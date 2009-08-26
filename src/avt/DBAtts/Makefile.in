@@ -82,6 +82,8 @@
 #    Dave Bremer, Wed Dec 19 12:33:29 PST 2007
 #    Added avtSILArray.C to the build.
 #
+#    Mark C. Miller, Wed Aug 26 11:06:34 PDT 2009
+#    Removed custom SIL stuff. Added avtVarMetaData
 ##############################################################################
 
 @SET_MAKE@
@@ -100,8 +102,6 @@ MetaData_src= \
   MetaData/avtMatSpeciesMetaData.C\
   MetaData/avtMaterialMetaData.C\
   MetaData/avtMeshMetaData.C\
-  MetaData/avtSILCollectionMetaData.C\
-  MetaData/avtSILMetaData.C\
   MetaData/avtScalarMetaData.C\
   MetaData/avtSimulationCommandSpecification.C\
   MetaData/avtSimulationInformation.C\
@@ -109,6 +109,7 @@ MetaData_src= \
   MetaData/avtSymmetricTensorMetaData.C\
   MetaData/avtTensorMetaData.C\
   MetaData/avtTypes.C\
+  MetaData/avtVarMetaData.C\
   MetaData/avtVectorMetaData.C
 SIL_src= \
   SIL/avtSIL.C \

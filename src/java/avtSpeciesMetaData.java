@@ -57,9 +57,24 @@ import java.util.Vector;
 
 public class avtSpeciesMetaData extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 7;
+
     public avtSpeciesMetaData()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        name = new String("Species");
+        originalName = new String("Species");
+        validVariable = true;
+        meshName = new String("mesh");
+        materialName = new String("material");
+        numMaterials = 0;
+        species = new Vector();
+    }
+
+    public avtSpeciesMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         name = new String("Species");
         originalName = new String("Species");
@@ -72,7 +87,7 @@ public class avtSpeciesMetaData extends AttributeSubject
 
     public avtSpeciesMetaData(avtSpeciesMetaData obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -92,6 +107,16 @@ public class avtSpeciesMetaData extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtSpeciesMetaData obj)
@@ -189,45 +214,41 @@ public class avtSpeciesMetaData extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetName(buf.ReadString());
+            break;
+        case 1:
+            SetOriginalName(buf.ReadString());
+            break;
+        case 2:
+            SetValidVariable(buf.ReadBool());
+            break;
+        case 3:
+            SetMeshName(buf.ReadString());
+            break;
+        case 4:
+            SetMaterialName(buf.ReadString());
+            break;
+        case 5:
+            SetNumMaterials(buf.ReadInt());
+            break;
+        case 6:
             {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshName(buf.ReadString());
-                break;
-            case 4:
-                SetMaterialName(buf.ReadString());
-                break;
-            case 5:
-                SetNumMaterials(buf.ReadInt());
-                break;
-            case 6:
+                int len = buf.ReadInt();
+                species.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    species.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtMatSpeciesMetaData tmp = new avtMatSpeciesMetaData();
-                        tmp.Read(buf);
-                        species.addElement(tmp);
-                    }
+                    avtMatSpeciesMetaData tmp = new avtMatSpeciesMetaData();
+                    tmp.Read(buf);
+                    species.addElement(tmp);
                 }
-                Select(6);
-                break;
             }
+            Select(6);
+            break;
         }
     }
 

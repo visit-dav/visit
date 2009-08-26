@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ConeAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 7;
+
     // Enum values
     public final static int REPRESENTATION_THREED = 0;
     public final static int REPRESENTATION_FLATTENED = 1;
@@ -67,7 +69,29 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public ConeAttributes()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        angle = 45;
+        origin = new double[3];
+        origin[0] = 0;
+        origin[1] = 0;
+        origin[2] = 0;
+        normal = new double[3];
+        normal[0] = 0;
+        normal[1] = 0;
+        normal[2] = 1;
+        representation = REPRESENTATION_FLATTENED;
+        upAxis = new double[3];
+        upAxis[0] = 0;
+        upAxis[1] = 1;
+        upAxis[2] = 0;
+        cutByLength = false;
+        length = 1;
+    }
+
+    public ConeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         angle = 45;
         origin = new double[3];
@@ -89,7 +113,7 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public ConeAttributes(ConeAttributes obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -114,6 +138,16 @@ public class ConeAttributes extends AttributeSubject implements Plugin
         length = obj.length;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ConeAttributes obj)
@@ -249,35 +283,31 @@ public class ConeAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(length);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetAngle(buf.ReadDouble());
-                break;
-            case 1:
-                SetOrigin(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetNormal(buf.ReadDoubleArray());
-                break;
-            case 3:
-                SetRepresentation(buf.ReadInt());
-                break;
-            case 4:
-                SetUpAxis(buf.ReadDoubleArray());
-                break;
-            case 5:
-                SetCutByLength(buf.ReadBool());
-                break;
-            case 6:
-                SetLength(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetAngle(buf.ReadDouble());
+            break;
+        case 1:
+            SetOrigin(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetNormal(buf.ReadDoubleArray());
+            break;
+        case 3:
+            SetRepresentation(buf.ReadInt());
+            break;
+        case 4:
+            SetUpAxis(buf.ReadDoubleArray());
+            break;
+        case 5:
+            SetCutByLength(buf.ReadBool());
+            break;
+        case 6:
+            SetLength(buf.ReadDouble());
+            break;
         }
     }
 

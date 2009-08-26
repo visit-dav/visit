@@ -56,9 +56,23 @@ package llnl.visit;
 
 public class ColorControlPoint extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 2;
+
     public ColorControlPoint()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        colors = new byte[4];
+        colors[0] = (byte)0;
+        colors[1] = (byte)0;
+        colors[2] = (byte)0;
+        colors[3] = (byte)255;
+        position = 0f;
+    }
+
+    public ColorControlPoint(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         colors = new byte[4];
         colors[0] = (byte)0;
@@ -70,7 +84,7 @@ public class ColorControlPoint extends AttributeSubject
 
     public ColorControlPoint(ColorControlPoint obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -81,6 +95,16 @@ public class ColorControlPoint extends AttributeSubject
         position = obj.position;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ColorControlPoint obj)
@@ -135,20 +159,16 @@ public class ColorControlPoint extends AttributeSubject
             buf.WriteFloat(position);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetColors(buf.ReadByteArray());
-                break;
-            case 1:
-                SetPosition(buf.ReadFloat());
-                break;
-            }
+        case 0:
+            SetColors(buf.ReadByteArray());
+            break;
+        case 1:
+            SetPosition(buf.ReadFloat());
+            break;
         }
     }
 

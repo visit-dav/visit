@@ -57,9 +57,20 @@ import java.util.Vector;
 
 public class avtDefaultPlotMetaData extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public avtDefaultPlotMetaData()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        pluginID = new String("");
+        plotVar = new String("var");
+        plotAttributes = new Vector();
+    }
+
+    public avtDefaultPlotMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         pluginID = new String("");
         plotVar = new String("var");
@@ -68,7 +79,7 @@ public class avtDefaultPlotMetaData extends AttributeSubject
 
     public avtDefaultPlotMetaData(avtDefaultPlotMetaData obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +91,16 @@ public class avtDefaultPlotMetaData extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtDefaultPlotMetaData obj)
@@ -136,23 +157,19 @@ public class avtDefaultPlotMetaData extends AttributeSubject
             buf.WriteStringVector(plotAttributes);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPluginID(buf.ReadString());
-                break;
-            case 1:
-                SetPlotVar(buf.ReadString());
-                break;
-            case 2:
-                SetPlotAttributes(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetPluginID(buf.ReadString());
+            break;
+        case 1:
+            SetPlotVar(buf.ReadString());
+            break;
+        case 2:
+            SetPlotAttributes(buf.ReadStringVector());
+            break;
         }
     }
 

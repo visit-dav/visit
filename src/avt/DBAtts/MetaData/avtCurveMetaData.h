@@ -40,7 +40,8 @@
 #define AVTCURVEMETADATA_H
 #include <dbatts_exports.h>
 #include <string>
-#include <AttributeSubject.h>
+#include <avtVarMetaData.h>
+
 
 // ****************************************************************************
 // Class: avtCurveMetaData
@@ -57,16 +58,26 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtCurveMetaData : public AttributeSubject
+class DBATTS_API avtCurveMetaData : public avtVarMetaData
 {
 public:
+    // These constructors are for objects of this class
     avtCurveMetaData();
     avtCurveMetaData(const avtCurveMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtCurveMetaData(private_tmfs_t tmfs);
+    avtCurveMetaData(const avtCurveMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtCurveMetaData();
 
     virtual avtCurveMetaData& operator = (const avtCurveMetaData &obj);
     virtual bool operator == (const avtCurveMetaData &obj) const;
     virtual bool operator != (const avtCurveMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtCurveMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -87,27 +98,18 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_xUnits,
+        ID_xUnits = avtVarMetaData::ID__LAST,
         ID_xLabel,
         ID_yUnits,
         ID_yLabel,
         ID_hasSpatialExtents,
         ID_minSpatialExtents,
         ID_maxSpatialExtents,
-        ID_hasDataExtents,
-        ID_minDataExtents,
-        ID_maxDataExtents,
-        ID_hideFromGUI,
-        ID_from1DScalarName
+        ID_from1DScalarName,
+        ID__LAST
     };
 
 public:
-    std::string name;
-    std::string originalName;
-    bool        validVariable;
     std::string xUnits;
     std::string xLabel;
     std::string yUnits;
@@ -115,15 +117,13 @@ public:
     bool        hasSpatialExtents;
     double      minSpatialExtents;
     double      maxSpatialExtents;
-    bool        hasDataExtents;
-    double      minDataExtents;
-    double      maxDataExtents;
-    bool        hideFromGUI;
     std::string from1DScalarName;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTCURVEMETADATA_TMFS (AVTVARMETADATA_TMFS "ssssbdds")
 
 #endif

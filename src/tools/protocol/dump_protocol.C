@@ -93,8 +93,6 @@
 #include <avtMatSpeciesMetaData.h>
 #include <avtMaterialMetaData.h>
 #include <avtMeshMetaData.h>
-#include <avtSILCollectionMetaData.h>
-#include <avtSILMetaData.h>
 #include <avtScalarMetaData.h>
 #include <avtSimulationCommandSpecification.h>
 #include <avtSimulationInformation.h>
@@ -262,8 +260,6 @@ CreateMetaDataObjects(StateObjectMap &attributes)
     MAKE_OBJECT(avtMatSpeciesMetaData);
     MAKE_OBJECT(avtMaterialMetaData);
     MAKE_OBJECT(avtMeshMetaData);
-    MAKE_OBJECT(avtSILCollectionMetaData);
-    MAKE_OBJECT(avtSILMetaData);
     MAKE_OBJECT(avtScalarMetaData);
     MAKE_OBJECT(avtSimulationCommandSpecification);
     MAKE_OBJECT(avtSimulationInformation);

@@ -58,6 +58,8 @@ import java.util.Vector;
 
 public class VisualCueInfo extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 9;
+
     // Enum values
     public final static int CUETYPE_PICKPOINT = 0;
     public final static int CUETYPE_REFLINE = 1;
@@ -66,7 +68,22 @@ public class VisualCueInfo extends AttributeSubject
 
     public VisualCueInfo()
     {
-        super(9);
+        super(numAdditionalAttributes);
+
+        points = new Vector();
+        cueType = CUETYPE_UNKNOWN;
+        color = new ColorAttribute(0, 0, 0);
+        glyphType = new String("");
+        label = new String("");
+        showLabel = false;
+        lineStyle = 0;
+        lineWidth = 0;
+        opacity = 1;
+    }
+
+    public VisualCueInfo(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         points = new Vector();
         cueType = CUETYPE_UNKNOWN;
@@ -81,7 +98,7 @@ public class VisualCueInfo extends AttributeSubject
 
     public VisualCueInfo(VisualCueInfo obj)
     {
-        super(9);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -102,6 +119,16 @@ public class VisualCueInfo extends AttributeSubject
         opacity = obj.opacity;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(VisualCueInfo obj)
@@ -218,42 +245,38 @@ public class VisualCueInfo extends AttributeSubject
             buf.WriteDouble(opacity);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPoints(buf.ReadDoubleVector());
-                break;
-            case 1:
-                SetCueType(buf.ReadInt());
-                break;
-            case 2:
-                color.Read(buf);
-                Select(2);
-                break;
-            case 3:
-                SetGlyphType(buf.ReadString());
-                break;
-            case 4:
-                SetLabel(buf.ReadString());
-                break;
-            case 5:
-                SetShowLabel(buf.ReadBool());
-                break;
-            case 6:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 7:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 8:
-                SetOpacity(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetPoints(buf.ReadDoubleVector());
+            break;
+        case 1:
+            SetCueType(buf.ReadInt());
+            break;
+        case 2:
+            color.Read(buf);
+            Select(2);
+            break;
+        case 3:
+            SetGlyphType(buf.ReadString());
+            break;
+        case 4:
+            SetLabel(buf.ReadString());
+            break;
+        case 5:
+            SetShowLabel(buf.ReadBool());
+            break;
+        case 6:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 7:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 8:
+            SetOpacity(buf.ReadDouble());
+            break;
         }
     }
 

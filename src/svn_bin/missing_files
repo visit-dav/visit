@@ -23,6 +23,9 @@ _moc.C$"
 
 # Filename patterns to include (mainly using extension) as possible
 # NON-versioned source code files.
+#
+# Mark C. Miller, Wed Aug 26 11:07:23 PDT 2009
+# Added java files to list.
 includePatterns="\
 \.[Ch]$\|\
 \.code$\|\
@@ -35,6 +38,7 @@ includePatterns="\
 \.java$\|\
 \.bz2$\|\
 \.ini$\|\
+\.java$\|\
 \.conf$"
 
 # Handle tmpdir setting

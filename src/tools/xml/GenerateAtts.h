@@ -1593,6 +1593,9 @@ class AttsFieldFactory
 //
 //   Mark C. Miller, Tue Mar 18 20:56:47 PDT 2008
 //   Made it write field id enum regardless of only public fields
+//
+//   Mark C. Miller, Wed Aug 26 11:01:01 PDT 2009
+//   Added custom base class for derived state objects.
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -1602,8 +1605,8 @@ class AttsGeneratorAttribute : public GeneratorBase
     vector<AttsGeneratorField*> fields;
   public:
     AttsGeneratorAttribute(const QString &n, const QString &p, const QString &f,
-                           const QString &e, const QString &ei)
-        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields()
+                           const QString &e, const QString &ei, const QString &bc)
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields()
     {
     }
 
@@ -1639,7 +1642,8 @@ class AttsGeneratorAttribute : public GeneratorBase
         if(!exportInclude.isEmpty())
             h << "#include <" << exportInclude << ">" << Endl;
         WriteHeaderSystemIncludes(h);
-        h << "#include <AttributeSubject.h>" << Endl;
+        h << "#include <" << baseClass << ".h>" << Endl;
+        h << Endl;
         WriteHeaderForwardDeclarations(h);
         WriteHeaderAttributeIncludes(h);
         // write user header includes
@@ -1666,9 +1670,9 @@ class AttsGeneratorAttribute : public GeneratorBase
 
         WriteClassComment(h, purpose);
         if(exportAPI.isEmpty())
-            h << "class " << name << " : public AttributeSubject" << Endl;
+            h << "class " << name << " : public " << baseClass << Endl;
         else
-            h << "class " << exportAPI << " " << name << " : public AttributeSubject" << Endl;
+            h << "class " << exportAPI << " " << name << " : public " << baseClass << Endl;
         h << "{" << Endl;
         h << "public:" << Endl;
         for (size_t i=0; i<EnumType::enums.size(); i++)
@@ -1692,13 +1696,23 @@ class AttsGeneratorAttribute : public GeneratorBase
         }
         if (EnumType::enums.size() || constants.size())
             h << Endl;
+        h << "    // These constructors are for objects of this class" << Endl;
         h << "    " << name << "();" << Endl;
         h << "    " << name << "(const " << name << " &obj);" << Endl;
+        h << "protected:" << Endl;
+        h << "    // These constructors are for objects derived from this class" << Endl;
+        h << "    " << name << "(private_tmfs_t tmfs);" << Endl;
+        h << "    " << name << "(const " << name << " &obj, private_tmfs_t tmfs);" << Endl;
+        h << "public:" << Endl;
         h << "    virtual ~" << name << "();" << Endl;
         h << Endl;
         h << "    virtual " << name << "& operator = (const " << name << " &obj);" << Endl;
         h << "    virtual bool operator == (const " << name << " &obj) const;" << Endl;
         h << "    virtual bool operator != (const " << name << " &obj) const;" << Endl;
+        h << "private:" << Endl;
+        h << "    void Init();" << Endl;
+        h << "    void Copy(const " << name << " &obj);" << Endl;
+        h << "public:" << Endl;
         h << Endl;
         h << "    virtual const std::string TypeName() const;" << Endl;
         h << "    virtual bool CopyAttributes(const AttributeGroup *);" << Endl;
@@ -1869,7 +1883,17 @@ class AttsGeneratorAttribute : public GeneratorBase
             h << "private:" << Endl;
         h << "    // Static class format string for type map." << Endl;
         h << "    static const char *TypeMapFormatString;" << Endl;
+        h << "    static const private_tmfs_t TmfsStruct;" << Endl;
         h << "};" << Endl;
+        QString formatString;
+        for (size_t i=0; i<fields.size(); i++)
+            formatString += fields[i]->GetAttributeGroupID();
+        if (custombase)
+            h << "#define " << name.toUpper() << "_TMFS (" << baseClass.toUpper()
+              << "_TMFS \"" << formatString << "\")" << Endl;
+        else
+            h << "#define " << name.toUpper() << "_TMFS \""
+              << formatString << "\"" << Endl;
         h << Endl;
 
         bool wroteUserDefinedFunctionsHeading = false;
@@ -1916,8 +1940,10 @@ class AttsGeneratorAttribute : public GeneratorBase
         WriteSourceEnumConversions(c);
 
         // Write the more complex methods.
-        WriteSourceConstructor(c);
-        WriteSourceCopyConstructor(c);
+        WriteSourceInitFunc(c);
+        WriteSourceCopyFunc(c);
+        WriteSourceConstructors(c);
+        WriteSourceCopyConstructors(c);
         WriteSourceDestructor(c);
         WriteSourceAssignmentOperator(c);
         WriteSourceComparisonOperators(c);
@@ -2083,13 +2109,17 @@ private:
         {
             h << "        " << fields[i]->FieldID();
             if(i == 0)
-                h << " = 0";
-            if(i < fields.size()-1)
-                h << ",";
-            h << Endl;
+            {
+                if(custombase)
+                    h << " = " << baseClass << "::ID__LAST";
+                else
+                    h << " = 0";
+            }
+            h << "," << Endl;
         }
         if(fields.size() > 0)
         {
+            h << "        ID__LAST" << Endl;
             h << "    };" << Endl;
             h << Endl;
         }
@@ -2219,23 +2249,27 @@ private:
         c << Endl;
     }
 
-    void WriteSourceConstructor(QTextStream &c)
+    void WriteSourceInitFunc(QTextStream &c)
     {
-        // Write the typemap format string.
-        QString formatString;
-        for (size_t i=0; i<fields.size(); i++)
-            formatString += fields[i]->GetAttributeGroupID();
-        c << "// Type map format string" << Endl;
-        c << "const char *" << name << "::TypeMapFormatString = \"" << formatString << "\";";
-        c << Endl << Endl;
-
-        // Write the method comment.
-        QString purposeString("Constructor for the ");
+        QString purposeString("Init utility for the ");
         purposeString += (name + " class.");
         WriteMethodComment(c, name, name, purposeString);
 
-        c << name << "::" << name << "() : \n    AttributeSubject(" << name << "::TypeMapFormatString)";
+        c << "void " << name << "::Init()" << Endl;
+        c << "{" << Endl;
+        for (size_t i=0; i<fields.size(); i++)
+        {
+            if (!fields[i]->PrintInit(c, generatorName) &&
+                fields[i]->valueSet)
+            {
+                fields[i]->WriteSourceSetDefault(c);
+            }
+        }
+        c << "}" << Endl << Endl;
+    }
 
+    void WriteSourceInitializerList(QTextStream &c)
+    {
         // Count the number of fields that require an initializer
         size_t nInitializers = 0;
         for (size_t i=0; i<fields.size(); ++i)
@@ -2271,16 +2305,39 @@ private:
         }
         else
             c << Endl;
+    }
 
+    void WriteSourceConstructors(QTextStream &c)
+    {
+        // Write the typemap format string.
+        c << "// Type map format string" << Endl;
+        c << "const char *" << name << "::TypeMapFormatString = "
+          << name.toUpper() << "_TMFS;" << Endl;
+        c << "const AttributeGroup::private_tmfs_t " << name << "::TmfsStruct = {"
+          << name.toUpper() << "_TMFS};" << Endl;
+        c << Endl << Endl;
+
+        // Write the method comment.
+        QString purposeString("Default constructor for the ");
+        purposeString += (name + " class.");
+        WriteMethodComment(c, name, name, purposeString);
+        c << name << "::" << name << "() : \n    " << baseClass << "(" << name
+          << (custombase?"::TmfsStruct)":"::TypeMapFormatString)");
+        WriteSourceInitializerList(c);
         c << "{" << Endl;
-        for (size_t i=0; i<fields.size(); i++)
-        {
-            if (!fields[i]->PrintInit(c, generatorName) &&
-                fields[i]->valueSet)
-            {
-                fields[i]->WriteSourceSetDefault(c);
-            }
-        }
+        c << "    " << name << "::Init();" << Endl;
+        c << "}" << Endl << Endl;
+
+        // Write the method comment.
+        purposeString = "Constructor for the derived classes of ";
+        purposeString += (name + " class.");
+        WriteMethodComment(c, name, name, purposeString);
+
+        c << name << "::" << name << "(private_tmfs_t tmfs) : \n    "
+          << baseClass << (custombase?"(tmfs)":"(tmfs.tmfs)");
+        WriteSourceInitializerList(c);
+        c << "{" << Endl;
+        c << "    " << name << "::Init();" << Endl;
         c << "}" << Endl << Endl;
     }
 
@@ -2302,22 +2359,46 @@ private:
         {
             fields[i]->WriteSourceCopyCode(c);
         }
-        c << Endl << "    SelectAll();" << Endl;
+        c << Endl << "    " << name << "::SelectAll();" << Endl;
     }
 
-    void WriteSourceCopyConstructor(QTextStream &c)
+    void WriteSourceCopyFunc(QTextStream &c)
+    {
+        QString purposeString("Copy utility for the ");
+        purposeString += (name + " class.");
+        WriteMethodComment(c, name, name, purposeString);
+        c << "void " << name << "::Copy(const " << name << " &obj)" << Endl;
+        c << "{" << Endl;
+        WriteSourceCopyCode(c);
+        c << "}" << Endl << Endl;
+    }
+
+    void WriteSourceCopyConstructors(QTextStream &c)
     {
         QString purposeString("Copy constructor for the ");
         purposeString += (name + " class.");
         WriteMethodComment(c, name, name, purposeString);
 
         c << name << "::" << name << "(const "
-          << name << " &obj) : \n    AttributeSubject(" << name
-          << "::TypeMapFormatString)" << Endl;
+          << name << " &obj) : \n    " << baseClass << (custombase?"(obj,":"(") << name
+          << (custombase?"::TmfsStruct)":"::TypeMapFormatString)") << Endl;
 
         c << "{" << Endl;
-        WriteSourceCopyCode(c);
+        c << "    " << name << "::Copy(obj);" << Endl;
         c << "}" << Endl << Endl;
+
+        purposeString = "Copy constructor for derived classes of the ";
+        purposeString += (name + " class.");
+        WriteMethodComment(c, name, name, purposeString);
+
+        c << name << "::" << name << "(const "
+          << name << " &obj, private_tmfs_t tmfs) : \n    "
+          << baseClass << (custombase?"(obj,tmfs)":"(tmfs.tmfs)") << Endl;
+
+        c << "{" << Endl;
+        c << "    " << name << "::Copy(obj);" << Endl;
+        c << "}" << Endl << Endl;
+
     }
     void WriteSourceDestructor(QTextStream &c)
     {
@@ -2363,7 +2444,15 @@ private:
           << name << " &obj)" << Endl;
         c << "{" << Endl;
         c << "    if (this == &obj) return *this;" << Endl;
+        c << Endl;
+        if (custombase)
+        {
+            c << "    // call the base class' assignment operator first" << Endl;
+            c << "    " << baseClass << "::operator=(obj);" << Endl;
+            c << Endl;
+        }
         WriteSourceCopyCode(c);
+        c << Endl;
         c << "    return *this;" << Endl;
         c << "}" << Endl << Endl;
     }
@@ -2505,6 +2594,12 @@ private:
                 if (i < fields.size() - 1)
                     c << " &&" << Endl;
             }
+            if (custombase)
+            {
+                c << " &&" << Endl;
+                c << "            ";
+                c << baseClass << "::operator==(obj)";
+            }
         }
         c << ");" << Endl;
 
@@ -2550,6 +2645,11 @@ private:
         c << "void" << Endl;
         c << name << "::SelectAll()" << Endl;
         c << "{" << Endl;
+        if (custombase)
+        {
+            c << "    // call the base class' SelectAll() first" << Endl;
+            c << "    " << baseClass << "::SelectAll();" << Endl;
+        }
         int maxlen = MaxFieldLength() + 2;
         for (size_t i=0; i<fields.size(); i++)
         {
@@ -2566,7 +2666,6 @@ private:
             }
             c << Endl;
         }
-
         c << "}" << Endl << Endl;
     }
     void WriteSourceSubAttributeGroup(QTextStream &c)

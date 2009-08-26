@@ -110,6 +110,8 @@ class DataNode;
 //    Brad Whitlock, Tue Jan  6 13:47:25 PST 2009
 //    I added support for including MapNode objects as fields.
 //
+//    Mark C. Miller, Wed Aug 26 11:11:19 PDT 2009
+//    Added _private_tmfs_t type for derived state object constructors.
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -144,6 +146,17 @@ public:
         FieldType_scalemode,
         FieldType_MapNode
     };
+
+    // This type is used only by code-generated state objects
+    // which are themselves derived from other code-generated
+    // state objects. We define this (silly) type to prevent
+    // any possibility of collision between a user-defined
+    // constructor requiring a single char* or std::string
+    // argument and constructors needed to support derived
+    // state objects.
+    typedef struct _private_tmfs_t {
+        const char *tmfs;
+    } private_tmfs_t;
 
 public:
     AttributeGroup(const char *formatString);

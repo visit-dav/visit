@@ -55,16 +55,23 @@ import java.util.Vector;
 //   
 // ****************************************************************************
 
-public class avtMaterialMetaData extends AttributeSubject
+public class avtMaterialMetaData extends avtVarMetaData
 {
+    private static int numAdditionalAttributes = 3;
+
     public avtMaterialMetaData()
     {
-        super(7);
+        super(numAdditionalAttributes);
 
-        name = new String("material");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
+        numMaterials = 0;
+        materialNames = new Vector();
+        colorNames = new Vector();
+    }
+
+    public avtMaterialMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
         numMaterials = 0;
         materialNames = new Vector();
         colorNames = new Vector();
@@ -72,14 +79,10 @@ public class avtMaterialMetaData extends AttributeSubject
 
     public avtMaterialMetaData(avtMaterialMetaData obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         int i;
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
-        meshName = new String(obj.meshName);
         numMaterials = obj.numMaterials;
         materialNames = new Vector(obj.materialNames.size());
         for(i = 0; i < obj.materialNames.size(); ++i)
@@ -91,6 +94,16 @@ public class avtMaterialMetaData extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtMaterialMetaData obj)
@@ -116,139 +129,82 @@ public class avtMaterialMetaData extends AttributeSubject
             colorNames_equal = colorNames1.equals(colorNames2);
         }
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (meshName.equals(obj.meshName)) &&
-                (numMaterials == obj.numMaterials) &&
+        return (super.equals(obj) && (numMaterials == obj.numMaterials) &&
                 materialNames_equal &&
                 colorNames_equal);
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
-    public void SetMeshName(String meshName_)
-    {
-        meshName = meshName_;
-        Select(3);
-    }
-
     public void SetNumMaterials(int numMaterials_)
     {
         numMaterials = numMaterials_;
-        Select(4);
+        Select(Offset() + 0);
     }
 
     public void SetMaterialNames(Vector materialNames_)
     {
         materialNames = materialNames_;
-        Select(5);
+        Select(Offset() + 1);
     }
 
     public void SetColorNames(Vector colorNames_)
     {
         colorNames = colorNames_;
-        Select(6);
+        Select(Offset() + 2);
     }
 
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetOriginalName() { return originalName; }
-    public boolean GetValidVariable() { return validVariable; }
-    public String  GetMeshName() { return meshName; }
-    public int     GetNumMaterials() { return numMaterials; }
-    public Vector  GetMaterialNames() { return materialNames; }
-    public Vector  GetColorNames() { return colorNames; }
+    public int    GetNumMaterials() { return numMaterials; }
+    public Vector GetMaterialNames() { return materialNames; }
+    public Vector GetColorNames() { return colorNames; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
-            buf.WriteString(meshName);
-        if(WriteSelect(4, buf))
+        super.WriteAtts(buf);
+
+        int offset = Offset();
+        if(WriteSelect(offset + 0, buf))
             buf.WriteInt(numMaterials);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(offset + 1, buf))
             buf.WriteStringVector(materialNames);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(offset + 2, buf))
             buf.WriteStringVector(colorNames);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        int index = id - Offset();
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshName(buf.ReadString());
-                break;
-            case 4:
-                SetNumMaterials(buf.ReadInt());
-                break;
-            case 5:
-                SetMaterialNames(buf.ReadStringVector());
-                break;
-            case 6:
-                SetColorNames(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetNumMaterials(buf.ReadInt());
+            break;
+        case 1:
+            SetMaterialNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetColorNames(buf.ReadStringVector());
+            break;
+        default:
+            super.ReadAtts(id, buf);
+            break;
         }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + stringToString("meshName", meshName, indent) + "\n";
         str = str + intToString("numMaterials", numMaterials, indent) + "\n";
         str = str + stringVectorToString("materialNames", materialNames, indent) + "\n";
         str = str + stringVectorToString("colorNames", colorNames, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String  name;
-    private String  originalName;
-    private boolean validVariable;
-    private String  meshName;
-    private int     numMaterials;
-    private Vector  materialNames; // vector of String objects
-    private Vector  colorNames; // vector of String objects
+    private int    numMaterials;
+    private Vector materialNames; // vector of String objects
+    private Vector colorNames; // vector of String objects
 }
 

@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class TransferFunctionWidget extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     // Enum values
     public final static int WIDGETTYPE_RECTANGLE = 0;
     public final static int WIDGETTYPE_TRIANGLE = 1;
@@ -65,7 +67,29 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public TransferFunctionWidget()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        Type = WIDGETTYPE_RECTANGLE;
+        Name = new String("unnamed");
+        BaseColor = new float[4];
+        BaseColor[0] = 1f;
+        BaseColor[1] = 1f;
+        BaseColor[2] = 1f;
+        BaseColor[3] = 1f;
+        Position = new float[8];
+        Position[0] = 0f;
+        Position[1] = 0f;
+        Position[2] = 0f;
+        Position[3] = 0f;
+        Position[4] = 0f;
+        Position[5] = 0f;
+        Position[6] = 0f;
+        Position[7] = 0f;
+    }
+
+    public TransferFunctionWidget(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         Type = WIDGETTYPE_RECTANGLE;
         Name = new String("unnamed");
@@ -87,7 +111,7 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public TransferFunctionWidget(TransferFunctionWidget obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -103,6 +127,16 @@ public class TransferFunctionWidget extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TransferFunctionWidget obj)
@@ -183,26 +217,22 @@ public class TransferFunctionWidget extends AttributeSubject
             buf.WriteFloatArray(Position);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetType(buf.ReadInt());
-                break;
-            case 1:
-                SetName(buf.ReadString());
-                break;
-            case 2:
-                SetBaseColor(buf.ReadFloatArray());
-                break;
-            case 3:
-                SetPosition(buf.ReadFloatArray());
-                break;
-            }
+        case 0:
+            SetType(buf.ReadInt());
+            break;
+        case 1:
+            SetName(buf.ReadString());
+            break;
+        case 2:
+            SetBaseColor(buf.ReadFloatArray());
+            break;
+        case 3:
+            SetPosition(buf.ReadFloatArray());
+            break;
         }
     }
 

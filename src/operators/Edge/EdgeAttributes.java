@@ -59,20 +59,39 @@ import llnl.visit.Plugin;
 
 public class EdgeAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     public EdgeAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        dummy = true;
+    }
+
+    public EdgeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         dummy = true;
     }
 
     public EdgeAttributes(EdgeAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         dummy = obj.dummy;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(EdgeAttributes obj)
@@ -101,9 +120,8 @@ public class EdgeAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(dummy);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetDummy(buf.ReadBool());
     }
 

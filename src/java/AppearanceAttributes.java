@@ -56,9 +56,28 @@ package llnl.visit;
 
 public class AppearanceAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 11;
+
     public AppearanceAttributes()
     {
-        super(11);
+        super(numAdditionalAttributes);
+
+        useSystemDefault = true;
+        background = new String("#c0c0c0");
+        foreground = new String("#000000");
+        fontName = new String("Helvetica,12,-1,5,50,0,0,0,0,0");
+        style = new String("motif");
+        orientation = 0;
+        defaultForeground = new String("");
+        defaultBackground = new String("");
+        defaultFontName = new String("");
+        defaultStyle = new String("");
+        defaultOrientation = 0;
+    }
+
+    public AppearanceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useSystemDefault = true;
         background = new String("#c0c0c0");
@@ -75,7 +94,7 @@ public class AppearanceAttributes extends AttributeSubject
 
     public AppearanceAttributes(AppearanceAttributes obj)
     {
-        super(11);
+        super(numAdditionalAttributes);
 
         useSystemDefault = obj.useSystemDefault;
         background = new String(obj.background);
@@ -90,6 +109,16 @@ public class AppearanceAttributes extends AttributeSubject
         defaultOrientation = obj.defaultOrientation;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AppearanceAttributes obj)
@@ -215,47 +244,43 @@ public class AppearanceAttributes extends AttributeSubject
             buf.WriteInt(defaultOrientation);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseSystemDefault(buf.ReadBool());
-                break;
-            case 1:
-                SetBackground(buf.ReadString());
-                break;
-            case 2:
-                SetForeground(buf.ReadString());
-                break;
-            case 3:
-                SetFontName(buf.ReadString());
-                break;
-            case 4:
-                SetStyle(buf.ReadString());
-                break;
-            case 5:
-                SetOrientation(buf.ReadInt());
-                break;
-            case 6:
-                SetDefaultForeground(buf.ReadString());
-                break;
-            case 7:
-                SetDefaultBackground(buf.ReadString());
-                break;
-            case 8:
-                SetDefaultFontName(buf.ReadString());
-                break;
-            case 9:
-                SetDefaultStyle(buf.ReadString());
-                break;
-            case 10:
-                SetDefaultOrientation(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetUseSystemDefault(buf.ReadBool());
+            break;
+        case 1:
+            SetBackground(buf.ReadString());
+            break;
+        case 2:
+            SetForeground(buf.ReadString());
+            break;
+        case 3:
+            SetFontName(buf.ReadString());
+            break;
+        case 4:
+            SetStyle(buf.ReadString());
+            break;
+        case 5:
+            SetOrientation(buf.ReadInt());
+            break;
+        case 6:
+            SetDefaultForeground(buf.ReadString());
+            break;
+        case 7:
+            SetDefaultBackground(buf.ReadString());
+            break;
+        case 8:
+            SetDefaultFontName(buf.ReadString());
+            break;
+        case 9:
+            SetDefaultStyle(buf.ReadString());
+            break;
+        case 10:
+            SetDefaultOrientation(buf.ReadInt());
+            break;
         }
     }
 

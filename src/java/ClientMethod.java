@@ -59,9 +59,21 @@ import java.lang.Double;
 
 public class ClientMethod extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     public ClientMethod()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        methodName = new String("");
+        intArgs = new Vector();
+        doubleArgs = new Vector();
+        stringArgs = new Vector();
+    }
+
+    public ClientMethod(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         methodName = new String("");
         intArgs = new Vector();
@@ -71,7 +83,7 @@ public class ClientMethod extends AttributeSubject
 
     public ClientMethod(ClientMethod obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -95,6 +107,16 @@ public class ClientMethod extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ClientMethod obj)
@@ -179,26 +201,22 @@ public class ClientMethod extends AttributeSubject
             buf.WriteStringVector(stringArgs);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetMethodName(buf.ReadString());
-                break;
-            case 1:
-                SetIntArgs(buf.ReadIntVector());
-                break;
-            case 2:
-                SetDoubleArgs(buf.ReadDoubleVector());
-                break;
-            case 3:
-                SetStringArgs(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetMethodName(buf.ReadString());
+            break;
+        case 1:
+            SetIntArgs(buf.ReadIntVector());
+            break;
+        case 2:
+            SetDoubleArgs(buf.ReadDoubleVector());
+            break;
+        case 3:
+            SetStringArgs(buf.ReadStringVector());
+            break;
         }
     }
 

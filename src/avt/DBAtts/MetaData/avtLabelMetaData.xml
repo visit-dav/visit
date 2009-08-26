@@ -1,24 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtLabelMetaData" purpose="Contains label metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtLabelMetaData.code">
-    <Field name="name" label="Name" type="string" access="public">
-      label
-    </Field>
-    <Field name="originalName" label="Original name" type="string" access="public">
-    </Field>
-    <Field name="validVariable" label="Valid variable" type="bool" access="public">
-      true
-    </Field>
-    <Field name="meshName" label="Mesh name" type="string" access="public">
-      mesh
-    </Field>
-    <Field name="centering" label="Variable centering" type="avtCentering" access="public">
-      AVT_UNKNOWN_CENT
-    </Field>
-    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
-      false
-    </Field>
+  <Attribute name="avtLabelMetaData" purpose="Contains label metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtLabelMetaData.code" baseClass="avtVarMetaData">
     <Function name="avtLabelMetaData2" user="true" member="true">
-    </Function>
-    <Function name="Print" user="true" member="true">
     </Function>
   </Attribute>

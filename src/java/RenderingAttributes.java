@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 19;
+
     // Enum values
     public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
     public final static int GEOMETRYREPRESENTATION_WIREFRAME = 1;
@@ -71,14 +73,45 @@ public class RenderingAttributes extends AttributeSubject
     public final static int TRISTATEMODE_AUTO = 2;
 
     // Constants
-    public final static int DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
+public final static int DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
 
-    public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
+public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
 
 
     public RenderingAttributes()
     {
-        super(19);
+        super(numAdditionalAttributes);
+
+        antialiasing = false;
+        geometryRepresentation = GEOMETRYREPRESENTATION_SURFACES;
+        displayListMode = TRISTATEMODE_AUTO;
+        stereoRendering = false;
+        stereoType = STEREOTYPES_CRYSTALEYES;
+        notifyForEachRender = false;
+        scalableActivationMode = TRISTATEMODE_AUTO;
+        scalableAutoThreshold = 2000000;
+        specularFlag = false;
+        specularCoeff = 0.6f;
+        specularPower = 10f;
+        specularColor = new ColorAttribute(255, 255, 255);
+        doShadowing = false;
+        shadowStrength = 0.5;
+        doDepthCueing = false;
+        startCuePoint = new double[3];
+        startCuePoint[0] = -10;
+        startCuePoint[1] = 0;
+        startCuePoint[2] = 0;
+        endCuePoint = new double[3];
+        endCuePoint[0] = 10;
+        endCuePoint[1] = 0;
+        endCuePoint[2] = 0;
+        compressionActivationMode = TRISTATEMODE_NEVER;
+        colorTexturingFlag = true;
+    }
+
+    public RenderingAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         antialiasing = false;
         geometryRepresentation = GEOMETRYREPRESENTATION_SURFACES;
@@ -109,7 +142,7 @@ public class RenderingAttributes extends AttributeSubject
 
     public RenderingAttributes(RenderingAttributes obj)
     {
-        super(19);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -142,6 +175,16 @@ public class RenderingAttributes extends AttributeSubject
         colorTexturingFlag = obj.colorTexturingFlag;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(RenderingAttributes obj)
@@ -379,72 +422,68 @@ public class RenderingAttributes extends AttributeSubject
             buf.WriteBool(colorTexturingFlag);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetAntialiasing(buf.ReadBool());
-                break;
-            case 1:
-                SetGeometryRepresentation(buf.ReadInt());
-                break;
-            case 2:
-                SetDisplayListMode(buf.ReadInt());
-                break;
-            case 3:
-                SetStereoRendering(buf.ReadBool());
-                break;
-            case 4:
-                SetStereoType(buf.ReadInt());
-                break;
-            case 5:
-                SetNotifyForEachRender(buf.ReadBool());
-                break;
-            case 6:
-                SetScalableActivationMode(buf.ReadInt());
-                break;
-            case 7:
-                SetScalableAutoThreshold(buf.ReadInt());
-                break;
-            case 8:
-                SetSpecularFlag(buf.ReadBool());
-                break;
-            case 9:
-                SetSpecularCoeff(buf.ReadFloat());
-                break;
-            case 10:
-                SetSpecularPower(buf.ReadFloat());
-                break;
-            case 11:
-                specularColor.Read(buf);
-                Select(11);
-                break;
-            case 12:
-                SetDoShadowing(buf.ReadBool());
-                break;
-            case 13:
-                SetShadowStrength(buf.ReadDouble());
-                break;
-            case 14:
-                SetDoDepthCueing(buf.ReadBool());
-                break;
-            case 15:
-                SetStartCuePoint(buf.ReadDoubleArray());
-                break;
-            case 16:
-                SetEndCuePoint(buf.ReadDoubleArray());
-                break;
-            case 17:
-                SetCompressionActivationMode(buf.ReadInt());
-                break;
-            case 18:
-                SetColorTexturingFlag(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetAntialiasing(buf.ReadBool());
+            break;
+        case 1:
+            SetGeometryRepresentation(buf.ReadInt());
+            break;
+        case 2:
+            SetDisplayListMode(buf.ReadInt());
+            break;
+        case 3:
+            SetStereoRendering(buf.ReadBool());
+            break;
+        case 4:
+            SetStereoType(buf.ReadInt());
+            break;
+        case 5:
+            SetNotifyForEachRender(buf.ReadBool());
+            break;
+        case 6:
+            SetScalableActivationMode(buf.ReadInt());
+            break;
+        case 7:
+            SetScalableAutoThreshold(buf.ReadInt());
+            break;
+        case 8:
+            SetSpecularFlag(buf.ReadBool());
+            break;
+        case 9:
+            SetSpecularCoeff(buf.ReadFloat());
+            break;
+        case 10:
+            SetSpecularPower(buf.ReadFloat());
+            break;
+        case 11:
+            specularColor.Read(buf);
+            Select(11);
+            break;
+        case 12:
+            SetDoShadowing(buf.ReadBool());
+            break;
+        case 13:
+            SetShadowStrength(buf.ReadDouble());
+            break;
+        case 14:
+            SetDoDepthCueing(buf.ReadBool());
+            break;
+        case 15:
+            SetStartCuePoint(buf.ReadDoubleArray());
+            break;
+        case 16:
+            SetEndCuePoint(buf.ReadDoubleArray());
+            break;
+        case 17:
+            SetCompressionActivationMode(buf.ReadInt());
+            break;
+        case 18:
+            SetColorTexturingFlag(buf.ReadBool());
+            break;
         }
     }
 

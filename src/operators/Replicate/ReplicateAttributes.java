@@ -59,9 +59,40 @@ import llnl.visit.Plugin;
 
 public class ReplicateAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 11;
+
     public ReplicateAttributes()
     {
-        super(11);
+        super(numAdditionalAttributes);
+
+        useUnitCellVectors = false;
+        xVector = new double[3];
+        xVector[0] = 1;
+        xVector[1] = 0;
+        xVector[2] = 0;
+        yVector = new double[3];
+        yVector[0] = 0;
+        yVector[1] = 1;
+        yVector[2] = 0;
+        zVector = new double[3];
+        zVector[0] = 0;
+        zVector[1] = 0;
+        zVector[2] = 1;
+        xReplications = 1;
+        yReplications = 1;
+        zReplications = 1;
+        mergeResults = true;
+        replicateUnitCellAtoms = false;
+        shiftPeriodicAtomOrigin = false;
+        newPeriodicOrigin = new double[3];
+        newPeriodicOrigin[0] = 0;
+        newPeriodicOrigin[1] = 0;
+        newPeriodicOrigin[2] = 0;
+    }
+
+    public ReplicateAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useUnitCellVectors = false;
         xVector = new double[3];
@@ -90,7 +121,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 
     public ReplicateAttributes(ReplicateAttributes obj)
     {
-        super(11);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -123,6 +154,16 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ReplicateAttributes obj)
@@ -313,47 +354,43 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
             buf.WriteDoubleArray(newPeriodicOrigin);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseUnitCellVectors(buf.ReadBool());
-                break;
-            case 1:
-                SetXVector(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetYVector(buf.ReadDoubleArray());
-                break;
-            case 3:
-                SetZVector(buf.ReadDoubleArray());
-                break;
-            case 4:
-                SetXReplications(buf.ReadInt());
-                break;
-            case 5:
-                SetYReplications(buf.ReadInt());
-                break;
-            case 6:
-                SetZReplications(buf.ReadInt());
-                break;
-            case 7:
-                SetMergeResults(buf.ReadBool());
-                break;
-            case 8:
-                SetReplicateUnitCellAtoms(buf.ReadBool());
-                break;
-            case 9:
-                SetShiftPeriodicAtomOrigin(buf.ReadBool());
-                break;
-            case 10:
-                SetNewPeriodicOrigin(buf.ReadDoubleArray());
-                break;
-            }
+        case 0:
+            SetUseUnitCellVectors(buf.ReadBool());
+            break;
+        case 1:
+            SetXVector(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetYVector(buf.ReadDoubleArray());
+            break;
+        case 3:
+            SetZVector(buf.ReadDoubleArray());
+            break;
+        case 4:
+            SetXReplications(buf.ReadInt());
+            break;
+        case 5:
+            SetYReplications(buf.ReadInt());
+            break;
+        case 6:
+            SetZReplications(buf.ReadInt());
+            break;
+        case 7:
+            SetMergeResults(buf.ReadBool());
+            break;
+        case 8:
+            SetReplicateUnitCellAtoms(buf.ReadBool());
+            break;
+        case 9:
+            SetShiftPeriodicAtomOrigin(buf.ReadBool());
+            break;
+        case 10:
+            SetNewPeriodicOrigin(buf.ReadDoubleArray());
+            break;
         }
     }
 

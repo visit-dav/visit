@@ -62,6 +62,8 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 36;
+
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
     public final static int SOURCETYPE_SPECIFIEDLINE = 1;
@@ -100,7 +102,85 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes()
     {
-        super(36);
+        super(numAdditionalAttributes);
+
+        sourceType = SOURCETYPE_SPECIFIEDPOINT;
+        maxStepLength = 0.1;
+        termination = 10;
+        pointSource = new double[3];
+        pointSource[0] = 0;
+        pointSource[1] = 0;
+        pointSource[2] = 0;
+        lineStart = new double[3];
+        lineStart[0] = 0;
+        lineStart[1] = 0;
+        lineStart[2] = 0;
+        lineEnd = new double[3];
+        lineEnd[0] = 1;
+        lineEnd[1] = 0;
+        lineEnd[2] = 0;
+        planeOrigin = new double[3];
+        planeOrigin[0] = 0;
+        planeOrigin[1] = 0;
+        planeOrigin[2] = 0;
+        planeNormal = new double[3];
+        planeNormal[0] = 0;
+        planeNormal[1] = 0;
+        planeNormal[2] = 1;
+        planeUpAxis = new double[3];
+        planeUpAxis[0] = 0;
+        planeUpAxis[1] = 1;
+        planeUpAxis[2] = 0;
+        planeRadius = 1;
+        sphereOrigin = new double[3];
+        sphereOrigin[0] = 0;
+        sphereOrigin[1] = 0;
+        sphereOrigin[2] = 0;
+        sphereRadius = 1;
+        boxExtents = new double[6];
+        boxExtents[0] = 0;
+        boxExtents[1] = 1;
+        boxExtents[2] = 0;
+        boxExtents[3] = 1;
+        boxExtents[4] = 0;
+        boxExtents[5] = 1;
+        useWholeBox = true;
+        pointList = new Vector();
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(1));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(0));
+        pointList.addElement(new Double(1));
+        pointList.addElement(new Double(0));
+        pointDensity = 2;
+        displayMethod = DISPLAYMETHOD_LINES;
+        showStart = false;
+        radius = 0.125;
+        lineWidth = 2;
+        coloringMethod = COLORINGMETHOD_COLORBYSPEED;
+        colorTableName = new String("Default");
+        singleColor = new ColorAttribute(0, 0, 0);
+        legendFlag = true;
+        lightingFlag = true;
+        StreamlineDirection = INTEGRATIONDIRECTION_FORWARD;
+        relTol = 0.0001;
+        absTol = 1e-05;
+        terminationType = TERMINATIONTYPE_DISTANCE;
+        integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
+        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
+        maxStreamlineProcessCount = 10;
+        maxDomainCacheSize = 3;
+        workGroupSize = 32;
+        pathlines = false;
+        coloringVariable = new String("");
+    }
+
+    public StreamlineAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -178,7 +258,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes(StreamlineAttributes obj)
     {
-        super(36);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -257,6 +337,16 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         coloringVariable = new String(obj.coloringVariable);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(StreamlineAttributes obj)
@@ -757,123 +847,119 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteString(coloringVariable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSourceType(buf.ReadInt());
-                break;
-            case 1:
-                SetMaxStepLength(buf.ReadDouble());
-                break;
-            case 2:
-                SetTermination(buf.ReadDouble());
-                break;
-            case 3:
-                SetPointSource(buf.ReadDoubleArray());
-                break;
-            case 4:
-                SetLineStart(buf.ReadDoubleArray());
-                break;
-            case 5:
-                SetLineEnd(buf.ReadDoubleArray());
-                break;
-            case 6:
-                SetPlaneOrigin(buf.ReadDoubleArray());
-                break;
-            case 7:
-                SetPlaneNormal(buf.ReadDoubleArray());
-                break;
-            case 8:
-                SetPlaneUpAxis(buf.ReadDoubleArray());
-                break;
-            case 9:
-                SetPlaneRadius(buf.ReadDouble());
-                break;
-            case 10:
-                SetSphereOrigin(buf.ReadDoubleArray());
-                break;
-            case 11:
-                SetSphereRadius(buf.ReadDouble());
-                break;
-            case 12:
-                SetBoxExtents(buf.ReadDoubleArray());
-                break;
-            case 13:
-                SetUseWholeBox(buf.ReadBool());
-                break;
-            case 14:
-                SetPointList(buf.ReadDoubleVector());
-                break;
-            case 15:
-                SetPointDensity(buf.ReadInt());
-                break;
-            case 16:
-                SetDisplayMethod(buf.ReadInt());
-                break;
-            case 17:
-                SetShowStart(buf.ReadBool());
-                break;
-            case 18:
-                SetRadius(buf.ReadDouble());
-                break;
-            case 19:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 20:
-                SetColoringMethod(buf.ReadInt());
-                break;
-            case 21:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 22:
-                singleColor.Read(buf);
-                Select(22);
-                break;
-            case 23:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 24:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            case 25:
-                SetStreamlineDirection(buf.ReadInt());
-                break;
-            case 26:
-                SetRelTol(buf.ReadDouble());
-                break;
-            case 27:
-                SetAbsTol(buf.ReadDouble());
-                break;
-            case 28:
-                SetTerminationType(buf.ReadInt());
-                break;
-            case 29:
-                SetIntegrationType(buf.ReadInt());
-                break;
-            case 30:
-                SetStreamlineAlgorithmType(buf.ReadInt());
-                break;
-            case 31:
-                SetMaxStreamlineProcessCount(buf.ReadInt());
-                break;
-            case 32:
-                SetMaxDomainCacheSize(buf.ReadInt());
-                break;
-            case 33:
-                SetWorkGroupSize(buf.ReadInt());
-                break;
-            case 34:
-                SetPathlines(buf.ReadBool());
-                break;
-            case 35:
-                SetColoringVariable(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetSourceType(buf.ReadInt());
+            break;
+        case 1:
+            SetMaxStepLength(buf.ReadDouble());
+            break;
+        case 2:
+            SetTermination(buf.ReadDouble());
+            break;
+        case 3:
+            SetPointSource(buf.ReadDoubleArray());
+            break;
+        case 4:
+            SetLineStart(buf.ReadDoubleArray());
+            break;
+        case 5:
+            SetLineEnd(buf.ReadDoubleArray());
+            break;
+        case 6:
+            SetPlaneOrigin(buf.ReadDoubleArray());
+            break;
+        case 7:
+            SetPlaneNormal(buf.ReadDoubleArray());
+            break;
+        case 8:
+            SetPlaneUpAxis(buf.ReadDoubleArray());
+            break;
+        case 9:
+            SetPlaneRadius(buf.ReadDouble());
+            break;
+        case 10:
+            SetSphereOrigin(buf.ReadDoubleArray());
+            break;
+        case 11:
+            SetSphereRadius(buf.ReadDouble());
+            break;
+        case 12:
+            SetBoxExtents(buf.ReadDoubleArray());
+            break;
+        case 13:
+            SetUseWholeBox(buf.ReadBool());
+            break;
+        case 14:
+            SetPointList(buf.ReadDoubleVector());
+            break;
+        case 15:
+            SetPointDensity(buf.ReadInt());
+            break;
+        case 16:
+            SetDisplayMethod(buf.ReadInt());
+            break;
+        case 17:
+            SetShowStart(buf.ReadBool());
+            break;
+        case 18:
+            SetRadius(buf.ReadDouble());
+            break;
+        case 19:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 20:
+            SetColoringMethod(buf.ReadInt());
+            break;
+        case 21:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 22:
+            singleColor.Read(buf);
+            Select(22);
+            break;
+        case 23:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 24:
+            SetLightingFlag(buf.ReadBool());
+            break;
+        case 25:
+            SetStreamlineDirection(buf.ReadInt());
+            break;
+        case 26:
+            SetRelTol(buf.ReadDouble());
+            break;
+        case 27:
+            SetAbsTol(buf.ReadDouble());
+            break;
+        case 28:
+            SetTerminationType(buf.ReadInt());
+            break;
+        case 29:
+            SetIntegrationType(buf.ReadInt());
+            break;
+        case 30:
+            SetStreamlineAlgorithmType(buf.ReadInt());
+            break;
+        case 31:
+            SetMaxStreamlineProcessCount(buf.ReadInt());
+            break;
+        case 32:
+            SetMaxDomainCacheSize(buf.ReadInt());
+            break;
+        case 33:
+            SetWorkGroupSize(buf.ReadInt());
+            break;
+        case 34:
+            SetPathlines(buf.ReadBool());
+            break;
+        case 35:
+            SetColoringVariable(buf.ReadString());
+            break;
         }
     }
 

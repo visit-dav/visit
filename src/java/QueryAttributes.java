@@ -59,6 +59,8 @@ import java.lang.Integer;
 
 public class QueryAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 19;
+
     // Enum values
     public final static int ELEMENTTYPE_ZONE = 0;
     public final static int ELEMENTTYPE_NODE = 1;
@@ -81,7 +83,39 @@ public class QueryAttributes extends AttributeSubject
 
     public QueryAttributes()
     {
-        super(19);
+        super(numAdditionalAttributes);
+
+        name = new String("");
+        variables = new Vector();
+        variables.addElement(new String("default"));
+        resultsMessage = new String("");
+        worldPoint = new double[3];
+        worldPoint[0] = 0;
+        worldPoint[1] = 0;
+        worldPoint[2] = 0;
+        domain = -1;
+        element = -1;
+        resultsValue = new Vector();
+        resultsValue.addElement(new Double(0));
+        elementType = ELEMENTTYPE_ZONE;
+        timeStep = 0;
+        varTypes = new Vector();
+        dataType = DATATYPE_ACTUALDATA;
+        pipeIndex = -1;
+        useGlobalId = false;
+        xUnits = new String("");
+        yUnits = new String("");
+        darg1 = new Vector();
+        darg1.addElement(new Double(0));
+        darg2 = new Vector();
+        darg2.addElement(new Double(0));
+        floatFormat = new String("%g");
+        xmlResult = new String("");
+    }
+
+    public QueryAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         name = new String("");
         variables = new Vector();
@@ -113,7 +147,7 @@ public class QueryAttributes extends AttributeSubject
 
     public QueryAttributes(QueryAttributes obj)
     {
-        super(19);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -168,6 +202,16 @@ public class QueryAttributes extends AttributeSubject
         xmlResult = new String(obj.xmlResult);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(QueryAttributes obj)
@@ -435,71 +479,67 @@ public class QueryAttributes extends AttributeSubject
             buf.WriteString(xmlResult);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetVariables(buf.ReadStringVector());
-                break;
-            case 2:
-                SetResultsMessage(buf.ReadString());
-                break;
-            case 3:
-                SetWorldPoint(buf.ReadDoubleArray());
-                break;
-            case 4:
-                SetDomain(buf.ReadInt());
-                break;
-            case 5:
-                SetElement(buf.ReadInt());
-                break;
-            case 6:
-                SetResultsValue(buf.ReadDoubleVector());
-                break;
-            case 7:
-                SetElementType(buf.ReadInt());
-                break;
-            case 8:
-                SetTimeStep(buf.ReadInt());
-                break;
-            case 9:
-                SetVarTypes(buf.ReadIntVector());
-                break;
-            case 10:
-                SetDataType(buf.ReadInt());
-                break;
-            case 11:
-                SetPipeIndex(buf.ReadInt());
-                break;
-            case 12:
-                SetUseGlobalId(buf.ReadBool());
-                break;
-            case 13:
-                SetXUnits(buf.ReadString());
-                break;
-            case 14:
-                SetYUnits(buf.ReadString());
-                break;
-            case 15:
-                SetDarg1(buf.ReadDoubleVector());
-                break;
-            case 16:
-                SetDarg2(buf.ReadDoubleVector());
-                break;
-            case 17:
-                SetFloatFormat(buf.ReadString());
-                break;
-            case 18:
-                SetXmlResult(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetName(buf.ReadString());
+            break;
+        case 1:
+            SetVariables(buf.ReadStringVector());
+            break;
+        case 2:
+            SetResultsMessage(buf.ReadString());
+            break;
+        case 3:
+            SetWorldPoint(buf.ReadDoubleArray());
+            break;
+        case 4:
+            SetDomain(buf.ReadInt());
+            break;
+        case 5:
+            SetElement(buf.ReadInt());
+            break;
+        case 6:
+            SetResultsValue(buf.ReadDoubleVector());
+            break;
+        case 7:
+            SetElementType(buf.ReadInt());
+            break;
+        case 8:
+            SetTimeStep(buf.ReadInt());
+            break;
+        case 9:
+            SetVarTypes(buf.ReadIntVector());
+            break;
+        case 10:
+            SetDataType(buf.ReadInt());
+            break;
+        case 11:
+            SetPipeIndex(buf.ReadInt());
+            break;
+        case 12:
+            SetUseGlobalId(buf.ReadBool());
+            break;
+        case 13:
+            SetXUnits(buf.ReadString());
+            break;
+        case 14:
+            SetYUnits(buf.ReadString());
+            break;
+        case 15:
+            SetDarg1(buf.ReadDoubleVector());
+            break;
+        case 16:
+            SetDarg2(buf.ReadDoubleVector());
+            break;
+        case 17:
+            SetFloatFormat(buf.ReadString());
+            break;
+        case 18:
+            SetXmlResult(buf.ReadString());
+            break;
         }
     }
 

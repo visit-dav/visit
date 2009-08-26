@@ -57,16 +57,25 @@ import java.util.Vector;
 
 public class ClientInformationList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public ClientInformationList()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        clients = new Vector();
+    }
+
+    public ClientInformationList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         clients = new Vector();
     }
 
     public ClientInformationList(ClientInformationList obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +89,16 @@ public class ClientInformationList extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ClientInformationList obj)
@@ -117,9 +136,8 @@ public class ClientInformationList extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         {
             int len = buf.ReadInt();
             clients.clear();

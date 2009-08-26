@@ -57,9 +57,22 @@ import java.util.Vector;
 
 public class ColorControlPointList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     public ColorControlPointList()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        controlPoints = new Vector();
+        smoothingFlag = true;
+        equalSpacingFlag = false;
+        discreteFlag = false;
+        externalFlag = false;
+    }
+
+    public ColorControlPointList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         controlPoints = new Vector();
         smoothingFlag = true;
@@ -70,7 +83,7 @@ public class ColorControlPointList extends AttributeSubject
 
     public ColorControlPointList(ColorControlPointList obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -88,6 +101,16 @@ public class ColorControlPointList extends AttributeSubject
         externalFlag = obj.externalFlag;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ColorControlPointList obj)
@@ -165,39 +188,35 @@ public class ColorControlPointList extends AttributeSubject
             buf.WriteBool(externalFlag);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
             {
-            case 0:
+                int len = buf.ReadInt();
+                controlPoints.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    controlPoints.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        ColorControlPoint tmp = new ColorControlPoint();
-                        tmp.Read(buf);
-                        controlPoints.addElement(tmp);
-                    }
+                    ColorControlPoint tmp = new ColorControlPoint();
+                    tmp.Read(buf);
+                    controlPoints.addElement(tmp);
                 }
-                Select(0);
-                break;
-            case 1:
-                SetSmoothingFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetEqualSpacingFlag(buf.ReadBool());
-                break;
-            case 3:
-                SetDiscreteFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetExternalFlag(buf.ReadBool());
-                break;
             }
+            Select(0);
+            break;
+        case 1:
+            SetSmoothingFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetEqualSpacingFlag(buf.ReadBool());
+            break;
+        case 3:
+            SetDiscreteFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetExternalFlag(buf.ReadBool());
+            break;
         }
     }
 

@@ -57,6 +57,8 @@ import java.util.Vector;
 
 public class avtSimulationInformation extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 8;
+
     // Enum values
     public final static int RUNMODE_UNKNOWN = 0;
     public final static int RUNMODE_RUNNING = 1;
@@ -65,7 +67,21 @@ public class avtSimulationInformation extends AttributeSubject
 
     public avtSimulationInformation()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        host = new String("");
+        port = 0;
+        securityKey = new String("");
+        otherNames = new Vector();
+        otherValues = new Vector();
+        genericCommands = new Vector();
+        mode = RUNMODE_UNKNOWN;
+        customCommands = new Vector();
+    }
+
+    public avtSimulationInformation(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         host = new String("");
         port = 0;
@@ -79,7 +95,7 @@ public class avtSimulationInformation extends AttributeSubject
 
     public avtSimulationInformation(avtSimulationInformation obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -113,6 +129,16 @@ public class avtSimulationInformation extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtSimulationInformation obj)
@@ -248,58 +274,54 @@ public class avtSimulationInformation extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetHost(buf.ReadString());
+            break;
+        case 1:
+            SetPort(buf.ReadInt());
+            break;
+        case 2:
+            SetSecurityKey(buf.ReadString());
+            break;
+        case 3:
+            SetOtherNames(buf.ReadStringVector());
+            break;
+        case 4:
+            SetOtherValues(buf.ReadStringVector());
+            break;
+        case 5:
             {
-            case 0:
-                SetHost(buf.ReadString());
-                break;
-            case 1:
-                SetPort(buf.ReadInt());
-                break;
-            case 2:
-                SetSecurityKey(buf.ReadString());
-                break;
-            case 3:
-                SetOtherNames(buf.ReadStringVector());
-                break;
-            case 4:
-                SetOtherValues(buf.ReadStringVector());
-                break;
-            case 5:
+                int len = buf.ReadInt();
+                genericCommands.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    genericCommands.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtSimulationCommandSpecification tmp = new avtSimulationCommandSpecification();
-                        tmp.Read(buf);
-                        genericCommands.addElement(tmp);
-                    }
+                    avtSimulationCommandSpecification tmp = new avtSimulationCommandSpecification();
+                    tmp.Read(buf);
+                    genericCommands.addElement(tmp);
                 }
-                Select(5);
-                break;
-            case 6:
-                SetMode(buf.ReadInt());
-                break;
-            case 7:
-                {
-                    int len = buf.ReadInt();
-                    customCommands.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtSimulationCommandSpecification tmp = new avtSimulationCommandSpecification();
-                        tmp.Read(buf);
-                        customCommands.addElement(tmp);
-                    }
-                }
-                Select(7);
-                break;
             }
+            Select(5);
+            break;
+        case 6:
+            SetMode(buf.ReadInt());
+            break;
+        case 7:
+            {
+                int len = buf.ReadInt();
+                customCommands.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtSimulationCommandSpecification tmp = new avtSimulationCommandSpecification();
+                    tmp.Read(buf);
+                    customCommands.addElement(tmp);
+                }
+            }
+            Select(7);
+            break;
         }
     }
 

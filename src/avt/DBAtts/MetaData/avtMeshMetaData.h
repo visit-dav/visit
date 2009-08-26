@@ -43,6 +43,7 @@
 #include <avtTypes.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: avtMeshMetaData
 //
@@ -61,13 +62,21 @@
 class DBATTS_API avtMeshMetaData : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     avtMeshMetaData();
     avtMeshMetaData(const avtMeshMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtMeshMetaData(private_tmfs_t tmfs);
+    avtMeshMetaData(const avtMeshMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtMeshMetaData();
 
     virtual avtMeshMetaData& operator = (const avtMeshMetaData &obj);
     virtual bool operator == (const avtMeshMetaData &obj) const;
     virtual bool operator != (const avtMeshMetaData &obj) const;
+    void Init();
+    void Copy(const avtMeshMetaData &obj);
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -127,7 +136,8 @@ public:
         ID_rectilinearGridTransform,
         ID_nodeOrigin,
         ID_containsExteriorBoundaryGhosts,
-        ID_hideFromGUI
+        ID_hideFromGUI,
+        ID__LAST
     };
 
 public:
@@ -177,6 +187,8 @@ public:
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTMESHMETADATA_TMFS "ssbiiiiissssssbDDiisss*iissi*bibbbbibFFbDibb"
 
 #endif

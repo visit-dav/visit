@@ -59,6 +59,8 @@
 //
 // Modifications:
 //   
+//    Mark C. Miller, Wed Aug 26 11:02:41 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 
 class AttributeBase
@@ -75,10 +77,13 @@ public:
     vector<Include*>   includes;
     vector<Code*>      codes;
     CodeFile          *codeFile;
+    bool               custombase;
+    QString            baseClass;
 
 public:
     AttributeBase(const QString &n, const QString &p, const QString &f,
-                  const QString &e, const QString &ei)
+                  const QString &e, const QString &ei,
+                  const QString &bc = "AttributeSubject")
         : name(n),
           purpose(p), 
           persistent(false),
@@ -89,7 +94,9 @@ public:
           constants(),
           includes(),
           codes(),
-          codeFile(NULL)
+          codeFile(NULL),
+          custombase(false),
+          baseClass(bc)
     {
         if (name.isNull()) name = "";
         if (purpose.isNull()) purpose = "";
@@ -99,6 +106,10 @@ public:
             codeFile = new CodeFile(f);
         if (codeFile)
             codeFile->Parse();
+        if (baseClass.isNull() || baseClass == "")
+            baseClass = "AttributeSubject";
+        if (baseClass == "AttributeSubject")
+            custombase = false;
     }
 
     virtual ~AttributeBase()

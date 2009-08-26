@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtScalarMetaData" purpose="Contains scalar metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtScalarMetaData.code">
+  <Attribute name="avtScalarMetaData" purpose="Contains scalar metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtScalarMetaData.code" baseClass="avtVarMetaData">
     <Enum name="PartialCellModes">
       Include
       Exclude
@@ -12,38 +12,7 @@
       ByBitMask
       ByNChooseR
     </Enum>
-    <Field name="name" label="Name" type="string" access="public">
-      scalar
-    </Field>
-    <Field name="originalName" label="Original name" type="string" access="public">
-    </Field>
-    <Field name="validVariable" label="Valid variable" type="bool" access="public">
-      true
-    </Field>
-    <Field name="meshName" label="Mesh name" type="string" access="public">
-      mesh
-    </Field>
-    <Field name="centering" label="Variable centering" type="avtCentering" access="public">
-      AVT_UNKNOWN_CENT
-    </Field>
-    <Field name="hasUnits" label="Has units" type="bool" access="public">
-      false
-    </Field>
-    <Field name="units" label="Units" type="string" access="public">
-    </Field>
-    <Field name="hasDataExtents" label="Has data extents" type="bool" access="public">
-      false
-    </Field>
-    <Field name="minDataExtents" label="Minimum data extents" type="double" access="public">
-      0.000000
-    </Field>
-    <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
-      0.000000
-    </Field>
     <Field name="treatAsASCII" label="Treat value as ASCII when displayed" type="bool" access="public">
-      false
-    </Field>
-    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
       false
     </Field>
     <Field name="enumerationType" label="Enumeration type" type="enum" subtype="EnumTypes">

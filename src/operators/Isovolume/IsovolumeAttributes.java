@@ -59,9 +59,20 @@ import llnl.visit.Plugin;
 
 public class IsovolumeAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 3;
+
     public IsovolumeAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        lbound = -1e+37;
+        ubound = 1e+37;
+        variable = new String("default");
+    }
+
+    public IsovolumeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         lbound = -1e+37;
         ubound = 1e+37;
@@ -70,13 +81,23 @@ public class IsovolumeAttributes extends AttributeSubject implements Plugin
 
     public IsovolumeAttributes(IsovolumeAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         lbound = obj.lbound;
         ubound = obj.ubound;
         variable = new String(obj.variable);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(IsovolumeAttributes obj)
@@ -125,23 +146,19 @@ public class IsovolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteString(variable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetLbound(buf.ReadDouble());
-                break;
-            case 1:
-                SetUbound(buf.ReadDouble());
-                break;
-            case 2:
-                SetVariable(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetLbound(buf.ReadDouble());
+            break;
+        case 1:
+            SetUbound(buf.ReadDouble());
+            break;
+        case 2:
+            SetVariable(buf.ReadString());
+            break;
         }
     }
 

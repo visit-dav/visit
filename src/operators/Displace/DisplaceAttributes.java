@@ -59,9 +59,19 @@ import llnl.visit.Plugin;
 
 public class DisplaceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 2;
+
     public DisplaceAttributes()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        factor = 1;
+        variable = new String("default");
+    }
+
+    public DisplaceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         factor = 1;
         variable = new String("default");
@@ -69,12 +79,22 @@ public class DisplaceAttributes extends AttributeSubject implements Plugin
 
     public DisplaceAttributes(DisplaceAttributes obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         factor = obj.factor;
         variable = new String(obj.variable);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DisplaceAttributes obj)
@@ -113,20 +133,16 @@ public class DisplaceAttributes extends AttributeSubject implements Plugin
             buf.WriteString(variable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetFactor(buf.ReadDouble());
-                break;
-            case 1:
-                SetVariable(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetFactor(buf.ReadDouble());
+            break;
+        case 1:
+            SetVariable(buf.ReadString());
+            break;
         }
     }
 

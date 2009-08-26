@@ -1,38 +1,7 @@
 <?xml version="1.0"?>
-  <Attribute name="avtVectorMetaData" purpose="Contains vector metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVectorMetaData.code">
-    <Field name="name" label="Name" type="string" access="public">
-      vector
-    </Field>
-    <Field name="originalName" label="Original name" type="string" access="public">
-    </Field>
-    <Field name="validVariable" label="Valid variable" type="bool" access="public">
-      true
-    </Field>
-    <Field name="meshName" label="Mesh name" type="string" access="public">
-      mesh
-    </Field>
-    <Field name="centering" label="Variable centering" type="avtCentering" access="public">
-      AVT_UNKNOWN_CENT
-    </Field>
-    <Field name="hasUnits" label="Has units" type="bool" access="public">
-      false
-    </Field>
-    <Field name="units" label="Units" type="string" access="public">
-    </Field>
-    <Field name="hasDataExtents" label="Has data extents" type="bool" access="public">
-      false
-    </Field>
-    <Field name="minDataExtents" label="Minimum data extents" type="double" access="public">
-      0.000000
-    </Field>
-    <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
-      0.000000
-    </Field>
+  <Attribute name="avtVectorMetaData" purpose="Contains vector metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVectorMetaData.code" baseClass="avtVarMetaData">
     <Field name="varDim" label="Variable dimension" type="int" access="public">
       0
-    </Field>
-    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
-      false
     </Field>
     <Function name="avtVectorMetaData2" user="true" member="true">
     </Function>

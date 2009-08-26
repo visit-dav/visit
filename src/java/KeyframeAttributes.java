@@ -56,24 +56,45 @@ package llnl.visit;
 
 public class KeyframeAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public KeyframeAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         enabled = false;
-        nFrames = 0;
+        nFrames = 20;
+        nFramesWasUserSet = false;
+    }
+
+    public KeyframeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        enabled = false;
+        nFrames = 20;
         nFramesWasUserSet = false;
     }
 
     public KeyframeAttributes(KeyframeAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         enabled = obj.enabled;
         nFrames = obj.nFrames;
         nFramesWasUserSet = obj.nFramesWasUserSet;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(KeyframeAttributes obj)
@@ -119,23 +140,19 @@ public class KeyframeAttributes extends AttributeSubject
             buf.WriteBool(nFramesWasUserSet);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetEnabled(buf.ReadBool());
-                break;
-            case 1:
-                SetNFrames(buf.ReadInt());
-                break;
-            case 2:
-                SetNFramesWasUserSet(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetEnabled(buf.ReadBool());
+            break;
+        case 1:
+            SetNFrames(buf.ReadInt());
+            break;
+        case 2:
+            SetNFramesWasUserSet(buf.ReadBool());
+            break;
         }
     }
 

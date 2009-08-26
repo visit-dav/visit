@@ -59,20 +59,39 @@ import llnl.visit.Plugin;
 
 public class BoundaryOpAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     public BoundaryOpAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        smoothingLevel = 0;
+    }
+
+    public BoundaryOpAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         smoothingLevel = 0;
     }
 
     public BoundaryOpAttributes(BoundaryOpAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         smoothingLevel = obj.smoothingLevel;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(BoundaryOpAttributes obj)
@@ -101,9 +120,8 @@ public class BoundaryOpAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(smoothingLevel);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetSmoothingLevel(buf.ReadInt());
     }
 

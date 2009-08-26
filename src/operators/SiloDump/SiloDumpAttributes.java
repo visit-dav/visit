@@ -59,9 +59,19 @@ import llnl.visit.Plugin;
 
 public class SiloDumpAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 2;
+
     public SiloDumpAttributes()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        filename = new String("dump");
+        display = false;
+    }
+
+    public SiloDumpAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         filename = new String("dump");
         display = false;
@@ -69,12 +79,22 @@ public class SiloDumpAttributes extends AttributeSubject implements Plugin
 
     public SiloDumpAttributes(SiloDumpAttributes obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         filename = new String(obj.filename);
         display = obj.display;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SiloDumpAttributes obj)
@@ -113,20 +133,16 @@ public class SiloDumpAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(display);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetFilename(buf.ReadString());
-                break;
-            case 1:
-                SetDisplay(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetFilename(buf.ReadString());
+            break;
+        case 1:
+            SetDisplay(buf.ReadBool());
+            break;
         }
     }
 

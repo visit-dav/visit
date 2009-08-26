@@ -62,6 +62,8 @@ import java.lang.Double;
 
 public class ThresholdAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 7;
+
     // Enum values
     public final static int OUTPUTMESHTYPE_INPUTZONES = 0;
     public final static int OUTPUTMESHTYPE_POINTMESH = 1;
@@ -72,7 +74,21 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
 
     public ThresholdAttributes()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        outputMeshType = 0;
+        listedVarNames = new Vector();
+        listedVarNames.addElement(new String("default"));
+        zonePortions = new Vector();
+        lowerBounds = new Vector();
+        upperBounds = new Vector();
+        defaultVarName = new String("default");
+        defaultVarIsScalar = false;
+    }
+
+    public ThresholdAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         outputMeshType = 0;
         listedVarNames = new Vector();
@@ -86,7 +102,7 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
 
     public ThresholdAttributes(ThresholdAttributes obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -119,6 +135,16 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
         defaultVarIsScalar = obj.defaultVarIsScalar;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ThresholdAttributes obj)
@@ -245,35 +271,31 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(defaultVarIsScalar);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOutputMeshType(buf.ReadInt());
-                break;
-            case 1:
-                SetListedVarNames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetZonePortions(buf.ReadIntVector());
-                break;
-            case 3:
-                SetLowerBounds(buf.ReadDoubleVector());
-                break;
-            case 4:
-                SetUpperBounds(buf.ReadDoubleVector());
-                break;
-            case 5:
-                SetDefaultVarName(buf.ReadString());
-                break;
-            case 6:
-                SetDefaultVarIsScalar(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetOutputMeshType(buf.ReadInt());
+            break;
+        case 1:
+            SetListedVarNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetZonePortions(buf.ReadIntVector());
+            break;
+        case 3:
+            SetLowerBounds(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetUpperBounds(buf.ReadDoubleVector());
+            break;
+        case 5:
+            SetDefaultVarName(buf.ReadString());
+            break;
+        case 6:
+            SetDefaultVarIsScalar(buf.ReadBool());
+            break;
         }
     }
 

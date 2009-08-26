@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class TransformAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 28;
+
     // Enum values
     public final static int ANGLETYPE_DEG = 0;
     public final static int ANGLETYPE_RAD = 1;
@@ -79,7 +81,50 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public TransformAttributes()
     {
-        super(28);
+        super(numAdditionalAttributes);
+
+        doRotate = false;
+        rotateOrigin = new float[3];
+        rotateOrigin[0] = 0f;
+        rotateOrigin[1] = 0f;
+        rotateOrigin[2] = 0f;
+        rotateAxis = new float[3];
+        rotateAxis[0] = 0f;
+        rotateAxis[1] = 0f;
+        rotateAxis[2] = 1f;
+        rotateAmount = 0f;
+        rotateType = ANGLETYPE_DEG;
+        doScale = false;
+        scaleOrigin = new float[3];
+        scaleOrigin[0] = 0f;
+        scaleOrigin[1] = 0f;
+        scaleOrigin[2] = 0f;
+        scaleX = 1f;
+        scaleY = 1f;
+        scaleZ = 1f;
+        doTranslate = false;
+        translateX = 0f;
+        translateY = 0f;
+        translateZ = 0f;
+        transformType = TRANSFORMTYPE_SIMILARITY;
+        inputCoordSys = COORDINATESYSTEM_CARTESIAN;
+        outputCoordSys = COORDINATESYSTEM_SPHERICAL;
+        m00 = 1;
+        m01 = 0;
+        m02 = 0;
+        m10 = 0;
+        m11 = 1;
+        m12 = 0;
+        m20 = 0;
+        m21 = 0;
+        m22 = 1;
+        invertLinearTransform = false;
+        vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
+    }
+
+    public TransformAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         doRotate = false;
         rotateOrigin = new float[3];
@@ -122,7 +167,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public TransformAttributes(TransformAttributes obj)
     {
-        super(28);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -168,6 +213,16 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         vectorTransformMethod = obj.vectorTransformMethod;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TransformAttributes obj)
@@ -513,98 +568,94 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(vectorTransformMethod);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDoRotate(buf.ReadBool());
-                break;
-            case 1:
-                SetRotateOrigin(buf.ReadFloatArray());
-                break;
-            case 2:
-                SetRotateAxis(buf.ReadFloatArray());
-                break;
-            case 3:
-                SetRotateAmount(buf.ReadFloat());
-                break;
-            case 4:
-                SetRotateType(buf.ReadInt());
-                break;
-            case 5:
-                SetDoScale(buf.ReadBool());
-                break;
-            case 6:
-                SetScaleOrigin(buf.ReadFloatArray());
-                break;
-            case 7:
-                SetScaleX(buf.ReadFloat());
-                break;
-            case 8:
-                SetScaleY(buf.ReadFloat());
-                break;
-            case 9:
-                SetScaleZ(buf.ReadFloat());
-                break;
-            case 10:
-                SetDoTranslate(buf.ReadBool());
-                break;
-            case 11:
-                SetTranslateX(buf.ReadFloat());
-                break;
-            case 12:
-                SetTranslateY(buf.ReadFloat());
-                break;
-            case 13:
-                SetTranslateZ(buf.ReadFloat());
-                break;
-            case 14:
-                SetTransformType(buf.ReadInt());
-                break;
-            case 15:
-                SetInputCoordSys(buf.ReadInt());
-                break;
-            case 16:
-                SetOutputCoordSys(buf.ReadInt());
-                break;
-            case 17:
-                SetM00(buf.ReadDouble());
-                break;
-            case 18:
-                SetM01(buf.ReadDouble());
-                break;
-            case 19:
-                SetM02(buf.ReadDouble());
-                break;
-            case 20:
-                SetM10(buf.ReadDouble());
-                break;
-            case 21:
-                SetM11(buf.ReadDouble());
-                break;
-            case 22:
-                SetM12(buf.ReadDouble());
-                break;
-            case 23:
-                SetM20(buf.ReadDouble());
-                break;
-            case 24:
-                SetM21(buf.ReadDouble());
-                break;
-            case 25:
-                SetM22(buf.ReadDouble());
-                break;
-            case 26:
-                SetInvertLinearTransform(buf.ReadBool());
-                break;
-            case 27:
-                SetVectorTransformMethod(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetDoRotate(buf.ReadBool());
+            break;
+        case 1:
+            SetRotateOrigin(buf.ReadFloatArray());
+            break;
+        case 2:
+            SetRotateAxis(buf.ReadFloatArray());
+            break;
+        case 3:
+            SetRotateAmount(buf.ReadFloat());
+            break;
+        case 4:
+            SetRotateType(buf.ReadInt());
+            break;
+        case 5:
+            SetDoScale(buf.ReadBool());
+            break;
+        case 6:
+            SetScaleOrigin(buf.ReadFloatArray());
+            break;
+        case 7:
+            SetScaleX(buf.ReadFloat());
+            break;
+        case 8:
+            SetScaleY(buf.ReadFloat());
+            break;
+        case 9:
+            SetScaleZ(buf.ReadFloat());
+            break;
+        case 10:
+            SetDoTranslate(buf.ReadBool());
+            break;
+        case 11:
+            SetTranslateX(buf.ReadFloat());
+            break;
+        case 12:
+            SetTranslateY(buf.ReadFloat());
+            break;
+        case 13:
+            SetTranslateZ(buf.ReadFloat());
+            break;
+        case 14:
+            SetTransformType(buf.ReadInt());
+            break;
+        case 15:
+            SetInputCoordSys(buf.ReadInt());
+            break;
+        case 16:
+            SetOutputCoordSys(buf.ReadInt());
+            break;
+        case 17:
+            SetM00(buf.ReadDouble());
+            break;
+        case 18:
+            SetM01(buf.ReadDouble());
+            break;
+        case 19:
+            SetM02(buf.ReadDouble());
+            break;
+        case 20:
+            SetM10(buf.ReadDouble());
+            break;
+        case 21:
+            SetM11(buf.ReadDouble());
+            break;
+        case 22:
+            SetM12(buf.ReadDouble());
+            break;
+        case 23:
+            SetM20(buf.ReadDouble());
+            break;
+        case 24:
+            SetM21(buf.ReadDouble());
+            break;
+        case 25:
+            SetM22(buf.ReadDouble());
+            break;
+        case 26:
+            SetInvertLinearTransform(buf.ReadBool());
+            break;
+        case 27:
+            SetVectorTransformMethod(buf.ReadInt());
+            break;
         }
     }
 

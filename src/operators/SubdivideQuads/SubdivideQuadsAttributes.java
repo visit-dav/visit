@@ -59,9 +59,22 @@ import llnl.visit.Plugin;
 
 public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 5;
+
     public SubdivideQuadsAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        threshold = 0.500002;
+        maxSubdivs = 4;
+        fanOutPoints = true;
+        doTriangles = false;
+        variable = new String("default");
+    }
+
+    public SubdivideQuadsAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         threshold = 0.500002;
         maxSubdivs = 4;
@@ -72,7 +85,7 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 
     public SubdivideQuadsAttributes(SubdivideQuadsAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         threshold = obj.threshold;
         maxSubdivs = obj.maxSubdivs;
@@ -81,6 +94,16 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
         variable = new String(obj.variable);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SubdivideQuadsAttributes obj)
@@ -149,29 +172,25 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
             buf.WriteString(variable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetThreshold(buf.ReadDouble());
-                break;
-            case 1:
-                SetMaxSubdivs(buf.ReadInt());
-                break;
-            case 2:
-                SetFanOutPoints(buf.ReadBool());
-                break;
-            case 3:
-                SetDoTriangles(buf.ReadBool());
-                break;
-            case 4:
-                SetVariable(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetThreshold(buf.ReadDouble());
+            break;
+        case 1:
+            SetMaxSubdivs(buf.ReadInt());
+            break;
+        case 2:
+            SetFanOutPoints(buf.ReadBool());
+            break;
+        case 3:
+            SetDoTriangles(buf.ReadBool());
+            break;
+        case 4:
+            SetVariable(buf.ReadString());
+            break;
         }
     }
 

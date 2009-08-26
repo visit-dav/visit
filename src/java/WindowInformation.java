@@ -58,9 +58,50 @@ import java.lang.Integer;
 
 public class WindowInformation extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 25;
+
     public WindowInformation()
     {
-        super(25);
+        super(numAdditionalAttributes);
+
+        activeSource = new String("");
+        activeTimeSlider = -1;
+        timeSliders = new Vector();
+        timeSliderCurrentStates = new Vector();
+        animationMode = 2;
+        interactionMode = 0;
+        boundingBoxNavigate = true;
+        spin = false;
+        fullFrame = false;
+        perspective = true;
+        lockView = false;
+        lockTools = false;
+        lockTime = false;
+        viewExtentsType = 0;
+        viewDimension = 2;
+        viewKeyframes = new Vector();
+        cameraViewMode = false;
+        usingScalableRendering = false;
+        lastRenderMin = 0f;
+        lastRenderAvg = 0f;
+        lastRenderMax = 0f;
+        numPrimitives = 0;
+        extents = new double[6];
+        extents[0] = 0;
+        extents[1] = 0;
+        extents[2] = 0;
+        extents[3] = 0;
+        extents[4] = 0;
+        extents[5] = 0;
+        windowSize = new int[2];
+        windowSize[0] = 0;
+        windowSize[1] = 0;
+        winMode = 0;
+    }
+
+    public WindowInformation(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         activeSource = new String("");
         activeTimeSlider = -1;
@@ -99,7 +140,7 @@ public class WindowInformation extends AttributeSubject
 
     public WindowInformation(WindowInformation obj)
     {
-        super(25);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -149,6 +190,16 @@ public class WindowInformation extends AttributeSubject
         winMode = obj.winMode;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(WindowInformation obj)
@@ -462,89 +513,85 @@ public class WindowInformation extends AttributeSubject
             buf.WriteInt(winMode);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetActiveSource(buf.ReadString());
-                break;
-            case 1:
-                SetActiveTimeSlider(buf.ReadInt());
-                break;
-            case 2:
-                SetTimeSliders(buf.ReadStringVector());
-                break;
-            case 3:
-                SetTimeSliderCurrentStates(buf.ReadIntVector());
-                break;
-            case 4:
-                SetAnimationMode(buf.ReadInt());
-                break;
-            case 5:
-                SetInteractionMode(buf.ReadInt());
-                break;
-            case 6:
-                SetBoundingBoxNavigate(buf.ReadBool());
-                break;
-            case 7:
-                SetSpin(buf.ReadBool());
-                break;
-            case 8:
-                SetFullFrame(buf.ReadBool());
-                break;
-            case 9:
-                SetPerspective(buf.ReadBool());
-                break;
-            case 10:
-                SetLockView(buf.ReadBool());
-                break;
-            case 11:
-                SetLockTools(buf.ReadBool());
-                break;
-            case 12:
-                SetLockTime(buf.ReadBool());
-                break;
-            case 13:
-                SetViewExtentsType(buf.ReadInt());
-                break;
-            case 14:
-                SetViewDimension(buf.ReadInt());
-                break;
-            case 15:
-                SetViewKeyframes(buf.ReadIntVector());
-                break;
-            case 16:
-                SetCameraViewMode(buf.ReadBool());
-                break;
-            case 17:
-                SetUsingScalableRendering(buf.ReadBool());
-                break;
-            case 18:
-                SetLastRenderMin(buf.ReadFloat());
-                break;
-            case 19:
-                SetLastRenderAvg(buf.ReadFloat());
-                break;
-            case 20:
-                SetLastRenderMax(buf.ReadFloat());
-                break;
-            case 21:
-                SetNumPrimitives(buf.ReadInt());
-                break;
-            case 22:
-                SetExtents(buf.ReadDoubleArray());
-                break;
-            case 23:
-                SetWindowSize(buf.ReadIntArray());
-                break;
-            case 24:
-                SetWinMode(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetActiveSource(buf.ReadString());
+            break;
+        case 1:
+            SetActiveTimeSlider(buf.ReadInt());
+            break;
+        case 2:
+            SetTimeSliders(buf.ReadStringVector());
+            break;
+        case 3:
+            SetTimeSliderCurrentStates(buf.ReadIntVector());
+            break;
+        case 4:
+            SetAnimationMode(buf.ReadInt());
+            break;
+        case 5:
+            SetInteractionMode(buf.ReadInt());
+            break;
+        case 6:
+            SetBoundingBoxNavigate(buf.ReadBool());
+            break;
+        case 7:
+            SetSpin(buf.ReadBool());
+            break;
+        case 8:
+            SetFullFrame(buf.ReadBool());
+            break;
+        case 9:
+            SetPerspective(buf.ReadBool());
+            break;
+        case 10:
+            SetLockView(buf.ReadBool());
+            break;
+        case 11:
+            SetLockTools(buf.ReadBool());
+            break;
+        case 12:
+            SetLockTime(buf.ReadBool());
+            break;
+        case 13:
+            SetViewExtentsType(buf.ReadInt());
+            break;
+        case 14:
+            SetViewDimension(buf.ReadInt());
+            break;
+        case 15:
+            SetViewKeyframes(buf.ReadIntVector());
+            break;
+        case 16:
+            SetCameraViewMode(buf.ReadBool());
+            break;
+        case 17:
+            SetUsingScalableRendering(buf.ReadBool());
+            break;
+        case 18:
+            SetLastRenderMin(buf.ReadFloat());
+            break;
+        case 19:
+            SetLastRenderAvg(buf.ReadFloat());
+            break;
+        case 20:
+            SetLastRenderMax(buf.ReadFloat());
+            break;
+        case 21:
+            SetNumPrimitives(buf.ReadInt());
+            break;
+        case 22:
+            SetExtents(buf.ReadDoubleArray());
+            break;
+        case 23:
+            SetWindowSize(buf.ReadIntArray());
+            break;
+        case 24:
+            SetWinMode(buf.ReadInt());
+            break;
         }
     }
 

@@ -61,6 +61,8 @@ import java.util.Vector;
 
 public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 10;
+
     // Enum values
     public final static int SELECT_BY_LEVEL = 0;
     public final static int SELECT_BY_VALUE = 1;
@@ -72,7 +74,23 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public IsosurfaceAttributes()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        contourNLevels = 10;
+        contourValue = new Vector();
+        contourPercent = new Vector();
+        contourMethod = SELECT_BY_LEVEL;
+        minFlag = false;
+        min = 0;
+        maxFlag = false;
+        max = 1;
+        scaling = SCALING_LINEAR;
+        variable = new String("default");
+    }
+
+    public IsosurfaceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         contourNLevels = 10;
         contourValue = new Vector();
@@ -88,7 +106,7 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public IsosurfaceAttributes(IsosurfaceAttributes obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -116,6 +134,16 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
         variable = new String(obj.variable);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(IsosurfaceAttributes obj)
@@ -254,44 +282,40 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
             buf.WriteString(variable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetContourNLevels(buf.ReadInt());
-                break;
-            case 1:
-                SetContourValue(buf.ReadDoubleVector());
-                break;
-            case 2:
-                SetContourPercent(buf.ReadDoubleVector());
-                break;
-            case 3:
-                SetContourMethod(buf.ReadInt());
-                break;
-            case 4:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 5:
-                SetMin(buf.ReadDouble());
-                break;
-            case 6:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 7:
-                SetMax(buf.ReadDouble());
-                break;
-            case 8:
-                SetScaling(buf.ReadInt());
-                break;
-            case 9:
-                SetVariable(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetContourNLevels(buf.ReadInt());
+            break;
+        case 1:
+            SetContourValue(buf.ReadDoubleVector());
+            break;
+        case 2:
+            SetContourPercent(buf.ReadDoubleVector());
+            break;
+        case 3:
+            SetContourMethod(buf.ReadInt());
+            break;
+        case 4:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 5:
+            SetMin(buf.ReadDouble());
+            break;
+        case 6:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 7:
+            SetMax(buf.ReadDouble());
+            break;
+        case 8:
+            SetScaling(buf.ReadInt());
+            break;
+        case 9:
+            SetVariable(buf.ReadString());
+            break;
         }
     }
 

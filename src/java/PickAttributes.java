@@ -58,6 +58,8 @@ import java.lang.Integer;
 
 public class PickAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 67;
+
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
     public final static int PICKTYPE_NODE = 1;
@@ -73,7 +75,102 @@ public class PickAttributes extends AttributeSubject
 
     public PickAttributes()
     {
-        super(67);
+        super(numAdditionalAttributes);
+
+        variables = new Vector();
+        variables.addElement(new String("default"));
+        displayIncidentElements = true;
+        showNodeId = true;
+        showNodeDomainLogicalCoords = false;
+        showNodeBlockLogicalCoords = false;
+        showNodePhysicalCoords = false;
+        showZoneId = true;
+        showZoneDomainLogicalCoords = false;
+        showZoneBlockLogicalCoords = false;
+        clearWindow = false;
+        pickLetter = new String("");
+        fulfilled = false;
+        pickType = PICKTYPE_ZONE;
+        domain = -1;
+        elementNumber = -1;
+        incidentElements = new Vector();
+        timeStep = -1;
+        dimension = -1;
+        databaseName = new String("");
+        activeVariable = new String("");
+        pickPoint = new double[3];
+        pickPoint[0] = 0;
+        pickPoint[1] = 0;
+        pickPoint[2] = 0;
+        cellPoint = new double[3];
+        cellPoint[0] = 0;
+        cellPoint[1] = 0;
+        cellPoint[2] = 0;
+        nodePoint = new double[3];
+        nodePoint[0] = 0;
+        nodePoint[1] = 0;
+        nodePoint[2] = 0;
+        plotBounds = new double[6];
+        plotBounds[0] = 0;
+        plotBounds[1] = 0;
+        plotBounds[2] = 0;
+        plotBounds[3] = 0;
+        plotBounds[4] = 0;
+        plotBounds[5] = 0;
+        rayPoint1 = new double[3];
+        rayPoint1[0] = 0;
+        rayPoint1[1] = 0;
+        rayPoint1[2] = 0;
+        rayPoint2 = new double[3];
+        rayPoint2[0] = 0;
+        rayPoint2[1] = 0;
+        rayPoint2[2] = 0;
+        meshInfo = new String("");
+        realElementNumber = -1;
+        realIncidentElements = new Vector();
+        pnodeCoords = new Vector();
+        dnodeCoords = new Vector();
+        bnodeCoords = new Vector();
+        dzoneCoords = new Vector();
+        bzoneCoords = new Vector();
+        needTransformMessage = false;
+        varInfo = new Vector();
+        invalidVars = new Vector();
+        doTimeCurve = false;
+        errorMessage = new String("");
+        error = false;
+        matSelected = false;
+        needActualCoords = false;
+        conciseOutput = false;
+        showTimeStep = true;
+        showMeshName = true;
+        blockPieceName = new String("");
+        groupPieceName = new String("");
+        ghosts = new Vector();
+        includeGhosts = false;
+        elementIsGhost = false;
+        requiresGlyphPick = false;
+        locationSuccessful = false;
+        displayGlobalIds = false;
+        globalElement = -1;
+        globalIncidentElements = new Vector();
+        elementIsGlobal = false;
+        displayPickLetter = true;
+        reusePickLetter = false;
+        ghostType = 0;
+        hasMixedGhostTypes = -1;
+        linesData = false;
+        inputTopoDim = -1;
+        meshCoordType = COORDINATETYPE_XY;
+        createSpreadsheet = false;
+        subsetName = new String("");
+        floatFormat = new String("%g");
+        timePreserveCoord = true;
+    }
+
+    public PickAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         variables = new Vector();
         variables.addElement(new String("default"));
@@ -168,7 +265,7 @@ public class PickAttributes extends AttributeSubject
 
     public PickAttributes(PickAttributes obj)
     {
-        super(67);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -312,6 +409,16 @@ public class PickAttributes extends AttributeSubject
         timePreserveCoord = obj.timePreserveCoord;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PickAttributes obj)
@@ -1189,225 +1296,221 @@ public class PickAttributes extends AttributeSubject
             buf.WriteBool(timePreserveCoord);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetVariables(buf.ReadStringVector());
+            break;
+        case 1:
+            SetDisplayIncidentElements(buf.ReadBool());
+            break;
+        case 2:
+            SetShowNodeId(buf.ReadBool());
+            break;
+        case 3:
+            SetShowNodeDomainLogicalCoords(buf.ReadBool());
+            break;
+        case 4:
+            SetShowNodeBlockLogicalCoords(buf.ReadBool());
+            break;
+        case 5:
+            SetShowNodePhysicalCoords(buf.ReadBool());
+            break;
+        case 6:
+            SetShowZoneId(buf.ReadBool());
+            break;
+        case 7:
+            SetShowZoneDomainLogicalCoords(buf.ReadBool());
+            break;
+        case 8:
+            SetShowZoneBlockLogicalCoords(buf.ReadBool());
+            break;
+        case 9:
+            SetClearWindow(buf.ReadBool());
+            break;
+        case 10:
+            SetPickLetter(buf.ReadString());
+            break;
+        case 11:
+            SetFulfilled(buf.ReadBool());
+            break;
+        case 12:
+            SetPickType(buf.ReadInt());
+            break;
+        case 13:
+            SetDomain(buf.ReadInt());
+            break;
+        case 14:
+            SetElementNumber(buf.ReadInt());
+            break;
+        case 15:
+            SetIncidentElements(buf.ReadIntVector());
+            break;
+        case 16:
+            SetTimeStep(buf.ReadInt());
+            break;
+        case 17:
+            SetDimension(buf.ReadInt());
+            break;
+        case 18:
+            SetDatabaseName(buf.ReadString());
+            break;
+        case 19:
+            SetActiveVariable(buf.ReadString());
+            break;
+        case 20:
+            SetPickPoint(buf.ReadDoubleArray());
+            break;
+        case 21:
+            SetCellPoint(buf.ReadDoubleArray());
+            break;
+        case 22:
+            SetNodePoint(buf.ReadDoubleArray());
+            break;
+        case 23:
+            SetPlotBounds(buf.ReadDoubleArray());
+            break;
+        case 24:
+            SetRayPoint1(buf.ReadDoubleArray());
+            break;
+        case 25:
+            SetRayPoint2(buf.ReadDoubleArray());
+            break;
+        case 26:
+            SetMeshInfo(buf.ReadString());
+            break;
+        case 27:
+            SetRealElementNumber(buf.ReadInt());
+            break;
+        case 28:
+            SetRealIncidentElements(buf.ReadIntVector());
+            break;
+        case 29:
+            SetPnodeCoords(buf.ReadStringVector());
+            break;
+        case 30:
+            SetDnodeCoords(buf.ReadStringVector());
+            break;
+        case 31:
+            SetBnodeCoords(buf.ReadStringVector());
+            break;
+        case 32:
+            SetDzoneCoords(buf.ReadStringVector());
+            break;
+        case 33:
+            SetBzoneCoords(buf.ReadStringVector());
+            break;
+        case 34:
+            SetNeedTransformMessage(buf.ReadBool());
+            break;
+        case 35:
             {
-            case 0:
-                SetVariables(buf.ReadStringVector());
-                break;
-            case 1:
-                SetDisplayIncidentElements(buf.ReadBool());
-                break;
-            case 2:
-                SetShowNodeId(buf.ReadBool());
-                break;
-            case 3:
-                SetShowNodeDomainLogicalCoords(buf.ReadBool());
-                break;
-            case 4:
-                SetShowNodeBlockLogicalCoords(buf.ReadBool());
-                break;
-            case 5:
-                SetShowNodePhysicalCoords(buf.ReadBool());
-                break;
-            case 6:
-                SetShowZoneId(buf.ReadBool());
-                break;
-            case 7:
-                SetShowZoneDomainLogicalCoords(buf.ReadBool());
-                break;
-            case 8:
-                SetShowZoneBlockLogicalCoords(buf.ReadBool());
-                break;
-            case 9:
-                SetClearWindow(buf.ReadBool());
-                break;
-            case 10:
-                SetPickLetter(buf.ReadString());
-                break;
-            case 11:
-                SetFulfilled(buf.ReadBool());
-                break;
-            case 12:
-                SetPickType(buf.ReadInt());
-                break;
-            case 13:
-                SetDomain(buf.ReadInt());
-                break;
-            case 14:
-                SetElementNumber(buf.ReadInt());
-                break;
-            case 15:
-                SetIncidentElements(buf.ReadIntVector());
-                break;
-            case 16:
-                SetTimeStep(buf.ReadInt());
-                break;
-            case 17:
-                SetDimension(buf.ReadInt());
-                break;
-            case 18:
-                SetDatabaseName(buf.ReadString());
-                break;
-            case 19:
-                SetActiveVariable(buf.ReadString());
-                break;
-            case 20:
-                SetPickPoint(buf.ReadDoubleArray());
-                break;
-            case 21:
-                SetCellPoint(buf.ReadDoubleArray());
-                break;
-            case 22:
-                SetNodePoint(buf.ReadDoubleArray());
-                break;
-            case 23:
-                SetPlotBounds(buf.ReadDoubleArray());
-                break;
-            case 24:
-                SetRayPoint1(buf.ReadDoubleArray());
-                break;
-            case 25:
-                SetRayPoint2(buf.ReadDoubleArray());
-                break;
-            case 26:
-                SetMeshInfo(buf.ReadString());
-                break;
-            case 27:
-                SetRealElementNumber(buf.ReadInt());
-                break;
-            case 28:
-                SetRealIncidentElements(buf.ReadIntVector());
-                break;
-            case 29:
-                SetPnodeCoords(buf.ReadStringVector());
-                break;
-            case 30:
-                SetDnodeCoords(buf.ReadStringVector());
-                break;
-            case 31:
-                SetBnodeCoords(buf.ReadStringVector());
-                break;
-            case 32:
-                SetDzoneCoords(buf.ReadStringVector());
-                break;
-            case 33:
-                SetBzoneCoords(buf.ReadStringVector());
-                break;
-            case 34:
-                SetNeedTransformMessage(buf.ReadBool());
-                break;
-            case 35:
+                int len = buf.ReadInt();
+                varInfo.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    varInfo.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        PickVarInfo tmp = new PickVarInfo();
-                        tmp.Read(buf);
-                        varInfo.addElement(tmp);
-                    }
+                    PickVarInfo tmp = new PickVarInfo();
+                    tmp.Read(buf);
+                    varInfo.addElement(tmp);
                 }
-                Select(35);
-                break;
-            case 36:
-                SetInvalidVars(buf.ReadStringVector());
-                break;
-            case 37:
-                SetDoTimeCurve(buf.ReadBool());
-                break;
-            case 38:
-                SetErrorMessage(buf.ReadString());
-                break;
-            case 39:
-                SetError(buf.ReadBool());
-                break;
-            case 40:
-                SetMatSelected(buf.ReadBool());
-                break;
-            case 41:
-                SetNeedActualCoords(buf.ReadBool());
-                break;
-            case 42:
-                SetConciseOutput(buf.ReadBool());
-                break;
-            case 43:
-                SetShowTimeStep(buf.ReadBool());
-                break;
-            case 44:
-                SetShowMeshName(buf.ReadBool());
-                break;
-            case 45:
-                SetBlockPieceName(buf.ReadString());
-                break;
-            case 46:
-                SetGroupPieceName(buf.ReadString());
-                break;
-            case 47:
-                SetGhosts(buf.ReadIntVector());
-                break;
-            case 48:
-                SetIncludeGhosts(buf.ReadBool());
-                break;
-            case 49:
-                SetElementIsGhost(buf.ReadBool());
-                break;
-            case 50:
-                SetRequiresGlyphPick(buf.ReadBool());
-                break;
-            case 51:
-                SetLocationSuccessful(buf.ReadBool());
-                break;
-            case 52:
-                SetDisplayGlobalIds(buf.ReadBool());
-                break;
-            case 53:
-                SetGlobalElement(buf.ReadInt());
-                break;
-            case 54:
-                SetGlobalIncidentElements(buf.ReadIntVector());
-                break;
-            case 55:
-                SetElementIsGlobal(buf.ReadBool());
-                break;
-            case 56:
-                SetDisplayPickLetter(buf.ReadBool());
-                break;
-            case 57:
-                SetReusePickLetter(buf.ReadBool());
-                break;
-            case 58:
-                SetGhostType(buf.ReadInt());
-                break;
-            case 59:
-                SetHasMixedGhostTypes(buf.ReadInt());
-                break;
-            case 60:
-                SetLinesData(buf.ReadBool());
-                break;
-            case 61:
-                SetInputTopoDim(buf.ReadInt());
-                break;
-            case 62:
-                SetMeshCoordType(buf.ReadInt());
-                break;
-            case 63:
-                SetCreateSpreadsheet(buf.ReadBool());
-                break;
-            case 64:
-                SetSubsetName(buf.ReadString());
-                break;
-            case 65:
-                SetFloatFormat(buf.ReadString());
-                break;
-            case 66:
-                SetTimePreserveCoord(buf.ReadBool());
-                break;
             }
+            Select(35);
+            break;
+        case 36:
+            SetInvalidVars(buf.ReadStringVector());
+            break;
+        case 37:
+            SetDoTimeCurve(buf.ReadBool());
+            break;
+        case 38:
+            SetErrorMessage(buf.ReadString());
+            break;
+        case 39:
+            SetError(buf.ReadBool());
+            break;
+        case 40:
+            SetMatSelected(buf.ReadBool());
+            break;
+        case 41:
+            SetNeedActualCoords(buf.ReadBool());
+            break;
+        case 42:
+            SetConciseOutput(buf.ReadBool());
+            break;
+        case 43:
+            SetShowTimeStep(buf.ReadBool());
+            break;
+        case 44:
+            SetShowMeshName(buf.ReadBool());
+            break;
+        case 45:
+            SetBlockPieceName(buf.ReadString());
+            break;
+        case 46:
+            SetGroupPieceName(buf.ReadString());
+            break;
+        case 47:
+            SetGhosts(buf.ReadIntVector());
+            break;
+        case 48:
+            SetIncludeGhosts(buf.ReadBool());
+            break;
+        case 49:
+            SetElementIsGhost(buf.ReadBool());
+            break;
+        case 50:
+            SetRequiresGlyphPick(buf.ReadBool());
+            break;
+        case 51:
+            SetLocationSuccessful(buf.ReadBool());
+            break;
+        case 52:
+            SetDisplayGlobalIds(buf.ReadBool());
+            break;
+        case 53:
+            SetGlobalElement(buf.ReadInt());
+            break;
+        case 54:
+            SetGlobalIncidentElements(buf.ReadIntVector());
+            break;
+        case 55:
+            SetElementIsGlobal(buf.ReadBool());
+            break;
+        case 56:
+            SetDisplayPickLetter(buf.ReadBool());
+            break;
+        case 57:
+            SetReusePickLetter(buf.ReadBool());
+            break;
+        case 58:
+            SetGhostType(buf.ReadInt());
+            break;
+        case 59:
+            SetHasMixedGhostTypes(buf.ReadInt());
+            break;
+        case 60:
+            SetLinesData(buf.ReadBool());
+            break;
+        case 61:
+            SetInputTopoDim(buf.ReadInt());
+            break;
+        case 62:
+            SetMeshCoordType(buf.ReadInt());
+            break;
+        case 63:
+            SetCreateSpreadsheet(buf.ReadBool());
+            break;
+        case 64:
+            SetSubsetName(buf.ReadString());
+            break;
+        case 65:
+            SetFloatFormat(buf.ReadString());
+            break;
+        case 66:
+            SetTimePreserveCoord(buf.ReadBool());
+            break;
         }
     }
 

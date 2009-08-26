@@ -56,9 +56,30 @@ package llnl.visit;
 
 public class ViewCurveAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     public ViewCurveAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        domainCoords = new double[2];
+        domainCoords[0] = 0;
+        domainCoords[1] = 1;
+        rangeCoords = new double[2];
+        rangeCoords[0] = 0;
+        rangeCoords[1] = 1;
+        viewportCoords = new double[4];
+        viewportCoords[0] = 0.1;
+        viewportCoords[1] = 0.1;
+        viewportCoords[2] = 0.9;
+        viewportCoords[3] = 0.9;
+        domainScale = 0;
+        rangeScale = 0;
+    }
+
+    public ViewCurveAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         domainCoords = new double[2];
         domainCoords[0] = 0;
@@ -77,7 +98,7 @@ public class ViewCurveAttributes extends AttributeSubject
 
     public ViewCurveAttributes(ViewCurveAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -97,6 +118,16 @@ public class ViewCurveAttributes extends AttributeSubject
         rangeScale = obj.rangeScale;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ViewCurveAttributes obj)
@@ -207,29 +238,25 @@ public class ViewCurveAttributes extends AttributeSubject
             buf.WriteInt(rangeScale);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDomainCoords(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetRangeCoords(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetViewportCoords(buf.ReadDoubleArray());
-                break;
-            case 3:
-                SetDomainScale(buf.ReadInt());
-                break;
-            case 4:
-                SetRangeScale(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetDomainCoords(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetRangeCoords(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetViewportCoords(buf.ReadDoubleArray());
+            break;
+        case 3:
+            SetDomainScale(buf.ReadInt());
+            break;
+        case 4:
+            SetRangeScale(buf.ReadInt());
+            break;
         }
     }
 

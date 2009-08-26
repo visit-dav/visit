@@ -149,12 +149,30 @@ public abstract class AttributeSubject extends java.lang.Object
     }
 
     /**
-     * Returns the number of attributes in the state object.
-     * @return The number of attributes in the state object.
+     * Returns the offset into the selected table where this state object's fields begin.
+     * @return An offset into the selected table.
+     */
+    public int Offset()
+    {
+        return 0;
+    }
+
+    /**
+     * Returns the total number of attributes in the state object.
+     * @return The total number of attributes in the state object.
      */
     public int NumAttributes()
     {
         return selected.length;
+    }
+
+    /**
+     * Returns the number of attributes added in this level of the state object.
+     * @return The number of attributes added in this level of the state object.
+     */
+    public int GetNumAdditionalAttributes()
+    {
+        return 0;
     }
 
     /**
@@ -229,9 +247,26 @@ public abstract class AttributeSubject extends java.lang.Object
         // Read the number of attributes to read. If the number is
         // greater than zero, read the attributes.
         int n = (int)buf.ReadByte();
-        if(n > 0)
-            ReadAtts(n, buf);
+        for(int i = 0; i < n; ++i)
+        {
+            int id = (int)buf.ReadByte();
+            ReadAtts(id, buf);
+        }
     }
+
+    /**
+     * Writes the selected fields of the object to the buffer.
+     * @param buf The communication buffer to which the object will be written.
+     */
+    public void WriteAtts(CommunicationBuffer buf)
+    {
+    }
+
+    /**
+     * Reads the specified index's data from the buffer into the object.
+     * @param buf The communication buffer to from which the object will be read.
+     */
+    public abstract void ReadAtts(int index, CommunicationBuffer buf);
 
     /**
      * Selects the i'th attribute in the object so it will be transmitted
@@ -424,10 +459,6 @@ public abstract class AttributeSubject extends java.lang.Object
     {
         return toString(new String());
     }
-
-    // Abstract methods.
-    public abstract void WriteAtts(CommunicationBuffer buf);
-    public abstract void ReadAtts(int n, CommunicationBuffer buf);
 
     private Vector    observers;
     private boolean[] selected;

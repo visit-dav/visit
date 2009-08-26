@@ -58,9 +58,23 @@ import java.lang.Integer;
 
 public class DBPluginInfoAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     public DBPluginInfoAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        types = new Vector();
+        hasWriter = new Vector();
+        dbReadOptions = new Vector();
+        dbWriteOptions = new Vector();
+        typesFullNames = new Vector();
+        host = new String("");
+    }
+
+    public DBPluginInfoAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         types = new Vector();
         hasWriter = new Vector();
@@ -72,7 +86,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
 
     public DBPluginInfoAttributes(DBPluginInfoAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -109,6 +123,16 @@ public class DBPluginInfoAttributes extends AttributeSubject
         host = new String(obj.host);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DBPluginInfoAttributes obj)
@@ -233,52 +257,48 @@ public class DBPluginInfoAttributes extends AttributeSubject
             buf.WriteString(host);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetTypes(buf.ReadStringVector());
+            break;
+        case 1:
+            SetHasWriter(buf.ReadIntVector());
+            break;
+        case 2:
             {
-            case 0:
-                SetTypes(buf.ReadStringVector());
-                break;
-            case 1:
-                SetHasWriter(buf.ReadIntVector());
-                break;
-            case 2:
+                int len = buf.ReadInt();
+                dbReadOptions.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    dbReadOptions.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        DBOptionsAttributes tmp = new DBOptionsAttributes();
-                        tmp.Read(buf);
-                        dbReadOptions.addElement(tmp);
-                    }
+                    DBOptionsAttributes tmp = new DBOptionsAttributes();
+                    tmp.Read(buf);
+                    dbReadOptions.addElement(tmp);
                 }
-                Select(2);
-                break;
-            case 3:
-                {
-                    int len = buf.ReadInt();
-                    dbWriteOptions.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        DBOptionsAttributes tmp = new DBOptionsAttributes();
-                        tmp.Read(buf);
-                        dbWriteOptions.addElement(tmp);
-                    }
-                }
-                Select(3);
-                break;
-            case 4:
-                SetTypesFullNames(buf.ReadStringVector());
-                break;
-            case 5:
-                SetHost(buf.ReadString());
-                break;
             }
+            Select(2);
+            break;
+        case 3:
+            {
+                int len = buf.ReadInt();
+                dbWriteOptions.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    DBOptionsAttributes tmp = new DBOptionsAttributes();
+                    tmp.Read(buf);
+                    dbWriteOptions.addElement(tmp);
+                }
+            }
+            Select(3);
+            break;
+        case 4:
+            SetTypesFullNames(buf.ReadStringVector());
+            break;
+        case 5:
+            SetHost(buf.ReadString());
+            break;
         }
     }
 

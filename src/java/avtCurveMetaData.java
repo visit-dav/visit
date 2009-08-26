@@ -54,15 +54,14 @@ package llnl.visit;
 //   
 // ****************************************************************************
 
-public class avtCurveMetaData extends AttributeSubject
+public class avtCurveMetaData extends avtVarMetaData
 {
+    private static int numAdditionalAttributes = 8;
+
     public avtCurveMetaData()
     {
-        super(15);
+        super(numAdditionalAttributes);
 
-        name = new String("curve");
-        originalName = new String("");
-        validVariable = true;
         xUnits = new String("");
         xLabel = new String("X-Axis");
         yUnits = new String("");
@@ -70,20 +69,27 @@ public class avtCurveMetaData extends AttributeSubject
         hasSpatialExtents = false;
         minSpatialExtents = 0;
         maxSpatialExtents = 0;
-        hasDataExtents = false;
-        minDataExtents = 0;
-        maxDataExtents = 0;
-        hideFromGUI = false;
+        from1DScalarName = new String("");
+    }
+
+    public avtCurveMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        xUnits = new String("");
+        xLabel = new String("X-Axis");
+        yUnits = new String("");
+        yLabel = new String("Y-Axis");
+        hasSpatialExtents = false;
+        minSpatialExtents = 0;
+        maxSpatialExtents = 0;
         from1DScalarName = new String("");
     }
 
     public avtCurveMetaData(avtCurveMetaData obj)
     {
-        super(15);
+        super(numAdditionalAttributes);
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
         xUnits = new String(obj.xUnits);
         xLabel = new String(obj.xLabel);
         yUnits = new String(obj.yUnits);
@@ -91,130 +97,84 @@ public class avtCurveMetaData extends AttributeSubject
         hasSpatialExtents = obj.hasSpatialExtents;
         minSpatialExtents = obj.minSpatialExtents;
         maxSpatialExtents = obj.maxSpatialExtents;
-        hasDataExtents = obj.hasDataExtents;
-        minDataExtents = obj.minDataExtents;
-        maxDataExtents = obj.maxDataExtents;
-        hideFromGUI = obj.hideFromGUI;
         from1DScalarName = new String(obj.from1DScalarName);
 
         SelectAll();
     }
 
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
+    }
+
     public boolean equals(avtCurveMetaData obj)
     {
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (xUnits.equals(obj.xUnits)) &&
+        return (super.equals(obj) && (xUnits.equals(obj.xUnits)) &&
                 (xLabel.equals(obj.xLabel)) &&
                 (yUnits.equals(obj.yUnits)) &&
                 (yLabel.equals(obj.yLabel)) &&
                 (hasSpatialExtents == obj.hasSpatialExtents) &&
                 (minSpatialExtents == obj.minSpatialExtents) &&
                 (maxSpatialExtents == obj.maxSpatialExtents) &&
-                (hasDataExtents == obj.hasDataExtents) &&
-                (minDataExtents == obj.minDataExtents) &&
-                (maxDataExtents == obj.maxDataExtents) &&
-                (hideFromGUI == obj.hideFromGUI) &&
                 (from1DScalarName.equals(obj.from1DScalarName)));
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
     public void SetXUnits(String xUnits_)
     {
         xUnits = xUnits_;
-        Select(3);
+        Select(Offset() + 0);
     }
 
     public void SetXLabel(String xLabel_)
     {
         xLabel = xLabel_;
-        Select(4);
+        Select(Offset() + 1);
     }
 
     public void SetYUnits(String yUnits_)
     {
         yUnits = yUnits_;
-        Select(5);
+        Select(Offset() + 2);
     }
 
     public void SetYLabel(String yLabel_)
     {
         yLabel = yLabel_;
-        Select(6);
+        Select(Offset() + 3);
     }
 
     public void SetHasSpatialExtents(boolean hasSpatialExtents_)
     {
         hasSpatialExtents = hasSpatialExtents_;
-        Select(7);
+        Select(Offset() + 4);
     }
 
     public void SetMinSpatialExtents(double minSpatialExtents_)
     {
         minSpatialExtents = minSpatialExtents_;
-        Select(8);
+        Select(Offset() + 5);
     }
 
     public void SetMaxSpatialExtents(double maxSpatialExtents_)
     {
         maxSpatialExtents = maxSpatialExtents_;
-        Select(9);
-    }
-
-    public void SetHasDataExtents(boolean hasDataExtents_)
-    {
-        hasDataExtents = hasDataExtents_;
-        Select(10);
-    }
-
-    public void SetMinDataExtents(double minDataExtents_)
-    {
-        minDataExtents = minDataExtents_;
-        Select(11);
-    }
-
-    public void SetMaxDataExtents(double maxDataExtents_)
-    {
-        maxDataExtents = maxDataExtents_;
-        Select(12);
-    }
-
-    public void SetHideFromGUI(boolean hideFromGUI_)
-    {
-        hideFromGUI = hideFromGUI_;
-        Select(13);
+        Select(Offset() + 6);
     }
 
     public void SetFrom1DScalarName(String from1DScalarName_)
     {
         from1DScalarName = from1DScalarName_;
-        Select(14);
+        Select(Offset() + 7);
     }
 
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetOriginalName() { return originalName; }
-    public boolean GetValidVariable() { return validVariable; }
     public String  GetXUnits() { return xUnits; }
     public String  GetXLabel() { return xLabel; }
     public String  GetYUnits() { return yUnits; }
@@ -222,109 +182,70 @@ public class avtCurveMetaData extends AttributeSubject
     public boolean GetHasSpatialExtents() { return hasSpatialExtents; }
     public double  GetMinSpatialExtents() { return minSpatialExtents; }
     public double  GetMaxSpatialExtents() { return maxSpatialExtents; }
-    public boolean GetHasDataExtents() { return hasDataExtents; }
-    public double  GetMinDataExtents() { return minDataExtents; }
-    public double  GetMaxDataExtents() { return maxDataExtents; }
-    public boolean GetHideFromGUI() { return hideFromGUI; }
     public String  GetFrom1DScalarName() { return from1DScalarName; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
+        super.WriteAtts(buf);
+
+        int offset = Offset();
+        if(WriteSelect(offset + 0, buf))
             buf.WriteString(xUnits);
-        if(WriteSelect(4, buf))
+        if(WriteSelect(offset + 1, buf))
             buf.WriteString(xLabel);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(offset + 2, buf))
             buf.WriteString(yUnits);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(offset + 3, buf))
             buf.WriteString(yLabel);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(offset + 4, buf))
             buf.WriteBool(hasSpatialExtents);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(offset + 5, buf))
             buf.WriteDouble(minSpatialExtents);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(offset + 6, buf))
             buf.WriteDouble(maxSpatialExtents);
-        if(WriteSelect(10, buf))
-            buf.WriteBool(hasDataExtents);
-        if(WriteSelect(11, buf))
-            buf.WriteDouble(minDataExtents);
-        if(WriteSelect(12, buf))
-            buf.WriteDouble(maxDataExtents);
-        if(WriteSelect(13, buf))
-            buf.WriteBool(hideFromGUI);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(offset + 7, buf))
             buf.WriteString(from1DScalarName);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        int index = id - Offset();
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetXUnits(buf.ReadString());
-                break;
-            case 4:
-                SetXLabel(buf.ReadString());
-                break;
-            case 5:
-                SetYUnits(buf.ReadString());
-                break;
-            case 6:
-                SetYLabel(buf.ReadString());
-                break;
-            case 7:
-                SetHasSpatialExtents(buf.ReadBool());
-                break;
-            case 8:
-                SetMinSpatialExtents(buf.ReadDouble());
-                break;
-            case 9:
-                SetMaxSpatialExtents(buf.ReadDouble());
-                break;
-            case 10:
-                SetHasDataExtents(buf.ReadBool());
-                break;
-            case 11:
-                SetMinDataExtents(buf.ReadDouble());
-                break;
-            case 12:
-                SetMaxDataExtents(buf.ReadDouble());
-                break;
-            case 13:
-                SetHideFromGUI(buf.ReadBool());
-                break;
-            case 14:
-                SetFrom1DScalarName(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetXUnits(buf.ReadString());
+            break;
+        case 1:
+            SetXLabel(buf.ReadString());
+            break;
+        case 2:
+            SetYUnits(buf.ReadString());
+            break;
+        case 3:
+            SetYLabel(buf.ReadString());
+            break;
+        case 4:
+            SetHasSpatialExtents(buf.ReadBool());
+            break;
+        case 5:
+            SetMinSpatialExtents(buf.ReadDouble());
+            break;
+        case 6:
+            SetMaxSpatialExtents(buf.ReadDouble());
+            break;
+        case 7:
+            SetFrom1DScalarName(buf.ReadString());
+            break;
+        default:
+            super.ReadAtts(id, buf);
+            break;
         }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
         str = str + stringToString("xUnits", xUnits, indent) + "\n";
         str = str + stringToString("xLabel", xLabel, indent) + "\n";
         str = str + stringToString("yUnits", yUnits, indent) + "\n";
@@ -332,19 +253,12 @@ public class avtCurveMetaData extends AttributeSubject
         str = str + boolToString("hasSpatialExtents", hasSpatialExtents, indent) + "\n";
         str = str + doubleToString("minSpatialExtents", minSpatialExtents, indent) + "\n";
         str = str + doubleToString("maxSpatialExtents", maxSpatialExtents, indent) + "\n";
-        str = str + boolToString("hasDataExtents", hasDataExtents, indent) + "\n";
-        str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
-        str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
-        str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
         str = str + stringToString("from1DScalarName", from1DScalarName, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String  name;
-    private String  originalName;
-    private boolean validVariable;
     private String  xUnits;
     private String  xLabel;
     private String  yUnits;
@@ -352,10 +266,6 @@ public class avtCurveMetaData extends AttributeSubject
     private boolean hasSpatialExtents;
     private double  minSpatialExtents;
     private double  maxSpatialExtents;
-    private boolean hasDataExtents;
-    private double  minDataExtents;
-    private double  maxDataExtents;
-    private boolean hideFromGUI;
     private String  from1DScalarName;
 }
 

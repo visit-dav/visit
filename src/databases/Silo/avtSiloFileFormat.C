@@ -2863,6 +2863,9 @@ avtSiloFileFormat::ReadCSGvars(DBfile *dbfile,
 //  Modifications:
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names.
+//
+//    Mark C. Miller, Wed Aug 26 11:09:29 PDT 2009
+//    Uncommented hidFromGUI setting.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
@@ -2944,7 +2947,7 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
                 mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
                                               mat->nmat, matnames);
             mmd->validVariable = valid_var;
-            //mmd->hideFromGUI = mat->guihide;
+            mmd->hideFromGUI = mat->guihide;
             md->Add(mmd);
 
         }
@@ -2973,6 +2976,9 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names. Also added logic to
 //    handle free of multimat during exceptions.
+//
+//    Mark C. Miller, Wed Aug 26 11:09:55 PDT 2009
+//    Uncommented hideFromGUI setting.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3142,7 +3148,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                                               mat ? mat->nmat : 0, matnames);
 
             mmd->validVariable = valid_var;
-            //mmd->hideFromGUI = mm->guihide;
+            mmd->hideFromGUI = mm->guihide;
             md->Add(mmd);
 
 
@@ -3514,7 +3520,24 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
 //    that whole block of comments was moved above all the individual
 //    ReadXXX() methods which precede this method.
 //
+//    Mark C. Miller, Wed Aug 19 11:21:37 PDT 2009
+//    Reformatted with TOC_ENTRY macros to reduce size.
 // ****************************************************************************
+#define COPY_TOC_ENTRY(NM)						\
+    int      n ## NM = toc->n ## NM;					\
+    char   **NM ## _names = new char*[n ## NM];				\
+    for (i = 0 ; i < n ## NM; i++)					\
+    {									\
+        NM ## _names[i] = new char[strlen(toc->NM ## _names[i])+1];	\
+        strcpy(NM ## _names[i], toc->NM ## _names[i]);			\
+    }
+#define FREE_COPIED_TOC_ENTRY(NM)					\
+    for (i = 0 ; i < n ## NM; i++)					\
+    {									\
+        delete [] NM ## _names[i];					\
+    }									\
+    delete [] NM ## _names;
+
 
 void
 avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
@@ -3534,116 +3557,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     // Copy relevant info from the toc. Otherwise, it'll get lost on
     // successive calls to DBSetDir().
     //
-    int      nmultimesh      = toc->nmultimesh;
-    char   **multimesh_names = new char*[nmultimesh];
-    for (i = 0 ; i < nmultimesh ; i++)
-    {
-        multimesh_names[i] = new char[strlen(toc->multimesh_names[i])+1];
-        strcpy(multimesh_names[i], toc->multimesh_names[i]);
-    }
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
-    int      ncsgmesh      = toc->ncsgmesh;
-    char   **csgmesh_names = new char*[ncsgmesh];
-    for (i = 0 ; i < ncsgmesh ; i++)
-    {
-        csgmesh_names[i] = new char[strlen(toc->csgmesh_names[i])+1];
-        strcpy(csgmesh_names[i], toc->csgmesh_names[i]);
-    }
-#endif
-    int      nqmesh      = toc->nqmesh;
-    char   **qmesh_names = new char*[nqmesh];
-    for (i = 0 ; i < nqmesh ; i++)
-    {
-        qmesh_names[i] = new char[strlen(toc->qmesh_names[i])+1];
-        strcpy(qmesh_names[i], toc->qmesh_names[i]);
-    }
-    int      nucdmesh      = toc->nucdmesh;
-    char   **ucdmesh_names = new char*[nucdmesh];
-    for (i = 0 ; i < nucdmesh ; i++)
-    {
-        ucdmesh_names[i] = new char[strlen(toc->ucdmesh_names[i])+1];
-        strcpy(ucdmesh_names[i], toc->ucdmesh_names[i]);
-    }
-    int      nptmesh      = toc->nptmesh;
-    char   **ptmesh_names = new char*[nptmesh];
-    for (i = 0 ; i < nptmesh ; i++)
-    {
-        ptmesh_names[i] = new char[strlen(toc->ptmesh_names[i])+1];
-        strcpy(ptmesh_names[i], toc->ptmesh_names[i]);
-    }
-    int      nmultivar      = toc->nmultivar;
-    char   **multivar_names = new char*[nmultivar];
-    for (i = 0 ; i < nmultivar ; i++)
-    {
-        multivar_names[i] = new char[strlen(toc->multivar_names[i])+1];
-        strcpy(multivar_names[i], toc->multivar_names[i]);
-    }
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
-    int      ncsgvar      = toc->ncsgvar;
-    char   **csgvar_names = new char*[ncsgvar];
-    for (i = 0 ; i < ncsgvar ; i++)
-    {
-        csgvar_names[i] = new char[strlen(toc->csgvar_names[i])+1];
-        strcpy(csgvar_names[i], toc->csgvar_names[i]);
-    }
-#endif
-    int      nqvar      = toc->nqvar;
-    char   **qvar_names = new char*[nqvar];
-    for (i = 0 ; i < nqvar ; i++)
-    {
-        qvar_names[i] = new char[strlen(toc->qvar_names[i])+1];
-        strcpy(qvar_names[i], toc->qvar_names[i]);
-    }
-    int      nucdvar      = toc->nucdvar;
-    char   **ucdvar_names = new char*[nucdvar];
-    for (i = 0 ; i < nucdvar ; i++)
-    {
-        ucdvar_names[i] = new char[strlen(toc->ucdvar_names[i])+1];
-        strcpy(ucdvar_names[i], toc->ucdvar_names[i]);
-    }
-    int      nptvar      = toc->nptvar;
-    char   **ptvar_names = new char*[nptvar];
-    for (i = 0 ; i < nptvar ; i++)
-    {
-        ptvar_names[i] = new char[strlen(toc->ptvar_names[i])+1];
-        strcpy(ptvar_names[i], toc->ptvar_names[i]);
-    }
-    int      nmat      = toc->nmat;
-    char   **mat_names = new char*[nmat];
-    for (i = 0 ; i < nmat ; i++)
-    {
-        mat_names[i] = new char[strlen(toc->mat_names[i])+1];
-        strcpy(mat_names[i], toc->mat_names[i]);
-    }
-    int      nmultimat      = toc->nmultimat;
-    char   **multimat_names = new char*[nmultimat];
-    for (i = 0 ; i < nmultimat ; i++)
-    {
-        multimat_names[i] = new char[strlen(toc->multimat_names[i])+1];
-        strcpy(multimat_names[i], toc->multimat_names[i]);
-    }
-    int      nmatspecies      = toc->nmatspecies;
-    char   **matspecies_names = new char*[nmatspecies];
-    for (i = 0 ; i < nmatspecies ; i++)
-    {
-        matspecies_names[i] = new char[strlen(toc->matspecies_names[i])+1];
-        strcpy(matspecies_names[i], toc->matspecies_names[i]);
-    }
-    int      nmultimatspecies      = toc->nmultimatspecies;
-    char   **multimatspecies_names = new char*[nmultimatspecies];
-    for (i = 0 ; i < nmultimatspecies ; i++)
-    {
-        multimatspecies_names[i]
-                   = new char[strlen(toc->multimatspecies_names[i])+1];
-        strcpy(multimatspecies_names[i], toc->multimatspecies_names[i]);
-    }
-    int      ndir      = toc->ndir;
-    char   **dir_names = new char*[ndir];
-    for (i = 0 ; i < ndir ; i++)
-    {
-        dir_names[i] = new char[strlen(toc->dir_names[i])+1];
-        strcpy(dir_names[i], toc->dir_names[i]);
-    }
     int      norigdir      = toc->ndir;
     char   **origdir_names = new char*[norigdir];
     for (i = 0 ; i < norigdir ; i++)
@@ -3651,22 +3564,27 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         origdir_names[i] = new char[strlen(toc->dir_names[i])+1];
         strcpy(origdir_names[i], toc->dir_names[i]);
     }
-#ifdef DB_VARTYPE_SCALAR // this test can be removed after Silo-4.5-pre3 is released
-    int      ndefvars = toc->ndefvars;
-    char   **defvars_names = new char*[ndefvars];
-    for (i = 0 ; i < ndefvars; i++)
-    {
-        defvars_names[i] = new char[strlen(toc->defvars_names[i])+1];
-        strcpy(defvars_names[i], toc->defvars_names[i]);
-    }
+    COPY_TOC_ENTRY(dir);
+    COPY_TOC_ENTRY(multimesh);
+    COPY_TOC_ENTRY(qmesh);
+    COPY_TOC_ENTRY(ucdmesh);
+    COPY_TOC_ENTRY(ptmesh);
+    COPY_TOC_ENTRY(multivar);
+    COPY_TOC_ENTRY(qvar);
+    COPY_TOC_ENTRY(ucdvar);
+    COPY_TOC_ENTRY(ptvar);
+    COPY_TOC_ENTRY(mat);
+    COPY_TOC_ENTRY(multimat);
+    COPY_TOC_ENTRY(matspecies);
+    COPY_TOC_ENTRY(multimatspecies);
+    COPY_TOC_ENTRY(curve);
+#ifdef DBCSG_INNER
+    COPY_TOC_ENTRY(csgvar);
+    COPY_TOC_ENTRY(csgmesh);
 #endif
-    int      ncurves = toc->ncurve;
-    char   **curve_names = new char*[ncurves];
-    for (i = 0 ; i < ncurves; i++)
-    {
-        curve_names[i] = new char[strlen(toc->curve_names[i])+1];
-        strcpy(curve_names[i], toc->curve_names[i]);
-    }
+#ifdef DB_VARTYPE_SCALAR
+    COPY_TOC_ENTRY(defvars);
+#endif
 
     // Miscellany in the root directory
     char *searchpath_str = NULL;
@@ -3677,7 +3595,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     ReadQuadmeshes(dbfile, nqmesh, qmesh_names, dirname, md);
     ReadUcdmeshes(dbfile, nucdmesh, ucdmesh_names, dirname, md);
     ReadPointmeshes(dbfile, nptmesh, ptmesh_names, dirname, md);
-    ReadCurves(dbfile, ncurves, curve_names, dirname, md);
+    ReadCurves(dbfile, ncurve, curve_names, dirname, md);
     ReadCSGmeshes(dbfile, ncsgmesh, csgmesh_names, dirname, md);
 
     // Vars
@@ -3787,102 +3705,32 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     // Ok, cleanup the info we copied from the toc.
     //
-    for (i = 0 ; i < nmultimesh ; i++)
-    {
-        delete [] multimesh_names[i];
-    }
-    delete [] multimesh_names;
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
-    for (i = 0 ; i < ncsgmesh ; i++)
-    {
-        delete [] csgmesh_names[i];
-    }
-    delete [] csgmesh_names;
-#endif
-    for (i = 0 ; i < nqmesh ; i++)
-    {
-        delete [] qmesh_names[i];
-    }
-    delete [] qmesh_names;
-    for (i = 0 ; i < nucdmesh ; i++)
-    {
-        delete [] ucdmesh_names[i];
-    }
-    delete [] ucdmesh_names;
-    for (i = 0 ; i < nptmesh ; i++)
-    {
-        delete [] ptmesh_names[i];
-    }
-    delete [] ptmesh_names;
-    for (i = 0 ; i < nmultivar ; i++)
-    {
-        delete [] multivar_names[i];
-    }
-    delete [] multivar_names;
-    for (i = 0 ; i < nqvar ; i++)
-    {
-        delete [] qvar_names[i];
-    }
-    delete [] qvar_names;
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
-    for (i = 0 ; i < ncsgvar ; i++)
-    {
-        delete [] csgvar_names[i];
-    }
-    delete [] csgvar_names;
-#endif
-    for (i = 0 ; i < nucdvar ; i++)
-    {
-        delete [] ucdvar_names[i];
-    }
-    delete [] ucdvar_names;
-    for (i = 0 ; i < nptvar ; i++)
-    {
-        delete [] ptvar_names[i];
-    }
-    delete [] ptvar_names;
-    for (i = 0 ; i < nmat ; i++)
-    {
-        delete [] mat_names[i];
-    }
-    delete [] mat_names;
-    for (i = 0 ; i < nmultimat ; i++)
-    {
-        delete [] multimat_names[i];
-    }
-    delete [] multimat_names;
-    for (i = 0 ; i < nmatspecies ; i++)
-    {
-        delete [] matspecies_names[i];
-    }
-    delete [] matspecies_names;
-    for (i = 0 ; i < nmultimatspecies ; i++)
-    {
-        delete [] multimatspecies_names[i];
-    }
-    delete [] multimatspecies_names;
-    for (i = 0 ; i < ndir ; i++)
-    {
-        delete [] dir_names[i];
-    }
-    delete [] dir_names;
     for (i = 0 ; i < norigdir ; i++)
     {
         delete [] origdir_names[i];
     }
     delete [] origdir_names;
-#ifdef DB_VARTYPE_SCALAR // this test can be removed after Silo-4.5-pre3 is released
-    for (i = 0 ; i < ndefvars; i++)
-    {
-        delete [] defvars_names[i];
-    }
-    delete [] defvars_names;
+    FREE_COPIED_TOC_ENTRY(multimesh);
+    FREE_COPIED_TOC_ENTRY(qmesh);
+    FREE_COPIED_TOC_ENTRY(ucdmesh);
+    FREE_COPIED_TOC_ENTRY(ptmesh);
+    FREE_COPIED_TOC_ENTRY(multivar);
+    FREE_COPIED_TOC_ENTRY(qvar);
+    FREE_COPIED_TOC_ENTRY(ucdvar);
+    FREE_COPIED_TOC_ENTRY(ptvar);
+    FREE_COPIED_TOC_ENTRY(mat);
+    FREE_COPIED_TOC_ENTRY(multimat);
+    FREE_COPIED_TOC_ENTRY(matspecies);
+    FREE_COPIED_TOC_ENTRY(multimatspecies);
+    FREE_COPIED_TOC_ENTRY(curve);
+    FREE_COPIED_TOC_ENTRY(dir);
+#ifdef DBCSG_INNER
+    FREE_COPIED_TOC_ENTRY(csgmesh);
+    FREE_COPIED_TOC_ENTRY(csgvar);
 #endif
-    for (i = 0 ; i < ncurves; i++)
-    {
-        delete [] curve_names[i];
-    }
-    delete [] curve_names;
+#ifdef DB_VARTYPE_SCALAR
+    FREE_COPIED_TOC_ENTRY(defvars);
+#endif
 }
 
 // ****************************************************************************

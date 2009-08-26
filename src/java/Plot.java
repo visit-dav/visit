@@ -58,6 +58,8 @@ import java.util.Vector;
 
 public class Plot extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 18;
+
     // Enum values
     public final static int STATETYPE_NEWLYCREATED = 0;
     public final static int STATETYPE_PENDING = 1;
@@ -67,7 +69,31 @@ public class Plot extends AttributeSubject
 
     public Plot()
     {
-        super(18);
+        super(numAdditionalAttributes);
+
+        stateType = STATETYPE_NEWLYCREATED;
+        plotType = 0;
+        plotName = new String("");
+        activeFlag = false;
+        hiddenFlag = false;
+        expandedFlag = false;
+        plotVar = new String("notset");
+        databaseName = new String("notset");
+        operators = new Vector();
+        operatorNames = new Vector();
+        activeOperator = -1;
+        id = -1;
+        beginFrame = -999;
+        endFrame = 999;
+        keyframes = new Vector();
+        databaseKeyframes = new Vector();
+        isFromSimulation = false;
+        followsTime = true;
+    }
+
+    public Plot(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         stateType = STATETYPE_NEWLYCREATED;
         plotType = 0;
@@ -91,7 +117,7 @@ public class Plot extends AttributeSubject
 
     public Plot(Plot obj)
     {
-        super(18);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -133,6 +159,16 @@ public class Plot extends AttributeSubject
         followsTime = obj.followsTime;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(Plot obj)
@@ -366,68 +402,64 @@ public class Plot extends AttributeSubject
             buf.WriteBool(followsTime);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetStateType(buf.ReadInt());
-                break;
-            case 1:
-                SetPlotType(buf.ReadInt());
-                break;
-            case 2:
-                SetPlotName(buf.ReadString());
-                break;
-            case 3:
-                SetActiveFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetHiddenFlag(buf.ReadBool());
-                break;
-            case 5:
-                SetExpandedFlag(buf.ReadBool());
-                break;
-            case 6:
-                SetPlotVar(buf.ReadString());
-                break;
-            case 7:
-                SetDatabaseName(buf.ReadString());
-                break;
-            case 8:
-                SetOperators(buf.ReadIntVector());
-                break;
-            case 9:
-                SetOperatorNames(buf.ReadStringVector());
-                break;
-            case 10:
-                SetActiveOperator(buf.ReadInt());
-                break;
-            case 11:
-                SetId(buf.ReadInt());
-                break;
-            case 12:
-                SetBeginFrame(buf.ReadInt());
-                break;
-            case 13:
-                SetEndFrame(buf.ReadInt());
-                break;
-            case 14:
-                SetKeyframes(buf.ReadIntVector());
-                break;
-            case 15:
-                SetDatabaseKeyframes(buf.ReadIntVector());
-                break;
-            case 16:
-                SetIsFromSimulation(buf.ReadBool());
-                break;
-            case 17:
-                SetFollowsTime(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetStateType(buf.ReadInt());
+            break;
+        case 1:
+            SetPlotType(buf.ReadInt());
+            break;
+        case 2:
+            SetPlotName(buf.ReadString());
+            break;
+        case 3:
+            SetActiveFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetHiddenFlag(buf.ReadBool());
+            break;
+        case 5:
+            SetExpandedFlag(buf.ReadBool());
+            break;
+        case 6:
+            SetPlotVar(buf.ReadString());
+            break;
+        case 7:
+            SetDatabaseName(buf.ReadString());
+            break;
+        case 8:
+            SetOperators(buf.ReadIntVector());
+            break;
+        case 9:
+            SetOperatorNames(buf.ReadStringVector());
+            break;
+        case 10:
+            SetActiveOperator(buf.ReadInt());
+            break;
+        case 11:
+            SetId(buf.ReadInt());
+            break;
+        case 12:
+            SetBeginFrame(buf.ReadInt());
+            break;
+        case 13:
+            SetEndFrame(buf.ReadInt());
+            break;
+        case 14:
+            SetKeyframes(buf.ReadIntVector());
+            break;
+        case 15:
+            SetDatabaseKeyframes(buf.ReadIntVector());
+            break;
+        case 16:
+            SetIsFromSimulation(buf.ReadBool());
+            break;
+        case 17:
+            SetFollowsTime(buf.ReadBool());
+            break;
         }
     }
 

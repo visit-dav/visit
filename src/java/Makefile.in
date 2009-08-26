@@ -161,8 +161,10 @@ METADATA_SRC= \
     avtSimulationCommandSpecification.java \
     avtSimulationInformation.java \
     avtSpeciesMetaData.java \
+    avtSubsetsMetaData.java \
     avtSymmetricTensorMetaData.java \
     avtTensorMetaData.java \
+    avtVarMetaData.java \
     avtVectorMetaData.java
 
 PACKAGE_STATE_SRC= AnimationAttributes.java \

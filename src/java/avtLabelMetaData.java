@@ -54,155 +54,68 @@ package llnl.visit;
 //   
 // ****************************************************************************
 
-public class avtLabelMetaData extends AttributeSubject
+public class avtLabelMetaData extends avtVarMetaData
 {
+    private static int numAdditionalAttributes = 0;
+
     public avtLabelMetaData()
     {
-        super(6);
+        super(numAdditionalAttributes);
 
-        name = new String("label");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
-        centering = 0;
-        hideFromGUI = false;
+    }
+
+    public avtLabelMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
     }
 
     public avtLabelMetaData(avtLabelMetaData obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
-        meshName = new String(obj.meshName);
-        centering = obj.centering;
-        hideFromGUI = obj.hideFromGUI;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtLabelMetaData obj)
     {
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (meshName.equals(obj.meshName)) &&
-                (centering == obj.centering) &&
-                (hideFromGUI == obj.hideFromGUI));
+        return (super.equals(obj) && true);
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
-    public void SetMeshName(String meshName_)
-    {
-        meshName = meshName_;
-        Select(3);
-    }
-
-    public void SetCentering(int centering_)
-    {
-        centering = centering_;
-        Select(4);
-    }
-
-    public void SetHideFromGUI(boolean hideFromGUI_)
-    {
-        hideFromGUI = hideFromGUI_;
-        Select(5);
-    }
-
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetOriginalName() { return originalName; }
-    public boolean GetValidVariable() { return validVariable; }
-    public String  GetMeshName() { return meshName; }
-    public int     GetCentering() { return centering; }
-    public boolean GetHideFromGUI() { return hideFromGUI; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
-            buf.WriteString(meshName);
-        if(WriteSelect(4, buf))
-            buf.WriteInt(centering);
-        if(WriteSelect(5, buf))
-            buf.WriteBool(hideFromGUI);
+        super.WriteAtts(buf);
+
+        int offset = Offset();
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
-        {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshName(buf.ReadString());
-                break;
-            case 4:
-                SetCentering(buf.ReadInt());
-                break;
-            case 5:
-                SetHideFromGUI(buf.ReadBool());
-                break;
-            }
-        }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + stringToString("meshName", meshName, indent) + "\n";
-        str = str + intToString("centering", centering, indent) + "\n";
-        str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String  name;
-    private String  originalName;
-    private boolean validVariable;
-    private String  meshName;
-    private int     centering;
-    private boolean hideFromGUI;
 }
 

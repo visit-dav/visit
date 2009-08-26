@@ -60,6 +60,8 @@ import java.lang.Double;
 
 public class MovieAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 16;
+
     // Enum values
     public final static int MOVIETYPEENUM_SIMPLE = 0;
     public final static int MOVIETYPEENUM_USINGTEMPLATE = 1;
@@ -71,7 +73,29 @@ public class MovieAttributes extends AttributeSubject
 
     public MovieAttributes()
     {
-        super(16);
+        super(numAdditionalAttributes);
+
+        generationMethod = GENERATIONMETHODENUM_NOWCURRENTINSTANCE;
+        movieType = MOVIETYPEENUM_SIMPLE;
+        outputDirectory = new String(".");
+        outputName = new String("movie");
+        fileFormats = new Vector();
+        useCurrentSize = new Vector();
+        widths = new Vector();
+        heights = new Vector();
+        scales = new Vector();
+        stereoFlags = new Vector();
+        templateFile = new String("");
+        sendEmailNotification = false;
+        emailAddress = new String("");
+        fps = 10;
+        startIndex = 0;
+        endIndex = 1000000000;
+    }
+
+    public MovieAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         generationMethod = GENERATIONMETHODENUM_NOWCURRENTINSTANCE;
         movieType = MOVIETYPEENUM_SIMPLE;
@@ -93,7 +117,7 @@ public class MovieAttributes extends AttributeSubject
 
     public MovieAttributes(MovieAttributes obj)
     {
-        super(16);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -145,6 +169,16 @@ public class MovieAttributes extends AttributeSubject
         endIndex = obj.endIndex;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MovieAttributes obj)
@@ -376,62 +410,58 @@ public class MovieAttributes extends AttributeSubject
             buf.WriteInt(endIndex);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetGenerationMethod(buf.ReadInt());
-                break;
-            case 1:
-                SetMovieType(buf.ReadInt());
-                break;
-            case 2:
-                SetOutputDirectory(buf.ReadString());
-                break;
-            case 3:
-                SetOutputName(buf.ReadString());
-                break;
-            case 4:
-                SetFileFormats(buf.ReadStringVector());
-                break;
-            case 5:
-                SetUseCurrentSize(buf.ReadByteVector());
-                break;
-            case 6:
-                SetWidths(buf.ReadIntVector());
-                break;
-            case 7:
-                SetHeights(buf.ReadIntVector());
-                break;
-            case 8:
-                SetScales(buf.ReadDoubleVector());
-                break;
-            case 9:
-                SetStereoFlags(buf.ReadIntVector());
-                break;
-            case 10:
-                SetTemplateFile(buf.ReadString());
-                break;
-            case 11:
-                SetSendEmailNotification(buf.ReadBool());
-                break;
-            case 12:
-                SetEmailAddress(buf.ReadString());
-                break;
-            case 13:
-                SetFps(buf.ReadInt());
-                break;
-            case 14:
-                SetStartIndex(buf.ReadInt());
-                break;
-            case 15:
-                SetEndIndex(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetGenerationMethod(buf.ReadInt());
+            break;
+        case 1:
+            SetMovieType(buf.ReadInt());
+            break;
+        case 2:
+            SetOutputDirectory(buf.ReadString());
+            break;
+        case 3:
+            SetOutputName(buf.ReadString());
+            break;
+        case 4:
+            SetFileFormats(buf.ReadStringVector());
+            break;
+        case 5:
+            SetUseCurrentSize(buf.ReadByteVector());
+            break;
+        case 6:
+            SetWidths(buf.ReadIntVector());
+            break;
+        case 7:
+            SetHeights(buf.ReadIntVector());
+            break;
+        case 8:
+            SetScales(buf.ReadDoubleVector());
+            break;
+        case 9:
+            SetStereoFlags(buf.ReadIntVector());
+            break;
+        case 10:
+            SetTemplateFile(buf.ReadString());
+            break;
+        case 11:
+            SetSendEmailNotification(buf.ReadBool());
+            break;
+        case 12:
+            SetEmailAddress(buf.ReadString());
+            break;
+        case 13:
+            SetFps(buf.ReadInt());
+            break;
+        case 14:
+            SetStartIndex(buf.ReadInt());
+            break;
+        case 15:
+            SetEndIndex(buf.ReadInt());
+            break;
         }
     }
 

@@ -51,6 +51,8 @@
 #    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
 #    Add define for proper symbol export.
 #
+#    Mark C. Miller, Wed Aug 26 11:06:34 PDT 2009
+#    Removed custom SIL stuff. Added avtVarMetaData
 ##############################################################################
 
 ##
@@ -73,15 +75,14 @@ METADATA_SRC= \
     PyavtMatSpeciesMetaData.C \
     PyavtMaterialMetaData.C \
     PyavtMeshMetaData.C \
-    PyavtSILCollectionMetaData.C \
-    PyavtSILMetaData.C \
     PyavtScalarMetaData.C \
     PyavtSimulationCommandSpecification.C \
     PyavtSimulationInformation.C \
     PyavtSpeciesMetaData.C \
     PyavtSymmetricTensorMetaData.C \
     PyavtTensorMetaData.C \
-    PyavtVectorMetaData.C
+    PyavtVectorMetaData.C \
+    PyavtVarMetaData.C
 
 WRAPPER_SRC= \
     PyAnimationAttributes.C \

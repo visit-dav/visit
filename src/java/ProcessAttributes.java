@@ -58,9 +58,21 @@ import java.util.Vector;
 
 public class ProcessAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     public ProcessAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        pids = new Vector();
+        ppids = new Vector();
+        hosts = new Vector();
+        isParallel = false;
+    }
+
+    public ProcessAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         pids = new Vector();
         ppids = new Vector();
@@ -70,7 +82,7 @@ public class ProcessAttributes extends AttributeSubject
 
     public ProcessAttributes(ProcessAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -95,6 +107,16 @@ public class ProcessAttributes extends AttributeSubject
         isParallel = obj.isParallel;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ProcessAttributes obj)
@@ -179,26 +201,22 @@ public class ProcessAttributes extends AttributeSubject
             buf.WriteBool(isParallel);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPids(buf.ReadDoubleVector());
-                break;
-            case 1:
-                SetPpids(buf.ReadDoubleVector());
-                break;
-            case 2:
-                SetHosts(buf.ReadStringVector());
-                break;
-            case 3:
-                SetIsParallel(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetPids(buf.ReadDoubleVector());
+            break;
+        case 1:
+            SetPpids(buf.ReadDoubleVector());
+            break;
+        case 2:
+            SetHosts(buf.ReadStringVector());
+            break;
+        case 3:
+            SetIsParallel(buf.ReadBool());
+            break;
         }
     }
 

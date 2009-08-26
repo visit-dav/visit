@@ -58,9 +58,21 @@ import java.util.Vector;
 
 public class NamespaceAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     public NamespaceAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        type = -1;
+        subsets = new Vector();
+        min = -1;
+        max = -1;
+    }
+
+    public NamespaceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         type = -1;
         subsets = new Vector();
@@ -70,7 +82,7 @@ public class NamespaceAttributes extends AttributeSubject
 
     public NamespaceAttributes(NamespaceAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -85,6 +97,16 @@ public class NamespaceAttributes extends AttributeSubject
         max = obj.max;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(NamespaceAttributes obj)
@@ -151,26 +173,22 @@ public class NamespaceAttributes extends AttributeSubject
             buf.WriteInt(max);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetType(buf.ReadInt());
-                break;
-            case 1:
-                SetSubsets(buf.ReadIntVector());
-                break;
-            case 2:
-                SetMin(buf.ReadInt());
-                break;
-            case 3:
-                SetMax(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetType(buf.ReadInt());
+            break;
+        case 1:
+            SetSubsets(buf.ReadIntVector());
+            break;
+        case 2:
+            SetMin(buf.ReadInt());
+            break;
+        case 3:
+            SetMax(buf.ReadInt());
+            break;
         }
     }
 

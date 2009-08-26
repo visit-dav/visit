@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define AVTMESHMETADATA_NMETH 86
 void VISITPY_API           PyavtMeshMetaData_StartUp(avtMeshMetaData *subj, void *data);
 void VISITPY_API           PyavtMeshMetaData_CloseDown();
-VISITPY_API PyMethodDef *   PyavtMeshMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyavtMeshMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtMeshMetaData_Check(PyObject *obj);
 VISITPY_API avtMeshMetaData *  PyavtMeshMetaData_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyavtMeshMetaData_New();
-VISITPY_API PyObject *      PyavtMeshMetaData_Wrap(const avtMeshMetaData *attr);
+VISITPY_API PyObject *     PyavtMeshMetaData_New();
+VISITPY_API PyObject *     PyavtMeshMetaData_Wrap(const avtMeshMetaData *attr);
 void VISITPY_API           PyavtMeshMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtMeshMetaData_SetDefaults(const avtMeshMetaData *atts);
 std::string VISITPY_API    PyavtMeshMetaData_GetLogString();
 std::string VISITPY_API    PyavtMeshMetaData_ToString(const avtMeshMetaData *, const char *);
+VISITPY_API PyObject *     PyavtMeshMetaData_getattr(PyObject *self, char *name);
+int VISITPY_API            PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH];
 
 #endif
 

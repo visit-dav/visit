@@ -61,24 +61,30 @@ import java.util.Vector;
 
 public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 2;
+
     public RemoveCellsAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
 
-        cell = 0;
-        domain = 0;
+        cellList = new Vector();
+        domainList = new Vector();
+    }
+
+    public RemoveCellsAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
         cellList = new Vector();
         domainList = new Vector();
     }
 
     public RemoveCellsAttributes(RemoveCellsAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
-        cell = obj.cell;
-        domain = obj.domain;
         cellList = new Vector();
         for(i = 0; i < obj.cellList.size(); ++i)
         {
@@ -93,6 +99,16 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
         }
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(RemoveCellsAttributes obj)
@@ -118,9 +134,7 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
             domainList_equal = domainList1.equals(domainList2);
         }
         // Create the return value
-        return ((cell == obj.cell) &&
-                (domain == obj.domain) &&
-                cellList_equal &&
+        return (cellList_equal &&
                 domainList_equal);
     }
 
@@ -128,33 +142,19 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetCell(int cell_)
-    {
-        cell = cell_;
-        Select(0);
-    }
-
-    public void SetDomain(int domain_)
-    {
-        domain = domain_;
-        Select(1);
-    }
-
     public void SetCellList(Vector cellList_)
     {
         cellList = cellList_;
-        Select(2);
+        Select(0);
     }
 
     public void SetDomainList(Vector domainList_)
     {
         domainList = domainList_;
-        Select(3);
+        Select(1);
     }
 
     // Property getting methods
-    public int    GetCell() { return cell; }
-    public int    GetDomain() { return domain; }
     public Vector GetCellList() { return cellList; }
     public Vector GetDomainList() { return domainList; }
 
@@ -162,43 +162,27 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(cell);
-        if(WriteSelect(1, buf))
-            buf.WriteInt(domain);
-        if(WriteSelect(2, buf))
             buf.WriteIntVector(cellList);
-        if(WriteSelect(3, buf))
+        if(WriteSelect(1, buf))
             buf.WriteIntVector(domainList);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetCell(buf.ReadInt());
-                break;
-            case 1:
-                SetDomain(buf.ReadInt());
-                break;
-            case 2:
-                SetCellList(buf.ReadIntVector());
-                break;
-            case 3:
-                SetDomainList(buf.ReadIntVector());
-                break;
-            }
+        case 0:
+            SetCellList(buf.ReadIntVector());
+            break;
+        case 1:
+            SetDomainList(buf.ReadIntVector());
+            break;
         }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + intToString("cell", cell, indent) + "\n";
-        str = str + intToString("domain", domain, indent) + "\n";
         str = str + intVectorToString("cellList", cellList, indent) + "\n";
         str = str + intVectorToString("domainList", domainList, indent) + "\n";
         return str;
@@ -206,8 +190,6 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
-    private int    cell;
-    private int    domain;
     private Vector cellList; // vector of Integer objects
     private Vector domainList; // vector of Integer objects
 }

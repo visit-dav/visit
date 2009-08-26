@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 38;
+
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
     public final static int SOURCETYPE_SPECIFIEDLINE = 1;
@@ -97,7 +99,75 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public PoincareAttributes()
     {
-        super(38);
+        super(numAdditionalAttributes);
+
+        sourceType = SOURCETYPE_SPECIFIEDPOINT;
+        maxStepLength = 0.1;
+        termination = 10;
+        pointSource = new double[3];
+        pointSource[0] = 0;
+        pointSource[1] = 0;
+        pointSource[2] = 0;
+        lineStart = new double[3];
+        lineStart[0] = 0;
+        lineStart[1] = 0;
+        lineStart[2] = 0;
+        lineEnd = new double[3];
+        lineEnd[0] = 1;
+        lineEnd[1] = 0;
+        lineEnd[2] = 0;
+        planeOrigin = new double[3];
+        planeOrigin[0] = 0;
+        planeOrigin[1] = 0;
+        planeOrigin[2] = 0;
+        planeNormal = new double[3];
+        planeNormal[0] = 0;
+        planeNormal[1] = 0;
+        planeNormal[2] = 1;
+        planeUpAxis = new double[3];
+        planeUpAxis[0] = 0;
+        planeUpAxis[1] = 1;
+        planeUpAxis[2] = 0;
+        planeRadius = 1;
+        pointDensity = 1;
+        colorTableName = new String("Default");
+        singleColor = new ColorAttribute(0, 0, 0);
+        verboseFlag = true;
+        legendFlag = true;
+        lightingFlag = true;
+        relTol = 0.0001;
+        absTol = 1e-05;
+        terminationType = TERMINATIONTYPE_STEPS;
+        integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
+        showStreamlines = false;
+        showPoints = false;
+        numberPlanes = 1;
+        colorBy = COLORBY_SAFETYFACTOR;
+        maxToroidalWinding = 30;
+        overrideToroidalWinding = 0;
+        hitRate = 0.9;
+        showCurves = SHOWMESHTYPE_CURVES;
+        adjustPlane = -1;
+        showIslands = false;
+        overlaps = OVERLAPTYPE_REMOVE;
+        min = 0;
+        max = 0;
+        minFlag = false;
+        maxFlag = false;
+        colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
+        intersectPlaneOrigin = new double[3];
+        intersectPlaneOrigin[0] = 0;
+        intersectPlaneOrigin[1] = 0;
+        intersectPlaneOrigin[2] = 0;
+        intersectPlaneNormal = new double[3];
+        intersectPlaneNormal[0] = 1;
+        intersectPlaneNormal[1] = 0;
+        intersectPlaneNormal[2] = 0;
+    }
+
+    public PoincareAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -165,7 +235,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public PoincareAttributes(PoincareAttributes obj)
     {
-        super(38);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -241,6 +311,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PoincareAttributes obj)
@@ -329,7 +409,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     }
 
     public String GetName() { return "Poincare"; }
-    public String GetVersion() { return "1.0"; }
+    public String GetVersion() { return "2.0"; }
 
     // Property setting methods
     public void SetSourceType(int sourceType_)
@@ -761,129 +841,125 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             buf.WriteDoubleArray(intersectPlaneNormal);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSourceType(buf.ReadInt());
-                break;
-            case 1:
-                SetMaxStepLength(buf.ReadDouble());
-                break;
-            case 2:
-                SetTermination(buf.ReadDouble());
-                break;
-            case 3:
-                SetPointSource(buf.ReadDoubleArray());
-                break;
-            case 4:
-                SetLineStart(buf.ReadDoubleArray());
-                break;
-            case 5:
-                SetLineEnd(buf.ReadDoubleArray());
-                break;
-            case 6:
-                SetPlaneOrigin(buf.ReadDoubleArray());
-                break;
-            case 7:
-                SetPlaneNormal(buf.ReadDoubleArray());
-                break;
-            case 8:
-                SetPlaneUpAxis(buf.ReadDoubleArray());
-                break;
-            case 9:
-                SetPlaneRadius(buf.ReadDouble());
-                break;
-            case 10:
-                SetPointDensity(buf.ReadInt());
-                break;
-            case 11:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 12:
-                singleColor.Read(buf);
-                Select(12);
-                break;
-            case 13:
-                SetVerboseFlag(buf.ReadBool());
-                break;
-            case 14:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 15:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            case 16:
-                SetRelTol(buf.ReadDouble());
-                break;
-            case 17:
-                SetAbsTol(buf.ReadDouble());
-                break;
-            case 18:
-                SetTerminationType(buf.ReadInt());
-                break;
-            case 19:
-                SetIntegrationType(buf.ReadInt());
-                break;
-            case 20:
-                SetShowStreamlines(buf.ReadBool());
-                break;
-            case 21:
-                SetShowPoints(buf.ReadBool());
-                break;
-            case 22:
-                SetNumberPlanes(buf.ReadInt());
-                break;
-            case 23:
-                SetColorBy(buf.ReadInt());
-                break;
-            case 24:
-                SetMaxToroidalWinding(buf.ReadInt());
-                break;
-            case 25:
-                SetOverrideToroidalWinding(buf.ReadInt());
-                break;
-            case 26:
-                SetHitRate(buf.ReadDouble());
-                break;
-            case 27:
-                SetShowCurves(buf.ReadInt());
-                break;
-            case 28:
-                SetAdjustPlane(buf.ReadInt());
-                break;
-            case 29:
-                SetShowIslands(buf.ReadBool());
-                break;
-            case 30:
-                SetOverlaps(buf.ReadInt());
-                break;
-            case 31:
-                SetMin(buf.ReadDouble());
-                break;
-            case 32:
-                SetMax(buf.ReadDouble());
-                break;
-            case 33:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 34:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 35:
-                SetColorType(buf.ReadInt());
-                break;
-            case 36:
-                SetIntersectPlaneOrigin(buf.ReadDoubleArray());
-                break;
-            case 37:
-                SetIntersectPlaneNormal(buf.ReadDoubleArray());
-                break;
-            }
+        case 0:
+            SetSourceType(buf.ReadInt());
+            break;
+        case 1:
+            SetMaxStepLength(buf.ReadDouble());
+            break;
+        case 2:
+            SetTermination(buf.ReadDouble());
+            break;
+        case 3:
+            SetPointSource(buf.ReadDoubleArray());
+            break;
+        case 4:
+            SetLineStart(buf.ReadDoubleArray());
+            break;
+        case 5:
+            SetLineEnd(buf.ReadDoubleArray());
+            break;
+        case 6:
+            SetPlaneOrigin(buf.ReadDoubleArray());
+            break;
+        case 7:
+            SetPlaneNormal(buf.ReadDoubleArray());
+            break;
+        case 8:
+            SetPlaneUpAxis(buf.ReadDoubleArray());
+            break;
+        case 9:
+            SetPlaneRadius(buf.ReadDouble());
+            break;
+        case 10:
+            SetPointDensity(buf.ReadInt());
+            break;
+        case 11:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 12:
+            singleColor.Read(buf);
+            Select(12);
+            break;
+        case 13:
+            SetVerboseFlag(buf.ReadBool());
+            break;
+        case 14:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 15:
+            SetLightingFlag(buf.ReadBool());
+            break;
+        case 16:
+            SetRelTol(buf.ReadDouble());
+            break;
+        case 17:
+            SetAbsTol(buf.ReadDouble());
+            break;
+        case 18:
+            SetTerminationType(buf.ReadInt());
+            break;
+        case 19:
+            SetIntegrationType(buf.ReadInt());
+            break;
+        case 20:
+            SetShowStreamlines(buf.ReadBool());
+            break;
+        case 21:
+            SetShowPoints(buf.ReadBool());
+            break;
+        case 22:
+            SetNumberPlanes(buf.ReadInt());
+            break;
+        case 23:
+            SetColorBy(buf.ReadInt());
+            break;
+        case 24:
+            SetMaxToroidalWinding(buf.ReadInt());
+            break;
+        case 25:
+            SetOverrideToroidalWinding(buf.ReadInt());
+            break;
+        case 26:
+            SetHitRate(buf.ReadDouble());
+            break;
+        case 27:
+            SetShowCurves(buf.ReadInt());
+            break;
+        case 28:
+            SetAdjustPlane(buf.ReadInt());
+            break;
+        case 29:
+            SetShowIslands(buf.ReadBool());
+            break;
+        case 30:
+            SetOverlaps(buf.ReadInt());
+            break;
+        case 31:
+            SetMin(buf.ReadDouble());
+            break;
+        case 32:
+            SetMax(buf.ReadDouble());
+            break;
+        case 33:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 34:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 35:
+            SetColorType(buf.ReadInt());
+            break;
+        case 36:
+            SetIntersectPlaneOrigin(buf.ReadDoubleArray());
+            break;
+        case 37:
+            SetIntersectPlaneNormal(buf.ReadDoubleArray());
+            break;
         }
     }
 

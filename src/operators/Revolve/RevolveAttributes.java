@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class RevolveAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 6;
+
     // Enum values
     public final static int MESHTYPE_AUTO = 0;
     public final static int MESHTYPE_XY = 1;
@@ -68,7 +70,22 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public RevolveAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        meshType = MESHTYPE_AUTO;
+        autoAxis = true;
+        axis = new double[3];
+        axis[0] = 1;
+        axis[1] = 0;
+        axis[2] = 0;
+        startAngle = 0;
+        stopAngle = 360;
+        steps = 30;
+    }
+
+    public RevolveAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         meshType = MESHTYPE_AUTO;
         autoAxis = true;
@@ -83,7 +100,7 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public RevolveAttributes(RevolveAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -99,6 +116,16 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
         steps = obj.steps;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(RevolveAttributes obj)
@@ -194,32 +221,28 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(steps);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetMeshType(buf.ReadInt());
-                break;
-            case 1:
-                SetAutoAxis(buf.ReadBool());
-                break;
-            case 2:
-                SetAxis(buf.ReadDoubleArray());
-                break;
-            case 3:
-                SetStartAngle(buf.ReadDouble());
-                break;
-            case 4:
-                SetStopAngle(buf.ReadDouble());
-                break;
-            case 5:
-                SetSteps(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetMeshType(buf.ReadInt());
+            break;
+        case 1:
+            SetAutoAxis(buf.ReadBool());
+            break;
+        case 2:
+            SetAxis(buf.ReadDoubleArray());
+            break;
+        case 3:
+            SetStartAngle(buf.ReadDouble());
+            break;
+        case 4:
+            SetStopAngle(buf.ReadDouble());
+            break;
+        case 5:
+            SetSteps(buf.ReadInt());
+            break;
         }
     }
 

@@ -56,9 +56,20 @@ package llnl.visit;
 
 public class AxisLabels extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public AxisLabels()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        visible = true;
+        font = new FontAttributes();
+        scaling = 0;
+    }
+
+    public AxisLabels(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         visible = true;
         font = new FontAttributes();
@@ -67,13 +78,23 @@ public class AxisLabels extends AttributeSubject
 
     public AxisLabels(AxisLabels obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         visible = obj.visible;
         font = new FontAttributes(obj.font);
         scaling = obj.scaling;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AxisLabels obj)
@@ -119,24 +140,20 @@ public class AxisLabels extends AttributeSubject
             buf.WriteInt(scaling);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVisible(buf.ReadBool());
-                break;
-            case 1:
-                font.Read(buf);
-                Select(1);
-                break;
-            case 2:
-                SetScaling(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetVisible(buf.ReadBool());
+            break;
+        case 1:
+            font.Read(buf);
+            Select(1);
+            break;
+        case 2:
+            SetScaling(buf.ReadInt());
+            break;
         }
     }
 

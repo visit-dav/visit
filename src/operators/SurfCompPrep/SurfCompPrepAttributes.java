@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 20;
+
     // Enum values
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
     public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
@@ -71,7 +73,33 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public SurfCompPrepAttributes()
     {
-        super(20);
+        super(numAdditionalAttributes);
+
+        surfaceType = SURFACETYPE_AVERAGE;
+        coordSystem = COORDINATESYSTEM_CARTESIAN;
+        thetaStart = 0;
+        thetaStop = 360;
+        thetaSteps = 90;
+        phiStart = 0;
+        phiStop = 180;
+        phiSteps = 45;
+        startRadius = 0;
+        endRadius = 1;
+        radiusSteps = 100;
+        xStart = 0;
+        xStop = 1;
+        xSteps = 100;
+        yStart = 0;
+        yStop = 1;
+        ySteps = 100;
+        zStart = 0;
+        zStop = 1;
+        zSteps = 100;
+    }
+
+    public SurfCompPrepAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         surfaceType = SURFACETYPE_AVERAGE;
         coordSystem = COORDINATESYSTEM_CARTESIAN;
@@ -97,7 +125,7 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public SurfCompPrepAttributes(SurfCompPrepAttributes obj)
     {
-        super(20);
+        super(numAdditionalAttributes);
 
         surfaceType = obj.surfaceType;
         coordSystem = obj.coordSystem;
@@ -121,6 +149,16 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
         zSteps = obj.zSteps;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SurfCompPrepAttributes obj)
@@ -339,74 +377,70 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(zSteps);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSurfaceType(buf.ReadInt());
-                break;
-            case 1:
-                SetCoordSystem(buf.ReadInt());
-                break;
-            case 2:
-                SetThetaStart(buf.ReadDouble());
-                break;
-            case 3:
-                SetThetaStop(buf.ReadDouble());
-                break;
-            case 4:
-                SetThetaSteps(buf.ReadInt());
-                break;
-            case 5:
-                SetPhiStart(buf.ReadDouble());
-                break;
-            case 6:
-                SetPhiStop(buf.ReadDouble());
-                break;
-            case 7:
-                SetPhiSteps(buf.ReadInt());
-                break;
-            case 8:
-                SetStartRadius(buf.ReadDouble());
-                break;
-            case 9:
-                SetEndRadius(buf.ReadDouble());
-                break;
-            case 10:
-                SetRadiusSteps(buf.ReadInt());
-                break;
-            case 11:
-                SetXStart(buf.ReadDouble());
-                break;
-            case 12:
-                SetXStop(buf.ReadDouble());
-                break;
-            case 13:
-                SetXSteps(buf.ReadInt());
-                break;
-            case 14:
-                SetYStart(buf.ReadDouble());
-                break;
-            case 15:
-                SetYStop(buf.ReadDouble());
-                break;
-            case 16:
-                SetYSteps(buf.ReadInt());
-                break;
-            case 17:
-                SetZStart(buf.ReadDouble());
-                break;
-            case 18:
-                SetZStop(buf.ReadDouble());
-                break;
-            case 19:
-                SetZSteps(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetSurfaceType(buf.ReadInt());
+            break;
+        case 1:
+            SetCoordSystem(buf.ReadInt());
+            break;
+        case 2:
+            SetThetaStart(buf.ReadDouble());
+            break;
+        case 3:
+            SetThetaStop(buf.ReadDouble());
+            break;
+        case 4:
+            SetThetaSteps(buf.ReadInt());
+            break;
+        case 5:
+            SetPhiStart(buf.ReadDouble());
+            break;
+        case 6:
+            SetPhiStop(buf.ReadDouble());
+            break;
+        case 7:
+            SetPhiSteps(buf.ReadInt());
+            break;
+        case 8:
+            SetStartRadius(buf.ReadDouble());
+            break;
+        case 9:
+            SetEndRadius(buf.ReadDouble());
+            break;
+        case 10:
+            SetRadiusSteps(buf.ReadInt());
+            break;
+        case 11:
+            SetXStart(buf.ReadDouble());
+            break;
+        case 12:
+            SetXStop(buf.ReadDouble());
+            break;
+        case 13:
+            SetXSteps(buf.ReadInt());
+            break;
+        case 14:
+            SetYStart(buf.ReadDouble());
+            break;
+        case 15:
+            SetYStop(buf.ReadDouble());
+            break;
+        case 16:
+            SetYSteps(buf.ReadInt());
+            break;
+        case 17:
+            SetZStart(buf.ReadDouble());
+            break;
+        case 18:
+            SetZStop(buf.ReadDouble());
+            break;
+        case 19:
+            SetZSteps(buf.ReadInt());
+            break;
         }
     }
 

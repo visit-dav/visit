@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class DualMeshAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     // Enum values
     public final static int CONVERSIONMODE_AUTO = 0;
     public final static int CONVERSIONMODE_NODESTOZONES = 1;
@@ -67,18 +69,35 @@ public class DualMeshAttributes extends AttributeSubject implements Plugin
 
     public DualMeshAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        mode = CONVERSIONMODE_AUTO;
+    }
+
+    public DualMeshAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         mode = CONVERSIONMODE_AUTO;
     }
 
     public DualMeshAttributes(DualMeshAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         mode = obj.mode;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DualMeshAttributes obj)
@@ -107,9 +126,8 @@ public class DualMeshAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(mode);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetMode(buf.ReadInt());
     }
 

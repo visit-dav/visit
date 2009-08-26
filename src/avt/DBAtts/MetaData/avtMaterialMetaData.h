@@ -40,7 +40,8 @@
 #define AVTMATERIALMETADATA_H
 #include <dbatts_exports.h>
 #include <string>
-#include <AttributeSubject.h>
+#include <avtVarMetaData.h>
+
 
 // ****************************************************************************
 // Class: avtMaterialMetaData
@@ -57,16 +58,26 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtMaterialMetaData : public AttributeSubject
+class DBATTS_API avtMaterialMetaData : public avtVarMetaData
 {
 public:
+    // These constructors are for objects of this class
     avtMaterialMetaData();
     avtMaterialMetaData(const avtMaterialMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtMaterialMetaData(private_tmfs_t tmfs);
+    avtMaterialMetaData(const avtMaterialMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtMaterialMetaData();
 
     virtual avtMaterialMetaData& operator = (const avtMaterialMetaData &obj);
     virtual bool operator == (const avtMaterialMetaData &obj) const;
     virtual bool operator != (const avtMaterialMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtMaterialMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -84,20 +95,13 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_meshName,
-        ID_numMaterials,
+        ID_numMaterials = avtVarMetaData::ID__LAST,
         ID_materialNames,
-        ID_colorNames
+        ID_colorNames,
+        ID__LAST
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  meshName;
     int          numMaterials;
     stringVector materialNames;
     stringVector colorNames;
@@ -105,6 +109,8 @@ public:
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTMATERIALMETADATA_TMFS (AVTVARMETADATA_TMFS "is*s*")
 
 #endif

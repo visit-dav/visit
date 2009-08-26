@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class MetricThresholdAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 19;
+
     // Enum values
     public final static int PRESET_NONE = 0;
     public final static int PRESET_ASPECT_RATIO = 1;
@@ -85,7 +87,32 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public MetricThresholdAttributes()
     {
-        super(19);
+        super(numAdditionalAttributes);
+
+        preset = PRESET_NONE;
+        Hexahedron = false;
+        hex_lower = 0;
+        hex_upper = 0;
+        Tetrahedron = false;
+        tet_lower = 0;
+        tet_upper = 0;
+        Wedge = false;
+        wed_lower = 0;
+        wed_upper = 0;
+        Pyramid = false;
+        pyr_lower = 0;
+        pyr_upper = 0;
+        Triangle = false;
+        tri_lower = 0;
+        tri_upper = 0;
+        Quad = false;
+        quad_lower = 0;
+        quad_upper = 0;
+    }
+
+    public MetricThresholdAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         preset = PRESET_NONE;
         Hexahedron = false;
@@ -110,7 +137,7 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public MetricThresholdAttributes(MetricThresholdAttributes obj)
     {
-        super(19);
+        super(numAdditionalAttributes);
 
         preset = obj.preset;
         Hexahedron = obj.Hexahedron;
@@ -133,6 +160,16 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
         quad_upper = obj.quad_upper;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MetricThresholdAttributes obj)
@@ -341,71 +378,67 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
             buf.WriteDouble(quad_upper);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPreset(buf.ReadInt());
-                break;
-            case 1:
-                SetHexahedron(buf.ReadBool());
-                break;
-            case 2:
-                SetHex_lower(buf.ReadDouble());
-                break;
-            case 3:
-                SetHex_upper(buf.ReadDouble());
-                break;
-            case 4:
-                SetTetrahedron(buf.ReadBool());
-                break;
-            case 5:
-                SetTet_lower(buf.ReadDouble());
-                break;
-            case 6:
-                SetTet_upper(buf.ReadDouble());
-                break;
-            case 7:
-                SetWedge(buf.ReadBool());
-                break;
-            case 8:
-                SetWed_lower(buf.ReadDouble());
-                break;
-            case 9:
-                SetWed_upper(buf.ReadDouble());
-                break;
-            case 10:
-                SetPyramid(buf.ReadBool());
-                break;
-            case 11:
-                SetPyr_lower(buf.ReadDouble());
-                break;
-            case 12:
-                SetPyr_upper(buf.ReadDouble());
-                break;
-            case 13:
-                SetTriangle(buf.ReadBool());
-                break;
-            case 14:
-                SetTri_lower(buf.ReadDouble());
-                break;
-            case 15:
-                SetTri_upper(buf.ReadDouble());
-                break;
-            case 16:
-                SetQuad(buf.ReadBool());
-                break;
-            case 17:
-                SetQuad_lower(buf.ReadDouble());
-                break;
-            case 18:
-                SetQuad_upper(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetPreset(buf.ReadInt());
+            break;
+        case 1:
+            SetHexahedron(buf.ReadBool());
+            break;
+        case 2:
+            SetHex_lower(buf.ReadDouble());
+            break;
+        case 3:
+            SetHex_upper(buf.ReadDouble());
+            break;
+        case 4:
+            SetTetrahedron(buf.ReadBool());
+            break;
+        case 5:
+            SetTet_lower(buf.ReadDouble());
+            break;
+        case 6:
+            SetTet_upper(buf.ReadDouble());
+            break;
+        case 7:
+            SetWedge(buf.ReadBool());
+            break;
+        case 8:
+            SetWed_lower(buf.ReadDouble());
+            break;
+        case 9:
+            SetWed_upper(buf.ReadDouble());
+            break;
+        case 10:
+            SetPyramid(buf.ReadBool());
+            break;
+        case 11:
+            SetPyr_lower(buf.ReadDouble());
+            break;
+        case 12:
+            SetPyr_upper(buf.ReadDouble());
+            break;
+        case 13:
+            SetTriangle(buf.ReadBool());
+            break;
+        case 14:
+            SetTri_lower(buf.ReadDouble());
+            break;
+        case 15:
+            SetTri_upper(buf.ReadDouble());
+            break;
+        case 16:
+            SetQuad(buf.ReadBool());
+            break;
+        case 17:
+            SetQuad_lower(buf.ReadDouble());
+            break;
+        case 18:
+            SetQuad_upper(buf.ReadDouble());
+            break;
         }
     }
 

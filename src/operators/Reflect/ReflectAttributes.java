@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ReflectAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 8;
+
     // Enum values
     public final static int OCTANT_PXPYPZ = 0;
     public final static int OCTANT_NXPYPZ = 1;
@@ -72,7 +74,29 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public ReflectAttributes()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        octant = OCTANT_PXPYPZ;
+        useXBoundary = true;
+        specifiedX = 0;
+        useYBoundary = true;
+        specifiedY = 0;
+        useZBoundary = true;
+        specifiedZ = 0;
+        reflections = new int[8];
+        reflections[0] = 1;
+        reflections[1] = 0;
+        reflections[2] = 1;
+        reflections[3] = 0;
+        reflections[4] = 0;
+        reflections[5] = 0;
+        reflections[6] = 0;
+        reflections[7] = 0;
+    }
+
+    public ReflectAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         octant = OCTANT_PXPYPZ;
         useXBoundary = true;
@@ -94,7 +118,7 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public ReflectAttributes(ReflectAttributes obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -111,6 +135,16 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ReflectAttributes obj)
@@ -217,38 +251,34 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
             buf.WriteIntArray(reflections);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOctant(buf.ReadInt());
-                break;
-            case 1:
-                SetUseXBoundary(buf.ReadBool());
-                break;
-            case 2:
-                SetSpecifiedX(buf.ReadDouble());
-                break;
-            case 3:
-                SetUseYBoundary(buf.ReadBool());
-                break;
-            case 4:
-                SetSpecifiedY(buf.ReadDouble());
-                break;
-            case 5:
-                SetUseZBoundary(buf.ReadBool());
-                break;
-            case 6:
-                SetSpecifiedZ(buf.ReadDouble());
-                break;
-            case 7:
-                SetReflections(buf.ReadIntArray());
-                break;
-            }
+        case 0:
+            SetOctant(buf.ReadInt());
+            break;
+        case 1:
+            SetUseXBoundary(buf.ReadBool());
+            break;
+        case 2:
+            SetSpecifiedX(buf.ReadDouble());
+            break;
+        case 3:
+            SetUseYBoundary(buf.ReadBool());
+            break;
+        case 4:
+            SetSpecifiedY(buf.ReadDouble());
+            break;
+        case 5:
+            SetUseZBoundary(buf.ReadBool());
+            break;
+        case 6:
+            SetSpecifiedZ(buf.ReadDouble());
+            break;
+        case 7:
+            SetReflections(buf.ReadIntArray());
+            break;
         }
     }
 

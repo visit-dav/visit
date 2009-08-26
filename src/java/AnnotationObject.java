@@ -57,6 +57,8 @@ import java.util.Vector;
 
 public class AnnotationObject extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 17;
+
     // Enum values
     public final static int ANNOTATIONTYPE_TEXT2D = 0;
     public final static int ANNOTATIONTYPE_TEXT3D = 1;
@@ -76,7 +78,36 @@ public class AnnotationObject extends AttributeSubject
 
     public AnnotationObject()
     {
-        super(17);
+        super(numAdditionalAttributes);
+
+        objectName = new String("");
+        objectType = ANNOTATIONTYPE_TEXT2D;
+        visible = false;
+        active = false;
+        position = new double[3];
+        position[0] = 0;
+        position[1] = 0;
+        position[2] = 0;
+        position2 = new double[3];
+        position2[0] = 0;
+        position2[1] = 0;
+        position2[2] = 0;
+        textColor = new ColorAttribute();
+        useForegroundForTextColor = true;
+        color1 = new ColorAttribute();
+        color2 = new ColorAttribute();
+        text = new Vector();
+        fontFamily = FONTFAMILY_ARIAL;
+        fontBold = false;
+        fontItalic = false;
+        fontShadow = false;
+        doubleAttribute1 = 0;
+        intAttribute1 = 0;
+    }
+
+    public AnnotationObject(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         objectName = new String("");
         objectType = ANNOTATIONTYPE_TEXT2D;
@@ -105,7 +136,7 @@ public class AnnotationObject extends AttributeSubject
 
     public AnnotationObject(AnnotationObject obj)
     {
-        super(17);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -139,6 +170,16 @@ public class AnnotationObject extends AttributeSubject
         intAttribute1 = obj.intAttribute1;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AnnotationObject obj)
@@ -365,68 +406,64 @@ public class AnnotationObject extends AttributeSubject
             buf.WriteInt(intAttribute1);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetObjectName(buf.ReadString());
-                break;
-            case 1:
-                SetObjectType(buf.ReadInt());
-                break;
-            case 2:
-                SetVisible(buf.ReadBool());
-                break;
-            case 3:
-                SetActive(buf.ReadBool());
-                break;
-            case 4:
-                SetPosition(buf.ReadDoubleArray());
-                break;
-            case 5:
-                SetPosition2(buf.ReadDoubleArray());
-                break;
-            case 6:
-                textColor.Read(buf);
-                Select(6);
-                break;
-            case 7:
-                SetUseForegroundForTextColor(buf.ReadBool());
-                break;
-            case 8:
-                color1.Read(buf);
-                Select(8);
-                break;
-            case 9:
-                color2.Read(buf);
-                Select(9);
-                break;
-            case 10:
-                SetText(buf.ReadStringVector());
-                break;
-            case 11:
-                SetFontFamily(buf.ReadInt());
-                break;
-            case 12:
-                SetFontBold(buf.ReadBool());
-                break;
-            case 13:
-                SetFontItalic(buf.ReadBool());
-                break;
-            case 14:
-                SetFontShadow(buf.ReadBool());
-                break;
-            case 15:
-                SetDoubleAttribute1(buf.ReadDouble());
-                break;
-            case 16:
-                SetIntAttribute1(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetObjectName(buf.ReadString());
+            break;
+        case 1:
+            SetObjectType(buf.ReadInt());
+            break;
+        case 2:
+            SetVisible(buf.ReadBool());
+            break;
+        case 3:
+            SetActive(buf.ReadBool());
+            break;
+        case 4:
+            SetPosition(buf.ReadDoubleArray());
+            break;
+        case 5:
+            SetPosition2(buf.ReadDoubleArray());
+            break;
+        case 6:
+            textColor.Read(buf);
+            Select(6);
+            break;
+        case 7:
+            SetUseForegroundForTextColor(buf.ReadBool());
+            break;
+        case 8:
+            color1.Read(buf);
+            Select(8);
+            break;
+        case 9:
+            color2.Read(buf);
+            Select(9);
+            break;
+        case 10:
+            SetText(buf.ReadStringVector());
+            break;
+        case 11:
+            SetFontFamily(buf.ReadInt());
+            break;
+        case 12:
+            SetFontBold(buf.ReadBool());
+            break;
+        case 13:
+            SetFontItalic(buf.ReadBool());
+            break;
+        case 14:
+            SetFontShadow(buf.ReadBool());
+            break;
+        case 15:
+            SetDoubleAttribute1(buf.ReadDouble());
+            break;
+        case 16:
+            SetIntAttribute1(buf.ReadInt());
+            break;
         }
     }
 

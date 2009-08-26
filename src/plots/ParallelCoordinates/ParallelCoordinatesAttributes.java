@@ -62,6 +62,8 @@ import llnl.visit.ColorAttribute;
 
 public class ParallelCoordinatesAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 15;
+
     // Enum values
     public final static int FOCUSRENDERING_INDIVIDUALLINES = 0;
     public final static int FOCUSRENDERING_BINSOFCONSTANTCOLOR = 1;
@@ -70,7 +72,28 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public ParallelCoordinatesAttributes()
     {
-        super(15);
+        super(numAdditionalAttributes);
+
+        scalarAxisNames = new Vector();
+        visualAxisNames = new Vector();
+        extentMinima = new Vector();
+        extentMaxima = new Vector();
+        drawLines = true;
+        linesColor = new ColorAttribute(128, 0, 0);
+        drawContext = true;
+        contextGamma = 2f;
+        contextNumPartitions = 128;
+        contextColor = new ColorAttribute(0, 220, 0);
+        drawLinesOnlyIfExtentsOn = true;
+        unifyAxisExtents = false;
+        linesNumPartitions = 512;
+        focusGamma = 4f;
+        drawFocusAs = FOCUSRENDERING_BINSOFCONSTANTCOLOR;
+    }
+
+    public ParallelCoordinatesAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         scalarAxisNames = new Vector();
         visualAxisNames = new Vector();
@@ -91,7 +114,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public ParallelCoordinatesAttributes(ParallelCoordinatesAttributes obj)
     {
-        super(15);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -130,6 +153,16 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
         drawFocusAs = obj.drawFocusAs;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ParallelCoordinatesAttributes obj)
@@ -336,61 +369,57 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
             buf.WriteInt(drawFocusAs);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetScalarAxisNames(buf.ReadStringVector());
-                break;
-            case 1:
-                SetVisualAxisNames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetExtentMinima(buf.ReadDoubleVector());
-                break;
-            case 3:
-                SetExtentMaxima(buf.ReadDoubleVector());
-                break;
-            case 4:
-                SetDrawLines(buf.ReadBool());
-                break;
-            case 5:
-                linesColor.Read(buf);
-                Select(5);
-                break;
-            case 6:
-                SetDrawContext(buf.ReadBool());
-                break;
-            case 7:
-                SetContextGamma(buf.ReadFloat());
-                break;
-            case 8:
-                SetContextNumPartitions(buf.ReadInt());
-                break;
-            case 9:
-                contextColor.Read(buf);
-                Select(9);
-                break;
-            case 10:
-                SetDrawLinesOnlyIfExtentsOn(buf.ReadBool());
-                break;
-            case 11:
-                SetUnifyAxisExtents(buf.ReadBool());
-                break;
-            case 12:
-                SetLinesNumPartitions(buf.ReadInt());
-                break;
-            case 13:
-                SetFocusGamma(buf.ReadFloat());
-                break;
-            case 14:
-                SetDrawFocusAs(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetScalarAxisNames(buf.ReadStringVector());
+            break;
+        case 1:
+            SetVisualAxisNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetExtentMinima(buf.ReadDoubleVector());
+            break;
+        case 3:
+            SetExtentMaxima(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetDrawLines(buf.ReadBool());
+            break;
+        case 5:
+            linesColor.Read(buf);
+            Select(5);
+            break;
+        case 6:
+            SetDrawContext(buf.ReadBool());
+            break;
+        case 7:
+            SetContextGamma(buf.ReadFloat());
+            break;
+        case 8:
+            SetContextNumPartitions(buf.ReadInt());
+            break;
+        case 9:
+            contextColor.Read(buf);
+            Select(9);
+            break;
+        case 10:
+            SetDrawLinesOnlyIfExtentsOn(buf.ReadBool());
+            break;
+        case 11:
+            SetUnifyAxisExtents(buf.ReadBool());
+            break;
+        case 12:
+            SetLinesNumPartitions(buf.ReadInt());
+            break;
+        case 13:
+            SetFocusGamma(buf.ReadFloat());
+            break;
+        case 14:
+            SetDrawFocusAs(buf.ReadInt());
+            break;
         }
     }
 

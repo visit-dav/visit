@@ -52,7 +52,6 @@ class avtSpeciesMetaData;
 class avtCurveMetaData;
 class avtLabelMetaData;
 class avtDefaultPlotMetaData;
-class avtSILMetaData;
 #include <ExpressionList.h>
 #include <avtSimulationInformation.h>
 #include <Expression.h>
@@ -64,8 +63,6 @@ class avtSILMetaData;
 #include <avtMatSpeciesMetaData.h>
 #include <avtMaterialMetaData.h>
 #include <avtMeshMetaData.h>
-#include <avtSILCollectionMetaData.h>
-#include <avtSILMetaData.h>
 #include <avtScalarMetaData.h>
 #include <avtSpeciesMetaData.h>
 #include <avtSymmetricTensorMetaData.h>
@@ -126,7 +123,6 @@ public:
     void SelectCurves();
     void SelectLabels();
     void SelectDefaultPlots();
-    void SelectSILs();
     void SelectSimInfo();
     void SelectSuggestedDefaultSILRestriction();
 
@@ -206,8 +202,6 @@ public:
           AttributeGroupVector     &GetLabels();
     const AttributeGroupVector     &GetDefaultPlots() const;
           AttributeGroupVector     &GetDefaultPlots();
-    const AttributeGroupVector     &GetSILs() const;
-          AttributeGroupVector     &GetSILs();
     bool                           GetIsSimulation() const;
     const avtSimulationInformation &GetSimInfo() const;
           avtSimulationInformation &GetSimInfo();
@@ -293,13 +287,6 @@ public:
     avtDefaultPlotMetaData &GetDefaultPlots(int i);
     const avtDefaultPlotMetaData &GetDefaultPlots(int i) const;
 
-    void AddSILs(const avtSILMetaData &);
-    void ClearSILs();
-    void RemoveSILs(int i);
-    int  GetNumSILs() const;
-    avtSILMetaData &GetSILs(int i);
-    const avtSILMetaData &GetSILs(int i) const;
-
     // User-defined methods
     void         SetTemporalExtents(double, double);
     void         SetCycle(int, int);
@@ -322,7 +309,6 @@ public:
     void         Add(avtMaterialMetaData *);
     void         Add(avtSpeciesMetaData *);
     void         Add(avtCurveMetaData *);
-    void         Add(avtSILMetaData *);
     void         Add(avtLabelMetaData *);
     void         Add(avtDefaultPlotMetaData *);
     const avtMeshMetaData        *GetMesh(int) const;
@@ -342,8 +328,6 @@ public:
     const avtSpeciesMetaData     *GetSpecies(const std::string&) const;
     const avtCurveMetaData       *GetCurve(int) const;
     const avtCurveMetaData       *GetCurve(const std::string&) const;
-    const avtSILMetaData         *GetSIL(int) const;
-    const avtSILMetaData         *GetSIL(const std::string&) const;
     const avtLabelMetaData       *GetLabel(int) const;
     const avtLabelMetaData       *GetLabel(const std::string&) const;
     const avtDefaultPlotMetaData *GetDefaultPlot(int) const;
@@ -418,7 +402,6 @@ public:
         ID_curves,
         ID_labels,
         ID_defaultPlots,
-        ID_SILs,
         ID_isSimulation,
         ID_simInfo,
         ID_suggestedDefaultSILRestriction
@@ -457,7 +440,6 @@ private:
     AttributeGroupVector     curves;
     AttributeGroupVector     labels;
     AttributeGroupVector     defaultPlots;
-    AttributeGroupVector     SILs;
     bool                     isSimulation;
     avtSimulationInformation simInfo;
     stringVector             suggestedDefaultSILRestriction;

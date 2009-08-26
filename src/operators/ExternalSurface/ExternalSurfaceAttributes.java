@@ -59,9 +59,19 @@ import llnl.visit.Plugin;
 
 public class ExternalSurfaceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 2;
+
     public ExternalSurfaceAttributes()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        removeGhosts = false;
+        edgesIn2D = true;
+    }
+
+    public ExternalSurfaceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         removeGhosts = false;
         edgesIn2D = true;
@@ -69,12 +79,22 @@ public class ExternalSurfaceAttributes extends AttributeSubject implements Plugi
 
     public ExternalSurfaceAttributes(ExternalSurfaceAttributes obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         removeGhosts = obj.removeGhosts;
         edgesIn2D = obj.edgesIn2D;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ExternalSurfaceAttributes obj)
@@ -113,20 +133,16 @@ public class ExternalSurfaceAttributes extends AttributeSubject implements Plugi
             buf.WriteBool(edgesIn2D);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetRemoveGhosts(buf.ReadBool());
-                break;
-            case 1:
-                SetEdgesIn2D(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetRemoveGhosts(buf.ReadBool());
+            break;
+        case 1:
+            SetEdgesIn2D(buf.ReadBool());
+            break;
         }
     }
 

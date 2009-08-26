@@ -59,9 +59,21 @@ import llnl.visit.Plugin;
 
 public class TriangulateRegularPointsAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 4;
+
     public TriangulateRegularPointsAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        useXGridSpacing = false;
+        xGridSpacing = 1;
+        useYGridSpacing = false;
+        yGridSpacing = 1;
+    }
+
+    public TriangulateRegularPointsAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useXGridSpacing = false;
         xGridSpacing = 1;
@@ -71,7 +83,7 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
 
     public TriangulateRegularPointsAttributes(TriangulateRegularPointsAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         useXGridSpacing = obj.useXGridSpacing;
         xGridSpacing = obj.xGridSpacing;
@@ -79,6 +91,16 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
         yGridSpacing = obj.yGridSpacing;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TriangulateRegularPointsAttributes obj)
@@ -137,26 +159,22 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
             buf.WriteDouble(yGridSpacing);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseXGridSpacing(buf.ReadBool());
-                break;
-            case 1:
-                SetXGridSpacing(buf.ReadDouble());
-                break;
-            case 2:
-                SetUseYGridSpacing(buf.ReadBool());
-                break;
-            case 3:
-                SetYGridSpacing(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetUseXGridSpacing(buf.ReadBool());
+            break;
+        case 1:
+            SetXGridSpacing(buf.ReadDouble());
+            break;
+        case 2:
+            SetUseYGridSpacing(buf.ReadBool());
+            break;
+        case 3:
+            SetYGridSpacing(buf.ReadDouble());
+            break;
         }
     }
 

@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class MeshAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 19;
+
     // Enum values
     public final static int POINTTYPE_BOX = 0;
     public final static int POINTTYPE_AXIS = 1;
@@ -78,7 +80,32 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes()
     {
-        super(19);
+        super(numAdditionalAttributes);
+
+        legendFlag = true;
+        lineStyle = 0;
+        lineWidth = 0;
+        meshColor = new ColorAttribute(0, 0, 0);
+        outlineOnlyFlag = false;
+        errorTolerance = 0.01;
+        opaqueMode = OPAQUEMODE_AUTO;
+        pointSize = 0.05;
+        opaqueColor = new ColorAttribute(255, 255, 255);
+        backgroundFlag = true;
+        foregroundFlag = true;
+        smoothingLevel = SMOOTHINGLEVEL_NONE;
+        pointSizeVarEnabled = false;
+        pointSizeVar = new String("default");
+        pointType = POINTTYPE_POINT;
+        opaqueMeshIsAppropriate = true;
+        showInternal = false;
+        pointSizePixels = 2;
+        opacity = 1;
+    }
+
+    public MeshAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         legendFlag = true;
         lineStyle = 0;
@@ -103,7 +130,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes(MeshAttributes obj)
     {
-        super(19);
+        super(numAdditionalAttributes);
 
         legendFlag = obj.legendFlag;
         lineStyle = obj.lineStyle;
@@ -126,6 +153,16 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         opacity = obj.opacity;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MeshAttributes obj)
@@ -334,73 +371,69 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(opacity);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 1:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 2:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 3:
-                meshColor.Read(buf);
-                Select(3);
-                break;
-            case 4:
-                SetOutlineOnlyFlag(buf.ReadBool());
-                break;
-            case 5:
-                SetErrorTolerance(buf.ReadDouble());
-                break;
-            case 6:
-                SetOpaqueMode(buf.ReadInt());
-                break;
-            case 7:
-                SetPointSize(buf.ReadDouble());
-                break;
-            case 8:
-                opaqueColor.Read(buf);
-                Select(8);
-                break;
-            case 9:
-                SetBackgroundFlag(buf.ReadBool());
-                break;
-            case 10:
-                SetForegroundFlag(buf.ReadBool());
-                break;
-            case 11:
-                SetSmoothingLevel(buf.ReadInt());
-                break;
-            case 12:
-                SetPointSizeVarEnabled(buf.ReadBool());
-                break;
-            case 13:
-                SetPointSizeVar(buf.ReadString());
-                break;
-            case 14:
-                SetPointType(buf.ReadInt());
-                break;
-            case 15:
-                SetOpaqueMeshIsAppropriate(buf.ReadBool());
-                break;
-            case 16:
-                SetShowInternal(buf.ReadBool());
-                break;
-            case 17:
-                SetPointSizePixels(buf.ReadInt());
-                break;
-            case 18:
-                SetOpacity(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 1:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 2:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 3:
+            meshColor.Read(buf);
+            Select(3);
+            break;
+        case 4:
+            SetOutlineOnlyFlag(buf.ReadBool());
+            break;
+        case 5:
+            SetErrorTolerance(buf.ReadDouble());
+            break;
+        case 6:
+            SetOpaqueMode(buf.ReadInt());
+            break;
+        case 7:
+            SetPointSize(buf.ReadDouble());
+            break;
+        case 8:
+            opaqueColor.Read(buf);
+            Select(8);
+            break;
+        case 9:
+            SetBackgroundFlag(buf.ReadBool());
+            break;
+        case 10:
+            SetForegroundFlag(buf.ReadBool());
+            break;
+        case 11:
+            SetSmoothingLevel(buf.ReadInt());
+            break;
+        case 12:
+            SetPointSizeVarEnabled(buf.ReadBool());
+            break;
+        case 13:
+            SetPointSizeVar(buf.ReadString());
+            break;
+        case 14:
+            SetPointType(buf.ReadInt());
+            break;
+        case 15:
+            SetOpaqueMeshIsAppropriate(buf.ReadBool());
+            break;
+        case 16:
+            SetShowInternal(buf.ReadBool());
+            break;
+        case 17:
+            SetPointSizePixels(buf.ReadInt());
+            break;
+        case 18:
+            SetOpacity(buf.ReadDouble());
+            break;
         }
     }
 

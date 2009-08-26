@@ -57,9 +57,19 @@ import java.util.Vector;
 
 public class HostProfileList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 2;
+
     public HostProfileList()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        profiles = new Vector();
+        activeProfile = -1;
+    }
+
+    public HostProfileList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         profiles = new Vector();
         activeProfile = -1;
@@ -67,7 +77,7 @@ public class HostProfileList extends AttributeSubject
 
     public HostProfileList(HostProfileList obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -82,6 +92,16 @@ public class HostProfileList extends AttributeSubject
         activeProfile = obj.activeProfile;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(HostProfileList obj)
@@ -129,30 +149,26 @@ public class HostProfileList extends AttributeSubject
             buf.WriteInt(activeProfile);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
             {
-            case 0:
+                int len = buf.ReadInt();
+                profiles.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    profiles.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        HostProfile tmp = new HostProfile();
-                        tmp.Read(buf);
-                        profiles.addElement(tmp);
-                    }
+                    HostProfile tmp = new HostProfile();
+                    tmp.Read(buf);
+                    profiles.addElement(tmp);
                 }
-                Select(0);
-                break;
-            case 1:
-                SetActiveProfile(buf.ReadInt());
-                break;
             }
+            Select(0);
+            break;
+        case 1:
+            SetActiveProfile(buf.ReadInt());
+            break;
         }
     }
 

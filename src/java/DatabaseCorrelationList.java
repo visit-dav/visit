@@ -57,6 +57,8 @@ import java.util.Vector;
 
 public class DatabaseCorrelationList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     // Enum values
     public final static int WHENTOCORRELATE_CORRELATEALWAYS = 0;
     public final static int WHENTOCORRELATE_CORRELATENEVER = 1;
@@ -65,7 +67,17 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public DatabaseCorrelationList()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        correlations = new Vector();
+        needPermission = true;
+        defaultCorrelationMethod = 0;
+        whenToCorrelate = WHENTOCORRELATE_CORRELATEONLYIFSAMELENGTH;
+    }
+
+    public DatabaseCorrelationList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         correlations = new Vector();
         needPermission = true;
@@ -75,7 +87,7 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public DatabaseCorrelationList(DatabaseCorrelationList obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -92,6 +104,16 @@ public class DatabaseCorrelationList extends AttributeSubject
         whenToCorrelate = obj.whenToCorrelate;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DatabaseCorrelationList obj)
@@ -159,36 +181,32 @@ public class DatabaseCorrelationList extends AttributeSubject
             buf.WriteInt(whenToCorrelate);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
             {
-            case 0:
+                int len = buf.ReadInt();
+                correlations.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    correlations.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        DatabaseCorrelation tmp = new DatabaseCorrelation();
-                        tmp.Read(buf);
-                        correlations.addElement(tmp);
-                    }
+                    DatabaseCorrelation tmp = new DatabaseCorrelation();
+                    tmp.Read(buf);
+                    correlations.addElement(tmp);
                 }
-                Select(0);
-                break;
-            case 1:
-                SetNeedPermission(buf.ReadBool());
-                break;
-            case 2:
-                SetDefaultCorrelationMethod(buf.ReadInt());
-                break;
-            case 3:
-                SetWhenToCorrelate(buf.ReadInt());
-                break;
             }
+            Select(0);
+            break;
+        case 1:
+            SetNeedPermission(buf.ReadBool());
+            break;
+        case 2:
+            SetDefaultCorrelationMethod(buf.ReadInt());
+            break;
+        case 3:
+            SetWhenToCorrelate(buf.ReadInt());
+            break;
         }
     }
 

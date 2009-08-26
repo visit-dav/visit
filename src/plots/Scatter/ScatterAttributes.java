@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class ScatterAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 39;
+
     // Enum values
     public final static int SCALING_LINEAR = 0;
     public final static int SCALING_LOG = 1;
@@ -80,7 +82,52 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public ScatterAttributes()
     {
-        super(39);
+        super(numAdditionalAttributes);
+
+        var1Role = VARIABLEROLE_COORDINATE0;
+        var1MinFlag = false;
+        var1MaxFlag = false;
+        var1Min = 0;
+        var1Max = 1;
+        var1Scaling = SCALING_LINEAR;
+        var1SkewFactor = 1;
+        var2Role = VARIABLEROLE_COORDINATE1;
+        var2 = new String("default");
+        var2MinFlag = false;
+        var2MaxFlag = false;
+        var2Min = 0;
+        var2Max = 1;
+        var2Scaling = SCALING_LINEAR;
+        var2SkewFactor = 1;
+        var3Role = VARIABLEROLE_NONE;
+        var3 = new String("default");
+        var3MinFlag = false;
+        var3MaxFlag = false;
+        var3Min = 0;
+        var3Max = 1;
+        var3Scaling = SCALING_LINEAR;
+        var3SkewFactor = 1;
+        var4Role = VARIABLEROLE_NONE;
+        var4 = new String("default");
+        var4MinFlag = false;
+        var4MaxFlag = false;
+        var4Min = 0;
+        var4Max = 1;
+        var4Scaling = SCALING_LINEAR;
+        var4SkewFactor = 1;
+        pointSize = 0.05;
+        pointSizePixels = 1;
+        pointType = POINTTYPE_POINT;
+        scaleCube = true;
+        colorTableName = new String("hot");
+        singleColor = new ColorAttribute(255, 0, 0);
+        foregroundFlag = true;
+        legendFlag = true;
+    }
+
+    public ScatterAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         var1Role = VARIABLEROLE_COORDINATE0;
         var1MinFlag = false;
@@ -125,7 +172,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public ScatterAttributes(ScatterAttributes obj)
     {
-        super(39);
+        super(numAdditionalAttributes);
 
         var1Role = obj.var1Role;
         var1MinFlag = obj.var1MinFlag;
@@ -168,6 +215,16 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         legendFlag = obj.legendFlag;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ScatterAttributes obj)
@@ -576,132 +633,128 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(legendFlag);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVar1Role(buf.ReadInt());
-                break;
-            case 1:
-                SetVar1MinFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetVar1MaxFlag(buf.ReadBool());
-                break;
-            case 3:
-                SetVar1Min(buf.ReadDouble());
-                break;
-            case 4:
-                SetVar1Max(buf.ReadDouble());
-                break;
-            case 5:
-                SetVar1Scaling(buf.ReadInt());
-                break;
-            case 6:
-                SetVar1SkewFactor(buf.ReadDouble());
-                break;
-            case 7:
-                SetVar2Role(buf.ReadInt());
-                break;
-            case 8:
-                SetVar2(buf.ReadString());
-                break;
-            case 9:
-                SetVar2MinFlag(buf.ReadBool());
-                break;
-            case 10:
-                SetVar2MaxFlag(buf.ReadBool());
-                break;
-            case 11:
-                SetVar2Min(buf.ReadDouble());
-                break;
-            case 12:
-                SetVar2Max(buf.ReadDouble());
-                break;
-            case 13:
-                SetVar2Scaling(buf.ReadInt());
-                break;
-            case 14:
-                SetVar2SkewFactor(buf.ReadDouble());
-                break;
-            case 15:
-                SetVar3Role(buf.ReadInt());
-                break;
-            case 16:
-                SetVar3(buf.ReadString());
-                break;
-            case 17:
-                SetVar3MinFlag(buf.ReadBool());
-                break;
-            case 18:
-                SetVar3MaxFlag(buf.ReadBool());
-                break;
-            case 19:
-                SetVar3Min(buf.ReadDouble());
-                break;
-            case 20:
-                SetVar3Max(buf.ReadDouble());
-                break;
-            case 21:
-                SetVar3Scaling(buf.ReadInt());
-                break;
-            case 22:
-                SetVar3SkewFactor(buf.ReadDouble());
-                break;
-            case 23:
-                SetVar4Role(buf.ReadInt());
-                break;
-            case 24:
-                SetVar4(buf.ReadString());
-                break;
-            case 25:
-                SetVar4MinFlag(buf.ReadBool());
-                break;
-            case 26:
-                SetVar4MaxFlag(buf.ReadBool());
-                break;
-            case 27:
-                SetVar4Min(buf.ReadDouble());
-                break;
-            case 28:
-                SetVar4Max(buf.ReadDouble());
-                break;
-            case 29:
-                SetVar4Scaling(buf.ReadInt());
-                break;
-            case 30:
-                SetVar4SkewFactor(buf.ReadDouble());
-                break;
-            case 31:
-                SetPointSize(buf.ReadDouble());
-                break;
-            case 32:
-                SetPointSizePixels(buf.ReadInt());
-                break;
-            case 33:
-                SetPointType(buf.ReadInt());
-                break;
-            case 34:
-                SetScaleCube(buf.ReadBool());
-                break;
-            case 35:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 36:
-                singleColor.Read(buf);
-                Select(36);
-                break;
-            case 37:
-                SetForegroundFlag(buf.ReadBool());
-                break;
-            case 38:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetVar1Role(buf.ReadInt());
+            break;
+        case 1:
+            SetVar1MinFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetVar1MaxFlag(buf.ReadBool());
+            break;
+        case 3:
+            SetVar1Min(buf.ReadDouble());
+            break;
+        case 4:
+            SetVar1Max(buf.ReadDouble());
+            break;
+        case 5:
+            SetVar1Scaling(buf.ReadInt());
+            break;
+        case 6:
+            SetVar1SkewFactor(buf.ReadDouble());
+            break;
+        case 7:
+            SetVar2Role(buf.ReadInt());
+            break;
+        case 8:
+            SetVar2(buf.ReadString());
+            break;
+        case 9:
+            SetVar2MinFlag(buf.ReadBool());
+            break;
+        case 10:
+            SetVar2MaxFlag(buf.ReadBool());
+            break;
+        case 11:
+            SetVar2Min(buf.ReadDouble());
+            break;
+        case 12:
+            SetVar2Max(buf.ReadDouble());
+            break;
+        case 13:
+            SetVar2Scaling(buf.ReadInt());
+            break;
+        case 14:
+            SetVar2SkewFactor(buf.ReadDouble());
+            break;
+        case 15:
+            SetVar3Role(buf.ReadInt());
+            break;
+        case 16:
+            SetVar3(buf.ReadString());
+            break;
+        case 17:
+            SetVar3MinFlag(buf.ReadBool());
+            break;
+        case 18:
+            SetVar3MaxFlag(buf.ReadBool());
+            break;
+        case 19:
+            SetVar3Min(buf.ReadDouble());
+            break;
+        case 20:
+            SetVar3Max(buf.ReadDouble());
+            break;
+        case 21:
+            SetVar3Scaling(buf.ReadInt());
+            break;
+        case 22:
+            SetVar3SkewFactor(buf.ReadDouble());
+            break;
+        case 23:
+            SetVar4Role(buf.ReadInt());
+            break;
+        case 24:
+            SetVar4(buf.ReadString());
+            break;
+        case 25:
+            SetVar4MinFlag(buf.ReadBool());
+            break;
+        case 26:
+            SetVar4MaxFlag(buf.ReadBool());
+            break;
+        case 27:
+            SetVar4Min(buf.ReadDouble());
+            break;
+        case 28:
+            SetVar4Max(buf.ReadDouble());
+            break;
+        case 29:
+            SetVar4Scaling(buf.ReadInt());
+            break;
+        case 30:
+            SetVar4SkewFactor(buf.ReadDouble());
+            break;
+        case 31:
+            SetPointSize(buf.ReadDouble());
+            break;
+        case 32:
+            SetPointSizePixels(buf.ReadInt());
+            break;
+        case 33:
+            SetPointType(buf.ReadInt());
+            break;
+        case 34:
+            SetScaleCube(buf.ReadBool());
+            break;
+        case 35:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 36:
+            singleColor.Read(buf);
+            Select(36);
+            break;
+        case 37:
+            SetForegroundFlag(buf.ReadBool());
+            break;
+        case 38:
+            SetLegendFlag(buf.ReadBool());
+            break;
         }
     }
 

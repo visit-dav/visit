@@ -57,9 +57,21 @@ import java.util.Vector;
 
 public class ColorTableAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     public ColorTableAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        names = new Vector();
+        colorTables = new Vector();
+        activeContinuous = new String("hot");
+        activeDiscrete = new String("levels");
+    }
+
+    public ColorTableAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         names = new Vector();
         colorTables = new Vector();
@@ -69,7 +81,7 @@ public class ColorTableAttributes extends AttributeSubject
 
     public ColorTableAttributes(ColorTableAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -89,6 +101,16 @@ public class ColorTableAttributes extends AttributeSubject
         activeDiscrete = new String(obj.activeDiscrete);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ColorTableAttributes obj)
@@ -165,36 +187,32 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteString(activeDiscrete);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetNames(buf.ReadStringVector());
+            break;
+        case 1:
             {
-            case 0:
-                SetNames(buf.ReadStringVector());
-                break;
-            case 1:
+                int len = buf.ReadInt();
+                colorTables.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    colorTables.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        ColorControlPointList tmp = new ColorControlPointList();
-                        tmp.Read(buf);
-                        colorTables.addElement(tmp);
-                    }
+                    ColorControlPointList tmp = new ColorControlPointList();
+                    tmp.Read(buf);
+                    colorTables.addElement(tmp);
                 }
-                Select(1);
-                break;
-            case 2:
-                SetActiveContinuous(buf.ReadString());
-                break;
-            case 3:
-                SetActiveDiscrete(buf.ReadString());
-                break;
             }
+            Select(1);
+            break;
+        case 2:
+            SetActiveContinuous(buf.ReadString());
+            break;
+        case 3:
+            SetActiveDiscrete(buf.ReadString());
+            break;
         }
     }
 

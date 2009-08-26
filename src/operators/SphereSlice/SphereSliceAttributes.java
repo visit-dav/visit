@@ -59,9 +59,22 @@ import llnl.visit.Plugin;
 
 public class SphereSliceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 2;
+
     public SphereSliceAttributes()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        origin = new double[3];
+        origin[0] = 0;
+        origin[1] = 0;
+        origin[2] = 0;
+        radius = 1;
+    }
+
+    public SphereSliceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         origin = new double[3];
         origin[0] = 0;
@@ -72,7 +85,7 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
 
     public SphereSliceAttributes(SphereSliceAttributes obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -84,6 +97,16 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
         radius = obj.radius;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SphereSliceAttributes obj)
@@ -139,20 +162,16 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(radius);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOrigin(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetRadius(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetOrigin(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetRadius(buf.ReadDouble());
+            break;
         }
     }
 

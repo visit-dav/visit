@@ -58,6 +58,8 @@ import java.util.Vector;
 
 public class MessageAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     // Enum values
     public final static int SEVERITY_ERROR = 0;
     public final static int SEVERITY_WARNING = 1;
@@ -68,7 +70,17 @@ public class MessageAttributes extends AttributeSubject
 
     public MessageAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        text = new String("");
+        unicode = new Vector();
+        hasUnicode = false;
+        severity = SEVERITY_MESSAGE;
+    }
+
+    public MessageAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         text = new String("");
         unicode = new Vector();
@@ -78,7 +90,7 @@ public class MessageAttributes extends AttributeSubject
 
     public MessageAttributes(MessageAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -94,6 +106,16 @@ public class MessageAttributes extends AttributeSubject
         severity = obj.severity;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MessageAttributes obj)
@@ -160,26 +182,22 @@ public class MessageAttributes extends AttributeSubject
             buf.WriteInt(severity);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetText(buf.ReadString());
-                break;
-            case 1:
-                SetUnicode(buf.ReadByteVector());
-                break;
-            case 2:
-                SetHasUnicode(buf.ReadBool());
-                break;
-            case 3:
-                SetSeverity(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetText(buf.ReadString());
+            break;
+        case 1:
+            SetUnicode(buf.ReadByteVector());
+            break;
+        case 2:
+            SetHasUnicode(buf.ReadBool());
+            break;
+        case 3:
+            SetSeverity(buf.ReadInt());
+            break;
         }
     }
 

@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class Axes2D extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 8;
+
     // Enum values
     public final static int TICKS_OFF = 0;
     public final static int TICKS_BOTTOM = 1;
@@ -70,7 +72,21 @@ public class Axes2D extends AttributeSubject
 
     public Axes2D()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        visible = true;
+        autoSetTicks = true;
+        autoSetScaling = true;
+        lineWidth = 0;
+        tickLocation = LOCATION_OUTSIDE;
+        tickAxes = TICKS_BOTTOMLEFT;
+        xAxis = new AxisAttributes();
+        yAxis = new AxisAttributes();
+    }
+
+    public Axes2D(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         visible = true;
         autoSetTicks = true;
@@ -84,7 +100,7 @@ public class Axes2D extends AttributeSubject
 
     public Axes2D(Axes2D obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         visible = obj.visible;
         autoSetTicks = obj.autoSetTicks;
@@ -96,6 +112,16 @@ public class Axes2D extends AttributeSubject
         yAxis = new AxisAttributes(obj.yAxis);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(Axes2D obj)
@@ -191,40 +217,36 @@ public class Axes2D extends AttributeSubject
             yAxis.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVisible(buf.ReadBool());
-                break;
-            case 1:
-                SetAutoSetTicks(buf.ReadBool());
-                break;
-            case 2:
-                SetAutoSetScaling(buf.ReadBool());
-                break;
-            case 3:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 4:
-                SetTickLocation(buf.ReadInt());
-                break;
-            case 5:
-                SetTickAxes(buf.ReadInt());
-                break;
-            case 6:
-                xAxis.Read(buf);
-                Select(6);
-                break;
-            case 7:
-                yAxis.Read(buf);
-                Select(7);
-                break;
-            }
+        case 0:
+            SetVisible(buf.ReadBool());
+            break;
+        case 1:
+            SetAutoSetTicks(buf.ReadBool());
+            break;
+        case 2:
+            SetAutoSetScaling(buf.ReadBool());
+            break;
+        case 3:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 4:
+            SetTickLocation(buf.ReadInt());
+            break;
+        case 5:
+            SetTickAxes(buf.ReadInt());
+            break;
+        case 6:
+            xAxis.Read(buf);
+            Select(6);
+            break;
+        case 7:
+            yAxis.Read(buf);
+            Select(7);
+            break;
         }
     }
 

@@ -58,6 +58,8 @@ import java.util.Vector;
 
 public class MeshManagementAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 7;
+
     // Enum values
     public final static int DISCRETIZATIONMODES_UNIFORM = 0;
     public final static int DISCRETIZATIONMODES_ADAPTIVE = 1;
@@ -65,7 +67,23 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public MeshManagementAttributes()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        discretizationTolerance = new Vector();
+        discretizationTolerance.addElement(new Double(0.01));
+        discretizationTolerance.addElement(new Double(0.025));
+        discretizationTolerance.addElement(new Double(0.05));
+        discretizationToleranceX = new Vector();
+        discretizationToleranceY = new Vector();
+        discretizationToleranceZ = new Vector();
+        discretizationMode = DISCRETIZATIONMODES_ADAPTIVE;
+        discretizeBoundaryOnly = false;
+        passNativeCSG = false;
+    }
+
+    public MeshManagementAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         discretizationTolerance = new Vector();
         discretizationTolerance.addElement(new Double(0.01));
@@ -81,7 +99,7 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public MeshManagementAttributes(MeshManagementAttributes obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -118,6 +136,16 @@ public class MeshManagementAttributes extends AttributeSubject
         passNativeCSG = obj.passNativeCSG;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MeshManagementAttributes obj)
@@ -241,35 +269,31 @@ public class MeshManagementAttributes extends AttributeSubject
             buf.WriteBool(passNativeCSG);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDiscretizationTolerance(buf.ReadDoubleVector());
-                break;
-            case 1:
-                SetDiscretizationToleranceX(buf.ReadDoubleVector());
-                break;
-            case 2:
-                SetDiscretizationToleranceY(buf.ReadDoubleVector());
-                break;
-            case 3:
-                SetDiscretizationToleranceZ(buf.ReadDoubleVector());
-                break;
-            case 4:
-                SetDiscretizationMode(buf.ReadInt());
-                break;
-            case 5:
-                SetDiscretizeBoundaryOnly(buf.ReadBool());
-                break;
-            case 6:
-                SetPassNativeCSG(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetDiscretizationTolerance(buf.ReadDoubleVector());
+            break;
+        case 1:
+            SetDiscretizationToleranceX(buf.ReadDoubleVector());
+            break;
+        case 2:
+            SetDiscretizationToleranceY(buf.ReadDoubleVector());
+            break;
+        case 3:
+            SetDiscretizationToleranceZ(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetDiscretizationMode(buf.ReadInt());
+            break;
+        case 5:
+            SetDiscretizeBoundaryOnly(buf.ReadBool());
+            break;
+        case 6:
+            SetPassNativeCSG(buf.ReadBool());
+            break;
         }
     }
 

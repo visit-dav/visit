@@ -56,20 +56,39 @@ package llnl.visit;
 
 public class SyncAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public SyncAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        syncTag = -1;
+    }
+
+    public SyncAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         syncTag = -1;
     }
 
     public SyncAttributes(SyncAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         syncTag = obj.syncTag;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SyncAttributes obj)
@@ -95,9 +114,8 @@ public class SyncAttributes extends AttributeSubject
             buf.WriteInt(syncTag);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetSyncTag(buf.ReadInt());
     }
 

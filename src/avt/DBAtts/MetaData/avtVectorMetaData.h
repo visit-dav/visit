@@ -39,9 +39,8 @@
 #ifndef AVTVECTORMETADATA_H
 #define AVTVECTORMETADATA_H
 #include <dbatts_exports.h>
-#include <string>
-#include <avtTypes.h>
-#include <AttributeSubject.h>
+#include <avtVarMetaData.h>
+
 
 // ****************************************************************************
 // Class: avtVectorMetaData
@@ -58,16 +57,26 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtVectorMetaData : public AttributeSubject
+class DBATTS_API avtVectorMetaData : public avtVarMetaData
 {
 public:
+    // These constructors are for objects of this class
     avtVectorMetaData();
     avtVectorMetaData(const avtVectorMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtVectorMetaData(private_tmfs_t tmfs);
+    avtVectorMetaData(const avtVectorMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtVectorMetaData();
 
     virtual avtVectorMetaData& operator = (const avtVectorMetaData &obj);
     virtual bool operator == (const avtVectorMetaData &obj) const;
     virtual bool operator != (const avtVectorMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtVectorMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -86,37 +95,18 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_meshName,
-        ID_centering,
-        ID_hasUnits,
-        ID_units,
-        ID_hasDataExtents,
-        ID_minDataExtents,
-        ID_maxDataExtents,
-        ID_varDim,
-        ID_hideFromGUI
+        ID_varDim = avtVarMetaData::ID__LAST,
+        ID__LAST
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  meshName;
-    avtCentering centering;
-    bool         hasUnits;
-    std::string  units;
-    bool         hasDataExtents;
-    double       minDataExtents;
-    double       maxDataExtents;
-    int          varDim;
-    bool         hideFromGUI;
+    int varDim;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTVECTORMETADATA_TMFS (AVTVARMETADATA_TMFS "i")
 
 #endif

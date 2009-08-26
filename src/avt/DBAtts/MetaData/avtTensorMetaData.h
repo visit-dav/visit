@@ -39,9 +39,8 @@
 #ifndef AVTTENSORMETADATA_H
 #define AVTTENSORMETADATA_H
 #include <dbatts_exports.h>
-#include <string>
-#include <avtTypes.h>
-#include <AttributeSubject.h>
+#include <avtVarMetaData.h>
+
 
 // ****************************************************************************
 // Class: avtTensorMetaData
@@ -58,16 +57,26 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtTensorMetaData : public AttributeSubject
+class DBATTS_API avtTensorMetaData : public avtVarMetaData
 {
 public:
+    // These constructors are for objects of this class
     avtTensorMetaData();
     avtTensorMetaData(const avtTensorMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtTensorMetaData(private_tmfs_t tmfs);
+    avtTensorMetaData(const avtTensorMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtTensorMetaData();
 
     virtual avtTensorMetaData& operator = (const avtTensorMetaData &obj);
     virtual bool operator == (const avtTensorMetaData &obj) const;
     virtual bool operator != (const avtTensorMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtTensorMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -83,31 +92,18 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_meshName,
-        ID_centering,
-        ID_hasUnits,
-        ID_units,
-        ID_dim,
-        ID_hideFromGUI
+        ID_dim = avtVarMetaData::ID__LAST,
+        ID__LAST
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  meshName;
-    avtCentering centering;
-    bool         hasUnits;
-    std::string  units;
-    int          dim;
-    bool         hideFromGUI;
+    int dim;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTTENSORMETADATA_TMFS (AVTVARMETADATA_TMFS "i")
 
 #endif

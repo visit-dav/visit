@@ -23,7 +23,7 @@ Definition:
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData(const std::string &n)
-    : AttributeSubject(avtCurveMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtCurveMetaData::TmfsStruct)
 {
     // Initialize all members
     *this = avtCurveMetaData();
@@ -54,7 +54,7 @@ Definition:
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE)
-    : AttributeSubject(avtCurveMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtCurveMetaData::TmfsStruct)
 {
     // Initialize all members
     *this = avtCurveMetaData();
@@ -69,6 +69,7 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n, double minS, double max
     minDataExtents = minE;
     maxDataExtents = maxE;
 }
+
 Function: SetSpatialExtents
 Declaration: void SetSpatialExtents(const double *);
 Definition:
@@ -111,7 +112,6 @@ avtCurveMetaData::UnsetSpatialExtents()
 {
     hasSpatialExtents = false;
 }
-
 
 Function: SetDataExtents
 Declaration: void SetDataExtents(const double *);
@@ -199,13 +199,7 @@ Indent(ostream &out, int indent)
 void
 avtCurveMetaData::Print(ostream &out, int indent) const
 {
-    Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
-    if (name != originalName)
-    {
-        Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
-    }
+    avtVarMetaData::Print(out, indent);
 
     Indent(out, indent);
     out << "Units = x:" << xUnits.c_str() << ", y:" << yUnits.c_str() << endl;
@@ -213,22 +207,6 @@ avtCurveMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
 
-    if (!validVariable)
-    {
-        Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
-    }
-    if (hasDataExtents)
-    {
-        Indent(out, indent);
-        out << "Extents are: (" << minDataExtents << ", "
-            << maxDataExtents << ")" << endl;
-    }
-    else
-    {
-        Indent(out, indent);
-        out << "The extents are not set." << endl;
-    }
     if (from1DScalarName != "")
     {
         Indent(out, indent);

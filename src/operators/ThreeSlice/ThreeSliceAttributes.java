@@ -59,9 +59,21 @@ import llnl.visit.Plugin;
 
 public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 4;
+
     public ThreeSliceAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        x = 0f;
+        y = 0f;
+        z = 0f;
+        interactive = true;
+    }
+
+    public ThreeSliceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         x = 0f;
         y = 0f;
@@ -71,7 +83,7 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 
     public ThreeSliceAttributes(ThreeSliceAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         x = obj.x;
         y = obj.y;
@@ -79,6 +91,16 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
         interactive = obj.interactive;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ThreeSliceAttributes obj)
@@ -137,26 +159,22 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(interactive);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetX(buf.ReadFloat());
-                break;
-            case 1:
-                SetY(buf.ReadFloat());
-                break;
-            case 2:
-                SetZ(buf.ReadFloat());
-                break;
-            case 3:
-                SetInteractive(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetX(buf.ReadFloat());
+            break;
+        case 1:
+            SetY(buf.ReadFloat());
+            break;
+        case 2:
+            SetZ(buf.ReadFloat());
+            break;
+        case 3:
+            SetInteractive(buf.ReadBool());
+            break;
         }
     }
 

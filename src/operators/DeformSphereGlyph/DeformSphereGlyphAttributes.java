@@ -59,9 +59,20 @@ import llnl.visit.Plugin;
 
 public class DeformSphereGlyphAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 3;
+
     public DeformSphereGlyphAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        var = new String("Default");
+        scale = 1;
+        minSize = 1;
+    }
+
+    public DeformSphereGlyphAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         var = new String("Default");
         scale = 1;
@@ -70,13 +81,23 @@ public class DeformSphereGlyphAttributes extends AttributeSubject implements Plu
 
     public DeformSphereGlyphAttributes(DeformSphereGlyphAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         var = new String(obj.var);
         scale = obj.scale;
         minSize = obj.minSize;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DeformSphereGlyphAttributes obj)
@@ -125,23 +146,19 @@ public class DeformSphereGlyphAttributes extends AttributeSubject implements Plu
             buf.WriteDouble(minSize);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVar(buf.ReadString());
-                break;
-            case 1:
-                SetScale(buf.ReadDouble());
-                break;
-            case 2:
-                SetMinSize(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetVar(buf.ReadString());
+            break;
+        case 1:
+            SetScale(buf.ReadDouble());
+            break;
+        case 2:
+            SetMinSize(buf.ReadDouble());
+            break;
         }
     }
 

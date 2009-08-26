@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # ----------------------------------------------------------------------------
 #      Run VisIt regression tests from NERSC source repo on LLNL systems 
@@ -99,6 +99,9 @@
 #    Mark C. Miller, Tue Aug 25 08:26:49 PDT 2009
 #    Added support for truncating error details. Fixed filter for sending
 #    emails to LLNL developers only.
+#
+#    Mark C. Miller, Wed Aug 26 10:51:47 PDT 2009
+#    Moved '-x' from shell invokation in line 1 to -trace option to script.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -261,6 +264,10 @@ do
          optError=1
          shift
          ;;
+      -trace)
+         set -x
+         shift
+         ;;
       -*)
          echo "Unknown option $1"
          optError=1
@@ -275,6 +282,7 @@ if test $optError -eq 1; then
     echo "        -help             display this help message"
     echo "        -force            force a test even if no files have changed since last run."
     echo "        -changed          Used to tell this script to issue the 'changed' log message."
+    echo "        -trace            set -x."
     exit 1
 fi
 

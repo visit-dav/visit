@@ -61,6 +61,8 @@ import java.util.Vector;
 
 public class OnionPeelAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 8;
+
     // Enum values
     public final static int NODEFACE_NODE = 0;
     public final static int NODEFACE_FACE = 1;
@@ -71,7 +73,22 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public OnionPeelAttributes()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        adjacencyType = NODEFACE_NODE;
+        useGlobalId = false;
+        categoryName = new String("Whole");
+        subsetName = new String("Whole");
+        index = new Vector();
+        index.addElement(new Integer(1));
+        logical = false;
+        requestedLayer = 0;
+        seedType = SEEDIDTYPE_SEEDCELL;
+    }
+
+    public OnionPeelAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         adjacencyType = NODEFACE_NODE;
         useGlobalId = false;
@@ -86,7 +103,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public OnionPeelAttributes(OnionPeelAttributes obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -105,6 +122,16 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         seedType = obj.seedType;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(OnionPeelAttributes obj)
@@ -214,38 +241,34 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(seedType);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetAdjacencyType(buf.ReadInt());
-                break;
-            case 1:
-                SetUseGlobalId(buf.ReadBool());
-                break;
-            case 2:
-                SetCategoryName(buf.ReadString());
-                break;
-            case 3:
-                SetSubsetName(buf.ReadString());
-                break;
-            case 4:
-                SetIndex(buf.ReadIntVector());
-                break;
-            case 5:
-                SetLogical(buf.ReadBool());
-                break;
-            case 6:
-                SetRequestedLayer(buf.ReadInt());
-                break;
-            case 7:
-                SetSeedType(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetAdjacencyType(buf.ReadInt());
+            break;
+        case 1:
+            SetUseGlobalId(buf.ReadBool());
+            break;
+        case 2:
+            SetCategoryName(buf.ReadString());
+            break;
+        case 3:
+            SetSubsetName(buf.ReadString());
+            break;
+        case 4:
+            SetIndex(buf.ReadIntVector());
+            break;
+        case 5:
+            SetLogical(buf.ReadBool());
+            break;
+        case 6:
+            SetRequestedLayer(buf.ReadInt());
+            break;
+        case 7:
+            SetSeedType(buf.ReadInt());
+            break;
         }
     }
 

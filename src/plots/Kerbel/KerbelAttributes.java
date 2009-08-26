@@ -59,9 +59,23 @@ import llnl.visit.Plugin;
 
 public class KerbelAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 3;
+
     public KerbelAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        Center = new float[3];
+        Center[0] = 0f;
+        Center[1] = 0f;
+        Center[2] = 0f;
+        Radius = 1f;
+        filename = new String("save.xml");
+    }
+
+    public KerbelAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         Center = new float[3];
         Center[0] = 0f;
@@ -73,7 +87,7 @@ public class KerbelAttributes extends AttributeSubject implements Plugin
 
     public KerbelAttributes(KerbelAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -86,6 +100,16 @@ public class KerbelAttributes extends AttributeSubject implements Plugin
         filename = new String(obj.filename);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(KerbelAttributes obj)
@@ -151,23 +175,19 @@ public class KerbelAttributes extends AttributeSubject implements Plugin
             buf.WriteString(filename);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetCenter(buf.ReadFloatArray());
-                break;
-            case 1:
-                SetRadius(buf.ReadFloat());
-                break;
-            case 2:
-                SetFilename(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetCenter(buf.ReadFloatArray());
+            break;
+        case 1:
+            SetRadius(buf.ReadFloat());
+            break;
+        case 2:
+            SetFilename(buf.ReadString());
+            break;
         }
     }
 

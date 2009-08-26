@@ -59,20 +59,39 @@ import llnl.visit.Plugin;
 
 public class DecimateAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     public DecimateAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        target = 0.1;
+    }
+
+    public DecimateAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         target = 0.1;
     }
 
     public DecimateAttributes(DecimateAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         target = obj.target;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DecimateAttributes obj)
@@ -101,9 +120,8 @@ public class DecimateAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(target);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetTarget(buf.ReadDouble());
     }
 

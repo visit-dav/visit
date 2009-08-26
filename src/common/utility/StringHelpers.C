@@ -390,7 +390,17 @@ StringHelpers::GroupStringsFixedAlpha(
 //  Programmer: Mark C. Miller 
 //  Creation:   Unknown
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug 26 11:16:31 PDT 2009
+//    Made version with string args.
 // ****************************************************************************
+
+int
+StringHelpers::FindRE(string s, string re)
+{
+    return StringHelpers::FindRE(s.c_str(), re.c_str());
+}
 int
 StringHelpers::FindRE(const char *strToSearch, const char *re)
 {
@@ -416,6 +426,26 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
     return (int) pm.rm_so;
 }
 
+// ****************************************************************************
+//  Function: ReplaceRE 
+//
+//  Purpose: Replace portion of string matching RE with replacement string 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 17, 2009 
+//
+// ****************************************************************************
+bool
+StringHelpers::ReplaceRE(string &s, const string re, const string repl)
+{
+    int n = FindRE(s, re);
+    if (n < 0)
+        return false;
+
+    string news = string(s,0,n) + repl;
+    s = news;
+    return true;
+}
 
 // ****************************************************************************
 //  Function: ExtractRESubstr 
@@ -867,4 +897,107 @@ StringHelpers::append(std::vector<std::string> &argv,
     }
     lst.erase(lst.begin());
     append(argv, lst);
+}
+
+// ****************************************************************************
+//  Function: Plural (and support structures)
+//
+//  Purpose: Given singular english noun, compute plural form 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 17, 2009 
+//
+//  Notes: The regular expression table below is by no means complete in that
+//  it covers all nouns in the english language. However, it does cover most
+//  of those likely to be used in VisIt (for names of set for example). It was
+//  compiled and re-coded for C++ after reading several sources on the web
+//  including http://www.csse.monash.edu.au/~damian/papers/HTML/Plurals.html
+//  and http://www.emacswiki.org/emacs/plural.el
+//
+// ****************************************************************************
+typedef struct _plural_rule_t {
+    const char *re;
+    const char *repl;
+} plural_rule_t;
+
+static const plural_rule_t plural_rules_table[] = {
+    {"ss$", "sses"},
+    {"zz$", "zzes"},
+    {"sh$", "shes"},
+    {"tch$", "tches"},
+    {"eaf$", "eaves"},
+    {"ief$", "ieves"},
+    {"roof$", "roofs"},
+    {"ife$", "ives"},
+    {"lf$", "lves"},
+    {"ay$", "ays"},
+    {"ey$", "eys"},
+    {"iy$", "iys"},
+    {"oy$", "oys"},
+    {"uy$", "uys"},
+    {"ndum$", "nda"},
+    {"um$", "a"},
+    {"schema$", "schemas"},
+    {"ia$", "ium"},
+    {"ma$", "mata"},
+    {"na$", "nae"},
+    {"ta$", "tum"},
+    {"atlas$", "atlases"},
+    {"aircraft$", "aircraft"},
+    {"alga$", "algae"},
+    {"alumna$", "alumnae"},
+    {"automaton$", "automata"},
+    {"corpus$", "corpora"},
+    {"cs$", "csen"},
+    {"foot$", "feet"},
+    {"formula$", "formulae"},
+    {"rion$", "ria"},
+    {"focus$", "foci"},
+    {"genus$", "genera"},
+    {"hedron$", "hedra"},
+    {"index$", "indices"},
+    {"ouse$", "ice"},
+    {"man$", "men"},
+    {"matrix$", "matrices"},
+    {"nucleus$", "nuclei"},
+    {"offspring", "offspring"},
+    {"phenomenon$", "phenomena"},
+    {"people$", "people"},
+    {"perch$", "perch"},
+    {"piano$", "pianos"},
+    {"police$", "police"},
+    {"portico$", "porticos"},
+    {"quarto$", "quartos"},
+    {"radius$", "radii"},
+    {"solo$", "solos"},
+    {"syllabus$", "syllabi"},
+    {"terminus$", "termini"},
+    {"ulus$", "uli"},
+    {"tooth$", "teeth"},
+    {"uterus$", "uteri"},
+    {"virtuoso", "virtuosi"},
+    {"viscus$", "viscera"},
+    {"is$", "es"},
+    {"us$", "uses"},
+    {"io$", "ios"},
+    {"oo$", "oos"},
+    {"o$", "oes"},
+    {"y$", "ies"},
+    {"ex$", "ices"},
+    {"ix$", "ices"},
+    {"x$", "xes"}
+};
+static const int NPluralRules = sizeof(plural_rules_table) / sizeof(plural_rules_table[0]);
+
+string
+StringHelpers::Plural(const string s)
+{
+    string ps = s;
+    for (int n = 0; n < NPluralRules; n++)
+    {
+        if (ReplaceRE(ps, plural_rules_table[n].re, plural_rules_table[n].repl))
+            return ps;
+    }
+    // We have no other choice but to simply try adding 's'
+    return ps + "s";
 }

@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class IndexSelectAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 13;
+
     // Enum values
     public final static int DIMENSION_ONED = 0;
     public final static int DIMENSION_TWOD = 1;
@@ -67,7 +69,26 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public IndexSelectAttributes()
     {
-        super(13);
+        super(numAdditionalAttributes);
+
+        dim = DIMENSION_TWOD;
+        xMin = 0;
+        xMax = -1;
+        xIncr = 1;
+        yMin = 0;
+        yMax = -1;
+        yIncr = 1;
+        zMin = 0;
+        zMax = -1;
+        zIncr = 1;
+        useWholeCollection = true;
+        categoryName = new String("Whole");
+        subsetName = new String("Whole");
+    }
+
+    public IndexSelectAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         dim = DIMENSION_TWOD;
         xMin = 0;
@@ -86,7 +107,7 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public IndexSelectAttributes(IndexSelectAttributes obj)
     {
-        super(13);
+        super(numAdditionalAttributes);
 
         dim = obj.dim;
         xMin = obj.xMin;
@@ -103,6 +124,16 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         subsetName = new String(obj.subsetName);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(IndexSelectAttributes obj)
@@ -251,53 +282,49 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
             buf.WriteString(subsetName);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDim(buf.ReadInt());
-                break;
-            case 1:
-                SetXMin(buf.ReadInt());
-                break;
-            case 2:
-                SetXMax(buf.ReadInt());
-                break;
-            case 3:
-                SetXIncr(buf.ReadInt());
-                break;
-            case 4:
-                SetYMin(buf.ReadInt());
-                break;
-            case 5:
-                SetYMax(buf.ReadInt());
-                break;
-            case 6:
-                SetYIncr(buf.ReadInt());
-                break;
-            case 7:
-                SetZMin(buf.ReadInt());
-                break;
-            case 8:
-                SetZMax(buf.ReadInt());
-                break;
-            case 9:
-                SetZIncr(buf.ReadInt());
-                break;
-            case 10:
-                SetUseWholeCollection(buf.ReadBool());
-                break;
-            case 11:
-                SetCategoryName(buf.ReadString());
-                break;
-            case 12:
-                SetSubsetName(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetDim(buf.ReadInt());
+            break;
+        case 1:
+            SetXMin(buf.ReadInt());
+            break;
+        case 2:
+            SetXMax(buf.ReadInt());
+            break;
+        case 3:
+            SetXIncr(buf.ReadInt());
+            break;
+        case 4:
+            SetYMin(buf.ReadInt());
+            break;
+        case 5:
+            SetYMax(buf.ReadInt());
+            break;
+        case 6:
+            SetYIncr(buf.ReadInt());
+            break;
+        case 7:
+            SetZMin(buf.ReadInt());
+            break;
+        case 8:
+            SetZMax(buf.ReadInt());
+            break;
+        case 9:
+            SetZIncr(buf.ReadInt());
+            break;
+        case 10:
+            SetUseWholeCollection(buf.ReadBool());
+            break;
+        case 11:
+            SetCategoryName(buf.ReadString());
+            break;
+        case 12:
+            SetSubsetName(buf.ReadString());
+            break;
         }
     }
 

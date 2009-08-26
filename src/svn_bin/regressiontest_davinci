@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # ----------------------------------------------------------------------------
 #      Run VisIt regression tests from NERSC source repo on LLNL systems 
@@ -158,6 +158,9 @@
 #
 #    Mark C. Miller, Mon Aug 10 19:21:12 PDT 2009
 #    Added usage for '-test' argument. Made '-test' imply '-force'.
+#
+#    Mark C. Miller, Wed Aug 26 10:52:56 PDT 2009
+#    Moved '-x' option from shell invokation in line 1 to -trace option.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -322,6 +325,10 @@ do
          scriptWasChanged=1;
          shift
          ;;
+      -trace)
+         set -x
+         shift
+         ;;
       -help)
          optError=1
          shift
@@ -347,6 +354,7 @@ if test $optError -eq 1; then
     echo "        -changed          Used to tell this script to issue the 'changed' log message."
     echo "        -test <email-addr>Used run this script in 'test' mode and email results to"
     echo "                          specified address. Implies -force, too."
+    echo "        -trace            set -x."
     exit 1
 fi
 

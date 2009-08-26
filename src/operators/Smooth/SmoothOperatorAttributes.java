@@ -59,9 +59,24 @@ import llnl.visit.Plugin;
 
 public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 7;
+
     public SmoothOperatorAttributes()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        numIterations = 20;
+        relaxationFactor = 0.01;
+        convergence = 0;
+        maintainFeatures = true;
+        featureAngle = 45;
+        edgeAngle = 15;
+        smoothBoundaries = false;
+    }
+
+    public SmoothOperatorAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         numIterations = 20;
         relaxationFactor = 0.01;
@@ -74,7 +89,7 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 
     public SmoothOperatorAttributes(SmoothOperatorAttributes obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         numIterations = obj.numIterations;
         relaxationFactor = obj.relaxationFactor;
@@ -85,6 +100,16 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
         smoothBoundaries = obj.smoothBoundaries;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SmoothOperatorAttributes obj)
@@ -173,35 +198,31 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(smoothBoundaries);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetNumIterations(buf.ReadInt());
-                break;
-            case 1:
-                SetRelaxationFactor(buf.ReadDouble());
-                break;
-            case 2:
-                SetConvergence(buf.ReadDouble());
-                break;
-            case 3:
-                SetMaintainFeatures(buf.ReadBool());
-                break;
-            case 4:
-                SetFeatureAngle(buf.ReadDouble());
-                break;
-            case 5:
-                SetEdgeAngle(buf.ReadDouble());
-                break;
-            case 6:
-                SetSmoothBoundaries(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetNumIterations(buf.ReadInt());
+            break;
+        case 1:
+            SetRelaxationFactor(buf.ReadDouble());
+            break;
+        case 2:
+            SetConvergence(buf.ReadDouble());
+            break;
+        case 3:
+            SetMaintainFeatures(buf.ReadBool());
+            break;
+        case 4:
+            SetFeatureAngle(buf.ReadDouble());
+            break;
+        case 5:
+            SetEdgeAngle(buf.ReadDouble());
+            break;
+        case 6:
+            SetSmoothBoundaries(buf.ReadBool());
+            break;
         }
     }
 

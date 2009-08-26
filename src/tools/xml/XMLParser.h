@@ -200,6 +200,8 @@ ParseCharacters(const QString &buff)
 //    Jeremy Meredith, Mon Feb 23 17:37:33 EST 2009
 //    Don't just check if init is nonnull, check if it's true.
 //
+//    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -345,6 +347,7 @@ class XMLParser : public QXmlDefaultHandler
             QString persistent    = atts.value("persistent");
             QString keyframe      = atts.value("keyframe");
             QString exportAPI     = atts.value("exportAPI");
+            QString baseClass     = atts.value("baseClass");
             if (exportAPI.isNull())
                 exportAPI = "";
             QString exportInclude = atts.value("exportInclude");
@@ -353,7 +356,9 @@ class XMLParser : public QXmlDefaultHandler
             if (!filepath.isNull() && !codefile.isNull())
                 codefile = filepath + codefile;
             currentAttribute = new Attribute(name, purpose, codefile,
-                                             exportAPI, exportInclude);
+                                             exportAPI, exportInclude,
+                                             baseClass);
+
             if (persistent.isNull())
                 currentAttribute->persistent = true;
             else
@@ -376,6 +381,11 @@ class XMLParser : public QXmlDefaultHandler
                                                                targets[i]));
                 }
             }
+
+            if (baseClass.isNull())
+                currentAttribute->custombase = false;
+            else
+                currentAttribute->custombase = (baseClass != "AttributeSubject");
         }
         else if (tag == "Enum")
         {

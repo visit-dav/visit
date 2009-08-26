@@ -59,9 +59,27 @@ import llnl.visit.Plugin;
 
 public class CracksClipperAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 10;
+
     public CracksClipperAttributes()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        crack1Var = new String("crack1_dir");
+        crack2Var = new String("crack2_dir");
+        crack3Var = new String("crack3_dir");
+        strainVar = new String("void_strain_ten");
+        showCrack1 = true;
+        showCrack2 = true;
+        showCrack3 = true;
+        calculateDensity = true;
+        inMassVar = new String("ems");
+        outDenVar = new String("ems");
+    }
+
+    public CracksClipperAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         crack1Var = new String("crack1_dir");
         crack2Var = new String("crack2_dir");
@@ -77,7 +95,7 @@ public class CracksClipperAttributes extends AttributeSubject implements Plugin
 
     public CracksClipperAttributes(CracksClipperAttributes obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         crack1Var = new String(obj.crack1Var);
         crack2Var = new String(obj.crack2Var);
@@ -91,6 +109,16 @@ public class CracksClipperAttributes extends AttributeSubject implements Plugin
         outDenVar = new String(obj.outDenVar);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(CracksClipperAttributes obj)
@@ -209,44 +237,40 @@ public class CracksClipperAttributes extends AttributeSubject implements Plugin
             buf.WriteString(outDenVar);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetCrack1Var(buf.ReadString());
-                break;
-            case 1:
-                SetCrack2Var(buf.ReadString());
-                break;
-            case 2:
-                SetCrack3Var(buf.ReadString());
-                break;
-            case 3:
-                SetStrainVar(buf.ReadString());
-                break;
-            case 4:
-                SetShowCrack1(buf.ReadBool());
-                break;
-            case 5:
-                SetShowCrack2(buf.ReadBool());
-                break;
-            case 6:
-                SetShowCrack3(buf.ReadBool());
-                break;
-            case 7:
-                SetCalculateDensity(buf.ReadBool());
-                break;
-            case 8:
-                SetInMassVar(buf.ReadString());
-                break;
-            case 9:
-                SetOutDenVar(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetCrack1Var(buf.ReadString());
+            break;
+        case 1:
+            SetCrack2Var(buf.ReadString());
+            break;
+        case 2:
+            SetCrack3Var(buf.ReadString());
+            break;
+        case 3:
+            SetStrainVar(buf.ReadString());
+            break;
+        case 4:
+            SetShowCrack1(buf.ReadBool());
+            break;
+        case 5:
+            SetShowCrack2(buf.ReadBool());
+            break;
+        case 6:
+            SetShowCrack3(buf.ReadBool());
+            break;
+        case 7:
+            SetCalculateDensity(buf.ReadBool());
+            break;
+        case 8:
+            SetInMassVar(buf.ReadString());
+            break;
+        case 9:
+            SetOutDenVar(buf.ReadString());
+            break;
         }
     }
 

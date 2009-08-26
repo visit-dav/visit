@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class CurveAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 12;
+
     // Enum values
     public final static int RENDERMODE_RENDERASLINES = 0;
     public final static int RENDERMODE_RENDERASSYMBOLS = 1;
@@ -74,7 +76,25 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
     public CurveAttributes()
     {
-        super(12);
+        super(numAdditionalAttributes);
+
+        lineStyle = 0;
+        lineWidth = 0;
+        color = new ColorAttribute(0, 0, 0);
+        showLabels = true;
+        designator = new String("");
+        showPoints = false;
+        pointSize = 5;
+        showLegend = true;
+        cycleColors = true;
+        renderMode = RENDERMODE_RENDERASLINES;
+        symbol = SYMBOLTYPES_TRIANGLEUP;
+        symbolDensity = 50;
+    }
+
+    public CurveAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         lineStyle = 0;
         lineWidth = 0;
@@ -92,7 +112,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
     public CurveAttributes(CurveAttributes obj)
     {
-        super(12);
+        super(numAdditionalAttributes);
 
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
@@ -108,6 +128,16 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         symbolDensity = obj.symbolDensity;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(CurveAttributes obj)
@@ -246,51 +276,47 @@ public class CurveAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(symbolDensity);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 1:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 2:
-                color.Read(buf);
-                Select(2);
-                break;
-            case 3:
-                SetShowLabels(buf.ReadBool());
-                break;
-            case 4:
-                SetDesignator(buf.ReadString());
-                break;
-            case 5:
-                SetShowPoints(buf.ReadBool());
-                break;
-            case 6:
-                SetPointSize(buf.ReadDouble());
-                break;
-            case 7:
-                SetShowLegend(buf.ReadBool());
-                break;
-            case 8:
-                SetCycleColors(buf.ReadBool());
-                break;
-            case 9:
-                SetRenderMode(buf.ReadInt());
-                break;
-            case 10:
-                SetSymbol(buf.ReadInt());
-                break;
-            case 11:
-                SetSymbolDensity(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 1:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 2:
+            color.Read(buf);
+            Select(2);
+            break;
+        case 3:
+            SetShowLabels(buf.ReadBool());
+            break;
+        case 4:
+            SetDesignator(buf.ReadString());
+            break;
+        case 5:
+            SetShowPoints(buf.ReadBool());
+            break;
+        case 6:
+            SetPointSize(buf.ReadDouble());
+            break;
+        case 7:
+            SetShowLegend(buf.ReadBool());
+            break;
+        case 8:
+            SetCycleColors(buf.ReadBool());
+            break;
+        case 9:
+            SetRenderMode(buf.ReadInt());
+            break;
+        case 10:
+            SetSymbol(buf.ReadInt());
+            break;
+        case 11:
+            SetSymbolDensity(buf.ReadInt());
+            break;
         }
     }
 

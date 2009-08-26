@@ -132,11 +132,17 @@ class ErrorHandler : public QXmlErrorHandler
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Mark C. Miller, Wed Aug 19 15:59:00 PDT 2009
+//    Made it clear EnumType::enums at the very start.
+//
+//    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 
 void
 XMLDocument::open(const QString &file)
 {
+    EnumType::enums.clear();
     filename = file;
 
     FieldFactory  *fieldFactory = new FieldFactory;
@@ -147,7 +153,7 @@ XMLDocument::open(const QString &file)
     {
         docType = "Plugin";
         plugin = new Plugin("","","","","","", "", false, false, false, false);
-        attribute = new Attribute("","",QString(),"","");
+        attribute = new Attribute("","",QString(),"","","");
         plugin->atts = attribute;
         return;
     }
@@ -183,7 +189,7 @@ XMLDocument::open(const QString &file)
         {
             if (!plugin->atts)
             {
-                plugin->atts = new Attribute(QString(),QString(),QString(),QString(),QString());
+                plugin->atts = new Attribute(QString(),QString(),QString(),QString(),QString(),QString());
             }
             attribute = plugin->atts;
         }

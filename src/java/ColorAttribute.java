@@ -56,10 +56,23 @@ package llnl.visit;
 
 public class ColorAttribute extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
 
     public ColorAttribute()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        color = new byte[4];
+        color[0] = (byte)0;
+        color[1] = (byte)0;
+        color[2] = (byte)0;
+        color[3] = (byte)255;
+    }
+
+    public ColorAttribute(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         color = new byte[4];
         color[0] = (byte)0;
@@ -70,7 +83,7 @@ public class ColorAttribute extends AttributeSubject
 
     public ColorAttribute(ColorAttribute obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +93,16 @@ public class ColorAttribute extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ColorAttribute obj)
@@ -124,9 +147,8 @@ public class ColorAttribute extends AttributeSubject
             buf.WriteByteArray(color, true);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetColor(buf.ReadByteArray());
     }
 

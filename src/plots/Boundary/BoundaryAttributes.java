@@ -62,6 +62,8 @@ import java.util.Vector;
 
 public class BoundaryAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 18;
+
     // Enum values
     public final static int BOUNDARY_TYPE_DOMAIN = 0;
     public final static int BOUNDARY_TYPE_GROUP = 1;
@@ -81,7 +83,31 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
 
     public BoundaryAttributes()
     {
-        super(18);
+        super(numAdditionalAttributes);
+
+        colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
+        colorTableName = new String("Default");
+        filledFlag = true;
+        legendFlag = true;
+        lineStyle = 0;
+        lineWidth = 0;
+        singleColor = new ColorAttribute();
+        multiColor = new ColorAttributeList();
+        boundaryNames = new Vector();
+        boundaryType = BOUNDARY_TYPE_UNKNOWN;
+        opacity = 1;
+        wireframe = false;
+        smoothingLevel = 0;
+        pointSize = 0.05;
+        pointType = POINTTYPE_POINT;
+        pointSizeVarEnabled = false;
+        pointSizeVar = new String("default");
+        pointSizePixels = 2;
+    }
+
+    public BoundaryAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
@@ -105,7 +131,7 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
 
     public BoundaryAttributes(BoundaryAttributes obj)
     {
-        super(18);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -132,6 +158,16 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         pointSizePixels = obj.pointSizePixels;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(BoundaryAttributes obj)
@@ -341,70 +377,66 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(pointSizePixels);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetColorType(buf.ReadInt());
-                break;
-            case 1:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 2:
-                SetFilledFlag(buf.ReadBool());
-                break;
-            case 3:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 5:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 6:
-                singleColor.Read(buf);
-                Select(6);
-                break;
-            case 7:
-                multiColor.Read(buf);
-                Select(7);
-                break;
-            case 8:
-                SetBoundaryNames(buf.ReadStringVector());
-                break;
-            case 9:
-                SetBoundaryType(buf.ReadInt());
-                break;
-            case 10:
-                SetOpacity(buf.ReadDouble());
-                break;
-            case 11:
-                SetWireframe(buf.ReadBool());
-                break;
-            case 12:
-                SetSmoothingLevel(buf.ReadInt());
-                break;
-            case 13:
-                SetPointSize(buf.ReadDouble());
-                break;
-            case 14:
-                SetPointType(buf.ReadInt());
-                break;
-            case 15:
-                SetPointSizeVarEnabled(buf.ReadBool());
-                break;
-            case 16:
-                SetPointSizeVar(buf.ReadString());
-                break;
-            case 17:
-                SetPointSizePixels(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetColorType(buf.ReadInt());
+            break;
+        case 1:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 2:
+            SetFilledFlag(buf.ReadBool());
+            break;
+        case 3:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 5:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 6:
+            singleColor.Read(buf);
+            Select(6);
+            break;
+        case 7:
+            multiColor.Read(buf);
+            Select(7);
+            break;
+        case 8:
+            SetBoundaryNames(buf.ReadStringVector());
+            break;
+        case 9:
+            SetBoundaryType(buf.ReadInt());
+            break;
+        case 10:
+            SetOpacity(buf.ReadDouble());
+            break;
+        case 11:
+            SetWireframe(buf.ReadBool());
+            break;
+        case 12:
+            SetSmoothingLevel(buf.ReadInt());
+            break;
+        case 13:
+            SetPointSize(buf.ReadDouble());
+            break;
+        case 14:
+            SetPointType(buf.ReadInt());
+            break;
+        case 15:
+            SetPointSizeVarEnabled(buf.ReadBool());
+            break;
+        case 16:
+            SetPointSizeVar(buf.ReadString());
+            break;
+        case 17:
+            SetPointSizePixels(buf.ReadInt());
+            break;
         }
     }
 

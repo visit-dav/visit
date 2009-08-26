@@ -56,9 +56,23 @@ package llnl.visit;
 
 public class AxisTitles extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     public AxisTitles()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        visible = true;
+        font = new FontAttributes();
+        userTitle = false;
+        userUnits = false;
+        title = new String("");
+        units = new String("");
+    }
+
+    public AxisTitles(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         visible = true;
         font = new FontAttributes();
@@ -70,7 +84,7 @@ public class AxisTitles extends AttributeSubject
 
     public AxisTitles(AxisTitles obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         visible = obj.visible;
         font = new FontAttributes(obj.font);
@@ -80,6 +94,16 @@ public class AxisTitles extends AttributeSubject
         units = new String(obj.units);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AxisTitles obj)
@@ -155,33 +179,29 @@ public class AxisTitles extends AttributeSubject
             buf.WriteString(units);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVisible(buf.ReadBool());
-                break;
-            case 1:
-                font.Read(buf);
-                Select(1);
-                break;
-            case 2:
-                SetUserTitle(buf.ReadBool());
-                break;
-            case 3:
-                SetUserUnits(buf.ReadBool());
-                break;
-            case 4:
-                SetTitle(buf.ReadString());
-                break;
-            case 5:
-                SetUnits(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetVisible(buf.ReadBool());
+            break;
+        case 1:
+            font.Read(buf);
+            Select(1);
+            break;
+        case 2:
+            SetUserTitle(buf.ReadBool());
+            break;
+        case 3:
+            SetUserUnits(buf.ReadBool());
+            break;
+        case 4:
+            SetTitle(buf.ReadString());
+            break;
+        case 5:
+            SetUnits(buf.ReadString());
+            break;
         }
     }
 

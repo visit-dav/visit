@@ -59,6 +59,8 @@ import java.lang.Double;
 
 public class DBOptionsAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 11;
+
     // Enum values
     public final static int OPTIONTYPE_BOOL = 0;
     public final static int OPTIONTYPE_INT = 1;
@@ -70,7 +72,24 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes()
     {
-        super(11);
+        super(numAdditionalAttributes);
+
+        types = new Vector();
+        names = new Vector();
+        optBools = new Vector();
+        optFloats = new Vector();
+        optDoubles = new Vector();
+        optInts = new Vector();
+        optStrings = new Vector();
+        optEnums = new Vector();
+        enumStrings = new Vector();
+        enumStringsSizes = new Vector();
+        obsoleteNames = new Vector();
+    }
+
+    public DBOptionsAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         types = new Vector();
         names = new Vector();
@@ -87,7 +106,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes(DBOptionsAttributes obj)
     {
-        super(11);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -153,6 +172,16 @@ public class DBOptionsAttributes extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DBOptionsAttributes obj)
@@ -379,47 +408,43 @@ public class DBOptionsAttributes extends AttributeSubject
             buf.WriteStringVector(obsoleteNames);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetTypes(buf.ReadIntVector());
-                break;
-            case 1:
-                SetNames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetOptBools(buf.ReadIntVector());
-                break;
-            case 3:
-                SetOptFloats(buf.ReadDoubleVector());
-                break;
-            case 4:
-                SetOptDoubles(buf.ReadDoubleVector());
-                break;
-            case 5:
-                SetOptInts(buf.ReadIntVector());
-                break;
-            case 6:
-                SetOptStrings(buf.ReadStringVector());
-                break;
-            case 7:
-                SetOptEnums(buf.ReadIntVector());
-                break;
-            case 8:
-                SetEnumStrings(buf.ReadStringVector());
-                break;
-            case 9:
-                SetEnumStringsSizes(buf.ReadIntVector());
-                break;
-            case 10:
-                SetObsoleteNames(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetTypes(buf.ReadIntVector());
+            break;
+        case 1:
+            SetNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetOptBools(buf.ReadIntVector());
+            break;
+        case 3:
+            SetOptFloats(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetOptDoubles(buf.ReadDoubleVector());
+            break;
+        case 5:
+            SetOptInts(buf.ReadIntVector());
+            break;
+        case 6:
+            SetOptStrings(buf.ReadStringVector());
+            break;
+        case 7:
+            SetOptEnums(buf.ReadIntVector());
+            break;
+        case 8:
+            SetEnumStrings(buf.ReadStringVector());
+            break;
+        case 9:
+            SetEnumStringsSizes(buf.ReadIntVector());
+            break;
+        case 10:
+            SetObsoleteNames(buf.ReadStringVector());
+            break;
         }
     }
 

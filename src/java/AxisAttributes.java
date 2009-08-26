@@ -56,9 +56,21 @@ package llnl.visit;
 
 public class AxisAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     public AxisAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        title = new AxisTitles();
+        label = new AxisLabels();
+        tickMarks = new AxisTickMarks();
+        grid = false;
+    }
+
+    public AxisAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         title = new AxisTitles();
         label = new AxisLabels();
@@ -68,7 +80,7 @@ public class AxisAttributes extends AttributeSubject
 
     public AxisAttributes(AxisAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         title = new AxisTitles(obj.title);
         label = new AxisLabels(obj.label);
@@ -76,6 +88,16 @@ public class AxisAttributes extends AttributeSubject
         grid = obj.grid;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AxisAttributes obj)
@@ -131,29 +153,25 @@ public class AxisAttributes extends AttributeSubject
             buf.WriteBool(grid);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                title.Read(buf);
-                Select(0);
-                break;
-            case 1:
-                label.Read(buf);
-                Select(1);
-                break;
-            case 2:
-                tickMarks.Read(buf);
-                Select(2);
-                break;
-            case 3:
-                SetGrid(buf.ReadBool());
-                break;
-            }
+        case 0:
+            title.Read(buf);
+            Select(0);
+            break;
+        case 1:
+            label.Read(buf);
+            Select(1);
+            break;
+        case 2:
+            tickMarks.Read(buf);
+            Select(2);
+            break;
+        case 3:
+            SetGrid(buf.ReadBool());
+            break;
         }
     }
 
