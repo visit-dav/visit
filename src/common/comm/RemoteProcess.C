@@ -1281,6 +1281,12 @@ RemoteProcess::WaitForTermination()
 //   Kathleen Bonnell, Tue Sep 9 15:16:47 PDT 2008 
 //   Fixed windows extra-lookup loop to correctly use hostent members.
 //
+//   Brad Whitlock, Wed Aug 26 10:10:16 PDT 2009
+//   I changed the windows extra-lookup loop so it uses a copy of the hostent
+//   because making calls to gethostbyaddr was causing the hostent to be
+//   overwritten with new values and we were walking off the end of an array
+//   and causing a seg fault.
+//
 // ****************************************************************************
 
 bool
@@ -1367,6 +1373,12 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
                << "Make sure that we have the correct name for localhost by "
                << "iterating through the localHostEnt and calling "
                << "gethostbyaddr." << endl;
+
+        // Make a copy of the hostent since subsequent calls to gethostbyaddr
+        // will blow away its contents and that means we'd walk off the end
+        // of the h_addr_list array.
+        localHostEnt = CopyHostent(localHostEnt);
+
         for(int i = 0; localHostEnt->h_addr_list[i] != 0; ++i)
         {
             struct hostent *h = NULL;
@@ -1382,6 +1394,8 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
             else
                 LogWindowsSocketError(mName, "gethostbyaddr");
         }
+
+        FreeHostent(localHostEnt);
     }
 #endif
 
