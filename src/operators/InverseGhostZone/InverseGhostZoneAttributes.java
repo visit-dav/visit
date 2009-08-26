@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class InverseGhostZoneAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     // Enum values
     public final static int SHOWTYPE_GHOSTZONESONLY = 0;
     public final static int SHOWTYPE_GHOSTZONESANDREALZONES = 1;
@@ -66,18 +68,35 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
 
     public InverseGhostZoneAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        showType = SHOWTYPE_GHOSTZONESONLY;
+    }
+
+    public InverseGhostZoneAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         showType = SHOWTYPE_GHOSTZONESONLY;
     }
 
     public InverseGhostZoneAttributes(InverseGhostZoneAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         showType = obj.showType;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(InverseGhostZoneAttributes obj)
@@ -106,9 +125,8 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
             buf.WriteInt(showType);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetShowType(buf.ReadInt());
     }
 

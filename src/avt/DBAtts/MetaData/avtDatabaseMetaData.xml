@@ -69,8 +69,6 @@
     </Field>
     <Field name="defaultPlots" label="Default plots" type="attVector" subtype="avtDefaultPlotMetaData">
     </Field>
-    <Field name="SILs" label="SILs" type="attVector" subtype="avtSILMetaData">
-    </Field>
     <Field name="isSimulation" label="Is simulation" type="bool">
       false
     </Field>
@@ -124,8 +122,6 @@
     </Function>
     <Function name="Add9" user="true" member="true">
     </Function>
-    <Function name="Add10" user="true" member="true">
-    </Function>
     <Function name="Add11" user="true" member="true">
     </Function>
     <Function name="Add12" user="true" member="true">
@@ -163,10 +159,6 @@
     <Function name="GetCurve1" user="true" member="true">
     </Function>
     <Function name="GetCurve2" user="true" member="true">
-    </Function>
-    <Function name="GetSIL1" user="true" member="true">
-    </Function>
-    <Function name="GetSIL2" user="true" member="true">
     </Function>
     <Function name="GetLabel1" user="true" member="true">
     </Function>
@@ -276,12 +268,6 @@
     </Include>
     <Include file="header" quoted="false">
       avtMeshMetaData.h
-    </Include>
-    <Include file="header" quoted="false">
-      avtSILCollectionMetaData.h
-    </Include>
-    <Include file="header" quoted="false">
-      avtSILMetaData.h
     </Include>
     <Include file="header" quoted="false">
       avtScalarMetaData.h

@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class SaveWindowAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 17;
+
     // Enum values
     public final static int FILEFORMAT_BMP = 0;
     public final static int FILEFORMAT_CURVE = 1;
@@ -83,7 +85,30 @@ public class SaveWindowAttributes extends AttributeSubject
 
     public SaveWindowAttributes()
     {
-        super(17);
+        super(numAdditionalAttributes);
+
+        outputToCurrentDirectory = true;
+        outputDirectory = new String(".");
+        fileName = new String("visit");
+        family = true;
+        format = FILEFORMAT_PNG;
+        width = 1024;
+        height = 1024;
+        screenCapture = false;
+        saveTiled = false;
+        quality = 80;
+        progressive = false;
+        binary = false;
+        lastRealFilename = new String("");
+        stereo = false;
+        compression = COMPRESSIONTYPE_PACKBITS;
+        forceMerge = false;
+        resConstraint = RESCONSTRAINT_SCREENPROPORTIONS;
+    }
+
+    public SaveWindowAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         outputToCurrentDirectory = true;
         outputDirectory = new String(".");
@@ -106,7 +131,7 @@ public class SaveWindowAttributes extends AttributeSubject
 
     public SaveWindowAttributes(SaveWindowAttributes obj)
     {
-        super(17);
+        super(numAdditionalAttributes);
 
         outputToCurrentDirectory = obj.outputToCurrentDirectory;
         outputDirectory = new String(obj.outputDirectory);
@@ -127,6 +152,16 @@ public class SaveWindowAttributes extends AttributeSubject
         resConstraint = obj.resConstraint;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SaveWindowAttributes obj)
@@ -312,65 +347,61 @@ public class SaveWindowAttributes extends AttributeSubject
             buf.WriteInt(resConstraint);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOutputToCurrentDirectory(buf.ReadBool());
-                break;
-            case 1:
-                SetOutputDirectory(buf.ReadString());
-                break;
-            case 2:
-                SetFileName(buf.ReadString());
-                break;
-            case 3:
-                SetFamily(buf.ReadBool());
-                break;
-            case 4:
-                SetFormat(buf.ReadInt());
-                break;
-            case 5:
-                SetWidth(buf.ReadInt());
-                break;
-            case 6:
-                SetHeight(buf.ReadInt());
-                break;
-            case 7:
-                SetScreenCapture(buf.ReadBool());
-                break;
-            case 8:
-                SetSaveTiled(buf.ReadBool());
-                break;
-            case 9:
-                SetQuality(buf.ReadInt());
-                break;
-            case 10:
-                SetProgressive(buf.ReadBool());
-                break;
-            case 11:
-                SetBinary(buf.ReadBool());
-                break;
-            case 12:
-                SetLastRealFilename(buf.ReadString());
-                break;
-            case 13:
-                SetStereo(buf.ReadBool());
-                break;
-            case 14:
-                SetCompression(buf.ReadInt());
-                break;
-            case 15:
-                SetForceMerge(buf.ReadBool());
-                break;
-            case 16:
-                SetResConstraint(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetOutputToCurrentDirectory(buf.ReadBool());
+            break;
+        case 1:
+            SetOutputDirectory(buf.ReadString());
+            break;
+        case 2:
+            SetFileName(buf.ReadString());
+            break;
+        case 3:
+            SetFamily(buf.ReadBool());
+            break;
+        case 4:
+            SetFormat(buf.ReadInt());
+            break;
+        case 5:
+            SetWidth(buf.ReadInt());
+            break;
+        case 6:
+            SetHeight(buf.ReadInt());
+            break;
+        case 7:
+            SetScreenCapture(buf.ReadBool());
+            break;
+        case 8:
+            SetSaveTiled(buf.ReadBool());
+            break;
+        case 9:
+            SetQuality(buf.ReadInt());
+            break;
+        case 10:
+            SetProgressive(buf.ReadBool());
+            break;
+        case 11:
+            SetBinary(buf.ReadBool());
+            break;
+        case 12:
+            SetLastRealFilename(buf.ReadString());
+            break;
+        case 13:
+            SetStereo(buf.ReadBool());
+            break;
+        case 14:
+            SetCompression(buf.ReadInt());
+            break;
+        case 15:
+            SetForceMerge(buf.ReadBool());
+            break;
+        case 16:
+            SetResConstraint(buf.ReadInt());
+            break;
         }
     }
 

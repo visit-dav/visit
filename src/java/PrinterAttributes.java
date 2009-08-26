@@ -56,9 +56,27 @@ package llnl.visit;
 
 public class PrinterAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 10;
+
     public PrinterAttributes()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        printerName = new String("");
+        printProgram = new String("lpr");
+        documentName = new String("untitled");
+        creator = new String("");
+        numCopies = 1;
+        portrait = true;
+        printColor = true;
+        outputToFile = false;
+        outputToFileName = new String("untitled");
+        pageSize = 2;
+    }
+
+    public PrinterAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         printerName = new String("");
         printProgram = new String("lpr");
@@ -74,7 +92,7 @@ public class PrinterAttributes extends AttributeSubject
 
     public PrinterAttributes(PrinterAttributes obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         printerName = new String(obj.printerName);
         printProgram = new String(obj.printProgram);
@@ -88,6 +106,16 @@ public class PrinterAttributes extends AttributeSubject
         pageSize = obj.pageSize;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PrinterAttributes obj)
@@ -203,44 +231,40 @@ public class PrinterAttributes extends AttributeSubject
             buf.WriteInt(pageSize);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPrinterName(buf.ReadString());
-                break;
-            case 1:
-                SetPrintProgram(buf.ReadString());
-                break;
-            case 2:
-                SetDocumentName(buf.ReadString());
-                break;
-            case 3:
-                SetCreator(buf.ReadString());
-                break;
-            case 4:
-                SetNumCopies(buf.ReadInt());
-                break;
-            case 5:
-                SetPortrait(buf.ReadBool());
-                break;
-            case 6:
-                SetPrintColor(buf.ReadBool());
-                break;
-            case 7:
-                SetOutputToFile(buf.ReadBool());
-                break;
-            case 8:
-                SetOutputToFileName(buf.ReadString());
-                break;
-            case 9:
-                SetPageSize(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetPrinterName(buf.ReadString());
+            break;
+        case 1:
+            SetPrintProgram(buf.ReadString());
+            break;
+        case 2:
+            SetDocumentName(buf.ReadString());
+            break;
+        case 3:
+            SetCreator(buf.ReadString());
+            break;
+        case 4:
+            SetNumCopies(buf.ReadInt());
+            break;
+        case 5:
+            SetPortrait(buf.ReadBool());
+            break;
+        case 6:
+            SetPrintColor(buf.ReadBool());
+            break;
+        case 7:
+            SetOutputToFile(buf.ReadBool());
+            break;
+        case 8:
+            SetOutputToFileName(buf.ReadString());
+            break;
+        case 9:
+            SetPageSize(buf.ReadInt());
+            break;
         }
     }
 

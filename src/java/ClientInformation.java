@@ -57,9 +57,20 @@ import java.util.Vector;
 
 public class ClientInformation extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public ClientInformation()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        clientName = new String("");
+        methodNames = new Vector();
+        methodPrototypes = new Vector();
+    }
+
+    public ClientInformation(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         clientName = new String("");
         methodNames = new Vector();
@@ -68,7 +79,7 @@ public class ClientInformation extends AttributeSubject
 
     public ClientInformation(ClientInformation obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -83,6 +94,16 @@ public class ClientInformation extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ClientInformation obj)
@@ -148,23 +169,19 @@ public class ClientInformation extends AttributeSubject
             buf.WriteStringVector(methodPrototypes);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetClientName(buf.ReadString());
-                break;
-            case 1:
-                SetMethodNames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetMethodPrototypes(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetClientName(buf.ReadString());
+            break;
+        case 1:
+            SetMethodNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetMethodPrototypes(buf.ReadStringVector());
+            break;
         }
     }
 

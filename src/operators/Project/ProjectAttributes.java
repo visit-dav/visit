@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ProjectAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     // Enum values
     public final static int PROJECTIONTYPE_XYCARTESIAN = 0;
     public final static int PROJECTIONTYPE_ZRCYLINDRICAL = 1;
@@ -66,18 +68,35 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     public ProjectAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        projectionType = PROJECTIONTYPE_XYCARTESIAN;
+    }
+
+    public ProjectAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         projectionType = PROJECTIONTYPE_XYCARTESIAN;
     }
 
     public ProjectAttributes(ProjectAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         projectionType = obj.projectionType;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ProjectAttributes obj)
@@ -106,9 +125,8 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(projectionType);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetProjectionType(buf.ReadInt());
     }
 

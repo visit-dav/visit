@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class CoordSwapAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 3;
+
     // Enum values
     public final static int COORD_COORD1 = 0;
     public final static int COORD_COORD2 = 1;
@@ -67,7 +69,16 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public CoordSwapAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        newCoord1 = COORD_COORD1;
+        newCoord2 = COORD_COORD2;
+        newCoord3 = COORD_COORD3;
+    }
+
+    public CoordSwapAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         newCoord1 = COORD_COORD1;
         newCoord2 = COORD_COORD2;
@@ -76,13 +87,23 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public CoordSwapAttributes(CoordSwapAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         newCoord1 = obj.newCoord1;
         newCoord2 = obj.newCoord2;
         newCoord3 = obj.newCoord3;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(CoordSwapAttributes obj)
@@ -131,23 +152,19 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(newCoord3);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetNewCoord1(buf.ReadInt());
-                break;
-            case 1:
-                SetNewCoord2(buf.ReadInt());
-                break;
-            case 2:
-                SetNewCoord3(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetNewCoord1(buf.ReadInt());
+            break;
+        case 1:
+            SetNewCoord2(buf.ReadInt());
+            break;
+        case 2:
+            SetNewCoord3(buf.ReadInt());
+            break;
         }
     }
 

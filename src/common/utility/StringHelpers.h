@@ -85,7 +85,9 @@ namespace StringHelpers
                      vector<std::set<std::string> > &stringGroups);
 
 
+   int UTILITY_API FindRE(string s, string re);
    int UTILITY_API FindRE(const char *stringToSearch, const char *re);
+   bool UTILITY_API ReplaceRE(string &s, const string re, const string repl);
    string UTILITY_API ExtractRESubstr(const char *stringToSearch, const char *re);
 
    bool UTILITY_API ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... );
@@ -93,9 +95,12 @@ namespace StringHelpers
    const char UTILITY_API *Basename(const char *path);
    const char UTILITY_API *Dirname(const char *path);
 
-   std::string UTILITY_API car(const std::string);
-   std::string UTILITY_API cdr(const std::string);
+   string UTILITY_API car(const string);
+   string UTILITY_API cdr(const string);
    void UTILITY_API append(std::vector<std::string> &, std::vector<std::string>);
+
+   string UTILITY_API Plural(string);
+
 
 // ****************************************************************************
 //  Function: str_to_u_numeric

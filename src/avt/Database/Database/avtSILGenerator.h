@@ -78,6 +78,9 @@ class     avtSIL;
 //
 //    Dave Bremer, Tue Apr  1 16:43:16 PDT 2008
 //    Added a flag to AddSubsets to control the use of SIL Arrays
+//
+//    Mark C. Miller, Wed Aug 26 11:08:47 PDT 2009
+//    Removed custom SIL stuff.
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -111,7 +114,6 @@ class DATABASE_API avtSILGenerator
                                            const std::vector<std::string> &);
     void                AddEnumScalars(avtSIL *, int,
                                        const avtScalarMetaData *);
-    void                CreateCustomSIL(avtDatabaseMetaData *, avtSIL *);
 };
 
 

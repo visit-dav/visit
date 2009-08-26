@@ -57,16 +57,25 @@ import java.util.Vector;
 
 public class ColorAttributeList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public ColorAttributeList()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        colors = new Vector();
+    }
+
+    public ColorAttributeList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         colors = new Vector();
     }
 
     public ColorAttributeList(ColorAttributeList obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +89,16 @@ public class ColorAttributeList extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ColorAttributeList obj)
@@ -117,9 +136,8 @@ public class ColorAttributeList extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         {
             int len = buf.ReadInt();
             colors.clear();

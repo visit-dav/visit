@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class MaterialAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 11;
+
     // Enum values
     public final static int ALGORITHM_TETRAHEDRAL = 0;
     public final static int ALGORITHM_ZOOCLIPPING = 1;
@@ -65,7 +67,24 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes()
     {
-        super(11);
+        super(numAdditionalAttributes);
+
+        smoothing = false;
+        forceMIR = false;
+        cleanZonesOnly = false;
+        needValidConnectivity = false;
+        algorithm = ALGORITHM_ZOOCLIPPING;
+        iterationEnabled = false;
+        numIterations = 5;
+        iterationDamping = 0.4f;
+        simplifyHeavilyMixedZones = false;
+        maxMaterialsPerZone = 3;
+        isoVolumeFraction = 0.5f;
+    }
+
+    public MaterialAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         smoothing = false;
         forceMIR = false;
@@ -82,7 +101,7 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes(MaterialAttributes obj)
     {
-        super(11);
+        super(numAdditionalAttributes);
 
         smoothing = obj.smoothing;
         forceMIR = obj.forceMIR;
@@ -97,6 +116,16 @@ public class MaterialAttributes extends AttributeSubject
         isoVolumeFraction = obj.isoVolumeFraction;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MaterialAttributes obj)
@@ -222,47 +251,43 @@ public class MaterialAttributes extends AttributeSubject
             buf.WriteFloat(isoVolumeFraction);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSmoothing(buf.ReadBool());
-                break;
-            case 1:
-                SetForceMIR(buf.ReadBool());
-                break;
-            case 2:
-                SetCleanZonesOnly(buf.ReadBool());
-                break;
-            case 3:
-                SetNeedValidConnectivity(buf.ReadBool());
-                break;
-            case 4:
-                SetAlgorithm(buf.ReadInt());
-                break;
-            case 5:
-                SetIterationEnabled(buf.ReadBool());
-                break;
-            case 6:
-                SetNumIterations(buf.ReadInt());
-                break;
-            case 7:
-                SetIterationDamping(buf.ReadFloat());
-                break;
-            case 8:
-                SetSimplifyHeavilyMixedZones(buf.ReadBool());
-                break;
-            case 9:
-                SetMaxMaterialsPerZone(buf.ReadInt());
-                break;
-            case 10:
-                SetIsoVolumeFraction(buf.ReadFloat());
-                break;
-            }
+        case 0:
+            SetSmoothing(buf.ReadBool());
+            break;
+        case 1:
+            SetForceMIR(buf.ReadBool());
+            break;
+        case 2:
+            SetCleanZonesOnly(buf.ReadBool());
+            break;
+        case 3:
+            SetNeedValidConnectivity(buf.ReadBool());
+            break;
+        case 4:
+            SetAlgorithm(buf.ReadInt());
+            break;
+        case 5:
+            SetIterationEnabled(buf.ReadBool());
+            break;
+        case 6:
+            SetNumIterations(buf.ReadInt());
+            break;
+        case 7:
+            SetIterationDamping(buf.ReadFloat());
+            break;
+        case 8:
+            SetSimplifyHeavilyMixedZones(buf.ReadBool());
+            break;
+        case 9:
+            SetMaxMaterialsPerZone(buf.ReadInt());
+            break;
+        case 10:
+            SetIsoVolumeFraction(buf.ReadFloat());
+            break;
         }
     }
 

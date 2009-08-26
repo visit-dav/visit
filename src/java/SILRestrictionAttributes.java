@@ -58,9 +58,20 @@ import java.util.Vector;
 
 public class SILRestrictionAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public SILRestrictionAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        useSet = new Vector();
+        topSet = -1;
+        silAtts = new SILAttributes();
+    }
+
+    public SILRestrictionAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useSet = new Vector();
         topSet = -1;
@@ -69,7 +80,7 @@ public class SILRestrictionAttributes extends AttributeSubject
 
     public SILRestrictionAttributes(SILRestrictionAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -84,6 +95,16 @@ public class SILRestrictionAttributes extends AttributeSubject
         silAtts = new SILAttributes(obj.silAtts);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SILRestrictionAttributes obj)
@@ -140,24 +161,20 @@ public class SILRestrictionAttributes extends AttributeSubject
             silAtts.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseSet(buf.ReadByteVector());
-                break;
-            case 1:
-                SetTopSet(buf.ReadInt());
-                break;
-            case 2:
-                silAtts.Read(buf);
-                Select(2);
-                break;
-            }
+        case 0:
+            SetUseSet(buf.ReadByteVector());
+            break;
+        case 1:
+            SetTopSet(buf.ReadInt());
+            break;
+        case 2:
+            silAtts.Read(buf);
+            Select(2);
+            break;
         }
     }
 

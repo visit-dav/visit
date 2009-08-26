@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class PseudocolorAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 21;
+
     // Enum values
     public final static int CENTERING_NATURAL = 0;
     public final static int CENTERING_NODAL = 1;
@@ -80,7 +82,34 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public PseudocolorAttributes()
     {
-        super(21);
+        super(numAdditionalAttributes);
+
+        legendFlag = true;
+        lightingFlag = true;
+        minFlag = false;
+        maxFlag = false;
+        centering = CENTERING_NATURAL;
+        scaling = SCALING_LINEAR;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        min = 0;
+        max = 1;
+        pointSize = 0.05;
+        pointType = POINTTYPE_POINT;
+        skewFactor = 1;
+        opacity = 1;
+        colorTableName = new String("hot");
+        smoothingLevel = 0;
+        pointSizeVarEnabled = false;
+        pointSizeVar = new String("default");
+        pointSizePixels = 2;
+        lineStyle = 0;
+        lineWidth = 0;
+        useColorTableOpacity = false;
+    }
+
+    public PseudocolorAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         legendFlag = true;
         lightingFlag = true;
@@ -107,7 +136,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public PseudocolorAttributes(PseudocolorAttributes obj)
     {
-        super(21);
+        super(numAdditionalAttributes);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
@@ -132,6 +161,16 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         useColorTableOpacity = obj.useColorTableOpacity;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PseudocolorAttributes obj)
@@ -360,77 +399,73 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(useColorTableOpacity);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 1:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 3:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetCentering(buf.ReadInt());
-                break;
-            case 5:
-                SetScaling(buf.ReadInt());
-                break;
-            case 6:
-                SetLimitsMode(buf.ReadInt());
-                break;
-            case 7:
-                SetMin(buf.ReadDouble());
-                break;
-            case 8:
-                SetMax(buf.ReadDouble());
-                break;
-            case 9:
-                SetPointSize(buf.ReadDouble());
-                break;
-            case 10:
-                SetPointType(buf.ReadInt());
-                break;
-            case 11:
-                SetSkewFactor(buf.ReadDouble());
-                break;
-            case 12:
-                SetOpacity(buf.ReadDouble());
-                break;
-            case 13:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 14:
-                SetSmoothingLevel(buf.ReadInt());
-                break;
-            case 15:
-                SetPointSizeVarEnabled(buf.ReadBool());
-                break;
-            case 16:
-                SetPointSizeVar(buf.ReadString());
-                break;
-            case 17:
-                SetPointSizePixels(buf.ReadInt());
-                break;
-            case 18:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 19:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 20:
-                SetUseColorTableOpacity(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 1:
+            SetLightingFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 3:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetCentering(buf.ReadInt());
+            break;
+        case 5:
+            SetScaling(buf.ReadInt());
+            break;
+        case 6:
+            SetLimitsMode(buf.ReadInt());
+            break;
+        case 7:
+            SetMin(buf.ReadDouble());
+            break;
+        case 8:
+            SetMax(buf.ReadDouble());
+            break;
+        case 9:
+            SetPointSize(buf.ReadDouble());
+            break;
+        case 10:
+            SetPointType(buf.ReadInt());
+            break;
+        case 11:
+            SetSkewFactor(buf.ReadDouble());
+            break;
+        case 12:
+            SetOpacity(buf.ReadDouble());
+            break;
+        case 13:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 14:
+            SetSmoothingLevel(buf.ReadInt());
+            break;
+        case 15:
+            SetPointSizeVarEnabled(buf.ReadBool());
+            break;
+        case 16:
+            SetPointSizeVar(buf.ReadString());
+            break;
+        case 17:
+            SetPointSizePixels(buf.ReadInt());
+            break;
+        case 18:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 19:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 20:
+            SetUseColorTableOpacity(buf.ReadBool());
+            break;
         }
     }
 

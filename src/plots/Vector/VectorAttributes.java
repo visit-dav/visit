@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class VectorAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 24;
+
     // Enum values
     public final static int ORIGINTYPE_HEAD = 0;
     public final static int ORIGINTYPE_MIDDLE = 1;
@@ -71,7 +73,37 @@ public class VectorAttributes extends AttributeSubject implements Plugin
 
     public VectorAttributes()
     {
-        super(24);
+        super(numAdditionalAttributes);
+
+        useStride = false;
+        stride = 1;
+        nVectors = 400;
+        lineStyle = 0;
+        lineWidth = 0;
+        scale = 0.25;
+        scaleByMagnitude = true;
+        autoScale = true;
+        headSize = 0.25;
+        headOn = true;
+        colorByMag = true;
+        useLegend = true;
+        vectorColor = new ColorAttribute(0, 0, 0);
+        colorTableName = new String("Default");
+        vectorOrigin = ORIGINTYPE_TAIL;
+        minFlag = false;
+        maxFlag = false;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        min = 0;
+        max = 1;
+        lineStem = true;
+        highQuality = false;
+        stemWidth = 0.08;
+        origOnly = true;
+    }
+
+    public VectorAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useStride = false;
         stride = 1;
@@ -101,7 +133,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
 
     public VectorAttributes(VectorAttributes obj)
     {
-        super(24);
+        super(numAdditionalAttributes);
 
         useStride = obj.useStride;
         stride = obj.stride;
@@ -129,6 +161,16 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         origOnly = obj.origOnly;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(VectorAttributes obj)
@@ -387,87 +429,83 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(origOnly);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseStride(buf.ReadBool());
-                break;
-            case 1:
-                SetStride(buf.ReadInt());
-                break;
-            case 2:
-                SetNVectors(buf.ReadInt());
-                break;
-            case 3:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 4:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 5:
-                SetScale(buf.ReadDouble());
-                break;
-            case 6:
-                SetScaleByMagnitude(buf.ReadBool());
-                break;
-            case 7:
-                SetAutoScale(buf.ReadBool());
-                break;
-            case 8:
-                SetHeadSize(buf.ReadDouble());
-                break;
-            case 9:
-                SetHeadOn(buf.ReadBool());
-                break;
-            case 10:
-                SetColorByMag(buf.ReadBool());
-                break;
-            case 11:
-                SetUseLegend(buf.ReadBool());
-                break;
-            case 12:
-                vectorColor.Read(buf);
-                Select(12);
-                break;
-            case 13:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 14:
-                SetVectorOrigin(buf.ReadInt());
-                break;
-            case 15:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 16:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 17:
-                SetLimitsMode(buf.ReadInt());
-                break;
-            case 18:
-                SetMin(buf.ReadDouble());
-                break;
-            case 19:
-                SetMax(buf.ReadDouble());
-                break;
-            case 20:
-                SetLineStem(buf.ReadBool());
-                break;
-            case 21:
-                SetHighQuality(buf.ReadBool());
-                break;
-            case 22:
-                SetStemWidth(buf.ReadDouble());
-                break;
-            case 23:
-                SetOrigOnly(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetUseStride(buf.ReadBool());
+            break;
+        case 1:
+            SetStride(buf.ReadInt());
+            break;
+        case 2:
+            SetNVectors(buf.ReadInt());
+            break;
+        case 3:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 4:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 5:
+            SetScale(buf.ReadDouble());
+            break;
+        case 6:
+            SetScaleByMagnitude(buf.ReadBool());
+            break;
+        case 7:
+            SetAutoScale(buf.ReadBool());
+            break;
+        case 8:
+            SetHeadSize(buf.ReadDouble());
+            break;
+        case 9:
+            SetHeadOn(buf.ReadBool());
+            break;
+        case 10:
+            SetColorByMag(buf.ReadBool());
+            break;
+        case 11:
+            SetUseLegend(buf.ReadBool());
+            break;
+        case 12:
+            vectorColor.Read(buf);
+            Select(12);
+            break;
+        case 13:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 14:
+            SetVectorOrigin(buf.ReadInt());
+            break;
+        case 15:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 16:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 17:
+            SetLimitsMode(buf.ReadInt());
+            break;
+        case 18:
+            SetMin(buf.ReadDouble());
+            break;
+        case 19:
+            SetMax(buf.ReadDouble());
+            break;
+        case 20:
+            SetLineStem(buf.ReadBool());
+            break;
+        case 21:
+            SetHighQuality(buf.ReadBool());
+            break;
+        case 22:
+            SetStemWidth(buf.ReadDouble());
+            break;
+        case 23:
+            SetOrigOnly(buf.ReadBool());
+            break;
         }
     }
 

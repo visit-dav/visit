@@ -58,9 +58,23 @@ import java.util.Vector;
 
 public class SILMatrixAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     public SILMatrixAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        set1 = new Vector();
+        category1 = new String("");
+        role1 = 0;
+        set2 = new Vector();
+        category2 = new String("");
+        role2 = 0;
+    }
+
+    public SILMatrixAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         set1 = new Vector();
         category1 = new String("");
@@ -72,7 +86,7 @@ public class SILMatrixAttributes extends AttributeSubject
 
     public SILMatrixAttributes(SILMatrixAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -94,6 +108,16 @@ public class SILMatrixAttributes extends AttributeSubject
         role2 = obj.role2;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SILMatrixAttributes obj)
@@ -189,32 +213,28 @@ public class SILMatrixAttributes extends AttributeSubject
             buf.WriteInt(role2);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSet1(buf.ReadIntVector());
-                break;
-            case 1:
-                SetCategory1(buf.ReadString());
-                break;
-            case 2:
-                SetRole1(buf.ReadInt());
-                break;
-            case 3:
-                SetSet2(buf.ReadIntVector());
-                break;
-            case 4:
-                SetCategory2(buf.ReadString());
-                break;
-            case 5:
-                SetRole2(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetSet1(buf.ReadIntVector());
+            break;
+        case 1:
+            SetCategory1(buf.ReadString());
+            break;
+        case 2:
+            SetRole1(buf.ReadInt());
+            break;
+        case 3:
+            SetSet2(buf.ReadIntVector());
+            break;
+        case 4:
+            SetCategory2(buf.ReadString());
+            break;
+        case 5:
+            SetRole2(buf.ReadInt());
+            break;
         }
     }
 

@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class BoxAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 7;
+
     // Enum values
     public final static int AMOUNT_SOME = 0;
     public final static int AMOUNT_ALL = 1;
@@ -66,7 +68,20 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public BoxAttributes()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        amount = AMOUNT_SOME;
+        minx = 0;
+        maxx = 1;
+        miny = 0;
+        maxy = 1;
+        minz = 0;
+        maxz = 1;
+    }
+
+    public BoxAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         amount = AMOUNT_SOME;
         minx = 0;
@@ -79,7 +94,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public BoxAttributes(BoxAttributes obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         amount = obj.amount;
         minx = obj.minx;
@@ -90,6 +105,16 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         maxz = obj.maxz;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(BoxAttributes obj)
@@ -178,35 +203,31 @@ public class BoxAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(maxz);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetAmount(buf.ReadInt());
-                break;
-            case 1:
-                SetMinx(buf.ReadDouble());
-                break;
-            case 2:
-                SetMaxx(buf.ReadDouble());
-                break;
-            case 3:
-                SetMiny(buf.ReadDouble());
-                break;
-            case 4:
-                SetMaxy(buf.ReadDouble());
-                break;
-            case 5:
-                SetMinz(buf.ReadDouble());
-                break;
-            case 6:
-                SetMaxz(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetAmount(buf.ReadInt());
+            break;
+        case 1:
+            SetMinx(buf.ReadDouble());
+            break;
+        case 2:
+            SetMaxx(buf.ReadDouble());
+            break;
+        case 3:
+            SetMiny(buf.ReadDouble());
+            break;
+        case 4:
+            SetMaxy(buf.ReadDouble());
+            break;
+        case 5:
+            SetMinz(buf.ReadDouble());
+            break;
+        case 6:
+            SetMaxz(buf.ReadDouble());
+            break;
         }
     }
 

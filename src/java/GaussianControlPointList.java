@@ -57,16 +57,25 @@ import java.util.Vector;
 
 public class GaussianControlPointList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public GaussianControlPointList()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        controlPoints = new Vector();
+    }
+
+    public GaussianControlPointList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         controlPoints = new Vector();
     }
 
     public GaussianControlPointList(GaussianControlPointList obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +89,16 @@ public class GaussianControlPointList extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(GaussianControlPointList obj)
@@ -117,9 +136,8 @@ public class GaussianControlPointList extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         {
             int len = buf.ReadInt();
             controlPoints.clear();

@@ -60,9 +60,26 @@ import llnl.visit.ColorAttributeList;
 
 public class TopologyAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 9;
+
     public TopologyAttributes()
     {
-        super(9);
+        super(numAdditionalAttributes);
+
+        lineWidth = 2;
+        lineStyle = 0;
+        multiColor = new ColorAttributeList();
+        minOpacity = 1;
+        minPlateauOpacity = 1;
+        maxPlateauOpacity = 1;
+        maxOpacity = 1;
+        tolerance = 1e-06;
+        hitpercent = 0;
+    }
+
+    public TopologyAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         lineWidth = 2;
         lineStyle = 0;
@@ -77,7 +94,7 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
 
     public TopologyAttributes(TopologyAttributes obj)
     {
-        super(9);
+        super(numAdditionalAttributes);
 
         lineWidth = obj.lineWidth;
         lineStyle = obj.lineStyle;
@@ -90,6 +107,16 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
         hitpercent = obj.hitpercent;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TopologyAttributes obj)
@@ -198,42 +225,38 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(hitpercent);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 1:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 2:
-                multiColor.Read(buf);
-                Select(2);
-                break;
-            case 3:
-                SetMinOpacity(buf.ReadDouble());
-                break;
-            case 4:
-                SetMinPlateauOpacity(buf.ReadDouble());
-                break;
-            case 5:
-                SetMaxPlateauOpacity(buf.ReadDouble());
-                break;
-            case 6:
-                SetMaxOpacity(buf.ReadDouble());
-                break;
-            case 7:
-                SetTolerance(buf.ReadDouble());
-                break;
-            case 8:
-                SetHitpercent(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 1:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 2:
+            multiColor.Read(buf);
+            Select(2);
+            break;
+        case 3:
+            SetMinOpacity(buf.ReadDouble());
+            break;
+        case 4:
+            SetMinPlateauOpacity(buf.ReadDouble());
+            break;
+        case 5:
+            SetMaxPlateauOpacity(buf.ReadDouble());
+            break;
+        case 6:
+            SetMaxOpacity(buf.ReadDouble());
+            break;
+        case 7:
+            SetTolerance(buf.ReadDouble());
+            break;
+        case 8:
+            SetHitpercent(buf.ReadDouble());
+            break;
         }
     }
 

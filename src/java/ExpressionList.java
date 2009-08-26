@@ -57,16 +57,25 @@ import java.util.Vector;
 
 public class ExpressionList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public ExpressionList()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        expressions = new Vector();
+    }
+
+    public ExpressionList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         expressions = new Vector();
     }
 
     public ExpressionList(ExpressionList obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +89,16 @@ public class ExpressionList extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ExpressionList obj)
@@ -117,9 +136,8 @@ public class ExpressionList extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         {
             int len = buf.ReadInt();
             expressions.clear();

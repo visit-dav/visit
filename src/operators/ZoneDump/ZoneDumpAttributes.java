@@ -59,9 +59,22 @@ import llnl.visit.Plugin;
 
 public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 5;
+
     public ZoneDumpAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        variable = new String("");
+        lowerBound = -1e+37;
+        upperBound = 1e+37;
+        outputFile = new String("visit_zonedump.zod");
+        enabled = false;
+    }
+
+    public ZoneDumpAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         variable = new String("");
         lowerBound = -1e+37;
@@ -72,7 +85,7 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 
     public ZoneDumpAttributes(ZoneDumpAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         variable = new String(obj.variable);
         lowerBound = obj.lowerBound;
@@ -81,6 +94,16 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
         enabled = obj.enabled;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ZoneDumpAttributes obj)
@@ -149,29 +172,25 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(enabled);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVariable(buf.ReadString());
-                break;
-            case 1:
-                SetLowerBound(buf.ReadDouble());
-                break;
-            case 2:
-                SetUpperBound(buf.ReadDouble());
-                break;
-            case 3:
-                SetOutputFile(buf.ReadString());
-                break;
-            case 4:
-                SetEnabled(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetVariable(buf.ReadString());
+            break;
+        case 1:
+            SetLowerBound(buf.ReadDouble());
+            break;
+        case 2:
+            SetUpperBound(buf.ReadDouble());
+            break;
+        case 3:
+            SetOutputFile(buf.ReadString());
+            break;
+        case 4:
+            SetEnabled(buf.ReadBool());
+            break;
         }
     }
 

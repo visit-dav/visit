@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class View2DAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     // Enum values
     public final static int TRISTATEMODE_ON = 0;
     public final static int TRISTATEMODE_OFF = 1;
@@ -67,7 +69,27 @@ public class View2DAttributes extends AttributeSubject
 
     public View2DAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        windowCoords = new double[4];
+        windowCoords[0] = 0;
+        windowCoords[1] = 0;
+        windowCoords[2] = 1;
+        windowCoords[3] = 1;
+        viewportCoords = new double[4];
+        viewportCoords[0] = 0.1;
+        viewportCoords[1] = 0.1;
+        viewportCoords[2] = 0.9;
+        viewportCoords[3] = 0.9;
+        fullFrameActivationMode = TRISTATEMODE_AUTO;
+        fullFrameAutoThreshold = 100;
+        xScale = 0;
+        yScale = 0;
+    }
+
+    public View2DAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         windowCoords = new double[4];
         windowCoords[0] = 0;
@@ -87,7 +109,7 @@ public class View2DAttributes extends AttributeSubject
 
     public View2DAttributes(View2DAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -105,6 +127,16 @@ public class View2DAttributes extends AttributeSubject
         yScale = obj.yScale;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(View2DAttributes obj)
@@ -216,32 +248,28 @@ public class View2DAttributes extends AttributeSubject
             buf.WriteInt(yScale);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetWindowCoords(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetViewportCoords(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetFullFrameActivationMode(buf.ReadInt());
-                break;
-            case 3:
-                SetFullFrameAutoThreshold(buf.ReadDouble());
-                break;
-            case 4:
-                SetXScale(buf.ReadInt());
-                break;
-            case 5:
-                SetYScale(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetWindowCoords(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetViewportCoords(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetFullFrameActivationMode(buf.ReadInt());
+            break;
+        case 3:
+            SetFullFrameAutoThreshold(buf.ReadDouble());
+            break;
+        case 4:
+            SetXScale(buf.ReadInt());
+            break;
+        case 5:
+            SetYScale(buf.ReadInt());
+            break;
         }
     }
 

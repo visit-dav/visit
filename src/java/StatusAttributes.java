@@ -58,13 +58,32 @@ import java.util.Vector;
 
 public class StatusAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 11;
+
     // Constants
     public final static int DEFAULT_DURATION = 5000;
 
 
     public StatusAttributes()
     {
-        super(11);
+        super(numAdditionalAttributes);
+
+        sender = new String("viewer");
+        clearStatus = false;
+        statusMessage = new String("");
+        unicode = new Vector();
+        hasUnicode = false;
+        percent = 0;
+        currentStage = 1;
+        currentStageName = new String("stage1");
+        maxStage = 1;
+        messageType = 0;
+        duration = 5000;
+    }
+
+    public StatusAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         sender = new String("viewer");
         clearStatus = false;
@@ -81,7 +100,7 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes(StatusAttributes obj)
     {
-        super(11);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -104,6 +123,16 @@ public class StatusAttributes extends AttributeSubject
         duration = obj.duration;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(StatusAttributes obj)
@@ -240,47 +269,43 @@ public class StatusAttributes extends AttributeSubject
             buf.WriteInt(duration);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSender(buf.ReadString());
-                break;
-            case 1:
-                SetClearStatus(buf.ReadBool());
-                break;
-            case 2:
-                SetStatusMessage(buf.ReadString());
-                break;
-            case 3:
-                SetUnicode(buf.ReadByteVector());
-                break;
-            case 4:
-                SetHasUnicode(buf.ReadBool());
-                break;
-            case 5:
-                SetPercent(buf.ReadInt());
-                break;
-            case 6:
-                SetCurrentStage(buf.ReadInt());
-                break;
-            case 7:
-                SetCurrentStageName(buf.ReadString());
-                break;
-            case 8:
-                SetMaxStage(buf.ReadInt());
-                break;
-            case 9:
-                SetMessageType(buf.ReadInt());
-                break;
-            case 10:
-                SetDuration(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetSender(buf.ReadString());
+            break;
+        case 1:
+            SetClearStatus(buf.ReadBool());
+            break;
+        case 2:
+            SetStatusMessage(buf.ReadString());
+            break;
+        case 3:
+            SetUnicode(buf.ReadByteVector());
+            break;
+        case 4:
+            SetHasUnicode(buf.ReadBool());
+            break;
+        case 5:
+            SetPercent(buf.ReadInt());
+            break;
+        case 6:
+            SetCurrentStage(buf.ReadInt());
+            break;
+        case 7:
+            SetCurrentStageName(buf.ReadString());
+            break;
+        case 8:
+            SetMaxStage(buf.ReadInt());
+            break;
+        case 9:
+            SetMessageType(buf.ReadInt());
+            break;
+        case 10:
+            SetDuration(buf.ReadInt());
+            break;
         }
     }
 

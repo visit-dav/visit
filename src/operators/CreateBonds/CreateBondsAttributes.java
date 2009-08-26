@@ -62,13 +62,35 @@ import java.lang.Double;
 
 public class CreateBondsAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 6;
+
     public CreateBondsAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         elementVariable = new String("element");
         atomicNumber1 = new Vector();
-        atomicNumber1.addElement(new Integer(0));
+        atomicNumber1.addElement(new Integer(1));
+        atomicNumber1.addElement(new Integer(-1));
+        atomicNumber2 = new Vector();
+        atomicNumber2.addElement(new Integer(-1));
+        atomicNumber2.addElement(new Integer(-1));
+        minDist = new Vector();
+        minDist.addElement(new Double(0.4));
+        minDist.addElement(new Double(0.4));
+        maxDist = new Vector();
+        maxDist.addElement(new Double(1.2));
+        maxDist.addElement(new Double(1.9));
+        maxBondsClamp = 10;
+    }
+
+    public CreateBondsAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        elementVariable = new String("element");
+        atomicNumber1 = new Vector();
+        atomicNumber1.addElement(new Integer(1));
         atomicNumber1.addElement(new Integer(-1));
         atomicNumber2 = new Vector();
         atomicNumber2.addElement(new Integer(-1));
@@ -84,7 +106,7 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
 
     public CreateBondsAttributes(CreateBondsAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -118,6 +140,16 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         maxBondsClamp = obj.maxBondsClamp;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(CreateBondsAttributes obj)
@@ -234,32 +266,28 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(maxBondsClamp);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetElementVariable(buf.ReadString());
-                break;
-            case 1:
-                SetAtomicNumber1(buf.ReadIntVector());
-                break;
-            case 2:
-                SetAtomicNumber2(buf.ReadIntVector());
-                break;
-            case 3:
-                SetMinDist(buf.ReadDoubleVector());
-                break;
-            case 4:
-                SetMaxDist(buf.ReadDoubleVector());
-                break;
-            case 5:
-                SetMaxBondsClamp(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetElementVariable(buf.ReadString());
+            break;
+        case 1:
+            SetAtomicNumber1(buf.ReadIntVector());
+            break;
+        case 2:
+            SetAtomicNumber2(buf.ReadIntVector());
+            break;
+        case 3:
+            SetMinDist(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetMaxDist(buf.ReadDoubleVector());
+            break;
+        case 5:
+            SetMaxBondsClamp(buf.ReadInt());
+            break;
         }
     }
 

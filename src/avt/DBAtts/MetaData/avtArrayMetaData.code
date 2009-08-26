@@ -17,7 +17,7 @@ Definition:
 
 avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
                                    avtCentering c, int nv)
-    : AttributeSubject(avtArrayMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtArrayMetaData::TmfsStruct)
 {
     // Initialize all members
     *this = avtArrayMetaData();
@@ -57,7 +57,7 @@ Definition:
 avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn, 
                                    avtCentering c, int nv,
                                    const stringVector &cn)
-    : AttributeSubject("sssiis*bbs")
+    : avtVarMetaData(avtArrayMetaData::TmfsStruct)
 {
     // Initialize all members
     *this = avtArrayMetaData();
@@ -99,41 +99,7 @@ Indent(ostream &out, int indent)
 void
 avtArrayMetaData::Print(ostream &out, int indent) const
 {
-    Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
-    if (name != originalName)
-    {
-        Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
-    }
-
-    Indent(out, indent);
-    out << "Mesh is = " << meshName.c_str() << endl;
-
-    Indent(out, indent);
-    out << "Centering = ";
-    switch (centering)
-    {
-      case AVT_NODECENT:
-        out << "node centered.";
-        break;
-
-      case AVT_ZONECENT:
-        out << "zone centered.";
-        break;
-
-      case AVT_UNKNOWN_CENT:
-      default:
-        out << "unknowing centering.";
-        break;
-    }
-    out << endl;
-
-    if(hasUnits)
-    {
-        Indent(out, indent);
-        out << "Units are: " << units.c_str() << endl;
-    }
+    avtVarMetaData::Print(out, indent);
 
     Indent(out, indent);
     out << "Number of variables = " << nVars << endl;
@@ -146,12 +112,6 @@ avtArrayMetaData::Print(ostream &out, int indent) const
             out << ", ";
         else
             out << endl;
-    }
-
-    if (!validVariable)
-    {
-        Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
     }
 }
 

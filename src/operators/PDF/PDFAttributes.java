@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class PDFAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 27;
+
     // Enum values
     public final static int SCALING_LINEAR = 0;
     public final static int SCALING_LOG = 1;
@@ -73,7 +75,40 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public PDFAttributes()
     {
-        super(27);
+        super(numAdditionalAttributes);
+
+        var1 = new String("default");
+        var1MinFlag = false;
+        var1MaxFlag = false;
+        var1Min = 0;
+        var1Max = 1;
+        var1Scaling = SCALING_LINEAR;
+        var1SkewFactor = 1;
+        var1NumSamples = 100;
+        var2 = new String("default");
+        var2MinFlag = false;
+        var2MaxFlag = false;
+        var2Min = 0;
+        var2Max = 1;
+        var2Scaling = SCALING_LINEAR;
+        var2SkewFactor = 1;
+        var2NumSamples = 100;
+        numAxes = NUMAXES_TWO;
+        var3 = new String("default");
+        var3MinFlag = false;
+        var3MaxFlag = false;
+        var3Min = 0;
+        var3Max = 1;
+        var3Scaling = SCALING_LINEAR;
+        var3SkewFactor = 1;
+        var3NumSamples = 100;
+        scaleCube = true;
+        densityType = DENSITYTYPE_PROBABILITY;
+    }
+
+    public PDFAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         var1 = new String("default");
         var1MinFlag = false;
@@ -106,7 +141,7 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public PDFAttributes(PDFAttributes obj)
     {
-        super(27);
+        super(numAdditionalAttributes);
 
         var1 = new String(obj.var1);
         var1MinFlag = obj.var1MinFlag;
@@ -137,6 +172,16 @@ public class PDFAttributes extends AttributeSubject implements Plugin
         densityType = obj.densityType;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PDFAttributes obj)
@@ -425,95 +470,91 @@ public class PDFAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(densityType);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVar1(buf.ReadString());
-                break;
-            case 1:
-                SetVar1MinFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetVar1MaxFlag(buf.ReadBool());
-                break;
-            case 3:
-                SetVar1Min(buf.ReadDouble());
-                break;
-            case 4:
-                SetVar1Max(buf.ReadDouble());
-                break;
-            case 5:
-                SetVar1Scaling(buf.ReadInt());
-                break;
-            case 6:
-                SetVar1SkewFactor(buf.ReadDouble());
-                break;
-            case 7:
-                SetVar1NumSamples(buf.ReadInt());
-                break;
-            case 8:
-                SetVar2(buf.ReadString());
-                break;
-            case 9:
-                SetVar2MinFlag(buf.ReadBool());
-                break;
-            case 10:
-                SetVar2MaxFlag(buf.ReadBool());
-                break;
-            case 11:
-                SetVar2Min(buf.ReadDouble());
-                break;
-            case 12:
-                SetVar2Max(buf.ReadDouble());
-                break;
-            case 13:
-                SetVar2Scaling(buf.ReadInt());
-                break;
-            case 14:
-                SetVar2SkewFactor(buf.ReadDouble());
-                break;
-            case 15:
-                SetVar2NumSamples(buf.ReadInt());
-                break;
-            case 16:
-                SetNumAxes(buf.ReadInt());
-                break;
-            case 17:
-                SetVar3(buf.ReadString());
-                break;
-            case 18:
-                SetVar3MinFlag(buf.ReadBool());
-                break;
-            case 19:
-                SetVar3MaxFlag(buf.ReadBool());
-                break;
-            case 20:
-                SetVar3Min(buf.ReadDouble());
-                break;
-            case 21:
-                SetVar3Max(buf.ReadDouble());
-                break;
-            case 22:
-                SetVar3Scaling(buf.ReadInt());
-                break;
-            case 23:
-                SetVar3SkewFactor(buf.ReadDouble());
-                break;
-            case 24:
-                SetVar3NumSamples(buf.ReadInt());
-                break;
-            case 25:
-                SetScaleCube(buf.ReadBool());
-                break;
-            case 26:
-                SetDensityType(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetVar1(buf.ReadString());
+            break;
+        case 1:
+            SetVar1MinFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetVar1MaxFlag(buf.ReadBool());
+            break;
+        case 3:
+            SetVar1Min(buf.ReadDouble());
+            break;
+        case 4:
+            SetVar1Max(buf.ReadDouble());
+            break;
+        case 5:
+            SetVar1Scaling(buf.ReadInt());
+            break;
+        case 6:
+            SetVar1SkewFactor(buf.ReadDouble());
+            break;
+        case 7:
+            SetVar1NumSamples(buf.ReadInt());
+            break;
+        case 8:
+            SetVar2(buf.ReadString());
+            break;
+        case 9:
+            SetVar2MinFlag(buf.ReadBool());
+            break;
+        case 10:
+            SetVar2MaxFlag(buf.ReadBool());
+            break;
+        case 11:
+            SetVar2Min(buf.ReadDouble());
+            break;
+        case 12:
+            SetVar2Max(buf.ReadDouble());
+            break;
+        case 13:
+            SetVar2Scaling(buf.ReadInt());
+            break;
+        case 14:
+            SetVar2SkewFactor(buf.ReadDouble());
+            break;
+        case 15:
+            SetVar2NumSamples(buf.ReadInt());
+            break;
+        case 16:
+            SetNumAxes(buf.ReadInt());
+            break;
+        case 17:
+            SetVar3(buf.ReadString());
+            break;
+        case 18:
+            SetVar3MinFlag(buf.ReadBool());
+            break;
+        case 19:
+            SetVar3MaxFlag(buf.ReadBool());
+            break;
+        case 20:
+            SetVar3Min(buf.ReadDouble());
+            break;
+        case 21:
+            SetVar3Max(buf.ReadDouble());
+            break;
+        case 22:
+            SetVar3Scaling(buf.ReadInt());
+            break;
+        case 23:
+            SetVar3SkewFactor(buf.ReadDouble());
+            break;
+        case 24:
+            SetVar3NumSamples(buf.ReadInt());
+            break;
+        case 25:
+            SetScaleCube(buf.ReadBool());
+            break;
+        case 26:
+            SetDensityType(buf.ReadInt());
+            break;
         }
     }
 

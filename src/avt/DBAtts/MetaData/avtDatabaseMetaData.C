@@ -56,10 +56,9 @@
 #include <avtCurveMetaData.h>
 #include <avtLabelMetaData.h>
 #include <avtDefaultPlotMetaData.h>
-#include <avtSILMetaData.h>
 
 // Type map format string
-const char *avtDatabaseMetaData::TypeMapFormatString = "bddibbbbbss*i*i*d*i*sssaa*a*a*a*a*a*a*a*a*a*a*a*bas*";
+const char *avtDatabaseMetaData::TypeMapFormatString = "bddibbbbbss*i*i*d*i*sssaa*a*a*a*a*a*a*a*a*a*a*bas*";
 
 // ****************************************************************************
 // Method: avtDatabaseMetaData::avtDatabaseMetaData
@@ -295,21 +294,6 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &obj) :
         defaultPlots.push_back(newavtDefaultPlotMetaData);
     }
 
-    // *** Copy the SILs field ***
-    // Delete the AttributeGroup objects and clear the vector.
-    for(pos = SILs.begin(); pos != SILs.end(); ++pos)
-        delete *pos;
-    SILs.clear();
-    if(obj.SILs.size() > 0)
-        SILs.reserve(obj.SILs.size());
-    // Duplicate the SILs from obj.
-    for(pos = obj.SILs.begin(); pos != obj.SILs.end(); ++pos)
-    {
-        avtSILMetaData *oldavtSILMetaData = (avtSILMetaData *)(*pos);
-        avtSILMetaData *newavtSILMetaData = new avtSILMetaData(*oldavtSILMetaData);
-        SILs.push_back(newavtSILMetaData);
-    }
-
     isSimulation = obj.isSimulation;
     simInfo = obj.simInfo;
     suggestedDefaultSILRestriction = obj.suggestedDefaultSILRestriction;
@@ -368,9 +352,6 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
         delete *pos;
     // Destroy the defaultPlots field.
     for(pos = defaultPlots.begin(); pos != defaultPlots.end(); ++pos)
-        delete *pos;
-    // Destroy the SILs field.
-    for(pos = SILs.begin(); pos != SILs.end(); ++pos)
         delete *pos;
 }
 
@@ -579,21 +560,6 @@ avtDatabaseMetaData::operator = (const avtDatabaseMetaData &obj)
         defaultPlots.push_back(newavtDefaultPlotMetaData);
     }
 
-    // *** Copy the SILs field ***
-    // Delete the AttributeGroup objects and clear the vector.
-    for(pos = SILs.begin(); pos != SILs.end(); ++pos)
-        delete *pos;
-    SILs.clear();
-    if(obj.SILs.size() > 0)
-        SILs.reserve(obj.SILs.size());
-    // Duplicate the SILs from obj.
-    for(pos = obj.SILs.begin(); pos != obj.SILs.end(); ++pos)
-    {
-        avtSILMetaData *oldavtSILMetaData = (avtSILMetaData *)(*pos);
-        avtSILMetaData *newavtSILMetaData = new avtSILMetaData(*oldavtSILMetaData);
-        SILs.push_back(newavtSILMetaData);
-    }
-
     isSimulation = obj.isSimulation;
     simInfo = obj.simInfo;
     suggestedDefaultSILRestriction = obj.suggestedDefaultSILRestriction;
@@ -719,15 +685,6 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
         defaultPlots_equal = (defaultPlots1 == defaultPlots2);
     }
 
-    bool SILs_equal = (obj.SILs.size() == SILs.size());
-    for(size_t i = 0; (i < SILs.size()) && SILs_equal; ++i)
-    {
-        // Make references to avtSILMetaData from AttributeGroup *.
-        const avtSILMetaData &SILs1 = *((const avtSILMetaData *)(SILs[i]));
-        const avtSILMetaData &SILs2 = *((const avtSILMetaData *)(obj.SILs[i]));
-        SILs_equal = (SILs1 == SILs2);
-    }
-
     // Create the return value
     return ((hasTemporalExtents == obj.hasTemporalExtents) &&
             (minTemporalExtents == obj.minTemporalExtents) &&
@@ -759,7 +716,6 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
             curves_equal &&
             labels_equal &&
             defaultPlots_equal &&
-            SILs_equal &&
             (isSimulation == obj.isSimulation) &&
             (simInfo == obj.simInfo) &&
             (suggestedDefaultSILRestriction == obj.suggestedDefaultSILRestriction));
@@ -936,7 +892,6 @@ avtDatabaseMetaData::SelectAll()
     Select(ID_curves,                         (void *)&curves);
     Select(ID_labels,                         (void *)&labels);
     Select(ID_defaultPlots,                   (void *)&defaultPlots);
-    Select(ID_SILs,                           (void *)&SILs);
     Select(ID_isSimulation,                   (void *)&isSimulation);
     Select(ID_simInfo,                        (void *)&simInfo);
     Select(ID_suggestedDefaultSILRestriction, (void *)&suggestedDefaultSILRestriction);
@@ -995,9 +950,6 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int attr_id)
         break;
     case ID_defaultPlots:
         retval = new avtDefaultPlotMetaData;
-        break;
-    case ID_SILs:
-        retval = new avtSILMetaData;
         break;
     }
 
@@ -1538,18 +1490,6 @@ avtDatabaseMetaData::GetDefaultPlots()
     return defaultPlots;
 }
 
-const AttributeGroupVector &
-avtDatabaseMetaData::GetSILs() const
-{
-    return SILs;
-}
-
-AttributeGroupVector &
-avtDatabaseMetaData::GetSILs()
-{
-    return SILs;
-}
-
 bool
 avtDatabaseMetaData::GetIsSimulation() const
 {
@@ -1708,12 +1648,6 @@ void
 avtDatabaseMetaData::SelectDefaultPlots()
 {
     Select(ID_defaultPlots, (void *)&defaultPlots);
-}
-
-void
-avtDatabaseMetaData::SelectSILs()
-{
-    Select(ID_SILs, (void *)&SILs);
 }
 
 void
@@ -3393,157 +3327,6 @@ avtDatabaseMetaData::GetDefaultPlots(int i) const
     return *((avtDefaultPlotMetaData *)defaultPlots[i]);
 }
 
-// ****************************************************************************
-// Method: avtDatabaseMetaData::AddSILs
-//
-// Purpose: 
-//   Contains database metadata attributes
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::AddSILs(const avtSILMetaData &obj)
-{
-    avtSILMetaData *newavtSILMetaData = new avtSILMetaData(obj);
-    SILs.push_back(newavtSILMetaData);
-
-    // Indicate that things have changed by selecting it.
-    Select(ID_SILs, (void *)&SILs);
-}
-
-// ****************************************************************************
-// Method: avtDatabaseMetaData::ClearSILs
-//
-// Purpose: 
-//   Contains database metadata attributes
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::ClearSILs()
-{
-    AttributeGroupVector::iterator pos;
-
-    for(pos = SILs.begin(); pos != SILs.end(); ++pos)
-        delete *pos;
-    SILs.clear();
-
-    // Indicate that things have changed by selecting the list.
-    Select(ID_SILs, (void *)&SILs);
-}
-
-// ****************************************************************************
-// Method: avtDatabaseMetaData::RemoveSILs
-//
-// Purpose: 
-//   Contains database metadata attributes
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::RemoveSILs(int index)
-{
-    AttributeGroupVector::iterator pos = SILs.begin();
-
-    // Iterate through the vector "index" times. 
-    for(int i = 0; i < index; ++i)
-        if(pos != SILs.end()) ++pos;
-
-    // If pos is still a valid iterator, remove that element.
-    if(pos != SILs.end())
-    {
-        delete *pos;
-        SILs.erase(pos);
-    }
-
-    // Indicate that things have changed by selecting the list.
-    Select(ID_SILs, (void *)&SILs);
-}
-
-// ****************************************************************************
-// Method: avtDatabaseMetaData::GetNumSILs
-//
-// Purpose: 
-//   Contains database metadata attributes
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-avtDatabaseMetaData::GetNumSILs() const
-{
-    return SILs.size();
-}
-
-// ****************************************************************************
-// Method: avtDatabaseMetaData::GetSILs
-//
-// Purpose: 
-//   Contains database metadata attributes
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-avtSILMetaData &
-avtDatabaseMetaData::GetSILs(int i)
-{
-    return *((avtSILMetaData *)SILs[i]);
-}
-
-// ****************************************************************************
-// Method: avtDatabaseMetaData::GetSILs
-//
-// Purpose: 
-//   Contains database metadata attributes
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-const avtSILMetaData &
-avtDatabaseMetaData::GetSILs(int i) const
-{
-    return *((avtSILMetaData *)SILs[i]);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
@@ -4266,24 +4049,6 @@ avtDatabaseMetaData::Add(avtCurveMetaData *cmd)
 //  Method: avtDatabaseMetaData::Add
 //
 //  Arguments:
-//      smd    A SIL meta data object.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   August 28, 2003
-//
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::Add(avtSILMetaData *smd)
-{
-    smd->Validate();
-    SILs.push_back(smd);
-}
-
-// ****************************************************************************
-//  Method: avtDatabaseMetaData::Add
-//
-//  Arguments:
 //      smd    A Label meta data object.
 //
 //  Programmer: Brad Whitlock
@@ -4757,57 +4522,6 @@ avtDatabaseMetaData::GetCurve(const std::string &n) const
     for (int i=0; i<GetNumCurves(); i++)
         if (VariableNamesEqual(GetCurves(i).name, n))
             return GetCurve(i);
-    return NULL;
-}
-
-// *******************************************************************
-// Method: avtDatabaseMetaData::GetSIL
-//
-// Purpose: 
-//     This returns the metadata for the nth SIL in the file.
-//
-// Arguments:
-//     n  :  the index into the array
-//
-// Programmer: Mark C. Miller 
-// Creation:   04Sep03 
-//
-// Modifications:
-//
-//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
-//   Add some checking for indices.
-//
-// *******************************************************************
-
-const avtSILMetaData *
-avtDatabaseMetaData::GetSIL(int n) const
-{
-    if (n < 0 || n >= GetNumSILs())
-        EXCEPTION2(BadIndexException, n, GetNumSILs());
-
-    return (const avtSILMetaData *)SILs[n];
-}
-
-// *******************************************************************
-// Method: avtDatabaseMetaData::GetSIL
-//
-// Purpose: 
-//     This returns the metadata for the SIL in the file whose name
-//     is n.
-//
-// Arguments:
-//     n  :  the name of the SIL object
-//
-// Programmer: Mark C. Miller
-// Creation:   04Sep03 
-// *******************************************************************
-
-const avtSILMetaData *
-avtDatabaseMetaData::GetSIL(const std::string &n) const
-{
-    for (int i=0; i<GetNumSILs(); i++)
-        if (VariableNamesEqual(GetSILs(i).meshName, n))
-            return GetSIL(i);
     return NULL;
 }
 
@@ -5298,9 +5012,6 @@ avtDatabaseMetaData::GetNumberOfExpressions(void) const
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Fixed possible reference through 0
 //
-//    Mark Miller, Tue Jul  8 14:44:05 PDT 2008
-//    Fixed indexing error for region specification.
-//
 // ****************************************************************************
 bool
 avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
@@ -5318,7 +5029,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
             for (i = domainAsVisItSeesIt; i >= 0 && groupIds[i] == j; i--)
                 ; // no-op
             *domain = j;
-            if (region) *region = domainAsVisItSeesIt - i - 1;
+            if (region) *region = domainAsVisItSeesIt - i + 1;
         }
         else
         {
@@ -5829,16 +5540,6 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
         if (VariableNamesEqual(GetCurves(i).name, var))
         {
             return var;
-        }
-    }
-
-    // Look through the sils.
-    for (i = 0 ; i < GetNumSILs(); i++)
-    {
-        for (int j = 0; j < GetSILs(i).GetNumCollections(); j++)
-        {
-            if (VariableNamesEqual(GetSILs(i).GetCollections(j).classOfCollection, var))
-                return GetSILs(i).meshName;
         }
     }
 
@@ -6510,12 +6211,6 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
                 << " (" << vartype.c_str() << "): \t"
                 << exprList[i].GetDefinition().c_str() << endl;
         }
-    }
-
-    for (i = 0; i < GetNumSILs(); ++i)
-    {
-        GetSILs(i).Print(out, indent+1);
-        out << endl;
     }
 }
 

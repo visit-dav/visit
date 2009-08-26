@@ -58,9 +58,22 @@ import java.lang.Integer;
 
 public class PluginManagerAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     public PluginManagerAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        name = new Vector();
+        type = new Vector();
+        version = new Vector();
+        id = new Vector();
+        enabled = new Vector();
+    }
+
+    public PluginManagerAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         name = new Vector();
         type = new Vector();
@@ -71,7 +84,7 @@ public class PluginManagerAttributes extends AttributeSubject
 
     public PluginManagerAttributes(PluginManagerAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -99,6 +112,16 @@ public class PluginManagerAttributes extends AttributeSubject
         }
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PluginManagerAttributes obj)
@@ -211,29 +234,25 @@ public class PluginManagerAttributes extends AttributeSubject
             buf.WriteIntVector(enabled);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadStringVector());
-                break;
-            case 1:
-                SetType(buf.ReadStringVector());
-                break;
-            case 2:
-                SetVersion(buf.ReadStringVector());
-                break;
-            case 3:
-                SetId(buf.ReadStringVector());
-                break;
-            case 4:
-                SetEnabled(buf.ReadIntVector());
-                break;
-            }
+        case 0:
+            SetName(buf.ReadStringVector());
+            break;
+        case 1:
+            SetType(buf.ReadStringVector());
+            break;
+        case 2:
+            SetVersion(buf.ReadStringVector());
+            break;
+        case 3:
+            SetId(buf.ReadStringVector());
+            break;
+        case 4:
+            SetEnabled(buf.ReadIntVector());
+            break;
         }
     }
 

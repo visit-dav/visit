@@ -59,6 +59,8 @@ import java.lang.Double;
 
 public class ViewerRPC extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 33;
+
     // Enum values
     public final static int VIEWERRPCTYPE_CLOSERPC = 0;
     public final static int VIEWERRPCTYPE_DETACHRPC = 1;
@@ -251,7 +253,56 @@ public class ViewerRPC extends AttributeSubject
 
     public ViewerRPC()
     {
-        super(33);
+        super(numAdditionalAttributes);
+
+        RPCType = VIEWERRPCTYPE_CLOSERPC;
+        windowLayout = 1;
+        windowId = 0;
+        windowMode = 0;
+        windowArea = new String("");
+        database = new String("");
+        programHost = new String("");
+        programSim = new String("");
+        programOptions = new Vector();
+        nFrames = 0;
+        stateNumber = 0;
+        frameRange = new int[2];
+        frameRange[0] = 0;
+        frameRange[1] = 0;
+        frame = 0;
+        plotType = 0;
+        operatorType = 0;
+        variable = new String("");
+        activePlotIds = new Vector();
+        activeOperatorIds = new Vector();
+        expandedPlotIds = new Vector();
+        colorTableName = new String("");
+        queryName = new String("");
+        queryPoint1 = new double[3];
+        queryPoint1[0] = 0;
+        queryPoint1[1] = 0;
+        queryPoint1[2] = 0;
+        queryPoint2 = new double[3];
+        queryPoint2[0] = 0;
+        queryPoint2[1] = 0;
+        queryPoint2[2] = 0;
+        queryVariables = new Vector();
+        toolId = 0;
+        boolFlag = false;
+        intArg1 = 0;
+        intArg2 = 0;
+        intArg3 = 0;
+        stringArg1 = new String("");
+        stringArg2 = new String("");
+        doubleArg1 = new Vector();
+        doubleArg1.addElement(new Double(0));
+        doubleArg2 = new Vector();
+        doubleArg2.addElement(new Double(0));
+    }
+
+    public ViewerRPC(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         RPCType = VIEWERRPCTYPE_CLOSERPC;
         windowLayout = 1;
@@ -300,7 +351,7 @@ public class ViewerRPC extends AttributeSubject
 
     public ViewerRPC(ViewerRPC obj)
     {
-        super(33);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -383,6 +434,16 @@ public class ViewerRPC extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ViewerRPC obj)
@@ -836,113 +897,109 @@ public class ViewerRPC extends AttributeSubject
             buf.WriteDoubleVector(doubleArg2);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetRPCType(buf.ReadInt());
-                break;
-            case 1:
-                SetWindowLayout(buf.ReadInt());
-                break;
-            case 2:
-                SetWindowId(buf.ReadInt());
-                break;
-            case 3:
-                SetWindowMode(buf.ReadInt());
-                break;
-            case 4:
-                SetWindowArea(buf.ReadString());
-                break;
-            case 5:
-                SetDatabase(buf.ReadString());
-                break;
-            case 6:
-                SetProgramHost(buf.ReadString());
-                break;
-            case 7:
-                SetProgramSim(buf.ReadString());
-                break;
-            case 8:
-                SetProgramOptions(buf.ReadStringVector());
-                break;
-            case 9:
-                SetNFrames(buf.ReadInt());
-                break;
-            case 10:
-                SetStateNumber(buf.ReadInt());
-                break;
-            case 11:
-                SetFrameRange(buf.ReadIntArray());
-                break;
-            case 12:
-                SetFrame(buf.ReadInt());
-                break;
-            case 13:
-                SetPlotType(buf.ReadInt());
-                break;
-            case 14:
-                SetOperatorType(buf.ReadInt());
-                break;
-            case 15:
-                SetVariable(buf.ReadString());
-                break;
-            case 16:
-                SetActivePlotIds(buf.ReadIntVector());
-                break;
-            case 17:
-                SetActiveOperatorIds(buf.ReadIntVector());
-                break;
-            case 18:
-                SetExpandedPlotIds(buf.ReadIntVector());
-                break;
-            case 19:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 20:
-                SetQueryName(buf.ReadString());
-                break;
-            case 21:
-                SetQueryPoint1(buf.ReadDoubleArray());
-                break;
-            case 22:
-                SetQueryPoint2(buf.ReadDoubleArray());
-                break;
-            case 23:
-                SetQueryVariables(buf.ReadStringVector());
-                break;
-            case 24:
-                SetToolId(buf.ReadInt());
-                break;
-            case 25:
-                SetBoolFlag(buf.ReadBool());
-                break;
-            case 26:
-                SetIntArg1(buf.ReadInt());
-                break;
-            case 27:
-                SetIntArg2(buf.ReadInt());
-                break;
-            case 28:
-                SetIntArg3(buf.ReadInt());
-                break;
-            case 29:
-                SetStringArg1(buf.ReadString());
-                break;
-            case 30:
-                SetStringArg2(buf.ReadString());
-                break;
-            case 31:
-                SetDoubleArg1(buf.ReadDoubleVector());
-                break;
-            case 32:
-                SetDoubleArg2(buf.ReadDoubleVector());
-                break;
-            }
+        case 0:
+            SetRPCType(buf.ReadInt());
+            break;
+        case 1:
+            SetWindowLayout(buf.ReadInt());
+            break;
+        case 2:
+            SetWindowId(buf.ReadInt());
+            break;
+        case 3:
+            SetWindowMode(buf.ReadInt());
+            break;
+        case 4:
+            SetWindowArea(buf.ReadString());
+            break;
+        case 5:
+            SetDatabase(buf.ReadString());
+            break;
+        case 6:
+            SetProgramHost(buf.ReadString());
+            break;
+        case 7:
+            SetProgramSim(buf.ReadString());
+            break;
+        case 8:
+            SetProgramOptions(buf.ReadStringVector());
+            break;
+        case 9:
+            SetNFrames(buf.ReadInt());
+            break;
+        case 10:
+            SetStateNumber(buf.ReadInt());
+            break;
+        case 11:
+            SetFrameRange(buf.ReadIntArray());
+            break;
+        case 12:
+            SetFrame(buf.ReadInt());
+            break;
+        case 13:
+            SetPlotType(buf.ReadInt());
+            break;
+        case 14:
+            SetOperatorType(buf.ReadInt());
+            break;
+        case 15:
+            SetVariable(buf.ReadString());
+            break;
+        case 16:
+            SetActivePlotIds(buf.ReadIntVector());
+            break;
+        case 17:
+            SetActiveOperatorIds(buf.ReadIntVector());
+            break;
+        case 18:
+            SetExpandedPlotIds(buf.ReadIntVector());
+            break;
+        case 19:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 20:
+            SetQueryName(buf.ReadString());
+            break;
+        case 21:
+            SetQueryPoint1(buf.ReadDoubleArray());
+            break;
+        case 22:
+            SetQueryPoint2(buf.ReadDoubleArray());
+            break;
+        case 23:
+            SetQueryVariables(buf.ReadStringVector());
+            break;
+        case 24:
+            SetToolId(buf.ReadInt());
+            break;
+        case 25:
+            SetBoolFlag(buf.ReadBool());
+            break;
+        case 26:
+            SetIntArg1(buf.ReadInt());
+            break;
+        case 27:
+            SetIntArg2(buf.ReadInt());
+            break;
+        case 28:
+            SetIntArg3(buf.ReadInt());
+            break;
+        case 29:
+            SetStringArg1(buf.ReadString());
+            break;
+        case 30:
+            SetStringArg2(buf.ReadString());
+            break;
+        case 31:
+            SetDoubleArg1(buf.ReadDoubleVector());
+            break;
+        case 32:
+            SetDoubleArg2(buf.ReadDoubleVector());
+            break;
         }
     }
 

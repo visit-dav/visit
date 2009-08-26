@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ResampleAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 15;
+
     // Enum values
     public final static int TIERESOLVER_RANDOM = 0;
     public final static int TIERESOLVER_LARGEST = 1;
@@ -67,7 +69,28 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public ResampleAttributes()
     {
-        super(15);
+        super(numAdditionalAttributes);
+
+        useExtents = true;
+        startX = 0;
+        endX = 1;
+        samplesX = 10;
+        startY = 0;
+        endY = 1;
+        samplesY = 10;
+        is3D = true;
+        startZ = 0;
+        endZ = 1;
+        samplesZ = 10;
+        tieResolver = TIERESOLVER_RANDOM;
+        tieResolverVariable = new String("default");
+        defaultValue = 0;
+        distributedResample = true;
+    }
+
+    public ResampleAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useExtents = true;
         startX = 0;
@@ -88,7 +111,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public ResampleAttributes(ResampleAttributes obj)
     {
-        super(15);
+        super(numAdditionalAttributes);
 
         useExtents = obj.useExtents;
         startX = obj.startX;
@@ -107,6 +130,16 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
         distributedResample = obj.distributedResample;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ResampleAttributes obj)
@@ -275,59 +308,55 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(distributedResample);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseExtents(buf.ReadBool());
-                break;
-            case 1:
-                SetStartX(buf.ReadDouble());
-                break;
-            case 2:
-                SetEndX(buf.ReadDouble());
-                break;
-            case 3:
-                SetSamplesX(buf.ReadInt());
-                break;
-            case 4:
-                SetStartY(buf.ReadDouble());
-                break;
-            case 5:
-                SetEndY(buf.ReadDouble());
-                break;
-            case 6:
-                SetSamplesY(buf.ReadInt());
-                break;
-            case 7:
-                SetIs3D(buf.ReadBool());
-                break;
-            case 8:
-                SetStartZ(buf.ReadDouble());
-                break;
-            case 9:
-                SetEndZ(buf.ReadDouble());
-                break;
-            case 10:
-                SetSamplesZ(buf.ReadInt());
-                break;
-            case 11:
-                SetTieResolver(buf.ReadInt());
-                break;
-            case 12:
-                SetTieResolverVariable(buf.ReadString());
-                break;
-            case 13:
-                SetDefaultValue(buf.ReadDouble());
-                break;
-            case 14:
-                SetDistributedResample(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetUseExtents(buf.ReadBool());
+            break;
+        case 1:
+            SetStartX(buf.ReadDouble());
+            break;
+        case 2:
+            SetEndX(buf.ReadDouble());
+            break;
+        case 3:
+            SetSamplesX(buf.ReadInt());
+            break;
+        case 4:
+            SetStartY(buf.ReadDouble());
+            break;
+        case 5:
+            SetEndY(buf.ReadDouble());
+            break;
+        case 6:
+            SetSamplesY(buf.ReadInt());
+            break;
+        case 7:
+            SetIs3D(buf.ReadBool());
+            break;
+        case 8:
+            SetStartZ(buf.ReadDouble());
+            break;
+        case 9:
+            SetEndZ(buf.ReadDouble());
+            break;
+        case 10:
+            SetSamplesZ(buf.ReadInt());
+            break;
+        case 11:
+            SetTieResolver(buf.ReadInt());
+            break;
+        case 12:
+            SetTieResolverVariable(buf.ReadString());
+            break;
+        case 13:
+            SetDefaultValue(buf.ReadDouble());
+            break;
+        case 14:
+            SetDistributedResample(buf.ReadBool());
+            break;
         }
     }
 

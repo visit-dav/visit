@@ -58,9 +58,22 @@ import java.lang.Integer;
 
 public class EngineList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     public EngineList()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        engines = new Vector();
+        numProcessors = new Vector();
+        numNodes = new Vector();
+        loadBalancing = new Vector();
+        simulationName = new Vector();
+    }
+
+    public EngineList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         engines = new Vector();
         numProcessors = new Vector();
@@ -71,7 +84,7 @@ public class EngineList extends AttributeSubject
 
     public EngineList(EngineList obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -103,6 +116,16 @@ public class EngineList extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(EngineList obj)
@@ -215,29 +238,25 @@ public class EngineList extends AttributeSubject
             buf.WriteStringVector(simulationName);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetEngines(buf.ReadStringVector());
-                break;
-            case 1:
-                SetNumProcessors(buf.ReadIntVector());
-                break;
-            case 2:
-                SetNumNodes(buf.ReadIntVector());
-                break;
-            case 3:
-                SetLoadBalancing(buf.ReadIntVector());
-                break;
-            case 4:
-                SetSimulationName(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetEngines(buf.ReadStringVector());
+            break;
+        case 1:
+            SetNumProcessors(buf.ReadIntVector());
+            break;
+        case 2:
+            SetNumNodes(buf.ReadIntVector());
+            break;
+        case 3:
+            SetLoadBalancing(buf.ReadIntVector());
+            break;
+        case 4:
+            SetSimulationName(buf.ReadStringVector());
+            break;
         }
     }
 

@@ -1380,6 +1380,8 @@ class WindowFieldFactory
 //   Brad Whitlock, Thu Feb 28 12:03:30 PDT 2008
 //   Made it use a base class so it can inherit some methods.
 //
+//    Mark C. Miller, Wed Aug 26 10:59:13 PDT 2009
+//    Added custom base class for derived state objects.
 // ----------------------------------------------------------------------------
 #include "GeneratorBase.h"
 
@@ -1391,8 +1393,8 @@ class WindowGeneratorAttribute : public GeneratorBase
     QString plugintype;
   public:
     WindowGeneratorAttribute(const QString &n, const QString &p, const QString &f,
-                             const QString &e, const QString &ei)
-        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields(), 
+                             const QString &e, const QString &ei, const QString &bc)
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields(), 
           windowname(), plugintype()
     {
         plugintype = "";

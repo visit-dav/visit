@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class GlobalLineoutAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 9;
+
     // Enum values
     public final static int CURVEOPTIONS_UPDATECURVE = 0;
     public final static int CURVEOPTIONS_CREATECURVE = 1;
@@ -66,7 +68,22 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public GlobalLineoutAttributes()
     {
-        super(9);
+        super(numAdditionalAttributes);
+
+        Dynamic = false;
+        createWindow = true;
+        windowId = 2;
+        samplingOn = false;
+        numSamples = 50;
+        createReflineLabels = false;
+        curveOption = CURVEOPTIONS_UPDATECURVE;
+        colorOption = COLOROPTIONS_REPEATCOLOR;
+        freezeInTime = false;
+    }
+
+    public GlobalLineoutAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         Dynamic = false;
         createWindow = true;
@@ -81,7 +98,7 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public GlobalLineoutAttributes(GlobalLineoutAttributes obj)
     {
-        super(9);
+        super(numAdditionalAttributes);
 
         Dynamic = obj.Dynamic;
         createWindow = obj.createWindow;
@@ -94,6 +111,16 @@ public class GlobalLineoutAttributes extends AttributeSubject
         freezeInTime = obj.freezeInTime;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(GlobalLineoutAttributes obj)
@@ -199,41 +226,37 @@ public class GlobalLineoutAttributes extends AttributeSubject
             buf.WriteBool(freezeInTime);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDynamic(buf.ReadBool());
-                break;
-            case 1:
-                SetCreateWindow(buf.ReadBool());
-                break;
-            case 2:
-                SetWindowId(buf.ReadInt());
-                break;
-            case 3:
-                SetSamplingOn(buf.ReadBool());
-                break;
-            case 4:
-                SetNumSamples(buf.ReadInt());
-                break;
-            case 5:
-                SetCreateReflineLabels(buf.ReadBool());
-                break;
-            case 6:
-                SetCurveOption(buf.ReadInt());
-                break;
-            case 7:
-                SetColorOption(buf.ReadInt());
-                break;
-            case 8:
-                SetFreezeInTime(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetDynamic(buf.ReadBool());
+            break;
+        case 1:
+            SetCreateWindow(buf.ReadBool());
+            break;
+        case 2:
+            SetWindowId(buf.ReadInt());
+            break;
+        case 3:
+            SetSamplingOn(buf.ReadBool());
+            break;
+        case 4:
+            SetNumSamples(buf.ReadInt());
+            break;
+        case 5:
+            SetCreateReflineLabels(buf.ReadBool());
+            break;
+        case 6:
+            SetCurveOption(buf.ReadInt());
+            break;
+        case 7:
+            SetColorOption(buf.ReadInt());
+            break;
+        case 8:
+            SetFreezeInTime(buf.ReadBool());
+            break;
         }
     }
 

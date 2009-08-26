@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class Point extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     // Enum values
     public final static int VALUETYPE_VT_TUPLE = 0;
     public final static int VALUETYPE_VT_MIN = 1;
@@ -69,18 +71,35 @@ public class Point extends AttributeSubject
 
     public Point()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        value = new String("");
+    }
+
+    public Point(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         value = new String("");
     }
 
     public Point(Point obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         value = new String(obj.value);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(Point obj)
@@ -106,9 +125,8 @@ public class Point extends AttributeSubject
             buf.WriteString(value);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetValue(buf.ReadString());
     }
 

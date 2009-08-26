@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class AnnotationAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 20;
+
     // Enum values
     public final static int GRADIENTSTYLE_TOPTOBOTTOM = 0;
     public final static int GRADIENTSTYLE_BOTTOMTOTOP = 1;
@@ -77,7 +79,33 @@ public class AnnotationAttributes extends AttributeSubject
 
     public AnnotationAttributes()
     {
-        super(20);
+        super(numAdditionalAttributes);
+
+        axes2D = new Axes2D();
+        axes3D = new Axes3D();
+        userInfoFlag = true;
+        userInfoFont = new FontAttributes();
+        databaseInfoFlag = true;
+        databaseInfoFont = new FontAttributes();
+        databaseInfoExpansionMode = PATHEXPANSIONMODE_FILE;
+        databaseInfoTimeScale = 1;
+        databaseInfoTimeOffset = 0;
+        legendInfoFlag = true;
+        backgroundColor = new ColorAttribute(255, 255, 255);
+        foregroundColor = new ColorAttribute(0, 0, 0);
+        gradientBackgroundStyle = GRADIENTSTYLE_RADIAL;
+        gradientColor1 = new ColorAttribute(0, 0, 255);
+        gradientColor2 = new ColorAttribute(0, 0, 0);
+        backgroundMode = BACKGROUNDMODE_SOLID;
+        backgroundImage = new String("");
+        imageRepeatX = 1;
+        imageRepeatY = 1;
+        axesArray = new AxesArray();
+    }
+
+    public AnnotationAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         axes2D = new Axes2D();
         axes3D = new Axes3D();
@@ -103,7 +131,7 @@ public class AnnotationAttributes extends AttributeSubject
 
     public AnnotationAttributes(AnnotationAttributes obj)
     {
-        super(20);
+        super(numAdditionalAttributes);
 
         axes2D = new Axes2D(obj.axes2D);
         axes3D = new Axes3D(obj.axes3D);
@@ -127,6 +155,16 @@ public class AnnotationAttributes extends AttributeSubject
         axesArray = new AxesArray(obj.axesArray);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AnnotationAttributes obj)
@@ -342,83 +380,79 @@ public class AnnotationAttributes extends AttributeSubject
             axesArray.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                axes2D.Read(buf);
-                Select(0);
-                break;
-            case 1:
-                axes3D.Read(buf);
-                Select(1);
-                break;
-            case 2:
-                SetUserInfoFlag(buf.ReadBool());
-                break;
-            case 3:
-                userInfoFont.Read(buf);
-                Select(3);
-                break;
-            case 4:
-                SetDatabaseInfoFlag(buf.ReadBool());
-                break;
-            case 5:
-                databaseInfoFont.Read(buf);
-                Select(5);
-                break;
-            case 6:
-                SetDatabaseInfoExpansionMode(buf.ReadInt());
-                break;
-            case 7:
-                SetDatabaseInfoTimeScale(buf.ReadDouble());
-                break;
-            case 8:
-                SetDatabaseInfoTimeOffset(buf.ReadDouble());
-                break;
-            case 9:
-                SetLegendInfoFlag(buf.ReadBool());
-                break;
-            case 10:
-                backgroundColor.Read(buf);
-                Select(10);
-                break;
-            case 11:
-                foregroundColor.Read(buf);
-                Select(11);
-                break;
-            case 12:
-                SetGradientBackgroundStyle(buf.ReadInt());
-                break;
-            case 13:
-                gradientColor1.Read(buf);
-                Select(13);
-                break;
-            case 14:
-                gradientColor2.Read(buf);
-                Select(14);
-                break;
-            case 15:
-                SetBackgroundMode(buf.ReadInt());
-                break;
-            case 16:
-                SetBackgroundImage(buf.ReadString());
-                break;
-            case 17:
-                SetImageRepeatX(buf.ReadInt());
-                break;
-            case 18:
-                SetImageRepeatY(buf.ReadInt());
-                break;
-            case 19:
-                axesArray.Read(buf);
-                Select(19);
-                break;
-            }
+        case 0:
+            axes2D.Read(buf);
+            Select(0);
+            break;
+        case 1:
+            axes3D.Read(buf);
+            Select(1);
+            break;
+        case 2:
+            SetUserInfoFlag(buf.ReadBool());
+            break;
+        case 3:
+            userInfoFont.Read(buf);
+            Select(3);
+            break;
+        case 4:
+            SetDatabaseInfoFlag(buf.ReadBool());
+            break;
+        case 5:
+            databaseInfoFont.Read(buf);
+            Select(5);
+            break;
+        case 6:
+            SetDatabaseInfoExpansionMode(buf.ReadInt());
+            break;
+        case 7:
+            SetDatabaseInfoTimeScale(buf.ReadDouble());
+            break;
+        case 8:
+            SetDatabaseInfoTimeOffset(buf.ReadDouble());
+            break;
+        case 9:
+            SetLegendInfoFlag(buf.ReadBool());
+            break;
+        case 10:
+            backgroundColor.Read(buf);
+            Select(10);
+            break;
+        case 11:
+            foregroundColor.Read(buf);
+            Select(11);
+            break;
+        case 12:
+            SetGradientBackgroundStyle(buf.ReadInt());
+            break;
+        case 13:
+            gradientColor1.Read(buf);
+            Select(13);
+            break;
+        case 14:
+            gradientColor2.Read(buf);
+            Select(14);
+            break;
+        case 15:
+            SetBackgroundMode(buf.ReadInt());
+            break;
+        case 16:
+            SetBackgroundImage(buf.ReadString());
+            break;
+        case 17:
+            SetImageRepeatX(buf.ReadInt());
+            break;
+        case 18:
+            SetImageRepeatY(buf.ReadInt());
+            break;
+        case 19:
+            axesArray.Read(buf);
+            Select(19);
+            break;
         }
     }
 

@@ -59,9 +59,19 @@ import llnl.visit.Plugin;
 
 public class TruecolorAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 2;
+
     public TruecolorAttributes()
     {
-        super(2);
+        super(numAdditionalAttributes);
+
+        opacity = 1;
+        lightingFlag = true;
+    }
+
+    public TruecolorAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         opacity = 1;
         lightingFlag = true;
@@ -69,12 +79,22 @@ public class TruecolorAttributes extends AttributeSubject implements Plugin
 
     public TruecolorAttributes(TruecolorAttributes obj)
     {
-        super(2);
+        super(numAdditionalAttributes);
 
         opacity = obj.opacity;
         lightingFlag = obj.lightingFlag;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TruecolorAttributes obj)
@@ -113,20 +133,16 @@ public class TruecolorAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(lightingFlag);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOpacity(buf.ReadDouble());
-                break;
-            case 1:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetOpacity(buf.ReadDouble());
+            break;
+        case 1:
+            SetLightingFlag(buf.ReadBool());
+            break;
         }
     }
 

@@ -59,9 +59,28 @@ import llnl.visit.Plugin;
 
 public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 5;
+
     public LineSurfaceAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        startTime = 0;
+        endTime = 1;
+        stride = 1;
+        point1 = new double[3];
+        point1[0] = 0;
+        point1[1] = 0;
+        point1[2] = 0;
+        point2 = new double[3];
+        point2[0] = 0;
+        point2[1] = 0;
+        point2[2] = 0;
+    }
+
+    public LineSurfaceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         startTime = 0;
         endTime = 1;
@@ -78,7 +97,7 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 
     public LineSurfaceAttributes(LineSurfaceAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -97,6 +116,16 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(LineSurfaceAttributes obj)
@@ -197,29 +226,25 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
             buf.WriteDoubleArray(point2);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetStartTime(buf.ReadInt());
-                break;
-            case 1:
-                SetEndTime(buf.ReadInt());
-                break;
-            case 2:
-                SetStride(buf.ReadInt());
-                break;
-            case 3:
-                SetPoint1(buf.ReadDoubleArray());
-                break;
-            case 4:
-                SetPoint2(buf.ReadDoubleArray());
-                break;
-            }
+        case 0:
+            SetStartTime(buf.ReadInt());
+            break;
+        case 1:
+            SetEndTime(buf.ReadInt());
+            break;
+        case 2:
+            SetStride(buf.ReadInt());
+            break;
+        case 3:
+            SetPoint1(buf.ReadDoubleArray());
+            break;
+        case 4:
+            SetPoint2(buf.ReadDoubleArray());
+            break;
         }
     }
 

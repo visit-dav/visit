@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ContextAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 7;
+
     // Enum values
     public final static int AMOUNT_SOME = 0;
     public final static int AMOUNT_ALL = 1;
@@ -66,7 +68,20 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public ContextAttributes()
     {
-        super(7);
+        super(numAdditionalAttributes);
+
+        offset = 2;
+        low = 2;
+        hi = 2;
+        context = new String("");
+        cutoff = 0;
+        below = 0;
+        above = 1;
+    }
+
+    public ContextAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         offset = 2;
         low = 2;
@@ -79,7 +94,7 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public ContextAttributes(ContextAttributes obj)
     {
-        super(7);
+        super(numAdditionalAttributes);
 
         offset = obj.offset;
         low = obj.low;
@@ -90,6 +105,16 @@ public class ContextAttributes extends AttributeSubject implements Plugin
         above = obj.above;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ContextAttributes obj)
@@ -178,35 +203,31 @@ public class ContextAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(above);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOffset(buf.ReadDouble());
-                break;
-            case 1:
-                SetLow(buf.ReadDouble());
-                break;
-            case 2:
-                SetHi(buf.ReadDouble());
-                break;
-            case 3:
-                SetContext(buf.ReadString());
-                break;
-            case 4:
-                SetCutoff(buf.ReadDouble());
-                break;
-            case 5:
-                SetBelow(buf.ReadDouble());
-                break;
-            case 6:
-                SetAbove(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetOffset(buf.ReadDouble());
+            break;
+        case 1:
+            SetLow(buf.ReadDouble());
+            break;
+        case 2:
+            SetHi(buf.ReadDouble());
+            break;
+        case 3:
+            SetContext(buf.ReadString());
+            break;
+        case 4:
+            SetCutoff(buf.ReadDouble());
+            break;
+        case 5:
+            SetBelow(buf.ReadDouble());
+            break;
+        case 6:
+            SetAbove(buf.ReadDouble());
+            break;
         }
     }
 

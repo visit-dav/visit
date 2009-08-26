@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+  <Attribute name="avtVarMetaData" purpose="Contains metadata attributes associated with all mesh variables" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVarMetaData.code">
+    <Field name="name" label="Name" type="string" access="public">
+      scalar
+    </Field>
+    <Field name="originalName" label="Original name" type="string" access="public">
+    </Field>
+    <Field name="validVariable" label="Valid variable" type="bool" access="public">
+      true
+    </Field>
+    <Field name="meshName" label="Mesh name" type="string" access="public">
+      mesh
+    </Field>
+    <Field name="centering" label="Variable centering" type="avtCentering" access="public">
+      AVT_UNKNOWN_CENT
+    </Field>
+    <Field name="hasUnits" label="Has units" type="bool" access="public">
+      false
+    </Field>
+    <Field name="units" label="Units" type="string" access="public">
+    </Field>
+    <Field name="hasDataExtents" label="Has data extents" type="bool" access="public">
+      false
+    </Field>
+    <Field name="minDataExtents" label="Minimum data extents" type="double" access="public">
+      0.000000
+    </Field>
+    <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
+      0.000000
+    </Field>
+    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
+      false
+    </Field>
+    <Function name="avtVarMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtVarMetaData3" user="true" member="true">
+    </Function>
+    <Function name="SetExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetExtents" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      ImproperUseException.h
+    </Include>
+    <Include file="header" quoted="false">
+      vector
+    </Include>
+  </Attribute>

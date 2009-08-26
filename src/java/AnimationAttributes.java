@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class AnimationAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     // Enum values
     public final static int ANIMATIONMODE_REVERSEPLAYMODE = 0;
     public final static int ANIMATIONMODE_STOPMODE = 1;
@@ -68,7 +70,18 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        animationMode = ANIMATIONMODE_STOPMODE;
+        pipelineCachingMode = false;
+        frameIncrement = 1;
+        timeout = 1;
+        playbackMode = PLAYBACKMODE_LOOPING;
+    }
+
+    public AnimationAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         animationMode = ANIMATIONMODE_STOPMODE;
         pipelineCachingMode = false;
@@ -79,7 +92,7 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes(AnimationAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         animationMode = obj.animationMode;
         pipelineCachingMode = obj.pipelineCachingMode;
@@ -88,6 +101,16 @@ public class AnimationAttributes extends AttributeSubject
         playbackMode = obj.playbackMode;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AnimationAttributes obj)
@@ -153,29 +176,25 @@ public class AnimationAttributes extends AttributeSubject
             buf.WriteInt(playbackMode);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetAnimationMode(buf.ReadInt());
-                break;
-            case 1:
-                SetPipelineCachingMode(buf.ReadBool());
-                break;
-            case 2:
-                SetFrameIncrement(buf.ReadInt());
-                break;
-            case 3:
-                SetTimeout(buf.ReadInt());
-                break;
-            case 4:
-                SetPlaybackMode(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetAnimationMode(buf.ReadInt());
+            break;
+        case 1:
+            SetPipelineCachingMode(buf.ReadBool());
+            break;
+        case 2:
+            SetFrameIncrement(buf.ReadInt());
+            break;
+        case 3:
+            SetTimeout(buf.ReadInt());
+            break;
+        case 4:
+            SetPlaybackMode(buf.ReadInt());
+            break;
         }
     }
 

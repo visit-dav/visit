@@ -861,27 +861,6 @@ avtDatabaseMetaData::Add(avtCurveMetaData *cmd)
     curves.push_back(cmd);
 }
 
-Function: Add10
-Declaration: void         Add(avtSILMetaData *);
-Definition:
-// ****************************************************************************
-//  Method: avtDatabaseMetaData::Add
-//
-//  Arguments:
-//      smd    A SIL meta data object.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   August 28, 2003
-//
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::Add(avtSILMetaData *smd)
-{
-    smd->Validate();
-    SILs.push_back(smd);
-}
-
 Function: Add11
 Declaration: void         Add(avtLabelMetaData *);
 Definition:
@@ -1416,63 +1395,6 @@ avtDatabaseMetaData::GetCurve(const std::string &n) const
     for (int i=0; i<GetNumCurves(); i++)
         if (VariableNamesEqual(GetCurves(i).name, n))
             return GetCurve(i);
-    return NULL;
-}
-
-Function: GetSIL1
-Declaration: const avtSILMetaData         *GetSIL(int) const;
-Definition:
-// *******************************************************************
-// Method: avtDatabaseMetaData::GetSIL
-//
-// Purpose: 
-//     This returns the metadata for the nth SIL in the file.
-//
-// Arguments:
-//     n  :  the index into the array
-//
-// Programmer: Mark C. Miller 
-// Creation:   04Sep03 
-//
-// Modifications:
-//
-//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
-//   Add some checking for indices.
-//
-// *******************************************************************
-
-const avtSILMetaData *
-avtDatabaseMetaData::GetSIL(int n) const
-{
-    if (n < 0 || n >= GetNumSILs())
-        EXCEPTION2(BadIndexException, n, GetNumSILs());
-
-    return (const avtSILMetaData *)SILs[n];
-}
-
-Function: GetSIL2
-Declaration: const avtSILMetaData         *GetSIL(const std::string&) const;
-Definition:
-// *******************************************************************
-// Method: avtDatabaseMetaData::GetSIL
-//
-// Purpose: 
-//     This returns the metadata for the SIL in the file whose name
-//     is n.
-//
-// Arguments:
-//     n  :  the name of the SIL object
-//
-// Programmer: Mark C. Miller
-// Creation:   04Sep03 
-// *******************************************************************
-
-const avtSILMetaData *
-avtDatabaseMetaData::GetSIL(const std::string &n) const
-{
-    for (int i=0; i<GetNumSILs(); i++)
-        if (VariableNamesEqual(GetSILs(i).meshName, n))
-            return GetSIL(i);
     return NULL;
 }
 
@@ -2557,16 +2479,6 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
         }
     }
 
-    // Look through the sils.
-    for (i = 0 ; i < GetNumSILs(); i++)
-    {
-        for (int j = 0; j < GetSILs(i).GetNumCollections(); j++)
-        {
-            if (VariableNamesEqual(GetSILs(i).GetCollections(j).classOfCollection, var))
-                return GetSILs(i).meshName;
-        }
-    }
-
     // Look through the labels.
     int nlabels = GetNumLabels();
     for (i = 0 ; i < nlabels ; i++)
@@ -3256,12 +3168,6 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
                 << " (" << vartype.c_str() << "): \t"
                 << exprList[i].GetDefinition().c_str() << endl;
         }
-    }
-
-    for (i = 0; i < GetNumSILs(); ++i)
-    {
-        GetSILs(i).Print(out, indent+1);
-        out << endl;
     }
 }
 

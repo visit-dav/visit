@@ -63,6 +63,8 @@ import llnl.visit.TransferFunctionWidget;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 28;
+
     // Enum values
     public final static int RENDERER_SPLATTING = 0;
     public final static int RENDERER_TEXTURE3D = 1;
@@ -88,7 +90,43 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public VolumeAttributes()
     {
-        super(28);
+        super(numAdditionalAttributes);
+
+        legendFlag = true;
+        lightingFlag = true;
+        colorControlPoints = new ColorControlPointList();
+        opacityAttenuation = 1f;
+        opacityMode = OPACITYMODES_FREEFORMMODE;
+        opacityControlPoints = new GaussianControlPointList();
+        resampleTarget = 50000;
+        opacityVariable = new String("default");
+        freeformOpacity = new byte[256];
+        for(int i = 0; i < 256; ++i)
+            freeformOpacity[i] = (byte)i;
+        useColorVarMin = false;
+        colorVarMin = 0f;
+        useColorVarMax = false;
+        colorVarMax = 0f;
+        useOpacityVarMin = false;
+        opacityVarMin = 0f;
+        useOpacityVarMax = false;
+        opacityVarMax = 0f;
+        smoothData = false;
+        samplesPerRay = 500;
+        rendererType = RENDERER_SPLATTING;
+        gradientType = GRADIENTTYPE_SOBELOPERATOR;
+        num3DSlices = 200;
+        scaling = SCALING_LINEAR;
+        skewFactor = 1;
+        sampling = SAMPLINGTYPE_RASTERIZATION;
+        rendererSamples = 3f;
+        transferFunction2DWidgets = new Vector();
+        transferFunctionDim = 1;
+    }
+
+    public VolumeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         legendFlag = true;
         lightingFlag = true;
@@ -124,7 +162,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public VolumeAttributes(VolumeAttributes obj)
     {
-        super(28);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -168,6 +206,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         transferFunctionDim = obj.transferFunctionDim;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(VolumeAttributes obj)
@@ -484,110 +532,106 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(transferFunctionDim);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 1:
+            SetLightingFlag(buf.ReadBool());
+            break;
+        case 2:
+            colorControlPoints.Read(buf);
+            Select(2);
+            break;
+        case 3:
+            SetOpacityAttenuation(buf.ReadFloat());
+            break;
+        case 4:
+            SetOpacityMode(buf.ReadInt());
+            break;
+        case 5:
+            opacityControlPoints.Read(buf);
+            Select(5);
+            break;
+        case 6:
+            SetResampleTarget(buf.ReadInt());
+            break;
+        case 7:
+            SetOpacityVariable(buf.ReadString());
+            break;
+        case 8:
+            SetFreeformOpacity(buf.ReadByteArray());
+            break;
+        case 9:
+            SetUseColorVarMin(buf.ReadBool());
+            break;
+        case 10:
+            SetColorVarMin(buf.ReadFloat());
+            break;
+        case 11:
+            SetUseColorVarMax(buf.ReadBool());
+            break;
+        case 12:
+            SetColorVarMax(buf.ReadFloat());
+            break;
+        case 13:
+            SetUseOpacityVarMin(buf.ReadBool());
+            break;
+        case 14:
+            SetOpacityVarMin(buf.ReadFloat());
+            break;
+        case 15:
+            SetUseOpacityVarMax(buf.ReadBool());
+            break;
+        case 16:
+            SetOpacityVarMax(buf.ReadFloat());
+            break;
+        case 17:
+            SetSmoothData(buf.ReadBool());
+            break;
+        case 18:
+            SetSamplesPerRay(buf.ReadInt());
+            break;
+        case 19:
+            SetRendererType(buf.ReadInt());
+            break;
+        case 20:
+            SetGradientType(buf.ReadInt());
+            break;
+        case 21:
+            SetNum3DSlices(buf.ReadInt());
+            break;
+        case 22:
+            SetScaling(buf.ReadInt());
+            break;
+        case 23:
+            SetSkewFactor(buf.ReadDouble());
+            break;
+        case 24:
+            SetSampling(buf.ReadInt());
+            break;
+        case 25:
+            SetRendererSamples(buf.ReadFloat());
+            break;
+        case 26:
             {
-            case 0:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 1:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            case 2:
-                colorControlPoints.Read(buf);
-                Select(2);
-                break;
-            case 3:
-                SetOpacityAttenuation(buf.ReadFloat());
-                break;
-            case 4:
-                SetOpacityMode(buf.ReadInt());
-                break;
-            case 5:
-                opacityControlPoints.Read(buf);
-                Select(5);
-                break;
-            case 6:
-                SetResampleTarget(buf.ReadInt());
-                break;
-            case 7:
-                SetOpacityVariable(buf.ReadString());
-                break;
-            case 8:
-                SetFreeformOpacity(buf.ReadByteArray());
-                break;
-            case 9:
-                SetUseColorVarMin(buf.ReadBool());
-                break;
-            case 10:
-                SetColorVarMin(buf.ReadFloat());
-                break;
-            case 11:
-                SetUseColorVarMax(buf.ReadBool());
-                break;
-            case 12:
-                SetColorVarMax(buf.ReadFloat());
-                break;
-            case 13:
-                SetUseOpacityVarMin(buf.ReadBool());
-                break;
-            case 14:
-                SetOpacityVarMin(buf.ReadFloat());
-                break;
-            case 15:
-                SetUseOpacityVarMax(buf.ReadBool());
-                break;
-            case 16:
-                SetOpacityVarMax(buf.ReadFloat());
-                break;
-            case 17:
-                SetSmoothData(buf.ReadBool());
-                break;
-            case 18:
-                SetSamplesPerRay(buf.ReadInt());
-                break;
-            case 19:
-                SetRendererType(buf.ReadInt());
-                break;
-            case 20:
-                SetGradientType(buf.ReadInt());
-                break;
-            case 21:
-                SetNum3DSlices(buf.ReadInt());
-                break;
-            case 22:
-                SetScaling(buf.ReadInt());
-                break;
-            case 23:
-                SetSkewFactor(buf.ReadDouble());
-                break;
-            case 24:
-                SetSampling(buf.ReadInt());
-                break;
-            case 25:
-                SetRendererSamples(buf.ReadFloat());
-                break;
-            case 26:
+                int len = buf.ReadInt();
+                transferFunction2DWidgets.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    transferFunction2DWidgets.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        TransferFunctionWidget tmp = new TransferFunctionWidget();
-                        tmp.Read(buf);
-                        transferFunction2DWidgets.addElement(tmp);
-                    }
+                    TransferFunctionWidget tmp = new TransferFunctionWidget();
+                    tmp.Read(buf);
+                    transferFunction2DWidgets.addElement(tmp);
                 }
-                Select(26);
-                break;
-            case 27:
-                SetTransferFunctionDim(buf.ReadInt());
-                break;
             }
+            Select(26);
+            break;
+        case 27:
+            SetTransferFunctionDim(buf.ReadInt());
+            break;
         }
     }
 

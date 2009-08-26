@@ -59,6 +59,8 @@ import java.lang.Double;
 
 public class DatabaseCorrelation extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 10;
+
     // Enum values
     public final static int CORRELATIONMETHOD_INDEXFORINDEXCORRELATION = 0;
     public final static int CORRELATIONMETHOD_STRETCHEDINDEXCORRELATION = 1;
@@ -69,7 +71,23 @@ public class DatabaseCorrelation extends AttributeSubject
 
     public DatabaseCorrelation()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        name = new String("");
+        numStates = 1;
+        method = CORRELATIONMETHOD_INDEXFORINDEXCORRELATION;
+        databaseNames = new Vector();
+        databaseNStates = new Vector();
+        databaseTimes = new Vector();
+        databaseCycles = new Vector();
+        indices = new Vector();
+        condensedTimes = new Vector();
+        condensedCycles = new Vector();
+    }
+
+    public DatabaseCorrelation(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         name = new String("");
         numStates = 1;
@@ -85,7 +103,7 @@ public class DatabaseCorrelation extends AttributeSubject
 
     public DatabaseCorrelation(DatabaseCorrelation obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -136,6 +154,16 @@ public class DatabaseCorrelation extends AttributeSubject
         }
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DatabaseCorrelation obj)
@@ -316,44 +344,40 @@ public class DatabaseCorrelation extends AttributeSubject
             buf.WriteIntVector(condensedCycles);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetNumStates(buf.ReadInt());
-                break;
-            case 2:
-                SetMethod(buf.ReadInt());
-                break;
-            case 3:
-                SetDatabaseNames(buf.ReadStringVector());
-                break;
-            case 4:
-                SetDatabaseNStates(buf.ReadIntVector());
-                break;
-            case 5:
-                SetDatabaseTimes(buf.ReadDoubleVector());
-                break;
-            case 6:
-                SetDatabaseCycles(buf.ReadIntVector());
-                break;
-            case 7:
-                SetIndices(buf.ReadIntVector());
-                break;
-            case 8:
-                SetCondensedTimes(buf.ReadDoubleVector());
-                break;
-            case 9:
-                SetCondensedCycles(buf.ReadIntVector());
-                break;
-            }
+        case 0:
+            SetName(buf.ReadString());
+            break;
+        case 1:
+            SetNumStates(buf.ReadInt());
+            break;
+        case 2:
+            SetMethod(buf.ReadInt());
+            break;
+        case 3:
+            SetDatabaseNames(buf.ReadStringVector());
+            break;
+        case 4:
+            SetDatabaseNStates(buf.ReadIntVector());
+            break;
+        case 5:
+            SetDatabaseTimes(buf.ReadDoubleVector());
+            break;
+        case 6:
+            SetDatabaseCycles(buf.ReadIntVector());
+            break;
+        case 7:
+            SetIndices(buf.ReadIntVector());
+            break;
+        case 8:
+            SetCondensedTimes(buf.ReadDoubleVector());
+            break;
+        case 9:
+            SetCondensedCycles(buf.ReadIntVector());
+            break;
         }
     }
 

@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class HistogramAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 16;
+
     // Enum values
     public final static int OUTPUTTYPE_CURVE = 0;
     public final static int OUTPUTTYPE_BLOCK = 1;
@@ -78,7 +80,29 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public HistogramAttributes()
     {
-        super(16);
+        super(numAdditionalAttributes);
+
+        basedOn = BASEDON_MANYZONESFORSINGLEVAR;
+        histogramType = BINCONTRIBUTION_FREQUENCY;
+        weightVariable = new String("default");
+        specifyRange = false;
+        min = 0;
+        max = 1;
+        numBins = 32;
+        domain = 0;
+        zone = 0;
+        useBinWidths = true;
+        outputType = OUTPUTTYPE_BLOCK;
+        lineStyle = 0;
+        lineWidth = 0;
+        color = new ColorAttribute(200, 80, 40);
+        dataScale = DATASCALE_LINEAR;
+        binScale = DATASCALE_LINEAR;
+    }
+
+    public HistogramAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         basedOn = BASEDON_MANYZONESFORSINGLEVAR;
         histogramType = BINCONTRIBUTION_FREQUENCY;
@@ -100,7 +124,7 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public HistogramAttributes(HistogramAttributes obj)
     {
-        super(16);
+        super(numAdditionalAttributes);
 
         basedOn = obj.basedOn;
         histogramType = obj.histogramType;
@@ -120,6 +144,16 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         binScale = obj.binScale;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(HistogramAttributes obj)
@@ -298,63 +332,59 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(binScale);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetBasedOn(buf.ReadInt());
-                break;
-            case 1:
-                SetHistogramType(buf.ReadInt());
-                break;
-            case 2:
-                SetWeightVariable(buf.ReadString());
-                break;
-            case 3:
-                SetSpecifyRange(buf.ReadBool());
-                break;
-            case 4:
-                SetMin(buf.ReadDouble());
-                break;
-            case 5:
-                SetMax(buf.ReadDouble());
-                break;
-            case 6:
-                SetNumBins(buf.ReadInt());
-                break;
-            case 7:
-                SetDomain(buf.ReadInt());
-                break;
-            case 8:
-                SetZone(buf.ReadInt());
-                break;
-            case 9:
-                SetUseBinWidths(buf.ReadBool());
-                break;
-            case 10:
-                SetOutputType(buf.ReadInt());
-                break;
-            case 11:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 12:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 13:
-                color.Read(buf);
-                Select(13);
-                break;
-            case 14:
-                SetDataScale(buf.ReadInt());
-                break;
-            case 15:
-                SetBinScale(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetBasedOn(buf.ReadInt());
+            break;
+        case 1:
+            SetHistogramType(buf.ReadInt());
+            break;
+        case 2:
+            SetWeightVariable(buf.ReadString());
+            break;
+        case 3:
+            SetSpecifyRange(buf.ReadBool());
+            break;
+        case 4:
+            SetMin(buf.ReadDouble());
+            break;
+        case 5:
+            SetMax(buf.ReadDouble());
+            break;
+        case 6:
+            SetNumBins(buf.ReadInt());
+            break;
+        case 7:
+            SetDomain(buf.ReadInt());
+            break;
+        case 8:
+            SetZone(buf.ReadInt());
+            break;
+        case 9:
+            SetUseBinWidths(buf.ReadBool());
+            break;
+        case 10:
+            SetOutputType(buf.ReadInt());
+            break;
+        case 11:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 12:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 13:
+            color.Read(buf);
+            Select(13);
+            break;
+        case 14:
+            SetDataScale(buf.ReadInt());
+            break;
+        case 15:
+            SetBinScale(buf.ReadInt());
+            break;
         }
     }
 

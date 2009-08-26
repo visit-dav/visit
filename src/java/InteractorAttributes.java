@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class InteractorAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     // Enum values
     public final static int NAVIGATIONMODE_TRACKBALL = 0;
     public final static int NAVIGATIONMODE_DOLLY = 1;
@@ -64,7 +66,18 @@ public class InteractorAttributes extends AttributeSubject
 
     public InteractorAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        showGuidelines = true;
+        clampSquare = false;
+        fillViewportOnZoom = true;
+        navigationMode = NAVIGATIONMODE_TRACKBALL;
+        axisArraySnap = true;
+    }
+
+    public InteractorAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         showGuidelines = true;
         clampSquare = false;
@@ -75,7 +88,7 @@ public class InteractorAttributes extends AttributeSubject
 
     public InteractorAttributes(InteractorAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         showGuidelines = obj.showGuidelines;
         clampSquare = obj.clampSquare;
@@ -84,6 +97,16 @@ public class InteractorAttributes extends AttributeSubject
         axisArraySnap = obj.axisArraySnap;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(InteractorAttributes obj)
@@ -149,29 +172,25 @@ public class InteractorAttributes extends AttributeSubject
             buf.WriteBool(axisArraySnap);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetShowGuidelines(buf.ReadBool());
-                break;
-            case 1:
-                SetClampSquare(buf.ReadBool());
-                break;
-            case 2:
-                SetFillViewportOnZoom(buf.ReadBool());
-                break;
-            case 3:
-                SetNavigationMode(buf.ReadInt());
-                break;
-            case 4:
-                SetAxisArraySnap(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetShowGuidelines(buf.ReadBool());
+            break;
+        case 1:
+            SetClampSquare(buf.ReadBool());
+            break;
+        case 2:
+            SetFillViewportOnZoom(buf.ReadBool());
+            break;
+        case 3:
+            SetNavigationMode(buf.ReadInt());
+            break;
+        case 4:
+            SetAxisArraySnap(buf.ReadBool());
+            break;
         }
     }
 

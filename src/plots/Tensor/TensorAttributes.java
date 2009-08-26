@@ -60,9 +60,27 @@ import llnl.visit.ColorAttribute;
 
 public class TensorAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 10;
+
     public TensorAttributes()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        useStride = false;
+        stride = 1;
+        nTensors = 400;
+        scale = 0.25;
+        scaleByMagnitude = true;
+        autoScale = true;
+        colorByEigenvalues = true;
+        useLegend = true;
+        tensorColor = new ColorAttribute(0, 0, 0);
+        colorTableName = new String("Default");
+    }
+
+    public TensorAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useStride = false;
         stride = 1;
@@ -78,7 +96,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
 
     public TensorAttributes(TensorAttributes obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         useStride = obj.useStride;
         stride = obj.stride;
@@ -92,6 +110,16 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         colorTableName = new String(obj.colorTableName);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TensorAttributes obj)
@@ -210,45 +238,41 @@ public class TensorAttributes extends AttributeSubject implements Plugin
             buf.WriteString(colorTableName);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseStride(buf.ReadBool());
-                break;
-            case 1:
-                SetStride(buf.ReadInt());
-                break;
-            case 2:
-                SetNTensors(buf.ReadInt());
-                break;
-            case 3:
-                SetScale(buf.ReadDouble());
-                break;
-            case 4:
-                SetScaleByMagnitude(buf.ReadBool());
-                break;
-            case 5:
-                SetAutoScale(buf.ReadBool());
-                break;
-            case 6:
-                SetColorByEigenvalues(buf.ReadBool());
-                break;
-            case 7:
-                SetUseLegend(buf.ReadBool());
-                break;
-            case 8:
-                tensorColor.Read(buf);
-                Select(8);
-                break;
-            case 9:
-                SetColorTableName(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetUseStride(buf.ReadBool());
+            break;
+        case 1:
+            SetStride(buf.ReadInt());
+            break;
+        case 2:
+            SetNTensors(buf.ReadInt());
+            break;
+        case 3:
+            SetScale(buf.ReadDouble());
+            break;
+        case 4:
+            SetScaleByMagnitude(buf.ReadBool());
+            break;
+        case 5:
+            SetAutoScale(buf.ReadBool());
+            break;
+        case 6:
+            SetColorByEigenvalues(buf.ReadBool());
+            break;
+        case 7:
+            SetUseLegend(buf.ReadBool());
+            break;
+        case 8:
+            tensorColor.Read(buf);
+            Select(8);
+            break;
+        case 9:
+            SetColorTableName(buf.ReadString());
+            break;
         }
     }
 

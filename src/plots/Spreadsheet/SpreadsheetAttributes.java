@@ -62,6 +62,8 @@ import java.util.Vector;
 
 public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 17;
+
     // Enum values
     public final static int NORMALAXIS_X = 0;
     public final static int NORMALAXIS_Y = 1;
@@ -70,7 +72,30 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes()
     {
-        super(17);
+        super(numAdditionalAttributes);
+
+        subsetName = new String("Whole");
+        formatString = new String("%1.6f");
+        useColorTable = false;
+        colorTableName = new String("Default");
+        showTracerPlane = true;
+        tracerColor = new ColorAttribute(255, 0, 0, 150);
+        normal = NORMALAXIS_Z;
+        sliceIndex = 0;
+        spreadsheetFont = new String("Courier,12,-1,5,50,0,0,0,0,0");
+        showPatchOutline = true;
+        showCurrentCellOutline = false;
+        currentPick = 0;
+        currentPickType = 0;
+        currentPickValid = false;
+        currentPickLetter = new String("");
+        pastPicks = new Vector();
+        pastPickLetters = new Vector();
+    }
+
+    public SpreadsheetAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         subsetName = new String("Whole");
         formatString = new String("%1.6f");
@@ -93,7 +118,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes(SpreadsheetAttributes obj)
     {
-        super(17);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -125,6 +150,16 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SpreadsheetAttributes obj)
@@ -333,66 +368,62 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
             buf.WriteStringVector(pastPickLetters);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSubsetName(buf.ReadString());
-                break;
-            case 1:
-                SetFormatString(buf.ReadString());
-                break;
-            case 2:
-                SetUseColorTable(buf.ReadBool());
-                break;
-            case 3:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 4:
-                SetShowTracerPlane(buf.ReadBool());
-                break;
-            case 5:
-                tracerColor.Read(buf);
-                Select(5);
-                break;
-            case 6:
-                SetNormal(buf.ReadInt());
-                break;
-            case 7:
-                SetSliceIndex(buf.ReadInt());
-                break;
-            case 8:
-                SetSpreadsheetFont(buf.ReadString());
-                break;
-            case 9:
-                SetShowPatchOutline(buf.ReadBool());
-                break;
-            case 10:
-                SetShowCurrentCellOutline(buf.ReadBool());
-                break;
-            case 11:
-                SetCurrentPick(buf.ReadInt());
-                break;
-            case 12:
-                SetCurrentPickType(buf.ReadInt());
-                break;
-            case 13:
-                SetCurrentPickValid(buf.ReadBool());
-                break;
-            case 14:
-                SetCurrentPickLetter(buf.ReadString());
-                break;
-            case 15:
-                SetPastPicks(buf.ReadDoubleVector());
-                break;
-            case 16:
-                SetPastPickLetters(buf.ReadStringVector());
-                break;
-            }
+        case 0:
+            SetSubsetName(buf.ReadString());
+            break;
+        case 1:
+            SetFormatString(buf.ReadString());
+            break;
+        case 2:
+            SetUseColorTable(buf.ReadBool());
+            break;
+        case 3:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 4:
+            SetShowTracerPlane(buf.ReadBool());
+            break;
+        case 5:
+            tracerColor.Read(buf);
+            Select(5);
+            break;
+        case 6:
+            SetNormal(buf.ReadInt());
+            break;
+        case 7:
+            SetSliceIndex(buf.ReadInt());
+            break;
+        case 8:
+            SetSpreadsheetFont(buf.ReadString());
+            break;
+        case 9:
+            SetShowPatchOutline(buf.ReadBool());
+            break;
+        case 10:
+            SetShowCurrentCellOutline(buf.ReadBool());
+            break;
+        case 11:
+            SetCurrentPick(buf.ReadInt());
+            break;
+        case 12:
+            SetCurrentPickType(buf.ReadInt());
+            break;
+        case 13:
+            SetCurrentPickValid(buf.ReadBool());
+            break;
+        case 14:
+            SetCurrentPickLetter(buf.ReadString());
+            break;
+        case 15:
+            SetPastPicks(buf.ReadDoubleVector());
+            break;
+        case 16:
+            SetPastPickLetters(buf.ReadStringVector());
+            break;
         }
     }
 

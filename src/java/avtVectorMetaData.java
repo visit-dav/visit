@@ -54,257 +54,86 @@ package llnl.visit;
 //   
 // ****************************************************************************
 
-public class avtVectorMetaData extends AttributeSubject
+public class avtVectorMetaData extends avtVarMetaData
 {
+    private static int numAdditionalAttributes = 1;
+
     public avtVectorMetaData()
     {
-        super(12);
+        super(numAdditionalAttributes);
 
-        name = new String("vector");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
-        centering = 0;
-        hasUnits = false;
-        units = new String("");
-        hasDataExtents = false;
-        minDataExtents = 0;
-        maxDataExtents = 0;
         varDim = 0;
-        hideFromGUI = false;
+    }
+
+    public avtVectorMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        varDim = 0;
     }
 
     public avtVectorMetaData(avtVectorMetaData obj)
     {
-        super(12);
+        super(numAdditionalAttributes);
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
-        meshName = new String(obj.meshName);
-        centering = obj.centering;
-        hasUnits = obj.hasUnits;
-        units = new String(obj.units);
-        hasDataExtents = obj.hasDataExtents;
-        minDataExtents = obj.minDataExtents;
-        maxDataExtents = obj.maxDataExtents;
         varDim = obj.varDim;
-        hideFromGUI = obj.hideFromGUI;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtVectorMetaData obj)
     {
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (meshName.equals(obj.meshName)) &&
-                (centering == obj.centering) &&
-                (hasUnits == obj.hasUnits) &&
-                (units.equals(obj.units)) &&
-                (hasDataExtents == obj.hasDataExtents) &&
-                (minDataExtents == obj.minDataExtents) &&
-                (maxDataExtents == obj.maxDataExtents) &&
-                (varDim == obj.varDim) &&
-                (hideFromGUI == obj.hideFromGUI));
+        return (super.equals(obj) && (varDim == obj.varDim));
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
-    public void SetMeshName(String meshName_)
-    {
-        meshName = meshName_;
-        Select(3);
-    }
-
-    public void SetCentering(int centering_)
-    {
-        centering = centering_;
-        Select(4);
-    }
-
-    public void SetHasUnits(boolean hasUnits_)
-    {
-        hasUnits = hasUnits_;
-        Select(5);
-    }
-
-    public void SetUnits(String units_)
-    {
-        units = units_;
-        Select(6);
-    }
-
-    public void SetHasDataExtents(boolean hasDataExtents_)
-    {
-        hasDataExtents = hasDataExtents_;
-        Select(7);
-    }
-
-    public void SetMinDataExtents(double minDataExtents_)
-    {
-        minDataExtents = minDataExtents_;
-        Select(8);
-    }
-
-    public void SetMaxDataExtents(double maxDataExtents_)
-    {
-        maxDataExtents = maxDataExtents_;
-        Select(9);
-    }
-
     public void SetVarDim(int varDim_)
     {
         varDim = varDim_;
-        Select(10);
-    }
-
-    public void SetHideFromGUI(boolean hideFromGUI_)
-    {
-        hideFromGUI = hideFromGUI_;
-        Select(11);
+        Select(Offset() + 0);
     }
 
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetOriginalName() { return originalName; }
-    public boolean GetValidVariable() { return validVariable; }
-    public String  GetMeshName() { return meshName; }
-    public int     GetCentering() { return centering; }
-    public boolean GetHasUnits() { return hasUnits; }
-    public String  GetUnits() { return units; }
-    public boolean GetHasDataExtents() { return hasDataExtents; }
-    public double  GetMinDataExtents() { return minDataExtents; }
-    public double  GetMaxDataExtents() { return maxDataExtents; }
-    public int     GetVarDim() { return varDim; }
-    public boolean GetHideFromGUI() { return hideFromGUI; }
+    public int GetVarDim() { return varDim; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
-            buf.WriteString(meshName);
-        if(WriteSelect(4, buf))
-            buf.WriteInt(centering);
-        if(WriteSelect(5, buf))
-            buf.WriteBool(hasUnits);
-        if(WriteSelect(6, buf))
-            buf.WriteString(units);
-        if(WriteSelect(7, buf))
-            buf.WriteBool(hasDataExtents);
-        if(WriteSelect(8, buf))
-            buf.WriteDouble(minDataExtents);
-        if(WriteSelect(9, buf))
-            buf.WriteDouble(maxDataExtents);
-        if(WriteSelect(10, buf))
+        super.WriteAtts(buf);
+
+        int offset = Offset();
+        if(WriteSelect(offset + 0, buf))
             buf.WriteInt(varDim);
-        if(WriteSelect(11, buf))
-            buf.WriteBool(hideFromGUI);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
-        {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshName(buf.ReadString());
-                break;
-            case 4:
-                SetCentering(buf.ReadInt());
-                break;
-            case 5:
-                SetHasUnits(buf.ReadBool());
-                break;
-            case 6:
-                SetUnits(buf.ReadString());
-                break;
-            case 7:
-                SetHasDataExtents(buf.ReadBool());
-                break;
-            case 8:
-                SetMinDataExtents(buf.ReadDouble());
-                break;
-            case 9:
-                SetMaxDataExtents(buf.ReadDouble());
-                break;
-            case 10:
-                SetVarDim(buf.ReadInt());
-                break;
-            case 11:
-                SetHideFromGUI(buf.ReadBool());
-                break;
-            }
-        }
+        if(id == Offset())
+            SetVarDim(buf.ReadInt());
+        else
+            super.ReadAtts(id, buf);
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + stringToString("meshName", meshName, indent) + "\n";
-        str = str + intToString("centering", centering, indent) + "\n";
-        str = str + boolToString("hasUnits", hasUnits, indent) + "\n";
-        str = str + stringToString("units", units, indent) + "\n";
-        str = str + boolToString("hasDataExtents", hasDataExtents, indent) + "\n";
-        str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
-        str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
         str = str + intToString("varDim", varDim, indent) + "\n";
-        str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String  name;
-    private String  originalName;
-    private boolean validVariable;
-    private String  meshName;
-    private int     centering;
-    private boolean hasUnits;
-    private String  units;
-    private boolean hasDataExtents;
-    private double  minDataExtents;
-    private double  maxDataExtents;
-    private int     varDim;
-    private boolean hideFromGUI;
+    private int varDim;
 }
 

@@ -59,9 +59,31 @@ import llnl.visit.Plugin;
 
 public class LineoutAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 8;
+
     public LineoutAttributes()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        point1 = new double[3];
+        point1[0] = 0;
+        point1[1] = 0;
+        point1[2] = 0;
+        point2 = new double[3];
+        point2[0] = 1;
+        point2[1] = 1;
+        point2[2] = 0;
+        interactive = false;
+        ignoreGlobal = false;
+        samplingOn = false;
+        numberOfSamplePoints = 50;
+        reflineLabels = false;
+        designator = new String("");
+    }
+
+    public LineoutAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         point1 = new double[3];
         point1[0] = 0;
@@ -81,7 +103,7 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
 
     public LineoutAttributes(LineoutAttributes obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -103,6 +125,16 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
         designator = new String(obj.designator);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(LineoutAttributes obj)
@@ -233,38 +265,34 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
             buf.WriteString(designator);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPoint1(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetPoint2(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetInteractive(buf.ReadBool());
-                break;
-            case 3:
-                SetIgnoreGlobal(buf.ReadBool());
-                break;
-            case 4:
-                SetSamplingOn(buf.ReadBool());
-                break;
-            case 5:
-                SetNumberOfSamplePoints(buf.ReadInt());
-                break;
-            case 6:
-                SetReflineLabels(buf.ReadBool());
-                break;
-            case 7:
-                SetDesignator(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetPoint1(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetPoint2(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetInteractive(buf.ReadBool());
+            break;
+        case 3:
+            SetIgnoreGlobal(buf.ReadBool());
+            break;
+        case 4:
+            SetSamplingOn(buf.ReadBool());
+            break;
+        case 5:
+            SetNumberOfSamplePoints(buf.ReadInt());
+            break;
+        case 6:
+            SetReflineLabels(buf.ReadBool());
+            break;
+        case 7:
+            SetDesignator(buf.ReadString());
+            break;
         }
     }
 

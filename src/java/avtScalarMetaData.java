@@ -57,8 +57,10 @@ import java.lang.Integer;
 //   
 // ****************************************************************************
 
-public class avtScalarMetaData extends AttributeSubject
+public class avtScalarMetaData extends avtVarMetaData
 {
+    private static int numAdditionalAttributes = 10;
+
     // Enum values
     public final static int PARTIALCELLMODES_INCLUDE = 0;
     public final static int PARTIALCELLMODES_EXCLUDE = 1;
@@ -73,20 +75,29 @@ public class avtScalarMetaData extends AttributeSubject
 
     public avtScalarMetaData()
     {
-        super(21);
+        super(numAdditionalAttributes);
 
-        name = new String("scalar");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
-        centering = 0;
-        hasUnits = false;
-        units = new String("");
-        hasDataExtents = false;
-        minDataExtents = 0;
-        maxDataExtents = 0;
         treatAsASCII = false;
-        hideFromGUI = false;
+        enumerationType = ENUMTYPES_NONE;
+        enumNames = new Vector();
+        enumRanges = new Vector();
+        enumAlwaysExclude = new double[2];
+        enumAlwaysExclude[0] = 0;
+        enumAlwaysExclude[1] = 0;
+        enumAlwaysInclude = new double[2];
+        enumAlwaysInclude[0] = 0;
+        enumAlwaysInclude[1] = 0;
+        enumPartialCellMode = PARTIALCELLMODES_EXCLUDE;
+        enumGraphEdges = new Vector();
+        enumNChooseRN = 0;
+        enumNChooseRMaxR = 0;
+    }
+
+    public avtScalarMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        treatAsASCII = false;
         enumerationType = ENUMTYPES_NONE;
         enumNames = new Vector();
         enumRanges = new Vector();
@@ -104,22 +115,11 @@ public class avtScalarMetaData extends AttributeSubject
 
     public avtScalarMetaData(avtScalarMetaData obj)
     {
-        super(21);
+        super(numAdditionalAttributes);
 
         int i;
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
-        meshName = new String(obj.meshName);
-        centering = obj.centering;
-        hasUnits = obj.hasUnits;
-        units = new String(obj.units);
-        hasDataExtents = obj.hasDataExtents;
-        minDataExtents = obj.minDataExtents;
-        maxDataExtents = obj.maxDataExtents;
         treatAsASCII = obj.treatAsASCII;
-        hideFromGUI = obj.hideFromGUI;
         enumerationType = obj.enumerationType;
         enumNames = new Vector(obj.enumNames.size());
         for(i = 0; i < obj.enumNames.size(); ++i)
@@ -151,6 +151,16 @@ public class avtScalarMetaData extends AttributeSubject
         enumNChooseRMaxR = obj.enumNChooseRMaxR;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtScalarMetaData obj)
@@ -195,18 +205,7 @@ public class avtScalarMetaData extends AttributeSubject
             enumGraphEdges_equal = enumGraphEdges1.equals(enumGraphEdges2);
         }
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (meshName.equals(obj.meshName)) &&
-                (centering == obj.centering) &&
-                (hasUnits == obj.hasUnits) &&
-                (units.equals(obj.units)) &&
-                (hasDataExtents == obj.hasDataExtents) &&
-                (minDataExtents == obj.minDataExtents) &&
-                (maxDataExtents == obj.maxDataExtents) &&
-                (treatAsASCII == obj.treatAsASCII) &&
-                (hideFromGUI == obj.hideFromGUI) &&
+        return (super.equals(obj) && (treatAsASCII == obj.treatAsASCII) &&
                 (enumerationType == obj.enumerationType) &&
                 enumNames_equal &&
                 enumRanges_equal &&
@@ -219,161 +218,84 @@ public class avtScalarMetaData extends AttributeSubject
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
-    public void SetMeshName(String meshName_)
-    {
-        meshName = meshName_;
-        Select(3);
-    }
-
-    public void SetCentering(int centering_)
-    {
-        centering = centering_;
-        Select(4);
-    }
-
-    public void SetHasUnits(boolean hasUnits_)
-    {
-        hasUnits = hasUnits_;
-        Select(5);
-    }
-
-    public void SetUnits(String units_)
-    {
-        units = units_;
-        Select(6);
-    }
-
-    public void SetHasDataExtents(boolean hasDataExtents_)
-    {
-        hasDataExtents = hasDataExtents_;
-        Select(7);
-    }
-
-    public void SetMinDataExtents(double minDataExtents_)
-    {
-        minDataExtents = minDataExtents_;
-        Select(8);
-    }
-
-    public void SetMaxDataExtents(double maxDataExtents_)
-    {
-        maxDataExtents = maxDataExtents_;
-        Select(9);
-    }
-
     public void SetTreatAsASCII(boolean treatAsASCII_)
     {
         treatAsASCII = treatAsASCII_;
-        Select(10);
-    }
-
-    public void SetHideFromGUI(boolean hideFromGUI_)
-    {
-        hideFromGUI = hideFromGUI_;
-        Select(11);
+        Select(Offset() + 0);
     }
 
     public void SetEnumerationType(int enumerationType_)
     {
         enumerationType = enumerationType_;
-        Select(12);
+        Select(Offset() + 1);
     }
 
     public void SetEnumNames(Vector enumNames_)
     {
         enumNames = enumNames_;
-        Select(13);
+        Select(Offset() + 2);
     }
 
     public void SetEnumRanges(Vector enumRanges_)
     {
         enumRanges = enumRanges_;
-        Select(14);
+        Select(Offset() + 3);
     }
 
     public void SetEnumAlwaysExclude(double[] enumAlwaysExclude_)
     {
         enumAlwaysExclude[0] = enumAlwaysExclude_[0];
         enumAlwaysExclude[1] = enumAlwaysExclude_[1];
-        Select(15);
+        Select(Offset() + 4);
     }
 
     public void SetEnumAlwaysExclude(double e0, double e1)
     {
         enumAlwaysExclude[0] = e0;
         enumAlwaysExclude[1] = e1;
-        Select(15);
+        Select(Offset() + 4);
     }
 
     public void SetEnumAlwaysInclude(double[] enumAlwaysInclude_)
     {
         enumAlwaysInclude[0] = enumAlwaysInclude_[0];
         enumAlwaysInclude[1] = enumAlwaysInclude_[1];
-        Select(16);
+        Select(Offset() + 5);
     }
 
     public void SetEnumAlwaysInclude(double e0, double e1)
     {
         enumAlwaysInclude[0] = e0;
         enumAlwaysInclude[1] = e1;
-        Select(16);
+        Select(Offset() + 5);
     }
 
     public void SetEnumPartialCellMode(int enumPartialCellMode_)
     {
         enumPartialCellMode = enumPartialCellMode_;
-        Select(17);
+        Select(Offset() + 6);
     }
 
     public void SetEnumGraphEdges(Vector enumGraphEdges_)
     {
         enumGraphEdges = enumGraphEdges_;
-        Select(18);
+        Select(Offset() + 7);
     }
 
     public void SetEnumNChooseRN(int enumNChooseRN_)
     {
         enumNChooseRN = enumNChooseRN_;
-        Select(19);
+        Select(Offset() + 8);
     }
 
     public void SetEnumNChooseRMaxR(int enumNChooseRMaxR_)
     {
         enumNChooseRMaxR = enumNChooseRMaxR_;
-        Select(20);
+        Select(Offset() + 9);
     }
 
     // Property getting methods
-    public String   GetName() { return name; }
-    public String   GetOriginalName() { return originalName; }
-    public boolean  GetValidVariable() { return validVariable; }
-    public String   GetMeshName() { return meshName; }
-    public int      GetCentering() { return centering; }
-    public boolean  GetHasUnits() { return hasUnits; }
-    public String   GetUnits() { return units; }
-    public boolean  GetHasDataExtents() { return hasDataExtents; }
-    public double   GetMinDataExtents() { return minDataExtents; }
-    public double   GetMaxDataExtents() { return maxDataExtents; }
     public boolean  GetTreatAsASCII() { return treatAsASCII; }
-    public boolean  GetHideFromGUI() { return hideFromGUI; }
     public int      GetEnumerationType() { return enumerationType; }
     public Vector   GetEnumNames() { return enumNames; }
     public Vector   GetEnumRanges() { return enumRanges; }
@@ -387,139 +309,76 @@ public class avtScalarMetaData extends AttributeSubject
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
-            buf.WriteString(meshName);
-        if(WriteSelect(4, buf))
-            buf.WriteInt(centering);
-        if(WriteSelect(5, buf))
-            buf.WriteBool(hasUnits);
-        if(WriteSelect(6, buf))
-            buf.WriteString(units);
-        if(WriteSelect(7, buf))
-            buf.WriteBool(hasDataExtents);
-        if(WriteSelect(8, buf))
-            buf.WriteDouble(minDataExtents);
-        if(WriteSelect(9, buf))
-            buf.WriteDouble(maxDataExtents);
-        if(WriteSelect(10, buf))
+        super.WriteAtts(buf);
+
+        int offset = Offset();
+        if(WriteSelect(offset + 0, buf))
             buf.WriteBool(treatAsASCII);
-        if(WriteSelect(11, buf))
-            buf.WriteBool(hideFromGUI);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(offset + 1, buf))
             buf.WriteInt(enumerationType);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(offset + 2, buf))
             buf.WriteStringVector(enumNames);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(offset + 3, buf))
             buf.WriteDoubleVector(enumRanges);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(offset + 4, buf))
             buf.WriteDoubleArray(enumAlwaysExclude);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(offset + 5, buf))
             buf.WriteDoubleArray(enumAlwaysInclude);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(offset + 6, buf))
             buf.WriteInt(enumPartialCellMode);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(offset + 7, buf))
             buf.WriteIntVector(enumGraphEdges);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(offset + 8, buf))
             buf.WriteInt(enumNChooseRN);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(offset + 9, buf))
             buf.WriteInt(enumNChooseRMaxR);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        int index = id - Offset();
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshName(buf.ReadString());
-                break;
-            case 4:
-                SetCentering(buf.ReadInt());
-                break;
-            case 5:
-                SetHasUnits(buf.ReadBool());
-                break;
-            case 6:
-                SetUnits(buf.ReadString());
-                break;
-            case 7:
-                SetHasDataExtents(buf.ReadBool());
-                break;
-            case 8:
-                SetMinDataExtents(buf.ReadDouble());
-                break;
-            case 9:
-                SetMaxDataExtents(buf.ReadDouble());
-                break;
-            case 10:
-                SetTreatAsASCII(buf.ReadBool());
-                break;
-            case 11:
-                SetHideFromGUI(buf.ReadBool());
-                break;
-            case 12:
-                SetEnumerationType(buf.ReadInt());
-                break;
-            case 13:
-                SetEnumNames(buf.ReadStringVector());
-                break;
-            case 14:
-                SetEnumRanges(buf.ReadDoubleVector());
-                break;
-            case 15:
-                SetEnumAlwaysExclude(buf.ReadDoubleArray());
-                break;
-            case 16:
-                SetEnumAlwaysInclude(buf.ReadDoubleArray());
-                break;
-            case 17:
-                SetEnumPartialCellMode(buf.ReadInt());
-                break;
-            case 18:
-                SetEnumGraphEdges(buf.ReadIntVector());
-                break;
-            case 19:
-                SetEnumNChooseRN(buf.ReadInt());
-                break;
-            case 20:
-                SetEnumNChooseRMaxR(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetTreatAsASCII(buf.ReadBool());
+            break;
+        case 1:
+            SetEnumerationType(buf.ReadInt());
+            break;
+        case 2:
+            SetEnumNames(buf.ReadStringVector());
+            break;
+        case 3:
+            SetEnumRanges(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetEnumAlwaysExclude(buf.ReadDoubleArray());
+            break;
+        case 5:
+            SetEnumAlwaysInclude(buf.ReadDoubleArray());
+            break;
+        case 6:
+            SetEnumPartialCellMode(buf.ReadInt());
+            break;
+        case 7:
+            SetEnumGraphEdges(buf.ReadIntVector());
+            break;
+        case 8:
+            SetEnumNChooseRN(buf.ReadInt());
+            break;
+        case 9:
+            SetEnumNChooseRMaxR(buf.ReadInt());
+            break;
+        default:
+            super.ReadAtts(id, buf);
+            break;
         }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + stringToString("meshName", meshName, indent) + "\n";
-        str = str + intToString("centering", centering, indent) + "\n";
-        str = str + boolToString("hasUnits", hasUnits, indent) + "\n";
-        str = str + stringToString("units", units, indent) + "\n";
-        str = str + boolToString("hasDataExtents", hasDataExtents, indent) + "\n";
-        str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
-        str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
         str = str + boolToString("treatAsASCII", treatAsASCII, indent) + "\n";
-        str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
         str = str + indent + "enumerationType = ";
         if(enumerationType == ENUMTYPES_NONE)
             str = str + "ENUMTYPES_NONE";
@@ -547,23 +406,12 @@ public class avtScalarMetaData extends AttributeSubject
         str = str + intVectorToString("enumGraphEdges", enumGraphEdges, indent) + "\n";
         str = str + intToString("enumNChooseRN", enumNChooseRN, indent) + "\n";
         str = str + intToString("enumNChooseRMaxR", enumNChooseRMaxR, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String   name;
-    private String   originalName;
-    private boolean  validVariable;
-    private String   meshName;
-    private int      centering;
-    private boolean  hasUnits;
-    private String   units;
-    private boolean  hasDataExtents;
-    private double   minDataExtents;
-    private double   maxDataExtents;
     private boolean  treatAsASCII;
-    private boolean  hideFromGUI;
     private int      enumerationType;
     private Vector   enumNames; // vector of String objects
     private Vector   enumRanges; // vector of Double objects

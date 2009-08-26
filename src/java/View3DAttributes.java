@@ -56,9 +56,44 @@ package llnl.visit;
 
 public class View3DAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 13;
+
     public View3DAttributes()
     {
-        super(13);
+        super(numAdditionalAttributes);
+
+        viewNormal = new double[3];
+        viewNormal[0] = 0;
+        viewNormal[1] = 0;
+        viewNormal[2] = 1;
+        focus = new double[3];
+        focus[0] = 0;
+        focus[1] = 0;
+        focus[2] = 0;
+        viewUp = new double[3];
+        viewUp[0] = 0;
+        viewUp[1] = 1;
+        viewUp[2] = 0;
+        viewAngle = 30;
+        parallelScale = 1;
+        nearPlane = 0.001;
+        farPlane = 100;
+        imagePan = new double[2];
+        imagePan[0] = 0;
+        imagePan[1] = 0;
+        imageZoom = 1;
+        perspective = true;
+        eyeAngle = 2;
+        centerOfRotationSet = false;
+        centerOfRotation = new double[3];
+        centerOfRotation[0] = 0;
+        centerOfRotation[1] = 0;
+        centerOfRotation[2] = 0;
+    }
+
+    public View3DAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         viewNormal = new double[3];
         viewNormal[0] = 0;
@@ -91,7 +126,7 @@ public class View3DAttributes extends AttributeSubject
 
     public View3DAttributes(View3DAttributes obj)
     {
-        super(13);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -129,6 +164,16 @@ public class View3DAttributes extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(View3DAttributes obj)
@@ -349,53 +394,49 @@ public class View3DAttributes extends AttributeSubject
             buf.WriteDoubleArray(centerOfRotation);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetViewNormal(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetFocus(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetViewUp(buf.ReadDoubleArray());
-                break;
-            case 3:
-                SetViewAngle(buf.ReadDouble());
-                break;
-            case 4:
-                SetParallelScale(buf.ReadDouble());
-                break;
-            case 5:
-                SetNearPlane(buf.ReadDouble());
-                break;
-            case 6:
-                SetFarPlane(buf.ReadDouble());
-                break;
-            case 7:
-                SetImagePan(buf.ReadDoubleArray());
-                break;
-            case 8:
-                SetImageZoom(buf.ReadDouble());
-                break;
-            case 9:
-                SetPerspective(buf.ReadBool());
-                break;
-            case 10:
-                SetEyeAngle(buf.ReadDouble());
-                break;
-            case 11:
-                SetCenterOfRotationSet(buf.ReadBool());
-                break;
-            case 12:
-                SetCenterOfRotation(buf.ReadDoubleArray());
-                break;
-            }
+        case 0:
+            SetViewNormal(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetFocus(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetViewUp(buf.ReadDoubleArray());
+            break;
+        case 3:
+            SetViewAngle(buf.ReadDouble());
+            break;
+        case 4:
+            SetParallelScale(buf.ReadDouble());
+            break;
+        case 5:
+            SetNearPlane(buf.ReadDouble());
+            break;
+        case 6:
+            SetFarPlane(buf.ReadDouble());
+            break;
+        case 7:
+            SetImagePan(buf.ReadDoubleArray());
+            break;
+        case 8:
+            SetImageZoom(buf.ReadDouble());
+            break;
+        case 9:
+            SetPerspective(buf.ReadBool());
+            break;
+        case 10:
+            SetEyeAngle(buf.ReadDouble());
+            break;
+        case 11:
+            SetCenterOfRotationSet(buf.ReadBool());
+            break;
+        case 12:
+            SetCenterOfRotation(buf.ReadDoubleArray());
+            break;
         }
     }
 

@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class MoleculeAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 22;
+
     // Enum values
     public final static int ATOMRENDERINGMODE_NOATOMS = 0;
     public final static int ATOMRENDERINGMODE_SPHEREATOMS = 1;
@@ -85,7 +87,35 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public MoleculeAttributes()
     {
-        super(22);
+        super(numAdditionalAttributes);
+
+        drawAtomsAs = ATOMRENDERINGMODE_SPHEREATOMS;
+        scaleRadiusBy = RADIUSTYPE_FIXED;
+        drawBondsAs = BONDRENDERINGMODE_CYLINDERBONDS;
+        colorBonds = BONDCOLORINGMODE_COLORBYATOM;
+        bondSingleColor = new ColorAttribute(128, 128, 128);
+        radiusVariable = new String("Default");
+        radiusScaleFactor = 1f;
+        radiusFixed = 0.3f;
+        atomSphereQuality = DETAILLEVEL_MEDIUM;
+        bondCylinderQuality = DETAILLEVEL_MEDIUM;
+        bondRadius = 0.12f;
+        bondLineWidth = 0;
+        bondLineStyle = 0;
+        elementColorTable = new String("cpk_jmol");
+        residueTypeColorTable = new String("amino_shapely");
+        residueSequenceColorTable = new String("Default");
+        continuousColorTable = new String("Default");
+        legendFlag = true;
+        minFlag = false;
+        scalarMin = 0f;
+        maxFlag = false;
+        scalarMax = 1f;
+    }
+
+    public MoleculeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         drawAtomsAs = ATOMRENDERINGMODE_SPHEREATOMS;
         scaleRadiusBy = RADIUSTYPE_FIXED;
@@ -113,7 +143,7 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public MoleculeAttributes(MoleculeAttributes obj)
     {
-        super(22);
+        super(numAdditionalAttributes);
 
         drawAtomsAs = obj.drawAtomsAs;
         scaleRadiusBy = obj.scaleRadiusBy;
@@ -139,6 +169,16 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         scalarMax = obj.scalarMax;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MoleculeAttributes obj)
@@ -377,81 +417,77 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
             buf.WriteFloat(scalarMax);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDrawAtomsAs(buf.ReadInt());
-                break;
-            case 1:
-                SetScaleRadiusBy(buf.ReadInt());
-                break;
-            case 2:
-                SetDrawBondsAs(buf.ReadInt());
-                break;
-            case 3:
-                SetColorBonds(buf.ReadInt());
-                break;
-            case 4:
-                bondSingleColor.Read(buf);
-                Select(4);
-                break;
-            case 5:
-                SetRadiusVariable(buf.ReadString());
-                break;
-            case 6:
-                SetRadiusScaleFactor(buf.ReadFloat());
-                break;
-            case 7:
-                SetRadiusFixed(buf.ReadFloat());
-                break;
-            case 8:
-                SetAtomSphereQuality(buf.ReadInt());
-                break;
-            case 9:
-                SetBondCylinderQuality(buf.ReadInt());
-                break;
-            case 10:
-                SetBondRadius(buf.ReadFloat());
-                break;
-            case 11:
-                SetBondLineWidth(buf.ReadInt());
-                break;
-            case 12:
-                SetBondLineStyle(buf.ReadInt());
-                break;
-            case 13:
-                SetElementColorTable(buf.ReadString());
-                break;
-            case 14:
-                SetResidueTypeColorTable(buf.ReadString());
-                break;
-            case 15:
-                SetResidueSequenceColorTable(buf.ReadString());
-                break;
-            case 16:
-                SetContinuousColorTable(buf.ReadString());
-                break;
-            case 17:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 18:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 19:
-                SetScalarMin(buf.ReadFloat());
-                break;
-            case 20:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 21:
-                SetScalarMax(buf.ReadFloat());
-                break;
-            }
+        case 0:
+            SetDrawAtomsAs(buf.ReadInt());
+            break;
+        case 1:
+            SetScaleRadiusBy(buf.ReadInt());
+            break;
+        case 2:
+            SetDrawBondsAs(buf.ReadInt());
+            break;
+        case 3:
+            SetColorBonds(buf.ReadInt());
+            break;
+        case 4:
+            bondSingleColor.Read(buf);
+            Select(4);
+            break;
+        case 5:
+            SetRadiusVariable(buf.ReadString());
+            break;
+        case 6:
+            SetRadiusScaleFactor(buf.ReadFloat());
+            break;
+        case 7:
+            SetRadiusFixed(buf.ReadFloat());
+            break;
+        case 8:
+            SetAtomSphereQuality(buf.ReadInt());
+            break;
+        case 9:
+            SetBondCylinderQuality(buf.ReadInt());
+            break;
+        case 10:
+            SetBondRadius(buf.ReadFloat());
+            break;
+        case 11:
+            SetBondLineWidth(buf.ReadInt());
+            break;
+        case 12:
+            SetBondLineStyle(buf.ReadInt());
+            break;
+        case 13:
+            SetElementColorTable(buf.ReadString());
+            break;
+        case 14:
+            SetResidueTypeColorTable(buf.ReadString());
+            break;
+        case 15:
+            SetResidueSequenceColorTable(buf.ReadString());
+            break;
+        case 16:
+            SetContinuousColorTable(buf.ReadString());
+            break;
+        case 17:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 18:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 19:
+            SetScalarMin(buf.ReadFloat());
+            break;
+        case 20:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 21:
+            SetScalarMax(buf.ReadFloat());
+            break;
         }
     }
 

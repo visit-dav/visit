@@ -56,9 +56,28 @@ package llnl.visit;
 
 public class ViewAxisArrayAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public ViewAxisArrayAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        domainCoords = new double[2];
+        domainCoords[0] = 0;
+        domainCoords[1] = 1;
+        rangeCoords = new double[2];
+        rangeCoords[0] = 0;
+        rangeCoords[1] = 1;
+        viewportCoords = new double[4];
+        viewportCoords[0] = 0.15;
+        viewportCoords[1] = 0.9;
+        viewportCoords[2] = 0.1;
+        viewportCoords[3] = 0.85;
+    }
+
+    public ViewAxisArrayAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         domainCoords = new double[2];
         domainCoords[0] = 0;
@@ -75,7 +94,7 @@ public class ViewAxisArrayAttributes extends AttributeSubject
 
     public ViewAxisArrayAttributes(ViewAxisArrayAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -93,6 +112,16 @@ public class ViewAxisArrayAttributes extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ViewAxisArrayAttributes obj)
@@ -183,23 +212,19 @@ public class ViewAxisArrayAttributes extends AttributeSubject
             buf.WriteDoubleArray(viewportCoords);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDomainCoords(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetRangeCoords(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetViewportCoords(buf.ReadDoubleArray());
-                break;
-            }
+        case 0:
+            SetDomainCoords(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetRangeCoords(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetViewportCoords(buf.ReadDoubleArray());
+            break;
         }
     }
 

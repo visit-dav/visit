@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class avtSimulationCommandSpecification extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 10;
+
     // Enum values
     public final static int RUNMODE_UNKNOWN = 0;
     public final static int RUNMODE_RUNNING = 1;
@@ -69,13 +71,28 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public avtSimulationCommandSpecification()
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         name = new String("");
             className = new String("");
         enabled = false;
         parent = new String("");
-        isOn = false;
+        isOn = true;
+        signal = new String("");
+        text = new String("");
+        uiType = new String("");
+        value = new String("");
+    }
+
+    public avtSimulationCommandSpecification(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        name = new String("");
+            className = new String("");
+        enabled = false;
+        parent = new String("");
+        isOn = true;
         signal = new String("");
         text = new String("");
         uiType = new String("");
@@ -84,7 +101,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public avtSimulationCommandSpecification(avtSimulationCommandSpecification obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         name = new String(obj.name);
         argumentType = obj.argumentType;
@@ -98,6 +115,16 @@ public class avtSimulationCommandSpecification extends AttributeSubject
         value = new String(obj.value);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtSimulationCommandSpecification obj)
@@ -213,44 +240,40 @@ public class avtSimulationCommandSpecification extends AttributeSubject
             buf.WriteString(value);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetArgumentType(buf.ReadInt());
-                break;
-            case 2:
-                SetClassName(buf.ReadString());
-                break;
-            case 3:
-                SetEnabled(buf.ReadBool());
-                break;
-            case 4:
-                SetParent(buf.ReadString());
-                break;
-            case 5:
-                SetIsOn(buf.ReadBool());
-                break;
-            case 6:
-                SetSignal(buf.ReadString());
-                break;
-            case 7:
-                SetText(buf.ReadString());
-                break;
-            case 8:
-                SetUiType(buf.ReadString());
-                break;
-            case 9:
-                SetValue(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetName(buf.ReadString());
+            break;
+        case 1:
+            SetArgumentType(buf.ReadInt());
+            break;
+        case 2:
+            SetClassName(buf.ReadString());
+            break;
+        case 3:
+            SetEnabled(buf.ReadBool());
+            break;
+        case 4:
+            SetParent(buf.ReadString());
+            break;
+        case 5:
+            SetIsOn(buf.ReadBool());
+            break;
+        case 6:
+            SetSignal(buf.ReadString());
+            break;
+        case 7:
+            SetText(buf.ReadString());
+            break;
+        case 8:
+            SetUiType(buf.ReadString());
+            break;
+        case 9:
+            SetValue(buf.ReadString());
+            break;
         }
     }
 

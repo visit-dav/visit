@@ -60,9 +60,21 @@ import java.util.Vector;
 
 public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 4;
+
     public TraceHistoryAttributes()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        vars = new Vector();
+        displacement = new String("");
+        numiter = 5;
+        output = new String("dump");
+    }
+
+    public TraceHistoryAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         vars = new Vector();
         displacement = new String("");
@@ -72,7 +84,7 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 
     public TraceHistoryAttributes(TraceHistoryAttributes obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -85,6 +97,16 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
         output = new String(obj.output);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TraceHistoryAttributes obj)
@@ -154,26 +176,22 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
             buf.WriteString(output);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVars(buf.ReadStringVector());
-                break;
-            case 1:
-                SetDisplacement(buf.ReadString());
-                break;
-            case 2:
-                SetNumiter(buf.ReadInt());
-                break;
-            case 3:
-                SetOutput(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetVars(buf.ReadStringVector());
+            break;
+        case 1:
+            SetDisplacement(buf.ReadString());
+            break;
+        case 2:
+            SetNumiter(buf.ReadInt());
+            break;
+        case 3:
+            SetOutput(buf.ReadString());
+            break;
         }
     }
 

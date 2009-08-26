@@ -30,7 +30,7 @@ Definition:
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : AttributeSubject(avtVectorMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtVectorMetaData::TmfsStruct)
 {
     // Initialize all members.
     *this = avtVectorMetaData();
@@ -74,7 +74,7 @@ Definition:
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd,
                                      const double *extents)
-    : AttributeSubject(avtVectorMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtVectorMetaData::TmfsStruct)
 {
     // Initialize all members.
     *this = avtVectorMetaData();
@@ -175,61 +175,8 @@ Indent(ostream &out, int indent)
 void
 avtVectorMetaData::Print(ostream &out, int indent) const
 {
-    Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
-    if (name != originalName)
-    {
-        Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
-    }
-
-    Indent(out, indent);
-    out << "Mesh is = " << meshName.c_str() << endl;
-
-    Indent(out, indent);
-    out << "Centering = ";
-    switch (centering)
-    {
-      case AVT_NODECENT:
-        out << "node centered.";
-        break;
-
-      case AVT_ZONECENT:
-        out << "zone centered.";
-        break;
-
-      case AVT_UNKNOWN_CENT:
-      default:
-        out << "unknowing centering.";
-        break;
-    }
-    out << endl;
-
-    if(hasUnits)
-    {
-        Indent(out, indent);
-        out << "Units are: " << units.c_str() << endl;
-    }
-
+    avtVarMetaData::Print(out, indent);
     Indent(out, indent);
     out << "Variable Dimension = " << varDim << endl;
-    if (hasDataExtents)
-    {
-        Indent(out, indent);
-        out << "Extents are: ( ";
-        out << minDataExtents << ", " << maxDataExtents;
-        out << ")" << endl;
-    }
-    else
-    {
-        Indent(out, indent);
-        out << "The extents are not set." << endl;
-    }
-
-    if (!validVariable)
-    {
-        Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
-    }
 }
 

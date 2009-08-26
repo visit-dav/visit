@@ -73,6 +73,8 @@
 //    Jeremy Meredith, Thu Aug  7 14:55:48 EDT 2008
 //    Use const char * for string literals.
 //   
+//    Mark C. Miller, Wed Aug 26 10:58:41 PDT 2009
+//    Added custom base class for dervied state objects.
 // ****************************************************************************
 
 class GeneratorBase : public AttributeBase
@@ -81,8 +83,9 @@ public:
     QString generatorName;
 public:
     GeneratorBase(const QString &n, const QString &p, const QString &f,
-                      const QString &e, const QString &ei, const QString &gName)
-        : AttributeBase(n,p,f,e,ei), generatorName(gName)
+                      const QString &e, const QString &ei, const QString &gName,
+                      const QString &bc = "AttributeSubject")
+        : AttributeBase(n,p,f,e,ei,bc), generatorName(gName)
     {
     }
 

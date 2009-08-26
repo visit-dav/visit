@@ -40,8 +40,8 @@
 #define AVTSCALARMETADATA_H
 #include <dbatts_exports.h>
 #include <string>
-#include <avtTypes.h>
-#include <AttributeSubject.h>
+#include <avtVarMetaData.h>
+
 #include <float.h>
 #include <vector>
 #include <list>
@@ -61,7 +61,7 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtScalarMetaData : public AttributeSubject
+class DBATTS_API avtScalarMetaData : public avtVarMetaData
 {
 public:
     enum PartialCellModes
@@ -79,13 +79,23 @@ public:
         ByNChooseR
     };
 
+    // These constructors are for objects of this class
     avtScalarMetaData();
     avtScalarMetaData(const avtScalarMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtScalarMetaData(private_tmfs_t tmfs);
+    avtScalarMetaData(const avtScalarMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtScalarMetaData();
 
     virtual avtScalarMetaData& operator = (const avtScalarMetaData &obj);
     virtual bool operator == (const avtScalarMetaData &obj) const;
     virtual bool operator != (const avtScalarMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtScalarMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -139,18 +149,7 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_meshName,
-        ID_centering,
-        ID_hasUnits,
-        ID_units,
-        ID_hasDataExtents,
-        ID_minDataExtents,
-        ID_maxDataExtents,
-        ID_treatAsASCII,
-        ID_hideFromGUI,
+        ID_treatAsASCII = avtVarMetaData::ID__LAST,
         ID_enumerationType,
         ID_enumNames,
         ID_enumRanges,
@@ -159,22 +158,12 @@ public:
         ID_enumPartialCellMode,
         ID_enumGraphEdges,
         ID_enumNChooseRN,
-        ID_enumNChooseRMaxR
+        ID_enumNChooseRMaxR,
+        ID__LAST
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  meshName;
-    avtCentering centering;
-    bool         hasUnits;
-    std::string  units;
-    bool         hasDataExtents;
-    double       minDataExtents;
-    double       maxDataExtents;
     bool         treatAsASCII;
-    bool         hideFromGUI;
     stringVector enumNames;
     doubleVector enumRanges;
     double       enumAlwaysExclude[2];
@@ -188,6 +177,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTSCALARMETADATA_TMFS (AVTVARMETADATA_TMFS "bis*d*DDii*ii")
 
 #endif

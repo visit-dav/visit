@@ -57,16 +57,25 @@ import java.util.Vector;
 
 public class AnnotationObjectList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public AnnotationObjectList()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        annotation = new Vector();
+    }
+
+    public AnnotationObjectList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         annotation = new Vector();
     }
 
     public AnnotationObjectList(AnnotationObjectList obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +89,16 @@ public class AnnotationObjectList extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AnnotationObjectList obj)
@@ -117,9 +136,8 @@ public class AnnotationObjectList extends AttributeSubject
         }
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         {
             int len = buf.ReadInt();
             annotation.clear();

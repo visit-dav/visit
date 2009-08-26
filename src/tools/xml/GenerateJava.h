@@ -116,6 +116,9 @@ using std::vector;
 //    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
 //    Reorder constructor initializers to be the correct order.
 //
+//    Brad Whitlock, Thu Aug 20 11:35:21 PDT 2009
+//    Added support for state object inheritance.
+//
 // ****************************************************************************
 
 class JavaGeneratorField : public virtual Field
@@ -124,11 +127,13 @@ class JavaGeneratorField : public virtual Field
     QString generatorName;
   public:
     bool generatePlugin;
+    bool custombase;
 
     JavaGeneratorField(const QString &t, const QString &n, const QString &l)
         : Field(t,n,l), generatorName(GENERATOR_NAME)
     {
         generatePlugin = false;
+        custombase = false;
     }
 
     QString GetCPPNameW(int w, bool subtypename=false, const QString &classname="")
@@ -137,6 +142,11 @@ class JavaGeneratorField : public virtual Field
         for (size_t i = w - s.length(); i > 0; --i)
             s += " ";
         return s;
+    }
+
+    QString OffsetPlus() const
+    {
+        return custombase ? QString("Offset() + ") : QString();
     }
 
     virtual void WriteSourceWriteAtts(QTextStream &h, const QString &indent) = 0;
@@ -166,7 +176,7 @@ class JavaGeneratorField : public virtual Field
         if (!isArray)
         {
             c << "        " << name << " = " << name << "_;" << endl;
-            c << "        Select(" << index << ");" << endl;
+            c << "        Select(" << OffsetPlus() << index << ");" << endl;
         }
         else
         {
@@ -180,7 +190,7 @@ class JavaGeneratorField : public virtual Field
                 c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
                 c << "             " << name << "[i] = " << name << "_[i];"<< endl;
             }
-            c << "        Select(" << index << ");" << endl;
+            c << "        Select(" << OffsetPlus() << index << ");" << endl;
         }
         c << "    }" << endl;
         c << endl;
@@ -350,7 +360,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << index << ");" << endl;
+            c << "        Select(" << OffsetPlus() << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -570,7 +580,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << index << ");" << endl;
+            c << "        Select(" << OffsetPlus() << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -689,7 +699,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << index << ");" << endl;
+            c << "        Select(" << OffsetPlus() << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -875,7 +885,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << index << ");" << endl;
+            c << "        Select(" << OffsetPlus() << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -1430,14 +1440,14 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "    public void Add" << Name << "(" << s << " obj)" << endl;
         c << "    {" << endl;
         c << "        " << name << ".addElement(new " << s << "(obj));" << endl;
-        c << "        Select(" << index << ");" << endl;
+        c << "        Select(" << OffsetPlus() << index << ");" << endl;
         c << "    }" << endl << endl;
 
         // Write the Clear method
         c << "    public void Clear" << Name << plural << "()" << endl;
         c << "    {" << endl;
         c << "        " << name << ".clear();" << endl;
-        c << "        Select(" << index << ");" << endl;
+        c << "        Select(" << OffsetPlus() << index << ");" << endl;
         c << "    }" << endl << endl;
 
         // Write the Remove method
@@ -1446,7 +1456,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "        if(index >= 0 && index < " << name << ".size())" << endl;
         c << "        {" << endl;
         c << "            " << name << ".remove(index);" << endl;
-        c << "            Select(" << index << ");" << endl;
+        c << "            Select(" << OffsetPlus() << index << ");" << endl;
         c << "        }" << endl;
         c << "    }" << endl << endl;
 
@@ -1658,6 +1668,9 @@ class JavaFieldFactory
 //    Brad Whitlock, Thu Feb 28 16:29:20 PST 2008
 //    Made it use a base class.
 //
+//    Brad Whitlock, Thu Aug 20 12:22:36 PDT 2009
+//    Added support for state object inheritance.
+//
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -1670,8 +1683,8 @@ class JavaGeneratorAttribute : public GeneratorBase
     QString pluginType;
   public:
     JavaGeneratorAttribute(const QString &n, const QString &p, const QString &f,
-                           const QString &e, const QString &ei)
-        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields(), pluginVersion("1.0"),
+                           const QString &e, const QString &ei, const QString &bc)
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields(), pluginVersion("1.0"),
           pluginName(), pluginType()
     {
     }
@@ -1717,7 +1730,10 @@ class JavaGeneratorAttribute : public GeneratorBase
         // Give a little information to the fields.
         size_t i;
         for (i = 0; i < fields.size(); ++i)
+        {
             fields[i]->generatePlugin = generatePlugin;
+            fields[i]->custombase = custombase;
+        }
 
         //
         // Write the list of imported classes
@@ -1730,9 +1746,9 @@ class JavaGeneratorAttribute : public GeneratorBase
         WriteClassComment(h, purpose);
 
         if(generatePlugin)
-            h << "public class " << name << " extends AttributeSubject implements Plugin" << endl;
+            h << "public class " << name << " extends " << baseClass <<" implements Plugin" << endl;
         else
-            h << "public class " << name << " extends AttributeSubject" << endl;
+            h << "public class " << name << " extends " << baseClass << endl;
         h << "{" << endl;
 
         //
@@ -1746,9 +1762,19 @@ class JavaGeneratorAttribute : public GeneratorBase
         WriteSourceConstructor(h);
 
         //
+        // Write the constructor that classes can use to inherit from this class.
+        //
+        WriteSourceIntConstructor(h);
+
+        //
         // Write the copy constructor.
         //
         WriteSourceCopyConstructor(h);
+
+        //
+        // Write offset related methods.
+        //
+        WriteOffsetRelated(h);
 
         //
         // Write the comparison method.
@@ -1828,7 +1854,7 @@ private:
 
         if(pluginType == "plot" || pluginType == "operator")
         {
-            sysincludes.AddString("import llnl.visit.AttributeSubject;\n");
+            sysincludes.AddString(QString("import llnl.visit.") + (baseClass + ";\n"));
             sysincludes.AddString("import llnl.visit.CommunicationBuffer;\n");
             sysincludes.AddString("import llnl.visit.Plugin;\n");
         }
@@ -1898,7 +1924,31 @@ private:
     {
         c << "    public " << name << "()" << endl;
         c << "    {" << endl;
-        c << "        super(" << fields.size() << ");" << endl;
+        c << "        super(numAdditionalAttributes);" << endl;
+        c << endl;
+
+        if(HasCode(name, 0))
+            PrintCode(c, name, 0);
+
+        size_t i;
+        for (i = 0; i < fields.size(); ++i)
+        {
+            c << "    ";
+            if(!fields[i]->PrintInit(c, generatorName))
+                fields[i]->WriteSourceSetDefault(c);
+        }
+
+        if(HasCode(name, 1))
+            PrintCode(c, name, 1);
+
+        c << "    }" << endl << endl;
+    }
+
+    void WriteSourceIntConstructor(QTextStream &c)
+    {
+        c << "    public " << name << "(int nMoreFields)" << endl;
+        c << "    {" << endl;
+        c << "        super(numAdditionalAttributes + nMoreFields);" << endl;
         c << endl;
 
         if(HasCode(name, 0))
@@ -1922,7 +1972,7 @@ private:
     {
         c << "    public " << name << "(" << name << " obj)" << endl;
         c << "    {" << endl;
-        c << "        super(" << fields.size() << ");" << endl;
+        c << "        super(numAdditionalAttributes);" << endl;
         c << endl;
 
         bool skipLine = false;
@@ -1939,6 +1989,21 @@ private:
         }
         c << endl << "        SelectAll();" << endl;
         c << "    }" << endl << endl;
+    }
+
+    void WriteOffsetRelated(QTextStream &c)
+    {
+        c << "    public int Offset()" << endl;
+        c << "    {" << endl;
+        c << "        return super.Offset() + super.GetNumAdditionalAttributes();" << endl;
+        c << "    }" << endl;
+        c << endl;
+
+        c << "    public int GetNumAdditionalAttributes()" << endl;
+        c << "    {" << endl;
+        c << "        return numAdditionalAttributes;" << endl;
+        c << "    }" << endl;
+        c << endl;
     }
 
     void WriteSourceComparison(QTextStream &c)
@@ -1968,6 +2033,9 @@ private:
         c << "        // Create the return value" << endl;
         c << "        return (";
 
+        if(custombase)
+            c << "super.equals(obj) && ";
+
         // Create a big boolean return statement.
         if (fields.size() == 0)
         {
@@ -1995,6 +2063,8 @@ private:
 
     void WriteSourceEnumsAndConstants(QTextStream &h)
     {
+        h << "    private static int numAdditionalAttributes = " << fields.size() << ";" << endl << endl;
+
         // Write the enums out as groups of static int constants.
         if(EnumType::enums.size() > 0)
             h << "    // Enum values" << endl;
@@ -2047,9 +2117,17 @@ private:
         }
         h << "    public void WriteAtts(CommunicationBuffer buf)" << endl;
         h << "    {" << endl;
+        QString oplus;
+        if(custombase)
+        {
+            h << "        super.WriteAtts(buf);" << endl;
+            h << endl;
+            h << "        int offset = Offset();" << endl;
+            oplus = "offset + ";
+        }
         for (size_t i = 0; i < fields.size(); ++i)
         {
-            h << "        if(WriteSelect(" << i << ", buf))" << endl;
+            h << "        if(WriteSelect(" << oplus << i << ", buf))" << endl;
             fields[i]->WriteSourceWriteAtts(h, "        ");
         }
         h << "    }" << endl;
@@ -2064,31 +2142,60 @@ private:
             h << endl;
             return;
         }
-        h << "    public void ReadAtts(int n, CommunicationBuffer buf)" << endl;
-        h << "    {" << endl;
-        if(fields.size() > 1)
+        if(custombase)
         {
-            h << "        for(int i = 0; i < n; ++i)" << endl;
-            h << "        {" << endl;
-            h << "            int index = (int)buf.ReadByte();" << endl;
-            h << "            switch(index)" << endl;
-            h << "            {" << endl;
-            for (size_t i = 0; i < fields.size(); ++i)
+            h << "    public void ReadAtts(int id, CommunicationBuffer buf)" << endl;
+            h << "    {" << endl;
+            if(fields.size() > 1)
             {
-                h << "            case " << i << ":" << endl;
-                if(!fields[i]->WriteSourceReadAtts(h, "                "))
-                    h << "                Select(" << i << ");" << endl;
-                h << "                break;" << endl;
+                h << "        int index = id - Offset();" << endl;
+                h << "        switch(index)" << endl;
+                h << "        {" << endl;
+                for (size_t i = 0; i < fields.size(); ++i)
+                {
+                    h << "        case " << i << ":" << endl;
+                    if(!fields[i]->WriteSourceReadAtts(h, "            "))
+                        h << "            Select(Offset() + " << i << ");" << endl;
+                    h << "            break;" << endl;
+                }
+                h << "        default:" << endl;
+                h << "            super.ReadAtts(id, buf);" << endl;
+                h << "            break;" << endl;
+                h << "        }" << endl;
             }
-            h << "            }" << endl;
-            h << "        }" << endl;
+            else if(fields.size() == 1)
+            {
+                h << "        if(id == Offset())" << endl;
+                if(!fields[0]->WriteSourceReadAtts(h, "            "))
+                    h << "            Select(Offset() + 0);" << endl;
+                h << "        else" << endl;
+                h << "            super.ReadAtts(id, buf);" << endl;
+            }
         }
-        else if(fields.size() == 1)
+        else
         {
-            h << "        buf.ReadByte();" << endl;
-            if(!fields[0]->WriteSourceReadAtts(h, "        "))
-                 h << "        Select(0);" << endl;
+            h << "    public void ReadAtts(int index, CommunicationBuffer buf)" << endl;
+            h << "    {" << endl;
+            if(fields.size() > 1)
+            {
+                h << "        switch(index)" << endl;
+                h << "        {" << endl;
+                for (size_t i = 0; i < fields.size(); ++i)
+                {
+                    h << "        case " << i << ":" << endl;
+                    if(!fields[i]->WriteSourceReadAtts(h, "            "))
+                        h << "            Select(" << i << ");" << endl;
+                    h << "            break;" << endl;
+                }
+                h << "        }" << endl;
+            }
+            else if(fields.size() == 1)
+            {
+                if(!fields[0]->WriteSourceReadAtts(h, "        "))
+                    h << "        Select(0);" << endl;
+            }
         }
+
         h << "    }" << endl;
         h << endl;
     }
@@ -2117,7 +2224,10 @@ private:
         }
         if(HasCode("toString", 1))
             PrintCode(h, "toString", 1);
-        h << "        return str;" << endl;
+        if(custombase)
+            h << "        return super.toString(indent) + str;" << endl;
+        else
+            h << "        return str;" << endl;
         h << "    }" << endl;
         h << endl;
 //        h << "    public String toString()" << endl;

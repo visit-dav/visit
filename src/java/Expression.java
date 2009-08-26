@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class Expression extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 8;
+
     // Enum values
     public final static int EXPRTYPE_UNKNOWN = 0;
     public final static int EXPRTYPE_SCALARMESHVAR = 1;
@@ -71,7 +73,21 @@ public class Expression extends AttributeSubject
 
     public Expression()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        name = new String("notset");
+        definition = new String("notset");
+        hidden = false;
+        type = EXPRTYPE_SCALARMESHVAR;
+        fromDB = false;
+        fromOperator = false;
+        dbName = new String("__none__");
+        autoExpression = false;
+    }
+
+    public Expression(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         name = new String("notset");
         definition = new String("notset");
@@ -85,7 +101,7 @@ public class Expression extends AttributeSubject
 
     public Expression(Expression obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         name = new String(obj.name);
         definition = new String(obj.definition);
@@ -97,6 +113,16 @@ public class Expression extends AttributeSubject
         autoExpression = obj.autoExpression;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(Expression obj)
@@ -192,38 +218,34 @@ public class Expression extends AttributeSubject
             buf.WriteBool(autoExpression);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetDefinition(buf.ReadString());
-                break;
-            case 2:
-                SetHidden(buf.ReadBool());
-                break;
-            case 3:
-                SetType(buf.ReadInt());
-                break;
-            case 4:
-                SetFromDB(buf.ReadBool());
-                break;
-            case 5:
-                SetFromOperator(buf.ReadBool());
-                break;
-            case 6:
-                SetDbName(buf.ReadString());
-                break;
-            case 7:
-                SetAutoExpression(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetName(buf.ReadString());
+            break;
+        case 1:
+            SetDefinition(buf.ReadString());
+            break;
+        case 2:
+            SetHidden(buf.ReadBool());
+            break;
+        case 3:
+            SetType(buf.ReadInt());
+            break;
+        case 4:
+            SetFromDB(buf.ReadBool());
+            break;
+        case 5:
+            SetFromOperator(buf.ReadBool());
+            break;
+        case 6:
+            SetDbName(buf.ReadString());
+            break;
+        case 7:
+            SetAutoExpression(buf.ReadBool());
+            break;
         }
     }
 

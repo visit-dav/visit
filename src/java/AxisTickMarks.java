@@ -56,9 +56,22 @@ package llnl.visit;
 
 public class AxisTickMarks extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     public AxisTickMarks()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        visible = true;
+        majorMinimum = 0;
+        majorMaximum = 1;
+        minorSpacing = 0.02;
+        majorSpacing = 0.2;
+    }
+
+    public AxisTickMarks(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         visible = true;
         majorMinimum = 0;
@@ -69,7 +82,7 @@ public class AxisTickMarks extends AttributeSubject
 
     public AxisTickMarks(AxisTickMarks obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         visible = obj.visible;
         majorMinimum = obj.majorMinimum;
@@ -78,6 +91,16 @@ public class AxisTickMarks extends AttributeSubject
         majorSpacing = obj.majorSpacing;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(AxisTickMarks obj)
@@ -143,29 +166,25 @@ public class AxisTickMarks extends AttributeSubject
             buf.WriteDouble(majorSpacing);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVisible(buf.ReadBool());
-                break;
-            case 1:
-                SetMajorMinimum(buf.ReadDouble());
-                break;
-            case 2:
-                SetMajorMaximum(buf.ReadDouble());
-                break;
-            case 3:
-                SetMinorSpacing(buf.ReadDouble());
-                break;
-            case 4:
-                SetMajorSpacing(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetVisible(buf.ReadBool());
+            break;
+        case 1:
+            SetMajorMinimum(buf.ReadDouble());
+            break;
+        case 2:
+            SetMajorMaximum(buf.ReadDouble());
+            break;
+        case 3:
+            SetMinorSpacing(buf.ReadDouble());
+            break;
+        case 4:
+            SetMajorSpacing(buf.ReadDouble());
+            break;
         }
     }
 

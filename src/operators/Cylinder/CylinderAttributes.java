@@ -59,9 +59,26 @@ import llnl.visit.Plugin;
 
 public class CylinderAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 3;
+
     public CylinderAttributes()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        point1 = new double[3];
+        point1[0] = 0;
+        point1[1] = 0;
+        point1[2] = 0;
+        point2 = new double[3];
+        point2[0] = 1;
+        point2[1] = 0;
+        point2[2] = 0;
+        radius = 1;
+    }
+
+    public CylinderAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         point1 = new double[3];
         point1[0] = 0;
@@ -76,7 +93,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
 
     public CylinderAttributes(CylinderAttributes obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -93,6 +110,16 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         radius = obj.radius;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(CylinderAttributes obj)
@@ -173,23 +200,19 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(radius);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetPoint1(buf.ReadDoubleArray());
-                break;
-            case 1:
-                SetPoint2(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetRadius(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetPoint1(buf.ReadDoubleArray());
+            break;
+        case 1:
+            SetPoint2(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetRadius(buf.ReadDouble());
+            break;
         }
     }
 

@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class LabelAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 18;
+
     // Enum values
     public final static int LABELINDEXDISPLAY_NATURAL = 0;
     public final static int LABELINDEXDISPLAY_LOGICALINDEX = 1;
@@ -95,7 +97,31 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public LabelAttributes()
     {
-        super(18);
+        super(numAdditionalAttributes);
+
+        varType = VARIABLETYPE_LABEL_VT_UNKNOWN_TYPE;
+        legendFlag = true;
+        showNodes = false;
+        showCells = true;
+        restrictNumberOfLabels = true;
+        drawLabelsFacing = LABELDRAWFACING_FRONT;
+        labelDisplayFormat = LABELINDEXDISPLAY_NATURAL;
+        numberOfLabels = 200;
+        specifyTextColor1 = false;
+        textColor1 = new ColorAttribute(255, 0, 0, 0);
+        textHeight1 = 0.02f;
+        specifyTextColor2 = false;
+        textColor2 = new ColorAttribute(0, 0, 255, 0);
+        textHeight2 = 0.02f;
+        horizontalJustification = LABELHORIZONTALALIGNMENT_HCENTER;
+        verticalJustification = LABELVERTICALALIGNMENT_VCENTER;
+        depthTestMode = DEPTHTESTMODE_LABEL_DT_AUTO;
+        formatTemplate = new String("%g");
+    }
+
+    public LabelAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         varType = VARIABLETYPE_LABEL_VT_UNKNOWN_TYPE;
         legendFlag = true;
@@ -119,7 +145,7 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public LabelAttributes(LabelAttributes obj)
     {
-        super(18);
+        super(numAdditionalAttributes);
 
         varType = obj.varType;
         legendFlag = obj.legendFlag;
@@ -141,6 +167,16 @@ public class LabelAttributes extends AttributeSubject implements Plugin
         formatTemplate = new String(obj.formatTemplate);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(LabelAttributes obj)
@@ -339,70 +375,66 @@ public class LabelAttributes extends AttributeSubject implements Plugin
             buf.WriteString(formatTemplate);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVarType(buf.ReadInt());
-                break;
-            case 1:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetShowNodes(buf.ReadBool());
-                break;
-            case 3:
-                SetShowCells(buf.ReadBool());
-                break;
-            case 4:
-                SetRestrictNumberOfLabels(buf.ReadBool());
-                break;
-            case 5:
-                SetDrawLabelsFacing(buf.ReadInt());
-                break;
-            case 6:
-                SetLabelDisplayFormat(buf.ReadInt());
-                break;
-            case 7:
-                SetNumberOfLabels(buf.ReadInt());
-                break;
-            case 8:
-                SetSpecifyTextColor1(buf.ReadBool());
-                break;
-            case 9:
-                textColor1.Read(buf);
-                Select(9);
-                break;
-            case 10:
-                SetTextHeight1(buf.ReadFloat());
-                break;
-            case 11:
-                SetSpecifyTextColor2(buf.ReadBool());
-                break;
-            case 12:
-                textColor2.Read(buf);
-                Select(12);
-                break;
-            case 13:
-                SetTextHeight2(buf.ReadFloat());
-                break;
-            case 14:
-                SetHorizontalJustification(buf.ReadInt());
-                break;
-            case 15:
-                SetVerticalJustification(buf.ReadInt());
-                break;
-            case 16:
-                SetDepthTestMode(buf.ReadInt());
-                break;
-            case 17:
-                SetFormatTemplate(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetVarType(buf.ReadInt());
+            break;
+        case 1:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetShowNodes(buf.ReadBool());
+            break;
+        case 3:
+            SetShowCells(buf.ReadBool());
+            break;
+        case 4:
+            SetRestrictNumberOfLabels(buf.ReadBool());
+            break;
+        case 5:
+            SetDrawLabelsFacing(buf.ReadInt());
+            break;
+        case 6:
+            SetLabelDisplayFormat(buf.ReadInt());
+            break;
+        case 7:
+            SetNumberOfLabels(buf.ReadInt());
+            break;
+        case 8:
+            SetSpecifyTextColor1(buf.ReadBool());
+            break;
+        case 9:
+            textColor1.Read(buf);
+            Select(9);
+            break;
+        case 10:
+            SetTextHeight1(buf.ReadFloat());
+            break;
+        case 11:
+            SetSpecifyTextColor2(buf.ReadBool());
+            break;
+        case 12:
+            textColor2.Read(buf);
+            Select(12);
+            break;
+        case 13:
+            SetTextHeight2(buf.ReadFloat());
+            break;
+        case 14:
+            SetHorizontalJustification(buf.ReadInt());
+            break;
+        case 15:
+            SetVerticalJustification(buf.ReadInt());
+            break;
+        case 16:
+            SetDepthTestMode(buf.ReadInt());
+            break;
+        case 17:
+            SetFormatTemplate(buf.ReadString());
+            break;
         }
     }
 

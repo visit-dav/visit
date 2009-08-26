@@ -64,6 +64,8 @@ import llnl.visit.ColorAttributeList;
 
 public class MultiCurveAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 15;
+
     // Enum values
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
     public final static int COLORINGMETHOD_COLORBYMULTIPLECOLORS = 1;
@@ -71,7 +73,28 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes()
     {
-        super(15);
+        super(numAdditionalAttributes);
+
+        defaultPalette = new ColorControlPointList();
+        changedColors = new Vector();
+        colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
+        singleColor = new ColorAttribute(255, 0, 0);
+        multiColor = new ColorAttributeList();
+        lineStyle = 0;
+        lineWidth = 0;
+        yAxisTitleFormat = new String("%g");
+        useYAxisTickSpacing = false;
+        yAxisTickSpacing = 1;
+        displayMarkers = true;
+        markerVariable = new String("default");
+        displayIds = false;
+        idVariable = new String("default");
+        legendFlag = true;
+    }
+
+    public MultiCurveAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -92,7 +115,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes(MultiCurveAttributes obj)
     {
-        super(15);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -119,6 +142,16 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
         legendFlag = obj.legendFlag;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(MultiCurveAttributes obj)
@@ -289,62 +322,58 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(legendFlag);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                defaultPalette.Read(buf);
-                Select(0);
-                break;
-            case 1:
-                SetChangedColors(buf.ReadByteVector());
-                break;
-            case 2:
-                SetColorType(buf.ReadInt());
-                break;
-            case 3:
-                singleColor.Read(buf);
-                Select(3);
-                break;
-            case 4:
-                multiColor.Read(buf);
-                Select(4);
-                break;
-            case 5:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 6:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 7:
-                SetYAxisTitleFormat(buf.ReadString());
-                break;
-            case 8:
-                SetUseYAxisTickSpacing(buf.ReadBool());
-                break;
-            case 9:
-                SetYAxisTickSpacing(buf.ReadDouble());
-                break;
-            case 10:
-                SetDisplayMarkers(buf.ReadBool());
-                break;
-            case 11:
-                SetMarkerVariable(buf.ReadString());
-                break;
-            case 12:
-                SetDisplayIds(buf.ReadBool());
-                break;
-            case 13:
-                SetIdVariable(buf.ReadString());
-                break;
-            case 14:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            }
+        case 0:
+            defaultPalette.Read(buf);
+            Select(0);
+            break;
+        case 1:
+            SetChangedColors(buf.ReadByteVector());
+            break;
+        case 2:
+            SetColorType(buf.ReadInt());
+            break;
+        case 3:
+            singleColor.Read(buf);
+            Select(3);
+            break;
+        case 4:
+            multiColor.Read(buf);
+            Select(4);
+            break;
+        case 5:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 6:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 7:
+            SetYAxisTitleFormat(buf.ReadString());
+            break;
+        case 8:
+            SetUseYAxisTickSpacing(buf.ReadBool());
+            break;
+        case 9:
+            SetYAxisTickSpacing(buf.ReadDouble());
+            break;
+        case 10:
+            SetDisplayMarkers(buf.ReadBool());
+            break;
+        case 11:
+            SetMarkerVariable(buf.ReadString());
+            break;
+        case 12:
+            SetDisplayIds(buf.ReadBool());
+            break;
+        case 13:
+            SetIdVariable(buf.ReadString());
+            break;
+        case 14:
+            SetLegendFlag(buf.ReadBool());
+            break;
         }
     }
 

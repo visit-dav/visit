@@ -56,9 +56,26 @@ package llnl.visit;
 
 public class LightList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 8;
+
     public LightList()
     {
-        super(8);
+        super(numAdditionalAttributes);
+
+        light0 = new LightAttributes();
+        light1 = new LightAttributes();
+        light2 = new LightAttributes();
+        light3 = new LightAttributes();
+        light4 = new LightAttributes();
+        light5 = new LightAttributes();
+        light6 = new LightAttributes();
+        light7 = new LightAttributes();
+        SetDefaultEnabledStates();
+    }
+
+    public LightList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         light0 = new LightAttributes();
         light1 = new LightAttributes();
@@ -73,7 +90,7 @@ public class LightList extends AttributeSubject
 
     public LightList(LightList obj)
     {
-        super(8);
+        super(numAdditionalAttributes);
 
         light0 = new LightAttributes(obj.light0);
         light1 = new LightAttributes(obj.light1);
@@ -85,6 +102,16 @@ public class LightList extends AttributeSubject
         light7 = new LightAttributes(obj.light7);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(LightList obj)
@@ -180,46 +207,42 @@ public class LightList extends AttributeSubject
             light7.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                light0.Read(buf);
-                Select(0);
-                break;
-            case 1:
-                light1.Read(buf);
-                Select(1);
-                break;
-            case 2:
-                light2.Read(buf);
-                Select(2);
-                break;
-            case 3:
-                light3.Read(buf);
-                Select(3);
-                break;
-            case 4:
-                light4.Read(buf);
-                Select(4);
-                break;
-            case 5:
-                light5.Read(buf);
-                Select(5);
-                break;
-            case 6:
-                light6.Read(buf);
-                Select(6);
-                break;
-            case 7:
-                light7.Read(buf);
-                Select(7);
-                break;
-            }
+        case 0:
+            light0.Read(buf);
+            Select(0);
+            break;
+        case 1:
+            light1.Read(buf);
+            Select(1);
+            break;
+        case 2:
+            light2.Read(buf);
+            Select(2);
+            break;
+        case 3:
+            light3.Read(buf);
+            Select(3);
+            break;
+        case 4:
+            light4.Read(buf);
+            Select(4);
+            break;
+        case 5:
+            light5.Read(buf);
+            Select(5);
+            break;
+        case 6:
+            light6.Read(buf);
+            Select(6);
+            break;
+        case 7:
+            light7.Read(buf);
+            Select(7);
+            break;
         }
     }
 

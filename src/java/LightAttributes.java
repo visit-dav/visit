@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class LightAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     // Enum values
     public final static int LIGHTTYPE_AMBIENT = 0;
     public final static int LIGHTTYPE_OBJECT = 1;
@@ -64,7 +66,22 @@ public class LightAttributes extends AttributeSubject
 
     public LightAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        enabledFlagCanBeToggled = true;
+        enabledFlag = true;
+        type = LIGHTTYPE_CAMERA;
+        direction = new double[3];
+        direction[0] = 0;
+        direction[1] = 0;
+        direction[2] = -1;
+        color = new ColorAttribute(255, 255, 255);
+        brightness = 1;
+    }
+
+    public LightAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         enabledFlagCanBeToggled = true;
         enabledFlag = true;
@@ -79,7 +96,7 @@ public class LightAttributes extends AttributeSubject
 
     public LightAttributes(LightAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -95,6 +112,16 @@ public class LightAttributes extends AttributeSubject
         brightness = obj.brightness;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(LightAttributes obj)
@@ -187,33 +214,29 @@ public class LightAttributes extends AttributeSubject
             buf.WriteDouble(brightness);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetEnabledFlagCanBeToggled(buf.ReadBool());
-                break;
-            case 1:
-                SetEnabledFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetType(buf.ReadInt());
-                break;
-            case 3:
-                SetDirection(buf.ReadDoubleArray());
-                break;
-            case 4:
-                color.Read(buf);
-                Select(4);
-                break;
-            case 5:
-                SetBrightness(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetEnabledFlagCanBeToggled(buf.ReadBool());
+            break;
+        case 1:
+            SetEnabledFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetType(buf.ReadInt());
+            break;
+        case 3:
+            SetDirection(buf.ReadDoubleArray());
+            break;
+        case 4:
+            color.Read(buf);
+            Select(4);
+            break;
+        case 5:
+            SetBrightness(buf.ReadDouble());
+            break;
         }
     }
 

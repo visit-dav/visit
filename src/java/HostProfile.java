@@ -57,6 +57,8 @@ import java.util.Vector;
 
 public class HostProfile extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 44;
+
     // Enum values
     public final static int CLIENTHOSTDETERMINATION_MACHINENAME = 0;
     public final static int CLIENTHOSTDETERMINATION_MANUALLYSPECIFIED = 1;
@@ -65,7 +67,57 @@ public class HostProfile extends AttributeSubject
 
     public HostProfile()
     {
-        super(44);
+        super(numAdditionalAttributes);
+
+        profileName = new String("notset");
+        host = new String("localhost");
+        userName = new String("notset");
+        timeout = 480;
+        numProcessors = 1;
+        numNodesSet = false;
+        numNodes = 1;
+        partitionSet = false;
+        partition = new String("");
+        bankSet = false;
+        bank = new String("");
+        timeLimitSet = false;
+        timeLimit = new String("");
+        launchMethodSet = false;
+        launchMethod = new String("");
+        forceStatic = true;
+        forceDynamic = false;
+        active = false;
+        arguments = new Vector();
+        parallel = false;
+        launchArgsSet = false;
+        launchArgs = new String("");
+        sublaunchArgsSet = false;
+        sublaunchArgs = new String("");
+        sublaunchPreCmdSet = false;
+        sublaunchPreCmd = new String("");
+        sublaunchPostCmdSet = false;
+        sublaunchPostCmd = new String("");
+        hostAliases = new String("");
+        hostNickname = new String("");
+        shareOneBatchJob = false;
+        sshPortSpecified = false;
+        sshPort = 22;
+        clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
+        manualClientHostName = new String("");
+        machinefileSet = false;
+        machinefile = new String("");
+        visitSetsUpEnv = false;
+        canDoHWAccel = false;
+        havePreCommand = false;
+        hwAccelPreCommand = new String("");
+        havePostCommand = false;
+        hwAccelPostCommand = new String("");
+        tunnelSSH = false;
+    }
+
+    public HostProfile(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         profileName = new String("notset");
         host = new String("localhost");
@@ -115,7 +167,7 @@ public class HostProfile extends AttributeSubject
 
     public HostProfile(HostProfile obj)
     {
-        super(44);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -168,6 +220,16 @@ public class HostProfile extends AttributeSubject
         tunnelSSH = obj.tunnelSSH;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(HostProfile obj)
@@ -634,146 +696,142 @@ public class HostProfile extends AttributeSubject
             buf.WriteBool(tunnelSSH);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetProfileName(buf.ReadString());
-                break;
-            case 1:
-                SetHost(buf.ReadString());
-                break;
-            case 2:
-                SetUserName(buf.ReadString());
-                break;
-            case 3:
-                SetTimeout(buf.ReadInt());
-                break;
-            case 4:
-                SetNumProcessors(buf.ReadInt());
-                break;
-            case 5:
-                SetNumNodesSet(buf.ReadBool());
-                break;
-            case 6:
-                SetNumNodes(buf.ReadInt());
-                break;
-            case 7:
-                SetPartitionSet(buf.ReadBool());
-                break;
-            case 8:
-                SetPartition(buf.ReadString());
-                break;
-            case 9:
-                SetBankSet(buf.ReadBool());
-                break;
-            case 10:
-                SetBank(buf.ReadString());
-                break;
-            case 11:
-                SetTimeLimitSet(buf.ReadBool());
-                break;
-            case 12:
-                SetTimeLimit(buf.ReadString());
-                break;
-            case 13:
-                SetLaunchMethodSet(buf.ReadBool());
-                break;
-            case 14:
-                SetLaunchMethod(buf.ReadString());
-                break;
-            case 15:
-                SetForceStatic(buf.ReadBool());
-                break;
-            case 16:
-                SetForceDynamic(buf.ReadBool());
-                break;
-            case 17:
-                SetActive(buf.ReadBool());
-                break;
-            case 18:
-                SetArguments(buf.ReadStringVector());
-                break;
-            case 19:
-                SetParallel(buf.ReadBool());
-                break;
-            case 20:
-                SetLaunchArgsSet(buf.ReadBool());
-                break;
-            case 21:
-                SetLaunchArgs(buf.ReadString());
-                break;
-            case 22:
-                SetSublaunchArgsSet(buf.ReadBool());
-                break;
-            case 23:
-                SetSublaunchArgs(buf.ReadString());
-                break;
-            case 24:
-                SetSublaunchPreCmdSet(buf.ReadBool());
-                break;
-            case 25:
-                SetSublaunchPreCmd(buf.ReadString());
-                break;
-            case 26:
-                SetSublaunchPostCmdSet(buf.ReadBool());
-                break;
-            case 27:
-                SetSublaunchPostCmd(buf.ReadString());
-                break;
-            case 28:
-                SetHostAliases(buf.ReadString());
-                break;
-            case 29:
-                SetHostNickname(buf.ReadString());
-                break;
-            case 30:
-                SetShareOneBatchJob(buf.ReadBool());
-                break;
-            case 31:
-                SetSshPortSpecified(buf.ReadBool());
-                break;
-            case 32:
-                SetSshPort(buf.ReadInt());
-                break;
-            case 33:
-                SetClientHostDetermination(buf.ReadInt());
-                break;
-            case 34:
-                SetManualClientHostName(buf.ReadString());
-                break;
-            case 35:
-                SetMachinefileSet(buf.ReadBool());
-                break;
-            case 36:
-                SetMachinefile(buf.ReadString());
-                break;
-            case 37:
-                SetVisitSetsUpEnv(buf.ReadBool());
-                break;
-            case 38:
-                SetCanDoHWAccel(buf.ReadBool());
-                break;
-            case 39:
-                SetHavePreCommand(buf.ReadBool());
-                break;
-            case 40:
-                SetHwAccelPreCommand(buf.ReadString());
-                break;
-            case 41:
-                SetHavePostCommand(buf.ReadBool());
-                break;
-            case 42:
-                SetHwAccelPostCommand(buf.ReadString());
-                break;
-            case 43:
-                SetTunnelSSH(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetProfileName(buf.ReadString());
+            break;
+        case 1:
+            SetHost(buf.ReadString());
+            break;
+        case 2:
+            SetUserName(buf.ReadString());
+            break;
+        case 3:
+            SetTimeout(buf.ReadInt());
+            break;
+        case 4:
+            SetNumProcessors(buf.ReadInt());
+            break;
+        case 5:
+            SetNumNodesSet(buf.ReadBool());
+            break;
+        case 6:
+            SetNumNodes(buf.ReadInt());
+            break;
+        case 7:
+            SetPartitionSet(buf.ReadBool());
+            break;
+        case 8:
+            SetPartition(buf.ReadString());
+            break;
+        case 9:
+            SetBankSet(buf.ReadBool());
+            break;
+        case 10:
+            SetBank(buf.ReadString());
+            break;
+        case 11:
+            SetTimeLimitSet(buf.ReadBool());
+            break;
+        case 12:
+            SetTimeLimit(buf.ReadString());
+            break;
+        case 13:
+            SetLaunchMethodSet(buf.ReadBool());
+            break;
+        case 14:
+            SetLaunchMethod(buf.ReadString());
+            break;
+        case 15:
+            SetForceStatic(buf.ReadBool());
+            break;
+        case 16:
+            SetForceDynamic(buf.ReadBool());
+            break;
+        case 17:
+            SetActive(buf.ReadBool());
+            break;
+        case 18:
+            SetArguments(buf.ReadStringVector());
+            break;
+        case 19:
+            SetParallel(buf.ReadBool());
+            break;
+        case 20:
+            SetLaunchArgsSet(buf.ReadBool());
+            break;
+        case 21:
+            SetLaunchArgs(buf.ReadString());
+            break;
+        case 22:
+            SetSublaunchArgsSet(buf.ReadBool());
+            break;
+        case 23:
+            SetSublaunchArgs(buf.ReadString());
+            break;
+        case 24:
+            SetSublaunchPreCmdSet(buf.ReadBool());
+            break;
+        case 25:
+            SetSublaunchPreCmd(buf.ReadString());
+            break;
+        case 26:
+            SetSublaunchPostCmdSet(buf.ReadBool());
+            break;
+        case 27:
+            SetSublaunchPostCmd(buf.ReadString());
+            break;
+        case 28:
+            SetHostAliases(buf.ReadString());
+            break;
+        case 29:
+            SetHostNickname(buf.ReadString());
+            break;
+        case 30:
+            SetShareOneBatchJob(buf.ReadBool());
+            break;
+        case 31:
+            SetSshPortSpecified(buf.ReadBool());
+            break;
+        case 32:
+            SetSshPort(buf.ReadInt());
+            break;
+        case 33:
+            SetClientHostDetermination(buf.ReadInt());
+            break;
+        case 34:
+            SetManualClientHostName(buf.ReadString());
+            break;
+        case 35:
+            SetMachinefileSet(buf.ReadBool());
+            break;
+        case 36:
+            SetMachinefile(buf.ReadString());
+            break;
+        case 37:
+            SetVisitSetsUpEnv(buf.ReadBool());
+            break;
+        case 38:
+            SetCanDoHWAccel(buf.ReadBool());
+            break;
+        case 39:
+            SetHavePreCommand(buf.ReadBool());
+            break;
+        case 40:
+            SetHwAccelPreCommand(buf.ReadString());
+            break;
+        case 41:
+            SetHavePostCommand(buf.ReadBool());
+            break;
+        case 42:
+            SetHwAccelPostCommand(buf.ReadString());
+            break;
+        case 43:
+            SetTunnelSSH(buf.ReadBool());
+            break;
         }
     }
 

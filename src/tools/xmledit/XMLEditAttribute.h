@@ -63,6 +63,8 @@ class QCheckBox;
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 class XMLEditAttribute : public QFrame
 {
@@ -81,6 +83,8 @@ class XMLEditAttribute : public QFrame
     void exportIncludeTextChanged(const QString&);
     void persistentChanged();
     void keyframeChanged();
+    void customBaseClassChanged();
+    void baseClassTextChanged(const QString&);
   private:
     XMLDocument   *xmldoc;
 
@@ -91,6 +95,8 @@ class XMLEditAttribute : public QFrame
     QLineEdit     *exportInclude;
     QCheckBox     *persistent;
     QCheckBox     *keyframe;
+    QCheckBox     *customBaseClass;
+    QLineEdit     *baseClass;
 };
 
 #endif

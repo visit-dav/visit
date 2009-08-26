@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class QueryOverTimeAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 10;
+
     // Enum values
     public final static int TIMETYPE_CYCLE = 0;
     public final static int TIMETYPE_DTIME = 1;
@@ -64,7 +66,23 @@ public class QueryOverTimeAttributes extends AttributeSubject
 
     public QueryOverTimeAttributes()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        timeType = TIMETYPE_CYCLE;
+        startTimeFlag = false;
+        startTime = 0;
+        endTimeFlag = false;
+        endTime = 1;
+        stride = 1;
+        createWindow = true;
+        windowId = 2;
+        queryAtts = new QueryAttributes();
+        pickAtts = new PickAttributes();
+    }
+
+    public QueryOverTimeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         timeType = TIMETYPE_CYCLE;
         startTimeFlag = false;
@@ -80,7 +98,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
 
     public QueryOverTimeAttributes(QueryOverTimeAttributes obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         timeType = obj.timeType;
         startTimeFlag = obj.startTimeFlag;
@@ -94,6 +112,16 @@ public class QueryOverTimeAttributes extends AttributeSubject
         pickAtts = new PickAttributes(obj.pickAtts);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(QueryOverTimeAttributes obj)
@@ -209,46 +237,42 @@ public class QueryOverTimeAttributes extends AttributeSubject
             pickAtts.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetTimeType(buf.ReadInt());
-                break;
-            case 1:
-                SetStartTimeFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetStartTime(buf.ReadInt());
-                break;
-            case 3:
-                SetEndTimeFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetEndTime(buf.ReadInt());
-                break;
-            case 5:
-                SetStride(buf.ReadInt());
-                break;
-            case 6:
-                SetCreateWindow(buf.ReadBool());
-                break;
-            case 7:
-                SetWindowId(buf.ReadInt());
-                break;
-            case 8:
-                queryAtts.Read(buf);
-                Select(8);
-                break;
-            case 9:
-                pickAtts.Read(buf);
-                Select(9);
-                break;
-            }
+        case 0:
+            SetTimeType(buf.ReadInt());
+            break;
+        case 1:
+            SetStartTimeFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetStartTime(buf.ReadInt());
+            break;
+        case 3:
+            SetEndTimeFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetEndTime(buf.ReadInt());
+            break;
+        case 5:
+            SetStride(buf.ReadInt());
+            break;
+        case 6:
+            SetCreateWindow(buf.ReadBool());
+            break;
+        case 7:
+            SetWindowId(buf.ReadInt());
+            break;
+        case 8:
+            queryAtts.Read(buf);
+            Select(8);
+            break;
+        case 9:
+            pickAtts.Read(buf);
+            Select(9);
+            break;
         }
     }
 

@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class Axes3D extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 11;
+
     // Enum values
     public final static int AXES_CLOSESTTRIAD = 0;
     public final static int AXES_FURTHESTTRIAD = 1;
@@ -70,7 +72,24 @@ public class Axes3D extends AttributeSubject
 
     public Axes3D()
     {
-        super(11);
+        super(numAdditionalAttributes);
+
+        visible = true;
+        autoSetTicks = true;
+        autoSetScaling = true;
+        lineWidth = 0;
+        tickLocation = LOCATION_INSIDE;
+        axesType = AXES_CLOSESTTRIAD;
+        triadFlag = true;
+        bboxFlag = true;
+        xAxis = new AxisAttributes();
+        yAxis = new AxisAttributes();
+        zAxis = new AxisAttributes();
+    }
+
+    public Axes3D(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         visible = true;
         autoSetTicks = true;
@@ -87,7 +106,7 @@ public class Axes3D extends AttributeSubject
 
     public Axes3D(Axes3D obj)
     {
-        super(11);
+        super(numAdditionalAttributes);
 
         visible = obj.visible;
         autoSetTicks = obj.autoSetTicks;
@@ -102,6 +121,16 @@ public class Axes3D extends AttributeSubject
         zAxis = new AxisAttributes(obj.zAxis);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(Axes3D obj)
@@ -227,50 +256,46 @@ public class Axes3D extends AttributeSubject
             zAxis.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVisible(buf.ReadBool());
-                break;
-            case 1:
-                SetAutoSetTicks(buf.ReadBool());
-                break;
-            case 2:
-                SetAutoSetScaling(buf.ReadBool());
-                break;
-            case 3:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 4:
-                SetTickLocation(buf.ReadInt());
-                break;
-            case 5:
-                SetAxesType(buf.ReadInt());
-                break;
-            case 6:
-                SetTriadFlag(buf.ReadBool());
-                break;
-            case 7:
-                SetBboxFlag(buf.ReadBool());
-                break;
-            case 8:
-                xAxis.Read(buf);
-                Select(8);
-                break;
-            case 9:
-                yAxis.Read(buf);
-                Select(9);
-                break;
-            case 10:
-                zAxis.Read(buf);
-                Select(10);
-                break;
-            }
+        case 0:
+            SetVisible(buf.ReadBool());
+            break;
+        case 1:
+            SetAutoSetTicks(buf.ReadBool());
+            break;
+        case 2:
+            SetAutoSetScaling(buf.ReadBool());
+            break;
+        case 3:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 4:
+            SetTickLocation(buf.ReadInt());
+            break;
+        case 5:
+            SetAxesType(buf.ReadInt());
+            break;
+        case 6:
+            SetTriadFlag(buf.ReadBool());
+            break;
+        case 7:
+            SetBboxFlag(buf.ReadBool());
+            break;
+        case 8:
+            xAxis.Read(buf);
+            Select(8);
+            break;
+        case 9:
+            yAxis.Read(buf);
+            Select(9);
+            break;
+        case 10:
+            zAxis.Read(buf);
+            Select(10);
+            break;
         }
     }
 

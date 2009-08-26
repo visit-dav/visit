@@ -61,7 +61,7 @@ public class avtDatabaseMetaData extends AttributeSubject
 {
     public avtDatabaseMetaData()
     {
-        super(34);
+        super(33);
 
         hasTemporalExtents = false;
         minTemporalExtents = 0;
@@ -93,7 +93,6 @@ public class avtDatabaseMetaData extends AttributeSubject
         curves = new Vector();
         labels = new Vector();
         defaultPlots = new Vector();
-        SILs = new Vector();
         isSimulation = false;
         simInfo = new avtSimulationInformation();
         suggestedDefaultSILRestriction = new Vector();
@@ -101,7 +100,7 @@ public class avtDatabaseMetaData extends AttributeSubject
 
     public avtDatabaseMetaData(avtDatabaseMetaData obj)
     {
-        super(34);
+        super(33);
 
         int i;
 
@@ -234,14 +233,6 @@ public class avtDatabaseMetaData extends AttributeSubject
         {
             avtDefaultPlotMetaData newObj = (avtDefaultPlotMetaData)defaultPlots.elementAt(i);
             defaultPlots.addElement(new avtDefaultPlotMetaData(newObj));
-        }
-
-        // *** Copy the SILs field ***
-        SILs = new Vector(obj.SILs.size());
-        for(i = 0; i < obj.SILs.size(); ++i)
-        {
-            avtSILMetaData newObj = (avtSILMetaData)SILs.elementAt(i);
-            SILs.addElement(new avtSILMetaData(newObj));
         }
 
         isSimulation = obj.isSimulation;
@@ -402,15 +393,6 @@ public class avtDatabaseMetaData extends AttributeSubject
             avtDefaultPlotMetaData defaultPlots2 = (avtDefaultPlotMetaData)obj.defaultPlots.elementAt(i);
             defaultPlots_equal = defaultPlots1.equals(defaultPlots2);
         }
-        // Compare the elements in the SILs vector.
-        boolean SILs_equal = (obj.SILs.size() == SILs.size());
-        for(i = 0; (i < SILs.size()) && SILs_equal; ++i)
-        {
-            // Make references to avtSILMetaData from Object.
-            avtSILMetaData SILs1 = (avtSILMetaData)SILs.elementAt(i);
-            avtSILMetaData SILs2 = (avtSILMetaData)obj.SILs.elementAt(i);
-            SILs_equal = SILs1.equals(SILs2);
-        }
         // Compare the elements in the suggestedDefaultSILRestriction vector.
         boolean suggestedDefaultSILRestriction_equal = (obj.suggestedDefaultSILRestriction.size() == suggestedDefaultSILRestriction.size());
         for(i = 0; (i < suggestedDefaultSILRestriction.size()) && suggestedDefaultSILRestriction_equal; ++i)
@@ -451,7 +433,6 @@ public class avtDatabaseMetaData extends AttributeSubject
                 curves_equal &&
                 labels_equal &&
                 defaultPlots_equal &&
-                SILs_equal &&
                 (isSimulation == obj.isSimulation) &&
                 (simInfo.equals(obj.simInfo)) &&
                 suggestedDefaultSILRestriction_equal);
@@ -575,19 +556,19 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void SetIsSimulation(boolean isSimulation_)
     {
         isSimulation = isSimulation_;
-        Select(31);
+        Select(30);
     }
 
     public void SetSimInfo(avtSimulationInformation simInfo_)
     {
         simInfo = simInfo_;
-        Select(32);
+        Select(31);
     }
 
     public void SetSuggestedDefaultSILRestriction(Vector suggestedDefaultSILRestriction_)
     {
         suggestedDefaultSILRestriction = suggestedDefaultSILRestriction_;
-        Select(33);
+        Select(32);
     }
 
     // Property getting methods
@@ -621,7 +602,6 @@ public class avtDatabaseMetaData extends AttributeSubject
     public Vector                   GetCurves() { return curves; }
     public Vector                   GetLabels() { return labels; }
     public Vector                   GetDefaultPlots() { return defaultPlots; }
-    public Vector                   GetSILs() { return SILs; }
     public boolean                  GetIsSimulation() { return isSimulation; }
     public avtSimulationInformation GetSimInfo() { return simInfo; }
     public Vector                   GetSuggestedDefaultSILRestriction() { return suggestedDefaultSILRestriction; }
@@ -767,19 +747,10 @@ public class avtDatabaseMetaData extends AttributeSubject
             }
         }
         if(WriteSelect(30, buf))
-        {
-            buf.WriteInt(SILs.size());
-            for(int i = 0; i < SILs.size(); ++i)
-            {
-                avtSILMetaData tmp = (avtSILMetaData)SILs.elementAt(i);
-                tmp.Write(buf);
-            }
-        }
-        if(WriteSelect(31, buf))
             buf.WriteBool(isSimulation);
-        if(WriteSelect(32, buf))
+        if(WriteSelect(31, buf))
             simInfo.Write(buf);
-        if(WriteSelect(33, buf))
+        if(WriteSelect(32, buf))
             buf.WriteStringVector(suggestedDefaultSILRestriction);
     }
 
@@ -992,26 +963,13 @@ public class avtDatabaseMetaData extends AttributeSubject
                 Select(29);
                 break;
             case 30:
-                {
-                    int len = buf.ReadInt();
-                    SILs.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtSILMetaData tmp = new avtSILMetaData();
-                        tmp.Read(buf);
-                        SILs.addElement(tmp);
-                    }
-                }
-                Select(30);
-                break;
-            case 31:
                 SetIsSimulation(buf.ReadBool());
                 break;
-            case 32:
+            case 31:
                 simInfo.Read(buf);
-                Select(32);
+                Select(31);
                 break;
-            case 33:
+            case 32:
                 SetSuggestedDefaultSILRestriction(buf.ReadStringVector());
                 break;
             }
@@ -1146,16 +1104,6 @@ public class avtDatabaseMetaData extends AttributeSubject
             AttributeSubject s = (AttributeSubject)defaultPlots.elementAt(i);
             str = str + s.toString(indent + "    ");
             if(i < defaultPlots.size()-1)
-                str = str + ", ";
-            str = str + "\n";
-        }
-        str = str + "}\n";
-        str = str + indent + "SILs = {\n";
-        for(int i = 0; i < SILs.size(); ++i)
-        {
-            AttributeSubject s = (AttributeSubject)SILs.elementAt(i);
-            str = str + s.toString(indent + "    ");
-            if(i < SILs.size()-1)
                 str = str + ", ";
             str = str + "\n";
         }
@@ -1519,38 +1467,6 @@ public class avtDatabaseMetaData extends AttributeSubject
         return tmp;
     }
 
-    public void AddSILs(avtSILMetaData obj)
-    {
-        SILs.addElement(new avtSILMetaData(obj));
-        Select(30);
-    }
-
-    public void ClearSILs()
-    {
-        SILs.clear();
-        Select(30);
-    }
-
-    public void RemoveSILs(int index)
-    {
-        if(index >= 0 && index < SILs.size())
-        {
-            SILs.remove(index);
-            Select(30);
-        }
-    }
-
-    public int GetNumSILs()
-    {
-        return SILs.size();
-    }
-
-    public avtSILMetaData GetSILs(int i)
-    {
-        avtSILMetaData tmp = (avtSILMetaData)SILs.elementAt(i);
-        return tmp;
-    }
-
 
     // Attributes
     private boolean                  hasTemporalExtents;
@@ -1583,7 +1499,6 @@ public class avtDatabaseMetaData extends AttributeSubject
     private Vector                   curves; // vector of avtCurveMetaData objects
     private Vector                   labels; // vector of avtLabelMetaData objects
     private Vector                   defaultPlots; // vector of avtDefaultPlotMetaData objects
-    private Vector                   SILs; // vector of avtSILMetaData objects
     private boolean                  isSimulation;
     private avtSimulationInformation simInfo;
     private Vector                   suggestedDefaultSILRestriction; // vector of String objects

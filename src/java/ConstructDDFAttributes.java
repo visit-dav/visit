@@ -59,6 +59,8 @@ import java.lang.Integer;
 
 public class ConstructDDFAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 13;
+
     // Enum values
     public final static int BINNINGSCHEME_UNIFORM = 0;
     public final static int BINNINGSCHEME_UNKNOWN = 1;
@@ -77,7 +79,26 @@ public class ConstructDDFAttributes extends AttributeSubject
 
     public ConstructDDFAttributes()
     {
-        super(13);
+        super(numAdditionalAttributes);
+
+        ddfName = new String("");
+        varnames = new Vector();
+        ranges = new Vector();
+        codomainName = new String("");
+        statisticalOperator = STATISTICALOPERATOR_AVERAGE;
+        percentile = 90;
+        undefinedValue = 0;
+        binningScheme = BINNINGSCHEME_UNIFORM;
+        numSamples = new Vector();
+        overTime = false;
+        timeStart = 0;
+        timeEnd = 1;
+        timeStride = 1;
+    }
+
+    public ConstructDDFAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         ddfName = new String("");
         varnames = new Vector();
@@ -96,7 +117,7 @@ public class ConstructDDFAttributes extends AttributeSubject
 
     public ConstructDDFAttributes(ConstructDDFAttributes obj)
     {
-        super(13);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -129,6 +150,16 @@ public class ConstructDDFAttributes extends AttributeSubject
         timeStride = obj.timeStride;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ConstructDDFAttributes obj)
@@ -303,53 +334,49 @@ public class ConstructDDFAttributes extends AttributeSubject
             buf.WriteInt(timeStride);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDdfName(buf.ReadString());
-                break;
-            case 1:
-                SetVarnames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetRanges(buf.ReadDoubleVector());
-                break;
-            case 3:
-                SetCodomainName(buf.ReadString());
-                break;
-            case 4:
-                SetStatisticalOperator(buf.ReadInt());
-                break;
-            case 5:
-                SetPercentile(buf.ReadDouble());
-                break;
-            case 6:
-                SetUndefinedValue(buf.ReadDouble());
-                break;
-            case 7:
-                SetBinningScheme(buf.ReadInt());
-                break;
-            case 8:
-                SetNumSamples(buf.ReadIntVector());
-                break;
-            case 9:
-                SetOverTime(buf.ReadBool());
-                break;
-            case 10:
-                SetTimeStart(buf.ReadInt());
-                break;
-            case 11:
-                SetTimeEnd(buf.ReadInt());
-                break;
-            case 12:
-                SetTimeStride(buf.ReadInt());
-                break;
-            }
+        case 0:
+            SetDdfName(buf.ReadString());
+            break;
+        case 1:
+            SetVarnames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetRanges(buf.ReadDoubleVector());
+            break;
+        case 3:
+            SetCodomainName(buf.ReadString());
+            break;
+        case 4:
+            SetStatisticalOperator(buf.ReadInt());
+            break;
+        case 5:
+            SetPercentile(buf.ReadDouble());
+            break;
+        case 6:
+            SetUndefinedValue(buf.ReadDouble());
+            break;
+        case 7:
+            SetBinningScheme(buf.ReadInt());
+            break;
+        case 8:
+            SetNumSamples(buf.ReadIntVector());
+            break;
+        case 9:
+            SetOverTime(buf.ReadBool());
+            break;
+        case 10:
+            SetTimeStart(buf.ReadInt());
+            break;
+        case 11:
+            SetTimeEnd(buf.ReadInt());
+            break;
+        case 12:
+            SetTimeStride(buf.ReadInt());
+            break;
         }
     }
 

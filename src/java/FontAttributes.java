@@ -56,6 +56,8 @@ package llnl.visit;
 
 public class FontAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     // Enum values
     public final static int FONTNAME_ARIAL = 0;
     public final static int FONTNAME_COURIER = 1;
@@ -64,7 +66,19 @@ public class FontAttributes extends AttributeSubject
 
     public FontAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        font = FONTNAME_ARIAL;
+        scale = 1;
+        useForegroundColor = true;
+        color = new ColorAttribute(0, 0, 0);
+        bold = false;
+        italic = false;
+    }
+
+    public FontAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         font = FONTNAME_ARIAL;
         scale = 1;
@@ -76,7 +90,7 @@ public class FontAttributes extends AttributeSubject
 
     public FontAttributes(FontAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         font = obj.font;
         scale = obj.scale;
@@ -86,6 +100,16 @@ public class FontAttributes extends AttributeSubject
         italic = obj.italic;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(FontAttributes obj)
@@ -161,33 +185,29 @@ public class FontAttributes extends AttributeSubject
             buf.WriteBool(italic);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetFont(buf.ReadInt());
-                break;
-            case 1:
-                SetScale(buf.ReadDouble());
-                break;
-            case 2:
-                SetUseForegroundColor(buf.ReadBool());
-                break;
-            case 3:
-                color.Read(buf);
-                Select(3);
-                break;
-            case 4:
-                SetBold(buf.ReadBool());
-                break;
-            case 5:
-                SetItalic(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetFont(buf.ReadInt());
+            break;
+        case 1:
+            SetScale(buf.ReadDouble());
+            break;
+        case 2:
+            SetUseForegroundColor(buf.ReadBool());
+            break;
+        case 3:
+            color.Read(buf);
+            Select(3);
+            break;
+        case 4:
+            SetBold(buf.ReadBool());
+            break;
+        case 5:
+            SetItalic(buf.ReadBool());
+            break;
         }
     }
 

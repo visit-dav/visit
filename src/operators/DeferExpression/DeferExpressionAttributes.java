@@ -60,16 +60,25 @@ import java.util.Vector;
 
 public class DeferExpressionAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     public DeferExpressionAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        exprs = new Vector();
+    }
+
+    public DeferExpressionAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         exprs = new Vector();
     }
 
     public DeferExpressionAttributes(DeferExpressionAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -79,6 +88,16 @@ public class DeferExpressionAttributes extends AttributeSubject implements Plugi
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DeferExpressionAttributes obj)
@@ -118,9 +137,8 @@ public class DeferExpressionAttributes extends AttributeSubject implements Plugi
             buf.WriteStringVector(exprs);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetExprs(buf.ReadStringVector());
     }
 

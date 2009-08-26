@@ -143,6 +143,20 @@ int main(int argc, char **argv)
         cerr << endl;
     }
 
+#define CHECK_PLURAL(noun,pnoun) 			\
+    if (Plural(#noun) != #pnoun)			\
+    {							\
+        cerr << "Problem pluralizing " #pnoun << endl;	\
+        return 1;					\
+    }
+
+    CHECK_PLURAL(matrix,matrices);
+    CHECK_PLURAL(stratum,strata);
+    CHECK_PLURAL(patch,patches);
+    CHECK_PLURAL(domain,domains);
+    CHECK_PLURAL(source,sources);
+    CHECK_PLURAL(assembly,assemblies);
+
     return falseNegatives.size() + falsePositives.size();
 
 }

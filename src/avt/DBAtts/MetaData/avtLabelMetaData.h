@@ -39,9 +39,8 @@
 #ifndef AVTLABELMETADATA_H
 #define AVTLABELMETADATA_H
 #include <dbatts_exports.h>
-#include <string>
-#include <avtTypes.h>
-#include <AttributeSubject.h>
+#include <avtVarMetaData.h>
+
 
 // ****************************************************************************
 // Class: avtLabelMetaData
@@ -58,16 +57,26 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtLabelMetaData : public AttributeSubject
+class DBATTS_API avtLabelMetaData : public avtVarMetaData
 {
 public:
+    // These constructors are for objects of this class
     avtLabelMetaData();
     avtLabelMetaData(const avtLabelMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtLabelMetaData(private_tmfs_t tmfs);
+    avtLabelMetaData(const avtLabelMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtLabelMetaData();
 
     virtual avtLabelMetaData& operator = (const avtLabelMetaData &obj);
     virtual bool operator == (const avtLabelMetaData &obj) const;
     virtual bool operator != (const avtLabelMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtLabelMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -79,29 +88,13 @@ public:
 
     // User-defined methods
     avtLabelMetaData(const std::string &, const std::string &, avtCentering);
-    void Print(ostream &, int = 0) const;
 
-    // IDs that can be used to identify fields in case statements
-    enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_meshName,
-        ID_centering,
-        ID_hideFromGUI
-    };
-
-public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  meshName;
-    avtCentering centering;
-    bool         hideFromGUI;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTLABELMETADATA_TMFS (AVTVARMETADATA_TMFS "")
 
 #endif

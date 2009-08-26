@@ -58,9 +58,21 @@ import java.lang.Integer;
 
 public class FileOpenOptions extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 4;
+
     public FileOpenOptions()
     {
-        super(4);
+        super(numAdditionalAttributes);
+
+        typeNames = new Vector();
+        typeIDs = new Vector();
+        openOptions = new Vector();
+        Enabled = new Vector();
+    }
+
+    public FileOpenOptions(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         typeNames = new Vector();
         typeIDs = new Vector();
@@ -70,7 +82,7 @@ public class FileOpenOptions extends AttributeSubject
 
     public FileOpenOptions(FileOpenOptions obj)
     {
-        super(4);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -98,6 +110,16 @@ public class FileOpenOptions extends AttributeSubject
         }
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(FileOpenOptions obj)
@@ -192,36 +214,32 @@ public class FileOpenOptions extends AttributeSubject
             buf.WriteIntVector(Enabled);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetTypeNames(buf.ReadStringVector());
+            break;
+        case 1:
+            SetTypeIDs(buf.ReadStringVector());
+            break;
+        case 2:
             {
-            case 0:
-                SetTypeNames(buf.ReadStringVector());
-                break;
-            case 1:
-                SetTypeIDs(buf.ReadStringVector());
-                break;
-            case 2:
+                int len = buf.ReadInt();
+                openOptions.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    openOptions.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        DBOptionsAttributes tmp = new DBOptionsAttributes();
-                        tmp.Read(buf);
-                        openOptions.addElement(tmp);
-                    }
+                    DBOptionsAttributes tmp = new DBOptionsAttributes();
+                    tmp.Read(buf);
+                    openOptions.addElement(tmp);
                 }
-                Select(2);
-                break;
-            case 3:
-                SetEnabled(buf.ReadIntVector());
-                break;
             }
+            Select(2);
+            break;
+        case 3:
+            SetEnabled(buf.ReadIntVector());
+            break;
         }
     }
 

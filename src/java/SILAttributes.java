@@ -58,9 +58,29 @@ import java.lang.Integer;
 
 public class SILAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 12;
+
     public SILAttributes()
     {
-        super(12);
+        super(numAdditionalAttributes);
+
+        nSets = 0;
+        setNames = new Vector();
+        setIds = new Vector();
+        wholeList = new Vector();
+        nCollections = 0;
+        category = new Vector();
+        role = new Vector();
+        superset = new Vector();
+        nspace = new Vector();
+        matrices = new Vector();
+        arrays = new Vector();
+        order = new Vector();
+    }
+
+    public SILAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         nSets = 0;
         setNames = new Vector();
@@ -78,7 +98,7 @@ public class SILAttributes extends AttributeSubject
 
     public SILAttributes(SILAttributes obj)
     {
-        super(12);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -148,6 +168,16 @@ public class SILAttributes extends AttributeSubject
         }
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SILAttributes obj)
@@ -378,80 +408,76 @@ public class SILAttributes extends AttributeSubject
             buf.WriteIntVector(order);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetNSets(buf.ReadInt());
+            break;
+        case 1:
+            SetSetNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetSetIds(buf.ReadIntVector());
+            break;
+        case 3:
+            SetWholeList(buf.ReadIntVector());
+            break;
+        case 4:
+            SetNCollections(buf.ReadInt());
+            break;
+        case 5:
+            SetCategory(buf.ReadStringVector());
+            break;
+        case 6:
+            SetRole(buf.ReadIntVector());
+            break;
+        case 7:
+            SetSuperset(buf.ReadIntVector());
+            break;
+        case 8:
             {
-            case 0:
-                SetNSets(buf.ReadInt());
-                break;
-            case 1:
-                SetSetNames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetSetIds(buf.ReadIntVector());
-                break;
-            case 3:
-                SetWholeList(buf.ReadIntVector());
-                break;
-            case 4:
-                SetNCollections(buf.ReadInt());
-                break;
-            case 5:
-                SetCategory(buf.ReadStringVector());
-                break;
-            case 6:
-                SetRole(buf.ReadIntVector());
-                break;
-            case 7:
-                SetSuperset(buf.ReadIntVector());
-                break;
-            case 8:
+                int len = buf.ReadInt();
+                nspace.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    nspace.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        NamespaceAttributes tmp = new NamespaceAttributes();
-                        tmp.Read(buf);
-                        nspace.addElement(tmp);
-                    }
+                    NamespaceAttributes tmp = new NamespaceAttributes();
+                    tmp.Read(buf);
+                    nspace.addElement(tmp);
                 }
-                Select(8);
-                break;
-            case 9:
-                {
-                    int len = buf.ReadInt();
-                    matrices.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        SILMatrixAttributes tmp = new SILMatrixAttributes();
-                        tmp.Read(buf);
-                        matrices.addElement(tmp);
-                    }
-                }
-                Select(9);
-                break;
-            case 10:
-                {
-                    int len = buf.ReadInt();
-                    arrays.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        SILArrayAttributes tmp = new SILArrayAttributes();
-                        tmp.Read(buf);
-                        arrays.addElement(tmp);
-                    }
-                }
-                Select(10);
-                break;
-            case 11:
-                SetOrder(buf.ReadIntVector());
-                break;
             }
+            Select(8);
+            break;
+        case 9:
+            {
+                int len = buf.ReadInt();
+                matrices.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    SILMatrixAttributes tmp = new SILMatrixAttributes();
+                    tmp.Read(buf);
+                    matrices.addElement(tmp);
+                }
+            }
+            Select(9);
+            break;
+        case 10:
+            {
+                int len = buf.ReadInt();
+                arrays.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    SILArrayAttributes tmp = new SILArrayAttributes();
+                    tmp.Read(buf);
+                    arrays.addElement(tmp);
+                }
+            }
+            Select(10);
+            break;
+        case 11:
+            SetOrder(buf.ReadIntVector());
+            break;
         }
     }
 

@@ -36,26 +36,30 @@
 *
 *****************************************************************************/
 
-#ifndef PY_AVTSILCOLLECTIONMETADATA_H
-#define PY_AVTSILCOLLECTIONMETADATA_H
+#ifndef PY_AVTVARMETADATA_H
+#define PY_AVTVARMETADATA_H
 #include <Python.h>
-#include <avtSILCollectionMetaData.h>
+#include <avtVarMetaData.h>
 #include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyavtSILCollectionMetaData_StartUp(avtSILCollectionMetaData *subj, void *data);
-void VISITPY_API           PyavtSILCollectionMetaData_CloseDown();
-VISITPY_API PyMethodDef *   PyavtSILCollectionMetaData_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyavtSILCollectionMetaData_Check(PyObject *obj);
-VISITPY_API avtSILCollectionMetaData *  PyavtSILCollectionMetaData_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyavtSILCollectionMetaData_New();
-VISITPY_API PyObject *      PyavtSILCollectionMetaData_Wrap(const avtSILCollectionMetaData *attr);
-void VISITPY_API           PyavtSILCollectionMetaData_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyavtSILCollectionMetaData_SetDefaults(const avtSILCollectionMetaData *atts);
-std::string VISITPY_API    PyavtSILCollectionMetaData_GetLogString();
-std::string VISITPY_API    PyavtSILCollectionMetaData_ToString(const avtSILCollectionMetaData *, const char *);
+#define AVTVARMETADATA_NMETH 24
+void VISITPY_API           PyavtVarMetaData_StartUp(avtVarMetaData *subj, void *data);
+void VISITPY_API           PyavtVarMetaData_CloseDown();
+VISITPY_API PyMethodDef *  PyavtVarMetaData_GetMethodTable(int *nMethods);
+bool VISITPY_API           PyavtVarMetaData_Check(PyObject *obj);
+VISITPY_API avtVarMetaData *  PyavtVarMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *     PyavtVarMetaData_New();
+VISITPY_API PyObject *     PyavtVarMetaData_Wrap(const avtVarMetaData *attr);
+void VISITPY_API           PyavtVarMetaData_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyavtVarMetaData_SetDefaults(const avtVarMetaData *atts);
+std::string VISITPY_API    PyavtVarMetaData_GetLogString();
+std::string VISITPY_API    PyavtVarMetaData_ToString(const avtVarMetaData *, const char *);
+VISITPY_API PyObject *     PyavtVarMetaData_getattr(PyObject *self, char *name);
+int VISITPY_API            PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH];
 
 #endif
 

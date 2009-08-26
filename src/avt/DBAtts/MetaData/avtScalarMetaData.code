@@ -44,29 +44,16 @@ Definition:
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : AttributeSubject(avtScalarMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtScalarMetaData::TmfsStruct)
 {
     // Initialize all values.
-    *this = avtScalarMetaData();
+    avtScalarMetaData::Init();
 
     // Override some initialization with the passed arguments.
     name           = n;
     originalName   = name;
     meshName       = mn;
     centering      = c;
-    hasDataExtents = false;
-    validVariable  = true;
-    treatAsASCII   = false;
-    hasUnits       = false;
-    enumerationType = None;
-    enumAlwaysInclude[0] = +DBL_MAX;
-    enumAlwaysInclude[1] = -DBL_MAX;
-    enumAlwaysExclude[0] = +DBL_MAX;
-    enumAlwaysExclude[1] = -DBL_MAX;
-    enumPartialCellMode = Exclude;
-    hideFromGUI = false;
-    enumNChooseRN = 0;
-    enumNChooseRMaxR = 0;
 }
 
 Function: avtScalarMetaData3
@@ -109,29 +96,16 @@ Definition:
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c, double min, double max)
-    : AttributeSubject(avtScalarMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtScalarMetaData::TmfsStruct)
 {
     // Initialize all values.
-    *this = avtScalarMetaData();
+    avtScalarMetaData::Init();
 
     // Override some initialization with the passed arguments.
     name           = n;
     originalName   = name;
     meshName       = mn;
     centering      = c;
-    validVariable  = true;
-    treatAsASCII   = false;
-    hasUnits       = false;
-    enumerationType = None;
-    enumAlwaysInclude[0] = +DBL_MAX;
-    enumAlwaysInclude[1] = -DBL_MAX;
-    enumAlwaysExclude[0] = +DBL_MAX;
-    enumAlwaysExclude[1] = -DBL_MAX;
-    enumPartialCellMode = Exclude;
-    hideFromGUI = false;
-    enumNChooseRN = 0;
-    enumNChooseRMaxR = 0;
-
     double  extents[2] = { min, max };
     SetExtents(extents);
 }
@@ -227,59 +201,8 @@ Indent(ostream &out, int indent)
 void
 avtScalarMetaData::Print(ostream &out, int indent) const
 {
-    Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
-    if (name != originalName)
-    {
-        Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
-    }
+    avtVarMetaData::Print(out, indent);
 
-    Indent(out, indent);
-    out << "Mesh is = " << meshName.c_str() << endl;
-
-    Indent(out, indent);
-    out << "Centering = ";
-    switch (centering)
-    {
-      case AVT_NODECENT:
-        out << "node centered.";
-        break;
-
-      case AVT_ZONECENT:
-        out << "zone centered.";
-        break;
-
-      case AVT_UNKNOWN_CENT:
-      default:
-        out << "unknowing centering.";
-        break;
-    }
-    out << endl;
-
-    if(hasUnits)
-    {
-        Indent(out, indent);
-        out << "Units are: " << units.c_str() << endl;
-    }
-
-    if (hasDataExtents)
-    {
-        Indent(out, indent);
-        out << "Extents are: (" << minDataExtents << ", " 
-            << maxDataExtents << ")" << endl;
-    }
-    else
-    {
-        Indent(out, indent);
-        out << "The extents are not set." << endl;
-    }
-
-    if (!validVariable)
-    {
-        Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
-    }
     if (treatAsASCII)
     {
         Indent(out, indent);

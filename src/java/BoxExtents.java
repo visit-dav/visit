@@ -56,9 +56,24 @@ package llnl.visit;
 
 public class BoxExtents extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 1;
+
     public BoxExtents()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        extents = new double[6];
+        extents[0] = 0;
+        extents[1] = 0;
+        extents[2] = 0;
+        extents[3] = 0;
+        extents[4] = 0;
+        extents[5] = 0;
+    }
+
+    public BoxExtents(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         extents = new double[6];
         extents[0] = 0;
@@ -71,7 +86,7 @@ public class BoxExtents extends AttributeSubject
 
     public BoxExtents(BoxExtents obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -81,6 +96,16 @@ public class BoxExtents extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(BoxExtents obj)
@@ -114,9 +139,8 @@ public class BoxExtents extends AttributeSubject
             buf.WriteDoubleArray(extents);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetExtents(buf.ReadDoubleArray());
     }
 

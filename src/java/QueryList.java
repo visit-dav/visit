@@ -58,6 +58,8 @@ import java.lang.Integer;
 
 public class QueryList extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 9;
+
     // Enum values
     public final static int QUERYTYPE_DATABASEQUERY = 0;
     public final static int QUERYTYPE_POINTQUERY = 1;
@@ -94,7 +96,22 @@ public class QueryList extends AttributeSubject
 
     public QueryList()
     {
-        super(9);
+        super(numAdditionalAttributes);
+
+        names = new Vector();
+        types = new Vector();
+        groups = new Vector();
+        numInputs = new Vector();
+        allowedVarTypes = new Vector();
+        winType = new Vector();
+        queryMode = new Vector();
+        numVars = new Vector();
+        canBePublic = new Vector();
+    }
+
+    public QueryList(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         names = new Vector();
         types = new Vector();
@@ -109,7 +126,7 @@ public class QueryList extends AttributeSubject
 
     public QueryList(QueryList obj)
     {
-        super(9);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -167,6 +184,16 @@ public class QueryList extends AttributeSubject
         }
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(QueryList obj)
@@ -355,41 +382,37 @@ public class QueryList extends AttributeSubject
             buf.WriteIntVector(canBePublic);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetNames(buf.ReadStringVector());
-                break;
-            case 1:
-                SetTypes(buf.ReadIntVector());
-                break;
-            case 2:
-                SetGroups(buf.ReadIntVector());
-                break;
-            case 3:
-                SetNumInputs(buf.ReadIntVector());
-                break;
-            case 4:
-                SetAllowedVarTypes(buf.ReadIntVector());
-                break;
-            case 5:
-                SetWinType(buf.ReadIntVector());
-                break;
-            case 6:
-                SetQueryMode(buf.ReadIntVector());
-                break;
-            case 7:
-                SetNumVars(buf.ReadIntVector());
-                break;
-            case 8:
-                SetCanBePublic(buf.ReadIntVector());
-                break;
-            }
+        case 0:
+            SetNames(buf.ReadStringVector());
+            break;
+        case 1:
+            SetTypes(buf.ReadIntVector());
+            break;
+        case 2:
+            SetGroups(buf.ReadIntVector());
+            break;
+        case 3:
+            SetNumInputs(buf.ReadIntVector());
+            break;
+        case 4:
+            SetAllowedVarTypes(buf.ReadIntVector());
+            break;
+        case 5:
+            SetWinType(buf.ReadIntVector());
+            break;
+        case 6:
+            SetQueryMode(buf.ReadIntVector());
+            break;
+        case 7:
+            SetNumVars(buf.ReadIntVector());
+            break;
+        case 8:
+            SetCanBePublic(buf.ReadIntVector());
+            break;
         }
     }
 

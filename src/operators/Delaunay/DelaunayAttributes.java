@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class DelaunayAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 1;
+
     // Enum values
     public final static int DIMENSION_AUTOMATIC = 0;
     public final static int DIMENSION_TRIANGULATION = 1;
@@ -67,18 +69,35 @@ public class DelaunayAttributes extends AttributeSubject implements Plugin
 
     public DelaunayAttributes()
     {
-        super(1);
+        super(numAdditionalAttributes);
+
+        dimension = DIMENSION_AUTOMATIC;
+    }
+
+    public DelaunayAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         dimension = DIMENSION_AUTOMATIC;
     }
 
     public DelaunayAttributes(DelaunayAttributes obj)
     {
-        super(1);
+        super(numAdditionalAttributes);
 
         dimension = obj.dimension;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(DelaunayAttributes obj)
@@ -107,9 +126,8 @@ public class DelaunayAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(dimension);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        buf.ReadByte();
         SetDimension(buf.ReadInt());
     }
 

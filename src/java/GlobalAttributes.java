@@ -58,9 +58,41 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 24;
+
     public GlobalAttributes()
     {
-        super(24);
+        super(numAdditionalAttributes);
+
+        sources = new Vector();
+        windows = new Vector();
+        activeWindow = 1;
+        iconifiedFlag = false;
+        autoUpdateFlag = false;
+        replacePlots = false;
+        applyOperator = true;
+        executing = false;
+        windowLayout = 1;
+        makeDefaultConfirm = true;
+        cloneWindowOnFirstRef = false;
+        maintainView = false;
+        maintainData = false;
+        automaticallyAddOperator = false;
+        tryHarderCyclesTimes = false;
+        treatAllDBsAsTimeVarying = false;
+        createMeshQualityExpressions = true;
+        createTimeDerivativeExpressions = true;
+        createVectorMagnitudeExpressions = true;
+        newPlotsInheritSILRestriction = true;
+        userDirForSessionFiles = false;
+        saveCrashRecoveryFile = true;
+        applySelection = true;
+        ignoreExtentsFromDbs = false;
+    }
+
+    public GlobalAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         sources = new Vector();
         windows = new Vector();
@@ -90,7 +122,7 @@ public class GlobalAttributes extends AttributeSubject
 
     public GlobalAttributes(GlobalAttributes obj)
     {
-        super(24);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -128,6 +160,16 @@ public class GlobalAttributes extends AttributeSubject
         ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(GlobalAttributes obj)
@@ -403,86 +445,82 @@ public class GlobalAttributes extends AttributeSubject
             buf.WriteBool(ignoreExtentsFromDbs);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetSources(buf.ReadStringVector());
-                break;
-            case 1:
-                SetWindows(buf.ReadIntVector());
-                break;
-            case 2:
-                SetActiveWindow(buf.ReadInt());
-                break;
-            case 3:
-                SetIconifiedFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetAutoUpdateFlag(buf.ReadBool());
-                break;
-            case 5:
-                SetReplacePlots(buf.ReadBool());
-                break;
-            case 6:
-                SetApplyOperator(buf.ReadBool());
-                break;
-            case 7:
-                SetExecuting(buf.ReadBool());
-                break;
-            case 8:
-                SetWindowLayout(buf.ReadInt());
-                break;
-            case 9:
-                SetMakeDefaultConfirm(buf.ReadBool());
-                break;
-            case 10:
-                SetCloneWindowOnFirstRef(buf.ReadBool());
-                break;
-            case 11:
-                SetMaintainView(buf.ReadBool());
-                break;
-            case 12:
-                SetMaintainData(buf.ReadBool());
-                break;
-            case 13:
-                SetAutomaticallyAddOperator(buf.ReadBool());
-                break;
-            case 14:
-                SetTryHarderCyclesTimes(buf.ReadBool());
-                break;
-            case 15:
-                SetTreatAllDBsAsTimeVarying(buf.ReadBool());
-                break;
-            case 16:
-                SetCreateMeshQualityExpressions(buf.ReadBool());
-                break;
-            case 17:
-                SetCreateTimeDerivativeExpressions(buf.ReadBool());
-                break;
-            case 18:
-                SetCreateVectorMagnitudeExpressions(buf.ReadBool());
-                break;
-            case 19:
-                SetNewPlotsInheritSILRestriction(buf.ReadBool());
-                break;
-            case 20:
-                SetUserDirForSessionFiles(buf.ReadBool());
-                break;
-            case 21:
-                SetSaveCrashRecoveryFile(buf.ReadBool());
-                break;
-            case 22:
-                SetApplySelection(buf.ReadBool());
-                break;
-            case 23:
-                SetIgnoreExtentsFromDbs(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetSources(buf.ReadStringVector());
+            break;
+        case 1:
+            SetWindows(buf.ReadIntVector());
+            break;
+        case 2:
+            SetActiveWindow(buf.ReadInt());
+            break;
+        case 3:
+            SetIconifiedFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetAutoUpdateFlag(buf.ReadBool());
+            break;
+        case 5:
+            SetReplacePlots(buf.ReadBool());
+            break;
+        case 6:
+            SetApplyOperator(buf.ReadBool());
+            break;
+        case 7:
+            SetExecuting(buf.ReadBool());
+            break;
+        case 8:
+            SetWindowLayout(buf.ReadInt());
+            break;
+        case 9:
+            SetMakeDefaultConfirm(buf.ReadBool());
+            break;
+        case 10:
+            SetCloneWindowOnFirstRef(buf.ReadBool());
+            break;
+        case 11:
+            SetMaintainView(buf.ReadBool());
+            break;
+        case 12:
+            SetMaintainData(buf.ReadBool());
+            break;
+        case 13:
+            SetAutomaticallyAddOperator(buf.ReadBool());
+            break;
+        case 14:
+            SetTryHarderCyclesTimes(buf.ReadBool());
+            break;
+        case 15:
+            SetTreatAllDBsAsTimeVarying(buf.ReadBool());
+            break;
+        case 16:
+            SetCreateMeshQualityExpressions(buf.ReadBool());
+            break;
+        case 17:
+            SetCreateTimeDerivativeExpressions(buf.ReadBool());
+            break;
+        case 18:
+            SetCreateVectorMagnitudeExpressions(buf.ReadBool());
+            break;
+        case 19:
+            SetNewPlotsInheritSILRestriction(buf.ReadBool());
+            break;
+        case 20:
+            SetUserDirForSessionFiles(buf.ReadBool());
+            break;
+        case 21:
+            SetSaveCrashRecoveryFile(buf.ReadBool());
+            break;
+        case 22:
+            SetApplySelection(buf.ReadBool());
+            break;
+        case 23:
+            SetIgnoreExtentsFromDbs(buf.ReadBool());
+            break;
         }
     }
 

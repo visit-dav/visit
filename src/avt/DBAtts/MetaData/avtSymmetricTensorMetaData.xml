@@ -1,29 +1,7 @@
 <?xml version="1.0"?>
-  <Attribute name="avtSymmetricTensorMetaData" purpose="Contains symmetricTensor metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtSymmetricTensorMetaData.code">
-    <Field name="name" label="Name" type="string" access="public">
-      symmetricTensor
-    </Field>
-    <Field name="originalName" label="Original name" type="string" access="public">
-    </Field>
-    <Field name="validVariable" label="Valid variable" type="bool" access="public">
-      true
-    </Field>
-    <Field name="meshName" label="Mesh name" type="string" access="public">
-      mesh
-    </Field>
-    <Field name="centering" label="Variable centering" type="avtCentering" access="public">
-      AVT_UNKNOWN_CENT
-    </Field>
-    <Field name="hasUnits" label="Has units" type="bool" access="public">
-      false
-    </Field>
-    <Field name="units" label="Units" type="string" access="public">
-    </Field>
+  <Attribute name="avtSymmetricTensorMetaData" purpose="Contains symmetricTensor metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtSymmetricTensorMetaData.code" baseClass="avtVarMetaData">
     <Field name="dim" label="Dimensions" type="int" access="public">
       0
-    </Field>
-    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
-      false
     </Field>
     <Function name="avtSymmetricTensorMetaData2" user="true" member="true">
     </Function>

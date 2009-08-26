@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ElevateAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 10;
+
     // Enum values
     public final static int SCALING_LINEAR = 0;
     public final static int SCALING_LOG = 1;
@@ -70,7 +72,23 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public ElevateAttributes()
     {
-        super(10);
+        super(numAdditionalAttributes);
+
+        useXYLimits = false;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        scaling = SCALING_LINEAR;
+        skewFactor = 1;
+        minFlag = false;
+        min = 0;
+        maxFlag = false;
+        max = 1;
+        zeroFlag = false;
+        variable = new String("default");
+    }
+
+    public ElevateAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         useXYLimits = false;
         limitsMode = LIMITSMODE_ORIGINALDATA;
@@ -86,7 +104,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public ElevateAttributes(ElevateAttributes obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         useXYLimits = obj.useXYLimits;
         limitsMode = obj.limitsMode;
@@ -100,6 +118,16 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
         variable = new String(obj.variable);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ElevateAttributes obj)
@@ -218,44 +246,40 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
             buf.WriteString(variable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetUseXYLimits(buf.ReadBool());
-                break;
-            case 1:
-                SetLimitsMode(buf.ReadInt());
-                break;
-            case 2:
-                SetScaling(buf.ReadInt());
-                break;
-            case 3:
-                SetSkewFactor(buf.ReadDouble());
-                break;
-            case 4:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 5:
-                SetMin(buf.ReadDouble());
-                break;
-            case 6:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 7:
-                SetMax(buf.ReadDouble());
-                break;
-            case 8:
-                SetZeroFlag(buf.ReadBool());
-                break;
-            case 9:
-                SetVariable(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetUseXYLimits(buf.ReadBool());
+            break;
+        case 1:
+            SetLimitsMode(buf.ReadInt());
+            break;
+        case 2:
+            SetScaling(buf.ReadInt());
+            break;
+        case 3:
+            SetSkewFactor(buf.ReadDouble());
+            break;
+        case 4:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 5:
+            SetMin(buf.ReadDouble());
+            break;
+        case 6:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 7:
+            SetMax(buf.ReadDouble());
+            break;
+        case 8:
+            SetZeroFlag(buf.ReadBool());
+            break;
+        case 9:
+            SetVariable(buf.ReadString());
+            break;
         }
     }
 

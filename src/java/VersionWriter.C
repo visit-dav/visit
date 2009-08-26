@@ -59,7 +59,7 @@ int
 main(int argc, char *argv[])
 {
     FILE *fp = NULL;
-    const char *ver = VERSION;
+    const char *ver = VISIT_VERSION;
     int i, reached_end = 0, retval = 1;
 
     // Open the file and write the Java class.

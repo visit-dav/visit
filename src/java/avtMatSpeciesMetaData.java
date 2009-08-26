@@ -57,9 +57,20 @@ import java.util.Vector;
 
 public class avtMatSpeciesMetaData extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 3;
+
     public avtMatSpeciesMetaData()
     {
-        super(3);
+        super(numAdditionalAttributes);
+
+        numSpecies = 0;
+        speciesNames = new Vector();
+        validVariable = true;
+    }
+
+    public avtMatSpeciesMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         numSpecies = 0;
         speciesNames = new Vector();
@@ -68,7 +79,7 @@ public class avtMatSpeciesMetaData extends AttributeSubject
 
     public avtMatSpeciesMetaData(avtMatSpeciesMetaData obj)
     {
-        super(3);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -80,6 +91,16 @@ public class avtMatSpeciesMetaData extends AttributeSubject
         validVariable = obj.validVariable;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtMatSpeciesMetaData obj)
@@ -136,23 +157,19 @@ public class avtMatSpeciesMetaData extends AttributeSubject
             buf.WriteBool(validVariable);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetNumSpecies(buf.ReadInt());
-                break;
-            case 1:
-                SetSpeciesNames(buf.ReadStringVector());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetNumSpecies(buf.ReadInt());
+            break;
+        case 1:
+            SetSpeciesNames(buf.ReadStringVector());
+            break;
+        case 2:
+            SetValidVariable(buf.ReadBool());
+            break;
         }
     }
 

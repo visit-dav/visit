@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class ClipAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 16;
+
     // Enum values
     public final static int CLIPSTYLE_PLANE = 0;
     public final static int CLIPSTYLE_SPHERE = 1;
@@ -74,7 +76,50 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes()
     {
-        super(16);
+        super(numAdditionalAttributes);
+
+        quality = QUALITY_FAST;
+        funcType = CLIPSTYLE_PLANE;
+        plane1Status = true;
+        plane2Status = false;
+        plane3Status = false;
+        plane1Origin = new double[3];
+        plane1Origin[0] = 0;
+        plane1Origin[1] = 0;
+        plane1Origin[2] = 0;
+        plane2Origin = new double[3];
+        plane2Origin[0] = 0;
+        plane2Origin[1] = 0;
+        plane2Origin[2] = 0;
+        plane3Origin = new double[3];
+        plane3Origin[0] = 0;
+        plane3Origin[1] = 0;
+        plane3Origin[2] = 0;
+        plane1Normal = new double[3];
+        plane1Normal[0] = 1;
+        plane1Normal[1] = 0;
+        plane1Normal[2] = 0;
+        plane2Normal = new double[3];
+        plane2Normal[0] = 0;
+        plane2Normal[1] = 1;
+        plane2Normal[2] = 0;
+        plane3Normal = new double[3];
+        plane3Normal[0] = 0;
+        plane3Normal[1] = 0;
+        plane3Normal[2] = 1;
+        planeInverse = false;
+        planeToolControlledClipPlane = WHICHCLIPPLANE_PLANE1;
+        center = new double[3];
+        center[0] = 0;
+        center[1] = 0;
+        center[2] = 0;
+        radius = 1;
+        sphereInverse = false;
+    }
+
+    public ClipAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         quality = QUALITY_FAST;
         funcType = CLIPSTYLE_PLANE;
@@ -117,7 +162,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes(ClipAttributes obj)
     {
-        super(16);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -167,6 +212,16 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         sphereInverse = obj.sphereInverse;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ClipAttributes obj)
@@ -452,62 +507,58 @@ public class ClipAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(sphereInverse);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetQuality(buf.ReadInt());
-                break;
-            case 1:
-                SetFuncType(buf.ReadInt());
-                break;
-            case 2:
-                SetPlane1Status(buf.ReadBool());
-                break;
-            case 3:
-                SetPlane2Status(buf.ReadBool());
-                break;
-            case 4:
-                SetPlane3Status(buf.ReadBool());
-                break;
-            case 5:
-                SetPlane1Origin(buf.ReadDoubleArray());
-                break;
-            case 6:
-                SetPlane2Origin(buf.ReadDoubleArray());
-                break;
-            case 7:
-                SetPlane3Origin(buf.ReadDoubleArray());
-                break;
-            case 8:
-                SetPlane1Normal(buf.ReadDoubleArray());
-                break;
-            case 9:
-                SetPlane2Normal(buf.ReadDoubleArray());
-                break;
-            case 10:
-                SetPlane3Normal(buf.ReadDoubleArray());
-                break;
-            case 11:
-                SetPlaneInverse(buf.ReadBool());
-                break;
-            case 12:
-                SetPlaneToolControlledClipPlane(buf.ReadInt());
-                break;
-            case 13:
-                SetCenter(buf.ReadDoubleArray());
-                break;
-            case 14:
-                SetRadius(buf.ReadDouble());
-                break;
-            case 15:
-                SetSphereInverse(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetQuality(buf.ReadInt());
+            break;
+        case 1:
+            SetFuncType(buf.ReadInt());
+            break;
+        case 2:
+            SetPlane1Status(buf.ReadBool());
+            break;
+        case 3:
+            SetPlane2Status(buf.ReadBool());
+            break;
+        case 4:
+            SetPlane3Status(buf.ReadBool());
+            break;
+        case 5:
+            SetPlane1Origin(buf.ReadDoubleArray());
+            break;
+        case 6:
+            SetPlane2Origin(buf.ReadDoubleArray());
+            break;
+        case 7:
+            SetPlane3Origin(buf.ReadDoubleArray());
+            break;
+        case 8:
+            SetPlane1Normal(buf.ReadDoubleArray());
+            break;
+        case 9:
+            SetPlane2Normal(buf.ReadDoubleArray());
+            break;
+        case 10:
+            SetPlane3Normal(buf.ReadDoubleArray());
+            break;
+        case 11:
+            SetPlaneInverse(buf.ReadBool());
+            break;
+        case 12:
+            SetPlaneToolControlledClipPlane(buf.ReadInt());
+            break;
+        case 13:
+            SetCenter(buf.ReadDoubleArray());
+            break;
+        case 14:
+            SetRadius(buf.ReadDouble());
+            break;
+        case 15:
+            SetSphereInverse(buf.ReadBool());
+            break;
         }
     }
 

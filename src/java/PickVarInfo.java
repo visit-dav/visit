@@ -59,6 +59,8 @@ import java.lang.Integer;
 
 public class PickVarInfo extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 14;
+
     // Enum values
     public final static int CENTERING_NODAL = 0;
     public final static int CENTERING_ZONAL = 1;
@@ -67,7 +69,27 @@ public class PickVarInfo extends AttributeSubject
 
     public PickVarInfo()
     {
-        super(14);
+        super(numAdditionalAttributes);
+
+        variableName = new String("");
+        variableType = new String("");
+        names = new Vector();
+        values = new Vector();
+        mixNames = new Vector();
+        mixValues = new Vector();
+        mixVar = false;
+        centering = CENTERING_NONE;
+        miscMessage = new String("");
+        numMatsPerZone = new Vector();
+        matNames = new Vector();
+        numSpecsPerMat = new Vector();
+        treatAsASCII = false;
+        floatFormat = new String("%g");
+    }
+
+    public PickVarInfo(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         variableName = new String("");
         variableType = new String("");
@@ -87,7 +109,7 @@ public class PickVarInfo extends AttributeSubject
 
     public PickVarInfo(PickVarInfo obj)
     {
-        super(14);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -138,6 +160,16 @@ public class PickVarInfo extends AttributeSubject
         floatFormat = new String(obj.floatFormat);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(PickVarInfo obj)
@@ -358,56 +390,52 @@ public class PickVarInfo extends AttributeSubject
             buf.WriteString(floatFormat);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetVariableName(buf.ReadString());
-                break;
-            case 1:
-                SetVariableType(buf.ReadString());
-                break;
-            case 2:
-                SetNames(buf.ReadStringVector());
-                break;
-            case 3:
-                SetValues(buf.ReadDoubleVector());
-                break;
-            case 4:
-                SetMixNames(buf.ReadStringVector());
-                break;
-            case 5:
-                SetMixValues(buf.ReadDoubleVector());
-                break;
-            case 6:
-                SetMixVar(buf.ReadBool());
-                break;
-            case 7:
-                SetCentering(buf.ReadInt());
-                break;
-            case 8:
-                SetMiscMessage(buf.ReadString());
-                break;
-            case 9:
-                SetNumMatsPerZone(buf.ReadIntVector());
-                break;
-            case 10:
-                SetMatNames(buf.ReadStringVector());
-                break;
-            case 11:
-                SetNumSpecsPerMat(buf.ReadIntVector());
-                break;
-            case 12:
-                SetTreatAsASCII(buf.ReadBool());
-                break;
-            case 13:
-                SetFloatFormat(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetVariableName(buf.ReadString());
+            break;
+        case 1:
+            SetVariableType(buf.ReadString());
+            break;
+        case 2:
+            SetNames(buf.ReadStringVector());
+            break;
+        case 3:
+            SetValues(buf.ReadDoubleVector());
+            break;
+        case 4:
+            SetMixNames(buf.ReadStringVector());
+            break;
+        case 5:
+            SetMixValues(buf.ReadDoubleVector());
+            break;
+        case 6:
+            SetMixVar(buf.ReadBool());
+            break;
+        case 7:
+            SetCentering(buf.ReadInt());
+            break;
+        case 8:
+            SetMiscMessage(buf.ReadString());
+            break;
+        case 9:
+            SetNumMatsPerZone(buf.ReadIntVector());
+            break;
+        case 10:
+            SetMatNames(buf.ReadStringVector());
+            break;
+        case 11:
+            SetNumSpecsPerMat(buf.ReadIntVector());
+            break;
+        case 12:
+            SetTreatAsASCII(buf.ReadBool());
+            break;
+        case 13:
+            SetFloatFormat(buf.ReadString());
+            break;
         }
     }
 

@@ -59,9 +59,22 @@ import llnl.visit.Plugin;
 
 public class TubeAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 5;
+
     public TubeAttributes()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        scaleByVarFlag = false;
+        width = 0.5f;
+        scaleVariable = new String("");
+        fineness = 3;
+        capping = false;
+    }
+
+    public TubeAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         scaleByVarFlag = false;
         width = 0.5f;
@@ -72,7 +85,7 @@ public class TubeAttributes extends AttributeSubject implements Plugin
 
     public TubeAttributes(TubeAttributes obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         scaleByVarFlag = obj.scaleByVarFlag;
         width = obj.width;
@@ -81,6 +94,16 @@ public class TubeAttributes extends AttributeSubject implements Plugin
         capping = obj.capping;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(TubeAttributes obj)
@@ -149,29 +172,25 @@ public class TubeAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(capping);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetScaleByVarFlag(buf.ReadBool());
-                break;
-            case 1:
-                SetWidth(buf.ReadFloat());
-                break;
-            case 2:
-                SetScaleVariable(buf.ReadString());
-                break;
-            case 3:
-                SetFineness(buf.ReadInt());
-                break;
-            case 4:
-                SetCapping(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetScaleByVarFlag(buf.ReadBool());
+            break;
+        case 1:
+            SetWidth(buf.ReadFloat());
+            break;
+        case 2:
+            SetScaleVariable(buf.ReadString());
+            break;
+        case 3:
+            SetFineness(buf.ReadInt());
+            break;
+        case 4:
+            SetCapping(buf.ReadBool());
+            break;
         }
     }
 

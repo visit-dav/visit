@@ -55,45 +55,49 @@ import java.util.Vector;
 //   
 // ****************************************************************************
 
-public class avtArrayMetaData extends AttributeSubject
+public class avtArrayMetaData extends avtVarMetaData
 {
+    private static int numAdditionalAttributes = 2;
+
     public avtArrayMetaData()
     {
-        super(10);
+        super(numAdditionalAttributes);
 
-        name = new String("array");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
-        centering = 0;
-        hasUnits = false;
-        units = new String("");
         nVars = 0;
         compNames = new Vector();
-        hideFromGUI = false;
+    }
+
+    public avtArrayMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
+
+        nVars = 0;
+        compNames = new Vector();
     }
 
     public avtArrayMetaData(avtArrayMetaData obj)
     {
-        super(10);
+        super(numAdditionalAttributes);
 
         int i;
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
-        meshName = new String(obj.meshName);
-        centering = obj.centering;
-        hasUnits = obj.hasUnits;
-        units = new String(obj.units);
         nVars = obj.nVars;
         compNames = new Vector(obj.compNames.size());
         for(i = 0; i < obj.compNames.size(); ++i)
             compNames.addElement(new String((String)obj.compNames.elementAt(i)));
 
-        hideFromGUI = obj.hideFromGUI;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtArrayMetaData obj)
@@ -110,184 +114,67 @@ public class avtArrayMetaData extends AttributeSubject
             compNames_equal = compNames1.equals(compNames2);
         }
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (meshName.equals(obj.meshName)) &&
-                (centering == obj.centering) &&
-                (hasUnits == obj.hasUnits) &&
-                (units.equals(obj.units)) &&
-                (nVars == obj.nVars) &&
-                compNames_equal &&
-                (hideFromGUI == obj.hideFromGUI));
+        return (super.equals(obj) && (nVars == obj.nVars) &&
+                compNames_equal);
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
-    public void SetMeshName(String meshName_)
-    {
-        meshName = meshName_;
-        Select(3);
-    }
-
-    public void SetCentering(int centering_)
-    {
-        centering = centering_;
-        Select(4);
-    }
-
-    public void SetHasUnits(boolean hasUnits_)
-    {
-        hasUnits = hasUnits_;
-        Select(5);
-    }
-
-    public void SetUnits(String units_)
-    {
-        units = units_;
-        Select(6);
-    }
-
     public void SetNVars(int nVars_)
     {
         nVars = nVars_;
-        Select(7);
+        Select(Offset() + 0);
     }
 
     public void SetCompNames(Vector compNames_)
     {
         compNames = compNames_;
-        Select(8);
-    }
-
-    public void SetHideFromGUI(boolean hideFromGUI_)
-    {
-        hideFromGUI = hideFromGUI_;
-        Select(9);
+        Select(Offset() + 1);
     }
 
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetOriginalName() { return originalName; }
-    public boolean GetValidVariable() { return validVariable; }
-    public String  GetMeshName() { return meshName; }
-    public int     GetCentering() { return centering; }
-    public boolean GetHasUnits() { return hasUnits; }
-    public String  GetUnits() { return units; }
-    public int     GetNVars() { return nVars; }
-    public Vector  GetCompNames() { return compNames; }
-    public boolean GetHideFromGUI() { return hideFromGUI; }
+    public int    GetNVars() { return nVars; }
+    public Vector GetCompNames() { return compNames; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
-            buf.WriteString(meshName);
-        if(WriteSelect(4, buf))
-            buf.WriteInt(centering);
-        if(WriteSelect(5, buf))
-            buf.WriteBool(hasUnits);
-        if(WriteSelect(6, buf))
-            buf.WriteString(units);
-        if(WriteSelect(7, buf))
+        super.WriteAtts(buf);
+
+        int offset = Offset();
+        if(WriteSelect(offset + 0, buf))
             buf.WriteInt(nVars);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(offset + 1, buf))
             buf.WriteStringVector(compNames);
-        if(WriteSelect(9, buf))
-            buf.WriteBool(hideFromGUI);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        int index = id - Offset();
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshName(buf.ReadString());
-                break;
-            case 4:
-                SetCentering(buf.ReadInt());
-                break;
-            case 5:
-                SetHasUnits(buf.ReadBool());
-                break;
-            case 6:
-                SetUnits(buf.ReadString());
-                break;
-            case 7:
-                SetNVars(buf.ReadInt());
-                break;
-            case 8:
-                SetCompNames(buf.ReadStringVector());
-                break;
-            case 9:
-                SetHideFromGUI(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetNVars(buf.ReadInt());
+            break;
+        case 1:
+            SetCompNames(buf.ReadStringVector());
+            break;
+        default:
+            super.ReadAtts(id, buf);
+            break;
         }
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + stringToString("meshName", meshName, indent) + "\n";
-        str = str + intToString("centering", centering, indent) + "\n";
-        str = str + boolToString("hasUnits", hasUnits, indent) + "\n";
-        str = str + stringToString("units", units, indent) + "\n";
         str = str + intToString("nVars", nVars, indent) + "\n";
         str = str + stringVectorToString("compNames", compNames, indent) + "\n";
-        str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String  name;
-    private String  originalName;
-    private boolean validVariable;
-    private String  meshName;
-    private int     centering;
-    private boolean hasUnits;
-    private String  units;
-    private int     nVars;
-    private Vector  compNames; // vector of String objects
-    private boolean hideFromGUI;
+    private int    nVars;
+    private Vector compNames; // vector of String objects
 }
 

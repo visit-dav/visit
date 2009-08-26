@@ -58,9 +58,93 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 42;
+
     public avtMeshMetaData()
     {
-        super(42);
+        super(numAdditionalAttributes);
+
+        name = new String("mesh");
+        originalName = new String("");
+        validVariable = true;
+        meshType = 0;
+        meshCoordType = 0;
+        cellOrigin = 0;
+        spatialDimension = 3;
+        topologicalDimension = 3;
+        xUnits = new String("");
+        yUnits = new String("");
+        zUnits = new String("");
+        xLabel = new String("X-Axis");
+        yLabel = new String("Y-Axis");
+        zLabel = new String("Z-Axis");
+        hasSpatialExtents = false;
+        minSpatialExtents = new double[3];
+        minSpatialExtents[0] = 0;
+        minSpatialExtents[1] = 0;
+        minSpatialExtents[2] = 0;
+        maxSpatialExtents = new double[3];
+        maxSpatialExtents[0] = 0;
+        maxSpatialExtents[1] = 0;
+        maxSpatialExtents[2] = 0;
+        numBlocks = 1;
+        blockOrigin = 0;
+        blockPieceName = new String("domain");
+        blockTitle = new String("domains");
+        blockNames = new Vector();
+        numGroups = 0;
+        groupOrigin = 0;
+        groupPieceName = new String("group");
+        groupTitle = new String("groups");
+        groupIds = new Vector();
+        disjointElements = false;
+        containsGhostZones = 0;
+        containsOriginalCells = false;
+        containsOriginalNodes = false;
+        containsGlobalNodeIds = false;
+        containsGlobalZoneIds = false;
+        loadBalanceScheme = 0;
+        nodesAreCritical = false;
+        unitCellVectors = new float[9];
+        unitCellVectors[0] = 1f;
+        unitCellVectors[1] = 0f;
+        unitCellVectors[2] = 0f;
+        unitCellVectors[3] = 0f;
+        unitCellVectors[4] = 1f;
+        unitCellVectors[5] = 0f;
+        unitCellVectors[6] = 0f;
+        unitCellVectors[7] = 0f;
+        unitCellVectors[8] = 1f;
+        unitCellOrigin = new float[3];
+        unitCellOrigin[0] = 0f;
+        unitCellOrigin[1] = 0f;
+        unitCellOrigin[2] = 0f;
+        rectilinearGridHasTransform = false;
+        rectilinearGridTransform = new double[16];
+        rectilinearGridTransform[0] = 1;
+        rectilinearGridTransform[1] = 0;
+        rectilinearGridTransform[2] = 0;
+        rectilinearGridTransform[3] = 0;
+        rectilinearGridTransform[4] = 0;
+        rectilinearGridTransform[5] = 1;
+        rectilinearGridTransform[6] = 0;
+        rectilinearGridTransform[7] = 0;
+        rectilinearGridTransform[8] = 0;
+        rectilinearGridTransform[9] = 0;
+        rectilinearGridTransform[10] = 1;
+        rectilinearGridTransform[11] = 0;
+        rectilinearGridTransform[12] = 0;
+        rectilinearGridTransform[13] = 0;
+        rectilinearGridTransform[14] = 0;
+        rectilinearGridTransform[15] = 1;
+        nodeOrigin = 0;
+        containsExteriorBoundaryGhosts = false;
+        hideFromGUI = false;
+    }
+
+    public avtMeshMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         name = new String("mesh");
         originalName = new String("");
@@ -142,7 +226,7 @@ public class avtMeshMetaData extends AttributeSubject
 
     public avtMeshMetaData(avtMeshMetaData obj)
     {
-        super(42);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -216,6 +300,16 @@ public class avtMeshMetaData extends AttributeSubject
         hideFromGUI = obj.hideFromGUI;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtMeshMetaData obj)
@@ -728,140 +822,136 @@ public class avtMeshMetaData extends AttributeSubject
             buf.WriteBool(hideFromGUI);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetName(buf.ReadString());
-                break;
-            case 1:
-                SetOriginalName(buf.ReadString());
-                break;
-            case 2:
-                SetValidVariable(buf.ReadBool());
-                break;
-            case 3:
-                SetMeshType(buf.ReadInt());
-                break;
-            case 4:
-                SetMeshCoordType(buf.ReadInt());
-                break;
-            case 5:
-                SetCellOrigin(buf.ReadInt());
-                break;
-            case 6:
-                SetSpatialDimension(buf.ReadInt());
-                break;
-            case 7:
-                SetTopologicalDimension(buf.ReadInt());
-                break;
-            case 8:
-                SetXUnits(buf.ReadString());
-                break;
-            case 9:
-                SetYUnits(buf.ReadString());
-                break;
-            case 10:
-                SetZUnits(buf.ReadString());
-                break;
-            case 11:
-                SetXLabel(buf.ReadString());
-                break;
-            case 12:
-                SetYLabel(buf.ReadString());
-                break;
-            case 13:
-                SetZLabel(buf.ReadString());
-                break;
-            case 14:
-                SetHasSpatialExtents(buf.ReadBool());
-                break;
-            case 15:
-                SetMinSpatialExtents(buf.ReadDoubleArray());
-                break;
-            case 16:
-                SetMaxSpatialExtents(buf.ReadDoubleArray());
-                break;
-            case 17:
-                SetNumBlocks(buf.ReadInt());
-                break;
-            case 18:
-                SetBlockOrigin(buf.ReadInt());
-                break;
-            case 19:
-                SetBlockPieceName(buf.ReadString());
-                break;
-            case 20:
-                SetBlockTitle(buf.ReadString());
-                break;
-            case 21:
-                SetBlockNames(buf.ReadStringVector());
-                break;
-            case 22:
-                SetNumGroups(buf.ReadInt());
-                break;
-            case 23:
-                SetGroupOrigin(buf.ReadInt());
-                break;
-            case 24:
-                SetGroupPieceName(buf.ReadString());
-                break;
-            case 25:
-                SetGroupTitle(buf.ReadString());
-                break;
-            case 26:
-                SetGroupIds(buf.ReadIntVector());
-                break;
-            case 27:
-                SetDisjointElements(buf.ReadBool());
-                break;
-            case 28:
-                SetContainsGhostZones(buf.ReadInt());
-                break;
-            case 29:
-                SetContainsOriginalCells(buf.ReadBool());
-                break;
-            case 30:
-                SetContainsOriginalNodes(buf.ReadBool());
-                break;
-            case 31:
-                SetContainsGlobalNodeIds(buf.ReadBool());
-                break;
-            case 32:
-                SetContainsGlobalZoneIds(buf.ReadBool());
-                break;
-            case 33:
-                SetLoadBalanceScheme(buf.ReadInt());
-                break;
-            case 34:
-                SetNodesAreCritical(buf.ReadBool());
-                break;
-            case 35:
-                SetUnitCellVectors(buf.ReadFloatArray());
-                break;
-            case 36:
-                SetUnitCellOrigin(buf.ReadFloatArray());
-                break;
-            case 37:
-                SetRectilinearGridHasTransform(buf.ReadBool());
-                break;
-            case 38:
-                SetRectilinearGridTransform(buf.ReadDoubleArray());
-                break;
-            case 39:
-                SetNodeOrigin(buf.ReadInt());
-                break;
-            case 40:
-                SetContainsExteriorBoundaryGhosts(buf.ReadBool());
-                break;
-            case 41:
-                SetHideFromGUI(buf.ReadBool());
-                break;
-            }
+        case 0:
+            SetName(buf.ReadString());
+            break;
+        case 1:
+            SetOriginalName(buf.ReadString());
+            break;
+        case 2:
+            SetValidVariable(buf.ReadBool());
+            break;
+        case 3:
+            SetMeshType(buf.ReadInt());
+            break;
+        case 4:
+            SetMeshCoordType(buf.ReadInt());
+            break;
+        case 5:
+            SetCellOrigin(buf.ReadInt());
+            break;
+        case 6:
+            SetSpatialDimension(buf.ReadInt());
+            break;
+        case 7:
+            SetTopologicalDimension(buf.ReadInt());
+            break;
+        case 8:
+            SetXUnits(buf.ReadString());
+            break;
+        case 9:
+            SetYUnits(buf.ReadString());
+            break;
+        case 10:
+            SetZUnits(buf.ReadString());
+            break;
+        case 11:
+            SetXLabel(buf.ReadString());
+            break;
+        case 12:
+            SetYLabel(buf.ReadString());
+            break;
+        case 13:
+            SetZLabel(buf.ReadString());
+            break;
+        case 14:
+            SetHasSpatialExtents(buf.ReadBool());
+            break;
+        case 15:
+            SetMinSpatialExtents(buf.ReadDoubleArray());
+            break;
+        case 16:
+            SetMaxSpatialExtents(buf.ReadDoubleArray());
+            break;
+        case 17:
+            SetNumBlocks(buf.ReadInt());
+            break;
+        case 18:
+            SetBlockOrigin(buf.ReadInt());
+            break;
+        case 19:
+            SetBlockPieceName(buf.ReadString());
+            break;
+        case 20:
+            SetBlockTitle(buf.ReadString());
+            break;
+        case 21:
+            SetBlockNames(buf.ReadStringVector());
+            break;
+        case 22:
+            SetNumGroups(buf.ReadInt());
+            break;
+        case 23:
+            SetGroupOrigin(buf.ReadInt());
+            break;
+        case 24:
+            SetGroupPieceName(buf.ReadString());
+            break;
+        case 25:
+            SetGroupTitle(buf.ReadString());
+            break;
+        case 26:
+            SetGroupIds(buf.ReadIntVector());
+            break;
+        case 27:
+            SetDisjointElements(buf.ReadBool());
+            break;
+        case 28:
+            SetContainsGhostZones(buf.ReadInt());
+            break;
+        case 29:
+            SetContainsOriginalCells(buf.ReadBool());
+            break;
+        case 30:
+            SetContainsOriginalNodes(buf.ReadBool());
+            break;
+        case 31:
+            SetContainsGlobalNodeIds(buf.ReadBool());
+            break;
+        case 32:
+            SetContainsGlobalZoneIds(buf.ReadBool());
+            break;
+        case 33:
+            SetLoadBalanceScheme(buf.ReadInt());
+            break;
+        case 34:
+            SetNodesAreCritical(buf.ReadBool());
+            break;
+        case 35:
+            SetUnitCellVectors(buf.ReadFloatArray());
+            break;
+        case 36:
+            SetUnitCellOrigin(buf.ReadFloatArray());
+            break;
+        case 37:
+            SetRectilinearGridHasTransform(buf.ReadBool());
+            break;
+        case 38:
+            SetRectilinearGridTransform(buf.ReadDoubleArray());
+            break;
+        case 39:
+            SetNodeOrigin(buf.ReadInt());
+            break;
+        case 40:
+            SetContainsExteriorBoundaryGhosts(buf.ReadBool());
+            break;
+        case 41:
+            SetHideFromGUI(buf.ReadBool());
+            break;
         }
     }
 

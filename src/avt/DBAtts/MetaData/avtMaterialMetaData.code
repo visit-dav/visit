@@ -27,7 +27,7 @@ Definition:
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, const std::string &mesh,
-    int nm, const stringVector &names) : AttributeSubject(avtMaterialMetaData::TypeMapFormatString)
+    int nm, const stringVector &names) : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
 {
     // Initialize all members.
     *this = avtMaterialMetaData();
@@ -56,7 +56,7 @@ Definition:
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
     const std::string &mesh, int nm, const stringVector &names,
     const stringVector &colors)
-    : AttributeSubject(avtMaterialMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
 {
     // Initialize all members.
     *this = avtMaterialMetaData();
@@ -84,7 +84,7 @@ Definition:
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
     const std::string &mesh, int nm)
-    : AttributeSubject(avtMaterialMetaData::TypeMapFormatString)
+    : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
 {
     // Initialize all members.
     *this = avtMaterialMetaData();
@@ -143,18 +143,7 @@ Indent(ostream &out, int indent)
 void
 avtMaterialMetaData::Print(ostream &out, int indent) const
 {
-    Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
-    if (name != originalName)
-    {
-        Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
-    }
-
-    Indent(out, indent);
-    out << "Mesh Name = " << meshName.c_str() << endl;
-    Indent(out, indent);
-    out << "Number of Materials = " << numMaterials << endl;
+    avtVarMetaData::Print(out, indent);
 
     Indent(out, indent);
     out << "The materials names are = ";
@@ -167,11 +156,5 @@ avtMaterialMetaData::Print(ostream &out, int indent) const
             out << ", ";
     }
     out << endl;
-
-    if (!validVariable)
-    {
-        Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
-    }
 }
 

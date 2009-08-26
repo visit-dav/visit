@@ -102,6 +102,8 @@
 //    Cyrus Harrison, Mon Sep 29 08:42:39 PDT 2008
 //    Fixed attempt to open the code file twice. 
 //
+//    Mark C. Miller, Wed Aug 26 10:57:41 PDT 2009
+//    Added custom base class for derived state objects.
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -110,8 +112,8 @@ class Attribute : public AttributeBase
     vector<Field*> fields;
   public:
     Attribute(const QString &n, const QString &p, const QString &f,
-              const QString &e, const QString &ei)
-        : AttributeBase(n,p,f,e,ei), fields()
+              const QString &e, const QString &ei, const QString &bc)
+        : AttributeBase(n,p,f,e,ei,bc), fields()
     {
     }
 
@@ -147,6 +149,9 @@ class Attribute : public AttributeBase
         WriteTagAttr(out, "exportInclude", exportInclude);
         if (codeFile)
             WriteTagAttr(out, "codefile", codeFile->FileBase());
+        if (custombase)
+            WriteTagAttr(out, "baseClass", baseClass);
+
         FinishOpenTag(out);
 
         size_t i;

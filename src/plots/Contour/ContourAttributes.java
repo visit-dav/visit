@@ -65,6 +65,8 @@ import java.lang.Double;
 
 public class ContourAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 19;
+
     // Enum values
     public final static int SELECT_BY_LEVEL = 0;
     public final static int SELECT_BY_VALUE = 1;
@@ -80,7 +82,32 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public ContourAttributes()
     {
-        super(19);
+        super(numAdditionalAttributes);
+
+        defaultPalette = new ColorControlPointList();
+        changedColors = new Vector();
+        colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
+        colorTableName = new String("Default");
+        legendFlag = true;
+        lineStyle = 0;
+        lineWidth = 0;
+        singleColor = new ColorAttribute(255, 0, 0);
+        multiColor = new ColorAttributeList();
+        contourNLevels = 10;
+        contourValue = new Vector();
+        contourPercent = new Vector();
+        contourMethod = SELECT_BY_LEVEL;
+        minFlag = false;
+        maxFlag = false;
+        min = 0;
+        max = 1;
+        scaling = SCALING_LINEAR;
+        wireframe = false;
+    }
+
+    public ContourAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -105,7 +132,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public ContourAttributes(ContourAttributes obj)
     {
-        super(19);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -148,6 +175,16 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         wireframe = obj.wireframe;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ContourAttributes obj)
@@ -376,74 +413,70 @@ public class ContourAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(wireframe);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                defaultPalette.Read(buf);
-                Select(0);
-                break;
-            case 1:
-                SetChangedColors(buf.ReadByteVector());
-                break;
-            case 2:
-                SetColorType(buf.ReadInt());
-                break;
-            case 3:
-                SetColorTableName(buf.ReadString());
-                break;
-            case 4:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 5:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 6:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 7:
-                singleColor.Read(buf);
-                Select(7);
-                break;
-            case 8:
-                multiColor.Read(buf);
-                Select(8);
-                break;
-            case 9:
-                SetContourNLevels(buf.ReadInt());
-                break;
-            case 10:
-                SetContourValue(buf.ReadDoubleVector());
-                break;
-            case 11:
-                SetContourPercent(buf.ReadDoubleVector());
-                break;
-            case 12:
-                SetContourMethod(buf.ReadInt());
-                break;
-            case 13:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 14:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 15:
-                SetMin(buf.ReadDouble());
-                break;
-            case 16:
-                SetMax(buf.ReadDouble());
-                break;
-            case 17:
-                SetScaling(buf.ReadInt());
-                break;
-            case 18:
-                SetWireframe(buf.ReadBool());
-                break;
-            }
+        case 0:
+            defaultPalette.Read(buf);
+            Select(0);
+            break;
+        case 1:
+            SetChangedColors(buf.ReadByteVector());
+            break;
+        case 2:
+            SetColorType(buf.ReadInt());
+            break;
+        case 3:
+            SetColorTableName(buf.ReadString());
+            break;
+        case 4:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 5:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 6:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 7:
+            singleColor.Read(buf);
+            Select(7);
+            break;
+        case 8:
+            multiColor.Read(buf);
+            Select(8);
+            break;
+        case 9:
+            SetContourNLevels(buf.ReadInt());
+            break;
+        case 10:
+            SetContourValue(buf.ReadDoubleVector());
+            break;
+        case 11:
+            SetContourPercent(buf.ReadDoubleVector());
+            break;
+        case 12:
+            SetContourMethod(buf.ReadInt());
+            break;
+        case 13:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 14:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 15:
+            SetMin(buf.ReadDouble());
+            break;
+        case 16:
+            SetMax(buf.ReadDouble());
+            break;
+        case 17:
+            SetScaling(buf.ReadInt());
+            break;
+        case 18:
+            SetWireframe(buf.ReadBool());
+            break;
         }
     }
 

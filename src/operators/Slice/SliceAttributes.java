@@ -59,6 +59,8 @@ import llnl.visit.Plugin;
 
 public class SliceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 17;
+
     // Enum values
     public final static int AXISTYPE_XAXIS = 0;
     public final static int AXISTYPE_YAXIS = 1;
@@ -75,7 +77,39 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public SliceAttributes()
     {
-        super(17);
+        super(numAdditionalAttributes);
+
+        originType = ORIGINTYPE_INTERCEPT;
+        originPoint = new double[3];
+        originPoint[0] = 0;
+        originPoint[1] = 0;
+        originPoint[2] = 0;
+        originIntercept = 0;
+        originPercent = 0;
+        originZone = 0;
+        originNode = 0;
+        normal = new double[3];
+        normal[0] = 0;
+        normal[1] = -1;
+        normal[2] = 0;
+        axisType = AXISTYPE_YAXIS;
+        upAxis = new double[3];
+        upAxis[0] = 0;
+        upAxis[1] = 0;
+        upAxis[2] = 1;
+        project2d = true;
+        interactive = true;
+        flip = false;
+        originZoneDomain = 0;
+        originNodeDomain = 0;
+        meshName = new String("default");
+        theta = 0;
+        phi = 0;
+    }
+
+    public SliceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         originType = ORIGINTYPE_INTERCEPT;
         originPoint = new double[3];
@@ -107,7 +141,7 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public SliceAttributes(SliceAttributes obj)
     {
-        super(17);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -142,6 +176,16 @@ public class SliceAttributes extends AttributeSubject implements Plugin
         phi = obj.phi;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SliceAttributes obj)
@@ -377,65 +421,61 @@ public class SliceAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(phi);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetOriginType(buf.ReadInt());
-                break;
-            case 1:
-                SetOriginPoint(buf.ReadDoubleArray());
-                break;
-            case 2:
-                SetOriginIntercept(buf.ReadDouble());
-                break;
-            case 3:
-                SetOriginPercent(buf.ReadDouble());
-                break;
-            case 4:
-                SetOriginZone(buf.ReadInt());
-                break;
-            case 5:
-                SetOriginNode(buf.ReadInt());
-                break;
-            case 6:
-                SetNormal(buf.ReadDoubleArray());
-                break;
-            case 7:
-                SetAxisType(buf.ReadInt());
-                break;
-            case 8:
-                SetUpAxis(buf.ReadDoubleArray());
-                break;
-            case 9:
-                SetProject2d(buf.ReadBool());
-                break;
-            case 10:
-                SetInteractive(buf.ReadBool());
-                break;
-            case 11:
-                SetFlip(buf.ReadBool());
-                break;
-            case 12:
-                SetOriginZoneDomain(buf.ReadInt());
-                break;
-            case 13:
-                SetOriginNodeDomain(buf.ReadInt());
-                break;
-            case 14:
-                SetMeshName(buf.ReadString());
-                break;
-            case 15:
-                SetTheta(buf.ReadDouble());
-                break;
-            case 16:
-                SetPhi(buf.ReadDouble());
-                break;
-            }
+        case 0:
+            SetOriginType(buf.ReadInt());
+            break;
+        case 1:
+            SetOriginPoint(buf.ReadDoubleArray());
+            break;
+        case 2:
+            SetOriginIntercept(buf.ReadDouble());
+            break;
+        case 3:
+            SetOriginPercent(buf.ReadDouble());
+            break;
+        case 4:
+            SetOriginZone(buf.ReadInt());
+            break;
+        case 5:
+            SetOriginNode(buf.ReadInt());
+            break;
+        case 6:
+            SetNormal(buf.ReadDoubleArray());
+            break;
+        case 7:
+            SetAxisType(buf.ReadInt());
+            break;
+        case 8:
+            SetUpAxis(buf.ReadDoubleArray());
+            break;
+        case 9:
+            SetProject2d(buf.ReadBool());
+            break;
+        case 10:
+            SetInteractive(buf.ReadBool());
+            break;
+        case 11:
+            SetFlip(buf.ReadBool());
+            break;
+        case 12:
+            SetOriginZoneDomain(buf.ReadInt());
+            break;
+        case 13:
+            SetOriginNodeDomain(buf.ReadInt());
+            break;
+        case 14:
+            SetMeshName(buf.ReadString());
+            break;
+        case 15:
+            SetTheta(buf.ReadDouble());
+            break;
+        case 16:
+            SetPhi(buf.ReadDouble());
+            break;
         }
     }
 

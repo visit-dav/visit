@@ -166,6 +166,8 @@ inline char toupper(char c)
 //    Reorder constructor initializers to be the correct order.
 //    Use const char* for string literals.
 //
+//    Mark C. Miller, Wed Aug 26 10:53:51 PDT 2009
+//    Added logic to count methods WITHOUT writing them.
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -264,21 +266,35 @@ class PythonGeneratorField : public virtual Field
         c << "    //" << name << Endl;
     }
 
-    virtual void WritePyObjectMethodTable(QTextStream &c, const QString &className)
+    virtual int WritePyObjectMethodTable(QTextStream &c, const QString &className, bool countOnly = false)
     {
         // Do not add any methods if the field is internal.
         if(internal)
-            return;
+            return 0;
+
+        int methCnt = 0;
 
         if(ProvidesSetMethod())
-            c << "    {\"" << MethodNameSet() << "\", " << className << "_" << MethodNameSet() << ", METH_VARARGS}," << Endl;
+        {
+            if (!countOnly)
+                c << "    {\"" << MethodNameSet() << "\", " << className << "_" << MethodNameSet() << ", METH_VARARGS}," << Endl;
+            methCnt++;
+        }
 
-        c << "    {\"" << MethodNameGet() << "\", " << className << "_" << MethodNameGet() << ", METH_VARARGS}," << Endl;
+        if (!countOnly)
+            c << "    {\"" << MethodNameGet() << "\", " << className << "_" << MethodNameGet() << ", METH_VARARGS}," << Endl;
+        methCnt++;
 
         // Write any additional methods that may go along with this field.
         std::vector<QString> additionalMethods(AdditionalMethodNames(className));
         for(size_t i = 0; i < additionalMethods.size(); i += 2)
-            c << "    {\"" << additionalMethods[i] << "\", " << additionalMethods[i+1] << ", METH_VARARGS}," << Endl;
+        {
+            if (!countOnly)
+                c << "    {\"" << additionalMethods[i] << "\", " << additionalMethods[i+1] << ", METH_VARARGS}," << Endl;
+            methCnt++;
+        }
+
+        return methCnt;
     }
 
     virtual void WriteGetAttr(QTextStream &c, const QString &className)
@@ -2289,6 +2305,8 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
 //
 // ----------------------------------- Enum -----------------------------------
 //
+//    Mark C. Miller, Wed Aug 19 15:25:14 PDT 2009
+//    Added missing logic for accesType in WriteGetMethodBody
 class PythonGeneratorEnum : public virtual Enum , public virtual PythonGeneratorField
 {
   public:
@@ -2331,7 +2349,12 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << Endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
+        if(accessType == AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet()<<"()";
+        c << "));" << Endl;
     }
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
@@ -2711,6 +2734,12 @@ class PythonFieldFactory
 //    Tom Fogal, Fri Aug  8 10:22:02 EDT 2008
 //    Add const in the doc string conditionally, based on python version.
 //
+//    Mark C. Miller, Mon Aug 17 17:02:51 PDT 2009
+//    Omitted creation date from output .C file
+//
+//    Mark C. Miller, Wed Aug 26 10:55:31 PDT 2009
+//    Added support for a custom base class to support derived state objects.
+//    Added logic to count methods in method table without writing them.
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -2721,8 +2750,8 @@ class PythonGeneratorAttribute : public GeneratorBase
     bool visitpy_api;
   public:
     PythonGeneratorAttribute(const QString &n, const QString &p, const QString &f,
-                           const QString &e, const QString &ei)
-        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields()
+                           const QString &e, const QString &ei, const QString &bc)
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME, bc), fields()
     {
         visitpy_api = true;
     }
@@ -2760,6 +2789,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "#define PY_" << name.toUpper() << "_H" << Endl;
         h << "#include <Python.h>" << Endl;
         h << "#include <"<<name<<".h>" << Endl;
+        if (custombase)
+            h << "#include <Py"<<baseClass<<".h>" << Endl;
         QString api(""); 
         if(visitpy_api)
         {
@@ -2770,17 +2801,26 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "//" << Endl;
         h << "// Functions exposed to the VisIt module." << Endl;
         h << "//" << Endl;
+        QTextStream dummy;
+        if (custombase)
+            h << "#define " << name.toUpper()<<"_NMETH ("<<baseClass.toUpper()<<"_NMETH+"<<WritePyObjectMethodTable(dummy, true)<<")"<< Endl;
+        else
+            h << "#define " << name.toUpper()<<"_NMETH " << WritePyObjectMethodTable(dummy, true) << Endl;
         h << "void "<<api<<"          Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << Endl;
         h << "void "<<api<<"          Py"<<name<<"_CloseDown();" << Endl;
-        h << api << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << Endl;
+        h << api << "PyMethodDef * "<<" Py"<<name<<"_GetMethodTable(int *nMethods);" << Endl;
         h << "bool "<<api<<"          Py"<<name<<"_Check(PyObject *obj);" << Endl;
         h << api << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << Endl;
-        h << api << "PyObject * "<<"     Py"<<name<<"_New();" << Endl;
-        h << api << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << Endl;
+        h << api << "PyObject * "<<"    Py"<<name<<"_New();" << Endl;
+        h << api << "PyObject * "<<"    Py"<<name<<"_Wrap(const " << name << " *attr);" << Endl;
         h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << Endl;
         h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << Endl;
+        h << api << "PyObject * "<<"    Py"<<name<<"_getattr(PyObject *self, char *name);" << Endl;
+        h << "int "<<api<<"           Py"<<name<<"_setattr(PyObject *self, char *name, PyObject *args);" << Endl;
+        h << api << "extern PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH];" << Endl;
+
         h << Endl;
         h << "#endif" << Endl;
         h << Endl;
@@ -2806,7 +2846,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "// Note:       Autogenerated by xml2python. Do not modify by hand!" << Endl;
         c << "//" << Endl;
         c << "// Programmer: xml2python" << Endl;
-        c << "// Creation:   " << CurrentTime() << Endl;       
+        c << "// Creation:   omitted" << Endl;       
         c << "//" << Endl;
         c << "// ****************************************************************************" << Endl;
         c << Endl;
@@ -2892,14 +2932,19 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
     }
 
-    void WritePyObjectMethodTable(QTextStream &c)
+    int WritePyObjectMethodTable(QTextStream &c, bool countOnly = false)
     {
-        c << Endl;
-        c << "static struct PyMethodDef "<<name<<"_methods[] = {" << Endl;
-        c << "    {\"Notify\", " << name << "_Notify, METH_VARARGS}," << Endl;
+        int methCnt = 0;
+        if (!countOnly)
+        {
+            c << Endl;
+            c << "PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH] = {" << Endl;
+            c << "    {\"Notify\", " << name << "_Notify, METH_VARARGS}," << Endl;
+        }
+        methCnt++;
         for(size_t i = 0; i < fields.size(); ++i)
         {
-            fields[i]->WritePyObjectMethodTable(c, name);
+            methCnt += fields[i]->WritePyObjectMethodTable(c, name, countOnly);
         }
         for(size_t i = 0; i < functions.size(); ++i)
         {
@@ -2909,17 +2954,49 @@ class PythonGeneratorAttribute : public GeneratorBase
                 QString pyMethName = functions[i]->decl;
                 if (functions[i]->decl.startsWith(name + "_"))
                     pyMethName = functions[i]->decl.right(functions[i]->decl.length()-name.length()-1); 
-                c << "    {\"" << pyMethName << "\", " << functions[i]->decl << ", METH_VARARGS}," << endl;
+                if (!countOnly)
+                    c << "    {\"" << pyMethName << "\", " << functions[i]->decl << ", METH_VARARGS}," << Endl;
+                methCnt++;
             }
         }
-        c << "    {NULL, NULL}" << Endl;
-        c << "};" << Endl;
-        c << Endl;
+        if (!countOnly)
+        {
+            c << "    {NULL, NULL}" << Endl;
+            c << "};" << Endl;
+            c << Endl;
+        }
+        methCnt++;
+
+        if (custombase && !countOnly)
+        {
+            c << "static void Py"<<name<<"_ExtendSetGetMethodTable()"<<Endl;
+            c << "{" << Endl;
+            c << "    static bool extended = false;" << Endl;
+            c << "    if (extended) return;" << Endl;
+            c << "    extended = true;" << Endl;
+            c << Endl;
+            c << "    int i = 0;" << Endl;
+            c << "    while (Py"<<name<<"_methods[i].ml_name)" << Endl;
+            c << "        i++;" << Endl;
+            c << "    int n = i;" << Endl;
+            c << "    while (Py"<<baseClass<<"_methods[i-n+1].ml_name)" << Endl;
+            c << "    {" << Endl;
+            c << "        Py"<<name<<"_methods[i] = Py"<<baseClass<<"_methods[i-n+1];" << Endl;
+            c << "        i++;" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    PyMethodDef nullMethod = {NULL, NULL};" << Endl;
+            c << "    Py"<<name<<"_methods[i] = nullMethod;" << Endl;
+            c << "}" << Endl;
+            c << Endl;
+        }
+
+        return methCnt;
     }
 
     void WriteGetAttrFunction(QTextStream &c)
     {
-        QString mName(name + "_getattr");
+        QString mName("Py" + name + "_getattr");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
@@ -2930,6 +3007,18 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "PyObject *" << Endl;
         c << mName << "(PyObject *self, char *name)" << Endl;
         c << "{" << Endl;
+        if (custombase)
+        {
+            c << "    if(strcmp(name, \"__methods__\") == 0)" << Endl;
+            c << "    {" << Endl;
+            c << "        Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
+            c << "        return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    PyObject *retval = Py"<<baseClass<<"_getattr(self, name);" << Endl;
+            c << "    if (retval) return retval;" << Endl;
+            c << Endl;
+        }
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         for(size_t i = 0; i < fields.size(); ++i)
@@ -2937,14 +3026,16 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
-        c << "    return Py_FindMethod("<<name<<"_methods, self, name);" << Endl;
+        if (custombase)
+            c << "    Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
+        c << "    return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
         c << "}" << Endl;
         c << Endl;
     }
 
     void WriteSetAttrFunction(QTextStream &c)
     {
-        QString mName(name + "_setattr");
+        QString mName("Py" + name + "_setattr");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
@@ -2952,9 +3043,15 @@ class PythonGeneratorAttribute : public GeneratorBase
             return;
         }
 
-        c << "static int" << Endl;
+        c << "int" << Endl;
         c << mName << "(PyObject *self, char *name, PyObject *args)" << Endl;
         c << "{" << Endl;
+        if (custombase)
+        {
+            c << "    if (Py"<<baseClass<<"_setattr(self, name, args) != -1)" << Endl;
+            c << "        return 0;" << Endl;
+            c << Endl;
+        }
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         c << "    // Create a tuple to contain the arguments since all of the Set" << Endl;
@@ -3032,6 +3129,11 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    std::string str; " << Endl;
         c << "    char tmpStr[1000]; " << Endl;
         c << Endl;
+        if (custombase)
+        {
+            c << "    str = Py"<<baseClass<<"_ToString(atts, prefix);" << Endl;
+            c << Endl;
+        }
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         for(size_t i = 0; i < fields.size(); ++i)
@@ -3132,8 +3234,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    //" << Endl;
         c << "    (destructor)"<<name<<"_dealloc,  // tp_dealloc" << Endl;
         c << "    (printfunc)"<<name<<"_print,     // tp_print" << Endl;
-        c << "    (getattrfunc)"<<name<<"_getattr, // tp_getattr" << Endl;
-        c << "    (setattrfunc)"<<name<<"_setattr, // tp_setattr" << Endl;
+        c << "    (getattrfunc)Py"<<name<<"_getattr, // tp_getattr" << Endl;
+        c << "    (setattrfunc)Py"<<name<<"_setattr, // tp_setattr" << Endl;
         c << "    (cmpfunc)"<<name<<"_compare,     // tp_compare" << Endl;
         c << "    (reprfunc)0,                         // tp_repr" << Endl;
         c << "    //" << Endl;

@@ -64,6 +64,8 @@
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 
 XMLEditAttribute::XMLEditAttribute(QWidget *p)
@@ -105,6 +107,12 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p)
     topLayout->addWidget(keyframe, row,0, 1,2);
     row++;
 
+    customBaseClass = new QCheckBox(tr("Base Class"), this);
+    baseClass = new QLineEdit(this);
+    topLayout->addWidget(customBaseClass, row, 0);
+    topLayout->addWidget(baseClass, row, 1);
+    row++;
+
     topLayout->setRowStretch(row, 100);
 
     connect(name, SIGNAL(textChanged(const QString &)),
@@ -121,6 +129,11 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p)
             this, SLOT(persistentChanged()));
     connect(keyframe, SIGNAL(clicked()),
             this, SLOT(keyframeChanged()));
+
+    connect(customBaseClass, SIGNAL(clicked()),
+            this, SLOT(customBaseClassChanged()));
+    connect(baseClass, SIGNAL(textChanged(const QString &)),
+            this,  SLOT(baseClassTextChanged(const QString &)));
 }
 
 // ****************************************************************************
@@ -139,6 +152,8 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p)
 //    Brad Whitlock, Thu Mar 6 14:51:29 PST 2008
 //    Adapted to newer CodeFile implementation.
 //
+//    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 void
 XMLEditAttribute::UpdateWindowContents()
@@ -167,6 +182,12 @@ XMLEditAttribute::UpdateWindowContents()
     persistent->setChecked(a->persistent);
     keyframe->setChecked(a->keyframe);
 
+    customBaseClass->setChecked(a->custombase);
+    if (customBaseClass->isChecked())
+        baseClass->setText(a->baseClass.isNull()?"AttributeSubject":a->baseClass);
+    else
+        baseClass->setText("AttributeSubject");
+
     UpdateWindowSensitivity();
 
     BlockAllSignals(false);
@@ -181,6 +202,10 @@ XMLEditAttribute::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
+//    Added support for custom base class for derived state objects.
 // ****************************************************************************
 void
 XMLEditAttribute::UpdateWindowSensitivity()
@@ -188,6 +213,8 @@ XMLEditAttribute::UpdateWindowSensitivity()
     bool plugin =  (xmldoc->docType == "Plugin");
     exportAPI->setEnabled(!plugin);
     exportInclude->setEnabled(!plugin);
+    customBaseClass->setEnabled(!plugin);
+    baseClass->setEnabled(!plugin && customBaseClass->isChecked());
 }
 
 // ****************************************************************************
@@ -218,6 +245,8 @@ XMLEditAttribute::BlockAllSignals(bool block)
     exportInclude->blockSignals(block);
     persistent->blockSignals(block);
     keyframe->blockSignals(block);
+    customBaseClass->blockSignals(block);
+    baseClass->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -335,3 +364,62 @@ XMLEditAttribute::keyframeChanged()
 {
     xmldoc->attribute->keyframe = keyframe->isChecked();    
 }
+
+// ****************************************************************************
+//  Method:  XMLEditAttribute::baseClassChanged
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    Mon Aug 10 17:06:18 PDT 2009
+//
+// ****************************************************************************
+void
+XMLEditAttribute::customBaseClassChanged()
+{
+    xmldoc->attribute->custombase = customBaseClass->isChecked();    
+    if (customBaseClass->isChecked())
+    {
+        baseClass->blockSignals(true);
+        baseClass->setEnabled(true);
+        baseClass->blockSignals(false);
+#if 0
+        if (xmldoc->attribute->baseClass.isNull())
+            baseClass->setText("AttributeSubject");
+        else if (xmldoc->attribute->baseClass == "AttributeSubject")
+        {
+            customBaseClass->blockSignals(true);
+            customBaseClass->setChecked(false);
+            customBaseClass->blockSignals(false);
+        }
+        else
+        {
+            baseClass->blockSignals(true);
+            baseClass->setText(xmldoc->attribute->baseClass);
+            baseClass->blockSignals(false);
+        }
+#endif
+    }
+    else
+    {
+        baseClass->blockSignals(true);
+        baseClass->setEnabled(false);
+        //baseClass->setText("AttributeSubject");
+        baseClass->blockSignals(false);
+    }
+}
+
+// ****************************************************************************
+//  Method:  XMLEditAttribute::baseClassTextChanged
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    Mon Aug 10 17:19:13 PDT 2009
+//
+// ****************************************************************************
+void
+XMLEditAttribute::baseClassTextChanged(const QString &text)
+{
+    if (xmldoc->docType == "Plugin")
+        return;
+
+    xmldoc->attribute->baseClass = text;
+}
+

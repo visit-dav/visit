@@ -56,9 +56,22 @@ package llnl.visit;
 
 public class GaussianControlPoint extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 5;
+
     public GaussianControlPoint()
     {
-        super(5);
+        super(numAdditionalAttributes);
+
+        x = 0f;
+        height = 0f;
+        width = 0.001f;
+        xBias = 0f;
+        yBias = 0f;
+    }
+
+    public GaussianControlPoint(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         x = 0f;
         height = 0f;
@@ -69,7 +82,7 @@ public class GaussianControlPoint extends AttributeSubject
 
     public GaussianControlPoint(GaussianControlPoint obj)
     {
-        super(5);
+        super(numAdditionalAttributes);
 
         x = obj.x;
         height = obj.height;
@@ -78,6 +91,16 @@ public class GaussianControlPoint extends AttributeSubject
         yBias = obj.yBias;
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(GaussianControlPoint obj)
@@ -143,29 +166,25 @@ public class GaussianControlPoint extends AttributeSubject
             buf.WriteFloat(yBias);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetX(buf.ReadFloat());
-                break;
-            case 1:
-                SetHeight(buf.ReadFloat());
-                break;
-            case 2:
-                SetWidth(buf.ReadFloat());
-                break;
-            case 3:
-                SetXBias(buf.ReadFloat());
-                break;
-            case 4:
-                SetYBias(buf.ReadFloat());
-                break;
-            }
+        case 0:
+            SetX(buf.ReadFloat());
+            break;
+        case 1:
+            SetHeight(buf.ReadFloat());
+            break;
+        case 2:
+            SetWidth(buf.ReadFloat());
+            break;
+        case 3:
+            SetXBias(buf.ReadFloat());
+            break;
+        case 4:
+            SetYBias(buf.ReadFloat());
+            break;
         }
     }
 

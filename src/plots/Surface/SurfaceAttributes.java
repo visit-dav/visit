@@ -60,6 +60,8 @@ import llnl.visit.ColorAttribute;
 
 public class SurfaceAttributes extends AttributeSubject implements Plugin
 {
+    private static int numAdditionalAttributes = 17;
+
     // Enum values
     public final static int COLORBYTYPE_CONSTANT = 0;
     public final static int COLORBYTYPE_ZVALUE = 1;
@@ -74,7 +76,30 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
 
     public SurfaceAttributes()
     {
-        super(17);
+        super(numAdditionalAttributes);
+
+        legendFlag = true;
+        lightingFlag = true;
+        surfaceFlag = true;
+        wireframeFlag = false;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        minFlag = false;
+        maxFlag = false;
+        colorByZFlag = true;
+        scaling = SCALING_LINEAR;
+        lineStyle = 0;
+        lineWidth = 0;
+        surfaceColor = new ColorAttribute(0, 0, 0);
+        wireframeColor = new ColorAttribute(0, 0, 0);
+        skewFactor = 1;
+        min = 0;
+        max = 1;
+        colorTableName = new String("hot");
+    }
+
+    public SurfaceAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         legendFlag = true;
         lightingFlag = true;
@@ -97,7 +122,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
 
     public SurfaceAttributes(SurfaceAttributes obj)
     {
-        super(17);
+        super(numAdditionalAttributes);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
@@ -118,6 +143,16 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         colorTableName = new String(obj.colorTableName);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(SurfaceAttributes obj)
@@ -306,67 +341,63 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
             buf.WriteString(colorTableName);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetLegendFlag(buf.ReadBool());
-                break;
-            case 1:
-                SetLightingFlag(buf.ReadBool());
-                break;
-            case 2:
-                SetSurfaceFlag(buf.ReadBool());
-                break;
-            case 3:
-                SetWireframeFlag(buf.ReadBool());
-                break;
-            case 4:
-                SetLimitsMode(buf.ReadInt());
-                break;
-            case 5:
-                SetMinFlag(buf.ReadBool());
-                break;
-            case 6:
-                SetMaxFlag(buf.ReadBool());
-                break;
-            case 7:
-                SetColorByZFlag(buf.ReadBool());
-                break;
-            case 8:
-                SetScaling(buf.ReadInt());
-                break;
-            case 9:
-                SetLineStyle(buf.ReadInt());
-                break;
-            case 10:
-                SetLineWidth(buf.ReadInt());
-                break;
-            case 11:
-                surfaceColor.Read(buf);
-                Select(11);
-                break;
-            case 12:
-                wireframeColor.Read(buf);
-                Select(12);
-                break;
-            case 13:
-                SetSkewFactor(buf.ReadDouble());
-                break;
-            case 14:
-                SetMin(buf.ReadDouble());
-                break;
-            case 15:
-                SetMax(buf.ReadDouble());
-                break;
-            case 16:
-                SetColorTableName(buf.ReadString());
-                break;
-            }
+        case 0:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 1:
+            SetLightingFlag(buf.ReadBool());
+            break;
+        case 2:
+            SetSurfaceFlag(buf.ReadBool());
+            break;
+        case 3:
+            SetWireframeFlag(buf.ReadBool());
+            break;
+        case 4:
+            SetLimitsMode(buf.ReadInt());
+            break;
+        case 5:
+            SetMinFlag(buf.ReadBool());
+            break;
+        case 6:
+            SetMaxFlag(buf.ReadBool());
+            break;
+        case 7:
+            SetColorByZFlag(buf.ReadBool());
+            break;
+        case 8:
+            SetScaling(buf.ReadInt());
+            break;
+        case 9:
+            SetLineStyle(buf.ReadInt());
+            break;
+        case 10:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 11:
+            surfaceColor.Read(buf);
+            Select(11);
+            break;
+        case 12:
+            wireframeColor.Read(buf);
+            Select(12);
+            break;
+        case 13:
+            SetSkewFactor(buf.ReadDouble());
+            break;
+        case 14:
+            SetMin(buf.ReadDouble());
+            break;
+        case 15:
+            SetMax(buf.ReadDouble());
+            break;
+        case 16:
+            SetColorTableName(buf.ReadString());
+            break;
         }
     }
 

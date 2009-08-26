@@ -1,13 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtCurveMetaData" purpose="Contains curve metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtCurveMetaData.code">
-    <Field name="name" label="Name" type="string" access="public">
-      curve
-    </Field>
-    <Field name="originalName" label="Original name" type="string" access="public">
-    </Field>
-    <Field name="validVariable" label="Valid variable" type="bool" access="public">
-      true
-    </Field>
+  <Attribute name="avtCurveMetaData" purpose="Contains curve metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtCurveMetaData.code" baseClass="avtVarMetaData">
     <Field name="xUnits" label="X units" type="string" access="public">
     </Field>
     <Field name="xLabel" label="X label" type="string" access="public">
@@ -26,18 +18,6 @@
     </Field>
     <Field name="maxSpatialExtents" label="Maximum spatial extents" type="double" access="public">
       0.000000
-    </Field>
-    <Field name="hasDataExtents" label="Has data extents" type="bool" access="public">
-      false
-    </Field>
-    <Field name="minDataExtents" label="Minimum data extents" type="double" access="public">
-      0.000000
-    </Field>
-    <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
-      0.000000
-    </Field>
-    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
-      false
     </Field>
     <Field name="from1DScalarName" label="Name  of 1D scalar this curve object was interpreted from" type="string" access="public">
     </Field>

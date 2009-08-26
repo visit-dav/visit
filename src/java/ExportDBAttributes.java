@@ -57,9 +57,23 @@ import java.util.Vector;
 
 public class ExportDBAttributes extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 6;
+
     public ExportDBAttributes()
     {
-        super(6);
+        super(numAdditionalAttributes);
+
+        db_type = new String("");
+        db_type_fullname = new String("");
+        filename = new String("visit_ex_db");
+        dirname = new String(".");
+        variables = new Vector();
+        opts = new DBOptionsAttributes();
+    }
+
+    public ExportDBAttributes(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         db_type = new String("");
         db_type_fullname = new String("");
@@ -71,7 +85,7 @@ public class ExportDBAttributes extends AttributeSubject
 
     public ExportDBAttributes(ExportDBAttributes obj)
     {
-        super(6);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -86,6 +100,16 @@ public class ExportDBAttributes extends AttributeSubject
         opts = new DBOptionsAttributes(obj.opts);
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(ExportDBAttributes obj)
@@ -172,33 +196,29 @@ public class ExportDBAttributes extends AttributeSubject
             opts.Write(buf);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
-            {
-            case 0:
-                SetDb_type(buf.ReadString());
-                break;
-            case 1:
-                SetDb_type_fullname(buf.ReadString());
-                break;
-            case 2:
-                SetFilename(buf.ReadString());
-                break;
-            case 3:
-                SetDirname(buf.ReadString());
-                break;
-            case 4:
-                SetVariables(buf.ReadStringVector());
-                break;
-            case 5:
-                opts.Read(buf);
-                Select(5);
-                break;
-            }
+        case 0:
+            SetDb_type(buf.ReadString());
+            break;
+        case 1:
+            SetDb_type_fullname(buf.ReadString());
+            break;
+        case 2:
+            SetFilename(buf.ReadString());
+            break;
+        case 3:
+            SetDirname(buf.ReadString());
+            break;
+        case 4:
+            SetVariables(buf.ReadStringVector());
+            break;
+        case 5:
+            opts.Read(buf);
+            Select(5);
+            break;
         }
     }
 
