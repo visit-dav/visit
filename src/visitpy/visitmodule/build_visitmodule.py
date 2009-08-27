@@ -25,6 +25,10 @@
 #   Brad Whitlock, Wed Jun 25 13:39:45 PST 2008
 #   Remove proxyexample from the build.
 #
+#   Cyrus Harrison, Thu Aug 27 08:09:38 PDT 2009
+#   "common/Exceptions/VisWindow" no longer exists, removed it from the python
+#   module build.
+#
 ###############################################################################
 
 from distutils.core import setup, Extension
@@ -55,7 +59,6 @@ srcdirs = ("../../common/comm",
 "../../common/Exceptions/Database",
 "../../common/Exceptions/Pipeline",
 "../../common/Exceptions/Plotter",
-"../../common/Exceptions/VisWindow",
 "../../common/expr",
 "../../common/parser",
 "../../avt/DBAtts/MetaData",
