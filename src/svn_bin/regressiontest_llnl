@@ -102,6 +102,11 @@
 #
 #    Mark C. Miller, Wed Aug 26 10:51:47 PDT 2009
 #    Moved '-x' from shell invokation in line 1 to -trace option to script.
+#
+#    Cyrus Harrison, Thu Aug 27 09:07:48 PDT 2009
+#    Added '--enable-visitmodule' to the configure line, so we can detect
+#    visitmodule build failures.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -306,7 +311,7 @@ echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
-./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-buildall --with-google-perftools=no 1>> config_log.txt 2>&1
+./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-visitmodule --enable-buildall --with-google-perftools=no 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "Pre-update configure failed" config_log.txt 
 
 # test 'make clean' acts as expected
