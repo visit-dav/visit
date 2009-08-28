@@ -133,6 +133,9 @@
 #   Brad Whitlock, Mon Aug 10 14:26:49 PDT 2009
 #   Added MakeHostProfile.java
 #
+#   Brad Whitlock, Fri Aug 28 10:53:38 PDT 2009
+#   Added PlotTypes.java
+#
 ##############################################################################
 
 ##
@@ -263,7 +266,17 @@ ViewerState.java \
 Xfer.java \
 Yielder.java
 
-MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java GetMetaData.java TryAnnotations.java MakeHostProfile.java OpenGUI.java
+MAIN_SRC = GetMetaData.java \
+MakeHostProfile.java \
+NIFGUI.java \
+OpenGUI.java \
+PlotAtts.java \
+PlotTypes.java\
+RunViewer.java \
+TryAnnotations.java \
+TryLighting.java \
+TryQuery.java 
+
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter
