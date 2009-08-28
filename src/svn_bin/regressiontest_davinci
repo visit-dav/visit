@@ -166,6 +166,8 @@
 #    Added '--enable-visitmodule' to the configure line, so we can detect
 #    visitmodule build failures.
 #
+#    Mark C. Miller, Fri Aug 28 10:33:20 PDT 2009
+#    Removed now obsolete code to update baseline dir.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -532,14 +534,6 @@ mkdir test/cores
 # run the test(s)
 error=0
 cd test
-
-#
-# Update the baseline dir used for creating symlink
-# targets for www 'post to' directory
-#
-pushd /project/projectdirs/visit/www/trunk/test 1>/dev/null
-svn update 1>/dev/null
-popd 1>/dev/null
 
 for m in $modes; do
 
