@@ -49,6 +49,8 @@
     </Field>
     <Field name="meshes" label="Meshes" type="attVector" subtype="avtMeshMetaData">
     </Field>
+    <Field name="subsets" label="Subset objects associated with mesh" type="attVector" subtype="avtSubsetsMetaData">
+    </Field>
     <Field name="scalars" label="Scalars" type="attVector" subtype="avtScalarMetaData">
     </Field>
     <Field name="vectors" label="Vectors" type="attVector" subtype="avtVectorMetaData">
@@ -242,6 +244,8 @@
     </Function>
     <Function name="AddDefaultSILRestrictionDescription" user="true" member="true">
     </Function>
+    <Function name="Add10" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false">
       Expression.h
     </Include>
@@ -274,6 +278,9 @@
     </Include>
     <Include file="header" quoted="false">
       avtSpeciesMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+      avtSubsetsMetaData.h
     </Include>
     <Include file="header" quoted="false">
       avtSymmetricTensorMetaData.h

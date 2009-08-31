@@ -79,6 +79,7 @@ METADATA_SRC= \
     PyavtSimulationCommandSpecification.C \
     PyavtSimulationInformation.C \
     PyavtSpeciesMetaData.C \
+    PyavtSubsetsMetaData.C \
     PyavtSymmetricTensorMetaData.C \
     PyavtTensorMetaData.C \
     PyavtVectorMetaData.C \

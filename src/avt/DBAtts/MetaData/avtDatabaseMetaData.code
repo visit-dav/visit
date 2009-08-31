@@ -3012,6 +3012,16 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         GetMeshes(i).Print(out, indent+1);
         out << endl;
     }
+    if (GetNumSubsets() > 0)
+    {
+        Indent(out, indent);
+        out << "Subsets: " << endl;
+    }
+    for (i = 0; i < GetNumSubsets(); i++)
+    {
+          GetSubsets(i).Print(out, indent+1);
+          out << endl;
+    }
     
     if(GetNumScalars() > 0)
     {
@@ -3526,5 +3536,25 @@ avtDatabaseMetaData::AddDefaultSILRestrictionDescription(const std::string& setN
 {
     suggestedDefaultSILRestriction.push_back(setName);
     Select(ID_suggestedDefaultSILRestriction, (void *)&suggestedDefaultSILRestriction);
+}
+
+Function: Add10
+Declaration: void         Add(avtSubsetsMetaData *);
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      smd    A subsets meta data object.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 18, 2009
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtSubsetsMetaData *smd)
+{
+    subsets.push_back(smd);
 }
 

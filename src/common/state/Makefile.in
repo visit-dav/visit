@@ -300,6 +300,8 @@
 #    Tom Fogal, Tue Jun 30 19:57:16 MDT 2009
 #    Add define for proper symbol export.
 #
+#    Mark C. Miller, Mon Aug 31 14:07:50 PDT 2009
+#    Added NameschemeAttributes.C
 ##############################################################################
 
 ##
@@ -375,6 +377,7 @@ SRC=    AnimationAttributes.C \
         MeshManagementAttributes.C \
         MessageAttributes.C \
         MovieAttributes.C \
+        NameschemeAttributes.C \
         NamespaceAttributes.C \
         Observer.C \
         ObserverToCallback.C \

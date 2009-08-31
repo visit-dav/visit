@@ -2872,7 +2872,8 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
 //    Jeremy Meredith, Wed Aug  6 18:06:14 EDT 2008
 //    scanf doesn't understand many printf modifiers.
 //    
-//
+//    Mark C. Miller, Wed Aug 26 17:42:40 PDT 2009
+//    Switched timeToCompress to double so its consistent with other code. 
 // ****************************************************************************
 
 void
@@ -2882,9 +2883,9 @@ CGetCompressionInfoFromDataString(const unsigned char *dstr,
     if (CMaybeCompressedDataString(dstr))
     {
         int uncompressedLen;
-        float timeToCompress;
+        double timeToCompress;
         sscanf((char*) &dstr[len-20], "%10d", &uncompressedLen);
-        sscanf((char*) &dstr[len-10], "%f", &timeToCompress);
+        sscanf((char*) &dstr[len-10], "%lf", &timeToCompress);
         if (timec) *timec = timeToCompress;
         if (ratioc) *ratioc = (float) uncompressedLen / (float) len;
     }

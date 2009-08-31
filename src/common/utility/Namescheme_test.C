@@ -35,31 +35,59 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <Namescheme.h>
+#include <string.h>
 
-#ifndef PY_AVTDATABASEMETADATA_H
-#define PY_AVTDATABASEMETADATA_H
-#include <Python.h>
-#include <avtDatabaseMetaData.h>
-#include <visitpy_exports.h>
+int main()
+{
+    int i;
+    int P[100], U[4];
 
-//
-// Functions exposed to the VisIt module.
-//
-#define AVTDATABASEMETADATA_NMETH 106
-void VISITPY_API           PyavtDatabaseMetaData_StartUp(avtDatabaseMetaData *subj, void *data);
-void VISITPY_API           PyavtDatabaseMetaData_CloseDown();
-VISITPY_API PyMethodDef *  PyavtDatabaseMetaData_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyavtDatabaseMetaData_Check(PyObject *obj);
-VISITPY_API avtDatabaseMetaData *  PyavtDatabaseMetaData_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyavtDatabaseMetaData_New();
-VISITPY_API PyObject *     PyavtDatabaseMetaData_Wrap(const avtDatabaseMetaData *attr);
-void VISITPY_API           PyavtDatabaseMetaData_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyavtDatabaseMetaData_SetDefaults(const avtDatabaseMetaData *atts);
-std::string VISITPY_API    PyavtDatabaseMetaData_GetLogString();
-std::string VISITPY_API    PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *, const char *);
-VISITPY_API PyObject *     PyavtDatabaseMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH];
+    // Test a somewhat complex expression 
+    Namescheme *ns = new Namescheme("@foo_%+03d@3-((n % 3)*(4+1)+1/2)+1");
+    if (strcmp(ns->GetName(25), "foo_+01") != 0)
+        return 1;
+    delete ns;
 
-#endif
+    // Test ?:: operator
+    ns = new Namescheme("@foo_%d@(n-5)?14:77:");
+    if (strcmp(ns->GetName(6), "foo_14") != 0)
+        return 1;
+    delete ns;
 
+    // Test multiple conversion specifiers
+    ns = new Namescheme("|foo_%03dx%03d|n/5|n%5");
+    if (strcmp(ns->GetName(17), "foo_003x002") != 0)
+       return 1;
+    if (strcmp(ns->GetName(20), "foo_004x000") != 0)
+       return 1;
+    if (strcmp(ns->GetName(3), "foo_000x003") != 0)
+       return 1;
+    delete ns;
+
+    // Test embedded string value results
+    ns = new Namescheme("#foo_%s#(n-5)?'master':'slave':");
+    if (strcmp(ns->GetName(6), "foo_master") != 0)
+        return 1;
+    delete ns;
+
+    // Test array-based references in a name scheme
+    for (i = 0; i < 100; i++)
+        P[i] = i*5;
+    for (i = 0; i < 4; i++)
+        U[i] = i*i;
+    ns = new Namescheme("#foo_%03dx%03d#$P[n]#$U[n%4]", P, U);
+    if (strcmp(ns->GetName(17), "foo_085x001") != 0)
+        return 1;
+    if (strcmp(ns->GetName(18), "foo_090x004") != 0)
+        return 1;
+    if (strcmp(ns->GetName(19), "foo_095x009") != 0)
+        return 1;
+    if (strcmp(ns->GetName(20), "foo_100x000") != 0)
+        return 1;
+    if (strcmp(ns->GetName(21), "foo_105x001") != 0)
+        return 1;
+    delete ns;
+
+    return 0;
+}

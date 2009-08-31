@@ -394,10 +394,13 @@ StringHelpers::GroupStringsFixedAlpha(
 //
 //    Mark C. Miller, Wed Aug 26 11:16:31 PDT 2009
 //    Made version with string args.
+//
+//    Mark C. Miller, Mon Aug 31 14:37:23 PDT 2009
+//    Made string version use const references.
 // ****************************************************************************
 
 int
-StringHelpers::FindRE(string s, string re)
+StringHelpers::FindRE(const string &s, const string &re)
 {
     return StringHelpers::FindRE(s.c_str(), re.c_str());
 }
@@ -434,9 +437,12 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 //  Programmer: Mark C. Miller 
 //  Creation:   August 17, 2009 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Aug 31 14:37:45 PDT 2009
+//    Made it use const (where possible) references to strings.
 // ****************************************************************************
 bool
-StringHelpers::ReplaceRE(string &s, const string re, const string repl)
+StringHelpers::ReplaceRE(string &s, const string &re, const string &repl)
 {
     int n = FindRE(s, re);
     if (n < 0)
@@ -914,6 +920,10 @@ StringHelpers::append(std::vector<std::string> &argv,
 //  including http://www.csse.monash.edu.au/~damian/papers/HTML/Plurals.html
 //  and http://www.emacswiki.org/emacs/plural.el
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug 31 14:38:18 PDT 2009
+//    Made function arg a reference.
 // ****************************************************************************
 typedef struct _plural_rule_t {
     const char *re;
@@ -990,7 +1000,7 @@ static const plural_rule_t plural_rules_table[] = {
 static const int NPluralRules = sizeof(plural_rules_table) / sizeof(plural_rules_table[0]);
 
 string
-StringHelpers::Plural(const string s)
+StringHelpers::Plural(const string &s)
 {
     string ps = s;
     for (int n = 0; n < NPluralRules; n++)
