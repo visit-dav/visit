@@ -1596,6 +1596,10 @@ class AttsFieldFactory
 //
 //   Mark C. Miller, Wed Aug 26 11:01:01 PDT 2009
 //   Added custom base class for derived state objects.
+//
+//   Mark C. Miller, Mon Aug 31 14:05:19 PDT 2009
+//   Added logic to support header/source file prefix/postfix code blocks.
+//   Added logic to support prefix/postfix code blocks in destructor.
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -1657,6 +1661,11 @@ class AttsGeneratorAttribute : public GeneratorBase
                 else
                     h << "#include <"  << includes[i]->include << ">"  << Endl;
             }
+        }
+        if(HasCode(name+".h", 0))
+        {
+            PrintCode(h, name+".h", 0);
+            h << Endl;
         }
 
         h << Endl;
@@ -1911,7 +1920,11 @@ class AttsGeneratorAttribute : public GeneratorBase
                 h << functions[i]->decl << Endl;
             }
         }
-
+        if(HasCode(name+".h", 1))
+        {
+            PrintCode(h, name+".h", 1);
+            h << Endl;
+        }
         h << "#endif" << Endl;
     }
 
@@ -1922,6 +1935,12 @@ class AttsGeneratorAttribute : public GeneratorBase
         c << copyright_str << Endl;
         c << "#include <" << name << ".h>" << Endl;
         WriteSourceIncludes(c);
+
+        if(HasCode(name+".C", 0))
+        {
+            PrintCode(c, name+".C", 0);
+            c << Endl;
+        }
 
         if (!constants.empty())
         {
@@ -2068,6 +2087,12 @@ class AttsGeneratorAttribute : public GeneratorBase
                          << "\" instead.\n\n" << Endl;
                 }
             }
+        }
+
+        if(HasCode(name+".C", 1))
+        {
+            PrintCode(c, name+".C", 1);
+            c << Endl;
         }
     }
 private:
@@ -2413,7 +2438,17 @@ private:
         c << name << "::~" << name << "()" << Endl;
         c << "{" << Endl;
         if (/*!HaveAGArrays() && */!HaveAGVectors())
-            c << "    // nothing here" << Endl;
+        {
+            if(HasCode(methodName, 0))
+            {
+                PrintCode(c, methodName, 0);
+                c << Endl;
+            }
+            else
+            {
+                c << "    // nothing here" << Endl;
+            }
+        }
         else 
         {
             if (HaveAGVectors())
@@ -2422,6 +2457,11 @@ private:
 
             for (size_t i=0; i<fields.size(); i++)
                 fields[i]->WriteSourceDestructor(c);
+        }
+        if(HasCode(methodName, 1))
+        {
+            PrintCode(c, methodName, 1);
+            c << Endl;
         }
         c << "}" << Endl << Endl;
     }

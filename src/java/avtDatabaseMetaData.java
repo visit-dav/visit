@@ -83,6 +83,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         databaseComment = new String("");
         exprList = new ExpressionList();
         meshes = new Vector();
+        subsets = new Vector();
         scalars = new Vector();
         vectors = new Vector();
         tensors = new Vector();
@@ -153,6 +154,14 @@ public class avtDatabaseMetaData extends AttributeSubject
         {
             avtMeshMetaData newObj = (avtMeshMetaData)meshes.elementAt(i);
             meshes.addElement(new avtMeshMetaData(newObj));
+        }
+
+        // *** Copy the subsets field ***
+        subsets = new Vector(obj.subsets.size());
+        for(i = 0; i < obj.subsets.size(); ++i)
+        {
+            avtSubsetsMetaData newObj = (avtSubsetsMetaData)subsets.elementAt(i);
+            subsets.addElement(new avtSubsetsMetaData(newObj));
         }
 
         // *** Copy the scalars field ***
@@ -303,6 +312,15 @@ public class avtDatabaseMetaData extends AttributeSubject
             avtMeshMetaData meshes2 = (avtMeshMetaData)obj.meshes.elementAt(i);
             meshes_equal = meshes1.equals(meshes2);
         }
+        // Compare the elements in the subsets vector.
+        boolean subsets_equal = (obj.subsets.size() == subsets.size());
+        for(i = 0; (i < subsets.size()) && subsets_equal; ++i)
+        {
+            // Make references to avtSubsetsMetaData from Object.
+            avtSubsetsMetaData subsets1 = (avtSubsetsMetaData)subsets.elementAt(i);
+            avtSubsetsMetaData subsets2 = (avtSubsetsMetaData)obj.subsets.elementAt(i);
+            subsets_equal = subsets1.equals(subsets2);
+        }
         // Compare the elements in the scalars vector.
         boolean scalars_equal = (obj.scalars.size() == scalars.size());
         for(i = 0; (i < scalars.size()) && scalars_equal; ++i)
@@ -423,6 +441,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 (databaseComment.equals(obj.databaseComment)) &&
                 (exprList.equals(obj.exprList)) &&
                 meshes_equal &&
+                subsets_equal &&
                 scalars_equal &&
                 vectors_equal &&
                 tensors_equal &&
@@ -592,6 +611,7 @@ public class avtDatabaseMetaData extends AttributeSubject
     public String                   GetDatabaseComment() { return databaseComment; }
     public ExpressionList           GetExprList() { return exprList; }
     public Vector                   GetMeshes() { return meshes; }
+    public Vector                   GetSubsets() { return subsets; }
     public Vector                   GetScalars() { return scalars; }
     public Vector                   GetVectors() { return vectors; }
     public Vector                   GetTensors() { return tensors; }
@@ -658,6 +678,15 @@ public class avtDatabaseMetaData extends AttributeSubject
         }
         if(WriteSelect(20, buf))
         {
+            buf.WriteInt(subsets.size());
+            for(int i = 0; i < subsets.size(); ++i)
+            {
+                avtSubsetsMetaData tmp = (avtSubsetsMetaData)subsets.elementAt(i);
+                tmp.Write(buf);
+            }
+        }
+        if(WriteSelect(21, buf))
+        {
             buf.WriteInt(scalars.size());
             for(int i = 0; i < scalars.size(); ++i)
             {
@@ -665,7 +694,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(21, buf))
+        if(WriteSelect(22, buf))
         {
             buf.WriteInt(vectors.size());
             for(int i = 0; i < vectors.size(); ++i)
@@ -674,7 +703,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(22, buf))
+        if(WriteSelect(23, buf))
         {
             buf.WriteInt(tensors.size());
             for(int i = 0; i < tensors.size(); ++i)
@@ -683,7 +712,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(23, buf))
+        if(WriteSelect(24, buf))
         {
             buf.WriteInt(symmTensors.size());
             for(int i = 0; i < symmTensors.size(); ++i)
@@ -692,7 +721,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(24, buf))
+        if(WriteSelect(25, buf))
         {
             buf.WriteInt(arrays.size());
             for(int i = 0; i < arrays.size(); ++i)
@@ -701,7 +730,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(25, buf))
+        if(WriteSelect(26, buf))
         {
             buf.WriteInt(materials.size());
             for(int i = 0; i < materials.size(); ++i)
@@ -710,7 +739,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(26, buf))
+        if(WriteSelect(27, buf))
         {
             buf.WriteInt(species.size());
             for(int i = 0; i < species.size(); ++i)
@@ -719,7 +748,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(27, buf))
+        if(WriteSelect(28, buf))
         {
             buf.WriteInt(curves.size());
             for(int i = 0; i < curves.size(); ++i)
@@ -728,7 +757,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(28, buf))
+        if(WriteSelect(29, buf))
         {
             buf.WriteInt(labels.size());
             for(int i = 0; i < labels.size(); ++i)
@@ -737,7 +766,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(29, buf))
+        if(WriteSelect(30, buf))
         {
             buf.WriteInt(defaultPlots.size());
             for(int i = 0; i < defaultPlots.size(); ++i)
@@ -746,7 +775,7 @@ public class avtDatabaseMetaData extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(30, buf))
+        if(WriteSelect(31, buf))
             buf.WriteBool(isSimulation);
         if(WriteSelect(31, buf))
             simInfo.Write(buf);
@@ -835,6 +864,19 @@ public class avtDatabaseMetaData extends AttributeSubject
             case 20:
                 {
                     int len = buf.ReadInt();
+                    subsets.clear();
+                    for(int j = 0; j < len; ++j)
+                    {
+                        avtSubsetsMetaData tmp = new avtSubsetsMetaData();
+                        tmp.Read(buf);
+                        subsets.addElement(tmp);
+                    }
+                }
+                Select(20);
+                break;
+            case 21:
+                {
+                    int len = buf.ReadInt();
                     scalars.clear();
                     for(int j = 0; j < len; ++j)
                     {
@@ -843,9 +885,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         scalars.addElement(tmp);
                     }
                 }
-                Select(20);
+                Select(21);
                 break;
-            case 21:
+            case 22:
                 {
                     int len = buf.ReadInt();
                     vectors.clear();
@@ -856,9 +898,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         vectors.addElement(tmp);
                     }
                 }
-                Select(21);
+                Select(22);
                 break;
-            case 22:
+            case 23:
                 {
                     int len = buf.ReadInt();
                     tensors.clear();
@@ -869,9 +911,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         tensors.addElement(tmp);
                     }
                 }
-                Select(22);
+                Select(23);
                 break;
-            case 23:
+            case 24:
                 {
                     int len = buf.ReadInt();
                     symmTensors.clear();
@@ -882,9 +924,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         symmTensors.addElement(tmp);
                     }
                 }
-                Select(23);
+                Select(24);
                 break;
-            case 24:
+            case 25:
                 {
                     int len = buf.ReadInt();
                     arrays.clear();
@@ -895,9 +937,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         arrays.addElement(tmp);
                     }
                 }
-                Select(24);
+                Select(25);
                 break;
-            case 25:
+            case 26:
                 {
                     int len = buf.ReadInt();
                     materials.clear();
@@ -908,9 +950,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         materials.addElement(tmp);
                     }
                 }
-                Select(25);
+                Select(26);
                 break;
-            case 26:
+            case 27:
                 {
                     int len = buf.ReadInt();
                     species.clear();
@@ -921,9 +963,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         species.addElement(tmp);
                     }
                 }
-                Select(26);
+                Select(27);
                 break;
-            case 27:
+            case 28:
                 {
                     int len = buf.ReadInt();
                     curves.clear();
@@ -934,9 +976,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         curves.addElement(tmp);
                     }
                 }
-                Select(27);
+                Select(28);
                 break;
-            case 28:
+            case 29:
                 {
                     int len = buf.ReadInt();
                     labels.clear();
@@ -947,9 +989,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         labels.addElement(tmp);
                     }
                 }
-                Select(28);
+                Select(29);
                 break;
-            case 29:
+            case 30:
                 {
                     int len = buf.ReadInt();
                     defaultPlots.clear();
@@ -960,9 +1002,9 @@ public class avtDatabaseMetaData extends AttributeSubject
                         defaultPlots.addElement(tmp);
                     }
                 }
-                Select(29);
+                Select(30);
                 break;
-            case 30:
+            case 31:
                 SetIsSimulation(buf.ReadBool());
                 break;
             case 31:
@@ -1004,6 +1046,16 @@ public class avtDatabaseMetaData extends AttributeSubject
             AttributeSubject s = (AttributeSubject)meshes.elementAt(i);
             str = str + s.toString(indent + "    ");
             if(i < meshes.size()-1)
+                str = str + ", ";
+            str = str + "\n";
+        }
+        str = str + "}\n";
+        str = str + indent + "subsets = {\n";
+        for(int i = 0; i < subsets.size(); ++i)
+        {
+            AttributeSubject s = (AttributeSubject)subsets.elementAt(i);
+            str = str + s.toString(indent + "    ");
+            if(i < subsets.size()-1)
                 str = str + ", ";
             str = str + "\n";
         }
@@ -1147,16 +1199,48 @@ public class avtDatabaseMetaData extends AttributeSubject
         return tmp;
     }
 
+    public void AddSubsets(avtSubsetsMetaData obj)
+    {
+        subsets.addElement(new avtSubsetsMetaData(obj));
+        Select(20);
+    }
+
+    public void ClearSubsets()
+    {
+        subsets.clear();
+        Select(20);
+    }
+
+    public void RemoveSubsets(int index)
+    {
+        if(index >= 0 && index < subsets.size())
+        {
+            subsets.remove(index);
+            Select(20);
+        }
+    }
+
+    public int GetNumSubsets()
+    {
+        return subsets.size();
+    }
+
+    public avtSubsetsMetaData GetSubsets(int i)
+    {
+        avtSubsetsMetaData tmp = (avtSubsetsMetaData)subsets.elementAt(i);
+        return tmp;
+    }
+
     public void AddScalars(avtScalarMetaData obj)
     {
         scalars.addElement(new avtScalarMetaData(obj));
-        Select(20);
+        Select(21);
     }
 
     public void ClearScalars()
     {
         scalars.clear();
-        Select(20);
+        Select(21);
     }
 
     public void RemoveScalars(int index)
@@ -1164,7 +1248,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < scalars.size())
         {
             scalars.remove(index);
-            Select(20);
+            Select(21);
         }
     }
 
@@ -1182,13 +1266,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddVectors(avtVectorMetaData obj)
     {
         vectors.addElement(new avtVectorMetaData(obj));
-        Select(21);
+        Select(22);
     }
 
     public void ClearVectors()
     {
         vectors.clear();
-        Select(21);
+        Select(22);
     }
 
     public void RemoveVectors(int index)
@@ -1196,7 +1280,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < vectors.size())
         {
             vectors.remove(index);
-            Select(21);
+            Select(22);
         }
     }
 
@@ -1214,13 +1298,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddTensors(avtTensorMetaData obj)
     {
         tensors.addElement(new avtTensorMetaData(obj));
-        Select(22);
+        Select(23);
     }
 
     public void ClearTensors()
     {
         tensors.clear();
-        Select(22);
+        Select(23);
     }
 
     public void RemoveTensors(int index)
@@ -1228,7 +1312,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < tensors.size())
         {
             tensors.remove(index);
-            Select(22);
+            Select(23);
         }
     }
 
@@ -1246,13 +1330,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddSymmTensors(avtSymmetricTensorMetaData obj)
     {
         symmTensors.addElement(new avtSymmetricTensorMetaData(obj));
-        Select(23);
+        Select(24);
     }
 
     public void ClearSymmTensors()
     {
         symmTensors.clear();
-        Select(23);
+        Select(24);
     }
 
     public void RemoveSymmTensors(int index)
@@ -1260,7 +1344,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < symmTensors.size())
         {
             symmTensors.remove(index);
-            Select(23);
+            Select(24);
         }
     }
 
@@ -1278,13 +1362,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddArrays(avtArrayMetaData obj)
     {
         arrays.addElement(new avtArrayMetaData(obj));
-        Select(24);
+        Select(25);
     }
 
     public void ClearArrays()
     {
         arrays.clear();
-        Select(24);
+        Select(25);
     }
 
     public void RemoveArrays(int index)
@@ -1292,7 +1376,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < arrays.size())
         {
             arrays.remove(index);
-            Select(24);
+            Select(25);
         }
     }
 
@@ -1310,13 +1394,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddMaterials(avtMaterialMetaData obj)
     {
         materials.addElement(new avtMaterialMetaData(obj));
-        Select(25);
+        Select(26);
     }
 
     public void ClearMaterials()
     {
         materials.clear();
-        Select(25);
+        Select(26);
     }
 
     public void RemoveMaterials(int index)
@@ -1324,7 +1408,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < materials.size())
         {
             materials.remove(index);
-            Select(25);
+            Select(26);
         }
     }
 
@@ -1342,13 +1426,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddSpecies(avtSpeciesMetaData obj)
     {
         species.addElement(new avtSpeciesMetaData(obj));
-        Select(26);
+        Select(27);
     }
 
     public void ClearSpecies()
     {
         species.clear();
-        Select(26);
+        Select(27);
     }
 
     public void RemoveSpecies(int index)
@@ -1356,7 +1440,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < species.size())
         {
             species.remove(index);
-            Select(26);
+            Select(27);
         }
     }
 
@@ -1374,13 +1458,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddCurves(avtCurveMetaData obj)
     {
         curves.addElement(new avtCurveMetaData(obj));
-        Select(27);
+        Select(28);
     }
 
     public void ClearCurves()
     {
         curves.clear();
-        Select(27);
+        Select(28);
     }
 
     public void RemoveCurves(int index)
@@ -1388,7 +1472,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < curves.size())
         {
             curves.remove(index);
-            Select(27);
+            Select(28);
         }
     }
 
@@ -1406,13 +1490,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddLabels(avtLabelMetaData obj)
     {
         labels.addElement(new avtLabelMetaData(obj));
-        Select(28);
+        Select(29);
     }
 
     public void ClearLabels()
     {
         labels.clear();
-        Select(28);
+        Select(29);
     }
 
     public void RemoveLabels(int index)
@@ -1420,7 +1504,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < labels.size())
         {
             labels.remove(index);
-            Select(28);
+            Select(29);
         }
     }
 
@@ -1438,13 +1522,13 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void AddDefaultPlots(avtDefaultPlotMetaData obj)
     {
         defaultPlots.addElement(new avtDefaultPlotMetaData(obj));
-        Select(29);
+        Select(30);
     }
 
     public void ClearDefaultPlots()
     {
         defaultPlots.clear();
-        Select(29);
+        Select(30);
     }
 
     public void RemoveDefaultPlots(int index)
@@ -1452,7 +1536,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         if(index >= 0 && index < defaultPlots.size())
         {
             defaultPlots.remove(index);
-            Select(29);
+            Select(30);
         }
     }
 
@@ -1489,6 +1573,7 @@ public class avtDatabaseMetaData extends AttributeSubject
     private String                   databaseComment;
     private ExpressionList           exprList;
     private Vector                   meshes; // vector of avtMeshMetaData objects
+    private Vector                   subsets; // vector of avtSubsetsMetaData objects
     private Vector                   scalars; // vector of avtScalarMetaData objects
     private Vector                   vectors; // vector of avtVectorMetaData objects
     private Vector                   tensors; // vector of avtTensorMetaData objects

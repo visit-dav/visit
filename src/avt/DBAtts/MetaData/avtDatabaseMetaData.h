@@ -41,7 +41,9 @@
 #include <dbatts_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class avtMeshMetaData;
+class avtSubsetsMetaData;
 class avtScalarMetaData;
 class avtVectorMetaData;
 class avtTensorMetaData;
@@ -65,6 +67,7 @@ class avtDefaultPlotMetaData;
 #include <avtMeshMetaData.h>
 #include <avtScalarMetaData.h>
 #include <avtSpeciesMetaData.h>
+#include <avtSubsetsMetaData.h>
 #include <avtSymmetricTensorMetaData.h>
 #include <avtTensorMetaData.h>
 #include <avtVectorMetaData.h>
@@ -87,13 +90,21 @@ class avtDefaultPlotMetaData;
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     avtDatabaseMetaData();
     avtDatabaseMetaData(const avtDatabaseMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtDatabaseMetaData(private_tmfs_t tmfs);
+    avtDatabaseMetaData(const avtDatabaseMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtDatabaseMetaData();
 
     virtual avtDatabaseMetaData& operator = (const avtDatabaseMetaData &obj);
     virtual bool operator == (const avtDatabaseMetaData &obj) const;
     virtual bool operator != (const avtDatabaseMetaData &obj) const;
+    void Init();
+    void Copy(const avtDatabaseMetaData &obj);
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -113,6 +124,7 @@ public:
     void SelectDatabaseComment();
     void SelectExprList();
     void SelectMeshes();
+    void SelectSubsets();
     void SelectScalars();
     void SelectVectors();
     void SelectTensors();
@@ -182,6 +194,8 @@ public:
           ExpressionList           &GetExprList();
     const AttributeGroupVector     &GetMeshes() const;
           AttributeGroupVector     &GetMeshes();
+    const AttributeGroupVector     &GetSubsets() const;
+          AttributeGroupVector     &GetSubsets();
     const AttributeGroupVector     &GetScalars() const;
           AttributeGroupVector     &GetScalars();
     const AttributeGroupVector     &GetVectors() const;
@@ -216,6 +230,13 @@ public:
     int  GetNumMeshes() const;
     avtMeshMetaData &GetMeshes(int i);
     const avtMeshMetaData &GetMeshes(int i) const;
+
+    void AddSubsets(const avtSubsetsMetaData &);
+    void ClearSubsets();
+    void RemoveSubsets(int i);
+    int  GetNumSubsets() const;
+    avtSubsetsMetaData &GetSubsets(int i);
+    const avtSubsetsMetaData &GetSubsets(int i) const;
 
     void AddScalars(const avtScalarMetaData &);
     void ClearScalars();
@@ -369,6 +390,7 @@ public:
     static void SetCycleFromFilenameRegex(const char *re);
     static std::string GetCycleFromFilenameRegex();
     void AddDefaultSILRestrictionDescription(const std::string&);
+    void         Add(avtSubsetsMetaData *);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -392,6 +414,7 @@ public:
         ID_databaseComment,
         ID_exprList,
         ID_meshes,
+        ID_subsets,
         ID_scalars,
         ID_vectors,
         ID_tensors,
@@ -404,7 +427,8 @@ public:
         ID_defaultPlots,
         ID_isSimulation,
         ID_simInfo,
-        ID_suggestedDefaultSILRestriction
+        ID_suggestedDefaultSILRestriction,
+        ID__LAST
     };
 
 protected:
@@ -430,6 +454,7 @@ private:
     std::string              databaseComment;
     ExpressionList           exprList;
     AttributeGroupVector     meshes;
+    AttributeGroupVector     subsets;
     AttributeGroupVector     scalars;
     AttributeGroupVector     vectors;
     AttributeGroupVector     tensors;
@@ -446,6 +471,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTDATABASEMETADATA_TMFS "bddibbbbbss*i*i*d*i*sssaa*a*a*a*a*a*a*a*a*a*a*a*bas*"
 
 #endif

@@ -46,6 +46,7 @@
 #include <MeshManagementAttributes.h>
 #include <MessageAttributes.h>
 #include <MovieAttributes.h>
+#include <NameschemeAttributes.h>
 #include <NamespaceAttributes.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
@@ -190,6 +191,7 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(MeshManagementAttributes);
     MAKE_OBJECT(MessageAttributes);
     MAKE_OBJECT(MovieAttributes);
+    MAKE_OBJECT(NameschemeAttributes);
     MAKE_OBJECT(NamespaceAttributes);
     MAKE_OBJECT(PickAttributes);
     MAKE_OBJECT(PickVarInfo);

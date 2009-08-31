@@ -112,6 +112,9 @@ class DataNode;
 //
 //    Mark C. Miller, Wed Aug 26 11:11:19 PDT 2009
 //    Added _private_tmfs_t type for derived state object constructors.
+//
+//    Mark C. Miller, Mon Aug 31 14:07:18 PDT 2009
+//    Added a generic exception class for state object failures.
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -331,5 +334,6 @@ typedef std::vector<AttributeGroup *> AttributeGroupVector;
 
 // An exception class
 class BadDeclareFormatString : public VisItException { };
+class StateObjectException : public VisItException { };
 
 #endif

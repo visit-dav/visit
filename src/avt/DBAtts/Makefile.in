@@ -106,6 +106,7 @@ MetaData_src= \
   MetaData/avtSimulationCommandSpecification.C\
   MetaData/avtSimulationInformation.C\
   MetaData/avtSpeciesMetaData.C\
+  MetaData/avtSubsetsMetaData.C\
   MetaData/avtSymmetricTensorMetaData.C\
   MetaData/avtTensorMetaData.C\
   MetaData/avtTypes.C\

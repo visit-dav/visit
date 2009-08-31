@@ -91,6 +91,9 @@
 #    Tom Fogal, Tue Jun 30 19:57:39 MDT 2009
 #    Add define for proper symbol export.
 #
+#    Mark C. Miller, Mon Aug 31 14:36:29 PDT 2009
+#    Removed NameingConvention.[Ch]. It was not being used anywhere.
+#    Added Namescheme.[Ch].
 ##############################################################################
 
 ##
@@ -107,20 +110,20 @@ LIBS=
 ## Files...
 ##
 SRC=AtomicProperties.C CoordUtils.C GeometricHelpers.C \
-    NamingConvention.C StringHelpers.C Utility.C \
+    Namescheme.C StringHelpers.C Utility.C \
     void_ref_ptr.C
-HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
+HDR=AtomicProperties.h BJHash.h Namescheme.h StringHelpers.h Utility.h\
     ref_ptr.h array_ref_ptr.h VisItStreamUtil.h void_ref_ptr.h
 OBJ=$(SRC:.C=.o)
 LIB=libutility
 
-TESTSRC=MRUCache_test.C StringHelpers_test.C
+TESTSRC=MRUCache_test.C StringHelpers_test.C Namescheme_test.C
 TESTOBJ=$(TESTSRC:.C=.o)
 
 ##
 ## Standard targets...
 ##
-all: message $(LIBSHARED) $(tmpbin)/MRUCache_test $(tmpbin)/StringHelpers_test
+all: message $(LIBSHARED) $(tmpbin)/MRUCache_test $(tmpbin)/StringHelpers_test $(tmpbin)/Namescheme_test
 
 clean:
 	$(RM) $(OBJ) $(LIBSHARED) $(TESTOBJ)
@@ -139,6 +142,9 @@ $(tmpbin)/MRUCache_test: MRUCache_test.o $(LIBSHARED)
 
 $(tmpbin)/StringHelpers_test: StringHelpers_test.o $(LIBSHARED)
 	$(CXX) $(INCLUDE) -o $@ StringHelpers_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
+
+$(tmpbin)/Namescheme_test: Namescheme_test.o $(LIBSHARED)
+	$(CXX) $(INCLUDE) -o $@ Namescheme_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
 
 ##
 ## Automatic dependency stuff
