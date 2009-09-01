@@ -136,6 +136,8 @@ void avtSubsetsMetaData::Init()
     isMaterialCat = false;
     isUnionOfChunks = false;
     hasPartialCells = false;
+
+    avtSubsetsMetaData::SelectAll();
 }
 
 // ****************************************************************************
@@ -158,9 +160,6 @@ void avtSubsetsMetaData::Copy(const avtSubsetsMetaData &obj)
     catName = obj.catName;
     catCount = obj.catCount;
     nameScheme = obj.nameScheme;
-    nameSchemeArrayData = obj.nameSchemeArrayData;
-    nameSchemeArrayOffsets = obj.nameSchemeArrayOffsets;
-    nameSchemeArrayNames = obj.nameSchemeArrayNames;
     colorScheme = obj.colorScheme;
     setsToChunksMaps = obj.setsToChunksMaps;
     graphEdges = obj.graphEdges;
@@ -309,9 +308,6 @@ avtSubsetsMetaData::operator = (const avtSubsetsMetaData &obj)
     catName = obj.catName;
     catCount = obj.catCount;
     nameScheme = obj.nameScheme;
-    nameSchemeArrayData = obj.nameSchemeArrayData;
-    nameSchemeArrayOffsets = obj.nameSchemeArrayOffsets;
-    nameSchemeArrayNames = obj.nameSchemeArrayNames;
     colorScheme = obj.colorScheme;
     setsToChunksMaps = obj.setsToChunksMaps;
     graphEdges = obj.graphEdges;
@@ -349,9 +345,6 @@ avtSubsetsMetaData::operator == (const avtSubsetsMetaData &obj) const
     return ((catName == obj.catName) &&
             (catCount == obj.catCount) &&
             (nameScheme == obj.nameScheme) &&
-            (nameSchemeArrayData == obj.nameSchemeArrayData) &&
-            (nameSchemeArrayOffsets == obj.nameSchemeArrayOffsets) &&
-            (nameSchemeArrayNames == obj.nameSchemeArrayNames) &&
             (colorScheme == obj.colorScheme) &&
             (setsToChunksMaps == obj.setsToChunksMaps) &&
             (graphEdges == obj.graphEdges) &&
@@ -507,21 +500,18 @@ avtSubsetsMetaData::SelectAll()
 {
     // call the base class' SelectAll() first
     avtVarMetaData::SelectAll();
-    Select(ID_catName,                (void *)&catName);
-    Select(ID_catCount,               (void *)&catCount);
-    Select(ID_nameScheme,             (void *)&nameScheme);
-    Select(ID_nameSchemeArrayData,    (void *)&nameSchemeArrayData);
-    Select(ID_nameSchemeArrayOffsets, (void *)&nameSchemeArrayOffsets);
-    Select(ID_nameSchemeArrayNames,   (void *)&nameSchemeArrayNames);
-    Select(ID_colorScheme,            (void *)&colorScheme);
-    Select(ID_setsToChunksMaps,       (void *)&setsToChunksMaps);
-    Select(ID_graphEdges,             (void *)&graphEdges);
-    Select(ID_isChunkCat,             (void *)&isChunkCat);
-    Select(ID_isMaterialCat,          (void *)&isMaterialCat);
-    Select(ID_isUnionOfChunks,        (void *)&isUnionOfChunks);
-    Select(ID_hasPartialCells,        (void *)&hasPartialCells);
-    Select(ID_decompMode,             (void *)&decompMode);
-    Select(ID_maxTopoDim,             (void *)&maxTopoDim);
+    Select(ID_catName,          (void *)&catName);
+    Select(ID_catCount,         (void *)&catCount);
+    Select(ID_nameScheme,       (void *)&nameScheme);
+    Select(ID_colorScheme,      (void *)&colorScheme);
+    Select(ID_setsToChunksMaps, (void *)&setsToChunksMaps);
+    Select(ID_graphEdges,       (void *)&graphEdges);
+    Select(ID_isChunkCat,       (void *)&isChunkCat);
+    Select(ID_isMaterialCat,    (void *)&isMaterialCat);
+    Select(ID_isUnionOfChunks,  (void *)&isUnionOfChunks);
+    Select(ID_hasPartialCells,  (void *)&hasPartialCells);
+    Select(ID_decompMode,       (void *)&decompMode);
+    Select(ID_maxTopoDim,       (void *)&maxTopoDim);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -529,24 +519,24 @@ avtSubsetsMetaData::SelectAll()
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-avtSubsetsMetaData::SetNameSchemeArrayData(const intVector &nameSchemeArrayData_)
+avtSubsetsMetaData::SetCatName(const std::string &catName_)
 {
-    nameSchemeArrayData = nameSchemeArrayData_;
-    Select(ID_nameSchemeArrayData, (void *)&nameSchemeArrayData);
+    catName = catName_;
+    Select(ID_catName, (void *)&catName);
 }
 
 void
-avtSubsetsMetaData::SetNameSchemeArrayOffsets(const intVector &nameSchemeArrayOffsets_)
+avtSubsetsMetaData::SetCatCount(int catCount_)
 {
-    nameSchemeArrayOffsets = nameSchemeArrayOffsets_;
-    Select(ID_nameSchemeArrayOffsets, (void *)&nameSchemeArrayOffsets);
+    catCount = catCount_;
+    Select(ID_catCount, (void *)&catCount);
 }
 
 void
-avtSubsetsMetaData::SetNameSchemeArrayNames(const stringVector &nameSchemeArrayNames_)
+avtSubsetsMetaData::SetNameScheme(const NameschemeAttributes &nameScheme_)
 {
-    nameSchemeArrayNames = nameSchemeArrayNames_;
-    Select(ID_nameSchemeArrayNames, (void *)&nameSchemeArrayNames);
+    nameScheme = nameScheme_;
+    Select(ID_nameScheme, (void *)&nameScheme);
 }
 
 void
@@ -567,40 +557,34 @@ avtSubsetsMetaData::SetGraphEdges(const intVector &graphEdges_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-const intVector &
-avtSubsetsMetaData::GetNameSchemeArrayData() const
+const std::string &
+avtSubsetsMetaData::GetCatName() const
 {
-    return nameSchemeArrayData;
+    return catName;
 }
 
-intVector &
-avtSubsetsMetaData::GetNameSchemeArrayData()
+std::string &
+avtSubsetsMetaData::GetCatName()
 {
-    return nameSchemeArrayData;
+    return catName;
 }
 
-const intVector &
-avtSubsetsMetaData::GetNameSchemeArrayOffsets() const
+int
+avtSubsetsMetaData::GetCatCount() const
 {
-    return nameSchemeArrayOffsets;
+    return catCount;
 }
 
-intVector &
-avtSubsetsMetaData::GetNameSchemeArrayOffsets()
+const NameschemeAttributes &
+avtSubsetsMetaData::GetNameScheme() const
 {
-    return nameSchemeArrayOffsets;
+    return nameScheme;
 }
 
-const stringVector &
-avtSubsetsMetaData::GetNameSchemeArrayNames() const
+NameschemeAttributes &
+avtSubsetsMetaData::GetNameScheme()
 {
-    return nameSchemeArrayNames;
-}
-
-stringVector &
-avtSubsetsMetaData::GetNameSchemeArrayNames()
-{
-    return nameSchemeArrayNames;
+    return nameScheme;
 }
 
 const intVector &
@@ -632,21 +616,15 @@ avtSubsetsMetaData::GetGraphEdges()
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-avtSubsetsMetaData::SelectNameSchemeArrayData()
+avtSubsetsMetaData::SelectCatName()
 {
-    Select(ID_nameSchemeArrayData, (void *)&nameSchemeArrayData);
+    Select(ID_catName, (void *)&catName);
 }
 
 void
-avtSubsetsMetaData::SelectNameSchemeArrayOffsets()
+avtSubsetsMetaData::SelectNameScheme()
 {
-    Select(ID_nameSchemeArrayOffsets, (void *)&nameSchemeArrayOffsets);
-}
-
-void
-avtSubsetsMetaData::SelectNameSchemeArrayNames()
-{
-    Select(ID_nameSchemeArrayNames, (void *)&nameSchemeArrayNames);
+    Select(ID_nameScheme, (void *)&nameScheme);
 }
 
 void
@@ -685,21 +663,18 @@ avtSubsetsMetaData::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_catName:                return "catName";
-    case ID_catCount:               return "catCount";
-    case ID_nameScheme:             return "nameScheme";
-    case ID_nameSchemeArrayData:    return "nameSchemeArrayData";
-    case ID_nameSchemeArrayOffsets: return "nameSchemeArrayOffsets";
-    case ID_nameSchemeArrayNames:   return "nameSchemeArrayNames";
-    case ID_colorScheme:            return "colorScheme";
-    case ID_setsToChunksMaps:       return "setsToChunksMaps";
-    case ID_graphEdges:             return "graphEdges";
-    case ID_isChunkCat:             return "isChunkCat";
-    case ID_isMaterialCat:          return "isMaterialCat";
-    case ID_isUnionOfChunks:        return "isUnionOfChunks";
-    case ID_hasPartialCells:        return "hasPartialCells";
-    case ID_decompMode:             return "decompMode";
-    case ID_maxTopoDim:             return "maxTopoDim";
+    case ID_catName:          return "catName";
+    case ID_catCount:         return "catCount";
+    case ID_nameScheme:       return "nameScheme";
+    case ID_colorScheme:      return "colorScheme";
+    case ID_setsToChunksMaps: return "setsToChunksMaps";
+    case ID_graphEdges:       return "graphEdges";
+    case ID_isChunkCat:       return "isChunkCat";
+    case ID_isMaterialCat:    return "isMaterialCat";
+    case ID_isUnionOfChunks:  return "isUnionOfChunks";
+    case ID_hasPartialCells:  return "hasPartialCells";
+    case ID_decompMode:       return "decompMode";
+    case ID_maxTopoDim:       return "maxTopoDim";
     default:  return "invalid index";
     }
 }
@@ -724,21 +699,18 @@ avtSubsetsMetaData::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_catName:                return FieldType_string;
-    case ID_catCount:               return FieldType_int;
-    case ID_nameScheme:             return FieldType_stringVector;
-    case ID_nameSchemeArrayData:    return FieldType_intVector;
-    case ID_nameSchemeArrayOffsets: return FieldType_intVector;
-    case ID_nameSchemeArrayNames:   return FieldType_stringVector;
-    case ID_colorScheme:            return FieldType_stringVector;
-    case ID_setsToChunksMaps:       return FieldType_intVector;
-    case ID_graphEdges:             return FieldType_intVector;
-    case ID_isChunkCat:             return FieldType_bool;
-    case ID_isMaterialCat:          return FieldType_bool;
-    case ID_isUnionOfChunks:        return FieldType_bool;
-    case ID_hasPartialCells:        return FieldType_bool;
-    case ID_decompMode:             return FieldType_enum;
-    case ID_maxTopoDim:             return FieldType_int;
+    case ID_catName:          return FieldType_string;
+    case ID_catCount:         return FieldType_int;
+    case ID_nameScheme:       return FieldType_att;
+    case ID_colorScheme:      return FieldType_stringVector;
+    case ID_setsToChunksMaps: return FieldType_intVector;
+    case ID_graphEdges:       return FieldType_intVector;
+    case ID_isChunkCat:       return FieldType_bool;
+    case ID_isMaterialCat:    return FieldType_bool;
+    case ID_isUnionOfChunks:  return FieldType_bool;
+    case ID_hasPartialCells:  return FieldType_bool;
+    case ID_decompMode:       return FieldType_enum;
+    case ID_maxTopoDim:       return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -763,21 +735,18 @@ avtSubsetsMetaData::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_catName:                return "string";
-    case ID_catCount:               return "int";
-    case ID_nameScheme:             return "stringVector";
-    case ID_nameSchemeArrayData:    return "intVector";
-    case ID_nameSchemeArrayOffsets: return "intVector";
-    case ID_nameSchemeArrayNames:   return "stringVector";
-    case ID_colorScheme:            return "stringVector";
-    case ID_setsToChunksMaps:       return "intVector";
-    case ID_graphEdges:             return "intVector";
-    case ID_isChunkCat:             return "bool";
-    case ID_isMaterialCat:          return "bool";
-    case ID_isUnionOfChunks:        return "bool";
-    case ID_hasPartialCells:        return "bool";
-    case ID_decompMode:             return "enum";
-    case ID_maxTopoDim:             return "int";
+    case ID_catName:          return "string";
+    case ID_catCount:         return "int";
+    case ID_nameScheme:       return "att";
+    case ID_colorScheme:      return "stringVector";
+    case ID_setsToChunksMaps: return "intVector";
+    case ID_graphEdges:       return "intVector";
+    case ID_isChunkCat:       return "bool";
+    case ID_isMaterialCat:    return "bool";
+    case ID_isUnionOfChunks:  return "bool";
+    case ID_hasPartialCells:  return "bool";
+    case ID_decompMode:       return "enum";
+    case ID_maxTopoDim:       return "int";
     default:  return "invalid index";
     }
 }
@@ -817,21 +786,6 @@ avtSubsetsMetaData::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_nameScheme:
         {  // new scope
         retval = (nameScheme == obj.nameScheme);
-        }
-        break;
-    case ID_nameSchemeArrayData:
-        {  // new scope
-        retval = (nameSchemeArrayData == obj.nameSchemeArrayData);
-        }
-        break;
-    case ID_nameSchemeArrayOffsets:
-        {  // new scope
-        retval = (nameSchemeArrayOffsets == obj.nameSchemeArrayOffsets);
-        }
-        break;
-    case ID_nameSchemeArrayNames:
-        {  // new scope
-        retval = (nameSchemeArrayNames == obj.nameSchemeArrayNames);
         }
         break;
     case ID_colorScheme:
@@ -937,6 +891,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "maxTopoDim = " << maxTopoDim << endl;
 
+#if 0
     if (nameScheme.size() == 1)
     {
         Indent(out, indent);
@@ -981,6 +936,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
             }
         } 
     }
+#endif
 
     if (setsToChunksMaps.size())
     {
@@ -1069,10 +1025,7 @@ avtSubsetsMetaData::AddGraphEdge(int head, int tail)
 
 void avtSubsetsMetaData::SetChunksForSet(int setId, std::vector<int> &chunks)
 {
-    setsToChunksMaps.push_back(setId);
-    setsToChunksMaps.push_back(chunks.size());
-    for (size_t i = 0; i < chunks.size(); i++)
-        setsToChunksMaps.push_back(chunks[i]);
+    SetChunksForSet(setId, &chunks[0], (int) chunks.size());
 }
 
 // ****************************************************************************
@@ -1093,72 +1046,6 @@ avtSubsetsMetaData::avtSubsetsMetaData(const char *catName, int catCount, int ma
 }
 
 // ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-void
-avtSubsetsMetaData::AddArrayForNameScheme(const char *name, const int *data, int len)
-{
-    nameSchemeArrayNames.push_back(name);
-    nameSchemeArrayOffsets.push_back(nameSchemeArrayData.size());
-    for (int i = 0; i < len; i++)
-        nameSchemeArrayData.push_back(data[i]);
-}
-
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-void
-avtSubsetsMetaData::AddArrayForNameScheme(const std::string name, const std::vector<int> &data)
-{
-    AddArrayForNameScheme(name.c_str(), &data[0], (int) data.size());
-}
-
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-const int*
-avtSubsetsMetaData::GetNameSchemeArray(int i)
-{
-    if (i < 0 || i > nameSchemeArrayOffsets.size())
-        return 0;
-    return &nameSchemeArrayData[nameSchemeArrayOffsets[i]];
-}
-
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-const int*
-avtSubsetsMetaData::GetNameSchemeArray(const char *name)
-{
-    std::vector<std::string>::iterator it =
-        find(nameSchemeArrayNames.begin(), nameSchemeArrayNames.end(), name);
-    if (it == nameSchemeArrayNames.end())
-        return 0;
-
-    return GetNameSchemeArray((int) distance(nameSchemeArrayNames.begin(),it));
-}
-
-// ****************************************************************************
 //  Method: avtSubsetsMetaData constructor
 //
 //  Purpose: convenient constructor
@@ -1170,5 +1057,22 @@ avtSubsetsMetaData::avtSubsetsMetaData(const std::string &catName, int catCount,
     : avtVarMetaData(avtSubsetsMetaData::TmfsStruct)
 {
     *this = avtSubsetsMetaData(catName.c_str(), catCount, maxTopoDim);
+}
+
+// ****************************************************************************
+//  Method: avtSubsetsMetaData::SetChunksForSet
+//
+//  Purpose: Indicate which chunks a given set exists on.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 18, 2009
+// ****************************************************************************
+
+void avtSubsetsMetaData::SetChunksForSet(int setId, const int *chunks, int len)
+{
+    setsToChunksMaps.push_back(setId);
+    setsToChunksMaps.push_back(len);
+    for (int i = 0; i < len; i++)
+        setsToChunksMaps.push_back(chunks[i]);
 }
 

@@ -57,6 +57,8 @@
 void avtMaterialMetaData::Init()
 {
     numMaterials = 0;
+
+    avtMaterialMetaData::SelectAll();
 }
 
 // ****************************************************************************

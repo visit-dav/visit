@@ -119,6 +119,7 @@ WRAPPER_SRC= \
     PyLightAttributes.C \
     PyMaterialAttributes.C \
     PyMeshManagementAttributes.C \
+    PyNameschemeAttributes.C \
     PyPickAttributes.C \
     PyPickVarInfo.C \
     PyPlot.C \

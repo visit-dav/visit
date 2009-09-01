@@ -66,6 +66,8 @@ void avtVarMetaData::Init()
     minDataExtents = 0;
     maxDataExtents = 0;
     hideFromGUI = false;
+
+    avtVarMetaData::SelectAll();
 }
 
 // ****************************************************************************

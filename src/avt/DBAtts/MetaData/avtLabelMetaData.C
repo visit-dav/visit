@@ -56,6 +56,8 @@
 
 void avtLabelMetaData::Init()
 {
+
+    avtLabelMetaData::SelectAll();
 }
 
 // ****************************************************************************

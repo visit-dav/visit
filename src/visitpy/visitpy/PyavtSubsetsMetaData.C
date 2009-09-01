@@ -40,6 +40,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
+#include <PyNameschemeAttributes.h>
 
 // ****************************************************************************
 // Module: PyavtSubsetsMetaData
@@ -78,73 +79,14 @@ PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%scatName = \"%s\"\n", prefix, atts->catName.c_str());
+    SNPRINTF(tmpStr, 1000, "%scatName = \"%s\"\n", prefix, atts->GetCatName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scatCount = %d\n", prefix, atts->catCount);
+    SNPRINTF(tmpStr, 1000, "%scatCount = %d\n", prefix, atts->GetCatCount());
     str += tmpStr;
-    {   const stringVector &nameScheme = atts->nameScheme;
-        SNPRINTF(tmpStr, 1000, "%snameScheme = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < nameScheme.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", nameScheme[i].c_str());
-            str += tmpStr;
-            if(i < nameScheme.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const intVector &nameSchemeArrayData = atts->GetNameSchemeArrayData();
-        SNPRINTF(tmpStr, 1000, "%snameSchemeArrayData = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < nameSchemeArrayData.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%d", nameSchemeArrayData[i]);
-            str += tmpStr;
-            if(i < nameSchemeArrayData.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const intVector &nameSchemeArrayOffsets = atts->GetNameSchemeArrayOffsets();
-        SNPRINTF(tmpStr, 1000, "%snameSchemeArrayOffsets = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < nameSchemeArrayOffsets.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%d", nameSchemeArrayOffsets[i]);
-            str += tmpStr;
-            if(i < nameSchemeArrayOffsets.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const stringVector &nameSchemeArrayNames = atts->GetNameSchemeArrayNames();
-        SNPRINTF(tmpStr, 1000, "%snameSchemeArrayNames = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < nameSchemeArrayNames.size(); ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", nameSchemeArrayNames[i].c_str());
-            str += tmpStr;
-            if(i < nameSchemeArrayNames.size() - 1)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "nameScheme.";
+        str += PyNameschemeAttributes_ToString(&atts->GetNameScheme(), objPrefix.c_str());
     }
     {   const stringVector &colorScheme = atts->colorScheme;
         SNPRINTF(tmpStr, 1000, "%scolorScheme = (", prefix);
@@ -257,7 +199,7 @@ avtSubsetsMetaData_SetCatName(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the catName in the object.
-    obj->data->catName = std::string(str);
+    obj->data->SetCatName(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -267,7 +209,7 @@ avtSubsetsMetaData_SetCatName(PyObject *self, PyObject *args)
 avtSubsetsMetaData_GetCatName(PyObject *self, PyObject *args)
 {
     avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->catName.c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetCatName().c_str());
     return retval;
 }
 
@@ -281,7 +223,7 @@ avtSubsetsMetaData_SetCatCount(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the catCount in the object.
-    obj->data->catCount = (int)ival;
+    obj->data->SetCatCount((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -291,7 +233,7 @@ avtSubsetsMetaData_SetCatCount(PyObject *self, PyObject *args)
 avtSubsetsMetaData_GetCatCount(PyObject *self, PyObject *args)
 {
     avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->catCount));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCatCount()));
     return retval;
 }
 
@@ -300,33 +242,16 @@ avtSubsetsMetaData_SetNameScheme(PyObject *self, PyObject *args)
 {
     avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->nameScheme;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
-
-    if(PyTuple_Check(tuple))
+    if(!PyNameschemeAttributes_Check(newValue))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
-        }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
-    else
+        fprintf(stderr, "The nameScheme field can only be set with NameschemeAttributes objects.\n");
         return NULL;
+    }
 
-    // Mark the nameScheme in the object as modified.
-    obj->data->SelectAll();
+    obj->data->SetNameScheme(*PyNameschemeAttributes_FromPyObject(newValue));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -336,186 +261,15 @@ avtSubsetsMetaData_SetNameScheme(PyObject *self, PyObject *args)
 avtSubsetsMetaData_GetNameScheme(PyObject *self, PyObject *args)
 {
     avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-    // Allocate a tuple the with enough entries to hold the nameScheme.
-    const stringVector &nameScheme = obj->data->nameScheme;
-    PyObject *retval = PyTuple_New(nameScheme.size());
-    for(size_t i = 0; i < nameScheme.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(nameScheme[i].c_str()));
-    return retval;
-}
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
 
-/*static*/ PyObject *
-avtSubsetsMetaData_SetNameSchemeArrayData(PyObject *self, PyObject *args)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyObject *retval = PyNameschemeAttributes_Wrap(&obj->data->GetNameScheme());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyNameschemeAttributes_SetParent(retval, self);
 
-    intVector  &vec = obj->data->GetNameSchemeArrayData();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the nameSchemeArrayData in the object as modified.
-    obj->data->SelectNameSchemeArrayData();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtSubsetsMetaData_GetNameSchemeArrayData(PyObject *self, PyObject *args)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-    // Allocate a tuple the with enough entries to hold the nameSchemeArrayData.
-    const intVector &nameSchemeArrayData = obj->data->GetNameSchemeArrayData();
-    PyObject *retval = PyTuple_New(nameSchemeArrayData.size());
-    for(size_t i = 0; i < nameSchemeArrayData.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(nameSchemeArrayData[i])));
-    return retval;
-}
-
-/*static*/ PyObject *
-avtSubsetsMetaData_SetNameSchemeArrayOffsets(PyObject *self, PyObject *args)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-
-    intVector  &vec = obj->data->GetNameSchemeArrayOffsets();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
-        }
-    }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the nameSchemeArrayOffsets in the object as modified.
-    obj->data->SelectNameSchemeArrayOffsets();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtSubsetsMetaData_GetNameSchemeArrayOffsets(PyObject *self, PyObject *args)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-    // Allocate a tuple the with enough entries to hold the nameSchemeArrayOffsets.
-    const intVector &nameSchemeArrayOffsets = obj->data->GetNameSchemeArrayOffsets();
-    PyObject *retval = PyTuple_New(nameSchemeArrayOffsets.size());
-    for(size_t i = 0; i < nameSchemeArrayOffsets.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(nameSchemeArrayOffsets[i])));
-    return retval;
-}
-
-/*static*/ PyObject *
-avtSubsetsMetaData_SetNameSchemeArrayNames(PyObject *self, PyObject *args)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-
-    stringVector  &vec = obj->data->GetNameSchemeArrayNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
-
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
-        }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
-    else
-        return NULL;
-
-    // Mark the nameSchemeArrayNames in the object as modified.
-    obj->data->SelectNameSchemeArrayNames();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtSubsetsMetaData_GetNameSchemeArrayNames(PyObject *self, PyObject *args)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
-    // Allocate a tuple the with enough entries to hold the nameSchemeArrayNames.
-    const stringVector &nameSchemeArrayNames = obj->data->GetNameSchemeArrayNames();
-    PyObject *retval = PyTuple_New(nameSchemeArrayNames.size());
-    for(size_t i = 0; i < nameSchemeArrayNames.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(nameSchemeArrayNames[i].c_str()));
     return retval;
 }
 
@@ -857,12 +611,6 @@ PyMethodDef PyavtSubsetsMetaData_methods[AVTSUBSETSMETADATA_NMETH] = {
     {"GetCatCount", avtSubsetsMetaData_GetCatCount, METH_VARARGS},
     {"SetNameScheme", avtSubsetsMetaData_SetNameScheme, METH_VARARGS},
     {"GetNameScheme", avtSubsetsMetaData_GetNameScheme, METH_VARARGS},
-    {"SetNameSchemeArrayData", avtSubsetsMetaData_SetNameSchemeArrayData, METH_VARARGS},
-    {"GetNameSchemeArrayData", avtSubsetsMetaData_GetNameSchemeArrayData, METH_VARARGS},
-    {"SetNameSchemeArrayOffsets", avtSubsetsMetaData_SetNameSchemeArrayOffsets, METH_VARARGS},
-    {"GetNameSchemeArrayOffsets", avtSubsetsMetaData_GetNameSchemeArrayOffsets, METH_VARARGS},
-    {"SetNameSchemeArrayNames", avtSubsetsMetaData_SetNameSchemeArrayNames, METH_VARARGS},
-    {"GetNameSchemeArrayNames", avtSubsetsMetaData_GetNameSchemeArrayNames, METH_VARARGS},
     {"SetColorScheme", avtSubsetsMetaData_SetColorScheme, METH_VARARGS},
     {"GetColorScheme", avtSubsetsMetaData_GetColorScheme, METH_VARARGS},
     {"SetSetsToChunksMaps", avtSubsetsMetaData_SetSetsToChunksMaps, METH_VARARGS},
@@ -944,12 +692,6 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
         return avtSubsetsMetaData_GetCatCount(self, NULL);
     if(strcmp(name, "nameScheme") == 0)
         return avtSubsetsMetaData_GetNameScheme(self, NULL);
-    if(strcmp(name, "nameSchemeArrayData") == 0)
-        return avtSubsetsMetaData_GetNameSchemeArrayData(self, NULL);
-    if(strcmp(name, "nameSchemeArrayOffsets") == 0)
-        return avtSubsetsMetaData_GetNameSchemeArrayOffsets(self, NULL);
-    if(strcmp(name, "nameSchemeArrayNames") == 0)
-        return avtSubsetsMetaData_GetNameSchemeArrayNames(self, NULL);
     if(strcmp(name, "colorScheme") == 0)
         return avtSubsetsMetaData_GetColorScheme(self, NULL);
     if(strcmp(name, "setsToChunksMaps") == 0)
@@ -999,12 +741,6 @@ PyavtSubsetsMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtSubsetsMetaData_SetCatCount(self, tuple);
     else if(strcmp(name, "nameScheme") == 0)
         obj = avtSubsetsMetaData_SetNameScheme(self, tuple);
-    else if(strcmp(name, "nameSchemeArrayData") == 0)
-        obj = avtSubsetsMetaData_SetNameSchemeArrayData(self, tuple);
-    else if(strcmp(name, "nameSchemeArrayOffsets") == 0)
-        obj = avtSubsetsMetaData_SetNameSchemeArrayOffsets(self, tuple);
-    else if(strcmp(name, "nameSchemeArrayNames") == 0)
-        obj = avtSubsetsMetaData_SetNameSchemeArrayNames(self, tuple);
     else if(strcmp(name, "colorScheme") == 0)
         obj = avtSubsetsMetaData_SetColorScheme(self, tuple);
     else if(strcmp(name, "setsToChunksMaps") == 0)

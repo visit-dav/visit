@@ -58,6 +58,8 @@
 void avtArrayMetaData::Init()
 {
     nVars = 0;
+
+    avtArrayMetaData::SelectAll();
 }
 
 // ****************************************************************************

@@ -1600,6 +1600,9 @@ class AttsFieldFactory
 //   Mark C. Miller, Mon Aug 31 14:05:19 PDT 2009
 //   Added logic to support header/source file prefix/postfix code blocks.
 //   Added logic to support prefix/postfix code blocks in destructor.
+//
+//   Mark C. Miller, Tue Sep  1 09:19:06 PDT 2009
+//   Fixed missing call to SelectAll in implementation of Init() func.
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -2290,6 +2293,8 @@ private:
                 fields[i]->WriteSourceSetDefault(c);
             }
         }
+        c << Endl;
+        c << "    " << name << "::SelectAll();" << Endl;
         c << "}" << Endl << Endl;
     }
 

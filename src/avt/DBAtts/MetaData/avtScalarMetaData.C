@@ -142,6 +142,8 @@ void avtScalarMetaData::Init()
     enumPartialCellMode = Exclude;
     enumNChooseRN = 0;
     enumNChooseRMaxR = 0;
+
+    avtScalarMetaData::SelectAll();
 }
 
 // ****************************************************************************

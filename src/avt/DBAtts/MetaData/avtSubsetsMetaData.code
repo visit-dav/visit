@@ -49,6 +49,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "maxTopoDim = " << maxTopoDim << endl;
 
+#if 0
     if (nameScheme.size() == 1)
     {
         Indent(out, indent);
@@ -93,6 +94,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
             }
         } 
     }
+#endif
 
     if (setsToChunksMaps.size())
     {
@@ -210,84 +212,6 @@ avtSubsetsMetaData::avtSubsetsMetaData(const char *catName, int catCount, int ma
     this->maxTopoDim = maxTopoDim;
 }
 
-Function: AddArrayForNameScheme
-Declaration: void AddArrayForNameScheme(const char *name, const int *data, int len);
-Definition:
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-void
-avtSubsetsMetaData::AddArrayForNameScheme(const char *name, const int *data, int len)
-{
-    nameSchemeArrayNames.push_back(name);
-    nameSchemeArrayOffsets.push_back(nameSchemeArrayData.size());
-    for (int i = 0; i < len; i++)
-        nameSchemeArrayData.push_back(data[i]);
-}
-
-Function: AddArrayForNameScheme2
-Declaration: void AddArrayForNameScheme(const std::string name, const std::vector<int> &data);
-Definition:
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-void
-avtSubsetsMetaData::AddArrayForNameScheme(const std::string name, const std::vector<int> &data)
-{
-    AddArrayForNameScheme(name.c_str(), &data[0], (int) data.size());
-}
-
-Function: GetNameSchemeArray
-Declaration: const int *GetNameSchemeArray(int i);
-Definition:
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-const int*
-avtSubsetsMetaData::GetNameSchemeArray(int i)
-{
-    if (i < 0 || i > nameSchemeArrayOffsets.size())
-        return 0;
-    return &nameSchemeArrayData[nameSchemeArrayOffsets[i]];
-}
-
-Function: GetNameSchemeArray2
-Declaration: const int *GetNameSchemeArray(const char *);
-Definition:
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::AddArrayForNameScheme
-//
-//  Purpose: Add integer array data to be used in name scheme
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-const int*
-avtSubsetsMetaData::GetNameSchemeArray(const char *name)
-{
-    std::vector<std::string>::iterator it =
-        find(nameSchemeArrayNames.begin(), nameSchemeArrayNames.end(), name);
-    if (it == nameSchemeArrayNames.end())
-        return 0;
-
-    return GetNameSchemeArray((int) distance(nameSchemeArrayNames.begin(),it));
-}
-
 Function: avtSubsetsMetaData2
 Declaration: avtSubsetsMetaData(const std::string &catName, int catCount, int maxTopoDim);
 Definition:
@@ -323,69 +247,5 @@ void avtSubsetsMetaData::SetChunksForSet(int setId, const int *chunks, int len)
     setsToChunksMaps.push_back(len);
     for (int i = 0; i < len; i++)
         setsToChunksMaps.push_back(chunks[i]);
-}
-
-Function: GetNameForSet
-Declaration: const char *GetNameForSet(int setId);
-Definition:
-typedef struct _DBnamescheme
-{
-    char *fmt;              /* orig. format string */
-    const char **fmtptrs;   /* ptrs into first (printf) part of fmt for each conversion spec. */
-    int fmtlen;             /* len of first part of fmt */
-    int ncspecs;            /* # of conversion specs in first part of fmt */
-    char delim;             /* delimiter char used for parts of fmt */
-    int nembed;             /* number of last embedded string encountered */
-    char *embedstrs[DB_MAX_EXPSTRS]; /* ptrs to copies of embedded strings */
-    int narrefs;            /* number of array refs in conversion specs */
-    char **arrnames;        /* array names used by array refs */
-    const int **arrvals;    /* pointer to actual array data assoc. with each name */
-    char **exprstrs;        /* expressions to be evaluated for each conv. spec. */
-} DBnamescheme;
-
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::GetNameForSet
-//
-//  Purpose: Return name for a set. If the namescheme is explicit, this
-//      function just looks up the name. Otherwise, it uses the nameschem
-//      to generate the the name.
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-
-Function: SetNameScheme
-Declaration: SetNameScheme(const char **ns_or_names, int cnt=1);
-Definition:
-// ****************************************************************************
-//  Method: avtSubsetsMetaData::SetNameScheme
-//
-//  Purpose: Sets the namescheme (printf style) used to name sets in this
-//      category. The ns_or_names argument can be an explicit list of names
-//      which is VERY EXPENSIVE to store, or a single 'namescheme'.
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 18, 2009
-// ****************************************************************************
-void avtSubsetsMetaData::SetNameScheme(const char **ns_or_names, cnt)
-{
-    if (cnt == 1)
-    {
-        nameScheme.push_back(ns_or_names[0]);
-        DBMakeNamescheme(ns_or_names[0]);
-    }
-    else
-    {
-        for (int i = 0; i < cnt; i++)
-            nameScheme.push_back(ns_or_names[i]);
-    }
-}
-
-Function: avtSubsetsMetaData
-Declaration: avtSubsetsMetaData();
-Definition:
-avtSubsetsMetaData::avtSubsetsMetaData() : avtVarMetaData(avtSubsetsMetaData::TmfsStruct)
-{
-    avtSubsetsMetaData::Init();
 }
 

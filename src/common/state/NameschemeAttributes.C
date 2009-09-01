@@ -62,6 +62,8 @@ static map<void*, bool> getNameCalledMap;
 
 void NameschemeAttributes::Init()
 {
+
+    NameschemeAttributes::SelectAll();
 }
 
 // ****************************************************************************
