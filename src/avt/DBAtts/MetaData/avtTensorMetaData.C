@@ -57,6 +57,8 @@
 void avtTensorMetaData::Init()
 {
     dim = 0;
+
+    avtTensorMetaData::SelectAll();
 }
 
 // ****************************************************************************

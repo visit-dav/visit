@@ -42,8 +42,10 @@
 #include <string>
 #include <avtVarMetaData.h>
 
+#include <NameschemeAttributes.h>
 #include <vector>
 #include <algorithm>
+#include <NameschemeAttributes.h>
 
 // ****************************************************************************
 // Class: avtSubsetsMetaData
@@ -101,30 +103,28 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectNameSchemeArrayData();
-    void SelectNameSchemeArrayOffsets();
-    void SelectNameSchemeArrayNames();
+    void SelectCatName();
+    void SelectNameScheme();
     void SelectSetsToChunksMaps();
     void SelectGraphEdges();
 
     // Property setting methods
-    void SetNameSchemeArrayData(const intVector &nameSchemeArrayData_);
-    void SetNameSchemeArrayOffsets(const intVector &nameSchemeArrayOffsets_);
-    void SetNameSchemeArrayNames(const stringVector &nameSchemeArrayNames_);
+    void SetCatName(const std::string &catName_);
+    void SetCatCount(int catCount_);
+    void SetNameScheme(const NameschemeAttributes &nameScheme_);
     void SetSetsToChunksMaps(const intVector &setsToChunksMaps_);
     void SetGraphEdges(const intVector &graphEdges_);
 
     // Property getting methods
-    const intVector    &GetNameSchemeArrayData() const;
-          intVector    &GetNameSchemeArrayData();
-    const intVector    &GetNameSchemeArrayOffsets() const;
-          intVector    &GetNameSchemeArrayOffsets();
-    const stringVector &GetNameSchemeArrayNames() const;
-          stringVector &GetNameSchemeArrayNames();
-    const intVector    &GetSetsToChunksMaps() const;
-          intVector    &GetSetsToChunksMaps();
-    const intVector    &GetGraphEdges() const;
-          intVector    &GetGraphEdges();
+    const std::string          &GetCatName() const;
+          std::string          &GetCatName();
+    int                        GetCatCount() const;
+    const NameschemeAttributes &GetNameScheme() const;
+          NameschemeAttributes &GetNameScheme();
+    const intVector            &GetSetsToChunksMaps() const;
+          intVector            &GetSetsToChunksMaps();
+    const intVector            &GetGraphEdges() const;
+          intVector            &GetGraphEdges();
 
     // Enum conversion functions
     static std::string PartialCellModes_ToString(PartialCellModes);
@@ -149,20 +149,14 @@ public:
     void AddGraphEdge(int head, int tail);
     void SetChunksForSet(int setId, std::vector<int> &chunks);
     avtSubsetsMetaData(const char *catName, int catCount, int maxTopoDim);
-    void AddArrayForNameScheme(const char *name, const int *data, int len);
-    void AddArrayForNameScheme(const std::string name, const std::vector<int> &data);
-    const int *GetNameSchemeArray(int i);
-    const int *GetNameSchemeArray(const char *);
     avtSubsetsMetaData(const std::string &catName, int catCount, int maxTopoDim);
+    void SetChunksForSet(int setId, const int *chunks, int len);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_catName = avtVarMetaData::ID__LAST,
         ID_catCount,
         ID_nameScheme,
-        ID_nameSchemeArrayData,
-        ID_nameSchemeArrayOffsets,
-        ID_nameSchemeArrayNames,
         ID_colorScheme,
         ID_setsToChunksMaps,
         ID_graphEdges,
@@ -176,27 +170,24 @@ public:
     };
 
 public:
-    std::string  catName;
-    int          catCount;
-    stringVector nameScheme;
-    stringVector colorScheme;
-    bool         isChunkCat;
-    bool         isMaterialCat;
-    bool         isUnionOfChunks;
-    bool         hasPartialCells;
-    int          decompMode;
-    int          maxTopoDim;
+    stringVector         colorScheme;
+    bool                 isChunkCat;
+    bool                 isMaterialCat;
+    bool                 isUnionOfChunks;
+    bool                 hasPartialCells;
+    int                  decompMode;
+    int                  maxTopoDim;
 private:
-    intVector    nameSchemeArrayData;
-    intVector    nameSchemeArrayOffsets;
-    stringVector nameSchemeArrayNames;
-    intVector    setsToChunksMaps;
-    intVector    graphEdges;
+    std::string          catName;
+    int                  catCount;
+    NameschemeAttributes nameScheme;
+    intVector            setsToChunksMaps;
+    intVector            graphEdges;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSUBSETSMETADATA_TMFS (AVTVARMETADATA_TMFS "sis*i*i*s*s*i*i*bbbbii")
+#define AVTSUBSETSMETADATA_TMFS (AVTVARMETADATA_TMFS "sias*i*i*bbbbii")
 
 #endif

@@ -14,13 +14,7 @@
     </Field>
     <Field name="catCount" label="Number of sets in this category" type="int">
     </Field>
-    <Field name="nameScheme" label="Way of naming sets in this category (may be explicit)" type="stringVector">
-    </Field>
-    <Field name="nameSchemeArrayData" label="1 or more arrays of ints used in the name scheme" type="intVector">
-    </Field>
-    <Field name="nameSchemeArrayOffsets" label="Offsets into nameSchemeArrays to beginning of each array" type="intVector">
-    </Field>
-    <Field name="nameSchemeArrayNames" label="Names of each name scheme array" type="stringVector">
+    <Field name="nameScheme" label="Namescheme for how members of this group of sets are named" type="att" subtype="NameschemeAttributes">
     </Field>
     <Field name="colorScheme" label="Colors to be associated with each set in this category" type="stringVector" access="public">
     </Field>
@@ -44,8 +38,6 @@
     </Field>
     <Field name="maxTopoDim" label="Maximum topological dimension of the subset" type="int" access="public">
     </Field>
-    <Field name="unnamed1" label="unnamed1" type="int">
-    </Field>
     <Function name="Print" user="true" member="true">
     </Function>
     <Function name="AddGraphEdge" user="true" member="true">
@@ -54,28 +46,17 @@
     </Function>
     <Function name="avtSubsetsMetaData1" user="true" member="true">
     </Function>
-    <Function name="AddArrayForNameScheme" user="true" member="true">
-    </Function>
-    <Function name="AddArrayForNameScheme2" user="true" member="true">
-    </Function>
-    <Function name="GetNameSchemeArray" user="true" member="true">
-    </Function>
-    <Function name="GetNameSchemeArray2" user="true" member="true">
-    </Function>
     <Function name="avtSubsetsMetaData2" user="true" member="true">
     </Function>
     <Function name="SetChunksForSet2" user="true" member="true">
-    </Function>
-    <Function name="GetNameForSet" user="true" member="true">
-    </Function>
-    <Function name="SetNameScheme" user="true" member="true">
-    </Function>
-    <Function name="avtSubsetsMetaData" user="true" member="true">
     </Function>
     <Include file="header" quoted="false">
       vector
     </Include>
     <Include file="header" quoted="false">
       algorithm
+    </Include>
+    <Include file="header" quoted="false">
+      NameschemeAttributes.h
     </Include>
   </Attribute>

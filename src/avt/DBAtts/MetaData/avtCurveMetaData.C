@@ -61,6 +61,8 @@ void avtCurveMetaData::Init()
     hasSpatialExtents = false;
     minSpatialExtents = 0;
     maxSpatialExtents = 0;
+
+    avtCurveMetaData::SelectAll();
 }
 
 // ****************************************************************************

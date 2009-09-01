@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class avtSubsetsMetaData extends avtVarMetaData
 {
-    private static int numAdditionalAttributes = 15;
+    private static int numAdditionalAttributes = 12;
 
     // Enum values
     public final static int PARTIALCELLMODES_INCLUDE = 0;
@@ -76,10 +76,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
         catName = new String("");
         catCount = 0;
-        nameScheme = new Vector();
-        nameSchemeArrayData = new Vector();
-        nameSchemeArrayOffsets = new Vector();
-        nameSchemeArrayNames = new Vector();
+        nameScheme = new NameschemeAttributes();
         colorScheme = new Vector();
         setsToChunksMaps = new Vector();
         graphEdges = new Vector();
@@ -96,10 +93,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
         catName = new String("");
         catCount = 0;
-        nameScheme = new Vector();
-        nameSchemeArrayData = new Vector();
-        nameSchemeArrayOffsets = new Vector();
-        nameSchemeArrayNames = new Vector();
+        nameScheme = new NameschemeAttributes();
         colorScheme = new Vector();
         setsToChunksMaps = new Vector();
         graphEdges = new Vector();
@@ -118,26 +112,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
         catName = new String(obj.catName);
         catCount = obj.catCount;
-        nameScheme = new Vector(obj.nameScheme.size());
-        for(i = 0; i < obj.nameScheme.size(); ++i)
-            nameScheme.addElement(new String((String)obj.nameScheme.elementAt(i)));
-
-        nameSchemeArrayData = new Vector();
-        for(i = 0; i < obj.nameSchemeArrayData.size(); ++i)
-        {
-            Integer iv = (Integer)obj.nameSchemeArrayData.elementAt(i);
-            nameSchemeArrayData.addElement(new Integer(iv.intValue()));
-        }
-        nameSchemeArrayOffsets = new Vector();
-        for(i = 0; i < obj.nameSchemeArrayOffsets.size(); ++i)
-        {
-            Integer iv = (Integer)obj.nameSchemeArrayOffsets.elementAt(i);
-            nameSchemeArrayOffsets.addElement(new Integer(iv.intValue()));
-        }
-        nameSchemeArrayNames = new Vector(obj.nameSchemeArrayNames.size());
-        for(i = 0; i < obj.nameSchemeArrayNames.size(); ++i)
-            nameSchemeArrayNames.addElement(new String((String)obj.nameSchemeArrayNames.elementAt(i)));
-
+        nameScheme = new NameschemeAttributes(obj.nameScheme);
         colorScheme = new Vector(obj.colorScheme.size());
         for(i = 0; i < obj.colorScheme.size(); ++i)
             colorScheme.addElement(new String((String)obj.colorScheme.elementAt(i)));
@@ -178,42 +153,6 @@ public class avtSubsetsMetaData extends avtVarMetaData
     {
         int i;
 
-        // Compare the elements in the nameScheme vector.
-        boolean nameScheme_equal = (obj.nameScheme.size() == nameScheme.size());
-        for(i = 0; (i < nameScheme.size()) && nameScheme_equal; ++i)
-        {
-            // Make references to String from Object.
-            String nameScheme1 = (String)nameScheme.elementAt(i);
-            String nameScheme2 = (String)obj.nameScheme.elementAt(i);
-            nameScheme_equal = nameScheme1.equals(nameScheme2);
-        }
-        // Compare the elements in the nameSchemeArrayData vector.
-        boolean nameSchemeArrayData_equal = (obj.nameSchemeArrayData.size() == nameSchemeArrayData.size());
-        for(i = 0; (i < nameSchemeArrayData.size()) && nameSchemeArrayData_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer nameSchemeArrayData1 = (Integer)nameSchemeArrayData.elementAt(i);
-            Integer nameSchemeArrayData2 = (Integer)obj.nameSchemeArrayData.elementAt(i);
-            nameSchemeArrayData_equal = nameSchemeArrayData1.equals(nameSchemeArrayData2);
-        }
-        // Compare the elements in the nameSchemeArrayOffsets vector.
-        boolean nameSchemeArrayOffsets_equal = (obj.nameSchemeArrayOffsets.size() == nameSchemeArrayOffsets.size());
-        for(i = 0; (i < nameSchemeArrayOffsets.size()) && nameSchemeArrayOffsets_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer nameSchemeArrayOffsets1 = (Integer)nameSchemeArrayOffsets.elementAt(i);
-            Integer nameSchemeArrayOffsets2 = (Integer)obj.nameSchemeArrayOffsets.elementAt(i);
-            nameSchemeArrayOffsets_equal = nameSchemeArrayOffsets1.equals(nameSchemeArrayOffsets2);
-        }
-        // Compare the elements in the nameSchemeArrayNames vector.
-        boolean nameSchemeArrayNames_equal = (obj.nameSchemeArrayNames.size() == nameSchemeArrayNames.size());
-        for(i = 0; (i < nameSchemeArrayNames.size()) && nameSchemeArrayNames_equal; ++i)
-        {
-            // Make references to String from Object.
-            String nameSchemeArrayNames1 = (String)nameSchemeArrayNames.elementAt(i);
-            String nameSchemeArrayNames2 = (String)obj.nameSchemeArrayNames.elementAt(i);
-            nameSchemeArrayNames_equal = nameSchemeArrayNames1.equals(nameSchemeArrayNames2);
-        }
         // Compare the elements in the colorScheme vector.
         boolean colorScheme_equal = (obj.colorScheme.size() == colorScheme.size());
         for(i = 0; (i < colorScheme.size()) && colorScheme_equal; ++i)
@@ -244,10 +183,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
         // Create the return value
         return (super.equals(obj) && (catName.equals(obj.catName)) &&
                 (catCount == obj.catCount) &&
-                nameScheme_equal &&
-                nameSchemeArrayData_equal &&
-                nameSchemeArrayOffsets_equal &&
-                nameSchemeArrayNames_equal &&
+                (nameScheme.equals(obj.nameScheme)) &&
                 colorScheme_equal &&
                 setsToChunksMaps_equal &&
                 graphEdges_equal &&
@@ -272,100 +208,79 @@ public class avtSubsetsMetaData extends avtVarMetaData
         Select(Offset() + 1);
     }
 
-    public void SetNameScheme(Vector nameScheme_)
+    public void SetNameScheme(NameschemeAttributes nameScheme_)
     {
         nameScheme = nameScheme_;
         Select(Offset() + 2);
     }
 
-    public void SetNameSchemeArrayData(Vector nameSchemeArrayData_)
-    {
-        nameSchemeArrayData = nameSchemeArrayData_;
-        Select(Offset() + 3);
-    }
-
-    public void SetNameSchemeArrayOffsets(Vector nameSchemeArrayOffsets_)
-    {
-        nameSchemeArrayOffsets = nameSchemeArrayOffsets_;
-        Select(Offset() + 4);
-    }
-
-    public void SetNameSchemeArrayNames(Vector nameSchemeArrayNames_)
-    {
-        nameSchemeArrayNames = nameSchemeArrayNames_;
-        Select(Offset() + 5);
-    }
-
     public void SetColorScheme(Vector colorScheme_)
     {
         colorScheme = colorScheme_;
-        Select(Offset() + 6);
+        Select(Offset() + 3);
     }
 
     public void SetSetsToChunksMaps(Vector setsToChunksMaps_)
     {
         setsToChunksMaps = setsToChunksMaps_;
-        Select(Offset() + 7);
+        Select(Offset() + 4);
     }
 
     public void SetGraphEdges(Vector graphEdges_)
     {
         graphEdges = graphEdges_;
-        Select(Offset() + 8);
+        Select(Offset() + 5);
     }
 
     public void SetIsChunkCat(boolean isChunkCat_)
     {
         isChunkCat = isChunkCat_;
-        Select(Offset() + 9);
+        Select(Offset() + 6);
     }
 
     public void SetIsMaterialCat(boolean isMaterialCat_)
     {
         isMaterialCat = isMaterialCat_;
-        Select(Offset() + 10);
+        Select(Offset() + 7);
     }
 
     public void SetIsUnionOfChunks(boolean isUnionOfChunks_)
     {
         isUnionOfChunks = isUnionOfChunks_;
-        Select(Offset() + 11);
+        Select(Offset() + 8);
     }
 
     public void SetHasPartialCells(boolean hasPartialCells_)
     {
         hasPartialCells = hasPartialCells_;
-        Select(Offset() + 12);
+        Select(Offset() + 9);
     }
 
     public void SetDecompMode(int decompMode_)
     {
         decompMode = decompMode_;
-        Select(Offset() + 13);
+        Select(Offset() + 10);
     }
 
     public void SetMaxTopoDim(int maxTopoDim_)
     {
         maxTopoDim = maxTopoDim_;
-        Select(Offset() + 14);
+        Select(Offset() + 11);
     }
 
     // Property getting methods
-    public String  GetCatName() { return catName; }
-    public int     GetCatCount() { return catCount; }
-    public Vector  GetNameScheme() { return nameScheme; }
-    public Vector  GetNameSchemeArrayData() { return nameSchemeArrayData; }
-    public Vector  GetNameSchemeArrayOffsets() { return nameSchemeArrayOffsets; }
-    public Vector  GetNameSchemeArrayNames() { return nameSchemeArrayNames; }
-    public Vector  GetColorScheme() { return colorScheme; }
-    public Vector  GetSetsToChunksMaps() { return setsToChunksMaps; }
-    public Vector  GetGraphEdges() { return graphEdges; }
-    public boolean GetIsChunkCat() { return isChunkCat; }
-    public boolean GetIsMaterialCat() { return isMaterialCat; }
-    public boolean GetIsUnionOfChunks() { return isUnionOfChunks; }
-    public boolean GetHasPartialCells() { return hasPartialCells; }
-    public int     GetDecompMode() { return decompMode; }
-    public int     GetMaxTopoDim() { return maxTopoDim; }
+    public String               GetCatName() { return catName; }
+    public int                  GetCatCount() { return catCount; }
+    public NameschemeAttributes GetNameScheme() { return nameScheme; }
+    public Vector               GetColorScheme() { return colorScheme; }
+    public Vector               GetSetsToChunksMaps() { return setsToChunksMaps; }
+    public Vector               GetGraphEdges() { return graphEdges; }
+    public boolean              GetIsChunkCat() { return isChunkCat; }
+    public boolean              GetIsMaterialCat() { return isMaterialCat; }
+    public boolean              GetIsUnionOfChunks() { return isUnionOfChunks; }
+    public boolean              GetHasPartialCells() { return hasPartialCells; }
+    public int                  GetDecompMode() { return decompMode; }
+    public int                  GetMaxTopoDim() { return maxTopoDim; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -378,30 +293,24 @@ public class avtSubsetsMetaData extends avtVarMetaData
         if(WriteSelect(offset + 1, buf))
             buf.WriteInt(catCount);
         if(WriteSelect(offset + 2, buf))
-            buf.WriteStringVector(nameScheme);
+            nameScheme.Write(buf);
         if(WriteSelect(offset + 3, buf))
-            buf.WriteIntVector(nameSchemeArrayData);
-        if(WriteSelect(offset + 4, buf))
-            buf.WriteIntVector(nameSchemeArrayOffsets);
-        if(WriteSelect(offset + 5, buf))
-            buf.WriteStringVector(nameSchemeArrayNames);
-        if(WriteSelect(offset + 6, buf))
             buf.WriteStringVector(colorScheme);
-        if(WriteSelect(offset + 7, buf))
+        if(WriteSelect(offset + 4, buf))
             buf.WriteIntVector(setsToChunksMaps);
-        if(WriteSelect(offset + 8, buf))
+        if(WriteSelect(offset + 5, buf))
             buf.WriteIntVector(graphEdges);
-        if(WriteSelect(offset + 9, buf))
+        if(WriteSelect(offset + 6, buf))
             buf.WriteBool(isChunkCat);
-        if(WriteSelect(offset + 10, buf))
+        if(WriteSelect(offset + 7, buf))
             buf.WriteBool(isMaterialCat);
-        if(WriteSelect(offset + 11, buf))
+        if(WriteSelect(offset + 8, buf))
             buf.WriteBool(isUnionOfChunks);
-        if(WriteSelect(offset + 12, buf))
+        if(WriteSelect(offset + 9, buf))
             buf.WriteBool(hasPartialCells);
-        if(WriteSelect(offset + 13, buf))
+        if(WriteSelect(offset + 10, buf))
             buf.WriteInt(decompMode);
-        if(WriteSelect(offset + 14, buf))
+        if(WriteSelect(offset + 11, buf))
             buf.WriteInt(maxTopoDim);
     }
 
@@ -417,42 +326,34 @@ public class avtSubsetsMetaData extends avtVarMetaData
             SetCatCount(buf.ReadInt());
             break;
         case 2:
-            SetNameScheme(buf.ReadStringVector());
+            nameScheme.Read(buf);
+            Select(Offset() + 2);
             break;
         case 3:
-            SetNameSchemeArrayData(buf.ReadIntVector());
-            break;
-        case 4:
-            SetNameSchemeArrayOffsets(buf.ReadIntVector());
-            break;
-        case 5:
-            SetNameSchemeArrayNames(buf.ReadStringVector());
-            break;
-        case 6:
             SetColorScheme(buf.ReadStringVector());
             break;
-        case 7:
+        case 4:
             SetSetsToChunksMaps(buf.ReadIntVector());
             break;
-        case 8:
+        case 5:
             SetGraphEdges(buf.ReadIntVector());
             break;
-        case 9:
+        case 6:
             SetIsChunkCat(buf.ReadBool());
             break;
-        case 10:
+        case 7:
             SetIsMaterialCat(buf.ReadBool());
             break;
-        case 11:
+        case 8:
             SetIsUnionOfChunks(buf.ReadBool());
             break;
-        case 12:
+        case 9:
             SetHasPartialCells(buf.ReadBool());
             break;
-        case 13:
+        case 10:
             SetDecompMode(buf.ReadInt());
             break;
-        case 14:
+        case 11:
             SetMaxTopoDim(buf.ReadInt());
             break;
         default:
@@ -466,10 +367,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
         String str = new String();
         str = str + stringToString("catName", catName, indent) + "\n";
         str = str + intToString("catCount", catCount, indent) + "\n";
-        str = str + stringVectorToString("nameScheme", nameScheme, indent) + "\n";
-        str = str + intVectorToString("nameSchemeArrayData", nameSchemeArrayData, indent) + "\n";
-        str = str + intVectorToString("nameSchemeArrayOffsets", nameSchemeArrayOffsets, indent) + "\n";
-        str = str + stringVectorToString("nameSchemeArrayNames", nameSchemeArrayNames, indent) + "\n";
+        str = str + indent + "nameScheme = {\n" + nameScheme.toString(indent + "    ") + indent + "}\n";
         str = str + stringVectorToString("colorScheme", colorScheme, indent) + "\n";
         str = str + intVectorToString("setsToChunksMaps", setsToChunksMaps, indent) + "\n";
         str = str + intVectorToString("graphEdges", graphEdges, indent) + "\n";
@@ -491,20 +389,17 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
 
     // Attributes
-    private String  catName;
-    private int     catCount;
-    private Vector  nameScheme; // vector of String objects
-    private Vector  nameSchemeArrayData; // vector of Integer objects
-    private Vector  nameSchemeArrayOffsets; // vector of Integer objects
-    private Vector  nameSchemeArrayNames; // vector of String objects
-    private Vector  colorScheme; // vector of String objects
-    private Vector  setsToChunksMaps; // vector of Integer objects
-    private Vector  graphEdges; // vector of Integer objects
-    private boolean isChunkCat;
-    private boolean isMaterialCat;
-    private boolean isUnionOfChunks;
-    private boolean hasPartialCells;
-    private int     decompMode;
-    private int     maxTopoDim;
+    private String               catName;
+    private int                  catCount;
+    private NameschemeAttributes nameScheme;
+    private Vector               colorScheme; // vector of String objects
+    private Vector               setsToChunksMaps; // vector of Integer objects
+    private Vector               graphEdges; // vector of Integer objects
+    private boolean              isChunkCat;
+    private boolean              isMaterialCat;
+    private boolean              isUnionOfChunks;
+    private boolean              hasPartialCells;
+    private int                  decompMode;
+    private int                  maxTopoDim;
 }
 

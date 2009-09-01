@@ -135,6 +135,8 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     std::map<std::string, std::vector<vtkFloatArray*> > vars;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    avtMeshType            DetermineAVTMeshType() const;
 };
 
 

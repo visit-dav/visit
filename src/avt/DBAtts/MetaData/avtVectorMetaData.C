@@ -57,6 +57,8 @@
 void avtVectorMetaData::Init()
 {
     varDim = 0;
+
+    avtVectorMetaData::SelectAll();
 }
 
 // ****************************************************************************

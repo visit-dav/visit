@@ -740,18 +740,29 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Mark C. Miller, Tue Sep  1 10:52:13 PDT 2009
+//    Made it deal with POINT zones that contain more spatial dimensions
+//    than topological ones.
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 {
     int numNodes = numI * numJ * numK;
+    int topologicalDimensionOfZone;
 
     if (numJ==1 && numK==1)
-        topologicalDimension = MAX(topologicalDimension, 1);
+        topologicalDimensionOfZone = 1;
     else if (numK==1)
-        topologicalDimension = MAX(topologicalDimension, 2);
+        topologicalDimensionOfZone = 2;
     else
-        topologicalDimension = MAX(topologicalDimension, 3);
+        topologicalDimensionOfZone = 3;
+
+    // If we have fewer topological dimenions than spatial dimensions,
+    // then the only reasonable thing is zero topological dimension.
+    if (topologicalDimensionOfZone < spatialDimension)
+        topologicalDimensionOfZone = 0;
+
+    topologicalDimension = MAX(topologicalDimension, topologicalDimensionOfZone);
 
     int numElementsI = (numI <= 1) ? 1 : numI-1;
     int numElementsJ = (numJ <= 1) ? 1 : numJ-1;
@@ -759,21 +770,31 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
     int numElements = numElementsI * numElementsJ * numElementsK;
     vtkPoints *points = ParseArraysPoint(numNodes, numElements);
 
-    vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
-    sgrid->SetPoints(points);
-    points->Delete();
-
-    int dims[3] = {numI, numJ, numK};
-    sgrid->SetDimensions(dims);
-
-    if ((topologicalDimension == 2 || topologicalDimension == 3) ||
-        (topologicalDimension == 0 && spatialDimension > 1))
+    if (topologicalDimensionOfZone == 0) 
     {
-        meshes.push_back(sgrid);
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(points);
+        points->Delete();
+        meshes.push_back(ugrid);
     }
     else
     {
-        sgrid->Delete();
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+        sgrid->SetPoints(points);
+        points->Delete();
+
+        int dims[3] = {numI, numJ, numK};
+        sgrid->SetDimensions(dims);
+
+        if ((topologicalDimension == 2 || topologicalDimension == 3) ||
+            (topologicalDimension == 0 && spatialDimension > 1))
+        {
+            meshes.push_back(sgrid);
+        }
+        else
+        {
+            sgrid->Delete();
+        }
     }
 }
 
@@ -1269,6 +1290,8 @@ avtTecplotFileFormat::~avtTecplotFileFormat()
 //    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
 //    Added support for cell-centered vars (through VARLOCATION).
 //
+//    Mark C. Miller, Mon Aug 31 19:51:39 PDT 2009
+//    Set topologicalDimension to 0 to make consistent with constructor.
 // ****************************************************************************
 
 void
@@ -1283,7 +1306,7 @@ avtTecplotFileFormat::FreeUpResources(void)
     Xindex = -1;
     Yindex = -1;
     Zindex = -1;
-    topologicalDimension = 1;
+    topologicalDimension = 0;
     spatialDimension = 1;
     numTotalVars = 0;
 
@@ -1314,6 +1337,32 @@ avtTecplotFileFormat::FreeUpResources(void)
 
 
 // ****************************************************************************
+//  Method: avtTecplotFileFormat::DetermineAVTMeshType
+//
+//  Purpose: Walk through the mesh(s) and decide what the overall mesh type
+//    should be.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   Tue Sep  1 10:44:33 PDT 2009
+//
+// ****************************************************************************
+avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
+{
+    if (topologicalDimension == 0)
+        return AVT_POINT_MESH;
+
+    bool allStructuredGrid = true;
+    for (size_t i = 0; i < meshes.size() && allStructuredGrid; i++)
+        if (meshes[i]->GetDataObjectType() != VTK_STRUCTURED_GRID)
+            allStructuredGrid = false;
+
+    if (allStructuredGrid)
+        return AVT_CURVILINEAR_MESH;
+
+    return AVT_UNSTRUCTURED_MESH;
+}
+
+// ****************************************************************************
 //  Method: avtTecplotFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -1334,6 +1383,8 @@ avtTecplotFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
 //    Added support for cell-centered vars (through VARLOCATION).
 //
+//    Mark C. Miller, Tue Sep  1 10:53:21 PDT 2009
+//    Made it call DetermineAVTMeshType
 // ****************************************************************************
 
 void
@@ -1349,22 +1400,7 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->name = "mesh";
         mesh->topologicalDimension = topologicalDimension;
         mesh->spatialDimension = spatialDimension;
-
-        if (meshes.size() > 0 && 
-            meshes[0]->GetDataObjectType()==VTK_STRUCTURED_GRID)
-        {
-            mesh->meshType = topologicalDimension == 0 ? 
-                                 AVT_POINT_MESH : AVT_CURVILINEAR_MESH;
-            // See '5756 for the reason for this next line
-            if (spatialDimension > 2)
-                mesh->topologicalDimension = 3;
-        }
-        else
-        {
-            mesh->meshType = topologicalDimension == 0 ?
-                                 AVT_POINT_MESH : AVT_UNSTRUCTURED_MESH;
-        }
-
+        mesh->meshType = DetermineAVTMeshType();
         mesh->numBlocks = meshes.size();
         mesh->blockOrigin = 1;
         mesh->cellOrigin = 1;

@@ -57,6 +57,8 @@
 void avtSymmetricTensorMetaData::Init()
 {
     dim = 0;
+
+    avtSymmetricTensorMetaData::SelectAll();
 }
 
 // ****************************************************************************
