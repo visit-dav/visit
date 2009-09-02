@@ -1385,6 +1385,10 @@ avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
 //
 //    Mark C. Miller, Tue Sep  1 10:53:21 PDT 2009
 //    Made it call DetermineAVTMeshType
+//
+//    Brad Whitlock, Wed Sep  2 14:15:37 PDT 2009
+//    Set node origin to 1.
+//
 // ****************************************************************************
 
 void
@@ -1404,6 +1408,7 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->numBlocks = meshes.size();
         mesh->blockOrigin = 1;
         mesh->cellOrigin = 1;
+        mesh->nodeOrigin = 1;
         mesh->blockTitle = "Zones";
         mesh->blockPieceName = "Zone";
         mesh->hasSpatialExtents = false;
