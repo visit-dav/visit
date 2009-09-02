@@ -315,6 +315,10 @@ const int Namescheme::max_fmtlen  = 4096;
 //  Programmer: Mark C. Miller
 //  Creation:   Wed Aug 26 15:34:45 PDT 2009
 //
+//  Modifications:
+//    Brad Whitlock, Wed Sep  2 15:59:27 PDT 2009
+//    I removed a dependence on strndup, which isn't on Mac.
+//
 // ****************************************************************************
 Namescheme::Namescheme(const char *fmt, ...)
 {
@@ -350,7 +354,9 @@ Namescheme::Namescheme(const char *fmt, ...)
         return;
 
     // grab just the part of fmt that is the printf-style format string
-    this->fmt = strndup(&fmt[1],n-1);
+    this->fmt = (char *)calloc(n, sizeof(char));
+    strncpy(this->fmt, &fmt[1], n-1);
+
     this->fmtlen = n-1;
 
     // In 2 passes, count conversion specs. and then setup pointers to each 
@@ -418,14 +424,16 @@ Namescheme::Namescheme(const char *fmt, ...)
             }
             if (k == this->narrefs)
             {
-                this->arrnames[k] = strndup(&fmt[i+1], j-1);
+                this->arrnames[k] = (char*)calloc(j, sizeof(char));
+                strncpy(this->arrnames[k], &fmt[i+1], j-1);
                 this->arrvals[k] = va_arg(ap, const int *);
                 this->narrefs++;
             }
         }
         else if (fmt[i] == this->delim || fmt[i] == '\0')
         {
-            this->exprstrs[ncspecs] = strndup(&fmt[n+1],i-(n+1));
+            this->exprstrs[ncspecs] = (char*)calloc(i-(n+1)+1, sizeof(char));
+            strncpy(this->exprstrs[ncspecs], &fmt[n+1], i-(n+1));
             ncspecs++;
             if (fmt[i] == '\0' ||
                 (fmt[i] == this->delim && fmt[i] == '\0'))

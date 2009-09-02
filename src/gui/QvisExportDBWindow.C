@@ -346,8 +346,7 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
             {
                 fileFormatComboBox->blockSignals(true);
                 int count = fileFormatComboBox->count();
-                for (j = count-1 ; j >= 0 ; j--)
-                    fileFormatComboBox->removeItem(j);
+                fileFormatComboBox->clear();
                 int nTypes = dbPluginInfoAtts->GetTypes().size();
                 int curItem = -1;
                 int nItems = 0;

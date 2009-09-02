@@ -37,17 +37,21 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtTecplotWriter.h                              //
+//                             avtTecplotWriter.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_Tecplot_WRITER_H
-#define AVT_Tecplot_WRITER_H
+#ifndef AVT_TECPLOT_WRITER_H
+#define AVT_TECPLOT_WRITER_H
 
 #include <avtDatabaseWriter.h>
 
 #include <string>
 #include <vector>
 #include <visitstream.h>
+
+class vtkPoints;
+class vtkPolyData;
+class vtkRectilinearGrid;
 class vtkStructuredGrid;
 class vtkUnstructuredGrid;
 
@@ -68,10 +72,12 @@ class vtkUnstructuredGrid;
 //    Jeremy Meredith, Tue Mar 27 17:03:47 EDT 2007
 //    Added numblocks (currently ignored) to the OpenFile interface.
 //
+//    Brad Whitlock, Wed Sep  2 14:16:43 PDT 2009
+//    I added methods for writing rectilinear and polydata datasets.
+//
 // ****************************************************************************
 
-class
-avtTecplotWriter : public virtual avtDatabaseWriter
+class avtTecplotWriter : public virtual avtDatabaseWriter
 {
   public:
                    avtTecplotWriter();
@@ -90,11 +96,20 @@ avtTecplotWriter : public virtual avtDatabaseWriter
     virtual void   CloseFile(void);
 
   private:
+    void           WritePolyData(vtkPolyData *, int);
+    void           WriteRectilinearMesh(vtkRectilinearGrid *, int);
     void           WriteCurvilinearMesh(vtkStructuredGrid *, int);
     void           WriteUnstructuredMesh(vtkUnstructuredGrid *, int);
+
+    void           WritePoints(vtkPoints *pts, int dim);
     void           WriteDataArrays(vtkDataSet*);
+    void           WriteVariables(const std::vector<std::string> &);
+
+    bool           ReallyHasMaterials();
+
     std::vector<std::string> variableList;
-    bool hadMaterial;
+    std::vector<std::string> materialList;
+    bool variablesWritten;
 };
 
 
