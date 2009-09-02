@@ -605,6 +605,9 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    Brad Whitlock, Thu Apr 23 11:55:41 PDT 2009
 //    Ignore any SimV plugin if we're not in the engine and not a simulation.
 //
+//    Eric Brugger, Wed Sep  2 08:06:13 PDT 2009
+//    I corrected a typo in a debug log message.
+//
 // ****************************************************************************
 
 void
@@ -708,7 +711,7 @@ PluginManager::ReadPluginInfo()
         }
     }
 
-    debug1 << "Succesfully loaded info about " 
+    debug1 << "Successfully loaded info about " 
            << ids.size() << " " << managerName.c_str() << " plugins.\n";
 
     if (pluginsWithWrongVersion.size() != 0)
