@@ -9781,7 +9781,13 @@ else
       FASTBIT_INCLUDE="-I$DEFAULT_FASTBIT_INCLUDE $FASTBIT_INCLUDE"
    fi
    if test "$DEFAULT_FASTBIT_LIB" != "" ; then
-      FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
+      if test "$UNAME" = "Darwin"; then
+         # On Darwin librt does not exist
+         FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit"
+      else
+         # At least on Linux we need librt for fastbit
+         FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
+      fi
    fi
 fi
 if test "$FASTBIT_LIB" != "" ; then
