@@ -972,6 +972,9 @@ dnl    Gunther H. Weber, Wed Jul 22 13:42:01 PDT 2009
 dnl    Link to tcmalloc_minimal instead of regular version to avoid additional
 dnl    dependencies (e.g. unwind) on 64-bit machines.   
 dnl
+dnl    Gunther H. Weber, Thu Sep  3 10:25:58 PDT 2009
+dnl    Do not try to link to librt on Darwin systems when FastBit is detected.
+dnl    It does not exist here.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2684,7 +2687,13 @@ else
       FASTBIT_INCLUDE="-I$DEFAULT_FASTBIT_INCLUDE $FASTBIT_INCLUDE"
    fi
    if test "$DEFAULT_FASTBIT_LIB" != "" ; then
-      FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
+      if test "$UNAME" = "Darwin"; then
+         # On Darwin librt does not exist
+         FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit"
+      else
+         # At least on Linux we need librt for fastbit
+         FASTBIT_LIB="-L$DEFAULT_FASTBIT_LIB -lfastbit -lrt"
+      fi
    fi
 fi
 if test "$FASTBIT_LIB" != "" ; then

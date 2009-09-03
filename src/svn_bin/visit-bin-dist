@@ -408,6 +408,11 @@
 #    I modified the logic that packages up the help files to avoid using
 #    the "-maxdepth" option to find, since it is not supported on AIX.
 #
+#    Gunther H. Weber, Thu Sep  3 10:16:24 PDT 2009
+#    Do not copy QtHelp and QtXmlPatterns, since we do not set appropriate
+#    install names in build_visit. Furthermore, QtHelp depends on libQtCLucene
+#    (at least on Macs), which we do not copy. Since we do not link to QtHelp
+#    or QtXmlPatterns, I commented out the iines copying them.
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -640,26 +645,26 @@ endif
 if ("$os" == "darwin") then
     set QtCore        = "QtCore.framework"
     set QtGui         = "QtGui.framework"
-    set QtHelp        = "QtHelp.framework"
+    #set QtHelp        = "QtHelp.framework"
     set QtNetwork     = "QtNetwork.framework"
     set QtOpenGL      = "QtOpenGL.framework"
     set QtScript      = "QtScript.framework"
     set QtSql         = "QtSql.framework"
     set QtSvg         = "QtSvg.framework"
     set QtXml         = "QtXml.framework"
-    set QtXmlPatterns = "QtXmlPatterns.framework"
+    #set QtXmlPatterns = "QtXmlPatterns.framework"
     set QtUiTools     = "libQtUiTools.a"
 else
     set QtCore        = `cd $VisItDir/lib && ls libQtCore.$SHLIB_SOEXT.?.?.?`
     set QtGui         = `cd $VisItDir/lib && ls libQtGui.$SHLIB_SOEXT.?.?.?`
-    set QtHelp        = `cd $VisItDir/lib && ls libQtHelp.$SHLIB_SOEXT.?.?.?`
+    #set QtHelp        = `cd $VisItDir/lib && ls libQtHelp.$SHLIB_SOEXT.?.?.?`
     set QtNetwork     = `cd $VisItDir/lib && ls libQtNetwork.$SHLIB_SOEXT.?.?.?`
     set QtOpenGL      = `cd $VisItDir/lib && ls libQtOpenGL.$SHLIB_SOEXT.?.?.?`
     set QtScript      = `cd $VisItDir/lib && ls libQtScript.$SHLIB_SOEXT.?.?.?`
     set QtSql         = `cd $VisItDir/lib && ls libQtSql.$SHLIB_SOEXT.?.?.?`
     set QtSvg         = `cd $VisItDir/lib && ls libQtSvg.$SHLIB_SOEXT.?.?.?`
     set QtXml         = `cd $VisItDir/lib && ls libQtXml.$SHLIB_SOEXT.?.?.?`
-    set QtXmlPatterns = `cd $VisItDir/lib && ls libQtXmlPatterns.$SHLIB_SOEXT.?.?.?`
+    #set QtXmlPatterns = `cd $VisItDir/lib && ls libQtXmlPatterns.$SHLIB_SOEXT.?.?.?`
     set QtUiTools     = "libQtUiTools.a"
 endif
 
@@ -667,7 +672,9 @@ endif
 # Check that the Qt libraries exist.
 #
 if ("$QtLibs" == "TRUE") then
-    foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
+    #foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
+    #foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
+    foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
         if (! -e $VisItDir/lib/$qlib) then
             echo " "
             echo "Error: The file $VisItDir/lib/$qlib does not exist. aborting ..."
@@ -1191,7 +1198,9 @@ endif
 #
 # Copy the Qt libraries to the distribution.
 #
-foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
+#`foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
+#foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
+foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
     if ("$os" != "darwin") then
         cp $VisItDir/lib/$qlib $libdir
         set libnoext = `echo $qlib | awk '{i=index($1,".so"); print substr($1,1,i-1)}'`

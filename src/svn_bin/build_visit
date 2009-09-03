@@ -683,6 +683,11 @@
 #     Makefile's env-make var collision check when it is being run from within
 #     build_visit.
 #
+#     Gunther H. Weber, Thu Sep  3 10:14:33 PDT 2009
+#     Change install name for Qt 4 on Darwin so that TAR-balls created with
+#     visit-bin-dist work on other machines. Added comments for necessary changes
+#     to switch to Qt 4.5.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -981,6 +986,8 @@ export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
 export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
+   #export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.5.2.tar.gz"}
+   #export QT_VERSION=${QT_VERSION:-"4.5.2"}
    export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.4.3.tar.gz"}
    export QT_VERSION=${QT_VERSION:-"4.4.3"}
 else
@@ -3013,7 +3020,7 @@ function build_qt
          "-make libs -make tools -fast -no-separate-debug-info" \
          "-no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite" \
          "${EXTRA_QT_FLAGS}"
-
+    # Need to replace the "echo yes"  with "(echo 'o'; echo 'yes')"  for Qt 4.5
     echo "yes" | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                              -platform ${QT_PLATFORM} \
                              -make libs -make tools -fast -no-separate-debug-info \
@@ -3059,6 +3066,25 @@ function build_qt
     if [[ "$OPSYS" == "AIX" ]]; then
         cd ${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/lib/
         for f in *.a; do ln -s $f ${f%\.*}.so; done
+    elif [[ "$OPSYS" == "Darwin" ]]; then
+        QtTopDir="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSql QtSvg QtXml"
+        for QtFW in $QtFrameworks; do
+            filename="$QtTopDir/lib/${QtFW}.framework/${QtFW}"
+            debugFilename="${filename}_debug"
+            oldSOName=$(otool -D $filename | tail -n -1)
+            oldDebugSOName=$(otool -D $debugFilename | tail -n -1)
+            internalFWPath=$(echo $oldSOName | sed -e 's/.*\.framework\///')
+            internalDebugFWPath=$(echo $oldDebugSOName | sed -e 's/.*\.framework\///')
+            newSOName="@executable_path/../lib/${QtFW}.framework/$internalFWPath"
+            newDebugSOName="@executable_path/../lib/${QtFW}.framework/$internalDebugFWPath"
+            install_name_tool -id $newSOName $filename
+            install_name_tool -id $newDebugSOName $debugFilename
+            for otherQtFW in $QtFrameworks; do
+                install_name_tool -change $oldSOName $newSOName $QtTopDir/lib/${otherQtFW}.framework/${otherQtFW}
+                install_name_tool -change $oldSOName $newSOName $QtTopDir/lib/${otherQtFW}.framework/${otherQtFW}_debug
+            done
+        done
     fi
     
     cd "$START_DIR"
