@@ -41,7 +41,8 @@
 // ************************************************************************* //
 
 #include <visit-config.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <qapplication.h>
 
