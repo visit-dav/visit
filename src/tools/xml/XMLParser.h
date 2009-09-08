@@ -61,10 +61,12 @@ enum ComponentTypes
     COMP_VIEWER          = 0x004,
     COMP_MDSERVER        = 0x008,
     COMP_ENGINE          = 0x010,
-    COMP_WIDGETS         = 0x020,
-    COMP_VIEWER_WIDGETS  = 0x040,
-    COMP_JAVA            = 0x080,
-    COMP_ALL             = 0x100
+    COMP_ENGINESER       = 0x020,
+    COMP_ENGINEPAR       = 0x040,
+    COMP_WIDGETS         = 0x080,
+    COMP_VIEWER_WIDGETS  = 0x100,
+    COMP_JAVA            = 0x200,
+    COMP_ALL             = 0x400
 };
 
 inline vector<QString>
@@ -202,6 +204,9 @@ ParseCharacters(const QString &buff)
 //
 //    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
 //    Added support for custom base class for derived state objects.
+//
+//    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
+//    Split custom engine libs into serial and parallel versions.
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -250,7 +255,9 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->vfiles.push_back(strings[i]);
                 if (currentFileComponents & COMP_MDSERVER)
                     currentPlugin->mfiles.push_back(strings[i]);
-                if (currentFileComponents & COMP_ENGINE)
+                if (currentFileComponents & COMP_ENGINE ||
+                    currentFileComponents & COMP_ENGINESER ||
+                    currentFileComponents & COMP_ENGINEPAR)
                     currentPlugin->efiles.push_back(strings[i]);
                 if (currentFileComponents & COMP_WIDGETS)
                     currentPlugin->wfiles.push_back(strings[i]);
@@ -268,7 +275,14 @@ class XMLParser : public QXmlDefaultHandler
                 if (currentLibComponents & COMP_MDSERVER)
                     currentPlugin->mlibs.push_back(strings[i]);
                 if (currentLibComponents & COMP_ENGINE)
-                    currentPlugin->elibs.push_back(strings[i]);
+                {
+                    currentPlugin->elibsSer.push_back(strings[i]);
+                    currentPlugin->elibsPar.push_back(strings[i]);
+                }
+                if (currentLibComponents & COMP_ENGINESER)
+                    currentPlugin->elibsSer.push_back(strings[i]);
+                if (currentLibComponents & COMP_ENGINEPAR)
+                    currentPlugin->elibsPar.push_back(strings[i]);
                 // case with no flags (libs for all components)
                 if (currentLibComponents & COMP_ALL)
                     currentPlugin->libs.push_back(strings[i]);
@@ -577,11 +591,17 @@ class XMLParser : public QXmlDefaultHandler
                         comps_current |= COMP_MDSERVER;
                         currentPlugin->custommlibs = true;
                     }
-                    else if (comps_split[i] == "E")
+                    else if (comps_split[i] == "ESer")
                     {
-                        currentPlugin->elibs.clear();
-                        comps_current |= COMP_ENGINE;
-                        currentPlugin->customelibs = true;
+                        currentPlugin->elibsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                        currentPlugin->customelibsSer = true;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->elibsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                        currentPlugin->customelibsPar = true;
                     }
                     else    
                         throw QString("invalid file '%1' for components attribute of LIBS tag").arg(comps_split[i]);

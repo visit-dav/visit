@@ -109,6 +109,9 @@
 //    Cyrus Harrison, Fri Sep 19 13:56:30 PDT 2008
 //    Added support for custom libs for gui,engine,mdserver,and viewer targets.
 //
+//    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
+//    Split custom engine libs into serial and parallel versions.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -296,12 +299,20 @@ class Plugin : public PluginBase
             WriteValues(out, efiles, indent);
             WriteCloseTag(out, "Files", indent);
         }
-        if (customelibs)
+        if (customelibsSer)
         {
             StartOpenTag(out, "LIBS", indent);
-            WriteTagAttr(out, "components", "E");
+            WriteTagAttr(out, "components", "ESer");
             FinishOpenTag(out);
-            WriteValues(out, elibs, indent);
+            WriteValues(out, elibsSer, indent);
+            WriteCloseTag(out, "LIBS", indent);
+        }
+        if (customelibsPar)
+        {
+            StartOpenTag(out, "LIBS", indent);
+            WriteTagAttr(out, "components", "EPar");
+            FinishOpenTag(out);
+            WriteValues(out, elibsPar, indent);
             WriteCloseTag(out, "LIBS", indent);
         }
         if (customwfiles)

@@ -161,10 +161,16 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->addWidget(EFiles, row,1);
     row++;
     
-    customELibs = new QCheckBox(tr("Engine Libs"), this);
-    ELibs = new QLineEdit(this);
-    topLayout->addWidget(customELibs, row, 0);
-    topLayout->addWidget(ELibs, row, 1);
+    customELibsSer = new QCheckBox(tr("Engine Libs (ser)"), this);
+    ELibsSer = new QLineEdit(this);
+    topLayout->addWidget(customELibsSer, row, 0);
+    topLayout->addWidget(ELibsSer, row, 1);
+    row++;
+
+    customELibsPar = new QCheckBox(tr("Engine Libs (par)"), this);
+    ELibsPar = new QLineEdit(this);
+    topLayout->addWidget(customELibsPar, row, 0);
+    topLayout->addWidget(ELibsPar, row, 1);
     row++;
 
     engSpecificCode = new QCheckBox(tr("Plugin has code specific to the Engine"),
@@ -202,8 +208,10 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
             this, SLOT(mlibsTextChanged(const QString&)));
     connect(EFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(efilesTextChanged(const QString&)));
-    connect(ELibs, SIGNAL(textChanged(const QString&)),
-            this, SLOT(elibsTextChanged(const QString&)));
+    connect(ELibsSer, SIGNAL(textChanged(const QString&)),
+            this, SLOT(elibsSerTextChanged(const QString&)));
+    connect(ELibsPar, SIGNAL(textChanged(const QString&)),
+            this, SLOT(elibsParTextChanged(const QString&)));
     connect(WFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(wfilesTextChanged(const QString&)));
     connect(VWFiles, SIGNAL(textChanged(const QString&)),
@@ -224,8 +232,10 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
             this, SLOT(custommlibsChanged()));
     connect(customEFiles, SIGNAL(clicked()),
             this, SLOT(customefilesChanged()));
-    connect(customELibs, SIGNAL(clicked()),
-            this, SLOT(customelibsChanged()));                            
+    connect(customELibsSer, SIGNAL(clicked()),
+            this, SLOT(customelibsSerChanged()));                            
+    connect(customELibsPar, SIGNAL(clicked()),
+            this, SLOT(customelibsParChanged()));                            
     connect(customWFiles, SIGNAL(clicked()),
             this, SLOT(customwfilesChanged()));
     connect(customVWFiles, SIGNAL(clicked()),
@@ -313,9 +323,12 @@ XMLEditMakefile::UpdateWindowContents()
         else
             EFiles->setText(JoinValues(p->defaultefiles, ' '));
         customEFiles->setChecked(p->customefiles);
-        if (p->customelibs)
-            ELibs->setText(JoinValues(p->elibs, ' '));
-        customELibs->setChecked(p->customelibs);
+        if (p->customelibsSer)
+            ELibsSer->setText(JoinValues(p->elibsSer, ' '));
+        customELibsSer->setChecked(p->customelibsSer);
+        if (p->customelibsPar)
+            ELibsPar->setText(JoinValues(p->elibsPar, ' '));
+        customELibsPar->setChecked(p->customelibsPar);
         // widgets
         if (p->customwfiles)
             WFiles->setText(JoinValues(p->wfiles, ' '));
@@ -397,8 +410,10 @@ XMLEditMakefile::UpdateWindowSensitivity()
     customMLibs->setEnabled(plugin);
     EFiles->setEnabled(plugin && xmldoc->plugin->customefiles);
     customEFiles->setEnabled(plugin);
-    ELibs->setEnabled(plugin && xmldoc->plugin->customelibs);
-    customELibs->setEnabled(plugin);
+    ELibsSer->setEnabled(plugin && xmldoc->plugin->customelibsSer);
+    customELibsSer->setEnabled(plugin);
+    ELibsPar->setEnabled(plugin && xmldoc->plugin->customelibsPar);
+    customELibsPar->setEnabled(plugin);
     WFiles->setEnabled(plugin && xmldoc->plugin->customwfiles);
     customWFiles->setEnabled(plugin);
     VWFiles->setEnabled(plugin && xmldoc->plugin->customvwfiles);
@@ -460,8 +475,10 @@ XMLEditMakefile::BlockAllSignals(bool block)
     customMLibs->blockSignals(block);
     EFiles->blockSignals(block);
     customEFiles->blockSignals(block);
-    ELibs->blockSignals(block);
-    customELibs->blockSignals(block);
+    ELibsSer->blockSignals(block);
+    customELibsSer->blockSignals(block);
+    ELibsPar->blockSignals(block);
+    customELibsPar->blockSignals(block);
     WFiles->blockSignals(block);
     customWFiles->blockSignals(block);
     VWFiles->blockSignals(block);
@@ -620,16 +637,37 @@ XMLEditMakefile::efilesTextChanged(const QString &text)
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::elibsTextChanged
+//  Method:  XMLEditMakefile::elibsSerTextChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep  8 14:57:13 EDT 2009
+//    Split into ser/par versions.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::elibsTextChanged(const QString &text)
+XMLEditMakefile::elibsSerTextChanged(const QString &text)
 {
-    xmldoc->plugin->elibs = SplitValues(text);
+    xmldoc->plugin->elibsSer = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::elibsParTextChanged
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    September 19, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Sep  8 14:57:13 EDT 2009
+//    Split into ser/par versions.
+//
+// ****************************************************************************
+void
+XMLEditMakefile::elibsParTextChanged(const QString &text)
+{
+    xmldoc->plugin->elibsPar = SplitValues(text);
 }
 
 // ****************************************************************************
@@ -772,16 +810,38 @@ XMLEditMakefile::customefilesChanged()
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customelibsChanged
+//  Method:  XMLEditMakefile::customelibsSerChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep  8 14:57:13 EDT 2009
+//    Split into ser/par versions.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::customelibsChanged()
+XMLEditMakefile::customelibsSerChanged()
 {
-    xmldoc->plugin->customelibs = customELibs->isChecked();
+    xmldoc->plugin->customelibsSer = customELibsSer->isChecked();
+    UpdateWindowContents();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::customelibsParChanged
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    September 19, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Sep  8 14:57:13 EDT 2009
+//    Split into ser/par versions.
+//
+// ****************************************************************************
+void
+XMLEditMakefile::customelibsParChanged()
+{
+    xmldoc->plugin->customelibsPar = customELibsPar->isChecked();
     UpdateWindowContents();
 }
 

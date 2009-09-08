@@ -64,7 +64,13 @@
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
-    <LIBS components="E">
+    <LIBS components="ESer">
+      $(TUVOK_LIB)
+      $(SLIVR_LIBS)
+      $(GLEW_LIBS)
+      $(GL_LIBS)
+    </LIBS>
+    <LIBS components="EPar">
       $(TUVOK_LIB)
       $(SLIVR_LIBS)
       $(GLEW_LIBS)

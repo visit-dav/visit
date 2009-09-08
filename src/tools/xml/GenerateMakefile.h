@@ -258,6 +258,9 @@
 //    Tom Fogal, Wed Jul  1 13:40:21 MDT 2009
 //    Added some export defines.
 //
+//    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
+//    Split custom engine libs into serial and parallel versions.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -486,9 +489,13 @@ class MakefileGeneratorPlugin : public Plugin
             for (size_t i=0; i<glibs.size(); i++)
                 out << glibs[i] << " ";
             out << endl;
-            out << "ENGINE_LIBS_FORCED=";
-            for (size_t i=0; i<elibs.size(); i++)
-                out << elibs[i] << " ";
+            out << "ENGINE_SER_LIBS_FORCED=";
+            for (size_t i=0; i<elibsSer.size(); i++)
+                out << elibsSer[i] << " ";
+            out << endl;
+            out << "ENGINE_PAR_LIBS_FORCED=";
+            for (size_t i=0; i<elibsPar.size(); i++)
+                out << elibsPar[i] << " ";
             out << endl;
             out << "MDSERVER_LIBS_FORCED=";
             for (size_t i=0; i<mlibs.size(); i++)
@@ -710,9 +717,13 @@ class MakefileGeneratorPlugin : public Plugin
             for (size_t i=0; i<glibs.size(); i++)
                 out << glibs[i] << " ";
             out << endl;
-            out << "ENGINE_LIBS_FORCED=";
-            for (size_t i=0; i<elibs.size(); i++)
-                out << elibs[i] << " ";
+            out << "ENGINE_SER_LIBS_FORCED=";
+            for (size_t i=0; i<elibsSer.size(); i++)
+                out << elibsSer[i] << " ";
+            out << endl;
+            out << "ENGINE_PAR_LIBS_FORCED=";
+            for (size_t i=0; i<elibsPar.size(); i++)
+                out << elibsPar[i] << " ";
             out << endl;
             out << "MDSERVER_LIBS_FORCED=";
             for (size_t i=0; i<mlibs.size(); i++)
@@ -818,9 +829,13 @@ class MakefileGeneratorPlugin : public Plugin
             for (size_t i=0; i<glibs.size(); i++)
                 out << glibs[i] << " ";
             out << endl;
-            out << "ENGINE_LIBS_FORCED=";
-            for (size_t i=0; i<elibs.size(); i++)
-                out << elibs[i] << " ";
+            out << "ENGINE_SER_LIBS_FORCED=";
+            for (size_t i=0; i<elibsSer.size(); i++)
+                out << elibsSer[i] << " ";
+            out << endl;
+            out << "ENGINE_PAR_LIBS_FORCED=";
+            for (size_t i=0; i<elibsPar.size(); i++)
+                out << elibsPar[i] << " ";
             out << endl;
             out << "MDSERVER_LIBS_FORCED=";
             for (size_t i=0; i<mlibs.size(); i++)

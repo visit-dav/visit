@@ -23,7 +23,11 @@
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
     </Files>
-    <LIBS components="E">
+    <LIBS components="ESer">
+      $(GLEW_LIBS)
+      $(GL_LIBS)
+    </LIBS>
+    <LIBS components="EPar">
       $(GLEW_LIBS)
       $(GL_LIBS)
     </LIBS>
