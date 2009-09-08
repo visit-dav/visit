@@ -72,6 +72,9 @@ class QCheckBox;
 //    Cyrus Harrison, Fri Sep 19 13:58:39 PDT 2008
 //    Added support for custom libs for gui,engine,mdserver, and viewer libs.
 //
+//    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
+//    Split custom engine libs into serial and parallel versions.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -94,7 +97,8 @@ class XMLEditMakefile : public QFrame
     void mfilesTextChanged(const QString&);
     void mlibsTextChanged(const QString&);
     void efilesTextChanged(const QString&);
-    void elibsTextChanged(const QString&);
+    void elibsSerTextChanged(const QString&);
+    void elibsParTextChanged(const QString&);
     void wfilesTextChanged(const QString&);
     void vwfilesTextChanged(const QString&);
     void customgfilesChanged();
@@ -105,7 +109,8 @@ class XMLEditMakefile : public QFrame
     void custommfilesChanged();
     void custommlibsChanged();
     void customefilesChanged();
-    void customelibsChanged();
+    void customelibsSerChanged();
+    void customelibsParChanged();
     void customwfilesChanged();
     void customvwfilesChanged();
     void mdSpecificCodeChanged();
@@ -132,8 +137,10 @@ class XMLEditMakefile : public QFrame
     QLineEdit       *VWFiles;
     QCheckBox       *customGLibs;
     QLineEdit       *GLibs;
-    QCheckBox       *customELibs;
-    QLineEdit       *ELibs;
+    QCheckBox       *customELibsSer;
+    QLineEdit       *ELibsSer;
+    QCheckBox       *customELibsPar;
+    QLineEdit       *ELibsPar;
     QCheckBox       *customMLibs;
     QLineEdit       *MLibs;
     QCheckBox       *customVLibs;

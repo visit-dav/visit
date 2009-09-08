@@ -74,6 +74,9 @@
 //    Cyrus Harrison, Fri Sep 19 13:46:16 PDT 2008
 //    Added support for custom libs for gui,engine, mdserver, viewer
 //
+//    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
+//    Split custom engine libs into serial and parallel versions.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -117,8 +120,10 @@ public:
     std::vector<QString> mlibs;      // mdserver libs
     bool customefiles;
     std::vector<QString> efiles;     // engine files
-    bool customelibs;
-    std::vector<QString> elibs;      // engine libs
+    bool customelibsSer;
+    std::vector<QString> elibsSer;      // engine libs
+    bool customelibsPar;
+    std::vector<QString> elibsPar;      // engine libs
     bool customwfiles;
     std::vector<QString> wfiles;     // widgets
     bool customvwfiles;
@@ -162,8 +167,10 @@ public:
           mlibs(),
           customefiles(false),
           efiles(),
-          customelibs(false),
-          elibs(),
+          customelibsSer(false),
+          elibsSer(),
+          customelibsPar(false),
+          elibsPar(),
           customwfiles(false),
           wfiles(),
           customvwfiles(false),

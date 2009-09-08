@@ -251,6 +251,9 @@ distclean: clean
 ## Cyrus Harrison, Fri Sep 19 14:20:32 PDT 2008
 ## Added custom libs for gui,engine,mdserver, and viewer libs.
 ##
+## Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
+## Split custom engine libs into serial and parallel versions.
+##
 $(IDSO) noidso: $(IOBJ)
 	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(IOBJ) @SHLIB_ILIBS@
 	@SHLIB_POSTPROCESS_ILIBS@
@@ -274,12 +277,12 @@ $(VDSO) novdso: $(VOBJ) $(VIEWERMOCOBJ)
 	@SHLIB_POSTPROCESS_VLIBS@
 
 $(ESERDSO) noedso_ser: $(ESEROBJ)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(ESEROBJ) $(SHLIB_FORCED) $(ENGINE_LIBS_FORCED) \
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(ESEROBJ) $(SHLIB_FORCED) $(ENGINE_SER_LIBS_FORCED) \
 		@SHLIB_ESERLIBS@
 	@SHLIB_POSTPROCESS_ESERLIBS@
 
 $(EPARDSO) noedso_par: $(EPAROBJ)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(EPAROBJ) $(SHLIB_FORCED) $(ENGINE_LIBS_FORCED)  \
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(EPAROBJ) $(SHLIB_FORCED) $(ENGINE_PAR_LIBS_FORCED)  \
 		@SHLIB_MPI_LIBS@ @SHLIB_EPARLIBS@ 
 	@SHLIB_POSTPROCESS_EPARLIBS@
 
