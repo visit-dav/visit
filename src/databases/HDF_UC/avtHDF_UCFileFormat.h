@@ -136,6 +136,7 @@ class avtHDF_UCFileFormat : public avtMTSDFileFormat
   protected:
     HDF5_FQ                           reader;
     bool                              is2D;
+    unsigned int                      coordType;
     bool                              fbIsAllowed;
     bool                              readAllData;
     std::vector<avtDataSelection_p>   selList;

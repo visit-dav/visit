@@ -254,6 +254,9 @@ class     WindowAttributes;
 //    Hank Childs, Mon Apr  6 14:05:10 PDT 2009
 //    Add support for registering named selections.
 //
+//    Brad Whitlock, Wed Sep  9 16:17:55 PDT 2009
+//    I made ReduceGeometry, CompactTree, SetCurrentExtents virtual.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -364,9 +367,9 @@ class PLOTTER_API avtPlot
 
     virtual int                TargetTopologicalDimension(void) = 0;
 
-    avtDataObject_p            ReduceGeometry(avtDataObject_p);
-    avtDataObject_p            CompactTree(avtDataObject_p);
-    avtDataObject_p            SetCurrentExtents(avtDataObject_p);
+    virtual avtDataObject_p    ReduceGeometry(avtDataObject_p);
+    virtual avtDataObject_p    CompactTree(avtDataObject_p);
+    virtual avtDataObject_p    SetCurrentExtents(avtDataObject_p);
     avtDataObject_p            SetScaleMode(avtDataObject_p,
                                             ScaleMode, ScaleMode,
                                             bool &, bool &);

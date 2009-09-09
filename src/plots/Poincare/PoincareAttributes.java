@@ -67,20 +67,17 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_SPECIFIEDLINE = 1;
     public final static int SOURCETYPE_SPECIFIEDPLANE = 2;
 
-    public final static int TERMINATIONTYPE_DISTANCE = 0;
-    public final static int TERMINATIONTYPE_TIME = 1;
-    public final static int TERMINATIONTYPE_STEPS = 2;
-    public final static int TERMINATIONTYPE_INTERSECTIONS = 3;
-
     public final static int COLORBY_ORIGINALVALUE = 0;
     public final static int COLORBY_INPUTORDER = 1;
     public final static int COLORBY_POINTINDEX = 2;
     public final static int COLORBY_PLANE = 3;
-    public final static int COLORBY_TOROIDALWINDINGORDER = 4;
-    public final static int COLORBY_TOROIDALWINDINGPOINTORDER = 5;
+    public final static int COLORBY_WINDINGORDER = 4;
+    public final static int COLORBY_WINDINGPOINTORDER = 5;
     public final static int COLORBY_TOROIDALWINDINGS = 6;
     public final static int COLORBY_POLOIDALWINDINGS = 7;
     public final static int COLORBY_SAFETYFACTOR = 8;
+    public final static int COLORBY_CONFIDENCE = 9;
+    public final static int COLORBY_RIDGELINEVARIANCE = 10;
 
     public final static int SHOWMESHTYPE_CURVES = 0;
     public final static int SHOWMESHTYPE_SURFACES = 1;
@@ -103,7 +100,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
-        termination = 10;
+        minPunctures = 10;
+        maxPunctures = 100;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -122,12 +120,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeOrigin[2] = 0;
         planeNormal = new double[3];
         planeNormal[0] = 0;
-        planeNormal[1] = 0;
-        planeNormal[2] = 1;
+        planeNormal[1] = 1;
+        planeNormal[2] = 0;
         planeUpAxis = new double[3];
         planeUpAxis[0] = 0;
-        planeUpAxis[1] = 1;
-        planeUpAxis[2] = 0;
+        planeUpAxis[1] = 0;
+        planeUpAxis[2] = 1;
         planeRadius = 1;
         pointDensity = 1;
         colorTableName = new String("Default");
@@ -137,7 +135,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lightingFlag = true;
         relTol = 0.0001;
         absTol = 1e-05;
-        terminationType = TERMINATIONTYPE_STEPS;
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
@@ -160,8 +157,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         intersectPlaneOrigin[1] = 0;
         intersectPlaneOrigin[2] = 0;
         intersectPlaneNormal = new double[3];
-        intersectPlaneNormal[0] = 1;
-        intersectPlaneNormal[1] = 0;
+        intersectPlaneNormal[0] = 0;
+        intersectPlaneNormal[1] = 1;
         intersectPlaneNormal[2] = 0;
     }
 
@@ -171,7 +168,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
-        termination = 10;
+        minPunctures = 10;
+        maxPunctures = 100;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -190,12 +188,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeOrigin[2] = 0;
         planeNormal = new double[3];
         planeNormal[0] = 0;
-        planeNormal[1] = 0;
-        planeNormal[2] = 1;
+        planeNormal[1] = 1;
+        planeNormal[2] = 0;
         planeUpAxis = new double[3];
         planeUpAxis[0] = 0;
-        planeUpAxis[1] = 1;
-        planeUpAxis[2] = 0;
+        planeUpAxis[1] = 0;
+        planeUpAxis[2] = 1;
         planeRadius = 1;
         pointDensity = 1;
         colorTableName = new String("Default");
@@ -205,7 +203,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lightingFlag = true;
         relTol = 0.0001;
         absTol = 1e-05;
-        terminationType = TERMINATIONTYPE_STEPS;
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
@@ -228,8 +225,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         intersectPlaneOrigin[1] = 0;
         intersectPlaneOrigin[2] = 0;
         intersectPlaneNormal = new double[3];
-        intersectPlaneNormal[0] = 1;
-        intersectPlaneNormal[1] = 0;
+        intersectPlaneNormal[0] = 0;
+        intersectPlaneNormal[1] = 1;
         intersectPlaneNormal[2] = 0;
     }
 
@@ -241,7 +238,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
         sourceType = obj.sourceType;
         maxStepLength = obj.maxStepLength;
-        termination = obj.termination;
+        minPunctures = obj.minPunctures;
+        maxPunctures = obj.maxPunctures;
         pointSource = new double[3];
         pointSource[0] = obj.pointSource[0];
         pointSource[1] = obj.pointSource[1];
@@ -281,7 +279,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lightingFlag = obj.lightingFlag;
         relTol = obj.relTol;
         absTol = obj.absTol;
-        terminationType = obj.terminationType;
         integrationType = obj.integrationType;
         showStreamlines = obj.showStreamlines;
         showPoints = obj.showPoints;
@@ -370,7 +367,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         // Create the return value
         return ((sourceType == obj.sourceType) &&
                 (maxStepLength == obj.maxStepLength) &&
-                (termination == obj.termination) &&
+                (minPunctures == obj.minPunctures) &&
+                (maxPunctures == obj.maxPunctures) &&
                 pointSource_equal &&
                 lineStart_equal &&
                 lineEnd_equal &&
@@ -386,7 +384,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (lightingFlag == obj.lightingFlag) &&
                 (relTol == obj.relTol) &&
                 (absTol == obj.absTol) &&
-                (terminationType == obj.terminationType) &&
                 (integrationType == obj.integrationType) &&
                 (showStreamlines == obj.showStreamlines) &&
                 (showPoints == obj.showPoints) &&
@@ -424,10 +421,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
-    public void SetTermination(double termination_)
+    public void SetMinPunctures(double minPunctures_)
     {
-        termination = termination_;
+        minPunctures = minPunctures_;
         Select(2);
+    }
+
+    public void SetMaxPunctures(double maxPunctures_)
+    {
+        maxPunctures = maxPunctures_;
+        Select(3);
     }
 
     public void SetPointSource(double[] pointSource_)
@@ -435,7 +438,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pointSource[0] = pointSource_[0];
         pointSource[1] = pointSource_[1];
         pointSource[2] = pointSource_[2];
-        Select(3);
+        Select(4);
     }
 
     public void SetPointSource(double e0, double e1, double e2)
@@ -443,7 +446,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pointSource[0] = e0;
         pointSource[1] = e1;
         pointSource[2] = e2;
-        Select(3);
+        Select(4);
     }
 
     public void SetLineStart(double[] lineStart_)
@@ -451,7 +454,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineStart[0] = lineStart_[0];
         lineStart[1] = lineStart_[1];
         lineStart[2] = lineStart_[2];
-        Select(4);
+        Select(5);
     }
 
     public void SetLineStart(double e0, double e1, double e2)
@@ -459,7 +462,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineStart[0] = e0;
         lineStart[1] = e1;
         lineStart[2] = e2;
-        Select(4);
+        Select(5);
     }
 
     public void SetLineEnd(double[] lineEnd_)
@@ -467,7 +470,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineEnd[0] = lineEnd_[0];
         lineEnd[1] = lineEnd_[1];
         lineEnd[2] = lineEnd_[2];
-        Select(5);
+        Select(6);
     }
 
     public void SetLineEnd(double e0, double e1, double e2)
@@ -475,7 +478,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineEnd[0] = e0;
         lineEnd[1] = e1;
         lineEnd[2] = e2;
-        Select(5);
+        Select(6);
     }
 
     public void SetPlaneOrigin(double[] planeOrigin_)
@@ -483,7 +486,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeOrigin[0] = planeOrigin_[0];
         planeOrigin[1] = planeOrigin_[1];
         planeOrigin[2] = planeOrigin_[2];
-        Select(6);
+        Select(7);
     }
 
     public void SetPlaneOrigin(double e0, double e1, double e2)
@@ -491,7 +494,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeOrigin[0] = e0;
         planeOrigin[1] = e1;
         planeOrigin[2] = e2;
-        Select(6);
+        Select(7);
     }
 
     public void SetPlaneNormal(double[] planeNormal_)
@@ -499,7 +502,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeNormal[0] = planeNormal_[0];
         planeNormal[1] = planeNormal_[1];
         planeNormal[2] = planeNormal_[2];
-        Select(7);
+        Select(8);
     }
 
     public void SetPlaneNormal(double e0, double e1, double e2)
@@ -507,7 +510,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeNormal[0] = e0;
         planeNormal[1] = e1;
         planeNormal[2] = e2;
-        Select(7);
+        Select(8);
     }
 
     public void SetPlaneUpAxis(double[] planeUpAxis_)
@@ -515,7 +518,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeUpAxis[0] = planeUpAxis_[0];
         planeUpAxis[1] = planeUpAxis_[1];
         planeUpAxis[2] = planeUpAxis_[2];
-        Select(8);
+        Select(9);
     }
 
     public void SetPlaneUpAxis(double e0, double e1, double e2)
@@ -523,66 +526,60 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         planeUpAxis[0] = e0;
         planeUpAxis[1] = e1;
         planeUpAxis[2] = e2;
-        Select(8);
+        Select(9);
     }
 
     public void SetPlaneRadius(double planeRadius_)
     {
         planeRadius = planeRadius_;
-        Select(9);
+        Select(10);
     }
 
     public void SetPointDensity(int pointDensity_)
     {
         pointDensity = pointDensity_;
-        Select(10);
+        Select(11);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(11);
+        Select(12);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(12);
+        Select(13);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(13);
+        Select(14);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(14);
+        Select(15);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(15);
+        Select(16);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(16);
+        Select(17);
     }
 
     public void SetAbsTol(double absTol_)
     {
         absTol = absTol_;
-        Select(17);
-    }
-
-    public void SetTerminationType(int terminationType_)
-    {
-        terminationType = terminationType_;
         Select(18);
     }
 
@@ -723,7 +720,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
-    public double         GetTermination() { return termination; }
+    public double         GetMinPunctures() { return minPunctures; }
+    public double         GetMaxPunctures() { return maxPunctures; }
     public double[]       GetPointSource() { return pointSource; }
     public double[]       GetLineStart() { return lineStart; }
     public double[]       GetLineEnd() { return lineEnd; }
@@ -739,7 +737,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetLightingFlag() { return lightingFlag; }
     public double         GetRelTol() { return relTol; }
     public double         GetAbsTol() { return absTol; }
-    public int            GetTerminationType() { return terminationType; }
     public int            GetIntegrationType() { return integrationType; }
     public boolean        GetShowStreamlines() { return showStreamlines; }
     public boolean        GetShowPoints() { return showPoints; }
@@ -768,39 +765,39 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(1, buf))
             buf.WriteDouble(maxStepLength);
         if(WriteSelect(2, buf))
-            buf.WriteDouble(termination);
+            buf.WriteDouble(minPunctures);
         if(WriteSelect(3, buf))
-            buf.WriteDoubleArray(pointSource);
+            buf.WriteDouble(maxPunctures);
         if(WriteSelect(4, buf))
-            buf.WriteDoubleArray(lineStart);
+            buf.WriteDoubleArray(pointSource);
         if(WriteSelect(5, buf))
-            buf.WriteDoubleArray(lineEnd);
+            buf.WriteDoubleArray(lineStart);
         if(WriteSelect(6, buf))
-            buf.WriteDoubleArray(planeOrigin);
+            buf.WriteDoubleArray(lineEnd);
         if(WriteSelect(7, buf))
-            buf.WriteDoubleArray(planeNormal);
+            buf.WriteDoubleArray(planeOrigin);
         if(WriteSelect(8, buf))
-            buf.WriteDoubleArray(planeUpAxis);
+            buf.WriteDoubleArray(planeNormal);
         if(WriteSelect(9, buf))
-            buf.WriteDouble(planeRadius);
+            buf.WriteDoubleArray(planeUpAxis);
         if(WriteSelect(10, buf))
-            buf.WriteInt(pointDensity);
+            buf.WriteDouble(planeRadius);
         if(WriteSelect(11, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteInt(pointDensity);
         if(WriteSelect(12, buf))
-            singleColor.Write(buf);
+            buf.WriteString(colorTableName);
         if(WriteSelect(13, buf))
-            buf.WriteBool(verboseFlag);
+            singleColor.Write(buf);
         if(WriteSelect(14, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(15, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(17, buf))
-            buf.WriteDouble(absTol);
+            buf.WriteDouble(relTol);
         if(WriteSelect(18, buf))
-            buf.WriteInt(terminationType);
+            buf.WriteDouble(absTol);
         if(WriteSelect(19, buf))
             buf.WriteInt(integrationType);
         if(WriteSelect(20, buf))
@@ -852,56 +849,56 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetMaxStepLength(buf.ReadDouble());
             break;
         case 2:
-            SetTermination(buf.ReadDouble());
+            SetMinPunctures(buf.ReadDouble());
             break;
         case 3:
-            SetPointSource(buf.ReadDoubleArray());
+            SetMaxPunctures(buf.ReadDouble());
             break;
         case 4:
-            SetLineStart(buf.ReadDoubleArray());
+            SetPointSource(buf.ReadDoubleArray());
             break;
         case 5:
-            SetLineEnd(buf.ReadDoubleArray());
+            SetLineStart(buf.ReadDoubleArray());
             break;
         case 6:
-            SetPlaneOrigin(buf.ReadDoubleArray());
+            SetLineEnd(buf.ReadDoubleArray());
             break;
         case 7:
-            SetPlaneNormal(buf.ReadDoubleArray());
+            SetPlaneOrigin(buf.ReadDoubleArray());
             break;
         case 8:
-            SetPlaneUpAxis(buf.ReadDoubleArray());
+            SetPlaneNormal(buf.ReadDoubleArray());
             break;
         case 9:
-            SetPlaneRadius(buf.ReadDouble());
+            SetPlaneUpAxis(buf.ReadDoubleArray());
             break;
         case 10:
-            SetPointDensity(buf.ReadInt());
+            SetPlaneRadius(buf.ReadDouble());
             break;
         case 11:
-            SetColorTableName(buf.ReadString());
+            SetPointDensity(buf.ReadInt());
             break;
         case 12:
-            singleColor.Read(buf);
-            Select(12);
+            SetColorTableName(buf.ReadString());
             break;
         case 13:
-            SetVerboseFlag(buf.ReadBool());
+            singleColor.Read(buf);
+            Select(13);
             break;
         case 14:
-            SetLegendFlag(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 15:
-            SetLightingFlag(buf.ReadBool());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 16:
-            SetRelTol(buf.ReadDouble());
+            SetLightingFlag(buf.ReadBool());
             break;
         case 17:
-            SetAbsTol(buf.ReadDouble());
+            SetRelTol(buf.ReadDouble());
             break;
         case 18:
-            SetTerminationType(buf.ReadInt());
+            SetAbsTol(buf.ReadDouble());
             break;
         case 19:
             SetIntegrationType(buf.ReadInt());
@@ -975,7 +972,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "SOURCETYPE_SPECIFIEDPLANE";
         str = str + "\n";
         str = str + doubleToString("maxStepLength", maxStepLength, indent) + "\n";
-        str = str + doubleToString("termination", termination, indent) + "\n";
+        str = str + doubleToString("minPunctures", minPunctures, indent) + "\n";
+        str = str + doubleToString("maxPunctures", maxPunctures, indent) + "\n";
         str = str + doubleArrayToString("pointSource", pointSource, indent) + "\n";
         str = str + doubleArrayToString("lineStart", lineStart, indent) + "\n";
         str = str + doubleArrayToString("lineEnd", lineEnd, indent) + "\n";
@@ -991,16 +989,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + doubleToString("relTol", relTol, indent) + "\n";
         str = str + doubleToString("absTol", absTol, indent) + "\n";
-        str = str + indent + "terminationType = ";
-        if(terminationType == TERMINATIONTYPE_DISTANCE)
-            str = str + "TERMINATIONTYPE_DISTANCE";
-        if(terminationType == TERMINATIONTYPE_TIME)
-            str = str + "TERMINATIONTYPE_TIME";
-        if(terminationType == TERMINATIONTYPE_STEPS)
-            str = str + "TERMINATIONTYPE_STEPS";
-        if(terminationType == TERMINATIONTYPE_INTERSECTIONS)
-            str = str + "TERMINATIONTYPE_INTERSECTIONS";
-        str = str + "\n";
         str = str + indent + "integrationType = ";
         if(integrationType == INTEGRATIONTYPE_DORMANDPRINCE)
             str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
@@ -1019,16 +1007,20 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "COLORBY_POINTINDEX";
         if(colorBy == COLORBY_PLANE)
             str = str + "COLORBY_PLANE";
-        if(colorBy == COLORBY_TOROIDALWINDINGORDER)
-            str = str + "COLORBY_TOROIDALWINDINGORDER";
-        if(colorBy == COLORBY_TOROIDALWINDINGPOINTORDER)
-            str = str + "COLORBY_TOROIDALWINDINGPOINTORDER";
+        if(colorBy == COLORBY_WINDINGORDER)
+            str = str + "COLORBY_WINDINGORDER";
+        if(colorBy == COLORBY_WINDINGPOINTORDER)
+            str = str + "COLORBY_WINDINGPOINTORDER";
         if(colorBy == COLORBY_TOROIDALWINDINGS)
             str = str + "COLORBY_TOROIDALWINDINGS";
         if(colorBy == COLORBY_POLOIDALWINDINGS)
             str = str + "COLORBY_POLOIDALWINDINGS";
         if(colorBy == COLORBY_SAFETYFACTOR)
             str = str + "COLORBY_SAFETYFACTOR";
+        if(colorBy == COLORBY_CONFIDENCE)
+            str = str + "COLORBY_CONFIDENCE";
+        if(colorBy == COLORBY_RIDGELINEVARIANCE)
+            str = str + "COLORBY_RIDGELINEVARIANCE";
         str = str + "\n";
         str = str + intToString("maxToroidalWinding", maxToroidalWinding, indent) + "\n";
         str = str + intToString("overrideToroidalWinding", overrideToroidalWinding, indent) + "\n";
@@ -1070,7 +1062,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     // Attributes
     private int            sourceType;
     private double         maxStepLength;
-    private double         termination;
+    private double         minPunctures;
+    private double         maxPunctures;
     private double[]       pointSource;
     private double[]       lineStart;
     private double[]       lineEnd;
@@ -1086,7 +1079,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        lightingFlag;
     private double         relTol;
     private double         absTol;
-    private int            terminationType;
     private int            integrationType;
     private boolean        showStreamlines;
     private boolean        showPoints;

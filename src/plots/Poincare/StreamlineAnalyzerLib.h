@@ -75,6 +75,12 @@ struct FieldlineInfo {
   float nnodes;
 
   float confidence;
+  float ridgelineVariance;
+  unsigned int ridgelinePeriod;
+
+  bool complete;
+
+  unsigned int nPuncturesNeeded;
 };
 
 namespace FusionPSE {
@@ -118,20 +124,21 @@ public:
                             unsigned int poloidalWinding,
                             unsigned int offset = 1 );
 
-  void poloidalWindingCheck( vector< Point > &points,
-                   vector< unsigned int > &poloidalWindingset,
-                   unsigned int maxToroidalToroidalWinding,
-                   unsigned int &bestToroidalWinding,
-                   unsigned int &bestPoloidalWinding,
-                   double &bestHitrate,
-                   unsigned int &nextBestToroidalWinding,
-                   unsigned int &nextBestPoloidalWinding,
-                   double &nextBestHitrate,
-                   unsigned int level );
+  void poloidalWindingCheck( vector< unsigned int > &poloidalWindingset,
+			     vector< pair < pair<unsigned int, unsigned int >,
+			                    double > > &windingSetList );
+
+  unsigned int
+  poloidalWindingStats( unsigned int base_period,
+			vector< Point >& ridgelinePoints,
+			vector< Point >& poloidalWindingPoints,
+			vector< pair< unsigned int,
+		                      double > >& ridgelineSetList );
 
   double
-  poloidalWindingStats( vector< Point >& poloidalWinding_points,
-              unsigned int poloidalWinding );
+  calculatePeriodVariance( vector< Point >& poloidalWinding_points,
+			   unsigned int poloidalWinding,
+			   bool zCheckOnly = false );
 
   bool
   rationalCheck( vector< Point >& points,
@@ -144,31 +151,14 @@ public:
   islandChecks( vector< Point >& points,
                 unsigned int toroidalWinding,
                 unsigned int &islands,
-                float &avenode );
-
-  bool
-  basicChecks( vector< Point >& points,
-               Vector & globalCentroid,
-               unsigned int &toroidalWinding,
-               unsigned int &poloidalWinding,
-               unsigned int &skip,
-               unsigned int &type,
-               unsigned int &islands,
-               float &avenode,
-               bool &groupCCW,
-               unsigned int &toroidalWindingNextBest );
-
+                float &avenode,
+		bool &complete );
 
   FieldlineInfo 
   fieldlineProperties( vector< Point > &ptList,
                        unsigned int override,
                        unsigned int maxToroidalWinding,
                        float hitrate );
-
-  FieldlineInfo 
-  fieldlineProperties( vector< Point > &points,
-                       unsigned int maxToroidalToroidalWinding );
-
 
   unsigned int
   islandProperties( vector< Point > &points,

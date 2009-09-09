@@ -50,6 +50,7 @@ class     avtContourFilter;
 class     avtFeatureEdgesFilter;
 class     avtLevelsLegend;
 class     avtLevelsMapper;
+class     avtLineToPolylineFilter;
 class     avtLookupTable;
 
 // ****************************************************************************
@@ -114,10 +115,12 @@ class     avtLookupTable;
 //    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
 //    other processor's portion of image space.
 //
+//    Brad Whitlock, Wed Sep  9 16:23:12 PDT 2009
+//    Override SetCurrentExtents to add in the avtLineToPolylineFilter.
+//
 // ****************************************************************************
 
-class
-avtContourPlot : public avtSurfaceDataPlot
+class avtContourPlot : public avtSurfaceDataPlot
 {
   public:
                     avtContourPlot();
@@ -139,8 +142,11 @@ avtContourPlot : public avtSurfaceDataPlot
     virtual bool    NeedZBufferToCompositeEvenIn2D(void);
 
   protected:
+     virtual avtDataObject_p SetCurrentExtents(avtDataObject_p);
+
      avtContourFilter        *contourFilter;
      avtFeatureEdgesFilter   *edgeFilter;
+     avtLineToPolylineFilter *lineFilter;
      avtLevelsMapper         *levelsMapper;
      avtLevelsLegend         *levelsLegend;
      avtLegend_p              levLegendRefPtr;

@@ -81,65 +81,27 @@ PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttribut
 }
 
 //
-// Enum conversion methods for PoincareAttributes::TerminationType
-//
-
-static const char *TerminationType_strings[] = {
-"Distance", "Time", "Steps", 
-"Intersections"};
-
-std::string
-PoincareAttributes::TerminationType_ToString(PoincareAttributes::TerminationType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
-    return TerminationType_strings[index];
-}
-
-std::string
-PoincareAttributes::TerminationType_ToString(int t)
-{
-    int index = (t < 0 || t >= 4) ? 0 : t;
-    return TerminationType_strings[index];
-}
-
-bool
-PoincareAttributes::TerminationType_FromString(const std::string &s, PoincareAttributes::TerminationType &val)
-{
-    val = PoincareAttributes::Distance;
-    for(int i = 0; i < 4; ++i)
-    {
-        if(s == TerminationType_strings[i])
-        {
-            val = (TerminationType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for PoincareAttributes::ColorBy
 //
 
 static const char *ColorBy_strings[] = {
 "OriginalValue", "InputOrder", "PointIndex", 
-"Plane", "ToroidalWindingOrder", "ToroidalWindingPointOrder", 
-"ToroidalWindings", "PoloidalWindings", "SafetyFactor"
-};
+"Plane", "WindingOrder", "WindingPointOrder", 
+"ToroidalWindings", "PoloidalWindings", "SafetyFactor", 
+"Confidence", "RidgelineVariance"};
 
 std::string
 PoincareAttributes::ColorBy_ToString(PoincareAttributes::ColorBy t)
 {
     int index = int(t);
-    if(index < 0 || index >= 9) index = 0;
+    if(index < 0 || index >= 11) index = 0;
     return ColorBy_strings[index];
 }
 
 std::string
 PoincareAttributes::ColorBy_ToString(int t)
 {
-    int index = (t < 0 || t >= 9) ? 0 : t;
+    int index = (t < 0 || t >= 11) ? 0 : t;
     return ColorBy_strings[index];
 }
 
@@ -147,7 +109,7 @@ bool
 PoincareAttributes::ColorBy_FromString(const std::string &s, PoincareAttributes::ColorBy &val)
 {
     val = PoincareAttributes::OriginalValue;
-    for(int i = 0; i < 9; ++i)
+    for(int i = 0; i < 11; ++i)
     {
         if(s == ColorBy_strings[i])
         {
@@ -308,7 +270,7 @@ PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttr
 }
 
 // Type map format string
-const char *PoincareAttributes::TypeMapFormatString = "iddDDDDDDdisabbbddiibbiiiidiibiddbbiDD";
+const char *PoincareAttributes::TypeMapFormatString = "idddDDDDDDdisabbbddibbiiiidiibiddbbiDD";
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
@@ -331,7 +293,8 @@ PoincareAttributes::PoincareAttributes() :
 {
     sourceType = SpecifiedPoint;
     maxStepLength = 0.1;
-    termination = 10;
+    minPunctures = 10;
+    maxPunctures = 100;
     pointSource[0] = 0;
     pointSource[1] = 0;
     pointSource[2] = 0;
@@ -345,11 +308,11 @@ PoincareAttributes::PoincareAttributes() :
     planeOrigin[1] = 0;
     planeOrigin[2] = 0;
     planeNormal[0] = 0;
-    planeNormal[1] = 0;
-    planeNormal[2] = 1;
+    planeNormal[1] = 1;
+    planeNormal[2] = 0;
     planeUpAxis[0] = 0;
-    planeUpAxis[1] = 1;
-    planeUpAxis[2] = 0;
+    planeUpAxis[1] = 0;
+    planeUpAxis[2] = 1;
     planeRadius = 1;
     pointDensity = 1;
     verboseFlag = true;
@@ -357,7 +320,6 @@ PoincareAttributes::PoincareAttributes() :
     lightingFlag = true;
     relTol = 0.0001;
     absTol = 1e-05;
-    terminationType = Steps;
     integrationType = AdamsBashforth;
     showStreamlines = false;
     showPoints = false;
@@ -378,8 +340,8 @@ PoincareAttributes::PoincareAttributes() :
     intersectPlaneOrigin[0] = 0;
     intersectPlaneOrigin[1] = 0;
     intersectPlaneOrigin[2] = 0;
-    intersectPlaneNormal[0] = 1;
-    intersectPlaneNormal[1] = 0;
+    intersectPlaneNormal[0] = 0;
+    intersectPlaneNormal[1] = 1;
     intersectPlaneNormal[2] = 0;
 }
 
@@ -403,7 +365,8 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
 {
     sourceType = obj.sourceType;
     maxStepLength = obj.maxStepLength;
-    termination = obj.termination;
+    minPunctures = obj.minPunctures;
+    maxPunctures = obj.maxPunctures;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
@@ -437,7 +400,6 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     lightingFlag = obj.lightingFlag;
     relTol = obj.relTol;
     absTol = obj.absTol;
-    terminationType = obj.terminationType;
     integrationType = obj.integrationType;
     showStreamlines = obj.showStreamlines;
     showPoints = obj.showPoints;
@@ -508,7 +470,8 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
     if (this == &obj) return *this;
     sourceType = obj.sourceType;
     maxStepLength = obj.maxStepLength;
-    termination = obj.termination;
+    minPunctures = obj.minPunctures;
+    maxPunctures = obj.maxPunctures;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
@@ -542,7 +505,6 @@ PoincareAttributes::operator = (const PoincareAttributes &obj)
     lightingFlag = obj.lightingFlag;
     relTol = obj.relTol;
     absTol = obj.absTol;
-    terminationType = obj.terminationType;
     integrationType = obj.integrationType;
     showStreamlines = obj.showStreamlines;
     showPoints = obj.showPoints;
@@ -634,7 +596,8 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
     // Create the return value
     return ((sourceType == obj.sourceType) &&
             (maxStepLength == obj.maxStepLength) &&
-            (termination == obj.termination) &&
+            (minPunctures == obj.minPunctures) &&
+            (maxPunctures == obj.maxPunctures) &&
             pointSource_equal &&
             lineStart_equal &&
             lineEnd_equal &&
@@ -650,7 +613,6 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (lightingFlag == obj.lightingFlag) &&
             (relTol == obj.relTol) &&
             (absTol == obj.absTol) &&
-            (terminationType == obj.terminationType) &&
             (integrationType == obj.integrationType) &&
             (showStreamlines == obj.showStreamlines) &&
             (showPoints == obj.showPoints) &&
@@ -856,7 +818,8 @@ PoincareAttributes::SelectAll()
 {
     Select(ID_sourceType,              (void *)&sourceType);
     Select(ID_maxStepLength,           (void *)&maxStepLength);
-    Select(ID_termination,             (void *)&termination);
+    Select(ID_minPunctures,            (void *)&minPunctures);
+    Select(ID_maxPunctures,            (void *)&maxPunctures);
     Select(ID_pointSource,             (void *)pointSource, 3);
     Select(ID_lineStart,               (void *)lineStart, 3);
     Select(ID_lineEnd,                 (void *)lineEnd, 3);
@@ -872,7 +835,6 @@ PoincareAttributes::SelectAll()
     Select(ID_lightingFlag,            (void *)&lightingFlag);
     Select(ID_relTol,                  (void *)&relTol);
     Select(ID_absTol,                  (void *)&absTol);
-    Select(ID_terminationType,         (void *)&terminationType);
     Select(ID_integrationType,         (void *)&integrationType);
     Select(ID_showStreamlines,         (void *)&showStreamlines);
     Select(ID_showPoints,              (void *)&showPoints);
@@ -936,10 +898,16 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("maxStepLength", maxStepLength));
     }
 
-    if(completeSave || !FieldsEqual(ID_termination, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_minPunctures, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("termination", termination));
+        node->AddNode(new DataNode("minPunctures", minPunctures));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxPunctures, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxPunctures", maxPunctures));
     }
 
     if(completeSave || !FieldsEqual(ID_pointSource, &defaultObject))
@@ -1032,12 +1000,6 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("absTol", absTol));
-    }
-
-    if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("terminationType", TerminationType_ToString(terminationType)));
     }
 
     if(completeSave || !FieldsEqual(ID_integrationType, &defaultObject))
@@ -1208,8 +1170,10 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("maxStepLength")) != 0)
         SetMaxStepLength(node->AsDouble());
-    if((node = searchNode->GetNode("termination")) != 0)
-        SetTermination(node->AsDouble());
+    if((node = searchNode->GetNode("minPunctures")) != 0)
+        SetMinPunctures(node->AsDouble());
+    if((node = searchNode->GetNode("maxPunctures")) != 0)
+        SetMaxPunctures(node->AsDouble());
     if((node = searchNode->GetNode("pointSource")) != 0)
         SetPointSource(node->AsDoubleArray());
     if((node = searchNode->GetNode("lineStart")) != 0)
@@ -1240,22 +1204,6 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetRelTol(node->AsDouble());
     if((node = searchNode->GetNode("absTol")) != 0)
         SetAbsTol(node->AsDouble());
-    if((node = searchNode->GetNode("terminationType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
-                SetTerminationType(TerminationType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            TerminationType value;
-            if(TerminationType_FromString(node->AsString(), value))
-                SetTerminationType(value);
-        }
-    }
     if((node = searchNode->GetNode("integrationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1284,7 +1232,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 9)
+            if(ival >= 0 && ival < 11)
                 SetColorBy(ColorBy(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1385,10 +1333,17 @@ PoincareAttributes::SetMaxStepLength(double maxStepLength_)
 }
 
 void
-PoincareAttributes::SetTermination(double termination_)
+PoincareAttributes::SetMinPunctures(double minPunctures_)
 {
-    termination = termination_;
-    Select(ID_termination, (void *)&termination);
+    minPunctures = minPunctures_;
+    Select(ID_minPunctures, (void *)&minPunctures);
+}
+
+void
+PoincareAttributes::SetMaxPunctures(double maxPunctures_)
+{
+    maxPunctures = maxPunctures_;
+    Select(ID_maxPunctures, (void *)&maxPunctures);
 }
 
 void
@@ -1506,13 +1461,6 @@ PoincareAttributes::SetAbsTol(double absTol_)
 {
     absTol = absTol_;
     Select(ID_absTol, (void *)&absTol);
-}
-
-void
-PoincareAttributes::SetTerminationType(PoincareAttributes::TerminationType terminationType_)
-{
-    terminationType = terminationType_;
-    Select(ID_terminationType, (void *)&terminationType);
 }
 
 void
@@ -1669,9 +1617,15 @@ PoincareAttributes::GetMaxStepLength() const
 }
 
 double
-PoincareAttributes::GetTermination() const
+PoincareAttributes::GetMinPunctures() const
 {
-    return termination;
+    return minPunctures;
+}
+
+double
+PoincareAttributes::GetMaxPunctures() const
+{
+    return maxPunctures;
 }
 
 const double *
@@ -1810,12 +1764,6 @@ double
 PoincareAttributes::GetAbsTol() const
 {
     return absTol;
-}
-
-PoincareAttributes::TerminationType
-PoincareAttributes::GetTerminationType() const
-{
-    return TerminationType(terminationType);
 }
 
 PoincareAttributes::IntegrationType
@@ -2034,7 +1982,8 @@ PoincareAttributes::GetFieldName(int index) const
     {
     case ID_sourceType:              return "sourceType";
     case ID_maxStepLength:           return "maxStepLength";
-    case ID_termination:             return "termination";
+    case ID_minPunctures:            return "minPunctures";
+    case ID_maxPunctures:            return "maxPunctures";
     case ID_pointSource:             return "pointSource";
     case ID_lineStart:               return "lineStart";
     case ID_lineEnd:                 return "lineEnd";
@@ -2050,7 +1999,6 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_lightingFlag:            return "lightingFlag";
     case ID_relTol:                  return "relTol";
     case ID_absTol:                  return "absTol";
-    case ID_terminationType:         return "terminationType";
     case ID_integrationType:         return "integrationType";
     case ID_showStreamlines:         return "showStreamlines";
     case ID_showPoints:              return "showPoints";
@@ -2096,7 +2044,8 @@ PoincareAttributes::GetFieldType(int index) const
     {
     case ID_sourceType:              return FieldType_enum;
     case ID_maxStepLength:           return FieldType_double;
-    case ID_termination:             return FieldType_double;
+    case ID_minPunctures:            return FieldType_double;
+    case ID_maxPunctures:            return FieldType_double;
     case ID_pointSource:             return FieldType_doubleArray;
     case ID_lineStart:               return FieldType_doubleArray;
     case ID_lineEnd:                 return FieldType_doubleArray;
@@ -2112,7 +2061,6 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_lightingFlag:            return FieldType_bool;
     case ID_relTol:                  return FieldType_double;
     case ID_absTol:                  return FieldType_double;
-    case ID_terminationType:         return FieldType_enum;
     case ID_integrationType:         return FieldType_enum;
     case ID_showStreamlines:         return FieldType_bool;
     case ID_showPoints:              return FieldType_bool;
@@ -2158,7 +2106,8 @@ PoincareAttributes::GetFieldTypeName(int index) const
     {
     case ID_sourceType:              return "enum";
     case ID_maxStepLength:           return "double";
-    case ID_termination:             return "double";
+    case ID_minPunctures:            return "double";
+    case ID_maxPunctures:            return "double";
     case ID_pointSource:             return "doubleArray";
     case ID_lineStart:               return "doubleArray";
     case ID_lineEnd:                 return "doubleArray";
@@ -2174,7 +2123,6 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_lightingFlag:            return "bool";
     case ID_relTol:                  return "double";
     case ID_absTol:                  return "double";
-    case ID_terminationType:         return "enum";
     case ID_integrationType:         return "enum";
     case ID_showStreamlines:         return "bool";
     case ID_showPoints:              return "bool";
@@ -2230,9 +2178,14 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (maxStepLength == obj.maxStepLength);
         }
         break;
-    case ID_termination:
+    case ID_minPunctures:
         {  // new scope
-        retval = (termination == obj.termination);
+        retval = (minPunctures == obj.minPunctures);
+        }
+        break;
+    case ID_maxPunctures:
+        {  // new scope
+        retval = (maxPunctures == obj.maxPunctures);
         }
         break;
     case ID_pointSource:
@@ -2338,11 +2291,6 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_absTol:
         {  // new scope
         retval = (absTol == obj.absTol);
-        }
-        break;
-    case ID_terminationType:
-        {  // new scope
-        retval = (terminationType == obj.terminationType);
         }
         break;
     case ID_integrationType:
@@ -2517,9 +2465,6 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
                                 POINT_DIFFERS(planeNormal, obj.planeNormal) ||
                                 POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
                                 planeRadius != obj.planeRadius));
-    bool intPlaneDiffers = ((terminationType == Intersections) &&
-                            (POINT_DIFFERS(intersectPlaneOrigin, obj.intersectPlaneOrigin) ||
-                             POINT_DIFFERS(intersectPlaneNormal, obj.intersectPlaneNormal)));
 
     // Other things need to be true before we start paying attention to
     // point density.
@@ -2530,8 +2475,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     bool radiusMatters = (planeRadius != obj.planeRadius);
 
     return (sourceType != obj.sourceType) ||
-           (termination != obj.termination) ||
-           (terminationType != obj.terminationType) ||
+           (minPunctures != obj.minPunctures) ||
+           (maxPunctures != obj.maxPunctures) ||
            (integrationType != obj.integrationType) ||
            (maxStepLength != obj.maxStepLength) ||
            (relTol != obj.relTol) ||
@@ -2539,7 +2484,6 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
-           intPlaneDiffers ||
            densityMatters ||
            radiusMatters;
 }

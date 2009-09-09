@@ -94,6 +94,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetShowCurves( unsigned int val );
     void SetAdjustPlane( int val );
     void SetClipPlanes( vector< double > planeAngles );
+    void SetMaxPunctures( double punctures );
 
   protected:
     // Streamline overides.
@@ -127,6 +128,15 @@ class avtPoincareFilter : public avtStreamlineFilter
                             unsigned int color,
                             double color_value);
 
+  virtual void loadPoints( avtDataTree *dt,
+			   vector < Point  > &nodes,
+			   unsigned int period,
+			   unsigned int nnodes,
+			   unsigned int islands,
+			   unsigned int poloidalWindings,
+			   unsigned int color,
+			   double color_value );
+
     // Poincare filter methods.
     bool                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
@@ -135,7 +145,7 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     FusionPSE::FieldlineLib FLlib;         
 
-    std::vector< double >     planes;
+    std::vector< double > planes;
 
     int override;
     int maxToroidalWinding;
@@ -147,6 +157,8 @@ class avtPoincareFilter : public avtStreamlineFilter
     unsigned int colorBy;
     bool is_curvemesh;
     int adjust_plane;
+
+    double maxPunctures;
 
     class SLHelper
     {

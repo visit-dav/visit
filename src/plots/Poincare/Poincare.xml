@@ -12,22 +12,18 @@
         SpecifiedLine
         SpecifiedPlane
       </Enum>
-      <Enum name="TerminationType">
-        Distance
-        Time
-        Steps
-        Intersections
-      </Enum>
       <Enum name="ColorBy">
         OriginalValue
         InputOrder
         PointIndex
         Plane
-        ToroidalWindingOrder
-        ToroidalWindingPointOrder
+        WindingOrder
+        WindingPointOrder
         ToroidalWindings
         PoloidalWindings
         SafetyFactor
+	Confidence
+	RidgelineVariance
       </Enum>
       <Enum name="ShowMeshType">
         Curves
@@ -53,8 +49,11 @@
       <Field name="maxStepLength" label="maximum step length" type="double">
         0.100000
       </Field>
-      <Field name="termination" label="Termination" type="double">
+      <Field name="minPunctures" label="Minimum number of Punctures" type="double">
         10.000000
+      </Field>
+      <Field name="maxPunctures" label="Maximum number of Punctures" type="double">
+        100.000000
       </Field>
       <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
         0.000000
@@ -78,13 +77,13 @@
       </Field>
       <Field name="planeNormal" label="Plane Source Normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
-        0.000000
         1.000000
+        0.000000
       </Field>
       <Field name="planeUpAxis" label="Plane Source Up Axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
-        1.000000
         0.000000
+        1.000000
       </Field>
       <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
         1.000000
@@ -115,9 +114,6 @@
       </Field>
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
-      </Field>
-      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
-        Steps
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         AdamsBashforth
@@ -176,8 +172,8 @@
         0.000000
       </Field>
       <Field name="intersectPlaneNormal" label="intersectPlaneNormal" type="doubleArray" length="3">
-        1.000000
         0.000000
+        1.000000
         0.000000
       </Field>
       <Function name="CopyAttributes" user="false" member="true">

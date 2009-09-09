@@ -337,15 +337,19 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
                                            10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
-    if (atts.GetTerminationType() == PoincareAttributes::Distance)
-        poincareFilter->SetTermination(STREAMLINE_TERMINATE_DISTANCE, atts.GetTermination());
-    else if (atts.GetTerminationType() == PoincareAttributes::Time)
-        poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
-    else if (atts.GetTerminationType() == PoincareAttributes::Steps)
-        poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEPS, atts.GetTermination());
-    else if (atts.GetTerminationType() == PoincareAttributes::Intersections)
+
+//     if (atts.GetTerminationType() == PoincareAttributes::Distance)
+//         poincareFilter->SetTermination(STREAMLINE_TERMINATE_DISTANCE, atts.GetTermination());
+//     else if (atts.GetTerminationType() == PoincareAttributes::Time)
+//         poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
+//     else if (atts.GetTerminationType() == PoincareAttributes::Steps)
+//         poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEPS, atts.GetTermination());
+//     else if (atts.GetTerminationType() == PoincareAttributes::Intersections)
     {
-        poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS, 2.0*atts.GetTermination());
+        poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
+				       atts.GetMinPunctures());
+
+        poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
         
         vtkPlane *intPlane = vtkPlane::New();
         intPlane->SetOrigin(atts.GetIntersectPlaneOrigin()[0],
@@ -404,7 +408,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     unsigned int nplanes = atts.GetNumberPlanes();
 
     for( unsigned int i=0; i<nplanes; i++ )
-        planes.push_back(2.0 * M_PI * (double) i / (double) nplanes );
+        planes.push_back(2.0 * M_PI * (double) i / (double) nplanes - M_PI/2.0);
 
     poincareFilter->SetClipPlanes( planes );
 #endif

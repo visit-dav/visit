@@ -154,23 +154,24 @@ QvisPoincarePlotWindow::CreateWindowContents()
     tabs->addTab(streamlineTab, "Streamlines");
     row = 0;
 
-    terminationLabel = new QLabel(tr("Termination Criterion"), streamlineTab, "terminationLabel");
-    streamlineLayout->addWidget(terminationLabel,row,0);
+    minPuncturesLabel =
+      new QLabel(tr("Minimum Punctures"), streamlineTab, "minPunctureLabel");
+    streamlineLayout->addWidget(minPuncturesLabel,row,0);
+
+    minPunctures = new QLineEdit(streamlineTab, "puncturesMin");
+    connect(minPunctures, SIGNAL(returnPressed()),
+            this, SLOT(minPuncturesProcessText()));
+    streamlineLayout->addWidget(minPunctures,row,1);
     row++;
 
-    terminationType = new QComboBox(streamlineTab, "terminationType");
-    terminationType->insertItem(tr("Distance"));
-    terminationType->insertItem(tr("Time"));
-    terminationType->insertItem(tr("Number of Steps"));
-    terminationType->insertItem(tr("Number of Punctures"));
-    connect(terminationType, SIGNAL(activated(int)),
-            this, SLOT(terminationTypeChanged(int)));
-    streamlineLayout->addWidget(terminationType, row,0);    
+    maxPuncturesLabel =
+      new QLabel(tr("Maximum Punctures"), streamlineTab, "maxPunctureLabel");
+    streamlineLayout->addWidget(maxPuncturesLabel,row,0);
 
-    termination = new QLineEdit(streamlineTab, "termination");
-    connect(termination, SIGNAL(returnPressed()),
-            this, SLOT(terminationProcessText()));
-    streamlineLayout->addWidget(termination,row,1);
+    maxPunctures = new QLineEdit(streamlineTab, "puncturesMax");
+    connect(maxPunctures, SIGNAL(returnPressed()),
+            this, SLOT(maxPuncturesProcessText()));
+    streamlineLayout->addWidget(maxPunctures,row,1);
     row++;
 
     // Create the source type combo box.
@@ -482,11 +483,13 @@ QvisPoincarePlotWindow::CreateWindowContents()
     ColorBy->insertItem(tr("InputOrder"));
     ColorBy->insertItem(tr("PointIndex"));
     ColorBy->insertItem(tr("Plane"));
-    ColorBy->insertItem(tr("ToroidalWindingOrder"));
-    ColorBy->insertItem(tr("ToroidalWindingPointOrder"));
+    ColorBy->insertItem(tr("WindingOrder"));
+    ColorBy->insertItem(tr("WindingPointOrder"));
     ColorBy->insertItem(tr("ToroidalWindings"));
     ColorBy->insertItem(tr("PoloidalWindings"));
     ColorBy->insertItem(tr("SafetyFactor"));
+    ColorBy->insertItem(tr("Confidence"));
+    ColorBy->insertItem(tr("RidgelineVariance"));
     connect(ColorBy, SIGNAL(activated(int)),
             this, SLOT(colorByChanged(int)));
     colorGLayout->addWidget(ColorBy,2,1);
@@ -690,11 +693,17 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             maxStepLength->setText(temp);
             maxStepLength->blockSignals(false);
             break;
-          case PoincareAttributes::ID_termination:
-            termination->blockSignals(true);
-            temp.setNum(atts->GetTermination());
-            termination->setText(temp);
-            termination->blockSignals(false);
+          case PoincareAttributes::ID_minPunctures:
+            minPunctures->blockSignals(true);
+            temp.setNum(atts->GetMinPunctures());
+            minPunctures->setText(temp);
+            minPunctures->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_maxPunctures:
+            maxPunctures->blockSignals(true);
+            temp.setNum(atts->GetMaxPunctures());
+            maxPunctures->setText(temp);
+            maxPunctures->blockSignals(false);
             break;
           case PoincareAttributes::ID_pointSource:
             dptr = atts->GetPointSource();
@@ -783,20 +792,6 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetAbsTol());
             absTol->setText(temp);
             absTol->blockSignals(false);
-            break;
-          case PoincareAttributes::ID_terminationType:
-            /*
-            {
-                bool intersectOn = atts->GetTerminationType() == PoincareAttributes::Intersections;
-                intPlnLocation->setEnabled(intersectOn);
-                intPlnLocationLabel->setEnabled(intersectOn);
-                intPlnNormal->setEnabled(intersectOn);
-                intPlnNormalLabel->setEnabled(intersectOn);
-            }
-            */
-            terminationType->blockSignals(true);
-            terminationType->setCurrentItem(atts->GetTerminationType());
-            terminationType->blockSignals(false);
             break;
           case PoincareAttributes::ID_intersectPlaneOrigin:
             /*
@@ -959,25 +954,47 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do termination
-    if(which_widget == PoincareAttributes::ID_termination || doAll)
+    // Do minPunctures
+    if(which_widget == PoincareAttributes::ID_minPunctures || doAll)
     {
-        temp = termination->displayText().simplifyWhiteSpace();
+        temp = minPunctures->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
             double val = temp.toDouble(&okay);
             if(okay)
-                atts->SetTermination(val);
+                atts->SetMinPunctures(val);
         }
 
         if(!okay)
         {
-            msg = tr("The value of termination was invalid. "
+            msg = tr("The value of minPunctures was invalid. "
                      "Resetting to the last good value of %1.").
-                  arg(atts->GetTermination());
+                  arg(atts->GetMinPunctures());
             Message(msg);
-            atts->SetTermination(atts->GetTermination());
+            atts->SetMinPunctures(atts->GetMinPunctures());
+        }
+    }
+
+    // Do maxPunctures
+    if(which_widget == PoincareAttributes::ID_maxPunctures || doAll)
+    {
+        temp = maxPunctures->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            if(okay)
+                atts->SetMaxPunctures(val);
+        }
+
+        if(!okay)
+        {
+            msg = tr("The value of maxPunctures was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxPunctures());
+            Message(msg);
+            atts->SetMaxPunctures(atts->GetMaxPunctures());
         }
     }
 
@@ -1517,19 +1534,20 @@ QvisPoincarePlotWindow::sourceTypeChanged(int val)
 
 
 void
-QvisPoincarePlotWindow::maxStepLengthProcessText()
+QvisPoincarePlotWindow::minPuncturesProcessText()
 {
-    GetCurrentValues(PoincareAttributes::ID_maxStepLength);
+    GetCurrentValues(PoincareAttributes::ID_minPunctures);
     Apply();
 }
 
 
 void
-QvisPoincarePlotWindow::terminationProcessText()
+QvisPoincarePlotWindow::maxPuncturesProcessText()
 {
-    GetCurrentValues(PoincareAttributes::ID_termination);
+    GetCurrentValues(PoincareAttributes::ID_maxPunctures);
     Apply();
 }
+
 
 
 void
@@ -1668,18 +1686,6 @@ QvisPoincarePlotWindow::absTolProcessText()
 {
     GetCurrentValues(PoincareAttributes::ID_absTol);
     Apply();
-}
-
-
-void
-QvisPoincarePlotWindow::terminationTypeChanged(int val)
-{
-    if(val != atts->GetTerminationType())
-    {
-        atts->SetTerminationType(PoincareAttributes::TerminationType(val));
-        //SetUpdate(false);
-        Apply();
-    }
 }
 
 
