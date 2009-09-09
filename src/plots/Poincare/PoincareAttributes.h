@@ -66,24 +66,19 @@ public:
         SpecifiedLine,
         SpecifiedPlane
     };
-    enum TerminationType
-    {
-        Distance,
-        Time,
-        Steps,
-        Intersections
-    };
     enum ColorBy
     {
         OriginalValue,
         InputOrder,
         PointIndex,
         Plane,
-        ToroidalWindingOrder,
-        ToroidalWindingPointOrder,
+        WindingOrder,
+        WindingPointOrder,
         ToroidalWindings,
         PoloidalWindings,
-        SafetyFactor
+        SafetyFactor,
+        Confidence,
+        RidgelineVariance
     };
     enum ShowMeshType
     {
@@ -137,7 +132,8 @@ public:
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
     void SetMaxStepLength(double maxStepLength_);
-    void SetTermination(double termination_);
+    void SetMinPunctures(double minPunctures_);
+    void SetMaxPunctures(double maxPunctures_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
     void SetLineEnd(const double *lineEnd_);
@@ -153,7 +149,6 @@ public:
     void SetLightingFlag(bool lightingFlag_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
-    void SetTerminationType(TerminationType terminationType_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetShowStreamlines(bool showStreamlines_);
     void SetShowPoints(bool showPoints_);
@@ -177,7 +172,8 @@ public:
     // Property getting methods
     SourceType           GetSourceType() const;
     double               GetMaxStepLength() const;
-    double               GetTermination() const;
+    double               GetMinPunctures() const;
+    double               GetMaxPunctures() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
     const double         *GetLineStart() const;
@@ -201,7 +197,6 @@ public:
     bool                 GetLightingFlag() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
-    TerminationType      GetTerminationType() const;
     IntegrationType      GetIntegrationType() const;
     bool                 GetShowStreamlines() const;
     bool                 GetShowPoints() const;
@@ -233,11 +228,6 @@ public:
     static bool SourceType_FromString(const std::string &, SourceType &);
 protected:
     static std::string SourceType_ToString(int);
-public:
-    static std::string TerminationType_ToString(TerminationType);
-    static bool TerminationType_FromString(const std::string &, TerminationType &);
-protected:
-    static std::string TerminationType_ToString(int);
 public:
     static std::string ColorBy_ToString(ColorBy);
     static bool ColorBy_FromString(const std::string &, ColorBy &);
@@ -280,7 +270,8 @@ public:
     enum {
         ID_sourceType = 0,
         ID_maxStepLength,
-        ID_termination,
+        ID_minPunctures,
+        ID_maxPunctures,
         ID_pointSource,
         ID_lineStart,
         ID_lineEnd,
@@ -296,7 +287,6 @@ public:
         ID_lightingFlag,
         ID_relTol,
         ID_absTol,
-        ID_terminationType,
         ID_integrationType,
         ID_showStreamlines,
         ID_showPoints,
@@ -321,7 +311,8 @@ public:
 private:
     int            sourceType;
     double         maxStepLength;
-    double         termination;
+    double         minPunctures;
+    double         maxPunctures;
     double         pointSource[3];
     double         lineStart[3];
     double         lineEnd[3];
@@ -337,7 +328,6 @@ private:
     bool           lightingFlag;
     double         relTol;
     double         absTol;
-    int            terminationType;
     int            integrationType;
     bool           showStreamlines;
     bool           showPoints;

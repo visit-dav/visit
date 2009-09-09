@@ -86,6 +86,7 @@ avtHDF_UCFileFormat::avtHDF_UCFileFormat(const char *filename, DBOptionsAttribut
     : avtMTSDFileFormat(&filename, 1)
 {
     is2D = false;
+    coordType = 0; // Cartesian
     if (readOpts != NULL)
         fbIsAllowed = readOpts->GetBool("Use FastBit");
     else
@@ -271,11 +272,34 @@ avtHDF_UCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     avtMeshMetaData *pmesh = new avtMeshMetaData;
 
     is2D = true;
+    unsigned int cartesian = 0;
+    unsigned int cylindrical = 0;
+    unsigned int spherical = 0;
+
     for (i = 0 ; i < vnames.size() ; i++)
     {
-        if (vnames[i] == "z")
+        if (vnames[i] == "x" || vnames[i] == "y" || vnames[i] == "z" )
+	  ++cartesian;
+
+        if (vnames[i] == "r" || vnames[i] == "phi" || vnames[i] == "z" )
+	  ++cylindrical;
+
+        if (vnames[i] == "r" || vnames[i] == "phi" || vnames[i] == "theta" )
+	  ++spherical;
+
+        if (vnames[i] == "z" || vnames[i] == "theta")
             is2D = false;
     }
+
+    if( spherical == 3)           { coordType = 2; }
+    else if( cylindrical >= 2)    { coordType = 1; }
+    else /* if( cartesian >= 2)*/ { coordType = 0; }
+
+    debug4 << (is2D ? "2d Mesh  " :  "3d Mesh  ")
+	 << (coordType==0 ? "Cartesian" :
+	     (coordType==1 ? "Cylindrical" :
+	      (coordType==2 ? "Spherical" : "Unknown") ) )
+	 << endl;
 
     pmesh->name = "particles";
     pmesh->originalName = "particles";
@@ -321,226 +345,120 @@ avtHDF_UCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
 {
+  char *coord_names[3][3] = { { "x", "y", "z" },
+			      { "r", "phi", "z" },
+			      { "r", "phi", "theta" } };
+
   int t1 = visitTimer->StartTimer();
-  
-  long int i;
-  
-  int numParticles = 0;
-  double *XD,*YD,*ZD;
-  float  *XF,*YF,*ZF;
-  XD=YD=ZD=NULL;
-  XF=YF=ZF=NULL;
-
-  BaseFileInterface::DataType x_type,y_type,z_type;
-  
-  //  debug4<<"avtHDF_UCFileFormat::GetMesh()" << endl;
-
-  updateReader(ts, true);
-  
-  if (readAllData)
-    {
-      //      debug4<<"GetMesh:: readAlldata" << endl;
-      vector<int64_t> dims;
-      reader.getVariableInformation("x", 0, dims, &x_type);
-      
-      if (dims.size() != 1)
-        EXCEPTION1(InvalidVariableException, meshname);
-      
-      numParticles = dims[0];
-      debug4<<"GetMesh:: all " << numParticles << " particles... " << endl;
-
-      reader.getVariableInformation("x", 0, dims, &x_type);
-      if (x_type==BaseFileInterface::H5_Double) {
-        XD = new double[numParticles];
-        reader.getData("x", 0, XD);     
-      }
-      else if (x_type==BaseFileInterface::H5_Float) {
-        XF = new float[numParticles];
-        reader.getData("x", 0, XF);     
-      }
-      else {
-        debug4<<"x is neither float nor double"<<endl;
-        EXCEPTION1(InvalidVariableException, "x");
-      }
-            
-
-      reader.getVariableInformation("y", 0, dims, &y_type);
-      if (dims[0]!=numParticles){
-        debug4<<"y dimensions != numParticles"<<endl;
-        EXCEPTION1(InvalidVariableException, "y");
-      }
-      
-      if (y_type==BaseFileInterface::H5_Double) {
-        YD = new double[numParticles];
-        reader.getData("y", 0, YD);
-      }
-      else if (y_type==BaseFileInterface::H5_Float) {
-        YF = new float[numParticles];
-        reader.getData("y", 0, YF);
-      }
-      else {
-        debug4<<"y is neither float nor double"<<endl;
-        EXCEPTION1(InvalidVariableException, "y");
-      }
-
-      if (!is2D)
-        {
-          reader.getVariableInformation("z", 0, dims, &z_type);
-          if (dims[0]!=numParticles){
-            debug4<<"z dimensions != numParticles"<<endl;
-            EXCEPTION1(InvalidVariableException, "z");
-          }
-          
-          if (z_type==BaseFileInterface::H5_Double) {
-            ZD = new double[numParticles];
-            reader.getData("z", 0, ZD);
-          }
-          else if (z_type==BaseFileInterface::H5_Float) {
-            ZF = new float[numParticles];
-            reader.getData("z", 0, ZF);
-          }
-          else {
-            debug4<<"z is neither float nor double"<<endl;
-            EXCEPTION1(InvalidVariableException, "z");
-          }
-        } // z case
-      
-    }
-
-  else
-    {
-      // RIGHT HERE!
-      // we will fill in data based on the results of a previous query that we executed in 
-      // setDataRangeSelections()
-
-      printOffsets();
-      
-      vector<int64_t> dims;
-      numParticles = queryResults.size();
-      
-      debug4<<"GetMesh:: read [" << numParticles << "] particles... " << endl;
-      debug4<<"GetMesh:: read [" << numParticles << "] particles from query result.. " << endl;
-
-      reader.getVariableInformation("x", 0, dims, &x_type);
-      if (x_type==BaseFileInterface::H5_Double) {
-        debug4<<"x is double type"<<std::endl;
-        XD = new double[numParticles];
-        reader.getPointData("x", 0, XD, queryResults);
-      }
-      else if (x_type==BaseFileInterface::H5_Float) {
-        debug4<<"x is float type"<<std::endl;
-        XF = new float[numParticles];
-        reader.getPointData("x", 0, XF, queryResults);
-      }
-      else {
-        debug4<<"x is neither float nor double"<<endl;
-        EXCEPTION1(InvalidVariableException, "x");
-      }
-      
-      reader.getVariableInformation("y", 0, dims, &y_type);
-      if (y_type==BaseFileInterface::H5_Double) {
-        YD = new double[numParticles];
-        reader.getPointData("y", 0, YD, queryResults);
-      }
-      else if (y_type==BaseFileInterface::H5_Float) {
-        YF = new float[numParticles];
-        for (int i=0;i<numParticles;i++)
-          YF[i] = 9.99999;
-
-        reader.getPointData("y", 0, YF, queryResults);
-      }
-      else {
-        debug4<<"y is neither float nor double"<<endl;
-        EXCEPTION1(InvalidVariableException, "y");
-      }
-
-      
-      if (!is2D)
-        {
-          reader.getVariableInformation("z", 0, dims, &z_type);
-          if (z_type==BaseFileInterface::H5_Double) {
-            ZD = new double[numParticles];
-            reader.getPointData("z", 0, ZD, queryResults);
-          }
-          else if (z_type==BaseFileInterface::H5_Float) {
-            ZF = new float[numParticles];
-            for (int i=0;i<numParticles;i++)
-              ZF[i] = 9.99999;
-
-            reader.getPointData("z", 0, ZF, queryResults);
-          }
-          else {
-            debug4<<"z is neither float nor double"<<endl;
-            EXCEPTION1(InvalidVariableException, "z");
-          }
-          
-        }
-    }
   
   vtkUnstructuredGrid *dataset = vtkUnstructuredGrid::New();
   vtkPoints *vtkpoints = vtkPoints::New();
-  vtkpoints->SetNumberOfPoints((vtkIdType) numParticles);
   
-  float *pts = (float *) vtkpoints->GetVoidPointer(0);
+  float *pts;
 
-  if (x_type==BaseFileInterface::H5_Double) {
-    for (i=0; i<numParticles; i++)
-      pts[3*i+0] = XD[i];
+  unsigned long int numParticles = 0;
 
-    delete[] XD;
+  // For queries the number of particles is already known so set up the
+  // need vtk variables. Otherwise for reading all do it after the
+  // first point variable is read in.
+  if (readAllData )
+    numParticles = 0;
+  else {
+    numParticles = queryResults.size();
+
+    vtkpoints->SetNumberOfPoints((vtkIdType) numParticles);
+
+    pts = (float *) vtkpoints->GetVoidPointer(0);
+
+    printOffsets();
+
+    debug4<<"GetMesh:: " << numParticles << " particles... " << endl;
   }
 
-  else if (x_type==BaseFileInterface::H5_Float) {
-    for (i=0; i<numParticles; i++)
-      pts[3*i+0] = XF[i];    
+  //  debug4<<"avtHDF_UCFileFormat::GetMesh()" << endl;
 
-    delete[] XF;
-  }
+  updateReader(ts, true);
 
-  if (y_type==BaseFileInterface::H5_Double) {
-    for (i=0; i<numParticles; i++)
-      pts[3*i+1] = YD[i];
-
-    delete[] YD;
-  }
-    
-  else if (y_type==BaseFileInterface::H5_Float) {
-    for (i=0; i<numParticles; i++)
-      pts[3*i+1] = YF[i];    
-  
-    delete[] YF;
-  }
-
-  
-  if (is2D) {
-    for (i=0; i<numParticles; i++) // 2D data
-      pts[3*i+2] = 0.;
-  }
-  
-  else { // 3D data
-    if (z_type==BaseFileInterface::H5_Double) {
-      for (i=0; i<numParticles; i++)
-        pts[3*i+2] = ZD[i];
+  for(unsigned int i=0; i<3; ++i )
+  {
+    if (i == 2 && is2D) {
+      for (unsigned long j=0; j<numParticles; j++) // 2D data
+	pts[3*j+i] = 0.;
       
-      delete[] ZD;
+      continue;
     }
+
+//      debug4<<"GetMesh:: readAlldata" << endl;
+    vector<int64_t> dims;
+    BaseFileInterface::DataType type;
+
+    reader.getVariableInformation(coord_names[coordType][i], 0, dims, &type);
     
-    else if (z_type==BaseFileInterface::H5_Float) {
-      for (i=0; i<numParticles; i++)
-        pts[3*i+2] = ZF[i];    
-      
-      delete[] ZF;
+    if (dims.size() != 1)
+      EXCEPTION1(InvalidVariableException, meshname);
+    
+    // Set up the need vtk variables. This step was already done for
+    // the queries outside ofthe loop.
+    if (readAllData ) {
+      if( i == 0 ) {
+	numParticles = dims[0];
+
+	vtkpoints->SetNumberOfPoints((vtkIdType) numParticles);
+
+	pts = (float *) vtkpoints->GetVoidPointer(0);
+
+	debug4<<"GetMesh:: " << numParticles << " particles... " << endl;
+      }
+      else if (dims[0] != numParticles) {
+	debug4<<coord_names[coordType][i]
+	      <<" dimensions != numParticles"<<endl;
+	EXCEPTION1(InvalidVariableException, coord_names[coordType][i]);
+      }
     }
-  } // is2D
+
+    if (type==BaseFileInterface::H5_Double) {
+      double *data = new double[numParticles];
+      
+      if (readAllData)
+	reader.getData(coord_names[coordType][i], 0, data);
+      else
+	reader.getPointData(coord_names[coordType][i], 0, data, queryResults);
+      
+      for (unsigned long int j=0; j<numParticles; j++)
+	pts[3*j+i] = data[j];
+      
+      delete[] data;
+    }
+    else if (type==BaseFileInterface::H5_Float) {
+      float *data = new float[numParticles];
+      
+      if (readAllData)
+	reader.getData(coord_names[coordType][i], 0, data);     
+      else
+	reader.getPointData(coord_names[coordType][i], 0, data, queryResults);
+
+      for (unsigned long int j=0; j<numParticles; j++)
+	pts[3*j+i] = data[j];
+
+      delete[] data;
+    }
+    else {
+      debug4 << coord_names[coordType][i]
+	     <<" is neither float nor double"<<endl;
+      EXCEPTION1(InvalidVariableException, coord_names[coordType][i]);
+    }
+
+  }
   
   //printMesh(numParticles, pts, "after converting to pts array");
   
   dataset->Allocate(numParticles*2);
-  for (i=0; i < numParticles ; i++)
-      {
-      vtkIdType onevertex = (vtkIdType) i;
-      dataset->InsertNextCell(VTK_VERTEX, 1, &onevertex);
-    }
+  for (unsigned long i=0; i < numParticles ; i++)
+  {
+    vtkIdType onevertex = (vtkIdType) i;
+    dataset->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+  }
+
   dataset->SetPoints(vtkpoints);
   vtkpoints->Delete();
   

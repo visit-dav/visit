@@ -69,12 +69,14 @@ static const int COLOR_OriginalValue = 0;
 static const int COLOR_InputOrder = 1;
 static const int COLOR_PointIndex = 2;
 static const int COLOR_Plane = 3;
-static const int COLOR_ToroidalWindingOrder = 4;
-static const int COLOR_ToroidalWindingPointOrder = 5;
+static const int COLOR_WindingOrder = 4;
+static const int COLOR_WindingPointOrder = 5;
 static const int COLOR_ToroidalWindings = 6;
 static const int COLOR_PoloidalWindings = 7;
 static const int COLOR_SafetyFactor = 8;
-static const int COLOR_Solid = 9;
+static const int COLOR_Confidence = 9;
+static const int COLOR_RidgelineVariance = 10;
+static const int COLOR_Solid = 11;
 
 // ****************************************************************************
 //  Method: avtPoincareFilter constructor
@@ -103,8 +105,8 @@ static const int COLOR_Solid = 9;
 
 avtPoincareFilter::avtPoincareFilter() :
     verboseFlag(1),
-    showIslands(0),
-    showPoints(0),
+    showIslands( 0 ),
+    showPoints( 0 ),
     override( 0 ),
     maxToroidalWinding( 30 ),
     hitrate( 0.90 ),
@@ -164,6 +166,26 @@ CreateSphere(float val, double rad, double pt[3])
     sphere->Delete();
 
     return sphereData;
+}
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::SetMaxPunctures
+//
+//  Purpose:
+//      Sets the attribute values from the GUI
+//
+//  Arguments:
+//  Returns:      void
+//
+//  Creationist: Allen Sanderson
+//  Creation:    Wed Aug 25 09:52:11 EST 2009
+//
+// ****************************************************************************
+
+void
+avtPoincareFilter::SetMaxPunctures( double punctures )
+{
+    maxPunctures = punctures;
 }
 
 // ****************************************************************************
@@ -513,6 +535,7 @@ avtPoincareFilter::Execute()
     FLlib.verboseFlag = verboseFlag;
 
     avtStreamlineFilter::Execute();
+
     avtDataTree *dt = CreatePoincareOutput();
     SetOutputDataTree(dt);
 }
@@ -617,43 +640,55 @@ bool
 avtPoincareFilter::ClassifyStreamlines()
 {
     bool analysisComplete = true;
+
     poincareClassification.resize(streamlines.size());
     
     for ( int i = 0; i < streamlines.size(); i++ )
     {
-        bool needMoreInfo = false; // <<< Allen: Pass this below.
-        
-        FieldlineInfo fi = FLlib.fieldlineProperties( streamlines[i].streamlinePts,
-                                                      override,
-                                                      maxToroidalWinding,
-                                                      hitrate );
-
-        if (needMoreInfo)
-        {
-            analysisComplete = false;
-            //cerr<<streamlines[i].slSeg->id<<": terminations= "<<streamlines[i].slSeg->termination<<" pts= "<<streamlines[i].streamlinePts.size()<<endl;
-            
-            //Allen: modify termination here.
-            streamlines[i].slSeg->termination += 30.0;
-        }
+        FieldlineInfo fi =
+	  FLlib.fieldlineProperties( streamlines[i].streamlinePts,
+				     override,
+				     maxToroidalWinding,
+				     hitrate );
 
         poincareClassification[i] = fi;
-        
+
+	if( fi.nPuncturesNeeded > maxPunctures )
+	  fi.nPuncturesNeeded = maxPunctures;
+
+	// Check to see if there are enough points for the analysis.
+	if( fi.nPuncturesNeeded != 0 &&
+	    fi.nPuncturesNeeded > streamlines[i].slSeg->termination )
+        {
+	  analysisComplete = false;
+
+	  streamlines[i].slSeg->termination = fi.nPuncturesNeeded;
+	  streamlines[i].slSeg->terminated = false;
+        }
+        else
+	  streamlines[i].slSeg->terminated = true;
+
         double safetyFactor;
         
         if ( fi.poloidalWinding > 0 )
-            safetyFactor = (double) fi.toroidalWinding / (double) fi.poloidalWinding;
+            safetyFactor =
+	      (double) fi.toroidalWinding / (double) fi.poloidalWinding;
         else
             safetyFactor = 0;
 
         if(verboseFlag ) 
           cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].slSeg->id
                << "  ptCnt = " << streamlines[i].streamlinePts.size()
-               << "  toroidal windings = " <<  fi.toroidalWinding
-               << "  poloidal windings = " << fi.poloidalWinding
+               << "  type = " << fi.type
+               << "  toroidal/poloidal windings = " <<  fi.toroidalWinding
+               << "/" << fi.poloidalWinding
+               << "  (" << safetyFactor << ")"
+               << "  skip = " << fi.skip
                << "  islands = " << fi.islands
-               << "  safety factor = " << safetyFactor
                << "  nodes = " << fi.nnodes
+               << "  confidence = " << fi.confidence
+               << "  ridgelinePeriod = " << fi.ridgelinePeriod
+	       << "  complete " << (fi.complete ? "Yes" : "No")
                << endl << endl;
     }
 
@@ -701,6 +736,12 @@ avtPoincareFilter::CreatePoincareOutput()
         unsigned int islands         = poincareClassification[i].islands;
         unsigned int skip            = poincareClassification[i].skip;
         unsigned int nnodes          = (unsigned int) poincareClassification[i].nnodes;
+	double confidence            = poincareClassification[i].confidence;
+	bool   complete              = poincareClassification[i].complete;
+
+        unsigned int ridgelinePeriod = (unsigned int) poincareClassification[i].ridgelinePeriod;
+	double ridgelineVariance     = poincareClassification[i].ridgelineVariance;
+
         bool completeIslands = true;
 
         // If toroidal winding is zero, skip it.
@@ -733,6 +774,7 @@ avtPoincareFilter::CreatePoincareOutput()
         bool CCWstreamline = (atan2( lastPt.y, lastPt.x ) <
                               atan2( currPt.y, currPt.x ));
         
+	double lastDist, currDist;
 
         // Put all of the points into the bins for each plane.
         std::vector< std::vector< std::vector < Point > > > puncturePts;
@@ -768,17 +810,13 @@ avtPoincareFilter::CreatePoincareOutput()
             plane[2] = planeN.z;
             plane[3] = planePt.dot(planeN);
             
-//      cerr << "Plane " << p << " is " << plane << endl;
-            
-//    cerr << "Starting new streamline binning " << c << endl;
-            
             puncturePts[p].resize( toroidalWinding );
             int bin = 0;
             
-            // So to get the winding groups consistant start examining the
-            // streamline in the same place for each plane.
-            Vector lastPt, currPt( streamlines[i].streamlinePts[startIndex] );
-            double lastDist, currDist = planeN.dot( currPt ) - plane[3];
+            // So to get the winding groups consistant start examining
+            // the streamline in the same place for each plane.
+            currPt = streamlines[i].streamlinePts[startIndex];
+            currDist = planeN.dot( currPt ) - plane[3];
             
             for( unsigned int j=startIndex+1; j<streamlines[i].streamlinePts.size(); ++j )
             {
@@ -799,10 +837,11 @@ avtPoincareFilter::CreatePoincareOutput()
                     // find where it intersects the plane.
                     if( dot > 0.0 )
                     {
-                        // So to get the winding groups consistant start examining
-                        // the streamline in the same place for each plane so
-                        // store the index of the first puncture point.
-                        if( p == 0 && puncturePts[p][bin].size() == 0 )
+                        // In order to get the winding groups
+                        // consistant start examining the streamline
+                        // in the same place for each plane so store
+                        // the index of the first puncture point.
+                        if( startIndex == 0 )
                             startIndex = j - 1;
                         
                         Vector w = lastPt - planePt;
@@ -814,203 +853,317 @@ avtPoincareFilter::CreatePoincareOutput()
                         puncturePts[p][bin].push_back( point );
                         
                         bin = (bin + 1) % toroidalWinding;
-                        
                     }
                 }
             }
         }
         
-        bool VALID = true;
+
+	unsigned int npts = 0;
+
+	// Set up the plane equation as the base analysis takes place in
+	// the X-Z plane.
+ 	Vector planeN( 0, 1, 0 );
+	Vector planePt(0,0,0);
         
-        // Sanity check
-        for( unsigned int p=0; p<planes.size(); ++p ) 
-        {
-            for( unsigned int j=0; j<toroidalWinding; ++j ) 
-            {
-                if( nnodes > puncturePts[p][j].size() )
-                    nnodes = puncturePts[p][j].size();
-                
-                if( puncturePts[p][j].size() < 1 ) 
-                {
-                    if( verboseFlag ) 
-                      cerr << "Binning check failed - Plane " << p
-                           << " bin  " << j
-                           << " number of points " << puncturePts[p][j].size()
-                           << endl;
-                    VALID = false;
-                    
-//                    return NULL;
-                }
-            }
-        }
+	// Set up the plane equation.
+	double plane[4];
         
-        
-        
-        // Get the rest of the info only from the phi = zero plane.
-        unsigned int p;
-        
-        if( CCWstreamline )
-            p = 0;
-        else
-            p = planes.size()-1;
-        
-        // Get the centroid of each toroidal winding group and all
-        // puncture points.
-        //    Vector globalCentroid(0,0,0);
-        std::vector< Vector > localCentroids;
-        std::vector< Vector > localSeparatrices[2];
-        
-        localCentroids.resize(toroidalWinding);
-        localSeparatrices[0].resize(toroidalWinding);
-        localSeparatrices[1].resize(toroidalWinding);
-        
-        for( unsigned int j=0; j<toroidalWinding; ++j ) 
-        {
-            localCentroids[j] = Vector(0,0,0);
+	// Get the centroid of the puncture points.
+	Vector centroid[4];
+
+	for( unsigned int cc=0; cc<4; ++cc)
+	{
+	  if( cc == 0 )
+	    planeN = Vector( 1, 0, 0 );
+	  else if( cc == 1 )
+	    planeN = Vector( -1, 0, 0 );
+	  else if( cc == 2 )
+	    planeN = Vector( 0, -1, 0 );
+	  else if( cc == 3 )
+	    planeN = Vector( 0, 1, 0 );
+
+	  plane[0] = planeN.x;
+	  plane[1] = planeN.y;
+	  plane[2] = planeN.z;
+	  plane[3] = Dot( planePt, planeN );
+	  
+	  currPt = streamlines[i].streamlinePts[0];
+	  currDist = Dot(planeN, currPt) - plane[3];
+	  
+	  centroid[cc] = Vector(0,0,0);
+	  npts = 0;
+
+	  for( unsigned int j=1; j<streamlines[i].streamlinePts.size(); ++j)
+	  {
+	    lastPt = currPt;
+	    currPt = streamlines[i].streamlinePts[j];
+	    
+	    // Poloidal plane distances.
+	    lastDist = currDist;
+	    currDist = Dot( planeN, currPt ) - plane[3];
+	    
+	    // First look at only points that intersect the poloidal plane.
+	    if( SIGN(lastDist) != SIGN(currDist) ) 
+	    {
+	      Vector dir(currPt-lastPt);
+	      
+	      double dot = Dot(planeN, dir);
+	      
+	      // If the segment is in the same direction as the poloidal plane
+	      // then find where it intersects the plane.
+	      if( dot > 0.0 )
+	      {
+		Vector w = (Vector) lastPt - planePt;
+		
+		double t = -Dot(planeN, w ) / dot;
+		
+		Point point = Point(lastPt + dir * t);
+		
+		centroid[cc] += (Vector) point;
+		++npts;
+	      }
+	    }
+	  }
+
+	  centroid[cc] /= (float) npts;
+	}
+
+
+	Vector normalZ0 =
+	  Cross(centroid[2] - centroid[0], centroid[3] - centroid[0]);
+	Vector normalZ1 =
+	  Cross(centroid[3] - centroid[1], centroid[2] - centroid[1]);
+
+	normalZ0.normalize();
+	normalZ1.normalize();
+
+	Vector normalZ = (normalZ0 + normalZ1) / 2.0;
+
+	// Set up the Z plane equation. Because the centroid of the puncture
+	// plot is not on the z axis use it as the normal for the z plane.
+	planeN = normalZ;
+
+	// Get the ridgeline points. There is one point between each
+	// poloidal plane puncture.
+	
+	// Set up the plane equation.
+	plane[0] = planeN.x;
+	plane[1] = planeN.y;
+	plane[2] = planeN.z;
+	plane[3] = planePt.dot(planeN);
             
-            for( unsigned int k=0; k<puncturePts[p][j].size(); ++k ) 
-                localCentroids[j] += (Vector) puncturePts[p][j][k];
+        std::vector < Point > ridgelinePts;
+
+	bool haveFirstIntersection = false;
+	double maxZ = 0;
+
+	// So to get the winding groups consistant start examining the
+	// streamline in the same place for each plane.
+	currPt = streamlines[i].streamlinePts[0];
+	currDist = planeN.dot( currPt ) - plane[3];
             
-            if( puncturePts[p][j].size() ) 
-            {
-                localCentroids[j] /= (double) puncturePts[p][j].size();
-                
-                //        globalCentroid += localCentroids[j];
-            }
-        }
+	for( unsigned int j=startIndex+1;
+	     j<streamlines[i].streamlinePts.size();
+	     ++j )
+	{
+	  lastPt = currPt;
+	  currPt = Vector(streamlines[i].streamlinePts[j]);
+          
+	  lastDist = currDist;
+	  currDist = Dot( planeN, currPt ) - plane[3];
+          
+	  // First look at only points that intersect the plane.
+	  if( SIGN(lastDist) != SIGN(currDist) ) 
+	  {
+	    Vector dir(currPt-lastPt);
+	    
+	    double dot = Dot(planeN, dir);
+            
+	    // If the segment is in the same direction as the plane then
+	    // record the max Z value.
+	    if( dot > 0.0 )
+	    {
+	      if( haveFirstIntersection )
+		ridgelinePts.push_back( Point( (float) ridgelinePts.size()/50.0,
+					       0,
+					       maxZ) );
+	      else
+		haveFirstIntersection = true;
+
+	      maxZ = 0;
+	    }
+	  }
+
+	  if( maxZ < currPt.z )
+	    maxZ = currPt.z;
+	}
         
-        //    globalCentroid /= toroidalWinding;
+// 	// Get the rest of the info only from the phi = zero plane.
+//         unsigned int p;
         
-        // Get the direction of the points within a group.
-        //    Vector v0 = (Vector) puncturePts[p][0][0] - globalCentroid;
-        //    Vector v1 = (Vector) puncturePts[p][0][1] - globalCentroid;
+//         if( CCWstreamline )
+//             p = 0;
+//         else
+//             p = planes.size()-1;
         
-        //    bool groupCCW = (FLlib.ccw( v0, v1 ) == 1);
-        //    cerr << 0.0<< "  " << groupCCW << endl;
+//         // Get the centroid of each toroidal winding group and all
+//         // puncture points.
+
+// 	Vector globalCentroid(0,0,0);
+// 	unsigned int npts = 0;
+
+//         std::vector< Vector > localCentroids;
+//         std::vector< Vector > localSeparatrices[2];
         
-        if( type == ISLAND_CHAIN ) 
-        {
-            for( unsigned int j=0; j<toroidalWinding; ++j ) 
-            {
-                unsigned int startIndex;
-                unsigned int middleIndex;
-                unsigned int stopIndex;
-                unsigned int nodes;
+//         localCentroids.resize(toroidalWinding);
+//         localSeparatrices[0].resize(toroidalWinding);
+//         localSeparatrices[1].resize(toroidalWinding);
+        
+//         for( unsigned int j=0; j<toroidalWinding; ++j ) 
+//         {
+//             localCentroids[j] = Vector(0,0,0);
+            
+//             for( unsigned int k=0; k<puncturePts[p][j].size(); ++k ) 
+//                 localCentroids[j] += (Vector) puncturePts[p][j][k];
+            
+//             if( puncturePts[p][j].size() ) 
+//             {
+//                 localCentroids[j] /= (double) puncturePts[p][j].size();
+// 	    }
+//         }
+
+
+//         // Get the direction of the points within a group.
+//         //    Vector v0 = (Vector) puncturePts[p][0][0] - globalCentroid;
+//         //    Vector v1 = (Vector) puncturePts[p][0][1] - globalCentroid;
+        
+//         //    bool groupCCW = (FLlib.ccw( v0, v1 ) == 1);
+//         //    cerr << 0.0<< "  " << groupCCW << endl;
+        
+//         if( type == ISLAND_CHAIN ) 
+//         {
+//             for( unsigned int j=0; j<toroidalWinding; ++j ) 
+//             {
+//                 unsigned int startIndex;
+//                 unsigned int middleIndex;
+//                 unsigned int stopIndex;
+//                 unsigned int nodes;
                 
-                Vector localCentroid;
+//                 Vector localCentroid;
                 
-                unsigned int turns =
-                    FLlib.islandProperties( puncturePts[p][j], localCentroid,
-                                            startIndex, middleIndex, stopIndex, nodes );
+//                 unsigned int turns =
+//                     FLlib.islandProperties( puncturePts[p][j], localCentroid,
+//                                             startIndex, middleIndex, stopIndex, nodes );
                 
-                //      cerr << "Island " << i  << "   "
-                //           << "Turns " << turns  << "   "
-                //           << "nodes " << nodes  << "   "
-                //           << "Indexes "
-                //           << startIndex  << "  "
-                //           << middleIndex << "  "
-                //           << stopIndex   << endl;
+//                 //      cerr << "Island " << i  << "   "
+//                 //           << "Turns " << turns  << "   "
+//                 //           << "nodes " << nodes  << "   "
+//                 //           << "Indexes "
+//                 //           << startIndex  << "  "
+//                 //           << middleIndex << "  "
+//                 //           << stopIndex   << endl;
                 
                 
-                //      if( turns < 3 )
-                //      completeIslands = false;
+// 		if( turns < 3 )
+// 		  completeIslands = false;
                 
-                if( turns >= 2 ) 
-                {
-                    //        localSeparatrices[0][j] = (Vector) puncturePts[p][j][startIndex];
-                    //        localSeparatrices[1][j] = (Vector) puncturePts[p][j][middleIndex];
-                }
+//                 if( turns >= 2 ) 
+//                 {
+//                     //        localSeparatrices[0][j] = (Vector) puncturePts[p][j][startIndex];
+//                     //        localSeparatrices[1][j] = (Vector) puncturePts[p][j][middleIndex];
+//                 }
                 
-                if( turns == 3 ) 
-                {
-                    unsigned int index0 = (middleIndex - startIndex ) / 2;
-                    unsigned int index1 = (  stopIndex - middleIndex) / 2;
+//                 if( turns == 3 ) 
+//                 {
+//                     unsigned int index0 = (middleIndex - startIndex ) / 2;
+//                     unsigned int index1 = (  stopIndex - middleIndex) / 2;
                     
-                    //      cerr << "Indexes mid " << nodes << " nodes "
-                    //           << "  " << ( startIndex + index0)%nodes 
-                    //           << "  " << (middleIndex - index0)%nodes
-                    //           << "  " << (middleIndex + index1)%nodes
-                    //           << "  " << (  stopIndex - index1)%nodes << endl;
+//                     //      cerr << "Indexes mid " << nodes << " nodes "
+//                     //           << "  " << ( startIndex + index0)%nodes 
+//                     //           << "  " << (middleIndex - index0)%nodes
+//                     //           << "  " << (middleIndex + index1)%nodes
+//                     //           << "  " << (  stopIndex - index1)%nodes << endl;
                     
-                    localCentroids[j] =
-                        ( (Vector) puncturePts[p][j][( startIndex + index0)%nodes] + 
-                          (Vector) puncturePts[p][j][(middleIndex - index0)%nodes] +
+//                     localCentroids[j] =
+//                         ( (Vector) puncturePts[p][j][( startIndex + index0)%nodes] + 
+//                           (Vector) puncturePts[p][j][(middleIndex - index0)%nodes] +
                           
-                          (Vector) puncturePts[p][j][(middleIndex + index1)%nodes] + 
-                          (Vector) puncturePts[p][j][(  stopIndex - index1)%nodes] ) / 4.0;
-                } 
-                else if( turns == 2 ) 
-                {
-                    unsigned int index0 = (middleIndex - startIndex ) / 2;
+//                           (Vector) puncturePts[p][j][(middleIndex + index1)%nodes] + 
+//                           (Vector) puncturePts[p][j][(  stopIndex - index1)%nodes] ) / 4.0;
+//                 }
+//                 else if( turns == 2 ) 
+//                 {
+//                     unsigned int index0 = (middleIndex - startIndex ) / 2;
                     
-                    //      cerr << "Indexes mid " << nodes << " nodes "
-                    //           << "  " << ( startIndex + index0)%nodes 
-                    //           << "  " << (middleIndex - index0)%nodes
-                    //           << "  " << (middleIndex + index1)%nodes
-                    //           << "  " << (  stopIndex - index1)%nodes << endl;
+//                     //      cerr << "Indexes mid " << nodes << " nodes "
+//                     //           << "  " << ( startIndex + index0)%nodes 
+//                     //           << "  " << (middleIndex - index0)%nodes
+//                     //           << "  " << (middleIndex + index1)%nodes
+//                     //           << "  " << (  stopIndex - index1)%nodes << endl;
                     
-                    localCentroids[j] =
-                        ( (Vector) puncturePts[p][j][( startIndex + index0)%nodes] + 
-                          (Vector) puncturePts[p][j][(middleIndex - index0)%nodes] ) / 2.0;
+//                     localCentroids[j] =
+//                         ( (Vector) puncturePts[p][j][( startIndex + index0)%nodes] + 
+//                           (Vector) puncturePts[p][j][(middleIndex - index0)%nodes] ) / 2.0;
                     
-                } 
-                else if( turns == 1 ) 
-                {
-                    unsigned int index0 = (stopIndex - startIndex ) / 2;
+//                 } 
+//                 else if( turns == 1 ) 
+//                 {
+//                     unsigned int index0 = (stopIndex - startIndex ) / 2;
                     
-                    //      cerr << "Indexes mid " << nodes << " nodes "
-                    //           << "  " << ( startIndex + index0)%nodes 
-                    //           << "  " << (middleIndex - index0)%nodes
-                    //           << "  " << (middleIndex + index1)%nodes
-                    //           << "  " << (  stopIndex - index1)%nodes << endl;
+//                     //      cerr << "Indexes mid " << nodes << " nodes "
+//                     //           << "  " << ( startIndex + index0)%nodes 
+//                     //           << "  " << (middleIndex - index0)%nodes
+//                     //           << "  " << (middleIndex + index1)%nodes
+//                     //           << "  " << (  stopIndex - index1)%nodes << endl;
                     
-                    localCentroids[j] =
-                        ( (Vector) puncturePts[p][j][(startIndex + index0)%nodes] + 
-                          (Vector) puncturePts[p][j][( stopIndex - index0)%nodes] ) / 2.0;
-                }
+//                     localCentroids[j] =
+//                         ( (Vector) puncturePts[p][j][(startIndex + index0)%nodes] + 
+//                           (Vector) puncturePts[p][j][( stopIndex - index0)%nodes] ) / 2.0;
+//                 }
                 
-                //      // Get the principal axes of the island.
-                //      Vector localCentroid(0,0,0);
+//                 //      // Get the principal axes of the island.
+//                 //      Vector localCentroid(0,0,0);
                 
-                //      for( unsigned int k=0; k<puncturePts[p][j].size(); ++k )
-                //        localCentroid += (Vector) puncturePts[p][j][k];
+//                 //      for( unsigned int k=0; k<puncturePts[p][j].size(); ++k )
+//                 //        localCentroid += (Vector) puncturePts[p][j][k];
                 
-                //      localCentroid /= (float) puncturePts[p][j].size();
+//                 //      localCentroid /= (float) puncturePts[p][j].size();
                 
-                //      float Ixx = 0.0;
-                //      float Ixz = 0.0;
-                //      float Izz = 0.0;
+//                 //      float Ixx = 0.0;
+//                 //      float Ixz = 0.0;
+//                 //      float Izz = 0.0;
                 
-                //      double maxDist = 0;
+//                 //      double maxDist = 0;
                 
-                //      for( unsigned int k=0; k<puncturePts[p][j].size(); k++ ) {
+//                 //      for( unsigned int k=0; k<puncturePts[p][j].size(); k++ ) {
                 
-                //        Vector vec = (Vector) puncturePts[p][j][k] - localCentroid;
+//                 //        Vector vec = (Vector) puncturePts[p][j][k] - localCentroid;
                 
-                //        if( maxDist < vec.length() )
-                //          maxDist = vec.length();
+//                 //        if( maxDist < vec.length() )
+//                 //          maxDist = vec.length();
                 
-                //        Ixx += vec.z()*vec.z();
-                //        Ixz -= vec.x()*vec.z();
-                //        Izz += vec.x()*vec.x();
-                //      }
+//                 //        Ixx += vec.z()*vec.z();
+//                 //        Ixz -= vec.x()*vec.z();
+//                 //        Izz += vec.x()*vec.x();
+//                 //      }
                 
-                //      float alpha = atan( 2.0 * Ixz / (Ixx - Izz) ) / 2.0;
+//                 //      float alpha = atan( 2.0 * Ixz / (Ixx - Izz) ) / 2.0;
                 
-                // //       cerr << "PRINCIPAL AXES " << alpha * 180.0 / M_PI << "    "
-                // //      << Ixx + Ixz * sin(alpha       )/cos(alpha       ) << "    "
-                // //      << Izz + Ixz * cos(alpha+M_PI/2)/sin(alpha+M_PI/2) << endl;
+//                 // //       cerr << "PRINCIPAL AXES " << alpha * 180.0 / M_PI << "    "
+//                 // //      << Ixx + Ixz * sin(alpha       )/cos(alpha       ) << "    "
+//                 // //      << Izz + Ixz * cos(alpha+M_PI/2)/sin(alpha+M_PI/2) << endl;
                 
-                //      if( Ixx + Ixz * sin(alpha       )/cos(alpha       ) >
-                //          Izz + Ixz * cos(alpha+M_PI/2)/sin(alpha+M_PI/2) )
-                //        localCentroid += Vector(  cos(alpha), 0, sin(alpha) ) * maxDist;
-                //      else
-                //        localCentroid += Vector( -sin(alpha), 0, cos(alpha) ) * maxDist;
+//                 //      if( Ixx + Ixz * sin(alpha       )/cos(alpha       ) >
+//                 //          Izz + Ixz * cos(alpha+M_PI/2)/sin(alpha+M_PI/2) )
+//                 //        localCentroid += Vector(  cos(alpha), 0, sin(alpha) ) * maxDist;
+//                 //      else
+//                 //        localCentroid += Vector( -sin(alpha), 0, cos(alpha) ) * maxDist;
                 
-                //      localCentroids[j] = localCentroid;
+//                 //      localCentroids[j] = localCentroid;
                 
-            }
-        }  // if( type == ISLAND_CHAIN )
+//             }
+//         }  // if( type == ISLAND_CHAIN )
         
         for( unsigned int p=0; p<planes.size(); p++ ) 
         {
@@ -1061,24 +1214,28 @@ avtPoincareFilter::CreatePoincareOutput()
         }
         
         if( verboseFlag ) 
-          cerr << "Surface " << i << " is a " << type << "  "
-               << toroidalWinding << ":" << poloidalWinding << " surface ("
-               << (double) toroidalWinding / (double) poloidalWinding << ") ";
-        
-        if( type == ISLAND_CHAIN ) 
-        {
-            if( verboseFlag ) 
-              cerr << "that contains " << islands << " islands"
-                   << (completeIslands ? " (Complete)" : "");
-        }
-        
-        if( verboseFlag ) 
-          cerr << " and has " << nnodes << " nodes" << endl;
-        
-        if( type == ISLAND_CHAIN && islands != toroidalWinding ) 
-        {
-            if( verboseFlag ) 
-              cerr << "WARNING - The island count does not match the toroidalWinding count"<<endl;
+	{
+          cerr << "Surface " << i << " is a "
+	       << toroidalWinding << ":" << poloidalWinding << " ("
+               << (double) toroidalWinding / (double) poloidalWinding << ")  ";
+
+	  if( type == RATIONAL )
+	    cerr << "rational surface  ";
+
+	  else if( type == IRRATIONAL )
+	    cerr << "flux surface  ";
+
+	  else if( type == ISLAND_CHAIN )
+	    cerr << "island chain that contains "
+		 << islands << " islands  ";
+
+	  cerr << "with " << nnodes << " nodes"
+	       << (complete ? " (Complete)  " : "  ")
+	       << "confidence " << confidence
+	       << endl;
+
+	  if( type == ISLAND_CHAIN && islands != toroidalWinding ) 
+	    cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
         }
         
         // Record the topology.
@@ -1086,7 +1243,6 @@ avtPoincareFilter::CreatePoincareOutput()
             topo( toroidalWinding, poloidalWinding );
         
         //    topology.push_back(topo);
-        
         
         if( !showIslands || (showIslands && islands) ) 
         {
@@ -1100,7 +1256,12 @@ avtPoincareFilter::CreatePoincareOutput()
                 color_value = poloidalWinding;
             else if( colorBy == COLOR_SafetyFactor )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
-            
+            else if( colorBy == COLOR_Confidence )
+	      color_value = confidence;
+            else if( colorBy == COLOR_RidgelineVariance )
+	      color_value = ridgelineVariance;
+
+                    
             // Currently the surface mesh is a structquad so set the dims - it
             // really should be and unstructured surface so multiple surface
             // can be generated.
@@ -1117,6 +1278,11 @@ avtPoincareFilter::CreatePoincareOutput()
               loadSurface( dt, puncturePts, nnodes, islands, skip,
                            colorBy, color_value );
             }
+
+	    loadPoints( dt, ridgelinePts, ridgelinePeriod,
+			nnodes, islands, poloidalWinding,
+			colorBy, color_value );
+
         }
     }
     
@@ -1163,7 +1329,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
     // Loop through each plane
     for( unsigned int p=0; p<nplanes; ++p ) 
     {
-        if( color == 3 )
+        if( color == COLOR_Plane )
             color_value = p;
         
         //Create groups that represent the toroidial groups.
@@ -1179,18 +1345,22 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
         {
             unsigned int j = jj % toroidalWindings;
 
-            if( color == 4 )
+            if( color == COLOR_WindingOrder )
                 color_value = j;
             
             // Use the first point in each toroidial group
             unsigned int i=0;
 
-            points->InsertPoint(j, nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z);
+            points->InsertPoint(j,
+				nodes[p][j][i].x,
+				nodes[p][j][i].y,
+				nodes[p][j][i].z);
+
             cells->InsertCellPoint(j);
 
-            if( color == 2 )
+            if( color == COLOR_PointIndex )
               color_value = (i*toroidalWindings+j)*nplanes + p;
-            else if( color == 5 )
+            else if( color == COLOR_WindingPointOrder )
               color_value =  i;
                 
             scalars->InsertTuple1(j, color_value);
@@ -1214,13 +1384,13 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
     {
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == 3 )
+            if( color == COLOR_Plane )
                 color_value = p;
             
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                if( color == 4 )
+                if( color == COLOR_WindingOrder )
                     color_value = j;
                 
                 // Loop through each point in toroidial group
@@ -1230,9 +1400,9 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     
                     double rad = 0.0025;
                     
-		    if( color == 2 )
+		    if( color == COLOR_PointIndex )
 		      color_value = (i*toroidalWindings+j)*nplanes + p;
-		    else if( color == 5 )
+		    else if( color == COLOR_WindingPointOrder )
 		      color_value =  i;
                     
                     vtkPolyData *ball = CreateSphere(color_value, rad, pt);
@@ -1284,7 +1454,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
     // Loop through each plane
     for( unsigned int p=0; p<nplanes; ++p ) 
     {
-        if( color == 3 )
+        if( color == COLOR_Plane )
             color_value = p;
         
         // Loop through each toroidial group
@@ -1298,18 +1468,22 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
             cells->InsertNextCell(nodes[p][j].size());
             scalars->Allocate    (nodes[p][j].size());
             
-            if( color == 4 )
+            if( color == COLOR_WindingOrder )
                 color_value = j;
             
             // Loop through each point in toroidial group
             for( unsigned int i=0; i<nodes[p][j].size(); ++i ) 
             {
-                points->InsertPoint(i, nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z);
+                points->InsertPoint(i,
+				    nodes[p][j][i].x,
+				    nodes[p][j][i].y,
+				    nodes[p][j][i].z);
+
                 cells->InsertCellPoint(i);
 
-                if( color == 2 )
+                if( color == COLOR_PointIndex )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
-                else if( color == 5 )
+                else if( color == COLOR_WindingPointOrder )
                     color_value =  i;
                 
                 scalars->InsertTuple1(i, color_value);
@@ -1334,13 +1508,13 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
     {
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            if( color == 3 )
+            if( color == COLOR_Plane )
                 color_value = p;
             
             // Loop through each toroidial group
             for( unsigned int j=0; j<toroidalWindings; ++j ) 
             {
-                if( color == 4 )
+                if( color == COLOR_WindingOrder )
                     color_value = j;
 
                 for( unsigned int i=0; i<nodes[p][j].size(); ++i )
@@ -1353,9 +1527,9 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     
                     double rad = 0.0025;
                     
-		    if( color == 2 )
+		    if( color == COLOR_PointIndex )
 		      color_value = (i*toroidalWindings+j)*nplanes + p;
-		    else if( color == 5 )
+		    else if( color == COLOR_WindingPointOrder )
 		      color_value =  i;
                     
                     vtkPolyData *ball = CreateSphere(color_value, rad, pt);
@@ -1440,18 +1614,18 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     // Loop through each toroidial group
     for( unsigned int j=0; j<toroidalWindings; ++j )
     {
-        if( color == 4 )
+        if( color == COLOR_WindingOrder )
             color_value = j;
 
         // Loop through each plane.
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
-            // Normally each toroidial winding group can be displayed in the
-            // order received. Except for the last plane where it needs to
-            // be adjusted by one group. That is if the streamline started
-            // in the "correct" place. This is not always the case so it may
-            // be necessary to adjust the toroidal winding group location by
-            // one.
+            // Normally each toroidial winding group can be displayed
+            // in the order received. Except for the last plane where
+            // it needs to be adjusted by one group. That is if the
+            // streamline started in the "correct" place. This is not
+            // always the case so it may be necessary to adjust the
+            // toroidal winding group location by one.
             unsigned int k;
             
             if( p == adjust_plane )
@@ -1465,7 +1639,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
             
             unsigned int jj = nplanes * j + p;
             
-            if( color == 3 )
+            if( color == COLOR_Plane )
                 color_value = jj;
             
             // Loop through each point in toroidial group.
@@ -1477,9 +1651,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
                 points_ptr[n1*3+1] = nodes[p][k][i].y;
                 points_ptr[n1*3+2] = nodes[p][k][i].z;
 
-                if( color == 2 )
+                if( color == COLOR_PointIndex )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
-                else if( color == 5 )
+                else if( color == COLOR_WindingPointOrder )
                     color_value =  i;
                 
                 scalars->InsertTuple1(n1, color_value);
@@ -1490,7 +1664,8 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
                 quad->GetPointIds()->SetId( 2,  (jj+1) * dims[0] + i + 1);
                 quad->GetPointIds()->SetId( 3,   jj    * dims[0] + i + 1);
                 
-                grid->InsertNextCell( quad->GetCellType(), quad->GetPointIds() );                
+                grid->InsertNextCell( quad->GetCellType(),
+				      quad->GetPointIds() );                
             }
 
             // For a surface add in the first point from the adjacent
@@ -1512,9 +1687,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
             points_ptr[n1*3+1] = nodes[p][k][0].y;
             points_ptr[n1*3+2] = nodes[p][k][0].z;
             
-            if( color == 2 )
+            if( color == COLOR_PointIndex )
               color_value = (i*toroidalWindings+j)*nplanes + p;
-            else if( color == 5 )
+            else if( color == COLOR_WindingPointOrder )
               color_value =  i;
             
             scalars->InsertTuple1(n1, color_value);
@@ -1525,7 +1700,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     // the torus.
     unsigned int j = 0;
     
-    if( color == 4 )
+    if( color == COLOR_WindingOrder )
         color_value = j;
     
     // Add in the first toroidal group from the first plane to complete
@@ -1550,7 +1725,7 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     
     unsigned int jj = nplanes * toroidalWindings;
     
-    if( color == 3 )
+    if( color == COLOR_Plane )
         color_value = jj;
     
     // Loop through each point in toroidial group.
@@ -1562,9 +1737,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
         points_ptr[n1*3+1] = nodes[p][k][i].y;
         points_ptr[n1*3+2] = nodes[p][k][i].z;
 
-        if( color == 2 )
+        if( color == COLOR_PointIndex )
             color_value = (i*toroidalWindings+j)*nplanes + p;
-        else if( color == 5 )
+        else if( color == COLOR_WindingPointOrder )
           color_value =  i;
         
         scalars->InsertTuple1(n1, color_value);
@@ -1588,9 +1763,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     points_ptr[n1*3+1] = nodes[p][k][0].y;
     points_ptr[n1*3+2] = nodes[p][k][0].z;
     
-    if( color == 2 )
+    if( color == COLOR_PointIndex )
       color_value = (i*toroidalWindings+j)*nplanes + p;
-    else if( color == 5 )
+    else if( color == COLOR_WindingPointOrder )
       color_value =  i;
     
     scalars->InsertTuple1(n1, color_value);
@@ -1606,4 +1781,127 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     quad->Delete();
     points->Delete();
     scalars->Delete();
+}
+
+
+void
+avtPoincareFilter::loadPoints( avtDataTree *dt,
+			       vector < Point  > &nodes,
+			       unsigned int period,
+			       unsigned int nnodes,
+			       unsigned int islands,
+			       unsigned int poloidalWindings,
+			       unsigned int color,
+			       double color_value ) 
+{
+  //  period = 27;
+
+  if( period <= 1 )
+    period = nodes.size();
+
+  unsigned int colorMax = 0;
+
+  vtkAppendPolyData *append = vtkAppendPolyData::New();
+
+  if( islands )
+    poloidalWindings *= nnodes;
+  
+  //Create groups that represent the toroidial groups.
+  vtkPoints *points;
+  vtkCellArray *cells;
+  vtkFloatArray *scalars;
+  
+  unsigned int cc = 0;
+  
+  // Loop through each point in poloidal group
+  for( unsigned int i=0; i<nodes.size(); ++i )
+  {      
+    if( i % period == 0 )
+    {
+      //Create groups that represent the toroidial groups.
+      points = vtkPoints::New();
+      cells = vtkCellArray::New();
+      scalars = vtkFloatArray::New();
+
+      unsigned int npts = period < (nodes.size()-i) ?
+	period : (nodes.size()-i);
+      
+      cells->InsertNextCell( npts );
+      scalars->Allocate    ( npts );
+      
+      cc = 0;
+    }
+    
+//    points->InsertPoint(cc, nodes[i].x, nodes[i].y, nodes[i].z);
+ 
+    points->InsertPoint(cc,
+			(float) (i % period) / 50.0,
+			nodes[i].y,
+			nodes[i].z);
+
+    cells->InsertCellPoint(cc);
+
+    if( color == COLOR_PointIndex )
+      color_value = i;
+    else if( color == COLOR_WindingOrder )
+      color_value = i / poloidalWindings;
+    else if( color == COLOR_WindingPointOrder )
+      color_value = i % poloidalWindings;
+	  
+    scalars->InsertTuple1(cc, color_value);
+	
+    ++cc;
+            
+    if( i % period == 0 )
+    {
+      // Create a new VTK polyline.
+      vtkPolyData *pd = vtkPolyData::New();
+      pd->SetPoints(points);
+      pd->SetLines(cells);
+      scalars->SetName("colorVar");
+      pd->GetPointData()->SetScalars(scalars);
+        
+      append->AddInput(pd);
+        
+      points->Delete();
+      cells->Delete();
+      scalars->Delete();       
+    }
+  }
+
+  if (showPoints)
+  {
+    // Loop through each poloidal group
+    // Loop through each point in poloidial group
+    for( unsigned int i=0; i<nodes.size(); ++i )
+    {      
+//      double pt[3] = { nodes[i].x, nodes[i].y, nodes[i].z };
+      double pt[3] = { (float) (i % period) / 50.0, nodes[i].y, nodes[i].z };
+          
+      double rad = 0.00025;
+
+      if( color == COLOR_PointIndex )
+	color_value = i;
+      else if( color == COLOR_WindingOrder )
+	color_value = i / poloidalWindings;
+      else if( color == COLOR_WindingPointOrder )
+	color_value = i % poloidalWindings;
+
+      if( colorMax < color_value )
+	colorMax = color_value;
+      
+      vtkPolyData *ball = CreateSphere(color_value, rad, pt);
+      
+      append->AddInput(ball);
+      ball->Delete();
+    }
+  }
+
+  append->Update();
+  vtkPolyData *outPD = append->GetOutput();
+  outPD->Register(NULL);
+  outPD->SetSource(NULL);
+  append->Delete();
+  
+  dt->Merge( new avtDataTree(outPD, 0) );
 }

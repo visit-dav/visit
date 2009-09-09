@@ -78,6 +78,7 @@ avtStreamlineWrapper::avtStreamlineWrapper()
     status = UNSET;
     domain = -1;
     numTimesCommunicated = 0;
+    terminated = false;
     sl = NULL;
     dir = FWD;
     maxCnt = sum= numDomainsVisited = 0;

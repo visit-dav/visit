@@ -164,6 +164,9 @@ char QvisLineStyleWidget::augmentedForeground[15];
 //   Brad Whitlock, Tue Jun  3 10:39:54 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Wed Sep  9 16:56:24 PDT 2009
+//   I fixed a labelling problem.
+//
 // ****************************************************************************
 
 QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) : 
@@ -208,10 +211,10 @@ QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) :
     QHBoxLayout *topLayout = new QHBoxLayout(this);
     topLayout->setMargin(0);
     lineStyleComboBox = new QComboBox(this);
-    lineStyleComboBox->addItem(QIcon(style1Pixmap), "solid");
-    lineStyleComboBox->addItem(QIcon(style2Pixmap), "dash");
-    lineStyleComboBox->addItem(QIcon(style3Pixmap), "dash/dot");
-    lineStyleComboBox->addItem(QIcon(style4Pixmap), "dotted");
+    lineStyleComboBox->addItem(QIcon(style1Pixmap), tr("solid"));
+    lineStyleComboBox->addItem(QIcon(style2Pixmap), tr("dash"));
+    lineStyleComboBox->addItem(QIcon(style3Pixmap), tr("dotted"));
+    lineStyleComboBox->addItem(QIcon(style4Pixmap), tr("dash/dot"));
     lineStyleComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     lineStyleComboBox->setCurrentIndex(style);
     topLayout->addWidget(lineStyleComboBox);

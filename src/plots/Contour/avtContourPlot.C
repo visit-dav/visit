@@ -49,6 +49,7 @@
 #include <avtLookupTable.h>
 #include <ContourAttributes.h>
 #include <avtFeatureEdgesFilter.h>
+#include <avtLineToPolylineFilter.h>
 
 #include <math.h>
 #include <limits.h>
@@ -74,6 +75,9 @@
 //    Hank Childs, Fri Feb 15 15:42:08 PST 2008
 //    Initialize edgeFilter.
 //
+//    Brad Whitlock, Wed Sep  9 15:50:56 PDT 2009
+//    Added lineFilter.
+//
 // ****************************************************************************
 
 avtContourPlot::avtContourPlot()
@@ -85,6 +89,7 @@ avtContourPlot::avtContourPlot()
     numLevels     = 0;
     contourFilter = NULL; 
     edgeFilter    = NULL;
+    lineFilter    = NULL;
 
     //
     // This is to allow the legend to reference counted so the behavior can
@@ -110,6 +115,9 @@ avtContourPlot::avtContourPlot()
 //    Hank Childs, Fri Feb 15 15:42:08 PST 2008
 //    Initialize edgeFilter.
 //
+//    Brad Whitlock, Wed Sep  9 16:41:30 PDT 2009
+//    Added lineFilter.
+//
 // ****************************************************************************
 
 avtContourPlot::~avtContourPlot()
@@ -130,6 +138,12 @@ avtContourPlot::~avtContourPlot()
     {
         delete edgeFilter;
         edgeFilter = NULL;
+    }
+
+    if (lineFilter != NULL)
+    {
+        delete lineFilter;
+        lineFilter = NULL;
     }
 
     if (avtLUT != NULL)
@@ -663,7 +677,7 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
 }
 
 // ****************************************************************************
-//  Method: avtContourPlot::ApplyOperators
+//  Method: avtContourPlot::ApplyRenderingTransformation
 //
 //  Purpose:
 //      Performs the rendering transformation for an isocontour plot, namely,
@@ -678,7 +692,6 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
 //  Creation:   October 22, 2002 
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Feb 15 15:43:37 PST 2008
 //    Fix memory leak.
 //
@@ -687,17 +700,64 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
 avtDataObject_p
 avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
+    avtDataObject_p dob = input;
+
     if (atts.GetWireframe())
     {
         if (edgeFilter != NULL)
             delete edgeFilter;
         edgeFilter = new avtFeatureEdgesFilter();
         edgeFilter->SetInput(input);
-        return edgeFilter->GetOutput();
+        dob = edgeFilter->GetOutput();
     }
-    return input;
+
+    return dob;
 }
 
+// ****************************************************************************
+// Method: avtContourPlot::SetCurrentExtents
+//
+// Purpose: 
+//   Apply the current extents filter.
+//
+// Arguments:
+//   input : The input data object.
+//
+// Returns:    The output of a filter; another data object.
+//
+// Note:       We also apply the line to polyline filter just before the
+//             current extents filter in some cases because it's a good place
+//             in the pipeline since the data from different domains has already
+//             been gathered.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  9 16:47:10 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtDataObject_p
+avtContourPlot::SetCurrentExtents(avtDataObject_p input)
+{
+    avtDataObject_p dob = input;
+
+    // Add the line filter if needed.
+    if(dob->GetInfo().GetAttributes().GetTopologicalDimension() == 1 ||
+       atts.GetWireframe())
+    {
+        if(lineFilter != NULL)
+            delete lineFilter;
+        lineFilter = new avtLineToPolylineFilter;
+        lineFilter->SetInput(dob);
+        dob = lineFilter->GetOutput();
+    }
+
+    // Let the base class apply its filters too.
+    dob = avtSurfaceDataPlot::SetCurrentExtents(dob);
+
+    return dob;
+}
 
 // ****************************************************************************
 //  Method: avtContourPlot::CustomizeBehavior
@@ -822,6 +882,9 @@ avtContourPlot::CustomizeMapper(avtDataObjectInformation &info)
 //    Hank Childs, Fri Feb 15 15:42:57 PST 2008
 //    Release data with edge filter.
 //
+//    Brad Whitlock, Wed Sep  9 16:50:36 PDT 2009
+//    Release lineFilter data.
+//
 // ****************************************************************************
 
 void
@@ -836,6 +899,10 @@ avtContourPlot::ReleaseData(void)
     if (edgeFilter != NULL)
     {
         edgeFilter->ReleaseData();
+    }
+    if (lineFilter != NULL)
+    {
+        lineFilter->ReleaseData();
     }
 }
 

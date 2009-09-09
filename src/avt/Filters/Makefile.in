@@ -108,6 +108,9 @@
 #    Dave Pugmire, Tue Feb  3 10:56:45 EST 2009
 #    Add the streamline algorithm code.
 #
+#    Brad Whitlock, Fri Aug 28 11:31:24 PDT 2009
+#    I added avtLineToPolylineFilter.C
+#
 ##############################################################################
 
 ##
@@ -137,6 +140,7 @@ SRC=\
  avtImageCompositer.C \
  avtLinearTransformFilter.C \
  avtLineScanFilter.C \
+ avtLineToPolylineFilter.C \
  avtLineoutFilter.C \
  avtMassVoxelExtractor.C \
  avtMeshLogFilter.C \

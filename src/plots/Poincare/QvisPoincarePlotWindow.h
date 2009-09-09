@@ -106,7 +106,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
   private slots:
     void sourceTypeChanged(int val);
     void maxStepLengthProcessText();
-    void terminationProcessText();
+    void minPuncturesProcessText();
+    void maxPuncturesProcessText();
     void pointSourceProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
@@ -124,7 +125,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void lightingFlagChanged(bool val);
     void relTolProcessText();
     void absTolProcessText();
-    void terminationTypeChanged(int val);
     void integrationTypeChanged(int val);
     void showStreamlinesChanged(bool val);
     void showPointsChanged(bool val);
@@ -150,7 +150,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QGroupBox *sourceAtts;
     QComboBox *directionType;
     QLineEdit *maxStepLength;
-    QLineEdit *termination;
+    QLineEdit *minPunctures;
+    QLineEdit *maxPunctures;
     QLineEdit *relTol;
     QLineEdit *absTol;
     QLineEdit *pointSource;
@@ -167,7 +168,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *intPlnLocationLabel;
     QLabel *intPlnNormalLabel;
     */
-    QComboBox *terminationType;
     QComboBox *integrationType;
 
     // display options
@@ -200,7 +200,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     // labels
     QLabel *sourceTypeLabel;
     QLabel *maxStepLengthLabel;
-    QLabel *terminationLabel;
+    QLabel *minPuncturesLabel;
+    QLabel *maxPuncturesLabel;
     QLabel *pointSourceLabel;
     QLabel *lineStartLabel;
     QLabel *lineEndLabel;

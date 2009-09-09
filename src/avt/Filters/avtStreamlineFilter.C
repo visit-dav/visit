@@ -1251,10 +1251,12 @@ avtStreamlineFilter::Execute(void)
 #else
     slAlgo = new avtSerialSLAlgorithm(this);
 #endif
+
     InitialIOTime = visitTimer->LookupTimer("Reading dataset");
+    
     slAlgo->Initialize(seedpoints);
     slAlgo->Execute();
-    
+
     while (ContinueExecute())
     {
         slAlgo->ResetStreamlinesForContinueExecute();
@@ -1896,28 +1898,36 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     int numSteps = slSeg->sl->size();
     avtIVPSolver::Result result;
 
-    if (intersectObj)
+    // When restarting a streamline one step is always taken. To avoid
+    // this unneed step check to see if the termination criteria was
+    // previously met.
+    if( ! slSeg->terminated )
+    {
+      if (intersectObj)
         slSeg->sl->SetIntersectionObject(intersectObj);
 
-    if (doPathlines)
-    {
+      if (doPathlines)
+      {
         avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
         result = slSeg->sl->Advance(&field,
                                     slSeg->terminationType,
                                     slSeg->termination);
-
-        if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
-            if (t2 < end)
-                result = avtIVPSolver::OUTSIDE_DOMAIN; // outside in time
-    }
-    else
-    {
+      }
+      else
+      {
         avtIVPVTKField field(velocity1);
         result = slSeg->sl->Advance(&field,
                                     slSeg->terminationType,
                                     slSeg->termination);
+      }
+
+      // Termination criteria was met.
+      slSeg->terminated = (result == avtIVPSolver::TERMINATE);
+	
     }
-    
+    else
+      result = avtIVPSolver::TERMINATE;
+
     numSteps = slSeg->sl->size() - numSteps;
     //slSeg->Debug();
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)

@@ -157,6 +157,7 @@ class AVTFILTERS_API avtStreamlineWrapper
 
     double termination;
     avtIVPSolver::TerminateType terminationType;
+    bool terminated;
     avtStreamline *sl;
 
     // Helpers needed for computing streamlines
