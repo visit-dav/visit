@@ -220,6 +220,9 @@ void  TestForConfigFiles(const char *component);
  *   Kathleen Bonnell, Tue Mar 17 16:55:32 MST 2009 
  *   Added 'TestForConfigFiles' and attendant methods.
  *
+ *   Kathleen Bonnell, Frid Sep 11 10:43:57 MST 2009
+ *   Changed mpeg2encode executable to the correct name.
+ *
  *****************************************************************************/
 
 int
@@ -297,7 +300,7 @@ main(int argc, char *argv[])
         }
         else if(ARG("-mpeg2encode"))
         {
-            strcpy(component, "mpeg2enc.exe");
+            strcpy(component, "mpeg2encode.exe");
             addVISITARGS = 1;
         }
         else if(ARG("-transition"))
