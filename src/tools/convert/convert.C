@@ -648,6 +648,9 @@ int main(int argc, char *argv[])
 //    Brad Whitlock, Tue Jun 24 16:57:45 PDT 2008
 //    Pass in the DatabasePluginManager pointer.
 //
+//    Hank Childs, Fri Sep 11 17:53:31 CDT 2009
+//    Only have proc 0 output error message.  Also call MPI_Finalize.
+//
 // ****************************************************************************
 
 static void
@@ -657,59 +660,63 @@ UsageAndExit(DatabasePluginManager *dbmgr, const char *argv0)
     while (progname > argv0 && *(progname-1) != '/')
         progname--;
 
-    cerr << "Usage: " << progname
-         << " <input-file> <output-file> <output-type> [OPTIONS]\n";
-
-    cerr << endl;
-    cerr << "Available options:" << endl;
-    cerr << "\t-clean" << endl;
-    cerr << "\t-target_chunks   <number>" << endl;
-    cerr << "\t-target_zones    <number>" << endl;
-    cerr << "\t-variable        <variable>" << endl;
-    cerr << "\t-no_options" << endl;
-    cerr << "\t-assume_format   <input_format>" << endl;
-    cerr << "\t-fallback_format <input_format>" << endl;
-    cerr << endl;
-    cerr << "Option descriptions:" << endl;
-    cerr << "  -clean should be specified when all clean zones are desired." << endl;
-    cerr << "   In this case material interface reconstruction will be performed." << endl;
-    cerr << endl;
-    cerr << "  -target_zones specifies what the total number of zones in the output" << endl;
-    cerr << "   should be." << endl;
-    cerr << endl;
-    cerr << "  -target_chunks should be specified when the chunks should be" << endl;
-    cerr << "   repartitioned.  This is often used in conjunction with -target_zones." << endl;
-    cerr << endl;
-    cerr << "  -variable specifies which variable should be processed." << endl;
-    cerr << "  There can be multiple -variable options on the command line." << endl;
-    cerr << "  Each one specifies the name of an additional variable to process." << endl;
-    cerr << endl;
-    cerr << "  -assume_format specifies the plugin format type to try first" << endl;
-    cerr << endl;
-    cerr << "  -fallback_format specifies a plugin format type to try if the" << endl;
-    cerr << "   guessing based on file extension failes" << endl;
-    cerr << endl;
-    cerr << "  -no_options skips option entry, instead using only default values" << endl;
-    cerr << "  where defaults are taken first from your config file unless -noconfig" << endl;
-    cerr << "  is specified and then from defaults as specified by the plugin." << endl;
-    cerr << endl;
-    cerr << "Example (one timestep):" << endl;
-    cerr << "  visitconvert_ser run1.exodus run1.silo Silo" << endl;
-    cerr << "Example (multi-timestep):" << endl;
-    cerr << "  visitconvert_ser run1.exodus run%04d.silo Silo" << endl;
-    cerr << "Example (scaling study):" << endl;
-    cerr << "  visitconvert_ser rect.silo rect BOV -target_chunks 512  \\" << endl;
-    cerr << "                 -target_zones 512000000 -variable var1" << endl;
-    cerr << endl;
-    cerr << "Acceptable output types are: " << endl;
-    for (int i = 0 ; i < dbmgr->GetNAllPlugins() ; i++)
+    if (PAR_Rank() == 0)
     {
-        string plugin = dbmgr->GetAllID(i);
-        if (dbmgr->PluginHasWriter(plugin))
-            cerr << "\t" << dbmgr->GetPluginName(plugin) << endl;
-    }
-    delete dbmgr;
+        cerr << "Usage: " << progname
+             << " <input-file> <output-file> <output-type> [OPTIONS]\n";
 
+        cerr << endl;
+        cerr << "Available options:" << endl;
+        cerr << "\t-clean" << endl;
+        cerr << "\t-target_chunks   <number>" << endl;
+        cerr << "\t-target_zones    <number>" << endl;
+        cerr << "\t-variable        <variable>" << endl;
+        cerr << "\t-no_options" << endl;
+        cerr << "\t-assume_format   <input_format>" << endl;
+        cerr << "\t-fallback_format <input_format>" << endl;
+        cerr << endl;
+        cerr << "Option descriptions:" << endl;
+        cerr << "  -clean should be specified when all clean zones are desired." << endl;
+        cerr << "   In this case material interface reconstruction will be performed." << endl;
+        cerr << endl;
+        cerr << "  -target_zones specifies what the total number of zones in the output" << endl;
+        cerr << "   should be." << endl;
+        cerr << endl;
+        cerr << "  -target_chunks should be specified when the chunks should be" << endl;
+        cerr << "   repartitioned.  This is often used in conjunction with -target_zones." << endl;
+        cerr << endl;
+        cerr << "  -variable specifies which variable should be processed." << endl;
+        cerr << "  There can be multiple -variable options on the command line." << endl;
+        cerr << "  Each one specifies the name of an additional variable to process." << endl;
+        cerr << endl;
+        cerr << "  -assume_format specifies the plugin format type to try first" << endl;
+        cerr << endl;
+        cerr << "  -fallback_format specifies a plugin format type to try if the" << endl;
+        cerr << "   guessing based on file extension failes" << endl;
+        cerr << endl;
+        cerr << "  -no_options skips option entry, instead using only default values" << endl;
+        cerr << "  where defaults are taken first from your config file unless -noconfig" << endl;
+        cerr << "  is specified and then from defaults as specified by the plugin." << endl;
+        cerr << endl;
+        cerr << "Example (one timestep):" << endl;
+        cerr << "  visitconvert_ser run1.exodus run1.silo Silo" << endl;
+        cerr << "Example (multi-timestep):" << endl;
+        cerr << "  visitconvert_ser run1.exodus run%04d.silo Silo" << endl;
+        cerr << "Example (scaling study):" << endl;
+        cerr << "  visitconvert_ser rect.silo rect BOV -target_chunks 512  \\" << endl;
+        cerr << "                 -target_zones 512000000 -variable var1" << endl;
+        cerr << endl;
+        cerr << "Acceptable output types are: " << endl;
+        for (int i = 0 ; i < dbmgr->GetNAllPlugins() ; i++)
+        {
+            string plugin = dbmgr->GetAllID(i);
+            if (dbmgr->PluginHasWriter(plugin))
+                cerr << "\t" << dbmgr->GetPluginName(plugin) << endl;
+        }
+        delete dbmgr;
+    }
+
+    PAR_Exit();
     exit(EXIT_FAILURE);
 }
 
