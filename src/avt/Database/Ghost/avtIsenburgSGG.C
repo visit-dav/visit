@@ -211,6 +211,11 @@ avtIsenburgSGG::GetNextDomain(void)
 //  Programmer: Hank Childs
 //  Creation:   February 10, 2008
 //
+//  Modifications:
+//   
+//     Hank Childs, Sat Sep 12 11:55:10 PDT 2009
+//     Fix indexing problem with setting up y+ ghost cells.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -295,7 +300,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     offset += dims[1];
     if (offset < size_out[1])
     {
-        ds->GetPoint(dims[0]*dims[1] - dims[0] , pt1);
+        ds->GetPoint(dims[0]*dims[1]-1-dims[0] , pt1);
         ds->GetPoint(dims[0]*dims[1]-1, pt2);
         int numExtra = size_out[1] - offset;
         for (i = 0 ; i < numExtra ; i++)
