@@ -688,6 +688,12 @@
 #     visit-bin-dist work on other machines. Added comments for necessary changes
 #     to switch to Qt 4.5.
 #
+#     Gunther H. Weber, Tue Sep 15 11:35:19 PDT 2009
+#     Only use first two components of gcc version in architecture string
+#     since the "least significant" portion of the version number can
+#     be changed by gcc maintenance updates (at least on Ubuntu) and these
+#     updated maintain binary compatibility.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -8905,8 +8911,8 @@ fi
 if [[ $VISITARCH == "" ]] ; then
     export VISITARCH=${ARCH}_${C_COMPILER}
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
-       VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
-       if [[ ${#VERSION} == 5 ]] ; then
+       VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
+       if [[ ${#VERSION} == 3 ]] ; then
           VISITARCH=${VISITARCH}-${VERSION}
        fi
     fi
