@@ -127,6 +127,9 @@ class DBOptionsAttributes;
 //    Gunther H. Weber, Wed Jun 10 18:25:34 PDT 2009
 //    Added support for particle data in Chombo files
 //
+//    Gunther H. Weber, Tue Sep 15 11:25:21 PDT 2009
+//    Added support for 3D mappings for 2D files
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -175,6 +178,8 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     bool                   enableOnlyRootLevel;
     bool                   enableOnlyExplicitMaterials;
     bool                   checkForMappingFile;
+    bool                   mappingFileExists;
+    bool                   mappingIs3D;
 
     std::vector<int>       lowProbI;
     std::vector<int>       hiProbI;

@@ -113,6 +113,9 @@ using     std::string;
 //    Hank Childs, Sun Jan 25 15:39:08 PST 2009
 //    Improve support for ghost data.
 //
+//    Gunther H. Weber, Tue Sep 15 11:26:12 PDT 2009
+//    Added support for 3D mappings for 2D files.
+//
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
@@ -125,6 +128,8 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
     enableOnlyRootLevel = false;
     enableOnlyExplicitMaterials = false;
     checkForMappingFile = true;
+    mappingFileExists = false;
+    mappingIs3D = false;
     if (atts != NULL)
     {
         for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
@@ -365,6 +370,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //
 //    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
 //    Added ability to handle particle data in Chombo files.
+//
+//    Gunther H. Weber, Tue Sep 15 11:26:12 PDT 2009
+//    Added support for 3D mappings for 2D files.
 //
 // ****************************************************************************
 
@@ -948,11 +956,6 @@ avtChomboFileFormat::InitializeReader(void)
     }
  
     //
-    // Re-enable HDF5's automatic diagnostic output
-    //
-    H5Eset_auto(h5e_autofunc, h5e_clientdata);
-
-    //
     // The domain nesting takes a while to calculate.  We don't need the
     // data structure if we are on the mdserver.  But we do if we're on the
     // engine.  So only calculate it conditionally.
@@ -988,6 +991,82 @@ avtChomboFileFormat::InitializeReader(void)
     {
 	++nMaterials; // There is always one extra material
     }
+
+    //
+    // Check for mapping file and whether mapping is 3D
+    //
+    if (checkForMappingFile)
+    {
+        std::string mappingFilename(filenames[0]);
+        size_t extPos = mappingFilename.find(".hdf5");
+        if  (extPos == std::string::npos)
+        {
+            extPos = mappingFilename.find(".h5");
+        }
+
+        if (extPos != std::string::npos)
+        {
+            mappingFilename.insert(extPos, ".map");
+
+            VisItStat_t fs;
+            if (VisItStat(mappingFilename.c_str(), &fs) == 0)
+            {
+                hid_t mapping_file_handle = H5Fopen(mappingFilename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                if (mapping_file_handle > 0)
+                {
+                    hid_t slash = H5Gopen(mapping_file_handle, "/");
+                    if (slash > 0)
+                    {
+                        hid_t ncomponents_id = H5Aopen_name(slash, "num_components");
+                        if (ncomponents_id > 0)
+                        {
+                            int mapping_ncomponents;
+                            H5Aread(ncomponents_id, H5T_NATIVE_INT, &mapping_ncomponents);
+                            if (mapping_ncomponents == 2)
+                            {
+                                mappingFileExists = true;
+                            }
+                            else if (mapping_ncomponents == 3)
+                            {
+                                mappingFileExists = true;
+                                mappingIs3D = true;
+                                std::cout << "3D mapping" << std::endl;
+                            }
+                            else
+                            {
+                                debug1 << "Ignoring mapping file since it has ";
+                                debug1 << mapping_ncomponents << " instead of expected ";
+                                debug1 << "two or three components." << std::endl;
+                            }
+                            H5Aclose(ncomponents_id);
+                        }
+                        else
+                        {
+                            debug1 << "Ignoring mapping file since it has no ";
+                            debug1 << "\"num_components\" attribute" << std::endl;
+                        }
+                        H5Gclose(slash);
+                    }
+                    else
+                    {
+                        debug1 << "Ignoring mapping file since I cannot open its ";
+                        debug1 << "root group." << std::endl;
+                    }
+                    H5Fclose(mapping_file_handle);
+                }
+                else
+                {
+                    debug1 << "Igonoring mapping file since it is not an HDF5 file.";
+                    debug1 << std::endl;
+                }
+            }
+        }
+    }
+
+    //
+    // Re-enable HDF5's automatic diagnostic output
+    //
+    H5Eset_auto(h5e_autofunc, h5e_clientdata);
 }
 
 
@@ -1275,6 +1354,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Only set cycle in metadata if it can be determined. Otherwise announce
 //    that it is not accurate.
 //
+//    Gunther H. Weber, Tue Sep 15 11:26:12 PDT 2009
+//    Added support for 3D mappings for 2D files.
+//
 // ****************************************************************************
 
 void
@@ -1306,6 +1388,10 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->blockOrigin = 0;
     mesh->spatialDimension = dimension;
     mesh->topologicalDimension = dimension;
+    if (dimension == 2 && checkForMappingFile && mappingFileExists && mappingIs3D)
+    {
+        mesh->spatialDimension = 3;
+    }
     mesh->hasSpatialExtents = true;
     mesh->minSpatialExtents[0] = lowProbI[0] * dx[0];
     mesh->maxSpatialExtents[0] = (hiProbI[0] + 1) * dx[0];
@@ -1590,8 +1676,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             mappingFilename.insert(extPos, ".map");
 
-            VisItStat_t fs;
-            if (VisItStat(mappingFilename.c_str(), &fs) == 0)
+            if (mappingFileExists)
             {
                 debug5 << "Found mapping file " << mappingFilename << ". ";
                 debug5 << "Adding cmfe expression!" << std::endl;
@@ -1624,7 +1709,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 mappingExpression->SetType(Expression::VectorMeshVar);
                 mappingExpression->SetHidden(false);
 
-                if (dimension == 2)
+                if (dimension == 2 && !mappingIs3D)
                     mappingExpression->SetDefinition(
                             "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
                             "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]}");
