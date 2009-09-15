@@ -60,6 +60,11 @@
 #   Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
 #   Don't forget to remove the Makefile in distclean.
 #
+#   Gunther H. Weber, Tue Sep 15 11:45:18 PDT 2009
+#   If it is possible to call Qt 4 version of moc explicitely (on systems
+#   with alternatives), specify that we want to use the Qt 4 version of
+#   moc.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -68,9 +73,13 @@
 all: mocprogram
 
 mocprogram:
-	if test -n "@QT_BIN@"; then               \
+	if test -n "@QT_BIN@"; then              \
 	    $(RM) moc                        ;   \
-	    ln -s @QT_BIN@/moc moc        ;   \
+	    if test -x @QT_BIN@/moc-qt4; then    \
+	        ln -s @QT_BIN@/moc-qt4 moc   ;   \
+	    else                                 \
+	        ln -s @QT_BIN@/moc moc       ;   \
+	    fi                               ;   \
 	fi
 
 clean:
