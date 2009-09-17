@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+  <Plugin name="Adios" type="database" label="Adios" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
+    <CXXFLAGS>
+      $(ADIOS_INCLUDE)
+    </CXXFLAGS>
+    <LDFLAGS>
+      $(ADIOS_LIB)
+    </LDFLAGS>
+    <Extensions>
+      bp
+    </Extensions>
+    <LIBS components="M">
+      -ladiosread_nompi
+    </LIBS>
+    <LIBS components="ESer">
+      -ladiosread_nompi
+    </LIBS>
+    <LIBS components="EPar">
+      -ladiosread
+    </LIBS>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
