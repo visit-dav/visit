@@ -975,6 +975,9 @@ dnl
 dnl    Gunther H. Weber, Thu Sep  3 10:25:58 PDT 2009
 dnl    Do not try to link to librt on Darwin systems when FastBit is detected.
 dnl    It does not exist here.
+dnl
+dnl    Dave Pugmire, Thu Sep 17 11:59:07 EDT 2009
+dnl    Add Adios thirdparty library
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2710,6 +2713,45 @@ AC_SUBST(FASTBIT)
 AC_SUBST(FASTBIT_INCLUDE)
 AC_SUBST(FASTBIT_LIB)
 AC_SUBST(FASTBIT_LIBDIR)
+
+#
+# Look for Adios
+#
+AC_MSG_CHECKING(for Adios)
+ADIOS=""
+ADIOS_INCLUDE=""
+ADIOS_LIB=""
+AC_ARG_WITH(adios,
+            [  --with-adios=INC-DIR,LIB-DIR      Location of Adios header and library],
+           adios_specified="yes",
+           adios_specified="no"
+           )
+if test "$adios_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      ADIOS_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      ADIOS_LIB="-L`echo $withval |cut -f2 -d, -s` -ladiosread"
+   fi
+else
+   if test "$DEFAULT_ADIOS_INCLUDE" != "" ; then
+      ADIOS_INCLUDE="-I$DEFAULT_ADIOS_INCLUDE"
+   fi
+   if test "$DEFAULT_ADIOS_LIB" != "" ; then
+      ADIOS_LIB="-L$DEFAULT_ADIOS_LIB -ladiosread"
+   fi
+fi
+if test "$ADIOS_LIB" != "" ; then
+   if test "$ADIOS_INCLUDE" != "" ; then
+      ADIOS="$""(ADIOS)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(ADIOS)
+AC_SUBST(ADIOS_INCLUDE)
+AC_SUBST(ADIOS_LIB)
 
 #
 # Look for ViSUS 
