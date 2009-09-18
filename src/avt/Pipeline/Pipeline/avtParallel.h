@@ -111,4 +111,5 @@ PIPELINE_API void    WaitSome(std::vector<int> &reqs, std::vector<int> &done, st
 PIPELINE_API void    TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
 PIPELINE_API void    CancelRequest(void *req);
 
+PIPELINE_API void    PullInMPI_IOSymbols();
 #endif
