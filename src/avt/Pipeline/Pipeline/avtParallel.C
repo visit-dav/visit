@@ -2131,3 +2131,44 @@ CancelRequest(void *req)
     MPI_Cancel(static_cast<MPI_Request*>(req));
 #endif
 }
+
+// ****************************************************************************
+//  Function: PullInMPI_IOSymbols()
+//
+//  Purpose:
+//    Don't call this, this is just to pull in MPI IO symbols.
+//
+//  Arguments:
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 17, 2009
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+PullInMPI_IOSymbols()
+{
+#ifdef PARALLEL
+
+    //Don't call this!
+    EXCEPTION1(ImproperUseException, "Do not call PullInMPI_IOSymbols");
+
+    MPI_Info info;
+    MPI_File fh;
+    MPI_Offset sz;
+    char *nm;
+    int whence;
+    void *buf;
+    int count;
+    MPI_Datatype datatype;
+    MPI_Status status;
+
+    MPI_File_open(VISIT_MPI_COMM, nm, 0, info, &fh);
+    MPI_File_get_size(fh, &sz);
+    MPI_File_seek(fh, sz, whence);
+    MPI_File_read(fh, buf, count, datatype, &status);
+#endif
+}
