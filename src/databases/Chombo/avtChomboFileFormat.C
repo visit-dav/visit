@@ -1030,7 +1030,6 @@ avtChomboFileFormat::InitializeReader(void)
                             {
                                 mappingFileExists = true;
                                 mappingIs3D = true;
-                                std::cout << "3D mapping" << std::endl;
                             }
                             else
                             {
