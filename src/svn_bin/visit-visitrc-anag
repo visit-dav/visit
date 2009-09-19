@@ -45,7 +45,7 @@ def SetupSlice():
     varname = m.GetScalars(0).name
     meshname = m.GetMeshes(0).name
 
-    if m.GetMeshes(0).spatialDimension == 2:
+    if m.GetMeshes(0).topologicalDimension == 2:
         AddMappingDisplacementOperator()
         HideActivePlots()
         AddPlot("Pseudocolor", varname)
@@ -118,7 +118,7 @@ def SetupIsosurf():
     m = GetMetaData(filename)
     varname = m.GetScalars(0).name
     
-    if m.GetMeshes(0).spatialDimension == 2:
+    if m.GetMeshes(0).topologicalDimension == 2:
         # In two dimensions add a simple contour plot ...
         AddPlot("Contour", varname)
         # ... with 10 black contour lines evenly spaced within the fuctnion range
@@ -178,7 +178,7 @@ def SetupBoundary():
         BoundaryAtts = BoundaryAttributes()
         BoundaryAtts.colorType = BoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
         BoundaryAtts.legendFlag = 0
-        if m.GetMeshes(0).spatialDimension == 2:
+        if m.GetMeshes(0).topologicalDimension == 2:
             BoundaryAtts.singleColor = (0, 0, 0, 255)
             BoundaryAtts.lineWidth = 1
         else:
