@@ -1038,8 +1038,11 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
 //   Totally rewrote to support reading data from multiple bases. It's more
 //   modular too.
 //
-//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//    Changed interface to DebugStream to obtain current debug level.
+//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
+//   Changed interface to DebugStream to obtain current debug level.
+//
+//   Mark C. Miller, Mon Sep 21 14:17:47 PDT 2009
+//   Adding missing calls to actually set the times/cycles in the metadata.
 // ****************************************************************************
 
 void
@@ -1051,7 +1054,11 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // Read the times if we have not read them yet.
     ReadTimes();
     md->SetTimesAreAccurate(cgnsTimesAccurate);    
+    if (cgnsTimesAccurate)
+        md->SetTimes(times);
     md->SetCyclesAreAccurate(cgnsCyclesAccurate);    
+    if (cgnsCyclesAccurate)
+        md->SetCycles(cycles);
 
     // Get the title
     char *refstate = 0;
