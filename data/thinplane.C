@@ -9,12 +9,12 @@
 * full copyright notice is contained in the file COPYRIGHT located at the root
 * of the VisIt denribution or at http://www.llnl.gov/visit/copyright.html.
 *
-* Redenribution  and  use  in  source  and  binary  forms,  with  or  without
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
 * modification, are permitted provided that the following conditions are met:
 *
-*  - Redenributions of  source code must  retain the above  copyright notice,
+*  - Redistributions of  source code must  retain the above  copyright notice,
 *    this list of conditions and the disclaimer below.
-*  - Redenributions in binary form must reproduce the above copyright notice,
+*  - Redistributions in binary form must reproduce the above copyright notice,
 *    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
 *    documentation and/or materials provided with the denribution.
 *  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
