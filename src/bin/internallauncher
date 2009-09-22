@@ -520,6 +520,10 @@ $0 = shift @ARGV;
 #    Tom Fogal, Mon Aug 24 11:27:50 MDT 2009
 #    gdb: allow pending breakpoints.
 #
+#    Gunther H. Weber, Tue Sep 22 15:57:16 PDT 2009
+#    Do not set PYTHONPATH and PYTHONHOME if VisIt install does not contain
+#    "private" Python version.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2009,13 +2013,16 @@ else
 {
     $ENV{LIBPATH} = "$visitlibdir:$ENV{LIBPATH_VISITORIG}";
 }
-if ($ENV{PYTHONPATH_VISITORIG} eq "")
+if (-x $visitlibdir/python)
 {
-    $ENV{PYTHONPATH} = "$visitlibdir/python";
-}
-else
-{
-    $ENV{PYTHONPATH} = "$visitlibdir/python:$ENV{PYTHONPATH_VISITORIG}";
+    if ($ENV{PYTHONPATH_VISITORIG} eq "")
+    {
+        $ENV{PYTHONPATH} = "$visitlibdir/python";
+    }
+    else
+    {
+        $ENV{PYTHONPATH} = "$visitlibdir/python:$ENV{PYTHONPATH_VISITORIG}";
+    }
 }
 
 # Add /usr/local/lib to the shared library path.  This was added for the
@@ -2091,13 +2098,16 @@ $ENV{VISITHOME}     = "$visitdir";
 $ENV{VISITARCHHOME} = "$visitarchdir";
 $ENV{VISITHELPHOME} = "$visithelpdir";
 $ENV{VISITULTRAHOME} = "$visitultradir";
-$ENV{PYTHONHOME}    = "$visitlibdir/python";
-
-# Some engine launchers (like MPICH2's mpirun) may be python-based
-# and we don't want to point them to our python environment.
-if ($exe_name eq "engine_par")
+if (-x $visitlibdir/python)
 {
-    delete $ENV{PYTHONHOME};
+    $ENV{PYTHONHOME}    = "$visitlibdir/python";
+
+    # Some engine launchers (like MPICH2's mpirun) may be python-based
+    # and we don't want to point them to our python environment.
+    if ($exe_name eq "engine_par")
+    {
+        delete $ENV{PYTHONHOME};
+    }
 }
 
 # Turn off trapping of floating point exceptions.

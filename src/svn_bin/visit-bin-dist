@@ -413,6 +413,11 @@
 #    install names in build_visit. Furthermore, QtHelp depends on libQtCLucene
 #    (at least on Macs), which we do not copy. Since we do not link to QtHelp
 #    or QtXmlPatterns, I commented out the iines copying them.
+#    Gunther H. Weber, Tue Sep 22 14:42:47 PDT 2009
+#    Determine Mesa and OSMesa major release version via readlink and cut
+#    since old method did not work for Mesa 7.5. Do not copy python or qt
+#    when npython or nqt options are used.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -691,14 +696,15 @@ if ("$os" == "darwin") then
     set MesaOSMesaLibName = "libOSMesa.$SHLIB_SOEXT"
     set MesaMesaGLLibName = "libMesaGL.$SHLIB_SOEXT"
 else 
-    set MesaOSMesaLibName = `cd $VisItDir/lib && ls libOSMesa.$SHLIB_SOEXT.?.?.??????`
-    set MesaMesaGLLibName = `cd $VisItDir/lib && ls libMesaGL.$SHLIB_SOEXT.?.?.??????`
+    set MesaOSMesaLibFile = `readlink -f $VisItDir/lib/libOSMesa.$SHLIB_SOEXT`
+    set MesaMesaGLLibFile = `readlink -f $VisItDir/lib/libMesaGL.$SHLIB_SOEXT`
+    set MesaOSMesaLibName = `basename $MesaOSMesaLibFile`
+    set MesaMesaGLLibName = `basename $MesaMesaGLLibFile`
     if ("$MesaOSMesaLibName" == "") then
         set MesaOSMesaLibName = "libOSMesa.$SHLIB_SOEXT"
         set MesaMesaGLLibName = "libMesaGL.$SHLIB_SOEXT"
     endif
 endif
-
 
 #
 # Check that the Mesa libraries exist.
@@ -1200,45 +1206,47 @@ endif
 #
 #`foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
 #foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
-foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
-    if ("$os" != "darwin") then
-        cp $VisItDir/lib/$qlib $libdir
-        set libnoext = `echo $qlib | awk '{i=index($1,".so"); print substr($1,1,i-1)}'`
-        set majorVersion = `echo $qlib | awk '{i=index($1,"so."); split(substr($1,i+3),v,"."); print v[1]}'`
-        set minorVersion = `echo $qlib | awk '{i=index($1,"so."); split(substr($1,i+3),v,"."); print v[2]}'`
-        pushd . > /dev/null
-        cd $libdir
-        if (! -e $libnoext.so.$majorVersion.$minorVersion) then
-            ln -s $qlib $libnoext.so.$majorVersion.$minorVersion
-        endif
-        if (! -e $libnoext.so.$majorVersion) then
-            ln -s $qlib $libnoext.so.$majorVersion
-        endif
-        if (! -e $libnoext.so) then
-            ln -s $qlib $libnoext.so
-        endif
-        if (-e $VisItDir/lib/$libnoext.a) then
-            ln -s $qlib $libnoext.a
-        endif
-        popd > /dev/null
-    else
-        if(-d $VisItDir/lib/$qlib) then
-            # Copy the framework directory. Since it can have symlinks and all 
-            # sorts of stuff in it, use tar to copy the contents.
-            set startdir=`pwd`
-            mkdir "$libdir/$qlib"
-            cd $VisItDir/lib/$qlib
-            tar cf $startdir/frameworktmp.tar * > /dev/null
-            cd $startdir
-            cd $libdir/$qlib
-            tar xvf $startdir/frameworktmp.tar > /dev/null
-            cd $startdir
-            rm -f frameworktmp.tar
-        else
+if("$QtLibs" == "TRUE") then
+    foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
+        if ("$os" != "darwin") then
             cp $VisItDir/lib/$qlib $libdir
+            set libnoext = `echo $qlib | awk '{i=index($1,".so"); print substr($1,1,i-1)}'`
+            set majorVersion = `echo $qlib | awk '{i=index($1,"so."); split(substr($1,i+3),v,"."); print v[1]}'`
+            set minorVersion = `echo $qlib | awk '{i=index($1,"so."); split(substr($1,i+3),v,"."); print v[2]}'`
+            pushd . > /dev/null
+            cd $libdir
+            if (! -e $libnoext.so.$majorVersion.$minorVersion) then
+                ln -s $qlib $libnoext.so.$majorVersion.$minorVersion
+            endif
+            if (! -e $libnoext.so.$majorVersion) then
+                ln -s $qlib $libnoext.so.$majorVersion
+            endif
+            if (! -e $libnoext.so) then
+                ln -s $qlib $libnoext.so
+            endif
+            if (-e $VisItDir/lib/$libnoext.a) then
+                ln -s $qlib $libnoext.a
+            endif
+            popd > /dev/null
+        else
+            if(-d $VisItDir/lib/$qlib) then
+                # Copy the framework directory. Since it can have symlinks and all 
+                # sorts of stuff in it, use tar to copy the contents.
+                set startdir=`pwd`
+                mkdir "$libdir/$qlib"
+                cd $VisItDir/lib/$qlib
+                tar cf $startdir/frameworktmp.tar * > /dev/null
+                cd $startdir
+                cd $libdir/$qlib
+                tar xvf $startdir/frameworktmp.tar > /dev/null
+                cd $startdir
+                rm -f frameworktmp.tar
+            else
+                cp $VisItDir/lib/$qlib $libdir
+            endif
         endif
-    endif
-end
+    end
+endif
 
 #
 # Copy the Mesa libraries to the distribution.
@@ -1247,14 +1255,14 @@ cp $VisItDir/lib/$MesaOSMesaLibName $libdir/$MesaOSMesaLibName
 cp $VisItDir/lib/$MesaMesaGLLibName $libdir/$MesaMesaGLLibName
 
 if ("$os" != "darwin") then
-    set OSMesaMajorVersion = `echo $MesaOSMesaLibName | awk '{printf substr($1, 14, 1)}'`
-    set MesaGLMajorVersion = `echo $MesaMesaGLLibName | awk '{printf substr($1, 14, 1)}'`
+    set OSMesaMajorVersion = `echo $MesaOSMesaLibName | cut -c 14`
+    set MesaGLMajorVersion = `echo $MesaMesaGLLibName | cut -c 14`
 
     if ("$OSMesaMajorVersion" != "") then
         ln -s $MesaOSMesaLibName $libdir/libOSMesa.so.$OSMesaMajorVersion
-        ln -s $MesaOSMesaLibName $libdir/libOSMesa.so
+        ln -s libOSMesa.so.$OSMesaMajorVersion $libdir/libOSMesa.so
         ln -s $MesaMesaGLLibName $libdir/libMesaGL.so.$MesaGLMajorVersion
-        ln -s $MesaMesaGLLibName $libdir/libMesaGL.so
+        ln -s libMesaGL.so.$MesaGLMajorVersion $libdir/libMesaGL.so
     endif
 endif
 
@@ -1268,7 +1276,7 @@ endif
 #
 # Copy Python to the distribution
 #
-if("$cli_exists" == "TRUE") then
+if(("$PythonExe" == "TRUE") && "$cli_exists" == "TRUE") then
     set pyver = `basename $VisItDir/lib/python/lib/python?.?`;
     mkdir $libdir/python
     mkdir $libdir/python/lib
