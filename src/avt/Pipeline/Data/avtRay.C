@@ -67,6 +67,9 @@ bool                        avtRay::kernelBasedSampling = false;
 //    Hank Childs, Mon Dec 31 13:13:44 PST 2001
 //    Initialize numRuns.
 //
+//    Hank Childs, Tue Sep 22 08:56:19 PDT 2009
+//    Use a static to initialize the validSample array more quickly.
+//
 // ****************************************************************************
 
 avtRay::avtRay(int ns, int nv)
@@ -83,11 +86,23 @@ avtRay::avtRay(int ns, int nv)
     {
         sample[i] = NULL;
     }
-    validSample = new bool[numSamples];
-    for (i = 0 ; i < numSamples ; i++)
+    static bool *staticAllFalse = NULL;
+    static int   staticNumSamps = -1;
+    if (numSamples != staticNumSamps)
     {
-        validSample[i] = false;
+        if (staticAllFalse != NULL)
+            delete [] staticAllFalse;
+        staticAllFalse = new bool[numSamples];
+        for (i = 0 ; i < numSamples ; i++)
+        {
+            staticAllFalse[i] = false;
+        }
+        staticNumSamps = numSamples;
     }
+
+    validSample = new bool[numSamples];
+    memcpy(validSample, staticAllFalse, sizeof(bool)*numSamples);
+
     numValidSamples = 0;
     numRuns = 0;
 }
