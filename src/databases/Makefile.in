@@ -370,6 +370,9 @@
 #   Dave Pugmire, Wed Jun  3 13:56:09 EDT 2009
 #   Added PlasmaState reader.
 #
+#   Brad Whitlock, Mon Sep 14 15:45:59 PDT 2009
+#   I added the Adventure reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -377,6 +380,7 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
+ADVIO=Adventure
 BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 CFITSIO=FITS
@@ -471,7 +475,7 @@ REQUIRED=\
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve2D RAW VTK
 
-THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5_TARGET@ @SILO_TARGET@ @PDB_TARGET@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @H5PART@ @CCMIO@ @SIMULATION@ @FASTBIT@ @ADIOS@
+THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5_TARGET@ @SILO_TARGET@ @PDB_TARGET@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @H5PART@ @CCMIO@ @SIMULATION@ @FASTBIT@ @ADVIO@ @ADIOS@
 
 SUBDIRS=@DB_BUILD_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(THIRDPARTY_DEPENDENT) $(SAMPLES) $(OPTIONAL)
