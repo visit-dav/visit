@@ -976,8 +976,12 @@ dnl    Gunther H. Weber, Thu Sep  3 10:25:58 PDT 2009
 dnl    Do not try to link to librt on Darwin systems when FastBit is detected.
 dnl    It does not exist here.
 dnl
+dnl    Brad Whitlock, Mon Sep 14 15:43:19 PDT 2009
+dnl    I added AdvIO support.
+dnl
 dnl    Dave Pugmire, Thu Sep 17 11:59:07 EDT 2009
 dnl    Add Adios thirdparty library
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3204,6 +3208,46 @@ AC_SUBST(CCMIO)
 AC_SUBST(CCMIO_INCLUDE)
 AC_SUBST(CCMIO_LIBS)
 AC_SUBST(CCMIO_LIBDIR)
+
+#
+# Look for AdvIO
+#
+AC_MSG_CHECKING(for AdvIO)
+ADVIO=""
+ADVIO_INCLUDE=""
+ADVIO_LIB=""
+AC_ARG_WITH(advio,
+	    [  --with-advio=INC-DIR,LIB-DIR     Location of AdvIO headers and libraries],
+           advio_specified="yes",
+           advio_specified="no"
+           )
+if test "$advio_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      ADVIO_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      ADVIO_LIB_PATH="`echo $withval |cut -f2 -d, -s`"
+      ADVIO_LIB="$ADVIO_LIB_PATH/libAdvDocIO.a $ADVIO_LIB_PATH/libAdvFileIO.a $ADVIO_LIB_PATH/libAdvBase.a "
+   fi
+else
+   if test "$DEFAULT_ADVIO_INCLUDE" != "" ; then
+      ADVIO_INCLUDE="-I$DEFAULT_ADVIO_INCLUDE $ADVIO_INCLUDE"
+   fi
+   if test "$DEFAULT_ADVIO_LIB" != "" ; then
+      ADVIO_LIB="$DEFAULT_ADVIO_LIB/libAdvDocIO.a $DEFAULT_ADVIO_LIB/libAdvFileIO.a $DEFAULT_ADVIO_LIB/libAdvBase.a $ADVIO_LIB"
+   fi
+fi
+if test "$ADVIO_LIB" != "" ; then
+   if test "$ADVIO_INCLUDE" != "" ; then
+      ADVIO="$""(ADVIO)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(ADVIO)
+AC_SUBST(ADVIO_INCLUDE)
+AC_SUBST(ADVIO_LIB)
 
 #
 # Determine if we should enable the simulation APIs

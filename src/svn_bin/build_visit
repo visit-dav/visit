@@ -65,6 +65,7 @@
 #           HDF5     1.8.2    hdf5-1.8.2.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
+#           AdvIO    1.2.0    AdvIO-1.2.tar.gz
 #           Silo     4.7      silo-4.7.tar.gz
 #           szip     2.1      szip-2.1.tar.gz
 #
@@ -104,6 +105,7 @@
 #     Function 8.15, build_itaps_moab: build MOAB impl. of ITAPS
 #     Function 8.16, build_itaps_fmdb: build FMDB impl. of ITAPS
 #     Function 8.17, build_itaps_grummp: build GRUMMP impl. of ITAPS
+#     Function 8.18, build_advio:   build AdvIO
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -694,6 +696,9 @@
 #     be changed by gcc maintenance updates (at least on Ubuntu) and these
 #     updated maintain binary compatibility.
 #
+#     Brad Whitlock, Mon Sep 21 09:53:56 PDT 2009
+#     Adding support for AdvIO
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -864,6 +869,8 @@ export DO_HDF4="no"
 export ON_HDF4="off"
 export DO_HDF5="no"
 export ON_HDF5="off"
+export DO_ADVIO="no"
+export ON_ADVIO="off"
 export DO_BOXLIB="no"
 export ON_BOXLIB="off"
 export DO_CGNS="no"
@@ -1029,6 +1036,11 @@ export NETCDF_VERSION=${NETCDF_VERSION-"3.6.3"}
 export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
 export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"3.6"}
 export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-3.6.3"}
+
+export ADVIO_FILE=${ADVIO_FILE:-"AdvIO-1.2.tar.gz"}
+export ADVIO_VERSION=${ADVIO_VERSION:-"1.2"}
+export ADVIO_COMPATIBILITY_VERSION=${ADVIO_COMPATIBILITY_VERSION:-"1.2"}
+export ADVIO_BUILD_DIR=${ADVIO_BUILD_DIR:-AdvIO-1.2}
 
 export CGNS_FILE=${CGNS_FILE:-"cgnslib_2.4-3.tar.gz"}
 export CGNS_VERSION=${CGNS_VERSION:-"2.4"}
@@ -1722,11 +1734,23 @@ function check_visit_source_code
 #    Merge in changes from 1.12RC, including build of FastBit. 
 #    Also change code to fail if download is unsuccessful.
 #
+#    Brad Whitlock, Mon Sep 21 09:57:52 PDT 2009
+#    Added AdvIO support.
+#
 # *************************************************************************** #
 
 function check_optional_3rdparty
 {
     info "Checking optional 3rd party libs"
+
+    if [[ "$DO_ADVIO" == "yes" ]] ; then
+        ensure_built_or_ready "AdvIO" $ADVIO_VERSION $ADVIO_BUILD_DIR $ADVIO_FILE
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_ADVIO="no"
+            error "Unable to build AdvIO. ${ADVIO_FILE} not found. You can register and download it from: http://adventure.sys.t.u-tokyo.ac.jp/download/IO.html"
+        fi
+    fi
 
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
         ensure_built_or_ready "boxlib"  "" $BOXLIB_BUILD_DIR  $BOXLIB_FILE
@@ -7672,6 +7696,65 @@ function build_itaps_grummp
 }
 
 # *************************************************************************** #
+#                         Function 8.18, build_advio                          #
+# *************************************************************************** #
+
+function build_advio
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE
+    untarred_ADVIO=$?
+    if [[ $untarred_ADVIO == -1 ]] ; then
+       warn "Unable to prepare AdvIO Build Directory. Giving up"
+       return 1
+    fi
+
+    # Configure AdvIO
+    info "Configuring AdvIO . . ."
+    cd $ADVIO_BUILD_DIR || error "Can't cd to AdvIO build dir."
+    # Remove IDL dependencies from the build process
+    sed "s%@idldir@%%g" Makefile.in > m2
+    mv m2 Makefile.in
+    sed "s%FileIO IDL DocIO%FileIO DocIO%g" configure > c2
+    mv c2 configure
+    chmod 750 ./configure
+    info "Invoking command to configure AdvIO"
+    ADVIO_DARWIN=""
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        ADVIO_DARWIN="--host=darwin"
+    fi
+    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN
+    if [[ $? != 0 ]] ; then
+       warn "AdvIO configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build AdvIO
+    #
+    info "Building AdvIO . . . (~1 minute)"
+
+    $MAKE
+    if [[ $? != 0 ]] ; then
+       warn "AdvIO build failed.  Giving up"
+       return 1
+    fi
+
+    # Install AdvIO
+    info "Installing AdvIO"
+    $MAKE install
+
+    cd "$START_DIR"
+    info "Done with AdvIO"
+
+    return 0
+}
+
+# *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 # *************************************************************************** #
 
@@ -7755,6 +7838,18 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo \
 "##############################################################" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## AdvIO" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "$DO_ADVIO" == "yes" ]] ; then
+        echo \
+"DEFAULT_ADVIO_INCLUDE=\$VISITHOME/AdvIO/$ADVIO_VERSION/\$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_ADVIO_LIB=\$VISITHOME/AdvIO/$ADVIO_VERSION/\$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## Boxlib" >> $HOSTCONF
@@ -8278,6 +8373,11 @@ printvariables () {
   printf "%s%s\n" "VISUS_COMPATIBILITY_VERSION=" "${VISUS_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "VISUS_BUILD_DIR=" "${VISUS_BUILD_DIR}"
 
+  printf "%s%s\n" "ADVIO_FILE=" "${ADVIO_FILE}"
+  printf "%s%s\n" "ADVIO_VERSION=" "${ADVIO_VERSION}"
+  printf "%s%s\n" "ADVIO_COMPATIBILITY_VERSION=" "${ADVIO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ADVIO_BUILD_DIR=" "${ADVIO_BUILD_DIR}"
+
   printf "%s%s\n" "TCMALLOC_FILE=" "${TCMALLOC_FILE}"
   printf "%s%s\n" "TCMALLOC_VERSION=" "${TCMALLOC_VERSION}"
   printf "%s%s\n" "TCMALLOC_COMPATIBILITY_VERSION=" "${TCMALLOC_COMPATIBILITY_VERSION}"
@@ -8294,6 +8394,7 @@ usage () {
   printf "\n\n"
   printf "BOOLEAN FLAGS\n"
   printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
+  printf "%-15s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
   printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB"
   printf "%-15s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
   printf "%-15s %s [%s]\n" "--cfitsio" "Build CFITSIO" "$DO_CFITSIO"
@@ -8514,6 +8615,7 @@ for arg in "${arguments[@]}" ; do
     fi
     case $arg in
         --absolute) ABS_PATH="yes"; ON_ABS_PATH="on";;
+        --advio) DO_ADVIO="yes"; ON_ADVIO="on";;
         --arch) next_arg="arch";;
         --boxlib) DO_BOXLIB="yes"; ON_BOXLIB="on";;
         --ccmio) DO_CCMIO="yes"; ON_CCMIO="on";;
@@ -8788,6 +8890,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     --checklist \
 "Select the optional 3rd party libraries "\
 "to be built and installed:" 0 0 0 \
+           "AdvIO"    "$ADVIO_VERSION    $ADVIO_FILE (not available from the web)"      $ON_ADVIO \
            "Boxlib"   "$BOXLIB_VERSION    $BOXLIB_FILE"    $ON_BOXLIB \
            "CCMIO"    "$CCMIO_VERSION  $CCMIO_FILE"     $ON_CCMIO \
            "CFITSIO"  "$CFITSIO_VERSION   $CFITSIO_FILE"   $ON_CFITSIO \
@@ -8811,6 +8914,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     choice="$(cat tmp$$ | sed 's/"//g' )"
     case $retval in
       0)
+        DO_ADVIO="no"
         DO_BOXLIB="no"
         DO_CCMIO="no"
         DO_CFITSIO="no"
@@ -8830,6 +8934,8 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         for OPTION in $choice
         do
             case $OPTION in
+              AdvIO)
+                 DO_ADVIO="yes";;
               Boxlib)
                  DO_BOXLIB="yes";;
               CCMIO)
@@ -9415,6 +9521,21 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
     fi
     # Setup the _IMPL symbol for ITAPS_GRUMMP
     export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
+fi
+
+cd "$START_DIR"
+if [[ "$DO_ADVIO" == "yes" ]] ; then
+    check_if_installed "AdvIO" $ADVIO_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping AdvIO build.  AdvIO is already installed."
+    else
+        info "Building AdvIO (~1 minutes)"
+        build_advio
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install AdvIO.  Bailing out."
+        fi
+        info "Done building AdvIO"
+    fi
 fi
 
 #
