@@ -242,8 +242,8 @@ visitmodule:
 check-make-and-env-vars:
 	@isdbg=$$(echo $(CXXFLAGS) | tr ' ' '\n' | grep -e '-g'); \
 	if test -z "$$isdbg" -a -z "$(VISIT_NOCKENV)"; then \
-	    echo "Checking for possible collisions between environment"; \
-	    echo -n "and VisIt's Make variables..."; \
+	    printf "Checking for possible collisions between environment\n"; \
+	    printf "and VisIt's Make variables..."; \
 	    if test -z "$(BUILD_VISIT_ENV)"; then \
 	        env | cut -d'=' -f1 | sort | uniq | grep . > env_vars.txt; \
             else \
