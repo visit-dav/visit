@@ -66,6 +66,7 @@ static bool   IsIdentity(vtkMatrix4x4 *);
 class vtkVisItMatrixToHomogeneousTransform : public vtkMatrixToHomogeneousTransform
 {
 public:
+  vtkVisItMatrixToHomogeneousTransform() { transformVectors = true; };
   static vtkVisItMatrixToHomogeneousTransform *New(); 
   virtual void TransformPointsNormalsVectors(vtkPoints *inPts,
                                              vtkPoints *outPts,
@@ -73,6 +74,9 @@ public:
                                              vtkDataArray *outNms,
                                              vtkDataArray *inVrs,
                                              vtkDataArray *outVrs);
+  void SetTransformVectors(bool v) { transformVectors = v; };
+private:
+  bool         transformVectors;
 };
 #include <vtkObjectFactory.h>
 #include <vtkMath.h>
@@ -130,36 +134,50 @@ void vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(vtkPoin
       {
       inVrs->GetTuple(i,inVec);
  
-      // do the linear homogeneous transformation
-      outVec[0] = M[0][0]*inVec[0] + M[0][1]*inVec[1] + M[0][2]*inVec[2];
-      outVec[1] = M[1][0]*inVec[0] + M[1][1]*inVec[1] + M[1][2]*inVec[2];
-      outVec[2] = M[2][0]*inVec[0] + M[2][1]*inVec[1] + M[2][2]*inVec[2];
-      w =         M[3][0]*inVec[0] + M[3][1]*inVec[1] + M[3][2]*inVec[2];
- 
-      // apply homogeneous correction: note that the f we are using
-      // is the one we calculated in the point transformation
-      outVec[0] = (outVec[0]-w*outPnt[0])*f;
-      outVec[1] = (outVec[1]-w*outPnt[1])*f;
-      outVec[2] = (outVec[2]-w*outPnt[2])*f;
- 
-      outVrs->InsertNextTuple(outVec);
+      if (transformVectors)
+      {
+         // do the linear homogeneous transformation
+         outVec[0] = M[0][0]*inVec[0] + M[0][1]*inVec[1] + M[0][2]*inVec[2];
+         outVec[1] = M[1][0]*inVec[0] + M[1][1]*inVec[1] + M[1][2]*inVec[2];
+         outVec[2] = M[2][0]*inVec[0] + M[2][1]*inVec[1] + M[2][2]*inVec[2];
+         w =         M[3][0]*inVec[0] + M[3][1]*inVec[1] + M[3][2]*inVec[2];
+    
+         // apply homogeneous correction: note that the f we are using
+         // is the one we calculated in the point transformation
+            outVec[0] = (outVec[0]-w*outPnt[0])*f;
+         outVec[1] = (outVec[1]-w*outPnt[1])*f;
+         outVec[2] = (outVec[2]-w*outPnt[2])*f;
+    
+         outVrs->InsertNextTuple(outVec);
+      }
+      else
+      {
+         outVrs->InsertNextTuple(inVec);
+      }
       } 
  
     if (inNms)
       {
       inNms->GetTuple(i,inNrm);
  
-      // calculate the w component of the normal
-      w = -(inNrm[0]*inPnt[0] + inNrm[1]*inPnt[1] + inNrm[2]*inPnt[2]);
+      if (transformVectors)
+      {
+         // calculate the w component of the normal
+         w = -(inNrm[0]*inPnt[0] + inNrm[1]*inPnt[1] + inNrm[2]*inPnt[2]);
  
-      // perform the transformation in homogeneous coordinates
-      outNrm[0] = L[0][0]*inNrm[0]+L[0][1]*inNrm[1]+L[0][2]*inNrm[2]+L[0][3]*w;
-      outNrm[1] = L[1][0]*inNrm[0]+L[1][1]*inNrm[1]+L[1][2]*inNrm[2]+L[1][3]*w;
-      outNrm[2] = L[2][0]*inNrm[0]+L[2][1]*inNrm[1]+L[2][2]*inNrm[2]+L[2][3]*w;
- 
-      // re-normalize
-      vtkMath::Normalize(outNrm);
-      outNms->InsertNextTuple(outNrm);
+         // perform the transformation in homogeneous coordinates
+         outNrm[0] = L[0][0]*inNrm[0]+L[0][1]*inNrm[1]+L[0][2]*inNrm[2]+L[0][3]*w;
+         outNrm[1] = L[1][0]*inNrm[0]+L[1][1]*inNrm[1]+L[1][2]*inNrm[2]+L[1][3]*w;
+         outNrm[2] = L[2][0]*inNrm[0]+L[2][1]*inNrm[1]+L[2][2]*inNrm[2]+L[2][3]*w;
+    
+         // re-normalize
+         vtkMath::Normalize(outNrm);
+         outNms->InsertNextTuple(outNrm);
+      }
+      else
+      {
+         outNms->InsertNextTuple(inNrm);
+      }
       }
     }
 }
@@ -242,6 +260,9 @@ avtTransform::~avtTransform()
 //    Hank Childs, Mon Jul  7 22:31:00 PDT 2003
 //    Throw an exception for unknown data types.
 //
+//    Hank Childs, Tue Sep 22 20:40:39 PDT 2009
+//    Turn off vector transformation (needed for volume rendering).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -264,6 +285,7 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // VTK WORK-AROUND
     //vtkMatrixToHomogeneousTransform *t =vtkMatrixToHomogeneousTransform::New();
     vtkVisItMatrixToHomogeneousTransform *t =vtkVisItMatrixToHomogeneousTransform::New();
+    t->SetTransformVectors(TransformVectors());
     t->SetInput(mat);
     transform->SetTransform(t);
     t->Delete();

@@ -88,6 +88,10 @@ class     vtkRectilinearGrid;
 //    Kathleen Bonnell, Fri Mar 28 14:33:55 PDT 2008 
 //    Added TransformData method.
 //
+//    Hank Childs, Tue Sep 22 20:26:35 PDT 2009
+//    Add a method for transforming vectors ... we need to not transform
+//    vectors when volume rendering.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
@@ -112,6 +116,7 @@ class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
     vtkDataSet                 *TransformRectilinearToCurvilinear(
                                                          vtkRectilinearGrid *);
     virtual void                TransformData(vtkRectilinearGrid *) {;};
+    virtual bool                TransformVectors(void) { return true; };
 };
 
 
