@@ -103,8 +103,10 @@ public:
     virtual avtDatabaseMetaData& operator = (const avtDatabaseMetaData &obj);
     virtual bool operator == (const avtDatabaseMetaData &obj) const;
     virtual bool operator != (const avtDatabaseMetaData &obj) const;
+private:
     void Init();
     void Copy(const avtDatabaseMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);

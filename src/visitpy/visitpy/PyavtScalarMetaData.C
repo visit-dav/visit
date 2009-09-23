@@ -719,15 +719,6 @@ avtScalarMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtScalarMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtScalarMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtScalarMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "treatAsASCII") == 0)
         return avtScalarMetaData_GetTreatAsASCII(self, NULL);
     if(strcmp(name, "enumerationType") == 0)
@@ -766,6 +757,13 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
         return avtScalarMetaData_GetEnumNChooseRN(self, NULL);
     if(strcmp(name, "enumNChooseRMaxR") == 0)
         return avtScalarMetaData_GetEnumNChooseRMaxR(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtScalarMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtScalarMetaData_methods, self, name);

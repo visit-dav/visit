@@ -76,7 +76,7 @@ PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *pref
     std::string str; 
     char tmpStr[1000]; 
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtBaseVarMetaData_ToString(atts, prefix);
 
     SNPRINTF(tmpStr, 1000, "%snumMaterials = %d\n", prefix, atts->numMaterials);
     str += tmpStr;
@@ -269,9 +269,9 @@ static void PyavtMaterialMetaData_ExtendSetGetMethodTable()
     while (PyavtMaterialMetaData_methods[i].ml_name)
         i++;
     int n = i;
-    while (PyavtVarMetaData_methods[i-n+1].ml_name)
+    while (PyavtBaseVarMetaData_methods[i-n+1].ml_name)
     {
-        PyavtMaterialMetaData_methods[i] = PyavtVarMetaData_methods[i-n+1];
+        PyavtMaterialMetaData_methods[i] = PyavtBaseVarMetaData_methods[i-n+1];
         i++;
     }
 
@@ -304,21 +304,19 @@ avtMaterialMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtMaterialMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtMaterialMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtMaterialMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "numMaterials") == 0)
         return avtMaterialMetaData_GetNumMaterials(self, NULL);
     if(strcmp(name, "materialNames") == 0)
         return avtMaterialMetaData_GetMaterialNames(self, NULL);
     if(strcmp(name, "colorNames") == 0)
         return avtMaterialMetaData_GetColorNames(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtBaseVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtMaterialMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtMaterialMetaData_methods, self, name);
@@ -327,7 +325,7 @@ PyavtMaterialMetaData_getattr(PyObject *self, char *name)
 int
 PyavtMaterialMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtBaseVarMetaData_setattr(self, name, args) != -1)
         return 0;
 
     // Create a tuple to contain the arguments since all of the Set

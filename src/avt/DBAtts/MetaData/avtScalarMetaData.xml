@@ -45,10 +45,6 @@
     </Function>
     <Function name="avtScalarMetaData3" user="true" member="true">
     </Function>
-    <Function name="SetExtents" user="true" member="true">
-    </Function>
-    <Function name="UnsetExtents" user="true" member="true">
-    </Function>
     <Function name="Print" user="true" member="true">
     </Function>
     <Function name="AddEnumGraphEdge" user="true" member="true">

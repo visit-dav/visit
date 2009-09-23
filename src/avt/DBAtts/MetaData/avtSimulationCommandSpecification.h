@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: avtSimulationCommandSpecification
 //
@@ -74,13 +75,23 @@ public:
         CmdArgString
     };
 
+    // These constructors are for objects of this class
     avtSimulationCommandSpecification();
     avtSimulationCommandSpecification(const avtSimulationCommandSpecification &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtSimulationCommandSpecification(private_tmfs_t tmfs);
+    avtSimulationCommandSpecification(const avtSimulationCommandSpecification &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtSimulationCommandSpecification();
 
     virtual avtSimulationCommandSpecification& operator = (const avtSimulationCommandSpecification &obj);
     virtual bool operator == (const avtSimulationCommandSpecification &obj) const;
     virtual bool operator != (const avtSimulationCommandSpecification &obj) const;
+private:
+    void Init();
+    void Copy(const avtSimulationCommandSpecification &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -151,7 +162,8 @@ public:
         ID_signal,
         ID_text,
         ID_uiType,
-        ID_value
+        ID_value,
+        ID__LAST
     };
 
 private:
@@ -168,6 +180,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTSIMULATIONCOMMANDSPECIFICATION_TMFS "sisbsbssss"
 
 #endif

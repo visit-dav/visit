@@ -188,6 +188,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSUBSETSMETADATA_TMFS (AVTVARMETADATA_TMFS "sias*i*i*bbbbii")
+#define AVTSUBSETSMETADATA_TMFS AVTVARMETADATA_TMFS "sias*i*i*bbbbii"
 
 #endif

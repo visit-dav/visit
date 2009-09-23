@@ -313,22 +313,7 @@ avtScalarMetaData::operator = (const avtScalarMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    treatAsASCII = obj.treatAsASCII;
-    enumerationType = obj.enumerationType;
-    enumNames = obj.enumNames;
-    enumRanges = obj.enumRanges;
-    enumAlwaysExclude[0] = obj.enumAlwaysExclude[0];
-    enumAlwaysExclude[1] = obj.enumAlwaysExclude[1];
-
-    enumAlwaysInclude[0] = obj.enumAlwaysInclude[0];
-    enumAlwaysInclude[1] = obj.enumAlwaysInclude[1];
-
-    enumPartialCellMode = obj.enumPartialCellMode;
-    enumGraphEdges = obj.enumGraphEdges;
-    enumNChooseRN = obj.enumNChooseRN;
-    enumNChooseRMaxR = obj.enumNChooseRMaxR;
-
-    avtScalarMetaData::SelectAll();
+    avtScalarMetaData::Copy(obj);
 
     return *this;
 }
@@ -629,16 +614,9 @@ avtScalarMetaData::GetEnumNChooseRMaxR() const
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : avtVarMetaData(avtScalarMetaData::TmfsStruct)
+    : avtVarMetaData(avtScalarMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all values.
     avtScalarMetaData::Init();
-
-    // Override some initialization with the passed arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
 }
 
 // ****************************************************************************
@@ -678,58 +656,9 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c, double min, double max)
-    : avtVarMetaData(avtScalarMetaData::TmfsStruct)
+    : avtVarMetaData(avtScalarMetaData::TmfsStruct, n, mn, c, min, max)
 {
-    // Initialize all values.
     avtScalarMetaData::Init();
-
-    // Override some initialization with the passed arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    double  extents[2] = { min, max };
-    SetExtents(extents);
-}
-
-// ****************************************************************************
-//  Method: avtScalarMetaData::SetExtents
-//
-//  Purpose:
-//      Sets the extents of the scalar variable.
-//
-//  Arguments:
-//      extents     Extents as <min value, max value>.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 30, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Tue May  1 12:53:10 PDT 2001
-//    Check for NULL extents.
-//
-// ****************************************************************************
-
-void
-avtScalarMetaData::SetExtents(const double *extents)
-{
-    if (extents == NULL)
-    {
-        hasDataExtents = false;
-    }
-    else
-    {
-        hasDataExtents = true;
-        minDataExtents = extents[0];
-        maxDataExtents = extents[1];
-    }
-}
-
-void
-avtScalarMetaData::UnsetExtents()
-{
-    hasDataExtents = false;
 }
 
 // ****************************************************************************

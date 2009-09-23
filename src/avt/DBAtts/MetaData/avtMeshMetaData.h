@@ -75,8 +75,10 @@ public:
     virtual avtMeshMetaData& operator = (const avtMeshMetaData &obj);
     virtual bool operator == (const avtMeshMetaData &obj) const;
     virtual bool operator != (const avtMeshMetaData &obj) const;
+private:
     void Init();
     void Copy(const avtMeshMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);

@@ -215,9 +215,7 @@ avtTensorMetaData::operator = (const avtTensorMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    dim = obj.dim;
-
-    avtTensorMetaData::SelectAll();
+    avtTensorMetaData::Copy(obj);
 
     return *this;
 }
@@ -426,17 +424,10 @@ avtTensorMetaData::SelectAll()
 
 avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : avtVarMetaData(avtTensorMetaData::TmfsStruct)
+    : avtVarMetaData(avtTensorMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members
-    *this = avtTensorMetaData();
-
-    // Override members using command line arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    dim            = vd;
+    avtTensorMetaData::Init();
+    dim = vd;
 }
 
 // ****************************************************************************

@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: avtMatSpeciesMetaData
 //
@@ -60,13 +61,23 @@
 class DBATTS_API avtMatSpeciesMetaData : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     avtMatSpeciesMetaData();
     avtMatSpeciesMetaData(const avtMatSpeciesMetaData &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtMatSpeciesMetaData(private_tmfs_t tmfs);
+    avtMatSpeciesMetaData(const avtMatSpeciesMetaData &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtMatSpeciesMetaData();
 
     virtual avtMatSpeciesMetaData& operator = (const avtMatSpeciesMetaData &obj);
     virtual bool operator == (const avtMatSpeciesMetaData &obj) const;
     virtual bool operator != (const avtMatSpeciesMetaData &obj) const;
+private:
+    void Init();
+    void Copy(const avtMatSpeciesMetaData &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -83,7 +94,8 @@ public:
     enum {
         ID_numSpecies = 0,
         ID_speciesNames,
-        ID_validVariable
+        ID_validVariable,
+        ID__LAST
     };
 
 public:
@@ -94,6 +106,8 @@ public:
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTMATSPECIESMETADATA_TMFS "is*b"
 
 #endif

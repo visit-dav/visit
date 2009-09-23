@@ -215,9 +215,7 @@ avtVectorMetaData::operator = (const avtVectorMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    varDim = obj.varDim;
-
-    avtVectorMetaData::SelectAll();
+    avtVectorMetaData::Copy(obj);
 
     return *this;
 }
@@ -432,17 +430,10 @@ avtVectorMetaData::SelectAll()
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : avtVarMetaData(avtVectorMetaData::TmfsStruct)
+    : avtVarMetaData(avtVectorMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members.
-    *this = avtVectorMetaData();
-
-    // Override from arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    varDim         = vd;
+    avtVectorMetaData::Init();
+    varDim = vd;
 }
 
 // ****************************************************************************
@@ -473,17 +464,10 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd,
                                      const double *extents)
-    : avtVarMetaData(avtVectorMetaData::TmfsStruct)
+    : avtVarMetaData(avtVectorMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members.
-    *this = avtVectorMetaData();
-
-    // Override from arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    varDim         = vd;
+    avtVectorMetaData::Init();
+    varDim = vd;
     SetExtents(extents);
 }
 

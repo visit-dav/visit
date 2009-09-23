@@ -1901,8 +1901,8 @@ class AttsGeneratorAttribute : public GeneratorBase
         for (size_t i=0; i<fields.size(); i++)
             formatString += fields[i]->GetAttributeGroupID();
         if (custombase)
-            h << "#define " << name.toUpper() << "_TMFS (" << baseClass.toUpper()
-              << "_TMFS \"" << formatString << "\")" << Endl;
+            h << "#define " << name.toUpper() << "_TMFS " << baseClass.toUpper()
+              << "_TMFS \"" << formatString << "\"" << Endl;
         else
             h << "#define " << name.toUpper() << "_TMFS \""
               << formatString << "\"" << Endl;
@@ -2496,7 +2496,7 @@ private:
             c << "    " << baseClass << "::operator=(obj);" << Endl;
             c << Endl;
         }
-        WriteSourceCopyCode(c);
+        c << "    " << name << "::Copy(obj);" << Endl;
         c << Endl;
         c << "    return *this;" << Endl;
         c << "}" << Endl << Endl;

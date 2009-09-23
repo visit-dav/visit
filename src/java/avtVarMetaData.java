@@ -54,59 +54,44 @@ package llnl.visit;
 //   
 // ****************************************************************************
 
-public class avtVarMetaData extends AttributeSubject
+public class avtVarMetaData extends avtBaseVarMetaData
 {
-    private static int numAdditionalAttributes = 11;
+    private static int numAdditionalAttributes = 6;
 
     public avtVarMetaData()
     {
         super(numAdditionalAttributes);
 
-        name = new String("scalar");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
         centering = 0;
         hasUnits = false;
         units = new String("");
         hasDataExtents = false;
         minDataExtents = 0;
         maxDataExtents = 0;
-        hideFromGUI = false;
     }
 
     public avtVarMetaData(int nMoreFields)
     {
         super(numAdditionalAttributes + nMoreFields);
 
-        name = new String("scalar");
-        originalName = new String("");
-        validVariable = true;
-        meshName = new String("mesh");
         centering = 0;
         hasUnits = false;
         units = new String("");
         hasDataExtents = false;
         minDataExtents = 0;
         maxDataExtents = 0;
-        hideFromGUI = false;
     }
 
     public avtVarMetaData(avtVarMetaData obj)
     {
         super(numAdditionalAttributes);
 
-        name = new String(obj.name);
-        originalName = new String(obj.originalName);
-        validVariable = obj.validVariable;
-        meshName = new String(obj.meshName);
         centering = obj.centering;
         hasUnits = obj.hasUnits;
         units = new String(obj.units);
         hasDataExtents = obj.hasDataExtents;
         minDataExtents = obj.minDataExtents;
         maxDataExtents = obj.maxDataExtents;
-        hideFromGUI = obj.hideFromGUI;
 
         SelectAll();
     }
@@ -124,162 +109,104 @@ public class avtVarMetaData extends AttributeSubject
     public boolean equals(avtVarMetaData obj)
     {
         // Create the return value
-        return ((name.equals(obj.name)) &&
-                (originalName.equals(obj.originalName)) &&
-                (validVariable == obj.validVariable) &&
-                (meshName.equals(obj.meshName)) &&
-                (centering == obj.centering) &&
+        return (super.equals(obj) && (centering == obj.centering) &&
                 (hasUnits == obj.hasUnits) &&
                 (units.equals(obj.units)) &&
                 (hasDataExtents == obj.hasDataExtents) &&
                 (minDataExtents == obj.minDataExtents) &&
-                (maxDataExtents == obj.maxDataExtents) &&
-                (hideFromGUI == obj.hideFromGUI));
+                (maxDataExtents == obj.maxDataExtents));
     }
 
     // Property setting methods
-    public void SetName(String name_)
-    {
-        name = name_;
-        Select(0);
-    }
-
-    public void SetOriginalName(String originalName_)
-    {
-        originalName = originalName_;
-        Select(1);
-    }
-
-    public void SetValidVariable(boolean validVariable_)
-    {
-        validVariable = validVariable_;
-        Select(2);
-    }
-
-    public void SetMeshName(String meshName_)
-    {
-        meshName = meshName_;
-        Select(3);
-    }
-
     public void SetCentering(int centering_)
     {
         centering = centering_;
-        Select(4);
+        Select(Offset() + 0);
     }
 
     public void SetHasUnits(boolean hasUnits_)
     {
         hasUnits = hasUnits_;
-        Select(5);
+        Select(Offset() + 1);
     }
 
     public void SetUnits(String units_)
     {
         units = units_;
-        Select(6);
+        Select(Offset() + 2);
     }
 
     public void SetHasDataExtents(boolean hasDataExtents_)
     {
         hasDataExtents = hasDataExtents_;
-        Select(7);
+        Select(Offset() + 3);
     }
 
     public void SetMinDataExtents(double minDataExtents_)
     {
         minDataExtents = minDataExtents_;
-        Select(8);
+        Select(Offset() + 4);
     }
 
     public void SetMaxDataExtents(double maxDataExtents_)
     {
         maxDataExtents = maxDataExtents_;
-        Select(9);
-    }
-
-    public void SetHideFromGUI(boolean hideFromGUI_)
-    {
-        hideFromGUI = hideFromGUI_;
-        Select(10);
+        Select(Offset() + 5);
     }
 
     // Property getting methods
-    public String  GetName() { return name; }
-    public String  GetOriginalName() { return originalName; }
-    public boolean GetValidVariable() { return validVariable; }
-    public String  GetMeshName() { return meshName; }
     public int     GetCentering() { return centering; }
     public boolean GetHasUnits() { return hasUnits; }
     public String  GetUnits() { return units; }
     public boolean GetHasDataExtents() { return hasDataExtents; }
     public double  GetMinDataExtents() { return minDataExtents; }
     public double  GetMaxDataExtents() { return maxDataExtents; }
-    public boolean GetHideFromGUI() { return hideFromGUI; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
-        if(WriteSelect(0, buf))
-            buf.WriteString(name);
-        if(WriteSelect(1, buf))
-            buf.WriteString(originalName);
-        if(WriteSelect(2, buf))
-            buf.WriteBool(validVariable);
-        if(WriteSelect(3, buf))
-            buf.WriteString(meshName);
-        if(WriteSelect(4, buf))
+        super.WriteAtts(buf);
+
+        int offset = Offset();
+        if(WriteSelect(offset + 0, buf))
             buf.WriteInt(centering);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(offset + 1, buf))
             buf.WriteBool(hasUnits);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(offset + 2, buf))
             buf.WriteString(units);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(offset + 3, buf))
             buf.WriteBool(hasDataExtents);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(offset + 4, buf))
             buf.WriteDouble(minDataExtents);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(offset + 5, buf))
             buf.WriteDouble(maxDataExtents);
-        if(WriteSelect(10, buf))
-            buf.WriteBool(hideFromGUI);
     }
 
-    public void ReadAtts(int index, CommunicationBuffer buf)
+    public void ReadAtts(int id, CommunicationBuffer buf)
     {
+        int index = id - Offset();
         switch(index)
         {
         case 0:
-            SetName(buf.ReadString());
-            break;
-        case 1:
-            SetOriginalName(buf.ReadString());
-            break;
-        case 2:
-            SetValidVariable(buf.ReadBool());
-            break;
-        case 3:
-            SetMeshName(buf.ReadString());
-            break;
-        case 4:
             SetCentering(buf.ReadInt());
             break;
-        case 5:
+        case 1:
             SetHasUnits(buf.ReadBool());
             break;
-        case 6:
+        case 2:
             SetUnits(buf.ReadString());
             break;
-        case 7:
+        case 3:
             SetHasDataExtents(buf.ReadBool());
             break;
-        case 8:
+        case 4:
             SetMinDataExtents(buf.ReadDouble());
             break;
-        case 9:
+        case 5:
             SetMaxDataExtents(buf.ReadDouble());
             break;
-        case 10:
-            SetHideFromGUI(buf.ReadBool());
+        default:
+            super.ReadAtts(id, buf);
             break;
         }
     }
@@ -287,32 +214,22 @@ public class avtVarMetaData extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringToString("name", name, indent) + "\n";
-        str = str + stringToString("originalName", originalName, indent) + "\n";
-        str = str + boolToString("validVariable", validVariable, indent) + "\n";
-        str = str + stringToString("meshName", meshName, indent) + "\n";
         str = str + intToString("centering", centering, indent) + "\n";
         str = str + boolToString("hasUnits", hasUnits, indent) + "\n";
         str = str + stringToString("units", units, indent) + "\n";
         str = str + boolToString("hasDataExtents", hasDataExtents, indent) + "\n";
         str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
         str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
-        str = str + boolToString("hideFromGUI", hideFromGUI, indent) + "\n";
-        return str;
+        return super.toString(indent) + str;
     }
 
 
     // Attributes
-    private String  name;
-    private String  originalName;
-    private boolean validVariable;
-    private String  meshName;
     private int     centering;
     private boolean hasUnits;
     private String  units;
     private boolean hasDataExtents;
     private double  minDataExtents;
     private double  maxDataExtents;
-    private boolean hideFromGUI;
 }
 

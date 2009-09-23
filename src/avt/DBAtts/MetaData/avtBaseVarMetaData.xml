@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+  <Attribute name="avtBaseVarMetaData" purpose="Contains metadata attributes associated with all mesh variables" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtBaseVarMetaData.code">
+    <Field name="name" label="Name" type="string" access="public">
+      scalar
+    </Field>
+    <Field name="originalName" label="Original name" type="string" access="public">
+    </Field>
+    <Field name="meshName" label="Mesh name" type="string" access="public">
+      mesh
+    </Field>
+    <Field name="validVariable" label="Valid variable" type="bool" access="public">
+      true
+    </Field>
+    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
+      false
+    </Field>
+    <Function name="avtBaseVarMetaData2" user="true" member="true" access="protected">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      ImproperUseException.h
+    </Include>
+    <Include file="header" quoted="false">
+      vector
+    </Include>
+  </Attribute>

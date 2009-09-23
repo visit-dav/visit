@@ -369,15 +369,6 @@ avtCurveMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtCurveMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtCurveMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtCurveMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "xUnits") == 0)
         return avtCurveMetaData_GetXUnits(self, NULL);
     if(strcmp(name, "xLabel") == 0)
@@ -394,6 +385,13 @@ PyavtCurveMetaData_getattr(PyObject *self, char *name)
         return avtCurveMetaData_GetMaxSpatialExtents(self, NULL);
     if(strcmp(name, "from1DScalarName") == 0)
         return avtCurveMetaData_GetFrom1DScalarName(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtCurveMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtCurveMetaData_methods, self, name);

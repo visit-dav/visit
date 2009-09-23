@@ -106,7 +106,7 @@ const AttributeGroup::private_tmfs_t avtMaterialMetaData::TmfsStruct = {AVTMATER
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData() : 
-    avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct)
 {
     avtMaterialMetaData::Init();
 }
@@ -127,7 +127,7 @@ avtMaterialMetaData::avtMaterialMetaData() :
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(private_tmfs_t tmfs) : 
-    avtVarMetaData(tmfs)
+    avtBaseVarMetaData(tmfs)
 {
     avtMaterialMetaData::Init();
 }
@@ -148,7 +148,7 @@ avtMaterialMetaData::avtMaterialMetaData(private_tmfs_t tmfs) :
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const avtMaterialMetaData &obj) : 
-    avtVarMetaData(obj,avtMaterialMetaData::TmfsStruct)
+    avtBaseVarMetaData(obj,avtMaterialMetaData::TmfsStruct)
 {
     avtMaterialMetaData::Copy(obj);
 }
@@ -169,7 +169,7 @@ avtMaterialMetaData::avtMaterialMetaData(const avtMaterialMetaData &obj) :
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const avtMaterialMetaData &obj, private_tmfs_t tmfs) : 
-    avtVarMetaData(obj,tmfs)
+    avtBaseVarMetaData(obj,tmfs)
 {
     avtMaterialMetaData::Copy(obj);
 }
@@ -215,13 +215,9 @@ avtMaterialMetaData::operator = (const avtMaterialMetaData &obj)
     if (this == &obj) return *this;
 
     // call the base class' assignment operator first
-    avtVarMetaData::operator=(obj);
+    avtBaseVarMetaData::operator=(obj);
 
-    numMaterials = obj.numMaterials;
-    materialNames = obj.materialNames;
-    colorNames = obj.colorNames;
-
-    avtMaterialMetaData::SelectAll();
+    avtMaterialMetaData::Copy(obj);
 
     return *this;
 }
@@ -248,7 +244,7 @@ avtMaterialMetaData::operator == (const avtMaterialMetaData &obj) const
     return ((numMaterials == obj.numMaterials) &&
             (materialNames == obj.materialNames) &&
             (colorNames == obj.colorNames) &&
-            avtVarMetaData::operator==(obj));
+            avtBaseVarMetaData::operator==(obj));
 }
 
 // ****************************************************************************
@@ -393,7 +389,7 @@ void
 avtMaterialMetaData::SelectAll()
 {
     // call the base class' SelectAll() first
-    avtVarMetaData::SelectAll();
+    avtBaseVarMetaData::SelectAll();
     Select(ID_numMaterials,  (void *)&numMaterials);
     Select(ID_materialNames, (void *)&materialNames);
     Select(ID_colorNames,    (void *)&colorNames);
@@ -437,16 +433,11 @@ avtMaterialMetaData::SelectAll()
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, const std::string &mesh,
-    int nm, const stringVector &names) : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    int nm, const stringVector &names) :
+    avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {
-    // Initialize all members.
-    *this = avtMaterialMetaData();
-
-    // Override members
-    name          = n;
-    originalName  = name;
-    meshName      = mesh;
-    numMaterials  = nm;
+    avtMaterialMetaData::Init();
+    numMaterials = nm;
     materialNames = names;
 }
 
@@ -463,18 +454,12 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n, const std::string
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
     const std::string &mesh, int nm, const stringVector &names,
     const stringVector &colors)
-    : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    : avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {
-    // Initialize all members.
-    *this = avtMaterialMetaData();
-
-    // Override members
-    name          = n;
-    originalName  = name;
-    meshName      = mesh;
-    numMaterials  = nm;
+    avtMaterialMetaData::Init();
+    numMaterials = nm;
     materialNames = names;
-    colorNames    = colors;
+    colorNames = colors;
 }
 
 // ****************************************************************************
@@ -488,16 +473,10 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
     const std::string &mesh, int nm)
-    : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    : avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {
-    // Initialize all members.
-    *this = avtMaterialMetaData();
-
-    // Override members
-    name          = n;
-    originalName  = name;
-    meshName      = mesh;
-    numMaterials  = nm;
+    avtMaterialMetaData::Init();
+    numMaterials = nm;
     for (int i = 0; i < numMaterials; i++)
     {
         char tmpn[32];
@@ -544,7 +523,7 @@ Indent(ostream &out, int indent)
 void
 avtMaterialMetaData::Print(ostream &out, int indent) const
 {
-    avtVarMetaData::Print(out, indent);
+    avtBaseVarMetaData::Print(out, indent);
 
     Indent(out, indent);
     out << "The materials names are = ";

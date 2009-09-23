@@ -38,7 +38,6 @@
 
 #include <avtVarMetaData.h>
 #include <DataNode.h>
-#include <ImproperUseException.h>
 
 // ****************************************************************************
 // Method: avtVarMetaData::avtVarMetaData
@@ -57,15 +56,11 @@
 
 void avtVarMetaData::Init()
 {
-    name = "scalar";
-    validVariable = true;
-    meshName = "mesh";
     centering = AVT_UNKNOWN_CENT;
     hasUnits = false;
     hasDataExtents = false;
     minDataExtents = 0;
     maxDataExtents = 0;
-    hideFromGUI = false;
 
     avtVarMetaData::SelectAll();
 }
@@ -87,17 +82,12 @@ void avtVarMetaData::Init()
 
 void avtVarMetaData::Copy(const avtVarMetaData &obj)
 {
-    name = obj.name;
-    originalName = obj.originalName;
-    validVariable = obj.validVariable;
-    meshName = obj.meshName;
     centering = obj.centering;
     hasUnits = obj.hasUnits;
     units = obj.units;
     hasDataExtents = obj.hasDataExtents;
     minDataExtents = obj.minDataExtents;
     maxDataExtents = obj.maxDataExtents;
-    hideFromGUI = obj.hideFromGUI;
 
     avtVarMetaData::SelectAll();
 }
@@ -123,7 +113,7 @@ const AttributeGroup::private_tmfs_t avtVarMetaData::TmfsStruct = {AVTVARMETADAT
 // ****************************************************************************
 
 avtVarMetaData::avtVarMetaData() : 
-    AttributeSubject(avtVarMetaData::TypeMapFormatString)
+    avtBaseVarMetaData(avtVarMetaData::TmfsStruct)
 {
     avtVarMetaData::Init();
 }
@@ -144,7 +134,7 @@ avtVarMetaData::avtVarMetaData() :
 // ****************************************************************************
 
 avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs) : 
-    AttributeSubject(tmfs.tmfs)
+    avtBaseVarMetaData(tmfs)
 {
     avtVarMetaData::Init();
 }
@@ -165,7 +155,7 @@ avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs) :
 // ****************************************************************************
 
 avtVarMetaData::avtVarMetaData(const avtVarMetaData &obj) : 
-    AttributeSubject(avtVarMetaData::TypeMapFormatString)
+    avtBaseVarMetaData(obj,avtVarMetaData::TmfsStruct)
 {
     avtVarMetaData::Copy(obj);
 }
@@ -186,7 +176,7 @@ avtVarMetaData::avtVarMetaData(const avtVarMetaData &obj) :
 // ****************************************************************************
 
 avtVarMetaData::avtVarMetaData(const avtVarMetaData &obj, private_tmfs_t tmfs) : 
-    AttributeSubject(tmfs.tmfs)
+    avtBaseVarMetaData(obj,tmfs)
 {
     avtVarMetaData::Copy(obj);
 }
@@ -231,19 +221,10 @@ avtVarMetaData::operator = (const avtVarMetaData &obj)
 {
     if (this == &obj) return *this;
 
-    name = obj.name;
-    originalName = obj.originalName;
-    validVariable = obj.validVariable;
-    meshName = obj.meshName;
-    centering = obj.centering;
-    hasUnits = obj.hasUnits;
-    units = obj.units;
-    hasDataExtents = obj.hasDataExtents;
-    minDataExtents = obj.minDataExtents;
-    maxDataExtents = obj.maxDataExtents;
-    hideFromGUI = obj.hideFromGUI;
+    // call the base class' assignment operator first
+    avtBaseVarMetaData::operator=(obj);
 
-    avtVarMetaData::SelectAll();
+    avtVarMetaData::Copy(obj);
 
     return *this;
 }
@@ -267,17 +248,13 @@ bool
 avtVarMetaData::operator == (const avtVarMetaData &obj) const
 {
     // Create the return value
-    return ((name == obj.name) &&
-            (originalName == obj.originalName) &&
-            (validVariable == obj.validVariable) &&
-            (meshName == obj.meshName) &&
-            (centering == obj.centering) &&
+    return ((centering == obj.centering) &&
             (hasUnits == obj.hasUnits) &&
             (units == obj.units) &&
             (hasDataExtents == obj.hasDataExtents) &&
             (minDataExtents == obj.minDataExtents) &&
             (maxDataExtents == obj.maxDataExtents) &&
-            (hideFromGUI == obj.hideFromGUI));
+            avtBaseVarMetaData::operator==(obj));
 }
 
 // ****************************************************************************
@@ -421,17 +398,14 @@ avtVarMetaData::NewInstance(bool copy) const
 void
 avtVarMetaData::SelectAll()
 {
-    Select(ID_name,           (void *)&name);
-    Select(ID_originalName,   (void *)&originalName);
-    Select(ID_validVariable,  (void *)&validVariable);
-    Select(ID_meshName,       (void *)&meshName);
+    // call the base class' SelectAll() first
+    avtBaseVarMetaData::SelectAll();
     Select(ID_centering,      (void *)&centering);
     Select(ID_hasUnits,       (void *)&hasUnits);
     Select(ID_units,          (void *)&units);
     Select(ID_hasDataExtents, (void *)&hasDataExtents);
     Select(ID_minDataExtents, (void *)&minDataExtents);
     Select(ID_maxDataExtents, (void *)&maxDataExtents);
-    Select(ID_hideFromGUI,    (void *)&hideFromGUI);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -450,8 +424,8 @@ avtVarMetaData::SelectAll()
 //  Method: avtVarMetaData constructor
 //
 //  Arguments:
-//      n           The name of the scalar variable.
-//      mn          The name of the mesh the scalar var is defined on.
+//      n           The name of the variable.
+//      mn          The name of the mesh the var is defined on.
 //      c           The centering of the variable.
 //
 //  Programmer: Hank Childs
@@ -479,33 +453,22 @@ avtVarMetaData::SelectAll()
 //
 // ****************************************************************************
 
-avtVarMetaData::avtVarMetaData(std::string n, std::string mn, 
-                                     avtCentering c)
-    : AttributeSubject(avtVarMetaData::TypeMapFormatString)
+avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs, std::string n, std::string mn,
+    avtCentering c) : avtBaseVarMetaData(tmfs, n, mn)
 {
-    // Initialize all values.
-    *this = avtVarMetaData();
-
-    // Override some initialization with the passed arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    hasDataExtents = false;
-    validVariable  = true;
-    hasUnits       = false;
-    hideFromGUI = false;
+    avtVarMetaData::Init();
+    centering = c;
 }
 
 // ****************************************************************************
 //  Method: avtVarMetaData constructor
 //
 //  Arguments:
-//      n           The name of the scalar variable.
-//      mn          The name of the mesh the scalar var is defined on.
+//      n           The name of the variable.
+//      mn          The name of the mesh the var is defined on.
 //      c           The centering of the variable.
-//      min         The minimum value of the scalar variable.
-//      max         The maximum value of the scalar variable.
+//      min         The minimum value of the variable.
+//      max         The maximum value of the variable.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 25, 2000
@@ -532,22 +495,11 @@ avtVarMetaData::avtVarMetaData(std::string n, std::string mn,
 //
 // ****************************************************************************
 
-avtVarMetaData::avtVarMetaData(std::string n, std::string mn,
-                                     avtCentering c, double min, double max)
-    : AttributeSubject(avtVarMetaData::TypeMapFormatString)
+avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs, std::string n, std::string mn,
+    avtCentering c, double min, double max) : avtBaseVarMetaData(tmfs, n, mn)
 {
-    // Initialize all values.
-    *this = avtVarMetaData();
-
-    // Override some initialization with the passed arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    validVariable  = true;
-    hasUnits       = false;
-    hideFromGUI = false;
-
+    avtVarMetaData::Init();
+    centering = c;
     double  extents[2] = { min, max };
     SetExtents(extents);
 }
@@ -634,16 +586,8 @@ Indent(ostream &out, int indent)
 void
 avtVarMetaData::Print(ostream &out, int indent) const
 {
-    Indent(out, indent);
-    out << "Name = " << name.c_str() << endl;
-    if (name != originalName)
-    {
-        Indent(out, indent);
-        out << "Original Name = " << originalName.c_str() << endl;
-    }
 
-    Indent(out, indent);
-    out << "Mesh is = " << meshName.c_str() << endl;
+    avtBaseVarMetaData::Print(out, indent);
 
     Indent(out, indent);
     out << "Centering = ";
@@ -680,12 +624,6 @@ avtVarMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "The extents are not set." << endl;
-    }
-
-    if (!validVariable)
-    {
-        Indent(out, indent);
-        out << "THIS IS NOT A VALID VARIABLE." << endl;
     }
 }
 

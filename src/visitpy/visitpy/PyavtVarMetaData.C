@@ -77,17 +77,8 @@ PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix)
     std::string str; 
     char tmpStr[1000]; 
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
-    str += tmpStr;
-    if(atts->validVariable)
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->meshName.c_str());
-    str += tmpStr;
+    str = PyavtBaseVarMetaData_ToString(atts, prefix);
+
     const char *centering_names = "AVT_NODECENT, AVT_ZONECENT, AVT_NO_VARIABLE, AVT_UNKNOWN_CENT";
     if(atts->centering == AVT_NODECENT)
     {
@@ -126,11 +117,6 @@ PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxDataExtents = %g\n", prefix, atts->maxDataExtents);
     str += tmpStr;
-    if(atts->hideFromGUI)
-        SNPRINTF(tmpStr, 1000, "%shideFromGUI = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%shideFromGUI = 0\n", prefix);
-    str += tmpStr;
     return str;
 }
 
@@ -141,102 +127,6 @@ avtVarMetaData_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_SetName(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the name in the object.
-    obj->data->name = std::string(str);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_GetName(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->name.c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_SetOriginalName(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the originalName in the object.
-    obj->data->originalName = std::string(str);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_GetOriginalName(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->originalName.c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_SetValidVariable(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the validVariable in the object.
-    obj->data->validVariable = (ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_GetValidVariable(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->validVariable?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_SetMeshName(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the meshName in the object.
-    obj->data->meshName = std::string(str);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_GetMeshName(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->meshName.c_str());
-    return retval;
 }
 
 /*static*/ PyObject *
@@ -382,42 +272,10 @@ avtVarMetaData_GetMaxDataExtents(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-avtVarMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the hideFromGUI in the object.
-    obj->data->hideFromGUI = (ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-avtVarMetaData_GetHideFromGUI(PyObject *self, PyObject *args)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->hideFromGUI?1L:0L);
-    return retval;
-}
-
 
 
 PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH] = {
     {"Notify", avtVarMetaData_Notify, METH_VARARGS},
-    {"SetName", avtVarMetaData_SetName, METH_VARARGS},
-    {"GetName", avtVarMetaData_GetName, METH_VARARGS},
-    {"SetOriginalName", avtVarMetaData_SetOriginalName, METH_VARARGS},
-    {"GetOriginalName", avtVarMetaData_GetOriginalName, METH_VARARGS},
-    {"SetValidVariable", avtVarMetaData_SetValidVariable, METH_VARARGS},
-    {"GetValidVariable", avtVarMetaData_GetValidVariable, METH_VARARGS},
-    {"SetMeshName", avtVarMetaData_SetMeshName, METH_VARARGS},
-    {"GetMeshName", avtVarMetaData_GetMeshName, METH_VARARGS},
     {"SetCentering", avtVarMetaData_SetCentering, METH_VARARGS},
     {"GetCentering", avtVarMetaData_GetCentering, METH_VARARGS},
     {"SetHasUnits", avtVarMetaData_SetHasUnits, METH_VARARGS},
@@ -430,10 +288,28 @@ PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH] = {
     {"GetMinDataExtents", avtVarMetaData_GetMinDataExtents, METH_VARARGS},
     {"SetMaxDataExtents", avtVarMetaData_SetMaxDataExtents, METH_VARARGS},
     {"GetMaxDataExtents", avtVarMetaData_GetMaxDataExtents, METH_VARARGS},
-    {"SetHideFromGUI", avtVarMetaData_SetHideFromGUI, METH_VARARGS},
-    {"GetHideFromGUI", avtVarMetaData_GetHideFromGUI, METH_VARARGS},
     {NULL, NULL}
 };
+
+static void PyavtVarMetaData_ExtendSetGetMethodTable()
+{
+    static bool extended = false;
+    if (extended) return;
+    extended = true;
+
+    int i = 0;
+    while (PyavtVarMetaData_methods[i].ml_name)
+        i++;
+    int n = i;
+    while (PyavtBaseVarMetaData_methods[i-n+1].ml_name)
+    {
+        PyavtVarMetaData_methods[i] = PyavtBaseVarMetaData_methods[i-n+1];
+        i++;
+    }
+
+    PyMethodDef nullMethod = {NULL, NULL};
+    PyavtVarMetaData_methods[i] = nullMethod;
+}
 
 //
 // Type functions
@@ -460,14 +336,6 @@ avtVarMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtVarMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "name") == 0)
-        return avtVarMetaData_GetName(self, NULL);
-    if(strcmp(name, "originalName") == 0)
-        return avtVarMetaData_GetOriginalName(self, NULL);
-    if(strcmp(name, "validVariable") == 0)
-        return avtVarMetaData_GetValidVariable(self, NULL);
-    if(strcmp(name, "meshName") == 0)
-        return avtVarMetaData_GetMeshName(self, NULL);
     if(strcmp(name, "centering") == 0)
         return avtVarMetaData_GetCentering(self, NULL);
     if(strcmp(name, "AVT_NODECENT") == 0)
@@ -489,15 +357,24 @@ PyavtVarMetaData_getattr(PyObject *self, char *name)
         return avtVarMetaData_GetMinDataExtents(self, NULL);
     if(strcmp(name, "maxDataExtents") == 0)
         return avtVarMetaData_GetMaxDataExtents(self, NULL);
-    if(strcmp(name, "hideFromGUI") == 0)
-        return avtVarMetaData_GetHideFromGUI(self, NULL);
 
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtBaseVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
+
+    PyavtVarMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtVarMetaData_methods, self, name);
 }
 
 int
 PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
+    if (PyavtBaseVarMetaData_setattr(self, name, args) != -1)
+        return 0;
+
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
     PyObject *tuple = PyTuple_New(1);
@@ -505,15 +382,7 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "name") == 0)
-        obj = avtVarMetaData_SetName(self, tuple);
-    else if(strcmp(name, "originalName") == 0)
-        obj = avtVarMetaData_SetOriginalName(self, tuple);
-    else if(strcmp(name, "validVariable") == 0)
-        obj = avtVarMetaData_SetValidVariable(self, tuple);
-    else if(strcmp(name, "meshName") == 0)
-        obj = avtVarMetaData_SetMeshName(self, tuple);
-    else if(strcmp(name, "centering") == 0)
+    if(strcmp(name, "centering") == 0)
         obj = avtVarMetaData_SetCentering(self, tuple);
     else if(strcmp(name, "hasUnits") == 0)
         obj = avtVarMetaData_SetHasUnits(self, tuple);
@@ -525,8 +394,6 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtVarMetaData_SetMinDataExtents(self, tuple);
     else if(strcmp(name, "maxDataExtents") == 0)
         obj = avtVarMetaData_SetMaxDataExtents(self, tuple);
-    else if(strcmp(name, "hideFromGUI") == 0)
-        obj = avtVarMetaData_SetHideFromGUI(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

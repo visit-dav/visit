@@ -104,6 +104,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSYMMETRICTENSORMETADATA_TMFS (AVTVARMETADATA_TMFS "i")
+#define AVTSYMMETRICTENSORMETADATA_TMFS AVTVARMETADATA_TMFS "i"
 
 #endif

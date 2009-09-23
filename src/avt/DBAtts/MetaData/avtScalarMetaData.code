@@ -44,16 +44,9 @@ Definition:
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : avtVarMetaData(avtScalarMetaData::TmfsStruct)
+    : avtVarMetaData(avtScalarMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all values.
     avtScalarMetaData::Init();
-
-    // Override some initialization with the passed arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
 }
 
 Function: avtScalarMetaData3
@@ -96,64 +89,9 @@ Definition:
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c, double min, double max)
-    : avtVarMetaData(avtScalarMetaData::TmfsStruct)
+    : avtVarMetaData(avtScalarMetaData::TmfsStruct, n, mn, c, min, max)
 {
-    // Initialize all values.
     avtScalarMetaData::Init();
-
-    // Override some initialization with the passed arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    double  extents[2] = { min, max };
-    SetExtents(extents);
-}
-
-Function: SetExtents
-Declaration: void SetExtents(const double *);
-Definition:
-// ****************************************************************************
-//  Method: avtScalarMetaData::SetExtents
-//
-//  Purpose:
-//      Sets the extents of the scalar variable.
-//
-//  Arguments:
-//      extents     Extents as <min value, max value>.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 30, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Tue May  1 12:53:10 PDT 2001
-//    Check for NULL extents.
-//
-// ****************************************************************************
-
-void
-avtScalarMetaData::SetExtents(const double *extents)
-{
-    if (extents == NULL)
-    {
-        hasDataExtents = false;
-    }
-    else
-    {
-        hasDataExtents = true;
-        minDataExtents = extents[0];
-        maxDataExtents = extents[1];
-    }
-}
-
-Function: UnsetExtents
-Declaration: void UnsetExtents();
-Definition:
-void
-avtScalarMetaData::UnsetExtents()
-{
-    hasDataExtents = false;
 }
 
 Function: Print

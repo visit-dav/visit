@@ -3007,18 +3007,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "PyObject *" << Endl;
         c << mName << "(PyObject *self, char *name)" << Endl;
         c << "{" << Endl;
-        if (custombase)
-        {
-            c << "    if(strcmp(name, \"__methods__\") == 0)" << Endl;
-            c << "    {" << Endl;
-            c << "        Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
-            c << "        return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
-            c << "    }" << Endl;
-            c << Endl;
-            c << "    PyObject *retval = Py"<<baseClass<<"_getattr(self, name);" << Endl;
-            c << "    if (retval) return retval;" << Endl;
-            c << Endl;
-        }
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         for(size_t i = 0; i < fields.size(); ++i)
@@ -3027,7 +3015,16 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
         if (custombase)
+        {
+            c << "    if(strcmp(name, \"__methods__\") != 0)" << Endl;
+            c << "    {" << Endl;
+            c << "        PyObject *retval = Py"<<baseClass<<"_getattr(self, name);" << Endl;
+            c << "        if (retval) return retval;" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
             c << "    Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
+            c << Endl;
+        }
         c << "    return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
         c << "}" << Endl;
         c << Endl;

@@ -170,17 +170,15 @@ avtVectorMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtVectorMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtVectorMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtVectorMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "varDim") == 0)
         return avtVectorMetaData_GetVarDim(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtVectorMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtVectorMetaData_methods, self, name);
