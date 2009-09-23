@@ -94,6 +94,7 @@ SRC=$(MetaData_src) $(SIL_src)
 
 MetaData_src= \
   MetaData/avtArrayMetaData.C\
+  MetaData/avtBaseVarMetaData.C\
   MetaData/avtCurveMetaData.C\
   MetaData/avtDatabaseMetaData.C\
   MetaData/avtDefaultPlotMetaData.C\

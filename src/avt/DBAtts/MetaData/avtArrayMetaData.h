@@ -108,6 +108,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTARRAYMETADATA_TMFS (AVTVARMETADATA_TMFS "is*")
+#define AVTARRAYMETADATA_TMFS AVTVARMETADATA_TMFS "is*"
 
 #endif

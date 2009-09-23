@@ -95,6 +95,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTLABELMETADATA_TMFS (AVTVARMETADATA_TMFS "")
+#define AVTLABELMETADATA_TMFS AVTVARMETADATA_TMFS ""
 
 #endif

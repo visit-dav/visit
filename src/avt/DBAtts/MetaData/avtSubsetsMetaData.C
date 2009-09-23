@@ -305,20 +305,7 @@ avtSubsetsMetaData::operator = (const avtSubsetsMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    catName = obj.catName;
-    catCount = obj.catCount;
-    nameScheme = obj.nameScheme;
-    colorScheme = obj.colorScheme;
-    setsToChunksMaps = obj.setsToChunksMaps;
-    graphEdges = obj.graphEdges;
-    isChunkCat = obj.isChunkCat;
-    isMaterialCat = obj.isMaterialCat;
-    isUnionOfChunks = obj.isUnionOfChunks;
-    hasPartialCells = obj.hasPartialCells;
-    decompMode = obj.decompMode;
-    maxTopoDim = obj.maxTopoDim;
-
-    avtSubsetsMetaData::SelectAll();
+    avtSubsetsMetaData::Copy(obj);
 
     return *this;
 }

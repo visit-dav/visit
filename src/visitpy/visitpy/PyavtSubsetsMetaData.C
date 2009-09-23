@@ -677,15 +677,6 @@ avtSubsetsMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtSubsetsMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtSubsetsMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "catName") == 0)
         return avtSubsetsMetaData_GetCatName(self, NULL);
     if(strcmp(name, "catCount") == 0)
@@ -717,6 +708,13 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "maxTopoDim") == 0)
         return avtSubsetsMetaData_GetMaxTopoDim(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtSubsetsMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtSubsetsMetaData_methods, self, name);

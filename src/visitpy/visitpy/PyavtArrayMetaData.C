@@ -237,19 +237,17 @@ avtArrayMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtArrayMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtArrayMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtArrayMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "nVars") == 0)
         return avtArrayMetaData_GetNVars(self, NULL);
     if(strcmp(name, "compNames") == 0)
         return avtArrayMetaData_GetCompNames(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtArrayMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtArrayMetaData_methods, self, name);

@@ -40,7 +40,7 @@
 #define AVTMATERIALMETADATA_H
 #include <dbatts_exports.h>
 #include <string>
-#include <avtVarMetaData.h>
+#include <avtBaseVarMetaData.h>
 
 
 // ****************************************************************************
@@ -58,7 +58,7 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtMaterialMetaData : public avtVarMetaData
+class DBATTS_API avtMaterialMetaData : public avtBaseVarMetaData
 {
 public:
     // These constructors are for objects of this class
@@ -95,7 +95,7 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_numMaterials = avtVarMetaData::ID__LAST,
+        ID_numMaterials = avtBaseVarMetaData::ID__LAST,
         ID_materialNames,
         ID_colorNames,
         ID__LAST
@@ -111,6 +111,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMATERIALMETADATA_TMFS (AVTVARMETADATA_TMFS "is*s*")
+#define AVTMATERIALMETADATA_TMFS AVTBASEVARMETADATA_TMFS "is*s*"
 
 #endif

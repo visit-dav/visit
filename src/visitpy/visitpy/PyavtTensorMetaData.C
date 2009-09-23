@@ -170,17 +170,15 @@ avtTensorMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtTensorMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
-    {
-        PyavtTensorMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtTensorMetaData_methods, self, name);
-    }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
     if(strcmp(name, "dim") == 0)
         return avtTensorMetaData_GetDim(self, NULL);
+
+
+    if(strcmp(name, "__methods__") != 0)
+    {
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
+    }
 
     PyavtTensorMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtTensorMetaData_methods, self, name);

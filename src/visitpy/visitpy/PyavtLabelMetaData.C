@@ -142,15 +142,13 @@ avtLabelMetaData_compare(PyObject *v, PyObject *w)
 PyObject *
 PyavtLabelMetaData_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "__methods__") == 0)
+
+
+    if(strcmp(name, "__methods__") != 0)
     {
-        PyavtLabelMetaData_ExtendSetGetMethodTable();
-        return Py_FindMethod(PyavtLabelMetaData_methods, self, name);
+        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        if (retval) return retval;
     }
-
-    PyObject *retval = PyavtVarMetaData_getattr(self, name);
-    if (retval) return retval;
-
 
     PyavtLabelMetaData_ExtendSetGetMethodTable();
     return Py_FindMethod(PyavtLabelMetaData_methods, self, name);

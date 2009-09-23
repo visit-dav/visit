@@ -151,6 +151,7 @@ INSTDIR=llnl/visit
 ##
 METADATA_SRC= \
     avtArrayMetaData.java \
+    avtBaseVarMetaData.java \
     avtCurveMetaData.java \
     avtDatabaseMetaData.java \
     avtDefaultPlotMetaData.java \

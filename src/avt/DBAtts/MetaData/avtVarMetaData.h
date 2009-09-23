@@ -39,9 +39,9 @@
 #ifndef AVTVARMETADATA_H
 #define AVTVARMETADATA_H
 #include <dbatts_exports.h>
-#include <string>
 #include <avtTypes.h>
-#include <AttributeSubject.h>
+#include <string>
+#include <avtBaseVarMetaData.h>
 
 #include <vector>
 
@@ -60,7 +60,7 @@
 //   
 // ****************************************************************************
 
-class DBATTS_API avtVarMetaData : public AttributeSubject
+class DBATTS_API avtVarMetaData : public avtBaseVarMetaData
 {
 public:
     // These constructors are for objects of this class
@@ -90,46 +90,36 @@ public:
     virtual void SelectAll();
 
     // User-defined methods
-    avtVarMetaData(std::string, std::string, avtCentering);
-    avtVarMetaData(std::string, std::string, avtCentering, double, double);
+    avtVarMetaData(private_tmfs_t, std::string, std::string, avtCentering);
+    avtVarMetaData(private_tmfs_t, std::string, std::string, avtCentering, double, double);
     void SetExtents(const double *);
     void UnsetExtents();
     void Print(ostream &, int = 0) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_name = 0,
-        ID_originalName,
-        ID_validVariable,
-        ID_meshName,
-        ID_centering,
+        ID_centering = avtBaseVarMetaData::ID__LAST,
         ID_hasUnits,
         ID_units,
         ID_hasDataExtents,
         ID_minDataExtents,
         ID_maxDataExtents,
-        ID_hideFromGUI,
         ID__LAST
     };
 
 public:
-    std::string  name;
-    std::string  originalName;
-    bool         validVariable;
-    std::string  meshName;
     avtCentering centering;
     bool         hasUnits;
     std::string  units;
     bool         hasDataExtents;
     double       minDataExtents;
     double       maxDataExtents;
-    bool         hideFromGUI;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTVARMETADATA_TMFS "ssbsibsbddb"
+#define AVTVARMETADATA_TMFS AVTBASEVARMETADATA_TMFS "ibsbdd"
 
 #endif

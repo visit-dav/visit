@@ -121,6 +121,8 @@ void avtMeshMetaData::Init()
     nodeOrigin = 0;
     containsExteriorBoundaryGhosts = false;
     hideFromGUI = false;
+
+    avtMeshMetaData::SelectAll();
 }
 
 // ****************************************************************************
@@ -329,64 +331,7 @@ avtMeshMetaData::operator = (const avtMeshMetaData &obj)
 {
     if (this == &obj) return *this;
 
-
-    name = obj.name;
-    originalName = obj.originalName;
-    validVariable = obj.validVariable;
-    meshType = obj.meshType;
-    meshCoordType = obj.meshCoordType;
-    cellOrigin = obj.cellOrigin;
-    spatialDimension = obj.spatialDimension;
-    topologicalDimension = obj.topologicalDimension;
-    xUnits = obj.xUnits;
-    yUnits = obj.yUnits;
-    zUnits = obj.zUnits;
-    xLabel = obj.xLabel;
-    yLabel = obj.yLabel;
-    zLabel = obj.zLabel;
-    hasSpatialExtents = obj.hasSpatialExtents;
-    minSpatialExtents[0] = obj.minSpatialExtents[0];
-    minSpatialExtents[1] = obj.minSpatialExtents[1];
-    minSpatialExtents[2] = obj.minSpatialExtents[2];
-
-    maxSpatialExtents[0] = obj.maxSpatialExtents[0];
-    maxSpatialExtents[1] = obj.maxSpatialExtents[1];
-    maxSpatialExtents[2] = obj.maxSpatialExtents[2];
-
-    numBlocks = obj.numBlocks;
-    blockOrigin = obj.blockOrigin;
-    blockPieceName = obj.blockPieceName;
-    blockTitle = obj.blockTitle;
-    blockNames = obj.blockNames;
-    numGroups = obj.numGroups;
-    groupOrigin = obj.groupOrigin;
-    groupPieceName = obj.groupPieceName;
-    groupTitle = obj.groupTitle;
-    groupIds = obj.groupIds;
-    disjointElements = obj.disjointElements;
-    containsGhostZones = obj.containsGhostZones;
-    containsOriginalCells = obj.containsOriginalCells;
-    containsOriginalNodes = obj.containsOriginalNodes;
-    containsGlobalNodeIds = obj.containsGlobalNodeIds;
-    containsGlobalZoneIds = obj.containsGlobalZoneIds;
-    loadBalanceScheme = obj.loadBalanceScheme;
-    nodesAreCritical = obj.nodesAreCritical;
-    for(int i = 0; i < 9; ++i)
-        unitCellVectors[i] = obj.unitCellVectors[i];
-
-    unitCellOrigin[0] = obj.unitCellOrigin[0];
-    unitCellOrigin[1] = obj.unitCellOrigin[1];
-    unitCellOrigin[2] = obj.unitCellOrigin[2];
-
-    rectilinearGridHasTransform = obj.rectilinearGridHasTransform;
-    for(int i = 0; i < 16; ++i)
-        rectilinearGridTransform[i] = obj.rectilinearGridTransform[i];
-
-    nodeOrigin = obj.nodeOrigin;
-    containsExteriorBoundaryGhosts = obj.containsExteriorBoundaryGhosts;
-    hideFromGUI = obj.hideFromGUI;
-
-    avtMeshMetaData::SelectAll();
+    avtMeshMetaData::Copy(obj);
 
     return *this;
 }

@@ -2,15 +2,7 @@ Function: avtLabelMetaData2
 Declaration: avtLabelMetaData(const std::string &, const std::string &, avtCentering);
 Definition:
 avtLabelMetaData::avtLabelMetaData(const std::string &n, const std::string &mn,
-   avtCentering c) : avtVarMetaData(avtLabelMetaData::TmfsStruct)
+   avtCentering c) : avtVarMetaData(avtLabelMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members
-    *this = avtLabelMetaData();
-
-    // Override members
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
+    avtLabelMetaData::Init();
 }
-

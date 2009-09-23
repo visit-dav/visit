@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define AVTMATSPECIESMETADATA_NMETH 8
 void VISITPY_API           PyavtMatSpeciesMetaData_StartUp(avtMatSpeciesMetaData *subj, void *data);
 void VISITPY_API           PyavtMatSpeciesMetaData_CloseDown();
-VISITPY_API PyMethodDef *   PyavtMatSpeciesMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyavtMatSpeciesMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtMatSpeciesMetaData_Check(PyObject *obj);
 VISITPY_API avtMatSpeciesMetaData *  PyavtMatSpeciesMetaData_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyavtMatSpeciesMetaData_New();
-VISITPY_API PyObject *      PyavtMatSpeciesMetaData_Wrap(const avtMatSpeciesMetaData *attr);
+VISITPY_API PyObject *     PyavtMatSpeciesMetaData_New();
+VISITPY_API PyObject *     PyavtMatSpeciesMetaData_Wrap(const avtMatSpeciesMetaData *attr);
 void VISITPY_API           PyavtMatSpeciesMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtMatSpeciesMetaData_SetDefaults(const avtMatSpeciesMetaData *atts);
 std::string VISITPY_API    PyavtMatSpeciesMetaData_GetLogString();
 std::string VISITPY_API    PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *, const char *);
+VISITPY_API PyObject *     PyavtMatSpeciesMetaData_getattr(PyObject *self, char *name);
+int VISITPY_API            PyavtMatSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyavtMatSpeciesMetaData_methods[AVTMATSPECIESMETADATA_NMETH];
 
 #endif
 

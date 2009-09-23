@@ -226,16 +226,7 @@ avtCurveMetaData::operator = (const avtCurveMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    xUnits = obj.xUnits;
-    xLabel = obj.xLabel;
-    yUnits = obj.yUnits;
-    yLabel = obj.yLabel;
-    hasSpatialExtents = obj.hasSpatialExtents;
-    minSpatialExtents = obj.minSpatialExtents;
-    maxSpatialExtents = obj.maxSpatialExtents;
-    from1DScalarName = obj.from1DScalarName;
-
-    avtCurveMetaData::SelectAll();
+    avtCurveMetaData::Copy(obj);
 
     return *this;
 }

@@ -77,7 +77,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
             className = new String("");
         enabled = false;
         parent = new String("");
-        isOn = true;
+        isOn = false;
         signal = new String("");
         text = new String("");
         uiType = new String("");
@@ -92,7 +92,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
             className = new String("");
         enabled = false;
         parent = new String("");
-        isOn = true;
+        isOn = false;
         signal = new String("");
         text = new String("");
         uiType = new String("");

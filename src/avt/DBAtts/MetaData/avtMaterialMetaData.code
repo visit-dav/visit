@@ -27,16 +27,11 @@ Definition:
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, const std::string &mesh,
-    int nm, const stringVector &names) : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    int nm, const stringVector &names) :
+    avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {
-    // Initialize all members.
-    *this = avtMaterialMetaData();
-
-    // Override members
-    name          = n;
-    originalName  = name;
-    meshName      = mesh;
-    numMaterials  = nm;
+    avtMaterialMetaData::Init();
+    numMaterials = nm;
     materialNames = names;
 }
 
@@ -56,18 +51,12 @@ Definition:
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
     const std::string &mesh, int nm, const stringVector &names,
     const stringVector &colors)
-    : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    : avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {
-    // Initialize all members.
-    *this = avtMaterialMetaData();
-
-    // Override members
-    name          = n;
-    originalName  = name;
-    meshName      = mesh;
-    numMaterials  = nm;
+    avtMaterialMetaData::Init();
+    numMaterials = nm;
     materialNames = names;
-    colorNames    = colors;
+    colorNames = colors;
 }
 
 Function: avtMaterialMetaData4
@@ -84,16 +73,10 @@ Definition:
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
     const std::string &mesh, int nm)
-    : avtVarMetaData(avtMaterialMetaData::TmfsStruct)
+    : avtBaseVarMetaData(avtMaterialMetaData::TmfsStruct, n, mesh)
 {
-    // Initialize all members.
-    *this = avtMaterialMetaData();
-
-    // Override members
-    name          = n;
-    originalName  = name;
-    meshName      = mesh;
-    numMaterials  = nm;
+    avtMaterialMetaData::Init();
+    numMaterials = nm;
     for (int i = 0; i < numMaterials; i++)
     {
         char tmpn[32];
@@ -143,7 +126,7 @@ Indent(ostream &out, int indent)
 void
 avtMaterialMetaData::Print(ostream &out, int indent) const
 {
-    avtVarMetaData::Print(out, indent);
+    avtBaseVarMetaData::Print(out, indent);
 
     Indent(out, indent);
     out << "The materials names are = ";

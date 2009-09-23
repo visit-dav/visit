@@ -55,7 +55,7 @@ import java.util.Vector;
 //   
 // ****************************************************************************
 
-public class avtMaterialMetaData extends avtVarMetaData
+public class avtMaterialMetaData extends avtBaseVarMetaData
 {
     private static int numAdditionalAttributes = 3;
 

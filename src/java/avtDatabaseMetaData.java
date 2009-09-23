@@ -59,9 +59,51 @@ import java.lang.Double;
 
 public class avtDatabaseMetaData extends AttributeSubject
 {
+    private static int numAdditionalAttributes = 34;
+
     public avtDatabaseMetaData()
     {
-        super(33);
+        super(numAdditionalAttributes);
+
+        hasTemporalExtents = false;
+        minTemporalExtents = 0;
+        maxTemporalExtents = 0;
+        numStates = 0;
+        isVirtualDatabase = false;
+        mustRepopulateOnStateChange = false;
+        mustAlphabetizeVariables = true;
+        formatCanDoDomainDecomposition = false;
+        useCatchAllMesh = false;
+        timeStepPath = new String("");
+        timeStepNames = new Vector();
+        cycles = new Vector();
+        cyclesAreAccurate = new Vector();
+        times = new Vector();
+        timesAreAccurate = new Vector();
+        databaseName = new String("");
+        fileFormat = new String("");
+        databaseComment = new String("");
+        exprList = new ExpressionList();
+        meshes = new Vector();
+        subsets = new Vector();
+        scalars = new Vector();
+        vectors = new Vector();
+        tensors = new Vector();
+        symmTensors = new Vector();
+        arrays = new Vector();
+        materials = new Vector();
+        species = new Vector();
+        curves = new Vector();
+        labels = new Vector();
+        defaultPlots = new Vector();
+        isSimulation = false;
+        simInfo = new avtSimulationInformation();
+        suggestedDefaultSILRestriction = new Vector();
+    }
+
+    public avtDatabaseMetaData(int nMoreFields)
+    {
+        super(numAdditionalAttributes + nMoreFields);
 
         hasTemporalExtents = false;
         minTemporalExtents = 0;
@@ -101,7 +143,7 @@ public class avtDatabaseMetaData extends AttributeSubject
 
     public avtDatabaseMetaData(avtDatabaseMetaData obj)
     {
-        super(33);
+        super(numAdditionalAttributes);
 
         int i;
 
@@ -252,6 +294,16 @@ public class avtDatabaseMetaData extends AttributeSubject
 
 
         SelectAll();
+    }
+
+    public int Offset()
+    {
+        return super.Offset() + super.GetNumAdditionalAttributes();
+    }
+
+    public int GetNumAdditionalAttributes()
+    {
+        return numAdditionalAttributes;
     }
 
     public boolean equals(avtDatabaseMetaData obj)
@@ -575,19 +627,19 @@ public class avtDatabaseMetaData extends AttributeSubject
     public void SetIsSimulation(boolean isSimulation_)
     {
         isSimulation = isSimulation_;
-        Select(30);
+        Select(31);
     }
 
     public void SetSimInfo(avtSimulationInformation simInfo_)
     {
         simInfo = simInfo_;
-        Select(31);
+        Select(32);
     }
 
     public void SetSuggestedDefaultSILRestriction(Vector suggestedDefaultSILRestriction_)
     {
         suggestedDefaultSILRestriction = suggestedDefaultSILRestriction_;
-        Select(32);
+        Select(33);
     }
 
     // Property getting methods
@@ -777,244 +829,240 @@ public class avtDatabaseMetaData extends AttributeSubject
         }
         if(WriteSelect(31, buf))
             buf.WriteBool(isSimulation);
-        if(WriteSelect(31, buf))
-            simInfo.Write(buf);
         if(WriteSelect(32, buf))
+            simInfo.Write(buf);
+        if(WriteSelect(33, buf))
             buf.WriteStringVector(suggestedDefaultSILRestriction);
     }
 
-    public void ReadAtts(int n, CommunicationBuffer buf)
+    public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        for(int i = 0; i < n; ++i)
+        switch(index)
         {
-            int index = (int)buf.ReadByte();
-            switch(index)
+        case 0:
+            SetHasTemporalExtents(buf.ReadBool());
+            break;
+        case 1:
+            SetMinTemporalExtents(buf.ReadDouble());
+            break;
+        case 2:
+            SetMaxTemporalExtents(buf.ReadDouble());
+            break;
+        case 3:
+            SetNumStates(buf.ReadInt());
+            break;
+        case 4:
+            SetIsVirtualDatabase(buf.ReadBool());
+            break;
+        case 5:
+            SetMustRepopulateOnStateChange(buf.ReadBool());
+            break;
+        case 6:
+            SetMustAlphabetizeVariables(buf.ReadBool());
+            break;
+        case 7:
+            SetFormatCanDoDomainDecomposition(buf.ReadBool());
+            break;
+        case 8:
+            SetUseCatchAllMesh(buf.ReadBool());
+            break;
+        case 9:
+            SetTimeStepPath(buf.ReadString());
+            break;
+        case 10:
+            SetTimeStepNames(buf.ReadStringVector());
+            break;
+        case 11:
+            SetCycles(buf.ReadIntVector());
+            break;
+        case 12:
+            SetCyclesAreAccurate(buf.ReadIntVector());
+            break;
+        case 13:
+            SetTimes(buf.ReadDoubleVector());
+            break;
+        case 14:
+            SetTimesAreAccurate(buf.ReadIntVector());
+            break;
+        case 15:
+            SetDatabaseName(buf.ReadString());
+            break;
+        case 16:
+            SetFileFormat(buf.ReadString());
+            break;
+        case 17:
+            SetDatabaseComment(buf.ReadString());
+            break;
+        case 18:
+            exprList.Read(buf);
+            Select(18);
+            break;
+        case 19:
             {
-            case 0:
-                SetHasTemporalExtents(buf.ReadBool());
-                break;
-            case 1:
-                SetMinTemporalExtents(buf.ReadDouble());
-                break;
-            case 2:
-                SetMaxTemporalExtents(buf.ReadDouble());
-                break;
-            case 3:
-                SetNumStates(buf.ReadInt());
-                break;
-            case 4:
-                SetIsVirtualDatabase(buf.ReadBool());
-                break;
-            case 5:
-                SetMustRepopulateOnStateChange(buf.ReadBool());
-                break;
-            case 6:
-                SetMustAlphabetizeVariables(buf.ReadBool());
-                break;
-            case 7:
-                SetFormatCanDoDomainDecomposition(buf.ReadBool());
-                break;
-            case 8:
-                SetUseCatchAllMesh(buf.ReadBool());
-                break;
-            case 9:
-                SetTimeStepPath(buf.ReadString());
-                break;
-            case 10:
-                SetTimeStepNames(buf.ReadStringVector());
-                break;
-            case 11:
-                SetCycles(buf.ReadIntVector());
-                break;
-            case 12:
-                SetCyclesAreAccurate(buf.ReadIntVector());
-                break;
-            case 13:
-                SetTimes(buf.ReadDoubleVector());
-                break;
-            case 14:
-                SetTimesAreAccurate(buf.ReadIntVector());
-                break;
-            case 15:
-                SetDatabaseName(buf.ReadString());
-                break;
-            case 16:
-                SetFileFormat(buf.ReadString());
-                break;
-            case 17:
-                SetDatabaseComment(buf.ReadString());
-                break;
-            case 18:
-                exprList.Read(buf);
-                Select(18);
-                break;
-            case 19:
+                int len = buf.ReadInt();
+                meshes.clear();
+                for(int j = 0; j < len; ++j)
                 {
-                    int len = buf.ReadInt();
-                    meshes.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtMeshMetaData tmp = new avtMeshMetaData();
-                        tmp.Read(buf);
-                        meshes.addElement(tmp);
-                    }
+                    avtMeshMetaData tmp = new avtMeshMetaData();
+                    tmp.Read(buf);
+                    meshes.addElement(tmp);
                 }
-                Select(19);
-                break;
-            case 20:
-                {
-                    int len = buf.ReadInt();
-                    subsets.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtSubsetsMetaData tmp = new avtSubsetsMetaData();
-                        tmp.Read(buf);
-                        subsets.addElement(tmp);
-                    }
-                }
-                Select(20);
-                break;
-            case 21:
-                {
-                    int len = buf.ReadInt();
-                    scalars.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtScalarMetaData tmp = new avtScalarMetaData();
-                        tmp.Read(buf);
-                        scalars.addElement(tmp);
-                    }
-                }
-                Select(21);
-                break;
-            case 22:
-                {
-                    int len = buf.ReadInt();
-                    vectors.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtVectorMetaData tmp = new avtVectorMetaData();
-                        tmp.Read(buf);
-                        vectors.addElement(tmp);
-                    }
-                }
-                Select(22);
-                break;
-            case 23:
-                {
-                    int len = buf.ReadInt();
-                    tensors.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtTensorMetaData tmp = new avtTensorMetaData();
-                        tmp.Read(buf);
-                        tensors.addElement(tmp);
-                    }
-                }
-                Select(23);
-                break;
-            case 24:
-                {
-                    int len = buf.ReadInt();
-                    symmTensors.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtSymmetricTensorMetaData tmp = new avtSymmetricTensorMetaData();
-                        tmp.Read(buf);
-                        symmTensors.addElement(tmp);
-                    }
-                }
-                Select(24);
-                break;
-            case 25:
-                {
-                    int len = buf.ReadInt();
-                    arrays.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtArrayMetaData tmp = new avtArrayMetaData();
-                        tmp.Read(buf);
-                        arrays.addElement(tmp);
-                    }
-                }
-                Select(25);
-                break;
-            case 26:
-                {
-                    int len = buf.ReadInt();
-                    materials.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtMaterialMetaData tmp = new avtMaterialMetaData();
-                        tmp.Read(buf);
-                        materials.addElement(tmp);
-                    }
-                }
-                Select(26);
-                break;
-            case 27:
-                {
-                    int len = buf.ReadInt();
-                    species.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtSpeciesMetaData tmp = new avtSpeciesMetaData();
-                        tmp.Read(buf);
-                        species.addElement(tmp);
-                    }
-                }
-                Select(27);
-                break;
-            case 28:
-                {
-                    int len = buf.ReadInt();
-                    curves.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtCurveMetaData tmp = new avtCurveMetaData();
-                        tmp.Read(buf);
-                        curves.addElement(tmp);
-                    }
-                }
-                Select(28);
-                break;
-            case 29:
-                {
-                    int len = buf.ReadInt();
-                    labels.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtLabelMetaData tmp = new avtLabelMetaData();
-                        tmp.Read(buf);
-                        labels.addElement(tmp);
-                    }
-                }
-                Select(29);
-                break;
-            case 30:
-                {
-                    int len = buf.ReadInt();
-                    defaultPlots.clear();
-                    for(int j = 0; j < len; ++j)
-                    {
-                        avtDefaultPlotMetaData tmp = new avtDefaultPlotMetaData();
-                        tmp.Read(buf);
-                        defaultPlots.addElement(tmp);
-                    }
-                }
-                Select(30);
-                break;
-            case 31:
-                SetIsSimulation(buf.ReadBool());
-                break;
-            case 31:
-                simInfo.Read(buf);
-                Select(31);
-                break;
-            case 32:
-                SetSuggestedDefaultSILRestriction(buf.ReadStringVector());
-                break;
             }
+            Select(19);
+            break;
+        case 20:
+            {
+                int len = buf.ReadInt();
+                subsets.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtSubsetsMetaData tmp = new avtSubsetsMetaData();
+                    tmp.Read(buf);
+                    subsets.addElement(tmp);
+                }
+            }
+            Select(20);
+            break;
+        case 21:
+            {
+                int len = buf.ReadInt();
+                scalars.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtScalarMetaData tmp = new avtScalarMetaData();
+                    tmp.Read(buf);
+                    scalars.addElement(tmp);
+                }
+            }
+            Select(21);
+            break;
+        case 22:
+            {
+                int len = buf.ReadInt();
+                vectors.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtVectorMetaData tmp = new avtVectorMetaData();
+                    tmp.Read(buf);
+                    vectors.addElement(tmp);
+                }
+            }
+            Select(22);
+            break;
+        case 23:
+            {
+                int len = buf.ReadInt();
+                tensors.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtTensorMetaData tmp = new avtTensorMetaData();
+                    tmp.Read(buf);
+                    tensors.addElement(tmp);
+                }
+            }
+            Select(23);
+            break;
+        case 24:
+            {
+                int len = buf.ReadInt();
+                symmTensors.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtSymmetricTensorMetaData tmp = new avtSymmetricTensorMetaData();
+                    tmp.Read(buf);
+                    symmTensors.addElement(tmp);
+                }
+            }
+            Select(24);
+            break;
+        case 25:
+            {
+                int len = buf.ReadInt();
+                arrays.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtArrayMetaData tmp = new avtArrayMetaData();
+                    tmp.Read(buf);
+                    arrays.addElement(tmp);
+                }
+            }
+            Select(25);
+            break;
+        case 26:
+            {
+                int len = buf.ReadInt();
+                materials.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtMaterialMetaData tmp = new avtMaterialMetaData();
+                    tmp.Read(buf);
+                    materials.addElement(tmp);
+                }
+            }
+            Select(26);
+            break;
+        case 27:
+            {
+                int len = buf.ReadInt();
+                species.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtSpeciesMetaData tmp = new avtSpeciesMetaData();
+                    tmp.Read(buf);
+                    species.addElement(tmp);
+                }
+            }
+            Select(27);
+            break;
+        case 28:
+            {
+                int len = buf.ReadInt();
+                curves.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtCurveMetaData tmp = new avtCurveMetaData();
+                    tmp.Read(buf);
+                    curves.addElement(tmp);
+                }
+            }
+            Select(28);
+            break;
+        case 29:
+            {
+                int len = buf.ReadInt();
+                labels.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtLabelMetaData tmp = new avtLabelMetaData();
+                    tmp.Read(buf);
+                    labels.addElement(tmp);
+                }
+            }
+            Select(29);
+            break;
+        case 30:
+            {
+                int len = buf.ReadInt();
+                defaultPlots.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    avtDefaultPlotMetaData tmp = new avtDefaultPlotMetaData();
+                    tmp.Read(buf);
+                    defaultPlots.addElement(tmp);
+                }
+            }
+            Select(30);
+            break;
+        case 31:
+            SetIsSimulation(buf.ReadBool());
+            break;
+        case 32:
+            simInfo.Read(buf);
+            Select(32);
+            break;
+        case 33:
+            SetSuggestedDefaultSILRestriction(buf.ReadStringVector());
+            break;
         }
     }
 

@@ -41,6 +41,7 @@
 #include <dbatts_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class avtSimulationCommandSpecification;
 class avtSimulationCommandSpecification;
 
@@ -69,13 +70,23 @@ public:
         Stopped
     };
 
+    // These constructors are for objects of this class
     avtSimulationInformation();
     avtSimulationInformation(const avtSimulationInformation &obj);
+protected:
+    // These constructors are for objects derived from this class
+    avtSimulationInformation(private_tmfs_t tmfs);
+    avtSimulationInformation(const avtSimulationInformation &obj, private_tmfs_t tmfs);
+public:
     virtual ~avtSimulationInformation();
 
     virtual avtSimulationInformation& operator = (const avtSimulationInformation &obj);
     virtual bool operator == (const avtSimulationInformation &obj) const;
     virtual bool operator != (const avtSimulationInformation &obj) const;
+private:
+    void Init();
+    void Copy(const avtSimulationInformation &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -147,7 +158,8 @@ public:
         ID_otherValues,
         ID_genericCommands,
         ID_mode,
-        ID_customCommands
+        ID_customCommands,
+        ID__LAST
     };
 
 protected:
@@ -164,6 +176,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AVTSIMULATIONINFORMATION_TMFS "siss*s*a*ia*"
 
 #endif

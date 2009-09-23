@@ -124,6 +124,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTCURVEMETADATA_TMFS (AVTVARMETADATA_TMFS "ssssbdds")
+#define AVTCURVEMETADATA_TMFS AVTVARMETADATA_TMFS "ssssbdds"
 
 #endif

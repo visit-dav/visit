@@ -217,10 +217,7 @@ avtArrayMetaData::operator = (const avtArrayMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    nVars = obj.nVars;
-    compNames = obj.compNames;
-
-    avtArrayMetaData::SelectAll();
+    avtArrayMetaData::Copy(obj);
 
     return *this;
 }
@@ -424,23 +421,16 @@ avtArrayMetaData::SelectAll()
 
 avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
                                    avtCentering c, int nv)
-    : avtVarMetaData(avtArrayMetaData::TmfsStruct)
+    : avtVarMetaData(avtArrayMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members
-    *this = avtArrayMetaData();
-
-    // Override members based on command line.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    nVars          = nv;
+    avtArrayMetaData::Init();
+    nVars = nv;
     compNames.resize(nVars);
     for (int i = 0 ; i < nVars ; i++)
     {
         char name[1024];
         SNPRINTF(name, 1024, "comp%d", i);
     }
-    centering      = c;
 }
 
 // ****************************************************************************
@@ -461,18 +451,11 @@ avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
 avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn, 
                                    avtCentering c, int nv,
                                    const stringVector &cn)
-    : avtVarMetaData(avtArrayMetaData::TmfsStruct)
+    : avtVarMetaData(avtArrayMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members
-    *this = avtArrayMetaData();
-
-    // Override members based on command line.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    nVars          = nv;
-    compNames      = cn;
-    centering      = c;
+    avtArrayMetaData::Init();
+    nVars = nv;
+    compNames = cn;
 }
 
 // ****************************************************************************

@@ -40,12 +40,13 @@
 #define PY_AVTVARMETADATA_H
 #include <Python.h>
 #include <avtVarMetaData.h>
+#include <PyavtBaseVarMetaData.h>
 #include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTVARMETADATA_NMETH 24
+#define AVTVARMETADATA_NMETH (AVTBASEVARMETADATA_NMETH+14)
 void VISITPY_API           PyavtVarMetaData_StartUp(avtVarMetaData *subj, void *data);
 void VISITPY_API           PyavtVarMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtVarMetaData_GetMethodTable(int *nMethods);

@@ -1,0 +1,119 @@
+Function: avtBaseVarMetaData2
+Declaration: avtBaseVarMetaData(private_tmfs_t, std::string, std::string);
+Definition:
+// ****************************************************************************
+//  Method: avtBaseVarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the variable.
+//      mn          The name of the mesh the var is defined on.
+//      c           The centering of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:44:42 PST 2004
+//    Added units.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+//    Mark C. Miller, Wed Mar 26 10:11:46 PDT 2008
+//    Added initialization for other enumerated scalar options
+//    and hideFromGUI.
+//
+//    Mark C. Miller, Thu Sep 10 09:24:46 PDT 2009
+//    Re-designed to serve as base class.
+// ****************************************************************************
+
+avtBaseVarMetaData::avtBaseVarMetaData(private_tmfs_t tmfs, std::string n,
+    std::string mn) : AttributeSubject(tmfs.tmfs)
+{
+    avtBaseVarMetaData::Init();
+    name = n;
+    originalName = n;
+    meshName = mn;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtBaseVarMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Print out validVariable.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Print out treatAsASCII.
+//
+//    Brad Whitlock, Tue Jul 20 13:47:04 PST 2004
+//    Added units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+//    Mark C. Miller, Thu Sep 10 09:24:46 PDT 2009
+//    Re-designed to serve as base class.
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+
+void
+avtBaseVarMetaData::Print(ostream &out, int indent) const
+{
+
+    Indent(out, indent);
+    out << "Name = \"" << name << "\"" << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = \"" << originalName << "\"" << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh is = \"" << meshName << "\"" << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+
+    if (hideFromGUI)
+    {
+        Indent(out, indent);
+        out << "THIS VARIABLE IS TO BE HIDDEN FROM THE GUI." << endl;
+    }
+}
+

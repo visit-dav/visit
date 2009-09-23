@@ -215,9 +215,7 @@ avtSymmetricTensorMetaData::operator = (const avtSymmetricTensorMetaData &obj)
     // call the base class' assignment operator first
     avtVarMetaData::operator=(obj);
 
-    dim = obj.dim;
-
-    avtSymmetricTensorMetaData::SelectAll();
+    avtSymmetricTensorMetaData::Copy(obj);
 
     return *this;
 }
@@ -426,17 +424,10 @@ avtSymmetricTensorMetaData::SelectAll()
 
 avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : avtVarMetaData(avtSymmetricTensorMetaData::TmfsStruct)
+    : avtVarMetaData(avtSymmetricTensorMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members
-    *this = avtSymmetricTensorMetaData();
-
-    // Override members using command line arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    dim            = vd;
+    avtSymmetricTensorMetaData::Init();
+    dim = vd;
 }
 
 // ****************************************************************************

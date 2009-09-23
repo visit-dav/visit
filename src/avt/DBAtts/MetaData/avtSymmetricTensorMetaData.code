@@ -24,17 +24,10 @@ Definition:
 
 avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : avtVarMetaData(avtSymmetricTensorMetaData::TmfsStruct)
+    : avtVarMetaData(avtSymmetricTensorMetaData::TmfsStruct, n, mn, c)
 {
-    // Initialize all members
-    *this = avtSymmetricTensorMetaData();
-
-    // Override members using command line arguments.
-    name           = n;
-    originalName   = name;
-    meshName       = mn;
-    centering      = c;
-    dim            = vd;
+    avtSymmetricTensorMetaData::Init();
+    dim = vd;
 }
 
 Function: Print

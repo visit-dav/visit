@@ -131,8 +131,6 @@ public:
     // User-defined methods
     avtScalarMetaData(std::string, std::string, avtCentering);
     avtScalarMetaData(std::string, std::string, avtCentering, double, double);
-    void SetExtents(const double *);
-    void UnsetExtents();
     void Print(ostream &, int = 0) const;
     void AddEnumGraphEdge(int head, int tail);
     int AddEnumNameValue(std::string name, double val);
@@ -179,6 +177,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSCALARMETADATA_TMFS (AVTVARMETADATA_TMFS "bis*d*DDii*ii")
+#define AVTSCALARMETADATA_TMFS AVTVARMETADATA_TMFS "bis*d*DDii*ii"
 
 #endif
