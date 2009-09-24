@@ -111,6 +111,9 @@ class vtkObject;
 //   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //   Don't record intersection points, just count them.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Option to serialize steps.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -151,7 +154,8 @@ class IVP_API avtStreamline
     void      Debug() const;
     
     void      Serialize(MemStream::Mode mode, MemStream &buff, 
-                        avtIVPSolver *solver);
+                        avtIVPSolver *solver,
+                        bool serializeSteps=false);
 
   protected:
     avtStreamline( const avtStreamline& );
@@ -170,8 +174,10 @@ class IVP_API avtStreamline
                                   avtIVPSolver::Result *result);
     bool      IntersectPlane(const avtVec &p0, const avtVec &p1);
 
+  public:
     // Integration steps.
     std::list<avtIVPStep*> _steps;
+  protected:
 
     // Intersection points.
     bool intersectionsSet;

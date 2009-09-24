@@ -146,6 +146,9 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 //  detect when slave set is done and mark done. Modify logic in how masters
 //  make decisions. Add domainOffloading (case 5).
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
+//
 // ****************************************************************************
 
 class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
@@ -161,9 +164,9 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 
     virtual const char*       AlgoName() const {return "MasterSlave";}
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
-    virtual void              Execute();
 
   protected:
+    virtual void              RunAlgorithm();
     virtual void              ProcessMessages();
     virtual void              PostLoopProcessing();    
     std::vector<int>          status, prevStatus;
@@ -228,6 +231,9 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Add HandleLatencyTimer method.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
+//
 // ****************************************************************************
 
 class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
@@ -239,11 +245,12 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual ~avtSlaveSLAlgorithm();
 
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
-    virtual void              Execute();
     virtual void              SendStatus(bool forceSend=false);
     virtual void              UpdateStatus();
 
   protected:
+    virtual void              RunAlgorithm();
+
     int                       master, numTerminated, timeout;
     bool                      workToDo;
     std::vector<int>          status, prevStatus;

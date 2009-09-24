@@ -198,7 +198,7 @@ avtParDomSLAlgorithm::ExchangeTermination()
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::Execute
+//  Method: avtParDomSLAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the static domain SL algorithm.
@@ -219,12 +219,15 @@ avtParDomSLAlgorithm::ExchangeTermination()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Remove ExchangeSLs() method.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Replace Execute() with RunAlgorithm().
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::Execute()
+avtParDomSLAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtParDomSLAlgorithm::Execute()\n";
+    debug1<<"avtParDomSLAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
     
     while (totalNumStreamlines > 0)
@@ -281,14 +284,14 @@ avtParDomSLAlgorithm::Execute()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Send SLs using SendSLs.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   SLs are exchanged after processing, simplifying this method.
+//
 // ****************************************************************************
 
 void
 avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
 {
-    MemStream buff;
-    bool deleteSL = true;
-
     // The integrated streamline could lie in multiple domains.
     // Duplicate the SL and send to the proper owner.
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
@@ -299,30 +302,14 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
 
         int domRank = DomainToRank(s->seedPtDomainList[i]);
         if (domRank == rank)
-        {
             activeSLs.push_back(s);
-            deleteSL = false;
-        }
         else
         {
-            // First time, create the buffer.
-            if (buff.buffLen() == 0)
-                s->Serialize(MemStream::WRITE, buff, GetSolver());
-
-            // Create a copy of the SL and add it to the distribute array.
-            avtStreamlineWrapper *newS = new avtStreamlineWrapper;
-            buff.rewind();
-            newS->Serialize(MemStream::READ, buff, GetSolver());
-            newS->domain = s->seedPtDomainList[i];
-
             vector<avtStreamlineWrapper *> sls;
-            sls.push_back(newS);
-            SendSLs(domRank, sls);
+            sls.push_back(s);
+            SendSLs(domRank,sls);
         }
     }
-
-    if (deleteSL)
-        delete s;
 }
 
 #endif

@@ -123,6 +123,9 @@ class AVTFILTERS_API DomainType
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Add serialization flags and a sequenceCnt.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineWrapper
@@ -141,6 +144,12 @@ class AVTFILTERS_API avtStreamlineWrapper
         BWD
     };
 
+    enum SerializeFlags
+    {
+        SERIALIZE_STEPS = 1,
+        SERIALIZE_INC_SEQ = 2,
+    };
+
     avtStreamlineWrapper();
     avtStreamlineWrapper(avtStreamline *s, Dir slDir=FWD, int ID=-1);
     ~avtStreamlineWrapper();
@@ -153,12 +162,22 @@ class AVTFILTERS_API avtStreamlineWrapper
     void GetEndPoint(avtVector &pt) const {double t; GetEndPoint(pt,t); }
 
     void Debug();
-    void Serialize(MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver);
+    void Serialize(MemStream::Mode mode,
+                   MemStream &buff,
+                   avtIVPSolver *solver);
+    static avtStreamlineWrapper* MergeStreamlineSequence(std::vector<avtStreamlineWrapper *> &v);
+    static bool IdSeqCompare(const avtStreamlineWrapper *slA,
+                             const avtStreamlineWrapper *slB);
+    static bool IdRevSeqCompare(const avtStreamlineWrapper *slA,
+                                const avtStreamlineWrapper *slB);
 
     double termination;
     avtIVPSolver::TerminateType terminationType;
     bool terminated;
     avtStreamline *sl;
+
+    //serialization flags.
+    unsigned long serializeFlags;
 
     // Helpers needed for computing streamlines
     std::vector<DomainType> seedPtDomainList;
@@ -167,10 +186,9 @@ class AVTFILTERS_API avtStreamlineWrapper
     Dir dir;
     
     // statistical bookeeping.
-    std::vector<int> domainVisitCnts;
+    //std::vector<int> domainVisitCnts;
     int maxCnt, sum, numDomainsVisited;
-    int numTimesCommunicated;
-    int id;
+    long id, sequenceCnt;
     long long sortKey;
 };
 

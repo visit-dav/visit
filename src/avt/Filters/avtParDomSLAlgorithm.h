@@ -68,6 +68,9 @@
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Remove ExchangeSLs.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -79,9 +82,8 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
-    virtual void              Execute();
-
   protected:
+    virtual void              RunAlgorithm();
     void                      ExchangeTermination();
     void                      HandleOOBSL(avtStreamlineWrapper *s);
     
