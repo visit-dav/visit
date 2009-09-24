@@ -765,7 +765,7 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Execute
+//  Method: avtMasterSLAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the master loop of the master/slave algorithm.
@@ -779,12 +779,15 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 //   Add call to check for sent buffers.
 //
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.       
+//  Allow masters to share work loads.
+//
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
 //
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Execute()
+avtMasterSLAlgorithm::RunAlgorithm()
 {
     int timer = visitTimer->StartTimer();
     
@@ -2160,7 +2163,7 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::Execute
+//  Method: avtSlaveSLAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the slave loop of the master/slave algorithm.
@@ -2187,11 +2190,14 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //
 //   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
 //   Add auto-load code for slaves.
+//
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
 //   
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::Execute()
+avtSlaveSLAlgorithm::RunAlgorithm()
 {
     list<avtStreamlineWrapper *>::const_iterator si;
     int timer = visitTimer->StartTimer();

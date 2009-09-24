@@ -92,8 +92,11 @@ struct avtIVPStateHelper;
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion.
 //
-//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
-//   Added ComputeSpeed, ComputeScalarVariable and associated member data.
+//    Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
+//    Added ComputeSpeed, ComputeScalarVariable and associated member data.
+//
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Added a copy constructor.
 //
 // ****************************************************************************
 
@@ -103,6 +106,13 @@ public:
     avtIVPStep() : avtBezierSegment()
     { tStart = tEnd = scalarValue = 0.0; speed = 0.0; vorticity = 0.0;
       velStart = avtVec(0.,0.,0.); velEnd = avtVec(0.,0.,0.); }
+
+    avtIVPStep(const avtIVPStep &s) : avtBezierSegment(s),
+                                      tStart(s.tStart),tEnd(s.tEnd), scalarValue(s.scalarValue),
+                                      speed(s.speed), vorticity(s.vorticity),
+                                      velStart(s.velStart), velEnd(s.velEnd)
+    {
+    }
     
     void   ComputeSpeed(const avtIVPField *field)
     {

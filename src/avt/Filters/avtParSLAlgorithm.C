@@ -126,6 +126,24 @@ avtParSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts,
     InitRequests();
 }
 
+
+// ****************************************************************************
+//  Method: avtParSLAlgorithm::PostRunAlgorithm
+//
+//  Purpose:
+//      Cleanup.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+// ****************************************************************************
+
+void
+avtParSLAlgorithm::PostRunAlgorithm()
+{
+    ExchangeSLSteps();
+}
+
 // ****************************************************************************
 //  Method: avtParSLAlgorithm::PostExecute
 //
@@ -172,6 +190,224 @@ avtParSLAlgorithm::InitRequests()
     }
 }
 
+static int
+CountIDs(list<avtStreamlineWrapper *> &l, int id)
+{
+    int cnt = 0;
+    list<avtStreamlineWrapper*>::const_iterator si = l.begin();
+    for (si = l.begin(); si != l.end(); si++)
+    {
+        if ((*si)->id == id)
+            cnt++;
+    }
+    return cnt;
+}
+
+// ****************************************************************************
+//  Method: avtParSLAlgorithm::ExchangeSLSteps
+//
+//  Purpose:
+//      Communicate streamlines pieces to destinations.
+//      When a streamline is communicated, only the state information is sent.
+//      All the integration steps need to sent to the proc that owns the terminated
+//      streamline.  This method figures out where each streamline has terminated and
+//      sends all the pieces there.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 21, 2009
+//
+// ****************************************************************************
+
+void
+avtParSLAlgorithm::ExchangeSLSteps()
+{
+    debug5<<"ExchangeSLSteps: communicatedSLs: "<<communicatedSLs.size();
+    debug5<<" terminatedSLs: "<<terminatedSLs.size()<<endl;
+
+    //Communicate to everyone where the terminators are located.
+    //Do this "N" streamlines at a time, so we don't have a super big buffer.
+    int N;
+    if (numSeedPoints > 500)
+        N = 500;
+    else
+        N = numSeedPoints;
+    
+    long *idBuffer = new long[2*N], *myIDs = new long[2*N];
+
+    //Sort the terminated/communicated SLs by id.
+    terminatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+    communicatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+
+    vector<vector<avtStreamlineWrapper *> >sendSLs(N);
+    vector<int> owners(N);
+    
+    int minId = 0;
+    int maxId = N-1;
+    int nLoops = numSeedPoints/N;
+    if (numSeedPoints % N != 0)
+        nLoops++;
+    for (int l = 0; l < nLoops; l++)
+    {
+        //Initialize arrays for this round.
+        for (int i = 0; i < N; i++)
+        {
+            idBuffer[i] = 0;
+            idBuffer[i+N] = 0;
+            myIDs[i] = 0;
+            myIDs[i+N] = 0;
+            sendSLs[i].resize(0);
+            owners[i] = 0;
+        }
+
+        //Set array for SLs that terminated here. Update sequence counts for communicated
+        //SLs.
+        list<avtStreamlineWrapper*>::iterator t = terminatedSLs.begin();
+        while (t != terminatedSLs.end() && (*t)->id <= maxId)
+        {
+            if ((*t)->id >= minId)
+            {
+                int idx = (*t)->id % N;
+                myIDs[idx] = rank;
+                myIDs[idx+N] += 1;
+                debug5<<"I own "<<(*t)->id<<" "<<(*t)->sequenceCnt<<" idx= "<<idx<<endl;
+            }
+
+            t++;
+        }
+        
+        list<avtStreamlineWrapper*>::const_iterator c = communicatedSLs.begin();
+        while (c != communicatedSLs.end() && (*c)->id <= maxId)
+        {
+            if ((*c)->id >= minId)
+            {
+                int idx = (*c)->id % N;
+                myIDs[idx+N] += 1;
+                debug5<<"I have "<<(*c)->id<<" "<<(*c)->sequenceCnt<<" idx= "<<idx<<endl;
+            }
+            c++;
+        }
+        
+        //Exchange ID owners and sequence counts.
+        MPI_Allreduce(myIDs, idBuffer, 2*N, MPI_LONG, MPI_SUM, VISIT_MPI_COMM);
+        if (0)
+        {
+            debug5<<"idBuffer:  [";
+            for(int i=0; i<2*N;i++)
+                debug5<<idBuffer[i]<<" ";
+            debug5<<"]"<<endl;
+        }
+        
+        //Now we know where all SLs belong and how many sequences for each.
+        //Send communicatedSLs to the owners.
+        while (!communicatedSLs.empty())
+        {
+            avtStreamlineWrapper *s = communicatedSLs.front();
+            if (s->id <= maxId)
+            {
+                int idx = s->id%N;
+                int owner = idBuffer[idx];
+                if (owner == rank)
+                    terminatedSLs.push_back(s);
+                else
+                {
+                    s->serializeFlags = avtStreamlineWrapper::SERIALIZE_STEPS; //Write SL steps.
+                    sendSLs[idx].push_back(s);
+                    owners[idx] = owner;
+                }
+                communicatedSLs.pop_front();
+            }
+            else
+                break;
+        }
+        
+        for (int i = 0; i < N; i++)
+        {
+            if (sendSLs[i].size() > 0)
+            {
+                DoSendSLs(owners[i], sendSLs[i]);
+
+                for (int j = 0; j < sendSLs[i].size(); j++)
+                    delete sendSLs[i][j];
+            }
+        }
+        
+        //Wait for all the sequences to arrive. The total number is known for
+        //each SL, so wait until they all come.
+        bool seqGathered = false;
+        while (!seqGathered)
+        {
+            RecvSLs(terminatedSLs);
+            
+            //See if we have all the sequences we need.
+            terminatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+            bool needMore = false;
+            for (int i = 0; i < N && !needMore; i++)
+                if (idBuffer[i] == rank)
+                    needMore = (CountIDs(terminatedSLs, i+minId) < idBuffer[i+N]);
+            
+            //Everyone done.
+            seqGathered = !needMore;
+        }
+        
+        //Advance to next N streamlines.
+        maxId += N;
+        minId += N;
+    }
+
+    //All SLs are distributed, merge the sequences into single streamlines.
+    MergeTerminatedSLSequences();
+    
+    delete [] idBuffer;
+    delete [] myIDs;
+}
+
+// ****************************************************************************
+//  Method: avtParSLAlgorithm::MergeTerminatedSLSequences
+//
+//  Purpose:
+//      Merge streamline sequences.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Sept 21, 2009
+//
+// ****************************************************************************
+
+void
+avtParSLAlgorithm::MergeTerminatedSLSequences()
+{
+    //Sort them by id and sequence so we can process them one at a time.
+    terminatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+
+    //Split them up into sequences.
+    vector<vector<avtStreamlineWrapper *> > seqs;
+    while (!terminatedSLs.empty())
+    {
+        avtStreamlineWrapper *s = terminatedSLs.front();
+        terminatedSLs.pop_front();
+        
+        //Empty or new ID, add a new entry.
+        if (seqs.size() == 0 ||
+            seqs[seqs.size()-1][0]->id != s->id)
+        {
+            vector<avtStreamlineWrapper *> v;
+            v.push_back(s);
+            seqs.push_back(v);
+        }
+        else
+        {
+            seqs[seqs.size()-1].push_back(s);
+        }
+    }
+    terminatedSLs.clear();
+    
+    //Merge the sequences together, put them into terminated list.
+    for (int i = 0; i < seqs.size(); i++)
+    {
+        avtStreamlineWrapper *s = avtStreamlineWrapper::MergeStreamlineSequence(seqs[i]);
+        terminatedSLs.push_back(s);
+    }
+}
+
 // ****************************************************************************
 //  Method: avtParSLAlgorithm::CleanupAsynchronous
 //
@@ -182,6 +418,7 @@ avtParSLAlgorithm::InitRequests()
 //  Creation:   June 16, 2008
 //
 // ****************************************************************************
+
 void
 avtParSLAlgorithm::CleanupAsynchronous()
 {
@@ -573,35 +810,79 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 //   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
 //   Memory leak fix.
 //
+//   Dave Pugmire, Thu Sep 24 14:03:46 EDT 2009
+//   Call new method, DoSendSLs.
+//
 // ****************************************************************************
 
 void
 avtParSLAlgorithm::SendSLs(int dst, 
                            vector<avtStreamlineWrapper*> &sls)
 {
+
+    for (int i = 0; i < sls.size(); i++)
+    {
+        avtStreamlineWrapper *slSeg = sls[i];
+        slSeg->serializeFlags |= avtStreamlineWrapper::SERIALIZE_INC_SEQ;
+    }
+
+    if (DoSendSLs(dst, sls))
+    {
+        for (int i = 0; i < sls.size(); i++)
+        {
+            avtStreamlineWrapper *slSeg = sls[i];
+            
+            //Add if id/seq is unique. (single streamlines can be sent to multiple dst).
+            list<avtStreamlineWrapper*>::const_iterator si = communicatedSLs.begin();
+            bool found = false;
+            for (si = communicatedSLs.begin(); !found && si != communicatedSLs.end(); si++)
+                found = ((*si)->id == slSeg->id && (*si)->sequenceCnt == slSeg->sequenceCnt);
+        
+            if (!found)
+                communicatedSLs.push_back(slSeg);
+        }
+        
+        //Empty the array.
+        sls.resize(0);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtParSLAlgorithm::DoSendSLs
+//
+//  Purpose:
+//      Send streamlines to a dst.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtParSLAlgorithm::DoSendSLs(int dst, 
+                             vector<avtStreamlineWrapper*> &sls)
+{
     if (dst == rank)
-        return;
+        return false;
   
     size_t szz = sls.size();
     if (szz == 0)
-        return;
+        return false;
 
     int communicationTimer = visitTimer->StartTimer();
     MemStream buff;
     buff.write(&szz, 1);
+
     for (int i = 0; i < sls.size(); i++)
     {
         avtStreamlineWrapper *slSeg = sls[i];
-        slSeg->numTimesCommunicated++;
         slSeg->Serialize(MemStream::WRITE, buff, GetSolver());
-        delete slSeg;
-        
         SLCommCnt.value ++;
     }
     
-    //Empty the array.
-    sls.resize(0);
-
     // Break it up into multiple messages if needed.
     if (buff.buffLen() > slMsgSz)
         EXCEPTION0(ImproperUseException);
@@ -622,8 +903,8 @@ avtParSLAlgorithm::SendSLs(int dst,
     BytesCnt.value += sz;
     CommTime.value += visitTimer->StopTimer(communicationTimer,
                                             "SendSLs");
+    return true;
 }
-
 
 // ****************************************************************************
 //  Method: avtParSLAlgorithm::RecvSLs

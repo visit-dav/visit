@@ -195,6 +195,28 @@ avtSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
     DomLoadCnt.value = streamlineFilter->InitialDomLoads;
 }
 
+
+// ****************************************************************************
+//  Method: avtSLAlgorithm::Execute
+//
+//  Purpose:
+//      Execute the algorithm.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//  
+// ****************************************************************************
+
+void
+avtSLAlgorithm::Execute()
+{
+    PreRunAlgorithm();
+    RunAlgorithm();
+    PostRunAlgorithm();
+}
+
 // ****************************************************************************
 //  Method: avtSLAlgorithm::PostExecute
 //

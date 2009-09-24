@@ -71,19 +71,26 @@ ostream& operator<<(ostream &out, const DomainType &d)
 //   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
 //   Add a seed point id attribute to each streamline.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Add sequenceCnt.
+//
 // ****************************************************************************
 
 avtStreamlineWrapper::avtStreamlineWrapper()
 {
     status = UNSET;
     domain = -1;
-    numTimesCommunicated = 0;
+    sequenceCnt = 0;
     terminated = false;
     sl = NULL;
     dir = FWD;
     maxCnt = sum= numDomainsVisited = 0;
     id = -1;
     sortKey = 0;
+    
+    termination = 0.0;
+    terminationType = avtIVPSolver::TIME;
+    serializeFlags = 0;
 }
 
 
@@ -100,6 +107,9 @@ avtStreamlineWrapper::avtStreamlineWrapper()
 //   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
 //   Add a seed point id attribute to each streamline.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Add sequenceCnt.
+//
 // ****************************************************************************
 
 avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir, int ID)
@@ -108,9 +118,13 @@ avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir, int ID)
     status = UNSET;
     domain = -1;
     dir = slDir;
-    numTimesCommunicated = 0;
+    sequenceCnt = 0;
     maxCnt = sum= numDomainsVisited = 0;
     id = ID;
+    terminated = false;
+    termination = 0.0;
+    terminationType = avtIVPSolver::TIME;
+    serializeFlags = 0;
 }
 
 
@@ -150,8 +164,10 @@ avtStreamlineWrapper::~avtStreamlineWrapper()
 void
 avtStreamlineWrapper::Debug()
 {
-    debug1 << "avtStreamlineWrapper::Debug()\n";
+    debug1<<"slWrapper: id= "<<id;
+    debug1<<" #steps= "<<(sl?sl->size():0)<<endl;
 
+    /*
     avtVec end;
     sl->PtEnd(end);
     debug1<<"******seed: "<<end;
@@ -160,6 +176,7 @@ avtStreamlineWrapper::Debug()
         debug1<<seedPtDomainList[i]<<", ";
     debug1<<"] ";
     debug1<< " steps= "<<sl->size()<<endl;
+    */
 }
 
 
@@ -176,28 +193,47 @@ avtStreamlineWrapper::Debug()
 //   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
 //   Add a seed point id attribute to each streamline.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Add serialization flags, sequenceCnt.
+//
 // ****************************************************************************
 
 void
-avtStreamlineWrapper::Serialize(MemStream::Mode mode, MemStream &buff, 
+avtStreamlineWrapper::Serialize(MemStream::Mode mode,
+                                MemStream &buff, 
                                 avtIVPSolver *solver)
 {
-    debug5 << "avtStreamlineWrapper::Serialize. sz= "<<buff.buffLen()<< endl;
+    debug5 << "avtStreamlineWrapper::Serialize: id= "<<id<<endl;
+    Debug();
 
     buff.io(mode, dir);
     buff.io(mode, id);
     buff.io(mode, domain);
     buff.io(mode, status);
-    buff.io(mode, numTimesCommunicated);
-    buff.io(mode, domainVisitCnts);
+    buff.io(mode, terminated);
+    buff.io(mode, termination);
+    buff.io(mode, terminationType);
+    
+    if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
+    {
+        long seqCnt = sequenceCnt+1;
+        buff.io(mode, seqCnt);
+    }
+    else
+        buff.io(mode, sequenceCnt);
+
+
+    //buff.io(mode, domainVisitCnts);
     if (mode == MemStream::READ)
     {
         if (sl)
             delete sl;
         sl = new avtStreamline;
     }
-    sl->Serialize(mode, buff, solver);
-    debug5 << "DONE: avtStreamlineWrapper::Serialize. sz= "<< buff.buffLen()
+    sl->Serialize(mode, buff, solver, (serializeFlags & SERIALIZE_STEPS));
+
+    serializeFlags = 0;
+    debug5 << "DONE: avtStreamlineWrapper::Serialize: id= "<<id<<" sz= "<< buff.buffLen()
            << endl;
 }
 
@@ -284,10 +320,12 @@ avtStreamlineWrapper::GetEndPoint(avtVector &pt, double &t) const
 void
 avtStreamlineWrapper::UpdateDomainCount(DomainType &dom)
 {
+    /*
     if (dom.domain+1 > domainVisitCnts.size())
         domainVisitCnts.resize(dom.domain+1, 0);
 
     domainVisitCnts[dom.domain]++;
+    */
 }
 
 
@@ -308,6 +346,7 @@ avtStreamlineWrapper::ComputeStatistics()
     maxCnt = 0;
     sum = 0;
     numDomainsVisited = 0;
+    /*
     for (size_t i = 0; i < domainVisitCnts.size(); i++)
     {
         int cnt = domainVisitCnts[i];
@@ -317,4 +356,96 @@ avtStreamlineWrapper::ComputeStatistics()
             numDomainsVisited++;
         sum += cnt;
     }
+    */
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineWrapper::IdSeqCompare
+//
+//  Purpose:
+//      Sort streamlines by id, then sequence number.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+// ****************************************************************************
+bool
+avtStreamlineWrapper::IdSeqCompare(const avtStreamlineWrapper *slA, 
+                                   const avtStreamlineWrapper *slB)
+{
+    if (slA->id == slB->id)
+        return slA->sequenceCnt < slB->sequenceCnt;
+    
+    return slA->id < slB->id;
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineWrapper::IdRevSeqCompare
+//
+//  Purpose:
+//      Sort streamlines by id, then reverse sequence number.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+// ****************************************************************************
+bool
+avtStreamlineWrapper::IdRevSeqCompare(const avtStreamlineWrapper *slA, 
+                                   const avtStreamlineWrapper *slB)
+{
+    if (slA->id == slB->id)
+        return slA->sequenceCnt > slB->sequenceCnt;
+    
+    return slA->id < slB->id;
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineWrapper::MergeStreamlineSequence
+//
+//  Purpose:
+//      Merge a vector of streamline sequences into a single streamline.
+//      This is destructive, extra streamlines are deleted.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+// ****************************************************************************
+
+avtStreamlineWrapper*
+avtStreamlineWrapper::MergeStreamlineSequence(std::vector<avtStreamlineWrapper *> &v)
+{
+    if (v.size() == 0)
+        return NULL;
+    else if (v.size() == 1)
+        return v[0];
+    
+    //Sort (fwd or rev) the streamlines.
+    std::sort(v.begin(), v.end(), (v.front()->dir == avtStreamlineWrapper::FWD ?
+                                   avtStreamlineWrapper::IdRevSeqCompare :
+                                   avtStreamlineWrapper::IdSeqCompare));
+
+    //Make sure all ids are the same.
+    if (v.front()->id != v.back()->id)
+        return NULL;
+
+    //We want to merge others into the "last" sequence, since it has the right
+    //sover state, sequenceCnt, etc. The vector is reverse sorted, so we can
+    //merge them in order.
+
+    avtStreamlineWrapper *s = v.front();
+
+    for (int i = 1; i < v.size(); i++)
+    {
+        std::list<avtIVPStep*>::reverse_iterator si;
+        for (si = v[i]->sl->_steps.rbegin(); si != v[i]->sl->_steps.rend(); si++)
+        {
+            avtIVPStep *step = new avtIVPStep(*(*si));
+            s->sl->_steps.push_front(step);
+        }
+        
+        delete v[i];
+    }
+
+    v.resize(0);
+    return s;
 }

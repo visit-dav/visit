@@ -151,7 +151,7 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::Execute
+//  Method: avtSerialSLAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the serial streamline algorithm.
@@ -171,12 +171,15 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //   bookkeeping logic, meaning that I/O will correctly be counted as I/O,
 //   instead of being rolled in with integration time.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
+//
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::Execute()
+avtSerialSLAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtSerialSLAlgorithm::Execute()\n";
+    debug1<<"avtSerialSLAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
     while (1)

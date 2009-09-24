@@ -78,6 +78,9 @@
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Replace Execute() with RunAlgorithm(). Add a Pre/Post RunAlgorithm.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -88,12 +91,16 @@ class avtSLAlgorithm
 
     //Execution of the algorithm.
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
-    virtual void              Execute() = 0;
+    void                      Execute();
     virtual void              ResetStreamlinesForContinueExecute() {} //= 0;
     virtual void              PostExecute();
     virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v) {} //= 0;
 
   protected:
+    virtual void              RunAlgorithm() = 0;
+    virtual void              PreRunAlgorithm() {}
+    virtual void              PostRunAlgorithm() {}
+
     avtStreamlineFilter *streamlineFilter;
     std::list<avtStreamlineWrapper *> terminatedSLs;
     int                       numDomains, numTimeSteps, numSeedPoints;

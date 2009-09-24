@@ -1908,17 +1908,17 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 
       if (doPathlines)
       {
-        avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
-        result = slSeg->sl->Advance(&field,
-                                    slSeg->terminationType,
-                                    slSeg->termination);
+          avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
+          result = slSeg->sl->Advance(&field,
+                                      slSeg->terminationType,
+                                      slSeg->termination);
       }
       else
       {
-        avtIVPVTKField field(velocity1);
-        result = slSeg->sl->Advance(&field,
-                                    slSeg->terminationType,
-                                    slSeg->termination);
+          avtIVPVTKField field(velocity1);
+          result = slSeg->sl->Advance(&field,
+                                      slSeg->terminationType,
+                                      slSeg->termination);
       }
 
       // Termination criteria was met.

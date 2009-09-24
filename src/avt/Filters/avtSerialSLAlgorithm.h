@@ -59,6 +59,9 @@
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//   Change Execute to RunAlgorithm.
+//
 // ****************************************************************************
 
 class avtSerialSLAlgorithm : public avtSLAlgorithm
@@ -69,11 +72,11 @@ class avtSerialSLAlgorithm : public avtSLAlgorithm
     
     virtual const char*       AlgoName() const {return "Serial";}
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
-    virtual void              Execute();
     virtual void              ResetStreamlinesForContinueExecute();
     virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v);
 
   protected:
+    virtual void              RunAlgorithm();
     std::list<avtStreamlineWrapper *> activeSLs, oobSLs;
     
 };
