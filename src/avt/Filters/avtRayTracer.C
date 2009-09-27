@@ -262,11 +262,20 @@ avtRayTracer::GetNumberOfStages(int screenX, int screenY, int screenZ)
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Sep 26 20:43:55 CDT 2009
+//    If we have more than 32 procs, then we have enough memory and don't need 
+//    to tile.
+//
 // ****************************************************************************
 
 int
 avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 {
+    if (PAR_Size() >= 32)
+        return 1;
+
     VISIT_LONG_LONG numSamps = screenX*screenY*screenZ;
     int sampLimitPerProc = 25000000; // 25M
     numSamps /= PAR_Size();
@@ -799,6 +808,11 @@ avtRayTracer::FilterUnderstandsTransformedRectMesh()
 //   Programmer: Hank Childs
 //   Creation:   December 24, 2008
 //
+//   Modifications:
+//
+//     Hank Childs, Sat Sep 26 20:43:55 CDT 2009
+//     Fixed bug for tightening planes when the camera is inside the volume.
+//
 // ****************************************************************************
 
 void
@@ -821,47 +835,6 @@ avtRayTracer::TightenClippingPlanes(const avtViewInfo &view,
         GetSpatialExtents(dbounds);
     }
 
-    //
-    // Multiply our current transform by each of the points in the bounding
-    // box, keeping track of the furthest and closest point.
-    //
-    double nearest     =  1.;
-    int    nearestInd  = -1;
-    double farthest    =  0.;
-    int    farthestInd = -1;
-    for (int i = 0 ; i < 8 ; i++)
-    {
-        double pt[4];
-        pt[0] = (i & 1 ? dbounds[1] : dbounds[0]);
-        pt[1] = (i & 2 ? dbounds[3] : dbounds[2]);
-        pt[2] = (i & 4 ? dbounds[5] : dbounds[4]);
-        pt[3] = 1.;
-        
-        double outpt[4];
-        transform->MultiplyPoint(pt, outpt);
-
-        if (outpt[3] != 0.)
-            outpt[2] /= outpt[3];
-        if (! view.orthographic)
-            outpt[2] *= -1; // this works, but ???
-        if (outpt[2] > farthest)
-        {
-            farthestInd = i;
-            farthest    = outpt[2];
-        }
-        if (outpt[2] < nearest)
-        {
-            nearestInd = i;
-            nearest    = outpt[2];
-        }
-    }
-
-    bool resetNearest = true;
-    if (nearestInd == -1 || nearest <= 0.)
-    {
-        resetNearest = false;
-    }
-
     double vecFromCameraToPlaneX = view.focus[0] - view.camera[0];
     double vecFromCameraToPlaneY = view.focus[1] - view.camera[1];
     double vecFromCameraToPlaneZ = view.focus[2] - view.camera[2];
@@ -870,47 +843,13 @@ avtRayTracer::TightenClippingPlanes(const avtViewInfo &view,
                   + (vecFromCameraToPlaneZ*vecFromCameraToPlaneZ);
     vecMag = sqrt(vecMag);
 
-    if (resetNearest)
+    double farthest = 0.;
+    double nearest  = 0.;
+    for (int i = 0 ; i < 8 ; i++)
     {
-        double X = (nearestInd & 1 ? dbounds[1] : dbounds[0]);
-        double Y = (nearestInd & 2 ? dbounds[3] : dbounds[2]);
-        double Z = (nearestInd & 4 ? dbounds[5] : dbounds[4]);
-
-        //
-        // My best attempt at explaining what is going on is below is the
-        // "farthest" case.
-        //
-        double vecFromCameraToNearestX = X - view.camera[0];
-        double vecFromCameraToNearestY = Y - view.camera[1];
-        double vecFromCameraToNearestZ = Z - view.camera[2];
-
-        double dot = vecFromCameraToPlaneX*vecFromCameraToNearestX
-                   + vecFromCameraToPlaneY*vecFromCameraToNearestY
-                   + vecFromCameraToPlaneZ*vecFromCameraToNearestZ;
-
-        double newNearest = dot / vecMag;
-        newNearest = newNearest - (view.farPlane-newNearest)*0.01; // fudge
-        if (newNearest > view.nearPlane)
-        {
-            newNearPlane = newNearest;
-        }
-    }
-
-    bool resetFarthest = true;
-    if (farthestInd == -1 || farthest >= 1.)
-    {
-        resetFarthest = false;
-    }
-
-    if (resetFarthest)
-    {
-        double X = (farthestInd & 1 ? dbounds[1] : dbounds[0]);
-        double Y = (farthestInd & 2 ? dbounds[3] : dbounds[2]);
-        double Z = (farthestInd & 4 ? dbounds[5] : dbounds[4]);
-
-        double vecFromCameraToFarthestX = X - view.camera[0];
-        double vecFromCameraToFarthestY = Y - view.camera[1];
-        double vecFromCameraToFarthestZ = Z - view.camera[2];
+        double X = (i & 1 ? dbounds[1] : dbounds[0]);
+        double Y = (i & 2 ? dbounds[3] : dbounds[2]);
+        double Z = (i & 4 ? dbounds[5] : dbounds[4]);
 
         //
         // We are now constructing the dot product of our two vectors.  Note
@@ -922,9 +861,9 @@ avtRayTracer::TightenClippingPlanes(const avtViewInfo &view,
         // a triangle with the camera-to-farthest-vector.  Then we have the
         // same angle between them and we can re-use the cosine we calculate.
         //
-        double dot = vecFromCameraToPlaneX*vecFromCameraToFarthestX
-                   + vecFromCameraToPlaneY*vecFromCameraToFarthestY
-                   + vecFromCameraToPlaneZ*vecFromCameraToFarthestZ;
+        double vecFromCameraToX = X - view.camera[0];
+        double vecFromCameraToY = Y - view.camera[1];
+        double vecFromCameraToZ = Z - view.camera[2];
 
         //
         // dot = cos X * mag(A) * mag(B)
@@ -932,14 +871,32 @@ avtRayTracer::TightenClippingPlanes(const avtViewInfo &view,
         // Then mag(C) = cos X * mag(A).
         // So mag(C) = dot / mag(B).
         //
-        double newFarthest = dot / vecMag;
+        double dot = vecFromCameraToPlaneX*vecFromCameraToX
+                   + vecFromCameraToPlaneY*vecFromCameraToY
+                   + vecFromCameraToPlaneZ*vecFromCameraToZ;
 
-        newFarthest = newFarthest + (newFarthest-view.nearPlane)*0.01; // fudge
-        if (newFarthest < view.farPlane)
+        double dist = dot / vecMag;
+        double newNearest  = dist - (view.farPlane-dist)*0.01; // fudge
+        double newFarthest = dist + (dist-view.nearPlane)*0.01; // fudge
+        if (i == 0)
         {
-            newFarPlane = newFarthest;
+            farthest = newFarthest;
+            nearest  = newNearest;
+        }
+        else
+        {
+            if (newNearest < nearest)
+                nearest  = newNearest;
+            if (newFarthest > farthest)
+                farthest = newFarthest;
         }
     }
+
+    if (nearest > view.nearPlane)
+        newNearPlane = nearest;
+
+    if (farthest < view.farPlane)
+        newFarPlane = farthest;
 }
 
 
