@@ -168,6 +168,10 @@
 #
 #    Mark C. Miller, Fri Aug 28 10:33:20 PDT 2009
 #    Removed now obsolete code to update baseline dir.
+#
+#    Mark C. Miller, Mon Sep 28 13:25:00 PDT 2009
+#    Replaced 'cp -dr' (which was not handling hard links as I expected)
+#    with 'mv' as command to 'post' results.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -596,7 +600,8 @@ for m in $modes; do
         chgrp visit /project/projectdirs/visit/www/${dateTag}
         chmod g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}
 
-        cp -dr html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
+        #cp -dr html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
+        mv html_$dateTag /project/projectdirs/visit/www/${dateTag}/${theMode}
         chgrp -R visit /project/projectdirs/visit/www/${dateTag}/${theMode}
         chmod -R g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}/${theMode}
         rm -rf html_$dateTag
