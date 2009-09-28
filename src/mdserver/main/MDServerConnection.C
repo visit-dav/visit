@@ -1010,6 +1010,9 @@ MDServerConnection::GetDBPluginInfo()
 //   Brad Whitlock, Wed Apr 14 17:22:53 PST 2004
 //   I fixed the .. filtering for Windows.
 //
+//   Brad Whitlock, Mon Sep 28 16:36:18 PDT 2009
+//   Don't pop_back unless there's something to remove.
+//
 // ****************************************************************************
 
 std::string
@@ -1055,7 +1058,10 @@ MDServerConnection::FilteredPath(const std::string &path) const
                 if(tmp.size() > 0)
                 {
                     if(tmp == "..")
-                        tmpNames.pop_back();
+                    {
+                        if(tmpNames.size() > 0)
+                            tmpNames.pop_back();
+                    }
                     else
                         tmpNames.push_back(tmp);
                 }
