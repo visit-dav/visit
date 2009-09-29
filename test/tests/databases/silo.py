@@ -48,6 +48,9 @@
 #    problem. The vector plot was simply generating way to many vectors that
 #    were being drawn on top of each other. I changed it to use a moderately
 #    large prime as the stride.
+#
+#    Mark C. Miller, Mon Sep 28 20:58:24 PDT 2009
+#    Added tests for AMR data from Silo file using MRG Trees.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -344,5 +347,51 @@ TimeSliderPreviousState()
 TimeSliderPreviousState()
 TimeSliderPreviousState()
 Test("silo_39")
+
+
+TestSection("Silo AMR w/Mrgtrees")
+LevelTwo = 77 # Set Id for Level 2 set for this mesh
+DeleteAllPlots()
+CloseDatabase("../data/wave_1file.visit")
+OpenDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
+AddPlot("Mesh","amr_mesh_wmrgtree")
+DrawPlots()
+ResetView()
+v=GetView2D()
+v.windowCoords = (0.368424, 0.412063, 0.265434, 0.310012)
+SetView2D(v)
+Test("silo_40")
+AddPlot("Pseudocolor","Density_wmrgtree")
+DrawPlots()
+Test("silo_41")
+silr=SILRestriction()
+silr.TurnOffSet(LevelTwo)
+SetPlotSILRestriction(silr)
+Test("silo_42")
+
+LevelTwo = 13
+LevelOne = 12
+DeleteAllPlots()
+CloseDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
+OpenDatabase("../data/silo_amr_test_data/amr3d_wmrgtree.silo")
+AddPlot("Contour","foo_wmrgtree")
+ca=ContourAttributes()
+ca.contourValue = (60,)
+ca.contourMethod = ca.Value
+SetPlotOptions(ca)
+DrawPlots()
+ResetView()
+v=GetView3D()
+v.imagePan = (0.2066, 0.104372)
+v.imageZoom = 6.03355
+SetView3D(v)
+Test("silo_43")
+silr=SILRestriction()
+silr.TurnOffSet(LevelTwo)
+SetPlotSILRestriction(silr)
+Test("silo_44")
+silr.TurnOffSet(LevelOne)
+SetPlotSILRestriction(silr)
+Test("silo_45")
 
 Exit()
