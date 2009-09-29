@@ -360,13 +360,15 @@ QvisPeriodicTableWidget::isValidIndex(int index) const
 // Creation:   August 11, 2006
 //
 // Modifications:
-//   
+//    Kathleen Bonnell, Tue Sep 29 12:01:44 PDT 2009
+//    Fix off-by-one error.
+//
 // ****************************************************************************
 
 void
 QvisPeriodicTableWidget::emitSelection()
 {
-    emit selectedElement(indexToElement(currentSelectedItem)-1);
+    emit selectedElement(indexToElement(currentSelectedItem));
 }
 
 // ****************************************************************************
