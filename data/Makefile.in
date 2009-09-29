@@ -327,6 +327,9 @@
 #   Brad Whitlock, Tue Sep 22 09:34:37 PDT 2009
 #   I added Adventure_test_data.
 #
+#   Mark C. Miller, Mon Sep 28 20:29:55 PDT 2009
+#   Added Silo AMR test data.
+#
 ##############################################################################
 
 ##
@@ -375,8 +378,7 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        csg_test_data miranda_raw FLASH_test_data iTaps_test_data \
        nek3d_test_data visitdiff_test_data odd_multi.silo claw_test_data \
        ddcmd_test_data Cale_test_data RAW_test_data Rect_test_data \
-       Adventure_test_data sample.h5part
-
+       Adventure_test_data sample.h5part silo_amr_test_data
 
 ##
 ## Libraries and includes...
