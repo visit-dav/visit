@@ -1738,9 +1738,13 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     mmd->groupTitle = "levels";
                     mmd->groupPieceName = "level";
                     mmd->blockNames = amr_block_names;
+                    md->Add(mmd);
                     md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
                 }
-                md->Add(mmd);
+                else
+                {
+                    md->Add(mmd);
+                }
 
                 //
                 // Handle special case for enumerated scalar rep for nodelists
