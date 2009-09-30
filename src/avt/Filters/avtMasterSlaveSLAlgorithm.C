@@ -190,8 +190,9 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Message size and number of receives put in Initialize().
+//  
 //
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Initialize offloadCounter.
 //  
 // ****************************************************************************
@@ -375,9 +376,9 @@ avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
 //  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //  Change how timings are reported/calculated.
 //
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Print new offload counter.
-//  
+//
 // ****************************************************************************
 
 void
@@ -409,9 +410,9 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //  Allow masters to share work loads.
 //
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Initialize new counters.
-//  
+//
 // ****************************************************************************
 
 avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
@@ -473,11 +474,11 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 //
 //  Modifications:
 //  
-//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.  
+//   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//   Allow masters to share work loads.
 //
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
-//   Better initial seed point distribution.
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
+//   Better initial SL distribution.
 //
 // ****************************************************************************
 
@@ -493,7 +494,7 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
         numMasters = 1;
     else
         numMasters = nProcs/workGroupSz;
-
+    
     int nSeedsPerProc = (nSeeds / numMasters);
     int oneExtraUntil = (nSeeds % numMasters);
     int i0 = 0, i1 = nSeeds;
@@ -591,7 +592,7 @@ avtMasterSLAlgorithm::CompileCounterStatistics()
 //
 //  Modifications:
 //
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Report new counters.
 //
 // ****************************************************************************
@@ -1927,17 +1928,6 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 
         debug1<<"Case 5: "<<senders[i]<<" ===> "<<receivers[i]<<" "<<doms[i]<<endl;
         SendMsg(senders[i], msg);
-        /*
-        for (int j = 0; j < slaveInfo.size(); j++)
-        {
-            if (slaveInfo[j].rank == senders[i])
-            {
-                slaveInfo[j].case5Mark = true;
-                break;
-            }
-        }
-        */
-
         counter++;
         if (i > 1)
             break;
@@ -1994,8 +1984,9 @@ avtSlaveSLAlgorithm::~avtSlaveSLAlgorithm()
 //  Programmer: Dave Pugmire
 //  Creation:   April 2, 2009
 //
+//
 //  Modifications:
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Record latency.
 //
 // ****************************************************************************
@@ -2188,12 +2179,12 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //   Latency time was not always being reported accurately. Only send the latency
 //   saving status update once.
 //
-//   Dave Pugmire, Tue Apr 28 10:24:55 EDT 2009
-//   Add auto-load code for slaves.
-//
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
 //   
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
+//   Add auto-load code for slaves.
+//
 // ****************************************************************************
 
 void
@@ -2224,7 +2215,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
                 
         bool done = false, newMsgs = false, forceSend = false;
         bool sentLatencySavingStatus = false;
-
+        
         //Check for a case4A overide...
         if (SLAVE_AUTO_LOAD_DOMS && activeSLs.empty() && (oobSLs.size() > case4AThreshold))
         {
