@@ -138,7 +138,11 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //
 //    Cyrus Harrison, Mon Jun 29 15:58:02 PDT 2009
 //    If a script file is passed - add its directory to the end of sys.path
-//    to enable easy importing. 
+//    to enable easy importing.
+//
+//    Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
+//    Added book keeping to track execution stack of source files and the
+//    script file passed via the '-s' command line option.
 //
 // ****************************************************************************
 
@@ -304,6 +308,12 @@ main(int argc, char *argv[])
         cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
                       argc_after_s, argv_after_s);
 
+        // setup source file and source stack variables
+        PyRun_SimpleString((char*)"import os\n"
+                                  "__visit_script_file__  = '<None>'\n"
+                                  "__visit_source_file__  = None\n"
+                                  "__visit_source_stack__ = [] \n");
+
         // Run some Python commands that import VisIt and launch the viewer.
         PyRun_SimpleString((char*)"from visit import *");
         PyRun_SimpleString((char*)"Launch()");
@@ -338,17 +348,19 @@ main(int argc, char *argv[])
              delete [] command;
         }
 
+
         // If there was a file to execute, do it.
         if(runFile !=0)
         {
             // add the script file's dir to the cli's sys.path
-            PyRun_SimpleString((char*)"import sys,os");
-            std::string pycmd =  "os.path.abspath('" + 
-                                        std::string(runFile)+ "')";
-            pycmd = "os.path.split(" + pycmd + ")[0]";
-            pycmd = "sys.path.append(" + pycmd +  ")";
+            std::string pycmd  = "import sys\n";
+            pycmd += "__visit_script_file__ = os.path.abspath('";
+            pycmd +=  std::string(runFile) + "')\n";
+            pycmd += "__visit_script_path__ = ";
+            pycmd += "os.path.split(__visit_script_file__)[0]\n";
+            pycmd += "sys.path.append(__visit_script_path__)\n";
             PyRun_SimpleString(pycmd.c_str());
-            
+
             cli_runscript(runFile);
         }
 
@@ -356,7 +368,7 @@ main(int argc, char *argv[])
         //int argc3 = 1;
         //char *argv3 = argv[0];
         //retval = Py_Main(argc3, &argv3);
-        
+
         char **argv3 = new char*[argc+1];
         int ii;
         for (ii = 1 ; ii < argc ; ii++)
