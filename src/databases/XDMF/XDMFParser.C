@@ -118,6 +118,10 @@ XDMFParser::~XDMFParser()
 //  Programmer: Eric Brugger
 //  Creation:   Wed Nov 14 10:32:54 PDT 2007
 //
+//  Modifications:
+//    Eric Brugger, Tue Sep 29 12:38:08 PDT 2009
+//    Added initialization of offset, ibuf and lbuf.
+//
 // ****************************************************************************
 
 void
@@ -127,7 +131,10 @@ XDMFParser::SetInputFileName(const char *filename)
     strcpy(fname, filename);
 
     file = fopen(filename, "r");
-
+ 
+    offset = 0;
+    ibuf = 0;
+    lbuf = 0;
     endOfFile = false;
 }
 
