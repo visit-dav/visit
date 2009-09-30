@@ -9739,6 +9739,12 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
 //   Added book keeping to track execution stack of source files.
 //
+//   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
+//   Added spoofing of __name__ for Source() executiuon so we can use 
+//   standard python check:
+//     if __name__ == "__main__"
+//   To delineate between '-s' and sourced scripts.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9780,6 +9786,8 @@ visit_Source(PyObject *self, PyObject *args)
     // book keeping for source file stack
     std::string pycmd  = "__visit_source_file__ = ";
     pycmd += " os.path.abspath('" + std::string(fileName) + "')\n";
+    pycmd += "__name__ = os.path.splitext(";
+    pycmd += "os.path.split(__visit_source_file__)[1])[0]\n";
     pycmd += "__visit_source_stack__.append(__visit_source_file__)\n";
     PyRun_SimpleString(pycmd.c_str());
 
@@ -9793,8 +9801,14 @@ visit_Source(PyObject *self, PyObject *args)
     pycmd  = "__visit_source_stack__.pop()\n";
     pycmd += "if len(__visit_source_stack__) == 0:\n";
     pycmd += "   __visit_source_file__ = None\n";
+    pycmd += "   __name__ = '__main__'\n";
     pycmd += "else:\n";
     pycmd += "   __visit_source_file__ = __visit_source_stack__[-1]\n";
+    pycmd += "   if __visit_source_file__ == __visit_script_file__:\n";
+    pycmd += "      __name__ = '__main__'\n";
+    pycmd += "   else:\n";
+    pycmd += "      __name__ = os.path.splitext(";
+    pycmd += "os.path.split(__visit_source_file__)[1])[0]\n";
     PyRun_SimpleString(pycmd.c_str());
 
     //
