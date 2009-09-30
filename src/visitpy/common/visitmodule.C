@@ -9736,6 +9736,9 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Jan 10 12:04:10 PDT 2006
 //   Changed how logging works.
 //
+//   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
+//   Added book keeping to track execution stack of source files.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9774,11 +9777,25 @@ visit_Source(PyObject *self, PyObject *args)
     LogFile_Write(buf);
     LogFile_IncreaseLevel();
 
+    // book keeping for source file stack
+    std::string pycmd  = "__visit_source_file__ = ";
+    pycmd += " os.path.abspath('" + std::string(fileName) + "')\n";
+    pycmd += "__visit_source_stack__.append(__visit_source_file__)\n";
+    PyRun_SimpleString(pycmd.c_str());
+
     //
     // Execute the commands in the file.
     //
-    PyRun_SimpleFile(fp, fileName);
+    PyRun_SimpleFile(fp, (char *)fileName);
     fclose(fp);
+
+    // book keeping for source file stack
+    pycmd  = "__visit_source_stack__.pop()\n";
+    pycmd += "if len(__visit_source_stack__) == 0:\n";
+    pycmd += "   __visit_source_file__ = None\n";
+    pycmd += "else:\n";
+    pycmd += "   __visit_source_file__ = __visit_source_stack__[-1]\n";
+    PyRun_SimpleString(pycmd.c_str());
 
     //
     // Turn logging back on.
@@ -15285,7 +15302,9 @@ cli_initvisit(int debugLevel, bool verbose, int argc, char **argv,
 // Creation:   Tue Jul 15 10:03:17 PDT 2003
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
+//   Added book keeping to track execution stack of source files.
+//
 // ****************************************************************************
 
 void
@@ -15297,8 +15316,25 @@ cli_runscript(const char *fileName)
         FILE *fp = fopen(fileName, "r");
         if(fp)
         {
+            // book keeping for source stack
+            std::string pycmd  = "__visit_source_file__ = ";
+            pycmd += " os.path.abspath('" + std::string(fileName) + "')\n";
+            pycmd += "__visit_source_stack__.append(__visit_source_file__)\n";
+            PyRun_SimpleString(pycmd.c_str());
+
+            //
+            // Execute the commands in the file.
+            //
             PyRun_SimpleFile(fp, (char *)fileName);
             fclose(fp);
+
+            // book keeping for source stack
+            pycmd  = "__visit_source_stack__.pop()\n";
+            pycmd += "if len(__visit_source_stack__) == 0:\n";
+            pycmd += "   __visit_source_file__ = None\n";
+            pycmd += "else:\n";
+            pycmd += "   __visit_source_file__ = __visit_source_stack__[-1]\n";
+            PyRun_SimpleString(pycmd.c_str());
         }
         else
         {
