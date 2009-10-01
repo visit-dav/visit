@@ -599,9 +599,12 @@ QvisLegendAttributesInterface::UpdateControls()
  
     stringVector sl = annot->GetStringVector1();
     size = sl.size();
-    for (size_t i = 0; i < size &&  i < suppliedLabels->rowCount(); ++i)
+    for (size_t i = 0; i < suppliedLabels->rowCount(); ++i)
     {
-        suppliedLabels->item(i, 1)->setText(sl[i].c_str());
+        if (i < size)
+            suppliedLabels->item(i, 1)->setText(sl[i].c_str());
+        else 
+            suppliedLabels->item(i, 1)->setText("");
     }
 
     drawLabelsComboBox->blockSignals(true);
