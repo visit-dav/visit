@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <vtkLookupTable.h>
-#include <vtkVerticalScalarBarActor.h>
+#include <vtkVisItScalarBarActor.h>
 
 #include <avtVariableLegend.h>
 
@@ -58,7 +58,7 @@
 //  Modifications:
 //
 //    Kathleen Bonnell, Fri Dec  8 15:02:31 PST 2000 
-//    Changed sBar to be of type vtkVerticalScalarBarActor, a modified
+//    Changed sBar to be of type vtkVisItScalarBarActor, a modified
 //    version of vtkScalarBarActor, better suited to VisIt.
 //
 //    Hank Childs, Thu Dec 28 10:13:43 PST 2000
@@ -94,6 +94,9 @@
 //    Hank Childs, Fri Jan 23 15:39:46 PST 2009
 //    Initialize minmaxVisibility.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:24:19 PDT 2009
+//    Initialize numTicks.  Set LegendType for sBar.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend()
@@ -103,7 +106,7 @@ avtVariableLegend::avtVariableLegend()
 
     lut = NULL;
  
-    sBar = vtkVerticalScalarBarActor::New();
+    sBar = vtkVisItScalarBarActor::New();
     sBar->SetShadow(0);
 
     scale[0] = 1.;
@@ -111,12 +114,14 @@ avtVariableLegend::avtVariableLegend()
     size[0] = 0.08;
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
+    sBar->SetType(vtkVisItScalarBarActor::VTK_CONTINUOUS);
 
     barVisibility = 1;
     rangeVisibility = 1;
     titleVisibility = true;
-    labelVisibility = true;
+    labelVisibility = 1;
     minmaxVisibility = true;
+    numTicks = 5;
 
     //
     // Set the legend to also point to sBar, so the base methods will work
@@ -172,6 +177,9 @@ avtVariableLegend::avtVariableLegend()
 //    Hank Childs, Fri Jan 23 15:40:11 PST 2009
 //    Initialize minmaxVisibility.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:24:19 PDT 2009
+//    Initialize numTicks.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend(int)
@@ -186,9 +194,10 @@ avtVariableLegend::avtVariableLegend(int)
     size[1] = 0.26;
     barVisibility = 1;
     rangeVisibility = 1;
-    labelVisibility = true;
+    labelVisibility = 1;
     minmaxVisibility = true;
     titleVisibility = true;
+    numTicks = 5;
 }
 
 
@@ -347,14 +356,16 @@ avtVariableLegend::GetTitleVisibility() const
 // Creation:   Wed Mar 21 21:31:17 PST 2007
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Oct  1 14:26:46 PDT 2009
+//    LabelVisibility has been changed to DrawMode in sbar.
 //   
 // ****************************************************************************
 
 void
-avtVariableLegend::SetLabelVisibility(bool val)
+avtVariableLegend::SetLabelVisibility(int val)
 {
     labelVisibility = val;
-    sBar->SetLabelVisibility(val?1:0);
+    sBar->SetDrawMode((vtkVisItScalarBarActor::TickLabelDrawMode)val);
 }
 
 // ****************************************************************************
@@ -372,7 +383,7 @@ avtVariableLegend::SetLabelVisibility(bool val)
 //   
 // ****************************************************************************
 
-bool
+int
 avtVariableLegend::GetLabelVisibility() const
 {
     return labelVisibility;
@@ -546,7 +557,7 @@ void
 avtVariableLegend::SetOrientation(LegendOrientation l)
 {
     avtLegend::SetOrientation(l);
-    sBar->SetOrientation(l);
+    sBar->SetOrientation((vtkVisItScalarBarActor::BarOrientation)(int)l);
 }
 
 // ****************************************************************************
@@ -641,6 +652,9 @@ avtVariableLegend::SetColorBarVisibility(const int val)
 //    Hank Childs, Mon Jul 14 09:54:14 PDT 2003
 //    Do not assume that the lut is non-NULL. ['3494]
 //    
+//    Kathleen Bonnell, Thu Oct  1 14:27:34 PDT 2009
+//    Use numTicks to set NumberOfLabels instead of setting to default.
+//
 // ****************************************************************************
 
 void
@@ -668,7 +682,7 @@ avtVariableLegend::SetRange(double nmin, double nmax)
     }
     else 
     {
-        sBar->SetNumberOfLabelsToDefault();
+        sBar->SetNumberOfLabels(numTicks);
         if (lut != NULL)
             lut->SetTableRange(min, max);
         sBar->SetRange(min, max);
@@ -896,3 +910,121 @@ avtVariableLegend::ChangeFontHeight(double fh)
 }
 
 
+// ****************************************************************************
+// Method: avtVariableLegend::SetNumTicks
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void                          
+avtVariableLegend::SetNumTicks(int nt)
+{
+    numTicks = nt;
+    sBar->SetNumberOfLabels(nt);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetUseSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetUseSuppliedLabels(bool val)
+{
+    sBar->SetUseSuppliedLabels(val);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::GetUseSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtVariableLegend::GetUseSuppliedLabels()
+{
+    return sBar->GetUseSuppliedLabels();
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetMinMaxInclusive
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetMinMaxInclusive(bool val)
+{
+    sBar->SetMinMaxInclusive(val);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetSuppliedValues
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetSuppliedValues(const doubleVector &v)
+{
+    sBar->SetSuppliedValues(v);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetSuppliedLabels(const stringVector &l)
+{
+    sBar->SetSuppliedLabels(l);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::GetCalculatedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::GetCalculatedLabels(doubleVector &v)
+{
+    sBar->GetCalculatedValues(v);
+}

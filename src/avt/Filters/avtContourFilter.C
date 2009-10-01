@@ -1071,6 +1071,10 @@ avtContourFilter::CreateNIsoValues(double min, double max)
 //    Hank Childs, Wed Apr 17 18:33:28 PDT 2002
 //    Don't muddy the waters downstream if we aren't making labels.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:38:10 PDT 2009
+//    Change print format to "%f" to preserve precision .. allows users to
+//    change the format of legend labels at will.
+//
 // ****************************************************************************
 
 void
@@ -1090,7 +1094,7 @@ avtContourFilter::CreateLabels()
 
     for (int i = 0; i < isoValues.size(); i++)
     {
-        sprintf(temp, "%# -9.4g", isoValues[i]);
+        sprintf(temp, "%f", isoValues[i]);
         isoLabels.push_back(temp);
     }
 }

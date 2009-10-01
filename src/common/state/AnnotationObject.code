@@ -1,76 +1,3 @@
-Function: SetFontFamily
-Declaration: void SetFontFamily(int family);
-Definition:
-void
-AnnotationObject::SetFontFamily(int family)
-{
-   if(family >= 0 && family < 3)
-       SetFontProperties((fontProperties & (~3)) | family);
-}
-
-Function: GetFontFamily
-Declaration: int GetFontFamily() const;
-Definition:
-int
-AnnotationObject::GetFontFamily() const
-{
-   return fontProperties & 3;
-}
-
-Function: SetFontBold
-Declaration: void SetFontBold(bool val);
-Definition:
-void
-AnnotationObject::SetFontBold(bool val)
-{
-    SetFontProperties((fontProperties & (~4)) | ((val?1:0)<<2));
-}
-
-Function: GetFontBold
-Declaration: bool GetFontBold() const;
-Definition:
-bool
-AnnotationObject::GetFontBold() const
-{
-    return ((fontProperties & 4) >> 2) == 1;
-}
-
-Function: SetFontItalic
-Declaration: void SetFontItalic(bool val);
-Definition:
-void
-AnnotationObject::SetFontItalic(bool val)
-{
-    SetFontProperties((fontProperties & (~8)) | ((val?1:0) << 3));
-}
-
-Function: GetFontItalic
-Declaration: bool GetFontItalic() const;
-Definition:
-bool
-AnnotationObject::GetFontItalic() const
-{
-    return ((fontProperties & 8) >> 3) == 1;
-}
-
-Function: SetFontShadow
-Declaration: void SetFontShadow(bool val);
-Definition:
-void
-AnnotationObject::SetFontShadow(bool val)
-{
-    SetFontProperties((fontProperties & (~16)) | ((val?1:0) << 4));
-}
-
-Function: GetFontShadow
-Declaration: bool GetFontShadow() const;
-Definition:
-bool
-AnnotationObject::GetFontShadow() const
-{
-   return ((fontProperties & 16) >> 4) == 1;
-}
-
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *parentNode);
 Definition:
@@ -94,6 +21,9 @@ Definition:
 //   Brad Whitlock, Fri Mar 23 17:08:29 PST 2007
 //   Added objectName.
 //
+//   Kathleen Bonnell, Thu Oct  1 15:00:50 PDT 2009
+//   Added intAttribute2, intAttribute3, doubleVector1, stringVector1, 
+//   stringVector2
 // ****************************************************************************
 
 void
@@ -189,5 +119,75 @@ AnnotationObject::SetFromNode(DataNode *parentNode)
         SetDoubleAttribute1(node->AsDouble());
     if((node = searchNode->GetNode("intAttribute1")) != 0)
         SetIntAttribute1(node->AsInt());
+    if((node = searchNode->GetNode("intAttribute2")) != 0)
+        SetIntAttribute2(node->AsInt());
+    if((node = searchNode->GetNode("intAttribute3")) != 0)
+        SetIntAttribute3(node->AsInt());
+    if((node = searchNode->GetNode("doubleVector1")) != 0)
+        SetDoubleVector1(node->AsDoubleVector());
+    if((node = searchNode->GetNode("stringVector1")) != 0)
+        SetStringVector1(node->AsStringVector());
+    if((node = searchNode->GetNode("stringVector2")) != 0)
+        SetStringVector2(node->AsStringVector());
 }
 
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: AnnotationObject::ProcessOldVersions
+//
+// Purpose: 
+//   This method maps old AnnotationAttributes fields to the 1.9.0 version of
+//   the data node tree for AnnotationAttributes.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Thu Sep 17 10:06:49 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnnotationObject::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if (!VersionLessThan(configVersion, "2.0.0"))
+        return;
+
+    if (parentNode == 0)
+        return;
+
+    DataNode * searchNode = parentNode->GetNode("AnnotationObject");
+    if (searchNode == 0)
+        return;
+
+    DataNode *node = searchNode->GetNode("objectType");
+    if (node == 0 || node->AsString() != "LegendAttributes")
+    {
+        return;
+    }
+
+    // what follows if for Legends only
+    node = searchNode->GetNode("intAttribute1");
+    if (node != 0)
+    {
+        int n = node->AsInt();
+
+        if ((n & (1 << 2)) != 0) // DrawLabels is set, change it to DrawValues
+        {
+            n -= 4;   // DrawLabels
+            n += 512; // DrawValues
+        }
+        // other new legend enums, default to on, and sum to 384
+        n += 384;
+        node->SetInt(n);
+    }
+    // new numTics attribute, default setting is 5
+    node = new DataNode("intAttribute2");
+    node->SetInt(5);
+    searchNode->AddNode(node);
+    node = new DataNode("intAttribute3");
+    node->SetInt(0);  // default "Variable" type
+    searchNode->AddNode(node);
+}

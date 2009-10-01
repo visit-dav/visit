@@ -49,13 +49,7 @@
 #include <DebugStream.h>
 #include <vtkSystemIncludes.h>
 
-#define LEGEND_MANAGE_POSITION 0
-#define LEGEND_DRAW_BOX        1
-#define LEGEND_DRAW_LABELS     2
-#define LEGEND_ORIENTATION0    3
-#define LEGEND_ORIENTATION1    4
-#define LEGEND_DRAW_TITLE      5
-#define LEGEND_DRAW_MINMAX     6
+#include <legend_defines.h>
 
 //
 // Helper functions to get bits out of the annotation attributes.
@@ -93,19 +87,25 @@ SetBool(AnnotationObject &annot, int bit, bool val)
 //    Hank Childs, Fri Jan 23 15:31:06 PST 2009
 //    Add support for draw min/max.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:33:43 PDT 2009
+//    Add support for user control of tick values and labels.
+//
 // ****************************************************************************
 
-avtLegendAttributesColleague::avtLegendAttributesColleague(VisWindowColleagueProxy &m) 
-    : avtAnnotationColleague(m), atts()
+avtLegendAttributesColleague::avtLegendAttributesColleague(
+    VisWindowColleagueProxy &m) : avtAnnotationColleague(m), atts()
 {
     // Populate atts with some legend defaults.
-    SetBool(atts, LEGEND_MANAGE_POSITION, true);
-    SetBool(atts, LEGEND_DRAW_BOX,        false);
-    SetBool(atts, LEGEND_DRAW_LABELS,     true);
-    SetBool(atts, LEGEND_ORIENTATION0,    false);
-    SetBool(atts, LEGEND_ORIENTATION1,    false);
-    SetBool(atts, LEGEND_DRAW_TITLE,      true);
-    SetBool(atts, LEGEND_DRAW_MINMAX,     true);
+    SetBool(atts, LEGEND_MANAGE_POSITION,  true);
+    SetBool(atts, LEGEND_DRAW_BOX,         false);
+    SetBool(atts, LEGEND_DRAW_LABELS,      false);
+    SetBool(atts, LEGEND_ORIENTATION0,     false);
+    SetBool(atts, LEGEND_ORIENTATION1,     false);
+    SetBool(atts, LEGEND_DRAW_TITLE,       true);
+    SetBool(atts, LEGEND_DRAW_MINMAX,      true);
+    SetBool(atts, LEGEND_CONTROL_TICKS,    true);
+    SetBool(atts, LEGEND_MINMAX_INCLUSIVE, true);
+    SetBool(atts, LEGEND_DRAW_VALUES,      true);
 
     // Set the format string for the legend into the text.
     stringVector text;
@@ -131,6 +131,12 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(VisWindowColleaguePro
     atts.SetFontBold(false);
     atts.SetFontItalic(false);
     atts.SetFontShadow(false);
+
+    // Set the default number of ticks 
+    atts.SetIntAttribute2(5);
+
+    // Set the default legend type to variable
+    atts.SetIntAttribute3(0);
 }
 
 // ****************************************************************************
@@ -343,6 +349,9 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 //   Hank Childs, Fri Jan 23 15:35:46 PST 2009
 //   Add support for drawing the min/max.
 //
+//   Kathleen Bonnell, Thu Oct  1 14:35:03 PDT 2009
+//   Added support for user control of tick values and labels.
+//
 // ****************************************************************************
 
 void
@@ -383,6 +392,19 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
         legend->SetLegendPosition(xLeft, yTop - height);
     }
 
+    if (GetBool(atts, LEGEND_CONTROL_TICKS))
+    {
+        legend->SetUseSuppliedLabels(false);
+        legend->SetNumTicks(atts.GetIntAttribute2());
+        legend->SetMinMaxInclusive(GetBool(atts, LEGEND_MINMAX_INCLUSIVE));
+    }
+    else 
+    {
+        legend->SetUseSuppliedLabels(true);
+        legend->SetSuppliedValues(atts.GetDoubleVector1());
+        legend->SetSuppliedLabels(atts.GetStringVector1());
+    }
+
     // Set the legend's foreground color.
     double textColor[3];
     if(atts.GetUseForegroundForTextColor())
@@ -404,7 +426,10 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
     legend->SetTitleVisibility(GetBool(atts, LEGEND_DRAW_TITLE));
 
     // Set whether the labels are drawn.
-    legend->SetLabelVisibility(GetBool(atts, LEGEND_DRAW_LABELS));
+    int dv = GetBool(atts, LEGEND_DRAW_VALUES) ? 1 : 0;
+    int dl = GetBool(atts, LEGEND_DRAW_LABELS) ? 2 : 0;
+    
+    legend->SetLabelVisibility(dl + dv);
 
     // Set whether the labels are drawn.
     legend->SetMinMaxVisibility(GetBool(atts, LEGEND_DRAW_MINMAX));

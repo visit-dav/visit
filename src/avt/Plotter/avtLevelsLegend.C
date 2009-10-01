@@ -46,7 +46,7 @@
 #include <snprintf.h>
 
 #include <vtkLookupTable.h>
-#include <vtkVerticalScalarBarActor.h>
+#include <vtkVisItScalarBarActor.h>
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -98,9 +98,9 @@ avtLevelsLegend::avtLevelsLegend()
 
     lut = NULL;
 
-    sBar = vtkVerticalScalarBarActor::New();
+    sBar = vtkVisItScalarBarActor::New();
     sBar->SetShadow(0);
-    sBar->UseDefinedLabelsOn();
+    sBar->SetType(vtkVisItScalarBarActor::VTK_DISCRETE);
 
     size[0] = 0.08;
     size[1] = 0.26;
@@ -108,7 +108,7 @@ avtLevelsLegend::avtLevelsLegend()
 
     barVisibility = 1;
     rangeVisibility = 1;
-    labelVisibility = true;
+    labelVisibility = 1;
     minmaxVisibility = true;
     titleVisibility = true;
 
@@ -206,7 +206,7 @@ avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
         // The fudge factor added to nLines when barVisibility is true is
         // there to make sure that there is enough room for all the levels
         // because this algorithm doesn't exactly match the algorithm in
-        // vtkVerticalScalarBarActor.
+        // vtkVisItScalarBarActor.
         //
         double fudge = 0.7;
         double nLines = 0.0;
@@ -317,14 +317,16 @@ avtLevelsLegend::GetTitleVisibility() const
 // Creation:   Wed Mar 21 21:31:17 PST 2007
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Oct  1 14:26:46 PDT 2009
+//    LabelVisibility has been changed to DrawMode in sbar.
 //   
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetLabelVisibility(bool val)
+avtLevelsLegend::SetLabelVisibility(int val)
 {
     labelVisibility = val;
-    sBar->SetLabelVisibility(val?1:0);
+    sBar->SetDrawMode((vtkVisItScalarBarActor::TickLabelDrawMode)val);
 }
 
 // ****************************************************************************
@@ -342,7 +344,7 @@ avtLevelsLegend::SetLabelVisibility(bool val)
 //   
 // ****************************************************************************
 
-bool
+int
 avtLevelsLegend::GetLabelVisibility() const
 {
     return labelVisibility;
@@ -484,7 +486,7 @@ void
 avtLevelsLegend::SetOrientation(LegendOrientation l)
 {
     avtLegend::SetOrientation(l);
-    sBar->SetOrientation(l);
+    sBar->SetOrientation((vtkVisItScalarBarActor::BarOrientation)(int)l);
 }
 
 // ****************************************************************************
@@ -872,4 +874,69 @@ avtLevelsLegend::SetNumberFormat(const char *fmt)
     char rangeFormat[200];
     SNPRINTF(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
     sBar->SetRangeFormat(rangeFormat);
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetUseSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetUseSuppliedLabels(bool val)
+{
+    sBar->SetUseSuppliedLabels(val);
+}
+
+
+// ****************************************************************************
+// Method: avtLevelsLegend::GetUseSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLevelsLegend::GetUseSuppliedLabels()
+{
+    return sBar->GetUseSuppliedLabels();
+}
+
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetSuppliedLabels(const stringVector &l)
+{
+    sBar->SetSuppliedLabels(l);
+}
+// ****************************************************************************
+// Method: avtLevelsLegend::GetCalculatedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::GetCalculatedLabels(stringVector &v)
+{
+    sBar->GetCalculatedLabels(v);
 }

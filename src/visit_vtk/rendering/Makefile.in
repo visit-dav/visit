@@ -313,6 +313,11 @@
 #    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
 #    Add define for proper symbol export.
 #
+#   
+#    Kathleen Bonnell, Mon Sep 14 15:08:53 PDT 2009
+#    Renamed vtkVerticalScalarBar* to vtkVisItScalarBar, as it is no longer
+#    strictly a vertical scalar bar.
+#
 ##############################################################################
 
 ##
@@ -342,8 +347,8 @@ SRC=InitVTK.C \
     vtkRubberBandMapper2D.C \
     vtkBackgroundActor.C \
     vtkTimeSliderActor.C \
-    vtkVerticalScalarBarActor.C \
-    vtkVerticalScalarBarWithOpacityActor.C \
+    vtkVisItScalarBarActor.C \
+    vtkVisItScalarBarWithOpacityActor.C \
     vtkVisItAxisActor.C \
     vtkVisItAxisActor2D.C \
     vtkVisItCubeAxesActor.C \

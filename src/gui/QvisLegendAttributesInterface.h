@@ -39,13 +39,17 @@
 #ifndef QVIS_LEGEND_ATTRIBUTES_INTERFACE_H
 #define QVIS_LEGEND_ATTRIBUTES_INTERFACE_H
 #include <QvisAnnotationObjectInterface.h>
+#include <vectortypes.h>
 
 // Forward declarations
 class QComboBox;
 class QCheckBox;
 class QLabel;
 class QNarrowLineEdit;
+class QPushButton;
 class QSpinBox;
+class QTabWidget;
+class QTableWidget;
 class QvisColorButton;
 class QvisOpacitySlider;
 class QvisScreenPositionEdit;
@@ -69,6 +73,9 @@ class QvisScreenPositionEdit;
 //    Add support for whether or not to draw the "min/max" portion of the
 //    legend.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:46:14 PDT 2009
+//    Added controls that allow users to modifiy tick values and labels.
+//
 // ****************************************************************************
 
 class GUI_API QvisLegendAttributesInterface : public QvisAnnotationObjectInterface
@@ -88,6 +95,7 @@ protected:
 
     bool GetBool(int bit) const;
     void SetBool(int bit, bool val);
+    void ResizeSuppliedLabelsList(int size);
 
 private slots:
     void layoutChanged(bool);
@@ -104,13 +112,24 @@ private slots:
     void italicToggled(bool);
     void shadowToggled(bool);
     void useForegroundColorToggled(bool);
-    void drawLabelsToggled(bool);
     void drawMinmaxToggled(bool);
     void drawBoundingBoxToggled(bool);
     void boundingBoxColorChanged(const QColor &);
     void boundingBoxOpacityChanged(int);
     void drawTitleToggled(bool);
+
+    void tickControlToggled(bool);
+    void numTicksChanged(int);
+    void minMaxToggled(bool);
+
+    void drawLabelsChanged(int);
+
+    void addSuppliedLabelsRow();
+    void deleteSelectedRow();
+
 private:
+
+    QTabWidget             *tabs;
     QCheckBox              *manageLayout;
     QvisScreenPositionEdit *positionEdit;
     QLabel                 *positionLabel;
@@ -128,13 +147,22 @@ private:
     QCheckBox              *shadowCheckBox;
     QCheckBox              *useForegroundColorCheckBox;
 
-    QCheckBox              *drawLabelsCheckBox;
     QCheckBox              *drawMinmaxCheckBox;
     QCheckBox              *drawTitleCheckBox;
 
     QCheckBox              *drawBoundingBoxCheckBox;
     QvisColorButton        *boundingBoxColorButton;
     QvisOpacitySlider      *boundingBoxOpacity;
+
+    QCheckBox              *tickControl; 
+    QSpinBox               *numTicksSpinBox; 
+    QLabel                 *numTicksLabel;
+    QCheckBox              *minMaxCheckBox; 
+    QComboBox              *drawLabelsComboBox;
+
+    QTableWidget           *suppliedLabels;
+    QPushButton            *addRowButton;
+    QPushButton            *deleteRowButton;
 };
 
 #endif

@@ -47,7 +47,7 @@
 
 #include <avtLegend.h>
 
-class  vtkVerticalScalarBarActor;
+class  vtkVisItScalarBarActor;
 class  vtkLookupTable;
 
 
@@ -63,7 +63,7 @@ class  vtkLookupTable;
 //  Modifications:
 //
 //    Kathleen Bonnell, Fri Dec  8 15:02:31 PST 2000 
-//    Changed sBar to be of type vtkVerticalScalarBarActor, a modified
+//    Changed sBar to be of type vtkVisItScalarBarActor, a modified
 //    version of the original, better suited to VisIt.  Added method
 //    'SetVarName' so that the variable name used for this plot could
 //    be part of the title.
@@ -108,6 +108,10 @@ class  vtkLookupTable;
 //    Hank Childs, Fri Jan 23 15:39:06 PST 2009
 //    Add support for Set/GetMinMax.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:18:11 PDT 2009
+//    Added methods and ivars that allow more user control of tick marks
+//    and tick labels.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -121,8 +125,8 @@ class PLOTTER_API avtVariableLegend : public avtLegend
 
     virtual void               SetTitleVisibility(bool);
     virtual bool               GetTitleVisibility() const;
-    virtual void               SetLabelVisibility(bool);
-    virtual bool               GetLabelVisibility() const;
+    virtual void               SetLabelVisibility(int);
+    virtual int                GetLabelVisibility() const;
     virtual void               SetMinMaxVisibility(bool);
     virtual bool               GetMinMaxVisibility() const;
     virtual void               SetNumberFormat(const char *);
@@ -141,18 +145,30 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     void                       SetVarRangeVisibility(const int);
     void                       SetVarRange(double min, double max);
 
+    virtual void               SetNumTicks(int);
+    virtual void               SetUseSuppliedLabels(bool);
+    virtual bool               GetUseSuppliedLabels(void); 
+    virtual void               SetMinMaxInclusive(bool);
+    virtual void               SetSuppliedValues(const doubleVector &);
+    virtual void               SetSuppliedLabels(const stringVector &);
+    virtual void               GetCalculatedLabels(doubleVector &);
+    virtual int                GetType(void) { return 0;}
+
+
   protected:
     double                     min, max;
 
-    vtkVerticalScalarBarActor *sBar;
+    vtkVisItScalarBarActor    *sBar;
     vtkLookupTable            *lut;
 
     double                     scale[2];
     int                        barVisibility;
     int                        rangeVisibility;
     bool                       titleVisibility;
-    bool                       labelVisibility;
+    int                        labelVisibility;
     bool                       minmaxVisibility;
+    int                        numTicks;
+    bool                       useSuppliedLabels;
 
     virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);

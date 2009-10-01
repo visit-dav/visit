@@ -394,11 +394,13 @@ avtLegend::GetTitleVisibility() const
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Oct  1 14:19:27 PDT 2009
+//    Changed arg from bool to int, to support multiple modes.
 //   
 // ****************************************************************************
 
 void
-avtLegend::SetLabelVisibility(bool)
+avtLegend::SetLabelVisibility(int)
 {
     // Do nothing
 }
@@ -410,13 +412,15 @@ avtLegend::SetLabelVisibility(bool)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Oct  1 14:19:27 PDT 2009
+//    Changed retrun type from bool to int, to support multiple modes.
 //   
 // ****************************************************************************
 
-bool
+int
 avtLegend::GetLabelVisibility() const
 {
-    return true;
+    return 1;
 }
 
 // ****************************************************************************
@@ -850,3 +854,120 @@ avtLegend::SetGlobalVisibility(bool v)
     globalVisibility = v;
 }
 
+
+// ****************************************************************************
+// Method: avtLegend::SetNumTicks
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void                          
+avtLegend::SetNumTicks(int)
+{
+    // Do nothing
+}
+
+
+// ****************************************************************************
+// Method: avtLegend::SetUseSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetUseSuppliedLabels(bool)
+{
+    // Do nothing
+}
+
+
+// ****************************************************************************
+// Method: avtLegend::SetMinMaxInclusive
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetMinMaxInclusive(bool)
+{
+    // Do nothing
+}
+
+
+// ****************************************************************************
+// Method: avtLegend::SetSuppliedValues
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetSuppliedValues(const doubleVector &)
+{
+    // Do nothing
+}
+
+
+// ****************************************************************************
+// Method: avtLegend::SetSuppliedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetSuppliedLabels(const stringVector &)
+{
+    // Do nothing
+}
+
+
+// ****************************************************************************
+// Method: avtLegend::GetCalculatedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::GetCalculatedLabels(doubleVector &)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::GetCalculatedLabels
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Wed Sep 16 13:25:54 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::GetCalculatedLabels(stringVector &)
+{
+    // Do nothing
+}

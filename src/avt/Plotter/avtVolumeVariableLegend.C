@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtVolumeVariableLegend.C                           //
+//                       avtVolumeVariableLegend.C                           //
 // ************************************************************************* //
 
-#include <vtkVerticalScalarBarWithOpacityActor.h>
+#include <vtkVisItScalarBarWithOpacityActor.h>
 #include <avtVolumeVariableLegend.h>
 #include <vtkLookupTable.h>
 
@@ -76,13 +76,14 @@
 
 avtVolumeVariableLegend::avtVolumeVariableLegend() : avtVariableLegend(1)
 {
-    sBar = vtkVerticalScalarBarWithOpacityActor::New();
+    sBar = vtkVisItScalarBarWithOpacityActor::New();
     sBar->SetShadow(0);
     sBar->SetLookupTable(lut);
 
     size[0] = 0.08;
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
+    sBar->SetType(vtkVisItScalarBarActor::VTK_CONTINUOUS);
 
     barVisibility = 1;
     rangeVisibility = 1;
@@ -140,5 +141,5 @@ avtVolumeVariableLegend::~avtVolumeVariableLegend()
 void
 avtVolumeVariableLegend::SetLegendOpacities(const unsigned char *opacity)
 {
-    ((vtkVerticalScalarBarWithOpacityActor *)sBar)->SetLegendOpacities(opacity);
+    ((vtkVisItScalarBarWithOpacityActor *)sBar)->SetLegendOpacities(opacity);
 }

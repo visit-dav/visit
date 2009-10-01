@@ -38,7 +38,7 @@
 
 //=========================================================================
 //
-//  Class:     vtkVerticalScalarBarActor
+//  Class:     vtkVisItScalarBarActor
 //  
 //  Purpose:
 //    Derived type of vtkActor2D. 
@@ -46,7 +46,7 @@
 //    color value and data value. 
 //
 //=========================================================================
-#include "vtkVerticalScalarBarActor.h"
+#include "vtkVisItScalarBarActor.h"
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -58,17 +58,18 @@
 #include <vtkWindow.h>
 #include <limits.h>
 #include <float.h>
+#include <sstream>
 #include "vtkSkew.h"
 
 #define DefaultNumLabels 5
-
+using std::string;
 //------------------------------------------------------------------------------
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 //------------------------------------------------------------------------------
 
-vtkStandardNewMacro(vtkVerticalScalarBarActor);
+vtkStandardNewMacro(vtkVisItScalarBarActor);
 
 //------------------------------------------------------------------------------
 // Instantiate this object
@@ -90,8 +91,13 @@ vtkStandardNewMacro(vtkVerticalScalarBarActor);
 //    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
 //    Undo previous change.
 //
+//    Kathleen Bonnell, Thu Oct  1 13:58:17 PDT 2009
+//    Removed LabelVisibility, UseDefinedLabels.  Added suppliedValues, 
+//    suppliedLabels, calculatedValues, MinMaxInclusive, UseSuppliedLabels, 
+//    DrawMode and Type.
+//
 //------------------------------------------------------------------------------
-vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap()
+vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap(), suppliedLabels(), suppliedValues(), calculatedValues()
 {
   this->LookupTable = NULL;
   this->Position2Coordinate = vtkCoordinate::New();
@@ -187,13 +193,11 @@ vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), define
   this->LastSize[0] = 0;
   this->LastSize[1] = 0;
   this->TitleVisibility = 1;
-  this->LabelVisibility = 1;
   this->RangeVisibility = 1;
   this->ColorBarVisibility = 1;
   this->BoundingBoxVisibility = 0;
   this->TitleOkayToDraw = 1;
   this->LabelOkayToDraw = 1;
-  this->UseDefinedLabels = 0;
   this->definedLabels = stringVector();
   this->definedDoubleLabels = doubleVector();
 
@@ -202,13 +206,22 @@ vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), define
   this->UseLogScaling = 0;
   this->ReverseOrder = 0;
   this->Orientation = VERTICAL_TEXT_ON_RIGHT;
+
+  this->MinMaxInclusive = 1;
+  this->UseSuppliedLabels = 0;
+  this->suppliedLabels = stringVector();
+  this->suppliedValues = doubleVector();
+
+  this->calculatedValues = doubleVector();
+  this->DrawMode = DRAW_VALUES_ONLY;
+  this->Type = VTK_CONTINUOUS;
 }
 
 
 // Release any graphics resources that are being consumed by this actor.
 // The parameter window could be used to determine which graphic
 // resources to release.
-void vtkVerticalScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
+void vtkVisItScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
 {
   this->TitleActor->ReleaseGraphicsResources(win);
   for (int i=0; i < VTK_MAX_NUMLABELS; i++)
@@ -233,7 +246,7 @@ void vtkVerticalScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
 //
 // ****************************************************************************
 
-vtkVerticalScalarBarActor::~vtkVerticalScalarBarActor()
+vtkVisItScalarBarActor::~vtkVisItScalarBarActor()
 {
   this->Position2Coordinate->Delete();
   this->Position2Coordinate = NULL;
@@ -297,25 +310,25 @@ vtkVerticalScalarBarActor::~vtkVerticalScalarBarActor()
   this->SetLookupTable(NULL);
 }
 
-void vtkVerticalScalarBarActor::SetVarRange(double *r)
+void vtkVisItScalarBarActor::SetVarRange(double *r)
 {
   this->varRange[0] = r[0];
   this->varRange[1] = r[1];
 }
 
-void vtkVerticalScalarBarActor::SetVarRange(double min, double max)
+void vtkVisItScalarBarActor::SetVarRange(double min, double max)
 {
   this->varRange[0] = min;
   this->varRange[1] = max;
 }
 
-void vtkVerticalScalarBarActor::SetRange(double *r)
+void vtkVisItScalarBarActor::SetRange(double *r)
 {
   this->range[0] = r[0];
   this->range[1] = r[1];
 }
 
-void vtkVerticalScalarBarActor::SetRange(double min, double max)
+void vtkVisItScalarBarActor::SetRange(double min, double max)
 {
   this->range[0] = min;
   this->range[1] = max;
@@ -333,7 +346,7 @@ void vtkVerticalScalarBarActor::SetRange(double min, double max)
 //    Separate the range visibility from the label visibility.
 //
 // *********************************************************************
-int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
+int vtkVisItScalarBarActor::RenderOverlay(vtkViewport *viewport)
 {
   int renderedSomething = 0;
   int i;
@@ -352,7 +365,7 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
   if ( this->ColorBarVisibility )
     {
     this->ColorBarActor->RenderOverlay(viewport);
-    if (this->LabelOkayToDraw && this->LabelVisibility)
+    if (this->LabelOkayToDraw && this->DrawMode != DRAW_NO_LABELS)
       {
       this->TicsActor->RenderOverlay(viewport);
       }
@@ -361,7 +374,7 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
       {
       this->RangeActor->RenderOverlay(viewport);
       }
-    if (this->LabelOkayToDraw && this->LabelVisibility)
+    if (this->LabelOkayToDraw && this->DrawMode != DRAW_NO_LABELS)
       {
       for (i=0; i<this->NumberOfLabelsBuilt; i++)
         {
@@ -393,7 +406,7 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
 // ****************************************************************************
 
 // Build the title for this actor 
-void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
+void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
 {
   double titleOrigin[3] = { 0., 0., 0. };
 
@@ -446,7 +459,7 @@ void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
 //    No longer call AdjustRangeFormat ... just use the number format from
 //    input.
 //
-void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
+void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 {
   int* viewSize = viewport->GetSize(); 
 
@@ -466,8 +479,6 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
     varRange[0] = lutRange[0];
     varRange[1] = lutRange[1];
     }
-
-  //AdjustRangeFormat(varRange[0], varRange[1]);
 
   //
   // create the range label
@@ -531,10 +542,15 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
 //    Updated to handle vertical, text on left or right, and horizontal,
 //    text on top or bottom.
+//
+//    Kathleen Bonnell, Thu Oct  1 14:00:02 PDT 2009
+//    Modified to support user supplied Labels and user supplied tick values.
+//
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor:: 
-BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels)
+void 
+vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo, 
+                                    double bw, double bh, int nLabels)
 {
   int i, idx;
   double val;
@@ -544,112 +560,225 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
   int* viewSize = viewport->GetSize(); 
   double offset;
 
-  if (Orientation == VERTICAL_TEXT_ON_RIGHT)
-    labelOrig[0] = (bw + bw*0.25 ) / viewSize[0];  //labelOrig[0] has left edge of text 
-  else if (Orientation == VERTICAL_TEXT_ON_LEFT)
-    labelOrig[0] = (bw - bw*0.25 ) / viewSize[0];  //labelOrig[0] has right edge of text 
-  else if (Orientation == HORIZONTAL_TEXT_ON_TOP)
+  if (this->Orientation == VERTICAL_TEXT_ON_RIGHT)
+    labelOrig[0] = (bw + bw*0.25 ) / viewSize[0];  // left edge of text 
+  else if (this->Orientation == VERTICAL_TEXT_ON_LEFT)
+    labelOrig[0] = (bw - bw*0.25 ) / viewSize[0];  // right edge of text 
+  else if (this->Orientation == HORIZONTAL_TEXT_ON_TOP)
     labelOrig[1] = ((bo + 1.25*bh) / viewSize[1]) + (this->FontHeight / 2.0);
-  else if (Orientation == HORIZONTAL_TEXT_ON_BOTTOM)
+  else if (this->Orientation == HORIZONTAL_TEXT_ON_BOTTOM)
     labelOrig[1] = ((bo - 0.25*bh) / viewSize[1]) - (this->FontHeight / 2.0);
-
-  if (this->UseDefinedLabels && !definedLabels.empty())
+  switch (this->Type)
     {
-    if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-        Orientation == VERTICAL_TEXT_ON_LEFT)
-      delta = bh/nLabels;
-    else
-      delta = bw/nLabels;
-    }
-  else
-    {
-    if (nLabels > 1)
-        if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-            Orientation == VERTICAL_TEXT_ON_LEFT)
-            delta = bh/(nLabels-1);
-        else
-            delta = bw/(nLabels-1);
-    else    
-        if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-            Orientation == VERTICAL_TEXT_ON_LEFT)
+    case VTK_DISCRETE:
+      {
+      if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+          this->Orientation == VERTICAL_TEXT_ON_LEFT)
+        delta = bh/nLabels;
+      else
+        delta = bw/nLabels;
+      }
+      break;
+    case VTK_CONTINUOUS:
+      {
+      if (this->UseSuppliedLabels)
+        {
+        delta = 0.;
+        }
+      else
+        {
+        if (nLabels > 1)
+          {
+          int nL = nLabels-1;
+          if (!this->MinMaxInclusive)
+            nL = nLabels+1;
+          if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+              this->Orientation == VERTICAL_TEXT_ON_LEFT)
+            delta = bh/nL;
+          else
+            delta = bw/nL;
+          }
+        else    
+          {
+          if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+              this->Orientation == VERTICAL_TEXT_ON_LEFT)
             delta = bh*0.5;
-        else
+          else
             delta = bw*0.5;
-    }
+          }
+        }
+      } // case VTK_CONTINUOUS
+      break; 
+    } // end switch
   bo /= viewSize[1];
 
-  if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-      Orientation == VERTICAL_TEXT_ON_LEFT)
+  if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+      this->Orientation == VERTICAL_TEXT_ON_LEFT)
     delta /= viewSize[1];
   else
     delta /= viewSize[0];
 
-  if (this->UseDefinedLabels && !definedLabels.empty())
+  double min, max;
+  if (this->UseLogScaling)
     {
-    if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-        Orientation == VERTICAL_TEXT_ON_LEFT)
-      offset = bo + 0.5 * delta;
-    else
-      offset = 0.5 * delta;
-
-    if (nLabels < VTK_MAX_NUMLABELS)
-      this->NumberOfLabelsBuilt = nLabels;
-    else
-      this->NumberOfLabelsBuilt = VTK_MAX_NUMLABELS;
-    for (i = 0; i < this->NumberOfLabelsBuilt; ++i)
-      {
-      if (!this->ReverseOrder)
-          idx = i;
-      else 
-          idx = this->NumberOfLabelsBuilt - 1 - i;
-      bool singleColor = ShouldCollapseDiscrete();
-      if (singleColor)
-        strcpy(labelString, "All");
-      else
-        sprintf(labelString, definedLabels[idx].c_str());
-      this->LabelMappers[i]->SetInput(labelString);
-      }
+    min = log10(range[0]);
+    max = log10(range[1]);
     }
   else
     {
-    if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-        Orientation == VERTICAL_TEXT_ON_LEFT)
-      offset = bo;
-    else
-      offset = 0.0;
+    min = range[0];
+    max = range[1];
+    }
+  double rangeDiff = max - min; 
 
-    double min, max;
-    if (this->UseLogScaling)
+  if (this->Type == VTK_CONTINUOUS && !this->UseSuppliedLabels)
+    calculatedValues.clear();
+
+  bool vv = this->DrawMode == DRAW_VALUES_ONLY ||
+            this->DrawMode == DRAW_VALUES_AND_LABELS;
+  bool lv = this->DrawMode == DRAW_LABELS_ONLY ||
+            this->DrawMode == DRAW_VALUES_AND_LABELS;
+
+  switch (this->Type)
     {
-        min = log10(range[0]);
-        max = log10(range[1]);
-    }
-    else
-    {
-        min = range[0];
-        max = range[1];
-    }
-    double rangeDiff = max - min; 
-    for (i = 0; i < nLabels; i++)
+    case VTK_DISCRETE:
       {
-      if (nLabels > 1)
-          val = min + (double)i/(nLabels-1) * rangeDiff;
-      else 
-          val = min; 
-      if (this->UseSkewScaling)
+      int nl = this->UseSuppliedLabels ? this->suppliedLabels.size() : nLabels;
+      if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+          this->Orientation == VERTICAL_TEXT_ON_LEFT)
+        offset = bo + 0.5 * delta;
+      else
+        offset = 0.5 * delta;
+      if (nl < VTK_MAX_NUMLABELS)
+        this->NumberOfLabelsBuilt = nl;
+      else
+        this->NumberOfLabelsBuilt = VTK_MAX_NUMLABELS;
+      for (i = 0; i < this->NumberOfLabelsBuilt; ++i)
         {
-        // The function we were using was actually the "inverse" skew.
-        val = vtkInverseSkewValue(val, min, max, this->SkewFactor);
+        if (!this->ReverseOrder)
+          idx = i;
+        else 
+          idx = this->NumberOfLabelsBuilt - 1 - i;
+        bool singleColor = ShouldCollapseDiscrete();
+        if (singleColor)
+          strcpy(labelString, "All");
+        else if (this->UseSuppliedLabels)
+          { 
+          bool va = i < this->definedLabels.size();
+          bool la = i < this->suppliedLabels.size();
+          if (vv & va)
+            { 
+            if (lv && la)
+              {
+              sprintf(labelString, "%s %s", this->definedLabels[idx].c_str(), 
+                      this->suppliedLabels[idx].c_str());
+              }
+            else
+              {
+              sprintf(labelString, this->definedLabels[idx].c_str() );
+              }
+            } 
+          else if (lv && la)
+            {
+            sprintf(labelString, this->suppliedLabels[idx].c_str());
+            }
+          else
+            {
+            sprintf(labelString, "%s", "");
+            }
+          }
+        else // not using supplied labels
+          sprintf(labelString, this->definedLabels[idx].c_str());
+        this->LabelMappers[i]->SetInput(labelString);
         }
-      else if (this->UseLogScaling)
-        {
-        val = (double) pow(10., val); 
-        }
-      sprintf(labelString, this->LabelFormat, val);
-      this->LabelMappers[i]->SetInput(labelString);
+        break;
       }
-    this->NumberOfLabelsBuilt = nLabels;
-    }
+    case VTK_CONTINUOUS:
+      if (this->UseSuppliedLabels)
+        {
+
+        for(i = 0; i < nLabels; ++i)
+          {
+          bool va = i < this->suppliedValues.size();
+          bool la = i < this->suppliedLabels.size();
+
+          if (vv & va)
+            {
+            if (lv && la)
+              {
+              std::string lf = this->LabelFormat;
+              lf += " %s";
+              sprintf(labelString, lf.c_str(), this->suppliedValues[i], 
+                      this->suppliedLabels[i].c_str());
+              }
+              else
+              {
+              sprintf(labelString, this->LabelFormat, this->suppliedValues[i]);
+              }
+            }
+          else if (lv && la)
+            {
+            sprintf(labelString, "%s", this->suppliedLabels[i].c_str());
+            }
+          else
+            {
+            sprintf(labelString, "%s", "");
+            }
+          this->LabelMappers[i]->SetInput(labelString);
+          }
+        this->NumberOfLabelsBuilt = nLabels;
+        }
+      else
+        {
+        if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+            this->Orientation == VERTICAL_TEXT_ON_LEFT)
+          if (this->MinMaxInclusive)
+            offset = bo;
+          else 
+            offset = bo + delta;
+        else
+          if (this->MinMaxInclusive)
+            offset = 0.0;
+          else 
+            offset = delta;
+
+        int nL = nLabels -1;
+        int rOffset = 0;
+        if (!this->MinMaxInclusive)
+          {
+          nL = nLabels + 1;
+          rOffset = 1;
+          }
+        for (i = 0; i < nLabels; i++)
+          {
+          if (nLabels > 1)
+            {
+            val = min + (double)(i+rOffset)/nL * rangeDiff;
+            }
+          else 
+            {
+            val = min; 
+            if (!this->MinMaxInclusive)
+              val += (max - min) /2; 
+            }
+    
+          if (this->UseSkewScaling)
+            {
+            // The function we were using was actually the "inverse" skew.
+            val = vtkInverseSkewValue(val, min, max, this->SkewFactor);
+            }
+          else if (this->UseLogScaling)
+            {
+            val = (double) pow(10., val); 
+            }
+          calculatedValues.push_back(val);
+          sprintf(labelString, this->LabelFormat, val);
+          this->LabelMappers[i]->SetInput(labelString);
+          }
+        this->NumberOfLabelsBuilt = nLabels;
+        } 
+        break;
+    }  // end switch
 
   int fontSize = (int)(FontHeight * viewSize[1]); 
 
@@ -663,28 +792,39 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
     tprop->SetFontFamily(this->FontFamily);
     tprop->SetColor(this->GetProperty()->GetColor());
 
-    double textWidth = (double)(this->LabelMappers[i]->GetWidth(viewport)) / viewSize[0];
+    double textWidth = (double)(this->LabelMappers[i]->GetWidth(viewport)) / 
+                       viewSize[0];
 
-    if (Orientation == VERTICAL_TEXT_ON_RIGHT)
-    {
+    if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels)
+      {
+      double rangePercent = (this->suppliedValues[i] - min) / rangeDiff;
+      if (this->Orientation == VERTICAL_TEXT_ON_RIGHT ||
+          this->Orientation == VERTICAL_TEXT_ON_LEFT)
+        offset = bo + rangePercent*bh/viewSize[1];
+      else 
+        offset = rangePercent*bw/viewSize[0];
+      delta = 0.;
+      }
+    if (this->Orientation == VERTICAL_TEXT_ON_RIGHT)
+      {
       labelOrig[1] = (offset + (double)i*delta);
-    }
-    else if (Orientation == VERTICAL_TEXT_ON_LEFT)
-    {
+      }
+    else if (this->Orientation == VERTICAL_TEXT_ON_LEFT)
+      {
       labelOrig[1] = (offset + (double)i*delta);
       labelOrig[0] -= textWidth;
-    }
+      }
     else
-    {
+      {
       labelOrig[0] = offset + (double)i*delta - 0.5*textWidth;
-    }
+      }
 
     this->LabelActors[i]->GetPositionCoordinate()->
       SetCoordinateSystemToNormalizedViewport();
     this->LabelActors[i]->GetPositionCoordinate()->SetValue(labelOrig);
     this->LabelActors[i]->SetProperty(this->GetProperty());
 
-    if (Orientation == VERTICAL_TEXT_ON_LEFT)
+    if (this->Orientation == VERTICAL_TEXT_ON_LEFT)
       labelOrig[0] += textWidth;
     }
 
@@ -710,10 +850,14 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
 //    Updated to handle vertical, text on left or right, and horizontal,
 //    text on top or bottom.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:00:02 PDT 2009
+//    Modified to support user supplied Labels and user supplied tick values.
+//
 // **********************************************************************
 
-void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
-                                           double height, int numLabels)
+void 
+vtkVisItScalarBarActor::BuildTics(double origin, double width,
+                                  double height, int numLabels)
 {
   int i;
 
@@ -732,29 +876,69 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
   //
   double x[3]; x[2] = 0.0;
   double delta, offset;
-
-  if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-      Orientation == VERTICAL_TEXT_ON_LEFT)
+  double min, max;
+  if (this->UseLogScaling)
     {
-    if (this->UseDefinedLabels && !this->definedLabels.empty()  )
+    min = log10(range[0]);
+    max = log10(range[1]);
+    }
+  else
+    {
+    min = range[0];
+    max = range[1];
+    }
+  double rangeDiff = max - min; 
+  double quarterWidth = width*0.25;
+  double quarterHeight = height*0.25;
+
+  if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+      this->Orientation == VERTICAL_TEXT_ON_LEFT)
+    {
+    switch(this->Type)
       {
-      delta = height/(double)(numLabels);
-      offset = origin + 0.5*delta;
-      }
-    else
-      {
-      delta = height/(double)(numLabels-1);
-      offset = origin;
-      }
+      case VTK_DISCRETE:
+        {
+        delta = height/(double)(numLabels);
+        offset = origin + 0.5*delta;
+        }
+        break;
+      case VTK_CONTINUOUS:
+        {
+        if (this->UseSuppliedLabels)
+          {
+          delta = 0.;
+          }
+        else
+          {
+          if (this->MinMaxInclusive)
+            {
+            if (numLabels > 1)
+              delta = height/(double)(numLabels-1);
+            else 
+              delta = 0.;
+            offset = origin;
+            }
+           else
+            {
+            delta = height/(double)(numLabels+1);
+            offset = origin + delta;
+            }
+          }
+        } // CONTINUOUS
+        break;
+      } // end switch
     
-    double quarterWidth = width*0.25;
     // first tic
     for (i = 0; i < numLabels; i++)
       {
+      if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels) 
+        {
+        offset = origin + (this->suppliedValues[i] - min)/rangeDiff * height;
+        }
       x[0] = width;
       x[1] = offset + i*delta;
       ticPts->SetPoint(2*i, x); 
-      if (Orientation == VERTICAL_TEXT_ON_RIGHT)
+      if (this->Orientation == VERTICAL_TEXT_ON_RIGHT)
         x[0] = width + quarterWidth;
       else
         x[0] = width - quarterWidth;
@@ -768,25 +952,52 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
       lines->InsertNextCell(2, ticPtId);
       }
     }
-  else
+  else // HORIZONTAL
     {
-    if (this->UseDefinedLabels && !this->definedLabels.empty()  )
+    switch (this->Type)
       {
-      delta = width/(double)(numLabels);
-      offset = 0.5*delta;
-      }
-    else
-      {
-      delta = width/(double)(numLabels-1);
-      offset = 0;
-      }
+      case VTK_DISCRETE:
+        {
+        delta = width/(double)(numLabels);
+        offset = 0.5*delta;
+        } // DISCRETE
+        break; 
+      case VTK_CONTINUOUS:
+        {
+        if (this->UseSuppliedLabels)
+          {
+          delta = 0.;
+          }
+        else
+          {
+          if (this->MinMaxInclusive)
+            {
+            if (numLabels > 1)
+              delta = width/(double)(numLabels-1);
+            else
+              delta = 0.;
+            offset = 0.;
+            }
+          else 
+            {
+            delta = width/(double)(numLabels+1);
+            offset = delta;
+            }
+          } // not using supplied labels
+        } // CONTINUOUS
+        break;
+      }// end switch
     
-    double quarterHeight = height*0.25;
     // first tic
     for (i = 0; i < numLabels; i++)
       {
+      if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels)
+        {
+        offset = (this->suppliedValues[i] - min) / rangeDiff * width;
+        }
+
       x[0] = offset + i*delta;
-      if (Orientation == HORIZONTAL_TEXT_ON_TOP)
+      if (this->Orientation == HORIZONTAL_TEXT_ON_TOP)
         {
         x[1] = origin+height;
         ticPts->SetPoint(2*i, x); 
@@ -808,7 +1019,6 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
       lines->InsertNextCell(2, ticPtId);
       }
     }
-
 }
 
 // **********************************************************************
@@ -876,10 +1086,18 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
 //    squeeze together a little more and still show the intended number
 //    of contour levels.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:00:02 PDT 2009
+//    Modified to support user supplied Labels and user supplied tick values.
+//
 // **********************************************************************
 
-void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
+void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
 {
+  if (this->Type == VTK_DISCRETE && this->definedLabels.empty())
+    {
+    vtkWarningMacro(<< "Discrete legend specified without labels!");
+    }
+
   int *viewSize = viewport->GetSize();
 
   bool singleColor = ShouldCollapseDiscrete();
@@ -912,18 +1130,18 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
     barHeight = LastSize[1] - barOrigin;
     }
 
-  if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-      Orientation == VERTICAL_TEXT_ON_LEFT)
+  if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+      this->Orientation == VERTICAL_TEXT_ON_LEFT)
     {
     barWidth = (int) (this->BarWidth * viewSize[0]);
     }
   else
     {
-    //Subtract space for the tick marks and text, if horizontal.
-    int tickSpace = (int)(2*halfFontSize + 0.2*(barHeight-2*halfFontSize));
-    barHeight -= tickSpace;
-    if (Orientation == HORIZONTAL_TEXT_ON_BOTTOM)
-      barOrigin += tickSpace;
+    //Subtract space for the tic marks and text, if horizontal.
+    int ticSpace = (int)(2*halfFontSize + 0.2*(barHeight-2*halfFontSize));
+    barHeight -= ticSpace;
+    if (this->Orientation == HORIZONTAL_TEXT_ON_BOTTOM)
+      barOrigin += ticSpace;
     barWidth = this->LastSize[0];
     }
 
@@ -937,28 +1155,42 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   // Determine the number of colors in the color bar.
   //
   int numColors, numLabels; 
-  if ( this->UseDefinedLabels && !this->definedLabels.empty() )
+  this->VerifySuppliedLabels();
+  switch (this->Type)
     {
-    if (singleColor)
-      numColors = numLabels = 1;
-    else
+    case VTK_DISCRETE:
       {
-      double fuzzFactor = 0.9; // <1 allows a little font squeezing
-      numColors = this->definedLabels.size();
-      if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-          Orientation == VERTICAL_TEXT_ON_LEFT)
+      if (singleColor)
+        numColors = numLabels = 1;
+      else
         {
-        if ((this->FontHeight * fuzzFactor * numColors * viewSize[1]) > barHeight)
-          numColors = (int) (barHeight / (this->FontHeight * fuzzFactor * viewSize[1]));
+        double fuzzFactor = 0.9; // <1 allows a little font squeezing
+        numColors = this->definedLabels.size();
+        if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+            this->Orientation == VERTICAL_TEXT_ON_LEFT)
+          {
+          if ((this->FontHeight * fuzzFactor * numColors * viewSize[1]) > barHeight)
+            numColors = (int) (barHeight / (this->FontHeight * fuzzFactor * viewSize[1]));
+          }
+        numLabels = numColors;
         }
-      numLabels = numColors;
       }
-    }
-  else
-    {
-    numColors = this->MaximumNumberOfColors;
-    numLabels = this->NumberOfLabels;
-    }
+      break;
+    case VTK_CONTINUOUS:
+      {
+      if (this->UseSuppliedLabels)
+        {
+        numColors = this->MaximumNumberOfColors;
+        numLabels = this->suppliedValues.size();
+        }
+      else
+        {
+        numColors = this->MaximumNumberOfColors;
+        numLabels = this->NumberOfLabels;
+        }
+      } // case VTK_CONTINUOUS
+      break;
+    } // switch
 
   //
   // Build color bar object
@@ -987,13 +1219,13 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   double x[3]; x[2] = 0;
   double delta;
 
-  if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
-      Orientation == VERTICAL_TEXT_ON_LEFT)
+  if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
+      this->Orientation == VERTICAL_TEXT_ON_LEFT)
     {
     delta = (double)barHeight/(double)numColors;
     for (i = 0; i < numPts/2; i++)
       {
-      if (Orientation == VERTICAL_TEXT_ON_RIGHT)
+      if (this->Orientation == VERTICAL_TEXT_ON_RIGHT)
         {
         x[0] = 0; 
         x[1] = i*delta+barOrigin; 
@@ -1063,10 +1295,12 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
         idx = i;
     else 
         idx = numColors-1-i; 
-    if (this->UseDefinedLabels && !this->definedLabels.empty() )
+    if (singleColor)
+        rgba = useMe->MapValue((double)idx);
+    else if (this->Type == VTK_DISCRETE && !this->definedLabels.empty() )
       {
       LevelColorMap::iterator it;
-      if ((it = labelColorMap.find(definedLabels[idx])) != labelColorMap.end())
+      if ((it = this->labelColorMap.find(this->definedLabels[idx])) != this->labelColorMap.end())
         {
         vtkIdType colorIndex = it->second;
         rgba = useMe->GetPointer(colorIndex);
@@ -1090,7 +1324,7 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   tmp->Delete();
 
   this->BuildTics(barOrigin, barWidth, barHeight, numLabels);
-  if (this->LabelVisibility)
+  if (this->DrawMode != DRAW_NO_LABELS)
     {
     this->BuildLabels(viewport, barOrigin, barWidth, barHeight, numLabels);
     }
@@ -1099,19 +1333,22 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
 
 
 bool
-vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
+vtkVisItScalarBarActor::ShouldCollapseDiscrete(void)
 {
-  if (!this->UseDefinedLabels || this->definedLabels.empty() )
-      return false;
-  if (definedLabels.size() <= 1)
-      return false;
+  if (this->Type == VTK_CONTINUOUS) 
+    return false;
+  if (this->definedLabels.empty())
+    return true; // will give us one color and one label "all"
+  if (this->definedLabels.size() == 1)
+    return false;
 
 
   double *lutRange = this->LookupTable->GetRange();
   unsigned char *rgba;
   unsigned char  rgba_base[4];
   LevelColorMap::iterator it;
-  if ((it = labelColorMap.find(definedLabels[0])) != labelColorMap.end())
+  if ((it = this->labelColorMap.find(this->definedLabels[0])) != 
+            this->labelColorMap.end())
     {
     vtkIdType colorIndex = it->second;
     rgba = LookupTable->GetPointer(colorIndex);
@@ -1125,9 +1362,10 @@ vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
   rgba_base[2] = rgba[2];
   rgba_base[3] = rgba[3];
   
-  for (size_t i = 1 ; i < definedLabels.size() ; i++)
+  for (size_t i = 1 ; i < this->definedLabels.size() ; i++)
     {
-    if ((it = labelColorMap.find(definedLabels[i])) != labelColorMap.end())
+    if ((it = this->labelColorMap.find(this->definedLabels[i])) != 
+              this->labelColorMap.end())
       {
       vtkIdType colorIndex = it->second;
       rgba = LookupTable->GetPointer(colorIndex);
@@ -1151,7 +1389,7 @@ vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
 }
 
 // ****************************************************************************
-// Method: vtkVerticalScalarBarActor::BuildBoundingBox
+// Method: vtkVisItScalarBarActor::BuildBoundingBox
 //
 // Purpose: 
 //   Builds the bounding box.
@@ -1167,7 +1405,7 @@ vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
 //   
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
+void vtkVisItScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
 {
   int *viewSize = viewport->GetSize();
 
@@ -1204,40 +1442,37 @@ void vtkVerticalScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
   // Need to account for the widest text to accurately calculate the width.
   if(this->TitleVisibility)
     {
-        int *titleLL = this->TitleActor->GetPositionCoordinate()->
+    int *titleLL = this->TitleActor->GetPositionCoordinate()->
             GetComputedViewportValue(viewport);
-        int rightX = titleLL[0] + 
-            this->TitleMapper->GetWidth(viewport);
-        if(rightX > maxX)
-            maxX = rightX;
-        if(titleLL[0] < minX)
-            minX = titleLL[0];
+    int rightX = titleLL[0] + this->TitleMapper->GetWidth(viewport);
+    if(rightX > maxX)
+      maxX = rightX;
+    if(titleLL[0] < minX)
+      minX = titleLL[0];
     }
 
   if(this->RangeVisibility)
     {
-        int *rangeLL = this->RangeActor->GetPositionCoordinate()->
+    int *rangeLL = this->RangeActor->GetPositionCoordinate()->
             GetComputedViewportValue(viewport);
-        int rightX = rangeLL[0] + 
-            this->RangeMapper->GetWidth(viewport);
-        if(rightX > maxX)
-            maxX = rightX;
-        if(rangeLL[0] < minX)
-            minX = rangeLL[0];
+    int rightX = rangeLL[0] + this->RangeMapper->GetWidth(viewport);
+    if(rightX > maxX)
+      maxX = rightX;
+    if(rangeLL[0] < minX)
+      minX = rangeLL[0];
     }
 
-  if (this->LabelOkayToDraw && this->LabelVisibility)
+  if (this->LabelOkayToDraw && this->DrawMode != DRAW_NO_LABELS)
     {
     for (int i=0; i<this->NumberOfLabelsBuilt; i++)
       {
-        int *labelLL = this->LabelActors[i]->GetPositionCoordinate()->
+      int *labelLL = this->LabelActors[i]->GetPositionCoordinate()->
             GetComputedViewportValue(viewport);
-        int rightX = labelLL[0] + 
-            this->LabelMappers[i]->GetWidth(viewport);
-        if(rightX > maxX)
-            maxX = rightX;
-        if(labelLL[0] < minX)
-            minX = labelLL[0];
+      int rightX = labelLL[0] + this->LabelMappers[i]->GetWidth(viewport);
+      if(rightX > maxX)
+        maxX = rightX;
+      if(labelLL[0] < minX)
+        minX = labelLL[0];
       }
     }
   width = maxX - minX;
@@ -1290,7 +1525,7 @@ void vtkVerticalScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
 //
 // *********************************************************************
 
-int vtkVerticalScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
+int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int renderedSomething = 0;
   int i;
@@ -1378,7 +1613,7 @@ int vtkVerticalScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
   if ( this->ColorBarVisibility )
     {
     this->ColorBarActor->RenderOpaqueGeometry(viewport);
-    if (this->LabelOkayToDraw && this->LabelVisibility)
+    if (this->LabelOkayToDraw && this->DrawMode != DRAW_NO_LABELS)
       {
       this->TicsActor->RenderOpaqueGeometry(viewport);
       }
@@ -1388,7 +1623,7 @@ int vtkVerticalScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       this->RangeActor->RenderOpaqueGeometry(viewport);
       }
 
-    if (this->LabelOkayToDraw && this->LabelVisibility)
+    if (this->LabelOkayToDraw && this->DrawMode != DRAW_NO_LABELS)
       {
       for (i=0; i<this->NumberOfLabelsBuilt; i++)
         {
@@ -1401,7 +1636,7 @@ int vtkVerticalScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
   return renderedSomething;
 }
 
-void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
@@ -1447,18 +1682,18 @@ void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "ColorBar Visibility: " 
      << (this->ColorBarVisibility ? "On\n" : "Off\n");
   os << indent << "Label Visibility: " 
-     << (this->LabelVisibility ? "On\n" : "Off\n");
+     << ((this->DrawMode != DRAW_NO_LABELS) ? "On\n" : "Off\n");
   os << indent << "Range Visibility: " 
      << (this->RangeVisibility ? "On\n" : "Off\n");
   os << indent << "BoundingBox Visibility: " 
      << (this->BoundingBoxVisibility ? "On\n" : "Off\n");
-  os << indent << "Use Defined Labels: " 
-     << (this->UseDefinedLabels ? "On\n" : "Off\n");
-  if ( !definedLabels.empty() )
+  os << indent << "Type: "; 
+     os << (this->Type == VTK_CONTINUOUS ? "Continuous\n" : "Discrete\n");
+  if ( !this->definedLabels.empty() )
     {
     vtkIndent indent2 = indent.GetNextIndent();
     os << indent << "Defined Labels: \n";
-    for (size_t i = 0; i < definedLabels.size(); i++)
+    for (size_t i = 0; i < this->definedLabels.size(); i++)
        os << indent2 << this->definedLabels[i].c_str() << "\n";
     }
   os << indent << "Position: " << this->PositionCoordinate << "\n";
@@ -1475,9 +1710,56 @@ void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Orientation: " << this->Orientation << "\n";
 }
 
-void vtkVerticalScalarBarActor::SetDefinedLabels(const stringVector &labels)
+// ****************************************************************************
+//  Modifications:
+//
+//    Kathleen Bonnell, Thu Oct  1 14:04:10 PDT 2009
+//    Convert labels to doubles if possible, to preserve precision.
+//
+// ****************************************************************************
+
+void vtkVisItScalarBarActor::SetDefinedLabels(const stringVector &labels)
 {
   this->definedLabels = labels;
+
+  // hack to retrieve real doubles when possible, because even plots
+  // that should be setting double labels (like Contour) are not.
+  // This could be removed if we ever get this fixed.
+  // Converting the strings to doubles here (when possible), simply
+  // allows for prettier printing of these labels in the gui and cli,
+  // in the 'suppliedLabels' column, and allows LabelFormat changes to affect
+  // labels.
+  doubleVector tmp;
+  bool okay = true;
+  for (size_t i = 0; i < labels.size() && okay; ++i)
+    {
+    std::istringstream ss(labels[i]);
+    int itest;
+    ss >> itest;
+    if (ss && (ss >> std::ws).eof())
+      {
+      // can convert to an int, lets stop here.
+      okay = false;
+      break;
+      }
+  
+    ss.clear();
+    ss.str(labels[i]);
+    double d;
+    ss >> d;
+    if (!(ss && (ss >> std::ws).eof()))
+      {
+      okay = false;
+      }
+    else
+      {
+      tmp.push_back(d);
+      }
+    }
+  if (okay)
+    {
+    this->SetDefinedLabels(tmp);
+    }
 }
 
 
@@ -1489,7 +1771,7 @@ void vtkVerticalScalarBarActor::SetDefinedLabels(const stringVector &labels)
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::SetDefinedLabels(const doubleVector &values)
+void vtkVisItScalarBarActor::SetDefinedLabels(const doubleVector &values)
 {
   this->definedDoubleLabels = values;
 
@@ -1503,41 +1785,41 @@ void vtkVerticalScalarBarActor::SetDefinedLabels(const doubleVector &values)
 }
 
 
-void vtkVerticalScalarBarActor::SetPosition(double x[2]) 
+void vtkVisItScalarBarActor::SetPosition(double x[2]) 
 {
   this->SetPosition(x[0],x[1]);
 } 
 
-void vtkVerticalScalarBarActor::SetPosition(double x, double y) 
+void vtkVisItScalarBarActor::SetPosition(double x, double y) 
 { 
   this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->PositionCoordinate->SetValue(x,y); 
 } 
 
-vtkCoordinate *vtkVerticalScalarBarActor::GetPosition2Coordinate() 
+vtkCoordinate *vtkVisItScalarBarActor::GetPosition2Coordinate() 
 { 
   return this->Position2Coordinate; 
 } 
 
-void vtkVerticalScalarBarActor::SetPosition2(double x[2]) 
+void vtkVisItScalarBarActor::SetPosition2(double x[2]) 
 {
   this->SetPosition2(x[0],x[1]);
 } 
 
-void vtkVerticalScalarBarActor::SetPosition2(double x, double y) 
+void vtkVisItScalarBarActor::SetPosition2(double x, double y) 
 { 
   this->Position2Coordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->Position2Coordinate->SetValue(x,y); 
 } 
 
-double *vtkVerticalScalarBarActor::GetPosition2() 
+double *vtkVisItScalarBarActor::GetPosition2() 
 { 
   return this->Position2Coordinate->GetValue(); 
 }
 
-void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
+void vtkVisItScalarBarActor::ShallowCopy(vtkProp *prop)
 {
-  vtkVerticalScalarBarActor *a = vtkVerticalScalarBarActor::SafeDownCast(prop);
+  vtkVisItScalarBarActor *a = vtkVisItScalarBarActor::SafeDownCast(prop);
   if ( a != NULL )
     {
     this->SetLookupTable(a->GetLookupTable());
@@ -1557,7 +1839,6 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
 
     this->SetTitleVisibility(a->GetTitleVisibility());
     this->SetRangeVisibility(a->GetRangeVisibility());
-    this->SetLabelVisibility(a->GetLabelVisibility());
     this->SetBoundingBoxVisibility(a->GetBoundingBoxVisibility());
 
     this->GetPositionCoordinate()->SetCoordinateSystem(
@@ -1569,6 +1850,9 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
       a->GetPosition2Coordinate()->GetCoordinateSystem());    
     this->GetPosition2Coordinate()->SetValue(
       a->GetPosition2Coordinate()->GetValue());
+
+    this->SetDrawMode(a->GetDrawMode());
+    this->SetType(a->GetType());
     }
 
   // Now do superclass
@@ -1583,7 +1867,7 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::SkewScalingOn()
+void vtkVisItScalarBarActor::SkewScalingOn()
 {
     this->UseSkewScaling = 1;
     this->UseLogScaling = 0;
@@ -1599,7 +1883,7 @@ void vtkVerticalScalarBarActor::SkewScalingOn()
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::SkewScalingOff()
+void vtkVisItScalarBarActor::SkewScalingOff()
 {
     this->UseSkewScaling = 0;
     this->Modified();
@@ -1614,7 +1898,7 @@ void vtkVerticalScalarBarActor::SkewScalingOff()
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::LogScalingOn()
+void vtkVisItScalarBarActor::LogScalingOn()
 {
     this->UseLogScaling = 1;
     this->UseSkewScaling = 0;
@@ -1630,7 +1914,7 @@ void vtkVerticalScalarBarActor::LogScalingOn()
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::LogScalingOff()
+void vtkVisItScalarBarActor::LogScalingOff()
 {
     this->UseLogScaling = 0;
     this->Modified();
@@ -1638,7 +1922,7 @@ void vtkVerticalScalarBarActor::LogScalingOff()
 
 
 // ****************************************************************************
-//  Method:      vtkVerticalScalarBarActor::SetNumberOfLabelsToDefault
+//  Method:      vtkVisItScalarBarActor::SetNumberOfLabelsToDefault
 //
 //  Purpose:
 //    Resets the number of labels to be the default number (currently 5).
@@ -1648,14 +1932,14 @@ void vtkVerticalScalarBarActor::LogScalingOff()
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::SetNumberOfLabelsToDefault()
+void vtkVisItScalarBarActor::SetNumberOfLabelsToDefault()
 {
     this->SetNumberOfLabels(DefaultNumLabels);
 }
 
 
 // ****************************************************************************
-//  Method:      vtkVerticalScalarBarActor::SetLabelColorMap
+//  Method:      vtkVisItScalarBarActor::SetLabelColorMap
 //
 //  Purpose:
 //    Sets up a map that translates a label to its corresponding color index. 
@@ -1669,136 +1953,29 @@ void vtkVerticalScalarBarActor::SetNumberOfLabelsToDefault()
 //
 // ****************************************************************************
 
-void vtkVerticalScalarBarActor::SetLabelColorMap(const LevelColorMap &cmap)
+void vtkVisItScalarBarActor::SetLabelColorMap(const LevelColorMap &cmap)
 {
     this->labelColorMap = cmap;
     this->Modified();
 }
 
 
-// ****************************************************************************
-//  Method:      vtkVerticalScalarBarActor::AdjustRangeFormat
-//
-//  Purpose:
-//    Determines the format for Range text. 
-//
-//  Notes:
-//    Modifed from VisWinAxes 'Digits' and 'LabelExponent' methods.
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    March 19, 2003
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Jun 12 11:05:18 PDT 2003
-//    Removed 'f' from pow(10.f, ...).
-//
-//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
-//    Change the range to Min Max.
-//
-//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
-//    Undo previous change.
-//
-// ****************************************************************************
-
-void
-vtkVerticalScalarBarActor::AdjustRangeFormat(double min, double max)
-{
-    double amax = max;
-    double amin = min;
-    //
-    // Determine power of 10 to scale range text.
-    //
-    double range = (fabs(amin) > fabs(amax) ? fabs(amin) : fabs(amax));
- 
-    double pow10 = log10(range);
-    //
-    // Cutoffs for using scientific notation.
-    //
-    static double  eformat_cut_min = -1.5;
-    static double  eformat_cut_max =  3.0;
-    static double  cut_min = pow(10., eformat_cut_min);
-    static double  cut_max = pow(10., eformat_cut_max);
-    double ipow10;
-    if (range < cut_min || range > cut_max)
-    {
-        ipow10 = floor(pow10);
-    }
-    else
-    {
-        ipow10 = 0.;
-    }
-    int exponent = (int) ipow10;
-    if (exponent != 0)
-    {
-        amax /= pow(10., exponent);
-        amin /= pow(10., exponent);
-    }
- 
-    double arange = amax - amin;
-    double apow10 = log10(arange);
-    int   aIpow10 = (int) floor(apow10);
-    int digitsPastDecimal = -aIpow10;
-
-    //
-    // Use a minimum of 4 decimal places.
-    //
-    if (digitsPastDecimal < 4)
-    {
-        digitsPastDecimal = 4;
-    }
- 
-    sprintf(this->RangeFormat, "Max: %%# -9.%dg\nMin: %%# -9.%dg", 
-            digitsPastDecimal, digitsPastDecimal);
-}
-
-
-
-
-
-// ****************************************************************************
-//  Method:      vtkVerticalScalarBarActor::SetOrientation
-//
-//  Purpose:
-//    Sets the orientation 
-//
-//  Programmer:  Dave Bremer
-//  Creation:    Fri Oct  3 15:53:07 PDT 2008
-//
-// ****************************************************************************
-
-void vtkVerticalScalarBarActor::SetOrientation(int o)
-{
-    this->Orientation = o;
-    this->Modified();
-}
-
-
-
-// ****************************************************************************
-//  Method:      vtkVerticalScalarBarActor::GetOrientation
-//
-//  Purpose:
-//    Gets the orientation 
-//
-//  Programmer:  Dave Bremer
-//  Creation:    Fri Oct  3 15:53:07 PDT 2008
-//
-// ****************************************************************************
-
-int vtkVerticalScalarBarActor::GetOrientation()
-{
-    return this->Orientation;
-}
-
-
-
-void vtkVerticalScalarBarActor::SetLabelFormat(const char *fmt)
+void vtkVisItScalarBarActor::SetLabelFormat(const char *fmt)
 {
   //This part is taken straight from vtkSetStringMacro
   vtkDebugMacro(<< this->GetClassName() << " (" << this << "): setting LabelFormat to " << (fmt?fmt:"(null)") );
-  if (this->LabelFormat == NULL && fmt == NULL) { return;}
-  if (this->LabelFormat && fmt && (!strcmp(this->LabelFormat,fmt))) { return;}
-  if (this->LabelFormat) { delete [] this->LabelFormat; }
+  if (this->LabelFormat == NULL && fmt == NULL) 
+    { 
+    return;
+    }
+  if (this->LabelFormat && fmt && (!strcmp(this->LabelFormat,fmt))) 
+    { 
+    return;
+    }
+  if (this->LabelFormat) 
+    { 
+    delete [] this->LabelFormat; 
+    }
   if (fmt)
     {
     this->LabelFormat = new char[strlen(fmt)+1];
@@ -1812,16 +1989,143 @@ void vtkVerticalScalarBarActor::SetLabelFormat(const char *fmt)
 
   //Add this to update strings for a fixed set of labels using the new , 
   //format string like in the contour plot for example.
-  if (this->UseDefinedLabels && !definedDoubleLabels.empty())
+  if (this->Type == VTK_DISCRETE && !this->definedDoubleLabels.empty())
       SetDefinedLabels(this->definedDoubleLabels);
 }
 
+void 
+vtkVisItScalarBarActor::SetSuppliedLabels(const stringVector &labels)
+{
+  bool mod = this->suppliedLabels.size() != labels.size();
+  for (size_t i = 0; !mod && i < this->suppliedLabels.size(); ++i)
+    mod = this->suppliedLabels[i] != labels[i];
+  
+  if (mod)
+    {
+    this->suppliedLabels = labels;
+    this->Modified();
+    } 
+}
 
+void 
+vtkVisItScalarBarActor::SetSuppliedValues(const doubleVector &values)
+{
+  bool mod = this->suppliedValues.size() != values.size();
+  for (size_t i = 0; !mod && i < this->suppliedValues.size(); ++i)
+    mod = this->suppliedValues[i] != values[i];
+  
+  if (mod)
+    {
+    this->suppliedValues = values;
+    this->Modified();
+    } 
+}
 
+void
+vtkVisItScalarBarActor::VerifySuppliedLabels()
+{
+  if (!this->UseSuppliedLabels)
+    return;
 
+  if (this->Type == VTK_DISCRETE)
+    {
+    if (this->suppliedLabels.size() < this->definedLabels.size())
+      vtkWarningMacro(<<"Number of supplied labels <  number of "
+                      << "colors in color bar, some labels may not be used.");    
+    if (this->suppliedLabels.size() > this->definedLabels.size())
+      vtkWarningMacro(<<"Number of supplied labels >  number of "
+                      << "colors in color bar, some colors won't have labels.");    
+    stringVector tmp2;
 
+    for (size_t i = 0; i < this->definedLabels.size() && 
+                       i < this->suppliedLabels.size(); ++i)
+      {
+      tmp2.push_back(this->suppliedLabels[i]); 
+      }
+    for (size_t i = tmp2.size(); i < this->definedLabels.size(); ++i)
+      {
+      tmp2.push_back("");
+      }
+    this->suppliedLabels = tmp2;
+    }
+  else
+    {
+    doubleVector tmp;
+    stringVector tmp2;
+    double min, max;
+    if (this->UseLogScaling)
+      {
+      min = log10(range[0]);
+      max = log10(range[1]);
+      }
+    else
+      {
+      min = range[0];
+      max = range[1];
+      }
 
+    // use an epsilon in keeping with the precision specified by
+    // the label format.
+    string lf(this->LabelFormat);
+    double eps1 = 0.;
+    double eps2 = 0.;
+    if (lf.find("%") != string::npos)
+      {
+      string::size_type idx = lf.find(".");
+      string t;
+      for (string::size_type i = idx+1; i < lf.size(); ++i)
+        if (isdigit(lf[i]))
+          t += lf[i]; 
+      if (t.size() > 0)
+        {
+        int s = atoi(t.c_str());
+        eps1 = pow(10.,-s);
+        eps2 = pow(10.,-(s-1));
+        }
+      }
+    for (size_t i = 0; i < this->suppliedValues.size(); ++i)
+      {
+      if (this->suppliedValues[i] < (min - eps1) || 
+          this->suppliedValues[i] > (max + eps2))
+        {
+        vtkDebugMacro("Ignoring supplied tic value " << this->suppliedValues[i] << " as it is out of range.");
+        continue;
+        }
+      tmp.push_back(this->suppliedValues[i]);
+      if (i < this->suppliedLabels.size())
+        tmp2.push_back(this->suppliedLabels[i]);
+      }
+    this->suppliedValues = tmp;
+    this->suppliedLabels = tmp2;
+    }
+}
 
+void
+vtkVisItScalarBarActor::GetCalculatedValues(doubleVector &v)
+{
+    v = this->calculatedValues;  
+}
 
-
-
+void
+vtkVisItScalarBarActor::GetCalculatedLabels(stringVector &v)
+{
+    if (this->definedDoubleLabels.empty())
+    {
+        v = this->definedLabels;  
+    }
+    else
+    {
+        // hack to get around the fact that labels for countour
+        // plots are *always* strings, when they should be doubles.
+        // and the format specification for them is determined by
+        // avtContourFilter, not the LabelFormatString used here for
+        // Variable type legends.
+        v.clear();
+        char labelString[1024];
+        for (size_t i = 0; i < definedDoubleLabels.size(); ++i)
+        {
+            sprintf(labelString, "%f", definedDoubleLabels[i]);
+            v.push_back(labelString);
+        }
+    }
+}

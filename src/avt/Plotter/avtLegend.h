@@ -46,6 +46,7 @@
 
 
 #include <ref_ptr.h>
+#include <vectortypes.h>
 
 
 class  vtkActor2D;
@@ -96,6 +97,10 @@ class  vtkRenderer;
 //    Hank Childs, Fri Jan 23 15:36:35 PST 2009
 //    Added min/max member.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:18:11 PDT 2009
+//    Added methods and ivars that allow more user control of tick marks
+//    and tick labels.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
@@ -124,8 +129,8 @@ class PLOTTER_API  avtLegend
 
     virtual void                  SetTitleVisibility(bool);
     virtual bool                  GetTitleVisibility() const;
-    virtual void                  SetLabelVisibility(bool);
-    virtual bool                  GetLabelVisibility() const;
+    virtual void                  SetLabelVisibility(int);
+    virtual int                   GetLabelVisibility() const;
     virtual void                  SetMinMaxVisibility(bool);
     virtual bool                  GetMinMaxVisibility() const;
     virtual void                  SetNumberFormat(const char *);
@@ -134,7 +139,8 @@ class PLOTTER_API  avtLegend
     virtual void                  SetBoundingBoxVisibility(bool);
     virtual void                  SetBoundingBoxColor(const double *);
     virtual void                  SetOrientation(LegendOrientation);
-    virtual void                  SetFont(int family, bool bold, bool italic, bool shadow);
+    virtual void                  SetFont(int family, bool bold, bool italic, 
+                                          bool shadow);
 
     virtual void                  SetForegroundColor(const double [3]);
     virtual void                  SetFontHeight(double);
@@ -146,6 +152,16 @@ class PLOTTER_API  avtLegend
     void                          SetMessage(const char *);
     void                          SetGlobalVisibility(bool);
 
+    virtual void                  SetNumTicks(int);
+    virtual void                  SetUseSuppliedLabels(bool);
+    virtual bool                  GetUseSuppliedLabels(void) { return false;}
+    virtual void                  SetMinMaxInclusive(bool);
+    virtual void                  SetSuppliedValues(const doubleVector &);
+    virtual void                  SetSuppliedLabels(const stringVector &);
+    virtual void                  GetCalculatedLabels(doubleVector &);
+    virtual void                  GetCalculatedLabels(stringVector &);
+    virtual int                   GetType(void) { return 2; }
+   
     void                          Update();
 
   protected:
