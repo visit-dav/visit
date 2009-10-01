@@ -315,7 +315,7 @@ EOF
 }
 
 # set up the environment
-PATH=/usr/common/usg/bin:/usr/common/mss/bin:/usr/common/pbs/bin:/usr/common/homes/m/miller86/bin:/usr/common/mss/bin:/usr/common/usg/bin:/usr/local/bin:/usr/bin/X11:/usr/bin:/bin:/usr/lib/java/jre/bin:.
+PATH=/usr/common/usg/bin:/usr/common/mss/bin:/usr/common/pbs/bin:/global/u1/m/miller86/bin:/usr/common/mss/bin:/usr/common/usg/bin:/usr/local/bin:/usr/bin/X11:/usr/bin:/bin:/usr/lib/java/jre/bin:.
 export PATH
 
 optError=0
