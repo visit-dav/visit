@@ -40,6 +40,9 @@
 #    Kathleen Bonnell, Wed May  5 08:11:53 PDT 2004
 #    Modified slice atts to get same picture since defaults have changed. 
 #
+#    Kathleen Bonnell, Mon Sep 14 15:01:25 PDT 2009
+#    Removed deprecated annotation settings.
+#
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
@@ -91,139 +94,139 @@ a.legendInfoFlag = 1
 ##
 
 # Turn off the 2D axes
-a.axesFlag2D = 0
+a.axes2D.visible = 0
 SetAnnotationAttributes(a)
 Test("annot2d_01")
 
-a.axesFlag2D = 1
+a.axes2D.visible = 1
 
 # Test 2D axis labels
-a.xAxisLabels2D = 0
-a.yAxisLabels2D = 0
+a.axes2D.xAxis.label.visible = 0
+a.axes2D.yAxis.label.visible = 0
 SetAnnotationAttributes(a)
 Test("annot2d_02")
 
-a.xAxisLabels2D = 1
-a.yAxisLabels2D = 0
+a.axes2D.xAxis.label.visible = 1
+a.axes2D.yAxis.label.visible = 0
 SetAnnotationAttributes(a)
 Test("annot2d_03")
 
-a.xAxisLabels2D = 0
-a.yAxisLabels2D = 1
+a.axes2D.xAxis.label.visible = 0
+a.axes2D.yAxis.label.visible = 1
 SetAnnotationAttributes(a)
 Test("annot2d_04")
 
-a.xAxisLabels2D = 1
-a.yAxisLabels2D = 1
+a.axes2D.xAxis.label.visible = 1
+a.axes2D.yAxis.label.visible = 1
 
 # Test 2D axis titles
-a.xAxisTitle2D = 0
-a.yAxisTitle2D = 0
+a.axes2D.xAxis.title.visible = 0
+a.axes2D.yAxis.title.visible = 0
 SetAnnotationAttributes(a)
 Test("annot2d_05")
 
-a.xAxisTitle2D = 1
-a.yAxisTitle2D = 0
+a.axes2D.xAxis.title.visible = 1
+a.axes2D.yAxis.title.visible = 0
 SetAnnotationAttributes(a)
 Test("annot2d_06")
 
-a.xAxisTitle2D = 0
-a.yAxisTitle2D = 1
+a.axes2D.xAxis.title.visible = 0
+a.axes2D.yAxis.title.visible = 1
 SetAnnotationAttributes(a)
 Test("annot2d_07")
 
-a.xAxisTitle2D = 1
-a.yAxisTitle2D = 1
+a.axes2D.xAxis.title.visible = 1
+a.axes2D.yAxis.title.visible = 1
 
 # Test 2D gridlines
-a.xGridLines2D = 1
-a.yGridLines2D = 0
+a.axes2D.xAxis.grid = 1
+a.axes2D.yAxis.grid = 0
 SetAnnotationAttributes(a)
 Test("annot2d_08")
 
-a.xGridLines2D = 0
-a.yGridLines2D = 1
+a.axes2D.xAxis.grid = 0
+a.axes2D.yAxis.grid = 1
 SetAnnotationAttributes(a)
 Test("annot2d_09")
 
-a.xGridLines2D = 1
-a.yGridLines2D = 1
+a.axes2D.xAxis.grid = 1
+a.axes2D.yAxis.grid = 1
 SetAnnotationAttributes(a)
 Test("annot2d_10")
 
-a.xGridLines2D = 0
-a.yGridLines2D = 0
+a.axes2D.xAxis.grid = 0
+a.axes2D.yAxis.grid = 0
 
 # Test auto set ticks off
-a.axesAutoSetTicks2D = 0
-a.xMajorTickMinimum2D = -8.
-a.xMajorTickMaximum2D = 8.
-a.xMajorTickSpacing2D = 4.
-a.xMinorTickSpacing2D = 1.
-a.yMajorTickMinimum2D = -9.
-a.yMajorTickMaximum2D = 9.
-a.yMajorTickSpacing2D = 3.
-a.yMinorTickSpacing2D = 1.
-a.axesTicks2D = 4 # All
-a.xGridLines2D = 1
-a.yGridLines2D = 1
+a.axes2D.autoSetTicks = 0
+a.axes2D.xAxis.tickMarks.majorMinimum = -8.
+a.axes2D.xAxis.tickMarks.majorMaximum = 8.
+a.axes2D.xAxis.tickMarks.majorSpacing = 4.
+a.axes2D.xAxis.tickMarks.minorSpacing = 1.
+a.axes2D.yAxis.tickMarks.majorMinimum = -9.
+a.axes2D.yAxis.tickMarks.majorMaximum = 9.
+a.axes2D.yAxis.tickMarks.majorSpacing = 3.
+a.axes2D.yAxis.tickMarks.minorSpacing = 1.
+a.axes2D.tickAxes = a.axes2D.All  # All
+a.axes2D.xAxis.grid = 1
+a.axes2D.yAxis.grid = 1
 SetAnnotationAttributes(a)
 Test("annot2d_11")
 
-a.axesAutoSetTicks2D = 1
-a.axesTicks2D = 3 # BottomLeft
-a.xGridLines2D = 0
-a.yGridLines2D = 0
+a.axes2D.autoSetTicks = 1
+a.axes2D.tickAxes = a.axes2D.BottomLeft # BottomLeft
+a.axes2D.xAxis.grid = 0
+a.axes2D.yAxis.grid = 0
 
 # Test tick locations
-a.axesTickLocation2D = 0 # Inside
+a.axes2D.tickLocation = a.axes2D.Inside # Inside
 SetAnnotationAttributes(a)
 Test("annot2d_12")
 
-a.axesTickLocation2D = 2 # Both
+a.axes2D.tickLocation = a.axes2D.Both # Both
 SetAnnotationAttributes(a)
 Test("annot2d_13")
 
-a.axesTickLocation2D = 1 # Outside
+a.axes2D.tickLocation = 1 # Outside
 
 # Test font sizes
-a.xLabelFontHeight2D = 0.03
-a.yLabelFontHeight2D = 0.03
-a.xTitleFontHeight2D = 0.03
-a.yTitleFontHeight2D = 0.03
+a.axes2D.xAxis.label.font.scale = 1.5
+a.axes2D.yAxis.label.font.scale = 1.5
+a.axes2D.xAxis.title.font.scale = 1.5
+a.axes2D.yAxis.title.font.scale = 1.5
 SetAnnotationAttributes(a)
 Test("annot2d_14")
 
-a.xLabelFontHeight2D = 0.04
-a.yLabelFontHeight2D = 0.04
-a.xTitleFontHeight2D = 0.04
-a.yTitleFontHeight2D = 0.04
+a.axes2D.xAxis.label.font.scale = 2
+a.axes2D.yAxis.label.font.scale = 2 
+a.axes2D.xAxis.title.font.scale = 2 
+a.axes2D.yAxis.title.font.scale = 2 
 SetAnnotationAttributes(a)
 Test("annot2d_15")
 
-a.xLabelFontHeight2D = 0.02
-a.yLabelFontHeight2D = 0.02
-a.xTitleFontHeight2D = 0.02
-a.yTitleFontHeight2D = 0.02
+a.axes2D.xAxis.label.font.scale = 1
+a.axes2D.yAxis.label.font.scale = 1
+a.axes2D.xAxis.title.font.scale = 1 
+a.axes2D.yAxis.title.font.scale = 1
 
 # Test labeling locations
-a.axesTicks2D = 0 # Off
+a.axes2D.tickAxes = a.axes2D.Off 
 SetAnnotationAttributes(a)
 Test("annot2d_16")
 
-a.axesTicks2D = 1 # Botton
+a.axes2D.tickAxes = a.axes2D.Bottom
 SetAnnotationAttributes(a)
 Test("annot2d_17")
 
-a.axesTicks2D = 2 # Left
+a.axes2D.tickAxes = a.axes2D.Left 
 SetAnnotationAttributes(a)
 Test("annot2d_18")
 
-a.axesTicks2D = 4 # All
+a.axes2D.tickAxes = a.axes2D.All
 SetAnnotationAttributes(a)
 Test("annot2d_19")
 
-a.axesTicks2D = 3 # BottomLeft
+a.axes2D.tickAxes = a.axes2D.BottomLeft
 
 # Test how the 2D flags play together
 # Especially with gridlines on.  Changing
@@ -238,46 +241,46 @@ ResetView()
 
 # Turn on y axis labels, x grid lines
 # and turn off ticks.
-a.xAxisLabels2D = 0
-a.yAxisLabels2D = 1
-a.xGridLines2D = 1
-a.yGridLines2D = 0
-a.axesTicks2D = 0 # Off
+a.axes2D.xAxis.label.visible = 0
+a.axes2D.yAxis.label.visible = 1
+a.axes2D.xAxis.grid = 1
+a.axes2D.yAxis.grid = 0
+a.axes2D.tickAxes = a.axes2D.Off
 SetAnnotationAttributes(a)
 Test("annot2d_20")
 
 # Turn on y axis labels, bottom ticks marks,
 # and x and y gridlines 
-a.xGridLines2D = 1
-a.yGridLines2D = 1
-a.axesTicks2D = 1 # Bottom
-a.axesTickLocation2D = 1 # Outside
-a.xAxisLabels2D = 0
-a.yAxisLabels2D = 1
+a.axes2D.xAxis.grid = 1
+a.axes2D.yAxis.grid = 1
+a.axes2D.tickAxes = a.axes2D.Bottom
+a.axes2D.tickLocation = a.axes2D.Outside
+a.axes2D.xAxis.label.visible = 0
+a.axes2D.yAxis.label.visible = 1
 SetAnnotationAttributes(a)
 Test("annot2d_21")
 
 # Test how the gridlines work by themselves 
 # Turn off labels and ticks, 
-a.axesTicks2D = 0 # Off
-a.xAxisLabels2D = 0
-a.yAxisLabels2D = 0
+a.axes2D.tickAxes = a.axes2D.Off
+a.axes2D.xAxis.label.visible = 0
+a.axes2D.yAxis.label.visible = 0
 SetAnnotationAttributes(a)
 Test("annot2d_22")
 
 # Test the 2d axes line width.
-a.axesTicks2D = 3 # Bottom-Left
-a.axesTickLocation2D = 1 # Outside
-a.axesLineWidth2D = 2
+a.axes2D.tickAxes = a.axes2D.BottomLeft
+a.axes2D.tickLocation = a.axes2D.Outside
+a.axes2D.lineWidth = 2
 SetAnnotationAttributes(a)
 Test("annot2d_23")
 
 # Test axis labeling with a narrow window.
-a.xAxisLabels2D = 1
-a.yAxisLabels2D = 1
-a.xGridLines2D = 0
-a.yGridLines2D = 0
-a.axesLineWidth2D = 0
+a.axes2D.xAxis.label.visible = 1
+a.axes2D.yAxis.label.visible = 1
+a.axes2D.xAxis.grid = 0
+a.axes2D.yAxis.grid = 0
+a.axes2D.lineWidth = 0
 SetAnnotationAttributes(a)
 
 v = View2DAttributes()
@@ -317,87 +320,87 @@ SetAnnotationAttributes(a)
 Test("annot3d_01")
 
 # Turn off the bounding box
-a.triadFlag = 1
-a.bboxFlag = 0
+a.axes3D.triadFlag = 1
+a.axes3D.bboxFlag = 0
 SetAnnotationAttributes(a)
 Test("annot3d_02")
 
 # Turn some axes off
-a.bboxFlag = 1
-a.xAxisLabels = 0
-a.yAxisLabels = 1
-a.zAxisLabels = 0
-a.xAxisTicks = 0
-a.yAxisTicks = 1
-a.zAxisTicks = 0
+a.axes3D.bboxFlag = 1
+a.axes3D.xAxis.label.visible = 0
+a.axes3D.yAxis.label.visible = 1
+a.axes3D.zAxis.label.visible = 0
+a.axes3D.xAxis.tickMarks.visible = 0
+a.axes3D.yAxis.tickMarks.visible = 1
+a.axes3D.zAxis.tickMarks.visible = 0
 SetAnnotationAttributes(a)
 Test("annot3d_03")
 
 # Turn on all gridlines
-a.xAxisLabels = 1
-a.yAxisLabels = 1
-a.zAxisLabels = 1
-a.xAxisTicks = 1
-a.yAxisTicks = 1
-a.zAxisTicks = 1
-a.xGridLines = 1
-a.yGridLines = 1
-a.zGridLines = 1
+a.axes3D.xAxis.label.visible = 1
+a.axes3D.yAxis.label.visible = 1
+a.axes3D.zAxis.label.visible = 1
+a.axes3D.xAxis.tickMarks.visible = 1
+a.axes3D.yAxis.tickMarks.visible = 1
+a.axes3D.zAxis.tickMarks.visible = 1
+a.axes3D.xAxis.grid = 1
+a.axes3D.yAxis.grid = 1
+a.axes3D.zAxis.grid = 1
 SetAnnotationAttributes(a)
 Test("annot3d_04")
 
 # Turn off labels and ticks
 # want to ensure gridlines work alone
-a.xAxisLabels = 0
-a.yAxisLabels = 0
-a.zAxisLabels = 0
-a.xAxisTicks = 0
-a.yAxisTicks = 0
-a.zAxisTicks = 0
+a.axes3D.xAxis.label.visible = 0
+a.axes3D.yAxis.label.visible = 0
+a.axes3D.zAxis.label.visible = 0
+a.axes3D.xAxis.tickMarks.visible = 0
+a.axes3D.yAxis.tickMarks.visible = 0
+a.axes3D.zAxis.tickMarks.visible = 0
 SetAnnotationAttributes(a)
 Test("annot3d_05")
 
 # Mix up which ticks, labels, 
 # or gridlines are turned on
-a.xAxisLabels = 1
-a.yAxisLabels = 0
-a.zAxisLabels = 0
-a.xAxisTicks = 0
-a.yAxisTicks = 1
-a.zAxisTicks = 0
-a.xGridLines = 0
-a.yGridLines = 0
-a.zGridLines = 1
+a.axes3D.xAxis.label.visible = 1
+a.axes3D.yAxis.label.visible = 0
+a.axes3D.zAxis.label.visible = 0
+a.axes3D.xAxis.tickMarks.visible = 0
+a.axes3D.yAxis.tickMarks.visible = 1
+a.axes3D.zAxis.tickMarks.visible = 0
+a.axes3D.xAxis.grid = 0
+a.axes3D.yAxis.grid = 0
+a.axes3D.zAxis.grid = 1
 SetAnnotationAttributes(a)
 Test("annot3d_06")
 
-a.xAxisLabels = 1
-a.yAxisLabels = 1
-a.zAxisLabels = 1
-a.xAxisTicks = 1
-a.yAxisTicks = 1
-a.zAxisTicks = 1
-a.xGridLines = 0
-a.yGridLines = 0
-a.zGridLines = 0
+a.axes3D.xAxis.label.visible = 1
+a.axes3D.yAxis.label.visible = 1
+a.axes3D.zAxis.label.visible = 1
+a.axes3D.xAxis.tickMarks.visible = 1
+a.axes3D.yAxis.tickMarks.visible = 1
+a.axes3D.zAxis.tickMarks.visible = 1
+a.axes3D.xAxis.grid = 0
+a.axes3D.yAxis.grid = 0
+a.axes3D.zAxis.grid = 0
 
 # Change the 3D axis type
-a.axesType = 4 # StaticEdges
+a.axes3D.axesType = a.axes3D.StaticEdges
 SetAnnotationAttributes(a)
 Test("annot3d_07")
 
 # Change the 3D axis type
-a.axesType = 1 # FurthestTriad
+a.axes3D.axesType = a.axes3D.FurthestTriad
 SetAnnotationAttributes(a)
 Test("annot3d_08")
 
 # Change the 3D axis type
-a.axesType = 2 # OutsideEdges
+a.axes3D.axesType = a.axes3D.OutsideEdges
 SetAnnotationAttributes(a)
 Test("annot3d_09")
 
 # Change the 3D axis type
-a.axesType = 3 # StaticTriad
+a.axes3D.axesType = a.axes3D.StaticTriad
 SetAnnotationAttributes(a)
 Test("annot3d_10")
 
