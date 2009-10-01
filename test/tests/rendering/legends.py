@@ -44,6 +44,11 @@
 #    Hank Childs, Sun Jan 25 15:07:31 PST 2009
 #    Turn off minmaxLabels as well.
 #
+#    Kathleen Bonnell, Wed Sep 23 10:13:13 PDT 2009
+#    Add TestLegendProperties2, to test new capability of modifiying num tics,
+#    and setting numeric values and text labels for tics in liu of the 
+#    automatically generated ones.
+#
 # ----------------------------------------------------------------------------
 
 # Test the Subset plot with some subsets turned off, and single-color on.
@@ -346,9 +351,110 @@ def TestLegendCopying(a):
     DeleteAllPlots()
     DeleteWindow()
     text2d.Delete()
+    GetAnnotationObject("text_obj").Delete()
     DeleteAllPlots()
 
 
+def TestLegendTics():
+    TestSection("Test setting legend tics")
+    OpenDatabase("../data/curv2d.silo")
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+ 
+    # change number of ticks
+    legend.numTicks = 3
+    Test("legends_38")
+  
+    # turn off use of min and max as tick values
+    legend.minMaxInclusive = 0
+    Test("legends_39")
+
+    legend.numTicks = 1
+    Test("legends_40")
+
+    legend.minMaxInclusive = 1
+    Test("legends_41")
+
+    legend.numTicks = 2
+    Test("legends_42")
+
+    legend.minMaxInclusive = 0
+    Test("legends_43")
+
+    legend.minMaxInclusive = 1
+    # turn off automatic control of ticks so labels can be added
+    legend.controlTicks = 0
+    # default values should be what was calculated
+    Test("legends_44")
+
+    # supply some labels
+    legend.suppliedLabels = ("", "second", "", "fourth", "")
+    # Turn on drawing of text labels
+    legend.drawLabels = legend.Both
+    Test("legends_45")
+
+    # only labels, no values
+    legend.drawLabels = legend.Labels
+    Test("legends_46")
+
+    # supply different values -- don't need to be in order
+    # show that values out-of-range won't be used
+    legend.suppliedValues = (2.2, 4.5, 3.8, 1.0, 5.7)
+    legend.suppliedLabels = ("this", "that", "the other", "noshow1", "noshow2")
+    legend.drawLabels = legend.Values
+    Test("legends_47")
+    legend.drawLabels = legend.Both
+    Test("legends_48")
+    legend.drawLabels = legend.Labels
+    Test("legends_49")
+
+    legend.orientation = legend.HorizontalTop
+    Test("legends_50")
+    legend.orientation = legend.HorizontalBottom
+    Test("legends_51")
+    legend.orientation = legend.VerticalLeft
+    Test("legends_52")
+
+    DeleteAllPlots()
+
+    # demonstrate adding labels to 'levels' type legends
+    AddPlot("FilledBoundary", "mat1")
+    DrawPlots()
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+
+    legend.controlTicks = 0
+    Test("legends_53")
+    legend.drawLabels = legend.Both
+    legend.suppliedLabels = ("red", "green", "blue");
+    Test("legends_54")
+    legend.drawLabels = legend.Labels
+    Test("legends_55")
+
+    DeleteAllPlots()
+    AddPlot("Contour", "p")
+    contourAtts = ContourAttributes()
+    contourAtts.contourNLevels = 6
+    SetPlotOptions(contourAtts)
+    DrawPlots()
+
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    Test("legends_56")
+    nf = legend.numberFormat
+    legend.numberFormat = "%# -0.2e"     
+    Test("legends_57")
+    legend.numberFormat = nf
+    legend.controlTicks = 0
+    legend.drawLabels = legend.Both
+    legend.suppliedLabels = ("one", "", "two", "", "three")
+    Test("legends_58")
+    legend.drawLabels = legend.Labels
+    Test("legends_59")
+    
+    #clean up
+    DeleteAllPlots()
+    
 def main():
     # Turn off all annotation except the legend.
     a = AnnotationAttributes()
@@ -361,6 +467,7 @@ def main():
     TestCurveLegend(a)
     TestLegendProperties(a)
     TestLegendCopying(a)
+    TestLegendTics()
 
     # reset DatabaseInfo for future tests.
     a.databaseInfoFlag = 0
