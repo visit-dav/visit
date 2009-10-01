@@ -1326,6 +1326,9 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
 //   Brad Whitlock, Thu Jan  8 16:00:43 PST 2009
 //   I added code to update the plot information.
 //
+//   Kathleen Bonnell, Thu Oct  1 14:40:20 PDT 2009
+//   Update annotation object lists when updating window.
+//
 // ****************************************************************************
 
 void
@@ -1372,6 +1375,7 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
     if(updateTheWindow)
     {
         UpdateWindow(true);
+        ViewerWindowManager::Instance()->UpdateAnnotationObjectList(true);
 
         //
         // Update the plot list so that the color changes on the plots.

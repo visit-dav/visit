@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVerticalScalarBarWithOpacityActor.h,v $
+  Module:    $RCSfile: vtkVisItScalarBarWithOpacityActor.h,v $
   Language:  C++
   Date:      $Date: 2000/11/03 14:10:27 $
   Version:   $Revision: 1.28 $
@@ -38,18 +38,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-// .NAME vtkVerticalScalarBarWithOpacityActor - Create a scalar bar with labels, title and 
+// .NAME vtkVisItScalarBarWithOpacityActor - Create a scalar bar with labels, title and 
 // range
 // .SECTION Description
-// vtkVerticalScalarBarWithOpacityActor creates a scalar bar with annotation text. A scalar
+// vtkVisItScalarBarWithOpacityActor creates a scalar bar with annotation text. A scalar
 // bar is a legend that indicates to the viewer the correspondence between
 // color value and data value. The legend consists of a rectangular bar 
 // made of rectangular pieces each colored a constant value. Since 
-// vtkVerticalScalarBarWithOpacityActor is a subclass of vtkActor2D, it is drawn in the 
+// vtkVisItScalarBarWithOpacityActor is a subclass of vtkActor2D, it is drawn in the 
 // image plane (i.e., in the renderer's viewport) on top of the 3D graphics 
 // window.
 //
-// To use vtkVerticalScalarBarWithOpacityActor you must associate a vtkScalarsToColors (or
+// To use vtkVisItScalarBarWithOpacityActor you must associate a vtkScalarsToColors (or
 // subclass) with it. The lookup table defines the colors and the
 // range of scalar values used to map scalar data.  Typically, the
 // number of colors shown in the scalar bar is not equal to the number
@@ -64,40 +64,40 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // vtkActor2D::SetPosition() method (by default the scalar bar is
 // position on the right side of the viewport).  Other features include 
 // the ability control the format (print style) with which to print the 
-// labels on the scalar bar. Also, the vtkVerticalScalarBarWithOpacityActor's property 
+// labels on the scalar bar. Also, the vtkVisItScalarBarWithOpacityActor's property 
 // is applied to the scalar bar and annotation (including color, layer, and
 // compositing operator).  
 
 // .SECTION See Also
-// vtkActor2D vtkTextMapper vtkPolyDataMapper2D vtkVerticalScalarBarActor
+// vtkActor2D vtkTextMapper vtkPolyDataMapper2D vtkVisItScalarBarActor
 
-#ifndef __vtkVerticalScalarBarWithOpacityActor_h
-#define __vtkVerticalScalarBarWithOpacityActor_h
+#ifndef __vtkVisItScalarBarWithOpacityActor_h
+#define __vtkVisItScalarBarWithOpacityActor_h
 #include <rendering_visit_vtk_exports.h>
-#include <vtkVerticalScalarBarActor.h>
+#include <vtkVisItScalarBarActor.h>
 
-class RENDERING_VISIT_VTK_API vtkVerticalScalarBarWithOpacityActor : public vtkVerticalScalarBarActor
+class RENDERING_VISIT_VTK_API vtkVisItScalarBarWithOpacityActor : public vtkVisItScalarBarActor
 {
 public:
-  vtkTypeMacro(vtkVerticalScalarBarWithOpacityActor,vtkVerticalScalarBarActor);
+  vtkTypeMacro(vtkVisItScalarBarWithOpacityActor,vtkVisItScalarBarActor);
 
   // Description:
   // Instantiate object. 
-  static vtkVerticalScalarBarWithOpacityActor *New();
+  static vtkVisItScalarBarWithOpacityActor *New();
 
   void SetLegendOpacities(const unsigned char *opacity);
 
 protected:
-  vtkVerticalScalarBarWithOpacityActor();
-  virtual ~vtkVerticalScalarBarWithOpacityActor();
+  vtkVisItScalarBarWithOpacityActor();
+  virtual ~vtkVisItScalarBarWithOpacityActor();
 
   virtual void BuildColorBar(vtkViewport *);
 
   unsigned char opacities[256];
 
 private:
-  vtkVerticalScalarBarWithOpacityActor(const vtkVerticalScalarBarWithOpacityActor&);
-  void operator=(const vtkVerticalScalarBarWithOpacityActor&);
+  vtkVisItScalarBarWithOpacityActor(const vtkVisItScalarBarWithOpacityActor&);
+  void operator=(const vtkVisItScalarBarWithOpacityActor&);
 };
 
 #endif

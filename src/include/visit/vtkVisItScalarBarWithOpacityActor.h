@@ -1,0 +1,1 @@
+../../visit_vtk/rendering/vtkVisItScalarBarWithOpacityActor.h

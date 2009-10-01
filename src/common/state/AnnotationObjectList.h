@@ -40,6 +40,7 @@
 #define ANNOTATIONOBJECTLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class AnnotationObject;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class AnnotationObject;
 class STATE_API AnnotationObjectList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AnnotationObjectList();
     AnnotationObjectList(const AnnotationObjectList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AnnotationObjectList(private_tmfs_t tmfs);
+    AnnotationObjectList(const AnnotationObjectList &obj, private_tmfs_t tmfs);
+public:
     virtual ~AnnotationObjectList();
 
     virtual AnnotationObjectList& operator = (const AnnotationObjectList &obj);
     virtual bool operator == (const AnnotationObjectList &obj) const;
     virtual bool operator != (const AnnotationObjectList &obj) const;
+private:
+    void Init();
+    void Copy(const AnnotationObjectList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -107,13 +118,15 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     bool RemoveAnnotation(const std::string &);
     std::string GetNewObjectName() const;
     int IndexForName(const std::string &name) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_annotation = 0
+        ID_annotation = 0,
+        ID__LAST
     };
 
 protected:
@@ -123,6 +136,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ANNOTATIONOBJECTLIST_TMFS "a*"
 
 #endif

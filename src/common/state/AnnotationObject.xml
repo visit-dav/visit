@@ -67,7 +67,20 @@
     <Field name="intAttribute1" label="Integer attribute 1" type="int">
       0
     </Field>
+    <Field name="intAttribute2" label="Integer attribute 2" type="int">
+      0
+    </Field>
+    <Field name="intAttribute3" label="Integer attribute 3" type="int">
+      0
+    </Field>
+    <Field name="doubleVector1" label="Double Vector 1" type="doubleVector">
+    </Field>
+    <Field name="stringVector1" label="String Vector 1" type="stringVector">
+    </Field>
+    <Field name="stringVector2" label="String Vector 2" type="stringVector">
+    </Field>
     <Function name="SetFromNode" user="false" member="true">
-    
+    </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
   </Attribute>

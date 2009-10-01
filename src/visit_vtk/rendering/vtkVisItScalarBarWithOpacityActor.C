@@ -38,15 +38,15 @@
 
 //=========================================================================
 //
-//  Class:     vtkVerticalScalarBarWithOpacityActor
+//  Class:     vtkVisItScalarBarWithOpacityActor
 //  
 //  Purpose:
-//    Derived type of vtkVerticalScalarBarActor. 
+//    Derived type of vtkVisItScalarBarActor. 
 //    Creates a legend that indicates to the viewer the correspondence between
 //    color/opacity values and data value. 
 //
 //=========================================================================
-#include "vtkVerticalScalarBarWithOpacityActor.h"
+#include "vtkVisItScalarBarWithOpacityActor.h"
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -64,17 +64,17 @@
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 //------------------------------------------------------------------------------
 
-vtkStandardNewMacro(vtkVerticalScalarBarWithOpacityActor);
+vtkStandardNewMacro(vtkVisItScalarBarWithOpacityActor);
 
 // Instantiate this object
-vtkVerticalScalarBarWithOpacityActor::vtkVerticalScalarBarWithOpacityActor() :
-    vtkVerticalScalarBarActor()
+vtkVisItScalarBarWithOpacityActor::vtkVisItScalarBarWithOpacityActor() :
+    vtkVisItScalarBarActor()
 {
    for(int i = 0; i < 256; ++i)
        opacities[i] = 255;
 }
 
-vtkVerticalScalarBarWithOpacityActor::~vtkVerticalScalarBarWithOpacityActor()
+vtkVisItScalarBarWithOpacityActor::~vtkVisItScalarBarWithOpacityActor()
 {
    // nothing here
 }
@@ -111,7 +111,7 @@ vtkVerticalScalarBarWithOpacityActor::~vtkVerticalScalarBarWithOpacityActor()
 //    text on top or bottom.
 // ****************************************************************************
 
-void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
+void vtkVisItScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 {
   int *viewSize = viewport->GetSize();
 
@@ -162,7 +162,7 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
   // Determine the number of colors in the color bar.
   //
   int numColors, numLabels; 
-  if ( this->UseDefinedLabels && !this->definedLabels.empty() )
+  if ( this->Type == VTK_DISCRETE && !this->definedLabels.empty() )
     {
     numColors = this->definedLabels.size();
     if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
@@ -244,7 +244,7 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
           nextOpacityIndex = 255;
 
       // Get the RGBA color for the i'th index.
-      if (this->UseDefinedLabels && !this->definedLabels.empty() )
+      if (this->Type == VTK_DISCRETE && !this->definedLabels.empty() )
       {
           rgba = this->LookupTable->MapValue((float) i);
       }
@@ -381,7 +381,7 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
   } // loop on numColors
 
   this->BuildTics(barOrigin, barWidth, barHeight, numLabels);
-  if (this->LabelVisibility)
+  if (this->DrawMode != DRAW_NO_LABELS)
     {
     this->BuildLabels(viewport, barOrigin, barWidth, barHeight, numLabels);
     }
@@ -389,7 +389,7 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 } // BuildColorBar
 
 // ****************************************************************************
-// Method: vtkVerticalScalarBarWithOpacityActor::SetLegendOpacities
+// Method: vtkVisItScalarBarWithOpacityActor::SetLegendOpacities
 //
 // Purpose: 
 //   Sets the opacities used for drawing the legend.
@@ -408,7 +408,7 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 // ****************************************************************************
 
 void
-vtkVerticalScalarBarWithOpacityActor::SetLegendOpacities(
+vtkVisItScalarBarWithOpacityActor::SetLegendOpacities(
     const unsigned char *opacity)
 {
     for(int i = 0; i < 256; ++i)

@@ -792,6 +792,9 @@ VisWinAnnotations::SetAnnotationObjectOptions(const AnnotationObjectList &al)
 //   Brad Whitlock, Tue Mar 20 13:41:26 PST 2007
 //   Set the annotation name.
 //
+//   Kathleen Bonnell, Thu Oct  1 14:36:42 PDT 2009
+//   Grab some values from legend objects to send back to gui/cli.
+// 
 // ****************************************************************************
 
 void
@@ -799,11 +802,41 @@ VisWinAnnotations::UpdateAnnotationObjectList(AnnotationObjectList &al)
 {
     al.ClearAnnotations();
 
+    std::vector<avtActor*>::iterator it;
     for(int i = 0; i < annotations.size(); ++i)
     {
         AnnotationObject annot;
         annotations[i]->GetOptions(annot);
         annot.SetObjectName(annotations[i]->GetName());
+        
+        for (it = actorList.begin(); it != actorList.end(); it++)
+        {
+            if (annotations[i]->GetName() == (*it)->GetActorName())
+            {
+                avtLegend_p legend = (*it)->GetLegend();
+                if (*legend != NULL)
+                {
+                    annot.SetIntAttribute3(legend->GetType());
+                    if (legend->GetType() == 0 && 
+                        legend->GetCurrentlyDrawn() &&
+                        !legend->GetUseSuppliedLabels())
+                    {
+                        doubleVector v;
+                        legend->GetCalculatedLabels(v);
+                        annot.SetDoubleVector1(v);
+                    }
+                    else if (legend->GetType() == 1 &&
+                             legend->GetCurrentlyDrawn())
+                    {
+                        stringVector s;
+                        legend->GetCalculatedLabels(s);
+                        annot.SetStringVector2(s);
+                    }
+                    break;
+                }
+            }
+        }
+
         al.AddAnnotation(annot);
     }
 }

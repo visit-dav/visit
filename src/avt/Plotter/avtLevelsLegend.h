@@ -50,7 +50,7 @@
 #include <string>
 #include <maptypes.h>
 
-class  vtkVerticalScalarBarActor;
+class  vtkVisItScalarBarActor;
 class  vtkLookupTable;
 
 
@@ -108,6 +108,10 @@ class  vtkLookupTable;
 //    Hank Childs, Fri Jan 23 15:43:01 PST 2009
 //    Added min/max visibility.
 //
+//    Kathleen Bonnell, Thu Oct  1 14:18:11 PDT 2009
+//    Added methods and ivars that allow more user control of tick marks
+//    and tick labels.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsLegend : public avtLegend
@@ -120,8 +124,8 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
 
     virtual void    SetTitleVisibility(bool);
     virtual bool    GetTitleVisibility() const;
-    virtual void    SetLabelVisibility(bool);
-    virtual bool    GetLabelVisibility() const;
+    virtual void    SetLabelVisibility(int);
+    virtual int     GetLabelVisibility() const;
     virtual void    SetMinMaxVisibility(bool);
     virtual bool    GetMinMaxVisibility() const;
 
@@ -142,6 +146,12 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     void            SetVarRangeVisibility(const int);
     void            SetVarRange(double min, double max);
 
+    virtual void    SetUseSuppliedLabels(bool);
+    virtual bool    GetUseSuppliedLabels(void); 
+    virtual void    SetSuppliedLabels(const stringVector &);
+    virtual void    GetCalculatedLabels(stringVector &);
+    virtual int     GetType(void) { return 1; }
+
 
   protected:
     double                     min, max;
@@ -151,12 +161,12 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     bool                       setMaxScale;
 
     vtkLookupTable            *lut;
-    vtkVerticalScalarBarActor *sBar;
+    vtkVisItScalarBarActor    *sBar;
 
     int                        barVisibility;
     int                        rangeVisibility;
     bool                       titleVisibility;
-    bool                       labelVisibility;
+    int                        labelVisibility;
     bool                       minmaxVisibility;
 
     virtual void               ChangePosition(double, double);

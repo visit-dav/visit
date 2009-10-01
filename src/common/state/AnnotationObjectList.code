@@ -1,3 +1,41 @@
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: AnnotationObjectList::ProcessOldVersions
+//
+// Purpose: 
+//   This method maps old AnnotationAttributes fields to the 1.9.0 version of
+//   the data node tree for AnnotationAttributes.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Thu Sep 17 10:06:49 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnnotationObjectList::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if (parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("AnnotationObjectList");
+    if (searchNode == 0)
+        return;
+
+    int nChildren = searchNode->GetNumChildren();
+    DataNode **children = searchNode->GetChildren();
+
+    for (int i = 0; i < nChildren; ++i)
+    {
+        AnnotationObject annot;
+        annot.ProcessOldVersions(children[i], configVersion);
+    }
+}
+
 Function: RemoveAnnotation2
 Declaration: bool RemoveAnnotation(const std::string &);
 Definition:
@@ -331,3 +369,4 @@ Definition:
             annot.SetVisible(visible);
         }
     }
+

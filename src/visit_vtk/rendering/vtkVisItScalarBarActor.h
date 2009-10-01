@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVerticalScalarBarActor.h,v $
+  Module:    $RCSfile: vtkVisItScalarBarActor.h,v $
   Language:  C++
   Date:      $Date: 2000/11/03 14:10:27 $
   Version:   $Revision: 1.28 $
@@ -38,18 +38,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-// .NAME vtkVerticalScalarBarActor - Create a scalar bar with labels, title and 
+// .NAME vtkVisItScalarBarActor - Create a scalar bar with labels, title and 
 // range
 // .SECTION Description
-// vtkVerticalScalarBarActor creates a scalar bar with annotation text. A scalar
+// vtkVisItScalarBarActor creates a scalar bar with annotation text. A scalar
 // bar is a legend that indicates to the viewer the correspondence between
 // color value and data value. The legend consists of a rectangular bar 
 // made of rectangular pieces each colored a constant value. Since 
-// vtkVerticalScalarBarActor is a subclass of vtkActor2D, it is drawn in the 
+// vtkVisItScalarBarActor is a subclass of vtkActor2D, it is drawn in the 
 // image plane (i.e., in the renderer's viewport) on top of the 3D graphics 
 // window.
 //
-// To use vtkVerticalScalarBarActor you must associate a vtkLookupTable (or
+// To use vtkVisItScalarBarActor you must associate a vtkLookupTable (or
 // subclass) with it. The lookup table defines the colors and the
 // range of scalar values used to map scalar data.  Typically, the
 // number of colors shown in the scalar bar is not equal to the number
@@ -64,15 +64,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // vtkActor2D::SetPosition() method (by default the scalar bar is
 // position on the right side of the viewport).  Other features include 
 // the ability control the format (print style) with which to print the 
-// labels on the scalar bar. Also, the vtkVerticalScalarBarActor's property 
+// labels on the scalar bar. Also, the vtkVisItScalarBarActor's property 
 // is applied to the scalar bar and annotation (including color, layer, and
 // compositing operator).  
 
 // .SECTION See Also
 // vtkActor2D vtkTextMapper vtkPolyDataMapper2D
 
-#ifndef __vtkVerticalScalarBarActor_h
-#define __vtkVerticalScalarBarActor_h
+#ifndef __vtkVisItScalarBarActor_h
+#define __vtkVisItScalarBarActor_h
 #include <rendering_visit_vtk_exports.h>
 
 #include <vtkActor2D.h>
@@ -85,12 +85,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <maptypes.h>
 
 #define VTK_MAX_NUMLABELS     100
-
-#define VERTICAL_TEXT_ON_RIGHT     0
-#define VERTICAL_TEXT_ON_LEFT      1
-#define HORIZONTAL_TEXT_ON_TOP     2
-#define HORIZONTAL_TEXT_ON_BOTTOM  3
-
 
 typedef std::vector<std::string> stringVector;
 typedef std::vector<double> doubleVector;
@@ -126,17 +120,22 @@ typedef std::vector<double> doubleVector;
 //    Brad Whitlock, Fri Dec 19 15:44:12 PST 2008
 //    I removed the skew function.
 //
+//    Kathleen Bonnell, Thu Oct  1 13:54:33 PDT 2009
+//    Renamed class, as it is no longer strictly a vertical scalar bar.
+//    Added legend type, and methods/ivars to support user supplied
+//    labels and tick values.  Changed label visibility from on/off to modal,
+//    with 4 modes.
 // ****************************************************************************
 
-class RENDERING_VISIT_VTK_API vtkVerticalScalarBarActor : public vtkActor2D
+class RENDERING_VISIT_VTK_API vtkVisItScalarBarActor : public vtkActor2D
 {
 public:
-  vtkTypeMacro(vtkVerticalScalarBarActor,vtkActor2D);
+  vtkTypeMacro(vtkVisItScalarBarActor,vtkActor2D);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Instantiate object. 
-  static vtkVerticalScalarBarActor *New();
+  static vtkVisItScalarBarActor *New();
   
   // Description:
   // Access the Position instance variable. Reimplemented from base
@@ -192,12 +191,6 @@ public:
   vtkGetMacro(NumberOfLabels, int);
   void SetNumberOfLabelsToDefault(void);
   
-  // Description:
-  // Enable/Disable use of defined labels.
-  vtkSetMacro(UseDefinedLabels, int);
-  vtkGetMacro(UseDefinedLabels, int);
-  vtkBooleanMacro(UseDefinedLabels, int);
-
   // Description:
   // Set/Get user defined labels; 
   void SetDefinedLabels(const stringVector &);
@@ -286,12 +279,6 @@ public:
   vtkBooleanMacro(TitleVisibility, int);
 
   // Description:
-  // Set/Get the visibility of the labels annotation text. 
-  vtkSetMacro(LabelVisibility, int);
-  vtkGetMacro(LabelVisibility, int);
-  vtkBooleanMacro(LabelVisibility, int);
-
-  // Description:
   // Set/Get the visibility of the bounding box.
   vtkSetMacro(BoundingBoxVisibility, int);
   vtkGetMacro(BoundingBoxVisibility, int);
@@ -331,12 +318,57 @@ public:
   vtkGetMacro(ReverseOrder, int);
   vtkBooleanMacro(ReverseOrder, int);
 
-  void SetOrientation(int);
-  int  GetOrientation(void);
+  typedef enum { VERTICAL_TEXT_ON_RIGHT, 
+                 VERTICAL_TEXT_ON_LEFT,
+                 HORIZONTAL_TEXT_ON_TOP,
+                 HORIZONTAL_TEXT_ON_BOTTOM
+               } BarOrientation;
+
+  vtkSetMacro(Orientation, BarOrientation);
+  vtkGetMacro(Orientation, BarOrientation);
+
+  // Description:
+  // Enable/Disable inclusion of min and max in tick values.
+  vtkSetMacro(MinMaxInclusive, int);
+  vtkGetMacro(MinMaxInclusive, int);
+  vtkBooleanMacro(MinMaxInclusive, int);
+
+  // Description:
+  // Enable/Disable use of user-supplied labels.
+  vtkSetMacro(UseSuppliedLabels, int);
+  vtkGetMacro(UseSuppliedLabels, int);
+  vtkBooleanMacro(UseSuppliedLabels, int);
+
+  // Description:
+  // Set/Get user defined labels; 
+  void SetSuppliedLabels(const stringVector &);
+  stringVector &GetSuppliedLabels(void) { return suppliedLabels; }
+  void SetSuppliedValues(const doubleVector &);
+  doubleVector &GetSuppliedValues(void) { return suppliedValues; }
+
+  void GetCalculatedValues(doubleVector &); 
+  void GetCalculatedLabels(stringVector &); 
+
+  typedef enum { DRAW_NO_LABELS,
+                 DRAW_VALUES_ONLY,
+                 DRAW_LABELS_ONLY,
+                 DRAW_VALUES_AND_LABELS
+               } TickLabelDrawMode;
+
+  vtkSetMacro(DrawMode, TickLabelDrawMode);
+  vtkGetMacro(DrawMode, TickLabelDrawMode);
+
+
+  typedef enum { VTK_DISCRETE, 
+                 VTK_CONTINUOUS
+               } LegendType;
+
+  vtkSetMacro(Type, LegendType);
+  vtkGetMacro(Type, LegendType);
 
 protected:
-  vtkVerticalScalarBarActor();
-  virtual ~vtkVerticalScalarBarActor();
+  vtkVisItScalarBarActor();
+  virtual ~vtkVisItScalarBarActor();
 
   void BuildTitle(vtkViewport *);
   void BuildRange(vtkViewport *);
@@ -363,16 +395,11 @@ protected:
   vtkCoordinate *Position2Coordinate;
 
   int TitleVisibility;
-  int LabelVisibility;
   int RangeVisibility;
   int ColorBarVisibility;
   int ReverseOrder;
   int BoundingBoxVisibility;
-  int Orientation;    // 4 possible values
-                      // 0:  vert, text on right
-                      // 1:  vert, text on left
-                      // 2:  horz, text on top
-                      // 3:  horz, text on bottom
+  BarOrientation Orientation;    
 
   double BarWidth;
 
@@ -405,7 +432,6 @@ protected:
   int TitleOkayToDraw;
   int LabelOkayToDraw;
 
-  int UseDefinedLabels;
   int UseSkewScaling;
   int UseLogScaling;
   double SkewFactor;
@@ -416,11 +442,22 @@ protected:
 
   LevelColorMap labelColorMap; 
 
-private:
-  vtkVerticalScalarBarActor(const vtkVerticalScalarBarActor&);
-  void operator=(const vtkVerticalScalarBarActor&);
+  int MinMaxInclusive;
+  int UseSuppliedLabels;
+  stringVector suppliedLabels;
+  doubleVector suppliedValues;
 
-  void AdjustRangeFormat(double, double);
+  doubleVector calculatedValues;
+
+  TickLabelDrawMode DrawMode;
+
+  LegendType Type;
+
+private:
+  vtkVisItScalarBarActor(const vtkVisItScalarBarActor&);
+  void operator=(const vtkVisItScalarBarActor&);
+
+  void VerifySuppliedLabels(void);
 };
 
 

@@ -2,6 +2,8 @@
   <Attribute name="AnnotationObjectList" purpose="Contains a list of AnnotationObjectAttributes" codefile="AnnotationObjectList.code" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="annotation" label="Annotation" type="attVector" subtype="AnnotationObject">
     </Field>
+    <Function name="ProcessOldVersions" user="true" member="true">
+    </Function>
     <Function name="RemoveAnnotation2" user="true" member="true">
     </Function>
     <Function name="GetNewObjectName" user="true" member="true">
