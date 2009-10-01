@@ -93,7 +93,7 @@ class avtparaDIS_tecplotFileFormat : public avtSTSDFileFormat
     virtual const char    *GetType(void)   { return "paraDIS_tecplot"; };
     virtual void           FreeUpResources(void); 
     
-    void AddHexToMesh(vtkUnstructuredGrid *linemesh, vector<int> &hex);
+    void AddCellToMesh(vtkUnstructuredGrid *linemesh, vector<int> &cell);
     vtkDataSet    * GetTecplotMesh(const char *meshname); 
     virtual vtkDataSet    *GetMesh(const char *);
     

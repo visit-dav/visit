@@ -261,17 +261,17 @@ bool avtparaDIS_tecplotFileFormat::PopulateTecplotMetaData(avtDatabaseMetaData *
     =======================================================
   */ 
     debug3 << "Adding Tecplot-style mesh to metadata." << endl; 
-    string meshname = "paraDIS_Tecplot_line_mesh"; 
+    string meshname = "paraDIS_Tecplot_poly_mesh"; 
     avtMeshType meshtype = AVT_UNSTRUCTURED_MESH; 
     int nblocks = 1; /* This is for multi-domain, we are single-domain self-decomposing */ 
     int block_origin = 0; 
     int spatial_dimension = 3; /* 3D space */ 
-    int topological_dimension = 1; /* lines */ 
+    int topological_dimension = 2; /* quads or lines */ 
     //double extents[6] = {0};  /* xx yy zz */
     double *extents = NULL;
     AddMeshToMetaData(md, meshname, meshtype, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
-    
+
     meshname = "paraDIS_Tecplot_point_mesh"; 
     meshtype = AVT_POINT_MESH;
     AddMeshToMetaData(md, meshname, meshtype, extents, nblocks, block_origin,
@@ -283,23 +283,26 @@ bool avtparaDIS_tecplotFileFormat::PopulateTecplotMetaData(avtDatabaseMetaData *
     Variables
     I currently do not see the need to serve up variables for the grid, but it's easy to support in GetTecplotVar() if desired later.
     =======================================================
-  */ 
+  */     
     { 
       int varnum=0;
       string varname; 
       while (varnum < mNumVars) {
         varname = string("paraDIS_Tecplot_line_var_") +  mVariableNames[varnum]; 
         debug3 << "Adding tecplot variable " << varname << " to  grid mesh metadata." << endl;
-        AddScalarVarToMetaData(md, varname.c_str(), "paraDIS_Tecplot_line_mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, varname.c_str(), "paraDIS_Tecplot_poly_mesh", AVT_NODECENT);
         
         varname = string("paraDIS_Tecplot_point_var_") +  mVariableNames[varnum]; 
         debug3 << "Adding tecplot variable " << varname << " to  point mesh metadata." << endl;
         AddScalarVarToMetaData(md, varname.c_str(), "paraDIS_Tecplot_point_mesh", AVT_NODECENT);
         ++varnum; 
       }
+      // add a constant variable to the mesh to allow translucent bounds
+      AddScalarVarToMetaData(md, "constantvalue", "paraDIS_Tecplot_poly_mesh", AVT_NODECENT);
+      
     } // end field data variables
 
-
+    
   md->SetFormatCanDoDomainDecomposition(true);  
   
   return true; 
@@ -435,22 +438,18 @@ avtparaDIS_tecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 }
 
 
-void avtparaDIS_tecplotFileFormat::AddHexToMesh(vtkUnstructuredGrid *linemesh, vector<int> &hex) {
-  vtkIdType nodeIndices[2]; 
+void avtparaDIS_tecplotFileFormat::AddCellToMesh(vtkUnstructuredGrid *linemesh, vector<int> &hex) {
+  vtkIdType nodeIndices[4]; 
   vtkIdType *ip = nodeIndices; // for printing
   unsigned int segnum = 0; 
   if (mFileType == "QUADRILATERAL") {
-    int index = 4, otherIndex; 
+    int index = 4;
     while (index--) {
-      if (index == 0) otherIndex = 3;
-      else otherIndex = index - 1;
-      nodeIndices[0] = hex[index]-1;
-      nodeIndices[1] = hex[otherIndex]-1; 
-      debug5 << "inserting segment: " << arrayToString(ip, 2) << endl; 
-      linemesh->InsertNextCell(VTK_LINE, 2, nodeIndices);
-      ++segnum; 
+      nodeIndices[index] = hex[index]-1; 
     }
-  } else if (mFileType == "BRICK") {
+    debug5 << "inserting quadrilateral: " << arrayToString(ip, 4) << endl; 
+    linemesh->InsertNextCell(VTK_QUAD, 4, nodeIndices);
+   } else if (mFileType == "BRICK") {
     int index, indexnum = 0; 
     // 3 segments connected to vertex 0
     nodeIndices[0] = hex[0]-1;
@@ -600,7 +599,7 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
       ++point; 
     }
   } 
-  else if (!strcmp(meshname, "paraDIS_Tecplot_line_mesh")) {
+  else if (!strcmp(meshname, "paraDIS_Tecplot_poly_mesh")) {
     debug2 << "Adding mesh elements to line mesh" << endl; 
     int vertsPerElem = -1; 
     if (mFileType == "BRICK") {
@@ -610,9 +609,9 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
     }  else {
       throw string("Unknown tecplot file format: ")+mFileType;      
     }
-    vector<int> hex; 
+    vector<int> cell; 
     while (elem < mNumElems) {
-      hex.clear(); 
+      cell.clear(); 
       int index, i=0; 
       debug5 << "Found element with vertices: ("; 
       while (i++<vertsPerElem) {
@@ -620,15 +619,15 @@ vtkDataSet    * avtparaDIS_tecplotFileFormat::GetTecplotMesh(const char *meshnam
         debug5 << index; 
         if (i<vertsPerElem)
           debug5 << ", "; 
-        hex.push_back(index); 
+        cell.push_back(index); 
       }
       debug5 << ")"<< endl; 
       
       
       if (!tecplotfile.good()) {
-        throw string("Error reading point index ")+doubleToString(i)+string(" in hex ")+doubleToString(elem); 
+        throw string("Error reading point index ")+doubleToString(i)+string(" in cell ")+doubleToString(elem); 
     }
-      AddHexToMesh(mesh, hex); 
+      AddCellToMesh(mesh, cell); 
       elem++;
     }
   } // end line mesh
@@ -685,10 +684,26 @@ vtkDataArray *
 avtparaDIS_tecplotFileFormat::GetVar(const char *varname)
 {
   debug2 << "Beginning GetVar(" << varname << ")" << endl; 
-   vtkFloatArray *scalars = vtkFloatArray::New(); 
+  vtkFloatArray *scalars = vtkFloatArray::New(); 
+  
+  // first look for the "constantvar" variable, it is special
+  if (string(varname) == "constantvalue") {
+    int pointNum = 0;
+    float f = 1.0; 
+    debug4 << "Inserting "<<mNumPoints << " constant variable values: "<<endl;
+    while (pointNum < mNumPoints) {
+      scalars->InsertTuple(pointNum,&f);       
 
+      ++pointNum; 
+    }
+    return scalars; 
+  }
+  
+  
   if (!strstr(varname, "paraDIS_Tecplot_") || !strstr(varname, "_var_")) {
-    debug2 << "GetTecplotVar: rejected varname " << varname <<" because it does not begin with 'paraDIS_Tecplot_' or does not contain '_var_'" << endl; 
+    string err = string("GetTecplotVar: rejected varname ") + varname +" because it does not begin with 'paraDIS_Tecplot_' or does not contain '_var_'";
+    cerr << err << endl; 
+    EXCEPTION1(VisItException, err.c_str()); 
     return false; 
   }
   /*  Get the variable number. 
