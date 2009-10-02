@@ -542,6 +542,11 @@ avtZeusMPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Wed Feb  6 16:11:51 PST 2008
 //    Added support for cylindrical coordinates.
 //
+//    Eric Brugger, Fri Oct  2 11:27:03 PDT 2009
+//    I corrected a bug in the logic that returned the mesh in spherical
+//    coordinates.  The fix was courtesy of Rodrigo Fernandez from the
+//    Institute for Advanced Study.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -654,9 +659,9 @@ avtZeusMPFileFormat::GetMesh(const char *meshname)
                         float theta = coord1[j];
                         float phi   = coord2[k];
 
-                        *pts++ = rad * cos(theta) * sin(phi);
-                        *pts++ = rad * sin(theta) * sin(phi);
-                        *pts++ = rad * cos(phi);
+                        *pts++ = rad * cos(phi) * sin(theta);
+                        *pts++ = rad * sin(phi) * sin(theta);
+                        *pts++ = rad * cos(theta);
                     }
                 }
             }            
