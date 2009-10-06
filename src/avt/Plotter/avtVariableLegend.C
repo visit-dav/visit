@@ -917,14 +917,19 @@ avtVariableLegend::ChangeFontHeight(double fh)
 // Creation:   Wed Sep 16 13:25:54 PDT 2009
 //
 // Modifications:
-//   
+//    Kathleen Bonnell, Tue Oct  6 11:07:53 PDT 2009
+//    Handle constant-legends.
+//
 // ****************************************************************************
 
 void                          
 avtVariableLegend::SetNumTicks(int nt)
 {
     numTicks = nt;
-    sBar->SetNumberOfLabels(nt);
+    if (min != max)
+        sBar->SetNumberOfLabels(numTicks);
+    else 
+        sBar->SetNumberOfLabels(0);
 }
 
 
