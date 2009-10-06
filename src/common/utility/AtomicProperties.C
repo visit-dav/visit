@@ -460,17 +460,17 @@ float covalent_radius[MAX_ELEMENT_NUMBER+1] = {
     1.46f, // Bi 83
     1.46f, // Po 84
     1.45f, // At 85
-    0.1f,  //
-    0.1f,  //
-    0.1f,  //
-    0.1f,  //
-    1.65f, // Th 90
-    0.1f,  //
-    1.42f, // U  92
-    .1f,
-    .1f,
-    .1f,
-    .1f,
+    1.50f, // Rn 86 // 86-96 from en.wikipedia.org/wiki/Covalent_radius 10/6/09
+    2.60f, // Fr 87
+    2.21f, // Ra 88
+    2.15f, // Ac 89
+    2.06f, // Th 90
+    2.00f, // Pa 91
+    1.96f, // U  92
+    1.90f, // Np 93
+    1.87f, // Pu 94
+    1.80f, // Am 95
+    1.69f, // Cm 96
     .1f,
     .1f,
     .1f,
@@ -574,8 +574,8 @@ float atomic_radius[MAX_ELEMENT_NUMBER+1] = {
     1.53f, // Po 84
     1.43f, // At 85
     1.34f, // Rn 86
-    .1f,
-    2.15f, // Ra 88 (88-95 from "http://en.wikipedia.org/wiki/Atomic_radii_of_the_elements_(data_page)", which references J.C. Slater, J. Chem. Phys. 1964, 41, 3199.)
+    2.60f, // Fr 87 (using covalent radius just to get a number here)
+    2.15f, // Ra 88 (88-99 from "http://en.wikipedia.org/wiki/Atomic_radii_of_the_elements_(data_page)", which references J.C. Slater, J. Chem. Phys. 1964, 41, 3199.)
     1.95f, // Ac 89
     1.80f, // Th 90
     1.80f, // Pa 91
@@ -583,10 +583,10 @@ float atomic_radius[MAX_ELEMENT_NUMBER+1] = {
     1.75f, // Np 93
     1.75f, // Pu 94
     1.75f, // Am 95
-    .1f,
-    .1f,
-    .1f,
-    .1f,
+    1.74f, // Cm 96 (96-99 use metallic radius to just get a number)
+    1.70f, // Bk 97
+    1.86f, // Cf 98
+    1.86f, // Es 99
     .1f,
     .1f,
     .1f,
