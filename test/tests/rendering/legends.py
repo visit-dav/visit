@@ -49,6 +49,9 @@
 #    and setting numeric values and text labels for tics in liu of the 
 #    automatically generated ones.
 #
+#    Kathleen Bonnell, Tue Oct 6 11:36:41 PDT 2009
+#    Added test for constant variable legend. 
+#
 # ----------------------------------------------------------------------------
 
 # Test the Subset plot with some subsets turned off, and single-color on.
@@ -451,7 +454,15 @@ def TestLegendTics():
     Test("legends_58")
     legend.drawLabels = legend.Labels
     Test("legends_59")
-    
+
+    DeleteAllPlots()
+
+    # test constant legend
+    DefineScalarExpression("one", "cell_constant(<curvmesh2d>, 1)")
+    AddPlot("Pseudocolor", "one")
+    DrawPlots()
+    Test("legends_60")
+  
     #clean up
     DeleteAllPlots()
     
