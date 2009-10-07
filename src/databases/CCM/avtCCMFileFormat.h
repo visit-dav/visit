@@ -129,6 +129,9 @@ protected:
         CellInfo(const CellInfo &);
         virtual ~CellInfo();
         void operator = (const CellInfo &);
+        void CellCenter(double *, vtkPoints *) const;
+        void UseNodes(bool *) const;
+
         int id;
         // Important for knowing how face nodes are ordered. 
         // 0 = boundary
@@ -187,12 +190,19 @@ protected:
                                    vtkCellArray *cellArray, 
                                    intVector &cellTypes);
     void              TesselateCell(const int, const CellInfoVector &civ, 
-                                    vtkPoints *points, 
-                                    vtkUnstructuredGrid *ugrid);
+                                    vtkPoints *points, vtkUnstructuredGrid *ugrid);
     void              TesselateCells2D(const int, const CellInfoVector &civ, 
-                                       vtkPoints *points, 
-                                       vtkUnstructuredGrid *ugrid);
+                                       vtkPoints *points, vtkUnstructuredGrid *ugrid);
     void              GetCellMapData(const int, const string &, intVector &);
+
+
+    void              ReadCellInfo(int dom, const char *meshname,
+                                   CellInfoVector &cellInfo, 
+                                   int &minFaceSize, int &maxFaceSize);
+    vtkPoints        *ReadPoints(int dom, const char *meshname);
+    void              SelectCellsForThisProcessor(CellInfoVector &cellInfo, vtkPoints *);
+
+    bool              subdividingSingleMesh;
 
     bool              ccmOpened;
     bool              ccmStateFound;
