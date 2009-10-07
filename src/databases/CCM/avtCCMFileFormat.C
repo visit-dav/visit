@@ -47,7 +47,8 @@
 #include <vtkCellTypes.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
-#include <vtkRectilinearGrid.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -70,6 +71,14 @@
 #include <algorithm>
 
 using     std::string;
+
+#ifdef PARALLEL
+// If we're running in parallel then we can enable subdivision of single domains.
+// This only kicks in when there is a single domain that we want to split among
+// all processors.
+#include <avtParallel.h>
+#define ENABLE_SUBDIVISION
+#endif
 
 // Prototypes
 ostream &operator << (ostream &os, CCMIOEntity e);
@@ -94,6 +103,7 @@ avtCCMFileFormat::avtCCMFileFormat(const char *filename)
     ccmOpened = false;
     ccmStateFound = false;
     ccmErr = kCCMIONoErr;
+    subdividingSingleMesh = false;
 }
 
 // ****************************************************************************
@@ -147,6 +157,8 @@ avtCCMFileFormat::FreeUpResources(void)
     originalCells.clear();
     varsToFields.clear();
     varsOnSubmesh.clear();
+
+    subdividingSingleMesh = false;
 }    
 
 
@@ -462,7 +474,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ++nblocks;
     }
     debug4 << mName << "Found " << nblocks << " domains in the file." << endl;
-
+   
 #if 0
     // this will be useful for subsetting by the cell type
     int nCellTypes = 0;
@@ -506,13 +518,24 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         EXCEPTION1(InvalidFilesException, filenames[0]);
     }
 
+    // If there's just 1 block, read the mesh now and decompose it into
+    // more meshes, caching them for later.
+    int nDomains = nblocks;
+#ifdef ENABLE_SUBDIVISION
+    if(nblocks == 1)
+    {
+        subdividingSingleMesh = true;
+        md->SetFormatCanDoDomainDecomposition(true);
+    }
+#endif
+
     // Create a mesh.
     avtMeshMetaData *mmd = new avtMeshMetaData;
     mmd->name = "Mesh";
     mmd->spatialDimension = dims;
     mmd->topologicalDimension = dims;
     mmd->meshType = AVT_UNSTRUCTURED_MESH;
-    mmd->numBlocks = nblocks;
+    mmd->numBlocks = nDomains;
     mmd->cellOrigin = 1;
     mmd->nodeOrigin = 1;
     md->Add(mmd);
@@ -753,6 +776,10 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Fixed a bug in which cell and vertex ids were mistaken for 1-based
 //    indices.
 // 
+//    Brad Whitlock, Thu Oct  1 13:36:48 PDT 2009
+//    I refactored this routine into helper routines and added support for
+//    automatically subdividing a mesh on the fly.
+//
 // ****************************************************************************
 
 #ifndef MDSERVER
@@ -760,210 +787,119 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #endif
 
 vtkDataSet *
-avtCCMFileFormat::GetMesh(int dom, const char *meshname)
+avtCCMFileFormat::GetMesh(int domain, const char *meshname)
 {
 #ifdef MDSERVER
     return 0;
-#endif
+#else
+    // Override domain if we're automatically dividing the data
+    int dom = subdividingSingleMesh ? 0 : domain;
+
     vtkUnstructuredGrid *ugrid = NULL;
-    CCMIOID processor, vertices, topology, solution;
-    bool hasSolution = true;
-    unsigned int i, j;
+    vtkPoints *points = NULL;
 
-    if(GetIDsForDomain(dom, processor, vertices, topology, solution,
-                       hasSolution))
+    TRY
     {
-        // Read the size of the vertices
-        CCMIOSize nnodes = 0;
-        CCMIOEntitySize(&ccmErr, vertices, &nnodes, NULL);
-        if(ccmErr != kCCMIONoErr)
-        {
-            debug4 << "CCMIOEntitySize for vertices failed with error " ;
-            debug4 << ccmErr << endl;
-            EXCEPTION1(InvalidVariableException, meshname);
-        }
+        // Read the points
+        points = ReadPoints(dom, meshname);
 
-        // Read the dimensions of the vertex.
-        CCMIOID mapID;
-        int dims = 1;
-        float scale;
-        CCMIOReadVerticesf(&ccmErr, vertices, &dims, NULL, NULL, NULL, 0, 1);
-        if(ccmErr != kCCMIONoErr)
-        {
-            debug4 << "CCMIOReadVertices for first vertex dimensions ";
-            debug4 << "failed with error " << ccmErr << endl;
-            EXCEPTION1(InvalidVariableException, meshname);
-        }
-
-        // Allocate VTK memory.
-        vtkPoints *points = vtkPoints::New();
-        points->SetNumberOfPoints(nnodes);
-        float *pts = (float *)points->GetVoidPointer(0);
-
-        // Read the data into the VTK points.
-        if(dims == 2)
-        {
-            // Read 2D points and convert to 3D, storing into VTK.
-            float *pts2d = new float[2 * nnodes];
-            CCMIOReadVerticesf(&ccmErr, vertices, &dims, &scale, &mapID, pts2d,
-                       0, nnodes);
-            float *src = pts2d;
-            float *dest = pts;
-            for(i = 0; i < nnodes; ++i)
-            {
-                *dest++ = *src++;
-                *dest++ = *src++;
-                *dest++ = 0.;
-            }
-            delete [] pts2d;
-        }
-        else
-        {
-            // Read the data directly into the VTK buffer.
-            CCMIOReadVerticesf(&ccmErr, vertices, &dims, &scale, &mapID, pts,
-                       0, nnodes);
-        }
-
-        intVector tmpVertexMap(nnodes);
-        CCMIOReadMap(&ccmErr, mapID, &tmpVertexMap[0], kCCMIOStart, kCCMIOEnd);
-        IDMap  vertexIDMap;
-        vertexIDMap.SetIDs(tmpVertexMap);
-        tmpVertexMap.clear();
-
-        // Scale the points, according to the scale factor read with the 
-        // vertices.
-        for(i = 0; i < nnodes; ++i)
-        {
-            pts[0] *= scale;
-            pts[1] *= scale;
-            pts[2] *= scale;
-            pts += 3;
-        }
-
-
-        // Get the topology information
-        CCMIOID faceID, cellsID;
-        unsigned int nIFaces = 0, nCells = 0, size = 0;
-        intVector cells;
-        //intVector cellMatType;
+        // Read the cell connectivity
         CellInfoVector cellInfo;
-
-        // Read the cells entity
-        CCMIOGetEntity(&ccmErr, topology, kCCMIOCells, 0, &cellsID);
-        // Read the cells entity size (num cells)
-        CCMIOEntitySize(&ccmErr, cellsID, &nCells, NULL);
-        cells.resize(nCells);
-        cellInfo.resize(nCells);
-        //cellMatType.resize(nCells);
-        // this gets the cell types and the map that stores the cell ids
-        CCMIOReadCells(&ccmErr, cellsID, &mapID, NULL,
-                       kCCMIOStart, kCCMIOEnd);
-        // this reads the cellids from the map.
-        CCMIOReadMap(&ccmErr, mapID, &cells[0], kCCMIOStart, kCCMIOEnd);
-        for (i = 0; i < nCells; ++i)
-            cellInfo[i].id = cells[i];
-
-        IDMap cellIDMap;
-        cellIDMap.SetIDs(cells);
-
         int minFaceSize = VTK_LARGE_INTEGER;
         int maxFaceSize = -1;
-        // Read the boundary faces.
+        ReadCellInfo(dom, meshname,
+                     cellInfo, minFaceSize, maxFaceSize);
 
-        int index = 0;
-        int count = 0;
-        int nBoundaries = 0;
-        while (CCMIONextEntity(NULL, topology, kCCMIOBoundaryFaces, &index, 
-                               &faceID) == kCCMIONoErr)
-        {
-            nBoundaries++;
-        }
-     
-        index = 0;
-        while (CCMIONextEntity(NULL, topology, kCCMIOBoundaryFaces, &index, 
-                               &faceID) == kCCMIONoErr)
-        {
-            CCMIOSize nBFaces;
-            CCMIOEntitySize(&ccmErr, faceID, &nBFaces, NULL);
-            GetFaces(faceID, kCCMIOBoundaryFaces, nBFaces, 
-                     cellIDMap, vertexIDMap,
-                     minFaceSize, maxFaceSize, cellInfo); 
-        }
-
-        // Read the internal faces.
-        // Get the InternalFaces entity.
-        CCMIOGetEntity(&ccmErr, topology, kCCMIOInternalFaces, 0, &faceID);
-        // Get the InternalFaces size (num faces).
-        CCMIOEntitySize(&ccmErr, faceID, &nIFaces, NULL);
-        
-        GetFaces(faceID, kCCMIOInternalFaces, nIFaces, cellIDMap, vertexIDMap,
-                 minFaceSize, maxFaceSize, cellInfo);
-
-
-        if (find(varsOnSubmesh.begin(), varsOnSubmesh.end(), activeVisItVar) 
-                != varsOnSubmesh.end())
-
-        {
-            // need to reduce the number of cells we actually process.
-            intVector validCells;
-            CellInfoVector vcv;
-            GetCellMapData(dom, activeVisItVar, validCells);
-          
-            for (i = 0; i < cellInfo.size(); ++i)
-            {
-                if (find(validCells.begin(), validCells.end(), cellInfo[i].id)
-                         != validCells.end())
-                {
-                    vcv.push_back(cellInfo[i]);
-                }
-            }
-            cellInfo = vcv;
-        }
+        //
+        // Convert cellInfo into vtkUnstructuredGrid
+        //
+        SelectCellsForThisProcessor(cellInfo, points);
 
         ugrid = vtkUnstructuredGrid::New();
-
-        debug5 << "minFaceSize = " << minFaceSize
-               << ", maxFaceSize = " << maxFaceSize << endl;
 
         // Determine cell topology from face lists
         if (minFaceSize == 2 && maxFaceSize == 2)
         {
             // 2D edges that we must assemble into polygons and tessellate into 
             // triangles that VisIt can digest.
-            TesselateCells2D(dom, cellInfo, points, ugrid); 
+            TesselateCells2D(domain, cellInfo, points, ugrid); 
         }
         else if (minFaceSize <= 4 && maxFaceSize <= 4)
         {
+#ifdef ENABLE_SUBDIVISION
+            // If we're subdividing a single domain on the fly then we create 
+            // original cell numbers so we can use them in the GetVar method 
+            // to return only the cell values that we selected for this chunk
+            // of the mesh.
+            unsigned int oc[2] = {dom, 0};
+            vtkUnsignedIntArray *origCells = 0;
+            if(subdividingSingleMesh)
+            {
+                int useCount = 0;
+                for(unsigned int i = 0; i < cellInfo.size(); ++i)
+                    useCount += (cellInfo[i].id != -1) ? 1 : 0;
+                origCells = vtkUnsignedIntArray::New();
+                origCells->SetName("avtOriginalCellNumbers");
+                origCells->SetNumberOfComponents(2);
+                origCells->Allocate(useCount * 3);
+                originalCells[dom] = origCells;
+            }
+#endif
             ugrid->SetPoints(points);
             // We have zoo elements that we can deal with.
             vtkCellArray *cellArray = vtkCellArray::New();
             intVector cellTypes; 
             bool unhandledCellType = false;
-            for (i = 0; i < cellInfo.size(); i++)
+            for (unsigned int i = 0; i < cellInfo.size(); i++)
             {
                 const CellInfo &ci = cellInfo[i]; 
+                if(ci.id == -1)
+                    continue;
+#ifdef ENABLE_SUBDIVISION
+                oc[1] = ci.id;
+#endif
                 switch(ci.faces.size())
                 {
                     case 4 : 
-                        BuildTet(ci, cellArray, cellTypes); 
+                        BuildTet(ci, cellArray, cellTypes);
+#ifdef ENABLE_SUBDIVISION
+                        if(subdividingSingleMesh)
+                            origCells->InsertNextTupleValue(oc);
+#endif
                         break;
                     case 5 : 
                         {
                         int nNodes = 0;
-                        for (j = 0; j < ci.faces.size(); j++)
+                        for (size_t j = 0; j < ci.faces.size(); j++)
                         {
                             nNodes += ci.faces[j].nodes.size();
                         }
                         if (nNodes == 16) // Pyramid 
+                        {
                             BuildPyramid(ci, cellArray, cellTypes);
+#ifdef ENABLE_SUBDIVISION
+                            if(subdividingSingleMesh)
+                                origCells->InsertNextTupleValue(oc);
+#endif
+                        }
                         else if (nNodes == 18) // Wedge
+                        {
                             BuildWedge(ci, cellArray, cellTypes);
+#ifdef ENABLE_SUBDIVISION
+                            if(subdividingSingleMesh)
+                                origCells->InsertNextTupleValue(oc);
+#endif
+                        }
                         else
                             unhandledCellType = true; 
                         break;
                         }
                     case 6 : 
-                        BuildHex(ci, cellArray, cellTypes); 
+                        BuildHex(ci, cellArray, cellTypes);
+#ifdef ENABLE_SUBDIVISION
+                        if(subdividingSingleMesh)
+                            origCells->InsertNextTupleValue(oc);
+#endif
                         break;
                     default : 
                         unhandledCellType = true; 
@@ -975,12 +911,465 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         }
         else
         {
-            TesselateCell(dom, cellInfo, points, ugrid); 
+            TesselateCell(domain, cellInfo, points, ugrid);
         }
+
         points->Delete();
     }
+    CATCHALL
+    {
+        if(points != NULL)
+            points->Delete();
+        if(ugrid != NULL)
+            ugrid->Delete();
+    }
+    ENDTRY
+
     return ugrid;
+#endif
 }
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::ReadPoints
+//
+// Purpose: 
+//   Reads the points associated with a specified domain/mesh.
+//
+// Arguments:
+//   dom         : The domain number.
+//   meshname    : The name of the mesh.(for error reporting)
+//
+// Returns:    The vtkPoints object that contains the points.
+//
+// Note:       This method was broken out from the original GetMesh routine.
+//
+// Programmer: Kathleen Bonnell, Brad Whitlock
+// Creation:   Thu Oct  1 13:29:03 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkPoints *
+avtCCMFileFormat::ReadPoints(int dom, const char *meshname)
+{
+    CCMIOID processor, vertices, topology, solution;
+    bool hasSolution = true;
+    if(!GetIDsForDomain(dom, processor, vertices, topology, solution,
+                        hasSolution))
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    // Read the size of the vertices
+    CCMIOSize nnodes = 0;
+    CCMIOEntitySize(&ccmErr, vertices, &nnodes, NULL);
+    if(ccmErr != kCCMIONoErr)
+    {
+        debug4 << "CCMIOEntitySize for vertices failed with error " ;
+        debug4 << ccmErr << endl;
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    // Read the dimensions of the vertex.
+    int dims = 1;
+    float scale;
+    CCMIOReadVerticesf(&ccmErr, vertices, &dims, NULL, NULL, NULL, 0, 1);
+    if(ccmErr != kCCMIONoErr)
+    {
+        debug4 << "CCMIOReadVertices for first vertex dimensions ";
+        debug4 << "failed with error " << ccmErr << endl;
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    // Allocate VTK memory.
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(nnodes);
+    float *pts = (float *)points->GetVoidPointer(0);
+
+    // Read the data into the VTK points.
+    CCMIOID mapID;
+    if(dims == 2)
+    {
+        // Read 2D points and convert to 3D, storing into VTK.
+        float *pts2d = new float[2 * nnodes];
+        CCMIOReadVerticesf(&ccmErr, vertices, &dims, &scale, &mapID, pts2d,
+                   0, nnodes);
+        float *src = pts2d;
+        float *dest = pts;
+        for(int i = 0; i < nnodes; ++i)
+        {
+            *dest++ = *src++;
+            *dest++ = *src++;
+            *dest++ = 0.;
+        }
+        delete [] pts2d;
+    }
+    else
+    {
+        // Read the data directly into the VTK buffer.
+        CCMIOReadVerticesf(&ccmErr, vertices, &dims, &scale, &mapID, pts,
+                   0, nnodes);
+    }
+
+    // Scale the points, according to the scale factor read with the 
+    // vertices.
+    for(int i = 0; i < nnodes; ++i)
+    {
+        pts[0] *= scale;
+        pts[1] *= scale;
+        pts[2] *= scale;
+        pts += 3;
+    }
+
+    return points;
+}
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::ReadCellInfo
+//
+// Purpose: 
+//   Reads the cell info associated with a specified domain/mesh.
+//
+// Arguments:
+//   dom         : The domain number.
+//   meshname    : The name of the mesh.(for error reporting)
+//   cellInfo    : The cell information to populate.
+//   minFaceSize : Return value of the min face size.
+//   maxFaceSize : Return value of the max face size.
+//
+// Returns:    
+//
+// Note:       This method was broken out from the original GetMesh routine.
+//             min/maxFaceSize are used to determine whether tesselation is 
+//             required.
+//
+// Programmer: Kathleen Bonnell, Brad Whitlock
+// Creation:   Thu Oct  1 13:29:03 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
+    CellInfoVector &cellInfo, int &minFaceSize, int &maxFaceSize)
+{
+    CCMIOID processor, vertices, topology, solution;
+    bool hasSolution = true;
+    if(!GetIDsForDomain(dom, processor, vertices, topology, solution,
+                       hasSolution))
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    // Read the size of the vertices
+    CCMIOSize nnodes = 0;
+    CCMIOEntitySize(&ccmErr, vertices, &nnodes, NULL);
+    if(ccmErr != kCCMIONoErr)
+    {
+        debug4 << "CCMIOEntitySize for vertices failed with error " ;
+        debug4 << ccmErr << endl;
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    // Read the dimensions of the vertex and get the mapID
+    int dims = 1;
+    CCMIOID mapID;
+    CCMIOReadVerticesf(&ccmErr, vertices, &dims, NULL, &mapID, NULL, 0, 1);
+    if(ccmErr != kCCMIONoErr)
+    {
+        debug4 << "CCMIOReadVertices for first vertex dimensions ";
+        debug4 << "failed with error " << ccmErr << endl;
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    // Read the vertex ids
+    intVector tmpVertexMap(nnodes);
+    CCMIOReadMap(&ccmErr, mapID, &tmpVertexMap[0], kCCMIOStart, kCCMIOEnd);
+    IDMap  vertexIDMap;
+    vertexIDMap.SetIDs(tmpVertexMap);
+    tmpVertexMap.clear();
+
+    // Get the topology information
+    CCMIOID faceID, cellsID;
+    unsigned int nIFaces = 0, nCells = 0, size = 0;
+    intVector cells;
+    //intVector cellMatType;
+
+    // Read the cells entity
+    CCMIOGetEntity(&ccmErr, topology, kCCMIOCells, 0, &cellsID);
+    // Read the cells entity size (num cells)
+    CCMIOEntitySize(&ccmErr, cellsID, &nCells, NULL);
+    cells.resize(nCells);
+    cellInfo.resize(nCells);
+    //cellMatType.resize(nCells);
+    // this gets the cell types and the map that stores the cell ids
+    CCMIOReadCells(&ccmErr, cellsID, &mapID, NULL,
+                   kCCMIOStart, kCCMIOEnd);
+    // this reads the cellids from the map.
+    CCMIOReadMap(&ccmErr, mapID, &cells[0], kCCMIOStart, kCCMIOEnd);
+    for (int i = 0; i < nCells; ++i)
+        cellInfo[i].id = cells[i];
+
+    IDMap cellIDMap;
+    cellIDMap.SetIDs(cells);
+
+    // Read the boundary faces.
+    int index = 0;
+    int count = 0;
+    int nBoundaries = 0;
+    while (CCMIONextEntity(NULL, topology, kCCMIOBoundaryFaces, &index, 
+                           &faceID) == kCCMIONoErr)
+    {
+        nBoundaries++;
+    }
+     
+    index = 0;
+    while (CCMIONextEntity(NULL, topology, kCCMIOBoundaryFaces, &index, 
+                           &faceID) == kCCMIONoErr)
+    {
+        CCMIOSize nBFaces;
+        CCMIOEntitySize(&ccmErr, faceID, &nBFaces, NULL);
+        GetFaces(faceID, kCCMIOBoundaryFaces, nBFaces, 
+                 cellIDMap, vertexIDMap,
+                 minFaceSize, maxFaceSize, cellInfo); 
+    }
+
+    // Read the internal faces.
+    // Get the InternalFaces entity.
+    CCMIOGetEntity(&ccmErr, topology, kCCMIOInternalFaces, 0, &faceID);
+    // Get the InternalFaces size (num faces).
+    CCMIOEntitySize(&ccmErr, faceID, &nIFaces, NULL);
+    
+    GetFaces(faceID, kCCMIOInternalFaces, nIFaces, cellIDMap, vertexIDMap,
+             minFaceSize, maxFaceSize, cellInfo);
+
+
+    if (find(varsOnSubmesh.begin(), varsOnSubmesh.end(), activeVisItVar) 
+            != varsOnSubmesh.end())
+    {
+        // need to reduce the number of cells we actually process.
+        intVector validCells;
+        CellInfoVector vcv;
+        GetCellMapData(dom, activeVisItVar, validCells);
+          
+        for (int i = 0; i < cellInfo.size(); ++i)
+        {
+            if (find(validCells.begin(), validCells.end(), cellInfo[i].id)
+                     != validCells.end())
+            {
+                vcv.push_back(cellInfo[i]);
+            }
+        }
+        cellInfo = vcv;
+    } 
+
+    debug5 << "minFaceSize = " << minFaceSize
+           << ", maxFaceSize = " << maxFaceSize << endl;
+}
+
+#ifdef ENABLE_SUBDIVISION
+// ****************************************************************************
+// Method: ComputePatchCenter
+//
+// Purpose: 
+//   Computes the center and bounds of the patch.
+//
+// Arguments:
+//   centers : The centers for each cell in the mesh.
+//   patch   : The list of cellids that make up the patch.
+//   center  : The calculated center of the patch.
+//   bounds  : The calculated bounds of the patch.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct  6 16:12:08 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+ComputePatchCenter(const double *centers, const intVector &patch, double *center, double *bounds)
+{
+    center[0] = 0.;
+    center[1] = 0.;
+    center[2] = 0.;
+    int nMatches = 0;
+    for(int i = 0; i < patch.size(); ++i)
+    {
+        const double *c = centers + patch[i] * 3;
+
+        // Compute extents of cell centers.
+        if(nMatches == 0)
+        {
+            bounds[0] = bounds[1] = c[0];
+            bounds[2] = bounds[3] = c[1];
+            bounds[4] = bounds[5] = c[2];
+        }
+        else
+        {
+            if(c[0] < bounds[0])
+                bounds[0] = c[0];
+            if(c[0] > bounds[1])
+                bounds[1] = c[0];
+
+            if(c[1] < bounds[2])
+                bounds[2] = c[1];
+            if(c[1] > bounds[3])
+                bounds[3] = c[1];
+
+            if(c[2] < bounds[4])
+                bounds[4] = c[2];
+            if(c[2] > bounds[5])
+                bounds[5] = c[2];
+        }
+
+        center[0] += c[0];
+        center[1] += c[1];
+        center[2] += c[2];
+        nMatches++;
+    }
+    if(nMatches > 0)
+    {
+        center[0] /= double(nMatches);
+        center[1] /= double(nMatches);
+        center[2] /= double(nMatches);
+    }
+}
+
+// ****************************************************************************
+// Method: DivideLargestPatch
+//
+// Purpose: 
+//   Divides the largest patch in the patch vector.
+//
+// Arguments:
+//   centers : The centers of all cells in the mesh.
+//   patches : The list of all patches.
+//
+// Returns:    
+//
+// Note:       This routine modifies the patches vector by splitting 1 of the
+//             patches, replacing the split patch with piece0. piece1 is appended
+//             to the patch vector.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct  6 16:13:33 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+DivideLargestPatch(const double *centers, std::vector<intVector> &patches)
+{
+    // Find the index of the largest patch
+    int maxIndex = 0;
+    for(int i = 1; i < patches.size(); ++i)
+        if(patches[i].size() > patches[maxIndex].size())
+            maxIndex = i;
+
+    // Compute the center at which we will bisect.
+    double center[3], bounds[6];
+    ComputePatchCenter(centers, patches[maxIndex], center, bounds);
+
+    // Figure out the longest dimension since that's the dimension we'll bisect.
+    double dX = bounds[1] - bounds[0];
+    double dY = bounds[3] - bounds[2];
+    double dZ = bounds[5] - bounds[4];
+    int longestDimension = 2;
+    if(dX > dY)
+    {
+        if(dX > dZ)
+            longestDimension = 0;
+    }
+    else
+    {
+        if(dY > dZ)
+            longestDimension = 1;
+    }
+
+    const intVector &patch = patches[maxIndex];
+    intVector piece0, piece1;
+    for(int j = 0; j < patch.size(); ++j)
+    {
+        const double *c = centers + patch[j] * 3;
+        if(c[longestDimension] > center[longestDimension])
+            piece0.push_back(patch[j]);
+        else
+            piece1.push_back(patch[j]);
+    }
+    patches[maxIndex] = piece0;
+    patches.push_back(piece1);
+}
+#endif
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::SelectCellsForThisProcessor
+//
+// Purpose: 
+//   This routine divides the cells spatially into PAR_Size() different bins
+//   and sets all of the ids for the cells in cellInfo to -1 (invalid) unless
+//   their bin matches PAR_Rank(). This means that we are marking a subset of
+//   the cells in cellInfo as being valid so we can return just a part of the
+//   dataset.
+//
+// Arguments:
+//   cellInfo : The vector of cell data.
+//   points   : The points used by the cells.
+//
+// Returns:    
+//
+// Note:       This method is just used in parallel when we have a single 
+//             domain dataset that we want to automatically chunk up under the
+//             covers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  1 13:25:17 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCCMFileFormat::SelectCellsForThisProcessor(CellInfoVector &cellInfo, vtkPoints *points)
+{
+#ifdef ENABLE_SUBDIVISION
+    if(subdividingSingleMesh)
+    {
+        // Compute cell centers
+        double *centers = new double[cellInfo.size() * 3];
+        for(size_t i = 0; i < cellInfo.size(); ++i)
+            cellInfo[i].CellCenter(centers + i * 3, points);
+
+        // Start out with all cells in 1 patch
+        std::vector<intVector> patches;
+        intVector allCells;
+        for(size_t i = 0; i < cellInfo.size(); ++i)
+            allCells.push_back(i);
+        patches.push_back(allCells);
+
+        // Divide the largest patch until we have enough patches.
+        while(patches.size() < PAR_Size())
+            DivideLargestPatch(centers, patches);
+
+        // Set cellid to -1 unless we're on the patch whose id == PAR_Rank.
+        for(size_t p = 0; p < patches.size(); ++p)
+        {
+            if(p == PAR_Rank())
+                continue;
+
+            const intVector &patch = patches[p];
+            for(size_t i = 0; i < patch.size(); ++i)
+                cellInfo[patch[i]].id = -1;
+        }
+
+        delete [] centers;
+    }
+#endif
+}
+
 
 // ****************************************************************************
 //  Method:  avtCCMFileFormat::RegisterVariableList
@@ -1087,12 +1476,17 @@ avtCCMFileFormat::GetCellMapData(const int domain, const string &var,
 //    avtOriginalCellNumbers array now contains CCM cellid, so ensure that
 //    the data array is indexed-into correctly, by mapping the original cell
 //
+//    Brad Whitlock, Thu Oct  1 13:08:35 PDT 2009
+//    Set domain to 0 if we're subdividing a single mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtCCMFileFormat::GetVar(int domain, const char *varname)
 {
     const char *mName = "avtCCMFileFormat::GetVar: ";
+    // Override domain if we're automatically dividing the data
+    domain = subdividingSingleMesh ? 0 : domain;
 
     VarFieldMap::const_iterator pos = varsToFields.find(varname);
     if (pos == varsToFields.end())
@@ -1169,11 +1563,18 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
 //
 //    Dave Bremer, Fri Apr 11 16:49:45 PDT 2008
 //    Initialize the err variable.
+//
+//    Brad Whitlock, Thu Oct  1 13:08:35 PDT 2009
+//    Set domain to 0 if we're subdividing a single mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
 {
+    // Override domain if we're automatically dividing the data
+    domain = subdividingSingleMesh ? 0 : domain;
+
     VarFieldMap::const_iterator pos = varsToFields.find(varname);
     if (pos == varsToFields.end())
         EXCEPTION1(InvalidVariableException, varname);
@@ -1365,10 +1766,12 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
 // ****************************************************************************
 
 void
-avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ, 
-                                vtkPoints *points, vtkUnstructuredGrid *ugrid)
+avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ, 
+    vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
 #ifndef MDSERVER
+    int dom = subdividingSingleMesh ? 0 : domain;
+
     const char *mName = "avtCCMFileFormat::TesselateCell: ";
     unsigned int i, j, k;
     unsigned int tetCount = 0;
@@ -1377,15 +1780,22 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
     VertexManager uniqueVerts(pts);
     PolygonToTriangles tess(&uniqueVerts);
     unsigned int oc[2] = {dom, 0};
+    
+    int useCount = 0;
+    for(i = 0; i < civ.size(); ++i)
+         useCount += (civ[i].id != -1) ? 1 : 0;
 
     originalCells[dom] = vtkUnsignedIntArray::New();
     originalCells[dom]->SetName("avtOriginalCellNumbers");
     originalCells[dom]->SetNumberOfComponents(2);
-    originalCells[dom]->Allocate(civ.size()*3);
+    originalCells[dom]->Allocate(useCount * 3);
 
     for (i = 0; i < civ.size(); ++i)
     {
         const CellInfo &ci = civ[i];
+        if(ci.id == -1)
+            continue;
+
         oc[1] = ci.id;
         int nFaces  = ci.faces.size();
         int nPts = 0;
@@ -1400,7 +1810,6 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             fbounds.push_back(VTK_LARGE_FLOAT);
             fbounds.push_back(-VTK_LARGE_FLOAT);
         }
-        intVector nodes;
         double *pt;
         double cbounds[6] = {VTK_LARGE_FLOAT, -VTK_LARGE_FLOAT, 
                              VTK_LARGE_FLOAT, -VTK_LARGE_FLOAT, 
@@ -1409,7 +1818,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
         int cnt = 0;
         for (j = 0; j < nFaces; ++j)
         {
-            nodes = ci.faces[j].nodes;
+            const intVector &nodes = ci.faces[j].nodes;
                 
             for (k = 0; k < nodes.size(); ++k)
             {
@@ -1444,21 +1853,25 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             } // k nodes
         } // j faces
             
-        double cc[3];
-        double fc[3];
+        double cc[3] = {0.,0.,0.};
+        double fc[3] = {0.,0.,0.};
         for (j = 0; j < 3; ++j)
             cc[j] = (cbounds[2*j+1]+cbounds[2*j])/2.0; 
+        int centerId = uniqueVerts.GetVertexId(cc);
+
         for (j = 0; j < nFaces; ++j)
         {
+            // Find the face center
+            const intVector &nodes = ci.faces[j].nodes;
+            double fc[3] = {0.,0.,0.};
             for (k = 0; k < 3; ++k)
                 fc[k] = (fbounds[2*k+1+(6*j)]+fbounds[2*k+(6*j)])/2.0; 
 
-            nodes = ci.faces[j].nodes;
+            // Tesselate the face
             double n[3] = {(cc[0] - fc[0]), (cc[1] - fc[1]), (cc[2] - fc[2])};
             tess.SetNormal(n);
             tess.BeginPolygon();
             tess.BeginContour();
-                
             for (k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
@@ -1467,30 +1880,31 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             } // k nodes
             tess.EndContour();
             tess.EndPolygon();
-        //}  // j faces
-        int centerId = uniqueVerts.GetVertexId(cc);
-        vtkIdType verts[4];
-        verts[3] = centerId;
-        if (tess.GetNumTriangles() > 0)
-        {
-            for (k = 0; k < tess.GetNumTriangles(); ++k)
+
+            // Make a tet for each triangle in the face to the cell center.
+            vtkIdType verts[4];
+            verts[3] = centerId;
+            if (tess.GetNumTriangles() > 0)
             {
-                int a, b, c;
-                tess.GetTriangle(k, a, b, c);
-                verts[0] = a; 
-                verts[1] = b; 
-                verts[2] = c; 
-                ugrid->InsertNextCell(VTK_TETRA, 4, verts);
-                ((vtkUnsignedIntArray*)originalCells[dom])->
-                    InsertNextTupleValue(oc);
+                for (k = 0; k < tess.GetNumTriangles(); ++k)
+                {
+                    int a, b, c;
+                    tess.GetTriangle(k, a, b, c);
+                    verts[0] = a; 
+                    verts[1] = b; 
+                    verts[2] = c; 
+                    ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+                    ((vtkUnsignedIntArray*)originalCells[dom])->
+                        InsertNextTupleValue(oc);
+                }
+                tetCount += tess.GetNumTriangles();
             }
-            tetCount += tess.GetNumTriangles();
-        }
-        // prepare for next cell
-        tess.ClearTriangles();
+            // prepare for next cell
+            tess.ClearTriangles();
         } // end face
     }
     pts->Squeeze();
+
     ugrid->SetPoints(pts);
     pts->Delete();
     ugrid->GetCellData()->AddArray(originalCells[dom]);
@@ -1537,10 +1951,12 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
 typedef std::pair<int,int> edge_pair;
 
 void
-avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ, 
-                                 vtkPoints *points, vtkUnstructuredGrid *ugrid)
+avtCCMFileFormat::TesselateCells2D(const int domain, const CellInfoVector &civ, 
+    vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
 #ifndef MDSERVER
+    int dom = subdividingSingleMesh ? 0 : domain;
+
     unsigned int i, k;
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(points->GetNumberOfPoints());
@@ -1548,16 +1964,23 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
     PolygonToTriangles tess(&uniqueVerts);
     unsigned int oc[2] = {dom, 0};
 
+    int useCount = 0;
+    for(i = 0; i < civ.size(); ++i)
+         useCount += (civ[i].id != -1) ? 1 : 0;
+
     originalCells[dom] = vtkUnsignedIntArray::New();
     originalCells[dom]->SetName("avtOriginalCellNumbers");
     originalCells[dom]->SetNumberOfComponents(2);
-    originalCells[dom]->Allocate(civ.size()*3);
+    originalCells[dom]->Allocate(useCount*3);
 
     const double n[3] = {0., 0., 1.};
 
     for (i = 0; i < civ.size(); ++i)
     {
         const CellInfo &ci = civ[i];
+        if(ci.id == -1)
+            continue;
+
         oc[1] = ci.id;
         tess.SetNormal(n);
         tess.BeginPolygon();
@@ -2093,6 +2516,68 @@ avtCCMFileFormat::CellInfo::operator =(const avtCCMFileFormat::CellInfo &obj)
     id = obj.id;
     faceTypes = obj.faceTypes;
     faces = obj.faces;
+}
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::CellInfo::CellCenter
+//
+// Purpose: 
+//   Determines the cell center from its nodes.
+//
+// Arguments:
+//   center : The returned center.
+//   pts    : The global points array that stores all of the nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  1 14:02:37 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCCMFileFormat::CellInfo::CellCenter(double *center, vtkPoints *pts) const
+{
+    int npts = 0;
+    double c[3] = {0.,0.,0.};
+    for(int i = 0; i < faces.size(); ++i)
+    {
+        for(int j = 0; j < faces[i].nodes.size(); ++j, ++npts)
+        {
+            double *pt = pts->GetPoint(faces[i].nodes[j]);
+            c[0] += pt[0];
+            c[1] += pt[1];
+            c[2] += pt[2];
+        }
+    }
+    center[0] = c[0] / double(npts);
+    center[1] = c[1] / double(npts);
+    center[2] = c[2] / double(npts);
+}
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::CellInfo::UseNodes
+//
+// Purpose: 
+//   Sets a true value into a domain-node-sized bool array for each node that
+//   the cell uses.
+//
+// Arguments:
+//   pts : The array containing the values for whether a node is used.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct  1 14:03:22 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCCMFileFormat::CellInfo::UseNodes(bool *pts) const
+{
+    for(int i = 0; i < faces.size(); ++i)
+        for(int j = 0; j < faces[i].nodes.size(); ++j)
+            pts[faces[i].nodes[j]] = true;
 }
 
 // ****************************************************************************
