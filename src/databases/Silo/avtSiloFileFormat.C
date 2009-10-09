@@ -20,7 +20,7 @@
 *  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
 *    be used to endorse or promote products derived from this software without
 *    specific prior written permission.
-*
+// *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
 * AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
@@ -4608,6 +4608,9 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //    Guard against read mask problem that occurs with treat all dbs as time 
 //    varying.
 //
+//    Cyrus harrison, Fri Oct  9 14:40:02 PDT 2009
+//    Guard against corner case crash for disconnected mesh subset.
+//
 // ****************************************************************************
 
 void
@@ -4619,12 +4622,12 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
     debug1 << "avtSiloFileFormat: using MultiMeshadj Object" <<endl;
     // loop indices
     int i,j;
-    
+
     // guard against improper read mask that occurs when treat all dbs as 
     // time varying is enabled. 
     long prev_read_mask = DBGetDataReadMask();
     DBSetDataReadMask(prev_read_mask | DBMMADJNodelists | DBMMADJZonelists);
-    
+
     // Get the MultiMeshAdjacency object
     DBmultimeshadj *mmadj_obj = DBGetMultimeshadj(dbfile,
                                                   "Domain_Decomposition",
@@ -4675,14 +4678,16 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
         // Note: Silo's MultiMesh Adjacency Object supports unstructured 
         // and point meshes - but so far we only support structured meshes.
 
-        lneighbors = mmadj_obj->lneighbors * 11;
+        int nnodelists = mmadj_obj->lneighbors;
+        lneighbors = nnodelists * 11;
         neighbors  = new int[lneighbors];
 
         int *extents_ptr = extents;
         int *neighbors_ptr = neighbors;
 
         int idx = 0;
-        for( i =0; i < ndomains; i++)
+
+        for( i =0; i < ndomains && idx < nnodelists; i++)
         {
             // the node list provides the overlap region between
             // the current domain and each neighbor and an orientation
