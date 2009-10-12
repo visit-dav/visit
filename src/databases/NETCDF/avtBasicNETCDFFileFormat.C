@@ -189,7 +189,6 @@ avtBasicNETCDFFileFormat::~avtBasicNETCDFFileFormat()
 void
 avtBasicNETCDFFileFormat::FreeUpResources()
 {
-    cerr << "Got here 2" << endl;
     debug4 << "avtBasicNETCDFFileFormat::FreeUpResources" << endl;
     fileObject->Close();
 }
