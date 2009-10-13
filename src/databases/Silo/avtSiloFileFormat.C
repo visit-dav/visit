@@ -1449,6 +1449,11 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names. Also added logic to
 //    handle freeing of multimesh object during exceptions.
+//
+//    Cyrus Harrison, Tue Oct 13 08:59:59 PDT 2009
+//    Construct avtMeshMetaData object after mrgtree processing  b/c this
+//    may change the mesh type to indicate an AMR mesh.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile, 
@@ -1687,6 +1692,24 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     break;
                 }
 
+                //
+                // Handle mrgtree on the multimesh
+                //
+                int num_amr_groups = 0;
+                vector<int> amr_group_ids;
+                vector<string> amr_block_names;
+
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,2)
+                if (mm->mrgtree_name != 0)
+                {
+                    // So far, we've coded only for MRG trees representing AMR hierarchies
+                    HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
+                        &mt, &num_amr_groups, &amr_group_ids, &amr_block_names);
+                }
+#endif
+#endif
+
                 avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
                     mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
                     groupOrigin, ndims, tdims, mt);
@@ -1703,22 +1726,6 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 mmd->zLabel = zLabel;
                 mmd->meshCoordType = mct;
 
-                //
-                // Handle mrgtree on the multimesh
-                //
-                int num_amr_groups = 0;
-                vector<int> amr_group_ids;
-                vector<string> amr_block_names;
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,6,2)
-                if (mm->mrgtree_name != 0)
-                {
-                    // So far, we've coded only for MRG trees representing AMR hierarchies
-                    HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
-                        &mt, &num_amr_groups, &amr_group_ids, &amr_block_names);
-                }
-#endif
-#endif
 
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,2)
