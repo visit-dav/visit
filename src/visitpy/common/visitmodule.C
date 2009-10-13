@@ -14512,6 +14512,11 @@ CloseExtensions()
 //   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
 //   Get the plugin manager via the viewer proxy.
 //
+//   Cyrus Harrison,Tue Oct 13 15:56:04 PDT 2009
+//   Always add Plot Plugin Interface Methods to the visitmodule.
+//   This allows these methods to be accessed from imported python modules
+//   if we are running the cli.
+//
 // ****************************************************************************
 
 static void
@@ -14542,15 +14547,32 @@ PlotPluginAddInterface()
         {
             PyObject *d;
             if(localNameSpace)
+            {
+                // if we are running in the cli, we want these methods
+                // to exist in the local namespace.
                 d = PyEval_GetLocals();
-            else
-                d = PyModule_GetDict(visitModule);
+                PyMethodDef *method = (PyMethodDef *)methods;
+                for(int j = 0; j < nMethods; ++j, ++method)
+                {
+                    debug1 << "\tAdded \"" << method->ml_name << "\" "
+                           << " to the local python dictionary." << endl;
 
+                    // Add the method to the dictionary.
+                    PyObject *v = PyCFunction_New(method, Py_None);
+                    if(v == NULL)
+                        continue;
+                    if(PyDict_SetItemString(d, method->ml_name, v) != 0)
+                        continue;
+                    Py_DECREF(v);
+                }
+            }
+            // make sure to add this method to the visitmodule dictionary
+            d = PyModule_GetDict(visitModule);
             PyMethodDef *method = (PyMethodDef *)methods;
             for(int j = 0; j < nMethods; ++j, ++method)
             {
-                debug1 << "\tAdded \"" << method->ml_name << "\" method."
-                       << endl;
+                debug1 << "\tAdded \"" << method->ml_name << "\" "
+                       << "method to the visitmodule dictionary." << endl;
 
                 // Add the method to the dictionary.
                 PyObject *v = PyCFunction_New(method, Py_None);
@@ -14586,6 +14608,11 @@ PlotPluginAddInterface()
 //   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
 //   Get the plugin manager via the viewer proxy.
 //
+//   Cyrus Harrison,Tue Oct 13 15:56:04 PDT 2009
+//   Always add Operator Plugin Interface Methods to the visitmodule.
+//   This allows these methods to be accessed from imported python modules
+//   if we are running the cli.
+//
 // ****************************************************************************
 
 static void
@@ -14616,15 +14643,32 @@ OperatorPluginAddInterface()
         {
             PyObject *d;
             if(localNameSpace)
+            {
+                // if we are running in the cli, we want these methods
+                // to exist in the local namespace.
                 d = PyEval_GetLocals();
-            else
-                d = PyModule_GetDict(visitModule);
+                PyMethodDef *method = (PyMethodDef *)methods;
+                for(int j = 0; j < nMethods; ++j, ++method)
+                {
+                    debug1 << "\tAdded \"" << method->ml_name << "\" "
+                           << " to the local python dictionary." << endl;
 
+                    // Add the method to the dictionary.
+                    PyObject *v = PyCFunction_New(method, Py_None);
+                    if(v == NULL)
+                        continue;
+                    if(PyDict_SetItemString(d, method->ml_name, v) != 0)
+                        continue;
+                    Py_DECREF(v);
+                }
+            }
+            // make sure to add this method to the visitmodule dictionary
+            d = PyModule_GetDict(visitModule);
             PyMethodDef *method = (PyMethodDef *)methods;
             for(int j = 0; j < nMethods; ++j, ++method)
             {
-                debug1 << "\tAdded \"" << method->ml_name << "\" method."
-                       << endl;
+                debug1 << "\tAdded \"" << method->ml_name << "\" "
+                       << "method to the visitmodule dictionary." << endl;
 
                 // Add the method to the dictionary.
                 PyObject *v = PyCFunction_New(method, Py_None);
