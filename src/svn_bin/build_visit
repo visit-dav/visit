@@ -699,6 +699,9 @@
 #     Brad Whitlock, Mon Sep 21 09:53:56 PDT 2009
 #     Adding support for AdvIO
 #
+#     Cyrus Harrison, Thu Oct 15 08:42:01 PDT 2009
+#     Modifications to build_mesa & its patches to support building on AIX.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -2337,451 +2340,12 @@ function check_variables
     return 0
 }
 
-# *************************************************************************** #
-#                          Function 3, build_mesa                             #
-# *************************************************************************** #
-
-function apply_mesa_642_patch_general
-{
-    patch -p0 <<\EOF
-diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
-*** Mesa-6.4.2.orig/configs/default	Wed Feb  1 09:47:36 2006
---- Mesa-6.4.2/configs/default	Wed May 23 16:43:22 2007
-***************
-*** 16,23 ****
-  # Compiler and flags
-  CC = cc
-  CXX = CC
-! CFLAGS = -O
-! CXXFLAGS = -O
-  GLU_CFLAGS = 
-  
-  # Misc tools and flags
---- 16,23 ----
-  # Compiler and flags
-  CC = cc
-  CXX = CC
-! CFLAGS = -O -DUSE_MGL_NAMESPACE
-! CXXFLAGS = -O -DUSE_MGL_NAMESPACE
-  GLU_CFLAGS = 
-  
-  # Misc tools and flags
-***************
-*** 24,30 ****
-  MKLIB_OPTIONS = 
-  MKDEP = makedepend
-  MKDEP_OPTIONS = -fdepend
-! MAKE = make
-  
-  # Python and flags (generally only needed by the developers)
-  PYTHON2 = python
---- 24,30 ----
-  MKLIB_OPTIONS = 
-  MKDEP = makedepend
-  MKDEP_OPTIONS = -fdepend
-! #MAKE = make
-  
-  # Python and flags (generally only needed by the developers)
-  PYTHON2 = python
-***************
-*** 31,37 ****
-  PYTHON_FLAGS = -t -O -O
-  
-  # Library names (base name)
-! GL_LIB = GL
-  GLU_LIB = GLU
-  GLUT_LIB = glut
-  GLW_LIB = GLw
---- 31,37 ----
-  PYTHON_FLAGS = -t -O -O
-  
-  # Library names (base name)
-! GL_LIB = MesaGL
-  GLU_LIB = GLU
-  GLUT_LIB = glut
-  GLW_LIB = GLw
-***************
-*** 57,63 ****
-  # Directories
-  LIB_DIR = $(TOP)/lib
-  INSTALL_PREFIX = /usr/local
-! SRC_DIRS = mesa glu glut/glx glw
-  GLU_DIRS = sgi
-  DRIVER_DIRS = x11 osmesa
-  # Which subdirs under $(TOP)/progs/ to enter:
---- 57,63 ----
-  # Directories
-  LIB_DIR = $(TOP)/lib
-  INSTALL_PREFIX = /usr/local
-! SRC_DIRS = mesa glu
-  GLU_DIRS = sgi
-  DRIVER_DIRS = x11 osmesa
-  # Which subdirs under $(TOP)/progs/ to enter:
-***************
-*** 65,71 ****
-  
-  
-  # Library/program dependencies
-! EXTRA_LIB_PATH ?=
-  GL_LIB_DEPS = $(EXTRA_LIB_PATH) -lX11 -lXext -lm -lpthread
-  OSMESA_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB)
-  GLU_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB) -lm
---- 65,71 ----
-  
-  
-  # Library/program dependencies
-! EXTRA_LIB_PATH =
-  GL_LIB_DEPS = $(EXTRA_LIB_PATH) -lX11 -lXext -lm -lpthread
-  OSMESA_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB)
-  GLU_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB) -lm
-
-diff -c Mesa-6.4.2.orig/src/mesa/main/config.h Mesa-6.4.2/src/mesa/main/config.h
-*** Mesa-6.4.2.orig/src/mesa/main/config.h      2005-07-15 20:56:20.000000000 -0400
---- Mesa-6.4.2/src/mesa/main/config.h   2008-06-24 13:45:21.000000000 -0400
-***************
-*** 129,137 ****
-  /**
-   * Maximum viewport/image width. Must accomodate all texture sizes too.
-   */
-! #define MAX_WIDTH 4096
-  /** Maximum viewport/image height */
-! #define MAX_HEIGHT 4096
-
-  /** Maxmimum size for CVA.  May be overridden by the drivers.  */
-  #define MAX_ARRAY_LOCK_SIZE 3000
---- 129,137 ----
-  /**
-   * Maximum viewport/image width. Must accomodate all texture sizes too.
-   */
-! #define MAX_WIDTH 16384
-  /** Maximum viewport/image height */
-! #define MAX_HEIGHT 16384
-
-  /** Maxmimum size for CVA.  May be overridden by the drivers.  */
-  #define MAX_ARRAY_LOCK_SIZE 3000
-EOF
-   if [[ $? != 0 ]] ; then
-       warn "Unable to apply generic 6.4.2 patch Mesa. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_mesa_642_darwin_patch
-{
-   patch -p0 <<\EOF
-diff -p -r Mesa-6.4.2.orig/configs/darwin Mesa-6.4.2/configs/darwin
-*** Mesa-6.4.2.orig/configs/darwin	Wed Jun 29 19:34:07 2005
---- Mesa-6.4.2/configs/darwin	Wed May 23 11:31:16 2007
-*************** CONFIG_NAME = darwin
-*** 7,29 ****
-  # Compiler and flags
-  CC = cc
-  CXX = cc
-! CFLAGS = -I/usr/X11R6/include -O3 -fPIC -fno-common -ffast-math -funroll-loops -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin
-! CXXFLAGS = -I/usr/X11R6/include -O3 -fPIC -fno-common -ffast-math -funroll-loops -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin
-  
-  # Library names (actual file names)
-! GL_LIB_NAME = libGL.dylib
-  GLU_LIB_NAME = libGLU.dylib
-  GLUT_LIB_NAME = libglut.dylib
-  GLW_LIB_NAME = libGLw.dylib
-  OSMESA_LIB_NAME = libOSMesa.dylib
-  
-! GL_LIB_DEPS = -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread
-! OSMESA_LIB_DEPS = -L$(LIB_DIR) -lGL
-! GLU_LIB_DEPS = -L$(LIB_DIR) -lGL
-! GLUT_LIB_DEPS = -L$(LIB_DIR) -lGL -lGLU -L/usr/X11R6/lib -lX11 -lXmu -lXi -lXext
-! GLW_LIB_DEPS = -L/usr/X11R6/lib -lX11 -lXt $(TOP)/lib/GL.dylib
-! APP_LIB_DEPS = -L$(TOP)/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) -L/usr/X11R6/lib -lX11 -lXmu -lXt -lXi -lm
-  
-  # omit glw lib for now:
-! SRC_DIRS = mesa glu glut/glx
-  
---- 7,31 ----
-  # Compiler and flags
-  CC = cc
-  CXX = cc
-! CFLAGS = -O3 -fPIC -fno-common -ffast-math -funroll-loops \
-! -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin -DUSE_MGL_NAMESPACE
-! CXXFLAGS = -O3 -fPIC -fno-common -ffast-math -funroll-loops \
-! -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin -DUSE_MGL_NAMESPACE
-  
-  # Library names (actual file names)
-! GL_LIB_NAME = libMesaGL.dylib
-  GLU_LIB_NAME = libGLU.dylib
-  GLUT_LIB_NAME = libglut.dylib
-  GLW_LIB_NAME = libGLw.dylib
-  OSMESA_LIB_NAME = libOSMesa.dylib
-  
-! GL_LIB_DEPS = -lm -lpthread
-! OSMESA_LIB_DEPS = -L$(LIB_DIR) -lMesaGL
-! GLU_LIB_DEPS = -L$(LIB_DIR) -lMesaGL
-! GLUT_LIB_DEPS = -L$(LIB_DIR) -lMesaGL -lGLU
-! GLW_LIB_DEPS = $(TOP)/lib/MesaGL.dylib
-! APP_LIB_DEPS = -L$(TOP)/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) -lm
-  
-  # omit glw lib for now:
-! SRC_DIRS = mesa glu
-  
-diff -p -r Mesa-6.4.2.orig/src/mesa/sources Mesa-6.4.2/src/mesa/sources
-*** Mesa-6.4.2.orig/src/mesa/sources	Tue Oct 18 18:02:59 2005
---- Mesa-6.4.2/src/mesa/sources	Wed May 23 11:52:49 2007
-*************** SPARC_API =			\
-*** 251,266 ****
-  COMMON_DRIVER_SOURCES =			\
-  	drivers/common/driverfuncs.c
-  
-! X11_DRIVER_SOURCES =		\
-! 	drivers/x11/glxapi.c	\
-! 	drivers/x11/fakeglx.c	\
-! 	drivers/x11/xfonts.c	\
-! 	drivers/x11/xm_api.c	\
-! 	drivers/x11/xm_buffer.c	\
-! 	drivers/x11/xm_dd.c	\
-! 	drivers/x11/xm_line.c	\
-! 	drivers/x11/xm_span.c	\
-! 	drivers/x11/xm_tri.c
-  
-  OSMESA_DRIVER_SOURCES = \
-  	drivers/osmesa/osmesa.c
---- 251,257 ----
-  COMMON_DRIVER_SOURCES =			\
-  	drivers/common/driverfuncs.c
-  
-! X11_DRIVER_SOURCES =
-  
-  OSMESA_DRIVER_SOURCES = \
-  	drivers/osmesa/osmesa.c
-EOF
-   if [[ $? != 0 ]] ; then
-       warn "Unable to apply Darwin 6.4.2 patch Mesa. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_mesa_642_linux_patch
-{
-   patch -p0 <<\EOF
-diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
-*** Mesa-6.4.2.orig/configs/linux	Thu Feb  2 19:54:06 2006
---- Mesa-6.4.2/configs/linux	Wed May 23 17:43:25 2007
-***************
-*** 18,24 ****
-  ARCH_FLAGS ?=
-  
-  DEFINES = -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE \
-! 	-D_BSD_SOURCE -DPTHREADS -DUSE_XSHM
-  
-  X11_INCLUDES = -I/usr/X11R6/include
-  
---- 18,24 ----
-  ARCH_FLAGS ?=
-  
-  DEFINES = -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE \
-! 	-D_BSD_SOURCE -DPTHREADS -DUSE_XSHM -DUSE_MGL_NAMESPACE
-  
-  X11_INCLUDES = -I/usr/X11R6/include
-  
-EOF
-   if [[ $? != 0 ]] ; then
-       warn "Unable to apply Linux 6.4.2 patch Mesa. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_mesa_642_aix_patch
-{
-   patch -p0 <<\EOF
-diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
-*** Mesa-6.4.2.orig/configs/aix	Mon Sep 13 14:04:48 2004
---- Mesa-6.4.2/configs/aix	Wed May 23 17:46:34 2007
-***************
-*** 5,19 ****
-  CONFIG_NAME = aix
-  
-  # Compiler and flags
-! CC = cc
-  CXX = xlC
-  
-! CFLAGS = -O -DAIXV3
-! CXXFLAGS = -O -DAIXV3
-! MKLIB_OPTIONS =
-  
-  # Library names (actual file names)
-! GL_LIB_NAME = libGL.a
-  GLU_LIB_NAME = libGLU.a
-  GLUT_LIB_NAME = libglut.a
-  GLW_LIB_NAME = libGLw.a
---- 5,19 ----
-  CONFIG_NAME = aix
-  
-  # Compiler and flags
-! CC = xlc
-  CXX = xlC
-  
-! CFLAGS = -O -DAIXV3 -DUSE_MGL_NAMESPACE
-! CXXFLAGS = -O -DAIXV3 -DUSE_MGL_NAMESPACE
-! MKLIB_OPTIONS = -static
-  
-  # Library names (actual file names)
-! GL_LIB_NAME = libMesaGL.a
-  GLU_LIB_NAME = libGLU.a
-  GLUT_LIB_NAME = libglut.a
-  GLW_LIB_NAME = libGLw.a
-diff -c Mesa-6.4.2.orig/src/mesa/main/glheader.h Mesa-6.4.2/src/mesa/main/glheader.h
-*** Mesa-6.4.2.orig/src/mesa/main/glheader.h	Sun Nov 27 10:16:31 2005
---- Mesa-6.4.2/src/mesa/main/glheader.h	Mon Jun 25 15:37:10 2007
-***************
-*** 305,312 ****
-   */
-  #if defined(__VMS)
-  #define __FUNCTION__ "VMS$NL:"
-! #elif !(defined(__GNUC__) && __GNUC__ >= 2) && !(defined(_MSC_VER) && _MSC_VER >= 1300)
-! #define __FUNCTION__ "unknown"
-  #endif
-  
-  
---- 305,315 ----
-   */
-  #if defined(__VMS)
-  #define __FUNCTION__ "VMS$NL:"
-! #elif __STDC_VERSION__ < 199901L
-! # if ((!defined __GNUC__) || (__GNUC__ < 2)) && (!defined __xlC__) && \
-!       (!defined(_MSC_VER) || _MSC_VER < 1300)
-! #  define __FUNCTION__ "<unknown>"
-! # endif
-  #endif
-  
-  
-diff -c Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h Mesa-6.4.2/src/mesa/swrast/s_tritemp.h
-*** Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h	Tue Dec 13 06:44:22 2005
---- Mesa-6.4.2/src/mesa/swrast/s_tritemp.h	Mon Jun 25 16:04:48 2007
-***************
-*** 1156,1162 ****
-  #ifdef INTERP_INDEX
-                    CLAMP_INTERPOLANT(index, indexStep, len);
-  #endif
-!                   RENDER_SPAN( span );
-                 }
-  
-                 /*
---- 1156,1164 ----
-  #ifdef INTERP_INDEX
-                    CLAMP_INTERPOLANT(index, indexStep, len);
-  #endif
-!                   {
-!                      RENDER_SPAN( span );
-!                   }
-                 }
-  
-                 /*
-EOF
-   if [[ $? != 0 ]] ; then
-       warn "Unable to apply AIX 6.4.2 patch Mesa. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_mesa_642_solaris_patch
-{
-   patch -p0 <<\EOF
-diff -p -r Mesa-6.4.2.orig/configs/solaris-x86-gcc Mesa-6.4.2/configs/solaris-x86-gcc
-*** Mesa-6.4.2.orig/configs/solaris-x86-gcc	Mon Sep 13 14:04:48 2004
---- Mesa-6.4.2/configs/solaris-x86-gcc	Wed May 23 11:34:25 2007
-*************** CONFIG_NAME = solaris-x86-gcc
-*** 7,14 ****
-  # Compiler and flags
-  CC = gcc
-  CXX = g++
-! CFLAGS = -O3 -m486 -fPIC -I/usr/openwin/include -DUSE_XSHM
-! CXXFLAGS = -O3 -m486 -fPIC
-  GLUT_CFLAGS = -fexceptions
-  MKLIB_OPTIONS = -static
-  
---- 7,14 ----
-  # Compiler and flags
-  CC = gcc
-  CXX = g++
-! CFLAGS = -O3 -m486 -fPIC -I/usr/openwin/include -DUSE_XSHM -DUSE_MGL_NAMESPACE
-! CXXFLAGS = -O3 -m486 -fPIC -DUSE_MGL_NAMESPACE
-  GLUT_CFLAGS = -fexceptions
-  MKLIB_OPTIONS = -static
-  
-*************** GLU_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB) 
-*** 17,23 ****
-  GLUT_LIB_DEPS = -L$(LIB_DIR) -l$(GLU_LIB) -l$(GL_LIB) -L/usr/openwin/lib -lX11 -lXmu -lXt -lXi -lm
-  APP_LIB_DEPS = -L$(LIB_DIR) -L/usr/openwin/lib -R/usr/openwin/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) -lm
-  
-! GL_LIB_NAME = libGL.a
-  GLU_LIB_NAME = libGLU.a
-  GLUT_LIB_NAME = libglut.a
-  GLW_LIB_NAME = libGLw.a
---- 17,23 ----
-  GLUT_LIB_DEPS = -L$(LIB_DIR) -l$(GLU_LIB) -l$(GL_LIB) -L/usr/openwin/lib -lX11 -lXmu -lXt -lXi -lm
-  APP_LIB_DEPS = -L$(LIB_DIR) -L/usr/openwin/lib -R/usr/openwin/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) -lm
-  
-! GL_LIB_NAME = libMesaGL.a
-  GLU_LIB_NAME = libGLU.a
-  GLUT_LIB_NAME = libglut.a
-  GLW_LIB_NAME = libGLw.a
-EOF
-   if [[ $? != 0 ]] ; then
-       warn "Unable to apply Solaris 6.4.2 patch Mesa. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_mesa_642_patch
-{
-   apply_mesa_642_patch_general
-   if [[ $? != 0 ]] ; then
-       return 1
-   fi
-   if [[ "$OPSYS" == "Darwin" ]]; then
-       info "Patching Mesa for Darwin . . ."
-       apply_mesa_642_darwin_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   elif [[ "$OPSYS" == "Linux" ]]; then
-       info "Patching Mesa for Linux . . ."
-       apply_mesa_642_linux_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   elif [[ "$OPSYS" == "AIX" ]]; then
-       info "Patching Mesa for AIX . . ."
-       apply_mesa_642_aix_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   elif [[ "$OPSYS" == "SunOS" ]]; then
-       info "Patching Mesa for Solaris . . ."
-       apply_mesa_642_solaris_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
-   return 0
-}
-
-function apply_mesa_75_patch
+function apply_mesa_75_patch_1
 {
    patch -p0 <<\EOF
 diff -p -r Mesa-7.5.orig/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
-*** Mesa-7.5.orig/src/mesa/main/config.h	2009-06-26 18:41:04.000000000 -0400
---- Mesa-7.5/src/mesa/main/config.h	2009-08-13 16:38:09.000000000 -0400
+*** Mesa-7.5.orig/src/mesa/main/config.h    2009-06-26 18:41:04.000000000 -0400
+--- Mesa-7.5/src/mesa/main/config.h 2009-08-13 16:38:09.000000000 -0400
 ***************
 *** 138,146 ****
   /** 
@@ -2805,21 +2369,149 @@ diff -p -r Mesa-7.5.orig/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
   #define MAX_ARRAY_LOCK_SIZE 3000
 EOF
    if [[ $? != 0 ]] ; then
-       warn "Unable to apply patch to Mesa 7.5."
-       return 1
+        warn "Unable to apply patch 1 to Mesa 7.5."
+        return 1
+   else
+        return 0
    fi
-
-   return 0
 }
+
+function apply_mesa_75_patch_2
+{
+    patch -p0 <<\EOF
+diff --git a/configure.ac b/configure.ac
+index 7518976..44fb779 100644
+--- a/configure.ac
++++ Mesa-7.5/configure.ac
+@@ -230,6 +230,8 @@ else
+         LIB_EXTENSION='dylib' ;;
+     cygwin* )
+         LIB_EXTENSION='dll' ;;
++    aix* )
++        LIB_EXTENSION='a' ;;
+     * )
+         LIB_EXTENSION='so' ;;
+     esac
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 2 to Mesa 7.5."
+        return 1
+    else
+        return 0
+   fi
+}
+
+function apply_mesa_75_patch_3
+{
+    patch -p0 <<\EOF
+diff --git a/progs/Makefile b/progs/Makefile
+index c99f4ee..064e5a2 100644
+--- a/progs/Makefile
++++ Mesa-7.5/progs/Makefile
+@@ -4,7 +4,7 @@ TOP = ..
+ 
+ include $(TOP)/configs/current
+ 
+-SUBDIRS = $(PROGRAM_DIRS)
++SUBDIRS ="$(PROGRAM_DIRS)"
+ 
+ 
+ default: message subdirs
+@@ -15,18 +15,22 @@ message:
+ 
+ 
+ subdirs:
+-	@for dir in $(SUBDIRS) ; do \
+-		if [ -d $$dir ] ; then \
+-			(cd $$dir && $(MAKE)) || exit 1 ; \
+-		fi \
+-	done
++	@if test -n "$(SUBDIRS)" ; then \
++		for dir in $(SUBDIRS) ; do \
++			if [ -d $$dir ] ; then \
++				(cd $$dir && $(MAKE)) || exit 1 ; \
++			fi \
++		done \
++	fi
+ 
+ # Dummy install target
+ install:
+ 
+ clean:
+-	-@for dir in $(SUBDIRS) tests ; do \
+-		if [ -d $$dir ] ; then \
+-			(cd $$dir && $(MAKE) clean) ; \
+-		fi \
+-	done
++	-@if test -n "$(SUBDIRS)" ; then \
++		for dir in $(SUBDIRS) tests ; do \
++			if [ -d $$dir ] ; then \
++				(cd $$dir && $(MAKE) clean) ; \
++			fi \
++		done \
++	fi
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 3 to Mesa 7.5."
+        return 1
+    else
+        return 0
+   fi
+}
+
+
+function apply_mesa_75_patch_4
+{
+    patch -p0 <<\EOF
+diff --git a/src/mesa/main/compiler.h b/src/mesa/main/compiler.h
+index 380663e..4f1df92 100644
+--- a/src/mesa/main/compiler.h
++++ Mesa-7.5/src/mesa/main/compiler.h
+@@ -234,6 +234,8 @@ extern "C" {
+ #elif defined(__APPLE__)
+ #include <CoreFoundation/CFByteOrder.h>
+ #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
++#elif defined(_AIX)
++#define CPU_TO_LE32( x )	( x )
+ #else /*__linux__ __APPLE__*/
+ #include <sys/endian.h>
+ #define CPU_TO_LE32( x )	bswap32( x )
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 4 to Mesa 7.5."
+        return 1
+    else
+        return 0
+   fi
+}
+
 
 function apply_mesa_patch
 {
    info "Patching Mesa . . ."
-   if [[ ${MESA_VERSION} == 6.4.2 ]] ; then
-      apply_mesa_642_patch
-   fi
    if [[ ${MESA_VERSION} == 7.5 ]] ; then
-      apply_mesa_75_patch
+      apply_mesa_75_patch_1
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+      apply_mesa_75_patch_2
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+      apply_mesa_75_patch_3
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+      apply_mesa_75_patch_4
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+   else
+       warn "Unsupported Mesa Version ${MESA_VERSION}"
+       return 1
    fi
 
    return 0
@@ -2833,12 +2525,12 @@ function build_mesa
     #
     prepare_build_dir $MESA_BUILD_DIR $MESA_FILE
     untarred_mesa=$?
-    
+
     if [[ $untarred_mesa == -1 ]] ; then
        warn "Unable to prepare Mesa build directory. Giving Up!"
        return 1
     fi
-    
+
     #
     # Patch mesa
     #
@@ -2876,51 +2568,95 @@ function build_mesa
     # context.  The two libraries will have a host of duplicate
     # symbols, and it is important that we pick up the ones from OSMesa.
     info "Configuring Mesa (Mangled glX) ..."
+    if [[ "$OPSYS" == "AIX" ]]; then
+        export AIX_MESA_CFLAGS="-qcpluscmt -qlanglvl=extc99"
+        autoconf
+        if [[ $? != 0 ]] ; then
+          error "Mesa: AIX autoconf failed!"
+        fi
+    fi
+    
+    info 
+    
     ./configure \
-      CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE"     \
+      CC="${C_COMPILER}" \
+      CXX="${CXX_COMPILER}" \
+      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE"     \
       CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
-      --prefix=${PF}                             \
-      --without-demos                            \
-      --with-driver=xlib                         \
-      --enable-gl-osmesa                         \
-      --disable-gallium                          \
-      --disable-egl
+      --prefix=${PF}               \
+      --without-demos              \
+      --disable-gallium            \
+      --with-driver=xlib           \
+      --enable-gl-osmesa           \
+      --disable-glw                \
+      --disable-glu                \
+      --disable-egl 
+    if [[ $? != 0 ]] ; then
+       warn "Mesa: 'configure' for Mangled glX failed.  Giving up"
+       return 1
+    fi
+
     # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
     # libraries supplied by the vendor.
-    if test `uname` = "Darwin" ; then
-        sed -i bak "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
-        sed -i bak "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
-    else
-        sed -i "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
-        sed -i "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
+    cat configs/autoconf | sed -e "s,GL_LIB = GL,GL_LIB=MesaGL,g" > configs/autoconf.edit || return 1
+    mv configs/autoconf.edit configs/autoconf
+    cat configs/autoconf | sed -e "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" > configs/autoconf.edit || return 1
+    mv configs/autoconf.edit configs/autoconf
+
+    info "Building Mesa (Mangled glX) ..."
+    ${MAKE} ${MAKE_OPT_FLAGS}
+    if [[ $? != 0 ]] ; then
+       warn "Mesa: 'make' for Mangled glX failed.  Giving up"
+       return 1
     fi
-    make ${MAKE_OPT_FLAGS}
     info "Installing Mesa (Mangled glX) ..."
-    make install
+    ${MAKE} install
+    if [[ $? != 0 ]] ; then
+       warn "Mesa: 'make install' for Mangled glX failed.  Giving up"
+       return 1
+    fi
 
     # Now install #2, the OSMesa that we want/need.
-    make clean &>/dev/null
+    ${MAKE} clean &>/dev/null
     info "Configuring Mesa (Mangled Offscreen) ..."
+
     ./configure \
-      CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE"     \
+      CC="${C_COMPILER}" \
+      CXX="${CXX_COMPILER}" \
+      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE"     \
       CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
-      --prefix=${PF}                             \
-      --without-demos                            \
-      --with-driver=osmesa                       \
-      --disable-gallium                          \
-      --disable-egl
+      --prefix=${PF}                    \
+      --without-demos                   \
+      --with-driver=osmesa              \
+      --disable-gallium                 \
+      --with-max-width=16384            \
+      --with-max-height=16384           \
+      --disable-glw                     \
+      --disable-glu                     \
+      --disable-egl 
+    if [[ $? != 0 ]] ; then
+       warn "Mesa: 'configure' for Mangled Offscreen failed.  Giving up"
+       return 1
+    fi
     # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
     # libraries supplied by the vendor.
-    if test `uname` = "Darwin" ; then
-        sed -i bak "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
-        sed -i bak "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
-    else
-        sed -i "s,GL_LIB = GL,GL_LIB=MesaGL,g" configs/autoconf || exit 1
-        sed -i "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" configs/autoconf || exit 1
+    cat configs/autoconf | sed -e "s,GL_LIB = GL,GL_LIB=MesaGL,g" > configs/autoconf.edit || return 1
+    mv configs/autoconf.edit configs/autoconf
+    cat configs/autoconf | sed -e "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" > configs/autoconf.edit || return 1
+    mv configs/autoconf.edit configs/autoconf
+
+    info "Building Mesa (Mangled Offscreen) ..."
+    ${MAKE} ${MAKE_OPT_FLAGS}
+    if [[ $? != 0 ]] ; then
+       warn "Mesa: 'make' for Mangled Offscreen failed.  Giving up"
+       return 1
     fi
-    make ${MAKE_OPT_FLAGS}
     info "Installing Mesa (Mangled Offscreen) ..."
-    make install
+    ${MAKE} install
+    if [[ $? != 0 ]] ; then
+       warn "Mesa: 'make install' for Mangled Offscreen failed.  Giving up"
+       return 1
+    fi
 
     # Some versions of Mesa erroneously install GLEW as well.  We need to make
     # sure we get VisIt's GLEW when we include it, so remove the ones Mesa
@@ -2931,50 +2667,7 @@ function build_mesa
        warn "Mesa build failed.  Giving up"
        return 1
     fi
-    
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
-        install_name_tool -id \
-           "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.$SO_EXT"
-        install_name_tool -id \
-           "$INSTALLNAMEPATH/libOSMesa.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.$SO_EXT"
-        install_name_tool -change \
-           libMesaGL.$SO_EXT \
-           "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.$SO_EXT"
-        install_name_tool -id \
-           "$INSTALLNAMEPATH/libMesaGLU.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGLU.$SO_EXT"
-        install_name_tool -change \
-           libMesaGL.$SO_EXT \
-           "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGLU.$SO_EXT"
-        if [[ $? != 0 ]] ; then
-           warn "Mesa dynamic library install failed.  Giving up"
-           return 1
-        fi
-    elif [[ "$OPSYS" == "AIX" ]]; then
-        cd lib
-        ar -x libMesaGL.a
-        xlC -G -brtl -Wl,-blpdata -Wl,-bmaxdata:0x70000000 \
-           -o libMesaGL.$SO_EXT *.o
-        cp libMesaGL.$SO_EXT \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.$SO_EXT"
-        rm *.o
-        ar -x libOSMesa.a
-        xlC -G -brtl -Wl,-blpdata -Wl,-bmaxdata:0x70000000 \
-           -o libOSMesa.$SO_EXT *.o
-        cp libOSMesa.$SO_EXT \
-           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.$SO_EXT"
-        rm *.o
-        cd ..
-    fi
+
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/mesa"
        chgrp -R ${GROUP} "$VISITDIR/mesa"
