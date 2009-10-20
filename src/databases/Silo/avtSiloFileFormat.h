@@ -232,6 +232,7 @@ typedef struct _GroupInfo
 //    Replaced DBtoc* arg to ReadXXX functions with list of names of objects
 //    to process. Added RemoveMultixxx functions to help manage cached
 //    multi-objects in presence of exceptions.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -303,6 +304,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     GroupInfo                       groupInfo;
 
     map<string, vector<int> >       arbMeshZoneRangesToSkip;
+    map<string, vector<int>* >      arbMeshCellReMap;
+    map<string, vector<int>* >      arbMeshNodeReMap;
 
     vector<avtDataSelection_p>      selList;
     vector<bool>                   *selsApplied;
@@ -375,6 +378,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
                                              DBzonelist *, int,
                                              vector<int>&);
+    void                  ReadInArbConnectivity(const char *, vtkUnstructuredGrid*,
+                                                DBucdmesh*,int);
     avtMeshType           FindDecomposedMeshType(DBfile *dbfile);
     void                  GetConnectivityAndGroupInformation(DBfile *, bool = false);
     void                  GetConnectivityAndGroupInformationFromFile(DBfile *,

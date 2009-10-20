@@ -65,6 +65,7 @@
 #include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 
@@ -135,7 +136,7 @@ static void TranslateSiloWedgeToVTKWedge(const int *, vtkIdType [6]);
 static void TranslateSiloPyramidToVTKPyramid(const int *, vtkIdType [5]);
 static void TranslateSiloTetrahedronToVTKTetrahedron(const int *,
                                                      vtkIdType [4]);
-static bool TetsAreInverted(const int *siloTetrahedron,
+static bool TetIsInverted(const int *siloTetrahedron,
                             vtkUnstructuredGrid *ugrid);
 
 static int  ComputeNumZonesSkipped(const vector<int>& zoneRangesSkipped);
@@ -920,6 +921,15 @@ avtSiloFileFormat::FreeUpResources(void)
 
     nlBlockToWindowsMap.clear();
     pascalsTriangleMap.clear();
+
+    arbMeshZoneRangesToSkip.clear();
+    map<string, vector<int>* >::iterator it;
+    for (it = arbMeshCellReMap.begin(); it != arbMeshCellReMap.end(); it++)
+        delete it->second;
+    arbMeshCellReMap.clear();
+    for (it = arbMeshNodeReMap.begin(); it != arbMeshNodeReMap.end(); it++)
+        delete it->second;
+    arbMeshNodeReMap.clear();
 }
 
 // ****************************************************************************
@@ -6403,10 +6413,12 @@ static void RemoveValuesForSkippedZones(const vector<int>& zoneRangesSkipped,
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Oct 20 16:51:06 PDT 2009
+//    Made it static.
 // ****************************************************************************
 
 template <typename T, typename Tarr>
-vtkDataArray *
+static vtkDataArray *
 CopyUcdVectorVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
 {
     Tarr *vectors = Tarr::New();
@@ -6549,11 +6561,12 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 // Creation:   Thu Aug  6 15:37:55 PDT 2009
 //
 // Modifications:
-//   
+//    Mark C. Miller, Tue Oct 20 16:50:55 PDT 2009
+//    Made it static.
 // ****************************************************************************
 
 template <typename T, typename Tarr>
-vtkDataArray *
+static vtkDataArray *
 CopyQuadVectorVar(const DBquadvar *qv)
 {
     Tarr *vectors = Tarr::New();
@@ -6663,11 +6676,14 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
 // Creation:   Thu Aug  6 15:12:29 PDT 2009
 //
 // Modifications:
+//
+//    Mark C. Miller, Tue Oct 20 16:50:41 PDT 2009
+//    Made it static.
 //   
 // ****************************************************************************
 
 template <typename T, typename Tarr>
-vtkDataArray *
+static vtkDataArray *
 CopyPointVectorVar(const DBmeshvar *mv)
 {
     Tarr *vectors = Tarr::New();
@@ -7174,25 +7190,74 @@ ConvertToFloat(int silotype, void *data, int nels)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Mon Oct 19 20:23:08 PDT 2009
+//    Replaced skipping logic (old way) with remapping logic for arb.
+//    polyhedral meshes. Also made this function static as it is not needed
+//    outside of this file.
 // ****************************************************************************
 
 template <typename T, typename Tarr>
-vtkDataArray *
-CopyUcdVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
+static vtkDataArray *
+CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
 {
     Tarr *scalars = Tarr::New();
+    T *ptr = 0;
+    size_t i;
+    int j, n, cnt;
 
     //
-    // Handle stripping out values for zone types we don't understand
+    // Handle remapping data to due zones that have been decomposed. 
     //
-    if (zonesRangesToSkip.size() > 0)
+    if (remap.size() > 0)
     {
-        int numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
+        if (uv->centering == DB_ZONECENT)
+        {
+            scalars->SetNumberOfTuples(remap.size());
+            ptr = (T *) scalars->GetVoidPointer(0);
+            for (i = 0; i < remap.size(); i++)
+                ptr[i] = ((T**)(uv->vals))[0][remap[i]];
+        }
+        else if (uv->centering == DB_NODECENT)
+        {
+            //
+            // Determine # of 'extra' nodes
+            //
+            n = 0;
+            i = 0;
+            while (i < remap.size())
+            {
+                cnt = remap[i++];
+                for (j = 0; j < cnt; j++)
+                    i++;
+                n++;
+            }
 
-        scalars->SetNumberOfTuples(uv->nels - numSkipped);
-        T *ptr = (T *) scalars->GetVoidPointer(0);
-        RemoveValuesForSkippedZones(zonesRangesToSkip,
-            ((T**)uv->vals)[0], uv->nels, ptr);
+            //
+            // Add data from original nodes.
+            //
+            scalars->SetNumberOfTuples(uv->nels+n);
+            ptr = (T *) scalars->GetVoidPointer(0);
+            for (i = 0; i < uv->nels; i++)
+                ptr[i] = ((T**)(uv->vals))[0][i];
+
+            //
+            // Remap data on 'extra' nodes. Note, this sum/average
+            // is almost certainly not appropriate for all variables.
+            // I think we need to know which are 'intensive' and which
+            // are 'extensive'. Silo still needs to be enhanced for
+            // that.
+            //
+            n = uv->nels;
+            i = 0;
+            while (i < remap.size())
+            {
+                double sum = 0.0;
+                cnt = remap[i++];
+                for (j = 0; j < cnt; j++, i++)
+                    sum += (double) ((T**)(uv->vals))[0][remap[i]];
+                ptr[n++] = (T) (sum / cnt);
+            }
+        }
     }
     else
     {
@@ -7258,6 +7323,8 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
 //    Brad Whitlock, Fri Aug  7 10:19:32 PDT 2009
 //    I added support for non-float types.
 //
+//    Mark C. Miller, Mon Oct 19 20:25:08 PDT 2009
+//    Replaced skipping logic with remapping logic.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7279,25 +7346,31 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vector<int> noskips;
-    vector<int> &zoneRangesToSkip = noskips;
-    if (uv->centering == DB_ZONECENT && metadata != NULL)
+    string meshName = metadata->MeshForVar(tvn);
+    vector<int> noremap;
+    vector<int>* remap = &noremap;
+    if (uv->centering == DB_ZONECENT &&
+        arbMeshCellReMap.find(meshName) != arbMeshCellReMap.end())
     {
-        string meshName = metadata->MeshForVar(tvn);
-        zoneRangesToSkip = arbMeshZoneRangesToSkip[meshName];
+        remap = arbMeshCellReMap[meshName];
+    }
+    else if (uv->centering == DB_NODECENT &&
+        arbMeshNodeReMap.find(meshName) != arbMeshNodeReMap.end())
+    {
+        remap = arbMeshNodeReMap[meshName];
     }
 
     vtkDataArray *scalars = 0;
     if(uv->datatype == DB_DOUBLE)
-        scalars = CopyUcdVar<double,vtkDoubleArray>(uv, zoneRangesToSkip);
+        scalars = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
-        scalars = CopyUcdVar<float,vtkFloatArray>(uv, zoneRangesToSkip);
+        scalars = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
-        scalars = CopyUcdVar<int,vtkIntArray>(uv, zoneRangesToSkip);
+        scalars = CopyUcdVar<int,vtkIntArray>(uv, *remap);
     else if(uv->datatype == DB_SHORT)
-        scalars = CopyUcdVar<short,vtkShortArray>(uv, zoneRangesToSkip);
+        scalars = CopyUcdVar<short,vtkShortArray>(uv, *remap);
     else if(uv->datatype == DB_CHAR)
-        scalars = CopyUcdVar<char,vtkCharArray>(uv, zoneRangesToSkip);
+        scalars = CopyUcdVar<char,vtkCharArray>(uv, *remap);
 
     if (uv->mixvals != NULL && uv->mixvals[0] != NULL)
     {
@@ -7600,10 +7673,12 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Oct 20 16:51:50 PDT 2009
+//    Made it static.
 // ****************************************************************************
 
 template <typename T>
-void
+static void
 CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 {
     int nnodes = um->nnodes;
@@ -7727,6 +7802,8 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //    Brad Whitlock, Thu Aug  6 12:00:39 PDT 2009
 //    I added support for double coordinates.
 //
+//    Mark C. Miller, Mon Oct 19 20:22:27 PDT 2009
+//    Added support to read in arbitrary polyhedral data.
 // ****************************************************************************
 
 vtkDataSet *
@@ -7869,11 +7946,27 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         }
 
     }
-    else if (fl != NULL)
+    else if (fl != NULL && um->phzones == NULL)
     {
         vtkPolyData *pd = vtkPolyData::New();
         fl->CalcFacelistFromPoints(points, pd);
         rv = pd;
+    }
+
+    if (um->phzones != NULL)
+    {
+        vtkUnstructuredGrid  *ugrid = 0;
+        if (rv == 0)
+        {
+            ugrid = vtkUnstructuredGrid::New(); 
+            ugrid->SetPoints(points);
+            rv = ugrid;
+        }
+        else
+        {
+            ugrid = vtkUnstructuredGrid::SafeDownCast(rv);
+        }
+        ReadInArbConnectivity(mesh, ugrid, um, domain);
     }
 
     points->Delete();
@@ -8122,7 +8215,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     if (firstTet)
                     {
                         firstTet = false;
-                        tetsAreInverted = TetsAreInverted(nodelist, ugrid);
+                        tetsAreInverted = TetIsInverted(nodelist, ugrid);
                         static bool haveIssuedWarning = false;
                         if (tetsAreInverted)
                         {
@@ -8266,6 +8359,614 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     }
 }
 
+static bool
+QuadFaceIsTwisted(vtkUnstructuredGrid *ugrid, int *nids)
+{
+    int i, j;
+
+    //
+    // initialize set of 4 points of quad
+    //
+    float *pts = (float *) ugrid->GetPoints()->GetVoidPointer(0); 
+    float p[4][3];
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 3; j++)
+            p[i][j] = pts[3*nids[i] + j];
+    }
+
+    // Walk around quad, computing inner product of two edge vectors.
+    // You can have at most 2 negative inner products. If it is twisted,
+    // you will have 4 negative inner products. However, there
+    // is a numerical issue for a 'perfectly rectangular' quad because
+    // each inner product will be near zero but randomly to either
+    // side of it. So, we compare the inner product magnitude to
+    // an average of the two vector magnitudes and consider the
+    // inner product sign only when it is sufficiently. There is
+    // somewhat an assumption of planarity here. However, for near
+    // planar quads, the algorithm is expected to still work as the
+    // off-plane components that can skew the inner product are
+    // expected to be small. For very much non planar quads, this
+    // algorithm can fail.
+    int numNegiProds = 0;
+    for (i = 0; i < 4; i++)
+    {
+        float dotsum = 0.0;
+        float mag1sum = 0.0;
+        float mag2sum = 0.0;
+        for (j = 0; j < 3; j++)
+        {
+            float v1j = p[(i+1)%4][j] - p[(i+0)%4][j];
+            float v2j = p[(i+2)%4][j] - p[(i+1)%4][j];
+            mag1sum += v1j*v1j;
+            mag2sum += v2j*v2j;
+            dotsum += v1j * v2j;
+        }
+        if (dotsum < 0)
+        {
+            dotsum *= dotsum;
+            if (mag1sum * mag2sum > 0)
+            {
+                if (dotsum / (mag1sum * mag2sum) > 1e-8)
+                    numNegiProds++;
+            }
+        }
+    }
+
+    if (numNegiProds > 2)
+        return true;
+
+    return false;
+}
+
+// ****************************************************************************
+//  Function: ArbInsertTet
+//
+//  Purpose: Insert a tet element from the arbitrary connectivity.
+//
+//  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
+//
+// ****************************************************************************
+static void
+ArbInsertTet(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
+    vector<int> *cellReMap)
+{
+    // Use the 'TetIsInverted' method here to determine whether this tet
+    // Is ordered correctly, relative to VTK. Note, in this context an
+    // affirmative response means that the Tet is 'ok' for VTK.
+    if (!TetIsInverted(nids, ugrid))
+    {
+        int tmp = nids[0];
+        nids[0] = nids[1];
+        nids[1] = tmp;
+    }
+    ugrid->InsertNextCell(VTK_TETRA, 4, nids);
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::SafeDownCast(
+        ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    oca->InsertNextTupleValue(ocdata);
+    cellReMap->push_back(ocdata[1]);
+}
+
+// ****************************************************************************
+//  Function: ArbInsertPyramid
+//
+//  Purpose: Insert a pyramid element from the arbitrary connectivity.
+//
+//  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
+//
+// ****************************************************************************
+static void
+ArbInsertPyramid(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
+    vector<int> *cellReMap)
+{
+    // The nodes of the pyramid are given in the order that the
+    // first 4 define the quad 'base' and the last node defines
+    // the 'apex.'
+
+    // Now the idea is to compute a normal to the 'base' quad face
+    // and confirm the fifth point is on the correct side of that face.
+    // However, we already have code that basically does that for a tet,
+    // forming a plane with the first 3 nodes and then determining if
+    // the 4th node is on the INward or OUTward side of that plane.
+    // So, we spoof up a set of 4 nodes here to pass to that routine.
+    // The first three nodes are taken from the first three nodes of
+    // the base quad of the pyramid. The last node is the 5th node of the
+    // pyramid.  Again, an affirmative from TetIsInverted means order
+    // is ok for VTK
+    int tmpnids[5];
+    tmpnids[0] = nids[0];
+    tmpnids[1] = nids[1];
+    tmpnids[2] = nids[2];
+    tmpnids[3] = nids[4];
+    if (!TetIsInverted(tmpnids, ugrid))
+    {
+        // Reverse the order of the 'base' quad's nodes.
+        tmpnids[0] = nids[3];
+        tmpnids[1] = nids[2];
+        tmpnids[2] = nids[1];
+        tmpnids[3] = nids[0];
+        tmpnids[4] = nids[4];
+        ugrid->InsertNextCell(VTK_PYRAMID, 5, tmpnids);
+    }
+    else
+    {
+        ugrid->InsertNextCell(VTK_PYRAMID, 5, nids);
+    }
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::SafeDownCast(
+        ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    oca->InsertNextTupleValue(ocdata);
+    cellReMap->push_back(ocdata[1]);
+}
+
+// ****************************************************************************
+//  Function: ArbInsertWedge
+//
+//  Purpose: Insert a wedge element from the arbitrary connectivity.
+//
+//  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
+//
+// ****************************************************************************
+static void
+ArbInsertWedge(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
+    vector<int> *cellReMap)
+{
+    // The nodes of a wedge are specified such that the first
+    // 3 define one triangle end and the next 3 define the other
+    // triangle end. We only have to deal with whether their
+    // orders need to be reversed.
+
+    // Just as for pyramid, we use TetIsInverted to determine
+    // whether or not we have correct orientation the first of
+    // the latter 3 face nodes relative to the first 3. So, that
+    // just means use the first 4 nodes of nids for the test.
+    if (!TetIsInverted(nids, ugrid))
+    {
+        // Reverse the order of the first 3 nodes defining one
+        // face of the wedge.
+        int tmp = nids[2];
+        nids[2] = nids[0];
+        nids[0] = tmp;
+    }
+
+    // VTK's node order is such that a right hand rule normal
+    // to the other triangular end points inward.
+    int tmpnids[4];
+    tmpnids[0] = nids[3];
+    tmpnids[1] = nids[4];
+    tmpnids[2] = nids[5];
+    tmpnids[3] = nids[0];
+    if (TetIsInverted(tmpnids, ugrid))
+    {
+        // Reverse the order of the latter 3 nodes defining other 
+        // face of the wedge.
+        int tmp = nids[5];
+        nids[5] = nids[3];
+        nids[3] = tmp;
+    }
+
+    ugrid->InsertNextCell(VTK_WEDGE, 6, nids);
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::SafeDownCast(
+        ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    oca->InsertNextTupleValue(ocdata);
+    cellReMap->push_back(ocdata[1]);
+}
+
+// ****************************************************************************
+//  Function: ArbInsertHex
+//
+//  Purpose: Insert a hex element from the arbitrary connectivity.
+//
+//  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
+//
+// ****************************************************************************
+static void
+ArbInsertHex(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
+    vector<int> *cellReMap)
+{
+    // The nodes for a hex are specified here such that the
+    // the first 4 loop around 1 quad face and the second 4
+    // loop around the opposing face. Again, as in the other
+    // cases, we use TetIsInverted with the first 3 nodes of
+    // a quad face and one the nodes of the opposing face to
+    // determine whether the node order needs reversing. In
+    // the VTK ordering, right hand rule on the first 4 nodes
+    // defines an INward normal while on the last 4 defines
+    // an outward normal.
+    int tmpnids[4];
+    tmpnids[0] = nids[0]; // first 3 nodes from first quad
+    tmpnids[1] = nids[1];
+    tmpnids[2] = nids[2];
+    tmpnids[3] = nids[4]; // last node from opposing quad
+    if (TetIsInverted(tmpnids, ugrid))
+    {
+        // Reverse the order of the first 4 nodes by swaping the
+        // ends and the middle nodes.
+        int tmp = nids[3];
+        nids[3] = nids[0];
+        nids[0] = tmp;
+        tmp = nids[2];
+        nids[2] = nids[1];
+        nids[1] = tmp;
+    }
+    tmpnids[0] = nids[4]; // first 3 nodes from opposing quad 
+    tmpnids[1] = nids[5];
+    tmpnids[2] = nids[6];
+    tmpnids[3] = nids[0]; // last node from first quad
+    if (!TetIsInverted(tmpnids, ugrid))
+    {
+        // Reverse the order of the last 4 nodes by swaping the
+        // ends and the middle nodes.
+        int tmp = nids[7];
+        nids[7] = nids[4];
+        nids[4] = tmp;
+        tmp = nids[6];
+        nids[6] = nids[5];
+        nids[5] = tmp;
+    }
+
+    ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, nids);
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::SafeDownCast(
+        ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    oca->InsertNextTupleValue(ocdata);
+    cellReMap->push_back(ocdata[1]);
+}
+
+// ****************************************************************************
+//  Function: ArbInsertArbitrary
+//
+//  Purpose: Insert a truly 'arbitrary' zone into the ucdmesh object by
+//  decomposing it into zoo-type pyramid and tet cells. We do this by first
+//  computing a cell center.  Then, for each face, find the node of lowest
+//  global node number. Start walking around the face from there in two
+//  directions; one up around the 'top' and the other down around the
+//  'bottom.' Using either 4 or 3 nodes on the face along with the newly
+//  created cell center node (created above), define either pyramid or tet
+//  elements. If the number of nodes around the face is even, we'll have
+//  only pyramids. If it is odd, we'll have one tet, too. Otherwise, we'll
+//  have only pyramids. By starting on the node of lowest global node number,
+//  we ensure that a given face is always decomposed the same way by both
+//  zones that share the face. We repeat this process for each face of the
+//  arbitrary zone.
+//
+//  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
+//
+// ****************************************************************************
+static void
+ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBucdmesh *um, int gz,
+    const vector<int> &nloffs, const vector<int> &floffs, unsigned int ocdata[2],
+    vector<int> *cellReMap, vector<int> *nodeReMap)
+{
+    //
+    // Compute cell center and insert it into the ugrid
+    //
+    double coord_sum[3] = {0.0, 0.0, 0.0};
+    DBphzonelist *phzl = um->phzones;
+    int fcnt = phzl->facecnt[gz];
+    vector<int> lnmingnvec;
+    map<int,int> nodemap;
+    int ncnttot = 0, lf, k;
+    for (lf = 0; lf < fcnt; lf++)		// lf = local face #
+    {
+        int lnmingn;
+        int mingn = INT_MAX;
+        int flidx = floffs[gz]+lf;		// flidx = index into facelist
+        int sgf = phzl->facelist[flidx];	// sgf = signed global face #
+        int gf = sgf < 0 ? ~sgf : sgf;		// gf = global face #
+        int ncnt = phzl->nodecnt[gf];		// ncnt = # nodes for this face
+        for (int ln = 0; ln < ncnt; ln++)	// ln = local node # 
+        {
+            int nlidx = nloffs[gf]+ln;		// nlidx = index into nodelist
+            int gn = phzl->nodelist[nlidx];	// gn = global node #
+            if (gn < mingn)
+            {
+                gn = mingn;
+                lnmingn = ln;
+            }
+            if (nodemap.find(gn) != nodemap.end())
+                continue;
+            nodemap[gn] = 1;
+            for (k = 0; k < 3; k++)
+                coord_sum[k] += ugrid->GetPoints()->GetPoint(gn)[k];
+            ncnttot++;
+        }
+        lnmingnvec.push_back(lnmingn);
+    }
+    for (k = 0; k < 3; k++)
+        coord_sum[k] /= ncnttot;
+    int cmidn = ugrid->GetPoints()->InsertNextPoint(coord_sum);
+    nodeReMap->push_back(nodemap.size());
+    for (map<int,int>::iterator it = nodemap.begin(); it != nodemap.end(); it++)
+        nodeReMap->push_back(it->first);
+
+    //
+    // Loop over faces, creating pyramid and tets using 4 or
+    // 3 nodes on the face and the cell center.
+    //
+    for (lf = 0; lf < fcnt; lf++)		// lf = local face #
+    {
+        int flidx = floffs[gz]+lf;		// flidx = index into facelist
+        int sgf = phzl->facelist[flidx];	// sgf = signed global face #
+        int gf = sgf < 0 ? ~sgf : sgf;		// gf = global face #
+        int ncnt = phzl->nodecnt[gf];		// ncnt = # nodes for this face
+        int newcellcnt = ncnt / 2 - ((ncnt%2)?0:1);
+        int lnmingn = lnmingnvec[lf];
+
+        int toplast = (lnmingn==ncnt-1)?0:lnmingn+1;
+        int botlast = lnmingn;
+        int topcur =  (toplast==ncnt-1)?0:toplast+1;
+        int botcur =  (botlast==0)?ncnt-1:botlast-1;
+
+        int nloff = nloffs[gf];
+        for (int c = 0; c < newcellcnt; c++)
+        {
+            if (c == newcellcnt-1 && ncnt%2)
+            {
+                int nids[4];
+                nids[0] =  phzl->nodelist[nloff+botcur];
+                nids[1] =  phzl->nodelist[nloff+botlast];
+                nids[2] =  phzl->nodelist[nloff+toplast];
+                nids[3] = cmidn;
+                ArbInsertTet(ugrid, nids, ocdata, cellReMap);
+            }
+            else
+            {
+                int nids[5];
+                nids[0] =  phzl->nodelist[nloff+botcur];
+                nids[1] =  phzl->nodelist[nloff+botlast];
+                nids[2] =  phzl->nodelist[nloff+toplast];
+                nids[3] =  phzl->nodelist[nloff+topcur];
+                nids[4] = cmidn;
+                ArbInsertPyramid(ugrid, nids, ocdata, cellReMap);
+            }
+
+            toplast = topcur;
+            topcur = (topcur==ncnt-1)?0:topcur+1;
+            botlast = botcur;
+            botcur = (botcur==0)?ncnt-1:botcur-1;
+        } 
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::ReadInArbConnectivity
+//
+//  Purpose: Read arbitrary connectivity, smartly. That is, recognize elements
+//  stored here, using arbitrary connectivity that are really the known zoo
+//  type elements and then treat them as such. Otherwise, for all other zones,
+//  decompose them into collections of pyramids and tets by adding a single
+//  new node at the cell centers and 'fanning out' pyramids and tets for each
+//  face around the zone to fill in the volume of the zone.
+//
+//  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
+    vtkUnstructuredGrid *ugrid, DBucdmesh *um, int domain)
+{
+    int i, j, sum;
+
+    DBphzonelist *phzl = um->phzones;
+    if (!phzl)
+        return;
+    
+    //
+    // Go ahead and add an empty avtOriginalCellNumbers array now.
+    // We'll populate it as we proceed but, if we never encounter 
+    // truly arbitrary zones, we'll remove it at the end because we
+    // won't actually need it.
+    //
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
+    oca->SetName("avtOriginalCellNumbers");
+    oca->SetNumberOfComponents(2);
+    ugrid->GetCellData()->AddArray(oca);
+    ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+    oca->Delete();
+
+    //
+    // Instantiate cell- and node- re-mapping arrays. Just as for
+    // avtOriginalCellNumbers, if we find out we don't need 'em, we
+    // remove them at the end. Note that due to the way we traverse
+    // the arb. polyhedral connectivity information and produce zones
+    // in the output mesh, the nodes will always be organized such
+    // that all the nodes of the original mesh come first, followed
+    // by all the nodes that get inserted for arb. polyhedra cell
+    // centers. For this reason, the nodeReMap vector is defined
+    // only for those 'extra' nodes.
+    //
+    vector<int> *nodeReMap = new vector<int>;
+    if (arbMeshNodeReMap.find(meshname) != arbMeshNodeReMap.end())
+        delete arbMeshNodeReMap[meshname];
+    arbMeshNodeReMap[meshname] = nodeReMap;
+
+    vector<int> *cellReMap = new vector<int>;
+    if (arbMeshCellReMap.find(meshname) != arbMeshCellReMap.end())
+        delete arbMeshCellReMap[meshname];
+    arbMeshCellReMap[meshname] = cellReMap;
+
+    // build up random access offset indices into nodelist and facelist lists
+    vector<int> nloffs;
+    for (i = 0, sum = 0; i < phzl->nfaces; sum += phzl->nodecnt[i], i++)
+        nloffs.push_back(sum);
+    vector<int> floffs;
+    for (i = 0, sum = 0; i < phzl->nzones; sum += phzl->facecnt[i], i++)
+        floffs.push_back(sum);
+    
+    for (int gz = 0; gz < phzl->nzones; gz++)		// gz = global zone #
+    {
+        int fcnt = phzl->facecnt[gz];			// fcnt = # faces for this zone
+        unsigned int ocdata[2] = {domain, gz};
+
+        if (fcnt == 4 || // Must be tet
+            fcnt == 5 || // Maybe pyramid or prism/wedge
+            fcnt == 6)   // Maybe hex
+        {
+            // Iterate over all faces for this zone finding the UNIQUE
+            // set of nodes the union of all the faces references. Also,
+            // along the way, keep track of total number of 3 node (tri)
+            // and 4 node (quad) faces as well as the first of these
+            // encountered and the face that 'opposes' those first faces,
+            // if any.
+            bool isNotZooElement = false;
+            int num3NodeFaces = 0;
+            int num4NodeFaces = 0;
+            int first3NodeFace = -INT_MAX;
+            int first4NodeFace = -INT_MAX;
+            int opposing3NodeFace = -INT_MAX;
+            int opposing4NodeFace = -INT_MAX;
+            map<int, int> nodemap;			// Map used for unique node #'s
+            int nloff;
+            for (int lf = 0; lf < fcnt; lf++)		// lf = local face #
+            {
+                int flidx = floffs[gz]+lf;		// flidx = index into facelist
+                int sgf = phzl->facelist[flidx];	// sgf = signed global face #
+                int gf = sgf < 0 ? ~sgf : sgf;		// gf = global face #
+                int ncnt = phzl->nodecnt[gf];		// ncnt = # nodes for this face
+
+                if (ncnt == 3)
+                {
+                    if (num3NodeFaces == 0)
+                        first3NodeFace = sgf;
+                    num3NodeFaces++;
+                }
+                else if (ncnt == 4)
+                {
+                    if (num4NodeFaces == 0)
+                        first4NodeFace = sgf;
+                    num4NodeFaces++;
+                }
+                else
+                {
+                    // Since this face is neither a tri or quad, this
+                    // cannot be a zoo element.
+                    isNotZooElement = true;
+                    break;
+                }
+
+                bool nodesInCommonWithFirst = false;
+                for (int ln = 0; ln < ncnt; ln++)	// ln = local node # 
+                {
+                    int nlidx = nloffs[gf]+ln;		// nlidx = index into nodelist
+                    int gn = phzl->nodelist[nlidx];	// gn = global node #
+                    nodemap[gn] = ln;
+
+                    // See if this face has any nodes in common with 'first'
+                    if (lf > 0 && !nodesInCommonWithFirst)
+                    {
+                        int gftmp;
+                        if (first3NodeFace != -INT_MAX)
+                            gftmp = first3NodeFace < 0 ? ~first3NodeFace: first3NodeFace;
+                        else if (first4NodeFace != -INT_MAX)
+                            gftmp = first4NodeFace < 0 ? ~first4NodeFace: first4NodeFace;
+                        for (j = 0; j < phzl->nodecnt[gftmp]; j++)
+                        {
+                            if (gn == phzl->nodelist[nloffs[gftmp]+j])
+                            {
+                                nodesInCommonWithFirst = true;
+                                break;
+                            }
+                        }
+                    }
+
+                }
+
+                if (!nodesInCommonWithFirst)
+                {
+                    if (ncnt == 3)
+                        opposing3NodeFace = sgf;
+                    else
+                        opposing4NodeFace = sgf;
+                }
+
+            }
+
+            int nids[8];
+            map<int, int>::iterator it;
+            if (isNotZooElement)				// Arbitrary
+            {
+                ArbInsertArbitrary(ugrid, um, gz, nloffs, floffs, ocdata,
+                    cellReMap, nodeReMap);
+            }
+            else if (fcnt == 4 && nodemap.size() == 4 &&
+                     num3NodeFaces == 4 && num4NodeFaces == 0)	// Tet
+            {
+                // Just get all 4 nodes from the nodemap
+                for (it = nodemap.begin(), j = 0; it != nodemap.end() && j < 4; it++, j++)
+                    nids[j] = it->first;
+                ArbInsertTet(ugrid, nids, ocdata, cellReMap);
+            }
+            else if (fcnt == 5 && nodemap.size() == 5 && 
+                     num3NodeFaces == 4 && num4NodeFaces == 1)	// Pyramid
+            {
+                // Get first 4 nodes from first4NodeFace
+                nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
+                for (j = 0; j < 4; j++)
+                {
+                    nids[j] = phzl->nodelist[nloff+j];
+                    nodemap.erase(nids[j]);
+                }
+                // Get last node from only remaining node in nodemap
+                for (it = nodemap.begin(), j = 0; it != nodemap.end() && j < 1; it++, j++)
+                    nids[4+j] = it->first;
+                ArbInsertPyramid(ugrid, nids, ocdata, cellReMap);
+            }
+            else if (fcnt == 5 && nodemap.size() == 6 && 
+                     num3NodeFaces == 2 && num4NodeFaces == 3)	// Prism/Wedge
+            {
+                // Get first 3 nodes from first3NodeFace
+                nloff = nloffs[first3NodeFace<0?~first3NodeFace:first3NodeFace]; 
+                for (j = 0; j < 3; j++)
+                    nids[j] = phzl->nodelist[nloffs[nloff]+j];
+                // Get next 3 nodes from opposing3NodeFace 
+                nloff = nloffs[opposing3NodeFace<0?~opposing3NodeFace:opposing3NodeFace];
+                for (j = 0; j < 3; j++)
+                    nids[3+j] = phzl->nodelist[nloffs[nloff]+j];
+                ArbInsertWedge(ugrid, nids, ocdata, cellReMap);
+            }
+            else if (fcnt == 6 && nodemap.size() == 8 && 
+                     num3NodeFaces == 0 && num4NodeFaces == 6)	// Hex
+            {
+                // Get first 4 nodes from first4NodeFace
+                nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
+                for (j = 0; j < 4; j++)
+                    nids[j] = phzl->nodelist[nloff+j];
+                // Get next 4 nodes from opposing4NodeFace
+                nloff = nloffs[opposing4NodeFace<0?~opposing4NodeFace:opposing4NodeFace];
+                for (j = 0; j < 4; j++)
+                    nids[4+j] = phzl->nodelist[nloff+j];
+                ArbInsertHex(ugrid, nids, ocdata, cellReMap);
+            }
+            else						// Arbitrary
+            {
+                ArbInsertArbitrary(ugrid, um, gz, nloffs, floffs, ocdata,
+                    cellReMap, nodeReMap);
+            }
+        }
+        else							// Arbitrary
+        {
+            ArbInsertArbitrary(ugrid, um, gz, nloffs, floffs, ocdata,
+                cellReMap, nodeReMap);
+        }
+    }
+
+    //
+    // Remove the avtOriginalCellNumbers array if we don't really
+    // need it. The indicator of that condtion is if new nodes were
+    // added to the ugrid object. That only happens for truly arbitrary
+    // polyhedra. In that case, the number of points in the ugrid
+    // object will be greater than the input DBucdmesh. In addition,
+    // if we didn't add any nodes, then we don't need to maintain
+    // any special cell-data or nodal-data remapping arrays.
+    //
+    if (ugrid->GetNumberOfPoints() <= um->nnodes)
+    {
+        ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
+        arbMeshCellReMap.erase(meshname);
+        arbMeshNodeReMap.erase(meshname);
+        delete cellReMap;
+        delete nodeReMap;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetQuadMesh
@@ -8664,10 +9365,12 @@ avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
 //   Brad Whitlock, Thu Aug  6 12:16:09 PDT 2009
 //   I moved this block out from GetCurve and I templated it.
 //
+//   Mark C. Miller, Tue Oct 20 16:51:36 PDT 2009
+//   Made it static.
 // ****************************************************************************
 
 template <typename T, typename Tarr>
-vtkRectilinearGrid *
+static vtkRectilinearGrid *
 CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
 {
     T *px = (T *) cur->x;
@@ -9138,10 +9841,12 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Oct 20 16:51:18 PDT 2009
+//    Made it static.
 // ****************************************************************************
 
 template <typename T>
-void
+static void
 CopyPointMeshCoordinates(T *pts, const DBpointmesh *pm)
 {
     for (int i = 0 ; i < 3 ; i++)
@@ -10515,6 +11220,12 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code to set data read mask back to its original value to *before*
 //    throwing of exeption.
+//
+//    Mark C. Miller, Thu Oct 15 21:31:07 PDT 2009
+//    Add DBZonelistInfo to data read mask to work around a bug in Silo
+//    library where attempt to DBGetUcdmesh causes call to DBGetZonelist
+//    and a subsequent segv down in the bowels of Silo due to invalid
+//    assumptions regarding the existence of certain zonelist strutures.
 // ****************************************************************************
 
 vtkDataArray *
@@ -10540,7 +11251,7 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
     long mask = DBGetDataReadMask();
-    DBSetDataReadMask(DBUMZonelist|DBZonelistGlobZoneNo);
+    DBSetDataReadMask(DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
     DBSetDataReadMask(mask);
     if (um == NULL)
@@ -12137,7 +12848,7 @@ TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
 }
 
 // ****************************************************************************
-//  Function: TetsAreInverted 
+//  Function: TetIsInverted 
 //
 //  Purpose: Determine if Tets in Silo are inverted from Silo's Normal ordering
 //
@@ -12147,7 +12858,7 @@ TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
 // ****************************************************************************
 
 bool
-TetsAreInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
+TetIsInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
 {
     //
     // initialize set of 4 points of tet
@@ -12648,7 +13359,6 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
     int i,j,k,q,pass;
     DBgroupelmap *retval = 0;
 
-//#warning FIX SILO LIBRARY WHERE FORCE SINGLE IS CONCERNED
     // We do this to prevent Silo for re-interpreting integer data in
     // groupel maps
     DBForceSingle(0);
