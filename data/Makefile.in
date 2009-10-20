@@ -358,7 +358,7 @@ SILOSRC=bigsil.C csg.C emptydomains.C fullframe.C galaxy.C ghost.C \
         meshorigin.C multi_test.C noise.C noise2d.C one_quad.C \
         quad_disk.C sid97.C specmix.C testall.C thinplane.C tire.C \
         wave.C mat_3x3_3across.C mat_3x3x3_3across.C multidir.C \
-        mmadj_rect_2d.C
+        mmadj_rect_2d.C arbpoly.C
 
 SILO_TARGET=$(SILOSRC:.C=)
 #SILO_TARGET=`echo $(SILOSRC) | sed -e 's/\.C//g'` is an alternative
@@ -634,6 +634,9 @@ clean: bin_data_clean gen_data_clean src_clean
 
 ./xdmf: xdmf.o
 	$(CXX) -o $@ xdmf.o $(LDFLAGS) $(HDF5_LIB) $(ZLIB_LIB) @LIBS@
+
+./arbpoly: arbpoly.o
+	$(CXX) -o $@ arbpoly.o $(LDFLAGS) $(LIBS)
 
 install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test ./multidir ./mmadj_rect_2d
 	$(INSTALL) ./bigsil $(bindir)
