@@ -13,6 +13,9 @@
 #  Programmer: Mark C. Miller 
 #  Date:       October 24, 2004
 #
+#  Modifications
+#    Mark C. Miller, Tue Oct 20 16:30:31 PDT 2009
+#    Added tests for fully arbitrary mesh
 # ----------------------------------------------------------------------------
 
 
@@ -48,5 +51,35 @@ SetPlotSILRestriction(silr)
 DrawPlots()
 
 Test("arbpoly_03")
+
+DeleteAllPlots()
+CloseDatabase("../data/poly3d.silo")
+
+OpenDatabase("../data/overlink_test_data/ev_0_0_100/OvlTop.silo")
+AddPlot("Mesh","MMESH")
+DrawPlots()
+ma = MeshAttributes()
+ma.opaqueColor = (0, 200, 200, 255)
+ma.opaqueMode = ma.On
+ma.backgroundFlag = 0
+SetPlotOptions(ma)
+ResetView()
+Test("arbpoly_04")
+v = GetView3D()
+v.SetViewNormal(-0.433013, 0.5, 0.75)
+v.SetViewUp(0.25, 0.866025, -0.433013)
+SetView3D(v)
+Test("arbpoly_05")
+ma.opaqueMode = ma.Off
+SetPlotOptions(ma)
+
+AddPlot("Pseudocolor","nvar0")
+DrawPlots()
+Test("arbpoly_06")
+DeleteActivePlots()
+
+AddPlot("Pseudocolor","zvar3")
+DrawPlots()
+Test("arbpoly_07")
 
 Exit()
