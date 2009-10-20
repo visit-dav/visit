@@ -16,7 +16,10 @@
 #     Cyrus Harrison, Mon Dec 22 15:58:32 PST 2008
 #     Changed links in index page to use relative paths & added failure listing
 #     to breakdown on index page.
-#      
+#     
+#     Cyrus Harrison, Tue Oct 20 11:38:04 PDT 2009
+#     Changed the way permissions are set for posting and reindexing.
+#
 # *****************************************************************************
 
 import sys,os,time,datetime,glob,socket
@@ -189,8 +192,9 @@ def reindex_results(result_root,result_group):
     f.write(res)
     f.close()
     sexe("chgrp -R %s %s " % (result_group,result_root))
-    sexe("chmod -R +rx %s " % result_root)
-   
+    sexe("chmod -R g+wrx %s " % result_root)
+    sexe("chmod -R o+rx %s " % result_root)
+
 def run_tests(input_file,mode):
     """
     Rebuilds the index.html file at a given result_root and sets 
@@ -238,7 +242,8 @@ def post(pattern,result_dir,result_group):
             sexe("mkdir %s/" % result_dir)
         sexe("cp %s %s" % (pattern,result_dir))
         sexe("chgrp -R %s %s"  % (result_group,result_dir))
-        sexe("chmod -R g+rx %s"  % result_dir)
+        sexe("chmod -R g+wrx %s " % result_dir)
+        sexe("chmod -R o+rx %s " % result_dir)
 
 def post_results(run_dir,result_root,result_group):
     """
