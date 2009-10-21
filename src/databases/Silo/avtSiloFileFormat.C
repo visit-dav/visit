@@ -20,7 +20,7 @@
 *  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
 *    be used to endorse or promote products derived from this software without
 *    specific prior written permission.
-// *
+*
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
 * AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
@@ -1702,6 +1702,22 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     break;
                 }
 
+                avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
+                    mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
+                    groupOrigin, ndims, tdims, mt);
+
+                mmd->hideFromGUI = mm->guihide;
+                mmd->validVariable = valid_var;
+                mmd->groupTitle = "blocks";
+                mmd->groupPieceName = "block";
+                mmd->xUnits = xUnits;
+                mmd->yUnits = yUnits;
+                mmd->zUnits = zUnits;
+                mmd->xLabel = xLabel;
+                mmd->yLabel = yLabel;
+                mmd->zLabel = zLabel;
+                mmd->meshCoordType = mct;
+
                 //
                 // Handle mrgtree on the multimesh
                 //
@@ -1719,22 +1735,6 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 }
 #endif
 #endif
-
-                avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
-                    mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
-                    groupOrigin, ndims, tdims, mt);
-
-                mmd->hideFromGUI = mm->guihide;
-                mmd->validVariable = valid_var;
-                mmd->groupTitle = "blocks";
-                mmd->groupPieceName = "block";
-                mmd->xUnits = xUnits;
-                mmd->yUnits = yUnits;
-                mmd->zUnits = zUnits;
-                mmd->xLabel = xLabel;
-                mmd->yLabel = yLabel;
-                mmd->zLabel = zLabel;
-                mmd->meshCoordType = mct;
 
 
 #ifdef SILO_VERSION_GE
@@ -8659,7 +8659,7 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBucdmesh *um, int gz,
             int gn = phzl->nodelist[nlidx];	// gn = global node #
             if (gn < mingn)
             {
-                gn = mingn;
+                mingn = gn;
                 lnmingn = ln;
             }
             if (nodemap.find(gn) != nodemap.end())
