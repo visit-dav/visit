@@ -41,8 +41,12 @@
 #    Don't remove the boost header files in make clean, just distclean.
 #
 #    Mark C. Miller, Mon Jun 15 22:22:46 PDT 2009
-#    Removed @LIBTARGETS@ line. It was not needed anyway and caused problems
+#    Removed LIBTARGETS line. It was not needed anyway and caused problems
 #    for SUSE make-3.8x.
+#
+#    Mark C. Miler, Tue Oct 20 21:32:28 PDT 2009
+#    Removed '@' surrounding LIBTARGETS in comment above as that was
+#    resulting in real configure symbol substitution.
 ##############################################################################
 ##
 ## Programs and options...
