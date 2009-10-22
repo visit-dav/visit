@@ -116,9 +116,12 @@ class ViewerState;
 //   Added arguments for host name and simulation name to methods for loading
 //   and saving named selections. 
 //
-//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
-//    Added argument to ReplaceDatabase to  allow replace of only active 
-//    plots.
+//   Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//   Added argument to ReplaceDatabase to  allow replace of only active 
+//   plots.
+//
+//   Brad Whitlock, Tue Oct 20 10:25:15 PDT 2009
+//   I added methods to set a plot description and to adjust plot order.
 //
 // ****************************************************************************
 
@@ -219,6 +222,11 @@ public:
                         const intVector &activeOperatorIds,
                         const intVector &expandedPlots);
     void ChangeActivePlotsVar(const std::string &var);
+    void SetPlotDescription(int plotId, const std::string &description);
+    void MovePlotOrderTowardFirst(int plotId);
+    void MovePlotOrderTowardLast(int plotId);
+    void SetPlotOrderToFirst(int plotId);
+    void SetPlotOrderToLast(int plotId);
 
     void AddOperator(int oper, const bool fromDefault = true);
     void AddInitializedOperator(int oper);

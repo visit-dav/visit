@@ -248,7 +248,12 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_LOADNAMEDSELECTIONRPC = 183;
     public final static int VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC = 184;
     public final static int VIEWERRPCTYPE_MENUQUITRPC = 185;
-    public final static int VIEWERRPCTYPE_MAXRPC = 186;
+    public final static int VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC = 186;
+    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC = 187;
+    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC = 188;
+    public final static int VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC = 189;
+    public final static int VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC = 190;
+    public final static int VIEWERRPCTYPE_MAXRPC = 191;
 
 
     public ViewerRPC()
@@ -1379,6 +1384,16 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC";
         if(RPCType == VIEWERRPCTYPE_MENUQUITRPC)
             str = str + "VIEWERRPCTYPE_MENUQUITRPC";
+        if(RPCType == VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC)
+            str = str + "VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC";
+        if(RPCType == VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC)
+            str = str + "VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC";
+        if(RPCType == VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC)
+            str = str + "VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC";
+        if(RPCType == VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC)
+            str = str + "VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC";
+        if(RPCType == VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC)
+            str = str + "VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC";
         if(RPCType == VIEWERRPCTYPE_MAXRPC)
             str = str + "VIEWERRPCTYPE_MAXRPC";
         str = str + "\n";

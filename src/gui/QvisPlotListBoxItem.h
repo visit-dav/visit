@@ -112,6 +112,7 @@ public:
     int    clicked(const QPoint &p, bool dc, int &id);
     bool   isExpanded() const;
     int    activeOperatorIndex() const;
+    int    textX() const;
 
     const Plot &GetPlot() const { return plot; };
     Plot &GetPlot() { return plot; };

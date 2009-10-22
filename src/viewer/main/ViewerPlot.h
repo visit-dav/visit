@@ -347,6 +347,8 @@ class VIEWER_API ViewerPlot : public ViewerBase
     const std::string &GetVariableName() const;
     const avtCentering GetVariableCentering() const;
     const std::string &GetMeshName() const;
+    const std::string &GetPlotDescription() const;
+    void SetPlotDescription(const std::string &);
 
     //
     // Get/Set the SIL restriction, get metadata, get expressions.
@@ -515,6 +517,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     int                     type;
     ViewerPlotPluginInfo   *viewerPluginInfo;
     std::string             plotName;
+    std::string             plotDescription;
 
     void                   *alternateDisplay;
     ViewerObserverToSignal *alternateDisplayObserver;

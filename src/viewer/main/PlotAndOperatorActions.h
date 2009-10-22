@@ -625,7 +625,125 @@ public:
     virtual bool Enabled() const;
 };
 
+// ****************************************************************************
+// Class: SetPlotDescriptionAction
+//
+// Purpose:
+//   This action sets the plot description
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:45:41 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+class SetPlotDescriptionAction : public ViewerAction
+{
+public:
+    SetPlotDescriptionAction(ViewerWindow *);
+    virtual ~SetPlotDescriptionAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
+// Class: MovePlotOrderTowardFirstAction
+//
+// Purpose:
+//   This action moves a plot one slot closer to the plot list start.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:45:41 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class MovePlotOrderTowardFirstAction : public ViewerAction
+{
+public:
+    MovePlotOrderTowardFirstAction(ViewerWindow *);
+    virtual ~MovePlotOrderTowardFirstAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
+// Class: MovePlotOrderTowardLastAction
+//
+// Purpose:
+//   This action moves a plot one slot closer to the plot list end.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:45:41 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class MovePlotOrderTowardLastAction : public ViewerAction
+{
+public:
+    MovePlotOrderTowardLastAction(ViewerWindow *);
+    virtual ~MovePlotOrderTowardLastAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
+// Class: SetPlotOrderToFirstAction
+//
+// Purpose:
+//   This action moves a plot to the plot list start.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:45:41 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class SetPlotOrderToFirstAction : public ViewerAction
+{
+public:
+    SetPlotOrderToFirstAction(ViewerWindow *);
+    virtual ~SetPlotOrderToFirstAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
+// Class: SetPlotOrderToLastAction
+//
+// Purpose:
+//   This action moves a plot to the plot list start.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:45:41 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class SetPlotOrderToLastAction : public ViewerAction
+{
+public:
+    SetPlotOrderToLastAction(ViewerWindow *);
+    virtual ~SetPlotOrderToLastAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
 
 #endif
 

@@ -1680,6 +1680,31 @@ static void log_ApplyNamedSelectionRPC(ViewerRPC *rpc, char *str)
                         rpc->GetStringArg1().c_str());
 }
 
+static void log_SetPlotDescriptionRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "SetPlotDescription(%d, \"%s\")\n", rpc->GetIntArg1(), rpc->GetStringArg1().c_str());
+}
+
+static void log_MovePlotOrderTowardLastRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "MovePlotOrderTowardLast(%d)\n", rpc->GetIntArg1());
+}
+
+static void log_MovePlotOrderTowardFirstRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "MovePlotOrderTowardFirst(%d)\n", rpc->GetIntArg1());
+}
+
+static void log_SetPlotOrderToLastRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "SetPlotOrderToLast(%d)\n", rpc->GetIntArg1());
+}
+
+static void log_SetPlotOrderToFirstRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "SetPlotOrderToFirst(%d)\n", rpc->GetIntArg1());
+}
+
 // ****************************************************************************
 // Method: LogRPCs
 //
@@ -1705,6 +1730,9 @@ static void log_ApplyNamedSelectionRPC(ViewerRPC *rpc, char *str)
 //
 //   Cyrus Harrison, Tue Jan  8 08:01:51 PST 2008
 //   Added SetQueryFloatFormatRPC.
+//
+//   Brad Whitlock, Tue Oct 20 16:19:15 PDT 2009
+//   I added the new RPCs that control the plot list ordering.
 //
 // ****************************************************************************
 
@@ -2236,7 +2264,22 @@ LogRPCs(Subject *subj, void *)
     case ViewerRPC::ApplyNamedSelectionRPC:
         log_ApplyNamedSelectionRPC(rpc, str);
         break;
-        
+    case ViewerRPC::SetPlotDescriptionRPC:
+        log_SetPlotDescriptionRPC(rpc, str);
+        break;
+    case ViewerRPC::MovePlotOrderTowardFirstRPC:
+        log_MovePlotOrderTowardFirstRPC(rpc, str);
+        break;
+    case ViewerRPC::MovePlotOrderTowardLastRPC:
+        log_MovePlotOrderTowardLastRPC(rpc, str);
+        break;
+    case ViewerRPC::SetPlotOrderToFirstRPC:
+        log_SetPlotOrderToFirstRPC(rpc, str);
+        break;
+    case ViewerRPC::SetPlotOrderToLastRPC:
+        log_SetPlotOrderToLastRPC(rpc, str);
+        break;
+
     // RPCs that we don't want to log:
     case ViewerRPC::CloseRPC:
     case ViewerRPC::DetachRPC:

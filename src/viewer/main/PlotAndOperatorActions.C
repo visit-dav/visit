@@ -2375,3 +2375,131 @@ SetPlotFollowsTimeAction::Enabled() const
     return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+SetPlotDescriptionAction::SetPlotDescriptionAction(ViewerWindow *win) : ViewerAction(win)
+{
+    DisableVisual();
+}
+
+SetPlotDescriptionAction::~SetPlotDescriptionAction()
+{
+}
+
+void
+SetPlotDescriptionAction::Execute()
+{
+    window->GetPlotList()->SetPlotDescription(args.GetIntArg1(), 
+        args.GetStringArg1());
+}
+
+bool
+SetPlotDescriptionAction::Enabled() const
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+MovePlotOrderTowardFirstAction::MovePlotOrderTowardFirstAction(ViewerWindow *win) : ViewerAction(win)
+{
+    DisableVisual();
+}
+
+MovePlotOrderTowardFirstAction::~MovePlotOrderTowardFirstAction()
+{
+}
+
+void
+MovePlotOrderTowardFirstAction::Execute()
+{
+    window->GetPlotList()->MovePlotOrderTowardFirst(args.GetIntArg1());
+}
+
+bool
+MovePlotOrderTowardFirstAction::Enabled() const
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+MovePlotOrderTowardLastAction::MovePlotOrderTowardLastAction(ViewerWindow *win) : ViewerAction(win)
+{
+    DisableVisual();
+}
+
+MovePlotOrderTowardLastAction::~MovePlotOrderTowardLastAction()
+{
+}
+
+void
+MovePlotOrderTowardLastAction::Execute()
+{
+    window->GetPlotList()->MovePlotOrderTowardLast(args.GetIntArg1());
+}
+
+bool
+MovePlotOrderTowardLastAction::Enabled() const
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+SetPlotOrderToFirstAction::SetPlotOrderToFirstAction(ViewerWindow *win) : ViewerAction(win)
+{
+    DisableVisual();
+}
+
+SetPlotOrderToFirstAction::~SetPlotOrderToFirstAction()
+{
+}
+
+void
+SetPlotOrderToFirstAction::Execute()
+{
+    window->GetPlotList()->SetPlotOrderToFirst(args.GetIntArg1());
+}
+
+bool
+SetPlotOrderToFirstAction::Enabled() const
+{
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+SetPlotOrderToLastAction::SetPlotOrderToLastAction(ViewerWindow *win) : ViewerAction(win)
+{
+    DisableVisual();
+}
+
+SetPlotOrderToLastAction::~SetPlotOrderToLastAction()
+{
+}
+
+void
+SetPlotOrderToLastAction::Execute()
+{
+    window->GetPlotList()->SetPlotOrderToLast(args.GetIntArg1());
+}
+
+bool
+SetPlotOrderToLastAction::Enabled() const
+{
+    return true;
+}
+
+

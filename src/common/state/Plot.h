@@ -90,6 +90,7 @@ public:
     void SelectOperatorNames();
     void SelectKeyframes();
     void SelectDatabaseKeyframes();
+    void SelectDescription();
 
     // Property setting methods
     void SetStateType(StateType stateType_);
@@ -110,6 +111,7 @@ public:
     void SetDatabaseKeyframes(const intVector &databaseKeyframes_);
     void SetIsFromSimulation(bool isFromSimulation_);
     void SetFollowsTime(bool followsTime_);
+    void SetDescription(const std::string &description_);
 
     // Property getting methods
     StateType          GetStateType() const;
@@ -137,6 +139,8 @@ public:
           intVector    &GetDatabaseKeyframes();
     bool               GetIsFromSimulation() const;
     bool               GetFollowsTime() const;
+    const std::string  &GetDescription() const;
+          std::string  &GetDescription();
 
     // Enum conversion functions
     static std::string StateType_ToString(StateType);
@@ -178,7 +182,8 @@ public:
         ID_keyframes,
         ID_databaseKeyframes,
         ID_isFromSimulation,
-        ID_followsTime
+        ID_followsTime,
+        ID_description
     };
 
 private:
@@ -200,6 +205,7 @@ private:
     intVector    databaseKeyframes;
     bool         isFromSimulation;
     bool         followsTime;
+    std::string  description;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

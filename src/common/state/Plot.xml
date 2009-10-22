@@ -23,7 +23,8 @@
     <Field name="keyframes" type="intVector"></Field>
     <Field name="databaseKeyframes" type="intVector"></Field>
     <Field name="isFromSimulation" type="bool">false</Field>
-    <Field name="followsTime" type="bool">true</Field>   
+    <Field name="followsTime" type="bool">true</Field>
+    <Field name="description" type="string"></Field>
     <Function name="AddOperator"        user="true" member="true"></Function>
     <Function name="ClearAllOperators"  user="true" member="true"></Function>
     <Function name="GetNumOperators"    user="true" member="true"></Function>

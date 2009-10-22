@@ -821,3 +821,12 @@ PlotList::AddPlot(const Plot &p, int id)
     Select(0, (void *)&plots);
 }
 
+int
+PlotList::FirstSelectedIndex() const
+{
+    for(int i = 0; i < GetNumPlots(); ++i)
+        if(this->operator[](i).GetActiveFlag())
+            return i;
+    return -1;
+}
+

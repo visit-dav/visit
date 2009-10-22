@@ -12,3 +12,14 @@ PlotList::AddPlot(const Plot &p, int id)
     Select(0, (void *)&plots);
 }
 
+Function: FirstSelectedIndex
+Declaration: int FirstSelectedIndex() const;
+Definition:
+int
+PlotList::FirstSelectedIndex() const
+{
+    for(int i = 0; i < GetNumPlots(); ++i)
+        if(this->operator[](i).GetActiveFlag())
+            return i;
+    return -1;
+}

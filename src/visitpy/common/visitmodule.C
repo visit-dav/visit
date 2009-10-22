@@ -7165,6 +7165,161 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetPlotDescription
+//
+// Purpose: 
+//   This is a Python callback that sets the plot description.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 16:06:12 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetPlotDescription(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index = 0;
+    char *description = 0;
+    if(!PyArg_ParseTuple(args, "is", &index, &description))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetPlotDescription(index, description);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_MovePlotOrderTowardLast
+//
+// Purpose: 
+//   This is a Python callback that moves a plot toward the last index in the 
+//   plot list
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 16:06:12 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_MovePlotOrderTowardLast(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index = 0;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->MovePlotOrderTowardLast(index);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_MovePlotOrderTowardFirst
+//
+// Purpose: 
+//   This is a Python callback that moves a plot toward the First index in the 
+//   plot list
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 16:06:12 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_MovePlotOrderTowardFirst(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index = 0;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->MovePlotOrderTowardFirst(index);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetPlotOrderToLast
+//
+// Purpose: 
+//   This is a Python callback that moves a plot toward the last index in the 
+//   plot list
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 16:06:12 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetPlotOrderToLast(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index = 0;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetPlotOrderToLast(index);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetPlotOrderToFirst
+//
+// Purpose: 
+//   This is a Python callback that moves a plot toward the First index in the 
+//   plot list
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 16:06:12 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetPlotOrderToFirst(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index = 0;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetPlotOrderToFirst(index);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetOperatorOptions
 //
 // Purpose:
@@ -13814,7 +13969,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //
 //   Kathleen Bonnell, Mon Feb  9 17:41:02 PST 2009
 //   Added LoadUltra.
-
+//
+//   Brad Whitlock, Tue Oct 20 16:14:06 PDT 2009
+//   I added functions to manipulate the plot list ordering.
 //
 // ****************************************************************************
 
@@ -14006,6 +14163,9 @@ AddDefaultMethods()
                                            visit_MovePlotDatabaseKeyframe_doc);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,
                                                    visit_MovePlotKeyframe_doc);
+    AddMethod("MovePlotOrderTowardFirst", visit_MovePlotOrderTowardFirst, NULL /*DOCUMENT ME*/);
+    AddMethod("MovePlotOrderTowardLast", visit_MovePlotOrderTowardLast, NULL /*DOCUMENT ME*/);
+
     AddMethod("MoveViewKeyframe", visit_MoveViewKeyframe,
                                                    visit_MoveViewKeyframe_doc);
     AddMethod("MoveWindow", visit_MoveWindow, visit_MoveWindow_doc);
@@ -14120,9 +14280,12 @@ AddDefaultMethods()
                                              visit_SetPipelineCachingMode_doc);
     AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState,
                                                visit_SetPlotDatabaseState_doc);
+    AddMethod("SetPlotDescription", visit_SetPlotDescription, NULL /*DOCUMENT ME*/);
     AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange,
                                                   visit_SetPlotFrameRange_doc);
     AddMethod("SetPlotOptions", visit_SetPlotOptions,visit_SetPlotOptions_doc);
+    AddMethod("SetPlotOrderToFirst", visit_SetPlotOrderToFirst, NULL /*DOCUMENT ME*/);
+    AddMethod("SetPlotOrderToLast", visit_SetPlotOrderToLast, NULL /*DOCUMENT ME*/);
     AddMethod("SetPlotSILRestriction", visit_SetPlotSILRestriction,
                                               visit_SetPlotSILRestriction_doc);
     AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes,

@@ -243,6 +243,34 @@ QvisPlotListBoxItem::width(const QListWidget *lb) const
 }
 
 // ****************************************************************************
+// Method: QvisPlotListBoxItem::textX
+//
+// Purpose: 
+//   Returns the x location of where we start drawing text.
+//
+// Returns:    The x coordinate of where we start drawing text.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 22 10:23:01 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisPlotListBoxItem::textX() const
+{
+    int bw = listWidget()->fontMetrics().lineSpacing();
+    if(bw < subsetIcon->width())
+        bw = subsetIcon->width() + 2;
+    if(bw < subsetIcon->height())
+        bw = subsetIcon->height() + 2;
+    int x5 = (bw << 1) + 4;
+    int x = x5 + 3;
+    return x;
+}
+
+// ****************************************************************************
 // Method: QvisPlotListBoxItem::paint
 //
 // Purpose: 
@@ -411,6 +439,8 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         // Draw the database name and the variable.
         dbName += QString(" - ");
         dbName += QString(plot.GetPlotVar().c_str());
+        if(plot.GetDescription().size() > 0)
+           dbName = QString("%1 [%2]").arg(plot.GetDescription().c_str()).arg(dbName);
         int textY = fm.ascent() + fm.leading()/2;
         painter->drawText(x, textY + d, dbName);
 
@@ -1026,11 +1056,18 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
 //    Brad Whitlock, Tue Jun 24 12:16:24 PDT 2008
 //    Get the plugin managers from the viewer proxy.
 //
+//    Brad Whitlock, Tue Oct 20 15:03:56 PDT 2009
+//    Show the plot description instead if it is not empty.
+//
 // ****************************************************************************
 
 QString
 QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
 {
+    // If we have a non-empty description, display that.
+    if(plot.GetDescription().size() > 0)
+        return QString(plot.GetDescription().c_str());
+
     // Get a pointer to the plot plugin manager.
     PlotPluginManager *plotPluginManager = GetViewerProxy()->GetPlotPluginManager();
     GUIPlotPluginInfo *plotInfo = NULL;

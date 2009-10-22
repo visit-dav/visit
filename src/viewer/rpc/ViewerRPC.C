@@ -107,20 +107,22 @@ static const char *ViewerRPCType_strings[] = {
 "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 
 "ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC", 
 "LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "MenuQuitRPC", 
-"MaxRPC"};
+"SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC", 
+"SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "MaxRPC"
+};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 187) index = 0;
+    if(index < 0 || index >= 192) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 187) ? 0 : t;
+    int index = (t < 0 || t >= 192) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -128,7 +130,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 187; ++i)
+    for(int i = 0; i < 192; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {

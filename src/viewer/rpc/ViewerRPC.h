@@ -248,6 +248,11 @@ public:
         LoadNamedSelectionRPC,
         SaveNamedSelectionRPC,
         MenuQuitRPC,
+        SetPlotDescriptionRPC,
+        MovePlotOrderTowardFirstRPC,
+        MovePlotOrderTowardLastRPC,
+        SetPlotOrderToFirstRPC,
+        SetPlotOrderToLastRPC,
         MaxRPC
     };
 

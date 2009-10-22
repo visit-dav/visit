@@ -477,8 +477,11 @@ ViewerPlot::operator = (const ViewerPlot &obj)
 //   Brad Whitlock, Wed Feb 14 12:15:57 PDT 2007
 //   Added code for alternate displays.
 //
-//    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
-//    Added xScaleMode, yScaleMode. 
+//   Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
+//   Added xScaleMode, yScaleMode. 
+//
+//   Brad Whitlock, Tue Oct 20 11:55:51 PDT 2009
+//   Added plotDescription.
 //
 // ****************************************************************************
 
@@ -508,6 +511,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
     isMesh              = obj.isMesh;
     isLabel             = obj.isLabel;
     followsTime         = obj.followsTime;
+    plotDescription     = obj.plotDescription;
     errorFlag           = false;
     networkID           = -1;
     clonedNetworkId     = -1;
@@ -1314,6 +1318,46 @@ void
 ViewerPlot::SetPlotName(const std::string &name)
 {
     plotName = name;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::GetPlotDescription
+//
+// Purpose: 
+//   Returns the description of the plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 19 18:05:31 PST 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+const std::string &
+ViewerPlot::GetPlotDescription() const
+{
+    return plotDescription;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SetPlotDescription
+//
+// Purpose: 
+//   Sets the plot description.
+//
+// Note: 
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 15:53:39 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::SetPlotDescription(const std::string &Description)
+{
+    plotDescription = Description;
 }
 
 // ****************************************************************************
@@ -4541,6 +4585,9 @@ ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
 //   Hank Childs, Tue Jul 14 11:22:58 PDT 2009
 //   Added support for named selections.
 //
+//   Brad Whitlock, Tue Oct 20 13:28:43 PDT 2009
+//   Added the plot description.
+//
 // ****************************************************************************
 
 void
@@ -4555,6 +4602,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
     //
     // Add information specific to the plot.
     //
+    plotNode->AddNode(new DataNode("plotDescription", plotDescription));
     plotNode->AddNode(new DataNode("cacheIndex", cacheIndex));
     // Only save beginning and end frames if the plot is keyframed.
     if(viewerPlotList->GetKeyframeMode())
@@ -4647,6 +4695,9 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 //   Hank Childs, Tue Jul 14 11:22:58 PDT 2009
 //   Added support for named selections.
 //
+//   Brad Whitlock, Tue Oct 20 13:30:14 PDT 2009
+//   Add plot description.
+//
 // ****************************************************************************
 
 void
@@ -4660,6 +4711,11 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
     DataNode *plotNode = parentNode->GetNode("ViewerPlot");
     if(plotNode == 0)
         return;
+
+    if((node = plotNode->GetNode("plotDescription")) != 0)
+    {
+        plotDescription = node->AsString();
+    }
 
     //
     // Get and set the start and end frames.
@@ -4962,6 +5018,9 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 //   Kathleen Bonnell, Mon Feb  9 17:35:58 PST 2009
 //   Made it set the operators' names, via AddOperator call.
 //
+//   Brad Whitlock, Tue Oct 20 11:59:21 PDT 2009
+//   I made it set the plot description.
+//
 // ****************************************************************************
 
 void
@@ -4975,6 +5034,8 @@ ViewerPlot::InitializePlot(Plot &plot) const
     plot.SetDatabaseName(GetSource());
     // Set the plot variable.
     plot.SetPlotVar(variableName);
+    // Set the plot description.
+    plot.SetDescription(plotDescription);
     plot.SetExpandedFlag(expandedFlag);
     plot.SetBeginFrame(beginCacheIndex);
     plot.SetEndFrame(endCacheIndex);

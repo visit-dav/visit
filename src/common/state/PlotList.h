@@ -108,6 +108,7 @@ public:
 
     // User-defined methods
     void AddPlot(const Plot &p, int id);
+    int FirstSelectedIndex() const;
 
     // IDs that can be used to identify fields in case statements
     enum {

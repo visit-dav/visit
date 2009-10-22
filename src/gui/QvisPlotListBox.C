@@ -48,6 +48,7 @@
 #include <QvisPlotManagerWidget.h>
 
 #include <QItemDelegate>
+#include <QLineEdit>
 #include <QPainter>
 #include <QvisPlotListBoxItem.h>
 
@@ -64,7 +65,9 @@
 // Creation:   Tue Sep 30 14:49:08 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 22 11:06:53 PDT 2009
+//   I added methods that let the user edit the plot name with a line edit.
+//
 // ****************************************************************************
 
 class QPlotDelegate : public QItemDelegate
@@ -107,6 +110,49 @@ public:
         }
 
         return size;
+    }
+
+    virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+    {
+        QLineEdit *lineEdit = new QLineEdit(parent);
+        return lineEdit;
+    }
+
+    virtual void setEditorData(QWidget *editor, const QModelIndex &index) const
+    {
+        QLineEdit *lineEdit = (QLineEdit *)editor;
+        lineEdit->setText(index.data().toString());
+        lineEdit->selectAll();
+    }
+
+    virtual void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+    {
+        qulonglong addr = index.data(Qt::UserRole).toULongLong();
+        QvisPlotListBoxItem *currentItem = (QvisPlotListBoxItem*)addr;
+        if(currentItem != 0)
+        {
+            QRect r(currentItem->listWidget()->visualItemRect(currentItem));
+            int x = currentItem->textX();
+            editor->move(QPoint(x, r.y()));
+            editor->resize(QSize(r.width() - x, editor->height()));
+        }
+        editor->show();
+        editor->setFocus();
+    }
+
+    virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+    {
+        qulonglong addr = index.data(Qt::UserRole).toULongLong();
+        QvisPlotListBoxItem *currentItem = (QvisPlotListBoxItem*)addr;
+        if(currentItem != 0)
+        {
+            QLineEdit *lineEdit = (QLineEdit *)editor;
+            QString s(lineEdit->text());
+            currentItem->listWidget()->closePersistentEditor(currentItem);
+
+            QvisPlotListBox *lb = (QvisPlotListBox *)currentItem->listWidget();
+            lb->triggerPlotRename(lb->row(currentItem), s);
+        }
     }
 };
 
@@ -410,6 +456,9 @@ QvisPlotListBox::activeOperatorIndex(int id) const
 //   Brad Whitlock, Wed Jul 28 17:39:36 PST 2004
 //   I made it check the file prefixes.
 //
+//   Brad Whitlock, Tue Oct 20 15:13:07 PDT 2009
+//   Check plot descriptions.
+//
 // ****************************************************************************
 
 bool
@@ -438,7 +487,8 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
                    newPlot.GetActiveOperator() != currentPlot.GetActiveOperator() ||
                    newPlot.GetPlotVar() != currentPlot.GetPlotVar() ||
                    newPlot.GetDatabaseName() != currentPlot.GetDatabaseName() ||
-                   newPlot.GetOperators() != currentPlot.GetOperators();
+                   newPlot.GetOperators() != currentPlot.GetOperators() ||
+                   newPlot.GetDescription() != currentPlot.GetDescription();
 
             if(nu) return true;
         }
@@ -523,6 +573,9 @@ QvisPlotListBox::NeedToUpdateSelection(const PlotList *pl) const
 //   Cyrus Harrison, Tue Jul  8 13:38:08 PDT 2008
 //   Initial Qt4 Port. 
 //
+//   Brad Whitlock, Tue Oct 20 15:28:07 PDT 2009
+//   I added menu items that let the user change the plot list.
+//
 // ****************************************************************************
 
 void
@@ -558,15 +611,41 @@ QvisPlotListBox::contextMenuCreateActions()
      copyAct = new QAction(tr("Copy"), this);
      copyAct->setStatusTip(tr("Copy this plot"));
      connect( copyAct, SIGNAL(triggered()), this, SIGNAL(copyThisPlot()));  
-       
+
+    setPlotDescriptionAct = new QAction(tr("Edit plot description"), this);
+    setPlotDescriptionAct->setStatusTip(tr("Add a meaningful name for the plot"));
+    connect(setPlotDescriptionAct, SIGNAL(triggered()), this, SLOT(setPlotDescription()));
+
+    moveThisPlotTowardFirstAct = new QAction(tr("Move toward first"), this);
+    moveThisPlotTowardFirstAct->setStatusTip(tr("Move this plot one slot toward the first plot in the plot list"));
+    connect(moveThisPlotTowardFirstAct, SIGNAL(triggered()), this, SIGNAL(moveThisPlotTowardFirst()));
+
+    moveThisPlotTowardLastAct = new QAction(tr("Move toward last"), this);
+    moveThisPlotTowardLastAct->setStatusTip(tr("Move this plot one slot toward the last plot in the plot list"));
+    connect(moveThisPlotTowardLastAct, SIGNAL(triggered()), this, SIGNAL(moveThisPlotTowardLast()));
+
+    makeThisPlotFirstAct = new QAction(tr("Make first"), this);
+    makeThisPlotFirstAct->setStatusTip(tr("Make this plot be the first in the plot list"));
+    connect(makeThisPlotFirstAct, SIGNAL(triggered()), this, SIGNAL(makeThisPlotFirst()));
+
+    makeThisPlotLastAct = new QAction(tr("Make last"), this);
+    makeThisPlotLastAct->setStatusTip(tr("Make this plot be the last in the plot list"));
+    connect(makeThisPlotLastAct, SIGNAL(triggered()), this, SIGNAL(makeThisPlotLast()));
+
      // build the menu
      plotContextMenu = new QMenu(this);
      plotContextMenu->addAction(hideShowAct);
      plotContextMenu->addAction(deleteAct);
      plotContextMenu->addAction(drawAct);
-     plotContextMenu->addSeparator();
      plotContextMenu->addAction(clearAct);
      plotContextMenu->addAction(redrawAct);
+     plotContextMenu->addSeparator();
+     plotContextMenu->addAction(makeThisPlotFirstAct);
+     plotContextMenu->addAction(moveThisPlotTowardFirstAct);
+     plotContextMenu->addAction(moveThisPlotTowardLastAct);
+     plotContextMenu->addAction(makeThisPlotLastAct);
+     plotContextMenu->addSeparator();
+     plotContextMenu->addAction(setPlotDescriptionAct);
      plotContextMenu->addSeparator();
      plotContextMenu->addAction(copyAct);
     
@@ -624,6 +703,9 @@ QvisPlotListBox::contextMenuCreateActions()
 //    Brad Whitlock, Fri May 30 15:59:13 PDT 2008
 //    Qt 4.
 //
+//    Brad Whitlock, Tue Oct 20 15:36:48 PDT 2009
+//    I added actions that modify the plot list.
+//
 // ****************************************************************************
 
 void
@@ -644,30 +726,68 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
             anyActive = true;
         }
     }
-    if( !anyActive ) 
-    {
-        hideShowAct->setEnabled(false);
-        deleteAct->setEnabled(false);
-        drawAct->setEnabled(false);
-        clearAct->setEnabled(false);
-        copyAct->setEnabled(false);
-        redrawAct->setEnabled(false);
-        disconnectAct->setEnabled(false);
-    }
-    else
-    {
-        hideShowAct->setEnabled(true);
-        deleteAct->setEnabled(true);
-        drawAct->setEnabled(true);
-        clearAct->setEnabled(true);
-        copyAct->setEnabled(true);
-        redrawAct->setEnabled(true);
-        disconnectAct->setEnabled(true);
-    }
-    
+
+    hideShowAct->setEnabled(anyActive);
+    deleteAct->setEnabled(anyActive);
+    drawAct->setEnabled(anyActive);
+    clearAct->setEnabled(anyActive);
+    copyAct->setEnabled(anyActive);
+    redrawAct->setEnabled(anyActive);
+    disconnectAct->setEnabled(anyActive);
+
+    makeThisPlotFirstAct->setEnabled(anyActive && count() > 1);
+    moveThisPlotTowardFirstAct->setEnabled(anyActive && count() > 1);
+    moveThisPlotTowardLastAct->setEnabled(anyActive && count() > 1);
+    makeThisPlotLastAct->setEnabled(anyActive && count() > 1);
+    setPlotDescriptionAct->setEnabled(anyActive);
+
     plotContextMenu->exec( e->globalPos() );
     
     QListWidget::contextMenuEvent(e);
 }
 
+// ****************************************************************************
+// Method: QvisPlotListBox::triggerPlotRename
+//
+// Purpose: 
+//   This is a helper method that lets the delegate cause the plot list box to
+//   emit a renamePlot signal.
+//
+// Arguments:
+//   row : The row of the plot
+//   newName : The new name of the plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 22 10:52:44 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+QvisPlotListBox::triggerPlotRename(int row, const QString &newName)
+{
+    emit renamePlot(row, newName);
+}
+
+// ****************************************************************************
+// Method: QvisPlotListBox::setPlotDescription
+//
+// Purpose: 
+//   This causes the delegate to open a line edit that lets us edit the
+//   name of the plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 22 10:52:09 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotListBox::setPlotDescription()
+{
+    QListWidgetItem *item = currentItem();
+    if(item != 0)
+        openPersistentEditor(item);
+}
