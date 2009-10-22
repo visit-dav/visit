@@ -305,6 +305,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Cyrus Harrison, Tue Apr 14 13:34:15 PDT 2009
 //    Modified ReplaceDatabase to add option for replacing only active plots.
 //
+//    Brad Whitlock, Tue Oct 20 14:55:44 PDT 2009
+//    I added methods to manipulate the plot list order.
+//
 // ****************************************************************************
 
 
@@ -413,6 +416,11 @@ public:
                         bool moreThanPlotsValid);
     void CopyActivePlots();
     void SetPlotFollowsTime();
+    void SetPlotDescription(int plotId, const std::string &description);
+    void SetPlotOrderToFirst(int plotId);
+    void SetPlotOrderToLast(int plotId);
+    void MovePlotOrderTowardFirst(int plotId);
+    void MovePlotOrderTowardLast(int plotId);
 
     void SetPlotSILRestriction(bool applyToAll = false);
 

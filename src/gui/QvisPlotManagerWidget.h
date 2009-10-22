@@ -278,6 +278,12 @@ private slots:
     void activatePlotWindow(QAction *);
     void activateOperatorWindow(QAction *);
 
+    void setPlotDescription(int, const QString &);
+    void moveThisPlotTowardFirst();
+    void moveThisPlotTowardLast();
+    void makeThisPlotFirst();
+    void makeThisPlotLast();
+
     void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(QAction *);
     void applyOperatorToggled(bool val);

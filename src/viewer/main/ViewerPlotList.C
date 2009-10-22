@@ -5431,6 +5431,172 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::SetPlotDescription
+//
+// Purpose: 
+//   Sets the description for the plot.
+//
+// Arguments:
+//   plotId      : The index of the plot whose description we're setting.
+//   description : The new plot description.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:32:03 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::SetPlotDescription(int plotId, const std::string &description)
+{
+    if(plotId >= 0 && plotId < nPlots)
+    {
+        plots[plotId].plot->SetPlotDescription(description);
+
+        UpdatePlotList();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::SetPlotOrderToFirst
+//
+// Purpose: 
+//   Make the specified plot be first in the plot list.
+//
+// Arguments:
+//   plotId : The index of the plot that we want to make first.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:42:20 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::SetPlotOrderToFirst(int plotId)
+{
+    if(plotId >= 0 && plotId < nPlots && nPlots > 1)
+    {
+        ViewerPlotListElement *newPlots = new ViewerPlotListElement[nPlots];
+        newPlots[0] = plots[plotId];
+        int index = 1;
+        for(int i = 0; i < nPlots; ++i)
+        {
+            if(i == plotId)
+                continue;
+            newPlots[index++] = plots[i];
+        }
+        delete [] plots;
+        plots = newPlots;
+
+        UpdatePlotList();
+        UpdateFrame();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::SetPlotOrderToLast
+//
+// Purpose: 
+//   Make the specified plot be last in the plot list.
+//
+// Arguments:
+//   plotId : The index of the plot that we want to make last.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:42:20 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::SetPlotOrderToLast(int plotId)
+{
+    if(plotId >= 0 && plotId < nPlots && nPlots > 1)
+    {
+        ViewerPlotListElement *newPlots = new ViewerPlotListElement[nPlots];
+        int index = 0;
+        for(int i = 0; i < nPlots; ++i)
+        {
+            if(i == plotId)
+                continue;
+            newPlots[index++] = plots[i];
+        }
+        newPlots[nPlots-1] = plots[plotId];
+        delete [] plots;
+        plots = newPlots;
+
+        UpdatePlotList();
+        UpdateFrame();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::MovePlotOrderTowardFirst
+//
+// Purpose: 
+//   Move the specified plot one slot closer to the start of the plot list
+//
+// Arguments:
+//   plotId : The index of the plot that we want to move.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:42:20 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::MovePlotOrderTowardFirst(int plotId)
+{
+    if(plotId >= 1 && plotId < nPlots && nPlots > 1)
+    {
+        ViewerPlotListElement tmp;
+        tmp = plots[plotId-1];
+        plots[plotId-1] = plots[plotId];
+        plots[plotId] = tmp;
+
+        UpdatePlotList();
+        UpdateFrame();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::MovePlotOrderTowardLast
+//
+// Purpose: 
+//   Move the specified plot one slot closer to the end of the plot list
+//
+// Arguments:
+//   plotId : The index of the plot that we want to move.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 13:42:20 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::MovePlotOrderTowardLast(int plotId)
+{
+    if(plotId >= 0 && plotId < nPlots-1 && nPlots > 1)
+    {
+        ViewerPlotListElement tmp;
+        tmp = plots[plotId+1];
+        plots[plotId+1] = plots[plotId];
+        plots[plotId] = tmp;
+
+        UpdatePlotList();
+        UpdateFrame();
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::AddOperator
 //
 //  Purpose:

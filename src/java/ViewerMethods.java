@@ -1239,6 +1239,78 @@ public class ViewerMethods
     }
 
     /**
+     * Sets the description string for the plot
+     *
+     * @param index The index of the plot in the plot list.
+     * @param description The description string to display for the plot
+     * @return true on success; false otherwise.
+     */
+    public boolean SetPlotDescription(int index, String description)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC);
+        GetViewerState().GetViewerRPC().SetIntArg1(index);
+        GetViewerState().GetViewerRPC().SetStringArg1(description);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Move a plot toward the first slot in the plot list
+     *
+     * @param index The index of the plot in the plot list.
+     * @return true on success; false otherwise.
+     */
+    public boolean MovePlotOrderTowardFirst(int index)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC);
+        GetViewerState().GetViewerRPC().SetIntArg1(index);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Move a plot toward the last slot in the plot list
+     *
+     * @param index The index of the plot in the plot list.
+     * @return true on success; false otherwise.
+     */
+    public boolean MovePlotOrderTowardLast(int index)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC);
+        GetViewerState().GetViewerRPC().SetIntArg1(index);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Make the plot be first in the plot list
+     *
+     * @param index The index of the plot in the plot list.
+     * @return true on success; false otherwise.
+     */
+    public boolean SetPlotOrderToFirst(int index)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC);
+        GetViewerState().GetViewerRPC().SetIntArg1(index);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Make the plot be last in the plot list
+     *
+     * @param index The index of the plot in the plot list.
+     * @return true on success; false otherwise.
+     */
+    public boolean SetPlotOrderToLast(int index)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC);
+        GetViewerState().GetViewerRPC().SetIntArg1(index);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
      * Adds an operator to the active plots.
      *
      * @param oper Type of the operator to be added, which is an index in the 

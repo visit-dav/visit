@@ -551,6 +551,9 @@ public:
 //   Brad Whitlock, Tue Apr 14 10:04:18 PDT 2009
 //   I added actions to open the gui and cli and quit.
 //
+//   Brad Whitlock, Tue Oct 20 14:53:42 PDT 2009
+//   I added actions to manipulate the plot list order.
+//
 // ****************************************************************************
 
 
@@ -630,6 +633,11 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new MovePlotDatabaseKeyframeAction(win), ViewerRPC::MovePlotDatabaseKeyframeRPC);
     AddAction(new CopyPlotAction(win), ViewerRPC::CopyActivePlotsRPC);
     AddAction(new SetPlotFollowsTimeAction(win),ViewerRPC::SetPlotFollowsTimeRPC);
+    AddAction(new SetPlotDescriptionAction(win),ViewerRPC::SetPlotDescriptionRPC);
+    AddAction(new MovePlotOrderTowardFirstAction(win),ViewerRPC::MovePlotOrderTowardFirstRPC);
+    AddAction(new MovePlotOrderTowardLastAction(win),ViewerRPC::MovePlotOrderTowardLastRPC);
+    AddAction(new SetPlotOrderToFirstAction(win),ViewerRPC::SetPlotOrderToFirstRPC);
+    AddAction(new SetPlotOrderToLastAction(win),ViewerRPC::SetPlotOrderToLastRPC);
 
     if(!GetViewerProperties()->GetLaunchedByClient())
     {

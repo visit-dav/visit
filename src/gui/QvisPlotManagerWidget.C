@@ -173,6 +173,9 @@ using std::vector;
 //   Brad Whitlock, Tue Sep  9 10:40:33 PDT 2008
 //   Removed metaData and pluginAtts since they were not used.
 //
+//   Brad Whitlock, Tue Oct 20 15:43:40 PDT 2009
+//   I added controls to change the plot list ordering.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent) 
@@ -271,6 +274,18 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(redrawThisPlot()));
     connect(plotListBox, SIGNAL(disconnectThisPlot()),
             this, SLOT(disconnectThisPlot()));
+
+    connect(plotListBox, SIGNAL(renamePlot(int, const QString &)),
+            this, SLOT(setPlotDescription(int, const QString &)));
+    connect(plotListBox, SIGNAL(moveThisPlotTowardFirst()),
+            this, SLOT(moveThisPlotTowardFirst()));
+    connect(plotListBox, SIGNAL(moveThisPlotTowardLast()),
+            this, SLOT(moveThisPlotTowardLast()));
+    connect(plotListBox, SIGNAL(makeThisPlotFirst()),
+            this, SLOT(makeThisPlotFirst()));
+    connect(plotListBox, SIGNAL(makeThisPlotLast()),
+            this, SLOT(makeThisPlotLast()));
+
     topLayout->addWidget(plotListBox, 2, 0, 1, 4);
 
     QWidget *applyOpsAndSelection = new QWidget(this);
@@ -2493,9 +2508,81 @@ QvisPlotManagerWidget::drawThisPlot()
 {
     // Draw the active plots.
     GetViewerMethods()->DrawPlots(false);
-    
 }
 
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::setPlotDescription
+//
+// Purpose: 
+//   Sets the new name for a plot.
+//
+// Arguments:
+//   index : The index of the plot to rename.
+//   newName : The new name of the plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 22 11:03:44 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+void
+QvisPlotManagerWidget::setPlotDescription(int index, const QString &newName)
+{
+    GetViewerMethods()->SetPlotDescription(index, newName.toStdString());
+    ClearStatus();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::moveThisPlotTowardFirst
+//
+// Purpose: 
+//   Move the active plot around in the plot list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 22 11:04:37 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::moveThisPlotTowardFirst()
+{
+    int index = GetViewerState()->GetPlotList()->FirstSelectedIndex();
+    if(index >= 0)
+        GetViewerMethods()->MovePlotOrderTowardFirst(index);
+    ClearStatus();
+}
+
+void
+QvisPlotManagerWidget::moveThisPlotTowardLast()
+{
+    int index = GetViewerState()->GetPlotList()->FirstSelectedIndex();
+    if(index >= 0)
+        GetViewerMethods()->MovePlotOrderTowardLast(index);
+    ClearStatus();
+}
+
+void
+QvisPlotManagerWidget::makeThisPlotFirst()
+{
+    int index = GetViewerState()->GetPlotList()->FirstSelectedIndex();
+    if(index >= 0)
+        GetViewerMethods()->SetPlotOrderToFirst(index);
+    ClearStatus();
+}
+
+void
+QvisPlotManagerWidget::makeThisPlotLast()
+{
+    int index = GetViewerState()->GetPlotList()->FirstSelectedIndex();
+    if(index >= 0)
+        GetViewerMethods()->SetPlotOrderToLast(index);
+    ClearStatus();
+}
 
 // ****************************************************************************
 // Method: QvisPlotManagerWidget::clearThisPlot
@@ -2639,14 +2726,15 @@ QvisPlotManagerWidget::redrawThisPlot()
 // Modifications:
 //   
 // ****************************************************************************
+
 void
 QvisPlotManagerWidget::disconnectThisPlot()
 {
 
     // Disconnect the active plot from the time slider:
-    GetViewerMethods()->SetPlotFollowsTime();
-			      
+    GetViewerMethods()->SetPlotFollowsTime();			      
 }
+
 // ****************************************************************************
 // Method: QvisPlotManagerWidget::setActivePlot
 //
@@ -2657,6 +2745,7 @@ QvisPlotManagerWidget::disconnectThisPlot()
 // Creation:   Wed July 18, 2007
 //
 // Modifications:
+//
 // ****************************************************************************
 
 void

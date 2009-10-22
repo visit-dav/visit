@@ -4,4 +4,6 @@
     </Field>
     <Function name="PlotList2" user="true" member="true">
     </Function>
+    <Function name="FirstSelectedIndex" user="true" member="true">
+    </Function>
   </Attribute>

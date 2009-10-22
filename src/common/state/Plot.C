@@ -78,7 +78,7 @@ Plot::StateType_FromString(const std::string &s, Plot::StateType &val)
 }
 
 // Type map format string
-const char *Plot::TypeMapFormatString = "iisbbbssi*s*iiiii*i*bb";
+const char *Plot::TypeMapFormatString = "iisbbbssi*s*iiiii*i*bbs";
 
 // ****************************************************************************
 // Method: Plot::Plot
@@ -149,6 +149,7 @@ Plot::Plot(const Plot &obj) :
     databaseKeyframes = obj.databaseKeyframes;
     isFromSimulation = obj.isFromSimulation;
     followsTime = obj.followsTime;
+    description = obj.description;
 
     SelectAll();
 }
@@ -210,6 +211,7 @@ Plot::operator = (const Plot &obj)
     databaseKeyframes = obj.databaseKeyframes;
     isFromSimulation = obj.isFromSimulation;
     followsTime = obj.followsTime;
+    description = obj.description;
 
     SelectAll();
     return *this;
@@ -251,7 +253,8 @@ Plot::operator == (const Plot &obj) const
             (keyframes == obj.keyframes) &&
             (databaseKeyframes == obj.databaseKeyframes) &&
             (isFromSimulation == obj.isFromSimulation) &&
-            (followsTime == obj.followsTime));
+            (followsTime == obj.followsTime) &&
+            (description == obj.description));
 }
 
 // ****************************************************************************
@@ -413,6 +416,7 @@ Plot::SelectAll()
     Select(ID_databaseKeyframes, (void *)&databaseKeyframes);
     Select(ID_isFromSimulation,  (void *)&isFromSimulation);
     Select(ID_followsTime,       (void *)&followsTime);
+    Select(ID_description,       (void *)&description);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -543,6 +547,13 @@ Plot::SetFollowsTime(bool followsTime_)
 {
     followsTime = followsTime_;
     Select(ID_followsTime, (void *)&followsTime);
+}
+
+void
+Plot::SetDescription(const std::string &description_)
+{
+    description = description_;
+    Select(ID_description, (void *)&description);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -699,6 +710,18 @@ Plot::GetFollowsTime() const
     return followsTime;
 }
 
+const std::string &
+Plot::GetDescription() const
+{
+    return description;
+}
+
+std::string &
+Plot::GetDescription()
+{
+    return description;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -745,6 +768,12 @@ Plot::SelectDatabaseKeyframes()
     Select(ID_databaseKeyframes, (void *)&databaseKeyframes);
 }
 
+void
+Plot::SelectDescription()
+{
+    Select(ID_description, (void *)&description);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -787,6 +816,7 @@ Plot::GetFieldName(int index) const
     case ID_databaseKeyframes: return "databaseKeyframes";
     case ID_isFromSimulation:  return "isFromSimulation";
     case ID_followsTime:       return "followsTime";
+    case ID_description:       return "description";
     default:  return "invalid index";
     }
 }
@@ -829,6 +859,7 @@ Plot::GetFieldType(int index) const
     case ID_databaseKeyframes: return FieldType_intVector;
     case ID_isFromSimulation:  return FieldType_bool;
     case ID_followsTime:       return FieldType_bool;
+    case ID_description:       return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -871,6 +902,7 @@ Plot::GetFieldTypeName(int index) const
     case ID_databaseKeyframes: return "intVector";
     case ID_isFromSimulation:  return "bool";
     case ID_followsTime:       return "bool";
+    case ID_description:       return "string";
     default:  return "invalid index";
     }
 }
@@ -985,6 +1017,11 @@ Plot::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_followsTime:
         {  // new scope
         retval = (followsTime == obj.followsTime);
+        }
+        break;
+    case ID_description:
+        {  // new scope
+        retval = (description == obj.description);
         }
         break;
     default: retval = false;

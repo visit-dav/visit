@@ -2192,6 +2192,163 @@ ViewerMethods::ChangeActivePlotsVar(const std::string &var)
 }
 
 // ****************************************************************************
+// Method: ViewerMethods::SetPlotDescription
+//
+// Purpose: 
+//   Set the description string for the plot.
+//
+// Arguments:
+//   plotId      : The id of the plot.
+//   description : The new plot description.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 11:44:49 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::SetPlotDescription(int plotId, const std::string &description)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetPlotDescriptionRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+    state->GetViewerRPC()->SetStringArg1(description);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::MovePlotOrderTowardFirst
+//
+// Purpose: 
+//   Move a plot towards the start of the plot list.
+//
+// Arguments:
+//  plotId : The id of the plot to move.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 11:46:00 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::MovePlotOrderTowardFirst(int plotId)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::MovePlotOrderTowardFirstRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::MovePlotOrderTowardLast
+//
+// Purpose: 
+//   Move a plot towards the end of the plot list.
+//
+// Arguments:
+//  plotId : The id of the plot to move.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 11:46:00 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::MovePlotOrderTowardLast(int plotId)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::MovePlotOrderTowardLastRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::SetPlotOrderToFirst
+//
+// Purpose: 
+//   Move a plot to the start of the plot list.
+//
+// Arguments:
+//  plotId : The id of the plot to move.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 11:46:00 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::SetPlotOrderToFirst(int plotId)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetPlotOrderToFirstRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::SetPlotOrderToLast
+//
+// Purpose: 
+//   Move a plot to the end of the plot list.
+//
+// Arguments:
+//  plotId : The id of the plot to move.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 20 11:46:00 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::SetPlotOrderToLast(int plotId)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetPlotOrderToLastRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::AddOperator
 //
 //  Purpose:

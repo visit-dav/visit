@@ -187,6 +187,11 @@
       LoadNamedSelectionRPC
       SaveNamedSelectionRPC
       MenuQuitRPC
+      SetPlotDescriptionRPC
+      MovePlotOrderTowardFirstRPC
+      MovePlotOrderTowardLastRPC
+      SetPlotOrderToFirstRPC
+      SetPlotOrderToLastRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

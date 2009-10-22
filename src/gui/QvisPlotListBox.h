@@ -85,6 +85,9 @@ class PlotList;
 //   Brad Whitlock, Fri May 30 15:43:50 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Tue Oct 20 15:16:39 PDT 2009
+//   I added signals for manipulating the plot list.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListWidget
@@ -99,6 +102,8 @@ public:
 
     bool NeedsToBeRegenerated(const PlotList *, const stringVector &indices) const;
     bool NeedToUpdateSelection(const PlotList *) const;
+
+    void triggerPlotRename(int, const QString &);
 signals:
     void itemExpansionChanged();
     void activateSubsetWindow();
@@ -117,6 +122,14 @@ signals:
     void redrawThisPlot();
     void disconnectThisPlot();
     void setActivePlot();
+
+    void renamePlot(int row, const QString &);
+    void makeThisPlotFirst();
+    void moveThisPlotTowardFirst();
+    void moveThisPlotTowardLast();
+    void makeThisPlotLast();
+private slots:
+    void setPlotDescription();
 protected:
     virtual void mousePressEvent(QMouseEvent *e);
     virtual void mouseDoubleClickEvent(QMouseEvent *e);
@@ -134,6 +147,11 @@ private:
     QAction    *copyToWinAct;
     QAction    *redrawAct;
     QAction    *disconnectAct;
+    QAction    *setPlotDescriptionAct;
+    QAction    *moveThisPlotTowardFirstAct;
+    QAction    *moveThisPlotTowardLastAct;
+    QAction    *makeThisPlotFirstAct;
+    QAction    *makeThisPlotLastAct;
 
     QMenu      *copyWinSubMenu;
     QAction    *win1Act;
