@@ -36,6 +36,8 @@
 *
 *****************************************************************************/
 
+#include <cstdio>
+
 #include <QvisColorGridWidget.h>
 
 #include <QCursor>
