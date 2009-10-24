@@ -94,6 +94,14 @@
 #    Mark C. Miller, Mon Aug 31 14:36:29 PDT 2009
 #    Removed NameingConvention.[Ch]. It was not being used anywhere.
 #    Added Namescheme.[Ch].
+#
+#    Hank Childs, Fri Oct 23 16:54:51 PDT 2009
+#    Remove reference to $INCLUDE, which is not a variable that our configure
+#    script uses.  It was working in most places, because it was not defined,
+#    but TACC's machines define INCLUDE as an environment variable.
+#    This was done on May 6th, but those changes were trampled, so doing it
+#    again when merging the same change from a backport to 1.12RC.
+#
 ##############################################################################
 
 ##
@@ -141,10 +149,10 @@ $(tmpbin)/MRUCache_test: MRUCache_test.o $(LIBSHARED)
 	$(CXX) -o $@ $(LDFLAGS) MRUCache_test.o
 
 $(tmpbin)/StringHelpers_test: StringHelpers_test.o $(LIBSHARED)
-	$(CXX) $(INCLUDE) -o $@ StringHelpers_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
+	$(CXX) -o $@ StringHelpers_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
 
 $(tmpbin)/Namescheme_test: Namescheme_test.o $(LIBSHARED)
-	$(CXX) $(INCLUDE) -o $@ Namescheme_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
+	$(CXX) -o $@ Namescheme_test.o  $(LDFLAGS) @EXE_LDFLAGS@ -lutility
 
 ##
 ## Automatic dependency stuff

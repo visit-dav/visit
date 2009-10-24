@@ -995,6 +995,9 @@ avtBoxlibFileFormat::ReadHeader(void)
 //    also need this functionality and it makes sense to have a single
 //    place where we do this).
 //
+//    Hank Childs, Fri Oct 23 09:53:07 PDT 2009
+//    Fix gap between patches caused by floating point precision.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1023,10 +1026,12 @@ avtBoxlibFileFormat::CreateGrid(double lo[BL_SPACEDIM], double hi[BL_SPACEDIM], 
     float *ptr = xcoord->GetPointer(0);
     for (i = 0; i < steps[0]; ++i)
         ptr[i] = (lo[0] + i * delta[0]);
+    ptr[steps[0]-1] = hi[0];
 
     ptr = ycoord->GetPointer(0);
     for (i = 0; i < steps[1]; ++i)
         ptr[i] = (lo[1] + i * delta[1]);
+    ptr[steps[1]-1] = hi[1];
 
     ptr = zcoord->GetPointer(0);
 #if BL_SPACEDIM==2
@@ -1034,6 +1039,7 @@ avtBoxlibFileFormat::CreateGrid(double lo[BL_SPACEDIM], double hi[BL_SPACEDIM], 
 #elif BL_SPACEDIM==3
     for (i = 0; i < steps[2]; ++i)
         ptr[i] = (lo[2] + i * delta[2]);
+    ptr[steps[2]-1] = hi[2];
 #endif
 
     rg->SetXCoordinates(xcoord);
