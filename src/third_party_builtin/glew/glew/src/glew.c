@@ -206,11 +206,12 @@ static void _glewInitFunctionLoader()
   GetLastError();
 #else
   const char *dl_error;
-  const char glx_gpa[] = "mglXGetProcAddress";
+  const char glx_gpa[] = "mglXGetProcAddressARB";
   if(NULL == dso_handle) {
     dso_handle = dlopen(glew_gl_lib, RTLD_LAZY | RTLD_LOCAL);
     if(NULL == dso_handle) {
       warning("Could not load library `%s': %s", glew_gl_lib, dlerror());
+      return;
     }
   }
   dlerror(); /* clear any previous error. */
@@ -10005,6 +10006,9 @@ GLenum glewInit ()
   GLenum r;
 
   _glewInitFunctionLoader();
+  if(dso_handle == NULL) {
+    return GLEW_ERROR_NO_GLX;
+  }
 
   r = glewContextInit();
 #if defined(_WIN32)
