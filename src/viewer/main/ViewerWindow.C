@@ -8119,6 +8119,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Wed Dec 10 15:24:21 PST 2008
 //   I removed code to handle ancient session files.
 //
+//   Brad Whitlock, Mon Oct 26 15:43:23 PDT 2009
+//   I replaced the code to delete the active plots with a new,more direct
+//   way that does not cause metadata read side-effects.
+//
 // ****************************************************************************
 
 void
@@ -8159,11 +8163,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     // Delete the plots first and update the frame so when we set the 
     // view, etc no updates can happen.
     //
-    intVector plots, tmp;
-    for(int j = 0; j < GetPlotList()->GetNumPlots(); ++j)
-        plots.push_back(j);
-    GetPlotList()->SetActivePlots(plots, tmp, tmp, false);
-    GetPlotList()->DeleteActivePlots();
+    GetPlotList()->DeleteAllPlots(false);
 
     //
     // Read in the plot list.

@@ -308,6 +308,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Tue Oct 20 14:55:44 PDT 2009
 //    I added methods to manipulate the plot list order.
 //
+//    Brad Whitlock, Mon Oct 26 15:44:55 PDT 2009
+//    I added DeleteAllPlots and I added a default argument to DeleteActivePlots.
+//
 // ****************************************************************************
 
 
@@ -393,7 +396,8 @@ public:
     void ClearPlots(bool clearAll = true);
     void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);
-    void DeleteActivePlots();
+    void DeleteActivePlots(bool doUpdates = true);
+    void DeleteAllPlots(bool doUpdates);
 
     int  FindCompatiblePlot(ViewerPlot *);
 

@@ -3544,10 +3544,13 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Brad Whitlock, Wed Dec 10 15:11:04 PST 2008
 //    Use AnimationAttributes.
 //
+//    Brad Whitlock, Mon Oct 26 14:49:56 PDT 2009
+//    I made updates optional.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::DeleteActivePlots()
+ViewerPlotList::DeleteActivePlots(bool doUpdates)
 {
     //
     // Loop over the list deleting any active plots.  As it traverses
@@ -3603,8 +3606,9 @@ ViewerPlotList::DeleteActivePlots()
     //
     if(ValidateTimeSlider())
     {
-        ViewerWindowManager::Instance()->UpdateWindowInformation(
-            WINDOWINFO_TIMESLIDERS, window->GetWindowId());
+        if(doUpdates)
+            ViewerWindowManager::Instance()->UpdateWindowInformation(
+                WINDOWINFO_TIMESLIDERS, window->GetWindowId());
     }
 
     //
@@ -3612,24 +3616,52 @@ ViewerPlotList::DeleteActivePlots()
     //
     if(nDeletedLegends > 0)
         ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
-    UpdatePlotList();
-    UpdatePlotAtts();
-    UpdateSILRestrictionAtts();
-    UpdateExpressionList(true);
+    if(doUpdates)
+    {
+        UpdatePlotList();
+        UpdatePlotAtts();
+        UpdateSILRestrictionAtts();
+        UpdateExpressionList(true);
+
+        //
+        // DBPluginInfo is currently expected to follow the selected plot's host.
+        //
+        if (nPlots > 0)
+        {
+            ViewerFileServer::Instance()->
+                UpdateDBPluginInfo(plots[0].plot->GetHostName());
+        }
+    }
 
     //
     // Update the frame.
     //
     UpdateFrame();
+}
 
-    //
-    // DBPluginInfo is currently expected to follow the selected plot's host.
-    //
-    if (nPlots > 0)
-    {
-        ViewerFileServer::Instance()->
-            UpdateDBPluginInfo(plots[0].plot->GetHostName());
-    }
+// ****************************************************************************
+// Method: ViewerPlotList::DeleteAllPlots
+//
+// Purpose: 
+//   Delete all of the plots in the plot list.
+//
+// Arguments:
+//   doUpdates : Whether the plot-related state should be sent to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 26 14:50:55 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::DeleteAllPlots(bool doUpdates)
+{
+    for(int i = 0; i < nPlots; ++i)
+        plots[i].active = true;
+
+    DeleteActivePlots(doUpdates);
 }
 
 // ****************************************************************************
@@ -8460,6 +8492,11 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Brad Whitlock, Fri Oct 23 17:04:38 PDT 2009
+//   I made it use GetMetaDataForState so we can open up databases at later
+//   timestates and get transient variables.
+//
 // ****************************************************************************
 
 bool
@@ -8625,7 +8662,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                      // If the time slider database has multiple time steps then
                      // create a correlation for it.
                      //
-                     const avtDatabaseMetaData *md = fs->GetMetaData(tsHost, tsDB);
+                     const avtDatabaseMetaData *md = fs->GetMetaDataForState(tsHost, tsDB, tsState);
                      if(md != 0 && md->GetNumStates() > 1)
                      {
                          stringVector dbs; dbs.push_back(tsName);

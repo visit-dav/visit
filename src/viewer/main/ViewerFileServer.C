@@ -2836,6 +2836,9 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
 //   I rewrote the method to handle creation of database correlations 
 //   using replacement sources.
 //
+//   Brad Whitlock, Fri Oct 23 16:11:33 PDT 2009
+//   I added code to remove all metadata, SILs, and database correlations.
+//
 // ****************************************************************************
 
 void
@@ -2843,6 +2846,24 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
     const std::map<std::string,std::string> &sourceToDB,
     const std::string &configVersion)
 {
+    // Clear out all of the metadata, SILs, and correlations.
+    debug4 << "Clearing all stored metadata, SILs, and correlations." << endl;
+    FileMetaDataMap::iterator fpos;
+    for(fpos = fileMetaData.begin(); fpos != fileMetaData.end(); ++fpos)
+    {
+        // Delete the metadata
+        delete fpos->second;
+    }
+    fileMetaData.clear();
+    FileSILMap::iterator fpos2;
+    for (fpos2 = fileSIL.begin() ; fpos2 != fileSIL.end() ; fpos2++)
+    {
+        // Delete the SIL
+        delete fpos2->second;
+    }
+    fileSIL.clear();
+    databaseCorrelationList->ClearCorrelations();
+
     DataNode *cLNode = parentNode->GetNode("DatabaseCorrelationList");
     if(cLNode != 0)
     {
