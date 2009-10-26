@@ -702,6 +702,9 @@
 #     Cyrus Harrison, Thu Oct 15 08:42:01 PDT 2009
 #     Modifications to build_mesa & its patches to support building on AIX.
 #
+#     Jed Brown, Sat Oct 24 21:57:05 CEST 2009
+#     Do not build QtSql components (they are not used and broke gcc-4.4.1/qt-4.4.3)
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -2747,7 +2750,8 @@ function build_qt
     echo "yes" | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                              -platform ${QT_PLATFORM} \
                              -make libs -make tools -fast -no-separate-debug-info \
-                             -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite | tee qt.config.out
+                             -no-qt3support -no-dbus \
+                             -no-sql-{db2,ibase,mysql,oci,odbc,psql,sqlite,sqlite2,tds} | tee qt.config.out
     
     if [[ $? != 0 ]] ; then
        warn "Qt4 configure failed. Giving up."
@@ -2791,7 +2795,7 @@ function build_qt
         for f in *.a; do ln -s $f ${f%\.*}.so; done
     elif [[ "$OPSYS" == "Darwin" ]]; then
         QtTopDir="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSql QtSvg QtXml"
+        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg QtXml"
         for QtFW in $QtFrameworks; do
             filename="$QtTopDir/lib/${QtFW}.framework/${QtFW}"
             debugFilename="${filename}_debug"

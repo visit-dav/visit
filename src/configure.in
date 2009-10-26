@@ -982,6 +982,9 @@ dnl
 dnl    Dave Pugmire, Thu Sep 17 11:59:07 EDT 2009
 dnl    Add Adios thirdparty library
 dnl
+dnl    Jed Brown, Sat Oct 24 21:57:05 CEST 2009
+dnl    Don't set QtSql variables; library is unused / not always available.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3400,9 +3403,6 @@ if test "$UNAME" = "Darwin"; then
     QT_SCRIPT=QtScript.framework
     QT_SCRIPT_LIB="-framework QtScript"
 
-    QT_SQL=QtSql.framework
-    QT_SQL_LIB="-framework QtSql"
-
     QT_SVG=QtSvg.framework
     QT_SVG_LIB="-framework QtSvg"
 
@@ -3438,9 +3438,6 @@ else
 
     QT_SCRIPT=libQtScript.so
     QT_SCRIPT_LIB=-lQtScript
-
-    QT_SQL=libQtSql.so
-    QT_SQL_LIB=-lQtSql
 
     QT_SVG=libQtSvg.so
     QT_SVG_LIB=-lQtSvg

@@ -654,7 +654,6 @@ if ("$os" == "darwin") then
     set QtNetwork     = "QtNetwork.framework"
     set QtOpenGL      = "QtOpenGL.framework"
     set QtScript      = "QtScript.framework"
-    set QtSql         = "QtSql.framework"
     set QtSvg         = "QtSvg.framework"
     set QtXml         = "QtXml.framework"
     #set QtXmlPatterns = "QtXmlPatterns.framework"
@@ -666,7 +665,6 @@ else
     set QtNetwork     = `cd $VisItDir/lib && ls libQtNetwork.$SHLIB_SOEXT.?.?.?`
     set QtOpenGL      = `cd $VisItDir/lib && ls libQtOpenGL.$SHLIB_SOEXT.?.?.?`
     set QtScript      = `cd $VisItDir/lib && ls libQtScript.$SHLIB_SOEXT.?.?.?`
-    set QtSql         = `cd $VisItDir/lib && ls libQtSql.$SHLIB_SOEXT.?.?.?`
     set QtSvg         = `cd $VisItDir/lib && ls libQtSvg.$SHLIB_SOEXT.?.?.?`
     set QtXml         = `cd $VisItDir/lib && ls libQtXml.$SHLIB_SOEXT.?.?.?`
     #set QtXmlPatterns = `cd $VisItDir/lib && ls libQtXmlPatterns.$SHLIB_SOEXT.?.?.?`
@@ -677,9 +675,7 @@ endif
 # Check that the Qt libraries exist.
 #
 if ("$QtLibs" == "TRUE") then
-    #foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
-    #foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
-    foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
+    foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSvg $QtXml $QtUiTools)
         if (! -e $VisItDir/lib/$qlib) then
             echo " "
             echo "Error: The file $VisItDir/lib/$qlib does not exist. aborting ..."
@@ -1204,10 +1200,8 @@ endif
 #
 # Copy the Qt libraries to the distribution.
 #
-#`foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtXmlPatterns $QtUiTools)
-#foreach qlib ($QtCore $QtGui $QtHelp $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
 if("$QtLibs" == "TRUE") then
-    foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSql $QtSvg $QtXml $QtUiTools)
+    foreach qlib ($QtCore $QtGui $QtNetwork $QtOpenGL $QtScript $QtSvg $QtXml $QtUiTools)
         if ("$os" != "darwin") then
             cp $VisItDir/lib/$qlib $libdir
             set libnoext = `echo $qlib | awk '{i=index($1,".so"); print substr($1,1,i-1)}'`
