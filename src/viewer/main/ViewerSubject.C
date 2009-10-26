@@ -2961,6 +2961,10 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Wed Feb 13 14:08:18 PST 2008
 //   Added configVersion argument.
 //
+//   Brad Whitlock, Mon Oct 26 15:45:27 PDT 2009
+//   I added code to clear the caches of all engines since they could contain
+//   metadata that we want to reread as part of restoring the session file.
+//
 // ****************************************************************************
 
 bool
@@ -2981,6 +2985,7 @@ ViewerSubject::SetFromNode(DataNode *parentNode,
     fatalError = ViewerWindowManager::Instance()->SessionContainsErrors(vsNode);
     if(!fatalError)
     {
+        ViewerEngineManager::Instance()->ClearCacheForAllEngines();
         ViewerFileServer::Instance()->SetFromNode(vsNode, sourceToDB, configVersion);
         ViewerWindowManager::Instance()->SetFromNode(vsNode, sourceToDB, configVersion);
         ViewerQueryManager::Instance()->SetFromNode(vsNode, configVersion);
