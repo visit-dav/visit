@@ -59,12 +59,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__APPLE__)
+#ifdef VTK_USE_COCOA
+#include <QLabel>
+#include <QPixmap>
+#include <QPainter>
+#include <QLine>
+#else
 #include <Carbon/Carbon.h>
+#endif
 #elif defined(HAVE_XLIB)
 #include <X11/Intrinsic.h>
 #endif
 
 #if defined(__APPLE__)
+#ifndef VTK_USE_COCOA
 struct vtkDashedXorGridMapper2DOverlay
 {
     WindowRef    window;
@@ -82,7 +90,7 @@ static OSStatus CreateOverlayWindow( Rect* inBounds, WindowRef* outOverlayWindow
 CreateNewWindowFAILED:
     return err;
 }
-
+#endif
 #else
 struct vtkDashedXorGridMapper2DOverlay
 {
@@ -128,11 +136,13 @@ vtkDashedXorGridMapper2D::~vtkDashedXorGridMapper2D()
     if(overlay != 0)
     {
 #if defined(__APPLE__)
+#ifndef VTK_USE_COCOA
         // Release the context that we used to draw on the window.
         QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
 
         // Destroy the transparent overlay window.
         DisposeWindow(overlay->window);
+#endif
 #endif
         delete overlay;
         overlay = 0;
@@ -164,11 +174,13 @@ vtkDashedXorGridMapper2D::ReleaseGraphicsResources(vtkWindow *win)
     if(overlay != 0)
     {
 #if defined(__APPLE__)
+#ifndef VTK_USE_COCOA
         // Release the context that we used to draw on the window.
         QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
 
         // Destroy the transparent overlay window.
         DisposeWindow(overlay->window);
+#endif
 #endif
         delete overlay;
         overlay = 0;
@@ -198,6 +210,10 @@ vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
 //
 //    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
 //    Remove unused variable.
+//
+//    Gunther H. Weber, Mon Oct 26 10:55:30 PDT 2009
+//    Use Qt to create the transparent overlay window on MacOS X if
+//    VTK_USE_COACOA is set.
 //
 // ****************************************************************************
 
@@ -244,6 +260,67 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     double whitergb[] = {1.,1.,1.};
     SET_FOREGROUND_D(whitergb);
 #elif defined(__APPLE__)
+#ifdef VTK_USE_COCOA
+//
+// Qt coding and macros
+//
+
+#define SET_FOREGROUND_D(rgba) \
+    painter.setPen(QColor(255.*rgba[0], 255.*rgba[1], 255.*rgba[2]));
+
+#define SET_FOREGROUND(rgba) \
+    painter.setPen(QColor(255.*rgba[0], 255.*rgba[1], 255.*rgba[2]));
+
+#define DRAW_XOR_LINE(x1, y1, x2, y2) \
+    painter.drawLine(QLine(x1, y1, x2, y2));
+
+#define FLUSH_AND_SYNC() \
+    overlay->setPixmap(pixmap);
+
+#define CLEAN_UP()
+
+    // Get a pointer to the GL widget that the vtkQtRenderWindow owns.
+    // Note that this only works because we've made the GenericDisplayId 
+    // method return the GL widget pointer. On other platforms where 
+    // the display is actually used for something, this does not work.
+    typedef struct { int x,y,w,h; } OverlayInfo;
+    OverlayInfo *info = (OverlayInfo *)window->GetGenericDisplayId();
+
+    //
+    // Try and create the window if we've not yet created it.
+    //
+    if(overlay == 0)
+    {
+        
+        overlay = new QLabel(0, Qt::FramelessWindowHint);
+        overlay->setAttribute(Qt::WA_TranslucentBackground);
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 0))
+        // FIXME? We should need the following, but it triggers a Qt
+        // bug and  strangely everything seems to work without it.
+        // The Qt 4.4.6 Beta seems to fix the problem, so we set
+        // the appropriate flag.
+        overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+#endif
+        overlay->setAutoFillBackground(false);
+        overlay->setGeometry(info->x, info->y, info->w, info->h);
+        QPixmap pixmap(info->w, info->h);;
+        pixmap.fill(Qt::transparent);
+        overlay->setPixmap(pixmap);
+        overlay->show();
+    }
+
+    // Clear the window so it's ready for us to draw.
+    QPixmap pixmap(info->w, info->h);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+   
+    // Set the line color
+    double* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_D(actorColor);
+
+    // Free the info that we received from the vtkQt window.
+    delete info;
+#else
 //
 // MacOS X coding and macros
 //
@@ -314,7 +391,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     r.size.width = info->w;
     r.size.height = info->h;
     CGContextClearRect(overlay->ctx, r);
-
+#endif
 #elif defined(HAVE_XLIB)
 //
 // X11 coding and macros

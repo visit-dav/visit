@@ -165,8 +165,13 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          1,
                          vtkObjectFactoryCreatevtkVisItStructuredGrid);
 #if defined(__APPLE__)
+#ifdef VTK_USE_COCOA
+  this->RegisterOverride("vtkCocoaRenderWindow", "vtkOSMesaRenderWindow",
+                         "vtkOSMesaRenderWindow override vtkCocoaRenderWindow",
+#else
   this->RegisterOverride("vtkCarbonRenderWindow", "vtkOSMesaRenderWindow",
                          "vtkOSMesaRenderWindow override vtkCarbonRenderWindow",
+#endif
                          1,
                          vtkObjectFactoryCreatevtkOSMesaRenderWindow);
 #endif

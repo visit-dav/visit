@@ -53,7 +53,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkPolyDataMapper2D.h"
 
+#ifdef VTK_USE_COCOA
+class QLabel;
+#else
 struct vtkRubberBandMapper2DOverlay;
+#endif
 
 class RENDERING_VISIT_VTK_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
 {
@@ -73,7 +77,12 @@ protected:
   vtkRubberBandMapper2D();
   ~vtkRubberBandMapper2D();
 
+#ifdef VTK_USE_COCOA
+  QLabel *overlay;
+#else
   vtkRubberBandMapper2DOverlay *overlay;
+#endif
+
 private:
   vtkRubberBandMapper2D(const vtkRubberBandMapper2D&);
   void operator=(const vtkRubberBandMapper2D&);

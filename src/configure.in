@@ -1420,6 +1420,23 @@ AC_SUBST(GL_LIBS)
 
 AC_LANG_C
 
+# See if we can use Carbon on Mac OS
+OVERLAY_INC=""$(QT_CXXFLAGS)
+OVERLAY_LIB="" $(QT_LDFLAGS)
+
+if test "$UNAME" = "Darwin"; then
+    if test ${VERS%%.*} -ge 10; then
+        AC_DEFINE(VISIT_MAC_NO_CARBON, [1], [Do not use Carbon on Snow Leopard and newer.])
+        OVERLAY_INC="$""(QT_CXXFLAGS)"
+        OVERLAY_LIB="$""(QT_LDFLAGS) $""(QT_LIBS)"
+    else
+        OVERLAY_LIB="-framework Carbon"
+    fi
+fi
+
+AC_SUBST(OVERLAY_INC)
+AC_SUBST(OVERLAY_LIB)
+
 #
 # Set up some VTK variables.
 #
@@ -3704,7 +3721,13 @@ if test "$enable_scripting" = "yes"; then
             PY_CLI_LIB="$PY_CLI_LIB -lutil"
             ;;
         Darwin)
-            PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
+
+	    VERS=`uname -r`
+            if [[ ${VER%%.*} >= 10 ]] ; then
+                PY_CXXFLAGS="-I$PY_INCLUDEDIR"
+            else
+                PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
+            fi
             ;;
     esac
 

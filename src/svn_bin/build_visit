@@ -702,6 +702,11 @@
 #     Cyrus Harrison, Thu Oct 15 08:42:01 PDT 2009
 #     Modifications to build_mesa & its patches to support building on AIX.
 #
+#     Gunther H. Weber, Fri Oct 23 13:17:34 PDT 2009
+#     Specify explicit path to system curl so that we do not use another
+#     version without SSL support
+#     Support for build on Snow Leopard
+#
 #     Jed Brown, Sat Oct 24 21:57:05 CEST 2009
 #     Do not build QtSql components (they are not used and broke gcc-4.4.1/qt-4.4.3)
 #
@@ -738,8 +743,10 @@ if [[ "$OPSYS" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET=10.4
    elif [[ ${VER%%.*} == 9 ]] ; then
       export MACOSX_DEPLOYMENT_TARGET=10.5
+   elif [[ ${VER%%.*} == 10 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.6
    else
-      export MACOSX_DEPLOYMENT_TARGET=10.5
+      export MACOSX_DEPLOYMENT_TARGET=10.6
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
@@ -1000,15 +1007,38 @@ export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.5"}
 export PYTHON_FILE=${PYTHON_FILE:-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
 export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR:-"Python-$PYTHON_VERSION"}
 
+# FIXME: Hack: Use newer versions for Snow Leopard build
+if [[ "$OPSYS" == "Darwin" ]] ; then
+    VER=$(uname -r)
+    if [[ ${VER%%.*} -ge 10 ]] ; then
+        # VisIt's VTK version does not work on Snow Leopard. Use further
+        # customized version
+        export VTK_FILE="vtk-5.0.0c-newfreetype.tar.gz"
+        # CMake 2.4.5 build aborts on Snow Leopard. Use newer cmake version
+        export CMAKE_FILE="cmake-2.6.4.tar.gz"
+        export CMAKE_VERSION="2.6.4"
+        export CMAKE_BUILD_DIR="cmake-2.6.4"
+        # Ditto for Python 2.5
+        export PYTHON_VERSION="2.6.4"
+        export PYTHON_COMPATIBILITY_VERSION=2.6
+        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+   fi
+fi
+
 export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
 export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
 export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
-   #export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.5.2.tar.gz"}
-   #export QT_VERSION=${QT_VERSION:-"4.5.2"}
-   export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.4.3.tar.gz"}
-   export QT_VERSION=${QT_VERSION:-"4.4.3"}
+   VER=$(uname -r)
+   if [[ ${VER%%.*} -ge 10 ]] ; then
+       export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.5.3.tar.gz"}
+       export QT_VERSION=${QT_VERSION:-"4.5.3"}
+   else
+       export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.4.3.tar.gz"}
+       export QT_VERSION=${QT_VERSION:-"4.4.3"}
+   fi
 else
    export QT_FILE=${QT_FILE:-"qt-x11-opensource-src-4.4.3.tar.gz"}
    export QT_VERSION=${QT_VERSION:-"4.4.3"}
@@ -1391,13 +1421,17 @@ function download_file
 #   Tom Fogal, Sun Jul 26 17:19:26 MDT 2009
 #   Follow redirects.  Don't use a second argument.
 #
+#   Gunther H. Weber, Fri Oct 23 13:17:34 PDT 2009
+#   Specify explicit path to system curl so that we do not use another
+#   version without SSL support
+#
 # *************************************************************************** 
 
 function try_download_file
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
         # MaxOS X comes with curl
-        curl -ksfLO $1
+        /usr/bin/curl -ksfLO $1
     else
         check_wget
         if [[ $? != 0 ]] ; then
@@ -2746,8 +2780,8 @@ function build_qt
          "-make libs -make tools -fast -no-separate-debug-info" \
          "-no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite" \
          "${EXTRA_QT_FLAGS}"
-    # Need to replace the "echo yes"  with "(echo 'o'; echo 'yes')"  for Qt 4.5
-    echo "yes" | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
+    (if [[ $(echo $QT_VERSION | cut -c 3) > 4 ]]; then echo 'o'; fi; echo "yes" ) | \
+                 ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                              -platform ${QT_PLATFORM} \
                              -make libs -make tools -fast -no-separate-debug-info \
                              -no-qt3support -no-dbus \
@@ -2762,7 +2796,7 @@ function build_qt
     # Figure out if configure found the OpenGL libraries
     #
     if [[ "${DO_DBIO_ONLY}" != "yes" ]] ; then
-       HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'`
+       HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
        if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
           warn "Qt4 configure did not find OpenGL." \
                 "VisIt needs Qt4 with enabled OpenGL support. Giving up."
@@ -3319,22 +3353,45 @@ function build_vtk
     cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
     CMAKE_BIN=${CMAKE_INSTALL}/cmake
     if [[ "$OPSYS" == "Darwin" ]]; then
-    ${CMAKE_BIN} \
-        -DBUILD_SHARED_LIBS:BOOL=ON\
-        -DBUILD_TESTING:BOOL=OFF\
-        -DUSE_ANSI_STD_LIB:BOOL=ON\
-        -DVTK_USE_MANGLED_MESA:BOOL=ON\
-        -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
-        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
-        -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
-        .
+    VER=$(uname -r)
+    if [[ ${VER%%.*} -ge 10 ]] ; then
+        echo Snow Leopard detected. Disabling Carbon.
+        ${CMAKE_BIN} \
+            -DVTK_USE_CARBON:BOOL=OFF\
+            -DVTK_USE_COCOA:BOOL=ON\
+            -DBUILD_SHARED_LIBS:BOOL=ON\
+            -DBUILD_TESTING:BOOL=OFF\
+            -DUSE_ANSI_STD_LIB:BOOL=ON\
+            -DVTK_USE_MANGLED_MESA:BOOL=ON\
+            -DVTK_USE_HYBRID:BOOL=ON\
+            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+            -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+            -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+            -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
+            -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            .
+    else
+        ${CMAKE_BIN} \
+            -DBUILD_SHARED_LIBS:BOOL=ON\
+            -DBUILD_TESTING:BOOL=OFF\
+            -DUSE_ANSI_STD_LIB:BOOL=ON\
+            -DVTK_USE_MANGLED_MESA:BOOL=ON\
+            -DVTK_USE_HYBRID:BOOL=ON\
+            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+            -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+            -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+            -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
+            -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            .
+    fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
     ${CMAKE_BIN} \
         -DBUILD_SHARED_LIBS:BOOL=ON\
@@ -3692,7 +3749,7 @@ function build_python
         fi
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH=\
-"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config"
+"$VISITDIR/python/$PYTHON_COMPATIBILITY_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
