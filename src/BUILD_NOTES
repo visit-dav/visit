@@ -484,7 +484,6 @@ ln -s libQtHelp.a libQtHelp.so
 ln -s libQtNetwork.a libQtNetwork.so
 ln -s libQtOpenGL.a libQtOpenGL.so
 ln -s libQtScript.a libQtScript.so
-ln -s libQtSql.a libQtSql.so
 ln -s libQtSvg.a libQtSvg.so
 ln -s libQtTest.a libQtTest.so
 ln -s libQtXml.a libQtXml.so

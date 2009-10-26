@@ -1,6 +1,6 @@
 QtBaseDir=$1
 
-QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSql QtSvg QtXml"
+QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg QtXml"
 for QtFW in $QtFrameworks; do
     echo $QtFW;
     filename="$QtBaseDir/lib/${QtFW}.framework/${QtFW}"
