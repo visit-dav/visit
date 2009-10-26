@@ -6194,12 +6194,18 @@ QvisGUIApplication::SaveWindow()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Guntehr H. Weber, Mon Oct 26 10:52:46 PDT 2009
+//   Disable using native MacOS print dialog if VISIT_MAC_NO_CARBON is set
+//   since Snow Leopard is removing Carbon, which is used to create the dialog.
+//   This change makes compilation possible, but trying to print on Snow
+//   Snow Leopard will crash.
+//
 // ****************************************************************************
     
 void
 QvisGUIApplication::SetPrinterOptions()
 {
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
     //
     // If we're on MacOS X and the Mac application style is being used, manage
     // the printer setup ourselves since the QPrinter object does not return
@@ -6386,7 +6392,7 @@ QvisGUIApplication::SetPrinterOptions()
             PrintWindow();
 #endif
         }
-#if defined(Q_WS_MACX)
+#if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
     }
 #endif
 }

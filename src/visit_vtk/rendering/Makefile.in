@@ -312,11 +312,13 @@
 #
 #    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
 #    Add define for proper symbol export.
-#
 #   
 #    Kathleen Bonnell, Mon Sep 14 15:08:53 PDT 2009
 #    Renamed vtkVerticalScalarBar* to vtkVisItScalarBar, as it is no longer
 #    strictly a vertical scalar bar.
+#
+#    Gunther H. Weber, Fri Oct 23 10:51:39 PDT 2009
+#    Modifications to compile VisIt on Mac OS X Snow Leaopard
 #
 ##############################################################################
 
@@ -357,12 +359,12 @@ SRC=InitVTK.C \
     vtkVectorFontCharacterData.C
 
 CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @X_CPPFLAGS@ \
-         @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE) \
+         @ANNOTATION_FLAGS@ -I../../include -I. $(GLEW_INCLUDE) @OVERLAY_INC@ \
          -DRENDERING_VISIT_VTK_EXPORTS
 
 OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) @MESA_OBJ@
 LIB=librendering_visit_vtk
-LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) -framework Carbon
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) @OVERLAY_LIB@
 LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(GLEW_LIBS) $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 
 ##

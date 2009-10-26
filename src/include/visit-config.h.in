@@ -220,6 +220,9 @@
 /* Define to enable Tuvok-based code */
 #undef USE_TUVOK
 
+/* Do not use Carbon on Snow Leopard and newer. */
+#undef VISIT_MAC_NO_CARBON
+
 /* Shared library extension */
 #undef VISIT_PLUGIN_EXTENSION
 

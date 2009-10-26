@@ -57,12 +57,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__APPLE__)
+#ifdef VTK_USE_COCOA
+#include <QLabel>
+#include <QPixmap>
+#include <QPainter>
+#include <QLine>
+#else
 #include <Carbon/Carbon.h>
+#endif
 #elif defined(HAVE_XLIB)
 #include <X11/Intrinsic.h>
 #endif
 
 #if defined(__APPLE__)
+#ifndef VTK_USE_COCOA
 struct vtkRubberBandMapper2DOverlay
 {
     WindowRef    window;
@@ -80,7 +88,7 @@ static OSStatus CreateOverlayWindow( Rect* inBounds, WindowRef* outOverlayWindow
 CreateNewWindowFAILED:
     return err;
 }
-
+#endif
 #else
 struct vtkRubberBandMapper2DOverlay
 {
@@ -132,11 +140,13 @@ vtkRubberBandMapper2D::~vtkRubberBandMapper2D()
     if(overlay != 0)
     {
 #if defined(__APPLE__)
+#ifndef VTK_USE_COCOA
         // Release the context that we used to draw on the window.
         QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
 
         // Destroy the transparent overlay window.
         DisposeWindow(overlay->window);
+#endif
 #endif
         delete overlay;
         overlay = 0;
@@ -168,11 +178,13 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
     if(overlay != 0)
     {
 #if defined(__APPLE__)
+#ifndef VTK_USE_COCOA
         // Release the context that we used to draw on the window.
         QDEndCGContext(GetWindowPort(overlay->window), &overlay->ctx);
 
         // Destroy the transparent overlay window.
         DisposeWindow(overlay->window);
+#endif
 #endif
         delete overlay;
         overlay = 0;
@@ -208,6 +220,10 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 //
 //    Brad Whitlock, Mon Mar 13 11:12:00 PDT 2006
 //    Added MacOS X implementation that draws into a transparent overlay window.
+//
+//    Gunther H. Weber, Mon Oct 26 10:55:30 PDT 2009
+//    Use Qt to create the transparent overlay window on MacOS X if
+//    VTK_USE_COACOA is set.
 //
 // ****************************************************************************
 
@@ -272,6 +288,81 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     double whitergb[] = {1.,1.,1.};
     SET_FOREGROUND_D(whitergb);
 #elif defined(__APPLE__)
+#ifdef VTK_USE_COCOA
+// ***************************************************************************
+//
+// Qt coding and macros
+//
+// ***************************************************************************
+
+#define STORE_POINT(P, X, Y) cerr << "STORE_POINT macro for Mac." << endl;
+
+#define SET_FOREGROUND_D(rgba) \
+    painter.setPen(QColor(255.*rgba[0], 255.*rgba[1], 255.*rgba[2]));
+
+#define SET_FOREGROUND(rgba) \
+    painter.setPen(QColor(255.*rgba[0], 255.*rgba[1], 255.*rgba[2]));
+
+#define DRAW_POLYGON(points, npts) \
+    cerr << "DRAW_POLYGON macro for Mac." << endl;
+
+#define RESIZE_POINT_ARRAY(points, npts, currSize) \
+    cerr << "RESIZE_POINT_ARRAY macro for Mac." << endl;
+
+#define DRAW_XOR_LINE(x1, y1, x2, y2) \
+    painter.drawLine(QLine(x1, y1, x2, y2));
+
+#define FLUSH_AND_SYNC() \
+    overlay->setPixmap(pixmap);
+
+#define CLEAN_UP()
+
+#define BEGIN_POLYLINE(X, Y)
+
+#define END_POLYLINE()
+
+    // Get a pointer to the GL widget that the vtkQtRenderWindow owns.
+    // Note that this only works because we've made the GenericDisplayId 
+    // method return the GL widget pointer. On other platforms where 
+    // the display is actually used for something, this does not work.
+    typedef struct { int x,y,w,h; } OverlayInfo;
+    OverlayInfo *info = (OverlayInfo *)window->GetGenericDisplayId();
+
+    //
+    // Try and create the window if we've not yet created it.
+    //
+    if(overlay == 0)
+    {
+        
+        overlay = new QLabel(0, Qt::FramelessWindowHint);
+        overlay->setAttribute(Qt::WA_TranslucentBackground);
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 0))
+        // FIXME? We should need the following, but it triggers a Qt
+        // bug and  strangely everything seems to work without it.
+        // The Qt 4.4.6 Beta seems to fix the problem, so we set
+        // the appropriate flag.
+        overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+#endif
+        overlay->setAutoFillBackground(false);
+        overlay->setGeometry(info->x, info->y, info->w, info->h);
+        QPixmap pixmap(info->w, info->h);;
+        pixmap.fill(Qt::transparent);
+        overlay->setPixmap(pixmap);
+        overlay->show();
+    }
+
+    // Clear the window so it's ready for us to draw.
+    QPixmap pixmap(info->w, info->h);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+   
+    // Set the line color
+    double* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_D(actorColor);
+
+    // Free the info that we received from the vtkQt window.
+    delete info;
+#else
 // ***************************************************************************
 //
 // MacOS X Darwin coding and macros
@@ -357,7 +448,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
 
     // Free the info that we received from the vtkQt window.
     delete info;
-
+#endif
 #elif defined(HAVE_XLIB)
 // ***************************************************************************
 //
@@ -592,6 +683,3 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
         p->Delete();
 #endif
 }
-
-
-  

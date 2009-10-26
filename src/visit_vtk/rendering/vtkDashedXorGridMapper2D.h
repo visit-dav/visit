@@ -56,6 +56,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkPolyDataMapper2D.h"
 
+#ifdef VTK_USE_COCOA
+class QLabel;
+#else
+struct vtkRubberBandMapper2DOverlay;
+#endif
+
 struct vtkDashedXorGridMapper2DOverlay;
 
 class RENDERING_VISIT_VTK_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
@@ -85,7 +91,12 @@ public:
 protected:
   int pixelDrawn, pixelSpaced;
   bool horizontalBias;
+
+#ifdef VTK_USE_COCOA
+  QLabel *overlay;
+#else
   vtkDashedXorGridMapper2DOverlay *overlay;
+#endif
 
   vtkDashedXorGridMapper2D();
   ~vtkDashedXorGridMapper2D();
