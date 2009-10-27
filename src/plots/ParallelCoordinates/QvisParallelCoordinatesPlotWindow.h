@@ -90,6 +90,9 @@ class QTreeWidgetItem;
 //    Jeremy Meredith, Thu Mar 12 13:22:44 EDT 2009
 //    Qt4 port of new additions.
 //
+//    Jeremy Meredith, Tue Oct 27 11:01:51 EDT 2009
+//    Added ability to set axis values.
+//
 // ****************************************************************************
 
 class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
@@ -137,6 +140,9 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     void focusGammaSliderChanged(int val);
     void focusGammaSliderReleased();
     void drawFocusAsChanged(int);
+    void axisMinValChanged(const QString &val);
+    void axisMaxValChanged(const QString &val);
+    void axisMinOrMaxValProcessText();
   private:
     int GetSelectedAxisIndex();
     int plotType;
@@ -148,6 +154,11 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     QPushButton        *axisUpButton;
     QPushButton        *axisDownButton;
     QPushButton        *axisResetExtentsButton;
+
+    QLabel             *axisMinValLabel;
+    QLineEdit          *axisMinVal;
+    QLabel             *axisMaxValLabel;
+    QLineEdit          *axisMaxVal;
 
     QGroupBox          *drawLines;
     QCheckBox          *linesOnlyIfExtents;
