@@ -1567,7 +1567,15 @@ static void log_GetProcInfoRPC(ViewerRPC *rpc, char *str)
 
 static void log_SendSimulationCommandRPC(ViewerRPC *rpc, char *str)
 {
-    MESSAGE_COMMENT("SendSimulationCommand", str, MSG_UNSUPPORTED);
+    if (rpc->GetStringArg2().length() > 0)
+        SNPRINTF(str, SLEN,
+                "SendSimulationCommand(\"%s\", \"%s\", \"%s\", \"%s\")\n",
+                 rpc->GetProgramHost().c_str(), rpc->GetProgramSim().c_str(),
+                 rpc->GetStringArg1().c_str(), rpc->GetStringArg2().c_str());
+    else
+        SNPRINTF(str, SLEN, "SendSimulationCommand(\"%s\", \"%s\", \"%s\")\n",
+                 rpc->GetProgramHost().c_str(), rpc->GetProgramSim().c_str(),
+                 rpc->GetStringArg1().c_str());
 }
 
 static void log_UpdateDBPluginInfoRPC(ViewerRPC *rpc, char *str)

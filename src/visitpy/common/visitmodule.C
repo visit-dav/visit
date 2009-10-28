@@ -12759,6 +12759,48 @@ visit_SaveNamedSelection(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SendSimulationCommand
+//
+// Purpose:
+//   Tells the viewer to send a command to the simulation
+//
+// Notes:      
+//
+// Programmer: Cihan Altinay
+// Creation:   October 28, 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SendSimulationCommand(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    const char *hostName = 0;
+    const char *simulationName = 0;
+    const char *command = 0;
+    const char *argument = 0;
+    if (!PyArg_ParseTuple(args, "ssss", &hostName, &simulationName, &command, &argument))
+    {
+        if (!PyArg_ParseTuple(args, "sss", &hostName, &simulationName, &command))
+            return NULL;
+        PyErr_Clear();
+    }
+
+    MUTEX_LOCK();
+         if (argument != 0)
+             GetViewerMethods()->SendSimulationCommand(hostName, simulationName, command, argument);
+         else
+             GetViewerMethods()->SendSimulationCommand(hostName, simulationName, command);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_Argv
 //
 // Purpose: 
@@ -14222,6 +14264,7 @@ AddDefaultMethods()
     AddMethod("SaveNamedSelection", visit_SaveNamedSelection,
                                            visit_SaveNamedSelection_doc);
     AddMethod("SaveWindow", visit_SaveWindow, visit_SaveWindow_doc);
+    AddMethod("SendSimulationCommand", visit_SendSimulationCommand,visit_SendSimulationCommand_doc);
     AddMethod("SetActivePlots", visit_SetActivePlots,visit_SetActivePlots_doc);
     AddMethod("SetActiveTimeSlider", visit_SetActiveTimeSlider, 
                                                 visit_SetActiveTimeSlider_doc);
