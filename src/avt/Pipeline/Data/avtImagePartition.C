@@ -297,12 +297,16 @@ avtImagePartition::GetPartition(int part, int &minW, int &maxW, int &minH,
 //    Fix size of array, preventing access to uninitialized values.
 //    Ensure the `scanline to partition' vector is large enough.
 //
+//    Hank Childs, Sun Oct 25 13:16:23 PDT 2009
+//    Do not worry about making assignments that minimize communication with
+//    large processor counts.
+//
 // ****************************************************************************
 
 void
 avtImagePartition::EstablishPartitionBoundaries(int *samples)
 {
-    int i;
+    int i, j;
 
     int first_scanline = (shouldDoTiling ? tile_height_min : 0);
     int last_scanline = (shouldDoTiling ? tile_height_max : height);
@@ -311,6 +315,46 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     // Find out how many samples there are in each scanline across all procs.
     //
     const int n_scanlines = last_scanline - first_scanline;
+
+    if (numProcessors > n_scanlines)
+    {
+        for (i = 0 ; i < n_scanlines ; i++)
+        {
+            partitionStartsOnScanline[i] = i;
+            partitionStopsOnScanline[i]  = i;
+            stpAssignments[i] = i;
+        }
+        for (i = n_scanlines ; i < numProcessors ; i++)
+        {
+            partitionStartsOnScanline[i] = n_scanlines+1;
+            partitionStopsOnScanline[i]  = n_scanlines;
+        }
+
+        establishedPartitionBoundaries = true;
+        return;
+    }
+    else if (numProcessors >= 32)
+    {
+        int numScanlinesPerProc = n_scanlines/numProcessors;
+        int numExtraUntil = (n_scanlines % numProcessors);
+        for (i = 0 ; i < numProcessors ; i++)
+        {
+            partitionStartsOnScanline[i] = numScanlinesPerProc*i;
+            partitionStartsOnScanline[i] += 
+                                   (i > numExtraUntil ? numExtraUntil : i);
+            partitionStopsOnScanline[i] = 
+                          partitionStartsOnScanline[i] + numScanlinesPerProc-1;
+            partitionStopsOnScanline[i] += 
+                                   (i < numExtraUntil ? 1 : 0);
+            for (j = partitionStartsOnScanline[i] ; 
+                 j <= partitionStopsOnScanline[i] ; j++)
+                 stpAssignments[j] = i;
+        }
+
+        establishedPartitionBoundaries = true;
+        return;
+    }
+
     std::vector<int> allSamples(n_scanlines);
     stpAssignments.resize(n_scanlines, 0);
     SumIntArrayAcrossAllProcessors(samples, &allSamples[0], n_scanlines);
