@@ -172,6 +172,7 @@ extern const char *visit_RestoreSession_doc;
 extern const char *visit_SaveSession_doc;
 extern const char *visit_SaveNamedSelection_doc;
 extern const char *visit_SaveWindow_doc;
+extern const char *visit_SendSimulationCommand_doc;
 extern const char *visit_SetActiveColorTable_doc;
 extern const char *visit_SetActivePlots_doc;
 extern const char *visit_SetActiveTimeSlider_doc;
