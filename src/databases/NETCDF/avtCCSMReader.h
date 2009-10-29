@@ -81,7 +81,6 @@ public:
     void           PopulateDatabaseMetaData(int, avtDatabaseMetaData *);
 protected:
     float *ReadArray(const char *varname);
-    bool RequiresTimeDimension() const;
 
     typedef std::map<std::string, intVector> StringIntVectorMap;
 
