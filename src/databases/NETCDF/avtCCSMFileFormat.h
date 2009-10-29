@@ -44,38 +44,39 @@
 #define AVT_CCSM_FILE_FORMAT_H
 
 #include <avtMTSDFileFormat.h>
+#include <avtSTSDFileFormat.h>
 
 #include <vector>
-#include <string>
-#include <map>
-#include <vectortypes.h>
 
 class avtFileFormatInterface;
 class NETCDFFileObject;
+class avtCCSMReader;
 
 // ****************************************************************************
-//  Class: avtCCSMFileFormat
+//  Class: avtCCSM_MTSD_FileFormat
 //
 //  Purpose:
-//      Reads in CCSM files as a plugin to VisIt.
+//      Reads in CCSM files with time dimension as a plugin to VisIt.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Jul 11 11:28:20 PDT 2007
 //
 //  Modifications:
+//    Brad Whitlock, Tue Oct 27 12:14:35 PDT 2009
+//    I moved the guts to avtCCSMReader.
 //
 // ****************************************************************************
 
-class avtCCSMFileFormat : public avtMTSDFileFormat
+class avtCCSM_MTSD_FileFormat : public avtMTSDFileFormat
 {
 public:
    static bool         Identify(NETCDFFileObject *);
    static avtFileFormatInterface *CreateInterface(NETCDFFileObject *f, 
                        const char *const *list, int nList, int nBlock);
 
-                       avtCCSMFileFormat(const char *);
-                       avtCCSMFileFormat(const char *, NETCDFFileObject *);
-    virtual           ~avtCCSMFileFormat();
+                       avtCCSM_MTSD_FileFormat(const char *);
+                       avtCCSM_MTSD_FileFormat(const char *, NETCDFFileObject *);
+    virtual           ~avtCCSM_MTSD_FileFormat();
 
     //
     // If you know the times and cycle numbers, overload this function.
@@ -86,29 +87,57 @@ public:
 
     virtual int            GetNTimesteps(void);
 
-    virtual const char    *GetType(void)   { return "CCSM"; };
+    virtual const char    *GetType(void)   { return "CCSM MT"; };
     virtual void           FreeUpResources(void); 
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, const char *);
 
 protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-    float *ReadArray(const char *varname);
 
-    // DATA MEMBERS
-    NETCDFFileObject      *fileObject;
-
-    typedef std::map<std::string, intVector> MeshNameMap;
-    MeshNameMap            meshNames;
-    typedef std::map<std::string, std::string> MeshToVarMap;
-    MeshToVarMap           meshToVar;
-
-    size_t                *dimSizes;
-
-    bool                   initialized;
+    avtCCSMReader *reader;
 };
 
+// ****************************************************************************
+//  Class: avtCCSM_MTSD_FileFormat
+//
+//  Purpose:
+//      Reads in CCSM files as a plugin to VisIt.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Oct 27 12:15:09 PDT 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class avtCCSM_STSD_FileFormat : public avtSTSDFileFormat
+{
+public: 
+   static bool         Identify(NETCDFFileObject *);
+   static avtFileFormatInterface *CreateInterface(NETCDFFileObject *f, 
+                       const char *const *list, int nList, int nBlock);
+
+                       avtCCSM_STSD_FileFormat(const char *);
+                       avtCCSM_STSD_FileFormat(const char *, NETCDFFileObject *);
+    virtual           ~avtCCSM_STSD_FileFormat();
+
+    virtual int           GetCycle();
+    virtual double        GetTime();
+    virtual const char   *GetType(void) { return "CCSM ST"; }
+
+    virtual void          ActivateTimestep(void); 
+    virtual void          FreeUpResources(void); 
+
+    virtual vtkDataSet   *GetMesh(const char *);
+    virtual vtkDataArray *GetVar(const char *);
+
+protected:
+    int                   GetCycleFromFilename(const char *f) const;
+    void                  PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    avtCCSMReader *reader;
+};
 
 #endif

@@ -77,6 +77,9 @@
 //   Brad Whitlock, Fri Oct 5 11:41:05 PDT 2007
 //   Added CCSM file format.
 //
+//   Brad Whitlock, Tue Oct 27 14:37:05 PDT 2009
+//   I separated CCSM into MT and ST flavors.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -133,10 +136,16 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 debug4 << "Database is avtFVCOMParticleFileFormat" << endl;
             }
 
-            if(flavor == -1 && avtCCSMFileFormat::Identify(f))
+            if(flavor == -1 && avtCCSM_MTSD_FileFormat::Identify(f))
             {
                 flavor = 7;
-                debug4 << "Database is avtFVCOMCCSMFileFormat" << endl;
+                debug4 << "Database is avtCCSM_MTSD_FileFormat" << endl;
+            }
+
+            if(flavor == -1 && avtCCSM_STSD_FileFormat::Identify(f))
+            {
+                flavor = 8;
+                debug4 << "Database is avtCCSM_STSD_FileFormat" << endl;
             }
 
             if(flavor == -1)
@@ -173,7 +182,10 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             ffi = avtFVCOMParticleFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         case 7:
-            ffi = avtCCSMFileFormat::CreateInterface(f, list, nList, nBlock);
+            ffi = avtCCSM_MTSD_FileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 8:
+            ffi = avtCCSM_STSD_FileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         default:
             ffi = avtBasicNETCDFFileFormat::CreateInterface(f, list, nList, nBlock);
