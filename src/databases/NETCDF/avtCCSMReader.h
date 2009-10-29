@@ -35,85 +35,64 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-#ifndef NETCDF_FILE_OBJECT_H
-#define NETCDF_FILE_OBJECT_H
+#ifndef AVT_CCSM_READER_H
+#define AVT_CCSM_READER_H
+#include <map>
 #include <string>
-#include <visitstream.h>
+#include <vectortypes.h>
 
-typedef enum {NO_TYPE, CHARARRAY_TYPE, UCHARARRAY_TYPE, SHORTARRAY_TYPE,
-              INTEGERARRAY_TYPE, FLOATARRAY_TYPE,
-              DOUBLEARRAY_TYPE, LONGARRAY_TYPE} TypeEnum;
+class NETCDFFileObject;
+class avtDatabaseMetaData;
+class vtkDataSet;
+class vtkDataArray;
 
 // ****************************************************************************
-// Class: NETCDFFileObject
+// Class: avtCCSMReader
 //
 // Purpose:
-//   Abstract the NETCDF file a little.
+//   This class reads CCSM files.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Fri Aug 12 10:07:08 PDT 2005
+// Creation:   Tue Oct 27 14:39:32 PDT 2009
 //
 // Modifications:
-//   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
-//   Added method for partial read to support on-the-fly domain decomp
-//
-//   Brad Whitlock, Tue Oct 27 14:28:08 PDT 2009
-//   Added GetDimensionInfo method.
-//
+//   
 // ****************************************************************************
 
-class NETCDFFileObject
+class avtCCSMReader
 {
 public:
-    NETCDFFileObject(const char *name); 
-    virtual ~NETCDFFileObject();
+                   avtCCSMReader(const char *);
+                   avtCCSMReader(const char *, NETCDFFileObject *);
+    virtual       ~avtCCSMReader();
 
-    bool IsOpen() const;
-    bool Open();
-    void Close();
-    const std::string &GetName() const;
-    int  GetFileHandle();
+    void           GetCycles(std::vector<int> &);
+    void           GetTimes(std::vector<double> &);
 
-    bool ReadAttribute(const char *attname, TypeEnum *type, int *ndims,
-                       int **dims, void **value);
-    bool ReadAttribute(const char *varname, const char *attname,
-                       TypeEnum *type, int *ndims, int **dims, void **value);
-    // Convenience functions
-    bool ReadStringAttribute(const char *varname, const char *attname,
-                             std::string &attval);
-    bool ReadStringAttribute(const char *attname, std::string &attval);
+    int            GetNTimesteps();
+    void           FreeUpResources(); 
+    void           ActivateTimestep(int);
 
-    bool InqVariable(const char *varname, TypeEnum *, int *ndims, int **dims);
-    bool ReadVariable(const char *varname, TypeEnum *type, int *ndims,
-                      int **dims, void **values);
-    bool ReadVariableInto(const char *varname, TypeEnum t, void *arr);
-    bool ReadVariableInto(const char *varname, TypeEnum t, 
-             const int *const starts, const int *const counts, void *arr);
-    bool ReadVariableIntoAsFloat(const char *varname, float *arr);
+    vtkDataSet    *GetMesh(int, const char *);
+    vtkDataArray  *GetVar(int, const char *);
 
-    bool GetVarId(const char *name, int *varid);
+    void           PopulateDatabaseMetaData(int, avtDatabaseMetaData *);
+protected:
+    float *ReadArray(const char *varname);
+    bool RequiresTimeDimension() const;
 
-    bool GetDimensionInfo(const char *dName, size_t *size);
+    typedef std::map<std::string, intVector> StringIntVectorMap;
 
-    void HandleError(int status) const;
-    void PrintFileContents(ostream &os);
-private:
-    bool AutoOpen();
+    // DATA MEMBERS
+    NETCDFFileObject      *fileObject;
+    StringIntVectorMap     meshNameToDimensions;
+    StringIntVectorMap     varToDimensions;
 
-    std::string filename;
-    int         ncid;
+    size_t                *dimSizes;
+
+    bool                   initialized;
 };
-
-//
-// Functions to free memory.
-//
-
-template <class T>
-void free_mem(T *);
-
-void free_void_mem(void *, TypeEnum);
 
 #endif
