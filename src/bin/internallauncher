@@ -1530,7 +1530,7 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /jaguar/ )
 $IsRunningOnFranklinNERSC = 0;
 if ( $host =~ /^nid/ )
 {
-    $nodename=`/usr/common/nsg/bin/nodename`;
+    $nodename=`/usr/syscom/nsg/bin/nodename`;
     if ($nodename =~ /^franklin/)
     {
         $IsRunningOnFranklinNERSC = 1;

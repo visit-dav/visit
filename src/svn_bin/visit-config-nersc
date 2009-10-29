@@ -61,7 +61,7 @@
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/aprun</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/scratch2/ProjectData/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/common/graphics/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
@@ -74,7 +74,7 @@
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/aprun</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/scratch2/ProjectData/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/common/graphics/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
@@ -87,7 +87,7 @@
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/aprun</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/scratch2/ProjectData/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/common/graphics/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
