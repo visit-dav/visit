@@ -233,6 +233,9 @@ typedef struct _GroupInfo
 //    to process. Added RemoveMultixxx functions to help manage cached
 //    multi-objects in presence of exceptions.
 //
+//    Mark C. Miller, Thu Oct 29 15:15:37 PDT 2009
+//    Removed arbMeshZoneRangesToSkip. Added HandleGlobalZoneIds. Adjusted
+//    interface to ReadInConnectivity.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -303,7 +306,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     GroupInfo                       groupInfo;
 
-    map<string, vector<int> >       arbMeshZoneRangesToSkip;
     map<string, vector<int>* >      arbMeshCellReMap;
     map<string, vector<int>* >      arbMeshNodeReMap;
 
@@ -375,9 +377,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *GetCurve(DBfile *, const char *);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
+    void                  HandleGlobalZoneIds(const char *, int, int*, int);
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
                                              DBzonelist *, int,
-                                             vector<int>&);
+                                             const char *,int);
     void                  ReadInArbConnectivity(const char *, vtkUnstructuredGrid*,
                                                 DBucdmesh*,int);
     avtMeshType           FindDecomposedMeshType(DBfile *dbfile);
