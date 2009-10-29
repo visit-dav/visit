@@ -139,7 +139,10 @@ static void TranslateSiloTetrahedronToVTKTetrahedron(const int *,
 static bool TetIsInverted(const int *siloTetrahedron,
                             vtkUnstructuredGrid *ugrid);
 
-static int  ComputeNumZonesSkipped(const vector<int>& zoneRangesSkipped);
+static void ArbInsertArbitrary(vtkUnstructuredGrid *ugrid,
+    DBphzonelist *phzl, int gz, const vector<int> &nloffs,
+    const vector<int> &floffs, unsigned int ocdata[2],
+    vector<int> *cellReMap, vector<int> *nodeReMap);
 
 static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
 static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
@@ -880,6 +883,10 @@ avtSiloFileFormat::CloseFile(int f)
 //
 //    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //    Clean up resources related to block structured code nodelists.
+//
+//    Mark C. Miller, Wed Oct 28 20:41:02 PDT 2009
+//    Removed arbMeshZoneRangesToSkip. Intoduced better handling of arb.
+//    polyhedral meshes.
 // ****************************************************************************
 
 void
@@ -922,7 +929,6 @@ avtSiloFileFormat::FreeUpResources(void)
     nlBlockToWindowsMap.clear();
     pascalsTriangleMap.clear();
 
-    arbMeshZoneRangesToSkip.clear();
     map<string, vector<int>* >::iterator it;
     for (it = arbMeshCellReMap.begin(); it != arbMeshCellReMap.end(); it++)
         delete it->second;
@@ -6356,117 +6362,150 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 }
 
 // ****************************************************************************
-//  Function: RemoveValuesForSkippedZones
-//
-//  Purpose: Given an input and output array, remove values from the input
-//  array that are for zones that are in the skip ranges.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   October 21, 2004 
-//
-//  Modifications:
-//    Brad Whitlock, Thu Aug  6 15:53:29 PDT 2009
-//    I added some consts.
-//
-// ****************************************************************************
-
-template <class T>
-static void RemoveValuesForSkippedZones(const vector<int>& zoneRangesSkipped,
-    const T *inArray, int inArraySize, T *outArray)
-{
-    int skipRangeIndexToUse = 0;
-    int inArrayIndex = 0;
-    int outArrayIndex = 0;
-
-    while (inArrayIndex < inArraySize)
-    {
-        while (inArrayIndex == zoneRangesSkipped[skipRangeIndexToUse])
-        {
-            inArrayIndex += (zoneRangesSkipped[skipRangeIndexToUse+1] -
-                             zoneRangesSkipped[skipRangeIndexToUse] + 1);
-            skipRangeIndexToUse += 2;
-        }
-
-        outArray[outArrayIndex] = inArray[inArrayIndex];
-
-        outArrayIndex++;
-        inArrayIndex++;
-    }
-}
-
-// ****************************************************************************
-// Method: CopyUcdVectorVar
+// Method: CopyUcdVar
 //
 // Purpose: 
-//   Copies a ucdvar vector into a vtkDataArray.
+//   Copies data from a ucdvar into a new vtkDataArray.
 //
 // Arguments:
-//   uv                : The input ucdvar.
-//   zonesRangesToSkip : The zones to remove from the resulting data array.
 //
-// Returns:    A suitably typed VTK data array.
+// Returns:    
 //
-// Note:       I took this code from GetUcdVectorVar and templated it.
+// Note:       I moved this code from GetUcdVar and I templated it.
 //
 // Programmer: Brad Whitlock
-// Creation:   Fri Aug  7 12:01:12 PDT 2009
+// Creation:   Fri Aug  7 10:19:52 PDT 2009
 //
 // Modifications:
 //   
+//    Mark C. Miller, Mon Oct 19 20:23:08 PDT 2009
+//    Replaced skipping logic (old way) with remapping logic for arb.
+//    polyhedral meshes.
+//
 //    Mark C. Miller, Tue Oct 20 16:51:06 PDT 2009
 //    Made it static.
+//
+//    Mark C. Miller, Wed Oct 28 20:29:23 PDT 2009
+//    Added logic to handle vector variables too. If input ucdvar has 2
+//    components, it gets 'promoted' to 3 by inserting zeros for 3rd component.
+//    Otherwise, output vtkDataArray will have same number of components
+//    as input ucdvar.
 // ****************************************************************************
 
 template <typename T, typename Tarr>
 static vtkDataArray *
-CopyUcdVectorVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
+CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
 {
-    Tarr *vectors = Tarr::New();
-    vectors->SetNumberOfComponents(3);
+    Tarr *vtkvar = Tarr::New();
+    T *ptr = 0;
+    size_t i;
+    int j, k, n, cnt;
 
     //
-    // Handle cases where we need to remove values for zone types we don't
-    // understand
+    // Handle remapping data to due zones that have been decomposed. 
     //
-    T *vals[3];
-    vals[0] = (T*) uv->vals[0];
-    vals[1] = (T*) uv->vals[1];
-    if (uv->nvals == 3)
-       vals[2] = (T*) uv->vals[2];
-    int numSkipped = 0;
-    if (zonesRangesToSkip.size() > 0)
+    int nvtkcomps = uv->nvals==2?3:uv->nvals;
+    vtkvar->SetNumberOfComponents(nvtkcomps);
+    if (remap.size() > 0)
     {
-        numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
-        vals[0] = new T[uv->nels - numSkipped];
-        vals[1] = new T[uv->nels - numSkipped];
-        if (uv->nvals == 3)
-            vals[2] = new T[uv->nels - numSkipped];
+        if (uv->centering == DB_ZONECENT)
+        {
+            vtkvar->SetNumberOfTuples(remap.size());
+            ptr = (T *) vtkvar->GetVoidPointer(0);
+            for (i = 0; i < remap.size(); i++)
+            {
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j < uv->nvals)
+                        ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][remap[i]];
+                    else
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                }
+            }
+        }
+        else if (uv->centering == DB_NODECENT)
+        {
+            //
+            // Determine # of 'extra' nodes
+            //
+            n = 0;
+            i = 0;
+            while (i < remap.size())
+            {
+                cnt = remap[i++];
+                for (j = 0; j < cnt; j++)
+                    i++;
+                n++;
+            }
 
-        RemoveValuesForSkippedZones(zonesRangesToSkip,
-            ((T**)uv->vals)[0], uv->nels, vals[0]);
-        RemoveValuesForSkippedZones(zonesRangesToSkip,
-            ((T**)uv->vals)[1], uv->nels, vals[1]);
-        if (uv->nvals == 3)
-            RemoveValuesForSkippedZones(zonesRangesToSkip,
-                ((T**)uv->vals)[2], uv->nels, vals[2]);
+            //
+            // Add data from original nodes.
+            //
+            vtkvar->SetNumberOfTuples(uv->nels+n);
+            ptr = (T *) vtkvar->GetVoidPointer(0);
+            for (i = 0; i < uv->nels; i++)
+            {
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j < uv->nvals)
+                        ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][i];
+                    else
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                }
+            }
+
+            //
+            // Remap data on 'extra' nodes. Note, this sum/average
+            // is almost certainly not appropriate for all variables.
+            // I think we need to know which are 'intensive' and which
+            // are 'extensive'. Silo still needs to be enhanced for
+            // that.
+            //
+            n = uv->nels;
+            i = 0;
+            while (i < remap.size())
+            {
+                double sum = 0.0;
+                cnt = remap[i++];
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j < uv->nvals)
+                    {
+                        int itmp;
+                        for (k = 0, itmp = i; k < cnt; k++, itmp++)
+                            sum += (double) ((T**)(uv->vals))[j][remap[itmp]];
+                    }
+                    else
+                    {
+                        sum = (double) 0;
+                    }
+                    ptr[n*nvtkcomps+j] = (T) (sum / cnt);
+                }
+                i+=cnt;
+                n++;
+            }
+        }
+    }
+    else
+    {
+        //
+        // Populate the variable as we normally would.
+        //
+        vtkvar->SetNumberOfTuples(uv->nels);
+        ptr = (T *) vtkvar->GetVoidPointer(0);
+        for (i = 0; i < uv->nels; i++)
+        {
+            for (j = 0; j < nvtkcomps; j++)
+            {
+                if (j < uv->nvals)
+                    ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][i];
+                else
+                    ptr[i*nvtkcomps+j] = ((T)0);
+            }
+        }
     }
 
-    vectors->SetNumberOfTuples(uv->nels - numSkipped);
-    for (int i = 0 ; i < uv->nels - numSkipped; i++)
-    {
-        double v3 = (uv->nvals == 3 ? vals[2][i] : 0.);
-        vectors->SetTuple3(i, (double)vals[0][i], (double)vals[1][i], v3);
-    }
-
-    if (vals[0] != (T*)uv->vals[0])
-    {
-        delete [] vals[0];
-        delete [] vals[1];
-        if (uv->nvals == 3)
-            delete [] vals[2];
-    }
-
-    return vectors;
+    return vtkvar;
 }
 
 // ****************************************************************************
@@ -6498,6 +6537,11 @@ CopyUcdVectorVar(const DBucdvar *uv, const vector<int> &zonesRangesToSkip)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Mark C. Miller, Wed Oct 28 20:42:14 PDT 2009
+//    Replaced arb. polyhederal zone skipping logic with real remapping
+//    as now Silo plugin will read and decompose arb. polyhedral mesh.
+//    Replaced CopyUcdVectorVar a vector-enhanced version of CopyUcdVar.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6519,25 +6563,31 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vector<int> noskips;
-    vector<int> &zoneRangesToSkip = noskips;
-    if (uv->centering == DB_ZONECENT && metadata != NULL)
+    string meshName = metadata->MeshForVar(tvn);
+    vector<int> noremap;
+    vector<int>* remap = &noremap;
+    if (uv->centering == DB_ZONECENT &&
+        arbMeshCellReMap.find(meshName) != arbMeshCellReMap.end())
     {
-        string meshName = metadata->MeshForVar(tvn);
-        zoneRangesToSkip = arbMeshZoneRangesToSkip[meshName];
+        remap = arbMeshCellReMap[meshName];
+    }
+    else if (uv->centering == DB_NODECENT &&
+        arbMeshNodeReMap.find(meshName) != arbMeshNodeReMap.end())
+    {
+        remap = arbMeshNodeReMap[meshName];
     }
 
     vtkDataArray *vectors = 0;
     if(uv->datatype == DB_DOUBLE)
-        vectors = CopyUcdVectorVar<double,vtkDoubleArray>(uv, zoneRangesToSkip);
+        vectors = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
-        vectors = CopyUcdVectorVar<float,vtkFloatArray>(uv, zoneRangesToSkip);
+        vectors = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
-        vectors = CopyUcdVectorVar<int,vtkIntArray>(uv, zoneRangesToSkip);
+        vectors = CopyUcdVar<int,vtkIntArray>(uv, *remap);
     else if(uv->datatype == DB_SHORT)
-        vectors = CopyUcdVectorVar<short,vtkShortArray>(uv, zoneRangesToSkip);
+        vectors = CopyUcdVar<short,vtkShortArray>(uv, *remap);
     else if(uv->datatype == DB_CHAR)
-        vectors = CopyUcdVectorVar<char,vtkCharArray>(uv, zoneRangesToSkip);
+        vectors = CopyUcdVar<char,vtkCharArray>(uv, *remap);
 
     DBFreeUcdvar(uv);
 
@@ -7174,106 +7224,6 @@ ConvertToFloat(int silotype, void *data, int nels)
 }
 
 // ****************************************************************************
-// Method: CopyUcdVar
-//
-// Purpose: 
-//   Copies data from a ucdvar into a new vtkDataArray.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       I moved this code from GetUcdVar and I templated it.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug  7 10:19:52 PDT 2009
-//
-// Modifications:
-//   
-//    Mark C. Miller, Mon Oct 19 20:23:08 PDT 2009
-//    Replaced skipping logic (old way) with remapping logic for arb.
-//    polyhedral meshes. Also made this function static as it is not needed
-//    outside of this file.
-// ****************************************************************************
-
-template <typename T, typename Tarr>
-static vtkDataArray *
-CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
-{
-    Tarr *scalars = Tarr::New();
-    T *ptr = 0;
-    size_t i;
-    int j, n, cnt;
-
-    //
-    // Handle remapping data to due zones that have been decomposed. 
-    //
-    if (remap.size() > 0)
-    {
-        if (uv->centering == DB_ZONECENT)
-        {
-            scalars->SetNumberOfTuples(remap.size());
-            ptr = (T *) scalars->GetVoidPointer(0);
-            for (i = 0; i < remap.size(); i++)
-                ptr[i] = ((T**)(uv->vals))[0][remap[i]];
-        }
-        else if (uv->centering == DB_NODECENT)
-        {
-            //
-            // Determine # of 'extra' nodes
-            //
-            n = 0;
-            i = 0;
-            while (i < remap.size())
-            {
-                cnt = remap[i++];
-                for (j = 0; j < cnt; j++)
-                    i++;
-                n++;
-            }
-
-            //
-            // Add data from original nodes.
-            //
-            scalars->SetNumberOfTuples(uv->nels+n);
-            ptr = (T *) scalars->GetVoidPointer(0);
-            for (i = 0; i < uv->nels; i++)
-                ptr[i] = ((T**)(uv->vals))[0][i];
-
-            //
-            // Remap data on 'extra' nodes. Note, this sum/average
-            // is almost certainly not appropriate for all variables.
-            // I think we need to know which are 'intensive' and which
-            // are 'extensive'. Silo still needs to be enhanced for
-            // that.
-            //
-            n = uv->nels;
-            i = 0;
-            while (i < remap.size())
-            {
-                double sum = 0.0;
-                cnt = remap[i++];
-                for (j = 0; j < cnt; j++, i++)
-                    sum += (double) ((T**)(uv->vals))[0][remap[i]];
-                ptr[n++] = (T) (sum / cnt);
-            }
-        }
-    }
-    else
-    {
-        //
-        // Populate the variable as we normally would.
-        // This assumes it is a scalar variable.
-        //
-        scalars->SetNumberOfTuples(uv->nels);
-        T *ptr = (T *) scalars->GetVoidPointer(0);
-        memcpy(ptr, uv->vals[0], sizeof(T)*uv->nels);
-    }
-
-    return scalars;
-}
-
-// ****************************************************************************
 //  Method: avtSiloFileFormat::GetUcdVar
 //
 //  Purpose:
@@ -7717,6 +7667,50 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 }
 
 // ****************************************************************************
+//  Method: avtSiloFileFormat::HandleGlobalZoneIds
+//
+//  Purpose: Handle re-mapping global zone ids as per arb. poly remeshing
+//      and sticking global zone ids into cache.
+//
+//  Programmer: Mark C. Miller, Thu Oct 29 15:00:54 PDT 2009
+// ****************************************************************************
+
+void
+avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
+    int *gzoneno, int lgzoneno)
+{
+    //
+    // Lookup an arb. poly remap data we might need.
+    //
+    vector<int> noremap;
+    vector<int> *remap = &noremap;
+    if (arbMeshCellReMap.find(meshname) != arbMeshCellReMap.end())
+        remap = arbMeshCellReMap[meshname];
+
+    //
+    // Create a vtkInt array whose contents are the actual gzoneno data
+    // Create a temp. DBucdvar object so we can use CopyUcdVar
+    //
+    DBucdvar tmp;
+    tmp.centering = DB_ZONECENT;
+    tmp.datatype = DB_INT;
+    tmp.nels = lgzoneno;
+    tmp.nvals = 1;
+    tmp.vals = (float**) new float*[1]; 
+    tmp.vals[0] = (float*) gzoneno; 
+    vtkDataArray *arr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
+    delete [] tmp.vals;
+
+    //
+    // Cache this VTK object but in the VoidRefCache, not the VTK cache
+    // so that it can be obtained through the GetAuxiliaryData call
+    //
+    void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
+    cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep, 
+        domain, vr);
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::GetUnstructuredMesh
 //
 //  Purpose:
@@ -7804,6 +7798,14 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //
 //    Mark C. Miller, Mon Oct 19 20:22:27 PDT 2009
 //    Added support to read in arbitrary polyhedral data.
+//
+//    Mark C. Miller, Wed Oct 28 08:21:14 PDT 2009
+//    Added logic to deal with global zone numbers on arb. poly mesh.
+//
+//    Mark C. Miller, Wed Oct 28 20:43:45 PDT 2009
+//    Removed logic/warning for skipping arb. polyhedral zones that are
+//    embedded in 'ordinary' zonelist. They are now correctly handled in
+//    ReadInConnectivity.
 // ****************************************************************************
 
 vtkDataSet *
@@ -7905,45 +7907,13 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     {
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
-        vector<int> zoneRangesToSkip;
-        ReadInConnectivity(ugrid, um->zones, um->zones->origin, zoneRangesToSkip);
-        if (zoneRangesToSkip.size() > 0)
-        {
-            // squirl away knowledge of the zones we've removed
-            arbMeshZoneRangesToSkip[mesh] = zoneRangesToSkip;
-            int numSkipped = ComputeNumZonesSkipped(zoneRangesToSkip);
-
-            // Issue a warning message about having skipped some zones
-            char msg[1024];
-            sprintf(msg, "\nIn reading mesh, \"%s\", VisIt encountered "
-                "%d arbitrary polyhedral zones accounting for %3d %% "
-                "of the zones in the mesh. Those zones have been removed. "
-                "Future versions of VisIt will be able to display these "
-                "zones. However, the current version cannot.", mesh,
-                numSkipped, 100 * numSkipped / um->zones->nzones);
-            avtCallback::IssueWarning(msg);
-        }
+        ReadInConnectivity(ugrid, um->zones, um->zones->origin,
+            mesh, domain);
         rv = ugrid;
 
         if (um->zones->gzoneno != NULL)
-        {
-            //
-            // Create a vtkInt array whose contents are the actual gzoneno data
-            //
-            vtkIntArray *arr = vtkIntArray::New();
-            arr->SetNumberOfComponents(1);
-            arr->SetNumberOfTuples(um->zones->nzones);
-            int *ptr = arr->GetPointer(0);
-            memcpy(ptr, um->zones->gzoneno, um->zones->nzones*sizeof(int));
-
-            //
-            // Cache this VTK object but in the VoidRefCache, not the VTK cache
-            // so that it can be obtained through the GetAuxiliaryData call
-            //
-            void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
-            cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep, 
-                                domain, vr);
-        }
+            HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
+                um->zones->nzones);
 
     }
     else if (fl != NULL && um->phzones == NULL)
@@ -7953,6 +7923,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         rv = pd;
     }
 
+    //
+    // Handle arbitrary polyhedral zonelist
+    //
     if (um->phzones != NULL)
     {
         vtkUnstructuredGrid  *ugrid = 0;
@@ -7967,6 +7940,10 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
             ugrid = vtkUnstructuredGrid::SafeDownCast(rv);
         }
         ReadInArbConnectivity(mesh, ugrid, um, domain);
+
+        if (um->phzones->gzoneno != NULL)
+            HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
+                um->phzones->nzones);
     }
 
     points->Delete();
@@ -7975,6 +7952,59 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     return rv;
 }
 
+// ****************************************************************************
+//  Function: MakePHZonelistFromZonelistArbFragment
+//
+//  Purpose: Create a DBphzonelist object from a fragment of an ordinary
+//      zonelist defining DB_ZONETYPE_POLYHEDRON type zones.
+//
+//  Programmer: Mark C. Miller, Wed Oct 28 20:46:22 PDT 2009
+//
+// ****************************************************************************
+
+static DBphzonelist* 
+MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
+{
+    int i, j;
+    int ntotfaces = 0;
+    int nzones = 0;
+    vector<int> nodecnt, facecnt, nodelist, facelist;
+    while (nzones < shapecnt)
+    {
+        int nfaces = *nl++;
+        facecnt.push_back(nfaces);
+        for (i = 0; i < nfaces; i++)
+        {
+            facelist.push_back(ntotfaces++);
+
+            int nnodes = *nl++;
+            nodecnt.push_back(nnodes);
+            for (j = 0; j < nnodes; j++)
+                nodelist.push_back(*nl++);
+        }
+        nzones++;
+    }
+
+    //
+    // Use malloc here instead of new since we're creating a Silo structure
+    // that Silo will later expect to be able to call free on.
+    //
+    DBphzonelist *phzl = DBAllocPHZonelist();
+    phzl->nfaces = ntotfaces;
+    phzl->nodecnt = (int *) malloc(nodecnt.size() * sizeof(int));
+    memcpy(phzl->nodecnt, &nodecnt[0], nodecnt.size() * sizeof(int));
+    phzl->lnodelist = (int) nodelist.size();
+    phzl->nodelist = (int *) malloc(nodelist.size() * sizeof(int));
+    memcpy(phzl->nodelist, &nodelist[0], nodelist.size() * sizeof(int));
+    phzl->nzones = shapecnt;
+    phzl->facecnt = (int *) malloc(facecnt.size() * sizeof(int));
+    memcpy(phzl->facecnt, &facecnt[0], facecnt.size() * sizeof(int));
+    phzl->lfacelist = (int) facelist.size();
+    phzl->facelist = (int *) malloc(facelist.size() * sizeof(int));
+    memcpy(phzl->facelist, &facelist[0], facelist.size() * sizeof(int));
+
+    return phzl;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::ReadInConnectivity
@@ -8010,13 +8040,27 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //    Hank Childs, Thu Jun  5 09:53:39 PDT 2008
 //    Add support for polygons that store the shapesize as 0.
 //
+//    Mark C. Miller, Wed Oct 28 18:38:12 PDT 2009
+//    Handle arb. polyhedra better. Now uses same logic as truly arb. zonelist
+//    does.
 // ****************************************************************************
 
 void
 avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                                       DBzonelist *zl, int origin,
-                                      vector<int> &zoneRangesToSkip)
+                                      const char *meshname, int domain)
 {
+    //
+    // A 'normal' zonelist in silo may contain some zones of arb. polyhedral
+    // type. In the past, the logic here simply 'skipped' these zones and we
+    // kept track of that skipping for zone-centered variables defined on
+    // the mesh. Now, we handle the arb. polyehdral zones 'correctly'. But,
+    // that is all handled here at the bottom of this function. All the
+    // logic prior to that simply walks over the arb. polyhedral zones but
+    // keeps track of where they occur in the zonelist so we can handle them
+    // later. Note that a setting of 'vtk_zonetype' of -2 represents the
+    // arb. polyhedral zonetype.
+    //
     int   i, j, k;
 
     //
@@ -8028,7 +8072,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     for (i = 0 ; i < zl->nshapes ; i++)
     {
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
-        if (vtk_zonetype != -2) // don't include arb. polyhedra
+        if (vtk_zonetype != -2)
         {
             numCells += zl->shapecnt[i];
             if (zl->shapesize[i] > 0)
@@ -8066,11 +8110,12 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     cellLocations->SetNumberOfValues(numCells);
     int *cl = cellLocations->GetPointer(0);
 
-    int zoneIndex = 0;
     int currentIndex = 0;
+    int zoneIndex = 0;
     bool mustResize = false;
-    int minIndexOffset = 0;
-    int maxIndexOffset = 0;
+    vector<int> arbZoneIdxOffs;
+    vector<int> arbZoneCounts;
+    vector<int*> arbZoneNlOffs;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
         const int shapecnt = zl->shapecnt[i];
@@ -8110,45 +8155,27 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         }
 
         //
-        // "Handle" arbitrary polyhedra by skipping over them
+        // "Handle" arbitrary polyhedra by skipping over them here.
+        // We deal with them later on in this func.
         //
-        if (vtk_zonetype == -2) // DB_ZONETYPE_POLYHEDRON
+        if (vtk_zonetype == -2)
         {
-            zoneRangesToSkip.push_back(zoneIndex);
-            zoneRangesToSkip.push_back(zoneIndex + shapecnt - 1);
-
-            // keep track of adjustments we'll need to make to
-            // min/max offsets for ghosting
-            if (zoneIndex < zl->min_index)
-            {
-               if (zoneIndex + shapecnt < zl->min_index)
-               {
-                   minIndexOffset += shapecnt;
-                   maxIndexOffset += shapecnt;
-               }
-               else
-               {
-                   minIndexOffset += (zl->min_index - zoneIndex); 
-                   maxIndexOffset += (zl->min_index - zoneIndex); 
-               }
-            }
-            else if (zoneIndex + shapecnt <= zl->max_index)
-            {
-               maxIndexOffset += shapecnt;
-            }
-            else if (zoneIndex + shapecnt > zl->max_index)
-            {
-               maxIndexOffset += (zl->max_index - zoneIndex + 1); 
-            }
-
-            nodelist += shapesize;
+            //
+            // There are shapecnt zones of arb. type in this segment
+            // of the zonelist. Record their count, indices and
+            // offset into nodelist for now.
+            //
+            arbZoneIdxOffs.push_back(zoneIndex); 
+            arbZoneCounts.push_back(shapecnt);
+            arbZoneNlOffs.push_back(nodelist);
             zoneIndex += shapecnt;
+            nodelist += shapesize;
         }
         else
         {
             bool tetsAreInverted = false;
             bool firstTet = true;
-            for (j = 0 ; j < shapecnt ; j++)
+            for (j = 0 ; j < shapecnt ; j++, zoneIndex++)
             {
                 *ct++ = effective_vtk_zonetype;
                 *cl++ = currentIndex;
@@ -8256,7 +8283,6 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 
                 nodelist += shapesize;
                 currentIndex += effective_shapesize+1;
-                zoneIndex++;
             }
         }
     }
@@ -8288,12 +8314,92 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     cells->Delete();
 
     //
+    // Now, deal with any arbitrary polyhedral zones we encountered above.
+    //
+    vector<int> *cellReMap = 0;
+    if (arbZoneIdxOffs.size())
+    {
+        //
+        // Associate cell/node maps with the mesh so we can find and use 'em
+        // in subsequent GetVar calls.
+        //
+        cellReMap = new vector<int>;
+        vector<int> *nodeReMap = new vector<int>;
+        arbMeshCellReMap[meshname] = cellReMap;
+        arbMeshNodeReMap[meshname] = nodeReMap;
+
+        //
+        // Go ahead and add an empty avtOriginalCellNumbers array now.
+        // We'll populate it below. 
+        //
+        vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
+        oca->SetName("avtOriginalCellNumbers");
+        oca->SetNumberOfComponents(2);
+        ugrid->GetCellData()->AddArray(oca);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+
+        //
+        // Build up the cellReMap array for all the non-arb. zones we've
+        // already put into the grid.
+        //
+        for (i = j = 0; i < zl->nzones; i++)
+        {
+            if (j < arbZoneIdxOffs.size() &&
+                i == arbZoneIdxOffs[j])
+            {
+                i += arbZoneCounts[j]-1; // -1 to undue i++ of for stmt.
+                j++;
+                continue;
+            }
+            unsigned int ocdata[2] = {domain, i};
+            oca->InsertNextTupleValue(ocdata);
+            cellReMap->push_back(i);
+        }
+        oca->Delete();
+
+        //
+        // Ok, we'll insert the arbitrary polyhedral zones by using
+        // ArbInsertArbitrary function. 
+        //
+        for (i = 0; i < arbZoneIdxOffs.size(); i++)
+        {
+            int sum;
+            int *nl = arbZoneNlOffs[i];
+            int gz = arbZoneIdxOffs[i];
+
+            //
+            // Create a temp. Silo DBphzonelist object to call ArbInsertArbitrary.
+            //
+            DBphzonelist *phzl = 
+                MakePHZonelistFromZonelistArbFragment(nl, arbZoneCounts[i]);
+            vector<int> nloffs, floffs;
+            for (j = 0, sum = 0; j < phzl->nfaces; sum += phzl->nodecnt[j], j++)
+                nloffs.push_back(sum);
+            for (j = 0, sum = 0; j < phzl->nzones; sum += phzl->facecnt[j], j++)
+                floffs.push_back(sum);
+
+            //
+            // Ok, now loop over this group of arb. polyhedral zones, 
+            // adding them using ArbInsertArbitrary.
+            //
+            for (j = 0; j < arbZoneCounts[i]; j++, gz++)
+            {
+                unsigned int ocdata[2] = {domain, gz};
+                ArbInsertArbitrary(ugrid, phzl, j, nloffs, floffs,
+                    ocdata, cellReMap, nodeReMap);
+            }
+
+            DBFreePHZonelist(phzl);
+        }
+    }
+
+    //
     //  Tell the ugrid which of its zones are real (avtGhostZone = 0),
     //  which are ghost (avtGhostZone = 1), but only create the ghost
     //  zones array if ghost zones are actually present.
     //
-    const int first = zl->min_index - minIndexOffset;  // where the real zones start
-    const int last = zl->max_index - maxIndexOffset;   // where the real zones end
+    const int first = zl->min_index;  // where the real zones start
+    const int last = zl->max_index;   // where the real zones end
 
     if (first == 0 && last == 0  && numCells > 27)
     {
@@ -8319,40 +8425,35 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                << " of " << numCells << " Cells." << endl;
 
         //
-        //  Give the array the proper name so that other vtk classes will
-        //  recognize these as ghost levels.
+        // Populate a zone-centered array of ghost zone values.
         //
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
-        ghostZones->SetNumberOfTuples(numCells);
-        unsigned char *tmp = ghostZones->GetPointer(0);
+        unsigned char *gvals = new unsigned char[numCells];
+        unsigned char val = 0;
+        avtGhostData::AddGhostZoneType(val, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         for (i = 0; i < first; i++)
-        {
-            //
-            //  ghostZones at the begining of the zone list
-            //
-            unsigned char val = 0;
-            avtGhostData::AddGhostZoneType(val, 
-                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            *tmp++ = val;
-        }
+            gvals[i] = val;
         for (i = first; i <= last; i++)
-        {
-            //
-            // real zones
-            //
-            *tmp++ = 0;
-        }
-        for (i = last+1; i < numCells; i++)
-        {
-            //
-            //  ghostZones at the end of the zone list
-            //
-            unsigned char val = 0;
-            avtGhostData::AddGhostZoneType(val, 
-                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            *tmp++ = val;
-        }
+            gvals[i] = 0;
+        for (i = last; i < numCells; i++)
+            gvals[i] = val;
+
+        //
+        // Create a temp. DBucdvar object to call CopyUcdVar. That will handle
+        // both creation of the vtkUnsignedCharArray object as well as re-mapping
+        // of array as per existence of any arb. polyhedral zones.
+        //
+        DBucdvar tmp;
+        tmp.centering = DB_ZONECENT;
+        tmp.datatype = DB_CHAR;
+        tmp.nels = numCells;
+        tmp.nvals = 1;
+        tmp.vals = (float**) new float*[1];
+        tmp.vals[0] = (float*) gvals;
+        vector<int> noremap;
+        vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp,
+            cellReMap?*cellReMap:noremap);
+        delete [] tmp.vals;
+
         ugrid->GetCellData()->AddArray(ghostZones);
         ghostZones->Delete();
         ugrid->SetUpdateGhostLevel(0);
@@ -8633,9 +8734,13 @@ ArbInsertHex(vtkUnstructuredGrid *ugrid, int *nids, unsigned int ocdata[2],
 //  Modifications:
 //    Mark C. Miller, Wed Oct 21 03:48:24 PDT 2009
 //    Fixed setting of 'mingn' when a new min is found.
+//
+//    Mark C. Miller, Wed Oct 28 20:47:40 PDT 2009
+//    Adjusted interface to take DBphzonelist* as second arg instead of 
+//    DBucdmesh*.
 // ****************************************************************************
 static void
-ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBucdmesh *um, int gz,
+ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
     const vector<int> &nloffs, const vector<int> &floffs, unsigned int ocdata[2],
     vector<int> *cellReMap, vector<int> *nodeReMap)
 {
@@ -8643,7 +8748,6 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBucdmesh *um, int gz,
     // Compute cell center and insert it into the ugrid
     //
     double coord_sum[3] = {0.0, 0.0, 0.0};
-    DBphzonelist *phzl = um->phzones;
     int fcnt = phzl->facecnt[gz];
     vector<int> lnmingnvec;
     map<int,int> nodemap;
@@ -8742,6 +8846,8 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBucdmesh *um, int gz,
 //
 //  Programmer: Mark C. Miller, Wed Oct  7 11:24:34 PDT 2009
 //
+//    Mark C. Miller, Wed Oct 28 08:20:41 PDT 2009
+//    Added logic to manage ghost zone information through the remap process.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
@@ -8887,7 +8993,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             map<int, int>::iterator it;
             if (isNotZooElement)				// Arbitrary
             {
-                ArbInsertArbitrary(ugrid, um, gz, nloffs, floffs, ocdata,
+                ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
             }
             else if (fcnt == 4 && nodemap.size() == 4 &&
@@ -8941,15 +9047,62 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             }
             else						// Arbitrary
             {
-                ArbInsertArbitrary(ugrid, um, gz, nloffs, floffs, ocdata,
+                ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
             }
         }
         else							// Arbitrary
         {
-            ArbInsertArbitrary(ugrid, um, gz, nloffs, floffs, ocdata,
+            ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                 cellReMap, nodeReMap);
         }
+    }
+
+    //
+    // Handle the ghost zoning, if necessary. We can do this easily now that
+    // the mesh has been re-mapped to all ucd elements. We use the cell
+    // centered re-mapping, if any, to make it work.
+    //
+    if (phzl->lo_offset != 0 || phzl->hi_offset != phzl->nzones-1)
+    {
+        //
+        // Populate a zone-centered array of ghost zone values.
+        //
+        unsigned char *gvals = new unsigned char[phzl->nzones];
+        unsigned char val = 0;
+        avtGhostData::AddGhostZoneType(val, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        for (i = 0; i < phzl->lo_offset; i++)
+            gvals[i] = val;
+        for (i = phzl->lo_offset; i <= phzl->hi_offset; i++)
+            gvals[i] = 0;
+        for (i = phzl->hi_offset; i < phzl->nzones; i++)
+            gvals[i] = val;
+       
+        //
+        // Remap the zone-centered array based on arb-poly remapping
+        // computed above.
+        //
+        vector<int> noremap;
+        vector<int> *remap = &noremap;    
+        if (ugrid->GetNumberOfPoints() <= um->nnodes)
+            remap = cellReMap;
+        DBucdvar tmp;
+        tmp.centering = DB_ZONECENT;
+        tmp.datatype = DB_CHAR;
+        tmp.nels = phzl->nzones;
+        tmp.nvals = 1;
+        tmp.vals = (float**) new float*[1];
+        tmp.vals[0] = (float*) gvals;
+        vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp, *remap);
+        delete [] tmp.vals;
+
+        //
+        // Assign the ghost zone array to the ugrid object.
+        //
+        ghostZones->SetName("avtGhostZones");
+        ugrid->GetCellData()->AddArray(ghostZones);
+        ghostZones->Delete();
+        ugrid->SetUpdateGhostLevel(0);
     }
 
     //
@@ -11478,6 +11631,9 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Brad Whitlock, Fri Aug  7 11:40:37 PDT 2009
 //    Convert double mix_vf to float for now since avtMaterial can't store it.
 //
+//    Mark C. Miller, Thu Oct 29 14:34:55 PDT 2009
+//    Replaced zone skipping logic (old way of handling meshes with arb. poly
+//    zones) to use remapping logic. 
 // ****************************************************************************
 
 avtMaterial *
@@ -11558,40 +11714,40 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     }
 
     //
-    // Handle cases were zones may have been removed due to unknown zone type
-    // Note: We can get away with remapping only the matlist array 
-    // Note: We should only wind up doing this for an unstructured mesh
+    // Handle cases for arb. poly meshes where arb. zones have been
+    // decomposed into zoo-type zones. We need only do this for matlist
+    // array, even in the presence of mixing.
     //
-    int *matList = silomat->matlist;
-
-    // handle cases where we really have a 1d matlist array even when ndims
-    // is greater than 1
-    int numDimsNonUnity = 0;
-    int nonUnityDim = -1;
-    int ndims = silomat->ndims;
-    int dims[3];
-    for (int i = 0; i < silomat->ndims; i++)
+    vtkDataArray *matListArr = 0;
+    string meshName = metadata->MeshForVar(tmn);
+    if (arbMeshCellReMap.find(meshName) != arbMeshCellReMap.end())
     {
-        if (silomat->dims[i] != 1)
-        {
-            numDimsNonUnity++;
-            nonUnityDim = i;
-        }
-        dims[i] = silomat->dims[i];
-    }
+        vector<int> *remap = arbMeshCellReMap[meshName];
 
-    if (metadata != NULL && numDimsNonUnity == 1)
-    {
-        string meshName = metadata->MeshForVar(tmn);
-        vector<int> zonesRangesToSkip = arbMeshZoneRangesToSkip[meshName];
-        if (zonesRangesToSkip.size() > 0)
-        {
-            int numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
-            matList = new int[dims[nonUnityDim] - numSkipped];
-            RemoveValuesForSkippedZones(zonesRangesToSkip,
-                silomat->matlist, dims[nonUnityDim], matList);
-            dims[nonUnityDim] -= numSkipped;
-        }
+        int nzones = 1;
+        for (int i = 0; i < silomat->ndims; i++)
+            nzones *= silomat->dims[i];
+
+        //
+        // Create a temp. ucdvar so we can use CopyUcdVar to remap matlist
+        //
+        DBucdvar tmp;
+        tmp.centering = DB_ZONECENT;
+        tmp.datatype = DB_INT;
+        tmp.nels = nzones;
+        tmp.nvals = 1;
+        tmp.vals = (float**) new float*[1];
+        tmp.vals[0] = (float*) silomat->matlist;
+        matListArr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
+
+        //
+        // Adjust the Silo DBmaterial object a bit for call to newMaterial
+        //
+        silomat->ndims = 1;
+        silomat->dims[0] = (int) remap->size();
+        silomat->dims[1] = 1;
+        silomat->dims[2] = 1;
+        delete [] tmp.vals;
     }
 
     int nummats = silomat->nmat;
@@ -11611,28 +11767,20 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     }
     float *mix_vf = ConvertToFloat(silomat->datatype, silomat->mix_vf, silomat->mixlen);
 
-    avtMaterial *mat = new avtMaterial(nummats, 
-                                       matnos,
-                                       matnames,
-                                       ndims,
-                                       dims,
-                                       silomat->major_order,
-                                       matList,
-                                       silomat->mixlen,
-                                       silomat->mix_mat,
-                                       silomat->mix_next,
-                                       silomat->mix_zone,
-                                       mix_vf,
-                                       dom_string
+    avtMaterial *mat = new avtMaterial(nummats, matnos, matnames, silomat->ndims,
+        silomat->dims, silomat->major_order,
+        matListArr?(int*)(matListArr->GetVoidPointer(0)):silomat->matlist,
+        silomat->mixlen, silomat->mix_mat, silomat->mix_next, silomat->mix_zone,
+        mix_vf, dom_string
 #ifdef DBOPT_ALLOWMAT0
                                        ,silomat->allowmat0
 #endif
-                                       );
+        );
 
     if(mix_vf != (float*)silomat->mix_vf)
         delete [] mix_vf;
-    if (matList != silomat->matlist)
-        delete [] matList;
+    if (matListArr)
+        matListArr->Delete();
     DBFreeMaterial(silomat);
     if (matnames != NULL)
         delete [] matnames;
@@ -12898,26 +13046,6 @@ TetIsInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
         return false;
 }
 
-
-// ****************************************************************************
-//  Function: ComputeNumZonesSkipped 
-//
-//  Purpose: Determine total number of zones represented in a set of skip
-//  ranges.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   October 21, 2004 
-//
-// ****************************************************************************
-
-int
-ComputeNumZonesSkipped(const vector<int> &zoneRangesSkipped)
-{
-   int retVal = 0;
-   for (int i = 0; i < zoneRangesSkipped.size(); i+=2)
-       retVal += (zoneRangesSkipped[i+1] - zoneRangesSkipped[i] + 1);
-   return retVal;
-}
 
 // ****************************************************************************
 //  Function: GetMultivarToMultimeshMap
