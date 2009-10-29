@@ -39,7 +39,7 @@ visitExecDir = visitDir + "/current/linux-x86_64"
 execName = visitExecDir + "/bin/engine_par"
 pluginNameList = glob.glob(visitExecDir + "/plugins/*/*.so")
 # Change this to the Lustre mount point on you machine
-lustrePrefix = "/scratch2"
+lustrePrefix = "/usr/common"
 
 # Check if the VisIt parallel engine executable exists
 if not os.access(execName, os.X_OK):
