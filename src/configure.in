@@ -1421,8 +1421,8 @@ AC_SUBST(GL_LIBS)
 AC_LANG_C
 
 # See if we can use Carbon on Mac OS
-OVERLAY_INC=""$(QT_CXXFLAGS)
-OVERLAY_LIB="" $(QT_LDFLAGS)
+OVERLAY_INC=""
+OVERLAY_LIB=""
 
 if test "$UNAME" = "Darwin"; then
     if test ${VERS%%.*} -ge 10; then
