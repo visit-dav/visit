@@ -38,6 +38,7 @@
 #include <avtCCSMFileFormat.h>
 #include <NETCDFFileObject.h>
 #include <avtCCSMReader.h>
+#include <avtDatabaseMetaData.h>
 
 #include <avtMTSDFileFormatInterface.h>
 #include <avtSTSDFileFormatInterface.h>
@@ -179,6 +180,8 @@ void
 avtCCSM_MTSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
     reader->PopulateDatabaseMetaData(timeState, md);
+    if(md != 0)
+         md->SetDatabaseComment("Read as CCSM MT data");
 }
 ////////////////////////////////////////////////////////////////////////////////
 ///                            ST FILE FORMAT
@@ -300,7 +303,6 @@ avtCCSM_STSD_FileFormat::GetTime()
 void
 avtCCSM_STSD_FileFormat::ActivateTimestep(void)
 {
-    reader->ActivateTimestep(0);
 }
 
 void
@@ -331,4 +333,6 @@ void
 avtCCSM_STSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     reader->PopulateDatabaseMetaData(0, md);
+    if(md != 0)
+         md->SetDatabaseComment("Read as CCSM ST data");
 }

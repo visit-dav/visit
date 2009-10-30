@@ -35,52 +35,56 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef AVT_CCSM_READER_H
-#define AVT_CCSM_READER_H
+
+#ifndef AVT_BASIC_NETCDF_READER_H
+#define AVT_BASIC_NETCDF_READER_H
 #include <avtNETCDFReaderBase.h>
-#include <map>
-#include <string>
 #include <vectortypes.h>
+#include <map>
 
 class NETCDFFileObject;
-class avtDatabaseMetaData;
-class vtkDataSet;
-class vtkDataArray;
+class avtFileFormatInterface;
 
 // ****************************************************************************
-// Class: avtCCSMReader
+//  Class: avtBasicNETCDFReader
 //
-// Purpose:
-//   This class reads CCSM files.
+//  Purpose:
+//      Reads in NETCDF files as a plugin to VisIt.
 //
-// Notes:      
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Aug 10 15:21:14 PST 2005
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 27 14:39:32 PDT 2009
+//  Modifications:
 //
-// Modifications:
-//   
 // ****************************************************************************
 
-class avtCCSMReader : public avtNETCDFReaderBase
+class avtBasicNETCDFReader : public avtNETCDFReaderBase
 {
-public:
-                   avtCCSMReader(const char *);
-                   avtCCSMReader(const char *, NETCDFFileObject *);
-    virtual       ~avtCCSMReader();
+public: 
 
-    vtkDataSet    *GetMesh(int, const char *);
-    vtkDataArray  *GetVar(int, const char *);
+                   avtBasicNETCDFReader(const char *filename, 
+                                        NETCDFFileObject *);
+                   avtBasicNETCDFReader(const char *filename);
+                  ~avtBasicNETCDFReader();
 
-    void           PopulateDatabaseMetaData(int, avtDatabaseMetaData *);
+    vtkDataSet    *GetMesh(int timeState, const char *);
+    vtkDataArray  *GetVar(int timeState, const char *);
+    void           PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *);
+
+    void           CreateGlobalAttributesString(int nGlobalAtts, std::string &gaString);
 protected:
+    bool ReturnSpatialDimensionIndices(const intVector &dims, int sDims[3], int &nSDims) const;
+    void ReturnDimStartsAndCounts(int timeState, const intVector &dims, 
+                                  intVector &dimStarts, intVector &dimCounts) const;
+private:
     // DATA MEMBERS
-    StringIntVectorMap     meshNameToDimensions;
-    StringIntVectorMap     varToDimensions;
+    bool                   meshNamesCreated;
+    StringIntVectorMap     meshNameToDimensionsSizes;
+    StringIntVectorMap     meshNameToNCDimensions;
+    StringIntVectorMap     varToDimensionsSizes;
 
-    size_t                *dimSizes;
-
-    bool                   initialized;
+    int                    procNum;
+    int                    procCount;
 };
 
 #endif

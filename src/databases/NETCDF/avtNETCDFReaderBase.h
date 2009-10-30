@@ -35,9 +35,8 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef AVT_CCSM_READER_H
-#define AVT_CCSM_READER_H
-#include <avtNETCDFReaderBase.h>
+#ifndef AVT_NETCDF_READER_BASE_H
+#define AVT_NETCDF_READER_BASE_H
 #include <map>
 #include <string>
 #include <vectortypes.h>
@@ -48,10 +47,19 @@ class vtkDataSet;
 class vtkDataArray;
 
 // ****************************************************************************
-// Class: avtCCSMReader
+// Class: avtNETCDFReaderBase
 //
 // Purpose:
-//   This class reads CCSM files.
+//   This class is a base class for "Reader" classes. which I mean to distinguish
+//   as the class that does the actual NETCDF reading. The various FileFormat 
+//   classes call a reader to do their work. There are MTSD and STSD versions
+//   of the FileFormat which call the same reader class. This permits the plugin 
+//   to serve up the best avtFileFormatInterface for the data with respect to 
+//   whether it is "MT" or "ST". Thus, the FileFormat classes become a very
+//   thin veneer on top of the Reader class. We do this mostly to work around a
+//   file grouping issue in avtDatabase where it can't group MT files. The other
+//   reason is that we don't want to have an ST or MT file format because we
+//   don't know which it is until the file is opened.
 //
 // Notes:      
 //
@@ -62,25 +70,28 @@ class vtkDataArray;
 //   
 // ****************************************************************************
 
-class avtCCSMReader : public avtNETCDFReaderBase
+class avtNETCDFReaderBase
 {
 public:
-                   avtCCSMReader(const char *);
-                   avtCCSMReader(const char *, NETCDFFileObject *);
-    virtual       ~avtCCSMReader();
+                   avtNETCDFReaderBase(const char *);
+                   avtNETCDFReaderBase(const char *, NETCDFFileObject *);
+    virtual       ~avtNETCDFReaderBase();
 
-    vtkDataSet    *GetMesh(int, const char *);
-    vtkDataArray  *GetVar(int, const char *);
+    void           GetCycles(std::vector<int> &);
+    void           GetTimes(std::vector<double> &);
 
-    void           PopulateDatabaseMetaData(int, avtDatabaseMetaData *);
+    int            GetNTimesteps();
+    void           FreeUpResources(); 
+
+    static bool GetTimeDimension(NETCDFFileObject *, int &ncdim, int &nts, std::string &name);
 protected:
+    float *ReadArray(const char *varname);
+
+    typedef std::map<std::string, intVector>   StringIntVectorMap;
+    typedef std::map<std::string, std::string> StringStringMap;
+
     // DATA MEMBERS
-    StringIntVectorMap     meshNameToDimensions;
-    StringIntVectorMap     varToDimensions;
-
-    size_t                *dimSizes;
-
-    bool                   initialized;
+    NETCDFFileObject      *fileObject;
 };
 
 #endif

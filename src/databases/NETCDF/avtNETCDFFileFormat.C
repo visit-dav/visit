@@ -80,6 +80,9 @@
 //   Brad Whitlock, Tue Oct 27 14:37:05 PDT 2009
 //   I separated CCSM into MT and ST flavors.
 //
+//   Brad Whitlock, Thu Oct 29 16:23:33 PDT 2009
+//   I separated the Basic reader into MT and ST flavors.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -148,8 +151,14 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 debug4 << "Database is avtCCSM_STSD_FileFormat" << endl;
             }
 
+            if(flavor == -1 && avtBasic_MTSD_NETCDFFileFormat::Identify(f))
+            {
+                flavor = 9;
+                debug4 << "Database is avtBasic_MTSD_NETCDFFileFormat" << endl;
+            }
+
             if(flavor == -1)
-                debug4 << "Database is avtBasicNETCDFFileFormat" << endl;
+                debug4 << "Database is avtBasic_STSD_NETCDFFileFormat" << endl;
         }
         CATCH(VisItException)
         {
@@ -187,8 +196,11 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         case 8:
             ffi = avtCCSM_STSD_FileFormat::CreateInterface(f, list, nList, nBlock);
             break;
+        case 9:
+            ffi = avtBasic_MTSD_NETCDFFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
         default:
-            ffi = avtBasicNETCDFFileFormat::CreateInterface(f, list, nList, nBlock);
+            ffi = avtBasic_STSD_NETCDFFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         }
     }

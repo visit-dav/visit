@@ -36,17 +36,64 @@
 *
 *****************************************************************************/
 
-#ifndef BASIC_NETCDF_READER_H
-#define BASIC_NETCDF_READER_H
+#ifndef BASIC_NETCDF_FILE_FORMAT_H
+#define BASIC_NETCDF_FILE_FORMAT_H
 #include <avtSTSDFileFormat.h>
+#include <avtMTSDFileFormat.h>
 #include <vectortypes.h>
 #include <map>
 
 class NETCDFFileObject;
 class avtFileFormatInterface;
+class avtBasicNETCDFReader;
 
 // ****************************************************************************
-//  Class: avtBasicNETCDFFileFormat
+//  Class: avtBasic_MTSD_NETCDFFileFormat
+//
+//  Purpose:
+//      Reads in NETCDF files with time dimension as a plugin to VisIt.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jul 11 11:28:20 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class avtBasic_MTSD_NETCDFFileFormat : public avtMTSDFileFormat
+{
+public:
+   static bool         Identify(NETCDFFileObject *);
+   static avtFileFormatInterface *CreateInterface(NETCDFFileObject *f, 
+                       const char *const *list, int nList, int nBlock);
+
+                       avtBasic_MTSD_NETCDFFileFormat(const char *);
+                       avtBasic_MTSD_NETCDFFileFormat(const char *, NETCDFFileObject *);
+    virtual           ~avtBasic_MTSD_NETCDFFileFormat();
+
+    //
+    // If you know the times and cycle numbers, overload this function.
+    // Otherwise, VisIt will make up some reasonable ones for you.
+    //
+    virtual void           GetCycles(std::vector<int> &);
+    virtual void           GetTimes(std::vector<double> &);
+
+    virtual int            GetNTimesteps(void);
+
+    virtual const char    *GetType(void)   { return "Basic MT NETCDF"; };
+    virtual void           FreeUpResources(void); 
+
+    virtual vtkDataSet    *GetMesh(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *);
+
+protected:
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
+    avtBasicNETCDFReader *reader;
+};
+
+// ****************************************************************************
+//  Class: avtBasic_STSD_NETCDFFileFormat
 //
 //  Purpose:
 //      Reads in NETCDF files as a plugin to VisIt.
@@ -64,20 +111,26 @@ class avtFileFormatInterface;
 //    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //    Added args to ReturnValidDimensions and procNum/Count data members
 //    to support on-the-fly domain decomp
+//
+//    Brad Whitlock, Thu Oct 29 16:14:17 PDT 2009
+//    I moved the guts to avtBasicNETCDFReader.
+//
 // ****************************************************************************
 
-class avtBasicNETCDFFileFormat : public avtSTSDFileFormat
+class avtBasic_STSD_NETCDFFileFormat : public avtSTSDFileFormat
 {
 public: 
    static avtFileFormatInterface *CreateInterface(NETCDFFileObject *f, 
                        const char *const *list, int nList, int nBlock);
 
-                       avtBasicNETCDFFileFormat(const char *filename, 
+                       avtBasic_STSD_NETCDFFileFormat(const char *filename, 
                                                 NETCDFFileObject *);
-                       avtBasicNETCDFFileFormat(const char *filename);
-    virtual           ~avtBasicNETCDFFileFormat();
+                       avtBasic_STSD_NETCDFFileFormat(const char *filename);
+    virtual           ~avtBasic_STSD_NETCDFFileFormat();
 
-    virtual const char    *GetType(void) { return "NETCDF"; }
+    virtual double         GetTime();
+
+    virtual const char    *GetType(void) { return "Basic ST NETCDF"; }
     virtual void           ActivateTimestep(void); 
     virtual void           FreeUpResources(void); 
 
@@ -87,21 +140,8 @@ public:
 protected:
     virtual int            GetCycleFromFilename(const char *f) const;
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    bool                   ReturnValidDimensions(const intVector &dims,
-                                                 int validDims[3],
-                                                 int &nValidDims,
-                                                 int dimStarts[3] = 0, 
-                                                 int dimCounts[3] = 0);
 private:
-    
-    NETCDFFileObject      *fileObject;
-
-    typedef std::map<std::string, intVector> MeshNameMap;
-    bool                   meshNamesCreated;
-    MeshNameMap            meshNames;
-
-    int                    procNum;
-    int                    procCount;
+    avtBasicNETCDFReader *reader;
 };
 
 #endif

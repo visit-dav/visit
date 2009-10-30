@@ -63,18 +63,12 @@
 #include <snprintf.h>
 
 #include <avtDatabaseMetaData.h>
-#include <avtMTSDFileFormatInterface.h>
 
 #include <DebugStream.h>
 
 #include <InvalidVariableException.h>
-#include <InvalidDBTypeException.h>
 
 #include <NETCDFFileObject.h>
-
-#define TIME_DIMENSION_NAME "time"
-
-using std::string;
 
 // ****************************************************************************
 //  Method: avtCCSM constructor
@@ -84,16 +78,16 @@ using std::string;
 //
 // ****************************************************************************
 
-avtCCSMReader::avtCCSMReader(const char *filename, NETCDFFileObject *f)
+avtCCSMReader::avtCCSMReader(const char *filename, NETCDFFileObject *f) : 
+    avtNETCDFReaderBase(filename, f)
 {
-    fileObject = f;
     initialized = false;
     dimSizes = 0;
 }
 
-avtCCSMReader::avtCCSMReader(const char *filename)
+avtCCSMReader::avtCCSMReader(const char *filename) : 
+    avtNETCDFReaderBase(filename)
 {
-    fileObject = new NETCDFFileObject(filename);
     initialized = false;
     dimSizes = 0;
 }
@@ -117,91 +111,6 @@ avtCCSMReader::~avtCCSMReader()
 
     delete fileObject;
     delete [] dimSizes;
-}
-
-// ****************************************************************************
-//  Method: avtCCSMReader::FreeUpResources
-//
-//  Purpose:
-//      When VisIt is done focusing on a particular timestep, it asks that
-//      timestep to free up any resources (memory, file descriptors) that
-//      it has associated with it.  This method is the mechanism for doing
-//      that.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Wed Jul 11 11:28:20 PDT 2007
-//
-// ****************************************************************************
-
-void
-avtCCSMReader::FreeUpResources()
-{
-    debug4 << "avtCCSMReader::FreeUpResources" << endl;
-    fileObject->Close();
-}
-
-// ****************************************************************************
-//  Method: avtCCSMReader::ActivateTimestep
-//
-//  Purpose:
-//      This method is called when VisIt switches to the new time step.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Wed Jul 11 11:28:20 PDT 2007
-//
-// ****************************************************************************
-
-void
-avtCCSMReader::ActivateTimestep(int timeState)
-{
-}
-
-// ****************************************************************************
-//  Method: avtEMSTDFileFormat::GetNTimesteps
-//
-//  Purpose:
-//      Tells the rest of the code how many timesteps there are in this file.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Wed Jul 11 11:28:20 PDT 2007
-//
-// ****************************************************************************
-
-int
-avtCCSMReader::GetNTimesteps(void)
-{
-    size_t sz = 0;
-    if(!fileObject->GetDimensionInfo(TIME_DIMENSION_NAME, &sz))
-        sz = 1;
-
-    return (int)sz;
-}
-
-void
-avtCCSMReader::GetCycles(std::vector<int> &cycles)
-{
-    int nts = GetNTimesteps();
-    for(int i = 0; i < nts; ++i)
-        cycles.push_back(i);
-}
-
-void
-avtCCSMReader::GetTimes(std::vector<double> &times)
-{
-    // Read the times from the DB...
-    int nts = GetNTimesteps();
-    float *times_array = ReadArray(TIME_DIMENSION_NAME);
-    if(times_array != 0)
-    {
-        for(int i = 0; i < nts; ++i)
-            times.push_back((double)times_array[i]);
-        delete [] times_array;
-    }
-    else 
-    {
-        for(int i = 0; i < nts; ++i)
-            times.push_back((double)i);
-    }
 }
 
 // ****************************************************************************
@@ -238,12 +147,8 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
         return;
     }
 
-    if(md != 0)
-         md->SetDatabaseComment("Read as CCSM data");
-
     // Get the size of all of the dimensions in the file.
     dimSizes = new size_t[nDims];
-    int timedim = -1;
     int i;
     for(i = 0; i < nDims; ++i)
     {
@@ -252,9 +157,6 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
         if((status = nc_inq_dim(fileObject->GetFileHandle(), i, dimName,
            &sz)) == NC_NOERR)
         {
-            if(strcmp(dimName, TIME_DIMENSION_NAME) == 0)
-                timedim = i;
-
             dimSizes[i] = sz;
         }
         else
@@ -263,6 +165,11 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
             fileObject->HandleError(status);
         }
     }
+
+    // Get the time dimension.
+    int timedim = -1, time_nts = 0;
+    std::string timedimname;
+    GetTimeDimension(fileObject, timedim, time_nts, timedimname);
 
     // Iterate over the variables and create a list of meshes names and add
     // the variable to the metadata.
@@ -283,14 +190,18 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
             if (varndims == 0)
                 continue;
 
-            int nGt1Dims = 0;
+            int nSpatialDimsGt1 = 0;
             int maxDim = dimSizes[vardims[0]];
             bool hasTimeDimension = false;
             for(int dim = 0; dim < varndims; ++dim)
             {
                 int d = dimSizes[vardims[dim]];
-                if(d > 1)
-                    ++nGt1Dims;
+                if(vardims[dim] != timedim)
+                {
+                    if(d > 1)
+                        ++nSpatialDimsGt1;
+                }
+
                 if(d > maxDim)
                     maxDim = d;
 
@@ -302,10 +213,10 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
             if(hasTimeDimension)
                 requiredDims = 3;
 
-            if(nGt1Dims < requiredDims)
+            if(nSpatialDimsGt1 < 2 || nSpatialDimsGt1 > 3)
             {
                 debug4 << mName << "Rejecting " << varname
-                       << " because it can't yield " << (requiredDims-1) << "D data over time." << endl;
+                       << " because it can't yield 2D or 3D data over time." << endl;
                 continue;
             }
 
@@ -369,7 +280,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                     debug4 << meshDims[j] << ",";
                 debug4 << endl;
 
-                string globalMesh = string("global/") + meshName;
+                std::string globalMesh = std::string("global/") + meshName;
  
                 // Add the name of the mesh to the list of meshes.
                 if(meshNameToDimensions.find(meshName) == meshNameToDimensions.end())
@@ -455,7 +366,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                     debug4 << "}" << endl;
 
                     // Add a global variable too.
-                    string globalVar = string("global/") + varname;
+                    std::string globalVar = std::string("global/") + varname;
                     smd = new avtScalarMetaData(globalVar,
                         globalMesh, AVT_ZONECENT);
                     smd->hasUnits = fileObject->ReadStringAttribute(
@@ -469,59 +380,6 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
     } // for nVars
 
     initialized = true;
-}
-
-// ****************************************************************************
-// Method: avtCCSMReader::ReadArray
-//
-// Purpose: 
-//   Reads a variable into a float array.
-//
-// Arguments:
-//   varname : The name of the variable to read.
-//
-// Returns:    A float array or NULL.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 5 12:18:25 PDT 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-float *
-avtCCSMReader::ReadArray(const char *varname)
-{
-    const char *mName = "avtCCSMReader::ReadArray: ";
-    TypeEnum t;
-    int ndims, *dims = 0;
-    float *arr = 0;
-
-    if(fileObject->InqVariable(varname, &t, &ndims, &dims))
-    {
-        debug4 << mName << "Got information for " << varname << endl;
-
-        // Determine the size of the variable.
-        int nelems = 1;
-        for(int i = 0; i < ndims; ++i)
-            nelems *= dims[i];
-        arr = new float[nelems];
-        delete [] dims;
-
-        // Read the variable.
-        if(!fileObject->ReadVariableIntoAsFloat(varname, arr))
-        {
-            debug4 << mName << "Could not read variable as float." << endl;
-            delete [] arr;
-            arr = 0;
-        }
-        else
-            debug4 << mName << "Variable " << varname << " was read." << endl;
-    }
-
-    return arr;
 }
 
 // ****************************************************************************
