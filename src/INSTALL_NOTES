@@ -10,36 +10,37 @@ by the Windows installation instructions.
 Unix and Mac OS X:
 
 1.  Run the visit-install script to install visit.  Note that it can
-    create a new distribution directory or update an existing
-    distribution.  This is handled automatically.
+    create a new distribution directory or update an existing distribution.
+    This is handled automatically.
 
         visit-install "version" "platform" "directory"
 
     where
 
-        "version" will be 1.12.0 for the current distribution.
+        "version" will be 1.12.1 for the current distribution.
 
-        "platform" will be one of the following:  aix, aix64-xlc, darwin,
-        irix6, linux-altix, linux-ia64, linux-x86_64, linux_chaos, linux_rhel3,
-        osf1, or sunos5 depending on the machine.  The one you use should
-        match the name of the accompanying distribution file.
+        "platform" will be one of the following:  aix, aix64, darwin-i386,
+        darwin-ppc, linux-altix, linux-ellipse, linux_rhel3, linux-x86_64,
+        linux-x86_64-ubuntu8 or linux-x86_64-fedora4 depending on the
+        machine.  The one you use should match the name of the accompanying
+        distribution file.
 
         "directory" is the directory you wish to install visit into.
         If the directory doesn't exist the script will create it.
 
     For example
 
-        visit-install 1.12.0 linux_rhel3 /usr/local/visit
+        visit-install 1.12.1 linux_rhel3 /usr/local/visit
 
-    will install the linux_rhel3, 1.12.0 version of visit in the directory
+    will install the linux_rhel3, 1.12.1 version of visit in the directory
     "/usr/local/visit".  Note that you will need to have the file
-    "visit1_12_0.linux_rhel3.tar.gz" present in the current directory for this
+    "visit1_12_1.linux_rhel3.tar.gz" present in the current directory for this
     to function properly.  You can install multiple binaries into the
     same directory.  For example, you could then execute
 
-        visit-install 1.12.0 darwin /usr/local/visit
+        visit-install 1.12.1 darwin-i386 /usr/local/visit
 
-    to add a linux, 1.12.0 version of visit to the same directory.
+    to add a linux, 1.12.1 version of visit to the same directory.
 
 2.  Add the bin directory below the installation directory
     (/usr/local/visit/bin in our example) to each user's search path.
@@ -57,28 +58,12 @@ Unix and Mac OS X:
     This completes the installation process for VisIt.
 
 3.  If you are installing VisIt on a Linux system with an NVidia graphics
-    card, we recommend using the NVidia 4363 driver or newer.  Below are
-    notes on the various NVidia Linux drivers.
-
-      2802 - Not recommended.  It has a triangle shading bug.
-
-      2960 - Doesn't support stereo rendering, but no critical bugs.
-
-      3123 - Does support stereo rendering, but it may not render large
-             numbers of polygons when using display lists.  You can turn
-             off display lists by bringing up the "Rendering options"
-             window and deselecting the "Use display lists" toggle button.
-
-      4191 - Not recommended.  VisIt either crashes your X server or puts
-             up a visualization window that never gets refreshed.
-
-      4363 - Recommended.  There are no known critical bugs with this or
-             newer drivers.
+    card, we recommend using the latest driver.
 
 Windows:
 
-1.  Copy the file visit1.12.0.exe to your desktop.
+1.  Copy the file visit1.12.1.exe to your desktop.
 
-2.  Double click on the visit1.12.0.exe icon to run the installer.
+2.  Double click on the visit1.12.1.exe icon to run the installer.
 
 3.  Follow the directions provided by the installer.
