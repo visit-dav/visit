@@ -7,7 +7,7 @@ on Intel and 10.3.9 on PPC.
 build_visit
   The recomended method for building VisIt on MacOS X is to use the 
   build_visit script available at:
-    http://www.llnl.gov/VisIt/1.11.2/build_visit 
+    http://www.llnl.gov/VisIt/1.12.1/build_visit 
   Note: you may need to restore the execute permissions after downloading
   with, chmod +x build_visit
   Using build_visit a basic build for the Mac can be initiated with:
@@ -58,10 +58,10 @@ Universal binary
   Building of a universal install target requires 2 independent builds of VisIt
   and its supporting libraries. The PowerPC Mac be running at least MacOS
   X10.3.9, and the Intel Mac running MacOS X10.4.x (Tiger). Each build is put
-  into a binary distribution tarball (e.g., visit1_11_2.darwin-ppc.tar.gz or
-  visit1_11_2.darwin-i386.tar.gz) by the clearcase_bin/visit-bin-dist step.
+  into a binary distribution tarball (e.g., visit1_12_1.darwin-ppc.tar.gz or
+  visit1_12_1.darwin-i386.tar.gz) by the clearcase_bin/visit-bin-dist step.
   Each of these tarballs can be installed in a executable distributions,
-  see: http://www/visit/1.11.2/INSTALL_NOTES.
+  see: http://visit.llnl.gov/1.12.1/INSTALL_NOTES.
 
 Build Notes (if you still want to do it by hand)
   VisIt relies on several external libraries which must be built and installed
