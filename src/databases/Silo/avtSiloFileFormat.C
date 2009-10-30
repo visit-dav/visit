@@ -7673,6 +7673,9 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //      and sticking global zone ids into cache.
 //
 //  Programmer: Mark C. Miller, Thu Oct 29 15:00:54 PDT 2009
+//
+//    Mark C. Miller, Fri Oct 30 14:03:13 PDT 2009
+//    Handle Silo's DB_DTPTR configuration option.
 // ****************************************************************************
 
 void
@@ -7696,8 +7699,13 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     tmp.datatype = DB_INT;
     tmp.nels = lgzoneno;
     tmp.nvals = 1;
+#ifdef DB_DTPTR
+    tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1]; 
+    tmp.vals[0] = (DB_DTPTR*) gzoneno; 
+#else
     tmp.vals = (float**) new float*[1]; 
     tmp.vals[0] = (float*) gzoneno; 
+#endif
     vtkDataArray *arr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
     delete [] tmp.vals;
 
@@ -8043,6 +8051,9 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 //    Mark C. Miller, Wed Oct 28 18:38:12 PDT 2009
 //    Handle arb. polyhedra better. Now uses same logic as truly arb. zonelist
 //    does.
+//
+//    Mark C. Miller, Fri Oct 30 14:03:13 PDT 2009
+//    Handle Silo's DB_DTPTR configuration option.
 // ****************************************************************************
 
 void
@@ -8447,8 +8458,13 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         tmp.datatype = DB_CHAR;
         tmp.nels = numCells;
         tmp.nvals = 1;
+#ifdef DB_DTPTR
+        tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1];
+        tmp.vals[0] = (DB_DTPTR*) gvals;
+#else
         tmp.vals = (float**) new float*[1];
         tmp.vals[0] = (float*) gvals;
+#endif
         vector<int> noremap;
         vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp,
             cellReMap?*cellReMap:noremap);
@@ -8848,6 +8864,9 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
 //
 //    Mark C. Miller, Wed Oct 28 08:20:41 PDT 2009
 //    Added logic to manage ghost zone information through the remap process.
+//
+//    Mark C. Miller, Fri Oct 30 14:03:13 PDT 2009
+//    Handle Silo's DB_DTPTR configuration option.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
@@ -9091,8 +9110,13 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
         tmp.datatype = DB_CHAR;
         tmp.nels = phzl->nzones;
         tmp.nvals = 1;
+#ifdef DB_DTPTR
+        tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1];
+        tmp.vals[0] = (DB_DTPTR*) gvals;
+#else
         tmp.vals = (float**) new float*[1];
         tmp.vals[0] = (float*) gvals;
+#endif
         vtkDataArray *ghostZones = CopyUcdVar<unsigned char,vtkUnsignedCharArray>(&tmp, *remap);
         delete [] tmp.vals;
 
@@ -11634,6 +11658,9 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Mark C. Miller, Thu Oct 29 14:34:55 PDT 2009
 //    Replaced zone skipping logic (old way of handling meshes with arb. poly
 //    zones) to use remapping logic. 
+//
+//    Mark C. Miller, Fri Oct 30 14:03:13 PDT 2009
+//    Handle Silo's DB_DTPTR configuration option.
 // ****************************************************************************
 
 avtMaterial *
@@ -11736,8 +11763,13 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
         tmp.datatype = DB_INT;
         tmp.nels = nzones;
         tmp.nvals = 1;
+#ifdef DB_DTPTR
+        tmp.vals = (DB_DTPTR**) new DB_DTPTR*[1];
+        tmp.vals[0] = (DB_DTPTR*) silomat->matlist;
+#else
         tmp.vals = (float**) new float*[1];
         tmp.vals[0] = (float*) silomat->matlist;
+#endif
         matListArr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
 
         //
