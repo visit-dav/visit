@@ -710,6 +710,10 @@
 #     Jed Brown, Sat Oct 24 21:57:05 CEST 2009
 #     Do not build QtSql components (they are not used and broke gcc-4.4.1/qt-4.4.3)
 #
+#     Gunther H. Weber, Fri Oct 30 14:19:57 PDT 2009
+#     Yet another Python fix: Use compatibility version in host.conf file instead
+#     of version.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7594,7 +7598,7 @@ function build_hostconf
 "## Specify the location of the python include and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "PYDIR=\$VISITHOME/python/$PYTHON_VERSION/\$VISITARCH" >> $HOSTCONF
-    echo "PYVERSION=python$PYTHON_VERSION" >> $HOSTCONF
+    echo "PYVERSION=python$PYTHON_COMPATIBILITY_VERSION" >> $HOSTCONF
     echo >> $HOSTCONF
     echo >> $HOSTCONF
     echo "## Compiler flags." >> $HOSTCONF
