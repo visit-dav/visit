@@ -2773,19 +2773,39 @@ function build_qt
     cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
       
     #
+    # Determine if we build with Cocoa
+    #
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        VER=$(uname -r)
+        if [[ ${VER%%.*} -ge 10 ]] ; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -cocoa"
+        fi
+        # Figure out whether we need to build 64-bit version of Qt
+        echo "int main() {}" >> arch_test.c
+        ${C_COMPILER} arch_test.c -o arch_test
+        GCC_BUILD_ARCH=$(lipo -info arch_test | sed -e 's/[^x]*//')
+        rm arch_test.c arch_test
+        if [[ "$GCC_BUILD_ARCH" == "x86_64" ]] ; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -arch x86_64"
+        fi
+    fi 
+
+    #
     # Call configure
     #
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
-         "-no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite" \
+         "-no-qt3support -no-dbus" \
+         "-no-sql-{db2,ibase,mysql,oci,odbc,psql,sqlite,sqlite2,tds}" \
          "${EXTRA_QT_FLAGS}"
     (if [[ $(echo $QT_VERSION | cut -c 3) > 4 ]]; then echo 'o'; fi; echo "yes" ) | \
                  ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                              -platform ${QT_PLATFORM} \
                              -make libs -make tools -fast -no-separate-debug-info \
                              -no-qt3support -no-dbus \
-                             -no-sql-{db2,ibase,mysql,oci,odbc,psql,sqlite,sqlite2,tds} | tee qt.config.out
+                             -no-sql-{db2,ibase,mysql,oci,odbc,psql,sqlite,sqlite2,tds} \
+                             ${EXTRA_QT_FLAGS} | tee qt.config.out
     
     if [[ $? != 0 ]] ; then
        warn "Qt4 configure failed. Giving up."
@@ -3749,7 +3769,7 @@ function build_python
         fi
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH=\
-"$VISITDIR/python/$PYTHON_COMPATIBILITY_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config"
+"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
@@ -3760,7 +3780,7 @@ function build_python
         fi
         mkdir tmpdir
         cd tmpdir
-        ar x ../libpython${PYTHON_VERSION}.a
+        ar x ../libpython${PYTHON_COMPATIBILITY_VERSION}.a
         $C_COMPILER -o ../libpython${PYTHON_VERSION}.$SO_EXT \
           -dynamiclib *.o -lSystem $USESTUBS \
           -framework Carbon -Wl,-headerpad_max_install_names \
