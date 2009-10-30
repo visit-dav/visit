@@ -25,6 +25,7 @@
 <li>A bug was corrected in the ZeusMP HDF4 reader, where the mesh in 3D spherical coordinates is read incorrectly.</li>
 <li>The CLI was missing the SendSimulationCommand function.</li>
 <li>The NETCDF reader had trouble reading files with CF convention where mesh coordinates are given using longxy,latixy arrays.</li>
+<li>The basic NETCDF reader was unable to read files containing a time dimension. In addition, the basic reader was modified to support using 1-D coordinate arrays, if available, instead of using indices as mesh coordinates. To be used, the coordinate arrays must be 1-D and have the same name as the dimension whose coordinate values they represent.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.12.0.html">VisIt 1.12.0 Release Notes</a>.</p>

@@ -25,6 +25,8 @@
       avtFVCOM_MTMDFileFormat.C
       avtCCSMFileFormat.C
       avtCCSMReader.C
+      avtNETCDFReaderBase.C
+      avtBasicNETCDFReader.C
       NETCDFFileObject.C
     </Files>
     <Files components="E">
@@ -40,6 +42,8 @@
       avtFVCOM_MTMDFileFormat.C
       avtCCSMFileFormat.C
       avtCCSMReader.C
+      avtNETCDFReaderBase.C
+      avtBasicNETCDFReader.C
       NETCDFFileObject.C
     </Files>
     <Attribute name="" purpose="" persistent="true" codefile="NETCDF.code">
