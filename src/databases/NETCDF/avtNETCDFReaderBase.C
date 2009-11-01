@@ -37,6 +37,8 @@
 *****************************************************************************/
 #include <avtNETCDFReaderBase.h>
 
+#include <cstring>
+
 #include <netcdf.h>
 
 #include <avtDatabaseMetaData.h>

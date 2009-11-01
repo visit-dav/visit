@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <NETCDFFileObject.h>
+#include <cstring>
 #include <netcdf.h>
 #include <DebugStream.h>
 #include <InvalidDBTypeException.h>
