@@ -172,6 +172,10 @@
 #    Mark C. Miller, Mon Sep 28 13:25:00 PDT 2009
 #    Replaced 'cp -dr' (which was not handling hard links as I expected)
 #    with 'mv' as command to 'post' results.
+#
+#    Tom Fogal, Sat Oct 31 20:42:12 MDT 2009
+#    Improve error message when log file does not exist.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -248,7 +252,7 @@ checkAndHandleError() {
                 cat $errorDetails >> $errorLogFile 
             fi
         else
-            echo "$errorDetails" >> $errorLogFile 
+            echo "file '${errorDetails}' does not exist." >> $errorLogFile
         fi
     else
         echo "No details given." >> $errorLogFile
