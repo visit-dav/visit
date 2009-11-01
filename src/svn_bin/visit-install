@@ -170,6 +170,9 @@
 #    Hank Childs, Sun Apr 26 09:26:43 CDT 2009
 #    Added TACC option.  Renamed open and closed to llnl_open and llnl_closed.
 #
+#    Hank Childs, Thu Oct 15 06:28:42 PDT 2009
+#    Corrected print statement.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -354,7 +357,7 @@ while ($config == prompt)
    echo "   7) Princeton network"
    echo "   8) TACC network"
    echo ""
-   echo "(1,2,3,4,5,6,7):"
+   echo "(1,2,3,4,5,6,7,8):"
 
    set config = $<
    switch ($config)

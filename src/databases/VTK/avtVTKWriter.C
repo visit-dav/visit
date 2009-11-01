@@ -48,6 +48,7 @@
 #include <vtkDataSetWriter.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtParallel.h>
 
 #include <DBOptionsAttributes.h>
 
@@ -122,6 +123,9 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 //    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
 //    Use the saved nblocks because we can't trust the meta data.
 //
+//    Hank Childs, Thu Oct 29 17:21:14 PDT 2009
+//    Only have processor 0 write out the header file.
+//
 // ****************************************************************************
 
 void
@@ -130,7 +134,7 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &materials)
 {
     doMultiBlock = (nblocks > 1);
-    if (nblocks > 1)
+    if (nblocks > 1 && PAR_Rank() == 0)
     {
         char filename[1024];
         sprintf(filename, "%s.visit", stem.c_str());
