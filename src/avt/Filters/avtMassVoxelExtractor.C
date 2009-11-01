@@ -371,7 +371,7 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
 //
 //  Purpose:
 //      Extracts a grid that has already been put into world space.  This case
-//      typically corresponds to resampling.
+//      typically corresponds to ray casting.
 //
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2004
@@ -1443,6 +1443,10 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Hank Childs, Thu Aug 28 10:52:32 PDT 2008
 //    Make sure we only sample the variables that were requested.
 //
+//    Hank Childs, Sun Nov  1 14:32:46 CST 2009
+//    Fix bug where ghost data could cause an extra sample to be put in the
+//    avtVolume, with that sample's data be uninitialized memory.
+//
 // ****************************************************************************
 
 void
@@ -1593,7 +1597,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                         if (count > 0)
                         {
                             avtRay *ray = volume->GetRay(i, j);
-                            ray->SetSamples(firstZ, k, tmpSampleList);
+                            ray->SetSamples(firstZ, k-1, tmpSampleList);
                         }
                         firstZ = -1;
                         count = 0;
