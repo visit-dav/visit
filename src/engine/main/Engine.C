@@ -1467,7 +1467,12 @@ Engine::PAR_EventLoop()
 //
 //    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
 //    Replaced MPI_Bcast with MPIXfer::VisIt_MPI_Bcast
+//
+//    Brad Whitlock, Tue Nov  3 10:58:23 PST 2009
+//    I changed the messaging style so libsim works again.
+//
 // ****************************************************************************
+
 void
 Engine::PAR_ProcessInput()
 {    
@@ -1477,9 +1482,17 @@ Engine::PAR_ProcessInput()
     }
     else
     {
-        MPIXfer::VisIt_MPI_Bcast((void *)&par_buf, 1,
-            PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
-        par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
+        int msgLength = 0;
+        MPIXfer::VisIt_MPI_Bcast((void *)&msgLength, 1, MPI_INT,
+                                 0, VISIT_MPI_COMM);
+
+        char *buf = new char[msgLength];
+        MPI_Bcast((void *)buf, msgLength, MPI_UNSIGNED_CHAR,
+                  0, VISIT_MPI_COMM);
+
+        par_conn.Append((unsigned char *)buf, msgLength);
+        delete [] buf;
+
         xfer->Process();
     }
 }

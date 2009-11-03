@@ -244,6 +244,10 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    Instead of sending 1..N 1K size messages, with N being more common, we
 //    now send 1 size message and then we send the entire command at once.
 //
+//    Brad Whitlock, Tue Nov  3 10:58:50 PST 2009
+//    I removed one of the calls to slaveprocesscallback since it was incorrect
+//    to have it.
+//
 // ****************************************************************************
 
 void
@@ -310,8 +314,6 @@ MPIXfer::Process()
 
                 // Use regular bcast since the previous call to bcast will 
                 // already have gotten the attention of the other processors.
-                if (slaveProcessInstruction)
-                    slaveProcessInstruction();
                 MPI_Bcast((void *)buf, msgLength, MPI_UNSIGNED_CHAR,
                            0, VISIT_MPI_COMM);
                 free(buf);
