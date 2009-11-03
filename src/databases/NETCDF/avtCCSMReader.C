@@ -103,13 +103,15 @@ avtCCSMReader::avtCCSMReader(const char *filename) :
 //
 // Modifications:
 //   
+//    Kathleen Bonnell, Tue Nov  3 11:58:06 PST 2009
+//    Don't delete fileObject here, base class does it.
+//
 // ****************************************************************************
 
 avtCCSMReader::~avtCCSMReader()
 {
     FreeUpResources();
 
-    delete fileObject;
     delete [] dimSizes;
 }
 
