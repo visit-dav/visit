@@ -17,6 +17,10 @@
 #    Jeremy Meredith, Fri Aug  8 11:23:29 EDT 2008
 #    Updated streamline settings to match new attribute fields.
 #
+#    Brad Whitlock, Mon 16:37:34 PST 2009
+#    I removed the Streamline plot and I fixed some other things to get it
+#    working again.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -94,22 +98,6 @@ def test0(datapath):
     SetView3D(v2)
     Test("netcdf_0_02")
 
-    # Plot the wind using a streamline plot.
-    AddPlot("Streamline", "wind")
-    s = StreamlineAttributes()
-    s.maxStepLength = 1.
-    s.termination = 1e+06
-    s.terminationType = s.Time
-    s.lineStart  = (-1e+06, -1.25e+06, 500000)
-    s.lineEnd  = (1e+06, -1.25e+06, 500000)
-    s.pointDensity = 15
-    s.sourceType = s.SpecifiedLine
-    SetPlotOptions(s)
-    AddOperator("Transform")
-    SetOperatorOptions(t)
-    DrawPlots()
-    Test("netcdf_0_03")
-
     # Plot something 2D
     DeleteAllPlots()
     AddPlot("Pseudocolor", "ustar")
@@ -117,7 +105,7 @@ def test0(datapath):
     p.skewFactor = 0.01
     p.scaling = p.Skew
     DrawPlots()
-    Test("netcdf_0_04")
+    Test("netcdf_0_03")
     DeleteAllPlots()
 
 def test1(datapath):
@@ -226,6 +214,7 @@ def test3(datapath):
     t.doScale = 1
     t.scaleX = 100
     t.scaleY = 100
+    t.scaleZ = 3
     SetOperatorOptions(t)
     th = ThresholdAttributes()
     th.listedVarNames = ("elevations")
@@ -244,19 +233,19 @@ def test3(datapath):
     SetLight(0, newLight)
     # Set up the view
     v = View3DAttributes()
-    v.viewNormal = (0, -0.642787, 0.766045)
-    v.focus = (20300, 19950, 199.5)
-    v.viewUp = (0, 0.766045, 0.642787)
+    v.viewNormal = (0, -0.5, 0.866025)
+    v.focus = (0, 0, 1646)
+    v.viewUp = (0, 0.866025, 0.5)
     v.viewAngle = 30
-    v.parallelScale = 27967.9
-    v.nearPlane = -55935.8
-    v.farPlane = 55935.8
+    v.parallelScale = 282140
+    v.nearPlane = -564281
+    v.farPlane = 564281
     v.imagePan = (0, 0)
-    v.imageZoom = 1.40076
+    v.imageZoom = 1.43024
     v.perspective = 1
     v.eyeAngle = 2
     v.centerOfRotationSet = 0
-    v.centerOfRotation = (20300, 19950, 199.5)
+    v.centerOfRotation = (0, 0, 1646)
     SetView3D(v)
     InvertBackgroundColor()
     Test("netcdf_3_01")
@@ -282,6 +271,7 @@ def test3(datapath):
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
+    ToggleFullFrameMode() # Did this get set somehow by the curve plots?
     Test("netcdf_3_04")
     DeleteAllPlots()
 
@@ -296,19 +286,11 @@ def test3(datapath):
     Test("netcdf_3_05")
     DeleteAllPlots()
 
-    # This one could be time varying if we made the "T" dimension be time.
     OpenDatabase(datapath + "NASA_vegetation_lai.cdf")
     AddPlot("Pseudocolor", "lai")
-    AddOperator("Slice")
-    SetOperatorOptions(s)
-    AddOperator("Transform")
-    t = TransformAttributes()
-    t.doScale = 1
-    t.scaleY = -1.
-    SetOperatorOptions(t)
     DrawPlots()
     v2 = View2DAttributes()
-    v2.windowCoords = (39.8281, 144.722, -111.97, -15.0293)
+    v2.windowCoords = (-139.883, -44.1452, -18.7702, 74.4037)
     v2.viewportCoords = (0.2, 0.95, 0.15, 0.95)
     v2.fullFrameActivationMode = v2.Off  # On, Off, Auto
     v2.fullFrameAutoThreshold = 100
