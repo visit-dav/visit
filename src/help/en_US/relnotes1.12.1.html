@@ -31,6 +31,7 @@
 <li>The VTK writer (for export database) is now much more efficient in parallel.</li>
 <li>The option for TACC systems in visit-install is now better represented in visit-install's help message.</li>
 <li>Parallel communication code in the compute engine, which was related to libsim, has been fixed so that libsim once again works with parallel simulations.</li>
+<li>VisIt now clears metadata in the metadata server and the compute engine prior to restoring session files. This prevents old metadata from affecting how the session file loads and ensures that transient variables are detected.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.12.0.html">VisIt 1.12.0 Release Notes</a>.</p>
