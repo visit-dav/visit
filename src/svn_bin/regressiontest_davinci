@@ -176,6 +176,8 @@
 #    Tom Fogal, Sat Oct 31 20:42:12 MDT 2009
 #    Improve error message when log file does not exist.
 #
+#    Mark C. Miller, Mon Nov  2 17:17:59 PST 2009
+#    Added partial skips for arbpoly, tuvok and specular.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -513,7 +515,16 @@ skipList_dueTo_parallelRendering="\
           davinci,scalable,parallel,icet:tests/databases/boxlib.py"
 
 skipList_dueTo_temporaryBugs="\
-          davinci,scalable,parallel,icet:tests/operators/transform.py:ops_transform05"
+          davinci,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
+          davinci,serial:tests/meshtype/arbpoly.py:arbpoly_01,arbpoly_02,arbpoly_03 \
+          davinci,parallel:tests/meshtype/arbpoly.py:arbpoly_01,arbpoly_02,arbpoly_03 \
+          davinci,scalable,parallel,icet:tests/meshtype/arbpoly.py:arbpoly_01,arbpoly_02,arbpoly_03 \
+          davinci,serial:tests/rendering/tuvok.py:tuvok_2,tuvok_4,tuvok_6 \
+          davinci,parallel:tests/rendering/tuvok.py:tuvok_2,tuvok_4,tuvok_6 \
+          davinci,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_2,tuvok_4,tuvok_6 \
+          davinci,serial:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05,specular_10 \
+          davinci,parallel:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05,specular_10 \
+          davinci,scalable,parallel,icet:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05,specular_10"
 
 skipList_for_Davinci="\
           davinci,serial:tests/meshtype/csg.py:csg_02 \
