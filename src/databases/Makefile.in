@@ -373,6 +373,10 @@
 #   Brad Whitlock, Mon Sep 14 15:45:59 PDT 2009
 #   I added the Adventure reader.
 #
+#   Hank Childs, Wed Nov  4 11:19:20 PST 2009
+#   Added Vs (VizSchema) plugin on behalf of Marc Durant and Sveta
+#   Shesharina of Tech-X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -400,6 +404,7 @@ HDF5_TARGET= \
 	SAMRAI \
 	Tetrad \
 	UNIC \
+	Vs \
 	XDMF
 
 MILI=Mili

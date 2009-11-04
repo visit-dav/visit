@@ -83,11 +83,11 @@ Build Notes (if you still want to do it by hand)
                    http://www.llnl.gov/visit/3rd_party/vtk-5.0.0c.tar.gz
     cmake    2.4.5    Make file generation  http://www.cmake.org
                    http://www.llnl.gov/visit/3rd_party/cmake-2.4.5.tar.gz
-    Silo     4.5.1    File I/O library       
-                   http://www.llnl.gov/visit/3rd_party/silo060605.sh
     
     Optional Version  Description           For More Information
     ======== =======  ===========           ====================
+    Silo     4.7      File I/O library       
+                   https://wci.llnl.gov/codes/silo/silo-4.7/silo-4.7.tar.gz
     Boxlib   2.5      An AMR I/O library    
                    http://www.llnl.gov/visit/3rd_party/boxlib.tar.rz
     CFITSIO  3006     File I/O library       
@@ -1231,8 +1231,8 @@ for HDF5. I needed to do a machine merge in order to get a universal binary,
 because the endianness and word size is determined in configure.
 
 # Build silo source into an archive library
-sh silo060605.sh
-cd silo060605
+gunzip < silo-4.7.tar.gz | tar xvf -
+cd silo-4.7
 #
 
 # Need to fake-out dependency tracking.
@@ -1253,8 +1253,8 @@ chmod +x configure
 ./configure --prefix=$VISITPATH/silo CFLAGS="-O2 -fno-common" \
 CXXFLAGS="-O2 -fno-common" \
 LDFLAGS="-Wl,-headerpad_max_install_names,-undefined,dynamic_lookup" \
---disable-sdx --disable-browser --without-readline \
---without-exodus --without-python --with-hdf5=$HDF5INCLUDE,$HDF5LIB
+--disable-browser --without-readline \
+--without-python --with-hdf5=$HDF5INCLUDE,$HDF5LIB
 
 # Compile the needed subroutines. Force make to ignore errors from
 # archive creation, it should get us to where we want to be.
@@ -1263,7 +1263,7 @@ make -i
 gcc -dynamiclib -o libsilo.dylib silo/*/*.o \
 -Wl,-headerpad_max_install_names,\
 -install_name,@executable_path/../lib/libsilo.dylib,\
--compatibility_version,4.5,-current_version,4.5.1 \
+-compatibility_version,4.7,-current_version,4.7 \
 -L$HDF5LIB -lhdf5 -lsz -lz
 
 # Install headers. Ignore archive creation errors.
