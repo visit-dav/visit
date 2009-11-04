@@ -16,7 +16,6 @@ shell prompt.
     Mesa     5.0       3-D Graphics Library   http://www.mesa3d.org/
     Python   2.5       Scripting Language     http://www.python.org
     Qt       4.4.3     GUI Toolkit            http://www.trolltech.com
-    Silo     4.5.1     File I/O library       http://silo.llnl.gov
     VTK      5.0.0c    Visualization Toolkit  http://www.kitware.com
 
 
@@ -36,6 +35,7 @@ build and install those libraries prior to building VisIt.
 
     Library  Version  Description            For More Information
     =======  =======  ===========            ====================
+    Silo     4.7      File I/O library       http://silo.llnl.gov
     Boxlib   ???      An AMR I/O library     ???
     ExodusII 4.46     File I/O library       http://www.sourceforge.net/projects/exodusII
     H5Part   1.3.3    Fili I/O library       https://codeforge.lbl.gov/projects/h5part/
@@ -501,8 +501,8 @@ Silo, read the BUILD_NOTES file in the Silo distribution for more information.
 #
 # Build Silo
 #
-sh silo060605.sh
-cd silo060605
+gunzip < silo-4.7.tar.gz | tar xvf -
+cd silo-4.7
 
 #
 #
@@ -521,21 +521,21 @@ cd silo060605
 # which is described later in this document.  The hdf5 library you use must
 # be a serial version.  VisIt will not work with a parallel version.
 #
-# env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.5/$VISITARCH/include,$VISITDIR/hdf5/1.6.5/$VISITARCH/lib --without-exodus
+# env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.5/$VISITARCH/include,$VISITDIR/hdf5/1.6.5/$VISITARCH/lib
 #
-env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
+env CFLAGS=-O2 ./configure --without-readline --without-hdf5
 make
 
 #
 # Install it in the visit directory under the silo directory.
 #
 mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/4.5.1
-mkdir $VISITDIR/silo/4.5.1/$VISITARCH
-mkdir $VISITDIR/silo/4.5.1/$VISITARCH/{include,lib}
-cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.5.1/$VISITARCH/include
-cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.5.1/$VISITARCH/include
-cp lib/libsilo.a            $VISITDIR/silo/4.5.1/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.7
+mkdir $VISITDIR/silo/4.7/$VISITARCH
+mkdir $VISITDIR/silo/4.7/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.7/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.7/$VISITARCH/lib
+cp lib/libsiloh5.a          $VISITDIR/silo/4.7/$VISITARCH/lib
 cd ..
 
 
