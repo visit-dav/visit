@@ -30,7 +30,8 @@ if options.web_url is not None:
 else:
   uri = options.web_root + options.web_date + "/"
   mode = ""
-  if options.mode == "sr" or options.mode == "scalable,parallel":
+  if options.mode == "sr" or options.mode == "scalable,parallel" or \
+     options.mode == "scalable_parallel":
     mode="davinci_scalable_parallel_icet"
   else:
     mode="".join([ s for s in ("davinci_", options.mode) ])
@@ -118,6 +119,8 @@ class Image(QtGui.QWidget):
     self._display.setPixmap(pixmap)
 
   def widget(self): return self._display
+  def width(self): return self._display.width()
+  def height(self): return self._display.height()
 
   def update(self, path):
     self._filename = path
@@ -128,8 +131,10 @@ class Layout(QtGui.QWidget):
     QtGui.QWidget.__init__(self, parent)
     self._mainwin = parent
     self._mainwin.statusBar().insertPermanentWidget(0,QtGui.QLabel())
+    self.status("Initializing...")
 
     quit = QtGui.QPushButton('Quit', self)
+    quit.setMaximumWidth(80)
     if parent is None: parent = self
     parent.connect(quit, QtCore.SIGNAL('clicked()'), QtGui.qApp,
                    QtCore.SLOT('quit()'))
@@ -139,9 +144,9 @@ class Layout(QtGui.QWidget):
 
     # guess an initial size; we don't know a real size until we've downloaded
     # images.
-    self.resize_this_and_mainwin(800, 600)
+    self.resize_this_and_mainwin(600, 600)
+    self.setFocusPolicy(QtCore.Qt.StrongFocus)
     self.setFocus()
-    #self.grabKeyboard()
 
     self._baseline = None
     self._current = None
@@ -153,8 +158,6 @@ class Layout(QtGui.QWidget):
     self._images[2] = Image(self._diff, self)
 
     grid = QtGui.QGridLayout()
-    grid.setHorizontalSpacing(10)
-    grid.setVerticalSpacing(1)
 
     label_baseline = QtGui.QLabel(grid.widget())
     label_current = QtGui.QLabel(grid.widget())
@@ -162,6 +165,9 @@ class Layout(QtGui.QWidget):
     label_baseline.setText("Baseline image:")
     label_current.setText("Davinci's current:")
     label_diff.setText("difference between them:")
+    label_baseline.setMaximumSize(QtCore.QSize(160,35))
+    label_current.setMaximumSize(QtCore.QSize(160,35))
+    label_diff.setMaximumSize(QtCore.QSize(200,35))
 
     label_directions = QtGui.QLabel(grid.widget())
     label_directions.setText("Keyboard shorcuts:\n\n"
@@ -169,6 +175,7 @@ class Layout(QtGui.QWidget):
                              "n: no, current image is wrong\n"
                              "u: unknown, I can't/don't want to decide now\n"
                              "q: quit")
+    label_directions.setMaximumSize(QtCore.QSize(300,300))
 
     grid.addWidget(label_baseline,           0,0)
     grid.addWidget(label_current,            0,1)
@@ -179,16 +186,36 @@ class Layout(QtGui.QWidget):
     grid.addWidget(self._images[2].widget(), 3,0)
     grid.addWidget(label_directions,         3,1)
 
+    rows = (
+      (0, (label_baseline, label_current)),
+      (1, (self._images[0], self._images[1])),
+      (2, (label_diff, quit)),
+      (3, (self._images[2], label_directions))
+    )
+    cols = (
+      (0, (label_baseline, self._images[0], label_diff, self._images[2])),
+      (1, (label_current, self._images[1], quit, label_directions))
+    )
+    for r in rows:
+      grid.setRowMinimumHeight(r[0], max([x.height() for x in r[1]]))
+    for c in cols:
+      grid.setColumnMinimumWidth(c[0], max([x.height() for x in c[1]]))
+
     self.setLayout(grid)
     self.resize_this_and_mainwin(self.calc_width(), self.calc_height())
     self.show()
+    self.setFocus()
 
   def resize_this_and_mainwin(self, w, h):
-    self.resize(w, h)
+    self.resize(w,h)
+    # make sure it can't shrink too much
+    self._mainwin.setMinimumWidth(w)
+    self._mainwin.setMinimumHeight(h+30) # +30: for the status bar
     # try not to resize the mainwin if we don't need to; it's annoying.
     cur_w = self._mainwin.width()
     cur_h = self._mainwin.height()
     self._mainwin.resize(max(w,cur_w), max(h,cur_h))
+    self._mainwin.update()
 
   def _die(self):
     print "You thought these test results were bugs:"
@@ -197,12 +224,16 @@ class Layout(QtGui.QWidget):
     self._mainwin.close()
 
   def calc_width(self):
-    return self._images[0].widget().width() + self._images[1].widget().width()
+    w = 0
+    for col in xrange(0,self.layout().columnCount()):
+      w += self.layout().columnMinimumWidth(col)
+    return w
 
   def calc_height(self):
-    return self._images[0].widget().height() + \
-           self._images[2].widget().height() + \
-           96   # cover labels + status bar
+    h = 0
+    for row in xrange(0,self.layout().rowCount()):
+      h += self.layout().rowMinimumHeight(row)
+    return h
 
   def _update_images(self):
     self._images[0].update(self._baseline)
