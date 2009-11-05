@@ -47,6 +47,9 @@
 #   Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
 #   Don't forget to remove the Makefile in distclean.
 #
+#   Cyrus Harrison, Fri Oct  2 15:15:57 PDT 2009
+#   Modified vtk include dir due to migration to a make installed vtk.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -62,7 +65,7 @@ incpython:
 
 incvtk:
 	$(RM) vtk
-	ln -s @VTK_DIR@ vtk
+	ln -s @VTK_DIR@/include vtk
 
 incmesa:
 	$(RM) mesa

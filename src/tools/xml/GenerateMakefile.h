@@ -264,6 +264,9 @@
 //    Brad Whitlock, Wed Nov  4 12:42:01 PST 2009
 //    I removed rendering_visit_vtk and the parallel engine state libs.
 //
+//    Cyrus Harrison, Tue Oct  6 08:56:58 PDT 2009
+//    Changed vtk include path to reflect a 'make install'ed vtk installation.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -352,15 +355,8 @@ class MakefileGeneratorPlugin : public Plugin
         out << "## Libraries and includes..." << endl;
         out << "##" << endl;
         out << "VTK_INCLUDE= \\" << endl;
-        out << "  -I"<<vtkdir<<" \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Common \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Filtering \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Graphics \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Hybrid \\"<<endl;
-        out << "  -I"<<vtkdir<<"/IO \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Imaging \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Rendering \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Utilities"<<endl;
+        out << "  -I"<<vtkdir<<"/vtk-5.0/ \\"<<endl;
+        out << "  -I"<<vtkdir<<"/MangleMesaInclude/"<<endl;
         if(type == "database")
         {
             out << "CXXFLAGS=$(CXXFLAGSORIG)";

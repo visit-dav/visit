@@ -985,6 +985,9 @@ dnl
 dnl    Jed Brown, Sat Oct 24 21:57:05 CEST 2009
 dnl    Don't set QtSql variables; library is unused / not always available.
 dnl
+dnl    Cyrus Harrison, Tue Oct  6 08:56:58 PDT 2009
+dnl    Changed vtk include paths to reflect a 'make install'ed vtk 
+dnl    installation.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1448,7 +1451,7 @@ if test -n "$VTK"; then
     AC_MSG_RESULT(found)
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
-    VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering -I$VTK_INCROOT/Utilities"
+    VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/vtk-5.0"
     VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkMPEG2Encode "
     if test "$UNAME" = "Darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
@@ -1458,7 +1461,7 @@ if test -n "$VTK"; then
 
     # Determine whether VTK was built with mangled Mesa support. If it wasn't
     # then there is code in VisIt that we do not want to compile.
-    useMangledMesa=`grep "define VTK_USE_MANGLED_MESA" $VTK/vtkToolkits.h`
+    useMangledMesa=`grep "define VTK_USE_MANGLED_MESA" $VTK/include/vtk-5.0/vtkToolkits.h`
     if test -n "$useMangledMesa" ; then
         AC_DEFINE(VISIT_USE_MANGLED_MESA, [1], [Enable use of mangled Mesa classes in VisIt.])
         MESA_OBJ="$""(MESA_OBJ)"
