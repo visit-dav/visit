@@ -1564,8 +1564,8 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
 
     if (ds == NULL)
     {
+        debug5<<"Get DS failed for domain= "<<domain<<endl;
         EXCEPTION0(ImproperUseException);
-        debug5<<"FALSE"<<endl;
         return false;
     }
 
@@ -1630,13 +1630,13 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     int foundCell = -1, subId = 0;
     int success = cellLocator->FindClosestPointWithinRadius(p, rad, resPt, 
                                                             foundCell, subId, dist);
-    
+
     if (DebugStream::Level5())
         debug5<<(success?"TRUE":"FALSE")<<" cellLocator"<<endl;
     if (success && DebugStream::Level5())
         debug5<< "suc = "<<success<<" dist = "<<dist<<" resPt= ["<<resPt[0]
               <<" "<<resPt[1]<<" "<<resPt[2]<<"] subId= "<<subId<<" foundCell= "<<foundCell<<endl;
-
+    
     return (success == 1 ? true : false);
 }
 
@@ -1764,7 +1764,7 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
     
     //debug1<<"avtStreamlineFilter::DomainToRank("<<domain<<") = "<<domainToRank[domain]<<endl;
 
-    if (domain.timeStep != 0)
+    if (doPathlines && domain.timeStep != 0)
         EXCEPTION1(ImproperUseException, "Fix DomainToRank for time slices.");
 
     return domainToRank[domain.domain];
@@ -1834,6 +1834,9 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//   Bug fix. Out-of-bounds SLs were being set to terminated.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1901,32 +1904,35 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     // When restarting a streamline one step is always taken. To avoid
     // this unneed step check to see if the termination criteria was
     // previously met.
+    if (DebugStream::Level5()) debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
     if( ! slSeg->terminated )
     {
-      if (intersectObj)
-        slSeg->sl->SetIntersectionObject(intersectObj);
+        if (intersectObj)
+            slSeg->sl->SetIntersectionObject(intersectObj);
 
-      if (doPathlines)
-      {
-          avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
-          result = slSeg->sl->Advance(&field,
-                                      slSeg->terminationType,
-                                      slSeg->termination);
-      }
-      else
-      {
-          avtIVPVTKField field(velocity1);
-          result = slSeg->sl->Advance(&field,
-                                      slSeg->terminationType,
-                                      slSeg->termination);
-      }
-
-      // Termination criteria was met.
-      slSeg->terminated = (result == avtIVPSolver::TERMINATE);
+        if (doPathlines)
+        {
+            avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
+            result = slSeg->sl->Advance(&field,
+                                        slSeg->terminationType,
+                                        slSeg->termination);
+        }
+        else
+        {
+            avtIVPVTKField field(velocity1);
+            result = slSeg->sl->Advance(&field,
+                                        slSeg->terminationType,
+                                        slSeg->termination);
+        }
+        
+        // Termination criteria was met.
+        slSeg->terminated = (result == avtIVPSolver::TERMINATE);
+        debug5<<"Advance:= "<<result<<endl;
+        debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
 	
     }
     else
-      result = avtIVPSolver::TERMINATE;
+        result = avtIVPSolver::TERMINATE;
 
     numSteps = slSeg->sl->size() - numSteps;
     //slSeg->Debug();
@@ -1940,27 +1946,37 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         
         // Not in any domains.
         if (slSeg->seedPtDomainList.size() == 0)
+        {
             slSeg->status = avtStreamlineWrapper::TERMINATE;
+        }
 
         // We are in the same domain.
         else if (slSeg->seedPtDomainList.size() >= 1)
         {
             // pathline terminates if timestep is out of bounds.
             if (doPathlines && slSeg->domain.timeStep == -1)
+            {
                 slSeg->status = avtStreamlineWrapper::TERMINATE;
+            }
 
             if (slSeg->domain == oldDomain && numSteps == 0)
             {
-                 slSeg->status = avtStreamlineWrapper::TERMINATE;
+                slSeg->status = avtStreamlineWrapper::TERMINATE;
             }
             else
             {
                 slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
             }
         }
+        else
+        {
+            //slSeg->status = avtStreamlineWrapper::TERMINATE;
+        }
     }
     else
+    {
         slSeg->status = avtStreamlineWrapper::TERMINATE;
+    }
     
     velocity1->Delete();
     if (cellToPt1)
@@ -2038,20 +2054,13 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
         //SL terminates.
         else
         {
-            if (DebugStream::Level5())
-            {
-                debug5<<"Terminate!\n";
-                debug5<<avtIVPSolver::OK<<endl;
-                debug5<<avtIVPSolver::TERMINATE<<endl;
-                debug5<<avtIVPSolver::OUTSIDE_DOMAIN<<endl;
-            }
+            if (DebugStream::Level5()) debug5<<"Terminate!\n";
             slSeg->status = avtStreamlineWrapper::TERMINATE;
         }
     }
     
     if (DebugStream::Level5())
-        debug5 << "   IntegrateStreamline DONE: status = " << (slSeg->status==avtStreamlineWrapper::TERMINATE ? "TERMINATE" : "OOB")
-               << " domCnt= "<<slSeg->seedPtDomainList.size()<<endl;
+        debug5 << "IntegrateStreamline DONE: status = "<<slSeg->status<<" doms= "<<slSeg->seedPtDomainList<<endl;
 }
 
 // ****************************************************************************
@@ -2301,6 +2310,9 @@ randMinus1_1()
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//   Bug fix. Seed points with multiple domains need to be given a separate ID.
+//
 // ****************************************************************************
 
 void
@@ -2345,7 +2357,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         U.normalize();
         N.normalize();
         if(dataSpatialDimension <= 2)
-           N = avtVector(0.,0.,1.);
+            N = avtVector(0.,0.,1.);
         // Determine the right vector.
         avtVector R(U % N);
         R.normalize();
@@ -2477,6 +2489,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
     double dZ = dataRange[5]-dataRange[4];
     double minRange = std::min(dX, std::min(dY,dZ));
 
+    int ID = 0;
     for (int i = 0; i < candidatePts.size(); i++)
     {
         vector<int> dl;
@@ -2531,8 +2544,9 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         {
             pd.pt = candidatePts[i];
             pd.domain = dl[j];
-            pd.id = i;
+            pd.id = ID;
             ptDom.push_back(pd);
+            ID++;
         }
     }
     
@@ -2568,6 +2582,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
             slSeg->domain.timeStep = seedTimeStep0;
             slSeg->termination = termination;
             slSeg->terminationType = terminationType;
+            debug5<<"Create seed: id= "<<ptDom[i].id<<" pt= "<<ptDom[i].pt<<" dom= "<<ptDom[i].domain<<endl;
             pts.push_back(slSeg);
         }
         
@@ -2577,14 +2592,18 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
             avtStreamline *sl = new avtStreamline(solver, seedTime0, pt);
             sl->SetScalarValueType(scalarVal);
 
+            int id = ptDom[i].id;
+            if (streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+                id += ptDom.size();
+            
             avtStreamlineWrapper *slSeg;
             slSeg = new avtStreamlineWrapper(sl, 
-                                             avtStreamlineWrapper::BWD,
-                                             ptDom[i].id);
+                                             avtStreamlineWrapper::BWD, id);
             slSeg->domain = ptDom[i].domain;
             slSeg->domain.timeStep = seedTimeStep0;
-            slSeg->termination = termination;
+            slSeg->termination = -termination;
             slSeg->terminationType = terminationType;
+            debug5<<"Create seed: id= "<<ptDom[i].id<<" pt= "<<ptDom[i].pt<<" dom= "<<ptDom[i].domain<<endl;
             pts.push_back(slSeg);
         }
     }

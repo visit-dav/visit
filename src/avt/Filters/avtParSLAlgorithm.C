@@ -269,7 +269,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
                 int idx = (*t)->id % N;
                 myIDs[idx] = rank;
                 myIDs[idx+N] += 1;
-                debug5<<"I own "<<(*t)->id<<" "<<(*t)->sequenceCnt<<" idx= "<<idx<<endl;
+                debug5<<"I own id= "<<(*t)->id<<" "<<(*t)->sequenceCnt<<" idx= "<<idx<<endl;
             }
 
             t++;

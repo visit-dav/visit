@@ -272,7 +272,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             result = ivp->Step(field, termType, end, step);
             if (DebugStream::Level5())
                 debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
-
             if (intersectionsSet)
                 HandleIntersections((end>0), step, termType, end, &result);
 
@@ -283,7 +282,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 debug5<<ivp->GetCurrentY()<<" not in domain\n";
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
-
             // restore old state to before failed step
             double hBeforePush = ivp->GetNextStepSize();
             ivp->PutState( state );
@@ -378,7 +376,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Code cleanup. 
 //
 //    Dave Pugmire,  Tue Mar 31 17:08:29 EDT 2009
-//    Set the step's T value when leaping out.  
+//    Set the step's T value when leaping out.
 //
 //    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
 //    Put if statements in front of debug's.  The generation of strings to
@@ -386,12 +384,15 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//   Replace size() with much more efficient empty().
+//
 // ****************************************************************************
 
 void
 avtStreamline::HandleGhostZones(bool forward, double *extents)
 {
-    if (size() == 0 || extents == NULL)
+    if (_steps.empty() || extents == NULL)
         return;
     
     // Determine the minimum non-zero data extent.
@@ -639,7 +640,6 @@ avtStreamline::HandleIntersections(bool forward,
         }
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtStreamline::IntersectPlane
