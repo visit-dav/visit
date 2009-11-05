@@ -524,6 +524,10 @@ $0 = shift @ARGV;
 #    Do not set PYTHONPATH and PYTHONHOME if VisIt install does not contain
 #    "private" Python version.
 #
+#    Cyrus Harrison,Thu Nov  5 15:05:16 PST 2009
+#    Added hack to make sure msub never sees the "ppn" argument on LLNL's 
+#    graph cluster.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1565,6 +1569,16 @@ if ($host =~ /^yana\d+$/ or $host =~ /^hopi\d+$/)
 }
 
 # ----
+# HACK for graph @ LLNL
+#
+# ----
+$UsePPN = 1;
+if ($host =~ /^graph\d+$/)
+{
+    $UsePPN  = 0;
+}
+
+# ----
 # HACK for Eureka @ Argonne
 # ----
 $IsRunningOnEureka_ANL = 0;
@@ -2596,7 +2610,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
                 elsif ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
                 if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn:vis";}
-                else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn"; }
+                elsif ( $UsePPN ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn"; }
+                else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes"; }
             }
 
             # command-line time fails on TACC machines, must be set in the TFILE, above
