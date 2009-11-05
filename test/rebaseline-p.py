@@ -197,7 +197,7 @@ class Layout(QtGui.QWidget):
     self._baseline = None
     self._current = None
     self._diff = None
-    self._images = (None, None, None)
+    self._images = [None, None, None]
     self._next_set_of_images()
     self._images[0] = Image(self._baseline, self)
     self._images[1] = Image(self._current, self)
@@ -285,7 +285,6 @@ class Layout(QtGui.QWidget):
     self._images[0].update(self._baseline)
     self._images[1].update(self._current)
     self._images[2].update(self._diff)
-    self._images[0].widget().update()
     self.resize_this_and_mainwin(self.calc_width(), self.calc_height())
     self.update()
 
@@ -324,7 +323,7 @@ class Layout(QtGui.QWidget):
        current and diff images."""
 
     if self._baseline is None:  # first call, build list.
-      self._images = []
+      self._imagelist = []
       print "Building initial file list... please wait."
       self.status("Building initial file list... please wait.")
       for root, dirs, files in os.walk("baseline"):
@@ -343,11 +342,11 @@ class Layout(QtGui.QWidget):
             baseline_fn, current_fn = baseline_current(serial_baseline_fn)
             assert os.path.exists(baseline_fn)
             if not trivial_pass(baseline_fn, current_fn):
-              self._images.append(baseline_fn)
+              self._imagelist.append(baseline_fn)
 
     try:
       while True:  # stupid python doesn't have a do-while.
-        self._baseline = self._images.pop()
+        self._baseline = self._imagelist.pop()
 
         # now derive other filenames based on that one.
         filename = None
