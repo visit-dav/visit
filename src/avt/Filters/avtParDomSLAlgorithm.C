@@ -110,6 +110,10 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Message size and number of receives moved to Initialize().
 //
+//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//   Establish how many streamlines there are once each proc determines if a
+//   seed is in the domain.
+//
 // ****************************************************************************
 
 
@@ -128,22 +132,53 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
     for (int i = 0; i < seedPts.size(); i++)
     {
         avtStreamlineWrapper *s = seedPts[i];
-        avtVector endPt;
-        s->GetEndPoint(endPt);
         if (OwnDomain(s->domain))
         {
+            avtVector endPt;
+            s->GetEndPoint(endPt);
+            
             if (PointInDomain(endPt, s->domain))
                 activeSLs.push_back(s);
             else
-            {
-                numSLChange--;
                 delete s;
-            }
         }
         else
             delete s;
     }
-    ExchangeTermination();
+
+    //Check for seeds owned by multiple procs.
+    /*
+    int *idBuffer = new int[numSeedPoints], *idBuffer2 = new int[numSeedPoints];
+    for (int i = 0; i < numSeedPoints; i++)
+        idBuffer[i] = 0;
+    
+    list<avtStreamlineWrapper *>::iterator s;
+    for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
+        idBuffer[(*s)->id]++;
+
+    SumIntArrayAcrossAllProcessors(idBuffer, idBuffer2, numSeedPoints);
+    for (int i = 0; i < numSeedPoints; i++)
+    {
+        debug5<<"SEED_COUNT: id= "<<i<<" cnt= "<<idBuffer2[i]<<endl;
+        if (idBuffer2[i] > 1)
+        {
+            debug5<<"DUPLICATE SEED: "<<i<<endl;
+        }
+    }
+
+    delete [] idBuffer;
+    delete [] idBuffer2;
+    */
+
+    totalNumStreamlines = activeSLs.size();
+    SumIntAcrossAllProcessors(totalNumStreamlines);
+    /*
+    debug5<<"Init_totalNumStreamlines= "<<totalNumStreamlines<<endl;
+    debug5<<"My SLs: "<<endl;
+    list<avtStreamlineWrapper *>::iterator s;
+    for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
+        debug5<<"ID "<<(*s)->id<<" dom= "<<(*s)->domain<<endl;
+    */
 
     debug1<<"My SLcount= "<<activeSLs.size()<<endl;
     debug1<<"I own: [";
@@ -239,10 +274,11 @@ avtParDomSLAlgorithm::RunAlgorithm()
         {
             avtStreamlineWrapper *s = activeSLs.front();
             activeSLs.pop_front();
-
+            
             IntegrateStreamline(s);
             if (s->status == avtStreamlineWrapper::TERMINATE)
             {
+                debug5<<"TerminatedSL: "<<s->id<<endl;
                 terminatedSLs.push_back(s);
                 numSLChange--;
             }
@@ -255,7 +291,7 @@ avtParDomSLAlgorithm::RunAlgorithm()
         //Check for new SLs.
         int earlyTerminations = 0;
         RecvSLs(activeSLs, earlyTerminations);
-        numSLChange -= earlyTerminations;
+        //numSLChange -= earlyTerminations;
 
         ExchangeTermination();
         CheckPendingSendRequests();
@@ -287,6 +323,9 @@ avtParDomSLAlgorithm::RunAlgorithm()
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   SLs are exchanged after processing, simplifying this method.
 //
+//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//   Bug fix. Set the new domain before communicating SL.
+//
 // ****************************************************************************
 
 void
@@ -297,17 +336,22 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
         // if i > 0, we create new streamlines.
-        if (i > 0)
-            numSLChange++;
+        //        if (i > 0)
+        //            numSLChange++;
 
         int domRank = DomainToRank(s->seedPtDomainList[i]);
+        s->domain = s->seedPtDomainList[i];
         if (domRank == rank)
+        {
             activeSLs.push_back(s);
+            //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> me"<<endl;
+        }
         else
         {
             vector<avtStreamlineWrapper *> sls;
             sls.push_back(s);
-            SendSLs(domRank,sls);
+            SendSLs(domRank, sls);
+            //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
         }
     }
 }

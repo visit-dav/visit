@@ -264,7 +264,10 @@ class avtIVPState
 //    Added OnExitDomain method.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
-//    Chagned how distanced based termination is computed.
+//    Changned how distanced based termination is computed.
+//
+//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//   Add operator<< for enums.
 //
 // ****************************************************************************
 
@@ -317,6 +320,37 @@ class avtIVPSolver
 protected:
     virtual void    AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
 };
+
+
+inline std::ostream& operator<<( std::ostream& out, const avtIVPSolver::Result &res )
+{
+    switch (res)
+    {
+      case avtIVPSolver::OK:  out<<"OK"; break;
+      case avtIVPSolver::TERMINATE: out<<"TERMINATE"; break;
+      case avtIVPSolver::OUTSIDE_DOMAIN: out<<"OUTSIDE_DOMAIN"; break;
+      case avtIVPSolver::STEPSIZE_UNDERFLOW: out<<"STEPSIZE_UNDERFLOW"; break;
+      case avtIVPSolver::STIFFNESS_DETECTED: out<<"STIFFNESS_DETECTED"; break;
+      case avtIVPSolver::UNSPECIFIED_ERROR: out<<"UNSPECIFIED_ERROR"; break;
+      default:
+        out<<"UNKNOWN_RESULT"; break;
+    }
+    return out;
+}
+
+inline std::ostream& operator<<( std::ostream& out, const avtIVPSolver::TerminateType &term )
+{
+    switch (term)
+    {
+      case avtIVPSolver::TIME:  out<<"TIME"; break;
+      case avtIVPSolver::DISTANCE: out<<"DISTANCE"; break;
+      case avtIVPSolver::STEPS: out<<"STEPS"; break;
+      case avtIVPSolver::INTERSECTIONS: out<<"INTERSECTIONS"; break;
+      default:
+        out<<"UNKNOWN_TERMINATION"; break;
+    }
+    return out;
+}
 
 #endif
 
