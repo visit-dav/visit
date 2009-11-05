@@ -55,7 +55,7 @@
 CPPFLAGS=-I. -I../../include -I../../include/visit @MILI_FLAGS@ @CPPFLAGS@
 
 SERLIBS=@MILI_LIBS@
-PARLIBS=@MILI_LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+PARLIBS=@MILI_LIBS@ $(MPI_LIBS) @PTHREAD_LIB@
 LIBDEP=
 
 ##
@@ -81,7 +81,7 @@ clean:
 	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS)
 
 @MAKEMILI_PAR@ or_no_par: $(LIBDEP) $(PAROBJ)
-	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
+	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS)
 
 ##
 ## Automatic dependency stuff

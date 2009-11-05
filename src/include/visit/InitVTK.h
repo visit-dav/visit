@@ -1,1 +1,1 @@
-../../visit_vtk/rendering/InitVTK.h
+../../visit_vtk/full/InitVTK.h

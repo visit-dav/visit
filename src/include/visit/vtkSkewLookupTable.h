@@ -1,1 +1,1 @@
-../../visit_vtk/full/vtkSkewLookupTable.h
+../../visit_vtk/lightweight/vtkSkewLookupTable.h

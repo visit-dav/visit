@@ -3965,7 +3965,7 @@ case $UNAME in
     SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
     SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
 
-    PREBIND_LIBS="$""(PREBIND_LIBS) $""(GLEW_LIBS) $""(MESA_LIBS) -lrendering_visit_vtk"
+    PREBIND_LIBS="$""(PREBIND_LIBS) $""(GLEW_LIBS) $""(MESA_LIBS)"
     ;;
 esac
 # these might be overridden in a config-site file and thus must be set last
@@ -4275,7 +4275,6 @@ fi
 if test -n "$ENGINE"; then
     ENGINE_FILES="engine/Makefile
                   engine/rpc/Makefile
-                  engine/parstate/Makefile
                   engine/proxy/Makefile
                   engine/main/Makefile"
 else
@@ -4326,9 +4325,7 @@ TOOLS_FILES="tools/Makefile
 
 VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/lightweight/Makefile
-                 visit_vtk/full/Makefile
-                 visit_vtk/rendering/Makefile
-                 visit_vtk/parallel/Makefile"
+                 visit_vtk/full/Makefile"
 
 COMPONENT_FILES="avt/Makefile
                  avt/DBAtts/Makefile

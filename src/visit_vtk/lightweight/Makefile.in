@@ -78,7 +78,7 @@
 ##
 ## Files...
 ##
-SRC=InitVTKNoGraphics.C \
+SRC=InitVTKLite.C \
     ClipCasesHex.C \
     ClipCasesLin.C \
     ClipCasesPix.C \
@@ -94,6 +94,7 @@ SRC=InitVTKNoGraphics.C \
     vtkDebugStream.C \
     vtkEnumThreshold.C \
     vtkPolyDataRelevantPointsFilter.C \
+    vtkSkewLookupTable.C \
     vtkTriangulationTables.C \
     vtkUnstructuredGridBoundaryFilter.C \
     vtkUnstructuredGridFacelistFilter.C \
@@ -108,7 +109,7 @@ CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. \
 
 OBJ=$(SRC:.C=.o)
 LIB=liblightweight_visit_vtk
-LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=
 LIBS=@VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) -lmisc
 
 

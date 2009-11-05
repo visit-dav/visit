@@ -483,9 +483,9 @@ PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
 SERLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) -lavtfilters_ser -lavtddf_ser
 PARLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) -lavtfilters_par -lavtddf_par
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lavtview -lvisit_verdict
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(SERLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par $(VTK_LIBS) $(PARLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk -lavtview -lvisit_verdict
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser -lavtivp_ser $(VTK_LIBS) $(SERLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par -lavtivp_par $(VTK_LIBS) $(PARLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ $(MPI_LIBS)
 
 ##
 ## Standard targets...

@@ -44,9 +44,6 @@
 #include <TimingsManager.h>
 
 #include <avtParallel.h>
-#ifdef PARALLEL
-#include <parallel.h>
-#endif
 
 #include <cstring>
 

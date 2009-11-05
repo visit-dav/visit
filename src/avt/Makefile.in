@@ -104,7 +104,7 @@
 SUBDIRS_DBIO_ONLY=DBAtts Pipeline Database
 
 SUBDIRS_ENGINE_ONLY=DBAtts Math IVP Pipeline DDF MIR Shapelets\
-        View Filters Database Expressions Queries Plotter FileWriter \
+        View Database Filters Expressions Queries Plotter FileWriter \
         VisWindow
 
 SUBDIRS_SERVER_COMPONENTS_ONLY=$(SUBDIRS_ENGINE_ONLY)

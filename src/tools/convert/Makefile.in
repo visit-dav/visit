@@ -110,8 +110,8 @@ CPPFLAGS=-I. -I../../include -I../../include/visit
 SERLIBS_FOR_MACOSX=-lavtmath_ser -lmir_ser
 PARLIBS_FOR_MACOSX=-lavtmath_par -lmir_par
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lvisit_verdict -lplotter_ser -lparallel_visit_vtk_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lvisit_verdict -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lvisit_verdict -lplotter_par -lparallel_visit_vtk_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lvisit_verdict -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lexpressions_ser -lvisit_verdict -lplotter_ser -lavtfilters_ser -lavtview -lavtddf_ser -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lvisit_verdict -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtivp_ser -lavtexceptions -lmir_ser -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lexpressions_par -lvisit_verdict -lplotter_par -lavtfilters_par -lavtview -lavtddf_par -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lvisit_verdict -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtivp_par -lavtexceptions -lmir_par -lplugin @VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) $(VISIT_VTK_LDFLAGS) @LIBS@ $(MPI_LIBS) @PTHREAD_LIB@
 LIBDEP=
 
 ##
@@ -132,7 +132,7 @@ SLIBLITE2=`test -z "@BUILD_DBIO_ONLY@" && echo '-lmir_ser'`
 PLIBLITE1=`test -z "@BUILD_DBIO_ONLY@" && echo '-lavtmath_par'`
 PLIBLITE2=`test -z "@BUILD_DBIO_ONLY@" && echo '-lmir_par'`
 SERLIBS_LITE=-L../../lib -ldatabase_ser -lpipeline_ser $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @PTHREAD_LIB@
-PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+PARLIBS_LITE=-L../../lib -ldatabase_par -lpipeline_par $(LIBLITE) -lexpr -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts $(SLIBLITE1) -lavtexceptions $(SLIBLITE2) -lplugin $(MY_VTK_LIBS) $(ZLIB_LIB) $(VISIT_VTK_LDFLAGS) @LIBS@ $(MPI_LIBS) @PTHREAD_LIB@
 
 BUILD_DBIO_ONLY=$(tmpbin)/visitconvert_ser_lite
 
@@ -175,7 +175,7 @@ $(PAROBJ_LITE): $(SRC)
 	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS) $(SERLIBS_FOR_MACOSX)
 
 @CONVERT_PAR@ or_no_par: $(LIBDEP) $(PAROBJ) @CONVERT_PAR_LITE@
-	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) $(PARLIBS_FOR_MACOSX) @MPI_LIBS@
+	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) $(PARLIBS_FOR_MACOSX) $(MPI_LIBS)
 
 ##
 ## Having this target explicitly instead of derived from @CONVERT_SER@
@@ -185,7 +185,7 @@ $(tmpbin)/visitconvert_ser_lite: $(LIBDEP) $(SEROBJ_LITE)
 	$(CXX) -o $@ $(SEROBJ_LITE) $(LDFLAGS) $(SERLIBS_LITE)
 
 @CONVERT_PAR@_lite: $(LIBDEP) $(PAROBJ_LITE) 
-	$(CXX) -o $@ $(PAROBJ_LITE) $(LDFLAGS) $(PARLIBS_LITE) @MPI_LIBS@
+	$(CXX) -o $@ $(PAROBJ_LITE) $(LDFLAGS) $(PARLIBS_LITE) $(MPI_LIBS)
 
 ##
 ## Automatic dependency stuff

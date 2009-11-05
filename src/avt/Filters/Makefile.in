@@ -179,9 +179,9 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtfilters
 LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS)
-COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lexpr -lparser -lutility -lavtview -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS)
+COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lexpr -lparser -lplugin -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk -lvisit_verdict $(LIBS_FOR_MACOSX_PREBINDING)
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -ldatabase_ser -lavtivp_ser -lmir_ser -lavtmath_ser $(VTK_LIBS)
+PARLIBS=$(COMMONLIBS) -lpipeline_par -ldatabase_par -lavtivp_par -lmir_par -lavtmath_par $(VTK_LIBS) $(MPI_LIBS)
 
 ##
 ## Standard targets...

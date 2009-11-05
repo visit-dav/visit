@@ -64,7 +64,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libavtview
-LIBS=-lavtexceptions -lstate -lmisc -lcomm -lutility -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(MESA_LIBS)
+LIBS=-lavtexceptions -lstate -lmisc -lcomm -lutility -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(MESA_LIBS)
 
 ##
 ## Standard targets...

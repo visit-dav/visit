@@ -82,10 +82,10 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtwriter
 LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS)
-SER_LIBS_FOR_MACOSX_PREBINDING=-lplotter_ser -lavtfilters_ser -lavtview -lparallel_visit_vtk_ser
-PAR_LIBS_FOR_MACOSX_PREBINDING=-lplotter_par -lavtfilters_par -lavtview -lparallel_visit_vtk_par
-SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(SER_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
-PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(PAR_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
+SER_LIBS_FOR_MACOSX_PREBINDING=-lplotter_ser -lavtfilters_ser -lavtview 
+PAR_LIBS_FOR_MACOSX_PREBINDING=-lplotter_par -lavtfilters_par -lavtview 
+SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(SER_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
+PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(PAR_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

@@ -61,7 +61,7 @@
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
 SERLIBS=-L../../lib -lXext -lprep_ser -ldatabase_ser -lpipeline_ser -lvisit_vtk -lrendering_visit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -lXext -lprep_par -ldatabase_par -lpipeline_par -lvisit_vtk -lrendering_visit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -lXext -lprep_par -ldatabase_par -lpipeline_par -lvisit_vtk -lrendering_visit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) @LIBS@ $(MPI_LIBS) @PTHREAD_LIB@
 LIBDEP=
 
 ##
@@ -87,7 +87,7 @@ clean:
 	$(CXX) -o $@ $(SEROBJ) $(LDFLAGS) $(SERLIBS)
 
 @AVTPREP_PAR@ or_no_par: $(LIBDEP) $(PAROBJ)
-	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) @MPI_LIBS@
+	$(CXX) -o $@ $(PAROBJ) $(LDFLAGS) $(PARLIBS) $(MPI_LIBS)
 
 ##
 ## Automatic dependency stuff

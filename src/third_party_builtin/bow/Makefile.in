@@ -33,6 +33,14 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ##############################################################################
+
+## Modifications:
+##   Brad Whitlock, Wed Nov  4 09:33:00 PST 2009
+##   I added vtkzlib because this library depends on it and we need it to
+##   link on Mac when we're not ignoring undefined symbols.
+##
+##############################################################################
+
 ##
 ## Programs and options...
 ##
@@ -40,7 +48,7 @@
 @VARIABLES@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit @CPPFLAGS@ @VTK_INCLUDES@
-LIBS=
+LIBS=-lvtkzlib
 
 ##
 ## Files...
