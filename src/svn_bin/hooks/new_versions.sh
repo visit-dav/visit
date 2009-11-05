@@ -19,7 +19,6 @@ files="verify_versioning.sh"
 files="${files} pre-commit"
 files="${files} post-commit"
 files="${files} exceptions.py"
-files="${files} ciabot_svn.sh"
 files="${files} output_email.sh"
 files="${files} state_update.sh"
 for f in ${files} ; do

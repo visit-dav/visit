@@ -33,9 +33,7 @@ function run_sh()
    fi
 }
 
-# background it -- this might take some time, and shouldnt slow down the
-# users commit.
-sh ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
+echo "To: ping+yrkzjtud@cia.vc" | /usr/sbin/sendmail -t
 
 # handle automatic installation of updated/new hooks. Should probably
 # remain first.
