@@ -87,10 +87,6 @@ class Xfer;
 #include <SaveWindowAttributes.h>
 #include <engine_main_exports.h>
 
-#ifdef PARALLEL
-#include <parallel.h>
-#endif
-
 // ****************************************************************************
 //  Class:  Engine
 //
@@ -334,7 +330,6 @@ class ENGINE_MAIN_API Engine
     // The Xfer object
 #ifdef PARALLEL
     MPIXfer            *xfer;
-    PAR_StateBuffer     par_buf;
     BufferConnection    par_conn;
 #else
     Xfer               *xfer;

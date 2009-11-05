@@ -1,1 +1,1 @@
-../../visit_vtk/rendering/vtkVisItScalarBarWithOpacityActor.h
+../../avt/Plotter/vtk/vtkVisItScalarBarWithOpacityActor.h

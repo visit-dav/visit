@@ -48,7 +48,7 @@
 #include <XDisplay.h>
 
 #include <DebugStream.h>
-#include <InitVTK.h>
+#include <InitVTKRendering.h>
 #include <snprintf.h>
 #include <StringHelpers.h>
 #include <visit-config.h>
@@ -211,7 +211,7 @@ XDisplay::Connect()
         perror("putenv");
         debug1 << "putenv(\"" << env_display << "\") failed." << std::endl;
     }
-    InitVTK::UnforceMesa();
+    InitVTKRendering::UnforceMesa();
 
     system("xhost +");
 }

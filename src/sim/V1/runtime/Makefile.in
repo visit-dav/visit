@@ -33,6 +33,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Wed Nov  4 12:36:35 PST 2009
+#   I removed libraries.
 #
 ##############################################################################
 
@@ -61,7 +63,7 @@ PAROBJ=$(SRC:.C=_par.o)
 ## Libraries that we need to link with
 ##
 COMMONLIBS=-L../../../lib -lplugin -lavtview \
-        -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk \
+        -lvisit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
         -ldbatts -lavtexceptions -lexpr -lexpr -lparser -lvisit_verdict \
 	$(VISIT_VTK_LDFLAGS)
@@ -69,16 +71,16 @@ COMMONLIBS=-L../../../lib -lplugin -lavtview \
 SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
         -lavtddf_ser -lavtivp_ser -lavtmath_ser -lavtshapelets_ser -ldatabase_ser -lquery_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
-        -lengine_ser -lengineparstate_ser -lparallel_visit_vtk_ser \
+        -lengine_ser  \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) \
 	@LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lavtddf_par -lavtivp_par -lavtmath_par -lavtshapelets_par -ldatabase_par -lquery_par\
         -lexpressions_par -lavtfilters_par -lpipeline_par \
-        -lengine_par -lengineparstate_par -lparallel_visit_vtk_par \
+        -lengine_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@ 
+	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@ @MPI_LIBS@
 
 ##
 ## Standard targets...

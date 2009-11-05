@@ -36,9 +36,6 @@
 *
 *****************************************************************************/
 
-#include <FileFunctions.h>
-
-
 /********** bow.c created by lib **********/
 
 
@@ -729,6 +726,86 @@ static void find_tmpdir(char *tmpdir)
 
 
 #define RET(X) { return (X); }
+
+#if 1
+// Let's duplicate some code from FileFunctions.C because we can't go
+// introducing a libmisc.so dependency into libbow.so because libmisc.so
+// hasn't even been compiled yet.
+#include <visit-config.h>
+#if defined(_WIN32)
+  typedef struct _stat VisItStat_t;
+  typedef off_t VisItOff_t;
+  typedef unsigned short mode_t;
+  #ifndef S_ISDIR
+    #define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
+  #endif
+#else
+
+#if SIZEOF_OFF64_T > 4
+typedef struct stat64 VisItStat_t;
+typedef off64_t VisItOff_t;
+#else
+typedef struct stat VisItStat_t;
+typedef off_t VisItOff_t;
+#endif
+
+#endif
+
+// ****************************************************************************
+// Method: VisItStat 
+//
+// Purpose: platform independent stat function that supports large files
+// when possible
+//
+// Programmer: Mark C. Miller 
+// Creation:   March 23, 2006 
+//
+// ****************************************************************************
+
+static int
+VisItStat(const char *file_name, VisItStat_t *buf)
+{
+#if defined(_WIN32)
+   return _stat(file_name, buf);
+#else
+
+#if SIZEOF_OFF64_T > 4
+    return stat64(file_name, buf);
+#else
+    return stat(file_name, buf);
+#endif
+
+#endif
+}
+
+// ****************************************************************************
+// Method: VisItFStat 
+//
+// Purpose: platform independent fstat function that supports large files
+// when possible
+//
+// Programmer: Mark C. Miller 
+// Creation:   March 23, 2006 
+//
+// ****************************************************************************
+
+static int
+VisItFstat(int fd, VisItStat_t *buf)
+{
+#if defined(_WIN32)
+   return _fstat(fd, buf);
+#else
+
+#if SIZEOF_OFF64_T > 4
+    return fstat64(fd, buf);
+#else
+    return fstat(fd, buf);
+#endif
+
+#endif
+}
+
+#endif
 
 
 /* read a file into new buffer */

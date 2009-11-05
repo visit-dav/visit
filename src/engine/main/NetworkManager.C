@@ -119,7 +119,6 @@
 #include <StackTimer.h>
 #ifdef PARALLEL
 #include <mpi.h>
-#include <parallel.h>
 #endif
 #include <visit-config.h>
 #include <TimingsManager.h>

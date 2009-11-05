@@ -319,6 +319,9 @@
 #    Tom Fogal, Tue Jun 30 20:02:20 MDT 2009
 #    Add define for proper symbol export.
 #
+#    Brad Whitlock, Wed Nov  4 11:56:24 PST 2009
+#    I added InitVTK.C
+#
 ##############################################################################
 
 ##
@@ -330,7 +333,8 @@
 ##
 ## Files...
 ##
-SRC= vtkAxisDepthSort.C \
+SRC=InitVTK.C \
+    vtkAxisDepthSort.C \
     vtkConnectedTubeFilter.C \
     vtkCSGGrid.C \
     vtkDataSetRemoveGhostCells.C \
@@ -344,7 +348,6 @@ SRC= vtkAxisDepthSort.C \
     vtkRGBWriter.C \
     vtkRectilinearGridFacelistFilter.C \
     vtkRectilinearLinesNoDataFilter.C \
-    vtkSkewLookupTable.C \
     vtkSlicer.C \
     vtkStructuredGridFacelistFilter.C \
     vtkSurfaceFilter.C \

@@ -1,1 +1,0 @@
-../../visit_vtk/lightweight/InitVTKNoGraphics.h

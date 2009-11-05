@@ -12,6 +12,7 @@
 #include <DebugStream.h>
 #include <VisItInit.h>
 #include <InitVTK.h>
+#include <InitVTKRendering.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #include <OperatorPluginManager.h>
@@ -103,6 +104,7 @@ VisItViewer::VisItViewer() : visitHome()
     //
     VisItInit::ComponentRegisterErrorFunction(ViewerErrorCallback, (void*)viewer);
     InitVTK::Initialize();
+    InitVTKRendering::Initialize();
     avtCallback::RegisterWarningCallback(ViewerWarningCallback, 
                                          (void*)viewer);
 }

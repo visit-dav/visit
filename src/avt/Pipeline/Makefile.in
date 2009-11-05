@@ -274,6 +274,7 @@ Data_src= \
   Data/avtAverageValueRF.C \
   Data/avtCallback.C \
   Data/avtCellList.C \
+  Data/avtColorTables.C \
   Data/avtCommonDataFunctions.C \
   Data/avtCompositeRF.C \
   Data/avtDataAttributes.C \
@@ -306,6 +307,7 @@ Data_src= \
   Data/avtIsolevelsSelection.C \
   Data/avtLightingModel.C \
   Data/avtLogicalSelection.C \
+  Data/avtLookupTable.C \
   Data/avtMIPRangeRF.C \
   Data/avtMaterial.C \
   Data/avtMaximumIntensityProjectionRF.C \
@@ -425,7 +427,7 @@ PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
 LIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
-PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ $(MPI_LIBS)
 
 ##
 ## Standard targets...

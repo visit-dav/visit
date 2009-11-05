@@ -289,6 +289,9 @@
 #    Brad Whitlock, Thu Mar 12 16:25:03 PDT 2009
 #    I removed the enginewrapper targets.
 #
+#    Brad Whitlock, Wed Nov  4 12:13:28 PST 2009
+#    I moved MPIXfer to this directory.
+#
 ##############################################################################
 
 ##
@@ -305,31 +308,29 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @PLATFORM_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit -DENGINE_MAIN_EXPORTS
 
 COMMONLIBS=-L../../lib -lplugin -lavtview \
-        -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk \
+        -lvisit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
         -ldbatts -lavtexceptions -lexpr -lexpr -lparser -lvisit_verdict \
 	$(VISIT_VTK_LDFLAGS)
 
 SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
         -lavtddf_ser -lavtivp_ser -lavtmath_ser -lavtshapelets_ser -ldatabase_ser -lquery_ser \
-        -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
-        -lengineparstate_ser -lparallel_visit_vtk_ser \
+        -lexpressions_ser -lavtfilters_ser -lpipeline_ser \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) \
 	@LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lavtddf_par -lavtivp_par -lavtmath_par -lavtshapelets_par -ldatabase_par -lquery_par\
         -lexpressions_par -lavtfilters_par -lpipeline_par \
-        -lengineparstate_par -lparallel_visit_vtk_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+	$(ZLIB_LIB) @LIBS@ @PTHREAD_LIB@ $(MPI_LIBS) @TCMALLOC_LIB@ @LIBCOGNOMEN@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_ser.@SHLIB_LIBEXT@ \
           ../../lib/libdatabase_ser.@SHLIB_LIBEXT@ ../../lib/libpipeline_ser.@SHLIB_LIBEXT@ \
           ../../lib/libvisit_vtk.@SHLIB_LIBEXT@ ../../lib/libenginerpc.@SHLIB_LIBEXT@ \
           ../../lib/libutility.@SHLIB_LIBEXT@ ../../lib/libmisc.@SHLIB_LIBEXT@ \
           ../../lib/libcomm.@SHLIB_LIBEXT@ ../../lib/libstate.@SHLIB_LIBEXT@ \
-          ../../lib/libengineparstate_ser.@SHLIB_LIBEXT@ ../../lib/libdbatts.@SHLIB_LIBEXT@ \
+          ../../lib/libdbatts.@SHLIB_LIBEXT@ \
           ../../lib/libavtexceptions.@SHLIB_LIBEXT@ ../../lib/libmir_ser.@SHLIB_LIBEXT@
 
 PARLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_par.@SHLIB_LIBEXT@ \
@@ -337,7 +338,7 @@ PARLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_par.@SHLIB_LIB
           ../../lib/libvisit_vtk.@SHLIB_LIBEXT@ ../../lib/libenginerpc.@SHLIB_LIBEXT@ \
           ../../lib/libutility.@SHLIB_LIBEXT@ ../../lib/libmisc.@SHLIB_LIBEXT@ \
           ../../lib/libcomm.@SHLIB_LIBEXT@ ../../lib/libstate.@SHLIB_LIBEXT@ \
-          ../../lib/libengineparstate_par.@SHLIB_LIBEXT@ ../../lib/libdbatts.@SHLIB_LIBEXT@ \
+          ../../lib/libdbatts.@SHLIB_LIBEXT@ \
           ../../lib/libavtexceptions.@SHLIB_LIBEXT@ ../../lib/libmir_par.@SHLIB_LIBEXT@
 
 ##
@@ -349,6 +350,7 @@ SRC=                    \
     Engine.C            \
     LoadBalancer.C      \
     MesaDisplay.C       \
+    MPIXfer.C           \
     Netnodes.C          \
     NetworkManager.C    \
     VisItDisplay.C      \
@@ -379,11 +381,11 @@ clean:
 
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	$(CXX) -o $@ $(LDFLAGS) @EXE_LDFLAGS@  $(MAINPAROBJ) -lengine_par $(PARLIBS) \
-	@MPI_LIBS@ @ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
+	$(MPI_LIBS) @ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
-	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) @LIBCOGNOMEN@ @MPI_LIBS@
+	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) @LIBCOGNOMEN@ $(MPI_LIBS)
 
 quantify: $(SERLIBDEP) $(SEROBJ)
 	quantify $(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)

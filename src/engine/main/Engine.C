@@ -74,6 +74,7 @@
 #include <VisItInit.h>
 #include <InstallationFunctions.h>
 #include <InitVTK.h>
+#include <InitVTKRendering.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
 #include <Netnodes.h>
@@ -115,7 +116,7 @@ const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 #endif
 
 #ifdef PARALLEL
-#include <parallel.h>
+#include <MPIXfer.h>
 #else
 #include <Xfer.h>
 #endif
@@ -477,6 +478,9 @@ Engine *Engine::Instance()
 //    Tom Fogal, Sun Jun 28 12:48:33 MDT 2009
 //    Call RuntimeSettings to allow overriding command line options.
 //
+//    Brad Whitlock, Wed Nov  4 12:05:18 PST 2009
+//    I removed a function that created an MPI type that we no longer use.
+//
 // ****************************************************************************
 
 void
@@ -493,12 +497,6 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     // Initialize for MPI and get the process rank & size.
     //
     PAR_Init(*argc, *argv);
-
-    //
-    // Create the derived types and operators for sending messages
-    // and collective operations.
-    //
-    PAR_CreateTypes();
 
     //
     // Initialize error logging
@@ -791,9 +789,10 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     ProcessCommandLine(*argc, *argv);
 
     InitVTK::Initialize();
+    InitVTKRendering::Initialize();
     if (avtCallback::GetSoftwareRendering())
     {
-        InitVTK::ForceMesa();
+        InitVTKRendering::ForceMesa();
     }
     else
     {

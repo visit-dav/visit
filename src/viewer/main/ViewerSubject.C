@@ -73,7 +73,7 @@
 #include <HostProfile.h>
 #include <HostProfileList.h>
 #include <VisItInit.h>
-#include <InitVTK.h>
+#include <InitVTKRendering.h>
 #include <InstallationFunctions.h>
 #include <InteractorAttributes.h>
 #include <InvalidVariableException.h>
@@ -2696,7 +2696,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-            InitVTK::ForceMesa();
+            InitVTKRendering::ForceMesa();
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
         }

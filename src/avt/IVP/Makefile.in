@@ -58,6 +58,9 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtivp
 
+SERLIBS=-lavtexceptions -lmisc -lavtmath_ser -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(X_LIBS)
+PARLIBS=-lavtexceptions -lmisc -lavtmath_par -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(X_LIBS)
+
 ##
 ## Standard targets...
 ##

@@ -63,7 +63,7 @@ CFLAGS=-I. -I$(TOPDIR)/include/visit -Wimplicit-function-declaration @CFLAGS@
 F77FLAGS=-I$(TOPDIR)/include/visit
 LDFLAGS=@LDFLAGS@ @EXE_LDFLAGS@ -L$(TOPDIR)/archives
 
-PARLIBS=@MPI_LIBS@
+PARLIBS=$(MPI_LIBS)
 
 LIBS=@LIBS@ -lpthread -lsim
 FLIBS=@LIBS@ -lpthread -lsimf -lsim

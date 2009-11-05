@@ -43,7 +43,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <VisItInit.h>
-#include <InitVTKNoGraphics.h>
+#include <InitVTKLite.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <DatabasePluginManager.h>
@@ -145,6 +145,9 @@ void fooz(void)
 //    Brad Whitlock, Tue Jun 24 15:15:39 PDT 2008
 //    I changed how the plugin info gets read.
 //
+//    Brad Whitlock, Wed Nov  4 12:19:46 PST 2009
+//    I renamed a namespace to InitVTKLite.
+//
 // ****************************************************************************
 
 int
@@ -155,7 +158,7 @@ main(int argc, char *argv[])
     // Initialize error logging
     VisItInit::SetComponentName("mdserver");
     VisItInit::Initialize(argc, argv);
-    InitVTKNoGraphics::Initialize();
+    InitVTKLite::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
 
     bool runApp = ProcessCommandLine(argc, argv);

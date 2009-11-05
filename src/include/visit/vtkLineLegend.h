@@ -1,1 +1,1 @@
-../../visit_vtk/rendering/vtkLineLegend.h
+../../avt/Plotter/vtk/vtkLineLegend.h

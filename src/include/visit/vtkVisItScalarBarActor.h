@@ -1,1 +1,1 @@
-../../visit_vtk/rendering/vtkVisItScalarBarActor.h
+../../avt/Plotter/vtk/vtkVisItScalarBarActor.h

@@ -51,7 +51,7 @@
 CFLAGS=-Icognomen/include -I../../include -DIN_COGNOMEN @CFLAGS@
 CXXFLAGS=-Icognomen/include @CXXFLAGS@
 CPPFLAGS=-Icognomen/include @CPPFLAGS@
-LIBS=@MPI_LIBS@
+LIBS=$(MPI_LIBS)
 
 ##
 ## Files...

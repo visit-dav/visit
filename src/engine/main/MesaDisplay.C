@@ -41,7 +41,7 @@
 #include <MesaDisplay.h>
 
 #include <Environment.h>
-#include <InitVTK.h>
+#include <InitVTKRendering.h>
 
 // ****************************************************************************
 //  Method: MesaDisplay constructor
@@ -123,7 +123,7 @@ MesaDisplay::Initialize(size_t display, const std::vector<std::string> &user_arg
 void
 MesaDisplay::Connect()
 {
-    InitVTK::ForceMesa();
+    InitVTKRendering::ForceMesa();
 
     Environment::unset("DISPLAY");
 }

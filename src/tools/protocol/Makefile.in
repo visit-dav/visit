@@ -47,7 +47,7 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 AVT_LIBS=-lpipeline_ser -lavtmath_ser -lavtfilters_ser -ldatabase_ser -lmir_ser -lvisit_verdict -lavtview -lplotter_ser -lavtivp_ser
-VISIT_VTK_LIBS=-lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser
+VISIT_VTK_LIBS=-lvisit_vtk -llightweight_visit_vtk
 EXTRA_LIBS=$(AVT_LIBS) $(VISIT_VTK_LIBS) $(VTK_LIBS) $(X_LIBS) $(MESA_LIBS) $(GLEW_LIBS) $(ZLIB_LIB) $(GL_LIBS) $(PTHREAD_LIB)
 LIBS=-L../../lib -lengineproxy -lenginerpc -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -lproxybase -lplugin -ldbatts -lexpr -lparser -lavtexceptions -lcomm -lstate -lutility -lmisc $(EXTRA_LIBS)
 

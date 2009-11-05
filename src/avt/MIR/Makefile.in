@@ -109,8 +109,8 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libmir
 LIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS)
-SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
-PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
+SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -lvisit_verdict -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
+PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lstate -lutility -lmisc -lcomm -lexpr -lparser -lvisit_verdict -llightweight_visit_vtk $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
 
 ##
 ## Standard targets...

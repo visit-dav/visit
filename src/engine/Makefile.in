@@ -43,6 +43,9 @@
 #    Sean Ahern, Mon Jun 10 16:37:08 PDT 2002
 #    Gutted while moving things to a central location.
 #
+#    Brad Whitlock, Wed Nov  4 12:08:53 PST 2009
+#    I removed parstate lib.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -52,7 +55,7 @@
 @MPI_CXX@
 
 # subdirectory `main' must be last.
-SUBDIRS=rpc parstate proxy main
+SUBDIRS=rpc proxy main
 
 message:
 	@echo

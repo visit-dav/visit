@@ -1,1 +1,1 @@
-../../visit_vtk/rendering/vtkTexturedBackgroundActor.h
+../../avt/Plotter/vtk/vtkTexturedBackgroundActor.h

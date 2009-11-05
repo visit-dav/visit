@@ -186,6 +186,10 @@
 #   Tom Fogal, Sat Jul 18 19:44:48 MDT 2009
 #   Added GLEW initialization wrapper.
 #
+#   Brad Whitlock, Tue Nov  3 16:33:54 PST 2009
+#   I moved the code from visit_vtk/rendering to here to avoid introducing
+#   a dependency on avtPlotter into visit_vtk/rendering.
+#
 ##############################################################################
 
 ##
@@ -197,31 +201,88 @@
 ##
 ## Files...
 ##
-OPENGL_SRC=avtOpenGLSurfaceAndWireframeRenderer.C
-MESA_SRC=avtMesaSurfaceAndWireframeRenderer.C
+OPENGL_SRC=avtOpenGLSurfaceAndWireframeRenderer.C \
+vtk/vtkOpenGLRectilinearGridMapper.C \
+vtk/vtkOpenGLStructuredGridMapper.C \
+vtk/vtkOpenGLTexturedBackgroundMapper.C \
+vtk/vtkVisItOpenGLPolyDataMapper.C \
+vtk/vtkVisItOpenGLTexture.C 
 
-SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
-    avtBehavior.C avtTheater.C avtMapper.C avtVariableMapper.C avtPlot.C \
-    avtImageMapper.C avtImageDrawable.C avtLevelsLegend.C \
-    avtLevelsMapper.C avtDrawer.C avtVectorGlyphMapper.C \
-    avtUserDefinedMapper.C RenderOrder.C avtVolumeVariableLegend.C \
-    avtColorTables.C avtSurfaceAndWireframeRenderer.C avtLookupTable.C \
-    avtLightList.C avtPickActor.C avtCustomRenderer.C \
-    avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
-    avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
-    avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C \
-    avtPointGlypher.C avtVariablePointGlyphMapper.C avtSoftwareShader.C \
-    avtLevelsPointGlyphMapper.C avtCurveLegend.C avtGLEWInitializer.C
+MESA_SRC=avtMesaSurfaceAndWireframeRenderer.C \
+vtk/vtkMesaRectilinearGridMapper.C \
+vtk/vtkMesaStructuredGridMapper.C \
+vtk/vtkMesaTexturedBackgroundMapper.C \
+vtk/vtkOSMesaRenderWindow.C \
+vtk/vtkVisItMesaPolyDataMapper.C 
 
+RENDERING_SRC=vtk/InitVTKRendering.C \
+vtk/vtkBackgroundActor.C \
+vtk/vtkDashedXorGridMapper2D.C \
+vtk/vtkLineLegend.C \
+vtk/vtkMultiFontVectorText.C \
+vtk/vtkParallelImageSpaceRedistributor.C \
+vtk/vtkRectilinearGridMapper.C \
+vtk/vtkRubberBandMapper2D.C \
+vtk/vtkStructuredGridMapper.C \
+vtk/vtkTexturedBackgroundActor.C \
+vtk/vtkTimeSliderActor.C \
+vtk/vtkTriad2D.C \
+vtk/vtkVectorFontCharacterData.C \
+vtk/vtkVisItAxisActor.C \
+vtk/vtkVisItAxisActor2D.C \
+vtk/vtkVisItCubeAxesActor.C \
+vtk/vtkVisItDataSetMapper.C \
+vtk/vtkVisItScalarBarActor.C \
+vtk/vtkVisItScalarBarWithOpacityActor.C 
 
-CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ $(GLEW_INCLUDE)
+SRC=RenderOrder.C \
+avtActor.C \
+avtBehavior.C \
+avtCurveLegend.C \
+avtCustomRenderer.C \
+avtDecorationsDrawable.C \
+avtDecorationsMapper.C \
+avtDrawable.C \
+avtDrawer.C \
+avtExternallyRenderedImagesActor.C \
+avtGLEWInitializer.C \
+avtGeometryDrawable.C \
+avtImageDrawable.C \
+avtImageMapper.C \
+avtLabelActor.C \
+avtLabeledCurveMapper.C \
+avtLegend.C \
+avtLevelsLegend.C \
+avtLevelsMapper.C \
+avtLevelsPointGlyphMapper.C \
+avtLightList.C \
+avtLineoutActor.C \
+avtMapper.C \
+avtPickActor.C \
+avtPlot.C \
+avtPointGlypher.C \
+avtSoftwareShader.C \
+avtSurfaceAndWireframeRenderer.C \
+avtTensorGlyphMapper.C \
+avtTheater.C \
+avtTransparencyActor.C \
+avtUserDefinedMapper.C \
+avtVariableLegend.C \
+avtVariableMapper.C \
+avtVariablePointGlyphMapper.C \
+avtVectorGlyphMapper.C \
+avtVolumeVariableLegend.C \
+$(RENDERING_SRC)
+
+CPPFLAGS=-Ivtk -I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ $(GLEW_INCLUDE) \
 
 SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) @SERMESA_OBJ@
 PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) @PARMESA_OBJ@
 LIB=libplotter
 LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) $(ZLIB_LIB) $(GLEW_LIBS)
-SERLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
-PARLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_par -lavtview -lavtmath_par -lavtfilters_par -lavtexceptions -lvisit_vtk -lrendering_visit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
+COMMONLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lplugin -lutility -lavtexceptions -lavtview -lvisit_vtk -llightweight_visit_vtk -lvisit_verdict
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -ldatabase_ser -lmir_ser -lavtivp_ser -lavtmath_ser -lavtfilters_ser $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @OVERLAY_LIB@
+PARLIBS=$(COMMONLIBS) -lpipeline_par -ldatabase_par -lmir_par -lavtivp_par -lavtmath_par -lavtfilters_par $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) $(MPI_LIBS) @OVERLAY_LIB@ 
 
 ##
 ## Standard targets...

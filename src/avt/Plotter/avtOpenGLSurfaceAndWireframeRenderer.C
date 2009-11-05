@@ -53,6 +53,10 @@
 #include <vtkTriangle.h>
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
+  #include <visit-config.h>
+  #ifdef HAVE_LIBGLEW
+    #include <avtGLEWInitializer.h>
+  #endif
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
@@ -61,8 +65,6 @@
     #endif
     #include <GL/gl.h>
   #endif
-#else
-  #include <GL/gl.h>
 #endif
 
 #include <DebugStream.h>
