@@ -4,6 +4,7 @@ import sys
 import shutil
 import subprocess
 import time
+import unittest
 import urllib
 from optparse import OptionParser
 from PyQt4 import QtCore,QtGui
@@ -50,6 +51,7 @@ def real_dirname(path):
 
 def real_basename(path):
   """Python's os.path.basename is not basename."""
+  if path.rsplit('/', 1)[1] is '': return None
   return path.rsplit('/', 1)[1]
 
 def baseline_current(serial_baseline):
@@ -72,6 +74,29 @@ def baseline_current(serial_baseline):
   current = os.path.join("current/", no_baseline[1])
 
   return (baseline, current)
+
+def mode_specific(baseline):
+  """Given a baseline image path, return a path to the mode specific baseline,
+     even if said baseline does not exist (yet)."""
+  if options.mode is None or options.mode == "serial":
+    return baseline
+
+  dname = real_dirname(baseline)
+  bname = real_basename(baseline)
+  if options.mode == "parallel":
+    if baseline.find("/parallel") != -1:
+      # It's already got parallel in the path; this IS a mode specific
+      # baseline.
+      return baseline
+    return os.path.join(dname, options.mode, bname)
+  if options.mode.find("scalable") != -1:
+    if baseline.find("scalable_parallel") != -1:
+      # Already is mode-specific.
+      return baseline
+    return os.path.join(dname, "scalable_parallel", bname)
+
+  # Ruh roh.  options.mode must be garbage.
+  raise NotImplementedError("Unknown mode '%s'" % options.mode)
 
 def local_modifications_git(file):
   vcs_diff = subprocess.call(["git", "diff", "--quiet", file])
@@ -104,6 +129,27 @@ def trivial_pass(baseline, image):
   """True if we can determine that this image is OK without querying the
      network."""
   return equivalent(baseline, image) or local_modifications(baseline)
+
+class RebaselinePTests(unittest.TestCase):
+  def test_dirname(self):
+    input_and_results = [
+      ("baseline/category/test/a.png", "baseline/category/test"),
+      ("b/c/t/q.png", "b/c/t"),
+      ("b/c/t/longfn.png", "b/c/t"),
+      ("b/c/t/", "b/c/t")
+    ]
+    for tst in input_and_results:
+      self.assertEqual(real_dirname(tst[0]), tst[1])
+
+  def test_basename(self):
+    input_and_results = [
+      ("baseline/category/test/a.png", "a.png"),
+      ("b/c/t/q.png", "q.png"),
+      ("b/c/t/longfn.png", "longfn.png"),
+      ("b/c/t/", None)
+    ]
+    for tst in input_and_results:
+      self.assertEqual(real_basename(tst[0]), tst[1])
 
 class Image(QtGui.QWidget):
   def __init__(self, path, parent=None):
@@ -244,9 +290,15 @@ class Layout(QtGui.QWidget):
     self.update()
 
   def _rebaseline(self):
-    self.status("".join(["rebaselining ", self._baseline, "..."]))
-    print "moving", self._current, "on top of", self._baseline
-    shutil.move(self._current, self._baseline) # do the rebaseline!
+    self.status("".join(["rebaselining ", self._current, "..."]))
+    baseline = mode_specific(self._baseline)
+    print "moving", self._current, "on top of", baseline
+    # We might be creating the first mode specific baseline for that test.  If
+    # so, it'll be missing the baseline specific dir.
+    if not os.path.exists(real_dirname(baseline)):
+      print real_dirname(baseline), "does not exist, creating..."
+      os.mkdir(real_dirname(baseline))
+    shutil.move(self._current, baseline) # do the rebaseline!
     self._next_set_of_images()
     self._update_images()
 
@@ -344,13 +396,20 @@ class Layout(QtGui.QWidget):
       self.emit(QtCore.SIGNAL('unknown()'))
     QtCore.QCoreApplication.processEvents()
 
-app = QtGui.QApplication(sys.argv)
-mw = MW()
-mw.show()
+if __name__ == '__main__':
+  suite = unittest.TestLoader().loadTestsFromTestCase(RebaselinePTests)
+  results = unittest.TextTestRunner(verbosity=2).run(suite)
+  if not results.wasSuccessful():
+    print "Tests failed, bailing."
+    sys.exit(1)
 
-mw.setWindowTitle("visit rebaseline -p")
+  app = QtGui.QApplication(sys.argv)
+  mw = MW()
+  mw.show()
 
-layout = Layout(mw)
-layout.show()
+  mw.setWindowTitle("visit rebaseline -p")
 
-sys.exit(app.exec_())
+  layout = Layout(mw)
+  layout.show()
+
+  sys.exit(app.exec_())
