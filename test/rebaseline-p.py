@@ -1,3 +1,4 @@
+import filecmp
 import os
 import sys
 import shutil
@@ -94,8 +95,9 @@ def local_modifications(filepath):
 
 def equivalent(baseline, image):
   """True if the files are the same."""
-  retval = subprocess.call(["cmp", "-s", baseline, image]) == 0 
-  return retval
+  if not os.path.exists(image): return False
+  # Note this is `shallow' by default, but that's fine for our usage.
+  return filecmp.cmp(baseline, image)
 
 def trivial_pass(baseline, image):
   """True if we can determine that this image is OK without querying the
