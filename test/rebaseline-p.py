@@ -4,49 +4,103 @@ import shutil
 import subprocess
 import time
 import urllib
+from optparse import OptionParser
 from PyQt4 import QtCore,QtGui
 
-# TODO take a command line argument to replace the "09Aug12" part.
-davinci_serial="http://portal.nersc.gov/project/visit/09Aug13/davinci_serial"
+parser = OptionParser()
+parser.add_option("-r", "--root", dest="web_root",
+                  default="http://portal.nersc.gov/project/visit/",
+                  help="Root of web URL where baselines are")
+parser.add_option("-d", "--date", dest="web_date",
+                  help="Date of last good run, in YYMonDD form")
+parser.add_option("-m", "--mode", dest="mode",
+                  help="Mode to run in: serial, parallel, sr")
+parser.add_option("-w", "--web-url", dest="web_url",
+                  help="Manual URL specification; normally generated "
+                       "automatically based on (-r, -d, -m)")
+parser.add_option("-g", "--git", dest="git", action="store_true",
+                  help="Use git to ignore images with local modifications")
+parser.add_option("-s", "--svn", dest="svn", action="store_true",
+                  help="Use svn to ignore images with local modifications")
+(options, args) = parser.parse_args()
+
+if options.web_url is not None:
+  uri = options.web_url
+else:
+  uri = options.web_root + options.web_date + "/"
+  mode = ""
+  if options.mode == "sr" or options.mode == "scalable,parallel":
+    mode="davinci_scalable_parallel_icet"
+  else:
+    mode="".join([ s for s in ("davinci_", options.mode) ])
+  uri += mode + "/"
+parser.destroy()
+
+print "uri:", uri
 
 class MW(QtGui.QMainWindow):
   def __init__(self, parent=None):
     QtGui.QMainWindow.__init__(self, parent)
 
-def current_from_baseline(path):
-  """Given a path to a baseline image, return the path to the current image."""
-  splitpath = path.split('/', 1)
-  return os.path.join("current/", splitpath[1])
+def real_dirname(path):
+  """Python's os.path.dirname is not dirname."""
+  return path.rsplit('/', 1)[0]
 
-def in_svn_repo():
-  a = subprocess.Popen("svn stat", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  result = a.communicate()[0]
-  if result.find('not a working copy') >= 0:
-    return False
-  return True
+def real_basename(path):
+  """Python's os.path.basename is not basename."""
+  return path.rsplit('/', 1)[1]
 
-# TODO: take a command line argument to dictate whether we care about the
-# vcs_diff case.  It's certainly cheaper than having a human run through the
-# files, but it makes this function very slow.
-def investigate_git(fileA, fileB):
-  """Indicate whether or not an image is worth investigating more deeply."""
-  # if the VCS says there the file is modified locally, say there aren't
-  # differences.  This covers the case that the file has been rebaselined, but
-  # only here -- davinci doesn't know yet!
-  vcs_diff = subprocess.call(["git", "diff", "--quiet", fileA])
+def baseline_current(serial_baseline):
+  """Given the path to the serial baseline image, determine if there is a mode
+     specific baseline.  Return a 2-tuple of the baseline image and the path to
+     the 'current' image."""
+  dname = real_dirname(serial_baseline)
+  bname = real_basename(serial_baseline)
+  baseline = serial_baseline
+
+  if options.mode is not None:
+    # Check for a mode specific baseline.
+    mode_spec = os.path.join(dname + "/", options.mode + "/", bname)
+    if os.path.exists(mode_spec):
+      baseline = mode_spec
+
+  # `Current' image never has a mode-specific path; filename/dir is always
+  # based on the serial baseline's directory.
+  no_baseline = serial_baseline.split('/', 1) # path without "baseline/"
+  current = os.path.join("current/", no_baseline[1])
+
+  return (baseline, current)
+
+def local_modifications_git(file):
+  vcs_diff = subprocess.call(["git", "diff", "--quiet", file])
   if vcs_diff == 1:
-    print fileA, " is locally modified, ignoring."
-    return False
+    return True
+  return False
 
-def investigate_svn(fileA, fileB):
-  """Indicate whether or not an image is worth investigating more deeply."""
-  a = subprocess.Popen("svn stat %s"%fileA, shell=True, stdout=subprocess.PIPE)
-  diff = a.communicate()[0]
+def local_modifications_svn(file):
+  svnstat = subprocess.Popen("svn stat %s" % file, shell=True,
+                             stdout=subprocess.PIPE)
+  diff = svnstat.communicate()[0]
   if diff != '':
-    print fileA, " is locally modified, ignoring."
-    return False
+    return True
+  return False
 
-  return subprocess.call(["cmp", "-s", fileA, fileB]) 
+def local_modifications(filepath):
+  """Returns true if the file has local modifications.  Always false if the
+     user did not supply the appropriate VCS option."""
+  if options.git: return local_modifications_git(filepath)
+  if options.svn: return local_modifications_svn(filepath)
+  return False
+
+def equivalent(baseline, image):
+  """True if the files are the same."""
+  retval = subprocess.call(["cmp", "-s", baseline, image]) == 0 
+  return retval
+
+def trivial_pass(baseline, image):
+  """True if we can determine that this image is OK without querying the
+     network."""
+  return equivalent(baseline, image) or local_modifications(baseline)
 
 class Image(QtGui.QWidget):
   def __init__(self, path, parent=None):
@@ -176,18 +230,13 @@ class Layout(QtGui.QWidget):
 
   def status(self, msg):
     self._mainwin.statusBar().showMessage(msg)
+    self._mainwin.statusBar().update()
     QtCore.QCoreApplication.processEvents() # we're single threaded
 
   def _next_set_of_images(self):
     """Figures out the next set of images to display.  Downloads 'current' and
        'diff' results from davinci.  Sets filenames corresponding to baseline,
        current and diff images."""
-
-    # use the right investigate routine
-    if in_svn_repo():
-      investigate = investigate_svn
-    else:
-      investigate = investigate_git
 
     if self._baseline is None:  # first call, build list.
       self._images = []
@@ -199,10 +248,17 @@ class Layout(QtGui.QWidget):
           if ext == ".png":
             # In some cases, we can trivially reject a file.  Don't bother
             # adding it to our list in that case.
-            baseline_fn = os.path.join(root, f)
-            current_fn = current_from_baseline(baseline_fn)
-            if investigate(baseline_fn, current_fn):
-              self._images.append(os.path.join(root, f))
+            serial_baseline_fn = os.path.join(root, f)
+
+            # Does this path contain "parallel" or "scalable_parallel"?  Then
+            # we've got a mode specific baseline.  We'll handle those based on
+            # the serial filenames, so ignore them for now.
+            if serial_baseline_fn.find("parallel") != -1: continue
+
+            baseline_fn, current_fn = baseline_current(serial_baseline_fn)
+            assert os.path.exists(baseline_fn)
+            if not trivial_pass(baseline_fn, current_fn):
+              self._images.append(baseline_fn)
 
     try:
       while True:  # stupid python doesn't have a do-while.
@@ -217,7 +273,7 @@ class Layout(QtGui.QWidget):
         except AttributeError, e:
           self.status("No slash!")
           break
-        current_url = davinci_serial + "/c_" + filename
+        current_url = uri + "/c_" + filename
         f,info = urllib.urlretrieve(current_url, "local_current.png")
         self.status("".join(["Checking ", current_url, "..."]))
 
@@ -227,7 +283,7 @@ class Layout(QtGui.QWidget):
         else:
           # We found the next image.
           self._current = "local_current.png"
-          diff_url = davinci_serial + "/d_" + filename
+          diff_url = uri + "/d_" + filename
           f,info = urllib.urlretrieve(diff_url, "local_diff.png")
           if info.getheader("Content-Type").startswith("text/html"):
             raise Exception("Could not download diff image.")
