@@ -345,7 +345,7 @@ class Layout(QtGui.QWidget):
               self._imagelist.append(baseline_fn)
 
     try:
-      while True:  # stupid python doesn't have a do-while.
+      while len(self._imagelist) > 0:
         self._baseline = self._imagelist.pop()
 
         # now derive other filenames based on that one.
