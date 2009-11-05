@@ -45,8 +45,8 @@
 #                    or qt-mac-opensource-4.4.3.tar.gz (Mac)
 #          Mesa         MesaLib-7.5.tar.gz
 #          Python	Python-2.5.tgz
-#          VTK		vtk-5.0.0c.tar.gz
-#          CMake	cmake-2.4.5.tar.gz
+#          VTK		vtk-5.0.0d.tar.gz
+#          CMake	cmake-2.6.4.tar.gz
 #
 #        The following optional libraries need to be in the current directory
 #        to be built. You must explicitly select which option library to
@@ -714,6 +714,9 @@
 #     Yet another Python fix: Use compatibility version in host.conf file instead
 #     of version.
 #
+#     Cyrus Harrison, Tue Nov  3 16:43:53 PST 2009
+#     Use of vtk-5.0.0d & transition to a "make install"ed vtk
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -990,13 +993,13 @@ fi
 export VISIT_VERSION=${VISIT_VERSION:-"2.0.0"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-export VTK_FILE=${VTK_FILE:-"vtk-5.0.0c.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.0.0c"}
+export VTK_FILE=${VTK_FILE:-"vtk-5.0.0d.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.0.0d"}
 export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
 
-export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.4.5.tar.gz"}
-export CMAKE_VERSION=${CMAKE_VERSION:-"2.4.5"}
-export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.4.5"}
+export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.6.4.tar.gz"}
+export CMAKE_VERSION=${CMAKE_VERSION:-"2.6.4"}
+export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.6.4"}
 
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.5.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.5"}
@@ -1015,13 +1018,6 @@ export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR:-"Python-$PYTHON_VERSION"}
 if [[ "$OPSYS" == "Darwin" ]] ; then
     VER=$(uname -r)
     if [[ ${VER%%.*} -ge 10 ]] ; then
-        # VisIt's VTK version does not work on Snow Leopard. Use further
-        # customized version
-        export VTK_FILE="vtk-5.0.0c-newfreetype.tar.gz"
-        # CMake 2.4.5 build aborts on Snow Leopard. Use newer cmake version
-        export CMAKE_FILE="cmake-2.6.4.tar.gz"
-        export CMAKE_VERSION="2.6.4"
-        export CMAKE_BUILD_DIR="cmake-2.6.4"
         # Ditto for Python 2.5
         export PYTHON_VERSION="2.6.4"
         export PYTHON_COMPATIBILITY_VERSION=2.6
@@ -3008,7 +3004,7 @@ function build_cmake
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
-function apply_vtk_500c_generic_patch_1
+function apply_vtk_500d_generic_patch_1
 {
   patch -p0 << \EOF
 diff -rp VTK/Utilities/DICOMParser/DICOMParser.cxx.orig VTK/Utilities/DICOMParser/DICOMParser.cxx
@@ -3031,7 +3027,7 @@ EOF
   return 0
 }
 
-function apply_vtk_500c_generic_patch_2
+function apply_vtk_500d_generic_patch_2
 {
    patch -p0 << \EOF
 --- VTK/Utilities/DICOMParser/DICOMAppHelper.cxx.orig   2008-08-18 12:13:40.000000000 -0600
@@ -3050,7 +3046,7 @@ EOF
    fi
 }
 
-function apply_vtk_500c_generic_patch_3
+function apply_vtk_500d_generic_patch_3
 {
    patch -p0 << \EOF
 --- VTK/Utilities/DICOMParser/DICOMFile.cxx.orig        2008-08-18 12:14:23.000000000 -0600
@@ -3070,22 +3066,12 @@ EOF
     fi
 }
 
-function apply_vtk_500c_darwin_patch
+function apply_vtk_500d_darwin_patch
 {
    patch -p0 << \EOF
 diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
 *** VTK.orig/CMakeLists.txt     Mon Mar 26 14:28:51 2007
 --- VTK/CMakeLists.txt  Wed Apr 25 15:41:25 2007
-*************** IF(VTK_USE_RENDERING)
-*** 196,202 ****
-    SET(VTK_KITS ${VTK_KITS} RENDERING)
-    SET(VTK_KITS ${VTK_KITS} VOLUMERENDERING)
-    SET(VTK_KITS ${VTK_KITS} HYBRID)
--   SET(VTK_KITS ${VTK_KITS} WIDGETS)
-  ENDIF(VTK_USE_RENDERING)
-  IF(VTK_USE_PARALLEL)
-    SET(VTK_KITS ${VTK_KITS} PARALLEL)
---- 196,201 ----
 *************** ELSE(CMAKE_COMPILER_IS_GNUCXX)
 *** 302,312 ****
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
@@ -3111,25 +3097,6 @@ diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
       IF(VTK_USE_CARBON)
         SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
       ENDIF(VTK_USE_CARBON)
-*************** IF(BUILD_TESTING)
-*** 874,880 ****
-      SUBDIRS(Rendering/Testing)
-      SUBDIRS(VolumeRendering/Testing)
-      SUBDIRS(Hybrid/Testing)
--     SUBDIRS(Widgets/Testing)
-    ENDIF(VTK_USE_RENDERING)
-    IF(VTK_USE_PARALLEL)
-      SUBDIRS(Parallel/Testing)
---- 873,878 ----
-*************** IF(NOT VTK_INSTALL_NO_DEVELOPMENT)
-*** 1354,1360 ****
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkRenderingInstantiator)
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkVolumeRenderingInstantiator)
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkHybridInstantiator)
--     INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
-    ENDIF(VTK_USE_RENDERING)
-    IF(VTK_USE_PARALLEL)
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkParallelInstantiator)
 --- 1352,1357 ----
 diff -rp VTK.orig/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
 *** VTK.orig/Rendering/vtkImagingFactory.cxx    Mon Mar 26 13:25:40 2007
@@ -3281,31 +3248,31 @@ EOF
    return 0
 }
 
-function apply_vtk_500c_generic_patches
+function apply_vtk_500d_generic_patches
 {
-   apply_vtk_500c_generic_patch_1
+   apply_vtk_500d_generic_patch_1
    if [[ $? != 0 ]] ; then
        return 1
    fi
-   apply_vtk_500c_generic_patch_2
+   apply_vtk_500d_generic_patch_2
    if [[ $? != 0 ]] ; then
        return 1
    fi
-   apply_vtk_500c_generic_patch_3
+   apply_vtk_500d_generic_patch_3
    if [[ $? != 0 ]] ; then
        return 1
    fi
 }
 
-function apply_vtk_500c_patch
+function apply_vtk_500d_patch
 {
-   apply_vtk_500c_generic_patches
+   apply_vtk_500d_generic_patches
    if [[ $? != 0 ]] ; then
        return 1
    fi
 
    if [[ "$OPSYS" == "Darwin" ]]; then
-       apply_vtk_500c_darwin_patch
+       apply_vtk_500d_darwin_patch
        if [[ $? != 0 ]] ; then
            return 1
        fi
@@ -3316,8 +3283,8 @@ function apply_vtk_500c_patch
 
 function apply_vtk_patch
 {
-   if [[ ${VTK_VERSION} == 5.0.0c ]] ; then
-       apply_vtk_500c_patch
+   if [[ ${VTK_VERSION} == 5.0.0d ]] ; then
+       apply_vtk_500d_patch
        if [[ $? != 0 ]] ; then
            return 1
        fi
@@ -3342,6 +3309,21 @@ function build_vtk
           return 1
        fi
     fi
+
+    #
+    # We need python to build the vtk python bindings.
+    #
+    PYTHON_INSTALL="$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH/bin"
+    if [[ -e ${PYTHON_INSTALL}/python ]] ; then
+       info "VTK: Python found"
+    else
+       build_python
+       if [[ $? != 0 ]] ; then
+          warn "Unable to build python. Giving up"
+          return 1
+       fi
+    fi
+    
     
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
     untarred_vtk=$?
@@ -3368,6 +3350,22 @@ function build_vtk
     fi
 
     #
+    # Setup paths and libs for python for the VTK build.
+    #
+    
+    VISIT_PYTHON_DIR="$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        export DYLD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$DYLD_LIBRARY_PATH"
+    else
+        export LD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$LD_LIBRARY_PATH"
+    fi
+    
+    export VTK_PY_LIBS="-lpthread"
+    if [["$OPSYS" == "Linux" ]]; then
+        export VTK_PY_LIBS="$VTK_PY_LIBS -ldl -lutil -lm"
+    fi
+
+    #
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
     # Linking OSMesa for MANGLED_MESA_LIBRARY is correct here; we'll never use
@@ -3381,6 +3379,7 @@ function build_vtk
     if [[ ${VER%%.*} -ge 10 ]] ; then
         echo Snow Leopard detected. Disabling Carbon.
         ${CMAKE_BIN} \
+            -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
             -DVTK_USE_CARBON:BOOL=OFF\
             -DVTK_USE_COCOA:BOOL=ON\
             -DBUILD_SHARED_LIBS:BOOL=ON\
@@ -3397,9 +3396,18 @@ function build_vtk
             -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
             -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DVTK_USE_TK=OFF\
+            -DTK_INCLUDE_PATH:FILEPATH=""\
+            -DTK_LIBRARY:FILEPATH=""\
+            -DVTK_WRAP_PYTHON:BOOL=ON\
+            -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
+            -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
+            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+            -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
             .
     else
         ${CMAKE_BIN} \
+            -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
             -DBUILD_SHARED_LIBS:BOOL=ON\
             -DBUILD_TESTING:BOOL=OFF\
             -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -3414,10 +3422,19 @@ function build_vtk
             -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
             -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DVTK_USE_TK=OFF\
+            -DTK_INCLUDE_PATH:FILEPATH=""\
+            -DTK_LIBRARY:FILEPATH=""\
+            -DVTK_WRAP_PYTHON:BOOL=ON\
+            -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
+            -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
+            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+            -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
             .
     fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
     ${CMAKE_BIN} \
+        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -3434,10 +3451,19 @@ function build_vtk
         -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        -DVTK_USE_TK=OFF\
+        -DTK_INCLUDE_PATH:FILEPATH=""\
+        -DTK_LIBRARY:FILEPATH=""\
+        -DVTK_WRAP_PYTHON:BOOL=ON\
+        -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
+        -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
+        -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+        -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
         .
     else
        if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
            ${CMAKE_BIN} \
+               -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
                -DBUILD_SHARED_LIBS:BOOL=ON\
                -DBUILD_TESTING:BOOL=OFF\
                -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -3447,9 +3473,18 @@ function build_vtk
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
                -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+               -DVTK_USE_TK=OFF\
+               -DTK_INCLUDE_PATH:FILEPATH=""\
+               -DTK_LIBRARY:FILEPATH=""\
+               -DVTK_WRAP_PYTHON:BOOL=ON\
+               -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
+               -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
+               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+               -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
                .
        else
            ${CMAKE_BIN} \
+               -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
                -DBUILD_SHARED_LIBS:BOOL=ON\
                -DBUILD_TESTING:BOOL=OFF\
                -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -3463,6 +3498,14 @@ function build_vtk
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
                -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+               -DVTK_USE_TK=OFF\
+               -DTK_INCLUDE_PATH:FILEPATH=""\
+               -DTK_LIBRARY:FILEPATH=""\
+               -DVTK_WRAP_PYTHON:BOOL=ON\
+               -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
+               -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
+               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+               -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
                .
        fi
     fi
@@ -3481,147 +3524,38 @@ function build_vtk
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
-        # fix the internal name with in the libraries
-        #
-        # first change the libraries name and identification by executing the
-        # following bourne shell script
-        cd bin
-        for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
-        libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
-        libvtkImaging libvtkMPEG2Encode libvtkRendering \
-        libvtkVolumeRendering libvtkexpat \
-        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-        libvtktiff libvtkzlib
-        do 
-           rm $i.$SO_EXT
-           cp $i.5.0.0.$SO_EXT $i.$SO_EXT
-           install_name_tool -id \
-             $INSTALLNAMEPATH/$i.$SO_EXT \
-             $i.$SO_EXT
-        done
-     
-        #
-        # Next change the dependent libraries names and paths
-        for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
-        libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
-        libvtkImaging libvtkMPEG2Encode libvtkRendering \
-        libvtkVolumeRendering libvtkexpat \
-        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-        libvtktiff libvtkzlib 
-        do
-          for j in libvtkCommon libvtkDICOMParser libvtkFiltering \
-          libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
-          libvtkImaging libvtkMPEG2Encode libvtkRendering \
-          libvtkVolumeRendering libvtkexpat \
-          libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
-          libvtktiff libvtkzlib
-          do
-             install_name_tool -change \
-                $j.5.0.$SO_EXT \
-                $INSTALLNAMEPATH/$j.$SO_EXT \
-                $i.$SO_EXT
-          done
-        done
-        cd ..
+    info "Installing VTK . . . "
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "VTK did not install correctly.  Giving up."
+       return 1
     fi
 
     #
-    # Install into the VisIt third party location.
-    #
-    
-    # Save off this directory for later
-    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        cd MangleMesaInclude
-        export BAD_MESA="$PWD"
-        cd ..
-    fi
-
-    info "Installing VTK . . ."
-
-    mkdir "$VISITDIR/vtk"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib"
-    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg"
-    cp vtkConfigure.h         "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
-    cp vtkToolkits.h          "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
-    cp vtk*Instantiator.h     "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
-    cp Common/*.h             "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common"
-    cp Common/*.txx           "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common"
-    cp Filtering/*.h          \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering"
-    cp Filtering/*.txx        \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering"
-    cp GenericFiltering/*.h   \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering"
-    cp Graphics/*.h           \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics"
-    cp Hybrid/*.h             "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid"
-    cp IO/*.h                 "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO"
-    cp Imaging/*.h            "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging"
-    cp Rendering/*.h          \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering"
-    cp Utilities/*.h          \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities"
-    cp Utilities/vtktiff/*.h  \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff"
-    cp Utilities/vtkexpat/*.h \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat"
-    cp Utilities/vtkzlib/*.h  \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib"
-    cp Utilities/vtkjpeg/*.h  \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg"
-    cp VolumeRendering/*.h    \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering"
-    cp MangleMesaInclude/*.h  \
-    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
-    cp vtkstd/*               "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd"
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        cd bin
-        cp *.${SO_EXT}       "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
-        ln -s "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libvtkjpeg.$SO_EXT" \
-        "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libjpeg.$SO_EXT"
-        cd ..
-    else
-        cp -R bin/*.$SO_EXT*  "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
-    fi
-    
+    # Manually install the Mangled Mesa headers
     #
     # The MangleMesa headers have absolute paths.  Correct these headers now for
     # the new location they have been copied into.
     #
+
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        cd "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
+        cd MangleMesaInclude
+        export BAD_MESA="$PWD"
+        cd ..
+        mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude"
+        cp MangleMesaInclude/*.h  "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude"
+        cd "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude"
         SED_STR1=$(echo "$BAD_MESA" | sed 's/\//\\\//g')  
         # Converts all '/' to "\/" for later sed'ding 
-        SED_STR2=$(echo "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude" |\
-        sed 's/\//\\\//g')
+        SED_STR2=$(echo "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude" | sed 's/\//\\\//g')
         for i in *.h ; do
            cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
            mv -f tmp.h $i
         done
+        cd $BAD_MESA
+        cd ../
     fi
+
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/vtk"
        chgrp -R ${GROUP} "$VISITDIR/vtk"
@@ -3732,9 +3666,9 @@ function build_python
     PYTHON_OPT="$cFlags"
 
     info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-         "--prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
+         "--enable-shared --prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
     
-    ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
+    ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" --enable-shared \
                 --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
 
     if [[ $? != 0 ]] ; then
@@ -3758,68 +3692,6 @@ function build_python
        return 1
     fi
 
-    #
-    # Create a shared library and copy that to the third party install location
-    #
-    info "Creating Python shared library"
-
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
-        VER=$(uname -r)
-        if (( ${VER%%.*} > 7 )) ; then
-           USESTUBS="-lSystemStubs"
-        else
-           USESTUBS=""
-        fi
-        if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH=\
-"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
-        if (( ${VER%%.*} > 6 )) ; then
-           UNDEFINED="-Wl,-twolevel_namespace,-undefined,dynamic_lookup"
-        else
-           UNDEFINED="-Wl,-flat_namespace,-undefined,suppress"
-        fi
-        mkdir tmpdir
-        cd tmpdir
-        ar x ../libpython${PYTHON_COMPATIBILITY_VERSION}.a
-        $C_COMPILER -o ../libpython${PYTHON_VERSION}.$SO_EXT \
-          -dynamiclib *.o -lSystem $USESTUBS \
-          -framework Carbon -Wl,-headerpad_max_install_names \
-          -Wl,-install_name,$INSTALLNAMEPATH/libpython$PYTHON_VERSION.$SO_EXT \
-          -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
-          -Wl,-current_version,${PYTHON_VERSION} $UNDEFINED
-        if [[ $? != 0 ]] ; then
-          warn "Python dynamic library build failed.  Giving up"
-          return 1
-        fi
-        cd ..
-        rm -rf tmpdir
-        cp libpython$PYTHON_VERSION.$SO_EXT \
-"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
-    elif [[ "$OPSYS" == "AIX" ]]; then
-        $C_COMPILER -qmkshrobj \
-          -o libpython$PYTHON_VERSION.$SO_EXT libpython$PYTHON_VERSION.a -lm
-        cp libpython$PYTHON_VERSION.$SO_EXT \
-"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
-    else
-        mkdir tmpdir
-        cd tmpdir
-        ar -x ../libpython$PYTHON_VERSION.a
-    if [[ "$OPSYS" == "SunOS" ]] ; then
-        C_SHARED_FLAG="-Wl,-G"
-    else
-        C_SHARED_FLAG="-shared"
-    fi
-        $C_COMPILER $C_OPT_FLAGS $C_SHARED_FLAG \
-          -o ../libpython$PYTHON_VERSION.$SO_EXT *.o
-        cd ..
-        rm -rf tmpdir
-        cp libpython$PYTHON_VERSION.$SO_EXT \
-"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
-    fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/python"
        chgrp -R ${GROUP} "$VISITDIR/python"
@@ -8900,41 +8772,8 @@ fi
 
 
 #
-# We are now ready to build.  Start with Mesa.
+# We are now ready to build.
 #
-cd "$START_DIR"
-if [[ "$DO_MESA" == "yes" ]] ; then
-    check_if_installed "mesa" $MESA_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Mesa build.  Mesa is already installed."
-    else
-        info "Building Mesa (~2 minutes)"
-        build_mesa
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Mesa.  Bailing out."
-        fi
-        info "Done building Mesa"
-    fi
-fi
-
-
-#
-# Build Qt
-#
-cd "$START_DIR"
-if [[ "$DO_QT" == "yes" ]] ; then
-        check_if_installed "qt" $QT_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Qt4 build.  Qt4 is already installed."
-   else
-      info "Building Qt4 (~60 minutes)"
-      build_qt
-      if [[ $? != 0 ]] ; then
-         error "Unable to build or install Qt4.  Bailing out."
-      fi
-      info "Done building Qt4"
-   fi
-fi
 
 #
 # Build CMake
@@ -8952,24 +8791,6 @@ if [[ "$DO_CMAKE" == "yes" ]]; then
         fi
         info "Done building CMake"
     fi
-fi
-
-#
-# Build VTK
-#
-cd "$START_DIR"
-if [[ "$DO_VTK" == "yes" ]] ; then
-    check_if_installed "vtk" $VTK_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping VTK build.  VTK is already installed."
-    else
-        info "Building VTK (~20 minutes)"
-        build_vtk
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install VTK.  Bailing out."
-        fi
-    fi
-    info "Done building VTK"
 fi
 
 #
@@ -8995,6 +8816,60 @@ if [[ "$DO_PYTHON" == "yes" ]] ; then
         fi
         info "Done building the Python Imaging Library"
     fi
+fi
+
+#
+# Build Mesa
+#
+cd "$START_DIR"
+if [[ "$DO_MESA" == "yes" ]] ; then
+    check_if_installed "mesa" $MESA_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping Mesa build.  Mesa is already installed."
+    else
+        info "Building Mesa (~2 minutes)"
+        build_mesa
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install Mesa.  Bailing out."
+        fi
+        info "Done building Mesa"
+    fi
+fi
+
+#
+# Build VTK
+#
+cd "$START_DIR"
+if [[ "$DO_VTK" == "yes" ]] ; then
+    check_if_installed "vtk" $VTK_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping VTK build.  VTK is already installed."
+    else
+        info "Building VTK (~20 minutes)"
+        build_vtk
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install VTK.  Bailing out."
+        fi
+    fi
+    info "Done building VTK"
+fi
+
+#
+# Build Qt
+#
+cd "$START_DIR"
+if [[ "$DO_QT" == "yes" ]] ; then
+        check_if_installed "qt" $QT_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping Qt4 build.  Qt4 is already installed."
+   else
+      info "Building Qt4 (~60 minutes)"
+      build_qt
+      if [[ $? != 0 ]] ; then
+         error "Unable to build or install Qt4.  Bailing out."
+      fi
+      info "Done building Qt4"
+   fi
 fi
 
 cd "$START_DIR"

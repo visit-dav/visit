@@ -188,6 +188,10 @@
 #    Link to tcmalloc_minimal instead of regular version to avoid additional
 #    dependencies (e.g. unwind) on 64-bit machines.   
 #
+#    Cyrus Harrison, Thu Nov  5 10:28:14 PST 2009
+#    Changed symlink of python lib to correclty pick up shared python lib
+#    build with '--enable-shared'.
+#    
 ##############################################################################
 
 @SET_MAKE@
@@ -338,9 +342,9 @@ libqui:
 	
 pythondir:
 	if test -n "@PYDIR@"; then                                     \
-	    $(RM) python lib@PYVERSION@.@SHLIB_LIBEXT@              ;  \
+	    $(RM) python lib@PYVERSION@.@SHLIB_LIBEXT@*             ;  \
 	    ln -s @PYDIR@ python                                    ;  \
-	    ln -s python/lib/@PYVERSION@/config/$(LIBPYTHON) . ;  \
+	    ln -s python/lib/lib@PYVERSION@.@SHLIB_LIBEXT@* . ;  \
 	fi
 
 create_mili_link:
