@@ -1356,6 +1356,10 @@ ViewerFileServer::StartServer(const std::string &host)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Hank Childs, Thu Nov  5 18:42:45 PST 2009
+//    Beef up error message when you cannot connect.
+//
 // ****************************************************************************
 
 void
@@ -1478,6 +1482,14 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
             "still cannot connect after SSH launches VisIt's remote "
             "components, check for debug logs on %1 to see if VisIt "
             "was at least able to launch there.\n\n"
+
+            "\"vglrun\": If you do not know what \"vglrun\" is, you can ignore this paragraph."
+            "  If there were no debug logs to be found on %1 and you are using "
+            "vglrun, then vglrun may be causing VisIt to fail. Some versions "
+            "of vglrun cause the ssh program to fail.  If you are running "
+            "VisIt in conjunction with vglrun, this may be causing your "
+            "failure.  (You can test this by running \"vglrun ssh\" and seeing "
+            "if it cores.)\n\n"
 
             "If you found debug log files on %1 but VisIt still can't "
             "connect then it's possible that %1 cannot connect to your "

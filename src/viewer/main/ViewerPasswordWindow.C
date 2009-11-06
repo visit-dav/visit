@@ -43,6 +43,7 @@
 #include <ChangeUsernameException.h>
 #include <CouldNotConnectException.h>
 #include <CancelledConnectException.h>
+#include <DebugStream.h>
 
 #include <QLayout>
 #include <QLineEdit>
@@ -207,6 +208,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Hank Childs, Sun Nov 11 22:21:55 PST 2007
 //    Add support for changing the username.
 //
+//    Hank Childs, Thu Nov  5 18:49:29 PST 2009
+//    Add some debug statements.
+//
 // ****************************************************************************
 
 void
@@ -235,6 +239,10 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             // signal caught, error, or EOF
             // could have been wrong password
             delete[] buffer;
+            debug1 << "About to throw a could not connect exception" << endl;
+            debug1 << "This is the standard place VisIt fails when the "
+                   << "server cannot connect back to the client." << endl;
+            debug1 << "See warning message for possible causes" << endl;
             EXCEPTION0(CouldNotConnectException);
         }
 
