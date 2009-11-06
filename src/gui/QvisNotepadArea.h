@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_NOTEPAD_AREA
-#define QVIS_NOTEPAD_AREA
+#ifndef QVIS_NOTEPAD_AREA_H
+#define QVIS_NOTEPAD_AREA_H
 #include <gui_exports.h>
 #include <QWidget>
 #include <QSizePolicy>

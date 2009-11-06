@@ -79,6 +79,9 @@
 //   Brad Whitlock, Wed Apr  9 11:54:33 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Fri Nov  6 11:38:38 EST 2009
+//   File panel selected files list now starts out hidden.
+//
 // ****************************************************************************
 
 QvisPreferencesWindow::QvisPreferencesWindow(
@@ -92,7 +95,7 @@ QvisPreferencesWindow::QvisPreferencesWindow(
 {
     atts = subj;
     timeStateDisplayMode = 0;
-    showSelFiles = true;
+    showSelFiles = false;
     selectedFilesToggle = 0;
     allowFileSelChange = true;
     allowFileSelectionChangeToggle = 0;
@@ -431,6 +434,10 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //
 //   Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //   Added logic for ignoring bad extents from dbs.
+//
+//   Jeremy Meredith, Fri Nov  6 11:39:11 EST 2009
+//   Removed duplicate code which looked like a copy/paste error.
+//
 // ****************************************************************************
 
 void
@@ -555,10 +562,6 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         postWindowsWhenShownToggle->blockSignals(true);
         postWindowsWhenShownToggle->setChecked(postWhenShown);
         postWindowsWhenShownToggle->blockSignals(false);
-
-        selectedFilesToggle->blockSignals(true);
-        selectedFilesToggle->setChecked(showSelFiles);
-        selectedFilesToggle->blockSignals(false);
 
         selectedFilesToggle->blockSignals(true);
         selectedFilesToggle->setChecked(showSelFiles);
