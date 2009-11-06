@@ -93,6 +93,9 @@ static void UsageAndExit(DatabasePluginManager *, const char *);
 //    Made to use strtod instead of strtof if on Windows or HAVE_STRTOF is
 //    not defined or HAVE_STRTOF_PROTOTYPE is not defined.
 //
+//    Hank Childs, Thu Nov  5 17:17:35 PST 2009
+//    Only have proc 0 print out error messages.
+//
 // ****************************************************************************
 void
 FillOptionsFromCommandline(DBOptionsAttributes *opts)
@@ -103,50 +106,67 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
     for (int j=0; j<opts->GetNumberOfOptions(); j++)
     {
         const string &name = opts->GetName(j);
-        cerr << endl << "Enter value for option '"<<name<<"'";
+        if (PAR_Rank() == 0)
+            cerr << endl << "Enter value for option '"<<name<<"'";
         switch (opts->GetType(j))
         {
           case DBOptionsAttributes::Bool:
-            cerr << " (boolean, default="<<opts->GetBool(name)<<"):\n";
+            if (PAR_Rank() == 0)
+                cerr << " (boolean, default="<<opts->GetBool(name)<<"):\n";
             break;
           case DBOptionsAttributes::Int:
-            cerr << " (integer, default="<<opts->GetInt(name)<<"):\n";
+            if (PAR_Rank() == 0)
+                cerr << " (integer, default="<<opts->GetInt(name)<<"):\n";
             break;
           case DBOptionsAttributes::Float:
-            cerr << " (float, default="<<opts->GetFloat(name)<<"):\n";
+            if (PAR_Rank() == 0)
+                cerr << " (float, default="<<opts->GetFloat(name)<<"):\n";
             break;
           case DBOptionsAttributes::Double:
-            cerr << " (double, default="<<opts->GetDouble(name)<<"):\n";
+            if (PAR_Rank() == 0)
+                cerr << " (double, default="<<opts->GetDouble(name)<<"):\n";
             break;
           case DBOptionsAttributes::String:
-            cerr << " (string, default='"<<opts->GetString(name)<<"'):\n";
+            if (PAR_Rank() == 0)
+                cerr << " (string, default='"<<opts->GetString(name)<<"'):\n";
             break;
           case DBOptionsAttributes::Enum:
             {
-            cerr << endl;
+            if (PAR_Rank() == 0)
+                cerr << endl;
             stringVector enumValues = opts->GetEnumStrings(name);
-            for (int k=0; k<enumValues.size(); k++)
-                cerr << "    ("<<k<<" = "<<enumValues[k]<<")\n";
-            cerr << " (integer, default="<<opts->GetEnum(name)<<"):\n";
+            if (PAR_Rank() == 0)
+                for (int k=0; k<enumValues.size(); k++)
+                    cerr << "    ("<<k<<" = "<<enumValues[k]<<")\n";
+            if (PAR_Rank() == 0)
+                cerr << " (integer, default="<<opts->GetEnum(name)<<"):\n";
             }
             break;
         }
         char buff[1024];
-        cin.getline(buff,1024);
+        if (PAR_Rank() == 0)
+            cin.getline(buff,1024);
+        string str = buff;
+        BroadcastString(str, PAR_Rank());
+        if (PAR_Rank() != 0)
+           strcpy(buff, str.c_str());
         if (strlen(buff) == 0)
         {
-            cerr << "Accepted default value for '"<<name<<"'\n";
+            if (PAR_Rank() == 0)
+                cerr << "Accepted default value for '"<<name<<"'\n";
             continue;
         }
         switch (opts->GetType(j))
         {
           case DBOptionsAttributes::Bool:
             opts->SetBool(name, strtol(buff, NULL, 10));
-            cerr << "Set to new value "<<opts->GetBool(name) << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetBool(name) << endl;
             break;
           case DBOptionsAttributes::Int:
             opts->SetInt(name, strtol(buff, NULL, 10));
-            cerr << "Set to new value "<<opts->GetInt(name) << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetInt(name) << endl;
             break;
           case DBOptionsAttributes::Float:
 #if defined(_WIN32) || !defined(HAVE_STRTOF) || !defined(HAVE_STRTOF_PROTOTYPE)
@@ -154,19 +174,23 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
 #else
             opts->SetFloat(name, strtof(buff, NULL));
 #endif
-            cerr << "Set to new value "<<opts->GetFloat(name) << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetFloat(name) << endl;
             break;
           case DBOptionsAttributes::Double:
             opts->SetDouble(name, strtod(buff, NULL));
-            cerr << "Set to new value "<<opts->GetDouble(name) << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetDouble(name) << endl;
             break;
           case DBOptionsAttributes::String:
             opts->SetString(name, buff);            
-            cerr << "Set to new value "<<opts->GetString(name) << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetString(name) << endl;
             break;
           case DBOptionsAttributes::Enum:
             opts->SetEnum(name, strtol(buff, NULL, 10));
-            cerr << "Set to new value "<<opts->GetEnum(name) << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Set to new value "<<opts->GetEnum(name) << endl;
             break;
         }
     }
@@ -178,6 +202,11 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
 //
 //  Programmer: Mark C. Miller
 //  Creation:   May 19, 2009 
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Nov  5 17:17:35 PST 2009
+//    Only have proc 0 print out error messages.
 //
 // ****************************************************************************
 
@@ -201,7 +230,8 @@ GetPluginInfo(DatabasePluginManager *dbmgr, const char *arg0, const char *plugin
 
     if (edpi == NULL)
     {
-        cerr << "Was not able to identify file type " << plugin <<"\n\n"<<endl;
+        if (PAR_Rank() == 0)
+            cerr << "Was not able to identify file type " << plugin <<"\n\n"<<endl;
         UsageAndExit(dbmgr, arg0);
     }
 
@@ -338,6 +368,10 @@ HandleReadOptions(bool noOptions, DatabasePluginManager *dbmgr, const char *arg0
 //
 //    Mark C. Miller, Wed Jun 17 14:23:51 PDT 2009
 //    Replaced CATCH(...) with CATCHALL
+//
+//    Hank Childs, Thu Nov  5 17:17:35 PST 2009
+//    Only have proc 0 print out error messages.  Also call MPI_Finalize.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -357,7 +391,8 @@ int main(int argc, char *argv[])
     DatabasePluginManager *dbmgr = new DatabasePluginManager;
     dbmgr->Initialize(DatabasePluginManager::Engine, parallel);
     dbmgr->LoadPluginsNow();
-    cerr << endl; // whitespace after some expected plugin loading errors
+    if (PAR_Rank() == 0)
+        cerr << endl; // whitespace after some expected plugin loading errors
 
     if (argc < 4)
     {
@@ -458,22 +493,28 @@ int main(int argc, char *argv[])
     }
     CATCHALL
     {
-        cerr << "The file " << argv[1] << " does not exist or could "
-             << "not be opened." << endl;
+        if (PAR_Rank() == 0)
+            cerr << "The file " << argv[1] << " does not exist or could "
+                 << "not be opened." << endl;
+        PAR_Exit();
         exit(EXIT_FAILURE);
     }
     ENDTRY
 
     if (db == NULL)
     {
-        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
+        if (PAR_Rank() == 0)
+            cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
         for (int i = 0 ; i < pluginList.size() ; i++)
         {
-            cerr << pluginList[i];
-            if (i != pluginList.size()-1)
-                cerr << ", ";
-            else
-                cerr << endl;
+            if (PAR_Rank() == 0)
+            {
+                cerr << pluginList[i];
+                if (i != pluginList.size()-1)
+                    cerr << ", ";
+                else
+                    cerr << endl;
+            }
         }
     }
 
@@ -496,8 +537,9 @@ int main(int argc, char *argv[])
     avtDatabaseWriter *wrtr = edpi->GetWriter();
     if (wrtr == NULL)
     {
-        cerr << "No writer defined for file type " << argv[3] << ".\n"
-             << "Please see a VisIt developer." << endl;
+        if (PAR_Rank() == 0)
+            cerr << "No writer defined for file type " << argv[3] << ".\n"
+                 << "Please see a VisIt developer." << endl;
         UsageAndExit(dbmgr, argv[0]);
     }
     if (doClean)
@@ -511,8 +553,9 @@ int main(int argc, char *argv[])
         bool canDoIt = wrtr->SetTargetZones(target_zones);
         if (!canDoIt)
         {
-            cerr << "This writer does not support the \"-target_zones\" option"
-                 << endl;
+            if (PAR_Rank() == 0)
+                cerr << "This writer does not support the \"-target_zones\" option"
+                     << endl;
             UsageAndExit(dbmgr, argv[0]);
         }
     }
@@ -521,8 +564,9 @@ int main(int argc, char *argv[])
         bool canDoIt = wrtr->SetTargetChunks(target_chunks);
         if (!canDoIt)
         {
-            cerr << "This writer does not support the \"-target_chunks\" "
-                 << "option" << endl;
+            if (PAR_Rank() == 0)
+                cerr << "This writer does not support the \"-target_chunks\" "
+                     << "option" << endl;
             UsageAndExit(dbmgr, argv[0]);
         }
     }
@@ -538,9 +582,12 @@ int main(int argc, char *argv[])
     {
         if (md->GetNumMeshes() > 1)
         {
-            cerr << "There are multiple meshes in the file.  This program can "
-                 << "only\nhandle one mesh at a time.  I am using mesh: ";
-            cerr << md->GetMesh(0)->name << endl;
+            if (PAR_Rank() == 0)
+            {
+                cerr << "There are multiple meshes in the file.  This program can "
+                     << "only\nhandle one mesh at a time.  I am using mesh: ";
+                cerr << md->GetMesh(0)->name << endl;
+            }
         }
         meshname = md->GetMesh(0)->name;
     }
@@ -548,13 +595,16 @@ int main(int argc, char *argv[])
     {
         if (md->GetNumCurves() > 0)
         {
-            cerr << "Cannot find any meshes, converting curves." << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Cannot find any meshes, converting curves." << endl;
             meshname = md->GetCurve(0)->name;
         }
         else
         {
-            cerr << "Cannot find any valid meshes or curves to convert.\n"
-                 << "Giving up." << endl;
+            if (PAR_Rank() == 0)
+                cerr << "Cannot find any valid meshes or curves to convert.\n"
+                     << "Giving up." << endl;
+            PAR_Exit();
             exit(EXIT_FAILURE);
         }
     }
@@ -574,7 +624,8 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    cerr << "Operating on " << md->GetNumStates() << " timestep(s)." << endl;
+    if (PAR_Rank() == 0)
+        cerr << "Operating on " << md->GetNumStates() << " timestep(s)." << endl;
     for (i = 0 ; i < md->GetNumStates() ; i++)
     {
          avtDataObject_p dob = db->GetOutput(meshname.c_str(), i);
@@ -606,9 +657,12 @@ int main(int argc, char *argv[])
          }
          CATCH2(VisItException, e)
          {
-             cerr << "Error encountered.  Unable to write files." << endl;
-             cerr << "Error was: " << endl;
-             cerr << e.Message() << endl;
+             if (PAR_Rank() == 0)
+             {
+                 cerr << "Error encountered.  Unable to write files." << endl;
+                 cerr << "Error was: " << endl;
+                 cerr << e.Message() << endl;
+             }
              break;
          }
          ENDTRY
