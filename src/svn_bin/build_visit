@@ -717,6 +717,10 @@
 #     Cyrus Harrison, Tue Nov  3 16:43:53 PST 2009
 #     Use of vtk-5.0.0d & transition to a "make install"ed vtk
 #
+#     Cyrus Harrison, Tue Nov  3 16:43:53 PST 2009
+#     Added support for using VisIt's anonymous svn server via "--svn-anonymous"
+#     Switched all versions of OSX to use Python 2.6.4 by default.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -924,6 +928,7 @@ export ON_H5PART="off"
 export DO_FASTBIT="no"
 export ON_FASTBIT="off"
 export DO_SVN="no"
+export DO_SVN_ANON="no"
 export ON_SVN="off"
 export DO_REVISION="no"
 export ON_REVISION="off"
@@ -965,11 +970,13 @@ export DO_MORE="no"
 export ON_MORE="off"
 export DO_DBIO_ONLY="no"
 
+
+export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit/"
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
-   export SVN_ROOT_PATH="svn+ssh://svn.nersc.gov/svn/visit"
+    export SVN_REPO_ROOT_PATH="svn+ssh://svn.nersc.gov/svn/visit"
 else
-   export SVN_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
+    export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
 fi
 
 if [[ "$OPSYS" != "Darwin" ]]; then
@@ -1014,16 +1021,12 @@ export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.5"}
 export PYTHON_FILE=${PYTHON_FILE:-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
 export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR:-"Python-$PYTHON_VERSION"}
 
-# FIXME: Hack: Use newer versions for Snow Leopard build
+# FIXME: Hack: Use newer versions for OSX
 if [[ "$OPSYS" == "Darwin" ]] ; then
-    VER=$(uname -r)
-    if [[ ${VER%%.*} -ge 10 ]] ; then
-        # Ditto for Python 2.5
-        export PYTHON_VERSION="2.6.4"
-        export PYTHON_COMPATIBILITY_VERSION=2.6
-        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-   fi
+    export PYTHON_VERSION="2.6.4"
+    export PYTHON_COMPATIBILITY_VERSION=2.6
+    export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+    export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
 fi
 
 export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
@@ -3323,8 +3326,8 @@ function build_vtk
           return 1
        fi
     fi
-    
-    
+
+
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
     untarred_vtk=$?
     if [[ $untarred_vtk == -1 ]] ; then
@@ -3352,16 +3355,16 @@ function build_vtk
     #
     # Setup paths and libs for python for the VTK build.
     #
-    
+
     VISIT_PYTHON_DIR="$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$DYLD_LIBRARY_PATH"
     else
         export LD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$LD_LIBRARY_PATH"
     fi
-    
+
     export VTK_PY_LIBS="-lpthread"
-    if [["$OPSYS" == "Linux" ]]; then
+    if [[ "$OPSYS" == "Linux" ]]; then
         export VTK_PY_LIBS="$VTK_PY_LIBS -ldl -lutil -lm"
     fi
 
@@ -8106,7 +8109,10 @@ usage () {
   printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
   printf "%s <%s> %s\n" "--svn" "revision" \
     "Obtain <revision> of VisIt source code from the SVN server"
-  printf "\t%s\n" "    [svn co $SVN_ROOT_PATH/trunk/src]"
+  printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/trunk/src]"
+  printf "%s <%s> %s\n" "--svn-anonymous" "revision" \
+    "Obtain <revision> of VisIt source code using the anonymous SVN mirror."
+  printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/trunk/src]"
   printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
   printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
     "             Specify the root directory name under which the 3rd party
@@ -8311,7 +8317,9 @@ for arg in "${arguments[@]}" ; do
         --szip) DO_SZIP="yes"; ON_SZIP="on";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --stdout) LOG_FILE="/dev/tty";;
-        --svn) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes";;
+        --svn) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
+        --svn-anon) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
+        --svn-anonymous) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
         --tarball) next_arg="tarball"
                    USE_VISIT_FILE="yes"
                    ON_USE_VISIT_FILE="on";;
@@ -8499,7 +8507,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
               Optional)
                  DO_OPTIONAL="yes";;
               SVN)
-                 DO_SVN="yes";;
+                 DO_SVN="yes";DO_SVN_ANON="yes";export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
               Tarball)
                  $DLG --backtitle "$DLG_BACKTITLE" \
                     --no-cancel --inputbox \
