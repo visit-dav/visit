@@ -524,6 +524,9 @@ $0 = shift @ARGV;
 #    Do not set PYTHONPATH and PYTHONHOME if VisIt install does not contain
 #    "private" Python version.
 #
+#    Hank Childs, Thu Nov  5 13:34:19 PST 2009
+#    Add support for running visitconvert in parallel.
+#
 #    Cyrus Harrison,Thu Nov  5 15:05:16 PST 2009
 #    Added hack to make sure msub never sees the "ppn" argument on LLNL's 
 #    graph cluster.
@@ -1275,64 +1278,9 @@ if ((!$procs_set) and ($name_set or $part_set or $bank_set or
 
 if (($procs_set) and ($procs < 1))
 {
-    print STDERR "You must specify more at least one processor to execute a parallel Visit engine.\n".
+    print STDERR "You must specify more at least one processor to execute a parallel Visit program.\n".
                  "You specified \"$procs\" processor(s).\n";
     exit 1;
-}
-
-@engine_parallel_args = ();
-$had_to_strip_parallel_args = 0;
-if ((($parallel) or ($launchengine)) and
-    ($exe_name ne "engine") and
-    (($exe_name ne "vcl") or (!$parlaunch_set)))
-{
-    $had_to_strip_parallel_args = 1;
-    # If we're trying to run in parallel, or we've been explicitly
-    # told to launch an engine, add any parallel arguments back on
-    push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
-    push @engine_parallel_args, "-l",  $launch           if ($launch_set);
-    push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
-    push @engine_parallel_args, "-np", $procs            if ($procs_set);
-    push @engine_parallel_args, "-nn", $nodes            if ($nodes_set);
-    push @engine_parallel_args, "-n",  $name             if ($name_set);
-    push @engine_parallel_args, "-p",  $part             if ($part_set);
-    push @engine_parallel_args, "-b",  $bank             if ($bank_set);
-    push @engine_parallel_args, "-t",  $time             if ($time_set);
-    push @engine_parallel_args, "-machinefile",  $machinefile if ($machinefile_set);
-
-    # ... but don't confuse the script
-    $parallel=0;
-    $launchargs_set=0;
-    $procs_set=0;
-    $name_set=0;
-    $part_set=0;
-    $bank_set=0;
-    $time_set=0;
-    $nodes_set=0;
-    $machinefile_set=0;
-
-    #
-    # The makemili and convert tool needs these parallel arguments, but to not
-    # confuse the script, we turn off the parallel flag. So we
-    # translate the executable name here.
-    #
-    if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
-    {
-        if (-e "$visitdir/exe/$exe_name" . "_par_lite")
-        {
-            $exe_name .= "_par_lite";
-        }
-        else
-        {
-            $exe_name .= "_par";
-        }
-    }
-    else
-    {
-        # If we didn't specify a location for the engine, assume localhost.
-        push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
-        push @visitargs, "-launchengine", $launchengine if ($launchengine);
-    }
 }
 
 # -----------------------------------------------------------------------------
@@ -1347,7 +1295,7 @@ if ((($parallel) or ($launchengine)) and
 # with -ssh, or another remote process launched through vcl).  A
 # parallel engine also needs to add the flag since even "local"
 # parallel jobs may run on compute nodes.
-if ($parallel && !$noloopback)
+if ($parallel and ($exe_name eq "engine") and !$noloopback)
 {
     $noloopback = 1;
     push @visitargs, "-noloopback";
@@ -1792,13 +1740,27 @@ if (!$part_set && (substr($launch,0,4) eq "psub"))
 # in parallel.
 if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
 {
-    if (-e "$visitdir/exe/$exe_name" . "_ser_lite")
+    if ($parallel) 
     {
-        $exe_name .= "_ser_lite" if (!$parallel);
+        if (-e "$visitdir/exe/$exe_name" . "_par_lite")
+        {
+            $exe_name .= "_par_lite";
+        }
+        else
+        {
+            $exe_name .= "_par";
+        }
     }
     else
     {
-        $exe_name .= "_ser" if (!$parallel);
+        if (-e "$visitdir/exe/$exe_name" . "_ser_lite")
+        {
+            $exe_name .= "_ser_lite";
+        }
+        else
+        {
+            $exe_name .= "_ser";
+        }
     }
 }
 
@@ -1894,15 +1856,6 @@ else # We're running a public version.
     $visitultradir = "$visitdir/$archdir/ultrawrapper";
     $visitplugins = "$visitdir/$archdir/plugins";
     $publicversion = 1;
-}
-
-if ($had_to_strip_parallel_args)
-{
-    if (scalar(@engine_parallel_args) > 0)
-    {
-        $engine_arg_string = ";".join(';', @engine_parallel_args);
-        push @visitargs, "-engineargs", $engine_arg_string;
-    }
 }
 
 
