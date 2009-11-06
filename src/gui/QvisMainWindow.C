@@ -322,6 +322,11 @@
 //    I changed the window so when we run on short screens, the notepad
 //    becomes the dominant window control and we post everything else into it.
 //
+//    Jeremy Meredith, Fri Nov  6 11:51:51 EST 2009
+//    File panel selected files starts out hidden, which means starting
+//    out without the Advanced file menu.  Changed default splitter
+//    sizes depending on if file panel starts hidden or not.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -397,25 +402,31 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                                        QKeySequence(Qt::CTRL + Qt::Key_O));
 
     // Advanced pull-right menu.
-    
-    fileAdvancedPopup  = new QMenu(tr("Advanced file options"),filePopup);    
-    fileAdvancedPopupAct = filePopup->addMenu(fileAdvancedPopup);
-    advancedMenuShowing = true;
-
-    // ReOpen pull-right menu.
-    
-    reopenPopup = new QMenu(tr("ReOpen file"),fileAdvancedPopup);        
-    connect(reopenPopup, SIGNAL(triggered(QAction*)),
-            this, SLOT(reopenFile(QAction*)));
-    reopenPopupAct = fileAdvancedPopup->addMenu(reopenPopup);
-    reopenPopupAct->setEnabled(false);
+    advancedMenuShowing = false;
+    if (advancedMenuShowing)
+    {
+        fileAdvancedPopup  = new QMenu(tr("Advanced file options"),filePopup);
+        fileAdvancedPopupAct = filePopup->addMenu(fileAdvancedPopup);
+    }
 
     // Close pull-right menu
-    closePopup = new QMenu(tr("Close file"),fileAdvancedPopup);
+    closePopup = new QMenu(tr("Close file"),
+                         advancedMenuShowing ? fileAdvancedPopup : filePopup);
     connect(closePopup, SIGNAL(triggered(QAction*)),
             this, SLOT(closeFile(QAction*)));
-    closePopupAct = fileAdvancedPopup->addMenu(closePopup);
+    if (advancedMenuShowing)
+        closePopupAct = fileAdvancedPopup->addMenu(closePopup);
+    else
+        closePopupAct = filePopup->addMenu(closePopup);
     closePopupAct->setEnabled(false);
+
+    // ReOpen pull-right menu.    
+    reopenPopup = new QMenu(tr("ReOpen file"), 
+                         advancedMenuShowing ? fileAdvancedPopup : filePopup);
+    connect(reopenPopup, SIGNAL(triggered(QAction*)),
+            this, SLOT(reopenFile(QAction*)));
+    reopenPopupAct = filePopup->addMenu(reopenPopup);
+    reopenPopupAct->setEnabled(false);
 
     refreshFileListAct = filePopup->addAction(tr("Refresh file list"), 
                           this, SIGNAL(refreshFileList()), 
@@ -717,9 +728,18 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         // May want to read these from the config file but here are the defaults.
         int hgt = qApp->desktop()->height();
         QList<int> splitterSizes;
-        splitterSizes.append(int(hgt * 0.3));
-        splitterSizes.append(int(hgt * 0.3));
-        splitterSizes.append(int(hgt * 0.4));
+        if (advancedMenuShowing)
+        {
+            splitterSizes.append(int(hgt * 0.3));
+            splitterSizes.append(int(hgt * 0.3));
+            splitterSizes.append(int(hgt * 0.4));
+        }
+        else
+        {
+            splitterSizes.append(int(hgt * 0.05));
+            splitterSizes.append(int(hgt * 0.50));
+            splitterSizes.append(int(hgt * 0.45));
+        }
         splitter->setSizes(splitterSizes);
     }
 

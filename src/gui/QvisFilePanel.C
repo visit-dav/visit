@@ -244,13 +244,16 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
 //    Added creation & setup of filePopupMenu.
 //
+//   Jeremy Meredith, Fri Nov  6 11:40:46 EST 2009
+//   File panel selected files list now starts out hidden.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent) :
    QWidget(parent), SimpleObserver(), GUIBase(), displayInfo(),
    timeStateFormat()
 {
-    showSelectedFiles = true;
+    showSelectedFiles = false;
     allowFileSelectionChange = true;
 
     // Create the top layout that will contain the widgets.
@@ -366,6 +369,16 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
 
     // Initialize the attached subjects
     windowInfo = NULL;
+
+
+    // Selected files list starts out hidden
+    if (!showSelectedFiles)
+    {
+        fileTree->hide();
+        openButton->hide();
+        replaceButton->hide();
+        overlayButton->hide();
+    }
 }
 
 // ****************************************************************************

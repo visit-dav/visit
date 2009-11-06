@@ -176,6 +176,10 @@ using std::vector;
 //   Brad Whitlock, Tue Oct 20 15:43:40 PDT 2009
 //   I added controls to change the plot list ordering.
 //
+//   Jeremy Meredith, Fri Nov  6 11:39:56 EST 2009
+//   File panel selected files list now starts out hidden, and the
+//   source thus starts out shown.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent) 
@@ -193,7 +197,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     updateVariableMenuEnabledState = false;
     maxVarCount = 0;
     varMenuFlags = 0;
-    sourceVisible = false;
+    sourceVisible = true;
 
     QVBoxLayout *veryTopLayout = new QVBoxLayout(this);
     veryTopLayout->setSpacing(5);
@@ -205,11 +209,13 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     // Create the source combobox.
     sourceComboBox = new QComboBox(this);
-    sourceComboBox->hide();
+    if (!sourceVisible)
+        sourceComboBox->hide();
     connect(sourceComboBox, SIGNAL(activated(int)),
             this, SLOT(sourceChanged(int)));
     sourceLabel = new QLabel(tr("Source"), this);
-    sourceLabel->hide();
+    if (!sourceVisible)
+        sourceLabel->hide();
     topLayout->addWidget(sourceLabel, 0, 0);
     topLayout->addWidget(sourceComboBox, 0, 1, 1, 3);
 

@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_FILE_PANEL
-#define QVIS_FILE_PANEL
+#ifndef QVIS_FILE_PANEL_H
+#define QVIS_FILE_PANEL_H
 #include <gui_exports.h>
 #include <QWidget>
 #include <SimpleObserver.h>
