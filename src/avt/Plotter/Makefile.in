@@ -190,6 +190,9 @@
 #   I moved the code from visit_vtk/rendering to here to avoid introducing
 #   a dependency on avtPlotter into visit_vtk/rendering.
 #
+#   Tom Fogal, Fri Nov  6 18:01:11 MST 2009
+#   Add X_CPPFLAGS to compilation flags.
+#
 ##############################################################################
 
 ##
@@ -275,7 +278,7 @@ avtVolumeVariableLegend.C \
 $(RENDERING_SRC)
 
 CPPFLAGS=-Ivtk -I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ $(GLEW_INCLUDE) \
-
+         @X_CPPFLAGS@
 SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) @SERMESA_OBJ@
 PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) @PARMESA_OBJ@
 LIB=libplotter
