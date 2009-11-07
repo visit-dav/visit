@@ -225,6 +225,9 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 //    Use Qt to create the transparent overlay window on MacOS X if
 //    VTK_USE_COACOA is set.
 //
+//    Tom Fogal, Fri Nov  6 18:01:42 MST 2009
+//    If no platform-specific implementation is available, give an error.
+//
 // ****************************************************************************
 
 void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
@@ -526,6 +529,8 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     // Set the line color
     double* actorColor = actor->GetProperty()->GetColor();
     SET_FOREGROUND_D(actorColor);
+#else
+# error "No implementation defined!"
 #endif
 
 #if defined(_WIN32) || defined(__APPLE__) || defined(HAVE_XLIB)
