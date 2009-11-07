@@ -531,6 +531,9 @@ $0 = shift @ARGV;
 #    Added hack to make sure msub never sees the "ppn" argument on LLNL's 
 #    graph cluster.
 #
+#    Hank Childs, Nov  6 15:49:14 PST 2009
+#    Incorporate TACC-specific launching changes from Paul Navratil
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2208,7 +2211,16 @@ if ($procs_set or ($parallel and $parlaunch_set))
     # ibrun
     elsif ($launch eq "ibrun")
     {
-        @parcmd = ("ibrun", "tacc_affinity"); # use affinity magick to help layout per node
+        my $is_big = `hostname –s`;
+        chomp $is_big;
+        if ($is_big eq "visbig")
+        {
+            @parcmd = ("ibrun");
+        }
+        else
+        {
+            @parcmd = ("ibrun", "tacc_affinity");
+        }
         push @parcmd, @visitcmd;
 
         @printcmd = @parcmd;
@@ -2409,7 +2421,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             }
             elsif ($sublauncher eq "ibrun")
             {
-                @mpicmd = ("ibrun", "tacc_affinity"); # use affinity magick to help layout per node
+                @mpicmd = ("ibrun");
                 push @mpicmd, "@visitcmd\n";
             }
             elsif ($sublauncher eq "")
