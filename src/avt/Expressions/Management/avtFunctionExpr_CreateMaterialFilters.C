@@ -37,6 +37,7 @@
 *****************************************************************************/
 #include <avtExprNode.h>
 
+#include <avtDominantMaterialExpression.h>
 #include <avtMIRvfExpression.h>
 #include <avtMatErrorExpression.h>
 #include <avtMatvfExpression.h>
@@ -62,6 +63,9 @@
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Nov  9 13:50:43 PST 2009
+//   Added dominant_mat.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -83,6 +87,8 @@ avtFunctionExpr::CreateMaterialFilters(const string &functionName) const
         f = new avtSpecMFExpression();
     else if (functionName == "nmats")
         f = new avtNMatsExpression();
+    else if (functionName == "dominant_mat")
+        f = new avtDominantMaterialExpression();
 
     return f;
 }
