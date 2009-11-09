@@ -149,9 +149,10 @@ static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
 
 static void HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm,
     const char *multimesh_name, avtMeshType *mt, int *num_groups,
-    vector<int> *group_ids, vector<string> *block_names);
+    vector<int> *group_ids, vector<string> *block_names, int dontForceSingle);
 static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
-    const char *meshName, int timestate, int type, avtVariableCache *cache);
+    const char *meshName, int timestate, int type, avtVariableCache *cache,
+    int dontForceSingle);
 
 static int MultiMatHasAllMatInfo(const DBmultimat *const mm);
 
@@ -1470,6 +1471,8 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    Construct avtMeshMetaData object after mrgtree processing  b/c this
 //    may change the mesh type to indicate an AMR mesh.
 //
+//    Mark C. Miller, Mon Nov  9 10:41:48 PST 2009
+//    Added 'dontForceSingle' to call to HandleMrgtree
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile, 
@@ -1737,7 +1740,8 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 {
                     // So far, we've coded only for MRG trees representing AMR hierarchies
                     HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
-                        &mt, &num_amr_groups, &amr_group_ids, &amr_block_names);
+                        &mt, &num_amr_groups, &amr_group_ids, &amr_block_names,
+                        dontForceSingle);
                 }
 #endif
 #endif
@@ -7030,6 +7034,9 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
 //    Mark C. Miller, Tue Nov 18 18:11:56 PST 2008
 //    Added support for mesh region grouping trees being used to spedify
 //    AMR representation in Silo.
+//
+//    Mark C. Miller, Mon Nov  9 10:42:13 PST 2009
+//    Added dontForceSingle to call to BuildDomainAux... for AMR cases.
 // ****************************************************************************
 
 vtkDataSet *
@@ -7057,7 +7064,8 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     else if (type==DB_QUADMESH || type==DB_QUAD_RECT || type==DB_QUAD_CURV)
     {
         if (metadata->GetMesh(m)->meshType == AVT_AMR_MESH)
-            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep, type, cache);
+            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep, type,
+                cache, dontForceSingle);
         rv = GetQuadMesh(domain_file, directory_mesh, domain);
     }
     else if (type == DB_POINTMESH)
@@ -13524,19 +13532,23 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
 //    Hank Childs, Mon May 25 11:26:25 PDT 2009
 //    Fix macro compilation problem with old versions of Silo.
 //
+//    Mark C. Miller, Mon Nov  9 08:54:28 PST 2009
+//    Protected calls to DBForceSingle with check for whether plugin is
+//    actually forcing single precision.
 // ****************************************************************************
 
 #ifdef SILO_VERSION_GE 
 #if SILO_VERSION_GE(4,6,3)
 static DBgroupelmap * 
-GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
+GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle)
 {
     int i,j,k,q,pass;
     DBgroupelmap *retval = 0;
 
     // We do this to prevent Silo for re-interpreting integer data in
     // groupel maps
-    DBForceSingle(0);
+    if (dontForceSingle != 0)
+        DBForceSingle(0);
 
     if (rootNode->num_children == 1 && rootNode->children[0]->narray == 0)
     {
@@ -13638,7 +13650,8 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
         }
     }
 
-    DBForceSingle(1);
+    if (dontForceSingle == 0)
+        DBForceSingle(1);
     return retval;
 }
 #endif
@@ -13662,11 +13675,14 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
 //    Hank Childs, Mon May 25 11:26:25 PDT 2009
 //    Fix macro compilation problem with old versions of Silo.
 //
+//    Mark C. Miller, Mon Nov  9 10:43:05 PST 2009
+//    Added dontForceSingle arg.
 // ****************************************************************************
 
 static void
 HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
-    avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names)
+    avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names,
+    int dontForceSingle)
 {
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
@@ -13723,7 +13739,7 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
     //
     // Get level grouping information from the levels subtree
     //
-    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode);
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, dontForceSingle);
     *num_groups = lvlgm->num_segments;
     group_ids->resize(mm->nblocks,-1);
     for (i = 0; i < lvlgm->num_segments; i++)
@@ -13864,11 +13880,14 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //    Hank Childs, Mon May 25 11:26:25 PDT 2009
 //    Add support for old versions of Silo.
 //
+//    Mark C. Miller, Mon Nov  9 08:54:59 PST 2009
+//    Protecting calls to DBForceSingle with check to see if plugin is
+//    really forcing single.
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     const char *meshName, int timestate, int db_mesh_type,
-    avtVariableCache *cache)
+    avtVariableCache *cache, int dontForceSingle)
 {
 #ifdef MDSERVER
 
@@ -13974,7 +13993,7 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     //
     // Get level grouping information from tree
     //
-    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode);
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, dontForceSingle);
     num_levels = lvlgm->num_segments;
     debug5 << "num_levels = " << num_levels << endl;
     vector<int> levelId;
@@ -14006,16 +14025,18 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     //
     // Get Parent/Child maps
     //
-    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, childsNode);
+    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, childsNode, dontForceSingle);
 
     //
     // Read the ratios variable (on the levels) and the parent/child
     // map.
     //
-    DBForceSingle(0);
+    if (dontForceSingle != 0)
+        DBForceSingle(0);
     DBmrgvar *ratvar = DBGetMrgvar(dbfile, ratioVarName.c_str());
     DBmrgvar *ijkvar = DBGetMrgvar(dbfile, ijkExtsVarName.c_str());
-    DBForceSingle(1);
+    if (dontForceSingle == 0)
+        DBForceSingle(1);
 
     //
     // The number of patches can be inferred from the size of the child groupel map.
