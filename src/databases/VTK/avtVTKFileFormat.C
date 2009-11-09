@@ -695,6 +695,10 @@ avtVTKFileFormat::FreeUpResources(void)
 //    added expressions to extract their components. I also added support 
 //    label variables.
 //
+//    Jeremy Meredith, Mon Nov  9 13:03:18 EST 2009
+//    Expand the test for lower topological dimensions to include
+//    structured grids.
+//
 // ****************************************************************************
 
 void
@@ -743,7 +747,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
  
     //
-    // See if we have a point mesh.
+    // Some mesh types can have a lower topological dimension
     //
     if (vtkType == VTK_UNSTRUCTURED_GRID)
     {
@@ -763,6 +767,22 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
 
         types->Delete();
+    }
+    else if (vtkType == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) dataset;
+        int dims[3];
+        sgrid->GetDimensions(dims);
+        if ((dims[0] == 1 && dims[1] == 1) ||
+            (dims[0] == 1 && dims[2] == 1) ||
+            (dims[1] == 1 && dims[2] == 1))
+        {
+            topo = 1;
+        }
+        else if (dims[0] == 1 || dims[1] == 1 || dims[2] == 1)
+        {
+            topo = 2;
+        }
     }
     else if (vtkType == VTK_POLY_DATA)
     {

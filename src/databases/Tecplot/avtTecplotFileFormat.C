@@ -746,6 +746,13 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //    Mark C. Miller, Tue Sep  1 10:52:13 PDT 2009
 //    Made it deal with POINT zones that contain more spatial dimensions
 //    than topological ones.
+//
+//    Jeremy Meredith, Mon Nov  9 13:04:25 EST 2009
+//    Don't force an M-topo-dimension zone in a N-spatial-dimension block
+//    (where M<N) to become a point mesh.  These types of blocks are
+//    perfectly valid, but extra support may need to be added to VisIt
+//    proper to handle them correctly.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
@@ -759,11 +766,6 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
         topologicalDimensionOfZone = 2;
     else
         topologicalDimensionOfZone = 3;
-
-    // If we have fewer topological dimenions than spatial dimensions,
-    // then the only reasonable thing is zero topological dimension.
-    if (topologicalDimensionOfZone < spatialDimension)
-        topologicalDimensionOfZone = 0;
 
     topologicalDimension = MAX(topologicalDimension, topologicalDimensionOfZone);
 

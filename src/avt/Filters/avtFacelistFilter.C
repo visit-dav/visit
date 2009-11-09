@@ -267,6 +267,11 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    Hank Childs, Thu Dec 28 09:10:40 PST 2006
 //    Renamed method to ExecuteDataTree. 
 //
+//    Jeremy Meredith, Mon Nov  9 13:06:08 EST 2009
+//    Add a test to see if we have a lower-topo-dimension domain than
+//    was advertised in the contract.  (This can come up if you have
+//    a data set with different topological dimensions in different domains.)
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -296,6 +301,25 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         }
         in_ds->GetCellData()->AddArray(cells);
         cells->Delete();
+    }
+
+    // We currently don't have a topological dimension on a per-domain
+    // basis, so let's try to check in little more detail to be sure.....
+    if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+        int dims[3];
+        sgrid->GetDimensions(dims);
+        if ((dims[0] == 1 && dims[1] == 1) ||
+            (dims[0] == 1 && dims[2] == 1) ||
+            (dims[1] == 1 && dims[2] == 1))
+        {
+            tDim = 1;
+        }
+        else if (dims[0] == 1 || dims[1] == 1 || dims[2] == 1)
+        {
+            tDim = 2;
+        }
     }
 
     vtkDataSet *out_ds = NULL;
