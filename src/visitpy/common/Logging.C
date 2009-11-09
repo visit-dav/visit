@@ -222,134 +222,162 @@ LogFile_Write(const char *str)
 #define MSG_NOT_IMPLEMENTED 0
 #define MSG_UNSUPPORTED     1
 
-static void MESSAGE_COMMENT(const char *name, char *str, int reason)
+static std::string MESSAGE_COMMENT(const char *name, int reason)
 {
+    std::string s;
+
     if(reason == MSG_NOT_IMPLEMENTED)
     {
-        SNPRINTF(str, SLEN, "# Logging for %s is not implemented yet.\n", name);
+        s = (std::string("# Logging for ") + name) + " is not implemented yet.\n";
     }
     else if(reason == MSG_UNSUPPORTED)
     {
-        SNPRINTF(str, SLEN, "# The %s RPC is not supported in the VisIt module "
-                 "so it will not be logged.\n", name);
+        s = (std::string("# The ") + name) + " RPC is not supported in the VisIt module "
+                 "so it will not be logged.\n";
     }
+    return s;
 }
 
 
-static void log_AddWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_AddWindowRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "AddWindow()\n");
+    return std::string("AddWindow()\n");
 }
 
-static void log_DeleteWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeleteWindowRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "DeleteWindow()\n");
+    return std::string("DeleteWindow()\n");
 }
 
-static void log_SetWindowLayoutRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetWindowLayoutRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetWindowLayout(%d)\n", rpc->GetWindowLayout());
+    return std::string(str);
 }
 
-static void log_SetActiveWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetActiveWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetActiveWindow(%d)\n", rpc->GetWindowId());
+    return std::string(str);
 }
 
-static void log_ClearWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearWindowRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ClearWindow()\n");
+    return std::string("ClearWindow()\n");
 }
 
-static void log_ClearAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ClearAllWindows()\n");
+    return std::string("ClearAllWindows()\n");
 }
 
-static void log_OpenDatabaseRPC(ViewerRPC *rpc, char *str)
+static std::string log_OpenDatabaseRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(),
              rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_CloseDatabaseRPC(ViewerRPC *rpc, char *str)
+static std::string log_CloseDatabaseRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\")\n",
              rpc->GetDatabase().c_str());
+    return std::string(str);
 }
 
-static void log_ActivateDatabaseRPC(ViewerRPC *rpc, char *str)
+static std::string log_ActivateDatabaseRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "ActivateDatabase(\"%s\")\n",
              rpc->GetDatabase().c_str());
+    return std::string(str);
 }
 
-static void log_CheckForNewStatesRPC(ViewerRPC *rpc, char *str)
+static std::string log_CheckForNewStatesRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "CheckForNewStates(\"%s\")\n",
              rpc->GetDatabase().c_str());
+    return std::string(str);
 }
 
-static void log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc, char *str)
+static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
-     std::string s("CreateDatabaseCorrelation(\"");
-     s += rpc->GetDatabase();
-     s += "\",(";
-     const stringVector &dbs = rpc->GetProgramOptions();
-     for(int i = 0; i < dbs.size(); ++i)
-     {
-         s += dbs[i];
-         if(i < dbs.size() - 1)
-             s += ", ";
-     }
-     SNPRINTF(str, SLEN, "%s), %d)\n", s.c_str(), rpc->GetIntArg1());
+    char str[SLEN];
+    std::string s("CreateDatabaseCorrelation(\"");
+    s += rpc->GetDatabase();
+    s += "\",(";
+    const stringVector &dbs = rpc->GetProgramOptions();
+    for(unsigned int i = 0; i < dbs.size(); ++i)
+    {
+        s += dbs[i];
+        if(i < dbs.size() - 1)
+            s += ", ";
+    }
+    SNPRINTF(str, SLEN, "%s), %d)\n", s.c_str(), rpc->GetIntArg1());
+    return std::string(str);     
 }
 
-static void log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc, char *str)
+static std::string log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
+     char str[SLEN];
      std::string s("AlterDatabaseCorrelation(\"");
      s += rpc->GetDatabase();
      s += "\",(";
      const stringVector &dbs = rpc->GetProgramOptions();
-     for(int i = 0; i < dbs.size(); ++i)
+     for(unsigned int i = 0; i < dbs.size(); ++i)
      {
          s += dbs[i];
          if(i < dbs.size() - 1)
              s += ", ";
      }
      SNPRINTF(str, SLEN, "%s), %d)\n", s.c_str(), rpc->GetIntArg1());
+     return std::string(str);
 }
 
-static void log_DeleteDatabaseCorrelationRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeleteDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "DeleteDatabaseCorrelation(\"%s\")\n", 
              rpc->GetDatabase().c_str());
+    return std::string(str);
 }
 
-static void log_ReOpenDatabaseRPC(ViewerRPC *rpc, char *str)
+static std::string log_ReOpenDatabaseRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(),
              rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_ReplaceDatabaseRPC(ViewerRPC *rpc, char *str)
+static std::string log_ReplaceDatabaseRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "ReplaceDatabase(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(),
              rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_OverlayDatabaseRPC(ViewerRPC *rpc, char *str)
+static std::string log_OverlayDatabaseRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "OverlayDatabase(\"%s\")\n", 
              rpc->GetDatabase().c_str());
+    return std::string(str);
 }
 
-static void log_OpenComponentHelper(ViewerRPC *rpc, char *str, const char *mName)
+static std::string log_OpenComponentHelper(ViewerRPC *rpc, const char *mName)
 {
     const stringVector &argv = rpc->GetProgramOptions();
+    char str[SLEN];
 
     if(argv.size() == 0)
     {
@@ -364,7 +392,7 @@ static void log_OpenComponentHelper(ViewerRPC *rpc, char *str, const char *mName
     else
     {
         std::string tmp("launchArguments = (");
-        for(int i = 0; i < argv.size(); ++i)
+        for(unsigned int i = 0; i < argv.size(); ++i)
         {
             tmp += "\"";
             tmp += argv[i];
@@ -376,68 +404,78 @@ static void log_OpenComponentHelper(ViewerRPC *rpc, char *str, const char *mName
         SNPRINTF(str, SLEN, "%s%s(\"%s\", launchArguments)\n",
                  tmp.c_str(), mName, rpc->GetProgramHost().c_str());
     }
+    return std::string(str);
 }
 
-static void log_OpenComputeEngineRPC(ViewerRPC *rpc, char *str)
+static std::string log_OpenComputeEngineRPC(ViewerRPC *rpc)
 {
-    log_OpenComponentHelper(rpc, str, "OpenComputeEngine");
+    return log_OpenComponentHelper(rpc, "OpenComputeEngine");
 }
 
-static void log_OpenMDServerRPC(ViewerRPC *rpc, char *str)
+static std::string log_OpenMDServerRPC(ViewerRPC *rpc)
 {
-    log_OpenComponentHelper(rpc, str, "OpenMDServer");
+    return log_OpenComponentHelper(rpc, "OpenMDServer");
 }
 
-static void log_CloseComputeEngineRPC(ViewerRPC *rpc, char *str)
+static std::string log_CloseComputeEngineRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "CloseComputeEngine(\"%s\", \"%s\")\n",
              rpc->GetProgramHost().c_str(),
              rpc->GetProgramSim().c_str());
+    return std::string(str);
 }
 
-static void log_AnimationSetNFramesRPC(ViewerRPC *rpc, char *str)
+static std::string log_AnimationSetNFramesRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "AnimationSetNFrames(%d)\n", rpc->GetNFrames());
+    return std::string(str);
 }
 
-static void log_AnimationPlayRPC(ViewerRPC *rpc, char *str)
+static std::string log_AnimationPlayRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("AnimationPlay", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("AnimationPlay", MSG_UNSUPPORTED);
 }
 
-static void log_AnimationReversePlayRPC(ViewerRPC *rpc, char *str)
+static std::string log_AnimationReversePlayRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("AnimationReversePlay", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("AnimationReversePlay", MSG_UNSUPPORTED);
 }
 
-static void log_AnimationStopRPC(ViewerRPC *rpc, char *str)
+static std::string log_AnimationStopRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("AnimationStop", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("AnimationStop", MSG_UNSUPPORTED);
 }
 
-static void log_TimeSliderNextStateRPC(ViewerRPC *rpc, char *str)
+static std::string log_TimeSliderNextStateRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "TimeSliderNextState()\n");
+    return std::string("TimeSliderNextState()\n");
 }
 
-static void log_TimeSliderPreviousStateRPC(ViewerRPC *rpc, char *str)
+static std::string log_TimeSliderPreviousStateRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "TimeSliderPreviousState\n");
+    return std::string("TimeSliderPreviousState()\n");
 }
 
-static void log_SetTimeSliderStateRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetTimeSliderStateRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetTimeSliderState(%d)\n", rpc->GetStateNumber());
+    return std::string(str);
 }
 
-static void log_SetActiveTimeSliderRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetActiveTimeSliderRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetActiveTimeSlider(\"%s\")\n",
              rpc->GetDatabase().c_str());
+    return std::string(str);
 }
 
-static void log_AddPlotRPC(ViewerRPC *rpc, char *str)
+static std::string log_AddPlotRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     std::string plotName("?");
     PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetPlotType()));
@@ -453,54 +491,61 @@ static void log_AddPlotRPC(ViewerRPC *rpc, char *str)
              rpc->GetVariable().c_str(),
              inheritSILRestriction,
              applyOperator);
+    return std::string(str);
 }
 
-static void log_SetPlotFrameRangeRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotFrameRangeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotFrameRange(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
+    return std::string(str);
 }
 
-static void log_DeletePlotKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeletePlotKeyframeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "DeletePlotKeyframe(%d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2());
+    return std::string(str);
 }
 
-static void log_MovePlotKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_MovePlotKeyframeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotKeyframe(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
+    return std::string(str);
 }
 
-static void log_DeleteActivePlotsRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeleteActivePlotsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "DeleteActivePlots()\n");
-
+    return std::string("DeleteActivePlots()\n");
 }
 
-static void log_HideActivePlotsRPC(ViewerRPC *rpc, char *str)
+static std::string log_HideActivePlotsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "HideActivePlots()\n");
+    return std::string("HideActivePlots()\n");
 }
 
-static void log_DrawPlotsRPC(ViewerRPC *rpc, char *str)
+static std::string log_DrawPlotsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "DrawPlots()\n");
+    return std::string("DrawPlots()\n");
 }
 
-static void log_DisableRedrawRPC(ViewerRPC *rpc, char *str)
+static std::string log_DisableRedrawRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "DisableRedraw()\n");
+    return std::string("DisableRedraw()\n");
 }
 
-static void log_RedrawRPC(ViewerRPC *rpc, char *str)
+static std::string log_RedrawRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "RedrawWindow()\n");
+    return std::string("RedrawWindow()\n");
 }
 
-static void log_SetActivePlotsRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetActivePlotsRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int slen = SLEN;
     const intVector &ids = rpc->GetActivePlotIds();
     char *sptr = str;
@@ -511,7 +556,7 @@ static void log_SetActivePlotsRPC(ViewerRPC *rpc, char *str)
         L = SNPRINTF(sptr, slen, "(");
         sptr += L, slen -= L;
     }
-    for(int i = 0; i < ids.size(); ++i)
+    for(unsigned int i = 0; i < ids.size(); ++i)
     {
         L = SNPRINTF(sptr, slen, "%d", ids[i]);
         sptr += L, slen -= L;
@@ -527,16 +572,20 @@ static void log_SetActivePlotsRPC(ViewerRPC *rpc, char *str)
         sptr += L, slen -= L;
     }
     SNPRINTF(sptr, slen, ")\n");
+    return std::string(str);
 }
 
-static void log_ChangeActivePlotsVarRPC(ViewerRPC *rpc, char *str)
+static std::string log_ChangeActivePlotsVarRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "ChangeActivePlotsVar(\"%s\")\n",
              rpc->GetVariable().c_str());
+    return std::string(str);
 }
 
-static void log_AddOperatorRPC(ViewerRPC *rpc, char *str)
+static std::string log_AddOperatorRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     std::string operatorName("?");
     OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetOperatorType()));
@@ -549,46 +598,57 @@ static void log_AddOperatorRPC(ViewerRPC *rpc, char *str)
     SNPRINTF(str, SLEN, "AddOperator(\"%s\", %d)\n",
              operatorName.c_str(),
              applyAll);
+    return std::string(str);
 }
 
-static void log_PromoteOperatorRPC(ViewerRPC *rpc, char *str)
+static std::string log_PromoteOperatorRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "PromoteOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
+    return std::string(str);
 }
 
-static void log_DemoteOperatorRPC(ViewerRPC *rpc, char *str)
+static std::string log_DemoteOperatorRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "DemoteOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
+    return std::string(str);
 }
 
-static void log_RemoveOperatorRPC(ViewerRPC *rpc, char *str)
+static std::string log_RemoveOperatorRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
+    return std::string(str);
 }
 
-static void log_RemoveLastOperatorRPC(ViewerRPC *rpc, char *str)
+static std::string log_RemoveLastOperatorRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveLastOperator(%d)\n", applyAll);
+    return std::string(str);
 }
 
-static void log_RemoveAllOperatorsRPC(ViewerRPC *rpc, char *str)
+static std::string log_RemoveAllOperatorsRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveAllOperators(%d)\n", applyAll);
+    return std::string(str);
 }
 
-static void log_SaveWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_SaveWindowRPC(ViewerRPC *rpc)
 {
     std::string s(PySaveWindowAttributes_GetLogString());
     s += "SetSaveWindowAttributes(SaveWindowAtts)\n";
-    SNPRINTF(str, SLEN, "%sSaveWindow()\n", s.c_str());
+    return s;
 }
 
 static void log_SetPlotOptionsHelper(ViewerRPC *rpc, std::string &atts, 
@@ -608,24 +668,24 @@ static void log_SetPlotOptionsHelper(ViewerRPC *rpc, std::string &atts,
     }
 }
 
-static void log_SetDefaultPlotOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultPlotOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), plotName("");
     log_SetPlotOptionsHelper(rpc, atts, plotName);
     atts += "SetDefaultPlotOptions(";
     atts += plotName;
     atts += ")\n";
-    SNPRINTF(str, SLEN, "%s", atts.c_str());
+    return atts;
 }
 
-static void log_SetPlotOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), plotName("");
     log_SetPlotOptionsHelper(rpc, atts, plotName);
     atts += "SetPlotOptions(";
     atts += plotName;
     atts += ")\n";
-    SNPRINTF(str, SLEN, "%s", atts.c_str());
+    return atts;
 }
 
 static void log_SetOperatorOptionsHelper(ViewerRPC *rpc, std::string &atts, 
@@ -645,17 +705,17 @@ static void log_SetOperatorOptionsHelper(ViewerRPC *rpc, std::string &atts,
     }
 }
 
-static void log_SetDefaultOperatorOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultOperatorOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), operatorName("");
     log_SetOperatorOptionsHelper(rpc, atts, operatorName);
     atts += "SetDefaultOperatorOptions(";
     atts += operatorName;
     atts += ")\n";
-    SNPRINTF(str, SLEN, "%s", atts.c_str());
+    return atts;
 }
 
-static void log_SetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetOperatorOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), operatorName("");
     bool  applyOperator = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
@@ -665,63 +725,66 @@ static void log_SetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
     atts += ", ";
     atts += (applyOperator ? "1" : "0");
     atts += ")\n";
-    SNPRINTF(str, SLEN, "%s", atts.c_str());
+    return atts;
 }
 
-static void log_AddInitializedOperatorRPC(ViewerRPC *rpc, char *str)
+static std::string log_AddInitializedOperatorRPC(ViewerRPC *rpc)
 {
-    char tmp1[SLEN], tmp2[SLEN];
-    log_AddOperatorRPC(rpc, tmp1);
-    log_SetOperatorOptionsRPC(rpc, tmp2);
-    SNPRINTF(str, SLEN, "%s%s", tmp1, tmp2);
+    std::string s;
+    s = log_AddOperatorRPC(rpc);
+    s += log_SetOperatorOptionsRPC(rpc);
+    return s;
 }
 
-static void log_WriteConfigFileRPC(ViewerRPC *rpc, char *str)
+static std::string log_WriteConfigFileRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "WriteConfigFile()\n");
+    return std::string("WriteConfigFile()\n");
 }
 
-static void log_IconifyAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_IconifyAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "IconifyAllWindows()\n");
+    return std::string("IconifyAllWindows()\n");
 }
 
-static void log_DeIconifyAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeIconifyAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "DeIconifyAllWindows()\n");
+    return std::string("DeIconifyAllWindows()\n");
 }
 
-static void log_ShowAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ShowAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ShowAllWindows()\n");
+    return std::string("ShowAllWindows()\n");
 }
 
-static void log_HideAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_HideAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "HideAllWindows()\n");
+    return std::string("HideAllWindows()\n");
 }
 
-static void log_SetAnnotationAttributesRPC(ViewerRPC *rpc, char *str)
-{
-    std::string s(PyAnnotationAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetAnnotationAttributes(AnnotationAtts)\n", s.c_str());
-}
-
-static void log_SetDefaultAnnotationAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetAnnotationAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyAnnotationAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetDefaultAnnotationAttributes(AnnotationAtts)\n", s.c_str());
+    s += std::string("SetAnnotationAttributes(AnnotationAtts)\n");
+    return s;
 }
 
-static void log_ResetAnnotationAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultAnnotationAttributesRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("ResetAnnotationAttributes", str, MSG_UNSUPPORTED);
+    std::string s(PyAnnotationAttributes_GetLogString());
+    s += std::string("SetDefaultAnnotationAttributes(AnnotationAtts)\n");
+    return s;
 }
 
-static void log_SetKeyframeAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetAnnotationAttributesRPC(ViewerRPC *rpc)
+{
+    return MESSAGE_COMMENT("ResetAnnotationAttributes", MSG_UNSUPPORTED);
+}
+
+static std::string log_SetKeyframeAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyKeyframeAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetKeyframeAttributes(KeyframeAtts)\n", s.c_str());
+    s += std::string("SetKeyframeAttributes(KeyframeAtts)\n");
+    return s;
 }
 
 // ****************************************************************************
@@ -740,7 +803,7 @@ static void log_SetKeyframeAttributesRPC(ViewerRPC *rpc, char *str)
 //
 // ****************************************************************************
 
-static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
 {
     std::string s("silr = SILRestriction()\n");
     int nsets[2] = {0,0};
@@ -786,7 +849,7 @@ static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
             s += "silr.SuspendCorrectnessChecking()\n";
             s += "silr.TurnOnAll()\n";
             s += "for silSet in (";
-            for(int i = 0; i < sets.size(); ++i)
+            for(unsigned int i = 0; i < sets.size(); ++i)
             {
                 char tmp[20];
                 if(i < sets.size() - 1)
@@ -830,7 +893,7 @@ static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
             s += "silr.SuspendCorrectnessChecking()\n";
             s += "silr.TurnOffAll()\n";
             s += "for silSet in (";
-            for(int i = 0; i < sets.size(); ++i)
+            for(unsigned int i = 0; i < sets.size(); ++i)
             {
                 char tmp[20];
                 if(i < sets.size() - 1)
@@ -848,34 +911,38 @@ static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
     s += "SetPlotSILRestriction(silr ,";
     s += (applyAll ? "1" : "0");
     s += ")\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetViewAxisArrayRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetViewAxisArrayRPC(ViewerRPC *rpc)
 {
     std::string s(PyViewAxisArrayAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetViewAxisArray(ViewAxisArrayAtts)\n", s.c_str());
+    s += std::string("SetViewAxisArray(ViewAxisArrayAtts)\n");
+    return s;
 }
 
-static void log_SetViewCurveRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetViewCurveRPC(ViewerRPC *rpc)
 {
     std::string s(PyViewCurveAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetViewCurve(ViewCurveAtts)\n", s.c_str());
+    s += std::string("SetViewCurve(ViewCurveAtts)\n");
+    return s;
 }
 
-static void log_SetView2DRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetView2DRPC(ViewerRPC *rpc)
 {
     std::string s(PyView2DAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetView2D(View2DAtts)\n", s.c_str());
+    s += std::string("SetView2D(View2DAtts)\n");
+    return s;
 }
 
-static void log_SetView3DRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetView3DRPC(ViewerRPC *rpc)
 {
     std::string s(PyView3DAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sSetView3D(View3DAtts)\n", s.c_str());
+    s += std::string("SetView3D(View3DAtts)\n");
+    return s;
 }
 
-static void log_ResetPlotOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetPlotOptionsRPC(ViewerRPC *rpc)
 {
     std::string plotName("?");
     PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
@@ -885,11 +952,10 @@ static void log_ResetPlotOptionsRPC(ViewerRPC *rpc, char *str)
     if(info != 0)
         plotName = info->GetName();
  
-    SNPRINTF(str, SLEN, "ResetPlotOptions(\"%s\")\n",
-             plotName.c_str());
+    return std::string("ResetPlotOptions(\"") + plotName + std::string("\")\n");
 }
 
-static void log_ResetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetOperatorOptionsRPC(ViewerRPC *rpc)
 {
     std::string operatorName("?");
     OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
@@ -900,13 +966,14 @@ static void log_ResetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
         operatorName = info->GetName();
  
     int  applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1: 0;
-    SNPRINTF(str, SLEN, "ResetOperatorOptions(\"%s\", %d)\n",
-             operatorName.c_str(), applyAll);
+    char tmp[20];
+    SNPRINTF(tmp, 20, "\", %d)\n", applyAll);
+    return std::string("ResetOperatorOptions(\"") + operatorName + std::string(tmp);
 }
 
-static void log_SetAppearanceRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetAppearanceRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("SetAppearance", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("SetAppearance", MSG_UNSUPPORTED);
 }
 
 //*****************************************************************************
@@ -916,9 +983,10 @@ static void log_SetAppearanceRPC(ViewerRPC *rpc, char *str)
 // 
 //*****************************************************************************
 
-static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
 {
     std::string exprList("");
+    char str[SLEN];
 
     ExpressionList *list = viewer->GetViewerState()->GetExpressionList();
     for(int i = 0; i < list->GetNumExpressions(); ++i)
@@ -956,7 +1024,7 @@ static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
         }
     }
 
-    SNPRINTF(str, SLEN, "%s", exprList.c_str());
+    return exprList;
 }
 
 //*****************************************************************************
@@ -967,7 +1035,7 @@ static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
 //*****************************************************************************
 
 
-static void log_SetLightListRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetLightListRPC(ViewerRPC *rpc)
 {
     std::string s;
     LightList *lightlist = viewer->GetViewerState()->GetLightList();
@@ -988,188 +1056,207 @@ static void log_SetLightListRPC(ViewerRPC *rpc, char *str)
         s += objName;
         s += ")\n";
     }
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetDefaultLightListRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultLightListRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("SetDefaultLightList", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("SetDefaultLightList", MSG_UNSUPPORTED);
 }
 
-static void log_ResetLightListRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetLightListRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("ResetLightList", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("ResetLightList", MSG_UNSUPPORTED);
 }
 
-static void log_SetAnimationAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetAnimationAttributesRPC(ViewerRPC *rpc)
 {
     // Note - there's no function to set all of the annotation atts at the same
     //        so we're just setting the animation timeout for now.
     AnimationAttributes *atts = viewer->GetViewerState()->GetAnimationAttributes();
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetAnimationTimeout(%d)\n", atts->GetTimeout());
+    return std::string(str);
 }
 
-static void log_SetWindowAreaRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetWindowAreaRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     int w,h,x,y;
     sscanf(rpc->GetWindowArea().c_str(), "%dx%d+%d+%d", &w, &h, &x, &y);
     SNPRINTF(str, SLEN, "SetWindowArea(%d, %d ,%d, %d)\n", w,h,x,y);
+    return std::string(str);
 }
 
-static void log_PrintWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_PrintWindowRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "PrintWindow()\n");
+    return std::string("PrintWindow()\n");
 }
 
-static void log_ResetViewRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetViewRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ResetView()\n");
+    return std::string("ResetView()\n");
 }
 
-static void log_RecenterViewRPC(ViewerRPC *rpc, char *str)
+static std::string log_RecenterViewRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "RecenterView()\n");
+    return std::string("RecenterView()\n");
 }
 
-static void log_ToggleMaintainViewModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleMaintainViewModeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleMaintainViewMode()\n");
+    return std::string("ToggleMaintainViewMode()\n");
 }
 
-static void log_ToggleMaintainDataModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleMaintainDataModeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleMaintainDataMode()\n");
+    return std::string("ToggleMaintainDataMode()\n");
 }
 
-static void log_ToggleBoundingBoxModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleBoundingBoxModeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleBoundingBoxMode()\n");
+    return std::string("ToggleBoundingBoxMode()\n");
 }
 
-static void log_ToggleCameraViewModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleCameraViewModeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleCameraViewMode()\n");
+    return std::string("ToggleCameraViewMode()\n");
 }
 
-static void log_TogglePerspectiveViewRPC(ViewerRPC *rpc, char *str)
+static std::string log_TogglePerspectiveViewRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "TogglePerspectiveView()\n");
+    return std::string("TogglePerspectiveView()\n");
 }
 
-static void log_ToggleSpinModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleSpinModeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleSpinMode()\n");
+    return std::string("ToggleSpinMode()\n");
 }
 
-static void log_ToggleLockTimeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleLockTimeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleLockTime()\n");
+    return std::string("ToggleLockTime()\n");
 }
 
-static void log_ToggleLockToolsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleLockToolsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleLockTools()\n");
+    return std::string("ToggleLockTools()\n");
 }
 
-static void log_ToggleLockViewModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleLockViewModeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleLockViewMode()\n");
+    return std::string("ToggleLockViewMode()\n");
 }
 
-static void log_ToggleFullFrameRPC(ViewerRPC *rpc, char *str)
+static std::string log_ToggleFullFrameRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ToggleFullFrameMode()\n");
+    return std::string("ToggleFullFrameMode()\n");
 }
 
-static void log_UndoViewRPC(ViewerRPC *rpc, char *str)
+static std::string log_UndoViewRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "UndoView()\n");
+    return std::string("UndoView()\n");
 }
 
-static void log_RedoViewRPC(ViewerRPC *rpc, char *str)
+static std::string log_RedoViewRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "RedoView()\n");
+    return std::string("RedoView()\n");
 }
 
-static void log_InvertBackgroundRPC(ViewerRPC *rpc, char *str)
+static std::string log_InvertBackgroundRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "InvertBackgroundColor()\n");
+    return std::string("InvertBackgroundColor()\n");
 }
 
-static void log_ClearPickPointsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearPickPointsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ClearPickPoints()\n");
+    return std::string("ClearPickPoints()\n");
 }
 
-static void log_SetWindowModeRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetWindowModeRPC(ViewerRPC *rpc)
 {
     const char *wmodes[] = {"navigate", "zone pick", "node pick", "zoom",
                             "lineout", "spreadsheet pick"};
-    SNPRINTF(str, SLEN, "SetWindowMode(\"%s\")\n", wmodes[rpc->GetWindowMode()]);
+    return (std::string("SetWindowMode(\"") + wmodes[rpc->GetWindowMode()]) + "\")\n";
 }
 
-static void log_EnableToolRPC(ViewerRPC *rpc, char *str)
+static std::string log_EnableToolRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "EnableTool(%d, %d)\n", rpc->GetToolId(),
              rpc->GetBoolFlag());
+    return std::string(str);
 }
 
-static void log_CopyViewToWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_CopyViewToWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "CopyViewToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
+    return std::string(str);
 }
 
-static void log_CopyLightingToWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_CopyLightingToWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "CopyLightingToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
+    return std::string(str);
 }
 
-static void log_CopyAnnotationsToWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_CopyAnnotationsToWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "CopyAnnotationsToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
+    return std::string(str);
 }
 
-static void log_CopyPlotsToWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_CopyPlotsToWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "CopyPlotsToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
+    return std::string(str);
 }
 
-static void log_ClearCacheRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearCacheRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "ClearCache(\"%s\", \"%s\")\n",
              rpc->GetProgramHost().c_str(),
              rpc->GetProgramSim().c_str());
+    return std::string(str);
 }
 
-static void log_ClearCacheForAllEnginesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearCacheForAllEnginesRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ClearCacheForAllEngines()\n");
+    return std::string("ClearCacheForAllEngines()\n");
 }
 
-static void log_SetViewExtentsTypeRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetViewExtentsTypeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetViewExtentsType(%d)\n", rpc->GetWindowLayout());
+    return std::string(str);
 }
 
-static void log_ClearRefLinesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearRefLinesRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ClearReferenceLines()\n");
+    return std::string("ClearReferenceLines()\n");
 }
 
-static void log_SetRenderingAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyRenderingAttributes_GetLogString());
     s += "SetRenderingAttributes(RenderingAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_DatabaseQueryRPC(ViewerRPC *rpc, char *str)
+static std::string log_DatabaseQueryRPC(ViewerRPC *rpc)
 {
     std::string s, qName;
+    char str[SLEN];
 
     if(rpc->GetIntArg3() > 0)
     {
@@ -1187,7 +1274,7 @@ static void log_DatabaseQueryRPC(ViewerRPC *rpc, char *str)
     const stringVector &vars = rpc->GetQueryVariables();
     if(vars.size() > 1)
         s += "(";
-    for(int i = 0; i < vars.size(); ++i)
+    for(unsigned int i = 0; i < vars.size(); ++i)
     {
         s += "\"";
         s += vars[i];
@@ -1198,17 +1285,17 @@ static void log_DatabaseQueryRPC(ViewerRPC *rpc, char *str)
     if(vars.size() > 1)
         s += ")";
     s += ")\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_PointQueryRPC(ViewerRPC *rpc, char *str)
+static std::string log_PointQueryRPC(ViewerRPC *rpc)
 {
     std::string s, varList;
-
+    char str[SLEN];
     const stringVector &vars = rpc->GetQueryVariables();
     if(vars.size() > 1)
         varList += "(";
-    for(int i = 0; i < vars.size(); ++i)
+    for(unsigned int i = 0; i < vars.size(); ++i)
     {
         varList += "\"";
         varList += vars[i];
@@ -1239,7 +1326,6 @@ static void log_PointQueryRPC(ViewerRPC *rpc, char *str)
         s += str;
         s += varList;
         s += ")\n";
-        SNPRINTF(str, SLEN, "%s", s.c_str());
     }
     else if(rpc->GetQueryName() == "PickByNode")
     {
@@ -1261,7 +1347,6 @@ static void log_PointQueryRPC(ViewerRPC *rpc, char *str)
         s += str;
         s += varList;
         s += ")\n";
-        SNPRINTF(str, SLEN, "%s", s.c_str());
     }
     else if(rpc->GetQueryName() == "Pick")
     {
@@ -1273,159 +1358,174 @@ static void log_PointQueryRPC(ViewerRPC *rpc, char *str)
         s += str;
         s += varList;
         s += ")\n";
-        SNPRINTF(str, SLEN, "%s", s.c_str());
     }
     else
     {
         s = "PointQuery(";
         s += rpc->GetQueryName();
         s += ")";
-        MESSAGE_COMMENT(s.c_str(), str, MSG_UNSUPPORTED);
+        s = MESSAGE_COMMENT(s.c_str(), MSG_UNSUPPORTED);
     }
+    return s;
 }
 
-static void log_LineQueryRPC(ViewerRPC *rpc, char *str)
+static std::string log_LineQueryRPC(ViewerRPC *rpc)
 {
     std::string s("LineQuery(");
     s += rpc->GetQueryName();
     s += ")";
-    MESSAGE_COMMENT(s.c_str(), str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT(s.c_str(), MSG_UNSUPPORTED);
 }
 
-static void log_CloneWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_CloneWindowRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "CloneWindow()\n");
+    return std::string("CloneWindow()\n");
 }
 
-static void log_SetMaterialAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetMaterialAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyMaterialAttributes_GetLogString());
     s += "SetMaterialAttributes(MaterialAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetDefaultMaterialAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultMaterialAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyMaterialAttributes_GetLogString());
     s += "SetDefaultMaterialAttributes(MaterialAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_ResetMaterialAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetMaterialAttributesRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("ResetMaterialAttributes", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("ResetMaterialAttributes", MSG_UNSUPPORTED);
 }
 
-static void log_SetPlotDatabaseStateRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotDatabaseStateRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotDatabaseState(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
+    return std::string(str);
 }
 
-static void log_DeletePlotDatabaseKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeletePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "DeletePlotDatabaseKeyframe(%d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2());
+    return std::string(str);
 }
 
-static void log_MovePlotDatabaseKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_MovePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotDatabaseKeyframe(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
+    return std::string(str);
 }
 
-static void log_ClearViewKeyframesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ClearViewKeyframesRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ClearViewKeyframes()\n");
+    return std::string("ClearViewKeyframes()\n");
 }
 
-static void log_DeleteViewKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeleteViewKeyframeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "DeleteViewKeyframe(%d)\n", rpc->GetFrame());
+    return std::string(str);
 }
 
-static void log_MoveViewKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_MoveViewKeyframeRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "MoveViewKeyframe(%d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2());
+    return std::string(str);
 }
 
-static void log_SetViewKeyframeRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetViewKeyframeRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "SetViewKeyframe()\n");
+    return std::string("SetViewKeyframe()\n");
 }
 
-static void log_EnableToolbarRPC(ViewerRPC *rpc, char *str)
+static std::string log_EnableToolbarRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("EnableToolbar", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("EnableToolbar", MSG_UNSUPPORTED);
 }
 
-static void log_HideToolbarsRPC(ViewerRPC *rpc, char *str)
+static std::string log_HideToolbarsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "HideToolbars()\n");
+    return std::string("HideToolbars()\n");
 }
 
-static void log_HideToolbarsForAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_HideToolbarsForAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "HideToolbars(1)\n");
+    return std::string("HideToolbars(1)\n");
 }
 
-static void log_ShowToolbarsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ShowToolbarsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ShowToolbars()\n");
+    return std::string("ShowToolbars()\n");
 }
 
-static void log_ShowToolbarsForAllWindowsRPC(ViewerRPC *rpc, char *str)
+static std::string log_ShowToolbarsForAllWindowsRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ShowToolbars(1)\n");
+    return std::string("ShowToolbars(1)\n");
 }
 
-static void log_SetToolbarIconSizeRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetToolbarIconSizeRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("SetToolbarIconSize", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("SetToolbarIconSize", MSG_UNSUPPORTED);
 }
 
-static void log_SaveViewRPC(ViewerRPC *rpc, char *str)
+static std::string log_SaveViewRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("SaveView", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("SaveView", MSG_UNSUPPORTED);
 }
 
-static void log_SetGlobalLineoutAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetGlobalLineoutAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyGlobalLineoutAttributes_GetLogString());
     s += "SetGlobalLineoutAttributes(GlobalLineoutAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetPickAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPickAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyPickAttributes_GetLogString());
     s += "SetPickAttributes(PickAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_ExportColorTableRPC(ViewerRPC *rpc, char *str)
+static std::string log_ExportColorTableRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("ExportColorTable", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("ExportColorTable", MSG_UNSUPPORTED);
 }
 
-static void log_ExportEntireStateRPC(ViewerRPC *rpc, char *str)
+static std::string log_ExportEntireStateRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SaveSession(\"%s\")\n", rpc->GetVariable().c_str());
+    return std::string(str);
 }
 
-static void log_ImportEntireStateRPC(ViewerRPC *rpc, char *str)
+static std::string log_ImportEntireStateRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "RestoreSession(\"%s\", %d)\n", rpc->GetVariable().c_str(),
              rpc->GetBoolFlag()?1:0);
+    return std::string(str);
 }
 
-static void log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     std::string stuple;
     const stringVector &sources = rpc->GetProgramOptions();
     stuple = "(";
-    for(int i = 0; i < sources.size(); ++i)
+    for(unsigned int i = 0; i < sources.size(); ++i)
     {
         stuple += std::string("\"") + sources[i] + std::string("\"");
         if(i < sources.size()-1)
@@ -1437,68 +1537,70 @@ static void log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc, char *s
              rpc->GetVariable().c_str(),
              rpc->GetBoolFlag()?1:0,
              stuple.c_str());
+    return std::string(str);
 }
 
-static void log_ResetPickAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetPickAttributesRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ResetPickAttributes()\n");
+    return std::string("ResetPickAttributes()\n");
 }
 
-static void log_AddAnnotationObjectRPC(ViewerRPC *rpc, char *str)
+static std::string log_AddAnnotationObjectRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("AddAnnotationObject", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("AddAnnotationObject", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_HideActiveAnnotationObjectsRPC(ViewerRPC *rpc, char *str)
+static std::string log_HideActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("HideActiveAnnotationObjects", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("HideActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_DeleteActiveAnnotationObjectsRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeleteActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("DeleteActiveAnnotationObjects", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("DeleteActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_RaiseActiveAnnotationObjectsRPC(ViewerRPC *rpc, char *str)
+static std::string log_RaiseActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("RaiseActiveAnnotationObjects", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("RaiseActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_LowerActiveAnnotationObjectsRPC(ViewerRPC *rpc, char *str)
+static std::string log_LowerActiveAnnotationObjectsRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("LowerActiveAnnotationObjects", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("LowerActiveAnnotationObjects", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_SetAnnotationObjectOptionsRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetAnnotationObjectOptionsRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("SetAnnotationObjectOptions", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("SetAnnotationObjectOptions", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_SetDefaultAnnotationObjectListRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultAnnotationObjectListRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("SetDefaultAnnotationObjectList", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("SetDefaultAnnotationObjectList", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_ResetAnnotationObjectListRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetAnnotationObjectListRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("ResetAnnotationObjectList", str, MSG_NOT_IMPLEMENTED);
+    return MESSAGE_COMMENT("ResetAnnotationObjectList", MSG_NOT_IMPLEMENTED);
 }
 
-static void log_ResetPickLetterRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetPickLetterRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ResetPickLetter()\n");
+    return std::string("ResetPickLetter()\n");
 }
 
-static void log_SetDefaultPickAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultPickAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyPickAttributes_GetLogString());
     s += "SetDefaultPickAttributes(PickAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 
 }
 
-static void log_ChooseCenterOfRotationRPC(ViewerRPC *rpc, char *str)
+static std::string log_ChooseCenterOfRotationRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     if(rpc->GetBoolFlag())
     {
         SNPRINTF(str, SLEN, "ChooseCenterOfRotation(%g, %g)\n", 
@@ -1508,65 +1610,69 @@ static void log_ChooseCenterOfRotationRPC(ViewerRPC *rpc, char *str)
     {
         SNPRINTF(str, SLEN, "ChooseCenterOfRotation()\n");
     }
+    return std::string(str);
 }
 
-static void log_SetCenterOfRotationRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetCenterOfRotationRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetCenterOfRotation(%g, %g, %g)\n", 
              rpc->GetQueryPoint1()[0], rpc->GetQueryPoint1()[1],
              rpc->GetQueryPoint1()[2]);
+    return std::string(str);
 }
 
-static void log_SetQueryOverTimeAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetQueryOverTimeAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyQueryOverTimeAttributes_GetLogString());
     s += "SetQueryOverTimeAttributes(QueryOverTimeAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetDefaultQueryOverTimeAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultQueryOverTimeAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyQueryOverTimeAttributes_GetLogString());
     s += "SetDefaultQueryOverTimeAttributes(QueryOverTimeAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_ResetQueryOverTimeAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetQueryOverTimeAttributesRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ResetQueryOverTimeAttributes()\n");
+    return std::string("ResetQueryOverTimeAttributes()\n");
 }
 
-static void log_ResetLineoutColorRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetLineoutColorRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ResetLineoutColor()\n");
+    return std::string("ResetLineoutColor()\n");
 }
 
-static void log_SetInteractorAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetInteractorAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyInteractorAttributes_GetLogString());
     s += "SetInteractorAttributes(InteractorAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetDefaultInteractorAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultInteractorAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyInteractorAttributes_GetLogString());
     s += "SetDefaultInteractorAttributes(InteractorAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_ResetInteractorAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetInteractorAttributesRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ResetInteractorAttributes()\n");
+    return std::string("ResetInteractorAttributes()\n");
 }
 
-static void log_GetProcInfoRPC(ViewerRPC *rpc, char *str)
+static std::string log_GetProcInfoRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("GetProcInfo", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("GetProcInfo", MSG_UNSUPPORTED);
 }
 
-static void log_SendSimulationCommandRPC(ViewerRPC *rpc, char *str)
+static std::string log_SendSimulationCommandRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     if (rpc->GetStringArg2().length() > 0)
         SNPRINTF(str, SLEN,
                 "SendSimulationCommand(\"%s\", \"%s\", \"%s\", \"%s\")\n",
@@ -1576,141 +1682,163 @@ static void log_SendSimulationCommandRPC(ViewerRPC *rpc, char *str)
         SNPRINTF(str, SLEN, "SendSimulationCommand(\"%s\", \"%s\", \"%s\")\n",
                  rpc->GetProgramHost().c_str(), rpc->GetProgramSim().c_str(),
                  rpc->GetStringArg1().c_str());
+    return std::string(str);
 }
 
-static void log_UpdateDBPluginInfoRPC(ViewerRPC *rpc, char *str)
+static std::string log_UpdateDBPluginInfoRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("UpdateDBPluginInfo", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("UpdateDBPluginInfo", MSG_UNSUPPORTED);
 }
 
-static void log_ConstructDDFRPC(ViewerRPC *rpc, char *str)
+static std::string log_ConstructDDFRPC(ViewerRPC *rpc)
 {
     std::string s(PyConstructDDFAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sConstructDDFtabase(ConstructDDFAtts)\n", s.c_str());
+    s += "ConstructDDFtabase(ConstructDDFAtts)\n";
+    return s;
 }
 
-static void log_ExportDBRPC(ViewerRPC *rpc, char *str)
+static std::string log_ExportDBRPC(ViewerRPC *rpc)
 {
     std::string s(PyExportDBAttributes_GetLogString());
-    SNPRINTF(str, SLEN, "%sExportDatabase(ExportDBAtts)\n", s.c_str());
+    s += "ExportDatabase(ExportDBAtts)\n";
+    return s;
 }
 
-static void log_SetTryHarderCyclesTimesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetTryHarderCyclesTimesRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetTryHarderCyclesTimes(%d)\n", rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_SuppressQueryOutputRPC(ViewerRPC *rpc, char *str)
+static std::string log_SuppressQueryOutputRPC(ViewerRPC *rpc)
 {
+    std::string s;
     if(rpc->GetBoolFlag())
-        SNPRINTF(str, SLEN, "SuppressQueryOutputOn()\n");
+        s = std::string("SuppressQueryOutputOn()\n");
     else
-        SNPRINTF(str, SLEN, "SuppressQueryOutputOff()\n");
+        s = std::string("SuppressQueryOutputOff()\n");
+    return s;
 }
 
-static void log_SetMeshManagementAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetMeshManagementAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyMeshManagementAttributes_GetLogString());
     s += "SetMeshManagementAttributes(MeshManagementAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_SetDefaultMeshManagementAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetDefaultMeshManagementAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyMeshManagementAttributes_GetLogString());
     s += "SetDefaultMeshManagementAttributes(MeshManagementAtts)\n";
-    SNPRINTF(str, SLEN, "%s", s.c_str());
+    return s;
 }
 
-static void log_ResetMeshManagementAttributesRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResetMeshManagementAttributesRPC(ViewerRPC *rpc)
 {
-    MESSAGE_COMMENT("ResetMeshManagementAttributes", str, MSG_UNSUPPORTED);
+    return MESSAGE_COMMENT("ResetMeshManagementAttributes", MSG_UNSUPPORTED);
 }
 
-static void log_ResizeWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_ResizeWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN]; 
     SNPRINTF(str, SLEN, "ResizeWindow(%d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2());
+    return std::string(str);
 }
 
-static void log_MoveWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_MoveWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN]; 
     SNPRINTF(str, SLEN, "MoveWindow(%d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2());
+    return std::string(str);
 }
 
-static void log_MoveAndResizeWindowRPC(ViewerRPC *rpc, char *str)
+static std::string log_MoveAndResizeWindowRPC(ViewerRPC *rpc)
 {
+    char str[SLEN]; 
     SNPRINTF(str, SLEN, "ResizeWindow(%d, %d, %d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3(),
              rpc->GetWindowLayout());
+    return std::string(str);
 }
 
-static void log_RequestMetaDataRPC(ViewerRPC *rpc, char *str)
+static std::string log_RequestMetaDataRPC(ViewerRPC *rpc)
 {
+    char str[SLEN]; 
     SNPRINTF(str, SLEN, "metadata = GetMetaData(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(), rpc->GetStateNumber());
+    return std::string(str);
 }
 
-static void log_SetQueryFloatFormatRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetQueryFloatFormatRPC(ViewerRPC *rpc)
 {
+    char str[SLEN]; 
     SNPRINTF(str, SLEN, "SetQueryFloatFormat(\"%s\")\n", 
                         rpc->GetStringArg1().c_str());
+    return std::string(str);
 }
 
-static void log_CreateNamedSelectionRPC(ViewerRPC *rpc, char *str)
+static std::string log_CreateNamedSelectionRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "CreateNamedSelection(\"%s\")\n", 
-                        rpc->GetStringArg1().c_str());
+    return std::string("CreateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
-static void log_DeleteNamedSelectionRPC(ViewerRPC *rpc, char *str)
+static std::string log_DeleteNamedSelectionRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "DeleteNamedSelection(\"%s\")\n", 
-                        rpc->GetStringArg1().c_str());
+    return std::string("DeleteNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
-static void log_LoadNamedSelectionRPC(ViewerRPC *rpc, char *str)
+static std::string log_LoadNamedSelectionRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "LoadNamedSelection(\"%s\")\n", 
-                        rpc->GetStringArg1().c_str());
+    return std::string("LoadNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
-static void log_SaveNamedSelectionRPC(ViewerRPC *rpc, char *str)
+static std::string log_SaveNamedSelectionRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "SaveNamedSelection(\"%s\")\n", 
-                        rpc->GetStringArg1().c_str());
+    return std::string("SaveNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
-static void log_ApplyNamedSelectionRPC(ViewerRPC *rpc, char *str)
+static std::string log_ApplyNamedSelectionRPC(ViewerRPC *rpc)
 {
-    SNPRINTF(str, SLEN, "ApplyNamedSelection(\"%s\")\n", 
-                        rpc->GetStringArg1().c_str());
+    return std::string("ApplyNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
-static void log_SetPlotDescriptionRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotDescriptionRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotDescription(%d, \"%s\")\n", rpc->GetIntArg1(), rpc->GetStringArg1().c_str());
+    return std::string(str);
 }
 
-static void log_MovePlotOrderTowardLastRPC(ViewerRPC *rpc, char *str)
+static std::string log_MovePlotOrderTowardLastRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotOrderTowardLast(%d)\n", rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_MovePlotOrderTowardFirstRPC(ViewerRPC *rpc, char *str)
+static std::string log_MovePlotOrderTowardFirstRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotOrderTowardFirst(%d)\n", rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_SetPlotOrderToLastRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotOrderToLastRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotOrderToLast(%d)\n", rpc->GetIntArg1());
+    return std::string(str);
 }
 
-static void log_SetPlotOrderToFirstRPC(ViewerRPC *rpc, char *str)
+static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 {
+    char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotOrderToFirst(%d)\n", rpc->GetIntArg1());
+    return std::string(str);
 }
 
 // ****************************************************************************
@@ -1742,13 +1870,16 @@ static void log_SetPlotOrderToFirstRPC(ViewerRPC *rpc, char *str)
 //   Brad Whitlock, Tue Oct 20 16:19:15 PDT 2009
 //   I added the new RPCs that control the plot list ordering.
 //
+//   Brad Whitlock, Mon Nov  9 14:59:03 PST 2009
+//   I made it use strings more instead of a fixed sized buffer so we would
+//   be less likely to cut off longer strings such as plot attributes.
+//
 // ****************************************************************************
 
 void
 LogRPCs(Subject *subj, void *)
 {
-    char str[SLEN];
-    int slen = SLEN;
+    std::string str;
     bool record = true;
 
     if(logFile == 0) 
@@ -1769,523 +1900,523 @@ LogRPCs(Subject *subj, void *)
 
     // The rpc's that we want to log.
     case ViewerRPC::AddWindowRPC:
-        log_AddWindowRPC(rpc, str);
+        str = log_AddWindowRPC(rpc);
         break;
     case ViewerRPC::DeleteWindowRPC:
-        log_DeleteWindowRPC(rpc, str);
+        str = log_DeleteWindowRPC(rpc);
         break;
     case ViewerRPC::SetWindowLayoutRPC:
-        log_SetWindowLayoutRPC(rpc, str);
+        str = log_SetWindowLayoutRPC(rpc);
         break;
     case ViewerRPC::SetActiveWindowRPC:
-        log_SetActiveWindowRPC(rpc, str);
+        str = log_SetActiveWindowRPC(rpc);
         break;
     case ViewerRPC::ClearWindowRPC:
-        log_ClearWindowRPC(rpc, str);
+        str = log_ClearWindowRPC(rpc);
         break;
     case ViewerRPC::ClearAllWindowsRPC:
-        log_ClearAllWindowsRPC(rpc, str);
+        str = log_ClearAllWindowsRPC(rpc);
         break;
     case ViewerRPC::OpenDatabaseRPC:
-        log_OpenDatabaseRPC(rpc, str);
+        str = log_OpenDatabaseRPC(rpc);
         break;
     case ViewerRPC::CloseDatabaseRPC:
-        log_CloseDatabaseRPC(rpc, str);
+        str = log_CloseDatabaseRPC(rpc);
         break;
     case ViewerRPC::ActivateDatabaseRPC:
-        log_ActivateDatabaseRPC(rpc, str);
+        str = log_ActivateDatabaseRPC(rpc);
         break;
     case ViewerRPC::CheckForNewStatesRPC:
-        log_CheckForNewStatesRPC(rpc, str);
+        str = log_CheckForNewStatesRPC(rpc);
         break;
     case ViewerRPC::CreateDatabaseCorrelationRPC:
-        log_CreateDatabaseCorrelationRPC(rpc, str);
+        str = log_CreateDatabaseCorrelationRPC(rpc);
         break;
     case ViewerRPC::AlterDatabaseCorrelationRPC:
-        log_AlterDatabaseCorrelationRPC(rpc, str);
+        str = log_AlterDatabaseCorrelationRPC(rpc);
         break;
     case ViewerRPC::DeleteDatabaseCorrelationRPC:
-        log_DeleteDatabaseCorrelationRPC(rpc, str);
+        str = log_DeleteDatabaseCorrelationRPC(rpc);
         break;
     case ViewerRPC::ReOpenDatabaseRPC:
-        log_ReOpenDatabaseRPC(rpc, str);
+        str = log_ReOpenDatabaseRPC(rpc);
         break;
     case ViewerRPC::ReplaceDatabaseRPC:
-        log_ReplaceDatabaseRPC(rpc, str);
+        str = log_ReplaceDatabaseRPC(rpc);
         break;
     case ViewerRPC::OverlayDatabaseRPC:
-        log_OverlayDatabaseRPC(rpc, str);
+        str = log_OverlayDatabaseRPC(rpc);
         break;
     case ViewerRPC::OpenComputeEngineRPC:
-        log_OpenComputeEngineRPC(rpc, str);
+        str = log_OpenComputeEngineRPC(rpc);
         break;
     case ViewerRPC::CloseComputeEngineRPC:
-        log_CloseComputeEngineRPC(rpc, str);
+        str = log_CloseComputeEngineRPC(rpc);
         break;
     case ViewerRPC::AnimationSetNFramesRPC:
-        log_AnimationSetNFramesRPC(rpc, str);
+        str = log_AnimationSetNFramesRPC(rpc);
         break;
     case ViewerRPC::AnimationPlayRPC:
-        log_AnimationPlayRPC(rpc, str);
+        str = log_AnimationPlayRPC(rpc);
         break;
     case ViewerRPC::AnimationReversePlayRPC:
-        log_AnimationReversePlayRPC(rpc, str);
+        str = log_AnimationReversePlayRPC(rpc);
         break;
     case ViewerRPC::AnimationStopRPC:
-        log_AnimationStopRPC(rpc, str);
+        str = log_AnimationStopRPC(rpc);
         break;
     case ViewerRPC::TimeSliderNextStateRPC:
-        log_TimeSliderNextStateRPC(rpc, str);
+        str = log_TimeSliderNextStateRPC(rpc);
         break;
     case ViewerRPC::TimeSliderPreviousStateRPC:
-        log_TimeSliderPreviousStateRPC(rpc, str);
+        str = log_TimeSliderPreviousStateRPC(rpc);
         break;
     case ViewerRPC::SetTimeSliderStateRPC:
-        log_SetTimeSliderStateRPC(rpc, str);
+        str = log_SetTimeSliderStateRPC(rpc);
         break;
     case ViewerRPC::SetActiveTimeSliderRPC:
-        log_SetActiveTimeSliderRPC(rpc, str);
+        str = log_SetActiveTimeSliderRPC(rpc);
         break;
     case ViewerRPC::AddPlotRPC:
-        log_AddPlotRPC(rpc, str);
+        str = log_AddPlotRPC(rpc);
         break;
     case ViewerRPC::SetPlotFrameRangeRPC:
-        log_SetPlotFrameRangeRPC(rpc, str);
+        str = log_SetPlotFrameRangeRPC(rpc);
         break;
     case ViewerRPC::DeletePlotKeyframeRPC:
-        log_DeletePlotKeyframeRPC(rpc, str);
+        str = log_DeletePlotKeyframeRPC(rpc);
         break;
     case ViewerRPC::MovePlotKeyframeRPC:
-        log_MovePlotKeyframeRPC(rpc, str);
+        str = log_MovePlotKeyframeRPC(rpc);
         break;
     case ViewerRPC::DeleteActivePlotsRPC:
-        log_DeleteActivePlotsRPC(rpc, str);
+        str = log_DeleteActivePlotsRPC(rpc);
         break;
     case ViewerRPC::HideActivePlotsRPC:
-        log_HideActivePlotsRPC(rpc, str);
+        str = log_HideActivePlotsRPC(rpc);
         break;
     case ViewerRPC::DrawPlotsRPC:
-        log_DrawPlotsRPC(rpc, str);
+        str = log_DrawPlotsRPC(rpc);
         break;
     case ViewerRPC::DisableRedrawRPC:
-        log_DisableRedrawRPC(rpc, str);
+        str = log_DisableRedrawRPC(rpc);
         break;
     case ViewerRPC::RedrawRPC:
-        log_RedrawRPC(rpc, str);
+        str = log_RedrawRPC(rpc);
         break;
     case ViewerRPC::SetActivePlotsRPC:
-        log_SetActivePlotsRPC(rpc, str);
+        str = log_SetActivePlotsRPC(rpc);
         break;
     case ViewerRPC::ChangeActivePlotsVarRPC:
-        log_ChangeActivePlotsVarRPC(rpc, str);
+        str = log_ChangeActivePlotsVarRPC(rpc);
         break;
     case ViewerRPC::AddOperatorRPC:
-        log_AddOperatorRPC(rpc, str);
+        str = log_AddOperatorRPC(rpc);
         break;
     case ViewerRPC::AddInitializedOperatorRPC:
-        log_AddInitializedOperatorRPC(rpc, str);
+        str = log_AddInitializedOperatorRPC(rpc);
         break;
     case ViewerRPC::PromoteOperatorRPC:
-        log_PromoteOperatorRPC(rpc, str);
+        str = log_PromoteOperatorRPC(rpc);
         break;
     case ViewerRPC::DemoteOperatorRPC:
-        log_DemoteOperatorRPC(rpc, str);
+        str = log_DemoteOperatorRPC(rpc);
         break;
     case ViewerRPC::RemoveOperatorRPC:
-        log_RemoveOperatorRPC(rpc, str);
+        str = log_RemoveOperatorRPC(rpc);
         break;
     case ViewerRPC::RemoveLastOperatorRPC:
-        log_RemoveLastOperatorRPC(rpc, str);
+        str = log_RemoveLastOperatorRPC(rpc);
         break;
     case ViewerRPC::RemoveAllOperatorsRPC:
-        log_RemoveAllOperatorsRPC(rpc, str);
+        str = log_RemoveAllOperatorsRPC(rpc);
         break;
     case ViewerRPC::SaveWindowRPC:
-        log_SaveWindowRPC(rpc, str);
+        str = log_SaveWindowRPC(rpc);
         break;
     case ViewerRPC::SetDefaultPlotOptionsRPC:
-        log_SetDefaultPlotOptionsRPC(rpc, str);
+        str = log_SetDefaultPlotOptionsRPC(rpc);
         break;
     case ViewerRPC::SetPlotOptionsRPC:
-        log_SetPlotOptionsRPC(rpc, str);
+        str = log_SetPlotOptionsRPC(rpc);
         break;
     case ViewerRPC::SetDefaultOperatorOptionsRPC:
-        log_SetDefaultOperatorOptionsRPC(rpc, str);
+        str = log_SetDefaultOperatorOptionsRPC(rpc);
         break;
     case ViewerRPC::SetOperatorOptionsRPC:
-        log_SetOperatorOptionsRPC(rpc, str);
+        str = log_SetOperatorOptionsRPC(rpc);
         break;
     case ViewerRPC::WriteConfigFileRPC:
-        log_WriteConfigFileRPC(rpc, str);
+        str = log_WriteConfigFileRPC(rpc);
         break;
     case ViewerRPC::IconifyAllWindowsRPC:
-        log_IconifyAllWindowsRPC(rpc, str);
+        str = log_IconifyAllWindowsRPC(rpc);
         break;
     case ViewerRPC::DeIconifyAllWindowsRPC:
-        log_DeIconifyAllWindowsRPC(rpc, str);
+        str = log_DeIconifyAllWindowsRPC(rpc);
         break;
     case ViewerRPC::ShowAllWindowsRPC:
-        log_ShowAllWindowsRPC(rpc, str);
+        str = log_ShowAllWindowsRPC(rpc);
         break;
     case ViewerRPC::HideAllWindowsRPC:
-        log_HideAllWindowsRPC(rpc, str);
+        str = log_HideAllWindowsRPC(rpc);
         break;
     case ViewerRPC::SetAnnotationAttributesRPC:
-        log_SetAnnotationAttributesRPC(rpc, str);
+        str = log_SetAnnotationAttributesRPC(rpc);
         break;
     case ViewerRPC::SetDefaultAnnotationAttributesRPC:
-        log_SetDefaultAnnotationAttributesRPC(rpc, str);
+        str = log_SetDefaultAnnotationAttributesRPC(rpc);
         break;
     case ViewerRPC::ResetAnnotationAttributesRPC:
-        log_ResetAnnotationAttributesRPC(rpc, str);
+        str = log_ResetAnnotationAttributesRPC(rpc);
         break;
     case ViewerRPC::SetKeyframeAttributesRPC:
-        log_SetKeyframeAttributesRPC(rpc, str);
+        str = log_SetKeyframeAttributesRPC(rpc);
         break;
     case ViewerRPC::SetPlotSILRestrictionRPC:
-        log_SetPlotSILRestrictionRPC(rpc, str);
+        str = log_SetPlotSILRestrictionRPC(rpc);
         break;
     case ViewerRPC::SetViewAxisArrayRPC:
-        log_SetViewAxisArrayRPC(rpc, str);
+        str = log_SetViewAxisArrayRPC(rpc);
         break;
     case ViewerRPC::SetViewCurveRPC:
-        log_SetViewCurveRPC(rpc, str);
+        str = log_SetViewCurveRPC(rpc);
         break;
     case ViewerRPC::SetView2DRPC:
-        log_SetView2DRPC(rpc, str);
+        str = log_SetView2DRPC(rpc);
         break;
     case ViewerRPC::SetView3DRPC:
-        log_SetView3DRPC(rpc, str);
+        str = log_SetView3DRPC(rpc);
         break;
     case ViewerRPC::ResetPlotOptionsRPC:
-        log_ResetPlotOptionsRPC(rpc, str);
+        str = log_ResetPlotOptionsRPC(rpc);
         break;
     case ViewerRPC::ResetOperatorOptionsRPC:
-        log_ResetOperatorOptionsRPC(rpc, str);
+        str = log_ResetOperatorOptionsRPC(rpc);
         break;
     case ViewerRPC::SetAppearanceRPC:
-        log_SetAppearanceRPC(rpc, str);
+        str = log_SetAppearanceRPC(rpc);
         break;
     case ViewerRPC::ProcessExpressionsRPC:
-        log_ProcessExpressionsRPC(rpc, str);
+        str = log_ProcessExpressionsRPC(rpc);
         break;
     case ViewerRPC::SetLightListRPC:
-        log_SetLightListRPC(rpc, str);
+        str = log_SetLightListRPC(rpc);
         break;
     case ViewerRPC::SetDefaultLightListRPC:
-        log_SetDefaultLightListRPC(rpc, str);
+        str = log_SetDefaultLightListRPC(rpc);
         break;
     case ViewerRPC::ResetLightListRPC:
-        log_ResetLightListRPC(rpc, str);
+        str = log_ResetLightListRPC(rpc);
         break;
     case ViewerRPC::SetAnimationAttributesRPC:
-        log_SetAnimationAttributesRPC(rpc, str);
+        str = log_SetAnimationAttributesRPC(rpc);
         break;
     case ViewerRPC::SetWindowAreaRPC:
-        log_SetWindowAreaRPC(rpc, str);
+        str = log_SetWindowAreaRPC(rpc);
         break;
     case ViewerRPC::PrintWindowRPC:
-        log_PrintWindowRPC(rpc, str);
+        str = log_PrintWindowRPC(rpc);
         break;
     case ViewerRPC::ResetViewRPC:
-        log_ResetViewRPC(rpc, str);
+        str = log_ResetViewRPC(rpc);
         break;
     case ViewerRPC::RecenterViewRPC:
-        log_RecenterViewRPC(rpc, str);
+        str = log_RecenterViewRPC(rpc);
         break;
     case ViewerRPC::ToggleMaintainViewModeRPC:
-        log_ToggleMaintainViewModeRPC(rpc, str);
+        str = log_ToggleMaintainViewModeRPC(rpc);
         break;
     case ViewerRPC::ToggleMaintainDataModeRPC:
-        log_ToggleMaintainDataModeRPC(rpc, str);
+        str = log_ToggleMaintainDataModeRPC(rpc);
         break;
     case ViewerRPC::ToggleBoundingBoxModeRPC:
-        log_ToggleBoundingBoxModeRPC(rpc, str);
+        str = log_ToggleBoundingBoxModeRPC(rpc);
         break;
     case ViewerRPC::ToggleCameraViewModeRPC:
-        log_ToggleCameraViewModeRPC(rpc, str);
+        str = log_ToggleCameraViewModeRPC(rpc);
         break;
     case ViewerRPC::TogglePerspectiveViewRPC:
-        log_TogglePerspectiveViewRPC(rpc, str);
+        str = log_TogglePerspectiveViewRPC(rpc);
         break;
     case ViewerRPC::ToggleSpinModeRPC:
-        log_ToggleSpinModeRPC(rpc, str);
+        str = log_ToggleSpinModeRPC(rpc);
         break;
     case ViewerRPC::ToggleLockTimeRPC:
-        log_ToggleLockTimeRPC(rpc, str);
+        str = log_ToggleLockTimeRPC(rpc);
         break;
     case ViewerRPC::ToggleLockToolsRPC:
-        log_ToggleLockToolsRPC(rpc, str);
+        str = log_ToggleLockToolsRPC(rpc);
         break;
     case ViewerRPC::ToggleLockViewModeRPC:
-        log_ToggleLockViewModeRPC(rpc, str);
+        str = log_ToggleLockViewModeRPC(rpc);
         break;
     case ViewerRPC::ToggleFullFrameRPC:
-        log_ToggleFullFrameRPC(rpc, str);
+        str = log_ToggleFullFrameRPC(rpc);
         break;
     case ViewerRPC::UndoViewRPC:
-        log_UndoViewRPC(rpc, str);
+        str = log_UndoViewRPC(rpc);
         break;
     case ViewerRPC::RedoViewRPC:
-        log_RedoViewRPC(rpc, str);
+        str = log_RedoViewRPC(rpc);
         break;
     case ViewerRPC::InvertBackgroundRPC:
-        log_InvertBackgroundRPC(rpc, str);
+        str = log_InvertBackgroundRPC(rpc);
         break;
     case ViewerRPC::ClearPickPointsRPC:
-        log_ClearPickPointsRPC(rpc, str);
+        str = log_ClearPickPointsRPC(rpc);
         break;
     case ViewerRPC::SetWindowModeRPC:
-        log_SetWindowModeRPC(rpc, str);
+        str = log_SetWindowModeRPC(rpc);
         break;
     case ViewerRPC::EnableToolRPC:
-        log_EnableToolRPC(rpc, str);
+        str = log_EnableToolRPC(rpc);
         break;
     case ViewerRPC::CopyViewToWindowRPC:
-        log_CopyViewToWindowRPC(rpc, str);
+        str = log_CopyViewToWindowRPC(rpc);
         break;
     case ViewerRPC::CopyLightingToWindowRPC:
-        log_CopyLightingToWindowRPC(rpc, str);
+        str = log_CopyLightingToWindowRPC(rpc);
         break;
     case ViewerRPC::CopyAnnotationsToWindowRPC:
-        log_CopyAnnotationsToWindowRPC(rpc, str);
+        str = log_CopyAnnotationsToWindowRPC(rpc);
         break;
     case ViewerRPC::CopyPlotsToWindowRPC:
-        log_CopyPlotsToWindowRPC(rpc, str);
+        str = log_CopyPlotsToWindowRPC(rpc);
         break;
     case ViewerRPC::ClearCacheRPC:
-        log_ClearCacheRPC(rpc, str);
+        str = log_ClearCacheRPC(rpc);
         break;
     case ViewerRPC::ClearCacheForAllEnginesRPC:
-        log_ClearCacheForAllEnginesRPC(rpc, str);
+        str = log_ClearCacheForAllEnginesRPC(rpc);
         break;
     case ViewerRPC::SetViewExtentsTypeRPC:
-        log_SetViewExtentsTypeRPC(rpc, str);
+        str = log_SetViewExtentsTypeRPC(rpc);
         break;
     case ViewerRPC::ClearRefLinesRPC:
-        log_ClearRefLinesRPC(rpc, str);
+        str = log_ClearRefLinesRPC(rpc);
         break;
     case ViewerRPC::SetRenderingAttributesRPC:
-        log_SetRenderingAttributesRPC(rpc, str);
+        str = log_SetRenderingAttributesRPC(rpc);
         break;
     case ViewerRPC::DatabaseQueryRPC:
-        log_DatabaseQueryRPC(rpc, str);
+        str = log_DatabaseQueryRPC(rpc);
         break;
     case ViewerRPC::PointQueryRPC:
-        log_PointQueryRPC(rpc, str);
+        str = log_PointQueryRPC(rpc);
         break;
     case ViewerRPC::LineQueryRPC:
-        log_LineQueryRPC(rpc, str);
+        str = log_LineQueryRPC(rpc);
         break;
     case ViewerRPC::CloneWindowRPC:
-        log_CloneWindowRPC(rpc, str);
+        str = log_CloneWindowRPC(rpc);
         break;
     case ViewerRPC::SetMaterialAttributesRPC:
-        log_SetMaterialAttributesRPC(rpc, str);
+        str = log_SetMaterialAttributesRPC(rpc);
         break;
     case ViewerRPC::SetDefaultMaterialAttributesRPC:
-        log_SetDefaultMaterialAttributesRPC(rpc, str);
+        str = log_SetDefaultMaterialAttributesRPC(rpc);
         break;
     case ViewerRPC::ResetMaterialAttributesRPC:
-        log_ResetMaterialAttributesRPC(rpc, str);
+        str = log_ResetMaterialAttributesRPC(rpc);
         break;
     case ViewerRPC::SetPlotDatabaseStateRPC:
-        log_SetPlotDatabaseStateRPC(rpc, str);
+        str = log_SetPlotDatabaseStateRPC(rpc);
         break;
     case ViewerRPC::DeletePlotDatabaseKeyframeRPC:
-        log_DeletePlotDatabaseKeyframeRPC(rpc, str);
+        str = log_DeletePlotDatabaseKeyframeRPC(rpc);
         break;
     case ViewerRPC::MovePlotDatabaseKeyframeRPC:
-        log_MovePlotDatabaseKeyframeRPC(rpc, str);
+        str = log_MovePlotDatabaseKeyframeRPC(rpc);
         break;
     case ViewerRPC::ClearViewKeyframesRPC:
-        log_ClearViewKeyframesRPC(rpc, str);
+        str = log_ClearViewKeyframesRPC(rpc);
         break;
     case ViewerRPC::DeleteViewKeyframeRPC:
-        log_DeleteViewKeyframeRPC(rpc, str);
+        str = log_DeleteViewKeyframeRPC(rpc);
         break;
     case ViewerRPC::MoveViewKeyframeRPC:
-        log_MoveViewKeyframeRPC(rpc, str);
+        str = log_MoveViewKeyframeRPC(rpc);
         break;
     case ViewerRPC::SetViewKeyframeRPC:
-        log_SetViewKeyframeRPC(rpc, str);
+        str = log_SetViewKeyframeRPC(rpc);
         break;
     case ViewerRPC::OpenMDServerRPC:
-        log_OpenMDServerRPC(rpc, str);
+        str = log_OpenMDServerRPC(rpc);
         break;
     case ViewerRPC::EnableToolbarRPC:
-        log_EnableToolbarRPC(rpc, str);
+        str = log_EnableToolbarRPC(rpc);
         break;
     case ViewerRPC::HideToolbarsRPC:
-        log_HideToolbarsRPC(rpc, str);
+        str = log_HideToolbarsRPC(rpc);
         break;
     case ViewerRPC::HideToolbarsForAllWindowsRPC:
-        log_HideToolbarsForAllWindowsRPC(rpc, str);
+        str = log_HideToolbarsForAllWindowsRPC(rpc);
         break;
     case ViewerRPC::ShowToolbarsRPC:
-        log_ShowToolbarsRPC(rpc, str);
+        str = log_ShowToolbarsRPC(rpc);
         break;
     case ViewerRPC::ShowToolbarsForAllWindowsRPC:
-        log_ShowToolbarsForAllWindowsRPC(rpc, str);
+        str = log_ShowToolbarsForAllWindowsRPC(rpc);
         break;
     case ViewerRPC::SetToolbarIconSizeRPC:
-        log_SetToolbarIconSizeRPC(rpc, str);
+        str = log_SetToolbarIconSizeRPC(rpc);
         break;
     case ViewerRPC::SaveViewRPC:
-        log_SaveViewRPC(rpc, str);
+        str = log_SaveViewRPC(rpc);
         break;
     case ViewerRPC::SetGlobalLineoutAttributesRPC:
-        log_SetGlobalLineoutAttributesRPC(rpc, str);
+        str = log_SetGlobalLineoutAttributesRPC(rpc);
         break;
     case ViewerRPC::SetPickAttributesRPC:
-        log_SetPickAttributesRPC(rpc, str);
+        str = log_SetPickAttributesRPC(rpc);
         break;
     case ViewerRPC::ExportColorTableRPC:
-        log_ExportColorTableRPC(rpc, str);
+        str = log_ExportColorTableRPC(rpc);
         break;
     case ViewerRPC::ExportEntireStateRPC:
-        log_ExportEntireStateRPC(rpc, str);
+        str = log_ExportEntireStateRPC(rpc);
         break;
     case ViewerRPC::ImportEntireStateRPC:
-        log_ImportEntireStateRPC(rpc, str);
+        str = log_ImportEntireStateRPC(rpc);
         break;
     case ViewerRPC::ImportEntireStateWithDifferentSourcesRPC:
-        log_ImportEntireStateWithDifferentSourcesRPC(rpc, str);
+        str = log_ImportEntireStateWithDifferentSourcesRPC(rpc);
         break;
     case ViewerRPC::ResetPickAttributesRPC:
-        log_ResetPickAttributesRPC(rpc, str);
+        str = log_ResetPickAttributesRPC(rpc);
         break;
     case ViewerRPC::AddAnnotationObjectRPC:
-        log_AddAnnotationObjectRPC(rpc, str);
+        str = log_AddAnnotationObjectRPC(rpc);
         break;
     case ViewerRPC::HideActiveAnnotationObjectsRPC:
-        log_HideActiveAnnotationObjectsRPC(rpc, str);
+        str = log_HideActiveAnnotationObjectsRPC(rpc);
         break;
     case ViewerRPC::DeleteActiveAnnotationObjectsRPC:
-        log_DeleteActiveAnnotationObjectsRPC(rpc, str);
+        str = log_DeleteActiveAnnotationObjectsRPC(rpc);
         break;
     case ViewerRPC::RaiseActiveAnnotationObjectsRPC:
-        log_RaiseActiveAnnotationObjectsRPC(rpc, str);
+        str = log_RaiseActiveAnnotationObjectsRPC(rpc);
         break;
     case ViewerRPC::LowerActiveAnnotationObjectsRPC:
-        log_LowerActiveAnnotationObjectsRPC(rpc, str);
+        str = log_LowerActiveAnnotationObjectsRPC(rpc);
         break;
     case ViewerRPC::SetAnnotationObjectOptionsRPC:
-        log_SetAnnotationObjectOptionsRPC(rpc, str);
+        str = log_SetAnnotationObjectOptionsRPC(rpc);
         break;
     case ViewerRPC::SetDefaultAnnotationObjectListRPC:
-        log_SetDefaultAnnotationObjectListRPC(rpc, str);
+        str = log_SetDefaultAnnotationObjectListRPC(rpc);
         break;
     case ViewerRPC::ResetAnnotationObjectListRPC:
-        log_ResetAnnotationObjectListRPC(rpc, str);
+        str = log_ResetAnnotationObjectListRPC(rpc);
         break;
     case ViewerRPC::ResetPickLetterRPC:
-        log_ResetPickLetterRPC(rpc, str);
+        str = log_ResetPickLetterRPC(rpc);
         break;
     case ViewerRPC::SetDefaultPickAttributesRPC:
-        log_SetDefaultPickAttributesRPC(rpc, str);
+        str = log_SetDefaultPickAttributesRPC(rpc);
         break;
     case ViewerRPC::ChooseCenterOfRotationRPC:
-        log_ChooseCenterOfRotationRPC(rpc, str);
+        str = log_ChooseCenterOfRotationRPC(rpc);
         break;
     case ViewerRPC::SetCenterOfRotationRPC:
-        log_SetCenterOfRotationRPC(rpc, str);
+        str = log_SetCenterOfRotationRPC(rpc);
         break;
     case ViewerRPC::SetQueryOverTimeAttributesRPC:
-        log_SetQueryOverTimeAttributesRPC(rpc, str);
+        str = log_SetQueryOverTimeAttributesRPC(rpc);
         break;
     case ViewerRPC::SetDefaultQueryOverTimeAttributesRPC:
-        log_SetDefaultQueryOverTimeAttributesRPC(rpc, str);
+        str = log_SetDefaultQueryOverTimeAttributesRPC(rpc);
         break;
     case ViewerRPC::ResetQueryOverTimeAttributesRPC:
-        log_ResetQueryOverTimeAttributesRPC(rpc, str);
+        str = log_ResetQueryOverTimeAttributesRPC(rpc);
         break;
     case ViewerRPC::ResetLineoutColorRPC:
-        log_ResetLineoutColorRPC(rpc, str);
+        str = log_ResetLineoutColorRPC(rpc);
         break;
     case ViewerRPC::SetInteractorAttributesRPC:
-        log_SetInteractorAttributesRPC(rpc, str);
+        str = log_SetInteractorAttributesRPC(rpc);
         break;
     case ViewerRPC::SetDefaultInteractorAttributesRPC:
-        log_SetDefaultInteractorAttributesRPC(rpc, str);
+        str = log_SetDefaultInteractorAttributesRPC(rpc);
         break;
     case ViewerRPC::ResetInteractorAttributesRPC:
-        log_ResetInteractorAttributesRPC(rpc, str);
+        str = log_ResetInteractorAttributesRPC(rpc);
         break;
     case ViewerRPC::GetProcInfoRPC:
-        log_GetProcInfoRPC(rpc, str);
+        str = log_GetProcInfoRPC(rpc);
         break;
     case ViewerRPC::SendSimulationCommandRPC:
-        log_SendSimulationCommandRPC(rpc, str);
+        str = log_SendSimulationCommandRPC(rpc);
         break;
     case ViewerRPC::UpdateDBPluginInfoRPC:
-        log_UpdateDBPluginInfoRPC(rpc, str);
+        str = log_UpdateDBPluginInfoRPC(rpc);
         break;
     case ViewerRPC::ExportDBRPC:
-        log_ExportDBRPC(rpc, str);
+        str = log_ExportDBRPC(rpc);
         break;
     case ViewerRPC::SetTryHarderCyclesTimesRPC:
-        log_SetTryHarderCyclesTimesRPC(rpc, str);
+        str = log_SetTryHarderCyclesTimesRPC(rpc);
         break;
     case ViewerRPC::SuppressQueryOutputRPC:
-        log_SuppressQueryOutputRPC(rpc, str);
+        str = log_SuppressQueryOutputRPC(rpc);
         break;
     case ViewerRPC::SetMeshManagementAttributesRPC:
-        log_SetMeshManagementAttributesRPC(rpc, str);
+        str = log_SetMeshManagementAttributesRPC(rpc);
         break;
     case ViewerRPC::SetDefaultMeshManagementAttributesRPC:
-        log_SetDefaultMeshManagementAttributesRPC(rpc, str);
+        str = log_SetDefaultMeshManagementAttributesRPC(rpc);
         break;
     case ViewerRPC::ResetMeshManagementAttributesRPC:
-        log_ResetMeshManagementAttributesRPC(rpc, str);
+        str = log_ResetMeshManagementAttributesRPC(rpc);
         break;
     case ViewerRPC::ResizeWindowRPC:
-        log_ResizeWindowRPC(rpc, str);
+        str = log_ResizeWindowRPC(rpc);
         break;
     case ViewerRPC::MoveWindowRPC:
-        log_MoveWindowRPC(rpc, str);
+        str = log_MoveWindowRPC(rpc);
         break;
     case ViewerRPC::MoveAndResizeWindowRPC:
-        log_MoveAndResizeWindowRPC(rpc, str);
+        str = log_MoveAndResizeWindowRPC(rpc);
         break;
     case ViewerRPC::ConstructDDFRPC:
-        log_ConstructDDFRPC(rpc, str);
+        str = log_ConstructDDFRPC(rpc);
         break;
     case ViewerRPC::RequestMetaDataRPC:
-        log_RequestMetaDataRPC(rpc, str);
+        str = log_RequestMetaDataRPC(rpc);
         break;
     case ViewerRPC::SetQueryFloatFormatRPC:
-        log_SetQueryFloatFormatRPC(rpc, str);
+        str = log_SetQueryFloatFormatRPC(rpc);
         break;
     case ViewerRPC::CreateNamedSelectionRPC:
-        log_CreateNamedSelectionRPC(rpc, str);
+        str = log_CreateNamedSelectionRPC(rpc);
         break;
     case ViewerRPC::DeleteNamedSelectionRPC:
-        log_DeleteNamedSelectionRPC(rpc, str);
+        str = log_DeleteNamedSelectionRPC(rpc);
         break;
     case ViewerRPC::LoadNamedSelectionRPC:
-        log_LoadNamedSelectionRPC(rpc, str);
+        str = log_LoadNamedSelectionRPC(rpc);
         break;
     case ViewerRPC::SaveNamedSelectionRPC:
-        log_SaveNamedSelectionRPC(rpc, str);
+        str = log_SaveNamedSelectionRPC(rpc);
         break;
     case ViewerRPC::ApplyNamedSelectionRPC:
-        log_ApplyNamedSelectionRPC(rpc, str);
+        str = log_ApplyNamedSelectionRPC(rpc);
         break;
     case ViewerRPC::SetPlotDescriptionRPC:
-        log_SetPlotDescriptionRPC(rpc, str);
+        str = log_SetPlotDescriptionRPC(rpc);
         break;
     case ViewerRPC::MovePlotOrderTowardFirstRPC:
-        log_MovePlotOrderTowardFirstRPC(rpc, str);
+        str = log_MovePlotOrderTowardFirstRPC(rpc);
         break;
     case ViewerRPC::MovePlotOrderTowardLastRPC:
-        log_MovePlotOrderTowardLastRPC(rpc, str);
+        str = log_MovePlotOrderTowardLastRPC(rpc);
         break;
     case ViewerRPC::SetPlotOrderToFirstRPC:
-        log_SetPlotOrderToFirstRPC(rpc, str);
+        str = log_SetPlotOrderToFirstRPC(rpc);
         break;
     case ViewerRPC::SetPlotOrderToLastRPC:
-        log_SetPlotOrderToLastRPC(rpc, str);
+        str = log_SetPlotOrderToLastRPC(rpc);
         break;
 
     // RPCs that we don't want to log:
@@ -2305,8 +2436,8 @@ LogRPCs(Subject *subj, void *)
         // Do the default behavior of stripping "RPC" from the name and 
         // making a function call from the rpc name.
         std::string rpcName(ViewerRPC::ViewerRPCType_ToString(rpc->GetRPCType()));
-        SNPRINTF(str, SLEN, "# MAINTENANCE ISSUE: %s is not handled in "
-                "Logging.C. Please contact a VisIt developer.\n", rpcName.c_str());
+        str = (std::string("# MAINTENANCE ISSUE: ") + rpcName) + " is not handled in "
+                "Logging.C. Please contact a VisIt developer.\n";
         debug5 << str;
         }
         break;
@@ -2320,7 +2451,7 @@ LogRPCs(Subject *subj, void *)
 
         // Write to the log
         if(logFile != 0)
-            fprintf(logFile, "%s", str);
+            fprintf(logFile, "%s", str.c_str());
     }
 }
 
