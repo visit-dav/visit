@@ -468,6 +468,12 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    in the contract.  Also, disable the collective test if we are doing
 //    on demand streaming.
 //
+//    Mark C. Miller, Mon Nov  9 09:38:49 PST 2009
+//    Pushed transform manager work down one level from here, where it 
+//    operates on a dataset collection (and means for example that all
+//    domains could be read in double precision before any one domain is
+//    converted to float) to inside ReadDataset. Doh! Why didn't I think
+//    of that before.
 // ****************************************************************************
 
 avtDataTree_p
@@ -520,19 +526,6 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         // This is the primary routine that reads things in from disk.
         //
         ReadDataset(datasetCollection, domains, spec, src, selectionsApplied);
-
-        //
-        // Do any transformations necessary to convert data from a form VisIt
-        // cannot, in general, handle to a form that it can. Typically, this
-        // is a no-op. The kind of transformations here include
-        // such things as precision conversion, making the mesh a "conforming"
-        // mesh (e.g. removing hanging nodes), converting arbitrary polyhdra
-        // to zoo-type, discretizing a csg mesh, etc.
-        //
-        int t0 = visitTimer->StartTimer();
-        xformManager->TransformDataset(datasetCollection, domains, spec, src,
-                          selectionsApplied, md);
-        visitTimer->StopTimer(t0, "Transform manager");
 
         //
         // Now that we have read things in from disk, verify that the dataset
@@ -4813,6 +4806,12 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Add support for file formats that do their own domain decomposition
 //    in a parallel setting when using data selections.
 //
+//    Mark C. Miller, Mon Nov  9 09:40:52 PST 2009
+//    Moved transform manager work here from ::GetOutput, so transforms can
+//    be applied as each domain is read rather than after all domains are
+//    read. This is important for transformations such us changes from 
+//    double to single precision that reduce the memory footprint of a 
+//    dataset.
 // ****************************************************************************
 
 void
@@ -5108,6 +5107,28 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                         ds.AddMixVar(i, vr);
                     }
                 }
+            }
+        }
+
+        //
+        // Do any transformations necessary to convert data
+        // from a form VisIt cannot, in general, handle to a
+        // form that it can. Typically, this is a no-op. The
+        // kind of transformations here include such things
+        // as precision conversion, making the mesh a "conforming"
+        // mesh (e.g. removing hanging nodes), converting arbitrary
+        // polyhdra to zoo-type, discretizing a csg mesh, etc.
+        //
+        for (int j = 0 ; j < (ds.needsMatSelect[i]?nmats:1); j++)
+        {
+            vtkDataSet *dsOrig, *dstmp;
+            dsOrig = dstmp = ds.GetDataset(i, j);
+            dstmp = xformManager->TransformSingleDataset(dstmp,
+                domains[i], spec, src, selectionsApplied, md);
+            if (dstmp != dsOrig)
+            {
+                ds.SetDataset(i, j, dstmp);
+                dstmp->Delete();
             }
         }
 

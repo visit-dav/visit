@@ -92,6 +92,10 @@ class avtSourceFromDatabase;
 //
 //    Mark C. Miller, Wed May  6 13:51:05 PDT 2009
 //    Pass md and dom to AddVertexCellsToPointsOnlyDataset.
+//
+//    Mark C. Miller, Mon Nov  9 10:40:34 PST 2009
+//    Changed interface to main transform method to operate on a single
+//    dataset instead of a dataset collection.
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -102,8 +106,8 @@ class DATABASE_API avtTransformManager
 
     void                       FreeUpResources(int lastts);
 
-    bool                       TransformDataset(avtDatasetCollection &ds,
-                                   intVector &domains, avtDataRequest_p &spec,
+    vtkDataSet                *TransformSingleDataset(vtkDataSet *ds,
+                                   int domain, avtDataRequest_p &spec,
                                    avtSourceFromDatabase *src,
                                    boolVector &selectionsApplied,
                                    avtDatabaseMetaData *md);

@@ -480,7 +480,7 @@ ConvertDataSetToFloat(vtkDataSet *oldds)
 }
 
 // ****************************************************************************
-//  Template: ConvertDataSetToFloat
+//  Template: BuildMappedArray
 //
 //  Purpose: Build a mapping array to handle changes in zone/node numbering
 //  and order when dealing with variables
@@ -507,7 +507,7 @@ BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
 }
 
 // ****************************************************************************
-//  Template: ConvertDataSetToFloat
+//  Template: BuildMappedArray
 //
 //  Purpose: Build a mapping array to handle changes in zone/node numbering
 //  and order when dealing with variables
@@ -1581,57 +1581,43 @@ vtkDataSet *ds, int dom)
 //    Mark C. Miller, Thu Feb 12 02:18:45 PST 2009
 //    Convert datasets that are intended to be curves but served up as 
 //    non-rectilinear-grid, 1D datasets to correct type.
+//
+//    Mark C. Miller, Mon Nov  9 10:34:15 PST 2009
+//    Changed name and interface to routine to reflect the fact that it is
+//    operating on only a single dataset and not a dataset collection as it
+//    was previously designed. This allows it to be integrated with generic db
+//    as each dataset is read from a plugin instead of after all datasets have
+//    been read.
 // ****************************************************************************
-bool
-avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
-    intVector &domains, avtDataRequest_p &d_spec,
+vtkDataSet *
+avtTransformManager::TransformSingleDataset(vtkDataSet *ds,
+    int domain, avtDataRequest_p &d_spec,
     avtSourceFromDatabase *src, boolVector &selectionsApplied,
     avtDatabaseMetaData *md)
 {
-    const char progressString[256] = "Transforming input data";
-    bool transformsApplied = false;
-    src->DatabaseProgress(0, 0, progressString);
-    for (int i = 0; i < dsc.GetNDomains(); i++)
+    if (!ds) return 0;
+
+    TRY
     {
-        vtkDataSet *dsOrig, *ds;
-        dsOrig = ds = dsc.GetDataset(i, 0);
-        src->DatabaseProgress(i, dsc.GetNDomains(), progressString);
+        ds = CSGToDiscrete(md, d_spec, ds, domain);
 
-        if (!ds) continue;
+        // Handle vtkPoints datasets that have points but no cells
+        ds = AddVertexCellsToPointsOnlyDataset(md, ds, domain);
 
-        TRY
-        {
-            ds = CSGToDiscrete(md, d_spec, ds, domains[i]);
+        // Handle 1D datasets as curves (rect grids)
+        ds = ConvertCurvesToRectGrids(md, ds, domain);
 
-            // Handle vtkPoints datasets that have points but no cells
-            ds = AddVertexCellsToPointsOnlyDataset(md, ds, domains[i]);
+        //ds = HangingToConforming(md, d_spec, ds);
 
-            // Handle 1D datasets as curves (rect grids)
-            ds = ConvertCurvesToRectGrids(md, ds, domains[i]);
+        //ds = PolyhedralToZoo(md, d_spec, ds);
 
-            //ds = HangingToConforming(md, d_spec, ds);
-
-            // old way of "dealing" with polyhedral was to eliminate it
-            //ds = ElminatePolyhedral(md, d_spec, ds);
-
-            //ds = PolyhedralToZoo(md, d_spec, ds);
-
-            ds = NativeToFloat(md, d_spec, ds, domains[i]);
-
-            if (ds != dsOrig)
-            {
-                transformsApplied = true;
-                dsc.SetDataset(i, 0, ds);
-                ds->Delete();
-            }
-        }
-        CATCH(PointerNotInCacheException)
-        {
-            ; // do nothing
-        }
-        ENDTRY
+        ds = NativeToFloat(md, d_spec, ds, domain);
     }
+    CATCH(PointerNotInCacheException)
+    {
+        ; // do nothing
+    }
+    ENDTRY
 
-    src->DatabaseProgress(1, 0, progressString);
-    return transformsApplied;
+    return ds;
 }
