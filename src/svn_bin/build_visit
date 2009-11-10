@@ -721,6 +721,11 @@
 #     Added support for using VisIt's anonymous svn server via "--svn-anonymous"
 #     Switched all versions of OSX to use Python 2.6.4 by default.
 #
+#     Hank Childs, Tue Nov 10 08:21:19 PST 2009
+#     Add support for "build_visit --no-thirdparty --vtk".  This was a
+#     supported option before, but it failed to properly download and/or build 
+#     Mesa, CMake, and Python.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1660,6 +1665,9 @@ function check_files
 #    Cyrus Harrison, Fri Nov 14 08:21:21 PST 2008
 #    Use helper function.
 #
+#    Hank Childs, Tue Nov 10 08:16:21 PST 2009
+#    Have CMake, Python, and Mesa be dependencies for VTK.
+#
 # *************************************************************************** #
 
 function check_required_3rdparty
@@ -1678,6 +1686,9 @@ function check_required_3rdparty
     fi
     
     if [[ "$DO_VTK" == "yes" ]] ; then
+        ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE
+        ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
+        ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE $MESA_URL
         ensure_built_or_ready "vtk"    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
         if [[ $? != 0 ]] ; then
             return 1
@@ -3327,6 +3338,19 @@ function build_vtk
        fi
     fi
 
+    #
+    # We need Mesa to build vtk with mangled Mesa.
+    #
+    MESA_INSTALL="$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
+    if [[ -e ${MESA_INSTALL} ]] ; then
+       info "VTK: Mesa found"
+    else
+       build_mesa
+       if [[ $? != 0 ]] ; then
+          warn "Unable to build Mesa. Giving up"
+          return 1
+       fi
+    fi
 
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
     untarred_vtk=$?
