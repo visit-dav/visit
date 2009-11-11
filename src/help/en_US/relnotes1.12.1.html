@@ -20,6 +20,7 @@
 <li>Projecting slices of vector data on rectilinear meshes to two dimensions now works correctly.</li>
 <li>VisIt's Tecplot writer was enhanced so it can save: 2D meshes, rectilinear meshes, and polygonal meshes. The writer was also changed so it produces files that are easier to read by a human.</li>
 <li>VisIt's Tecplot reader now tags meshes as being 1-origin for node numbers. This makes the node numbers show up as 1-origin in the Label plot and in query results.</li>
+<li>VisIt's Tecplot reader has improved support for mixed dimensionality meshes, as well as supporting some new additions to the format.</li>
 <li>The paraDIS and paraDIS_tecplot readers were added.</li>
 <li>VisIt's Contour plot was enhanced so short line segments are grouped into polylines, which makes setting line styles work better.</li>
 <li>A bug was corrected in the XDMF reader, where going through a time sequence a second time could cause read errors.</li>
@@ -34,6 +35,10 @@
 <li>VisIt now clears metadata in the metadata server and the compute engine prior to restoring session files. This prevents old metadata from affecting how the session file loads and ensures that transient variables are detected.</li>
 <li>VisIt no longer erroneously places plots into the error state when restoring sessions as could happen when the Engine Chooser window was active.</li>
 <li>VisIt's macro recording feature no longer cuts off recorded commands and 5000 characters.</li>
+<li>The internal atomic support data tables had missing data which has now been populated.</li>
+<li>The visualization window axes have improved support for 0-range data, also fixing an exception in some cases.</li>
+<li>A problem tracking the primary variable, which could appear when using the Molecule plot, has been fixed.</li>
+<li>The axis extents used by the Parallel Coordinates plot were displayed, but not editable.  They can now be changed directly in the window.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.12.0.html">VisIt 1.12.0 Release Notes</a>.</p>
