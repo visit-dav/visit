@@ -16,8 +16,7 @@
 
 //Along with PARALLEL (defined by build system) enables
 // domain decomposition code added by Gunther
-//#define DECOMPOSE_DOMAINS
-//#define PARALLEL
+//#define VIZSCHEMA_DECOMPOSE_DOMAINS
 
 // std includes
 #include <cstring>
@@ -51,7 +50,7 @@
 
 #include <avtVsFileFormat.h>
 
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
 #include <avtParallel.h>
 #endif
 
@@ -158,10 +157,10 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name) {
            debugStrmRef <<methodSig <<"Trying to load & return uniform mesh" <<std::endl;
       return getUniformMesh(meshName, *meta);
          }
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     // Don't know how to decompose any other type of mesh -> load it on proc 0 only
     if (PAR_Rank() > 0) {
-           debugStrmRef <<methodSig <<"In parallel mode on procesor " <<PAR_Rank <<" and mesh is not uniform" <<std::endl;>
+           debugStrmRef <<methodSig <<"In parallel mode on procesor " <<PAR_Rank <<" and mesh is not uniform" <<std::endl;
            debugStrmRef <<methodSig <<"Returning NULL, mesh will be loaded on processor 0 only." <<std::endl;
       return NULL;
     }
@@ -870,7 +869,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(const std::string& name,
     return NULL;
   }
 
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
   debugStrmRef <<methodSig <<"Parallel & Decompose_Domains are defined, entering parallel code." << endl;
   size_t splitAxis = 0;
   size_t largestCount = numCells[splitAxis];
@@ -1016,7 +1015,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(const std::string& name,
          numValues = numValues / stride[0];
          debugStrmRef  <<methodSig <<"Filtering points based on stride.  After = " <<numValues <<std::endl;
   }
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
   debugStrmRef <<methodSig <<"Parallel & Decompose_Domains are defined, entering parallel code." << endl;
   size_t numPartsPerProc = numValues / PAR_Size();
   size_t numProcsWithExtraPart = numValues % PAR_Size();
@@ -1075,7 +1074,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(const std::string& name,
 
   // Read in the data
   debugStrmRef << methodSig <<"Reading data." <<std::endl;
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
   herr_t err = reader->getVarWithMeshMesh(meta, dataPtr, start, count);
 #else
   herr_t err = reader->getVarWithMeshMesh(meta, dataPtr);
@@ -1469,7 +1468,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName) {
     debugStrmRef << methodSig <<"Entering VarWithMesh section." << endl;
 //    int lastDim = dims[dims.size()-1];
 //    len = vmmeta->getLength()/lastDim;
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     debugStrmRef <<methodSig <<"Parallel & Decompose_Domains are defined, entering parallel code." << endl;
     size_t numPartsPerProc = len / PAR_Size();
     size_t numProcsWithExtraPart = len % PAR_Size();
@@ -1496,7 +1495,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName) {
     }
 
     debugStrmRef <<methodSig <<"Reading var with mesh data." << endl;
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     herr_t err = reader->getVarWithMeshComponent(name, componentIndex, data, start, count);
 #else
     herr_t err = reader->getVarWithMeshComponent(name, componentIndex, data);
@@ -1510,10 +1509,10 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName) {
   else if (isAComponent) {
     debugStrmRef << methodSig <<"Entering Component section." << endl;
     // Read a var comp
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     debugStrmRef <<methodSig <<"Parallel & Decompose_Domains are defined, entering parallel code." << endl;
     size_t splitDims[rank];
-    data = reader->getVariableComponent(nm, indx, PAR_Rank(), PAR_Size(), splitDims);
+    data = reader->getVariableComponent(name, componentIndex, PAR_Rank(), PAR_Size(), splitDims);
     if (!data) return 0;
     debugStrmRef << methodSig <<"Original dimensions are";
     for (size_t i=0; i<rank; ++i) {
@@ -1566,7 +1565,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName) {
   }
   else {
     debugStrmRef << methodSig <<"Entering regular Variable section." << endl;
-#if (defined PARALLEL && defined DECOMPOSE_DOMAINS)
+#if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     // Don't know how to decompose this type of mesh -> load it on proc 0 only
     if (PAR_Rank() > 0)
     {
@@ -2196,7 +2195,7 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md) {
   // NOTE that we can't decompose domains if we have MD meshes
   // So it's one or the other
   std::vector<std::string> names;
-#ifdef DECOMPOSE_DOMAINS
+#ifdef VIZSCHEMA_DECOMPOSE_DOMAINS
   debugStrmRef <<methodSig <<"Decompose_domains is defined.  Entering code block." <<std::endl;
   reader->getMDMeshNames(names);
   if (names.size() > 0) {
