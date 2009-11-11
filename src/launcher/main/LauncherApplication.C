@@ -63,6 +63,7 @@
 
 #include <LauncherApplication.h>
 #include <ConnectionGroup.h>
+#include <FileFunctions.h>
 #include <SocketConnection.h>
 #include <Utility.h>
 #include <vectortypes.h>
@@ -877,6 +878,9 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs,
 //   I moved the testing for parallel & engine up to here so I can call
 //   SetupGatewaySocketBridgeIfNeeded when I need to connect to simulations.
 //
+//   Hank Childs, Weds Nov 11 12:05:51 PST 2009
+//   Add support for tildes (~). 
+//
 // ****************************************************************************
 
 void
@@ -967,6 +971,8 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
             close(k);
         }
         // Execute the process on the local machine.
+        if (remoteProgram.size() > 0 && remoteProgram[0] == '~')
+            remoteProgram = ExpandUserPath(remoteProgram);
         execvp(remoteProgram.c_str(), args);
         exit(-1);
         break;   // OCD
