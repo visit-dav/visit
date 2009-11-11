@@ -11,7 +11,6 @@
 #include "stringutil.h"
 #include "timer.h"
 #include <algorithm>
-#include <ext/hash_set>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>

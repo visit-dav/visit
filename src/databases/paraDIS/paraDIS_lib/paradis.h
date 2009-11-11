@@ -81,7 +81,6 @@
 #include <fstream>
 #include <iostream>
 #include <ostream> 
-#include <ext/hash_set>
 #include <math.h>
 
 #include "Point.h"
@@ -118,7 +117,7 @@ namespace paraDIS {
       mNodeID = node; 
     }
     /*! 
-      for ordering hash_sets and hash lookups 
+      for ordering sets and hash lookups 
     */ 
     bool operator == (const NodeID &other) const {
       return mDomainID == other.mDomainID && mNodeID == other.mNodeID;
@@ -732,7 +731,7 @@ namespace paraDIS {
     }
     
     /*!
-      operator ==() is required for hash_set ordering.  It tests equality of endpoints, which is done by NodeID, not by location.  
+      operator ==() is required for set ordering.  It tests equality of endpoints, which is done by NodeID, not by location.  
     */ 
     bool operator == (const ArmSegment &other) const {
       return 
@@ -1039,7 +1038,7 @@ namespace paraDIS {
  
   // ==============================================
   /*!
-    A wrapper class to enable me to store ArmSegment *'s in a hash_set.  If I just use pointers, it does not work properly with operator ==() in that it compares the pointers for equality,  which is not what I want.  Using this class allows me to overload operator ==() so that the pointers are dereferenced before they are compared.  I also provide unary operator *() for convenience of notation. 
+    A wrapper class to enable me to store ArmSegment *'s.  If I just use pointers, it does not work properly with operator ==() in that it compares the pointers for equality,  which is not what I want.  Using this class allows me to overload operator ==() so that the pointers are dereferenced before they are compared.  I also provide unary operator *() for convenience of notation. 
   */ 
   class ArmSegmentSetElement {
   public:
@@ -1060,7 +1059,7 @@ namespace paraDIS {
         
    //=============================================
   /*!
-    This is a unary function object to be used with the hash_set in the DataSet.  operator () must return a size_t... 
+    This is a unary function object to be used with the hash in the DataSet.  operator () must return a size_t... 
   */ 
   class ArmSegmentHash {
   public: 
@@ -1520,7 +1519,6 @@ s      Tell the data set which file to read
     /*!
       set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
     */ 
-    //__gnu_cxx::hash_set<ArmSegmentSetElement, ArmSegmentHash> mQuickFindArmSegments; 
     set<ArmSegment *, CompareSegPtrs> mQuickFindArmSegments; 
     /*!
       The QuickFind array does not allow duplicates, so put wrapped arm segments here 
