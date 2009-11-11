@@ -39,6 +39,14 @@
 <li>The visualization window axes have improved support for 0-range data, also fixing an exception in some cases.</li>
 <li>A problem tracking the primary variable, which could appear when using the Molecule plot, has been fixed.</li>
 <li>The axis extents used by the Parallel Coordinates plot were displayed, but not editable.  They can now be changed directly in the window.</li>
+<li>The coordinates of Boxlib data have changed slightly.  We believe this should not be noticeable to users and that the new version is more accurate.  (We are now using integer arithmetic for "longer" when calculating positions.)</li>
+<li>ExportDatabase will now be much faster when exporting VTK files in parallel.</li>
+<li>A bug with 2d logical mesh boundary info was corrected in the Miranda reader.</li>
+<li>Support for launching on graph.llnl.gov was added.</li>
+</ul>
+<p><b><font size="4">Features added in version 1.12.1</font></b></p>
+<ul>
+<li>The VizSchema database reader from the Tech-X Corporation was added.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.12.0.html">VisIt 1.12.0 Release Notes</a>.</p>
