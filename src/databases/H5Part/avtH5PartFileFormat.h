@@ -31,6 +31,9 @@ class DBOptionsAttributes;
 //    Gunther H. Weber, Fri Apr 17 13:03:47 PDT 2009
 //    Added option to reject file if FastBit index is present.
 //
+//    Gunther H. Weber, Tue Nov 10 19:48:28 PST 2009
+//    Removed unused data members.
+//
 // ****************************************************************************
 
 class avtH5PartFileFormat : public avtMTMDFileFormat
@@ -73,8 +76,6 @@ class avtH5PartFileFormat : public avtMTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     std::vector<std::vector<float> > pointvars; //point variables
     std::vector<std::string> pointvarnames; //point variables' names
-    std::vector<float> minExtents; //min extents
-    std::vector<float> maxExtents; //max extents
 
     // H5Block
     std::vector< std::string > fieldNames; 
