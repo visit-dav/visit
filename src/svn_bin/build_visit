@@ -726,6 +726,9 @@
 #     supported option before, but it failed to properly download and/or build 
 #     Mesa, CMake, and Python.
 #
+#     Gunther H. Weber, Tue Nov 10 19:46:08 PST 2009
+#     Change install_name for VTK on MacOS.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3556,6 +3559,58 @@ function build_vtk
     if [[ $? != 0 ]] ; then
        warn "VTK did not install correctly.  Giving up."
        return 1
+    fi
+
+    #
+    # If on Darwin, fix install names
+    #
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        # fix the internal name with in the libraries
+        #
+        # first change the libraries name and identification by executing the
+        # following bourne shell script
+        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
+        libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
+        libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
+        libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
+        libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
+        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+        libvtktiff libvtkzlib
+        do
+           install_name_tool -id \
+             $INSTALLNAMEPATH/$i.$SO_EXT \
+             $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+        done
+
+        #
+        # Next change the dependent libraries names and paths
+        for i in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
+        libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
+        libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
+        libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
+        libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
+        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+        libvtktiff libvtkzlib
+        do
+          for j in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
+          libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
+          libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
+          libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
+          libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
+          libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+          libvtktiff libvtkzlib
+          do
+             install_name_tool -change \
+                $j.5.0.$SO_EXT \
+                $INSTALLNAMEPATH/$j.$SO_EXT \
+                $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+          done
+        done
     fi
 
     #
