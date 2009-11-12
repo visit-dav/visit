@@ -1193,6 +1193,7 @@ namespace paraDIS {
           
           currentSegment->ComputeBurgersType(burgers); 
           
+#ifdef __GNUC__
           ArmSegmentSet::iterator foundSegment = mQuickFindArmSegments.find(currentSegment); 
           if (foundSegment == mQuickFindArmSegments.end()) {
             currentSegment->SetID(); 
@@ -1202,6 +1203,7 @@ namespace paraDIS {
             (*foundSegment)->ReplacePlaceholder(fullNode);             
           }
           fullNode->AddNeighbor((*foundSegment)); 
+#endif
          
           ++neighbornum; 
         }; // done reading neighbor information

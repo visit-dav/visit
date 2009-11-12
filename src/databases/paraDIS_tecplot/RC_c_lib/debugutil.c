@@ -131,9 +131,10 @@ void dbg_maskstderr(int mask, char *fmt, ...)
 
 /* return 0 on failure, 1 on success */
 int dbg_setfile(const char *dbgfile) {
+  FILE *tmpf = NULL; 
   INITDEBUGFILE; 
   if (!dbgfile) return 0; 
-  FILE *tmpf = fopen(dbgfile, "w"); 
+  tmpf = fopen(dbgfile, "w"); 
   if (!tmpf) return 0; 
   gDebugFile = tmpf; 
   return 1;
