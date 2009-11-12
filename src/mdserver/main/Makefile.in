@@ -198,6 +198,9 @@
 #    Tom Fogal, Thu Jul  2 01:58:08 MDT 2009
 #    Add comm exports, since we catch an exception thrown by comm.
 #
+#    Hank Childs, Wed Nov 11 20:39:57 PST 2009
+#    Added $(ZLIB_LIB).
+#
 ##############################################################################
 
 ##
@@ -228,6 +231,7 @@ LIBS= \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \
     @LIBS@ \
+    $(ZLIB_LIB) \
     @PTHREAD_LIB@
 LIBDEP=
 CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@ -DMDSERVER_MAIN_EXPORTS -DCOMM_EXPORTS
