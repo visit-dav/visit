@@ -40,16 +40,16 @@ extern "C" {
 
   /*useful macro -- printf the fmt string onto s, modulo current function varargs */
 #define myvasprintf(s, fmt) \
-  va_list ap;\
+  { va_list ap;\
   va_start(ap, fmt);\
   vsprintf(s,fmt,ap);\
-  va_end(ap)
+  va_end(ap); }
 
 #define vafprintf(s, fmt) \
-  va_list ap;\
+  { va_list ap;\
   va_start(ap, fmt);\
   vfprintf(s,fmt,ap);\
-  va_end(ap)
+  va_end(ap); }
 
 void dbfprintf(FILE *stream, int level, const char *fmt, ...);
 void dbprintf(int level, const char *fmt, ...);
