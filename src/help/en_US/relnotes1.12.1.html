@@ -43,10 +43,14 @@
 <li>ExportDatabase will now be much faster when exporting VTK files in parallel.</li>
 <li>A bug with 2d logical mesh boundary info was corrected in the Miranda reader.</li>
 <li>Support for launching on graph.llnl.gov was added.</li>
+<li>A bug was fixed reading cycle/time information from CGNS files.</li>
+<li>A bug where build_visit inadvertently reported collisions between the user's enviornment variables and VisIt's make variables was corrected. Users should no longer have to specify VISIT_NOCKENV=1.</li>
 </ul>
 <p><b><font size="4">Features added in version 1.12.1</font></b></p>
 <ul>
 <li>The VizSchema database reader from the Tech-X Corporation was added.</li>
+<li>Support for arbitrary polyhedral meshes was added to the Silo plugin.</li>
+<li>Support for AMR meshes via Silo's Mesh Region Grouping trees was added to the Silo plugin.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.12.0.html">VisIt 1.12.0 Release Notes</a>.</p>
