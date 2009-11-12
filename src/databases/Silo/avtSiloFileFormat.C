@@ -1765,7 +1765,9 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     mmd->groupTitle = "levels";
                     mmd->groupPieceName = "level";
                     mmd->blockNames = amr_block_names;
+                    mmd->meshType = AVT_AMR_MESH;
                     md->Add(mmd);
+                    groupInfo.haveGroups = false;
                     md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
                 }
                 else
@@ -4638,6 +4640,8 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //    Cyrus harrison, Fri Oct  9 14:40:02 PDT 2009
 //    Guard against corner case crash for disconnected mesh subset.
 //
+//    Mark C. Miller, Wed Nov 11 12:28:25 PST 2009
+//    Added guard against case where some mmadj->nodelists arrays are null.
 // ****************************************************************************
 
 void
@@ -4716,6 +4720,9 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
 
         for( i =0; i < ndomains && idx < nnodelists; i++)
         {
+            if (!mmadj_obj->nodelists[idx])
+                continue;
+
             // the node list provides the overlap region between
             // the current domain and each neighbor and an orientation
             memcpy(extents_ptr, mmadj_obj->nodelists[idx],6*sizeof(int));
@@ -7528,6 +7535,9 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
 //    Brad Whitlock, Fri Aug  7 10:38:34 PDT 2009
 //    I added support for non-float data types.
 //
+//    Mark C. Miller, Thu Nov 12 14:56:15 PST 2009
+//    Changed logic for exception for variable with more than 1 component
+//    to use 'nvals' instead of 'ndims'
 // ****************************************************************************
 
 vtkDataArray *
@@ -7548,7 +7558,7 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    if(mv->ndims > 1)
+    if(mv->nvals > 1)
     {
         EXCEPTION1(InvalidVariableException, "Pointvar with more than 1 component. Fix Silo reader.");
     }
