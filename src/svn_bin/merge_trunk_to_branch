@@ -13,6 +13,9 @@
 #    Hank Childs, Mon Dec 17 16:12:45 PST 2007
 #    Explicitly enumerate the list of directories to merge over.
 #
+#    Brad Whitlock, Fri Nov 13 15:33:10 PST 2009
+#    I added a -user argument.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -25,9 +28,19 @@ P2=${P%/*}
 CDPATH=""
 
 BRANCH=""
-if [[ $# != 0 ]] ; then
+
+user=$SVN_NERSC_NAME
+if [[ $# == 2 ]] ; then
+   if [[ "$1" == "-user" ]] ; then
+       user=$2
+   else
+       issueHelp="yes"
+   fi
+elif [[ $# != 0 ]] ; then
    issueHelp="yes"
-elif [[ ! -f .branchname ]] ; then
+fi
+
+if [[ ! -f .branchname ]] ; then
    echo ""
    echo "ERROR: You must run this script at the top of your branch directory"
    echo ""
@@ -37,10 +50,10 @@ elif [[ ! -f .rootpath ]] ; then
    echo "ERROR: You must run this script at the top of your branch directory"
    echo ""
    issueHelp="yes"
-else
+elif [[ "$issueHelp" == "no" ]] ; then
    BRANCHNAME=$(cat .branchname)
    ROOTPATH=$(cat .rootpath)
-   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}${ROOTPATH}
+   BRANCH=${VISIT_SVN_BRANCHES}/${user}/${BRANCHNAME}${ROOTPATH}
    svn ls $BRANCH 2>/dev/null > /dev/null
    if [[ $? != 0 ]] ; then
       echo "The branch $1 does not appear to exist."
@@ -52,9 +65,10 @@ fi
 
 if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
-   echo "Usage:   ${0##*/}"
+   echo "Usage:   ${0##*/} [-user name]"
    echo ""
    echo "Example: ${0##*/}"
+   echo "         ${0##*/} -user name"
    echo ""
    echo "\tThis command should be run at the top level of your checked out branch."
    echo "\tIt will use the contents of the file \".branchname\" to determine which branch "
@@ -74,7 +88,7 @@ echo "Getting record of last merge from trunk into branch..."
 
 mkdir tmp_forRev$$
 cd tmp_forRev$$
-svn checkout --quiet ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+svn checkout --quiet ${VISIT_SVN_BRANCHES}/${user}/${BRANCHNAME}/svninfo
 cd svninfo
 REV=$(cat Rev_fromTrunk)
 cd ../..
