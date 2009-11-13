@@ -19,7 +19,6 @@
 #ifndef COGNOMEN_H
 #define COGNOMEN_H
 
-#include <cog/bool.h>
 #include <cog/types.h>
 
 #if __GNUC__ >= 4 && defined(IN_COGNOMEN)
@@ -51,8 +50,8 @@ int API cog_set_min(const cog_set * const);
 /** @return the maximum rank defined in the given set */
 int API cog_set_max(const cog_set * const);
 
-/** @return true if the given rank falls in the given set. */
-bool API cog_set_intersect(const cog_set * const, int);
+/** @return 1 if the given rank falls in the given set. */
+int API cog_set_intersect(const cog_set * const, int);
 
 #ifdef __cplusplus
 }
