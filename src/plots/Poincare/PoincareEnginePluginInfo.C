@@ -43,6 +43,10 @@
 #include <PoincarePluginInfo.h>
 #include <avtPoincarePlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Poincare_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +57,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* Poincare_GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
 {
     return new PoincareEnginePluginInfo;
 }

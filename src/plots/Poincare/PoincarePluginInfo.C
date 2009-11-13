@@ -44,7 +44,15 @@
 #include <PoincareAttributes.h>
 
 #include <visit-config.h>
+#if defined(__APPLE__)
 extern "C" PLOT_EXPORT const char *PoincareVisItPluginVersion = VISIT_VERSION;
+#else
+extern "C" PLOT_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
+#endif
+
+#if defined(__APPLE__)
+#define GetGeneralInfo Poincare_GetGeneralInfo
+#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -56,7 +64,7 @@ extern "C" PLOT_EXPORT const char *PoincareVisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT GeneralPlotPluginInfo* Poincare_GetGeneralInfo()
+extern "C" PLOT_EXPORT GeneralPlotPluginInfo* GetGeneralInfo()
 {
     return new PoincareGeneralPluginInfo;
 }
@@ -96,7 +104,7 @@ PoincareGeneralPluginInfo::GetName() const
 const char *
 PoincareGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "2.0";
 }
 
 // ****************************************************************************
@@ -115,7 +123,7 @@ PoincareGeneralPluginInfo::GetVersion() const
 const char *
 PoincareGeneralPluginInfo::GetID() const
 {
-    return "Poincare_1.0";
+    return "Poincare_2.0";
 }
 // ****************************************************************************
 //  Method: PoincareGeneralPluginInfo::EnabledByDefault
