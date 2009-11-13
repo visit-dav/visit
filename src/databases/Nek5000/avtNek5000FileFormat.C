@@ -190,16 +190,12 @@ typedef __int64 int64_t;
 // ****************************************************************************
 // Example of a metadata input file
 //
-// NEK3D
-// version: 1.0
 // filetemplate: example.fld%02d  
 // firsttimestep: 2                 # first dump here: example.fld02
 // numtimesteps: 3                  # number of dumps
 // type: binary                     # ascii or binary
 //
 // 
-// NEK3D
-// version: 1.0
 // filetemplate: example%02d.f%04d  
 // firsttimestep: 2                 # first dump here: example??.f0002
 // numtimesteps: 3                  # number of dumps
@@ -263,6 +259,10 @@ typedef __int64 int64_t;
 //
 //    Dave Bremer, Mon Aug 11 13:53:18 PDT 2008
 //    Brought in a change from Stefan Kerkemeier to change default init values.
+//
+//    Eric Brugger, Thu Nov 12 17:20:03 PST 2009
+//    Removed the data member version since it is no longer used.
+//
 // ****************************************************************************
 
 avtNek5000FileFormat::avtNek5000FileFormat(const char *filename)
@@ -270,7 +270,6 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename)
 {
     int t0 = visitTimer->StartTimer();
 
-    version = "";
     bSwapEndian = false;
     fileTemplate = "";
     iFirstTimestep = 1;
@@ -338,6 +337,11 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename)
 //    directories from the parallel file header, allowing users to skip
 //    the "numoutputdirs:" tag in the .nek file.
 //
+//    Eric Brugger, Thu Nov 12 17:20:03 PST 2009
+//    Removed the requirement that the file start with "NEK3D" and "version:
+//    1.0".  They are still recognized so that they will not produce an error
+//    if present.
+//
 // ****************************************************************************
 
 void           
@@ -347,34 +351,6 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
     char buf[2048];
     ifstream  f(filename);
     int ii;
-
-    // Verify that the 'magic' and version number are right
-    f >> tag;
-    while (tag[0] == '#')
-    {
-        f.getline(buf, 2048);
-        f >> tag;
-    }
-    if (STREQUAL("NEK3D", tag.c_str()) != 0)
-    {
-        EXCEPTION1(InvalidDBTypeException, "Not a Nek5000 file." );
-    }
-    f >> tag;
-    while (tag[0] == '#')
-    {
-        f.getline(buf, 2048);
-        f >> tag;
-    }
-    f >> version;
-    if (STREQUAL("version:", tag.c_str()) != 0)
-    {
-        EXCEPTION1(InvalidDBTypeException, "Not a Nek5000 file." );
-    }
-    if (version != "1.0")
-    {
-        EXCEPTION1(InvalidDBTypeException, 
-                   "Only Nek5000 version 1.0 is supported." );
-    }
 
     // Process a tag at a time until all lines have been read
     while (f.good())
@@ -459,6 +435,17 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
             if (iNumOutputDirs > 1)
                 bParFormat = true;
         }
+        else if (STREQUAL("NEK3D", tag.c_str()) != 0)
+        {
+            //This is an obsolete tag, ignore it.
+        }
+        else if (STREQUAL("version:", tag.c_str()) != 0)
+        {
+            //This is an obsolete tag, ignore it, skipping the version number
+            //as well.
+            std::string version;
+            f >> version;
+        }
         else
         {
             SNPRINTF(buf, 2048, "Error parsing file.  Unknown tag %s", tag.c_str());
@@ -521,7 +508,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
 //  Programmer: David Bremer
 //  Creation:   Wed Feb  6 19:12:55 PST 2008
 //
-//  Modified:
+//  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.
 //
@@ -734,7 +721,6 @@ avtNek5000FileFormat::ParseNekFileHeader()
 //  Programmer: David Bremer
 //  Creation:   Mon Aug 11 13:53:18 PDT 2008
 //
-//  Modified:
 // ****************************************************************************
 
 void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
@@ -795,7 +781,7 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 //  Programmer: David Bremer
 //  Creation:   Wed Feb  6 19:12:55 PST 2008
 //
-//  Modified:
+//  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.  Changed sprintf to SNPRINTF.
 //

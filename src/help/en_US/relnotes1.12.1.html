@@ -18,10 +18,8 @@
 <li>The ray-casted volume renderer no longer gets lighting queues wrong with non-rectilinear and non-AMR data sets.</li>
 <li>A bug that sometimes caused the Windows version of VisIt to crash when connecting to a remote computer was fixed.</li>
 <li>Projecting slices of vector data on rectilinear meshes to two dimensions now works correctly.</li>
-<li>VisIt's Tecplot writer was enhanced so it can save: 2D meshes, rectilinear meshes, and polygonal meshes. The writer was also changed so it produces files that are easier to read by a human.</li>
 <li>VisIt's Tecplot reader now tags meshes as being 1-origin for node numbers. This makes the node numbers show up as 1-origin in the Label plot and in query results.</li>
 <li>VisIt's Tecplot reader has improved support for mixed dimensionality meshes, as well as supporting some new additions to the format.</li>
-<li>The paraDIS and paraDIS_tecplot readers were added.</li>
 <li>VisIt's Contour plot was enhanced so short line segments are grouped into polylines, which makes setting line styles work better.</li>
 <li>A bug was corrected in the XDMF reader, where going through a time sequence a second time could cause read errors.</li>
 <li>A bug was corrected in the ZeusMP HDF4 reader, where the mesh in 3D spherical coordinates is read incorrectly.</li>
@@ -38,11 +36,8 @@
 <li>The internal atomic support data tables had missing data which has now been populated.</li>
 <li>The visualization window axes have improved support for 0-range data, also fixing an exception in some cases.</li>
 <li>A problem tracking the primary variable, which could appear when using the Molecule plot, has been fixed.</li>
-<li>The axis extents used by the Parallel Coordinates plot were displayed, but not editable.  They can now be changed directly in the window.</li>
 <li>The coordinates of Boxlib data have changed slightly.  We believe this should not be noticeable to users and that the new version is more accurate.  (We are now using integer arithmetic for "longer" when calculating positions.)</li>
-<li>ExportDatabase will now be much faster when exporting VTK files in parallel.</li>
 <li>A bug with 2d logical mesh boundary info was corrected in the Miranda reader.</li>
-<li>Support for launching on graph.llnl.gov was added.</li>
 <li>A bug was fixed reading cycle/time information from CGNS files.</li>
 <li>A bug where build_visit inadvertently reported collisions between the user's enviornment variables and VisIt's make variables was corrected. Users should no longer have to specify VISIT_NOCKENV=1.</li>
 </ul>
@@ -51,6 +46,12 @@
 <li>The VizSchema database reader from the Tech-X Corporation was added.</li>
 <li>Support for arbitrary polyhedral meshes was added to the Silo plugin.</li>
 <li>Support for AMR meshes via Silo's Mesh Region Grouping trees was added to the Silo plugin.</li>
+<li>VisIt's Tecplot writer was enhanced so it can save: 2D meshes, rectilinear meshes, and polygonal meshes. The writer was also changed so it produces files that are easier to read by a human.</li>
+<li>The paraDIS and paraDIS_tecplot readers were added.</li>
+<li>The Nek5000 reader was enhanced so that "NEK3D" and "version: 1.0" are no longer required at the beginning of the metadata file. They are still allowed for backward compatability with old files.</li>
+<li>The axis extents used by the Parallel Coordinates plot were displayed, but not editable.  They can now be changed directly in the window.</li>
+<li>Support for launching on graph.llnl.gov was added.</li>
+<li>ExportDatabase will now be much faster when exporting VTK files in parallel.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.12.0.html">VisIt 1.12.0 Release Notes</a>.</p>
