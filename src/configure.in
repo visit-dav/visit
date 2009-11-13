@@ -4285,7 +4285,7 @@ if test -n "$METADATA_SERVER"; then
     MDSERVER_FILES="mdserver/Makefile 
                     mdserver/rpc/Makefile
                     mdserver/proxy/Makefile
-                    mdserver/ssl/Makefile
+                    mdserver/symloc/Makefile
                     mdserver/main/Makefile"
 else
     MDSERVER_FILES=""
@@ -4318,7 +4318,7 @@ if test -n "$ENGINE"; then
     ENGINE_FILES="engine/Makefile
                   engine/rpc/Makefile
                   engine/proxy/Makefile
-                  engine/ssl/Makefile
+                  engine/symloc/Makefile
                   engine/main/Makefile"
 else
     ENGINE_FILES=""

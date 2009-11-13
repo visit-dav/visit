@@ -88,7 +88,7 @@ void
 StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &libs,
                        const std::string &pluginType)
 {
-    if (pluginType == "Database")
+    if (pluginType == "database")
     {
         ADD_PLUGIN(Silo);
         ADD_PLUGIN(VTK);

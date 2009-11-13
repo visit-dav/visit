@@ -46,15 +46,15 @@
 @VARIABLES@
 
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include/visit
-CPPFLAGS:=@CPPFLAGS@ $(CPPFLAGS) -DMDSERVER_SSL_EXPORTS
+CPPFLAGS:=@CPPFLAGS@ $(CPPFLAGS) -DENGINE_SYMLOC_EXPORTS
 
 ##
 ## Files...
 ##
-SRC=MDServerStaticSymbolLocator.C
+SRC=EngineStaticSymbolLocator.C
 HDR=
 OBJ=$(SRC:.C=.o)
-LIB=libmdserverssl
+LIB=libenginesymloc
 LIBS_FOR_MACOSX_PREBINDING=
 LIBS=
 
