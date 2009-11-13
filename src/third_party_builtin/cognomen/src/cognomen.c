@@ -86,6 +86,7 @@ cog_set_local(cog_set * const local, const int rank)
 {
     int i;
     long hostid = map_id[rank];
+    size_t count=0;
 
     /* first we need to know how big their set should be. */
     size_t n_local=0;
@@ -98,7 +99,6 @@ cog_set_local(cog_set * const local, const int rank)
     local->set.size = n_local;
 
     /* Now we can copy all of the ids into the set. */
-    size_t count=0;
     for(i=0; i < mpi_size(); ++i) {
         if(map_id[i] == hostid) {
             cog_id v;
@@ -142,17 +142,17 @@ cog_set_max(const cog_set * const cset)
 }
 
 /** @return true if the given rank falls in the given set. */
-bool
+int
 cog_set_intersect(const cog_set * const cset, int id)
 {
     size_t i;
     /* Essentially a search for the given rank in a set. */
     for(i=0; i < cset->set.size; ++i) {
         if(cset->set.v[i].id == id) {
-            return true;
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 static int

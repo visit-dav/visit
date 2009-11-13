@@ -428,10 +428,10 @@ void sortVertices( const int n, const REAL3* vertices, const REAL3 normal, IntTy
     for(int i=0;i<n;i++)
     {
         int imin = i;
-        REAL dmin = dot(vertices[indices[i]],normal);
+        REAL dmin = ::dot(vertices[indices[i]],normal);
         for(int j=i+1;j<n;j++)
         {
-            REAL d = dot(vertices[indices[j]],normal);
+            REAL d = ::dot(vertices[indices[j]],normal);
             imin = ( d < dmin ) ? j : imin;
             dmin = min( dmin , d );
         }
@@ -449,10 +449,10 @@ void sortVertices( const int n, const REAL2* vertices, const REAL2 normal, IntTy
     for(int i=0;i<n;i++)
     {
         int imin = i;
-        REAL dmin = dot(vertices[indices[i]],normal);
+        REAL dmin = ::dot(vertices[indices[i]],normal);
         for(int j=i+1;j<n;j++)
         {
-            REAL d = dot(vertices[indices[j]],normal);
+            REAL d = ::dot(vertices[indices[j]],normal);
             imin = ( d < dmin ) ? j : imin;
             dmin = min( dmin , d );
         }

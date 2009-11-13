@@ -30,6 +30,10 @@
  *   declaration of the member, 'set'.  When both the definition of
  *   the struct and declaration of 'set' were combined gcc-3.2.3 was
  *   complaining of a missing semicolon.
+ *
+ *   Brad Whitlock, Fri Nov 13 13:48:08 PST 2009
+ *   I separated out the internal struct definition for cog_set.set 
+ *   into the cog_set_t typedef so it works on C/C++, gcc/xlC.
  */
 
 #ifndef COG_TYPES_H
@@ -45,13 +49,14 @@ typedef union _cog_id {
     int id;
 } cog_id;
 
+typedef struct {
+  cog_id *v;
+  size_t size;
+} cog_set_t;
+
 typedef union _cog_set {
-    char _sz[_SIZEOF_COG_SET];
-    struct _set {
-        cog_id *v;
-        size_t size;
-    };
-    struct _set set;
+    char      _sz[_SIZEOF_COG_SET];
+    cog_set_t set;
 } cog_set;
 
 #endif /* COG_TYPES_H */

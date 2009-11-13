@@ -83,6 +83,10 @@ static const char *glew_gl_lib = "opengl32.dll";
 static const char *glew_gl_lib = "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
 #elif defined(__linux__)
 static const char *glew_gl_lib = "/usr/lib/libGL.so";
+#elif defined(_AIX)
+static const char *glew_gl_lib = "/usr/lib/libGL.a";
+#else
+static const char *glew_gl_lib = "/usr/lib/libGL.so";
 #endif
 
 static GPA __glewXGetProcAddress = NULL;
@@ -149,8 +153,14 @@ static void *dso_handle = NULL;
 # define warning(...) do { fprintf(stderr, __VA_ARGS__); } while(0)
 # define error(...) do { fprintf(stderr, __VA_ARGS__); abort(); } while(0)
 #else
+#ifdef __xlC__
+#include <stdio.h>
+# define warning if(0)printf /* nothing */
+# define error   if(0)printf /* nothing */
+#else
 # define warning(...) /* nothing */
 # define error(...) /* nothing */
+#endif
 #endif
 
 /* Function pointer for OSMesa function loader. */
@@ -224,7 +234,7 @@ static void _glewInitFunctionLoader()
 #ifdef _WIN32
     _glewOSMesaGetProcAddress = (_GPA)GetProcAddress(dso_handle, "OSMesaGetProcAddress");
 #else
-    _glewOSMesaGetProcAddress = dlsym(dso_handle, "OSMesaGetProcAddress");
+    _glewOSMesaGetProcAddress = (_GPA)dlsym(dso_handle, "OSMesaGetProcAddress");
 #endif
     _glewGetProcAddress = _glew_osmesa_thunk_gpa;
     break;
@@ -238,9 +248,9 @@ static void _glewInitFunctionLoader()
     __glewXGetProcAddress = NULL;
     _glewGetProcAddress = _glew_dlsym_thunk_gpa;
 #else
-    __glewXGetProcAddress = dlsym(dso_handle, glx_gpa+1 /* skip 'm' */);
+    __glewXGetProcAddress = (GPA)dlsym(dso_handle, glx_gpa+1 /* skip 'm' */);
     _glewGetProcAddress = _glew_glx_thunk_gpa;
-#endif // _WIN32
+#endif
 
     break;
   }
@@ -253,7 +263,7 @@ static void _glewInitFunctionLoader()
   }
 #else
   if((dl_error = dlerror()) != NULL) {
-    error("Could not find dynamic loading function; %s", error);
+    error("Could not find dynamic loading function; %s", dl_error);
   }
 #endif
 }
@@ -7012,7 +7022,7 @@ GLenum glewContextInit (GLEW_CONTEXT_ARG_DEF_LIST)
 
   /* Since we're still initializing, the `GetString' function pointer hasn't
    * been loaded yet. */
-  __glewGetString = glewGetProcAddress(
+  __glewGetString = (PFNGLGETSTRINGPROC)glewGetProcAddress(
                       fqn_from_convention(glew_convention, "glGetString")
                     );
   /* query opengl version */
@@ -9953,7 +9963,7 @@ GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
 
 /* ------------------------------------------------------------------------ */
 
-const GLubyte* glewGetErrorString (GLenum error)
+const GLubyte* glewGetErrorString (GLenum e)
 {
   static const GLubyte* _glewErrorString[] =
   {
@@ -9964,7 +9974,7 @@ const GLubyte* glewGetErrorString (GLenum error)
     (const GLubyte*)"Unknown error"
   };
   const int max_error = sizeof(_glewErrorString)/sizeof(*_glewErrorString) - 1;
-  return _glewErrorString[(int)error > max_error ? max_error : (int)error];
+  return _glewErrorString[(int)e > max_error ? max_error : (int)e];
 }
 
 const GLubyte* glewGetString (GLenum name)

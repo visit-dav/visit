@@ -17,6 +17,7 @@
 #include <PlotPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
+#include <RuntimeSetting.h>
 
 #include <StringHelpers.h>
 
@@ -45,7 +46,9 @@ static void LogGlxAndXdpyInfo();
 // Creation:   Mon Aug 18 16:31:28 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Nov 13 13:57:36 PST 2009
+//   I added RuntimeSetting initialization.
+//
 // ****************************************************************************
 
 void
@@ -53,6 +56,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
 {
     VisItInit::SetComponentName("viewer");
     VisItInit::Initialize(*argc, *argv, 0, 1, false);
+    RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
     LogGlxAndXdpyInfo();
 }
 
