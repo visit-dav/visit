@@ -56,7 +56,7 @@
 @DIRTARGETS@
 @MPI_CC@
 @MPI_CXX@
-STATIC_LINK=ssl
+STATIC_LINK=symloc
 
 # subdirectory `main' must be last.
 SUBDIRS=rpc proxy @STATIC_LINK@ main
