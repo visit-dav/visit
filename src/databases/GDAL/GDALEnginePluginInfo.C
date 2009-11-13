@@ -38,10 +38,6 @@
 
 #include <GDALPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo GDAL_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* GDAL_GetEngineInfo()
 {
     return new GDALEnginePluginInfo;
 }

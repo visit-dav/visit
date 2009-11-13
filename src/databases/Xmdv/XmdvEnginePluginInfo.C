@@ -39,10 +39,6 @@
 #include <XmdvPluginInfo.h>
 #include <avtXmdvWriter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Xmdv_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Xmdv_GetEngineInfo()
 {
     return new XmdvEnginePluginInfo;
 }

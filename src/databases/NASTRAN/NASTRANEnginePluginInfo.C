@@ -38,10 +38,6 @@
 
 #include <NASTRANPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo NASTRAN_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* NASTRAN_GetEngineInfo()
 {
     return new NASTRANEnginePluginInfo;
 }

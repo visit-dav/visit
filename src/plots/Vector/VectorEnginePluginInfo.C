@@ -43,10 +43,6 @@
 #include <VectorPluginInfo.h>
 #include <avtVectorPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Vector_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Vector_GetEngineInfo()
 {
     return new VectorEnginePluginInfo;
 }

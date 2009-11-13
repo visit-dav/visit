@@ -43,10 +43,6 @@
 #include <ZoneDumpPluginInfo.h>
 #include <avtZoneDumpFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo ZoneDump_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* ZoneDump_GetEngineInfo()
 {
     return new ZoneDumpEnginePluginInfo;
 }

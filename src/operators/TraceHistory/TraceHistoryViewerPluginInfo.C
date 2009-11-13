@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <TraceHistoryAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo TraceHistory_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* TraceHistory_GetViewerInfo()
 {
     TraceHistoryViewerPluginInfo::InitializeGlobalObjects();
     return new TraceHistoryViewerPluginInfo;

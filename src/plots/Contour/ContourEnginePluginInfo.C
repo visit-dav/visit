@@ -43,10 +43,6 @@
 #include <ContourPluginInfo.h>
 #include <avtContourPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Contour_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Contour_GetEngineInfo()
 {
     return new ContourEnginePluginInfo;
 }

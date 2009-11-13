@@ -43,10 +43,6 @@
 #include <FilledBoundaryPluginInfo.h>
 #include <avtFilledBoundaryPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo FilledBoundary_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* FilledBoundary_GetEngineInfo()
 {
     return new FilledBoundaryEnginePluginInfo;
 }

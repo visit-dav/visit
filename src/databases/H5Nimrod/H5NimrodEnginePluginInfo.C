@@ -38,10 +38,6 @@
 
 #include <H5NimrodPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo H5Nimrod_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* H5Nimrod_GetEngineInfo()
 {
     return new H5NimrodEnginePluginInfo;
 }

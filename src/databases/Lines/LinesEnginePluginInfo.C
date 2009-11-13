@@ -38,10 +38,6 @@
 
 #include <LinesPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Lines_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Lines_GetEngineInfo()
 {
     return new LinesEnginePluginInfo;
 }

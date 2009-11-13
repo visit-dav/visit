@@ -198,8 +198,9 @@
 #    Tom Fogal, Thu Jul  2 01:58:08 MDT 2009
 #    Add comm exports, since we catch an exception thrown by comm.
 #
-#    Hank Childs, Wed Nov 11 20:39:57 PST 2009
-#    Added $(ZLIB_LIB).
+#    Hank Childs, Tue Nov 10 05:47:15 PST 2009
+#    Add path for linking (-L../../lib).  Also re-order libraries for static
+#    linking.
 #
 ##############################################################################
 
@@ -210,17 +211,21 @@
 @VARIABLES@
 
 PREBIND_LIBS=-lvisit_vtk
+STATIC_LINK=-lmdserverssl \
+            -L../../plugins/databases -lMSiloDatabase -lMVTKDatabase
+STATIC_LINK_DBS=$(SILO_LIB)
 
-LIBS= \
+LIBS=-L../../lib \
+    -lplugin \
+    @STATIC_LINK@ \
+    -ldatabase_ser \
+    -lpipeline_ser \
+    -ldbatts \
     -lexpr \
     -lparser \
-    -lplugin \
     -lmdserverrpc \
     -lavtmath_ser \
-    -lpipeline_ser \
-    -ldatabase_ser \
     -lmir_ser \
-    -ldbatts \
     -lavtexceptions \
     -lstate \
     -lcomm \
@@ -230,8 +235,8 @@ LIBS= \
     -lvisit_verdict \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \
+    @STATIC_LINK_DBS@ \
     @LIBS@ \
-    $(ZLIB_LIB) \
     @PTHREAD_LIB@
 LIBDEP=
 CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@ -DMDSERVER_MAIN_EXPORTS -DCOMM_EXPORTS
@@ -289,7 +294,7 @@ quantify: $(LIBDEP) $(OBJ)
 	quantify $(CXX) -o $(tmpbin)/mdserver $(LDFLAGS) $(OBJ) $(LIBS)
 
 $(tmpbin)/testmds: $(LIBDEP) $(TESTOBJ)
-	$(CXX) -o $@ $(LDFLAGS) $(TESTOBJ) $(LIBS) -lmdserverproxy -lproxybase
+	$(CXX) -o $@ $(LDFLAGS) $(TESTOBJ) -lmdserverproxy -lproxybase $(LIBS) 
 
 install_bin: $(tmpbin)/mdserver
 	$(INSTALL) $(tmpbin)/mdserver $(bindir)

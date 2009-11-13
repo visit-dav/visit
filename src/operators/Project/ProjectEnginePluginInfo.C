@@ -43,10 +43,6 @@
 #include <ProjectPluginInfo.h>
 #include <avtProjectFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Project_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Project_GetEngineInfo()
 {
     return new ProjectEnginePluginInfo;
 }

@@ -42,10 +42,6 @@
 #include <PyExternalSurfaceAttributes.h>
 #include <ExternalSurfacePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo ExternalSurface_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* ExternalSurface_GetScriptingInfo()
 {
     return new ExternalSurfaceScriptingPluginInfo;
 }

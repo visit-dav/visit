@@ -42,10 +42,6 @@
 #include <PySubdivideQuadsAttributes.h>
 #include <SubdivideQuadsPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo SubdivideQuads_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* SubdivideQuads_GetScriptingInfo()
 {
     return new SubdivideQuadsScriptingPluginInfo;
 }

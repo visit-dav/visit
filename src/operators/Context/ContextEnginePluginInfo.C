@@ -43,10 +43,6 @@
 #include <ContextPluginInfo.h>
 #include <avtContextFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Context_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Context_GetEngineInfo()
 {
     return new ContextEnginePluginInfo;
 }

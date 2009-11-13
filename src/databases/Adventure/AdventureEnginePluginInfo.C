@@ -38,10 +38,6 @@
 
 #include <AdventurePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Adventure_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Adventure_GetEngineInfo()
 {
     return new AdventureEnginePluginInfo;
 }

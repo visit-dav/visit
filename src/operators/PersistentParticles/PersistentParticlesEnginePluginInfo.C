@@ -43,10 +43,6 @@
 #include <PersistentParticlesPluginInfo.h>
 #include <avtPersistentParticlesFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo PersistentParticles_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* PersistentParticles_GetEngineInfo()
 {
     return new PersistentParticlesEnginePluginInfo;
 }

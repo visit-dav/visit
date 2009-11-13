@@ -43,10 +43,6 @@
 #include <SphereSlicePluginInfo.h>
 #include <avtSphereSliceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SphereSlice_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* SphereSlice_GetEngineInfo()
 {
     return new SphereSliceEnginePluginInfo;
 }

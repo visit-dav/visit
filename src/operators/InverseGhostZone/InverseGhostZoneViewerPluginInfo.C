@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <InverseGhostZoneAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo InverseGhostZone_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* InverseGhostZone_GetViewerInfo()
 {
     InverseGhostZoneViewerPluginInfo::InitializeGlobalObjects();
     return new InverseGhostZoneViewerPluginInfo;

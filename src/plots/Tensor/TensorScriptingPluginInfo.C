@@ -42,10 +42,6 @@
 #include <PyTensorAttributes.h>
 #include <TensorPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Tensor_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Tensor_GetScriptingInfo()
 {
     return new TensorScriptingPluginInfo;
 }

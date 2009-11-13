@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <DualMeshAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo DualMesh_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* DualMesh_GetViewerInfo()
 {
     DualMeshViewerPluginInfo::InitializeGlobalObjects();
     return new DualMeshViewerPluginInfo;

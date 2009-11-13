@@ -38,10 +38,6 @@
 
 #include <ClawPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Claw_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Claw_GetEngineInfo()
 {
     return new ClawEnginePluginInfo;
 }

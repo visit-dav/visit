@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <CracksClipperAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo CracksClipper_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* CracksClipper_GetViewerInfo()
 {
     CracksClipperViewerPluginInfo::InitializeGlobalObjects();
     return new CracksClipperViewerPluginInfo;

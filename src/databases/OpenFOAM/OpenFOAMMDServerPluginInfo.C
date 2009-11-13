@@ -38,10 +38,6 @@
 
 #include <OpenFOAMPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo OpenFOAM_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* OpenFOAM_GetMDServerInfo()
 {
     return new OpenFOAMMDServerPluginInfo;
 }

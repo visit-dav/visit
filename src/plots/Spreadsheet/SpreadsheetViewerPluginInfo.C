@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtSpreadsheetPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Spreadsheet_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Spreadsheet_GetViewerInfo()
 {
     SpreadsheetViewerPluginInfo::InitializeGlobalObjects();
     return new SpreadsheetViewerPluginInfo;

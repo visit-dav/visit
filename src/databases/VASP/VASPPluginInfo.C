@@ -43,15 +43,7 @@
 #include <VASPPluginInfo.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
 extern "C" DBP_EXPORT const char *VASPVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" DBP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo VASP_GetGeneralInfo
-#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -63,7 +55,7 @@ extern "C" DBP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT GeneralDatabasePluginInfo* GetGeneralInfo()
+extern "C" DBP_EXPORT GeneralDatabasePluginInfo* VASP_GetGeneralInfo()
 {
     return new VASPGeneralPluginInfo;
 }

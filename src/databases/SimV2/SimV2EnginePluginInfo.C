@@ -39,10 +39,6 @@
 #include <SimV2PluginInfo.h>
 #include <avtSimV2Writer.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SimV2_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* SimV2_GetEngineInfo()
 {
     return new SimV2EnginePluginInfo;
 }

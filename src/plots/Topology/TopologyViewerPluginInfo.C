@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtTopologyPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Topology_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Topology_GetViewerInfo()
 {
     TopologyViewerPluginInfo::InitializeGlobalObjects();
     return new TopologyViewerPluginInfo;

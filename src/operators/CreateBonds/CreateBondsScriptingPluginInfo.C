@@ -42,10 +42,6 @@
 #include <PyCreateBondsAttributes.h>
 #include <CreateBondsPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo CreateBonds_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* CreateBonds_GetScriptingInfo()
 {
     return new CreateBondsScriptingPluginInfo;
 }

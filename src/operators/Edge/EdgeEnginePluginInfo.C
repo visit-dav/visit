@@ -43,10 +43,6 @@
 #include <EdgePluginInfo.h>
 #include <avtEdgeFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Edge_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Edge_GetEngineInfo()
 {
     return new EdgeEnginePluginInfo;
 }

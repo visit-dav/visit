@@ -43,10 +43,6 @@
 #include <MeshPluginInfo.h>
 #include <avtMeshPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Mesh_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Mesh_GetEngineInfo()
 {
     return new MeshEnginePluginInfo;
 }

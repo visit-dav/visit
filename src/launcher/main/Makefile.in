@@ -48,6 +48,9 @@
 #    script uses.  It was working in most places, because it was not defined,
 #    but TACC's machines define INCLUDE as an environment variable.
 #
+#    Hank Childs, Tue Nov 10 05:47:15 PST 2009
+#    Add path for linking (-L../../lib).
+#
 ##############################################################################
 
 ##
@@ -56,7 +59,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-LIBS=-lvclrpc -lstate -lcomm -lmisc -lutility -lavtexceptions @LIBS@ @PTHREAD_LIB@
+LIBS=-L../../lib -lvclrpc -lstate -lcomm -lmisc -lutility -lavtexceptions @LIBS@ @PTHREAD_LIB@
 LIBDEP=
 CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit

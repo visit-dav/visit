@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtHistogramPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Histogram_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Histogram_GetViewerInfo()
 {
     HistogramViewerPluginInfo::InitializeGlobalObjects();
     return new HistogramViewerPluginInfo;

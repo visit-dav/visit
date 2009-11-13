@@ -38,10 +38,6 @@
 
 #include <PlainTextPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo PlainText_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* PlainText_GetMDServerInfo()
 {
     return new PlainTextMDServerPluginInfo;
 }

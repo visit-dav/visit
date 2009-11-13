@@ -42,10 +42,6 @@
 #include <PyLabelAttributes.h>
 #include <LabelPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Label_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Label_GetScriptingInfo()
 {
     return new LabelScriptingPluginInfo;
 }

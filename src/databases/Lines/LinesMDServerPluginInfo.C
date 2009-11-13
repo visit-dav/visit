@@ -38,10 +38,6 @@
 
 #include <LinesPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Lines_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Lines_GetMDServerInfo()
 {
     return new LinesMDServerPluginInfo;
 }

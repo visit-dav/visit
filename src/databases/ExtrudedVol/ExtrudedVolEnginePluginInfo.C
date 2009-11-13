@@ -39,10 +39,6 @@
 #include <ExtrudedVolPluginInfo.h>
 #include <avtExtrudedVolWriter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo ExtrudedVol_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* ExtrudedVol_GetEngineInfo()
 {
     return new ExtrudedVolEnginePluginInfo;
 }

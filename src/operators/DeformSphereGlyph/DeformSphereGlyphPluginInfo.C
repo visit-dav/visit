@@ -44,15 +44,7 @@
 #include <DeformSphereGlyphAttributes.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
 extern "C" OP_EXPORT const char *DeformSphereGlyphVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" OP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo DeformSphereGlyph_GetGeneralInfo
-#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -64,7 +56,7 @@ extern "C" OP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GeneralOperatorPluginInfo* GetGeneralInfo()
+extern "C" OP_EXPORT GeneralOperatorPluginInfo* DeformSphereGlyph_GetGeneralInfo()
 {
     return new DeformSphereGlyphGeneralPluginInfo;
 }

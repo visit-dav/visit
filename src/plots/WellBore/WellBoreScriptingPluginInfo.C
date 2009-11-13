@@ -42,10 +42,6 @@
 #include <PyWellBoreAttributes.h>
 #include <WellBorePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo WellBore_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* WellBore_GetScriptingInfo()
 {
     return new WellBoreScriptingPluginInfo;
 }

@@ -38,10 +38,6 @@
 
 #include <PATRANPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo PATRAN_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* PATRAN_GetMDServerInfo()
 {
     return new PATRANMDServerPluginInfo;
 }

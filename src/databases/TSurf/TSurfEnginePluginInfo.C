@@ -38,10 +38,6 @@
 
 #include <TSurfPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo TSurf_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* TSurf_GetEngineInfo()
 {
     return new TSurfEnginePluginInfo;
 }

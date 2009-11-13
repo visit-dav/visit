@@ -43,10 +43,6 @@
 #include <TruecolorPluginInfo.h>
 #include <avtTruecolorPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Truecolor_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Truecolor_GetEngineInfo()
 {
     return new TruecolorEnginePluginInfo;
 }

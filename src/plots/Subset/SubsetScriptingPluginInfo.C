@@ -42,10 +42,6 @@
 #include <PySubsetAttributes.h>
 #include <SubsetPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Subset_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Subset_GetScriptingInfo()
 {
     return new SubsetScriptingPluginInfo;
 }

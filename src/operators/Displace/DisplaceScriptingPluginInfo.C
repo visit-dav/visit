@@ -42,10 +42,6 @@
 #include <PyDisplaceAttributes.h>
 #include <DisplacePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Displace_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Displace_GetScriptingInfo()
 {
     return new DisplaceScriptingPluginInfo;
 }

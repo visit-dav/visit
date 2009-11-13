@@ -42,10 +42,6 @@
 #include <PyContextAttributes.h>
 #include <ContextPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Context_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Context_GetScriptingInfo()
 {
     return new ContextScriptingPluginInfo;
 }

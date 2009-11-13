@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisPoincarePlotWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Poincare_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()
+extern "C" PLOT_EXPORT GUIPlotPluginInfo* Poincare_GetGUIInfo()
 {
     return new PoincareGUIPluginInfo;
 }

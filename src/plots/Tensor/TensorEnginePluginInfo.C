@@ -43,10 +43,6 @@
 #include <TensorPluginInfo.h>
 #include <avtTensorPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Tensor_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Tensor_GetEngineInfo()
 {
     return new TensorEnginePluginInfo;
 }

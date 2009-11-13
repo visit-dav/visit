@@ -39,10 +39,6 @@
 #include <VTKPluginInfo.h>
 #include <avtVTKWriter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo VTK_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* VTK_GetEngineInfo()
 {
     return new VTKEnginePluginInfo;
 }

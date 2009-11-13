@@ -42,10 +42,6 @@
 #include <PySurfaceAttributes.h>
 #include <SurfacePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Surface_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Surface_GetScriptingInfo()
 {
     return new SurfaceScriptingPluginInfo;
 }

@@ -177,6 +177,11 @@
 #    been defined by build_visit and it will contain the user's env. just
 #    after starting build_visit but before build_visit starts adding things
 #    to the user's environment.
+#
+#    Hank Childs, Thu Nov 12 12:23:56 PST 2009
+#    Add variable for static link.  This places the plugins before the
+#    components.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -190,6 +195,9 @@ SUBDIRS_ENGINE_ONLY=include lib bin third_party_builtin common visit_vtk avt eng
 
 SUBDIRS_SERVER_COMPONENTS_ONLY=include lib bin third_party_builtin common visit_vtk \
         avt engine launcher mdserver sim plots operators databases 
+
+SUBDIRS_STATIC_LINK=include lib bin third_party_builtin common visit_vtk \
+        avt plots operators databases engine launcher mdserver
 
 SUBDIRS_STD=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
         avt engine launcher @METADATA_SERVER@ winutil @VIEWER@ \

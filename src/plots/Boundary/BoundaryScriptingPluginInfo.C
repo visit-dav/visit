@@ -42,10 +42,6 @@
 #include <PyBoundaryAttributes.h>
 #include <BoundaryPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Boundary_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Boundary_GetScriptingInfo()
 {
     return new BoundaryScriptingPluginInfo;
 }

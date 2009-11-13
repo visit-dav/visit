@@ -42,10 +42,6 @@
 #include <PyCoordSwapAttributes.h>
 #include <CoordSwapPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo CoordSwap_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* CoordSwap_GetScriptingInfo()
 {
     return new CoordSwapScriptingPluginInfo;
 }

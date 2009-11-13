@@ -60,6 +60,7 @@
 
 SUBDIRS_DBIO_ONLY=lightweight full
 SUBDIRS_ENGINE_ONLY=lightweight full 
+SUBDIRS_STATIC_LINK=lightweight full 
 SUBDIRS_SERVER_COMPONENTS_ONLY=lightweight full 
 SUBDIRS_STD=lightweight full 
 SUBDIRS=@SUBDIRS@

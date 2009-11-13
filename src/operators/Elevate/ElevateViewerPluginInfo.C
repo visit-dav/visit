@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ElevateAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Elevate_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Elevate_GetViewerInfo()
 {
     ElevateViewerPluginInfo::InitializeGlobalObjects();
     return new ElevateViewerPluginInfo;

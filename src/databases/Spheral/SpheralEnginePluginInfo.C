@@ -38,10 +38,6 @@
 
 #include <SpheralPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Spheral_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Spheral_GetEngineInfo()
 {
     return new SpheralEnginePluginInfo;
 }

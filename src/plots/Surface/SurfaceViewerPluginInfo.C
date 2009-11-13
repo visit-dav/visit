@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtSurfacePlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Surface_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Surface_GetViewerInfo()
 {
     SurfaceViewerPluginInfo::InitializeGlobalObjects();
     return new SurfaceViewerPluginInfo;

@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisLineSurfaceWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo LineSurface_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()
+extern "C" OP_EXPORT GUIOperatorPluginInfo* LineSurface_GetGUIInfo()
 {
     return new LineSurfaceGUIPluginInfo;
 }

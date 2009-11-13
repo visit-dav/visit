@@ -42,10 +42,6 @@
 #include <PyKerbelAttributes.h>
 #include <KerbelPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Kerbel_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Kerbel_GetScriptingInfo()
 {
     return new KerbelScriptingPluginInfo;
 }

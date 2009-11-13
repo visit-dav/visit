@@ -38,10 +38,6 @@
 
 #include <Boxlib2DPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Boxlib2D_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Boxlib2D_GetEngineInfo()
 {
     return new Boxlib2DEnginePluginInfo;
 }

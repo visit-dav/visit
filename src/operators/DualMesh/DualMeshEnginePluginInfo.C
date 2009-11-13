@@ -43,10 +43,6 @@
 #include <DualMeshPluginInfo.h>
 #include <avtDualMeshFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo DualMesh_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* DualMesh_GetEngineInfo()
 {
     return new DualMeshEnginePluginInfo;
 }

@@ -43,10 +43,6 @@
 #include <MultiCurvePluginInfo.h>
 #include <avtMultiCurvePlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo MultiCurve_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* MultiCurve_GetEngineInfo()
 {
     return new MultiCurveEnginePluginInfo;
 }

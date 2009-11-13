@@ -42,10 +42,6 @@
 #include <PyIsosurfaceAttributes.h>
 #include <IsosurfacePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Isosurface_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Isosurface_GetScriptingInfo()
 {
     return new IsosurfaceScriptingPluginInfo;
 }

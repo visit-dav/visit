@@ -42,10 +42,6 @@
 #include <PyPersistentParticlesAttributes.h>
 #include <PersistentParticlesPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo PersistentParticles_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* PersistentParticles_GetScriptingInfo()
 {
     return new PersistentParticlesScriptingPluginInfo;
 }

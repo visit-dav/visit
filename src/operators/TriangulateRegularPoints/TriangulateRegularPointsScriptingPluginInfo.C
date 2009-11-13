@@ -42,10 +42,6 @@
 #include <PyTriangulateRegularPointsAttributes.h>
 #include <TriangulateRegularPointsPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo TriangulateRegularPoints_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* TriangulateRegularPoints_GetScriptingInfo()
 {
     return new TriangulateRegularPointsScriptingPluginInfo;
 }

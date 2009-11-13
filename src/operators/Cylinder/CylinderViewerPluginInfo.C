@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <CylinderAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Cylinder_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Cylinder_GetViewerInfo()
 {
     CylinderViewerPluginInfo::InitializeGlobalObjects();
     return new CylinderViewerPluginInfo;

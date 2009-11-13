@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtSubsetPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Subset_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Subset_GetViewerInfo()
 {
     SubsetViewerPluginInfo::InitializeGlobalObjects();
     return new SubsetViewerPluginInfo;

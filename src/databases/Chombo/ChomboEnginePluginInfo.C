@@ -38,10 +38,6 @@
 
 #include <ChomboPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Chombo_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Chombo_GetEngineInfo()
 {
     return new ChomboEnginePluginInfo;
 }

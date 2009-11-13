@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <PDFAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo PDF_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* PDF_GetViewerInfo()
 {
     PDFViewerPluginInfo::InitializeGlobalObjects();
     return new PDFViewerPluginInfo;

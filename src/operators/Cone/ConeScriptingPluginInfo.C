@@ -42,10 +42,6 @@
 #include <PyConeAttributes.h>
 #include <ConePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Cone_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Cone_GetScriptingInfo()
 {
     return new ConeScriptingPluginInfo;
 }

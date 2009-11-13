@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtMoleculePlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Molecule_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Molecule_GetViewerInfo()
 {
     MoleculeViewerPluginInfo::InitializeGlobalObjects();
     return new MoleculeViewerPluginInfo;

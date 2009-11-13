@@ -42,10 +42,6 @@
 #include <PyVolumeAttributes.h>
 #include <VolumePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Volume_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Volume_GetScriptingInfo()
 {
     return new VolumeScriptingPluginInfo;
 }

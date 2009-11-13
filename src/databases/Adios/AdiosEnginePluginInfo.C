@@ -38,10 +38,6 @@
 
 #include <AdiosPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Adios_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Adios_GetEngineInfo()
 {
     return new AdiosEnginePluginInfo;
 }

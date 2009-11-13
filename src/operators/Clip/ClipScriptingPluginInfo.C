@@ -42,10 +42,6 @@
 #include <PyClipAttributes.h>
 #include <ClipPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Clip_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Clip_GetScriptingInfo()
 {
     return new ClipScriptingPluginInfo;
 }

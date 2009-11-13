@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <MergeOperatorAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Merge_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Merge_GetViewerInfo()
 {
     MergeViewerPluginInfo::InitializeGlobalObjects();
     return new MergeViewerPluginInfo;

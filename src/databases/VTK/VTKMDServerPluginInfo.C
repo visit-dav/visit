@@ -38,10 +38,6 @@
 
 #include <VTKPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo VTK_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* VTK_GetMDServerInfo()
 {
     return new VTKMDServerPluginInfo;
 }

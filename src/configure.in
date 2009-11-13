@@ -988,6 +988,14 @@ dnl
 dnl    Cyrus Harrison, Tue Oct  6 08:56:58 PDT 2009
 dnl    Changed vtk include paths to reflect a 'make install'ed vtk 
 dnl    installation.
+dnl
+dnl    Hank Childs, Thu Nov 12 11:48:11 PST 2009
+dnl    Add support for static linking of the server side components.
+dnl    Client side components have not been tested.  Further, it is assumed
+dnl    that third party libraries have been linked statically.  Dynamic
+dnl    libraries are nominally fine, but the symlinks in /lib will not work and
+dnl    you won't get a true "static" binary.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1175,6 +1183,30 @@ if test "$enable_server_components_only" = yes && test "$enable_engine_only" = y
    AC_MSG_WARN([--enable-server-components-only overrides --enable-engine-only])
    enable_engine_only=no
 fi
+
+#
+# Check for static builds.
+#
+AC_ARG_ENABLE(static,
+   AC_HELP_STRING([--enable-static], [build the server components statically (you must also issue --enable-server-components-only)]))
+if test "$enable_static" = yes && test "$enable_server_components_only" != yes; then
+   AC_MSG_ERROR([--static requires --enable-server-components-only])
+fi
+STATIC_LINK=""
+STATIC_LINK_PAR=""
+STATIC_LINK_DBS=""
+if test "$enable_static" = yes; then
+    STATIC_LINK="$""(STATIC_LINK)"
+    STATIC_LINK_PAR="$""(STATIC_LINK_PAR)"
+    STATIC_LINK_DBS="$""(STATIC_LINK_DBS)"
+    AC_DEFINE(STATIC, [1], [Preprocessor directive for a static link.])
+    SHLIB_CREATEPROG="ar rcs"
+    SHLIB_SOEXT="a"
+    SHLIB_LIBEXT="a"
+fi
+AC_SUBST(STATIC_LINK)
+AC_SUBST(STATIC_LINK_PAR)
+AC_SUBST(STATIC_LINK_DBS)
 
 #
 # Check for CMake
@@ -1452,11 +1484,11 @@ if test -n "$VTK"; then
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/vtk-5.0"
-    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkMPEG2Encode "
+    VTK_LIBS="-lvtkDICOMParser -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkGraphics -lvtkFiltering -lvtkCommon -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtkzlib -lvtksys -lvtkMPEG2Encode"
     if test "$UNAME" = "Darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else
-        VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib -lvtkexpat -lvtksys"
+        VTK_LIGHTWEIGHT_LIBS="-lvtkFiltering -lvtkCommon -lvtkzlib -lvtkexpat -lvtksys"
     fi
 
     # Determine whether VTK was built with mangled Mesa support. If it wasn't
@@ -3928,9 +3960,13 @@ case $UNAME in
             SHLIB_CREATEPROG="$""(CXX) -shared -o"
         fi
         # Set RPATH relative to executable
-        EXE_LDFLAGS="$EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
-        PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
-        DATA_EXE_LDFLAGS="$DATA_EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../src/lib"
+        if test "$enable_static" = yes; then
+            EXE_LDFLAGS="-L$""(TOPDIR)/lib/"
+        else
+            EXE_LDFLAGS="$EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
+            PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
+            DATA_EXE_LDFLAGS="$DATA_EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../src/lib"
+        fi
     fi
     ;;
 
@@ -4221,7 +4257,9 @@ operatorplugindir="$""(TOPDIR)/plugins/operators"
 AC_SUBST(databaseplugindir)
 databaseplugindir="$""(TOPDIR)/plugins/databases"
 
-LDFLAGS="-L$libdir $LDFLAGS"
+if test ! "$enable_static" = yes; then
+    LDFLAGS="-L$libdir $LDFLAGS"
+fi
 
 
 dnl
@@ -4247,6 +4285,7 @@ if test -n "$METADATA_SERVER"; then
     MDSERVER_FILES="mdserver/Makefile 
                     mdserver/rpc/Makefile
                     mdserver/proxy/Makefile
+                    mdserver/ssl/Makefile
                     mdserver/main/Makefile"
 else
     MDSERVER_FILES=""
@@ -4279,6 +4318,7 @@ if test -n "$ENGINE"; then
     ENGINE_FILES="engine/Makefile
                   engine/rpc/Makefile
                   engine/proxy/Makefile
+                  engine/ssl/Makefile
                   engine/main/Makefile"
 else
     ENGINE_FILES=""
@@ -4469,7 +4509,7 @@ if test "$enable_engine_only" = yes; then
     VISITPY_FILES=""
     CQSCORE_FILES=""
     JAVA_FILES=""
-    TOOLS_FILES=""
+    TOOLS_FILES="tools/xml/Makefile"
     COMPONENT_FILES="avt/Makefile
                  avt/DBAtts/Makefile
                  avt/DDF/Makefile
@@ -4501,7 +4541,7 @@ if test "$enable_server_components_only" = yes; then
     VISITPY_FILES=""
     CQSCORE_FILES=""
     JAVA_FILES=""
-    TOOLS_FILES=""
+    TOOLS_FILES="tools/xml/Makefile"
     COMPONENT_FILES="avt/Makefile
                  avt/DBAtts/Makefile
                  avt/DDF/Makefile
@@ -4519,6 +4559,9 @@ if test "$enable_server_components_only" = yes; then
                  avt/Shapelets/Makefile
                  avt/View/Makefile
                  avt/VisWindow/Makefile"
+fi
+if test "$enable_static" = yes; then
+    SUBDIRS="$""(SUBDIRS_STATIC_LINK)"
 fi
 
 AC_OUTPUT($STANDARD_FILES

@@ -42,10 +42,6 @@
 #include <PyTubeAttributes.h>
 #include <TubePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Tube_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Tube_GetScriptingInfo()
 {
     return new TubeScriptingPluginInfo;
 }

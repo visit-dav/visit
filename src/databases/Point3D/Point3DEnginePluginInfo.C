@@ -38,10 +38,6 @@
 
 #include <Point3DPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Point3D_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Point3D_GetEngineInfo()
 {
     return new Point3DEnginePluginInfo;
 }

@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtTruecolorPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Truecolor_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Truecolor_GetViewerInfo()
 {
     TruecolorViewerPluginInfo::InitializeGlobalObjects();
     return new TruecolorViewerPluginInfo;

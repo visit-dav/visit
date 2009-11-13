@@ -43,10 +43,6 @@
 #include <SubdivideQuadsPluginInfo.h>
 #include <avtSubdivideQuadsFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SubdivideQuads_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* SubdivideQuads_GetEngineInfo()
 {
     return new SubdivideQuadsEnginePluginInfo;
 }

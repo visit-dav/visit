@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <DisplaceAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Displace_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Displace_GetViewerInfo()
 {
     DisplaceViewerPluginInfo::InitializeGlobalObjects();
     return new DisplaceViewerPluginInfo;

@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtMultiCurvePlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo MultiCurve_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* MultiCurve_GetViewerInfo()
 {
     MultiCurveViewerPluginInfo::InitializeGlobalObjects();
     return new MultiCurveViewerPluginInfo;

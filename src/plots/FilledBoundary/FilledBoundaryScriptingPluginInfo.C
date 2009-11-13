@@ -42,10 +42,6 @@
 #include <PyFilledBoundaryAttributes.h>
 #include <FilledBoundaryPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo FilledBoundary_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* FilledBoundary_GetScriptingInfo()
 {
     return new FilledBoundaryScriptingPluginInfo;
 }

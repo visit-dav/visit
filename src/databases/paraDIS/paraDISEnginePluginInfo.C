@@ -38,10 +38,6 @@
 
 #include <paraDISPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo paraDIS_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* paraDIS_GetEngineInfo()
 {
     return new paraDISEnginePluginInfo;
 }

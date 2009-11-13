@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ReflectAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Reflect_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Reflect_GetViewerInfo()
 {
     ReflectViewerPluginInfo::InitializeGlobalObjects();
     return new ReflectViewerPluginInfo;

@@ -38,10 +38,6 @@
 
 #include <ANALYZEPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo ANALYZE_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* ANALYZE_GetMDServerInfo()
 {
     return new ANALYZEMDServerPluginInfo;
 }

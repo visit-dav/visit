@@ -42,10 +42,6 @@
 #include <PyZoneDumpAttributes.h>
 #include <ZoneDumpPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo ZoneDump_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* ZoneDump_GetScriptingInfo()
 {
     return new ZoneDumpScriptingPluginInfo;
 }

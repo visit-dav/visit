@@ -43,10 +43,6 @@
 #include <StreamlinePluginInfo.h>
 #include <avtStreamlinePlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Streamline_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Streamline_GetEngineInfo()
 {
     return new StreamlineEnginePluginInfo;
 }

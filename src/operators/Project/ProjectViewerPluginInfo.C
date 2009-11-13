@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ProjectAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Project_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Project_GetViewerInfo()
 {
     ProjectViewerPluginInfo::InitializeGlobalObjects();
     return new ProjectViewerPluginInfo;

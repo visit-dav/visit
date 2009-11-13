@@ -46,26 +46,7 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
 
-//Visit 2.0.0 and later use VISIT_VERSION instead of VERSION
-#ifdef VISIT_VERSION
-//VISIT 2.0.0 code
-  #if defined(__APPLE__)
-  extern "C" const char *VsVisItPluginVersion = VISIT_VERSION;
-  #else
-  extern "C" const char *VisItPluginVersion = VISIT_VERSION;
-  #endif
-#else
-//Visit 1.11.2 and earlier code
-  #if defined(__APPLE__)
-  extern "C" const char *VsVisItPluginVersion = VERSION;
-  #else
-  extern "C" const char *VisItPluginVersion = VERSION;
-  #endif
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo Vs_GetGeneralInfo
-#endif
+extern "C" const char *VsVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -77,7 +58,7 @@
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
+extern "C" GeneralDatabasePluginInfo* Vs_GetGeneralInfo()
 {
     return new VsGeneralPluginInfo;
 }

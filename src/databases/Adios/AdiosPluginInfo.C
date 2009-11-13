@@ -43,15 +43,7 @@
 #include <AdiosPluginInfo.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
-extern "C" const char *AdiosVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo Adios_GetGeneralInfo
-#endif
+extern "C" DBP_EXPORT const char *AdiosVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -63,7 +55,7 @@ extern "C" const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
+extern "C" DBP_EXPORT GeneralDatabasePluginInfo* Adios_GetGeneralInfo()
 {
     return new AdiosGeneralPluginInfo;
 }

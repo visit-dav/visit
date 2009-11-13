@@ -42,10 +42,6 @@
 #include <PySliceAttributes.h>
 #include <SlicePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Slice_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Slice_GetScriptingInfo()
 {
     return new SliceScriptingPluginInfo;
 }

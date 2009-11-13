@@ -42,10 +42,6 @@
 #include <PyBoxAttributes.h>
 #include <BoxPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Box_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Box_GetScriptingInfo()
 {
     return new BoxScriptingPluginInfo;
 }

@@ -43,10 +43,6 @@
 #include <SmoothPluginInfo.h>
 #include <avtSmoothFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Smooth_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Smooth_GetEngineInfo()
 {
     return new SmoothEnginePluginInfo;
 }

@@ -267,6 +267,9 @@
 //    Cyrus Harrison, Tue Oct  6 08:56:58 PDT 2009
 //    Changed vtk include path to reflect a 'make install'ed vtk installation.
 //
+//    Hank Childs, Thu Nov 12 12:16:26 PST 2009
+//    Don't add the plugin directory the LDFLAGS when linking statically.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -386,6 +389,7 @@ class MakefileGeneratorPlugin : public Plugin
 #else
         out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/mesa -I"<<visithome<<"/include/visit $(PY_CXXFLAGS)" << endl;
 #endif
+#ifndef STATIC
         if(type == "database")
             out << "LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS)";
         else
@@ -394,6 +398,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << " " << ldflags[i];
         out << " -L" << visitplugininstall << "/" << type << "s";
         out << endl << endl;
+#endif
         out << "LIBG_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB)" << endl;
         out << "LIBV_QT_LIBS=$(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB)" << endl;
         out << "" << endl;
@@ -479,6 +484,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "JAVAPLUGINFLAGS=-d "<<visithome<<"/java -classpath " << visithome << "/java" << endl;  
 
             out << "" << endl;
+#ifndef STATIC
             out << "SHLIB_FORCED=";
             for (size_t i=0; i<libs.size(); i++)
                 out << libs[i] << " ";
@@ -504,6 +510,7 @@ class MakefileGeneratorPlugin : public Plugin
             for (size_t i=0; i<vlibs.size(); i++)
                 out << vlibs[i] << " ";
             out << endl;
+#endif
 #ifndef __APPLE__
             out << "ELIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=" << endl;
@@ -707,6 +714,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "JAVAPLUGINFLAGS=-d "<<visithome<<"/java -classpath " << visithome << "/java" << endl;  
 
             out << "" << endl;
+#ifndef STATIC
             out << "SHLIB_FORCED=";
             for (size_t i=0; i<libs.size(); i++)
                 out << libs[i] << " ";
@@ -732,6 +740,7 @@ class MakefileGeneratorPlugin : public Plugin
             for (size_t i=0; i<vlibs.size(); i++)
                 out << vlibs[i] << " ";
             out << endl;
+#endif
 #ifndef __APPLE__
             out << "ELIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=" << endl;
@@ -818,6 +827,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "SRC=$(ISRC) $(COMMONSRC) $(MSRC) $(ESRC)" << endl;
 
             out << "" << endl;
+#ifndef STATIC
             out << "SHLIB_FORCED=";
             for (size_t i=0; i<libs.size(); i++)
                 out << libs[i] << " ";
@@ -843,6 +853,7 @@ class MakefileGeneratorPlugin : public Plugin
             for (size_t i=0; i<vlibs.size(); i++)
                 out << vlibs[i] << " ";
             out << endl;
+#endif
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "MLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(ZLIB_LIB) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ILIBS=" << endl;

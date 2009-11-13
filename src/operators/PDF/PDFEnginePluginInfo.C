@@ -43,10 +43,6 @@
 #include <PDFPluginInfo.h>
 #include <avtPDFFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo PDF_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* PDF_GetEngineInfo()
 {
     return new PDFEnginePluginInfo;
 }

@@ -42,10 +42,6 @@
 #include <PyDecimateAttributes.h>
 #include <DecimatePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Decimate_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Decimate_GetScriptingInfo()
 {
     return new DecimateScriptingPluginInfo;
 }

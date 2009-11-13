@@ -66,6 +66,9 @@
 #   Brad Whitlock, Wed Jun 3 15:43:54 PST 2009
 #   I added engine only build options.
 #
+#   Hank Childs, Thu Nov 12 14:17:14 PST 2009
+#   Add support for static builds.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -81,6 +84,7 @@ ALLSUBDIRS_ENGINE_ONLY=zlib glew bilib slivr bow cognomen tuvok verdict
 
 SUBDIRS_SERVER_COMPONENTS_ONLY=$(SUBDIRS_ENGINE_ONLY)
 ALLSUBDIRS_SERVER_COMPONENTS_ONLY=$(ALLSUBDIRS_ENGINE_ONLY)
+SUBDIRS_STATIC_LINK=$(SUBDIRS_ENGINE_ONLY)
 
 SUBDIRS_STD=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
     @BUILD_SLIVR@ @BUILD_COGNOMEN@ @BUILD_TUVOK@ bow verdict

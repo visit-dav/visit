@@ -38,10 +38,6 @@
 
 #include <MM5PluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo MM5_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* MM5_GetEngineInfo()
 {
     return new MM5EnginePluginInfo;
 }

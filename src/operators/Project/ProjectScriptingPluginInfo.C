@@ -42,10 +42,6 @@
 #include <PyProjectAttributes.h>
 #include <ProjectPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Project_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Project_GetScriptingInfo()
 {
     return new ProjectScriptingPluginInfo;
 }

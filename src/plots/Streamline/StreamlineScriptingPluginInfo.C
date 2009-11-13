@@ -42,10 +42,6 @@
 #include <PyStreamlineAttributes.h>
 #include <StreamlinePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Streamline_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Streamline_GetScriptingInfo()
 {
     return new StreamlineScriptingPluginInfo;
 }

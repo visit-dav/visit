@@ -42,10 +42,6 @@
 #include <PyThreeSliceAttributes.h>
 #include <ThreeSlicePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo ThreeSlice_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* ThreeSlice_GetScriptingInfo()
 {
     return new ThreeSliceScriptingPluginInfo;
 }

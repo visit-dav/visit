@@ -42,10 +42,6 @@
 #include <PyPseudocolorAttributes.h>
 #include <PseudocolorPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Pseudocolor_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Pseudocolor_GetScriptingInfo()
 {
     return new PseudocolorScriptingPluginInfo;
 }

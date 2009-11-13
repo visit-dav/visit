@@ -38,10 +38,6 @@
 
 #include <DDCMDPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo DDCMD_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* DDCMD_GetEngineInfo()
 {
     return new DDCMDEnginePluginInfo;
 }

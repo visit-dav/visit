@@ -38,10 +38,6 @@
 
 #include <VistaPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Vista_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Vista_GetMDServerInfo()
 {
     return new VistaMDServerPluginInfo;
 }

@@ -43,10 +43,6 @@
 #include <IsosurfacePluginInfo.h>
 #include <avtIsosurfaceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Isosurface_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Isosurface_GetEngineInfo()
 {
     return new IsosurfaceEnginePluginInfo;
 }

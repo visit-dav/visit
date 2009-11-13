@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <CreateBondsAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo CreateBonds_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* CreateBonds_GetViewerInfo()
 {
     CreateBondsViewerPluginInfo::InitializeGlobalObjects();
     return new CreateBondsViewerPluginInfo;

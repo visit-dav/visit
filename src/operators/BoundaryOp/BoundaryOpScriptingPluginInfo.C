@@ -42,10 +42,6 @@
 #include <PyBoundaryOpAttributes.h>
 #include <BoundaryOpPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo BoundaryOp_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* BoundaryOp_GetScriptingInfo()
 {
     return new BoundaryOpScriptingPluginInfo;
 }

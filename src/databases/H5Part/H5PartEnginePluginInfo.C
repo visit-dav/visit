@@ -38,10 +38,6 @@
 
 #include <H5PartPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo H5Part_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* H5Part_GetEngineInfo()
 {
     return new H5PartEnginePluginInfo;
 }

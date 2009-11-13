@@ -43,10 +43,6 @@
 #include <LineSurfacePluginInfo.h>
 #include <avtLineSurfaceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo LineSurface_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* LineSurface_GetEngineInfo()
 {
     return new LineSurfaceEnginePluginInfo;
 }

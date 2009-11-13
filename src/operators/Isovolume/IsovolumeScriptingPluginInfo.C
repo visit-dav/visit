@@ -42,10 +42,6 @@
 #include <PyIsovolumeAttributes.h>
 #include <IsovolumePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Isovolume_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Isovolume_GetScriptingInfo()
 {
     return new IsovolumeScriptingPluginInfo;
 }

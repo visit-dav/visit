@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ThreeSliceAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo ThreeSlice_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* ThreeSlice_GetViewerInfo()
 {
     ThreeSliceViewerPluginInfo::InitializeGlobalObjects();
     return new ThreeSliceViewerPluginInfo;

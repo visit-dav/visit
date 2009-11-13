@@ -38,10 +38,6 @@
 
 #include <TetradPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Tetrad_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Tetrad_GetEngineInfo()
 {
     return new TetradEnginePluginInfo;
 }

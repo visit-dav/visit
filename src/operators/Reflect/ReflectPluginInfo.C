@@ -44,15 +44,7 @@
 #include <ReflectAttributes.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
 extern "C" OP_EXPORT const char *ReflectVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" OP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo Reflect_GetGeneralInfo
-#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -64,7 +56,7 @@ extern "C" OP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GeneralOperatorPluginInfo* GetGeneralInfo()
+extern "C" OP_EXPORT GeneralOperatorPluginInfo* Reflect_GetGeneralInfo()
 {
     return new ReflectGeneralPluginInfo;
 }

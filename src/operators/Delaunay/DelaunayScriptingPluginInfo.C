@@ -42,10 +42,6 @@
 #include <PyDelaunayAttributes.h>
 #include <DelaunayPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Delaunay_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Delaunay_GetScriptingInfo()
 {
     return new DelaunayScriptingPluginInfo;
 }

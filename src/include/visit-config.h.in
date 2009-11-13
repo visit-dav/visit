@@ -244,6 +244,9 @@
 /* Define if we want to use VisIt's no-spin BCast. */
 #undef VISIT_USE_NOSPIN_BCAST
 
+/* Preprocessor directive for a static link */
+#undef STATIC
+
 /* Define VISIT_USE_PTY if we want to use PTYs. */
 #undef VISIT_USE_PTY
 

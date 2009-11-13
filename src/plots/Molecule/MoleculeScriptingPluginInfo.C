@@ -42,10 +42,6 @@
 #include <PyMoleculeAttributes.h>
 #include <MoleculePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Molecule_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Molecule_GetScriptingInfo()
 {
     return new MoleculeScriptingPluginInfo;
 }

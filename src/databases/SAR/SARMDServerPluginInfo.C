@@ -38,10 +38,6 @@
 
 #include <SARPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo SAR_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* SAR_GetMDServerInfo()
 {
     return new SARMDServerPluginInfo;
 }

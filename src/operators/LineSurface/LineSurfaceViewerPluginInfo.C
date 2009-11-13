@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <LineSurfaceAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo LineSurface_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* LineSurface_GetViewerInfo()
 {
     LineSurfaceViewerPluginInfo::InitializeGlobalObjects();
     return new LineSurfaceViewerPluginInfo;

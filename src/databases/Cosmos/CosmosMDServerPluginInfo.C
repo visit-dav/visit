@@ -38,10 +38,6 @@
 
 #include <CosmosPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Cosmos_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Cosmos_GetMDServerInfo()
 {
     return new CosmosMDServerPluginInfo;
 }

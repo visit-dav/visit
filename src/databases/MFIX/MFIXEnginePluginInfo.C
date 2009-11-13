@@ -38,10 +38,6 @@
 
 #include <MFIXPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo MFIX_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* MFIX_GetEngineInfo()
 {
     return new MFIXEnginePluginInfo;
 }

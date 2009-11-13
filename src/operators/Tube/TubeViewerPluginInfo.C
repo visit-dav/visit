@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <TubeAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Tube_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Tube_GetViewerInfo()
 {
     TubeViewerPluginInfo::InitializeGlobalObjects();
     return new TubeViewerPluginInfo;

@@ -43,10 +43,6 @@
 #include <SurfCompPrepPluginInfo.h>
 #include <avtSurfCompPrepFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SurfCompPrep_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* SurfCompPrep_GetEngineInfo()
 {
     return new SurfCompPrepEnginePluginInfo;
 }

@@ -38,10 +38,6 @@
 
 #include <SARPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SAR_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* SAR_GetEngineInfo()
 {
     return new SAREnginePluginInfo;
 }
