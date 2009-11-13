@@ -38,10 +38,6 @@
 
 #include <ExodusPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Exodus_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Exodus_GetEngineInfo()
 {
     return new ExodusEnginePluginInfo;
 }

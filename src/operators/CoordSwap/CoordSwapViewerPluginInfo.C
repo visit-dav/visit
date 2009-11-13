@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <CoordSwapAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo CoordSwap_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* CoordSwap_GetViewerInfo()
 {
     CoordSwapViewerPluginInfo::InitializeGlobalObjects();
     return new CoordSwapViewerPluginInfo;

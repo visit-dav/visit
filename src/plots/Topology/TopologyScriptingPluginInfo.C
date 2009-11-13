@@ -42,10 +42,6 @@
 #include <PyTopologyAttributes.h>
 #include <TopologyPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Topology_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Topology_GetScriptingInfo()
 {
     return new TopologyScriptingPluginInfo;
 }

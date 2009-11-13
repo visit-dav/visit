@@ -42,10 +42,6 @@
 #include <PyParallelCoordinatesAttributes.h>
 #include <ParallelCoordinatesPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo ParallelCoordinates_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* ParallelCoordinates_GetScriptingInfo()
 {
     return new ParallelCoordinatesScriptingPluginInfo;
 }

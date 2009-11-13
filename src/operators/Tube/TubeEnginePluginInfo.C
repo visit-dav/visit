@@ -43,10 +43,6 @@
 #include <TubePluginInfo.h>
 #include <avtTubeFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Tube_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Tube_GetEngineInfo()
 {
     return new TubeEnginePluginInfo;
 }

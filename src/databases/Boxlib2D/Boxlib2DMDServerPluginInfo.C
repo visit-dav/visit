@@ -38,10 +38,6 @@
 
 #include <Boxlib2DPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Boxlib2D_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Boxlib2D_GetMDServerInfo()
 {
     return new Boxlib2DMDServerPluginInfo;
 }

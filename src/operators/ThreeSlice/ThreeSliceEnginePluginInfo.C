@@ -43,10 +43,6 @@
 #include <ThreeSlicePluginInfo.h>
 #include <avtThreeSliceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo ThreeSlice_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* ThreeSlice_GetEngineInfo()
 {
     return new ThreeSliceEnginePluginInfo;
 }

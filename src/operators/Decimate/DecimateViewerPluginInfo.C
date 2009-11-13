@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <DecimateAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Decimate_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Decimate_GetViewerInfo()
 {
     DecimateViewerPluginInfo::InitializeGlobalObjects();
     return new DecimateViewerPluginInfo;

@@ -43,10 +43,6 @@
 #include <PseudocolorPluginInfo.h>
 #include <avtPseudocolorPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Pseudocolor_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Pseudocolor_GetEngineInfo()
 {
     return new PseudocolorEnginePluginInfo;
 }

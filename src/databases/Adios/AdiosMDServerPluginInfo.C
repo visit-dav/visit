@@ -38,10 +38,6 @@
 
 #include <AdiosPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Adios_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Adios_GetMDServerInfo()
 {
     return new AdiosMDServerPluginInfo;
 }

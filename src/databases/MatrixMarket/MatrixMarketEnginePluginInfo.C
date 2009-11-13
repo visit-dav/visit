@@ -38,10 +38,6 @@
 
 #include <MatrixMarketPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo MatrixMarket_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* MatrixMarket_GetEngineInfo()
 {
     return new MatrixMarketEnginePluginInfo;
 }

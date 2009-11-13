@@ -43,10 +43,6 @@
 #include <ParallelCoordinatesPluginInfo.h>
 #include <avtParallelCoordinatesPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo ParallelCoordinates_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* ParallelCoordinates_GetEngineInfo()
 {
     return new ParallelCoordinatesEnginePluginInfo;
 }

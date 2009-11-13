@@ -38,10 +38,6 @@
 
 #include <CTRLPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo CTRL_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* CTRL_GetEngineInfo()
 {
     return new CTRLEnginePluginInfo;
 }

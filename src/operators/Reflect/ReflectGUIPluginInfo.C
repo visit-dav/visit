@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisReflectWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Reflect_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()
+extern "C" OP_EXPORT GUIOperatorPluginInfo* Reflect_GetGUIInfo()
 {
     return new ReflectGUIPluginInfo;
 }

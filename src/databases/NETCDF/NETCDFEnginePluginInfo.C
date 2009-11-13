@@ -38,10 +38,6 @@
 
 #include <NETCDFPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo NETCDF_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* NETCDF_GetEngineInfo()
 {
     return new NETCDFEnginePluginInfo;
 }

@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisBoundaryPlotWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Boundary_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()
+extern "C" PLOT_EXPORT GUIPlotPluginInfo* Boundary_GetGUIInfo()
 {
     return new BoundaryGUIPluginInfo;
 }

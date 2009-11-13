@@ -42,10 +42,6 @@
 #include <PyScatterAttributes.h>
 #include <ScatterPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Scatter_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Scatter_GetScriptingInfo()
 {
     return new ScatterScriptingPluginInfo;
 }

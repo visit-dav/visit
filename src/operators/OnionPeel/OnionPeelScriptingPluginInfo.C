@@ -42,10 +42,6 @@
 #include <PyOnionPeelAttributes.h>
 #include <OnionPeelPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo OnionPeel_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* OnionPeel_GetScriptingInfo()
 {
     return new OnionPeelScriptingPluginInfo;
 }

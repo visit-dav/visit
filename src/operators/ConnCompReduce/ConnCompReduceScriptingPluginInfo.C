@@ -42,10 +42,6 @@
 #include <PyConnCompReduceAttributes.h>
 #include <ConnCompReducePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo ConnCompReduce_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* ConnCompReduce_GetScriptingInfo()
 {
     return new ConnCompReduceScriptingPluginInfo;
 }

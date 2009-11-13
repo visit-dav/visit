@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ConeAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Cone_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Cone_GetViewerInfo()
 {
     ConeViewerPluginInfo::InitializeGlobalObjects();
     return new ConeViewerPluginInfo;

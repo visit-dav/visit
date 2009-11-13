@@ -44,15 +44,7 @@
 #include <MoleculeAttributes.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
 extern "C" PLOT_EXPORT const char *MoleculeVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" PLOT_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo Molecule_GetGeneralInfo
-#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -64,7 +56,7 @@ extern "C" PLOT_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT GeneralPlotPluginInfo* GetGeneralInfo()
+extern "C" PLOT_EXPORT GeneralPlotPluginInfo* Molecule_GetGeneralInfo()
 {
     return new MoleculeGeneralPluginInfo;
 }

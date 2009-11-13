@@ -43,10 +43,6 @@
 #include <TopologyPluginInfo.h>
 #include <avtTopologyPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Topology_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Topology_GetEngineInfo()
 {
     return new TopologyEnginePluginInfo;
 }

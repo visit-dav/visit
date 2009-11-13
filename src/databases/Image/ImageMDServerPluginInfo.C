@@ -38,10 +38,6 @@
 
 #include <ImagePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Image_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Image_GetMDServerInfo()
 {
     return new ImageMDServerPluginInfo;
 }

@@ -39,10 +39,6 @@
 #include <SiloPluginInfo.h>
 #include <avtSiloWriter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Silo_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Silo_GetEngineInfo()
 {
     return new SiloEnginePluginInfo;
 }

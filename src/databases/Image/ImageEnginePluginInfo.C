@@ -39,10 +39,6 @@
 #include <ImagePluginInfo.h>
 #include <avtImagePluginWriter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Image_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Image_GetEngineInfo()
 {
     return new ImageEnginePluginInfo;
 }

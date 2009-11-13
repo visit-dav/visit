@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ExternalSurfaceAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo ExternalSurface_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* ExternalSurface_GetViewerInfo()
 {
     ExternalSurfaceViewerPluginInfo::InitializeGlobalObjects();
     return new ExternalSurfaceViewerPluginInfo;

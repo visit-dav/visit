@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisMoleculePlotWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Molecule_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()
+extern "C" PLOT_EXPORT GUIPlotPluginInfo* Molecule_GetGUIInfo()
 {
     return new MoleculeGUIPluginInfo;
 }

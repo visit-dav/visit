@@ -38,10 +38,6 @@
 
 #include <SimV2PluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo SimV2_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* SimV2_GetMDServerInfo()
 {
     return new SimV2MDServerPluginInfo;
 }

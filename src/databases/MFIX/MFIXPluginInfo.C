@@ -43,15 +43,7 @@
 #include <MFIXPluginInfo.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
 extern "C" DBP_EXPORT const char *MFIXVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" DBP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo MFIX_GetGeneralInfo
-#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -63,7 +55,7 @@ extern "C" DBP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT GeneralDatabasePluginInfo* GetGeneralInfo()
+extern "C" DBP_EXPORT GeneralDatabasePluginInfo* MFIX_GetGeneralInfo()
 {
     return new MFIXGeneralPluginInfo;
 }

@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ContextAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Context_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Context_GetViewerInfo()
 {
     ContextViewerPluginInfo::InitializeGlobalObjects();
     return new ContextViewerPluginInfo;

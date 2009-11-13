@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisProjectWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Project_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()
+extern "C" OP_EXPORT GUIOperatorPluginInfo* Project_GetGUIInfo()
 {
     return new ProjectGUIPluginInfo;
 }

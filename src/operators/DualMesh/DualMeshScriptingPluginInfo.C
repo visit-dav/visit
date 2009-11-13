@@ -42,10 +42,6 @@
 #include <PyDualMeshAttributes.h>
 #include <DualMeshPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo DualMesh_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* DualMesh_GetScriptingInfo()
 {
     return new DualMeshScriptingPluginInfo;
 }

@@ -42,10 +42,6 @@
 #include <PyTraceHistoryAttributes.h>
 #include <TraceHistoryPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo TraceHistory_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* TraceHistory_GetScriptingInfo()
 {
     return new TraceHistoryScriptingPluginInfo;
 }

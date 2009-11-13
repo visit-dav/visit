@@ -43,10 +43,6 @@
 #include <TriangulateRegularPointsPluginInfo.h>
 #include <avtTriangulateRegularPointsFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo TriangulateRegularPoints_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* TriangulateRegularPoints_GetEngineInfo()
 {
     return new TriangulateRegularPointsEnginePluginInfo;
 }

@@ -38,10 +38,6 @@
 
 #include <SAMRAIPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SAMRAI_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* SAMRAI_GetEngineInfo()
 {
     return new SAMRAIEnginePluginInfo;
 }

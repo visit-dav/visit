@@ -42,10 +42,6 @@
 #include <PyMetricThresholdAttributes.h>
 #include <MetricThresholdPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo MetricThreshold_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* MetricThreshold_GetScriptingInfo()
 {
     return new MetricThresholdScriptingPluginInfo;
 }

@@ -43,10 +43,6 @@
 #include <ExternalSurfacePluginInfo.h>
 #include <avtExternalSurfaceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo ExternalSurface_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* ExternalSurface_GetEngineInfo()
 {
     return new ExternalSurfaceEnginePluginInfo;
 }

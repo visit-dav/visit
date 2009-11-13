@@ -40,6 +40,9 @@
 #    Sean Ahern, Mon Jun 10 16:38:09 PDT 2002
 #    Gutted while moving things to a central location.
 #
+#    Hank Childs, Thu Nov 12 13:30:06 PST 2009
+#    Added ssl directory for static links.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -47,9 +50,10 @@
 @DIRTARGETS@
 @MPI_CC@
 @MPI_CXX@
+STATIC_LINK=ssl
 
 # subdirectory `main' must be last.
-SUBDIRS=rpc proxy main
+SUBDIRS=rpc proxy @STATIC_LINK@ main
 
 message:
 	@echo

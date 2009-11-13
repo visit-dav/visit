@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ReplicateAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Replicate_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Replicate_GetViewerInfo()
 {
     ReplicateViewerPluginInfo::InitializeGlobalObjects();
     return new ReplicateViewerPluginInfo;

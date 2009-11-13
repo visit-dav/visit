@@ -42,10 +42,6 @@
 #include <PyResampleAttributes.h>
 #include <ResamplePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Resample_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Resample_GetScriptingInfo()
 {
     return new ResampleScriptingPluginInfo;
 }

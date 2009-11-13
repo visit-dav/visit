@@ -42,10 +42,6 @@
 #include <PyInverseGhostZoneAttributes.h>
 #include <InverseGhostZonePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo InverseGhostZone_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* InverseGhostZone_GetScriptingInfo()
 {
     return new InverseGhostZoneScriptingPluginInfo;
 }

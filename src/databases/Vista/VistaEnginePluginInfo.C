@@ -38,10 +38,6 @@
 
 #include <VistaPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Vista_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Vista_GetEngineInfo()
 {
     return new VistaEnginePluginInfo;
 }

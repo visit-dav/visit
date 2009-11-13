@@ -42,10 +42,6 @@
 #include <PyReflectAttributes.h>
 #include <ReflectPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Reflect_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Reflect_GetScriptingInfo()
 {
     return new ReflectScriptingPluginInfo;
 }

@@ -42,10 +42,6 @@
 #include <PyThresholdAttributes.h>
 #include <ThresholdPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Threshold_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Threshold_GetScriptingInfo()
 {
     return new ThresholdScriptingPluginInfo;
 }

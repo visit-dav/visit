@@ -42,10 +42,6 @@
 #include <PySphereSliceAttributes.h>
 #include <SphereSlicePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo SphereSlice_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* SphereSlice_GetScriptingInfo()
 {
     return new SphereSliceScriptingPluginInfo;
 }

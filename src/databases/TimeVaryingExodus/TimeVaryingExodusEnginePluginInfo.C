@@ -38,10 +38,6 @@
 
 #include <TimeVaryingExodusPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo TimeVaryingExodus_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* TimeVaryingExodus_GetEngineInfo()
 {
     return new TimeVaryingExodusEnginePluginInfo;
 }

@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtVectorPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Vector_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Vector_GetViewerInfo()
 {
     VectorViewerPluginInfo::InitializeGlobalObjects();
     return new VectorViewerPluginInfo;

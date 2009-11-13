@@ -42,10 +42,6 @@
 #include <PyHistogramAttributes.h>
 #include <HistogramPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Histogram_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Histogram_GetScriptingInfo()
 {
     return new HistogramScriptingPluginInfo;
 }

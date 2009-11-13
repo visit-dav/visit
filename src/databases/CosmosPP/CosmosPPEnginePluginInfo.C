@@ -38,10 +38,6 @@
 
 #include <CosmosPPPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo CosmosPP_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* CosmosPP_GetEngineInfo()
 {
     return new CosmosPPEnginePluginInfo;
 }

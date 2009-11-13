@@ -38,10 +38,6 @@
 
 #include <SAMRAIPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo SAMRAI_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* SAMRAI_GetMDServerInfo()
 {
     return new SAMRAIMDServerPluginInfo;
 }

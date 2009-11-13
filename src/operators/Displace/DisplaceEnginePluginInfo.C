@@ -43,10 +43,6 @@
 #include <DisplacePluginInfo.h>
 #include <avtDisplaceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Displace_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Displace_GetEngineInfo()
 {
     return new DisplaceEnginePluginInfo;
 }

@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtCurvePlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Curve_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Curve_GetViewerInfo()
 {
     CurveViewerPluginInfo::InitializeGlobalObjects();
     return new CurveViewerPluginInfo;

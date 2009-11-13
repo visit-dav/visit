@@ -42,10 +42,6 @@
 #include <PyRemoveCellsAttributes.h>
 #include <RemoveCellsPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo RemoveCells_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* RemoveCells_GetScriptingInfo()
 {
     return new RemoveCellsScriptingPluginInfo;
 }

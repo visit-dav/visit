@@ -38,10 +38,6 @@
 
 #include <LAMMPSPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo LAMMPS_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* LAMMPS_GetMDServerInfo()
 {
     return new LAMMPSMDServerPluginInfo;
 }

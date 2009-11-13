@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <MetricThresholdAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo MetricThreshold_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* MetricThreshold_GetViewerInfo()
 {
     MetricThresholdViewerPluginInfo::InitializeGlobalObjects();
     return new MetricThresholdViewerPluginInfo;

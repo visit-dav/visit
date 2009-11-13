@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <SiloDumpAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo SiloDump_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* SiloDump_GetViewerInfo()
 {
     SiloDumpViewerPluginInfo::InitializeGlobalObjects();
     return new SiloDumpViewerPluginInfo;

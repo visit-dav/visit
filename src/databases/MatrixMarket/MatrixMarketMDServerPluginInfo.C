@@ -38,10 +38,6 @@
 
 #include <MatrixMarketPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo MatrixMarket_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* MatrixMarket_GetMDServerInfo()
 {
     return new MatrixMarketMDServerPluginInfo;
 }

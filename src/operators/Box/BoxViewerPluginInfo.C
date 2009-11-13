@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <BoxAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Box_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Box_GetViewerInfo()
 {
     BoxViewerPluginInfo::InitializeGlobalObjects();
     return new BoxViewerPluginInfo;

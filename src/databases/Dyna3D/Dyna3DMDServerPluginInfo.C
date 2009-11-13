@@ -38,10 +38,6 @@
 
 #include <Dyna3DPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Dyna3D_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Dyna3D_GetMDServerInfo()
 {
     return new Dyna3DMDServerPluginInfo;
 }

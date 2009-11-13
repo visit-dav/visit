@@ -38,10 +38,6 @@
 
 #include <H5NimrodPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo H5Nimrod_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* H5Nimrod_GetMDServerInfo()
 {
     return new H5NimrodMDServerPluginInfo;
 }

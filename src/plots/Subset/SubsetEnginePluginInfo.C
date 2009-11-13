@@ -43,10 +43,6 @@
 #include <SubsetPluginInfo.h>
 #include <avtSubsetPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Subset_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Subset_GetEngineInfo()
 {
     return new SubsetEnginePluginInfo;
 }

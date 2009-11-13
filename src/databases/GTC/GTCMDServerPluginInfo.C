@@ -38,10 +38,6 @@
 
 #include <GTCPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo GTC_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GTC_GetMDServerInfo()
 {
     return new GTCMDServerPluginInfo;
 }

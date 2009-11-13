@@ -38,10 +38,6 @@
 
 #include <VsPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Vs_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" MDServerDatabasePluginInfo* Vs_GetMDServerInfo()
 {
     return new VsMDServerPluginInfo;
 }

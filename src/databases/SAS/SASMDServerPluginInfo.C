@@ -38,10 +38,6 @@
 
 #include <SASPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo SAS_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* SAS_GetMDServerInfo()
 {
     return new SASMDServerPluginInfo;
 }

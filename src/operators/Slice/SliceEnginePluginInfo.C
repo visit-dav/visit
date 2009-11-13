@@ -43,10 +43,6 @@
 #include <SlicePluginInfo.h>
 #include <avtSliceFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Slice_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Slice_GetEngineInfo()
 {
     return new SliceEnginePluginInfo;
 }

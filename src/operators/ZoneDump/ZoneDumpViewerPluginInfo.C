@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ZoneDumpAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo ZoneDump_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* ZoneDump_GetViewerInfo()
 {
     ZoneDumpViewerPluginInfo::InitializeGlobalObjects();
     return new ZoneDumpViewerPluginInfo;

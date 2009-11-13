@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtVolumePlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Volume_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Volume_GetViewerInfo()
 {
     VolumeViewerPluginInfo::InitializeGlobalObjects();
     return new VolumeViewerPluginInfo;

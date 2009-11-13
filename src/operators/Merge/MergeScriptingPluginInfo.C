@@ -42,10 +42,6 @@
 #include <PyMergeOperatorAttributes.h>
 #include <MergePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Merge_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Merge_GetScriptingInfo()
 {
     return new MergeScriptingPluginInfo;
 }

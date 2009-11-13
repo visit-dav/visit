@@ -42,10 +42,6 @@
 #include <PyVectorAttributes.h>
 #include <VectorPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Vector_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Vector_GetScriptingInfo()
 {
     return new VectorScriptingPluginInfo;
 }

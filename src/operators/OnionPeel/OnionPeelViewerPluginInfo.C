@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <OnionPeelAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo OnionPeel_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* OnionPeel_GetViewerInfo()
 {
     OnionPeelViewerPluginInfo::InitializeGlobalObjects();
     return new OnionPeelViewerPluginInfo;

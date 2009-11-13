@@ -42,10 +42,6 @@
 #include <PyPDFAttributes.h>
 #include <PDFPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo PDF_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* PDF_GetScriptingInfo()
 {
     return new PDFScriptingPluginInfo;
 }

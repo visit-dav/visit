@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <IndexSelectAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo IndexSelect_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* IndexSelect_GetViewerInfo()
 {
     IndexSelectViewerPluginInfo::InitializeGlobalObjects();
     return new IndexSelectViewerPluginInfo;

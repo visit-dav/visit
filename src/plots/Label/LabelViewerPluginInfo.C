@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtLabelPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Label_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Label_GetViewerInfo()
 {
     LabelViewerPluginInfo::InitializeGlobalObjects();
     return new LabelViewerPluginInfo;

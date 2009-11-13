@@ -39,10 +39,6 @@
 #include <ITAPS_CPluginInfo.h>
 #include <avtITAPS_CWriter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo ITAPS_C_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -53,7 +49,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* ITAPS_C_GetEngineInfo()
 {
     return new ITAPS_CEnginePluginInfo;
 }

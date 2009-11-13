@@ -38,10 +38,6 @@
 
 #include <paraDISPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo paraDIS_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* paraDIS_GetMDServerInfo()
 {
     return new paraDISMDServerPluginInfo;
 }

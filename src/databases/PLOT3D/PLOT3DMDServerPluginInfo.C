@@ -38,10 +38,6 @@
 
 #include <PLOT3DPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo PLOT3D_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* PLOT3D_GetMDServerInfo()
 {
     return new PLOT3DMDServerPluginInfo;
 }

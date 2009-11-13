@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <PersistentParticlesAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo PersistentParticles_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* PersistentParticles_GetViewerInfo()
 {
     PersistentParticlesViewerPluginInfo::InitializeGlobalObjects();
     return new PersistentParticlesViewerPluginInfo;

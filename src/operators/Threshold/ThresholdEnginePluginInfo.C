@@ -43,10 +43,6 @@
 #include <ThresholdPluginInfo.h>
 #include <avtThresholdFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Threshold_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Threshold_GetEngineInfo()
 {
     return new ThresholdEnginePluginInfo;
 }

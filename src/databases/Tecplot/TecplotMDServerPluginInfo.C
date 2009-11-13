@@ -38,10 +38,6 @@
 
 #include <TecplotPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Tecplot_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Tecplot_GetMDServerInfo()
 {
     return new TecplotMDServerPluginInfo;
 }

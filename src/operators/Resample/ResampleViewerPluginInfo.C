@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ResampleAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Resample_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Resample_GetViewerInfo()
 {
     ResampleViewerPluginInfo::InitializeGlobalObjects();
     return new ResampleViewerPluginInfo;

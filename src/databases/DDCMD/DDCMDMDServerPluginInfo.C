@@ -38,10 +38,6 @@
 
 #include <DDCMDPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo DDCMD_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* DDCMD_GetMDServerInfo()
 {
     return new DDCMDMDServerPluginInfo;
 }

@@ -42,10 +42,6 @@
 #include <PyCurveAttributes.h>
 #include <CurvePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Curve_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Curve_GetScriptingInfo()
 {
     return new CurveScriptingPluginInfo;
 }

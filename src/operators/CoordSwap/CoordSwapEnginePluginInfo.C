@@ -43,10 +43,6 @@
 #include <CoordSwapPluginInfo.h>
 #include <avtCoordSwapFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo CoordSwap_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* CoordSwap_GetEngineInfo()
 {
     return new CoordSwapEnginePluginInfo;
 }

@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisDecimateWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Decimate_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()
+extern "C" OP_EXPORT GUIOperatorPluginInfo* Decimate_GetGUIInfo()
 {
     return new DecimateGUIPluginInfo;
 }

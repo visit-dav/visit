@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <ConnCompReduceAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo ConnCompReduce_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* ConnCompReduce_GetViewerInfo()
 {
     ConnCompReduceViewerPluginInfo::InitializeGlobalObjects();
     return new ConnCompReduceViewerPluginInfo;

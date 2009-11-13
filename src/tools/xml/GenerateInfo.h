@@ -184,6 +184,14 @@
 //   Tom Fogal, Wed Jul  1 23:46:57 MDT 2009
 //   Make sure to export interface symbols.
 //
+//   Hank Childs, Thu Nov 12 15:51:05 PST 2009
+//   Removed the specialized function naming from AddMacOSXMacro and made that
+//   behavior be used all the time.  Before this change: every plugin had
+//   its own VisItVersionString, GetGeneralInfo, etc, and only on Mac's would
+//   it be Pseudocolor_VisItVersionString, Pseudocolor_GetGeneralInfo, etc.
+//   Now we have Pseudocolor_VisItVersionString, Pseudocolor_GetGeneralInfo,
+//   etc., all the time.  This is needed for static builds.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -705,18 +713,8 @@ class InfoGeneratorPlugin : public Plugin
     void AddVersion(QTextStream &c)
     {
         c << "#include <visit-config.h>" << endl;
-        c << "#if defined(__APPLE__)" << endl;
         c << "extern \"C\" " << Export(type.toStdString()) << " const char *"<<name<<"VisItPluginVersion = VISIT_VERSION;" << endl;
-        c << "#else" << endl;
-        c << "extern \"C\" " << Export(type.toStdString()) << " const char *VisItPluginVersion = VISIT_VERSION;" << endl;
-        c << "#endif" << endl;
         c << endl;
-    }
-    void AddMacOSXMacro(QTextStream &c, const char *infoType)
-    {
-        c << "#if defined(__APPLE__)" << endl;
-        c << "#define Get" << infoType << "Info " << name << "_Get" << infoType << "Info" << endl;
-        c << "#endif" << endl << endl;
     }
     void WriteInfoSource(QTextStream &c)
     {
@@ -730,7 +728,6 @@ class InfoGeneratorPlugin : public Plugin
             c << "#include <"<<atts->name<<".h>" << endl;
         c << endl;
         AddVersion(c);
-        AddMacOSXMacro(c, "General");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetGeneralInfo" << endl;
         c << "//" << endl;
@@ -742,11 +739,11 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if (type=="operator")
-            c << "extern \"C\" OP_EXPORT GeneralOperatorPluginInfo* GetGeneralInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT GeneralOperatorPluginInfo* " << name <<"_GetGeneralInfo()" << endl;
         else if (type=="plot")
-            c << "extern \"C\" PLOT_EXPORT GeneralPlotPluginInfo* GetGeneralInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT GeneralPlotPluginInfo* " << name << "_GetGeneralInfo()" << endl;
         else if (type=="database")
-            c << "extern \"C\" DBP_EXPORT GeneralDatabasePluginInfo* GetGeneralInfo()" << endl;
+            c << "extern \"C\" DBP_EXPORT GeneralDatabasePluginInfo* " << name << "_GetGeneralInfo()" << endl;
         c << "{" << endl;
         c << "    return new "<<name<<"GeneralPluginInfo;" << endl;
         c << "}" << endl;
@@ -1152,7 +1149,6 @@ class InfoGeneratorPlugin : public Plugin
         else if (type=="plot")
             c << "#include <Qvis"<<name<<"PlotWindow.h>" << endl;
         c << endl;
-        AddMacOSXMacro(c, "GUI");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetGUIInfo" << endl;
         c << "//" << endl;
@@ -1164,9 +1160,9 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if (type=="operator")
-            c << "extern \"C\" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT GUIOperatorPluginInfo* " << name << "_GetGUIInfo()" << endl;
         else if (type=="plot")
-            c << "extern \"C\" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT GUIPlotPluginInfo* " << name << "_GetGUIInfo()" << endl;
         c << "{" << endl;
         c << "    return new "<<name<<"GUIPluginInfo;" << endl;
         c << "}" << endl;
@@ -1347,7 +1343,6 @@ class InfoGeneratorPlugin : public Plugin
         else if (type=="plot")
             c << "#include <avt"<<name<<"Plot.h>" << endl;
         c << endl;
-        AddMacOSXMacro(c, "Viewer");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetViewerInfo" << endl;
         c << "//" << endl;
@@ -1359,9 +1354,9 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if (type=="operator")
-            c << "extern \"C\" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT ViewerOperatorPluginInfo* " << name << "_GetViewerInfo()" << endl;
         else if (type=="plot")
-            c << "extern \"C\" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT ViewerPlotPluginInfo* " << name << "_GetViewerInfo()" << endl;
         c << "{" << endl;
         c << "    "<<name<<"ViewerPluginInfo::InitializeGlobalObjects();" << endl;
         c << "    return new "<<name<<"ViewerPluginInfo;" << endl;
@@ -1729,7 +1724,6 @@ class InfoGeneratorPlugin : public Plugin
             c << copyright_str << endl;
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "" << endl;
-            AddMacOSXMacro(c, "MDServer");
             c << "// ****************************************************************************" << endl;
             c << "//  Function:  GetMDServerInfo" << endl;
             c << "//" << endl;
@@ -1740,7 +1734,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted" << endl;
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
-            c << "extern \"C\" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()" << endl;
+            c << "extern \"C\" DBP_EXPORT MDServerDatabasePluginInfo* " << name << "_GetMDServerInfo()" << endl;
             c << "{" << endl;
             c << "    return new "<<name<<"MDServerPluginInfo;" << endl;
             c << "}" << endl;
@@ -1762,7 +1756,6 @@ class InfoGeneratorPlugin : public Plugin
             if (haswriter)
                 c << "#include <avt"<<name<<"Writer.h>" << endl;
             c << "" << endl;
-            AddMacOSXMacro(c, "Engine");
             c << "// ****************************************************************************" << endl;
             c << "//  Function:  GetEngineInfo" << endl;
             c << "//" << endl;
@@ -1773,7 +1766,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "//  Creation:   omitted" << endl;
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
-            c << "extern \"C\" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()" << endl;
+            c << "extern \"C\" DBP_EXPORT EngineDatabasePluginInfo* " << name << "_GetEngineInfo()" << endl;
             c << "{" << endl;
             c << "    return new "<<name<<"EnginePluginInfo;" << endl;
             c << "}" << endl;
@@ -1822,7 +1815,6 @@ class InfoGeneratorPlugin : public Plugin
             else if (type=="plot")
                 c << "#include <avt"<<name<<"Plot.h>" << endl;
             c << endl;
-            AddMacOSXMacro(c, "Engine");
             c << "// ****************************************************************************" << endl;
             c << "//  Function:  GetEngineInfo" << endl;
             c << "//" << endl;
@@ -1834,9 +1826,9 @@ class InfoGeneratorPlugin : public Plugin
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             if (type=="operator")
-                c << "extern \"C\" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()" << endl;
+                c << "extern \"C\" OP_EXPORT EngineOperatorPluginInfo* " << name << "_GetEngineInfo()" << endl;
             else if (type=="plot")
-                c << "extern \"C\" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()" << endl;
+                c << "extern \"C\" PLOT_EXPORT EnginePlotPluginInfo* " << name << "_GetEngineInfo()" << endl;
             c << "{" << endl;
             c << "    return new "<<name<<"EnginePluginInfo;" << endl;
             c << "}" << endl;
@@ -1908,7 +1900,6 @@ class InfoGeneratorPlugin : public Plugin
         c << "#include <Py"<<atts->name<<".h>" << endl;
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
         c << "" << endl;
-        AddMacOSXMacro(c, "Scripting");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetScriptingInfo" << endl;
         c << "//" << endl;
@@ -1920,9 +1911,9 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         if(type=="plot")
-            c << "extern \"C\" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()" << endl;
+            c << "extern \"C\" PLOT_EXPORT ScriptingPlotPluginInfo* " << name << "_GetScriptingInfo()" << endl;
         else if(type == "operator")
-            c << "extern \"C\" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()" << endl;
+            c << "extern \"C\" OP_EXPORT ScriptingOperatorPluginInfo* " << name << "_GetScriptingInfo()" << endl;
         c << "{" << endl;
         c << "    return new "<<name<<"ScriptingPluginInfo;" << endl;
         c << "}" << endl;

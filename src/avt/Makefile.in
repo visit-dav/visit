@@ -95,6 +95,9 @@
 #   Brad Whitlock, Wed Jun 3 15:42:02 PST 2009
 #   I added an engine-only build option.
 #
+#   Hank Childs, Thu Nov 12 13:42:52 PST 2009
+#   Added an option for static linking.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -108,6 +111,8 @@ SUBDIRS_ENGINE_ONLY=DBAtts Math IVP Pipeline DDF MIR Shapelets\
         VisWindow
 
 SUBDIRS_SERVER_COMPONENTS_ONLY=$(SUBDIRS_ENGINE_ONLY)
+
+SUBDIRS_STATIC_LINK=$(SUBDIRS_ENGINE_ONLY)
 
 SUBDIRS_STD=$(SUBDIRS_ENGINE_ONLY) QtVisWindow
 

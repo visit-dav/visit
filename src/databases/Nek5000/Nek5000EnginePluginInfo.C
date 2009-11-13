@@ -38,10 +38,6 @@
 
 #include <Nek5000PluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Nek5000_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Nek5000_GetEngineInfo()
 {
     return new Nek5000EnginePluginInfo;
 }

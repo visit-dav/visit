@@ -43,10 +43,6 @@
 #include <SiloDumpPluginInfo.h>
 #include <avtSiloDumpFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SiloDump_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* SiloDump_GetEngineInfo()
 {
     return new SiloDumpEnginePluginInfo;
 }

@@ -42,10 +42,6 @@
 #include <PyLineoutAttributes.h>
 #include <LineoutPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Lineout_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Lineout_GetScriptingInfo()
 {
     return new LineoutScriptingPluginInfo;
 }

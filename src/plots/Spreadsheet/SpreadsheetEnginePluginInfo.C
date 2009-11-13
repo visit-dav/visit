@@ -43,10 +43,6 @@
 #include <SpreadsheetPluginInfo.h>
 #include <avtSpreadsheetPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Spreadsheet_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Spreadsheet_GetEngineInfo()
 {
     return new SpreadsheetEnginePluginInfo;
 }

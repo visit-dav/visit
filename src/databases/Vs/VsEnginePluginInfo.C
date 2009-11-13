@@ -38,10 +38,6 @@
 
 #include <VsPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Vs_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" EngineDatabasePluginInfo* Vs_GetEngineInfo()
 {
     return new VsEnginePluginInfo;
 }

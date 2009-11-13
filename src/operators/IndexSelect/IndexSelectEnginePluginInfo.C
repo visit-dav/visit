@@ -43,10 +43,6 @@
 #include <IndexSelectPluginInfo.h>
 #include <avtIndexSelectFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo IndexSelect_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* IndexSelect_GetEngineInfo()
 {
     return new IndexSelectEnginePluginInfo;
 }

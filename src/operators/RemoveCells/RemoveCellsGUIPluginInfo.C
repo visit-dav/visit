@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisRemoveCellsWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo RemoveCells_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT GUIOperatorPluginInfo* GetGUIInfo()
+extern "C" OP_EXPORT GUIOperatorPluginInfo* RemoveCells_GetGUIInfo()
 {
     return new RemoveCellsGUIPluginInfo;
 }

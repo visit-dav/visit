@@ -38,10 +38,6 @@
 
 #include <OVERFLOWPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo OVERFLOW_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* OVERFLOW_GetEngineInfo()
 {
     return new OVERFLOWEnginePluginInfo;
 }

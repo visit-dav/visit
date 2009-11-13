@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <BoundaryOpAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo BoundaryOp_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* BoundaryOp_GetViewerInfo()
 {
     BoundaryOpViewerPluginInfo::InitializeGlobalObjects();
     return new BoundaryOpViewerPluginInfo;

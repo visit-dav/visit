@@ -38,10 +38,6 @@
 
 #include <M3DPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo M3D_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* M3D_GetEngineInfo()
 {
     return new M3DEnginePluginInfo;
 }

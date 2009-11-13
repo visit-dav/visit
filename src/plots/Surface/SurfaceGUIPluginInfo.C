@@ -45,10 +45,6 @@
 #include <QApplication>
 #include <QvisSurfacePlotWindow.h>
 
-#if defined(__APPLE__)
-#define GetGUIInfo Surface_GetGUIInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //
@@ -59,7 +55,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT GUIPlotPluginInfo* GetGUIInfo()
+extern "C" PLOT_EXPORT GUIPlotPluginInfo* Surface_GetGUIInfo()
 {
     return new SurfaceGUIPluginInfo;
 }

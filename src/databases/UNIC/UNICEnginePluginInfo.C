@@ -38,10 +38,6 @@
 
 #include <UNICPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo UNIC_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* UNIC_GetEngineInfo()
 {
     return new UNICEnginePluginInfo;
 }

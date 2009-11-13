@@ -38,10 +38,6 @@
 
 #include <GGCMPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo GGCM_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* GGCM_GetEngineInfo()
 {
     return new GGCMEnginePluginInfo;
 }

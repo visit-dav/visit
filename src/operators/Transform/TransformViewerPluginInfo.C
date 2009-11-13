@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <TransformAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Transform_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Transform_GetViewerInfo()
 {
     TransformViewerPluginInfo::InitializeGlobalObjects();
     return new TransformViewerPluginInfo;

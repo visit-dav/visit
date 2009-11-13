@@ -43,10 +43,6 @@
 #include <TransformPluginInfo.h>
 #include <avtTransformFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Transform_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Transform_GetEngineInfo()
 {
     return new TransformEnginePluginInfo;
 }

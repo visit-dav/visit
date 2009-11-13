@@ -42,10 +42,6 @@
 #include <PyElevateAttributes.h>
 #include <ElevatePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Elevate_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Elevate_GetScriptingInfo()
 {
     return new ElevateScriptingPluginInfo;
 }

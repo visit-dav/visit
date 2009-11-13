@@ -38,10 +38,6 @@
 
 #include <HDF_UCPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo HDF_UC_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* HDF_UC_GetMDServerInfo()
 {
     return new HDF_UCMDServerPluginInfo;
 }

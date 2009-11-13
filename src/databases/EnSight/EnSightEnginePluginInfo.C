@@ -38,10 +38,6 @@
 
 #include <EnSightPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo EnSight_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* EnSight_GetEngineInfo()
 {
     return new EnSightEnginePluginInfo;
 }

@@ -43,10 +43,6 @@
 #include <CracksClipperPluginInfo.h>
 #include <avtCracksClipperFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo CracksClipper_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* CracksClipper_GetEngineInfo()
 {
     return new CracksClipperEnginePluginInfo;
 }

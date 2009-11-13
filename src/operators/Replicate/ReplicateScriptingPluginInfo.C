@@ -42,10 +42,6 @@
 #include <PyReplicateAttributes.h>
 #include <ReplicatePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Replicate_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Replicate_GetScriptingInfo()
 {
     return new ReplicateScriptingPluginInfo;
 }

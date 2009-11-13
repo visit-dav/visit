@@ -38,10 +38,6 @@
 
 #include <GTCPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo GTC_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* GTC_GetEngineInfo()
 {
     return new GTCEnginePluginInfo;
 }

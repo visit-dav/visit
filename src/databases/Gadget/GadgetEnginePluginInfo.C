@@ -38,10 +38,6 @@
 
 #include <GadgetPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Gadget_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* Gadget_GetEngineInfo()
 {
     return new GadgetEnginePluginInfo;
 }

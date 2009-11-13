@@ -42,10 +42,6 @@
 #include <PySurfCompPrepAttributes.h>
 #include <SurfCompPrepPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo SurfCompPrep_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* SurfCompPrep_GetScriptingInfo()
 {
     return new SurfCompPrepScriptingPluginInfo;
 }

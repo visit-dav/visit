@@ -38,10 +38,6 @@
 
 #include <FLASHPluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo FLASH_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* FLASH_GetEngineInfo()
 {
     return new FLASHEnginePluginInfo;
 }

@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtParallelCoordinatesPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo ParallelCoordinates_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* ParallelCoordinates_GetViewerInfo()
 {
     ParallelCoordinatesViewerPluginInfo::InitializeGlobalObjects();
     return new ParallelCoordinatesViewerPluginInfo;

@@ -43,10 +43,6 @@
 #include <ReflectPluginInfo.h>
 #include <avtReflectFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Reflect_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Reflect_GetEngineInfo()
 {
     return new ReflectEnginePluginInfo;
 }

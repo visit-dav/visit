@@ -38,10 +38,6 @@
 
 #include <ShapefilePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Shapefile_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Shapefile_GetMDServerInfo()
 {
     return new ShapefileMDServerPluginInfo;
 }

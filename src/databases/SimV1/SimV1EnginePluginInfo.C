@@ -38,10 +38,6 @@
 
 #include <SimV1PluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo SimV1_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT EngineDatabasePluginInfo* GetEngineInfo()
+extern "C" DBP_EXPORT EngineDatabasePluginInfo* SimV1_GetEngineInfo()
 {
     return new SimV1EnginePluginInfo;
 }

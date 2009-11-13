@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtContourPlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Contour_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Contour_GetViewerInfo()
 {
     ContourViewerPluginInfo::InitializeGlobalObjects();
     return new ContourViewerPluginInfo;

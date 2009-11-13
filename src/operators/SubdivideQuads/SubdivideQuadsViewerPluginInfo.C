@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <SubdivideQuadsAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo SubdivideQuads_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* SubdivideQuads_GetViewerInfo()
 {
     SubdivideQuadsViewerPluginInfo::InitializeGlobalObjects();
     return new SubdivideQuadsViewerPluginInfo;

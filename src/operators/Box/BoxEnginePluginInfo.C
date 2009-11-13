@@ -43,10 +43,6 @@
 #include <BoxPluginInfo.h>
 #include <avtBoxFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Box_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Box_GetEngineInfo()
 {
     return new BoxEnginePluginInfo;
 }

@@ -38,10 +38,6 @@
 
 #include <Nek5000PluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetMDServerInfo Nek5000_GetMDServerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //
@@ -52,7 +48,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT MDServerDatabasePluginInfo* GetMDServerInfo()
+extern "C" DBP_EXPORT MDServerDatabasePluginInfo* Nek5000_GetMDServerInfo()
 {
     return new Nek5000MDServerPluginInfo;
 }

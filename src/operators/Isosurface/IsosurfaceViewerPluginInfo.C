@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <IsosurfaceAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Isosurface_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* Isosurface_GetViewerInfo()
 {
     IsosurfaceViewerPluginInfo::InitializeGlobalObjects();
     return new IsosurfaceViewerPluginInfo;

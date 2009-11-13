@@ -43,10 +43,6 @@
 #include <DecimatePluginInfo.h>
 #include <avtDecimateFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Decimate_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* Decimate_GetEngineInfo()
 {
     return new DecimateEnginePluginInfo;
 }

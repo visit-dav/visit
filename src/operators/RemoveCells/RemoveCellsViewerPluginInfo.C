@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <RemoveCellsAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo RemoveCells_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* RemoveCells_GetViewerInfo()
 {
     RemoveCellsViewerPluginInfo::InitializeGlobalObjects();
     return new RemoveCellsViewerPluginInfo;

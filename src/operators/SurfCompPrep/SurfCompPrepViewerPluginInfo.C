@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <SurfCompPrepAttributes.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo SurfCompPrep_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ViewerOperatorPluginInfo* GetViewerInfo()
+extern "C" OP_EXPORT ViewerOperatorPluginInfo* SurfCompPrep_GetViewerInfo()
 {
     SurfCompPrepViewerPluginInfo::InitializeGlobalObjects();
     return new SurfCompPrepViewerPluginInfo;

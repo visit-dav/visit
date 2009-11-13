@@ -80,6 +80,12 @@ using std::sort;
 
 #define MAX_PLUGINERROR 500
 
+#ifdef STATIC
+extern void *fake_dlsym(const string &);
+extern void StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &,
+                                   const string &);
+#endif
+
 // ****************************************************************************
 //  Method: PluginManager constructor
 //
@@ -496,11 +502,19 @@ PluginManager::EnablePlugin(const string &id)
 //    Hank Childs, Fri Nov 16 15:24:16 PST 2007
 //    Fix bug pointed out by Paul Selby of AWE.
 //
+//    Hank Childs, Thu Nov 12 17:49:58 PST 2009
+//    Only read the supported libraries if we are doing a static link.
+//    
 // ****************************************************************************
 
 void
 PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 {
+#ifdef STATIC
+    StaticGetSupportedLibs(libs, managerName);
+    return;
+#endif
+
     // Read the files in the plugin directory.
     vector< vector<pair<string,string> > > files;
     ReadPluginDir(files);
@@ -1471,6 +1485,10 @@ PluginManager::ReadPluginDir(vector< vector<pair<string,string> > > &files)
 //
 //    Mark C. Miller, Thu Aug 14 01:22:59 PDT 2008
 //    Made messages reported to screen include plugin name and error msg.
+//    
+//    Hank Childs, Thu Nov 12 11:28:10 PST 2009
+//    Add support for static "plugins".
+//
 // ****************************************************************************
 
 void
@@ -1488,6 +1506,8 @@ PluginManager::PluginOpen(const string &pluginFile)
     }
 
     handle = (void *)lib;
+#elif defined(STATIC)
+    debug1 << "Not opening " << pluginFile << " because this is a static build." << endl;
 #else
     // dlopen the plugin
     handle = dlopen(pluginFile.c_str(), RTLD_LAZY);
@@ -1543,15 +1563,16 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   Cyrus Harrison, Wed Jun 20 14:05:58 PDT 2007
 //   Changed __DARWIN__ back to __APPLE__
 //
+//   Hank Childs, Thu Nov 12 11:28:10 PST 2009
+//   Add support for static "plugins".
+//   
 // ****************************************************************************
 
 void *
 PluginManager::PluginSymbol(const string &symbol, bool noError)
 {
     void *retval;
-#if defined(_WIN32)
-    retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
-#elif defined(__APPLE__)
+
     string symbolName(symbol);
 
     //
@@ -1572,17 +1593,24 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
         int len = openPlugin.size() - slashPos - suffixLen - 5 -
                   managerName.size() - ext.size();
         string pluginPrefix(openPlugin.substr(slashPos + 5, len));
-//        debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;
+        //  debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;
         if(pluginVersion)
             symbolName = string(pluginPrefix + symbol);
         else
             symbolName = string(pluginPrefix + "_" + symbol);
-//        debug4 << "PluginSymbol: sym: " << symbolName << endl;
+        //  debug4 << "PluginSymbol: sym: " << symbolName << endl;
     }
     
-    retval = dlsym(handle, symbolName.c_str());
+#if defined(_WIN32)
+    retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
 #else
-    retval = dlsym(handle, symbol.c_str());
+  #if defined(STATIC)
+    retval = fake_dlsym(symbolName);
+    if (retval == NULL)
+        debug1 << "fake_dlsym was not able to return " << symbolName << endl;
+  #else
+    retval = dlsym(handle, symbolName.c_str());
+  #endif
 #endif
 
     // If the symbol was not found, print the error message if appropriate.

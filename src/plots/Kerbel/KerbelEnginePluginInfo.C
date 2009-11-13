@@ -43,10 +43,6 @@
 #include <KerbelPluginInfo.h>
 #include <avtKerbelPlot.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo Kerbel_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT EnginePlotPluginInfo* GetEngineInfo()
+extern "C" PLOT_EXPORT EnginePlotPluginInfo* Kerbel_GetEngineInfo()
 {
     return new KerbelEnginePluginInfo;
 }

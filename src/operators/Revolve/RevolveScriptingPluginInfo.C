@@ -42,10 +42,6 @@
 #include <PyRevolveAttributes.h>
 #include <RevolvePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Revolve_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT ScriptingOperatorPluginInfo* GetScriptingInfo()
+extern "C" OP_EXPORT ScriptingOperatorPluginInfo* Revolve_GetScriptingInfo()
 {
     return new RevolveScriptingPluginInfo;
 }

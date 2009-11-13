@@ -43,15 +43,7 @@
 #include <H5PartPluginInfo.h>
 
 #include <visit-config.h>
-#if defined(__APPLE__)
 extern "C" DBP_EXPORT const char *H5PartVisItPluginVersion = VISIT_VERSION;
-#else
-extern "C" DBP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
-#endif
-
-#if defined(__APPLE__)
-#define GetGeneralInfo H5Part_GetGeneralInfo
-#endif
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -63,7 +55,7 @@ extern "C" DBP_EXPORT const char *VisItPluginVersion = VISIT_VERSION;
 //  Creation:    omitted
 //
 // ****************************************************************************
-extern "C" DBP_EXPORT GeneralDatabasePluginInfo* GetGeneralInfo()
+extern "C" DBP_EXPORT GeneralDatabasePluginInfo* H5Part_GetGeneralInfo()
 {
     return new H5PartGeneralPluginInfo;
 }

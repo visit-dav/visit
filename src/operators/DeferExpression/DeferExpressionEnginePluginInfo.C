@@ -43,10 +43,6 @@
 #include <DeferExpressionPluginInfo.h>
 #include <avtDeferExpressionFilter.h>
 
-#if defined(__APPLE__)
-#define GetEngineInfo DeferExpression_GetEngineInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //
@@ -57,7 +53,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" OP_EXPORT EngineOperatorPluginInfo* GetEngineInfo()
+extern "C" OP_EXPORT EngineOperatorPluginInfo* DeferExpression_GetEngineInfo()
 {
     return new DeferExpressionEnginePluginInfo;
 }
