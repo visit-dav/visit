@@ -310,6 +310,29 @@ avtBasic_STSD_NETCDFFileFormat::GetCycleFromFilename(const char *f) const
 }
 
 // ****************************************************************************
+// Method: avtBasic_STSD_NETCDFFileFormat::GetCycle
+//
+// Purpose: 
+//   Get the cycle from the file
+//
+// Returns:    The time
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Nov 13 16:33:08 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtBasic_STSD_NETCDFFileFormat::GetCycle()
+{
+    intVector cycles;
+    reader->GetCycles(cycles);
+    return (cycles.size() > 0) ? cycles[0] : avtFileFormat::INVALID_CYCLE;
+}
+
+// ****************************************************************************
 // Method: avtBasic_STSD_NETCDFFileFormat::GetTime
 //
 // Purpose: 
@@ -321,6 +344,9 @@ avtBasic_STSD_NETCDFFileFormat::GetCycleFromFilename(const char *f) const
 // Creation:   Tue May 16 14:00:37 PST 2006
 //
 // Modifications:
+//   Eric Brugger, Fri Nov 13 16:33:08 PST 2009
+//   I modified the routine to return INVALID_TIME instead of 0 if there
+//   were no times in the file.
 //   
 // ****************************************************************************
 
@@ -329,7 +355,7 @@ avtBasic_STSD_NETCDFFileFormat::GetTime()
 {
     doubleVector times;
     reader->GetTimes(times);
-    return (times.size() > 0) ? times[0] : 0.;
+    return (times.size() > 0) ? times[0] : avtFileFormat::INVALID_TIME;
 }
 
 // ****************************************************************************

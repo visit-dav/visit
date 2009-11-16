@@ -67,6 +67,8 @@ class vtkDataArray;
 // Creation:   Tue Oct 27 14:39:32 PDT 2009
 //
 // Modifications:
+//   Eric Brugger, Mon Nov 16 07:59:52 PST 2009
+//   I added ReadTimeAttribute and ReadCycleAttribute.
 //   
 // ****************************************************************************
 
@@ -85,6 +87,8 @@ public:
 
     static bool GetTimeDimension(NETCDFFileObject *, int &ncdim, int &nts, std::string &name);
 protected:
+    float *ReadTimeAttribute();
+    int    ReadCycleAttribute();
     float *ReadArray(const char *varname);
 
     typedef std::map<std::string, intVector>   StringIntVectorMap;

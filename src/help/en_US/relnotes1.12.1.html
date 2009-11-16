@@ -49,6 +49,7 @@
 <li>VisIt's Tecplot writer was enhanced so it can save: 2D meshes, rectilinear meshes, and polygonal meshes. The writer was also changed so it produces files that are easier to read by a human.</li>
 <li>The paraDIS and paraDIS_tecplot readers were added.</li>
 <li>The Nek5000 reader was enhanced so that "NEK3D" and "version: 1.0" are no longer required at the beginning of the metadata file. They are still allowed for backward compatability with old files.</li>
+<li>The basic NETCDF reader was enhanced so that the global attributes "Time" and "Cycle" are used as the time and cycle for the file when each time step is stored in a seperate NETCDF file. The previous default behavior is used when the global attributes "Time" or "Cycle" are not present. The "Time" attribute is only used if there is no array named "time", "Time" or "T".</li>
 <li>The axis extents used by the Parallel Coordinates plot were displayed, but not editable.  They can now be changed directly in the window.</li>
 <li>Support for launching on graph.llnl.gov was added.</li>
 <li>ExportDatabase will now be much faster when exporting VTK files in parallel.</li>
