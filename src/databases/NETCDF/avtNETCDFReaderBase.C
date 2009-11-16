@@ -210,8 +210,15 @@ void
 avtNETCDFReaderBase::GetCycles(std::vector<int> &cycles)
 {
     int nts = GetNTimesteps();
-    for(int i = 0; i < nts; ++i)
-        cycles.push_back(i);
+    if (nts <= 1)
+    {
+        cycles.push_back(ReadCycleAttribute());
+    }
+    else
+    {
+        for(int i = 0; i < nts; ++i)
+            cycles.push_back(i);
+    }
 }
 
 void
@@ -222,8 +229,15 @@ avtNETCDFReaderBase::GetTimes(std::vector<double> &times)
     float *times_array = 0;
     if(GetTimeDimension(fileObject, ncdim, nts, name))
     {
-        // Read the times from the DB...
+        // Read the times from the DB.
         times_array = ReadArray(name.c_str());
+    }
+    else
+    {
+        // Read the time attribute.
+        times_array = ReadTimeAttribute();
+        if (times_array != 0)
+            nts = 1;
     }
 
     if(times_array != 0)
@@ -237,6 +251,107 @@ avtNETCDFReaderBase::GetTimes(std::vector<double> &times)
         for(int i = 0; i < nts; ++i)
             times.push_back((double)i);
     }
+}
+
+// ****************************************************************************
+// Method: avtCCSMReader::ReadTimeAttribute
+//
+// Purpose: 
+//   Reads the global attribute Time into a float array.
+//
+// Returns:    A float array or NULL.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Nov 16 08:01:05 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+float *
+avtNETCDFReaderBase::ReadTimeAttribute()
+{
+    float *times_array = 0;
+
+    //
+    // See if the global attribute time exists. If it does and is
+    // either a float or double, then return the first value of it
+    // as the time array.
+    //
+    int     status;
+    nc_type atttype;
+    size_t  attsize;
+    if((status = nc_inq_att(fileObject->GetFileHandle(), NC_GLOBAL,
+        "Time", &atttype, &attsize)) == NC_NOERR)
+    {
+        if (atttype == NC_FLOAT)
+        {
+            times_array = new float[1];
+            float *value = new float[attsize];
+            nc_get_att_float(fileObject->GetFileHandle(), NC_GLOBAL,
+                "Time", value); 
+            times_array[0] = value[0];
+            delete [] value;
+        }
+        else if (atttype == NC_DOUBLE)
+        {
+            times_array = new float[1];
+            double *value = new double[attsize];
+            nc_get_att_double(fileObject->GetFileHandle(), NC_GLOBAL,
+                "Time", value); 
+            times_array[0] = value[0];
+            delete [] value;
+        }
+    }
+
+    return times_array;
+}
+
+// ****************************************************************************
+// Method: avtCCSMReader::ReadCycleAttribute
+//
+// Purpose: 
+//   Returns the global attribute Cycle as an int.
+//
+// Returns:    The global attribute Cycle.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Nov 16 08:01:05 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtNETCDFReaderBase::ReadCycleAttribute()
+{
+    int cycle = 0;
+
+    //
+    // See if the global attribute cycle exists. If it does and is
+    // an int, then return the first value of it as the cycle.
+    //
+    int     status;
+    nc_type atttype;
+    size_t  attsize;
+    if((status = nc_inq_att(fileObject->GetFileHandle(), NC_GLOBAL,
+        "Cycle", &atttype, &attsize)) == NC_NOERR)
+    {
+        if (atttype == NC_INT)
+        {
+            int *value = new int[attsize];
+            nc_get_att_int(fileObject->GetFileHandle(), NC_GLOBAL,
+                "Cycle", value); 
+            cycle = value[0];
+            delete [] value;
+        }
+    }
+
+    return cycle;
 }
 
 // ****************************************************************************

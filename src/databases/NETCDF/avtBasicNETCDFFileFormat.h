@@ -115,6 +115,9 @@ protected:
 //    Brad Whitlock, Thu Oct 29 16:14:17 PDT 2009
 //    I moved the guts to avtBasicNETCDFReader.
 //
+//    Eric Brugger, Fri Nov 13 16:31:57 PST 2009
+//    I added GetCycle.
+//
 // ****************************************************************************
 
 class avtBasic_STSD_NETCDFFileFormat : public avtSTSDFileFormat
@@ -128,6 +131,7 @@ public:
                        avtBasic_STSD_NETCDFFileFormat(const char *filename);
     virtual           ~avtBasic_STSD_NETCDFFileFormat();
 
+    virtual int            GetCycle();
     virtual double         GetTime();
 
     virtual const char    *GetType(void) { return "Basic ST NETCDF"; }
