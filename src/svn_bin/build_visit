@@ -208,7 +208,7 @@
 #     Kathleen Bonnell, Mon Aug 27 08:42:06 PDT 2007
 #     Changed -DMANGLED_OSMESA_INCLUDE to -DMANGLED_OSMESA_INCLUDE_DIR 
 #     in build_vtk. 
-#     
+#
 #     Gunther H. Weber, Wed Aug 29 12:34:58 PDT 2007
 #     - Added rv=0 to beginning of check_parallel to fix error when trying
 #       to build a parallel version of VisIt.
@@ -218,7 +218,7 @@
 #     - Do not specify a username for svn checkout if SVN_NERSC_USERNAME is
 #       not set, so that one can use .ssh/config for that purpose
 #     - Fix gcc version detection if ./configure line containts "version"
-#     
+#
 #     Hank Childs, Mon Sep 10 12:33:06 PDT 2007
 #     If you are building only an optional third party library, then don't
 #     download Qt, VTK, Mesa, VisIt source, etc.
@@ -307,13 +307,13 @@
 #     Corrected the silo build
 #     Added an explicit CMake build step.
 #     Added a parallel make option
-#     
+#
 #     Thomas R. Treadway, Thu Feb  7 16:58:19 PST 2008
 #     Corrected the ccmio build for x86_64
-#     
+#
 #     Thomas R. Treadway, Fri Feb  8 15:30:08 PST 2008
 #     Added David Bremer's patch for fixing QT's OpenGL path problems.
-#     
+#
 #     Hank Childs, Sat Feb  9 14:18:54 PST 2008
 #     Change clearcase_bin to svn_bin in help section.
 #
@@ -729,6 +729,10 @@
 #     Gunther H. Weber, Tue Nov 10 19:46:08 PST 2009
 #     Change install_name for VTK on MacOS.
 #
+#     Cyrus Harrison, Tue Nov 17 12:33:47 PST 2009
+#     Reverted back to custom creation of python shared library on AIX.
+#     Changed SO_EXT for AIX to ".a"
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -814,7 +818,7 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    export QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
 elif [[ "$OPSYS" == "AIX" ]]; then
    export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
-   export SO_EXT="so"
+   export SO_EXT="a"
    export C_COMPILER=${C_COMPILER:-"xlc"}
    export CXX_COMPILER=${CXX_COMPILER:-"xlC"}
    export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
@@ -3747,12 +3751,17 @@ function build_python
     fi
     PYTHON_OPT="$cFlags"
 
-    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-         "--enable-shared --prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
-    
-    ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" --enable-shared \
+    if [[ "$OPSYS" == "AIX" ]]; then
+        info "Configuring Python (AIX): ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
+             "--prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
+        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
                 --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
-
+    else
+        info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
+             "--enable-shared --prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
+        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" --enable-shared \
+                --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
+    fi
     if [[ $? != 0 ]] ; then
        warn "Python configure failed.  Giving up"
        return 1
@@ -3772,6 +3781,20 @@ function build_python
     if [[ $? != 0 ]] ; then
        warn "Python build (make install) failed.  Giving up"
        return 1
+    fi
+
+
+    if [[ "$OPSYS" == "AIX" ]]; then
+        # configure flag --enable-shared doesn't work on llnl aix5 systems
+        # we need to create the shared lib manually and place it in the
+        # proper loc
+        $C_COMPILER -qmkshrobj -lm \
+          $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/libpython$PYTHON_COMPATIBILITY_VERSION.a \
+          -o $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT
+        if [[ $? != 0 ]] ; then
+          warn "Python dynamic library build failed.  Giving up"
+          return 1
+        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
