@@ -32,13 +32,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <math.h>
 #include <stdarg.h>
 #include "debugutil.h"
 #include <time.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 
 static  int    iVerbose = 0;
 static    int    iCheck = 0;

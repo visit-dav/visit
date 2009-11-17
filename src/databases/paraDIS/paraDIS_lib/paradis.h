@@ -73,7 +73,11 @@
 #define DEBUG 1
 
 /* now for the API */  
+#ifndef WIN32
 #include <stdint.h>
+#else
+#include <msc_stdint.h>
+#endif
 #include <stdio.h>
 #include <vector>
 #include <set>
@@ -175,7 +179,7 @@ namespace paraDIS {
 
 
   //===========================================================================
-  struct Neighbor; // forward declaration
+  class Neighbor; // forward declaration
   
   /*! class Node
     \brief Abstract base class
@@ -258,7 +262,7 @@ namespace paraDIS {
   }; 
    
   //=============================================
-  /*!  struct Neighbor
+  /*!  class Neighbor
     Concrete base class 
     Contains no burgers information to save memory. 
     

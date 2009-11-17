@@ -63,7 +63,13 @@
 */
 
 #include <ctime>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
+#ifdef WIN32
+#include <sys/timeb.h>
+#include <Winsock2.h>
+#endif
 #include <iostream>
 #include <iomanip>
 
@@ -83,11 +89,19 @@ class timer
   double acc_time;
   double time_per_tick; 
   bool mUseWallTime; 
+#ifndef WIN32
   double getExactSeconds(void) {
     struct timeval t; 
     gettimeofday(&t, NULL); 
     return t.tv_sec + (double)t.tv_usec/1000000.0; 
   }
+#else
+  double getExactSeconds(void) {
+    struct _timeb t; 
+    _ftime(&t); 
+   return t.time + (double)t.millitm/1000.0;
+  }
+#endif
  public:
   // 'running' is initially false.  A timer needs to be explicitly started
   // using 'start' or 'restart'

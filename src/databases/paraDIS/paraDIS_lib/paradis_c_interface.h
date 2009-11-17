@@ -5,8 +5,11 @@
 
 #ifndef PARADIS_C_INTERFACE_H
 #define PARADIS_C_INTERFACE_H
-
-#include <stdint.h>
+#ifndef WIN32
+#  include <stdint.h>
+#else
+#  include <msc_stdint.h>
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif  

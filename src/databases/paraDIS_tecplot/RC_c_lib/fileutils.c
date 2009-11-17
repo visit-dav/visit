@@ -1,7 +1,9 @@
 #include "fileutils.h"
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
 #include <dirent.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -9,6 +11,7 @@
 #include <stdlib.h>
 
 /* return 0 on success, perr, or -1 (internal failure) value on failure */
+#ifndef WIN32
 int mkdir_recursive(const char *targetdir){
   char parentdir[1024]; 
   char *lastslash = NULL;
@@ -41,6 +44,7 @@ int mkdir_recursive(const char *targetdir){
   }
   return 0; 
 }
+#endif
      
   
 /* read in a loop until done or fread returns zero (EOF) (caller then needs to use feof() or ferror() )
