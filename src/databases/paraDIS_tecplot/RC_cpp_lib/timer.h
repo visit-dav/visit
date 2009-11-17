@@ -62,6 +62,7 @@
   
 */
 
+#include <visit-config.h>
 #include <ctime>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
