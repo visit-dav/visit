@@ -1,8 +1,14 @@
 /* $Id: signals.c,v 1.5 2005/09/14 02:30:56 rcook Exp $ */
 #include <signal.h>
 #include <stdio.h>
-#include <netdb.h>
-#include <unistd.h>
+#ifdef WIN32
+#  include <winsock2.h>
+#else
+#  include <netdb.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#endif
 /* set a signal handler for the given signal 
    sig == the signal to catch
    func == the handler
@@ -41,14 +47,17 @@ int GettingSignaled(void)
   /* see if we're getting signaled, damnit!*/
   setsignal(SIGINT, handler);
   /*setsignal(SIGKILL, handler);*/
+  /*setsignal(SIGSTOP, handler);*/
+  setsignal(SIGTERM, handler);
+  setsignal(SIGABRT, handler);
+
+#ifndef WIN32
+  setsignal(SIGCHLD, handler);
   setsignal(SIGHUP, SIG_IGN);
   setsignal(SIGPIPE, handler);
   setsignal(SIGQUIT, handler);
-  /*setsignal(SIGSTOP, handler);*/
-  setsignal(SIGTERM, handler);
   setsignal(SIGTTIN, handler);
-  setsignal(SIGABRT, handler);
-  setsignal(SIGCHLD, handler);
+#endif
 
   gethostname(localhost, 256);
   hep = gethostbyname(localhost);
@@ -71,11 +80,15 @@ int GettingSignaled(void)
   /*fclose(stderr);*/
   i=30;
   while (i--){
+#ifndef WIN32
     int err = usleep (999999);
     if (err) {
       fprintf(stderr, "child sleep err %d\n", err);
       exit(1);
     }
+#else
+    Sleep(999);
+#endif
     printf("Child sleeping... (%d) \n", i);
     fflush(stdout);
   }

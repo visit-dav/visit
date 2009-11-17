@@ -11,7 +11,11 @@
 #include "stringutil.h"
 #include "timer.h"
 #include <algorithm>
-#include <dirent.h>
+#ifndef WIN32
+#  include <dirent.h>
+#else
+#  include <direct.h>
+#endif
 #include <sys/stat.h>
 #include <errno.h>
 using namespace RC_Math; 
@@ -911,6 +915,7 @@ namespace paraDIS {
   //===========================================================================
   bool DataSet::Mkdir(const char *dirname) {
     dbprintf(3, "Mkdir(%s)",dirname); 
+#ifndef WIN32
     DIR *dir = opendir(dirname); 
     if (!dir) {
       if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO )) {
@@ -924,6 +929,15 @@ namespace paraDIS {
     }else {
       closedir(dir); 
     }
+#else
+    if (_mkdir(dirname) != 0)
+    {
+        string errmsg = string("Warning:  could not create debug output directory: ") + mDebugOutputDir+ ". Stats will not be written." ; 
+        cerr << errmsg << endl; 
+        dbprintf(1, errmsg.c_str()); 
+        return false; 
+    }
+#endif
     return true; 
   }
   //===========================================================================

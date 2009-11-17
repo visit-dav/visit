@@ -1,5 +1,15 @@
 #include "stringutil.h"
-
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#elif defined(WIN32)
+#  include <direct.h>
+#  define WINDOWS_LEAN_AND_MEAN
+#  include <windows.h>
+#  ifndef PATH_MAX
+#    define PATH_MAX MAX_PATH
+#  endif
+#endif
+#include <limits.h>
 
 //===============================================================
 /*!
