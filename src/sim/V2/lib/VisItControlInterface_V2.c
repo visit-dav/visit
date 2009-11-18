@@ -180,6 +180,8 @@ static void         *visit_command_callback_data = NULL;
 * Date:       Thu Mar 26 13:28:11 PDT 2009
 *
 * Modifications:
+*  Cyrus Harrison, Wed Nov 18 11:56:37 PST 2009
+*  Declare "*ptr" at top of function for strict c compile.
 *
 ******************************************************************************/
 
@@ -187,6 +189,7 @@ static SyncCallback *
 visit_get_sync(void)
 {
     SyncCallback *retval = NULL;
+    SyncCallback *ptr = NULL;
 
     if(visit_sync_callbacks == NULL)
     {
@@ -205,7 +208,7 @@ visit_get_sync(void)
         }
 
         /* resize */
-        SyncCallback *ptr = (SyncCallback *)calloc(visit_sync_callbacks_size+20, sizeof(SyncCallback));
+        ptr = (SyncCallback *)calloc(visit_sync_callbacks_size+20, sizeof(SyncCallback));
         memcpy(ptr, visit_sync_callbacks, visit_sync_callbacks_size * sizeof(SyncCallback));
         free(visit_sync_callbacks);
         visit_sync_callbacks = ptr;
@@ -252,19 +255,22 @@ visit_get_sync2(int id)
 * Date:       Thu Mar 26 13:28:11 PDT 2009
 *
 * Modifications:
+*  Cyrus Harrison, Wed Nov 18 11:56:37 PST 2009
+*  Declare "cmd" at top of function for strict c compile.
 *
 ******************************************************************************/
 
 static void
 visit_add_sync(void (*cb)(void*), void *cbdata)
 {
+    char cmd[30];
+
     if(cb != NULL && callbacks->control.execute_command != NULL)
     {
         SyncCallback *sync = visit_get_sync();
         sync->id = visit_sync_id++;
         sync->cb = cb;
         sync->cbdata = cbdata;
-        char cmd[30];
         sprintf(cmd, "INTERNALSYNC %d", sync->id);
 
         (*callbacks->control.execute_command)(engine, cmd);
