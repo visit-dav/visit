@@ -737,6 +737,9 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Replaced the representation of curves as vtkPolyData with that as 
 //      vtkRectilinearGrid, to support expressions
 //
+//    Brad Whitlock, Wed Nov 18 11:10:09 PST 2009
+//    Delete double precision particle data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -887,6 +890,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
                 pts[i*3+2] = float(ddata[i]);
             }
         }
+        delete [] ddata;
 
         // fill in zeros
         for (int d=dimension; d<3; d++)
@@ -1062,6 +1066,10 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 //  Programmer: Randy Hudson
 //  Creation:   June 15, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 18 11:11:37 PST 2009
+//    I fixed a bug where points and lines were not deleted.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -1119,6 +1127,9 @@ avtFLASHFileFormat::GetMortonCurveSubset(int domain)
         pdata->SetLines(lines);
     }
    
+    points->Delete();
+    lines->Delete();
+
     return pdata;
 }
 
@@ -1131,6 +1142,10 @@ avtFLASHFileFormat::GetMortonCurveSubset(int domain)
 //
 //  Programmer: Randy Hudson
 //  Creation:   April 3, 2007
+//
+//  Modifications:
+//    Brad Whitlock, Wed Nov 18 11:11:37 PST 2009
+//    I fixed a bug where points and lines were not deleted.
 //
 // ****************************************************************************
 
@@ -1174,7 +1189,9 @@ avtFLASHFileFormat::GetMortonCurve()
 
     pdata->SetPoints(points);
     pdata->SetLines(lines);
-    
+    points->Delete();
+    lines->Delete();
+
     return pdata;
 }
 
@@ -1214,6 +1231,9 @@ avtFLASHFileFormat::GetMortonCurve()
 //    Randy Hudson, July 19, 2007
 //    Added support for concurrent block-level and block-processor subset pairs
 //      for both domain and morton curve meshes
+//
+//    Brad Whitlock, Wed Nov 18 11:14:16 PST 2009
+//    Delete particle data arrays!
 //
 // ****************************************************************************
 
@@ -1260,6 +1280,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
             for (int i=0; i<numParticles; i++)
                 data[i] = ddata[i];
 
+            delete [] ddata;
         }
         else if (vartype == H5T_NATIVE_INT)
         {
@@ -1273,6 +1294,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
                 data[i] = idata[i];
 
             H5Tclose(h5type);
+            delete [] idata;
         }
         else
         {
@@ -2253,8 +2275,14 @@ void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Wed Nov 18 11:26:09 PST 2009
+//    Delete some arrays.
+//
 // ****************************************************************************
-void avtFLASHFileFormat::ReadUnknownNames()
+
+void
+avtFLASHFileFormat::ReadUnknownNames()
 {
     //
     // Read the variable ("unknown") names
@@ -2294,6 +2322,9 @@ void avtFLASHFileFormat::ReadUnknownNames()
 
         varNames[v] = tmpstring;
     }
+
+    delete [] unk_array;
+    delete [] tmpstring;
 
     // Done with the type
     H5Tclose(unk_raw_data_type);
@@ -3046,6 +3077,7 @@ avtFLASHFileFormat::ReadRealScalars(hid_t file_id)
     H5Tclose(datatype);
     H5Sclose(spaceId);
     H5Dclose(realScalarsId);
+    delete [] rs;
 }
 
 
