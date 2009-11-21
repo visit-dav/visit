@@ -92,6 +92,9 @@ avtNumNodesQuery::~avtNumNodesQuery()
 //    Ensure ghost nodes aren't counted in the 'real' count by calling the
 //    appropriate avtDatasetExaminer method in the presence of ghost zones.
 //
+//    Hank Childs, Sat Nov 21 13:25:42 PST 2009
+//    Add long long support.
+//
 // ****************************************************************************
 
 void
@@ -112,8 +115,8 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     avtGhostType gzt = 
         GetInput()->GetInfo().GetAttributes().GetContainsGhostZones();
 
-    int totalNodes[2] = {0, 0};
-    int tn[2] = {0, 0};
+    VISIT_LONG_LONG totalNodes[2] = {0, 0};
+    VISIT_LONG_LONG tn[2] = {0, 0};
     char msg[200];
     if (usedDomains)
     {
@@ -129,12 +132,12 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
         }
     }
 
-    SumIntArrayAcrossAllProcessors(totalNodes, tn, 2);
+    SumLongLongArrayAcrossAllProcessors(totalNodes, tn, 2);
 
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of nodes is %d.", tn[0]);
+        SNPRINTF(msg, 200, "The original number of nodes is %ld.", tn[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of nodes is %d.", tn[0]);
+        SNPRINTF(msg, 200, "The actual number of nodes is %ld.", tn[0]);
 
 
     if (gzt != AVT_HAS_GHOSTS)
@@ -145,7 +148,7 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost nodes is %d.", msg, tn[1]);
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost nodes is %ld.", msg, tn[1]);
         double results[2] = {(double) tn[0], (double) tn[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);

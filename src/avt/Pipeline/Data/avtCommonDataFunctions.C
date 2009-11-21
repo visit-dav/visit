@@ -369,12 +369,17 @@ CGetDataExtents(avtDataRepresentation &data, void *g, bool &success)
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 18, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of nodes with a long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    int *numCells = (int*)sum;
+    VISIT_LONG_LONG *numCells = (VISIT_LONG_LONG*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -2479,12 +2484,17 @@ CGetVariableCentering(avtDataRepresentation &data, void *arg, bool &success)
 //  Programmer: Kathleen Bonnell
 //  Creation:   February 18, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of nodes with a long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    int *numNodes = (int*)sum;
+    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
     if (!data.Valid())
     {
         EXCEPTION0(NoInputException);
@@ -2518,12 +2528,15 @@ CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 //    Hank Childs, Fri Aug 27 15:32:06 PDT 2004
 //    Rename ghost data array.
 //
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of nodes with a long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 {
-    int *numZones = (int*)sum;
+    VISIT_LONG_LONG *numZones = (VISIT_LONG_LONG*)sum;
     //
     // realZones  stored in numZones[0]
     // ghostZones stored in numZones[1]
@@ -2576,12 +2589,15 @@ CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 //
 //  Modifications:
 //
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of nodes with a long long.
+//
 // ****************************************************************************
 
 void
 CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
 {
-    int *numNodes = (int*)sum;
+    VISIT_LONG_LONG *numNodes = (VISIT_LONG_LONG*)sum;
     //
     // realNodes  stored in numNodes[0]
     // ghostNodes stored in numNodes[1]

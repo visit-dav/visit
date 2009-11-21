@@ -102,6 +102,9 @@ avtNumZonesQuery::~avtNumZonesQuery()
 //    Kathleen Bonnell, Tue Jul  6 14:32:06 PDT 2004 
 //    Removed MPI calls, use SumIntArrayAcrossAllProcessors from avtParallel. 
 //
+//    Hank Childs, Sat Nov 21 13:10:43 PST 2009
+//    Change counter to long long.
+//
 // ****************************************************************************
 
 void
@@ -119,7 +122,7 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         GetInput()->GetInfo().GetValidity().GetHasEverOwnedAnyDomain() ? 1 : 0;
 
     avtGhostType gt = GetInput()->GetInfo().GetAttributes().GetContainsGhostZones();
-    int totalZones [2] = {0, 0};
+    VISIT_LONG_LONG totalZones [2] = {0, 0};
     char msg[200];
     if (usedDomains)
     {
@@ -135,13 +138,13 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         }
     }
 
-    int tz[2] = {0, 0};
-    SumIntArrayAcrossAllProcessors(totalZones, tz, 2);
+    VISIT_LONG_LONG tz[2] = {0, 0};
+    SumLongLongArrayAcrossAllProcessors(totalZones, tz, 2);
 
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of zones is %d.", tz[0]);
+        SNPRINTF(msg, 200, "The original number of zones is %ld.", tz[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of zones is %d.", tz[0]);
+        SNPRINTF(msg, 200, "The actual number of zones is %ld.", tz[0]);
     
     if (gt != AVT_HAS_GHOSTS)
     {
@@ -151,7 +154,7 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %d.", msg, tz[1]);
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %ld.", msg, tz[1]);
         double results[2] = {(double) tz[0], (double) tz[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);

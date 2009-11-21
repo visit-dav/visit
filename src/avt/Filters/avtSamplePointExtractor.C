@@ -514,6 +514,9 @@ avtSamplePointExtractor::SetUpArbitrator(std::string &name, bool pm)
 //    Hank Childs, Tue Jan 15 21:23:49 PST 2008
 //    Set up the sample point arbitrator.
 //
+//    Hank Childs, Sat Nov 21 13:29:21 PST 2009
+//    Add support for long longs.
+//
 // ****************************************************************************
 
 void
@@ -553,8 +556,9 @@ avtSamplePointExtractor::PreExecute(void)
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         avtDataset_p ds = GetTypedInput();
-        int nzones = avtDatasetExaminer::GetNumberOfZones(ds);
-        int total_nzones = UnifyMaximumValue(nzones);
+        VISIT_LONG_LONG nzones = avtDatasetExaminer::GetNumberOfZones(ds);
+        VISIT_LONG_LONG total_nzones;
+        UnifyLongLongArrayAcrossAllProcessors(&nzones, &total_nzones, 1);
         
         if (total_nzones == 0)
         {

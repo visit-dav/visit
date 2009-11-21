@@ -69,14 +69,17 @@
 //    Hank Childs, Fri Mar 15 17:18:00 PST 2002
 //    Moved from class avtDataset.
 //
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of zones with a long long.
+//
 // ****************************************************************************
  
-int
+VISIT_LONG_LONG
 avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    int numZones = 0;
+    VISIT_LONG_LONG numZones = 0;
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -608,14 +611,19 @@ avtDatasetExaminer::GetVariableCentering(avtDataset_p &ds, const char *varname)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    February 18, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of nodes with a long long.
+//
 // ****************************************************************************
 
-int
+VISIT_LONG_LONG
 avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    int numNodes = 0;
+    VISIT_LONG_LONG numNodes = 0;
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -639,14 +647,20 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    January 04, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of zones with a long long.
+//
 // ****************************************************************************
 
 void
-avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, int &nReal, int &nGhost)
+avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, VISIT_LONG_LONG &nReal, 
+                                     VISIT_LONG_LONG &nGhost)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    int numZones[2] = {0, 0} ;
+    VISIT_LONG_LONG numZones[2] = {0, 0} ;
     if (*dataTree != NULL)
     {
         bool dummy;
@@ -671,14 +685,20 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, int &nReal, int &nGhost)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    July 29, 2008 
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 21 13:16:09 PST 2009
+//    Calculate number of nodes with a long long.
+//
 // ****************************************************************************
 
 void
-avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, int &nReal, int &nGhost)
+avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, VISIT_LONG_LONG &nReal, 
+                                     VISIT_LONG_LONG &nGhost)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    int numNodes[2] = {0, 0};
+    VISIT_LONG_LONG numNodes[2] = {0, 0};
     if (*dataTree != NULL)
     {
         bool dummy;

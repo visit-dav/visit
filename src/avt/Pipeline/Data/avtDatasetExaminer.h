@@ -81,15 +81,20 @@ class     vtkDataArray;
 //    Kathleen Bonnell, Tue Jul 29 09:55:37 PDT 2008
 //    Added another form of GetNumberOfNodes.
 //
+//    Hank Childs, Sat Nov 21 13:59:40 PST 2009
+//    Change interface of GetNumberOfZones/Nodes to use VISIT_LONG_LONG.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
 {
   public:
-    static int                GetNumberOfNodes(avtDataset_p &);
-    static int                GetNumberOfZones(avtDataset_p &);
-    static void               GetNumberOfZones(avtDataset_p &, int &, int &);
-    static void               GetNumberOfNodes(avtDataset_p &, int &, int &);
+    static VISIT_LONG_LONG    GetNumberOfNodes(avtDataset_p &);
+    static VISIT_LONG_LONG    GetNumberOfZones(avtDataset_p &);
+    static void               GetNumberOfZones(avtDataset_p&, VISIT_LONG_LONG&,
+                                               VISIT_LONG_LONG&);
+    static void               GetNumberOfNodes(avtDataset_p&, VISIT_LONG_LONG&,
+                                               VISIT_LONG_LONG&);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
     static bool               GetSpatialExtents(std::vector<avtDataTree_p> &, 
