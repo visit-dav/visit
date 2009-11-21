@@ -331,15 +331,15 @@ avtPersistentParticlesFilter::InspectPrincipalData(void)
 //    Kathleen Bonnell, Mon Apr 20 17:49:52 MST 2009
 //    Use vtk's SafeDownCast method instead of dynamic_cast.
 //
+//    Hank Childs, Sat Nov 21 13:29:21 PST 2009
+//    Remove unneeded call to GetNumberOfZones (found while adding support 
+//    for long longs).
+//
 // ****************************************************************************
 
 void
 avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
 {
-    bool success;
-    int nzones = -1;
-    tree->Traverse(CGetNumberOfZones, &nzones, success);
-
     //Merge the datasets but do not connect the particles
     if( ! atts.GetConnectParticles() )
     {
