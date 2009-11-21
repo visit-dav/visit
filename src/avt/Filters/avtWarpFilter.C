@@ -41,6 +41,7 @@
 //                             avtWarpFilter.C                               //
 // ************************************************************************* //
 
+// HERE IS ANOTHER COMMENT FOR THE MERGE TEST
 #include <avtWarpFilter.h>
 
 #include <vtkCellArray.h>
