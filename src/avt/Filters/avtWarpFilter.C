@@ -37,11 +37,13 @@
 ******************************************************************************/
 // I AM TESTING MERGING TODAY, HRC, 11/21/09.  HERE IS A COMMENT
 // ADDING ANOTHER COMMENT
+// YAC
 
 // ************************************************************************* //
 //                             avtWarpFilter.C                               //
 // ************************************************************************* //
 
+// COMMENT HERE
 #include <avtWarpFilter.h>
 
 #include <vtkCellArray.h>
@@ -50,6 +52,7 @@
 #include <vtkRectilinearGrid.h>
 #include <ImproperUseException.h>
 
+// MORE COMMENTS
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 
