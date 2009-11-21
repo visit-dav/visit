@@ -43,7 +43,6 @@
 //                             avtWarpFilter.C                               //
 // ************************************************************************* //
 
-// COMMENT HERE
 #include <avtWarpFilter.h>
 
 #include <vtkCellArray.h>
