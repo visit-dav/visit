@@ -35,11 +35,6 @@
 * DAMAGE.
 *
 ******************************************************************************/
-// I AM TESTING MERGING TODAY, HRC, 11/21/09.  HERE IS A COMMENT
-// ADDING ANOTHER COMMENT
-// MIDDLE COMMENT
-// YAC
-// ENDING COMMENT
 
 // ************************************************************************* //
 //                             avtWarpFilter.C                               //
@@ -47,14 +42,12 @@
 
 #include <avtWarpFilter.h>
 
-// COMMMENT
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <ImproperUseException.h>
 
-// MORE COMMENTS
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 
