@@ -40,6 +40,7 @@
 #define STREAMLINEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -109,13 +110,23 @@ public:
         AdamsBashforth
     };
 
+    // These constructors are for objects of this class
     StreamlineAttributes();
     StreamlineAttributes(const StreamlineAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    StreamlineAttributes(private_tmfs_t tmfs);
+    StreamlineAttributes(const StreamlineAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~StreamlineAttributes();
 
     virtual StreamlineAttributes& operator = (const StreamlineAttributes &obj);
     virtual bool operator == (const StreamlineAttributes &obj) const;
     virtual bool operator != (const StreamlineAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const StreamlineAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -174,6 +185,10 @@ public:
     void SetWorkGroupSize(int workGroupSize_);
     void SetPathlines(bool pathlines_);
     void SetColoringVariable(const std::string &coloringVariable_);
+    void SetLegendMinFlag(bool legendMinFlag_);
+    void SetLegendMaxFlag(bool legendMaxFlag_);
+    void SetLegendMin(double legendMin_);
+    void SetLegendMax(double legendMax_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -224,6 +239,10 @@ public:
     bool                 GetPathlines() const;
     const std::string    &GetColoringVariable() const;
           std::string    &GetColoringVariable();
+    bool                 GetLegendMinFlag() const;
+    bool                 GetLegendMaxFlag() const;
+    double               GetLegendMin() const;
+    double               GetLegendMax() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -312,7 +331,12 @@ public:
         ID_maxDomainCacheSize,
         ID_workGroupSize,
         ID_pathlines,
-        ID_coloringVariable
+        ID_coloringVariable,
+        ID_legendMinFlag,
+        ID_legendMaxFlag,
+        ID_legendMin,
+        ID_legendMax,
+        ID__LAST
     };
 
 private:
@@ -352,9 +376,15 @@ private:
     int            workGroupSize;
     bool           pathlines;
     std::string    coloringVariable;
+    bool           legendMinFlag;
+    bool           legendMaxFlag;
+    double         legendMin;
+    double         legendMax;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibdiisabbiddiiiiiibsbbdd"
 
 #endif

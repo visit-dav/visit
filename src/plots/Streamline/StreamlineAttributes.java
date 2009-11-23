@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 36;
+    private static int numAdditionalAttributes = 40;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -176,6 +176,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         workGroupSize = 32;
         pathlines = false;
         coloringVariable = new String("");
+        legendMinFlag = false;
+        legendMaxFlag = false;
+        legendMin = 0;
+        legendMax = 1;
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -254,6 +258,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         workGroupSize = 32;
         pathlines = false;
         coloringVariable = new String("");
+        legendMinFlag = false;
+        legendMaxFlag = false;
+        legendMin = 0;
+        legendMax = 1;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -335,6 +343,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         workGroupSize = obj.workGroupSize;
         pathlines = obj.pathlines;
         coloringVariable = new String(obj.coloringVariable);
+        legendMinFlag = obj.legendMinFlag;
+        legendMaxFlag = obj.legendMaxFlag;
+        legendMin = obj.legendMin;
+        legendMax = obj.legendMax;
 
         SelectAll();
     }
@@ -438,7 +450,11 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (maxDomainCacheSize == obj.maxDomainCacheSize) &&
                 (workGroupSize == obj.workGroupSize) &&
                 (pathlines == obj.pathlines) &&
-                (coloringVariable.equals(obj.coloringVariable)));
+                (coloringVariable.equals(obj.coloringVariable)) &&
+                (legendMinFlag == obj.legendMinFlag) &&
+                (legendMaxFlag == obj.legendMaxFlag) &&
+                (legendMin == obj.legendMin) &&
+                (legendMax == obj.legendMax));
     }
 
     public String GetName() { return "Streamline"; }
@@ -732,6 +748,30 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(35);
     }
 
+    public void SetLegendMinFlag(boolean legendMinFlag_)
+    {
+        legendMinFlag = legendMinFlag_;
+        Select(36);
+    }
+
+    public void SetLegendMaxFlag(boolean legendMaxFlag_)
+    {
+        legendMaxFlag = legendMaxFlag_;
+        Select(37);
+    }
+
+    public void SetLegendMin(double legendMin_)
+    {
+        legendMin = legendMin_;
+        Select(38);
+    }
+
+    public void SetLegendMax(double legendMax_)
+    {
+        legendMax = legendMax_;
+        Select(39);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
@@ -769,6 +809,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public int            GetWorkGroupSize() { return workGroupSize; }
     public boolean        GetPathlines() { return pathlines; }
     public String         GetColoringVariable() { return coloringVariable; }
+    public boolean        GetLegendMinFlag() { return legendMinFlag; }
+    public boolean        GetLegendMaxFlag() { return legendMaxFlag; }
+    public double         GetLegendMin() { return legendMin; }
+    public double         GetLegendMax() { return legendMax; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -845,6 +889,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(pathlines);
         if(WriteSelect(35, buf))
             buf.WriteString(coloringVariable);
+        if(WriteSelect(36, buf))
+            buf.WriteBool(legendMinFlag);
+        if(WriteSelect(37, buf))
+            buf.WriteBool(legendMaxFlag);
+        if(WriteSelect(38, buf))
+            buf.WriteDouble(legendMin);
+        if(WriteSelect(39, buf))
+            buf.WriteDouble(legendMax);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -960,6 +1012,18 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 35:
             SetColoringVariable(buf.ReadString());
             break;
+        case 36:
+            SetLegendMinFlag(buf.ReadBool());
+            break;
+        case 37:
+            SetLegendMaxFlag(buf.ReadBool());
+            break;
+        case 38:
+            SetLegendMin(buf.ReadDouble());
+            break;
+        case 39:
+            SetLegendMax(buf.ReadDouble());
+            break;
         }
     }
 
@@ -1063,6 +1127,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + intToString("workGroupSize", workGroupSize, indent) + "\n";
         str = str + boolToString("pathlines", pathlines, indent) + "\n";
         str = str + stringToString("coloringVariable", coloringVariable, indent) + "\n";
+        str = str + boolToString("legendMinFlag", legendMinFlag, indent) + "\n";
+        str = str + boolToString("legendMaxFlag", legendMaxFlag, indent) + "\n";
+        str = str + doubleToString("legendMin", legendMin, indent) + "\n";
+        str = str + doubleToString("legendMax", legendMax, indent) + "\n";
         return str;
     }
 
@@ -1104,5 +1172,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private int            workGroupSize;
     private boolean        pathlines;
     private String         coloringVariable;
+    private boolean        legendMinFlag;
+    private boolean        legendMaxFlag;
+    private double         legendMin;
+    private double         legendMax;
 }
 
