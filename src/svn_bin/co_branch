@@ -25,6 +25,11 @@
 #    Sean Ahern, Thu May 15 16:53:56 EDT 2008
 #    Fixed \t printing problems by turning them into spaces.
 #
+#    Cyrus Harrison, Mon Nov 23 12:30:38 PST 2009
+#    Disabled the previous merge check b/c answering "yes" in the wrong
+#    situation has the potential to ruin a branch. If this is needed
+#    in the future it should be refactored to protect the health of the branch.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -167,7 +172,13 @@ function checkout_dir
    fi
    cd ../../
    rm -Rf tmp_forRev$$
-   if [[ "$current" != "$init" ]] ; then
+   #
+   #  I disabled this check b/c answering "yes" in the wrong situation 
+   #  has the potential to ruin a branch - Cyrus
+   #
+   #if [[ "$current" != "$init" ]] ; then
+   #
+   if [  ] ; then
       stop="no"
       while [[ "$stop" == "no" ]] ; do
            echo ""
