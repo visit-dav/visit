@@ -447,6 +447,24 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     aLayout->addWidget(singleColorLabel,7,0);
     aLayout->addWidget(singleColor, 7,1, Qt::AlignLeft);
 
+    
+    //min/max display.
+    limitsLabel = new QLabel(tr("Limits"), pageAppearance);
+    legendMaxToggle = new QCheckBox(tr("Max"), pageAppearance);
+    legendMinToggle = new QCheckBox(tr("Min"), pageAppearance);
+    connect(legendMaxToggle, SIGNAL(toggled(bool)), this, SLOT(legendMaxToggled(bool)));
+    connect(legendMinToggle, SIGNAL(toggled(bool)), this, SLOT(legendMinToggled(bool)));
+
+    legendMaxEdit = new QLineEdit(pageAppearance);
+    legendMinEdit = new QLineEdit(pageAppearance);
+    connect(legendMaxEdit, SIGNAL(returnPressed()), this, SLOT(processMaxLimitText()));
+    connect(legendMinEdit, SIGNAL(returnPressed()), this, SLOT(processMinLimitText()));
+    aLayout->addWidget(limitsLabel, 8,0);
+    aLayout->addWidget(legendMaxToggle, 8,1);
+    aLayout->addWidget(legendMaxEdit, 8,2);
+    aLayout->addWidget(legendMinToggle, 9,1);
+    aLayout->addWidget(legendMinEdit, 9,2);
+
     //
     // Create advanced widgets.
     //
@@ -775,6 +793,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             singleColor->setEnabled(!needCT);
             singleColorLabel->setEnabled(!needCT);
 
+            legendMaxToggle->setEnabled(needCT);
+            legendMinToggle->setEnabled(needCT);
+            legendMaxEdit->setEnabled((needCT ? streamAtts->GetLegendMaxFlag() : false));
+            legendMinEdit->setEnabled((needCT ? streamAtts->GetLegendMinFlag() : false));
+
             coloringMethod->blockSignals(true);
             coloringMethod->setCurrentIndex(int(streamAtts->GetColoringMethod()));
             coloringMethod->blockSignals(false);
@@ -793,7 +816,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 varLabel->hide();
                 var->hide();
             }
-
+            
             }
             break;
         case StreamlineAttributes::ID_colorTableName:
@@ -871,6 +894,30 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             pathlineFlag->setChecked(streamAtts->GetPathlines());
             pathlineFlag->blockSignals(false);
           */
+            break;
+            
+          case StreamlineAttributes::ID_legendMinFlag:
+            legendMinToggle->blockSignals(true);
+            legendMinToggle->setChecked(streamAtts->GetLegendMinFlag());
+            
+            legendMinEdit->setEnabled(streamAtts->GetLegendMinFlag());
+            legendMinToggle->blockSignals(false);
+            break;
+          case StreamlineAttributes::ID_legendMaxFlag:
+            legendMaxToggle->blockSignals(true);
+            legendMaxToggle->setChecked(streamAtts->GetLegendMaxFlag());
+
+            legendMaxEdit->setEnabled(streamAtts->GetLegendMaxFlag());
+            legendMaxToggle->blockSignals(false);
+            break;
+
+          case StreamlineAttributes::ID_legendMin:
+            temp.setNum(streamAtts->GetLegendMin());
+            legendMinEdit->setText(temp);
+            break;
+          case StreamlineAttributes::ID_legendMax:
+            temp.setNum(streamAtts->GetLegendMax());
+            legendMaxEdit->setText(temp);
             break;
         }
     }
@@ -1502,6 +1549,33 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
         if (val >= 2)
             streamAtts->SetWorkGroupSize(val);
     }
+    
+    // Legend min
+    if(which_widget == StreamlineAttributes::ID_legendMin || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(legendMinEdit, val))
+            streamAtts->SetLegendMin(val);
+        else
+        {
+            ResettingError(tr("Legend Min"),
+                DoubleToQString(streamAtts->GetLegendMin()));
+            streamAtts->SetLegendMin(streamAtts->GetLegendMin());
+        }
+    }
+    // Legend max
+    if(which_widget == StreamlineAttributes::ID_legendMax || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(legendMaxEdit, val))
+            streamAtts->SetLegendMax(val);
+        else
+        {
+            ResettingError(tr("Legend Max"),
+                DoubleToQString(streamAtts->GetLegendMax()));
+            streamAtts->SetLegendMax(streamAtts->GetLegendMax());
+        }
+    }
 }
 
 
@@ -1875,5 +1949,30 @@ QvisStreamlinePlotWindow::pointSourceProcessText()
     Apply();
 }
 
+void
+QvisStreamlinePlotWindow::legendMaxToggled(bool val)
+{
+    streamAtts->SetLegendMaxFlag(val);
+    Apply();
+}
 
+void
+QvisStreamlinePlotWindow::legendMinToggled(bool val)
+{
+    streamAtts->SetLegendMinFlag(val);
+    Apply();
+}
 
+void
+QvisStreamlinePlotWindow::processMinLimitText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_legendMin);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processMaxLimitText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_legendMax);
+    Apply();
+}

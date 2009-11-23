@@ -100,6 +100,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
 //   Add color by variable.
 //
+//   Dave Pugmire, Mon Nov 23 09:38:53 EST 2009
+//   Add min/max options to color table.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -164,6 +167,11 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void useWholeBoxChanged(bool val);
     void coloringVariableChanged(const QString &var);
     void boxExtentsProcessText();
+    void legendMaxToggled(bool);
+    void legendMinToggled(bool);
+    void processMaxLimitText();
+    void processMinLimitText();
+
   private:
     int plotType;
     QComboBox *sourceType;
@@ -226,6 +234,11 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QSpinBox  *workGroupSize;
     QvisVariableButton *var;
     QLabel    *varLabel;
+    QLabel    *limitsLabel;
+    QCheckBox *legendMaxToggle;
+    QCheckBox *legendMinToggle;
+    QLineEdit *legendMaxEdit;
+    QLineEdit *legendMinEdit;
 
     StreamlineAttributes *streamAtts;
 };

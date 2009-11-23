@@ -183,6 +183,18 @@
       </Field>
       <Field name="coloringVariable" label="unnamed1" type="string">
       </Field>
+      <Field name="legendMinFlag" label="legendMinFlag" type="bool">
+        false
+      </Field>
+      <Field name="legendMaxFlag" label="legendMaxFlag" type="bool">
+        false
+      </Field>
+      <Field name="legendMin" label="legendMin" type="double">
+        0.000000
+      </Field>
+      <Field name="legendMax" label="legendMax" type="double">
+        1.000000
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

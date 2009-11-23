@@ -472,6 +472,11 @@ avtStreamlinePlot::SetColorTable(const char *ctName)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Oct 7 15:54:28 PST 2002
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Nov 23 09:38:53 EST 2009
+//   Add min/max options to color table.
+//
 // ****************************************************************************
 
 void
@@ -485,12 +490,12 @@ avtStreamlinePlot::SetLegend(bool legendOn)
         varLegend->SetScaling();
         varMapper->SetLookupTable(avtLUT->GetLookupTable());
 
-        //
         //  Retrieve the actual range of the data
-        //
-        varMapper->SetMin(0.);
-        varMapper->SetMaxOff();
-        varMapper->SetLimitsMode(0);
+        if (atts.GetLegendMinFlag() || atts.GetLegendMaxFlag())
+            varMapper->SetLimitsMode(2);
+        else
+            varMapper->SetLimitsMode(0);
+        
         SetLegendRanges();
     }
     else
@@ -550,6 +555,9 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 //   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
 //   Don't clamp max to 0.0. We can now color by a variable.
 //
+//   Dave Pugmire, Mon Nov 23 09:38:53 EST 2009
+//   Add min/max options to color table.
+//
 // ****************************************************************************
 
 void
@@ -557,10 +565,22 @@ avtStreamlinePlot::SetLegendRanges()
 {
     double min=0.0, max=0.0;
     varMapper->GetVarRange(min, max);
+
+    if (atts.GetLegendMinFlag())
+    {
+        min = atts.GetLegendMin();
+        varMapper->SetMin(min);
+    }
+    if (atts.GetLegendMaxFlag())
+    {
+        max = atts.GetLegendMax();
+        varMapper->SetMax(max);
+    }
     
     //
     // Set the range for the legend's text and colors.
     //
+    varLegend->SetScaling(0);
     varLegend->SetVarRange(min, max);
     varLegend->SetRange(min, max);
 }
