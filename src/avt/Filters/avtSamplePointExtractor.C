@@ -558,7 +558,7 @@ avtSamplePointExtractor::PreExecute(void)
         avtDataset_p ds = GetTypedInput();
         VISIT_LONG_LONG nzones = avtDatasetExaminer::GetNumberOfZones(ds);
         VISIT_LONG_LONG total_nzones;
-        UnifyLongLongArrayAcrossAllProcessors(&nzones, &total_nzones, 1);
+        SumLongLongArrayAcrossAllProcessors(&nzones, &total_nzones, 1);
         
         if (total_nzones == 0)
         {
