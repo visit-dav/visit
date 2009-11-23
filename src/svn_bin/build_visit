@@ -733,6 +733,9 @@
 #     Reverted back to custom creation of python shared library on AIX.
 #     Changed SO_EXT for AIX to ".a"
 #
+#     Hank Childs, Mon Nov 23 07:59:36 PST 2009
+#     Add parallel include to CFLAGS.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7520,9 +7523,11 @@ function build_hostconf
     #
     PARFLAGS=""
     CXXFLAGS="$CXX_OPT_FLAGS"
+    CFLAGS="$C_OPT_FLAGS"
     if [[ "$parallel" == "yes" ]] ; then
        PARFLAGS="--enable-parallel"
        CXXFLAGS="$CXX_OPT_FLAGS $PAR_INCLUDE"
+       CFLAGS="$C_OPT_FLAGS $PAR_INCLUDE"
     fi
     
     #
@@ -7582,7 +7587,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "CC=\"$C_COMPILER\"" >> $HOSTCONF
     echo "CXX=\"$CXX_COMPILER\"" >> $HOSTCONF
-    echo "CFLAGS=\"$C_OPT_FLAGS \$CFLAGS\"" >> $HOSTCONF
+    echo "CFLAGS=\"$CFLAGS \$CFLAGS\"" >> $HOSTCONF
     echo "CXXFLAGS=\"$CXXFLAGS \$CXXFLAGS\"" >> $HOSTCONF
     if [[ "$parallel" == "yes" ]] ; then
         echo "MPI_LIBS=\"$PAR_LIBS\"" >> $HOSTCONF
