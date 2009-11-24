@@ -3020,6 +3020,10 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //
 //    Mark C. Miller, Wed Aug 26 11:09:55 PDT 2009
 //    Uncommented hideFromGUI setting.
+//
+//    Cyrus Harrison, Tue Nov 24 14:05:28 PST 2009
+//    Added guard to avoid crash from unset material name.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3131,7 +3135,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                 {
                     char *num = NULL;
                     int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
-                    if (mat->matnames == NULL)
+                    if (mat->matnames == NULL || mat->matnames[j] == NULL)
                     {
                         num = new char[dlen + 2];
                         sprintf(num, "%d", mat->matnos[j]);
