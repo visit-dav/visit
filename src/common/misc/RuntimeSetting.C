@@ -98,9 +98,12 @@ const struct Setting s::settings[] = {
 #elif defined(_WIN32)
     {"system-gl", "opengl32.dll", true, "--mesa-lib", "VISIT_MESA_LIB",
      "Library (.dll) which implements OpenGL."},
+#elif defined(_AIX)
+    {"system-gl", "libGL.a", true, "--system-gl-lib",
+     "VISIT_GL_LIB", "Library (.so, .a) which implements OpenGL."},
 #else
-    {"system-gl", "/usr/lib/libGL.so", true, "--system-gl-lib",
-     "VISIT_GL_LIB", "Library (so) which implements OpenGL."},
+    {"system-gl", "libGL.so.1", true, "--system-gl-lib",
+     "VISIT_GL_LIB", "Library (.so) which implements OpenGL."},
 #endif
     {"tuvok-shader-dir", "./share/Shaders", true, "--tuvok-shaders",
      "VISIT_TUVOK_SHADER_DIR", "Directory which holds Tuvok's GLSL shaders."}
