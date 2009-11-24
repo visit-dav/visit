@@ -157,6 +157,9 @@
 #    Eric Brugger, Tue Dec  9 14:05:30 PST 2008
 #    Added VisWinAxesParallel.
 #
+#    Tom Fogal, Tue Nov 24 11:38:00 MST 2009
+#    VWR needs GLEW now; add the include path.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -238,7 +241,8 @@ Exceptions_src= \
   Exceptions/PlotDimensionalityException.C
 
 
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ @VTK_INCLUDES@ $(MESA_INCLUDE)
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ @VTK_INCLUDES@ \
+         $(MESA_INCLUDE) @GLEW_INCLUDE@
 
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)

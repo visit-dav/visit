@@ -56,6 +56,9 @@
 //    Kathleen Bonnell, Tue Feb 11 11:28:03 PST 2003 
 //    Removed iren.
 //
+//    Tom Fogal, Tue Nov 24 11:25:39 MST 2009
+//    Make sure to set offscreen before other initialization.
+//
 // ****************************************************************************
 
 VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
@@ -69,8 +72,8 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     // Mesa that we are getting, but we don't care.
     //
     renWin = vtkRenderWindow::New();
-    InitializeRenderWindow(renWin);
     renWin->OffScreenRenderingOn();
+    InitializeRenderWindow(renWin);
 }
 
 

@@ -58,6 +58,7 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <avtCallback.h>
+#include <avtGLEWInitializer.h>
 #include <avtSourceFromImage.h>
 
 #include <ImproperUseException.h>
@@ -248,12 +249,19 @@ VisWinRendering::~VisWinRendering()
 //    Jeremy Meredith, Tue Nov 19 17:12:33 PST 2002
 //    Added check of a flag before forcing stereo.
 //
+//    Tom Fogal, Tue Nov 24 11:24:57 MST 2009
+//    Force a render so that we can initialize GLEW.
+//
 // ****************************************************************************
  
 void
 VisWinRendering::InitializeRenderWindow(vtkRenderWindow *renWin)
 {
     renWin->SetNumberOfLayers(3);
+
+    debug3 << "Forcing render for GL context initialization..." << std::endl;
+    renWin->Render();
+    avt::glew::initialize();
  
     renWin->AddRenderer(background);
     renWin->AddRenderer(canvas);
