@@ -96,8 +96,8 @@ const struct Setting s::settings[] = {
      "--system-gl-lib", "VISIT_GL_LIB",
      "Library (dylib) which implements OpenGL."},
 #elif defined(_WIN32)
-    {"mesa-lib", "./lib/libOSMesa.dll", true, "--mesa-lib", "VISIT_MESA_LIB",
-     "Library with mangled offscreen mesa symbols."},
+    {"system-gl", "opengl32.dll", true, "--mesa-lib", "VISIT_MESA_LIB",
+     "Library (.dll) which implements OpenGL."},
 #else
     {"system-gl", "/usr/lib/libGL.so", true, "--system-gl-lib",
      "VISIT_GL_LIB", "Library (so) which implements OpenGL."},
