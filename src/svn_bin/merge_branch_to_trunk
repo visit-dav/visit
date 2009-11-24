@@ -28,6 +28,10 @@
 #    Mark C. Miller, Mon Aug 17 15:18:30 PDT 2009
 #    Made it give a useful error message if it appears to have been
 #    invoked for an RC merge.
+#
+#    Hank Childs, Mon Nov 23 16:45:41 PST 2009
+#    Document -user argument.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -138,10 +142,11 @@ fi
 
 if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
-   echo "Usage:   ${0##*/} <branch> [-allow_local_mods]"
+   echo "Usage:   ${0##*/} <branch> [-allow_local_mods] [-user username]"
    echo ""
-   echo "Args:"    echo "\t-allow_local_mods\tForce merge, despite modifications in the working copy of the trunk."
-   echo ""
+   echo "Args:"    
+   echo "\t-allow_local_mods\tForce merge, despite modifications in the working copy of the trunk."
+   echo "\t-user\tMerge from SVN directory space of a different user"
    echo "Example: ${0##*/} my_dev_work"
    echo "\tThis command should be run at the top level of your checked out "
    echo "\ttrunk.  It will merge the work from my_dev_work into the trunk."
