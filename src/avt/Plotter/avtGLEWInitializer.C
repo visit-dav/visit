@@ -61,6 +61,11 @@ static bool initialized = false;
 //
 //  Programmer: Tom Fogal
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Nov 24 10:48:00 MST 2009
+//    Update for GLEW API change.
+//
 // ****************************************************************************
 bool initialize(bool force)
 {
@@ -71,21 +76,24 @@ bool initialize(bool force)
 
     std::string gl_lib;
     enum GL_Name_Convention convention;
+    enum GL_Library_Type libtype;
     const bool use_mesa = avtCallback::GetSoftwareRendering();
 
     if(use_mesa)
     {
         gl_lib = RuntimeSetting::lookups("mesa-lib");
-        convention = GLEW_NAME_CONVENTION_MANGLED_MESA;
+        convention = GLEW_NAME_MANGLED;
+        libtype = GLEW_LIB_TYPE_OSMESA;
     }
     else
     {
         gl_lib = RuntimeSetting::lookups("system-gl");
-        convention = GLEW_NAME_CONVENTION_GL;
+        convention = GLEW_NAME_STANDARD;
+        libtype = GLEW_LIB_TYPE_NATIVE;
     }
 
     debug1 << "Initializing GLEW using library: " << gl_lib << std::endl;
-    GLenum err = glewInitLibrary(gl_lib.c_str(), convention);
+    GLenum err = glewInitLibrary(gl_lib.c_str(), libtype, convention);
     initialized = true;
     if(GLEW_OK != err)
     {

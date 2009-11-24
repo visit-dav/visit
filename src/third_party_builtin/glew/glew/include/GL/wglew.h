@@ -88,6 +88,61 @@
 extern "C" {
 #endif
 
+/* ------------------------------ WGL_core_api ----------------------------- */
+
+#ifndef WGL_core_api
+#define WGL_core_api 1
+
+typedef int (WINAPI * PFNWGLCHOOSEPIXELFORMATPROC) (HDC hDc, PIXELFORMATDESCRIPTOR *pPfd);
+typedef BOOL (WINAPI * PFNWGLCOPYCONTEXTPROC) (HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask);
+typedef HGLRC (WINAPI * PFNWGLCREATECONTEXTPROC) (HDC hDc);
+typedef HGLRC (WINAPI * PFNWGLCREATELAYERCONTEXTPROC) (HDC hDc, int level);
+typedef BOOL (WINAPI * PFNWGLDELETECONTEXTPROC) (HGLRC oldContext);
+typedef BOOL (WINAPI * PFNWGLDESCRIBELAYERPLANEPROC) (HDC hDc, int pixelFormat, int layerPlane, UINT nBytes, LAYERPLANEDESCRIPTOR *plpd);
+typedef int (WINAPI * PFNWGLDESCRIBEPIXELFORMATPROC) (HDC hDc, int ipfd, UINT cjpfd, PIXELFORMATDESCRIPTOR *pPfd);
+typedef HGLRC (WINAPI * PFNWGLGETCURRENTCONTEXTPROC) (VOID);
+typedef HDC (WINAPI * PFNWGLGETCURRENTDCPROC) (VOID);
+typedef PROC (WINAPI * PFNWGLGETDEFAULTPROCADDRESSPROC) (LPCSTR lpszProc);
+typedef int (WINAPI * PFNWGLGETLAYERPALETTEENTRIESPROC) (HDC hdc, int iLayerPlane, int iStart, int cEntries, COLORREF *pcr);
+typedef int (WINAPI * PFNWGLGETPIXELFORMATPROC) (HDC hDc);
+typedef PROC (WINAPI * PFNWGLGETPROCADDRESSPROC) (LPCSTR lpszProc);
+typedef BOOL (WINAPI * PFNWGLMAKECURRENTPROC) (HDC hDc, HGLRC newContext);
+typedef BOOL (WINAPI * PFNWGLREALIZELAYERPALETTEPROC) (HDC hdc, int iLayerPlane, BOOL bRealize);
+typedef int (WINAPI * PFNWGLSETLAYERPALETTEENTRIESPROC) (HDC hdc, int iLayerPlane, int iStart, int cEntries, COLORREF *pcr);
+typedef BOOL (WINAPI * PFNWGLSETPIXELFORMATPROC) (HDC hdc, int ipfd, PIXELFORMATDESCRIPTOR *ppfd);
+typedef BOOL (WINAPI * PFNWGLSHARELISTSPROC) (HGLRC hrcSrvShare, HGLRC hrcSrvSource);
+typedef BOOL (WINAPI * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
+typedef BOOL (WINAPI * PFNWGLSWAPLAYERBUFFERSPROC) (HDC hdc, UINT fuFlags);
+typedef BOOL (WINAPI * PFNWGLUSEFONTBITMAPSAPROC) (HDC hDc, DWORD first, DWORD count, DWORD listBase);
+typedef BOOL (WINAPI * PFNWGLUSEFONTBITMAPSWPROC) (HDC hDc, DWORD first, DWORD count, DWORD listBase);
+
+#define wglChoosePixelFormat WGLEW_GET_FUN(__wglewChoosePixelFormat)
+#define wglCopyContext WGLEW_GET_FUN(__wglewCopyContext)
+#define wglCreateContext WGLEW_GET_FUN(__wglewCreateContext)
+#define wglCreateLayerContext WGLEW_GET_FUN(__wglewCreateLayerContext)
+#define wglDeleteContext WGLEW_GET_FUN(__wglewDeleteContext)
+#define wglDescribeLayerPlane WGLEW_GET_FUN(__wglewDescribeLayerPlane)
+#define wglDescribePixelFormat WGLEW_GET_FUN(__wglewDescribePixelFormat)
+#define wglGetCurrentContext WGLEW_GET_FUN(__wglewGetCurrentContext)
+#define wglGetCurrentDC WGLEW_GET_FUN(__wglewGetCurrentDC)
+#define wglGetDefaultProcAddress WGLEW_GET_FUN(__wglewGetDefaultProcAddress)
+#define wglGetLayerPaletteEntries WGLEW_GET_FUN(__wglewGetLayerPaletteEntries)
+#define wglGetPixelFormat WGLEW_GET_FUN(__wglewGetPixelFormat)
+#define wglGetProcAddress WGLEW_GET_FUN(__wglewGetProcAddress)
+#define wglMakeCurrent WGLEW_GET_FUN(__wglewMakeCurrent)
+#define wglRealizeLayerPalette WGLEW_GET_FUN(__wglewRealizeLayerPalette)
+#define wglSetLayerPaletteEntries WGLEW_GET_FUN(__wglewSetLayerPaletteEntries)
+#define wglSetPixelFormat WGLEW_GET_FUN(__wglewSetPixelFormat)
+#define wglShareLists WGLEW_GET_FUN(__wglewShareLists)
+#define wglSwapBuffers WGLEW_GET_FUN(__wglewSwapBuffers)
+#define wglSwapLayerBuffers WGLEW_GET_FUN(__wglewSwapLayerBuffers)
+#define wglUseFontBitmapsA WGLEW_GET_FUN(__wglewUseFontBitmapsA)
+#define wglUseFontBitmapsW WGLEW_GET_FUN(__wglewUseFontBitmapsW)
+
+#define WGLEW_core_api WGLEW_GET_VAR(__WGLEW_core_api)
+
+#endif /* WGL_core_api */
+
 /* -------------------------- WGL_3DFX_multisample ------------------------- */
 
 #ifndef WGL_3DFX_multisample
@@ -117,6 +172,46 @@ typedef BOOL (WINAPI * PFNWGLSETSTEREOEMITTERSTATE3DLPROC) (HDC hDC, UINT uState
 #define WGLEW_3DL_stereo_control WGLEW_GET_VAR(__WGLEW_3DL_stereo_control)
 
 #endif /* WGL_3DL_stereo_control */
+
+/* ------------------------ WGL_AMD_gpu_association ------------------------ */
+
+#ifndef WGL_AMD_gpu_association
+#define WGL_AMD_gpu_association 1
+
+#define WGL_GPU_VENDOR_AMD 0x1F00
+#define WGL_GPU_RENDERER_STRING_AMD 0x1F01
+#define WGL_GPU_OPENGL_VERSION_STRING_AMD 0x1F02
+#define WGL_GPU_FASTEST_TARGET_GPUS_AMD 0x21A2
+#define WGL_GPU_RAM_AMD 0x21A3
+#define WGL_GPU_CLOCK_AMD 0x21A4
+#define WGL_GPU_NUM_PIPES_AMD 0x21A5
+#define WGL_GPU_NUM_SIMD_AMD 0x21A6
+#define WGL_GPU_NUM_RB_AMD 0x21A7
+#define WGL_GPU_NUM_SPI_AMD 0x21A8
+
+typedef VOID (WINAPI * PFNWGLBLITCONTEXTFRAMEBUFFERAMDPROC) (HGLRC dstCtx, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+typedef HGLRC (WINAPI * PFNWGLCREATEASSOCIATEDCONTEXTAMDPROC) (UINT id);
+typedef HGLRC (WINAPI * PFNWGLCREATEASSOCIATEDCONTEXTATTRIBSAMDPROC) (UINT id, HGLRC hShareContext, const int* attribList);
+typedef BOOL (WINAPI * PFNWGLDELETEASSOCIATEDCONTEXTAMDPROC) (HGLRC hglrc);
+typedef UINT (WINAPI * PFNWGLGETCONTEXTGPUIDAMDPROC) (HGLRC hglrc);
+typedef HGLRC (WINAPI * PFNWGLGETCURRENTASSOCIATEDCONTEXTAMDPROC) (void);
+typedef UINT (WINAPI * PFNWGLGETGPUIDSAMDPROC) (UINT maxCount, UINT* ids);
+typedef INT (WINAPI * PFNWGLGETGPUINFOAMDPROC) (UINT id, INT property, GLenum dataType, UINT size, void* data);
+typedef BOOL (WINAPI * PFNWGLMAKEASSOCIATEDCONTEXTCURRENTAMDPROC) (HGLRC hglrc);
+
+#define wglBlitContextFramebufferAMD WGLEW_GET_FUN(__wglewBlitContextFramebufferAMD)
+#define wglCreateAssociatedContextAMD WGLEW_GET_FUN(__wglewCreateAssociatedContextAMD)
+#define wglCreateAssociatedContextAttribsAMD WGLEW_GET_FUN(__wglewCreateAssociatedContextAttribsAMD)
+#define wglDeleteAssociatedContextAMD WGLEW_GET_FUN(__wglewDeleteAssociatedContextAMD)
+#define wglGetContextGPUIDAMD WGLEW_GET_FUN(__wglewGetContextGPUIDAMD)
+#define wglGetCurrentAssociatedContextAMD WGLEW_GET_FUN(__wglewGetCurrentAssociatedContextAMD)
+#define wglGetGPUIDsAMD WGLEW_GET_FUN(__wglewGetGPUIDsAMD)
+#define wglGetGPUInfoAMD WGLEW_GET_FUN(__wglewGetGPUInfoAMD)
+#define wglMakeAssociatedContextCurrentAMD WGLEW_GET_FUN(__wglewMakeAssociatedContextCurrentAMD)
+
+#define WGLEW_AMD_gpu_association WGLEW_GET_VAR(__WGLEW_AMD_gpu_association)
+
+#endif /* WGL_AMD_gpu_association */
 
 /* ------------------------- WGL_ARB_buffer_region ------------------------- */
 
@@ -148,19 +243,37 @@ typedef BOOL (WINAPI * PFNWGLSAVEBUFFERREGIONARBPROC) (HANDLE hRegion, int x, in
 #define WGL_ARB_create_context 1
 
 #define WGL_CONTEXT_DEBUG_BIT_ARB 0x0001
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
+#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
 #define WGL_CONTEXT_LAYER_PLANE_ARB 0x2093
 #define WGL_CONTEXT_FLAGS_ARB 0x2094
-
-typedef HGLRC (WINAPI * PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int* attribList);
-
-#define wglCreateContextAttribsARB WGLEW_GET_FUN(__wglewCreateContextAttribsARB)
+#define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
 
 #define WGLEW_ARB_create_context WGLEW_GET_VAR(__WGLEW_ARB_create_context)
 
 #endif /* WGL_ARB_create_context */
+
+/* --------------------- WGL_ARB_create_context_profile -------------------- */
+
+#ifndef WGL_ARB_create_context_profile
+#define WGL_ARB_create_context_profile 1
+
+#define WGL_CONTEXT_DEBUG_BIT_ARB 0x0001
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
+#define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
+#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+#define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
+#define WGL_CONTEXT_LAYER_PLANE_ARB 0x2093
+#define WGL_CONTEXT_FLAGS_ARB 0x2094
+#define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
+
+#define WGLEW_ARB_create_context_profile WGLEW_GET_VAR(__WGLEW_ARB_create_context_profile)
+
+#endif /* WGL_ARB_create_context_profile */
 
 /* ----------------------- WGL_ARB_extensions_string ----------------------- */
 
@@ -400,6 +513,61 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 #define WGLEW_ATI_render_texture_rectangle WGLEW_GET_VAR(__WGLEW_ATI_render_texture_rectangle)
 
 #endif /* WGL_ATI_render_texture_rectangle */
+
+/* ------------------------------ WGL_core_api ----------------------------- */
+
+#ifndef WGL_core_api
+#define WGL_core_api 1
+
+typedef int (WINAPI * PFNWGLCHOOSEPIXELFORMATPROC) (HDC hDc, PIXELFORMATDESCRIPTOR *pPfd);
+typedef BOOL (WINAPI * PFNWGLCOPYCONTEXTPROC) (HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask);
+typedef HGLRC (WINAPI * PFNWGLCREATECONTEXTPROC) (HDC hDc);
+typedef HGLRC (WINAPI * PFNWGLCREATELAYERCONTEXTPROC) (HDC hDc, int level);
+typedef BOOL (WINAPI * PFNWGLDELETECONTEXTPROC) (HGLRC oldContext);
+typedef BOOL (WINAPI * PFNWGLDESCRIBELAYERPLANEPROC) (HDC hDc, int pixelFormat, int layerPlane, UINT nBytes, LAYERPLANEDESCRIPTOR *plpd);
+typedef int (WINAPI * PFNWGLDESCRIBEPIXELFORMATPROC) (HDC hDc, int ipfd, UINT cjpfd, PIXELFORMATDESCRIPTOR *pPfd);
+typedef HGLRC (WINAPI * PFNWGLGETCURRENTCONTEXTPROC) (VOID);
+typedef HDC (WINAPI * PFNWGLGETCURRENTDCPROC) (VOID);
+typedef PROC (WINAPI * PFNWGLGETDEFAULTPROCADDRESSPROC) (LPCSTR lpszProc);
+typedef int (WINAPI * PFNWGLGETLAYERPALETTEENTRIESPROC) (HDC hdc, int iLayerPlane, int iStart, int cEntries, COLORREF *pcr);
+typedef int (WINAPI * PFNWGLGETPIXELFORMATPROC) (HDC hDc);
+typedef PROC (WINAPI * PFNWGLGETPROCADDRESSPROC) (LPCSTR lpszProc);
+typedef BOOL (WINAPI * PFNWGLMAKECURRENTPROC) (HDC hDc, HGLRC newContext);
+typedef BOOL (WINAPI * PFNWGLREALIZELAYERPALETTEPROC) (HDC hdc, int iLayerPlane, BOOL bRealize);
+typedef int (WINAPI * PFNWGLSETLAYERPALETTEENTRIESPROC) (HDC hdc, int iLayerPlane, int iStart, int cEntries, COLORREF *pcr);
+typedef BOOL (WINAPI * PFNWGLSETPIXELFORMATPROC) (HDC hdc, int ipfd, PIXELFORMATDESCRIPTOR *ppfd);
+typedef BOOL (WINAPI * PFNWGLSHARELISTSPROC) (HGLRC hrcSrvShare, HGLRC hrcSrvSource);
+typedef BOOL (WINAPI * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
+typedef BOOL (WINAPI * PFNWGLSWAPLAYERBUFFERSPROC) (HDC hdc, UINT fuFlags);
+typedef BOOL (WINAPI * PFNWGLUSEFONTBITMAPSAPROC) (HDC hDc, DWORD first, DWORD count, DWORD listBase);
+typedef BOOL (WINAPI * PFNWGLUSEFONTBITMAPSWPROC) (HDC hDc, DWORD first, DWORD count, DWORD listBase);
+
+#define wglChoosePixelFormat WGLEW_GET_FUN(__wglewChoosePixelFormat)
+#define wglCopyContext WGLEW_GET_FUN(__wglewCopyContext)
+#define wglCreateContext WGLEW_GET_FUN(__wglewCreateContext)
+#define wglCreateLayerContext WGLEW_GET_FUN(__wglewCreateLayerContext)
+#define wglDeleteContext WGLEW_GET_FUN(__wglewDeleteContext)
+#define wglDescribeLayerPlane WGLEW_GET_FUN(__wglewDescribeLayerPlane)
+#define wglDescribePixelFormat WGLEW_GET_FUN(__wglewDescribePixelFormat)
+#define wglGetCurrentContext WGLEW_GET_FUN(__wglewGetCurrentContext)
+#define wglGetCurrentDC WGLEW_GET_FUN(__wglewGetCurrentDC)
+#define wglGetDefaultProcAddress WGLEW_GET_FUN(__wglewGetDefaultProcAddress)
+#define wglGetLayerPaletteEntries WGLEW_GET_FUN(__wglewGetLayerPaletteEntries)
+#define wglGetPixelFormat WGLEW_GET_FUN(__wglewGetPixelFormat)
+#define wglGetProcAddress WGLEW_GET_FUN(__wglewGetProcAddress)
+#define wglMakeCurrent WGLEW_GET_FUN(__wglewMakeCurrent)
+#define wglRealizeLayerPalette WGLEW_GET_FUN(__wglewRealizeLayerPalette)
+#define wglSetLayerPaletteEntries WGLEW_GET_FUN(__wglewSetLayerPaletteEntries)
+#define wglSetPixelFormat WGLEW_GET_FUN(__wglewSetPixelFormat)
+#define wglShareLists WGLEW_GET_FUN(__wglewShareLists)
+#define wglSwapBuffers WGLEW_GET_FUN(__wglewSwapBuffers)
+#define wglSwapLayerBuffers WGLEW_GET_FUN(__wglewSwapLayerBuffers)
+#define wglUseFontBitmapsA WGLEW_GET_FUN(__wglewUseFontBitmapsA)
+#define wglUseFontBitmapsW WGLEW_GET_FUN(__wglewUseFontBitmapsW)
+
+#define WGLEW_core_api WGLEW_GET_VAR(__WGLEW_core_api)
+
+#endif /* WGL_core_api */
 
 /* -------------------------- WGL_EXT_depth_float -------------------------- */
 
@@ -753,6 +921,15 @@ typedef BOOL (WINAPI * PFNWGLQUERYFRAMETRACKINGI3DPROC) (DWORD* pFrameCount, DWO
 
 #endif /* WGL_I3D_swap_frame_usage */
 
+/* --------------------------- WGL_NV_copy_image --------------------------- */
+
+#ifndef WGL_NV_copy_image
+#define WGL_NV_copy_image 1
+
+#define WGLEW_NV_copy_image WGLEW_GET_VAR(__WGLEW_NV_copy_image)
+
+#endif /* WGL_NV_copy_image */
+
 /* -------------------------- WGL_NV_float_buffer -------------------------- */
 
 #ifndef WGL_NV_float_buffer
@@ -864,7 +1041,7 @@ typedef BOOL (WINAPI * PFNWGLBINDSWAPBARRIERNVPROC) (GLuint group, GLuint barrie
 typedef BOOL (WINAPI * PFNWGLJOINSWAPGROUPNVPROC) (HDC hDC, GLuint group);
 typedef BOOL (WINAPI * PFNWGLQUERYFRAMECOUNTNVPROC) (HDC hDC, GLuint* count);
 typedef BOOL (WINAPI * PFNWGLQUERYMAXSWAPGROUPSNVPROC) (HDC hDC, GLuint* maxGroups, GLuint *maxBarriers);
-typedef BOOL (WINAPI * PFNWGLQUERYSWAPGROUPNVPROC) (HDC hDC, GLuint* group);
+typedef BOOL (WINAPI * PFNWGLQUERYSWAPGROUPNVPROC) (HDC hDC, GLuint* group, GLuint *barrier);
 typedef BOOL (WINAPI * PFNWGLRESETFRAMECOUNTNVPROC) (HDC hDC);
 
 #define wglBindSwapBarrierNV WGLEW_GET_FUN(__wglewBindSwapBarrierNV)
@@ -968,14 +1145,45 @@ struct WGLEWContextStruct
 {
 #endif /* GLEW_MX */
 
+WGLEW_EXPORT PFNWGLCHOOSEPIXELFORMATPROC __wglewChoosePixelFormat;
+WGLEW_EXPORT PFNWGLCOPYCONTEXTPROC __wglewCopyContext;
+WGLEW_EXPORT PFNWGLCREATECONTEXTPROC __wglewCreateContext;
+WGLEW_EXPORT PFNWGLCREATELAYERCONTEXTPROC __wglewCreateLayerContext;
+WGLEW_EXPORT PFNWGLDELETECONTEXTPROC __wglewDeleteContext;
+WGLEW_EXPORT PFNWGLDESCRIBELAYERPLANEPROC __wglewDescribeLayerPlane;
+WGLEW_EXPORT PFNWGLDESCRIBEPIXELFORMATPROC __wglewDescribePixelFormat;
+WGLEW_EXPORT PFNWGLGETCURRENTCONTEXTPROC __wglewGetCurrentContext;
+WGLEW_EXPORT PFNWGLGETCURRENTDCPROC __wglewGetCurrentDC;
+WGLEW_EXPORT PFNWGLGETDEFAULTPROCADDRESSPROC __wglewGetDefaultProcAddress;
+WGLEW_EXPORT PFNWGLGETLAYERPALETTEENTRIESPROC __wglewGetLayerPaletteEntries;
+WGLEW_EXPORT PFNWGLGETPIXELFORMATPROC __wglewGetPixelFormat;
+WGLEW_EXPORT PFNWGLGETPROCADDRESSPROC __wglewGetProcAddress;
+WGLEW_EXPORT PFNWGLMAKECURRENTPROC __wglewMakeCurrent;
+WGLEW_EXPORT PFNWGLREALIZELAYERPALETTEPROC __wglewRealizeLayerPalette;
+WGLEW_EXPORT PFNWGLSETLAYERPALETTEENTRIESPROC __wglewSetLayerPaletteEntries;
+WGLEW_EXPORT PFNWGLSETPIXELFORMATPROC __wglewSetPixelFormat;
+WGLEW_EXPORT PFNWGLSHARELISTSPROC __wglewShareLists;
+WGLEW_EXPORT PFNWGLSWAPBUFFERSPROC __wglewSwapBuffers;
+WGLEW_EXPORT PFNWGLSWAPLAYERBUFFERSPROC __wglewSwapLayerBuffers;
+WGLEW_EXPORT PFNWGLUSEFONTBITMAPSAPROC __wglewUseFontBitmapsA;
+WGLEW_EXPORT PFNWGLUSEFONTBITMAPSWPROC __wglewUseFontBitmapsW;
+
 WGLEW_EXPORT PFNWGLSETSTEREOEMITTERSTATE3DLPROC __wglewSetStereoEmitterState3DL;
+
+WGLEW_EXPORT PFNWGLBLITCONTEXTFRAMEBUFFERAMDPROC __wglewBlitContextFramebufferAMD;
+WGLEW_EXPORT PFNWGLCREATEASSOCIATEDCONTEXTAMDPROC __wglewCreateAssociatedContextAMD;
+WGLEW_EXPORT PFNWGLCREATEASSOCIATEDCONTEXTATTRIBSAMDPROC __wglewCreateAssociatedContextAttribsAMD;
+WGLEW_EXPORT PFNWGLDELETEASSOCIATEDCONTEXTAMDPROC __wglewDeleteAssociatedContextAMD;
+WGLEW_EXPORT PFNWGLGETCONTEXTGPUIDAMDPROC __wglewGetContextGPUIDAMD;
+WGLEW_EXPORT PFNWGLGETCURRENTASSOCIATEDCONTEXTAMDPROC __wglewGetCurrentAssociatedContextAMD;
+WGLEW_EXPORT PFNWGLGETGPUIDSAMDPROC __wglewGetGPUIDsAMD;
+WGLEW_EXPORT PFNWGLGETGPUINFOAMDPROC __wglewGetGPUInfoAMD;
+WGLEW_EXPORT PFNWGLMAKEASSOCIATEDCONTEXTCURRENTAMDPROC __wglewMakeAssociatedContextCurrentAMD;
 
 WGLEW_EXPORT PFNWGLCREATEBUFFERREGIONARBPROC __wglewCreateBufferRegionARB;
 WGLEW_EXPORT PFNWGLDELETEBUFFERREGIONARBPROC __wglewDeleteBufferRegionARB;
 WGLEW_EXPORT PFNWGLRESTOREBUFFERREGIONARBPROC __wglewRestoreBufferRegionARB;
 WGLEW_EXPORT PFNWGLSAVEBUFFERREGIONARBPROC __wglewSaveBufferRegionARB;
-
-WGLEW_EXPORT PFNWGLCREATECONTEXTATTRIBSARBPROC __wglewCreateContextAttribsARB;
 
 WGLEW_EXPORT PFNWGLGETEXTENSIONSSTRINGARBPROC __wglewGetExtensionsStringARB;
 
@@ -995,6 +1203,29 @@ WGLEW_EXPORT PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglewGetPixelFormatAttribivAR
 WGLEW_EXPORT PFNWGLBINDTEXIMAGEARBPROC __wglewBindTexImageARB;
 WGLEW_EXPORT PFNWGLRELEASETEXIMAGEARBPROC __wglewReleaseTexImageARB;
 WGLEW_EXPORT PFNWGLSETPBUFFERATTRIBARBPROC __wglewSetPbufferAttribARB;
+
+WGLEW_EXPORT PFNWGLCHOOSEPIXELFORMATPROC __wglewChoosePixelFormat;
+WGLEW_EXPORT PFNWGLCOPYCONTEXTPROC __wglewCopyContext;
+WGLEW_EXPORT PFNWGLCREATECONTEXTPROC __wglewCreateContext;
+WGLEW_EXPORT PFNWGLCREATELAYERCONTEXTPROC __wglewCreateLayerContext;
+WGLEW_EXPORT PFNWGLDELETECONTEXTPROC __wglewDeleteContext;
+WGLEW_EXPORT PFNWGLDESCRIBELAYERPLANEPROC __wglewDescribeLayerPlane;
+WGLEW_EXPORT PFNWGLDESCRIBEPIXELFORMATPROC __wglewDescribePixelFormat;
+WGLEW_EXPORT PFNWGLGETCURRENTCONTEXTPROC __wglewGetCurrentContext;
+WGLEW_EXPORT PFNWGLGETCURRENTDCPROC __wglewGetCurrentDC;
+WGLEW_EXPORT PFNWGLGETDEFAULTPROCADDRESSPROC __wglewGetDefaultProcAddress;
+WGLEW_EXPORT PFNWGLGETLAYERPALETTEENTRIESPROC __wglewGetLayerPaletteEntries;
+WGLEW_EXPORT PFNWGLGETPIXELFORMATPROC __wglewGetPixelFormat;
+WGLEW_EXPORT PFNWGLGETPROCADDRESSPROC __wglewGetProcAddress;
+WGLEW_EXPORT PFNWGLMAKECURRENTPROC __wglewMakeCurrent;
+WGLEW_EXPORT PFNWGLREALIZELAYERPALETTEPROC __wglewRealizeLayerPalette;
+WGLEW_EXPORT PFNWGLSETLAYERPALETTEENTRIESPROC __wglewSetLayerPaletteEntries;
+WGLEW_EXPORT PFNWGLSETPIXELFORMATPROC __wglewSetPixelFormat;
+WGLEW_EXPORT PFNWGLSHARELISTSPROC __wglewShareLists;
+WGLEW_EXPORT PFNWGLSWAPBUFFERSPROC __wglewSwapBuffers;
+WGLEW_EXPORT PFNWGLSWAPLAYERBUFFERSPROC __wglewSwapLayerBuffers;
+WGLEW_EXPORT PFNWGLUSEFONTBITMAPSAPROC __wglewUseFontBitmapsA;
+WGLEW_EXPORT PFNWGLUSEFONTBITMAPSWPROC __wglewUseFontBitmapsW;
 
 WGLEW_EXPORT PFNWGLBINDDISPLAYCOLORTABLEEXTPROC __wglewBindDisplayColorTableEXT;
 WGLEW_EXPORT PFNWGLCREATEDISPLAYCOLORTABLEEXTPROC __wglewCreateDisplayColorTableEXT;
@@ -1088,10 +1319,13 @@ WGLEW_EXPORT PFNWGLSWAPBUFFERSMSCOMLPROC __wglewSwapBuffersMscOML;
 WGLEW_EXPORT PFNWGLSWAPLAYERBUFFERSMSCOMLPROC __wglewSwapLayerBuffersMscOML;
 WGLEW_EXPORT PFNWGLWAITFORMSCOMLPROC __wglewWaitForMscOML;
 WGLEW_EXPORT PFNWGLWAITFORSBCOMLPROC __wglewWaitForSbcOML;
+WGLEW_EXPORT GLboolean __WGLEW_core_api;
 WGLEW_EXPORT GLboolean __WGLEW_3DFX_multisample;
 WGLEW_EXPORT GLboolean __WGLEW_3DL_stereo_control;
+WGLEW_EXPORT GLboolean __WGLEW_AMD_gpu_association;
 WGLEW_EXPORT GLboolean __WGLEW_ARB_buffer_region;
 WGLEW_EXPORT GLboolean __WGLEW_ARB_create_context;
+WGLEW_EXPORT GLboolean __WGLEW_ARB_create_context_profile;
 WGLEW_EXPORT GLboolean __WGLEW_ARB_extensions_string;
 WGLEW_EXPORT GLboolean __WGLEW_ARB_framebuffer_sRGB;
 WGLEW_EXPORT GLboolean __WGLEW_ARB_make_current_read;
@@ -1102,6 +1336,7 @@ WGLEW_EXPORT GLboolean __WGLEW_ARB_pixel_format_float;
 WGLEW_EXPORT GLboolean __WGLEW_ARB_render_texture;
 WGLEW_EXPORT GLboolean __WGLEW_ATI_pixel_format_float;
 WGLEW_EXPORT GLboolean __WGLEW_ATI_render_texture_rectangle;
+WGLEW_EXPORT GLboolean __WGLEW_core_api;
 WGLEW_EXPORT GLboolean __WGLEW_EXT_depth_float;
 WGLEW_EXPORT GLboolean __WGLEW_EXT_display_color_table;
 WGLEW_EXPORT GLboolean __WGLEW_EXT_extensions_string;
@@ -1118,6 +1353,7 @@ WGLEW_EXPORT GLboolean __WGLEW_I3D_genlock;
 WGLEW_EXPORT GLboolean __WGLEW_I3D_image_buffer;
 WGLEW_EXPORT GLboolean __WGLEW_I3D_swap_frame_lock;
 WGLEW_EXPORT GLboolean __WGLEW_I3D_swap_frame_usage;
+WGLEW_EXPORT GLboolean __WGLEW_NV_copy_image;
 WGLEW_EXPORT GLboolean __WGLEW_NV_float_buffer;
 WGLEW_EXPORT GLboolean __WGLEW_NV_gpu_affinity;
 WGLEW_EXPORT GLboolean __WGLEW_NV_present_video;
@@ -1156,6 +1392,10 @@ GLEWAPI GLboolean wglewIsSupported (const char* name);
 #endif /* GLEW_MX */
 
 GLEWAPI GLboolean wglewGetExtension (const char* name);
+
+typedef int (WINAPI * PFNCHOOSEPIXELFORMATPROC)(HDC hdc, PIXELFORMATDESCRIPTOR *ppfd);
+#define ChoosePixelFormat WGLEW_GET_FUN(__glewGdiChoosePixelFormat)
+WGLEW_EXPORT PFNCHOOSEPIXELFORMATPROC __glewGdiChoosePixelFormat;
 
 #ifdef __cplusplus
 }
