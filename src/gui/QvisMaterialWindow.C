@@ -166,7 +166,7 @@ QvisMaterialWindow::CreateWindowContents()
     algorithm->addItem(tr("Zoo-based (default)"));
     algorithm->addItem(tr("Isovolume (special-purpose)"));
     algorithm->addItem(tr("Youngs (accurate/discontinuous)"));
-    algorithm->addItem(tr("Discrete (accurate/10X memory footprint)"));
+    algorithm->addItem(tr("Discrete (accurate/10X memory footprint/rect. only)"));
     algLayout->addWidget(algorithm);
     connect(algorithm, SIGNAL(activated(int)),
             this, SLOT(algorithmChanged(int)));
