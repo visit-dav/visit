@@ -831,6 +831,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Hank Childs, Fri Jan 16 15:30:15 PST 2009
 //    Store the variable with the working network.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -901,6 +904,7 @@ NetworkManager::StartNetwork(const string &format,
     dataRequest->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
     dataRequest->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
     dataRequest->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());
+    dataRequest->SetAnnealingTime(matopts.GetAnnealingTime());
     dataRequest->SetDiscTol(meshopts.GetDiscretizationTolerance()[0]);
     dataRequest->SetFlatTol(meshopts.GetDiscretizationTolerance()[1]);
     dataRequest->SetDiscMode(meshopts.GetDiscretizationMode());

@@ -111,6 +111,7 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     void numIterationsProcessText(void);
     void iterationDampingProcessText(void);
     void enableIterationChanged(bool val);
+    void annealingTimeProcessText(void);
   private:
     MaterialAttributes *atts;
 
@@ -125,11 +126,13 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     QCheckBox *enableIteration;
     QNarrowLineEdit *numIterations;
     QNarrowLineEdit *iterationDamping;
+    QNarrowLineEdit *annealingTime;
     QLabel *maxMatsPerZoneLabel;
     QLabel *algorithmLabel;
     QLabel *isoVolumeFractionLabel;
     QLabel *numIterationsLabel;
     QLabel *iterationDampingLabel;
+    QLabel *annealingTimeLabel;
 };
 
 #endif

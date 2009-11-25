@@ -48,6 +48,9 @@
 //    Jeremy Meredith, Thu Aug 18 16:36:55 PDT 2005
 //    Added algorithm and isovolumeVF.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -62,4 +65,5 @@ MIROptions::MIROptions()
     leaveCleanZonesWhole = true;
     cleanZonesOnly       = false;
     isovolumeVF          = 0.5;
+    annealingTime        = 10;
 }

@@ -132,8 +132,14 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
-//    Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
+//    Cyrus Harrison, Tue Jun 10 10:04:26 PDT 2008
 //    Initial Qt4 Port.
+//
+//    John C. Anderson, Fri Oct 17 16:03:10 2008
+//    Added "Discrete" reconstruction option.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
 //
 //    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
 //    Added material iteration capability.
@@ -160,6 +166,7 @@ QvisMaterialWindow::CreateWindowContents()
     algorithm->addItem(tr("Zoo-based (default)"));
     algorithm->addItem(tr("Isovolume (special-purpose)"));
     algorithm->addItem(tr("Youngs (accurate/discontinuous)"));
+    algorithm->addItem(tr("Discrete (accurate/10X memory footprint)"));
     algLayout->addWidget(algorithm);
     connect(algorithm, SIGNAL(activated(int)),
             this, SLOT(algorithmChanged(int)));
@@ -231,6 +238,14 @@ QvisMaterialWindow::CreateWindowContents()
     connect(numIterations, SIGNAL(returnPressed()),
             this, SLOT(iterationDampingProcessText()));
     mainLayout->addWidget(iterationDamping, 10,1);
+
+    annealingTimeLabel = new QLabel(tr("Annealing time (seconds)"), central);
+    mainLayout->addWidget(annealingTimeLabel,11,0);
+    annealingTime = new QNarrowLineEdit(central);
+    connect(annealingTime, SIGNAL(returnPressed()),
+            this, SLOT(annealingTimeProcessText()));
+    mainLayout->addWidget(annealingTime, 11,1);
+
 }
 
 
@@ -260,6 +275,9 @@ QvisMaterialWindow::CreateWindowContents()
 //    Brad Whitlock, Fri Dec 14 17:38:49 PST 2007
 //    Made it use ids.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
 //    Added material iteration capability.
 //
@@ -284,6 +302,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     enableIteration->blockSignals(true);
     numIterations->blockSignals(true);
     iterationDamping->blockSignals(true);
+    annealingTime->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -320,6 +339,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
                 isoVolumeFraction->setEnabled(false);
                 isoVolumeFractionLabel->setEnabled(false);
             }
+            annealingTime->setEnabled(atts->GetAlgorithm() == MaterialAttributes::Discrete);
+            annealingTimeLabel->setEnabled(atts->GetAlgorithm() == MaterialAttributes::Discrete);
+                
             smoothing->setEnabled(
                    atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
                    atts->GetAlgorithm()==MaterialAttributes::Tetrahedral);
@@ -387,6 +409,10 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetIterationDamping());
             iterationDamping->setText(temp);
             break;
+          case MaterialAttributes::ID_annealingTime:
+            temp.setNum(atts->GetAnnealingTime());
+            annealingTime->setText(temp);
+            break;
         }
     }
 
@@ -401,6 +427,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     enableIteration->blockSignals(false);
     numIterations->blockSignals(false);
     iterationDamping->blockSignals(false);
+    annealingTime->blockSignals(false);
 }
 
 
@@ -432,6 +459,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
 //
 //    Jeremy Meredith, Fri Feb 13 12:11:07 EST 2009
 //    Added material iteration capability.
@@ -576,6 +606,29 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do annealingTime
+    if(which_widget == MaterialAttributes::ID_annealingTime || doAll)
+    {
+        temp = annealingTime->displayText().simplified();
+        bool okay = !temp.isEmpty();
+        if (okay)
+        {
+            int val = temp.toInt(&okay);
+            if (val < 0)
+                okay = false;
+            else
+                atts->SetAnnealingTime(val);
+        }
+
+        if (!okay)
+        {
+            msg = tr("The value of annealingTime was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetAnnealingTime());
+            Message(msg);
+            atts->SetAnnealingTime(atts->GetAnnealingTime());
+        }
+    }
 }
 
 
@@ -780,3 +833,9 @@ QvisMaterialWindow::iterationDampingProcessText()
     Apply();
 }
 
+void
+QvisMaterialWindow::annealingTimeProcessText()
+{
+    GetCurrentValues(MaterialAttributes::ID_annealingTime);
+    Apply();
+}

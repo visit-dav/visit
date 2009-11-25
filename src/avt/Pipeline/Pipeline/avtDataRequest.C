@@ -167,6 +167,9 @@ using     std::map;
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -199,6 +202,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     mirNumIterations = 0; // 0 = no iteration
     mirIterationDamping = .2; // the multiplier of the vf diff when iterating
     isovolumeMIRVF = 0.5;
+    annealingTime = 10;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;
     desiredGhostDataType = NO_GHOST_DATA;
@@ -327,6 +331,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -358,6 +365,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     mirNumIterations = 0; // 0 = no iteration
     mirIterationDamping = .2; // the multiplier of the vf diff when iterating
     isovolumeMIRVF = 0.5;
+    annealingTime = 10;
     simplifyHeavilyMixedZones = false;
     maxMatsPerZone = 3;
     desiredGhostDataType = NO_GHOST_DATA;
@@ -626,6 +634,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -684,6 +695,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     mirNumIterations                = spec.mirNumIterations;
     mirIterationDamping             = spec.mirIterationDamping;
     isovolumeMIRVF                  = spec.isovolumeMIRVF;
+    annealingTime                   = spec.annealingTime;
     desiredGhostDataType            = spec.desiredGhostDataType;
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
     needNativePrecision             = spec.needNativePrecision;
@@ -805,6 +817,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
 //
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
@@ -947,6 +962,11 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     }
 
     if (isovolumeMIRVF != ds.isovolumeMIRVF)
+    {
+        return false;
+    }
+
+    if (annealingTime != ds.annealingTime)
     {
         return false;
     }
@@ -1833,6 +1853,8 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("mirIterationDamping", str);
     sprintf(str, "%f", isovolumeMIRVF);
     webpage->AddTableEntry2("isovolumeMIRVF", str);
+    sprintf(str, "%d", annealingTime);
+    webpage->AddTableEntry2("annealingTime", str);
     webpage->AddTableEntry2("simplifyHeavilyMixedZones", YesOrNo(simplifyHeavilyMixedZones));
     sprintf(str, "%d", maxMatsPerZone);
     webpage->AddTableEntry2("maxMatsPerZone", str);

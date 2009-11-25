@@ -56,13 +56,14 @@ package llnl.visit;
 
 public class MaterialAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 11;
+    private static int numAdditionalAttributes = 12;
 
     // Enum values
     public final static int ALGORITHM_TETRAHEDRAL = 0;
     public final static int ALGORITHM_ZOOCLIPPING = 1;
     public final static int ALGORITHM_ISOVOLUME = 2;
     public final static int ALGORITHM_YOUNGS = 3;
+    public final static int ALGORITHM_DISCRETE = 4;
 
 
     public MaterialAttributes()
@@ -80,6 +81,7 @@ public class MaterialAttributes extends AttributeSubject
         simplifyHeavilyMixedZones = false;
         maxMaterialsPerZone = 3;
         isoVolumeFraction = 0.5f;
+        annealingTime = 10;
     }
 
     public MaterialAttributes(int nMoreFields)
@@ -97,6 +99,7 @@ public class MaterialAttributes extends AttributeSubject
         simplifyHeavilyMixedZones = false;
         maxMaterialsPerZone = 3;
         isoVolumeFraction = 0.5f;
+        annealingTime = 10;
     }
 
     public MaterialAttributes(MaterialAttributes obj)
@@ -114,6 +117,7 @@ public class MaterialAttributes extends AttributeSubject
         simplifyHeavilyMixedZones = obj.simplifyHeavilyMixedZones;
         maxMaterialsPerZone = obj.maxMaterialsPerZone;
         isoVolumeFraction = obj.isoVolumeFraction;
+        annealingTime = obj.annealingTime;
 
         SelectAll();
     }
@@ -141,7 +145,8 @@ public class MaterialAttributes extends AttributeSubject
                 (iterationDamping == obj.iterationDamping) &&
                 (simplifyHeavilyMixedZones == obj.simplifyHeavilyMixedZones) &&
                 (maxMaterialsPerZone == obj.maxMaterialsPerZone) &&
-                (isoVolumeFraction == obj.isoVolumeFraction));
+                (isoVolumeFraction == obj.isoVolumeFraction) &&
+                (annealingTime == obj.annealingTime));
     }
 
     // Property setting methods
@@ -211,6 +216,12 @@ public class MaterialAttributes extends AttributeSubject
         Select(10);
     }
 
+    public void SetAnnealingTime(int annealingTime_)
+    {
+        annealingTime = annealingTime_;
+        Select(11);
+    }
+
     // Property getting methods
     public boolean GetSmoothing() { return smoothing; }
     public boolean GetForceMIR() { return forceMIR; }
@@ -223,6 +234,7 @@ public class MaterialAttributes extends AttributeSubject
     public boolean GetSimplifyHeavilyMixedZones() { return simplifyHeavilyMixedZones; }
     public int     GetMaxMaterialsPerZone() { return maxMaterialsPerZone; }
     public float   GetIsoVolumeFraction() { return isoVolumeFraction; }
+    public int     GetAnnealingTime() { return annealingTime; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -249,6 +261,8 @@ public class MaterialAttributes extends AttributeSubject
             buf.WriteInt(maxMaterialsPerZone);
         if(WriteSelect(10, buf))
             buf.WriteFloat(isoVolumeFraction);
+        if(WriteSelect(11, buf))
+            buf.WriteInt(annealingTime);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -288,6 +302,9 @@ public class MaterialAttributes extends AttributeSubject
         case 10:
             SetIsoVolumeFraction(buf.ReadFloat());
             break;
+        case 11:
+            SetAnnealingTime(buf.ReadInt());
+            break;
         }
     }
 
@@ -307,6 +324,8 @@ public class MaterialAttributes extends AttributeSubject
             str = str + "ALGORITHM_ISOVOLUME";
         if(algorithm == ALGORITHM_YOUNGS)
             str = str + "ALGORITHM_YOUNGS";
+        if(algorithm == ALGORITHM_DISCRETE)
+            str = str + "ALGORITHM_DISCRETE";
         str = str + "\n";
         str = str + boolToString("iterationEnabled", iterationEnabled, indent) + "\n";
         str = str + intToString("numIterations", numIterations, indent) + "\n";
@@ -314,6 +333,7 @@ public class MaterialAttributes extends AttributeSubject
         str = str + boolToString("simplifyHeavilyMixedZones", simplifyHeavilyMixedZones, indent) + "\n";
         str = str + intToString("maxMaterialsPerZone", maxMaterialsPerZone, indent) + "\n";
         str = str + floatToString("isoVolumeFraction", isoVolumeFraction, indent) + "\n";
+        str = str + intToString("annealingTime", annealingTime, indent) + "\n";
         return str;
     }
 
@@ -330,5 +350,6 @@ public class MaterialAttributes extends AttributeSubject
     private boolean simplifyHeavilyMixedZones;
     private int     maxMaterialsPerZone;
     private float   isoVolumeFraction;
+    private int     annealingTime;
 }
 

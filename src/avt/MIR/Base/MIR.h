@@ -78,6 +78,9 @@ class avtSpecies;
 //    Jeremy Meredith, Thu Aug 18 16:35:05 PDT 2005
 //    Added algorithm selector, and added VF for isovolume algorithm.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -99,6 +102,7 @@ class MIR_API MIR
     void SetLeaveCleanZonesWhole(bool);
     void SetCleanZonesOnly(bool);
     void SetIsovolumeVF(float);
+    void SetAnnealingTime(int);
 
     // do the processing
     virtual bool Reconstruct3DMesh(vtkDataSet *, avtMaterial *) = 0;
