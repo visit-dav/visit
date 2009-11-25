@@ -736,6 +736,11 @@
 #     Hank Childs, Mon Nov 23 07:59:36 PST 2009
 #     Add parallel include to CFLAGS.
 #
+#     Hank Childs, Wed Nov 25 11:43:31 PST 2009
+#     Add some defense against using existing "VTK" directory from 5.0.0c.
+#     Quote the PYTHON_EXTRA_LIBS.  Remove CMakeCache.txt file.  Change
+#     the log file to be in the current directory.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -870,7 +875,7 @@ fi
 export MAKE=${MAKE:-"make"}
 export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
 export GROUP=${GROUP:-"visit"}
-export LOG_FILE=${LOG_FILE:-"$0_log"}
+export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 export SVNREVISION=${SVNREVISION:-"HEAD"}
 # Created a temporary value because the user can override most of 
 # the components, which for the GUI happens at a later time.
@@ -3362,6 +3367,15 @@ function build_vtk
        fi
     fi
 
+    if [[ -d $VTK_BUILD_DIR ]] ; then
+        if [[ ! -f $VTK_FILE ]] ; then
+           if [[ -f vtk-5.0.0c.tar.gz ]] ; then
+               warn "I believe your VTK directory is from VTK5.0.0c.  Deleting"
+               rm -Rf $VTK_BUILD_DIR
+               ensure_built_or_ready "vtk"    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
+           fi
+        fi
+    fi
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
     untarred_vtk=$?
     if [[ $untarred_vtk == -1 ]] ; then
@@ -3385,6 +3399,12 @@ function build_vtk
                "failing harmlessly on a second application."
        fi
     fi
+
+    # 
+    # Remove the CMakeCache.txt files ... existing files sometimes prevent
+    # fields from getting overwritten properly.
+    #
+    rm -Rf ${VTK_BUILD_DIR}/CMakeCache.txt ${VTK_BUILD_DIR}/*/CMakeCache.txt
 
     #
     # Setup paths and libs for python for the VTK build.
@@ -3440,7 +3460,7 @@ function build_vtk
             -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
             -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
             -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
-            -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
+            -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
             .
     else
         ${CMAKE_BIN} \
@@ -3466,7 +3486,7 @@ function build_vtk
             -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
             -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
             -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
-            -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
+            -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
             .
     fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
@@ -3495,7 +3515,7 @@ function build_vtk
         -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
         -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
         -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
-        -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
+        -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
         .
     else
        if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
@@ -3517,7 +3537,7 @@ function build_vtk
                -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
                -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
                -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
-               -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
+               -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
                .
        else
            ${CMAKE_BIN} \
@@ -3542,7 +3562,7 @@ function build_vtk
                -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
                -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
                -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
-               -DPYTHON_EXTRA_LIBS:STRING=$VTK_PY_LIBS \
+               -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
                .
        fi
     fi
