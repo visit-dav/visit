@@ -13974,10 +13974,10 @@ GLEW_VAR_EXPORT GLboolean __GLEW_WIN_swap_hint;
  * OpenGL naming convention codes.
  * Used to switch between `standard' OpenGL and mangled Mesa implementations.
  */
-//enum GL_Name_Convention {
-//    GLEW_NAME_CONVENTION_GL = 0,
-//    GLEW_NAME_CONVENTION_MANGLED_MESA
-//};
+/* enum GL_Name_Convention {
+    GLEW_NAME_CONVENTION_GL = 0,
+    GLEW_NAME_CONVENTION_MANGLED_MESA
+};*/
 
 enum GL_Library_Type {
   GLEW_LIB_TYPE_NATIVE = 0,

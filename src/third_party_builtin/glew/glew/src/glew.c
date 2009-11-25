@@ -153,8 +153,14 @@ static void *dso_handle = NULL;
 # define warning(...) do { fprintf(stderr, __VA_ARGS__); } while(0)
 # define error(...) do { fprintf(stderr, __VA_ARGS__); abort(); } while(0)
 #else
+#ifdef __xlC__
+#include <stdio.h>
+# define warning if(0)printf /* nothing */
+# define error   if(0)printf /* nothing */
+#else
 # define warning(...) /* nothing */
 # define error(...) /* nothing */
+#endif
 #endif
 
 /* Function pointer for OSMesa function loader. */
@@ -11058,7 +11064,7 @@ GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
 
 /* ------------------------------------------------------------------------ */
 
-const GLubyte* glewGetErrorString (GLenum error)
+const GLubyte* glewGetErrorString (GLenum e)
 {
   static const GLubyte* _glewErrorString[] =
   {
@@ -11073,7 +11079,7 @@ const GLubyte* glewGetErrorString (GLenum error)
     (const GLubyte*)"Unknown error"
   };
   const int max_error = sizeof(_glewErrorString)/sizeof(*_glewErrorString) - 1;
-  return _glewErrorString[(int)error > max_error ? max_error : (int)error];
+  return _glewErrorString[(int)e > max_error ? max_error : (int)e];
 }
 
 const GLubyte* glewGetString (GLenum name)
