@@ -322,6 +322,9 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Sun Oct 28 21:09:44 PST 2007
 //    Added Boolean argument to GetDomainBoundaryInformation.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time to GetMIR and MaterialSelect.
+//
 //    Hank Childs, Sun Feb 10 19:43:59 MST 2008
 //    Add support for streaming ghost generation.
 //
@@ -454,12 +457,12 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               stringVector &, 
                                               bool, bool, bool, bool, bool,
                                               bool, bool, int, int,
-                                              int, float, float, bool, 
+                                              int, float, float, int, bool, 
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
                                       bool, int, int, int, float,
-                                      float, bool, bool&, bool&,bool, 
+                                      float, int, bool, bool&, bool&,bool, 
                                       avtMaterial *&);
     avtMaterial               *GetMaterial(int, const char *, int, const avtDataRequest_p = 0);
     avtSpecies                *GetSpecies(int, const char *, int);

@@ -99,6 +99,7 @@
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 #ifndef DBIO_ONLY
+#include <DiscreteMIR.h>
 #include <TetMIR.h>
 #include <ZooMIR.h>
 #include <YoungsMIR.h>
@@ -3476,11 +3477,15 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    they had only one material.  Added code to account for that in
 //    case of creating boundary surfaces.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
 //    Mark C. Miller, Wed Mar  4 18:00:22 PST 2009
 //    Adjusted for dbio-only build
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3499,6 +3504,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         int  mirNumIterations,
                         float  mirIterationDamping,
                         float isovolumeMIRVF,
+                        int annealingTime,
                         bool didGhosts,
                         bool &subdivisionOccurred,
                         bool &notAllCellsSubdivided,
@@ -3564,6 +3570,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                                  mirNumIterations,
                                  mirIterationDamping,
                                  isovolumeMIRVF,
+                                 annealingTime,
                                  didGhosts,
                                  subdivisionOccurred,
                                  notAllCellsSubdivided,
@@ -4363,6 +4370,12 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Do not delete the new material if we do "simplify heavily mixed",
 //    since it might be used later.
 //
+//    John C. Anderson, Fri Oct 17 17:37:16 2008
+//    Added Discrete MIR option.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Hank Childs, Thu Feb 21 16:41:25 PST 2008
 //    Throw an exception if we get a bad MIR type value.
 //
@@ -4394,6 +4407,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            int  mirNumIterations,
                            float mirIterationDamping,
                            float isovolumeMIRVF,
+                           int annealingTime,
                            bool didGhosts,
                            bool &subdivisionOccurred,
                            bool &notAllCellsSubdivided, bool reUseMIR,
@@ -4417,7 +4431,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     }
 
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%f",
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%d_%f",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
             needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
@@ -4428,11 +4442,12 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             mirAlgorithm==0 ? "TetMIR" :
             (mirAlgorithm==1 ? "ZooMIR" :
              (mirAlgorithm==2 ? "IsovolumeMIR" :
-              "YoungsMIR")),
+              (mirAlgorithm==3 ? "YoungsMIR" :
+                  "DiscreteMIR"))),
+            annealingTime,
             mirNumIterations,
             mirIterationDamping);
             
-
     //
     // See if we already have the data lying around.
     //
@@ -4476,6 +4491,10 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             mir = new YoungsMIR;
             break;
  
+          case 4:
+            mir = new DiscreteMIR;
+            break;
+
           default:
             EXCEPTION0(ImproperUseException);
         }
@@ -4487,6 +4506,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
         mir->SetSmoothing(needSmoothMaterialInterfaces);
         mir->SetCleanZonesOnly(needCleanZonesOnly);
         mir->SetIsovolumeVF(isovolumeMIRVF);
+        mir->SetAnnealingTime(annealingTime);
         if (topoDim == 3)
         {
             mir->Reconstruct3DMesh(ds, mat_to_use);
@@ -7376,6 +7396,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
 //    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -7456,6 +7479,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 spec->MIRNumIterations(),
                                 spec->MIRIterationDamping(),
                                 spec->IsovolumeMIRVF(),
+                                spec->AnnealingTime(),
                                 didGhosts, so, nacs, reUseMIR);
 
             notAllCellsSubdivided = notAllCellsSubdivided || nacs ||

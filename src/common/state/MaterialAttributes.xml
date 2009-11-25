@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
-  <Attribute name="MaterialAttributes" purpose="Attributes to control material interface reconstruction" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="MaterialAttributes" purpose="Attributes to control material interface reconstruction" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="Algorithm">
       Tetrahedral
       ZooClipping
       Isovolume
       Youngs
+      Discrete
     </Enum>
     <Field name="smoothing" label="Enable interface smoothing" type="bool">
       false
@@ -38,5 +39,8 @@
     </Field>
     <Field name="isoVolumeFraction" label="VF for Isovolume" type="float" enabler="algorithm:Isovolume">
       0.500000
+    </Field>
+    <Field name="annealingTime" label="Maximum time for simulated annealing." type="int" enabler="algorithm:Discrete">
+      10
     </Field>
   </Attribute>

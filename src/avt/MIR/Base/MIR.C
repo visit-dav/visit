@@ -200,6 +200,22 @@ MIR::SetIsovolumeVF(float vf)
 }
 
 // ****************************************************************************
+//  Method:  MIR::SetAnnealingTime
+//
+//  Purpose:
+//    Set the maximum simulated annealing time for Discrete MIR.
+//
+//  Programmer:  John C. Anderson
+//  Creation:    January 15, 2009
+//
+// ****************************************************************************
+void
+MIR::SetAnnealingTime(int t)
+{
+    options.annealingTime = t;
+}
+
+// ****************************************************************************
 //  Default Constructor:  MIR::MIR
 //
 //  Programmer:  Jeremy Meredith

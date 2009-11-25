@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: MaterialAttributes
 //
@@ -65,16 +66,27 @@ public:
         Tetrahedral,
         ZooClipping,
         Isovolume,
-        Youngs
+        Youngs,
+        Discrete
     };
 
+    // These constructors are for objects of this class
     MaterialAttributes();
     MaterialAttributes(const MaterialAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MaterialAttributes(private_tmfs_t tmfs);
+    MaterialAttributes(const MaterialAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MaterialAttributes();
 
     virtual MaterialAttributes& operator = (const MaterialAttributes &obj);
     virtual bool operator == (const MaterialAttributes &obj) const;
     virtual bool operator != (const MaterialAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MaterialAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -96,6 +108,7 @@ public:
     void SetSimplifyHeavilyMixedZones(bool simplifyHeavilyMixedZones_);
     void SetMaxMaterialsPerZone(int maxMaterialsPerZone_);
     void SetIsoVolumeFraction(float isoVolumeFraction_);
+    void SetAnnealingTime(int annealingTime_);
 
     // Property getting methods
     bool  GetSmoothing() const;
@@ -109,6 +122,7 @@ public:
     bool  GetSimplifyHeavilyMixedZones() const;
     int   GetMaxMaterialsPerZone() const;
     float GetIsoVolumeFraction() const;
+    int   GetAnnealingTime() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -140,7 +154,9 @@ public:
         ID_iterationDamping,
         ID_simplifyHeavilyMixedZones,
         ID_maxMaterialsPerZone,
-        ID_isoVolumeFraction
+        ID_isoVolumeFraction,
+        ID_annealingTime,
+        ID__LAST
     };
 
 private:
@@ -155,9 +171,12 @@ private:
     bool  simplifyHeavilyMixedZones;
     int   maxMaterialsPerZone;
     float isoVolumeFraction;
+    int   annealingTime;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MATERIALATTRIBUTES_TMFS "bbbbibifbifi"
 
 #endif

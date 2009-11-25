@@ -199,6 +199,9 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
@@ -376,6 +379,11 @@ class PIPELINE_API avtDataRequest
     void                         SetIsovolumeMIRVF(float vf)
                                      { isovolumeMIRVF = vf; }
 
+    int                          AnnealingTime(void)
+                                     { return annealingTime;}
+    void                         SetAnnealingTime(int t)
+                                     { annealingTime = t; }
+
     bool                         SimplifyHeavilyMixedZones(void)
                                      { return simplifyHeavilyMixedZones;}
     void                         SetSimplifyHeavilyMixedZones(bool shmz)
@@ -476,6 +484,7 @@ class PIPELINE_API avtDataRequest
     int                          mirNumIterations;
     float                        mirIterationDamping;
     float                        isovolumeMIRVF;
+    int                          annealingTime;
     bool                         simplifyHeavilyMixedZones;
     int                          maxMatsPerZone;
     bool                         maintainOriginalConnectivity;
