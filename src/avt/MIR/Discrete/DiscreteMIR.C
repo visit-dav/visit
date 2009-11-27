@@ -220,6 +220,11 @@ DiscreteMIR::DiscreteMIR()
 //  Programmer:  John C. Anderson
 //  Creation:    October 17, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 27 07:08:22 CET 2009
+//    Fix compilation error of some linux boxes.
+//
 // ****************************************************************************
 DiscreteMIR::~DiscreteMIR()
 {
@@ -228,7 +233,7 @@ DiscreteMIR::~DiscreteMIR()
         int nCells = mesh->GetNumberOfCells();
         for(int i = 0; i < nCells; ++i)
         {
-            if(((int) m_labels[i]) > 0)
+            if((m_labels[i]) != NULL)
                 free(m_labels[i]);
         }
         free(m_labels);
@@ -294,6 +299,9 @@ DiscreteMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //  Creation:    October 17, 2008
 //
 //  Modifications:
+//
+//    Hank Childs, Fri Nov 27 07:08:22 CET 2009
+//    Replace assert with exception.
 //
 // ****************************************************************************
 bool
@@ -376,7 +384,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
     // Intialize the label pointer array.
     m_labels = (unsigned char **) calloc(dimensions[0] * dimensions[1] * dimensions[2],
                                          sizeof(unsigned char *));
-    assert(m_labels);
+    if (m_labels == NULL)
+        EXCEPTION1(ImproperUseException, "Memory allocation problem");
 
     if(dimension == 2)
     {
@@ -423,7 +432,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                 // Initialize the label array for this cell.
                 m_labels[cellid] =
                     (unsigned char *) calloc(DX * DY * DZ, sizeof(unsigned char));
-                assert(m_labels[cellid]);
+                if (m_labels[cellid] == NULL)
+                    EXCEPTION1(ImproperUseException, "Memory allocation problem");
             }
 
     // Initialize the discretized blocks.
@@ -960,7 +970,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                             break;
 
                           default:
-                            assert(0);
+                            EXCEPTION1(ImproperUseException, "Unexpected case");
                         }
 
                         indexList.push_back(centroid);                 
@@ -1103,7 +1113,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
             for(int st = 0; st < small_tets.size(); st += 3)
             {
                 // Make sure that the centroid handle exists.
-                assert(centroid_handles[small_tets[st]]);
+                if (centroid_handles[small_tets[st]] == 0)
+                    EXCEPTION1(ImproperUseException, "Memory allocation problem");
 
                 ReconstructedZone zone;
                 zone.origzone   = cellid;
@@ -1134,7 +1145,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                     continue;
                 
                 // Make sure that the centroid handle exists.
-                assert(centroid_handles[big_tets[bt]]);
+                if (centroid_handles[big_tets[bt]] == 0)
+                    EXCEPTION1(ImproperUseException, "Memory allocation problem");
 
                 ReconstructedZone zone;
                 zone.origzone   = cellid;
@@ -1737,6 +1749,15 @@ DiscreteMIR::SetUpCoords()
     visitTimer->DumpTimings();
 }
 
+// ***************************************************************************
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 27 07:08:22 CET 2009
+//    Fix compilation error of some linux boxes.
+//
+// ***************************************************************************
+
 unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
 {
     if(!inside(i, j, k))
@@ -1746,7 +1767,8 @@ unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
 
     unsigned char *labels = NULL;
 
-    if((int) (labels = m_labels[id(cell)]) > 0)
+    labels = m_labels[id(cell)];
+    if(labels != NULL)
     {
         i %= DX;
         j %= DY;
@@ -1756,7 +1778,7 @@ unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
     }
     else
     {
-        return -((int) labels);
+        return 0;
     }
 }
 
