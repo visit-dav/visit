@@ -111,6 +111,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     layout->addWidget(profiles, 0,0, 1,4);
     connect(profiles, SIGNAL(itemSelectionChanged()),
             this,     SLOT(newProfileSelected()));
+    connect(profiles, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(accept()));
 
     numProcsLabel = new QLabel(tr("Num procs"), this);
     numProcs = new QSpinBox(this);
