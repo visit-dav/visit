@@ -190,6 +190,9 @@ int DiscreteMIR::Node::m_neighborNode[4][2] =
 //  Creation:    October 17, 2008
 //
 //  Modifications:
+//   Jeremy Meredith, Mon Nov 30 17:28:43 EST 2009
+//   Split labels into mixed and clean versions to avoid assumptions
+//   about signedness of pointers and sizes of integers and pointers.
 //
 // ****************************************************************************
 DiscreteMIR::DiscreteMIR()
@@ -206,7 +209,8 @@ DiscreteMIR::DiscreteMIR()
     yspacing = NULL;
     zspacing = NULL;
 
-    m_labels = NULL;
+    m_mixedlabels = NULL;
+    m_cleanlabels = NULL;
     m_neighborhood = NULL;
 
     m_temperature = 0.25;
@@ -225,18 +229,26 @@ DiscreteMIR::DiscreteMIR()
 //    Hank Childs, Fri Nov 27 07:08:22 CET 2009
 //    Fix compilation error of some linux boxes.
 //
+//   Jeremy Meredith, Mon Nov 30 17:28:43 EST 2009
+//   Split labels into mixed and clean versions to avoid assumptions
+//   about signedness of pointers and sizes of integers and pointers.
+//
 // ****************************************************************************
 DiscreteMIR::~DiscreteMIR()
 {
-    if(m_labels)
+    if(m_mixedlabels)
     {
         int nCells = mesh->GetNumberOfCells();
         for(int i = 0; i < nCells; ++i)
         {
-            if((m_labels[i]) != NULL)
-                free(m_labels[i]);
+            if((m_mixedlabels[i]) != NULL)
+                free(m_mixedlabels[i]);
         }
-        free(m_labels);
+        free(m_mixedlabels);
+    }
+    if(m_cleanlabels)
+    {
+        free(m_cleanlabels);
     }
 
     if(m_neighborhood)
@@ -302,6 +314,10 @@ DiscreteMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //
 //    Hank Childs, Fri Nov 27 07:08:22 CET 2009
 //    Replace assert with exception.
+//
+//    Jeremy Meredith, Mon Nov 30 17:28:43 EST 2009
+//    Split labels into mixed and clean versions to avoid assumptions
+//    about signedness of pointers and sizes of integers and pointers.
 //
 // ****************************************************************************
 bool
@@ -381,11 +397,17 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
     // Seed the random number generator.
     srand((int) time(NULL));
 
-    // Intialize the label pointer array.
-    m_labels = (unsigned char **) calloc(dimensions[0] * dimensions[1] * dimensions[2],
+    // Intialize the mixed label pointer array.
+    m_mixedlabels = (unsigned char **) calloc(dimensions[0] * dimensions[1] * dimensions[2],
                                          sizeof(unsigned char *));
-    if (m_labels == NULL)
+    if (m_mixedlabels == NULL)
         EXCEPTION1(ImproperUseException, "Memory allocation problem");
+
+    // Intialize the clean label array.
+    m_cleanlabels = (int*) calloc(dimensions[0] * dimensions[1] * dimensions[2],
+                                  sizeof(int));
+    if (m_cleanlabels == NULL)
+        EXCEPTION1(ImproperUseException,  "Memory allocation problem");
 
     if(dimension == 2)
     {
@@ -422,7 +444,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
 
                 if(matlist[cellid] >= 0)
                 {
-                    m_labels[cellid] = (unsigned char *) -matlist[cellid];
+                    m_cleanlabels[cellid] = matlist[cellid];
+                    m_mixedlabels[cellid] = NULL;
                     continue;
                 }
 
@@ -430,9 +453,10 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                 m_mixedCells.push_back(cell);
 
                 // Initialize the label array for this cell.
-                m_labels[cellid] =
+                m_cleanlabels[cellid] = -1; // dummy value
+                m_mixedlabels[cellid] =
                     (unsigned char *) calloc(DX * DY * DZ, sizeof(unsigned char));
-                if (m_labels[cellid] == NULL)
+                if (m_mixedlabels[cellid] == NULL)
                     EXCEPTION1(ImproperUseException, "Memory allocation problem");
             }
 
@@ -472,7 +496,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
         total = DX * DY * DZ;
 
         unsigned char
-            *tmp = m_labels[cellid],
+            *tmp = m_mixedlabels[cellid],
             *end = tmp + (DX * DY * DZ);
 
         while(tmp != end)
@@ -663,7 +687,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                     zone.origzone   = cellid;
                     zone.startindex = indexList.size();
                     zone.mix_index  = -1; // TODO: What is this values supposed to be?
-                    zone.mat        = m_labels[cellid][DX * DY * z + DX * y + x];
+                    zone.mat        = m_mixedlabels[cellid][DX * DY * z + DX * y + x];
                     zone.celltype   = (dimension == 3) ? VTK_HEXAHEDRON : VTK_QUAD;
                     zone.nnodes     = (dimension == 3) ? 8 : 4;
 
@@ -1756,6 +1780,12 @@ DiscreteMIR::SetUpCoords()
 //    Hank Childs, Fri Nov 27 07:08:22 CET 2009
 //    Fix compilation error of some linux boxes.
 //
+//    Jeremy Meredith, Mon Nov 30 17:31:34 EST 2009
+//    Split labels into mixed and clean versions to avoid assumptions
+//    about signedness of pointers and sizes of integers and pointers.
+//    Revert to old version where we return the clean cell label if
+//    there is no mixed label.
+//
 // ***************************************************************************
 
 unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
@@ -1767,7 +1797,7 @@ unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
 
     unsigned char *labels = NULL;
 
-    labels = m_labels[id(cell)];
+    labels = m_mixedlabels[id(cell)];
     if(labels != NULL)
     {
         i %= DX;
@@ -1778,10 +1808,18 @@ unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
     }
     else
     {
-        return 0;
+        return m_cleanlabels[id(cell)];
     }
 }
 
+// ***************************************************************************
+//
+//  Modifications:
+//   Jeremy Meredith, Mon Nov 30 17:33:11 EST 2009
+//    Split labels into mixed and clean versions to avoid assumptions
+//    about signedness of pointers and sizes of integers and pointers.
+//
+// ***************************************************************************
 void DiscreteMIR::optimize()
 {
     // Temporary labels.
@@ -1804,7 +1842,7 @@ void DiscreteMIR::optimize()
         for(int iteration = 0; iteration < 1000; ++iteration)
         {
             cell = m_mixedCells[RANDOM * m_mixedCells.size()];
-            labels = m_labels[id(cell)];
+            labels = m_mixedlabels[id(cell)];
 
             // Pick two sites within a cell with different labels.
             int incell = 10;

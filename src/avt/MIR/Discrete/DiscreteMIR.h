@@ -64,6 +64,9 @@
 //  Creation:    October 17, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Nov 30 17:31:34 EST 2009
+//    Split labels into mixed and clean versions to avoid assumptions
+//    about signedness of pointers and sizes of integers and pointers.
 //
 // ****************************************************************************
 class MIR_API DiscreteMIR : public MIR
@@ -358,7 +361,8 @@ class MIR_API DiscreteMIR : public MIR
     float *xspacing, *yspacing, *zspacing;
 
     std::vector< Cell > m_mixedCells;
-    unsigned char **m_labels;
+    unsigned char **m_mixedlabels;
+    int            *m_cleanlabels;
     float *m_neighborhood;
 
     size_t m_size[3];
