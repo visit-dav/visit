@@ -1,3 +1,4 @@
+#include <visit-config.h>
 #include "stringutil.h"
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
