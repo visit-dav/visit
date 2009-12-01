@@ -45,7 +45,6 @@
 #include <list>
 #include <iostream>
 #include <limits>
-#include <avtVecArray.h>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
 #include <vtkPlane.h>
@@ -70,11 +69,14 @@
 //
 //   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //   Don't record intersection points, just count them.
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
 //  
 // ****************************************************************************
 
 avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
-                             const avtVec& p_start, int ID) :
+                             const avtVector &p_start, int ID) :
     scalarValueType(NONE)
 {
     _t0 = t_start;
@@ -384,8 +386,12 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
-//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
-//   Replace size() with much more efficient empty().
+//
+//    Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
+//    Replace size() with much more efficient empty().
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
 //
 // ****************************************************************************
 
@@ -413,7 +419,7 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
         return;
     
     //Get the direction of the last step.
-    avtVec dir, pt;
+    avtVector dir, pt;
     if (forward)
     {
         iterator si = _steps.end();
@@ -442,7 +448,7 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
     if (DebugStream::Level5())
         debug5<< "Leap: "<<pt;
     dir *= leapingDistance;
-    avtVec newPt = pt + dir;
+    avtVector newPt = pt + dir;
     _ivpSolver->SetCurrentY(newPt);
     _ivpSolver->SetCurrentT(_ivpSolver->GetCurrentT() + leapingDistance);
     
@@ -560,10 +566,13 @@ avtStreamline::size() const
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 void
-avtStreamline::PtEnd(avtVec &end)
+avtStreamline::PtEnd(avtVector &end)
 {
     end = _ivpSolver->GetCurrentY();
 }
@@ -655,19 +664,22 @@ avtStreamline::HandleIntersections(bool forward,
 //   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //   Don't record intersection points, just count them.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 bool
-avtStreamline::IntersectPlane(const avtVec &p0, const avtVec &p1)
+avtStreamline::IntersectPlane(const avtVector &p0, const avtVector &p1)
 {
-    double distP0 = intersectPlaneEq[0] * p0.values()[0] +
-                    intersectPlaneEq[1] * p0.values()[1] +
-                    intersectPlaneEq[2] * p0.values()[2] +
+    double distP0 = intersectPlaneEq[0] * p0.x +
+                    intersectPlaneEq[1] * p0.y +
+                    intersectPlaneEq[2] * p0.z +
                     intersectPlaneEq[3];
 
-    double distP1 = intersectPlaneEq[0] * p1.values()[0] +
-                    intersectPlaneEq[1] * p1.values()[1] +
-                    intersectPlaneEq[2] * p1.values()[2] +
+    double distP1 = intersectPlaneEq[0] * p1.x +
+                    intersectPlaneEq[1] * p1.y +
+                    intersectPlaneEq[2] * p1.z +
                     intersectPlaneEq[3];
 
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
@@ -755,6 +767,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         _steps.clear();
         size_t sz = 0;
         buff.io( mode, sz );
+        debug5<<"Read step cnt= "<<sz<<endl;
         for ( size_t i = 0; i < sz; i++ )
         {
             avtIVPStep *s = new avtIVPStep;

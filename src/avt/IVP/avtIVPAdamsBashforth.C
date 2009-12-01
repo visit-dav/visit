@@ -40,12 +40,13 @@
 //                              avtIVPAdamsBashforth.C                       //
 // ************************************************************************* //
 
-#include "avtIVPAdamsBashforth.h"
+#include <avtIVPAdamsBashforth.h>
 #include <avtIVPDopri5.h>
 #include <avtIVPStateHelper.h>
 #include <DebugStream.h>
 
 #include <limits>
+#include <cmath>
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
@@ -143,9 +144,12 @@ avtIVPAdamsBashforth::GetCurrentT() const
 //    Improved version of A-B solver that builds function history from
 //    initial RK4 steps.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
-avtVec 
+avtVector 
 avtIVPAdamsBashforth::GetCurrentY() const
 {
     return yCur;
@@ -165,10 +169,13 @@ avtIVPAdamsBashforth::GetCurrentY() const
 //    Improved version of A-B solver that builds function history from
 //    initial RK4 steps.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 void
-avtIVPAdamsBashforth::SetCurrentY(const avtVec &newY)
+avtIVPAdamsBashforth::SetCurrentY(const avtVector &newY)
 {
     yCur = newY;
 }
@@ -299,10 +306,13 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //    Dave Pugmire, Tue May  5 10:43:05 EDT 2009
 //    Memory issue with history init. Make sure vecs are of proper size.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 void 
-avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
+avtIVPAdamsBashforth::Reset(const double& t_start, const avtVector &y_start)
 {
     t = t_start;
     d = 0.0;
@@ -313,11 +323,11 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
     h = h_max;
     initialized = 0;
 
-    history[0] = avtVec(yCur.dim());
-    history[1] = avtVec(yCur.dim());
-    history[2] = avtVec(yCur.dim());
-    history[3] = avtVec(yCur.dim());
-    history[4] = avtVec(yCur.dim());
+    history[0] = yCur;
+    history[1] = yCur;
+    history[2] = yCur;
+    history[3] = yCur;
+    history[4] = yCur;
 }
 
 
@@ -355,13 +365,18 @@ avtIVPAdamsBashforth::OnExitDomain()
 //  Programmer: Dave Pugmire
 //  Creation:   Feb 24 2009
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
-                              avtVec &yNew )
+                              avtVector &yNew )
 {
-  avtVec f[4];
+  avtVector f[4];
 
   f[0] = (*field)(t,yCur)              * h;
   f[1] = (*field)(t,yCur + f[0] * 0.5) * h;
@@ -395,7 +410,7 @@ avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
 
 avtIVPSolver::Result 
 avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
-                             avtVec &yNew )
+                             avtVector &yNew )
 {
     // Calculate the predictor using the Adams-Bashforth formula
     yNew = yCur;
@@ -476,7 +491,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
     }
 
     avtIVPSolver::Result res;
-    avtVec yNew(yCur.dim());
+    avtVector yNew = yCur;
     // Use a forth order Runga Kutta integration to seed the Adams-Bashforth.
     if ( initialized < NSTEPS )
     {
@@ -496,7 +511,7 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 
     if ( res == avtIVPSolver::OK )
     {
-        ivpstep->resize( yCur.dim(), 2 );
+        ivpstep->resize(2);
         
         (*ivpstep)[0] = yCur;
         (*ivpstep)[1] = yNew;

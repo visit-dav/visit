@@ -43,6 +43,7 @@
 #include <math.h>
 #include <math_exports.h>
 #include <visitstream.h>
+#include <ImproperUseException.h>
 
 #ifdef DBIO_ONLY 
 #define STUB_VOID {}
@@ -74,6 +75,9 @@
 //    Kathleen Bonnell, Mon Apr 20 10:38:22 MST 2009 
 //    Added MATH_API in front of operator<< for compilation on windows when
 //    other classes attempt to use the method.
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Add [] operator and lerp method.
 //
 // ****************************************************************************
 class MATH_API avtVector
@@ -114,6 +118,10 @@ class MATH_API avtVector
     // dot product
     double     operator*(const avtVector&) const;
     double     dot(const avtVector&) const;
+
+    // element access
+    double& operator[](const size_t &i);
+    const double& operator[](const size_t &i) const;
 
     // 2-norm
     double     norm() const;
@@ -349,6 +357,40 @@ inline double
 avtVector::length() const
 {
     return sqrt(length2());
+}
+
+inline double &
+avtVector::operator[](const size_t &i)
+{
+    if (i == 0)
+        return x;
+    else if (i == 1)
+        return y;
+    else if (i == 2)
+        return z;
+    EXCEPTION0(ImproperUseException);
+}
+
+inline const double &
+avtVector::operator[](const size_t &i) const
+{
+    if (i == 0)
+        return x;
+    else if (i == 1)
+        return y;
+    else if (i == 2)
+        return z;
+    EXCEPTION0(ImproperUseException);
+}
+
+inline avtVector lerp(const double &t, const avtVector &v0, const avtVector &v1)
+{
+    double one_minus_t = 1.0-t;
+
+    avtVector result(one_minus_t*v0.x + t*v1.x,
+                     one_minus_t*v0.y + t*v1.y,
+                     one_minus_t*v0.z + t*v1.z);
+    return result;
 }
 
 

@@ -44,7 +44,7 @@
 #define AVT_IVPFIELD_H
 
 #include <stdexcept>
-#include <avtVec.h>
+#include <avtVector.h>
 #include <ivp_exports.h>
 
 
@@ -72,6 +72,9 @@
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Added ComputeScalarVariable, HasGhostZones and GetExtents methods.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
@@ -88,15 +91,15 @@ class IVP_API avtIVPField
 
                          avtIVPField() {};
 
-    virtual avtVec       operator()(const double& t, 
-                                    const avtVecRef& x) const = 0;
+    virtual avtVector    operator()(const double& t, 
+                                    const avtVector& x) const = 0;
     virtual double       ComputeVorticity(const double& t, 
-                                          const avtVecRef& x ) const = 0;
+                                          const avtVector& x ) const = 0;
     virtual double       ComputeScalarVariable(const double& t,
-                                               const avtVecRef& x) const = 0;
+                                               const avtVector& x) const = 0;
 
     virtual bool         IsInside(const double& t, 
-                                  const avtVecRef& x) const = 0;
+                                  const avtVector& x) const = 0;
     virtual unsigned int GetDimension() const = 0;
     virtual bool         GetValidTimeRange(double range[]) const = 0;
     virtual bool         HasGhostZones() const = 0;

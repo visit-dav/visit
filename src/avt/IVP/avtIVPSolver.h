@@ -43,7 +43,7 @@
 #ifndef AVT_IVPSOLVER_H
 #define AVT_IVPSOLVER_H
 
-#include <avtVec.h>
+#include <avtVector.h>
 #include <avtIVPField.h>
 #include <avtBezierSegment.h>
 #include <MemStream.h>
@@ -98,6 +98,9 @@ struct avtIVPStateHelper;
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Added a copy constructor.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
@@ -105,7 +108,7 @@ class IVP_API avtIVPStep: public avtBezierSegment
 public:
     avtIVPStep() : avtBezierSegment()
     { tStart = tEnd = scalarValue = 0.0; speed = 0.0; vorticity = 0.0;
-      velStart = avtVec(0.,0.,0.); velEnd = avtVec(0.,0.,0.); }
+      velStart = avtVector(0.,0.,0.); velEnd = avtVector(0.,0.,0.); }
 
     avtIVPStep(const avtIVPStep &s) : avtBezierSegment(s),
                                       tStart(s.tStart),tEnd(s.tEnd), scalarValue(s.scalarValue),
@@ -126,12 +129,12 @@ public:
     {
         double tMid = tStart + (tEnd-tStart)/2.0;
         
-        avtVec pt = evaluate( tMid );
+        avtVector pt = evaluate( tMid );
         if ( field->IsInside( tMid, pt ) )
             vorticity = field->ComputeVorticity( tMid, pt );
     }
     
-    void   Serialize(MemStream::Mode mode, MemStream &buff)
+    virtual void Serialize(MemStream::Mode mode, MemStream &buff)
     {
         //debug1 << "avtIVPStep::Serialize()\n";
         buff.io( mode, tStart );
@@ -142,10 +145,9 @@ public:
         buff.io( mode, velStart );
         buff.io( mode, velEnd );
         
-        //TODO
-        //avtBezierSegment::Serialize( mode, buff );
-        buff.io( mode, _dim );
-        buff.io( mode, _data );
+        avtBezierSegment::Serialize(mode, buff);
+        //buff.io( mode, _dim );
+        //buff.io( mode, _data );
     }
 
     double   Length(double eps=1e-6)
@@ -154,7 +156,7 @@ public:
     }
     
     double tStart, tEnd;
-    avtVec velStart, velEnd;
+    avtVector velStart, velEnd;
     double speed, vorticity, scalarValue;
 };
 
@@ -269,6 +271,9 @@ class avtIVPState
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
 //   Add operator<< for enums.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class avtIVPSolver
@@ -291,17 +296,17 @@ class avtIVPSolver
 	INTERSECTIONS
     };
     
-    virtual void    Reset(const double& t_start, const avtVecRef& y_start) = 0;
+    virtual void    Reset(const double& t_start, const avtVector& y_start) = 0;
 
     virtual Result  Step(const avtIVPField* field,
                          const TerminateType &type,
                          const double &end,
                          avtIVPStep* ivpstep = 0 ) = 0;
     virtual void    OnExitDomain() {}
-    virtual avtVec  GetCurrentY() const = 0;
+    virtual avtVector  GetCurrentY() const = 0;
     virtual double  GetCurrentT() const = 0;
 
-    virtual void    SetCurrentY(const avtVec &newY) = 0;
+    virtual void    SetCurrentY(const avtVector &newY) = 0;
     virtual void    SetCurrentT(double newT) = 0;
 
     virtual void    SetNextStepSize(const double& h)  = 0;

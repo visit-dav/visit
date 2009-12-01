@@ -47,8 +47,8 @@
 #include <vector>
 #include <list>
 #include <cstring>
-#include <avtVec.h>
-#include <avtVecArray.h>
+#include <avtVector.h>
+#include <vector>
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -59,6 +59,11 @@
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
+//
+//  Modifications:
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
 //
 // ****************************************************************************
 
@@ -80,16 +85,14 @@ struct IVP_API MemStream
     unsigned char *buff() const { return data; }
 
     // General read/write routines.
-    template <typename T> void io( Mode mode, T *pt, size_t num ) 
+    template <typename T> void io( Mode mode, T *pt, size_t num )
                       { return (mode == READ ? read(pt,num) : write(pt,num)); }
-    template <typename T> void io( Mode mode, T& t ) 
+    template <typename T> void io( Mode mode, T& t )
                       { size_t s=1; io( mode, &t, s ); }
     template <typename T> void io( Mode mode, std::vector<T> &v )
                       { return (mode == READ ? read(v) : write(v)); }
-    void io( Mode mode, avtVec &v ) 
+    void io( Mode mode, avtVector &v )
                       { return (mode == READ ? read(v) : write(v)); }
-    void io( Mode mode, avtVecArray &va )  
-                      { return (mode == READ ? read(va) : write(va)); }
     //template <typename T> void io( Mode mode, std::list<T*> &l )  
     //                { return (mode == READ ? read(l) : write(l)); }
 
@@ -103,21 +106,11 @@ struct IVP_API MemStream
         pos += nBytes;
     }
     
-    void read( avtVec &v )
+    void read( avtVector &v )
     {
-        size_t dim;
-        read(dim);
-        v = avtVec(dim);
-        read(v.begin(), v.dim());
-    }
-
-    void read( avtVecArray &va )
-    {
-        size_t dim, size;
-        read(dim);
-        read(size);
-        va = avtVecArray(dim,size);
-        read(va.data(),size*dim);
+        read(v.x);
+        read(v.y);
+        read(v.z);
     }
 
     template <typename T> void read( std::vector<T> &v )
@@ -168,17 +161,11 @@ struct IVP_API MemStream
             write( v[i] );
     }
 
-    void write( const avtVec &v )
+    void write( const avtVector &v )
     {
-        write( v.dim() );
-        write( v.begin(), v.dim() );
-    }
-    
-    void write( const avtVecArray &va )
-    {
-        write(va.dim());
-        write(va.size());
-        write(va.data(),va.size()*va.dim());
+        write(v.x);
+        write(v.y);
+        write(v.z);
     }
 
     /*    

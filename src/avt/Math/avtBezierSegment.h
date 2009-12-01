@@ -39,7 +39,9 @@
 #ifndef AVT_BEZIERSEGMENT_H
 #define AVT_BEZIERSEGMENT_H
 
-#include <avtVecArray.h>
+#include <avtVector.h>
+#include <vector>
+#include <MemStream.h>
 
 // ****************************************************************************
 //  Class avtBezierSegment
@@ -55,9 +57,12 @@
 //    Dave Pugmire, Wed Jun 10 11:39:12 EDT 2009
 //    Add firstV and lastV methods.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
-class avtBezierSegment: public avtVecArray
+class avtBezierSegment: public std::vector<avtVector>
 {
 public:
 
@@ -65,9 +70,9 @@ public:
     {
     }
 
-    avtBezierSegment( unsigned int dim, unsigned int order ) :
-        avtVecArray( dim, order )
+    avtBezierSegment(unsigned int order)
     {
+        resize(order);
     }
 
     unsigned int degree() const 
@@ -80,26 +85,26 @@ public:
         return size();
     }
 
-    avtVec firstV() const
+    avtVector firstV() const
     {
-        avtVec v;
+        avtVector v;
         if (size() > 0)
             v = (*this)[0];
         return v;
     }
 
-    avtVec lastV() const
+    avtVector lastV() const
     {
-        avtVec v;
+        avtVector v;
         if (size() > 0)
             v = (*this)[size()-1];
         return v;
     }
 
-    avtVec evaluate( const double& param )
+    avtVector evaluate( const double& param )
     {
         // BezierSegment evaluation using deCasteljau's scheme
-        avtVecArray tmp( *this );
+        std::vector<avtVector> tmp(*this);
         
         for( size_t l=1; l<order(); ++l )
         {
@@ -110,9 +115,9 @@ public:
         return tmp[degree()];
     }
 
-    avtVec derivative( const double& param, unsigned int order = 1 )
+    avtVector derivative( const double& param, unsigned int order = 1 )
     {
-        avtVecArray tmp( *this );
+        std::vector<avtVector> tmp(*this);
         
         for( size_t i=0; i<order; ++i )
             tmp[i] = tmp[i+1] - tmp[i];
@@ -131,17 +136,23 @@ public:
         double len = 0.0;
         int N = 10;
         double dt = (t1-t0)/(double)(N-1);
-        avtVec p0 = evaluate( t0 );
+        avtVector p0 = evaluate( t0 );
         double t = t0+dt;
         for ( int i = 1; i < N; i++ )
         {
-            avtVec p1 = evaluate( t );
+            avtVector p1 = evaluate( t );
             len += (p1-p0).length();
             p0 = p1;
             t += dt;
         }
         
         return len;
+    }
+
+    virtual void Serialize(MemStream::Mode mode, MemStream &buff)
+    {
+        std::vector<avtVector> *vec = this;
+        buff.io(mode, *vec);
     }
 };
 

@@ -114,6 +114,9 @@ class vtkObject;
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Option to serialize steps.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -123,7 +126,7 @@ class IVP_API avtStreamline
 
     typedef std::list<avtIVPStep*>::const_iterator iterator;
     avtStreamline(const avtIVPSolver* model, const double& t_start, 
-                  const avtVec& p_start, int ID=-1);
+                  const avtVector &p_start, int ID=-1);
     avtStreamline();
     ~avtStreamline();
 
@@ -138,8 +141,8 @@ class IVP_API avtStreamline
     double    TMin() const;
     double    TMax() const;
 
-    avtVec    PtStart() const { return _p0; }
-    void      PtEnd(avtVec &end);
+    avtVector PtStart() const { return _p0; }
+    void      PtEnd(avtVector &end);
     double    TStart() const { return _t0; }
 
     bool      IsForward() const { return true; }
@@ -172,7 +175,7 @@ class IVP_API avtStreamline
                                   avtIVPSolver::TerminateType termType,
                                   double end,
                                   avtIVPSolver::Result *result);
-    bool      IntersectPlane(const avtVec &p0, const avtVec &p1);
+    bool      IntersectPlane(const avtVector &p0, const avtVector &p1);
 
   public:
     // Integration steps.
@@ -186,7 +189,7 @@ class IVP_API avtStreamline
 
     // Initial T and seed point.
     double _t0;
-    avtVec _p0;
+    avtVector _p0;
     
     ScalarValueType    scalarValueType;
 

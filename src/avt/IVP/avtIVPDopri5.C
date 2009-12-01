@@ -40,11 +40,11 @@
 //                              avtIVPDopri5.C                               //
 // ************************************************************************* //
 
-#include "avtIVPDopri5.h"
-#include "avtIVPStateHelper.h"
-#include "DebugStream.h"
-
+#include <avtIVPDopri5.h>
+#include <avtIVPStateHelper.h>
+#include <DebugStream.h>
 #include <limits>
+#include <cmath>
 
 // some constants for the Dormand-Prince RK scheme
 static const double safe = 0.9;
@@ -116,9 +116,13 @@ avtIVPDopri5::avtIVPDopri5()
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Chagned how distanced based termination is computed.
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
-avtIVPDopri5::avtIVPDopri5( const double& t_start, const avtVecRef& y_start )
+avtIVPDopri5::avtIVPDopri5( const double& t_start, const avtVector& y_start )
 {
     // set (somewhat) reasonable defaults
     reltol = 1e-8;
@@ -157,11 +161,14 @@ avtIVPDopri5::~avtIVPDopri5()
 //    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion.
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
 //  
 // ****************************************************************************
 
 void 
-avtIVPDopri5::Reset(const double& t_start, const avtVecRef& y_start)
+avtIVPDopri5::Reset(const double& t_start, const avtVector& y_start)
 {
     h = h_init = 0.0;
     
@@ -175,7 +182,7 @@ avtIVPDopri5::Reset(const double& t_start, const avtVecRef& y_start)
     d = 0.0;
     numStep = 0;
     y = y_start;
-    k1 = avtVec(y_start.dim());
+    k1 = avtVector(0,0,0);
 }
 
 
@@ -206,9 +213,14 @@ avtIVPDopri5::GetCurrentT() const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
-avtVec 
+avtVector 
 avtIVPDopri5::GetCurrentY() const
 {
     return y;
@@ -223,10 +235,15 @@ avtIVPDopri5::GetCurrentY() const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications::
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 void
-avtIVPDopri5::SetCurrentY(const avtVec &newY)
+avtIVPDopri5::SetCurrentY(const avtVector &newY)
 {
     y = newY;
 }
@@ -344,6 +361,9 @@ avtIVPDopri5::SetTolerances(const double& relt, const double& abst)
 //    Incorporate fix from Christoph to do a better job guessing the
 //    initial step size.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 double 
@@ -366,7 +386,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
     
             double h;
     
-            for(size_t i=0 ; i < y.dim() ; i++) 
+            for(size_t i=0 ; i < 3; i++) 
             {
                 sk = abstol + reltol * std::abs(y[i]);
                 sqr = k1[i] / sk;
@@ -384,15 +404,15 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
             h = sign( h, direction );
 
             // perform an explicit Euler step
-            avtVec k3 = y + h * k1;
-            avtVec k2 = (*field)( t+h, k3 );
+            avtVector k3 = y + h * k1;
+            avtVector k2 = (*field)( t+h, k3 );
 
             n_eval++;
 
             // estimate the second derivative of the solution
             double der2 = 0.0;
 
-            for( size_t i=0; i<y.dim(); i++) 
+            for( size_t i=0; i < 3; i++) 
             {
                 sk = abstol + reltol * std::abs( y[i] );
                 sqr = ( k2[i] - k1[i] ) / sk;
@@ -473,6 +493,9 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //    Add new termination criterion: Number of intersections with an object.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -495,7 +518,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
     
     const double direction = sign( 1.0, t_max - t );
 
-    avtVec k2, k3, k4, k5, k6, k7;
+    avtVector k2, k3, k4, k5, k6, k7;
     bool reject = false;
     
     // compute maximum stepsize
@@ -528,7 +551,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
     while( true )
     {
         bool last = false;
-        avtVec y_new, y_stiff;
+        avtVector y_new, y_stiff;
 
         // stepsize underflow?
         if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
@@ -565,7 +588,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
         y_new = y + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
         k5 = (*field)( t+c5*h, y_new );
 
-        y_stiff = y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
+        y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
+        y_stiff = y_new; //???? Needed?
         k6 = (*field)( t+h, y_new );
         
         y_new = y + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
@@ -576,17 +600,17 @@ avtIVPDopri5::Step(const avtIVPField* field,
         double err = 0.0, h_new, fac11;
 
         // error estimation
-        avtVec ee = h * ( e1*k1 + e3*k3 + e4*k4 + e5*k5 + e6*k6 + e7*k7 );
+        avtVector ee = h * ( e1*k1 + e3*k3 + e4*k4 + e5*k5 + e6*k6 + e7*k7 );
         double sk, sqr;
             
-        for( size_t i=0; i<y.dim(); i++ ) 
+        for( size_t i=0; i<3; i++ ) 
         {
             sk = abstol + reltol * std::max(std::abs(y[i]), std::abs(y_new[i]));
             sqr = ee[i]/sk;
             err += sqr*sqr;
         }
             
-        err = sqrt( err / y.dim() );
+        err = sqrt(err / 3.0);
             
         // compute next potential stepsize
         fac11 = pow( err, 0.2 - beta*0.75 );
@@ -610,7 +634,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
             {
                 double stnum = 0.0, stden = 0.0, sqr;
 
-                for( size_t i=0; i<k7.dim(); i++ ) 
+                for( size_t i=0; i < 3; i++ ) 
                 {
                     sqr = k7[i] - k6[i];
                     stnum += sqr * sqr;
@@ -651,9 +675,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
             // make interpolation polynomial
             if( ivpstep )
             {
-                ivpstep->resize( y.dim(), 5 );
+                ivpstep->resize(5);
                 (*ivpstep)[0] = y;
-                (*ivpstep)[1] = y + h*k1/4.;
+                (*ivpstep)[1] = y + (h*k1/4.);
                 (*ivpstep)[2] = (y + y_new)/2 + h*( (d1+1)*k1 + d3*k3 + d4*k4 
                               + d5*k5 + d6*k6 + (d7-1)*k7 )/6.;
                 (*ivpstep)[3] = y_new - h*k7/4;

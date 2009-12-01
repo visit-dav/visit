@@ -40,6 +40,7 @@
 //                        avtIVPVTKTimeVaryingField.C                        //
 // ************************************************************************* //
 
+#include <ImproperUseException.h>
 #include <avtIVPVTKTimeVaryingField.h>
 #include <iostream>
 #include <vtkCell.h>
@@ -151,45 +152,38 @@ avtIVPVTKTimeVaryingField::GetExtents(double *extents) const
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
-avtVec
-avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
+avtVector
+avtIVPVTKTimeVaryingField::operator()(const double &t, const avtVector &pt) const
 {
-    if (DebugStream::Level5())
-        debug5<<"Eval( "<<t<<", "<<x<<") = ";
-
     // Check for inclusion in this time boundary.
     if (t < time1 || t > time2)
     {
-        if (DebugStream::Level5())
-            debug5<<"  **OUT of TIME**\n";
         throw Undefined();
     }
 
     // Evaluate the field at both timesteps.
-    avtVec y1(x.dim()), param(pad(x,t)), y2(x.dim());
-    if ( ! iv->Evaluate(param.values(), y1.values(), t))
+    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
+    if ( ! iv->Evaluate(param, vec, t))
     {
-        if (DebugStream::Level5())
-            debug5<<"  **OUT of BOUNDS**\n";
         throw Undefined();
     }
     
-    avtVec y(x.dim());
-    y = y1;
-
-    if (DebugStream::Level5())
-        debug5<<"T= "<<t<<" ["<<time1<<" "<<time2<<"]"<<" Y1 = "<<y1<<" Y2= "<<y2<<" y= "<<y<<endl;
+    avtVector v(vec[0], vec[1], vec[2]);
 
     if ( normalized )
     {
-        double len = y.length();
+        double len = v.length();
         if ( len > 0.0 )
-            y /= len;
+            v /= len;
     }
 
-    return y;
+    return v;
 }
 
 
@@ -208,12 +202,16 @@ avtIVPVTKTimeVaryingField::operator()(const double& t, const avtVecRef& x) const
 //    Update to use vtkVisItInterpolatedVelocityField, not 
 //    vtkInterpolatedVelocityField.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeVorticity( const double& t, const avtVecRef& x ) const
+avtIVPVTKTimeVaryingField::ComputeVorticity( const double &t, const avtVector &pt ) const
 {
 EXCEPTION0(ImproperUseException); // didn't do this.
+/*
     avtVec y( x.dim() );
     avtVec param = pad(x,t);
     
@@ -262,6 +260,7 @@ EXCEPTION0(ImproperUseException); // didn't do this.
     //cout<<"omega= "<<omega<<endl;
 
     return omega;
+*/
 }
 
 // ****************************************************************************
@@ -275,11 +274,14 @@ EXCEPTION0(ImproperUseException); // didn't do this.
 //
 //  Modifications:
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeScalarVariable(const double& t,
-                                                 const avtVecRef& x) const
+avtIVPVTKTimeVaryingField::ComputeScalarVariable(const double &t,
+                                                 const avtVector &pt) const
 {
     EXCEPTION0(ImproperUseException); // didn't do this.
 }
@@ -301,16 +303,17 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(const double& t,
 //    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
 //    Make sure to pass time along to the VTK module, as it now uses it.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 bool
-avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVecRef& x ) const
+avtIVPVTKTimeVaryingField::IsInside( const double &t, const avtVector &pt ) const
 {
-    avtVec y(x.dim());
-    avtVec param = pad(x,t);
+    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
 
-    return (t >= time1 && t <= time2 &&
-            iv->Evaluate(param.values(), y.values(), t) );
+    return (t >= time1 && t <= time2 && iv->Evaluate(param, vec, t));
 }
 
 
