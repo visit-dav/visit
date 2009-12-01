@@ -76,6 +76,9 @@
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Added ComputeScalarVariable, HasGhostZones and GetExtents methods.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
@@ -86,12 +89,12 @@ class IVP_API avtIVPVTKTimeVaryingField: public avtIVPField
                    ~avtIVPVTKTimeVaryingField();
 
     // avtIVPField interface
-    avtVec         operator()(const double& t, const avtVecRef& x) const;
-    double         ComputeVorticity(const double& t, const avtVecRef& x) const;
+    avtVector      operator()(const double& t, const avtVector &pt) const;
+    double         ComputeVorticity(const double& t, const avtVector &pt) const;
     double         ComputeScalarVariable(const double& t, 
-                                         const avtVecRef& x) const;
+                                         const avtVector &pt) const;
     
-    bool           IsInside( const double& t, const avtVecRef& x ) const;
+    bool           IsInside( const double& t, const avtVector &pt) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
     virtual bool   GetValidTimeRange(double range[]) const;

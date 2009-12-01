@@ -74,6 +74,9 @@
 //    Reworked the termination code. Added a type enum and value. Made num steps
 //    a termination criterion.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPDopri5: public avtIVPSolver
@@ -81,11 +84,11 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
   public:
                      avtIVPDopri5();
                      avtIVPDopri5(const double& t_start, 
-                                  const avtVecRef& y_start);
+                                  const avtVector& y_start);
                      ~avtIVPDopri5();
 
     // begin a new IVP solution
-    virtual void     Reset( const double& t_start, const avtVecRef& y_start );
+    virtual void     Reset( const double& t_start, const avtVector& y_start );
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
@@ -94,10 +97,10 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
                           const double &end,                      
                           avtIVPStep* ivpstep = NULL);
 
-    virtual avtVec   GetCurrentY() const;
+    virtual avtVector   GetCurrentY() const;
     virtual double   GetCurrentT() const;
 
-    virtual void     SetCurrentY( const avtVec &newY );
+    virtual void     SetCurrentY( const avtVector &newY );
     virtual void     SetCurrentT( double newT );
 
     virtual void     SetNextStepSize( const double& h );
@@ -139,8 +142,8 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     int iasti;
     int nonsti;
 
-    avtVec y;
-    avtVec k1;
+    avtVector y;
+    avtVector k1;
 };
 
 #endif

@@ -137,26 +137,28 @@ avtIVPVTKField::GetExtents(double *extents) const
 //    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
 //    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
-avtVec
-avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
+avtVector
+avtIVPVTKField::operator()(const double &t, const avtVector &pt) const
 {
-    avtVec y( x.dim() ), param( pad(x,t));
-    
-    int result = iv->Evaluate( param.values(), y.values() );
-    //debug5<<result<<"= iv->Evaluate("<<param<<") y= "<<y<<endl;
+    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
+    int result = iv->Evaluate(param, vec);
     
     if( !result )
         throw Undefined();
     
+    avtVector v(vec[0], vec[1], vec[2]);
     if ( normalized )
     {
-        double len = y.length();
+        double len = v.length();
         if ( len > 0.0 )
-            y /= len;
+            v /= len;
     }
-    return y;
+    return v;
 }
 
 
@@ -178,18 +180,15 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
 //    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
 //    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
+avtIVPVTKField::ComputeVorticity( const double& t, const avtVector &pt ) const
 {
-    avtVec y( x.dim() );
-    avtVec param = pad(x,t);
-    
-    int result = iv->Evaluate( param.values(), y.values() );
-    
-    if( !result )
-        throw Undefined();
+    avtVector y = (*this)(t, pt);
 
     vtkDataSet *ds = iv->GetDataSet();
     vtkIdType cellID = iv->GetLastCell();
@@ -225,9 +224,9 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
     double len = y.length();
     if ( len > 0.0 )
         omega = (
-                  vort[0] * y.values()[0] + vort[1] * y.values()[1] 
-                  + vort[2] * y.values()[2]
-                ) / len;
+                 vort[0] * y.x + vort[1] * y.y 
+                 + vort[2] * y.z
+                 ) / len;
     //cout<<"omega= "<<omega<<endl;
 
     return omega;
@@ -244,11 +243,14 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
 //
 //  Modifications:
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 double
 avtIVPVTKField::ComputeScalarVariable(const double& t,
-                                      const avtVecRef& x) const
+                                      const avtVector &pt) const
 {
     vtkDataSet *ds = iv->GetDataSet();
     vtkCell *cell = ds->GetCell(iv->GetLastCell());
@@ -258,8 +260,8 @@ avtIVPVTKField::ComputeScalarVariable(const double& t,
     double pcoords[3], dist2, v;
     double *weights = new double[numPts];
 
-    avtVec y(x.dim());
-    cell->EvaluatePosition((double *)x.values(), NULL, subId, pcoords, dist2, weights);
+    double xvals[3] = {pt.x, pt.y, pt.z};
+    cell->EvaluatePosition(xvals, NULL, subId, pcoords, dist2, weights);
     
     double value = 0.0;
     //See if we have node centered data...
@@ -286,7 +288,7 @@ avtIVPVTKField::ComputeScalarVariable(const double& t,
 
 
 // ****************************************************************************
-//  Method: avtIVPVTKField::IsInsider
+//  Method: avtIVPVTKField::IsInside
 //
 //  Purpose:
 //      Determines if a point is inside a field.
@@ -299,13 +301,16 @@ avtIVPVTKField::ComputeScalarVariable(const double& t,
 //    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
 //    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 bool
-avtIVPVTKField::IsInside( const double& t, const avtVecRef& x ) const
+avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
 {
-    avtVec y( x.dim() );
-    return iv->Evaluate( pad( x, t ).values(), y.values() );
+    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
+    return iv->Evaluate(param, vec);
 }
 
 

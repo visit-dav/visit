@@ -43,10 +43,9 @@
 #ifndef AVT_IVPSTATEHELPER_H
 #define AVT_IVPSTATEHELPER_H
 
-#include <avtVec.h>
-#include <avtVecArray.h>
 #include <avtIVPSolver.h>
 #include <ivp_exports.h>
+#include <avtVector.h>
 
 // ****************************************************************************
 //  Struct: avtIVPStateHelper
@@ -100,16 +99,13 @@ public:
         return *this;
     }
     
-    avtIVPStateHelper& Accept( avtVec& v )
+    avtIVPStateHelper& Accept(avtVector &v)
     {
-        size_t dim = v.dim();
-        Accept( dim );
-        if( _mode == PUT )
-            v = avtVec( dim );
-        
-        return Accept( v.begin(), v.dim() );
+        Accept(v.x);
+        Accept(v.y);
+        Accept(v.z);
     }
-    
+    /*
     avtIVPStateHelper& Accept( avtVecArray& va )
     {
         size_t dim  = va.dim();
@@ -122,7 +118,7 @@ public:
             
         return Accept( va.data(), size*dim );
     }
-    
+    */
     size_t size() const
     {
         return _size;

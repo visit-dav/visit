@@ -2566,7 +2566,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
     
     for (int i = 0; i < ptDom.size(); i++)
     {
-        avtVec pt(ptDom[i].pt.x, ptDom[i].pt.y, ptDom[i].pt.z);
+        avtVector pt(ptDom[i].pt.x, ptDom[i].pt.y, ptDom[i].pt.z);
         
         if (streamlineDirection == VTK_INTEGRATE_FORWARD ||
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)

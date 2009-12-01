@@ -77,6 +77,9 @@
 //    Dave Pugmire, Mon Mar  9 15:35:05 EDT 2009
 //    Fix serialization for parallel integration.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
@@ -86,7 +89,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     ~avtIVPAdamsBashforth();
 
     // begin a new IVP solution
-    virtual void     Reset( const double& t_start, const avtVecRef& y_start );
+    virtual void     Reset( const double& t_start, const avtVector &y_start );
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
@@ -96,10 +99,10 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
                           avtIVPStep* ivpstep = NULL);
     virtual void    OnExitDomain();
 
-    virtual avtVec   GetCurrentY() const;
+    virtual avtVector GetCurrentY() const;
     virtual double   GetCurrentT() const;
 
-    virtual void     SetCurrentY( const avtVec &newY );
+    virtual void     SetCurrentY( const avtVector &newY );
     virtual void     SetCurrentT( double newT );
 
     virtual void     SetNextStepSize( const double& h );
@@ -116,13 +119,13 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
-    void             UpdateHistory( const avtVec &yNew );
+    void             UpdateHistory( const avtVector &yNew );
 
     avtIVPSolver::Result RK4Step(const avtIVPField* field,
-                                 avtVec &yNew);
+                                 avtVector &yNew);
 
     avtIVPSolver::Result ABStep(const avtIVPField* field,
-                                avtVec &yNew);
+                                avtVector &yNew);
 
   private:
     int numStep;
@@ -131,9 +134,9 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     double t, d;
     int degenerate_iterations;
     double stiffness_eps;
-    avtVec history[5];
-    avtVec yCur;
-    avtVec ys[2];
+    avtVector history[5];
+    avtVector yCur;
+    avtVector ys[2];
     int initialized;
 };
 

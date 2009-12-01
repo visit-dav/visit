@@ -164,8 +164,8 @@ avtStreamlineWrapper::~avtStreamlineWrapper()
 void
 avtStreamlineWrapper::Debug()
 {
-    debug1<<"slWrapper: id= "<<id;
-    debug1<<" #steps= "<<(sl?sl->size():0)<<endl;
+    //debug1<<"slWrapper: id= "<<id;
+    //debug1<<" #steps= "<<(sl?sl->size():0)<<endl;
 
     /*
     avtVec end;
@@ -251,16 +251,15 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 void
 avtStreamlineWrapper::GetStartPoint(avtVector &pt, double &t) const
 {
-    avtVec p = sl->PtStart();
-    
-    pt.x = p.values()[0];
-    pt.y = p.values()[1];
-    pt.z = p.values()[2];
+    pt = sl->PtStart();
     t = sl->TMin();
 
     //debug5<<"avtStreamlineWrapper::GetStartPoint() = "<<pt<<" T= "<<t<<endl;
@@ -284,17 +283,15 @@ avtStreamlineWrapper::GetStartPoint(avtVector &pt, double &t) const
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//    Switch from avtVec to avtVector.
+//
 // ****************************************************************************
 
 void
 avtStreamlineWrapper::GetEndPoint(avtVector &pt, double &t) const
 {
-    avtVec end;
-    
-    sl->PtEnd(end);
-    pt.x = end.values()[0];
-    pt.y = end.values()[1];
-    pt.z = end.values()[2];
+    sl->PtEnd(pt);
     t = sl->TMax();
 
     //debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<" T= "<<t<<endl;
