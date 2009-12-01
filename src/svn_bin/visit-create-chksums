@@ -103,11 +103,12 @@ do
    $cmd visit$version.exe                          >> $output
    $cmd visit$version2.aix.tar.gz                  >> $output
    $cmd visit$version2.aix64.tar.gz                >> $output
-   $cmd visit$version2.darwin-ppc.tar.gz           >> $output
    $cmd visit$version2.darwin-i386-parallel.tar.gz >> $output
    $cmd visit$version2.darwin-i386.tar.gz          >> $output
+   $cmd visit$version2.darwin-ppc.tar.gz           >> $output
    $cmd visit$version2.linux-altix.tar.gz          >> $output
    $cmd visit$version2.linux-ellipse.tar.gz        >> $output
+   $cmd visit$version2.linux-ubuntu8.tar.gz        >> $output
    $cmd visit$version2.linux-x86_64-fedora4.tar.gz >> $output
    $cmd visit$version2.linux-x86_64-ubuntu8.tar.gz >> $output
    $cmd visit$version2.linux-x86_64.tar.gz         >> $output
