@@ -710,7 +710,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         {
             out_ds[i] = vtkPolyData::New();
             out_ds[i]->ShallowCopy(output);
-	    out_ds[i]->GetFieldData()->ShallowCopy(in_ds->GetFieldData());
+            out_ds[i]->GetFieldData()->ShallowCopy(in_ds->GetFieldData());
             out_ds[i]->GetPointData()->RemoveArray("avtGhostNodes");
         }
         visitTimer->StopTimer(id2, "Calculating isosurface");
