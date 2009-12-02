@@ -459,6 +459,8 @@ avtZipWrapperFileFormatInterface::Finalize()
 //    Brad Whitlock, Tue Jun 24 16:44:49 PDT 2008
 //    Pass in the zipwrapper info so we can access the plugin manager.
 //
+//    Mark C. Miller, Tue Dec  1 18:31:52 PST 2009
+//    Fix regular expressions for parsing extension and decompressed name.
 // ****************************************************************************
 
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
@@ -492,9 +494,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     //
     // Make sure the necessary real plugin is loaded.
     //
-    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.gz$|\\.bz$|\\.bz2$|\\.zip$>");
+    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(gz|bz|bz2|zip)$>");
     const char *bname = StringHelpers::Basename(inputFileList[0][0].c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.gz$|\\.bz$|\\.bz2$|\\.zip$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
 
     // Save the pointer to the plugin manager.
     pluginManager = zwinfo->GetPluginManager();
@@ -680,6 +682,11 @@ avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(
 //    Brad Whitlock, Tue Jun 24 16:46:55 PDT 2008
 //    Pass the plugin manager to the database factory.
 //
+//    Mark C. Miller, Tue Dec  1 18:39:15 PST 2009
+//    Fix regular expressions for parsing extension and decompressed name.
+//    Added force options to other compression commands. Added stat and loop
+//    logic to help avoid situations where multiple compression commands
+//    might somehow be running in background and colliding with each other.
 // ****************************************************************************
 avtFileFormatInterface *
 avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCache)
@@ -705,9 +712,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
-    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.gz$|\\.bz$|\\.bz2$|\\.zip$>");
+    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(gz|bz|bz2|zip)$>");
     const char *bname = StringHelpers::Basename(compressedName.c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.gz$|\\.bz$|\\.bz2$|\\.zip$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
 
     string dcmd = decompCmd;
     if (dcmd == "")
@@ -715,15 +722,67 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         if (ext == ".gz")
             dcmd = "gunzip -f";
         else if (ext == ".bz")
-            dcmd = "bunzip";
+            dcmd = "bunzip -f";
         else if (ext == ".bz2")
-            dcmd = "bunzip2";
+            dcmd = "bunzip2 -f";
         else if (ext == "zip")
-            dcmd = "unzip";
+            dcmd = "unzip -o";
+    }
+
+    //
+    // We need to guard against situations where the same file could be in process of
+    // being decompressed and we are about to initiate a 'new' decompression command
+    // on it. So, we use a sort of 'locking' mechanism here by creating '.lck' files
+    // just before we begin decompressing and then removing the '.lck' files after
+    // the decompression completes. If we get here and find a .lck file for the
+    // given target, we loop, stat'ing the target and so long as the target file size
+    // is increasing and .lck exists, we wait. If .lck goes away, we know its 
+    // completed. If file size does NOT continue to grow after several successive
+    // stat's, we conclude it is somehow hung.
+    //
+    off_t tsize = 0;
+    int ntries = 199; // must be odd
+    VisItStat_t statbuf;
+    int statval = VisItStat(string(dcname+".lck").c_str(), &statbuf);
+    if (statval == -1 && errno == ENOENT)
+        ntries = 0;
+
+    while (ntries>0)
+    {
+        // Wait a bit.
+        struct timespec ts = {0, 1000000000/2}; // 1/2-second
+        nanosleep(&ts, 0);
+
+        // Stat the target so we can monitor its size
+        errno = 0;
+        statval = VisItStat(dcname.c_str(), &statbuf);
+        if (statval == 0)
+        {
+            if (statbuf.st_size > tsize)
+                tsize = statbuf.st_size;
+            else
+                ntries-=2;
+        }
+        else if (errno == ENOENT)
+            ntries = 0;
+        else
+            ntries-=2;
+
+        // Stat the lock. If its gone, we know the previos decomp command completed.
+        errno = 0;
+        statval = VisItStat(string(dcname+".lck").c_str(), &statbuf);
+        if (statval == -1 && errno == ENOENT)
+            ntries = 0;
+    }
+
+    if (ntries<0)
+    {
+        debug5 << "It looks like an existing decompression attempt has hung. But, proceeding anyway." << endl;
     }
 
     char tmpcmd[1024];
-    SNPRINTF(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; %s %s", tmpDir.c_str(), compressedName.c_str(), dcmd.c_str(), bname);
+    SNPRINTF(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
+        tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
     debug5 << "Using decompression command: \"" << tmpcmd << "\"" << endl;
     int ret = system(tmpcmd);
     if (WIFEXITED(ret))

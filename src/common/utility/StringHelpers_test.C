@@ -157,6 +157,28 @@ int main(int argc, char **argv)
     CHECK_PLURAL(source,sources);
     CHECK_PLURAL(assembly,assemblies);
 
+    // test ExtractRESubstr
+    string filename = "/usr/gapps/visit/data/foo.silo.bz2";
+    string ext = ExtractRESubstr(filename.c_str(), "<\\.(gz|bz|bz2|zip)$>");
+    const char *bname = Basename(filename.c_str());
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
+
+    if (ext != ".bz2")
+    {
+        cerr << "Problem with ExtractRESubstr" << endl;
+        return 1;
+    }
+    if (string(bname) != "foo.silo.bz2")
+    {
+        cerr << "Problem with Basename" << endl;
+        return 1;
+    }
+    if (dcname != "foo.silo")
+    {
+        cerr << "Problem with ExtractRESubstr" << endl;
+        return 1;
+    }
+
     return falseNegatives.size() + falsePositives.size();
 
 }
