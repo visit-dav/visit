@@ -1929,7 +1929,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         slSeg->terminated = (result == avtIVPSolver::TERMINATE);
         debug5<<"Advance:= "<<result<<endl;
         debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
-	
+
     }
     else
         result = avtIVPSolver::TERMINATE;
@@ -2340,7 +2340,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
 
         for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
         {
-	    double *pt = line->GetOutput()->GetPoint(i);
+            double *pt = line->GetOutput()->GetPoint(i);
             avtVector p(pt[0], pt[1], pt[2]);
             candidatePts.push_back(p);
         }
