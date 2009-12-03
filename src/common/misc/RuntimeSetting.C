@@ -96,7 +96,7 @@ const struct Setting s::settings[] = {
      "--system-gl-lib", "VISIT_GL_LIB",
      "Library (dylib) which implements OpenGL."},
 #elif defined(_WIN32)
-    {"system-gl", "opengl32.dll", true, "--mesa-lib", "VISIT_MESA_LIB",
+    {"system-gl", "opengl32.dll", true, "--system-gl-lib", "VISIT_GL_LIB",
      "Library (.dll) which implements OpenGL."},
 #elif defined(_AIX)
     {"system-gl", "libGL.a(shr_64.o)", true, "--system-gl-lib",
