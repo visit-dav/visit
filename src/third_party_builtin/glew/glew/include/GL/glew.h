@@ -13970,20 +13970,16 @@ GLEW_VAR_EXPORT GLboolean __GLEW_WIN_swap_hint;
 #define GLEW_VERSION_MINOR 3
 #define GLEW_VERSION_MICRO 4
 
-/*
- * OpenGL naming convention codes.
- * Used to switch between `standard' OpenGL and mangled Mesa implementations.
- */
-/* enum GL_Name_Convention {
-    GLEW_NAME_CONVENTION_GL = 0,
-    GLEW_NAME_CONVENTION_MANGLED_MESA
-};*/
-
+/* Library type; determines which "GetProcAddress" to use. */
 enum GL_Library_Type {
   GLEW_LIB_TYPE_NATIVE = 0,
   GLEW_LIB_TYPE_OSMESA
 };
 
+/*
+ * OpenGL naming convention codes.
+ * Used to switch between `standard' OpenGL and mangled Mesa implementations.
+ */
 enum GL_Name_Convention {
   GLEW_NAME_STANDARD = 0,
   GLEW_NAME_MANGLED
