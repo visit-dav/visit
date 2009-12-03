@@ -348,7 +348,7 @@ unsigned char *src, *dst;
         ip3 = (i<width-3) ? i+3 : width-1;
         ip4 = (i<width-4) ? i+4 : width-1;
         ip5 = (i<width-5) ? i+5 : width-1;
-        ip6 = (i<width-5) ? i+6 : width-1;
+        ip6 = (i<width-6) ? i+6 : width-1; /* Fix by HRC */
 
         /* FIR filter with 0.5 sample interval phase shift */
         dst[i>>1] = clp[(int)(228*(src[i]+src[ip1])
@@ -412,7 +412,7 @@ unsigned char *src, *dst;
         jp3 = (j<height-3) ? j+3 : height-1;
         jp4 = (j<height-4) ? j+4 : height-1;
         jp5 = (j<height-5) ? j+5 : height-1;
-        jp6 = (j<height-5) ? j+6 : height-1;
+        jp6 = (j<height-6) ? j+6 : height-1; /* Fix by HRC */
 
         /* FIR filter with 0.5 sample interval phase shift */
         dst[w*(j>>1)] = clp[(int)(228*(src[w*j]+src[w*jp1])
