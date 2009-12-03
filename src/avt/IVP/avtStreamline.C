@@ -314,7 +314,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                     debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
                 return avtIVPSolver::OUTSIDE_DOMAIN;        
             }
-            
+
             ivp->SetNextStepSize( h );
 
             // retry step
@@ -799,4 +799,8 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     }    
     if (DebugStream::Level5())
         debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
+    
+    //FIX THIS!!!
+    if (intersectionsSet != true || intersectionsSet != false)
+        intersectionsSet = false;
 }

@@ -71,6 +71,9 @@
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
 //
+//   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
+//   Add AddStreamlines and ResetStreamlinesForContinueExecute
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -80,6 +83,8 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
     virtual ~avtParDomSLAlgorithm();
 
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls);
+    virtual void              ResetStreamlinesForContinueExecute();
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
   protected:

@@ -199,6 +199,9 @@ class avtSLAlgorithm;
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
+//   Added ID member data and new seedpoint generation methods.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -293,14 +296,14 @@ class AVTFILTERS_API avtStreamlineFilter :
     int activeTimeStep;
 
     //Timings helpers.
-    int                       numSeedPts;
+    int                       numSeedPts, MaxID;
     int                       method;
     int                       maxCount, workGroupSz;
     double                    InitialIOTime;
     int                       InitialDomLoads;
 
     virtual void              Execute(void);
-    virtual bool              ContinueExecute() { return false;}
+    virtual bool              ContinueExecute() {return false;}
     virtual void              UpdateDataObjectInfo(void);
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
@@ -319,8 +322,21 @@ class AVTFILTERS_API avtStreamlineFilter :
 
     void                      SetZToZero(vtkPolyData *) const;
     vtkPolyData *             StartSphere(float val, double pt[3]);
-    void                      GetSeedPoints(
-                                   std::vector<avtStreamlineWrapper *> &pts);
+
+    void                      GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromLine(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromPlane(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromSphere(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromBox(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
+
+    int                       GetNextStreamlineID(){ int id = MaxID; MaxID++; return id;}
+    void                      CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
+                                                         std::vector<avtStreamlineWrapper *> &streamlines,
+                                                         std::vector<std::vector<int> > &ids);
+    void                      GetStreamlinesFromInitialSeeds(std::vector<avtStreamlineWrapper *> &sls);
+    void                      AddSeedpoints(std::vector<avtVector> &pts,
+                                            std::vector<std::vector<int> > &ids);
     virtual void              CreateStreamlineOutput( 
                                                      vector<avtStreamlineWrapper *> &streamlines)
                                                     = 0;

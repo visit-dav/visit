@@ -116,7 +116,6 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //
 // ****************************************************************************
 
-
 void
 avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 {
@@ -125,13 +124,30 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
         numRecvs = 64;
     
     avtParSLAlgorithm::Initialize(seedPts, 1, numRecvs);
-    totalNumStreamlines = seedPts.size();
     numSLChange = 0;
+    AddStreamlines(seedPts);
+}
 
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::AddStreamlines
+//
+//  Purpose:
+//      Add streamlines
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
+{
     //Get the SLs that I own.
-    for (int i = 0; i < seedPts.size(); i++)
+    for (int i = 0; i < sls.size(); i++)
     {
-        avtStreamlineWrapper *s = seedPts[i];
+        avtStreamlineWrapper *s = sls[i];
         if (OwnDomain(s->domain))
         {
             avtVector endPt;
@@ -354,6 +370,35 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
             //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
         }
     }
+}
+
+// ****************************************************************************
+//  Method: avtParDomSLAlgorithm::ResetStreamlinesForContinueExecute
+//
+//  Purpose:
+//      Reset for continued streamline integration.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Aug 18 08:59:40 EDT 2009
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::ResetStreamlinesForContinueExecute()
+{
+    while (! terminatedSLs.empty())
+    {
+        avtStreamlineWrapper *s = terminatedSLs.front();
+        terminatedSLs.pop_front();
+        
+        activeSLs.push_back(s);
+        numSLChange++;
+    }
+
+    ExchangeTermination();
 }
 
 #endif
