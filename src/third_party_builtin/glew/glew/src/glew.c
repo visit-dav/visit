@@ -163,7 +163,7 @@ static void *dso_handle = NULL;
    * even if the macro definition doesn't use __VA_ARGS__.  Thus we define
    * empty functions for these instead of empty macros. */
   UNUSED static void warning(UNUSED const char* s, ...) { }
-  UNUSED static void error(UNUSED const char* s, ...) { }
+  static void error(UNUSED const char* s, ...) { }
 #endif
 
 /* Function pointer for OSMesa function loader. */
@@ -227,7 +227,15 @@ static int _glewInitFunctionLoader()
   const char *dl_error;
   const char glx_gpa[] = "mglXGetProcAddressARB";
   if(NULL == dso_handle) {
+#ifdef _AIX
+    /* AIX needs RTLD_MEMBER to load shared libs; otherwise it returns an
+     * `invalid magic number' error.  This apparently can be worked around by
+     * building the shared library in a special way, but the system's supplied
+     * libGL.a requires this, at least. */
+    dso_handle = dlopen(glew_gl_lib, RTLD_LAZY | RTLD_LOCAL | RTLD_MEMBER);
+#else
     dso_handle = dlopen(glew_gl_lib, RTLD_LAZY | RTLD_LOCAL);
+#endif
     if(NULL == dso_handle) {
       error("Could not load library `%s': %s", glew_gl_lib, dlerror());
       return GLEW_ERROR_DLOPEN;
@@ -253,6 +261,7 @@ static int _glewInitFunctionLoader()
        * Google: "glXGPA with mangled Mesa" for more information. */
       __glewXGetProcAddress = (GPA) dlsym(dso_handle, glx_gpa);
       if(__glewXGetProcAddress == NULL) {
+        dlerror(); /* clear the error from loading the `mgl' variant. */
         __glewXGetProcAddress = (GPA) dlsym(dso_handle, glx_gpa + name_offset);
       }
       _glewGetProcAddress = _glew_glx_thunk_gpa;

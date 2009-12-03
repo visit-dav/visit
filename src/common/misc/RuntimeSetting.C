@@ -99,7 +99,7 @@ const struct Setting s::settings[] = {
     {"system-gl", "opengl32.dll", true, "--mesa-lib", "VISIT_MESA_LIB",
      "Library (.dll) which implements OpenGL."},
 #elif defined(_AIX)
-    {"system-gl", "libGL.a", true, "--system-gl-lib",
+    {"system-gl", "libGL.a(shr_64.o)", true, "--system-gl-lib",
      "VISIT_GL_LIB", "Library (.so, .a) which implements OpenGL."},
 #else
     {"system-gl", "libGL.so.1", true, "--system-gl-lib",
