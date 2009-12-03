@@ -334,6 +334,30 @@ avtSLAlgorithm::SortStreamlines(vector<avtStreamlineWrapper *> &sl)
     SortTime.value += visitTimer->StopTimer(timerHandle, "SortStreamlines()");
 }
 
+// ****************************************************************************
+//  Method: avtSLAlgorithm::GetTerminatedSLs
+//
+//  Purpose:
+//      Return an array of terminated streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Aug 18 08:59:40 EDT 2009
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamlineWrapper *> &v)
+{
+    list<avtStreamlineWrapper *>::const_iterator s;
+    
+    for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
+        v.push_back(*s);
+}
+
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CalculateTimingStatistics

@@ -213,6 +213,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     InitialDomLoads = 0;
     activeTimeStep = -1;
     intersectObj = NULL;
+    MaxID = 0;
 }
 
 
@@ -1223,15 +1224,18 @@ avtStreamlineFilter::CheckOnDemandViability(void)
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of streamlines.
 //
+//   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
+//   New methods for seedpoint generation.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::Execute(void)
 {
     Initialize();
-    vector<avtStreamlineWrapper *> seedpoints;
-    GetSeedPoints(seedpoints);
-    numSeedPts = seedpoints.size();
+    vector<avtStreamlineWrapper *> sls;
+    GetStreamlinesFromInitialSeeds(sls);
+    numSeedPts = sls.size();
 
     SetMaxQueueLength(cacheQLen);
 
@@ -1254,7 +1258,7 @@ avtStreamlineFilter::Execute(void)
 
     InitialIOTime = visitTimer->LookupTimer("Reading dataset");
     
-    slAlgo->Initialize(seedpoints);
+    slAlgo->Initialize(sls);
     slAlgo->Execute();
 
     while (ContinueExecute())
@@ -1266,6 +1270,7 @@ avtStreamlineFilter::Execute(void)
     slAlgo->PostExecute();
 
     delete slAlgo;
+    slAlgo = NULL;
     
     delete intervalTree;
     intervalTree = NULL;
@@ -2253,7 +2258,7 @@ randMinus1_1()
 }
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::GetSeedPoints
+//  Method: avtStreamlineFilter::GetStreamlinesFromInitialSeeds
 //
 //  Purpose:
 //      Get the seed points out of the attributes.
@@ -2313,246 +2318,74 @@ randMinus1_1()
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
 //   Bug fix. Seed points with multiple domains need to be given a separate ID.
 //
+//   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
+//   Renamed this method.
+//
 // ****************************************************************************
 
 void
-avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
+avtStreamlineFilter::GetStreamlinesFromInitialSeeds(std::vector<avtStreamlineWrapper *> &streamlines)
 {
-    std::vector<avtVector> candidatePts;
+    std::vector<avtVector> seedPts;
 
     // Add seed points based on the source.
     if(sourceType == STREAMLINE_SOURCE_POINT)
-    {
-        double z0 = (dataSpatialDimension > 2) ? pointSource[2] : 0.0;
-        avtVector pt(pointSource[0], pointSource[1], z0);
-        candidatePts.push_back(pt);
-    }
-
+        GenerateSeedPointsFromPoint(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_LINE)
-    {
-        vtkLineSource* line = vtkLineSource::New();
-        double z0 = (dataSpatialDimension > 2) ? lineStart[2] : 0.;
-        double z1 = (dataSpatialDimension > 2) ? lineEnd[2] : 0.;
-        line->SetPoint1(lineStart[0], lineStart[1], z0);
-        line->SetPoint2(lineEnd[0], lineEnd[1], z1);
-        line->SetResolution(pointDensity1);
-        line->Update();
-
-        for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
-        {
-            double *pt = line->GetOutput()->GetPoint(i);
-            avtVector p(pt[0], pt[1], pt[2]);
-            candidatePts.push_back(p);
-        }
-        line->Delete();
-    }
+        GenerateSeedPointsFromLine(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_PLANE)
-    {
-        vtkPlaneSource* plane = vtkPlaneSource::New();
-        plane->SetXResolution(pointDensity1);
-        plane->SetYResolution(pointDensity2);
-        avtVector O(planeOrigin);
-        avtVector U(planeUpAxis);
-        avtVector N(planeNormal);
-        U.normalize();
-        N.normalize();
-        if(dataSpatialDimension <= 2)
-            N = avtVector(0.,0.,1.);
-        // Determine the right vector.
-        avtVector R(U % N);
-        R.normalize();
-        plane->SetOrigin(O.x, O.y, O.z);
-        avtVector P1(U * (2./1.414214) * planeRadius + O);
-        avtVector P2(R * (2./1.414214) * planeRadius + O);
-        plane->SetPoint2(P1.x, P1.y, P1.z);
-        plane->SetPoint1(P2.x, P2.y, P2.z);
-        plane->SetNormal(N.x, N.y, N.z);
-        plane->SetCenter(O.x, O.y, O.z);
-        plane->SetResolution(pointDensity1,pointDensity2);
-        plane->Update();
-
-        for (int i = 0; i< plane->GetOutput()->GetNumberOfPoints(); i++)
-        {
-            double *pt = plane->GetOutput()->GetPoint(i);
-            avtVector p(pt[0], pt[1], pt[2]);
-            candidatePts.push_back(p);
-        }
-        plane->Delete();
-    }
+        GenerateSeedPointsFromPlane(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_SPHERE)
-    {
-        vtkSphereSource* sphere = vtkSphereSource::New();
-        sphere->SetCenter(sphereOrigin[0], sphereOrigin[1], sphereOrigin[2]);
-        sphere->SetRadius(sphereRadius);
-        sphere->SetLatLongTessellation(1);
-        double t = double(30 - pointDensity1) / 29.;
-        double angle = t * 3. + (1. - t) * 30.;
-        sphere->SetPhiResolution(int(angle));
-        sphere->SetThetaResolution(int(angle));
-
-        sphere->Update();
-        for (int i = 0; i < sphere->GetOutput()->GetNumberOfPoints(); i++)
-        {
-            double *pt = sphere->GetOutput()->GetPoint(i);
-            avtVector p(pt[0], pt[1], pt[2]);
-            candidatePts.push_back(p);
-        }
-        sphere->Delete();
-    }
+        GenerateSeedPointsFromSphere(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_BOX)
-    {
-        int npts = (pointDensity1+1)*(pointDensity2+1);
-
-        int nZvals = 1;
-        if(dataSpatialDimension > 2)
-        {
-            npts *= (pointDensity3+1);
-            nZvals = (pointDensity3+1);
-        }
-
-        //Whole domain, ask intervalTree.
-        if (useWholeBox)
-            intervalTree->GetExtents( boxExtents );
-        
-        float dX = boxExtents[1] - boxExtents[0];
-        float dY = boxExtents[3] - boxExtents[2];
-        float dZ = boxExtents[5] - boxExtents[4];
-
-        // If using whole box, shrink the extents inward by 0.5%
-        const float shrink = 0.005;
-        if (useWholeBox)
-        {
-            if (dX > 0.0)
-            {
-                boxExtents[0] += (shrink*dX);
-                boxExtents[1] -= (shrink*dX);
-                dX = boxExtents[1] - boxExtents[0];
-            }
-            if ( dY > 0.0 )
-            {
-                boxExtents[2] += (shrink*dY);
-                boxExtents[3] -= (shrink*dY);
-                dY = boxExtents[3] - boxExtents[2];
-            }
-            if ( dZ > 0.0 )
-            {
-                boxExtents[4] += (shrink*dZ);
-                boxExtents[5] -= (shrink*dZ);
-                dZ = boxExtents[5] - boxExtents[4];
-            }
-        }
-
-        int index = 0;
-        for(int k = 0; k < nZvals; ++k)
-        {
-            float Z = 0.;
-            if(dataSpatialDimension > 2)
-                Z = (float(k) / float(pointDensity3)) * dZ + boxExtents[4];
-            for(int j = 0; j < pointDensity2+1; ++j)
-            {
-                float Y = (float(j) / float(pointDensity2)) * dY +boxExtents[2];
-                for(int i = 0; i < pointDensity1+1; ++i)
-                {
-                    float X = (float(i) / float(pointDensity1)) * dX 
-                            + boxExtents[0];
-                    avtVector p(X,Y,Z);
-                    candidatePts.push_back(p);
-                }
-            }
-        }
-    }
+        GenerateSeedPointsFromBox(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_POINT_LIST)
-    {
-        if ((pointList.size() % 3) != 0)
-        {
-            EXCEPTION1(VisItException, "The seed points for the streamline "
-                       "are incorrectly specified.  The number of values must be a "
-                       "multiple of 3 (X, Y, Z).");
-        }
-        int npts = pointList.size() / 3;
-        for (int i = 0 ; i < npts ; i++)
-        {
-            avtVector p(pointList[3*i], pointList[3*i+1], pointList[3*i+2]);
-            candidatePts.push_back(p);
-        }
-    }
+        GenerateSeedPointsFromPointList(seedPts);
 
-    //Make sure we don't have any points on boundaries. These cause major 
-    //heartburn.
-    //Also, filter out any points that aren't inside the DS.
-    vector<seedPtDomain> ptDom;
-    double dataRange[6] = { 0.,0., 0.,0., 0.,0. };
+    //Create streamlines from the seed points.
+    vector<vector<int> > ids;
+    CreateStreamlinesFromSeeds(seedPts, streamlines, ids);
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::AddSeedpoints
+//
+//  Purpose:
+//      Add additional seed points.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::AddSeedpoints(std::vector<avtVector> &pts,
+                                   std::vector<std::vector<int> > &ids)
+{
+    if (slAlgo == NULL)
+        EXCEPTION1(ImproperUseException, "Improper call of avtStreamlineFilter::AddSeedpoints");
     
-    intervalTree->GetExtents(dataRange);
-    double dX = dataRange[1]-dataRange[0];
-    double dY = dataRange[3]-dataRange[2];
-    double dZ = dataRange[5]-dataRange[4];
-    double minRange = std::min(dX, std::min(dY,dZ));
+    vector<avtStreamlineWrapper *> sls;
+    CreateStreamlinesFromSeeds(pts, sls, ids);
+    slAlgo->AddStreamlines(sls);
+}
 
-    int ID = 0;
-    for (int i = 0; i < candidatePts.size(); i++)
-    {
-        vector<int> dl;
-        seedPtDomain pd;
-        double xyz[3] = {candidatePts[i].x,candidatePts[i].y,candidatePts[i].z};
-        intervalTree->GetElementsListFromRange(xyz,xyz, dl);
+// ****************************************************************************
+//  Method: avtStreamlineFilter::CreateStreamlinesFromSeeds
+//
+//  Purpose:
+//      Create streamlines from seed points.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
 
-        //cout<<i<<": "<<candidatePts[i].x<<" "<<candidatePts[i].y<<" "<<candidatePts[i].z<<" dl= "<<dl.size()<<endl;
-        // seed in no domains, try to wiggle it into a DS.
-        if (dl.size() == 0)
-        {
-            //Try to wiggle it by 0.5% of the dataset size.
-            double wiggle[3] = {dX*0.005, dY*0.005, dZ*0.005};
-            bool foundGoodPt = false;
-            for ( int w = 0; w < 100; w++ )
-            {
-                double wigglePt[3] = {(candidatePts[i].x+wiggle[0]*randMinus1_1(),
-                                       candidatePts[i].y+wiggle[1]*randMinus1_1(),
-                                       candidatePts[i].z+wiggle[2]*randMinus1_1())};
-                
-                vector<int> dl2;
-                intervalTree->GetElementsListFromRange(wigglePt, wigglePt, dl2);
-                //cout<<"Wiggle it: "<<i<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2];
-                //cout<<" domain cnt: "<<dl2.size()<<endl;
-                if ( dl2.size() > 0 )
-                {
-                    candidatePts[i] = wigglePt;
-                    dl.resize(0);
-                    for ( int j = 0; j < dl2.size(); j++ )
-                        dl.push_back(dl2[j]);
-                    foundGoodPt = true;
-                    //cout<<"Wiggle it: "<<w<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2]<<" dl= "<<dl.size()<<endl;
-                    break;
-                }
-                
-            }
-            
-            // Can't find a point inside, we will skip it.
-            if (!foundGoodPt)
-                continue;
-        }
-
-        if (DebugStream::Level5())
-        {
-            debug5<<"Candidate pt: "<<i<<" "<<candidatePts[i];
-            debug5<<" id= "<<i<<" dom ="<<dl<<endl;
-        }
-
-        // Add seed for each domain/pt. At this point, we don't know where 
-        // the pt belongs....
-        for (int j = 0; j < dl.size(); j++)
-        {
-            pd.pt = candidatePts[i];
-            pd.domain = dl[j];
-            pd.id = ID;
-            ptDom.push_back(pd);
-            ID++;
-        }
-    }
-    
-    // Now, sort the ptDom.
-    qsort(&ptDom[0], ptDom.size(), sizeof(seedPtDomain), comparePtDom);
-
+void
+avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
+                                                std::vector<avtStreamlineWrapper *> &streamlines,
+                                                std::vector<std::vector<int> > &ids)
+{
     avtStreamline::ScalarValueType scalarVal = avtStreamline::NONE;
     if (coloringMethod == STREAMLINE_COLOR_SPEED)
         scalarVal = avtStreamline::SPEED;
@@ -2563,49 +2396,290 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
 
     if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
         scalarVal = (avtStreamline::ScalarValueType)(scalarVal | avtStreamline::VORTICITY);
-    
-    for (int i = 0; i < ptDom.size(); i++)
+
+    for (int i = 0; i < pts.size(); i++)
     {
-        avtVector pt(ptDom[i].pt.x, ptDom[i].pt.y, ptDom[i].pt.z);
+        double xyz[3] = {pts[i].x, pts[i].y, pts[i].z};
+        vector<int> dl;
         
-        if (streamlineDirection == VTK_INTEGRATE_FORWARD ||
-             streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
-        {
-            avtStreamline *sl = new avtStreamline(solver, seedTime0, pt);
-            sl->SetScalarValueType(scalarVal);
-
-            avtStreamlineWrapper *slSeg;
-            slSeg = new avtStreamlineWrapper(sl,
-                                             avtStreamlineWrapper::FWD,
-                                             ptDom[i].id);
-            slSeg->domain.domain = ptDom[i].domain;
-            slSeg->domain.timeStep = seedTimeStep0;
-            slSeg->termination = termination;
-            slSeg->terminationType = terminationType;
-            debug5<<"Create seed: id= "<<ptDom[i].id<<" pt= "<<ptDom[i].pt<<" dom= "<<ptDom[i].domain<<endl;
-            pts.push_back(slSeg);
-        }
+        intervalTree->GetElementsListFromRange(xyz, xyz, dl);
         
-        if (streamlineDirection == VTK_INTEGRATE_BACKWARD ||
-             streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+        vector<int> seedPtIds;
+        
+        for (int j = 0; j < dl.size(); j++)
         {
-            avtStreamline *sl = new avtStreamline(solver, seedTime0, pt);
-            sl->SetScalarValueType(scalarVal);
-
-            int id = ptDom[i].id;
-            if (streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
-                id += ptDom.size();
+            DomainType dom(dl[j], seedTimeStep0);
             
-            avtStreamlineWrapper *slSeg;
-            slSeg = new avtStreamlineWrapper(sl, 
-                                             avtStreamlineWrapper::BWD, id);
-            slSeg->domain = ptDom[i].domain;
-            slSeg->domain.timeStep = seedTimeStep0;
-            slSeg->termination = -termination;
-            slSeg->terminationType = terminationType;
-            debug5<<"Create seed: id= "<<ptDom[i].id<<" pt= "<<ptDom[i].pt<<" dom= "<<ptDom[i].domain<<endl;
-            pts.push_back(slSeg);
+            if (streamlineDirection == VTK_INTEGRATE_FORWARD ||
+                streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+            {
+                avtStreamline *sl = new avtStreamline(solver, seedTime0, pts[i]);
+                sl->SetScalarValueType(scalarVal);
+                
+                avtStreamlineWrapper *slSeg;
+                slSeg = new avtStreamlineWrapper(sl,
+                                                 avtStreamlineWrapper::FWD,
+                                                 GetNextStreamlineID());
+                slSeg->domain = dom;
+                slSeg->termination = termination;
+                slSeg->terminationType = terminationType;
+            
+                streamlines.push_back(slSeg);
+                seedPtIds.push_back(slSeg->id);
+            }
+            
+            if (streamlineDirection == VTK_INTEGRATE_BACKWARD ||
+                streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+            {
+                avtStreamline *sl = new avtStreamline(solver, seedTime0, pts[i]);
+                sl->SetScalarValueType(scalarVal);
+                
+                avtStreamlineWrapper *slSeg;
+                slSeg = new avtStreamlineWrapper(sl,
+                                                 avtStreamlineWrapper::BWD,
+                                                 GetNextStreamlineID());
+                slSeg->domain = dom;
+                slSeg->termination = -termination;
+                slSeg->terminationType = terminationType;
+            
+                streamlines.push_back(slSeg);
+                seedPtIds.push_back(slSeg->id);
+            }
         }
+        
+        ids.push_back(seedPtIds);
+    }
+    
+    //Sort them on domain.
+    std::sort(streamlines.begin(), streamlines.end(), avtStreamlineWrapper::DomainCompare);
+
+    for (int i = 0; i < streamlines.size(); i++)
+    {
+        avtStreamlineWrapper *slSeg = streamlines[i];
+        debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromPoint
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromPoint(std::vector<avtVector> &pts)
+{
+    double z0 = (dataSpatialDimension > 2) ? pointSource[2] : 0.0;
+    avtVector pt(pointSource[0], pointSource[1], z0);
+    pts.push_back(pt);
+}
+
+
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
+{
+    vtkLineSource* line = vtkLineSource::New();
+    double z0 = (dataSpatialDimension > 2) ? lineStart[2] : 0.;
+    double z1 = (dataSpatialDimension > 2) ? lineEnd[2] : 0.;
+    line->SetPoint1(lineStart[0], lineStart[1], z0);
+    line->SetPoint2(lineEnd[0], lineEnd[1], z1);
+    line->SetResolution(pointDensity1);
+    line->Update();
+
+    for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
+    {
+        double *pt = line->GetOutput()->GetPoint(i);
+        avtVector p(pt[0], pt[1], pt[2]);
+        pts.push_back(p);
+    }
+    line->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromPlane
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
+{
+    vtkPlaneSource* plane = vtkPlaneSource::New();
+    plane->SetXResolution(pointDensity1);
+    plane->SetYResolution(pointDensity2);
+    avtVector O(planeOrigin), U(planeUpAxis), N(planeNormal);
+    
+    U.normalize();
+    N.normalize();
+    if(dataSpatialDimension <= 2)
+        N = avtVector(0.,0.,1.);
+    // Determine the right vector.
+    avtVector R(U % N);
+    R.normalize();
+    plane->SetOrigin(O.x, O.y, O.z);
+    avtVector P1(U * (2./1.414214) * planeRadius + O);
+    avtVector P2(R * (2./1.414214) * planeRadius + O);
+    plane->SetPoint2(P1.x, P1.y, P1.z);
+    plane->SetPoint1(P2.x, P2.y, P2.z);
+    plane->SetNormal(N.x, N.y, N.z);
+    plane->SetCenter(O.x, O.y, O.z);
+    plane->SetResolution(pointDensity1, pointDensity2);
+    plane->Update();
+
+    for (int i = 0; i< plane->GetOutput()->GetNumberOfPoints(); i++)
+    {
+        double *pt = plane->GetOutput()->GetPoint(i);
+        avtVector p(pt[0], pt[1], pt[2]);
+        pts.push_back(p);
+    }
+    plane->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromSphere
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts)
+{
+    vtkSphereSource* sphere = vtkSphereSource::New();
+    sphere->SetCenter(sphereOrigin[0], sphereOrigin[1], sphereOrigin[2]);
+    sphere->SetRadius(sphereRadius);
+    sphere->SetLatLongTessellation(1);
+    double t = double(30 - pointDensity1) / 29.;
+    double angle = t * 3. + (1. - t) * 30.;
+    sphere->SetPhiResolution(int(angle));
+    sphere->SetThetaResolution(int(angle));
+
+    sphere->Update();
+    for (int i = 0; i < sphere->GetOutput()->GetNumberOfPoints(); i++)
+    {
+        double *pt = sphere->GetOutput()->GetPoint(i);
+        avtVector p(pt[0], pt[1], pt[2]);
+        pts.push_back(p);
+    }
+    sphere->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromBox
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
+{
+    int npts = (pointDensity1+1)*(pointDensity2+1);
+
+    int nZvals = 1;
+    if(dataSpatialDimension > 2)
+    {
+        npts *= (pointDensity3+1);
+        nZvals = (pointDensity3+1);
+    }
+
+    //Whole domain, ask intervalTree.
+    if (useWholeBox)
+        intervalTree->GetExtents( boxExtents );
+        
+    float dX = boxExtents[1] - boxExtents[0];
+    float dY = boxExtents[3] - boxExtents[2];
+    float dZ = boxExtents[5] - boxExtents[4];
+
+    // If using whole box, shrink the extents inward by 0.5%
+    const float shrink = 0.005;
+    if (useWholeBox)
+    {
+        if (dX > 0.0)
+        {
+            boxExtents[0] += (shrink*dX);
+            boxExtents[1] -= (shrink*dX);
+            dX = boxExtents[1] - boxExtents[0];
+        }
+        if ( dY > 0.0 )
+        {
+            boxExtents[2] += (shrink*dY);
+            boxExtents[3] -= (shrink*dY);
+            dY = boxExtents[3] - boxExtents[2];
+        }
+        if ( dZ > 0.0 )
+        {
+            boxExtents[4] += (shrink*dZ);
+            boxExtents[5] -= (shrink*dZ);
+            dZ = boxExtents[5] - boxExtents[4];
+        }
+    }
+
+    int index = 0;
+    for(int k = 0; k < nZvals; ++k)
+    {
+        float Z = 0.;
+        if(dataSpatialDimension > 2)
+            Z = (float(k) / float(pointDensity3)) * dZ + boxExtents[4];
+        for(int j = 0; j < pointDensity2+1; ++j)
+        {
+            float Y = (float(j) / float(pointDensity2)) * dY +boxExtents[2];
+            for(int i = 0; i < pointDensity1+1; ++i)
+            {
+                float X = (float(i) / float(pointDensity1)) * dX 
+                    + boxExtents[0];
+                avtVector p(X,Y,Z);
+                pts.push_back(p);
+            }
+        }
+    }
+
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromPointList
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts)
+{
+    if ((pointList.size() % 3) != 0)
+    {
+        EXCEPTION1(VisItException, "The seed points for the streamline "
+                   "are incorrectly specified.  The number of values must be a "
+                   "multiple of 3 (X, Y, Z).");
+    }
+    int npts = pointList.size() / 3;
+    for (int i = 0 ; i < npts ; i++)
+    {
+        avtVector p(pointList[3*i], pointList[3*i+1], pointList[3*i+2]);
+        pts.push_back(p);
     }
 }
 

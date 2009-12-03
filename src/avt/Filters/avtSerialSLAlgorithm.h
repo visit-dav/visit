@@ -73,7 +73,7 @@ class avtSerialSLAlgorithm : public avtSLAlgorithm
     virtual const char*       AlgoName() const {return "Serial";}
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
     virtual void              ResetStreamlinesForContinueExecute();
-    virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v);
+    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls);
 
   protected:
     virtual void              RunAlgorithm();

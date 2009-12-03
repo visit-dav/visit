@@ -170,6 +170,8 @@ class AVTFILTERS_API avtStreamlineWrapper
                              const avtStreamlineWrapper *slB);
     static bool IdRevSeqCompare(const avtStreamlineWrapper *slA,
                                 const avtStreamlineWrapper *slB);
+    static bool DomainCompare(const avtStreamlineWrapper *slA,
+                              const avtStreamlineWrapper *slB);
 
     double termination;
     avtIVPSolver::TerminateType terminationType;

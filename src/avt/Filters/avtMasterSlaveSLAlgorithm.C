@@ -251,6 +251,18 @@ avtMasterSlaveSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedP
     avtParSLAlgorithm::Initialize(seedPts, 2+NUM_DOMAINS, numRecvs);
 }
 
+void
+avtMasterSlaveSLAlgorithm::ResetStreamlinesForContinueExecute()
+{
+    EXCEPTION0(ImproperUseException);
+}
+
+void
+avtMasterSlaveSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
 
 // ****************************************************************************
 //  Method: avtMasterSlaveSLAlgorithm::Sleep

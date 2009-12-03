@@ -92,9 +92,10 @@ class avtSLAlgorithm
     //Execution of the algorithm.
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
     void                      Execute();
-    virtual void              ResetStreamlinesForContinueExecute() {} //= 0;
+    virtual void              ResetStreamlinesForContinueExecute() = 0;
     virtual void              PostExecute();
-    virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v) {} //= 0;
+    virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v);
+    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls) = 0;
 
   protected:
     virtual void              RunAlgorithm() = 0;

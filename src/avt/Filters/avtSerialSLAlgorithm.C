@@ -100,9 +100,26 @@ void
 avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 {
     avtSLAlgorithm::Initialize(seedPts);
-    int nSeeds = seedPts.size();
+
+    AddStreamlines(seedPts);
+}
+
+// ****************************************************************************
+//  Method: avtSerialSLAlogrithm::AddStreamlines
+//
+//  Purpose:
+//      Add streamlines
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamlineWrapper *> &sls)
+{
+    int nSeeds = sls.size();
     int i0 = 0, i1 = nSeeds;
-    debug3 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
 
  #ifdef PARALLEL
     int rank = PAR_Rank();
@@ -124,29 +141,23 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
     
     //Delete the seeds I don't need.
     for (int i = 0; i < i0; i++)
-        delete seedPts[i];
+        delete sls[i];
     for (int i = i1; i < nSeeds; i++)
-        delete seedPts[i];
+        delete sls[i];
 #endif
+    
+    debug5 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
     
     // Filter the seeds for proper domain inclusion and fill the activeSLs list.
     avtVector endPt;
     for ( int i = i0; i < i1; i++)
     {
-        avtStreamlineWrapper *s = seedPts[i];
+        avtStreamlineWrapper *s = sls[i];
         s->GetEndPoint(endPt);
         if (PointInDomain(endPt, s->domain))
             activeSLs.push_back(s);
         else
             delete s;
-    }
-
-    //Sort the streamlines and load the first domain.
-    SortStreamlines(activeSLs);
-    if (!activeSLs.empty())
-    {
-        avtStreamlineWrapper *s = activeSLs.front();
-        GetDomain(s);
     }
 }
 
@@ -174,6 +185,9 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
 //
+//   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
+//   Move some initialization into RunAlgorithm.
+//
 // ****************************************************************************
 
 void
@@ -181,6 +195,14 @@ avtSerialSLAlgorithm::RunAlgorithm()
 {
     debug1<<"avtSerialSLAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
+
+    //Sort the streamlines and load the first domain.
+    SortStreamlines(activeSLs);
+    if (!activeSLs.empty())
+    {
+        avtStreamlineWrapper *s = activeSLs.front();
+        GetDomain(s);
+    }
 
     while (1)
     {
@@ -228,29 +250,6 @@ avtSerialSLAlgorithm::RunAlgorithm()
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::GetTerminatedSLs
-//
-//  Purpose:
-//      Return an array of terminated streamlines.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Aug 18 08:59:40 EDT 2009
-//
-//  Modifications:
-//
-//
-// ****************************************************************************
-
-void
-avtSerialSLAlgorithm::GetTerminatedSLs(vector<avtStreamlineWrapper *> &v)
-{
-    list<avtStreamlineWrapper *>::const_iterator s;
-    
-    for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
-        v.push_back(*s);
-}
-
-// ****************************************************************************
 //  Method: avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute
 //
 //  Purpose:
@@ -275,4 +274,3 @@ avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute()
         activeSLs.push_back(s);
     }
 }
-

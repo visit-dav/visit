@@ -83,6 +83,9 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
     
     virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
     virtual const char*       AlgoName() const {return "MasterSlave";}
+    
+    virtual void              ResetStreamlinesForContinueExecute();
+    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls);
 
     static avtMasterSlaveSLAlgorithm* Create(avtStreamlineFilter *slFilter,
                                              int maxCount,

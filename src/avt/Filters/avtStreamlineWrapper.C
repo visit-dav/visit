@@ -230,6 +230,7 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode,
             delete sl;
         sl = new avtStreamline;
     }
+
     sl->Serialize(mode, buff, solver, (serializeFlags & SERIALIZE_STEPS));
 
     serializeFlags = 0;
@@ -394,6 +395,13 @@ avtStreamlineWrapper::IdRevSeqCompare(const avtStreamlineWrapper *slA,
         return slA->sequenceCnt > slB->sequenceCnt;
     
     return slA->id < slB->id;
+}
+
+bool
+avtStreamlineWrapper::DomainCompare(const avtStreamlineWrapper *slA,
+                                    const avtStreamlineWrapper *slB)
+{
+    return slA->domain < slB->domain;
 }
 
 // ****************************************************************************
