@@ -56,7 +56,6 @@
 avtIVPM3DField::avtIVPM3DField( vtkVisItInterpolatedVelocityField* velocity ) 
  : avtIVPVTKField(velocity)
 {
-  findElementNeighbors();
 }
 
 
@@ -72,6 +71,62 @@ avtIVPM3DField::~avtIVPM3DField()
 {
   free(neighbors);
   free(trigtable);
+}
+
+
+// ****************************************************************************
+//  Method: setValues
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+void avtIVPM3DField::setValues(vtkDataSet *ds)
+{
+  int index;
+
+  F0 = -bzero * rzero;
+ 
+  findElementNeighbors();
+
+  // Single values from the header attributes.
+  linflag = ((int*)
+             ds->GetPointData()->GetArray("linflag", index)->GetVoidPointer(0))[0];
+
+  tmode = ((int*)
+           ds->GetPointData()->GetArray("tmode", index)->GetVoidPointer(0))[0];
+
+  bzero = ((double*)
+           ds->GetPointData()->GetArray("bzero", index)->GetVoidPointer(0))[0];
+
+  rzero = ((double*)
+           ds->GetPointData()->GetArray("rzero", index)->GetVoidPointer(0))[0];
+
+  // Scalar values from the mesh.
+  elements = (double*)
+    ds->GetPointData()->GetArray("elements", index)->GetVoidPointer(0);
+  // Single values from the mesh.
+  nelms = ((int*)
+           ds->GetPointData()->GetArray("nelms", index)->GetVoidPointer(0))[0];
+
+  // Scalar values from the field
+  psi0 = (double*)
+    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+
+  f0 = (double*)
+    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+
+  psinr = (double*)
+    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+
+  psini = (double*)
+    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+
+  fnr = (double*)
+    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+
+  fni = (double*)
+    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
 }
 
 

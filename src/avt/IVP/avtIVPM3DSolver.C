@@ -1,4 +1,4 @@
-/*****************************************************************************
+un/*****************************************************************************
 *
 * Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
@@ -378,13 +378,9 @@ avtIVPM3DSolver::Step(const avtIVPField* field,
 
     avtIVPSolver::Result res;
     avtVec yNew(yCur.dim());
-    avtVec yInt(yCur.dim());
 
-    if (res = partial_step(field, yCur, 0, 0.5*h, yInt)) return res;
-    if (res = partial_step(field, yInt, 1, 0.5*h, yInt)) return res;
-    if (res = partial_step(field, yInt, 2,     h, yInt)) return res;
-    if (res = partial_step(field, yInt, 1, 0.5*h, yInt)) return res;
-    if (res = partial_step(field, yInt, 0, 0.5*h, yNew)) return res;
+    // This call begins the M3D code.
+    vpstep(field, yCur, h, yNew);
 
     if ( res == avtIVPSolver::OK )
     {
@@ -394,9 +390,45 @@ avtIVPM3DSolver::Step(const avtIVPField* field,
         (*ivpstep)[1] = yNew;
         ivpstep->tStart = t;
         ivpstep->tEnd = t + h;
+        numStep++;
 
-        ivpstep->velStart = (*field)( t   ,yCur);
-        ivpstep->velEnd   = (*field)((t+h),yNew);
+        // Handle distanced based termination.
+        if (termType == TIME)
+        {
+            if ((end > 0 && t >= end) ||
+                (end < 0 && t <= end))
+                return TERMINATE;
+        }
+        else if (termType == DISTANCE)
+        {
+            double len = ivpstep->length();
+            
+            //debug1<<"ABStep: "<<t<<" d: "<<d<<" => "<<(d+len)<<" h= "<<h<<" len= "<<len<<" sEps= "<<stiffness_eps<<endl;
+            if (len < stiffness_eps)
+            {
+                degenerate_iterations++;
+                if (degenerate_iterations > 15)
+                {
+                    //debug1<<"********** STIFFNESS ***************************\n";
+                    return STIFFNESS_DETECTED;
+                }
+            }
+            else
+                degenerate_iterations = 0;
+
+            if (d+len > fabs(end))
+                throw avtIVPField::Undefined();
+            else if (d+len >= fabs(end))
+                return TERMINATE;
+
+            d = d+len;
+        }
+        else if (termType == STEPS &&
+                 numStep >= (int)fabs(end))
+            return TERMINATE;
+
+        ivpstep->velStart = (*field)(t,yCur);
+        ivpstep->velEnd = (*field)((t+h),yNew);
 
         yCur = yNew;
         t = t+h;
@@ -407,6 +439,31 @@ avtIVPM3DSolver::Step(const avtIVPField* field,
     return res;
 }
 
+// ****************************************************************************
+//  Method: avtIVPM3DSolver::vpstep
+//
+//  Purpose:
+//      Take a step and return the result.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+// ****************************************************************************
+avtIVPSolver::Result 
+avtIVPM3DSolver::vpstep(const avtIVPField* field,
+                        avtVec &yCur, double h, avtVec &yNew)
+{
+  avtIVPSolver::Result res;
+  avtVec yInt(yCur.dim());
+
+  if (res = partial_step(field, yCur, 0, 0.5*h, yInt)) return res;
+  if (res = partial_step(field, yInt, 1, 0.5*h, yInt)) return res;
+  if (res = partial_step(field, yInt, 2,     h, yInt)) return res;
+  if (res = partial_step(field, yInt, 1, 0.5*h, yInt)) return res;
+  if (res = partial_step(field, yInt, 0, 0.5*h, yNew)) return res;
+
+  return avtIVPSolver::OK;
+}
 
 // ****************************************************************************
 //  Method: avtIVPM3DSolver::partial_step
@@ -509,7 +566,8 @@ avtIVPM3DSolver::getBfield(const avtIVPField* field,
                            avtVec &x, int iflow, int icomp, double *Bout,
                            int dflag, double *Bpout)
 {
-  // FIX ME - do we really want to do this set???
+  // FIX THIS CODE - It would be preferable to use a dynamic cast but
+  // because the field is passd down a const it can not be used.
   avtIVPM3DField *m3dField = (avtIVPM3DField *)(field);
 
   if (m3dField->linflag)
@@ -537,7 +595,8 @@ avtIVPM3DSolver::getBfield1(const avtIVPField* field,
   double xieta[2];
   int    element;
 
-  // FIX ME - do we really want to do this set???
+  // FIX THIS CODE - It would be preferable to use a dynamic cast but
+  // because the field is passd down a const it can not be used.
   avtIVPM3DField *m3dField = (avtIVPM3DField *)(field);
 
   vtkVisItInterpolatedVelocityField *ivf = m3dField->GetBaseField();
@@ -618,6 +677,8 @@ avtIVPM3DSolver::getBfield2(const avtIVPField* field,
   double co, sn, tmp1, tmp2, tmp3, tmp4;
   int    element;
 
+  // FIX THIS CODE - It would be preferable to use a dynamic cast but
+  // because the field is passd down a const it can not be used.
   avtIVPM3DField *m3dField = (avtIVPM3DField *)(field);
 
   vtkVisItInterpolatedVelocityField *ivf = m3dField->GetBaseField();
