@@ -2,6 +2,8 @@
 // Commissariat a l'Energie Atomique, (CEA)
 // BP12, 91297 Arpajon, France
 
+#include<vector>
+using std::vector;
 
 //#define REAL_PRECISION 32
 #define REAL_PRECISION 64
@@ -20,8 +22,8 @@ double findTetraSetCuttingPlane(
 {
 
     REAL3 N = { normal[0], normal[1], normal[2] };
-    REAL3 V[vertexCount];
-    uchar4 tet[tetraCount];
+    vector<REAL3> V(vertexCount);
+    vector<uchar4> tet(tetraCount);
 
     for(int i=0;i<vertexCount;i++)
     {
@@ -56,7 +58,7 @@ double findTetraSetCuttingPlane(
     }
 
     double dist0 = vertices[0][0]*normal[0] + vertices[0][1]*normal[1] + vertices[0][2]*normal[2];
-    double d = dist0 + findTetraSetCuttingPlane(N, fraction, vertexCount, tetraCount, tet, V ) * scale;
+    double d = dist0 + findTetraSetCuttingPlane(N, fraction, vertexCount, tetraCount, &tet[0], &V[0] ) * scale;
 
     return - d;
 }

@@ -39,6 +39,7 @@
 #include "DiscreteMIR.h"
 
 #include <map>
+#include <time.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -62,6 +63,8 @@
 #include <vtkObjectFactory.h>
 
 #include <VisItArray.h>
+
+using std::vector;
 
 // Programmer: John C. Anderson, Fri Oct 31 12:53:10 2008
 #define RANDOM ((double) rand() / (double) RAND_MAX)
@@ -461,8 +464,8 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
             }
 
     // Initialize the discretized blocks.
-    int target[nMaterials];
-    int count[nMaterials];
+    vector<int> target(nMaterials);
+    vector<int> count(nMaterials);
     for(std::vector< Cell >::iterator iter = m_mixedCells.begin();
         iter != m_mixedCells.end();
         ++iter)

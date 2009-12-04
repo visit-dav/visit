@@ -2922,8 +2922,6 @@ avtNek5000FileFormat::RegisterDataSelections(
                                const std::vector<avtDataSelection_p> &selList,
                                std::vector<bool> *selectionsApplied)
 {
-    int  i;
-
     vector<vector<int> > domainsToUse(selList.size());
 
     // Special logic for the case where there are no matches ...
@@ -3061,7 +3059,7 @@ avtNek5000FileFormat::RegisterDataSelections(
     }
 
     myElementList.resize(my_num_elements);
-    for (i = my_start ; i < my_end ; i++)
+    for (int i = my_start ; i < my_end ; i++)
     {
         myElementList[i-my_start] = (useAllElements ? i : finalElementList[i]);
     }
