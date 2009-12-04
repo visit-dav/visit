@@ -89,6 +89,8 @@ class IVP_API avtIVPM3DField: public avtIVPVTKField
 
     vtkVisItInterpolatedVelocityField* GetBaseField() { return iv; }    
 
+    void setValues(vtkDataSet *ds);
+
     void findElementNeighbors();
     void register_vert(v_entry *vlist, int *len,
                        double x, double y, int *index);
@@ -109,26 +111,29 @@ class IVP_API avtIVPM3DField: public avtIVPVTKField
     int    *neighbors;              /* Element neighbor table for efficient searches */
 
  public:
-    // FIX ME - unset variables on the mesh
+    // FIX ME - variables on the mesh
     double *psi0, *f0;                  /* Equilibrium field */
     double *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
 
-    // FIX ME - unset variables single read
+    // FIX ME - variable based on attributes (bzero and rzero)
     double F0;                      /* Strength of vacuum toroidal field */
     
     // Variables calculated in findElementNeighbors
     double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
 
-    // FIX ME - unset variables read from header attributes (xlim,
-    // zlim) or explicitly set (psilim).
+    // FIX ME - unused variables read from header attributes
+    // (xlim, zlim) or explicitly set (psilim).
 //  double xlim, zlim, psilim;      /* Information about limiting surface */
 
-    // FIX ME - unset variables read from header attributes
+    // FIX ME - unused variables read from header attributes (ntime == nframes)
 //  int    nframes;
 
-    // FIX ME - unset variables read from header attributes (linflag,
-    // tmode) or part of the mesh (nelms).
+    // FIX ME - variables read from header attributes (linear == linflag,
+    // ntor == tmode) or part of the mesh (nelms).
     int linflag, nelms, tmode;
+
+    // FIX ME - variables read from header attributes.
+    double bzero, rzero;
 };
 
 #endif

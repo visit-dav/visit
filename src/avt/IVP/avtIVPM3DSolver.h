@@ -40,8 +40,8 @@
 //                                avtIVPM3DSolver.h                      //
 // ************************************************************************* //
 
-#ifndef AVT_IVPADAMSBASHFORTH_H
-#define AVT_IVPADAMSBASHFORTH_H
+#ifndef AVT_IVPM3DSOLVER_H
+#define AVT_IVPM3DSOLVER_H
 
 #include <avtIVPSolver.h>
 #include <ivp_exports.h>
@@ -99,6 +99,9 @@ class IVP_API avtIVPM3DSolver: public avtIVPSolver
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
+    avtIVPSolver::Result  vpstep(const avtIVPField* field,
+                                 avtVec &yCur, double h, avtVec &yInt);
+
     avtIVPSolver::Result partial_step(const avtIVPField* field,
                                       avtVec &yInt, int iflow, double h, avtVec &yNew);
 
