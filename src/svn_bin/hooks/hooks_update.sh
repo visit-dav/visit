@@ -17,6 +17,9 @@
 #   Mark C. Miller, Fri Dec  4 09:33:50 PST 2009
 #   Modified chmod command to make user/group read,write,eXecute and other
 #   read,eXecute.
+#
+#   Mark C. Miller, Fri Dec  4 09:37:39 PST 2009
+#   Fixed typo in chmod command
 ##############################################################################
 
 REPOS="$1"
@@ -57,7 +60,7 @@ if test -n "$hookCommonFile"; then
     log "Installing updated hook_common file"
     svnlook cat -r $REV $REPOS $hookCommonFile > $REPOS/hooks/hook_common.sh
     chgrp $VISIT_GROUP_NAME $REPOS/hooks/hook_common.sh
-    chmod u+rwX,g+rwX,o+rX $REPOS/hooks/$bf 1>/dev/null 2>&1
+    chmod u+rwX,g+rwX,o+rX $REPOS/hooks/hook_common.sh
 fi
 
 #
