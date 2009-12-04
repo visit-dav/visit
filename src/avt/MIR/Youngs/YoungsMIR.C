@@ -113,7 +113,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     //vector<string> matNames = mat->GetMaterials();
     int nmats = mat->GetNMaterials();
     int ncells = ds->GetNumberOfCells();
-    vtkFloatArray *vf[nmats];
+    vector<vtkFloatArray *>vf(nmats);
     for (int m=0; m<nmats; m++)
     {
         vf[m] = vtkFloatArray::New();

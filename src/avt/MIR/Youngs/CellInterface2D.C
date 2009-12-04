@@ -2,6 +2,8 @@
 // Commissariat a l'Energie Atomique, (CEA)
 // BP12, 91297 Arpajon, France
 
+#include <vector>
+using std::vector;
 
 //#define REAL_PRECISION 32
 #define REAL_PRECISION 64
@@ -24,7 +26,7 @@ double findTriangleSetCuttingPlane(
 {
     double d;
 
-    uchar3 tri[triangleCount];
+    vector<uchar3> tri(triangleCount);
     for(int i=0;i<triangleCount;i++)
     {
         tri[i].x = triangles[i][0];
@@ -35,7 +37,7 @@ double findTriangleSetCuttingPlane(
     if( axisSymetric )
     {
         REAL2 N = { normal[0], normal[1] };
-        REAL2 V[vertexCount];
+        vector<REAL2> V(vertexCount);
         for(int i=0;i<vertexCount;i++)
         {
             V[i].x = vertices[i][0] - vertices[0][0] ;
@@ -55,12 +57,12 @@ double findTriangleSetCuttingPlane(
         if( (vmax.y-vmin.y) > scale ) scale = vmax.y-vmin.y;
         for(int i=0;i<vertexCount;i++) V[i] /= scale;
         double dist0 = vertices[0][0]*normal[0] + vertices[0][1]*normal[1] ;
-        d = dist0 + findTriangleSetCuttingCone(N, fraction, vertexCount, triangleCount, tri, V ) * scale;
+        d = dist0 + findTriangleSetCuttingCone(N, fraction, vertexCount, triangleCount, &tri[0], &V[0] ) * scale;
     }
     else
     {
         REAL3 N = { normal[0], normal[1], normal[2] };
-        REAL3 V[vertexCount];
+        vector<REAL3> V(vertexCount);
         for(int i=0;i<vertexCount;i++)
         {
             V[i].x = vertices[i][0] - vertices[0][0] ;
@@ -84,7 +86,7 @@ double findTriangleSetCuttingPlane(
         if( (vmax.z-vmin.z) > scale ) scale = vmax.z-vmin.z;
         for(int i=0;i<vertexCount;i++) V[i] /= scale;
         double dist0 = vertices[0][0]*normal[0] + vertices[0][1]*normal[1] + vertices[0][2]*normal[2];
-        d = dist0 + findTriangleSetCuttingPlane(N, fraction, vertexCount, triangleCount, tri, V ) * scale;
+        d = dist0 + findTriangleSetCuttingPlane(N, fraction, vertexCount, triangleCount, &tri[0], &V[0] ) * scale;
     }
 
     return - d;

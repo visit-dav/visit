@@ -1088,7 +1088,6 @@ AttributeGroup::ReadType(Connection &conn, int attrId, AttributeGroup::typeInfo 
         break;
     case msgTypeString:
         { // new scope
-          unsigned char c;
           std::string *sptr = (std::string *)(info.address);
           conn.ReadString(*sptr);
         }

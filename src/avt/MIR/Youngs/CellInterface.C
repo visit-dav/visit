@@ -31,6 +31,8 @@ const static char * CELL_INTERFACE_C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%    
 #include "CellInterface3D.h"
 #include "CellInterfaceCommon.h"
 
+using std::vector;
+
 // usefull to avoid numerical errors
 #define Clamp(x,min,max) if(x<min) x=min; else if(x>max) x=max
 
@@ -227,7 +229,7 @@ bool CellInterface::cellInterface2D(
     double d = useFractionAsDistance ? fraction : findTriangleSetCuttingPlane( normal, fraction, nPoints, points, nTriangles, triangles , axisSymetric );
 
     // compute vertex distances to interface plane
-    double dist[nPoints];
+    vector<double> dist(nPoints);
     for(int i=0;i<nPoints;i++)
     {
         dist[i] = points[i][0]*normal[0] + points[i][1]*normal[1] + points[i][2]*normal[2] + d;
