@@ -14,6 +14,9 @@
 #   variable definitions now. Replaced refs to commands via ${<VARNAME>}
 #   method to just the commands themselves.
 #
+#   Mark C. Miller, Fri Dec  4 09:33:50 PST 2009
+#   Modified chmod command to make user/group read,write,eXecute and other
+#   read,eXecute.
 ##############################################################################
 
 REPOS="$1"
@@ -54,7 +57,7 @@ if test -n "$hookCommonFile"; then
     log "Installing updated hook_common file"
     svnlook cat -r $REV $REPOS $hookCommonFile > $REPOS/hooks/hook_common.sh
     chgrp $VISIT_GROUP_NAME $REPOS/hooks/hook_common.sh
-    chmod 770 $REPOS/hooks/hook_common.sh
+    chmod u+rwX,g+rwX,o+rX $REPOS/hooks/$bf 1>/dev/null 2>&1
 fi
 
 #
@@ -87,7 +90,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     if test -s $REPOS/hooks/$bf; then
         log "Installing hook script $bf to $REPOS/hooks/$bf"
         chgrp $VISIT_GROUP_NAME $REPOS/hooks/$bf 1>/dev/null 2>&1
-        chmod 770 $REPOS/hooks/$bf 1>/dev/null 2>&1
+        chmod u+rwX,g+rwX,o+rX $REPOS/hooks/$bf 1>/dev/null 2>&1
     else
 	log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         rm -f $REPOS/hooks/$bf 1>/dev/null 2>&1
