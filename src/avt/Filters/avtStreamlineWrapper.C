@@ -48,6 +48,7 @@
 #include <vtkFloatArray.h>
 #include <DebugStream.h>
 #include <avtVector.h>
+#include <algorithm>
 
 using namespace std;
 
