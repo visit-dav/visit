@@ -587,6 +587,9 @@ def UpdateThisExpression(exprName, expr, currentExpressions, addedExpressions,
 #   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
 #   Added support for difference summary mode 
 #
+#   Mark C. Miller, Thu Dec  3 20:53:21 PST 2009
+#   Apply patch from Cihan Altinay for typo of 'numDims' on vector var
+#   metadata to 'varDims'
 ###############################################################################
 def UpdateExpressions(mdl, mdr):
     global forcePosCMFE
@@ -717,7 +720,7 @@ def UpdateExpressions(mdl, mdr):
 	    vecr = mdr.GetVectors(vec_i2)
             valid = vecl.validVariable and vecr.validVariable
             nameMatch = vecl.name == vecr.name
-            numDimsMatch = vecl.numDim == vecr.numDim
+            numDimsMatch = vecl.varDim == vecr.varDim
             if valid and nameMatch and numDimsMatch:
                 # Determine some properties about the mesh so we can decide
                 # Whether we'll use conn_cmfe or pos_cmfe.
