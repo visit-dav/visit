@@ -47,6 +47,10 @@
 
 // standard constructors and factory
 
+//  Modifications:
+//   Jeremy Meredith, Tue Dec  1 12:34:33 EST 2009
+//   Made viable volume fraction range 2 orders of magnitude more exact.
+//
 vtkYoungsMaterialInterface::vtkYoungsMaterialInterface()
 {
     this->FillMaterial = 0;
@@ -55,8 +59,8 @@ vtkYoungsMaterialInterface::vtkYoungsMaterialInterface()
     this->OnionPeel = 0;
     this->ReverseMaterialOrder = 0;
     this->UseFractionAsDistance = 0;
-    this->VolumeFractionRange[0] = 0.01;
-    this->VolumeFractionRange[1] = 0.99;
+    this->VolumeFractionRange[0] = 0.0001;
+    this->VolumeFractionRange[1] = 0.9999;
     this->TwoMaterialsOptimization = 0;
 }
 
