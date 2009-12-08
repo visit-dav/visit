@@ -144,7 +144,7 @@ public:
     void SetAllNames(const char *const *const names, int count);
     void SetName(int i, const char *name);
     void SetName(int i, const string &n);
-    const char *GetName(int n);
+    const char *GetName(int n) const;
     void SetAllNames(const vector<string> &names);
     void CheckIfGetNameCalled();
 

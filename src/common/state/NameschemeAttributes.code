@@ -3,8 +3,8 @@ Prefix:
 // This is a hack to work around fact that we cannot define variables
 // of arbitrary type, like a map, in the state object itself. So, we
 // do it using a map with key being the object's this pointer.
-static map<void*, Namescheme*> nameschemesMap;
-static map<void*, bool> getNameCalledMap;
+static map<const void*, Namescheme*> nameschemesMap;
+static map<const void*, bool> getNameCalledMap;
 Postfix:
 
 Code: NameschemeAttributes.h
@@ -17,10 +17,13 @@ Postfix:
 Code: ~NameschemeAttributes
 Prefix:
     // Clear any map entries for 'this' object.
-    map<void*, Namescheme*>::iterator it2 = nameschemesMap.find(this);
+    map<const void*, Namescheme*>::iterator it2 = nameschemesMap.find(this);
     if (it2 != nameschemesMap.end())
+    {
+        delete it2->second;
         nameschemesMap.erase(it2);
-    map<void*, bool>::iterator it3 = getNameCalledMap.find(this);
+    }
+    map<const void*, bool>::iterator it3 = getNameCalledMap.find(this);
     if (it3 != getNameCalledMap.end())
         getNameCalledMap.erase(it3);
 Postfix:
@@ -118,14 +121,29 @@ void NameschemeAttributes::SetName(int i, const string &n)
 }
 
 Function: GetName
-Declaration: const char *GetName(int n);
+Declaration: const char *GetName(int n) const;
 Definition:
+// ****************************************************************************
+//  Method: GetName.
+//
+//  Purpose: Main workhorse of this method. Compute a name from the namescheme.
+//
+//  The FIRST call to this method indicates that caller is done building up
+//  the object and ready to start using it to compute names.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 28, 2009
+//
+//    Mark C. Miller, Tue Dec  8 14:33:27 PST 2009
+//    Added const qualification to map keys. Const qualified the method itself.
+// ****************************************************************************
+
 #define EA(N) &externalArrayData[externalArrayOffsets[N]]
 
-const char *NameschemeAttributes::GetName(int n)
+const char *NameschemeAttributes::GetName(int n) const
 {
     // First, determine if this is FIRST call to GetName on this object
-    map<void*, bool>::const_iterator cit4 = getNameCalledMap.find(this);
+    map<const void*, bool>::const_iterator cit4 = getNameCalledMap.find(this);
     if (cit4 == getNameCalledMap.end())
     {
         // This is first call. Indicate that in the map.
@@ -159,7 +177,7 @@ const char *NameschemeAttributes::GetName(int n)
 
     // First, lets see if we've already got one constructed for this object.
     Namescheme *ns = 0;
-    map<void*, Namescheme*>::const_iterator cit3 = nameschemesMap.find(this);
+    map<const void*, Namescheme*>::const_iterator cit3 = nameschemesMap.find(this);
     if (cit3 != nameschemesMap.end())
     {
         ns = cit3->second;
@@ -225,11 +243,13 @@ Definition:
 //  Programmer: Mark C. Miller
 //  Creation:   August 28, 2009
 //
+//    Mark C. Miller, Tue Dec  8 14:33:27 PST 2009
+//    Added const qualification to map key
 // ****************************************************************************
 
 void NameschemeAttributes::CheckIfGetNameCalled()
 {
-    map<void*,bool>::const_iterator cit = getNameCalledMap.find(this);
+    map<const void*,bool>::const_iterator cit = getNameCalledMap.find(this);
     if (cit == getNameCalledMap.end())
         return;
     EXCEPTION0(StateObjectException);
