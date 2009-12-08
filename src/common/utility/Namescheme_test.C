@@ -65,6 +65,7 @@ int main()
        return 1;
     if (strcmp(ns->GetName(1035), "level_3,patch2") != 0)
        return 1;
+    delete ns;
 
     // Test multiple conversion specifiers
     ns = new Namescheme("|foo_%03dx%03d|n/5|n%5");
