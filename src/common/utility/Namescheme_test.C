@@ -55,6 +55,17 @@ int main()
         return 1;
     delete ns;
 
+    // Example of AMR-like naming convention where first 10
+    // patches are level 0, next 134 are level 1, next 1033
+    // are level 2
+    ns = new Namescheme("@level_%d,patch%d@(n/10)?((n/134)?((n/1033)?3:2:):1:):0:@(n/10)?((n/134)?((n/1033)?n-1033:n-134:):n-10:):n:");
+    if (strcmp(ns->GetName(7), "level_0,patch7") != 0)
+       return 1;
+    if (strcmp(ns->GetName(22), "level_1,patch12") != 0)
+       return 1;
+    if (strcmp(ns->GetName(1035), "level_3,patch2") != 0)
+       return 1;
+
     // Test multiple conversion specifiers
     ns = new Namescheme("|foo_%03dx%03d|n/5|n%5");
     if (strcmp(ns->GetName(17), "foo_003x002") != 0)
