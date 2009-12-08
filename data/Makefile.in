@@ -330,6 +330,9 @@
 #   Mark C. Miller, Mon Sep 28 20:29:55 PDT 2009
 #   Added Silo AMR test data.
 #
+#   Cyrus Harrison, Tue Dec  8 09:11:58 PST 2009
+#   Reorged all data into tarballs. (old targets are still intact)
+#
 ##############################################################################
 
 ##
@@ -367,7 +370,7 @@ SILO_TARGET=$(SILOSRC:.C=)
 ## Optional compressed binary data files (w/o extensions)
 ##
 BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
-       pixie_test_data old_silo_data shapefile_test_data mili_test_data \
+       pixie_test_data shapefile_test_data mili_test_data \
        boxlib_test_data exodus_test_data tecplot_test_data \
        KullLite_test_data NASTRAN_test_data ANSYS_test_data PATRAN_test_data \
        visus_test_data netcdf_test_data CGNS_test_data GDAL_test_data \
@@ -375,10 +378,30 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        vtk_cylindrical_test_data ProteinDataBank_test_data \
        Fluent_test_data OpenFOAM_test_data EnSight_test_data \
        FITS_test_data GGCM_test_data Chombo_test_data Enzo_test_data \
-       csg_test_data miranda_raw FLASH_test_data iTaps_test_data \
-       nek3d_test_data visitdiff_test_data odd_multi.silo claw_test_data \
+       csg_test_data FLASH_test_data iTaps_test_data \
+       nek3d_test_data visitdiff_test_data claw_test_data \
        ddcmd_test_data Cale_test_data RAW_test_data Rect_test_data \
-       Adventure_test_data sample.h5part silo_amr_test_data
+       Adventure_test_data silo_amr_test_data \
+       bov_test_data \
+       chgcar_test_data \
+       curve_test_data \
+       h5nimrod_test_data \
+       h5part_test_data \
+       hdf5_test_data \
+       lines_test_data \
+       miranda_test_data \
+       okc_test_data \
+       old_silo_test_data \
+       pdb_test_data \
+       sami_test_data \
+       silo_pdb_test_data \
+       silo_hdf5_test_data \
+       vtk_test_data \
+       xdmf_test_data \
+       xyz_test_data
+
+      
+       
 
 ##
 ## Libraries and includes...
