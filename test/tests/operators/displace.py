@@ -32,7 +32,7 @@ disp.variable = "vel"
 SetDefaultOperatorOptions(disp)
 
 # 2D, rectilinear.
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Displace")
 AddPlot("Mesh", "quadmesh2d")
@@ -43,24 +43,24 @@ Test("ops_disp01")
 
 SetActivePlots(1)
 DeleteActivePlots()
-ReplaceDatabase("../data/curv2d.silo")
+ReplaceDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 ResetView()
 
 Test("ops_disp02")
 
-ReplaceDatabase("../data/curv3d.silo")
+ReplaceDatabase("../data/silo_hdf5_test_data/curv3d.silo")
 v = GetView3D()
 v.viewNormal = (0.61, -0.61, 0.61)
 SetView3D(v)
 
 Test("ops_disp03")
 
-ReplaceDatabase("../data/rect3d.silo")
+ReplaceDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 Test("ops_disp04")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/ucd3d.silo")
 
 AddPlot("Subset", "mat1")
 AddOperator("Displace")
@@ -71,7 +71,7 @@ DrawPlots()
 Test("ops_disp05")
 
 DeleteAllPlots()
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Displace")
 disp.variable = "vel"

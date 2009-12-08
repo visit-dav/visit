@@ -15,7 +15,7 @@
 
 
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 
 
 DefineScalarExpression("mod", "mod(t, 10)")

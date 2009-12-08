@@ -13,7 +13,7 @@
 
 # Test that we can do an l2norm of a degenerate ultra file.
 TurnOnAllAnnotations()
-OpenDatabase("../data/degenerate.ultra")
+OpenDatabase("../data/curve_test_data/degenerate.ultra")
 AddPlot("Curve", "This is a degenerate ultra file.")
 DrawPlots()
 
@@ -22,14 +22,14 @@ text = GetQueryOutputString()
 TestText("l2norm_01", text)
 
 DeleteAllPlots()
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 DefineScalarExpression("d_mod", "d+0.4*coord(quadmesh2d)[1]")
 AddWindow()
 SetActiveWindow(2)
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 DeleteAllPlots()
 AddPlot("Pseudocolor", "d_mod")
 DrawPlots()

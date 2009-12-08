@@ -25,7 +25,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 AddPlot("Pseudocolor", "hardyglobal")
 
 AddOperator("Isosurface")
@@ -61,7 +61,7 @@ Test("specular_05")
 
 # Make sure that specular is not affecting 2D plots.
 DeleteAllPlots()
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 Test("specular_06")
@@ -70,7 +70,7 @@ Test("specular_06")
 DeleteAllPlots()
 r.specularFlag = 0
 SetRenderingAttributes(r)
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 AddPlot("Surface", "hgslice")
 DrawPlots()
 

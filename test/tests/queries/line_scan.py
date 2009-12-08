@@ -185,8 +185,8 @@ def TestOne(index, filename, varname, meshname, limit):
     DeleteAllPlots()
 
 
-TestOne(0, "../data/rect2d.silo", "d", "quadmesh2d", 0.5)
-TestOne(1, "../data/multi_rect2d.silo", "d", "mesh1", 0.5)
+TestOne(0, "../data/silo_hdf5_test_data/rect2d.silo", "d", "quadmesh2d", 0.5)
+TestOne(1, "../data/silo_hdf5_test_data/multi_rect2d.silo", "d", "mesh1", 0.5)
 TestOne(2, "../data/KullLite_test_data/T.pdb", "mesh_quality/volume", "mesh", 0.2)
 TestOne(3, "../data/KullLite_test_data/tagtest_rz_3.pdb", "mesh_quality/mesh/area", "mesh", 4.0)
 

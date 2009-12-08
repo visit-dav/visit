@@ -15,7 +15,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/emptydomains.silo")
+OpenDatabase("../data/silo_hdf5_test_data/emptydomains.silo")
 
 # Test the multi-mesh support
 AddPlot("Mesh", "mesh")

@@ -22,7 +22,7 @@ a.axesFlag2D = 1
 SetAnnotationAttributes(a)
 
 # Test that we can do an l2norm of a degenerate ultra file.
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Contour", "u")
 DrawPlots()
 Query("Total Length")
@@ -30,7 +30,7 @@ text = GetQueryOutputString()
 TestText("length_01", text)
 
 DeleteAllPlots()
-OpenDatabase("../data/curve.visit")
+OpenDatabase("../data/curve_test_data/curve.visit")
 AddPlot("Curve", "going_up") 
 DrawPlots()
 

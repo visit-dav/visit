@@ -15,7 +15,7 @@ ca = CurveAttributes()
 ca.showPoints = 1
 SetDefaultPlotOptions(ca)
 
-OpenDatabase("../data/zonecent.ultra")
+OpenDatabase("../data/curve_test_data/zonecent.ultra")
 AddPlot("Curve","curve2")
 DrawPlots()
 v = GetViewCurve()

@@ -257,6 +257,10 @@
 #    Mark C. Miller, Mon Dec  8 23:36:31 PST 2008
 #    I added logic to provide useful error messages when it looks like the
 #    test ran 'ok' but developer negected to call Exit() from .py file.
+#
+#    Cyrus Harrison, Tue Dec  8 09:59:42 PST 2009
+#    Updated to reflect reorg of data directory.
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -585,43 +589,15 @@ LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 #
 #  create data files if needed
 #
-if test ! -f ../data/globe.silo; then
-    if test -z "`echo $modes | grep hdf5`"; then
-        if test $quiet -eq 0; then
+if test ! -f ../data/silo_hdf5_test_data/globe.silo; then
+    if test $quiet -eq 0; then
+             echo ""
+            echo "Rebuilding test data based on the fact that ../data/silo_hdf5_test_data/globe.silo doesn't exist."
             echo ""
-            echo "Rebuilding test data (PDB format) based on the fact that ../data/globe.silo doesn't exist."
-            echo ""
-        fi
-        (cd ../data && make test 1>/dev/null 2>&1)
-    else
-        if test $quiet -eq 0; then
-            echo ""
-            echo "Rebuilding test data (HDF5 format) based on the fact that ../data/globe.silo doesn't exist."
-            echo ""
-        fi
-        (cd ../data && make testh5 1>/dev/null 2>&1)
     fi
-else
-    if test -z "`echo $modes | grep hdf5`"; then
-        if test -z "`head -n 1 ../data/globe.silo | grep PDB`"; then
-            if test $quiet -eq 0; then
-                echo ""
-                echo "Rebuilding test data (PDB format) based on the fact that ../data/globe.silo is wrong format."
-                echo ""
-            fi
-            (cd ../data && make test 1>/dev/null 2>&1)
-        fi
-    else
-        if test -z "`head -n 1 ../data/globe.silo | grep HDF`"; then
-            if test $quiet -eq 0; then
-                echo ""
-                echo "Rebuilding test data (HDF5 format) based on the fact that ../data/globe.silo is wrong format."
-                echo ""
-            fi
-            (cd ../data && make testh5 1>/dev/null 2>&1)
-        fi
-    fi
+    (cd ../data && make test 1>/dev/null 2>&1)
 fi
+
 if test $? -ne 0 && test $quiet -eq 0; then
     echo "***************************"
     echo "***************************"

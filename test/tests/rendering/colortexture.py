@@ -22,14 +22,14 @@ def main():
     a.backgroundColor = (0, 0, 0, 255)
     SetAnnotationAttributes(a)
 
-    OpenDatabase("../data/ucd2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
     AddPlot("Pseudocolor", "d")
     AddPlot("Mesh", "ucdmesh2d")
     DrawPlots()
     Test("colortexture_00")
     DeleteAllPlots()
 
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Pseudocolor", "speed")
     pc = PseudocolorAttributes()
     pc.colorTableName = "levels"

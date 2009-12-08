@@ -51,7 +51,7 @@ v.viewNormal = (-0.5, 0.707107, 0.5)
 v.viewUp = (0.5, 0.707107, -0.5)
 SetView3D(v)
 
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -61,7 +61,7 @@ DeleteAllPlots()
 
 # Create a psuedocolor plot and test various degenerate 2d views.
 TestSection("Test degenerate 2D views")
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -89,7 +89,7 @@ DeleteAllPlots()
 
 # Create several curve plots and test various degenerate curve views.
 TestSection("Test degenerate curve views")
-OpenDatabase("../data/c051.curve")
+OpenDatabase("../data/curve_test_data/c051.curve")
 
 AddPlot("Curve", "flat")
 AddPlot("Curve", "going_up")
@@ -125,7 +125,7 @@ DeleteAllPlots()
 # Create a pseudocolor and mesh plot and zoom in on a sharp edge to
 # verify that the mesh lines are not bleeding through the surface.
 TestSection("Test zoom in on mesh lines")
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 
 AddPlot("Pseudocolor", "u")
 AddPlot("Mesh", "mesh1")
@@ -185,7 +185,7 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 AddPlot("Pseudocolor", "u")
 AddOperator("Clip")
 DrawPlots()
@@ -194,7 +194,7 @@ Test("view_14")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "p")
 DrawPlots()
 Test("view_15")
@@ -204,7 +204,7 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
 scale = TransformAttributes()
@@ -242,30 +242,30 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase("../data/rect_flat_i.vtk")
+OpenDatabase("../data/vtk_test_data/rect_flat_i.vtk")
 AddPlot("Mesh", "mesh")
 DrawPlots()
-OpenDatabase("../data/rect_flat_j.vtk")
+OpenDatabase("../data/vtk_test_data/rect_flat_j.vtk")
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("view_20")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/rect_flat_j.vtk")
+OpenDatabase("../data/vtk_test_data/rect_flat_j.vtk")
 AddPlot("Mesh", "mesh")
 DrawPlots()
-OpenDatabase("../data/rect_flat_k.vtk")
+OpenDatabase("../data/vtk_test_data/rect_flat_k.vtk")
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("view_21")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/rect_flat_k.vtk")
+OpenDatabase("../data/vtk_test_data/rect_flat_k.vtk")
 AddPlot("Mesh", "mesh")
 DrawPlots()
-OpenDatabase("../data/rect_flat_i.vtk")
+OpenDatabase("../data/vtk_test_data/rect_flat_i.vtk")
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("view_22")
@@ -277,7 +277,7 @@ DeleteAllPlots()
 # ability to interpolate the view.
 #
 TestSection("Test interpolation of View3DAttributes")
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "speed")
 DrawPlots()
 

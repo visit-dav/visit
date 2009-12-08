@@ -18,7 +18,7 @@
 
 # Test that we can do an l2norm of a degenerate ultra file.
 TurnOnAllAnnotations()
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Mesh", "mesh1")
 DrawPlots()
 
@@ -67,7 +67,7 @@ TestText("centroid_06", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Mesh", "quadmesh2d")
 DrawPlots()
 
@@ -93,7 +93,7 @@ TestText("centroid_10", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 AddPlot("Mesh", "quadmesh3d")
 DrawPlots()
 
@@ -104,7 +104,7 @@ Query("Moment of Inertia")
 text = GetQueryOutputString()
 TestText("centroid_12", text)
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Elevate")
 DrawPlots()

@@ -101,7 +101,7 @@ def TestSaveFormat(fmt):
     TestText("saveformat_%s%s"%(mode,ext), result)
 
 TestSection("Curve Formats")
-OpenDatabase("../data/c062.curve")
+OpenDatabase("../data/curve_test_data/c062.curve")
 AddPlot("Curve", "going_down")
 DrawPlots()
 for f in CFormats:
@@ -109,8 +109,8 @@ for f in CFormats:
 
 TestSection("Image Formats via Screen Capture")
 DeleteAllPlots()
-CloseDatabase("../data/c062.curve")
-OpenDatabase("../data/multi_rect2d.silo")
+CloseDatabase("../data/curve_test_data/c062.curve")
+OpenDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo")
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -126,8 +126,8 @@ swa.screenCapture = 1
 
 TestSection("Geometry Formats")
 DeleteAllPlots()
-CloseDatabase("../data/multi_rect2d.silo")
-OpenDatabase("../data/globe.silo")
+CloseDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "dx")
 DrawPlots()
 for f in GFormats:

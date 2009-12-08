@@ -20,7 +20,7 @@
 
 
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 
 #Test default surface plot (surface on, wireframe off)
 AddPlot("Surface", "u")
@@ -40,7 +40,7 @@ Test("surface_03")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/noise2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise2d.silo")
 AddPlot("Surface", "shepardglobal")
 DrawPlots()
 

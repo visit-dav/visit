@@ -29,7 +29,7 @@
 
 
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "t")
 DrawPlots()
 
@@ -57,8 +57,8 @@ DrawPlots()
 Test("export_db_02")
 
 DeleteAllPlots()
-OpenDatabase("../data/wave.visit")
-DefineScalarExpression("cmfe", "conn_cmfe(coord(<../data/wave0020.silo:quadmesh>)[1], quadmesh)")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+DefineScalarExpression("cmfe", "conn_cmfe(coord(<../data/silo_hdf5_test_data/wave0020.silo:quadmesh>)[1], quadmesh)")
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 e.variables = ("cmfe")

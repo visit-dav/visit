@@ -84,7 +84,7 @@ def QueryMultiWindow():
     DeleteAllPlots()
 
     #bug 8425 (multiple windows, same db, same timestate)
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     DefineScalarExpression("X", "coord(quadmesh3d)[0]")
     DefineScalarExpression("unnamed1", "X-1")
     DefineScalarExpression("unnamed2", "X-2")
@@ -117,7 +117,7 @@ def QueryMultiWindow():
     DeleteAllPlots()
 
     #bug 8425 (multiple plots, same window, same db, same root var)
-    OpenDatabase("../data/multi_rect2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo")
     DefineScalarExpression("p2", "p*p")
     DefineScalarExpression("p3", "p*p*p")
     AddPlot("Pseudocolor", "p")

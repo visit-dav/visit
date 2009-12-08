@@ -22,7 +22,7 @@ SetAnnotationAttributes(a)
 #    multicolor mode -- normal plot, then CZO on, then CZO off
 # -----------------------------------------------------------------------------
 TestSection("Multicolor mode")
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 
 AddPlot("FilledBoundary", "mat1");
 DrawPlots()

@@ -22,7 +22,7 @@
 
 
 
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
 
 
 vec = VectorAttributes()

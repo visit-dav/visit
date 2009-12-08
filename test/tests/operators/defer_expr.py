@@ -31,7 +31,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 DefineScalarExpression("en", "external_node(mesh1)")
 AddPlot("Pseudocolor", "en")
 AddOperator("Isovolume")

@@ -41,7 +41,7 @@ SetAnnotationAttributes(a)
 # Start off by testing that we can bring up a normal volume plot and smooth
 # the data.  Also test that it can interact with the bounding box correctly.
 #
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 AddPlot("Volume", "d")
 vol_atts = VolumeAttributes()
 vol_atts.rendererType = vol_atts.RayCasting
@@ -111,7 +111,7 @@ Test("ray_trace_04")
 # different sort of sampling.
 #
 DeleteAllPlots()
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Volume", "d")
 vol_atts.rendererType = vol_atts.RayCasting
 vol_atts.smoothData = 0
@@ -161,7 +161,7 @@ AddWindow()
 SetActiveWindow(2)
 DeleteAllPlots()
 SetAnnotationAttributes(a)
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 AddPlot("Volume", "d")
 vol_atts = VolumeAttributes()
 vol_atts.rendererType = vol_atts.RayCasting

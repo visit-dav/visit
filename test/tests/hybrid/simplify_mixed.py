@@ -56,7 +56,7 @@ Test("simplify_mixed03")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/thinplane.silo")
+OpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
 
 m.forceMIR = 1
 SetMaterialAttributes(m)
@@ -69,12 +69,12 @@ Test("simplify_mixed04")
 
 m.maxMaterialsPerZone = 2
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/thinplane.silo")
+ReOpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
 Test("simplify_mixed05")
 
 m.maxMaterialsPerZone = 3
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/thinplane.silo")
+ReOpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
 Test("simplify_mixed06")
 
 Exit()

@@ -32,7 +32,7 @@
 #
 TestSection("Test scalar collection sources")
 
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 
 # Set default plot variables
 p = ParallelCoordinatesAttributes()
@@ -98,7 +98,7 @@ TestSection("Test array expression sources")
 # Try an array variable
 DeleteAllPlots();
 
-OpenDatabase("../data/astronomy.okc")
+OpenDatabase("../data/okc_test_data/astronomy.okc")
 
 DefineArrayExpression("arrayvar1",
                       "array_compose(d, b, b/2, b+l)")

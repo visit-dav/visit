@@ -50,7 +50,7 @@ def TestLengthAndCorrelationList(testname):
 TurnOnAllAnnotations()
 
 # Create a plot of DB A.
-OpenDatabase("../data/dbA00.pdb")
+OpenDatabase("../data/pdb_test_data/dbA00.pdb")
 AddPlot("FilledBoundary", "material(mesh)")
 DrawPlots()
 Test("locktime_00")
@@ -59,7 +59,7 @@ TestLength("locktime_01")
 # Create a second window and create plot of DB B.
 CloneWindow()
 DeleteAllPlots()
-OpenDatabase("../data/dbB00.pdb")
+OpenDatabase("../data/pdb_test_data/dbB00.pdb")
 AddPlot("FilledBoundary", "material(mesh)")
 InvertBackgroundColor()
 DrawPlots()

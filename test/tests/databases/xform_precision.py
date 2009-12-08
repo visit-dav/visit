@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/quad_disk.silo")
+OpenDatabase("../data/silo_hdf5_test_data/quad_disk.silo")
 
 #
 # Turn off force single precision for this test
@@ -36,8 +36,8 @@ DrawPlots()
 Test("float_xform_02")
 DeleteAllPlots()
 
-CloseDatabase("../data/quad_disk.silo")
-OpenDatabase("../data/quad_disk.silo")
+CloseDatabase("../data/silo_hdf5_test_data/quad_disk.silo")
+OpenDatabase("../data/silo_hdf5_test_data/quad_disk.silo")
 
 #
 # test float data on a float mesh
@@ -63,8 +63,8 @@ DrawPlots()
 Test("float_xform_05")
 DeleteAllPlots()
 
-CloseDatabase("../data/quad_disk.silo")
-OpenDatabase("../data/quad_disk.silo")
+CloseDatabase("../data/silo_hdf5_test_data/quad_disk.silo")
+OpenDatabase("../data/silo_hdf5_test_data/quad_disk.silo")
 
 #
 # test double data on a double mesh

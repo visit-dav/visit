@@ -22,10 +22,10 @@ import os, sys
 def TestNetworkReset():
     TestSection("Testing that plots of single-timestep are "\
                 "requested in SR after engine loss")
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Mesh", "curvmesh2d")
 
-    OpenDatabase("../data/dbA00.pdb")
+    OpenDatabase("../data/pdb_test_data/dbA00.pdb")
     AddPlot("Contour", "mesh/nummm")
     DrawPlots()
 

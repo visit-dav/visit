@@ -28,7 +28,7 @@
 
 
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 
 
 # Test errors.
@@ -64,20 +64,20 @@ DrawPlots()
 Test("symm_05")
 
 DeleteAllPlots()
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 DefineScalarExpression("sp5", "symm_plane(hardyglobal, [1, 0, 0, 0, 0, 0])")
 AddPlot("Contour", "sp5")
 DrawPlots()
 Test("symm_06")
 
 DeleteAllPlots()
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 DefineScalarExpression("st2", "symm_transform(hardyglobal, [0.707, 0.707, 0, -0.707, 0.707, 0, 0, 0, 1])")
 AddPlot("Contour", "st2")
 DrawPlots()
 Test("symm_07")
 
-ActivateDatabase("../data/rect2d.silo")
+ActivateDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 DeleteAllPlots()
 DefineScalarExpression("sp4_2", "symm_point(d, [0.4, 0.6, 0])")
 AddPlot("Pseudocolor", "sp4_2")
@@ -85,7 +85,7 @@ DrawPlots()
 Test("symm_08")
 
 DeleteAllPlots()
-OpenDatabase("../data/curv3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
 DefineScalarExpression("sp6", "symm_plane(d, [1, 0, 0, 0.2, 0, 0])")
 AddPlot("Pseudocolor", "sp6")
 DrawPlots()

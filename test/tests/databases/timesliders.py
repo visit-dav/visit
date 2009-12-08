@@ -85,7 +85,7 @@ def PrintDict(dict):
 TurnOnAllAnnotations()
 
 # The plotted databases.
-dbs = ("../data/dbA00.pdb", "../data/dbB00.pdb", "../data/dbC00.pdb")
+dbs = ("../data/pdb_test_data/dbA00.pdb", "../data/pdb_test_data/dbB00.pdb", "../data/pdb_test_data/dbC00.pdb")
 
 # Create a plot from one database
 TestSection("Set time using different time sliders")
@@ -168,7 +168,7 @@ DeleteAllPlots()
 OpenDatabase(dbs[0])
 SetTimeSliderState(0)
 TestWindowInformation("timesliders23")
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 ResetView()
@@ -201,7 +201,7 @@ SetTheView()
 Test("timesliders32")
 TestWindowInformation("timesliders33")
 # Replace with an ST database
-ReplaceDatabase("../data/wave0000.silo")
+ReplaceDatabase("../data/silo_hdf5_test_data/wave0000.silo")
 Test("timesliders34")
 TestWindowInformation("timesliders35")
 
@@ -212,9 +212,9 @@ DeleteAllPlots()
 for source in GetGlobalAttributes().sources:
     CloseDatabase(source)
 
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
 AddPlot("Pseudocolor", "pressure")
-OpenDatabase("../data/curv3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
 AddPlot("Pseudocolor", "p")
 DrawPlots()
 

@@ -40,7 +40,7 @@
 
 
 # 3D, rectilinear.  Multi-block  Tests ghost zones as well.
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 
 atts = ReflectAttributes()
 
@@ -68,7 +68,7 @@ Test("ops_refl02")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Reflect")
 DrawPlots()
@@ -85,7 +85,7 @@ Test("ops_refl05")
 DeleteAllPlots()
 
 # Test unstructured mesh -- plus test vectors.
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Vector", "vel")
 v = VectorAttributes()
 v.vectorOrigin = v.Head
@@ -144,7 +144,7 @@ DeleteAllPlots()
 # rectilinear grid.  Use the PXPYPZ and NXNYNZ octants to flex all of that 
 # code.
 
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 AddPlot("Pseudocolor", "hardyglobal")
 pc = PseudocolorAttributes()
 pc.opacity = 0.3
@@ -190,7 +190,7 @@ Test("ops_refl11")
 # reflect) and ghost zones (from the multi_ucd3d file).
 
 DeleteAllPlots()
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Pseudocolor", "d")
 SetPlotOptions(pc)
 AddOperator("Reflect")
@@ -217,7 +217,7 @@ SetView3D(v)
 Test("ops_refl12")
 
 DeleteAllPlots()
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Boundary", "mat1")
 AddOperator("Project")
 AddOperator("Reflect")
@@ -227,7 +227,7 @@ Test("ops_refl13")
 # The "mass volume extractor" of the volume renderer depends on the
 # rectilinear grid not being inverted.  Test that here ('6321).
 DeleteAllPlots()
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 AddPlot("Volume", "d")
 AddOperator("Reflect")
 DrawPlots()

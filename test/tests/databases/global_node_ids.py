@@ -26,7 +26,7 @@ view.farPlane = 1.73205
 view.perspective = 1
 SetView3D(view)
 
-OpenDatabase("../data/global_node.silo")
+OpenDatabase("../data/silo_hdf5_test_data/global_node.silo")
 AddPlot("Subset", "mat")
 DrawPlots()
 

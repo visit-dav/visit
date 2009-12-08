@@ -21,7 +21,7 @@
 
 
 # First test that we can open a Xmdv file.
-OpenDatabase("../data/astronomy.okc")
+OpenDatabase("../data/okc_test_data/astronomy.okc")
 AddPlot("Pseudocolor", "classmagi")
 AddOperator("Transform")
 t = TransformAttributes()
@@ -59,7 +59,7 @@ DeleteAllPlots()
 
 # Now test the writer.
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 DefineScalarExpression("uc", "recenter(u)")
 DefineScalarExpression("vc", "recenter(v)")
 AddPlot("Pseudocolor", "d")
@@ -79,7 +79,7 @@ DrawPlots()
 Test("Xmdv_04")
 
 DeleteAllPlots()
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Vector", "vel")
 DrawPlots()
 e.variables = ()

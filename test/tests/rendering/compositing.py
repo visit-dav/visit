@@ -12,7 +12,7 @@
 #
 # ----------------------------------------------------------------------------
 
-ds_noise = "../data/noise.silo"
+ds_noise = "../data/silo_hdf5_test_data/noise.silo"
 OpenDatabase(ds_noise)
 
 ra = GetRenderingAttributes()

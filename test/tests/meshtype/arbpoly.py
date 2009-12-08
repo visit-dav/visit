@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/poly3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/poly3d.silo")
 
 AddPlot("Mesh", "ucdmesh3d")
 DrawPlots()
@@ -53,7 +53,7 @@ DrawPlots()
 Test("arbpoly_03")
 
 DeleteAllPlots()
-CloseDatabase("../data/poly3d.silo")
+CloseDatabase("../data/silo_hdf5_test_data/poly3d.silo")
 
 OpenDatabase("../data/overlink_test_data/ev_0_0_100/OvlTop.silo")
 AddPlot("Mesh","MMESH")

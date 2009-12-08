@@ -27,7 +27,7 @@ a.backgroundMode = a.Solid
 SetAnnotationAttributes(a)
 
 # Open up the database and create a plot.
-OpenDatabase("../data/allinone00.pdb")
+OpenDatabase("../data/pdb_test_data/allinone00.pdb")
 AddPlot("Pseudocolor", "mesh/a")
 SetTimeSliderState(4)
 DrawPlots()
@@ -97,7 +97,7 @@ Test("timeslider12")
 # Delete all plots and open a new database
 SetTimeSliderState(0)
 DeleteAllPlots()
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "speed")
 AddPlot("Mesh", "mesh1")
 DrawPlots()

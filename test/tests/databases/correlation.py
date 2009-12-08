@@ -89,7 +89,7 @@ TurnOnAllAnnotations()
 #
 # The databases that we'll use for most tests.
 #
-dbs = ("../data/dbA00.pdb", "../data/dbB00.pdb", "../data/dbC00.pdb")
+dbs = ("../data/pdb_test_data/dbA00.pdb", "../data/pdb_test_data/dbB00.pdb", "../data/pdb_test_data/dbC00.pdb")
 
 #
 # Open each database and create a plot.

@@ -16,7 +16,7 @@
 
 
 
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 
 
 DefineScalarExpression("bigun", 'if(and(gt(nmats(mat1), 1.), gt(matvf(mat1, "4"), 0.)), d, 0.)')

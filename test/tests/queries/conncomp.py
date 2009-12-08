@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/multi_rect2d.silo", 0)
+OpenDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo", 0)
 DefineScalarExpression("_rand_test_2d", "rand(mesh1)")
 DefineScalarExpression("_ccl_test_2d", "conn_components(mesh1)")
 

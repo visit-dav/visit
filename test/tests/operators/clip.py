@@ -46,15 +46,15 @@ def TestOne(filename, index, zonal_var, nodal_var, radius):
    Test(name)
    DeleteAllPlots()
 
-TestOne("../data/rect2d.silo", 4*0, "d", "u", 0.5)
-TestOne("../data/rect3d.silo", 4*1, "d", "u", 0.5)
-TestOne("../data/curv2d.silo", 4*2, "d", "u", 3)
-TestOne("../data/curv3d.silo", 4*3, "d", "u", 4)
-TestOne("../data/globe.silo", 4*4, "t", "u", 5)
+TestOne("../data/silo_hdf5_test_data/rect2d.silo", 4*0, "d", "u", 0.5)
+TestOne("../data/silo_hdf5_test_data/rect3d.silo", 4*1, "d", "u", 0.5)
+TestOne("../data/silo_hdf5_test_data/curv2d.silo", 4*2, "d", "u", 3)
+TestOne("../data/silo_hdf5_test_data/curv3d.silo", 4*3, "d", "u", 4)
+TestOne("../data/silo_hdf5_test_data/globe.silo", 4*4, "t", "u", 5)
 
 # Test doing a clip where there are no planes selected.  This has caused
 # a crash ['7195].
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor" , "d")
 AddOperator("Clip")
 c = ClipAttributes()
@@ -72,7 +72,7 @@ test_idx += 1
 
 # Test accurate vs. fast.
 DeleteAllPlots()
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Mesh", "mesh1")
 c = ClipAttributes()
 c.funcType = c.Plane  # Plane, Sphere

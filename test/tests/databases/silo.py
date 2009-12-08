@@ -54,7 +54,7 @@
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
-OpenDatabase("../data/multipart_multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multipart_multi_ucd3d.silo")
 
 #
 # Test simple read and display of a variable 
@@ -156,7 +156,7 @@ os.system("rm -f ../data/gorfo*")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/ucd3d.silo")
 AddPlot("Mesh", "exterior_faces")
 DrawPlots()
 Test("silo_07")
@@ -197,7 +197,7 @@ Test("silo_18")
 # Test defvar object
 #
 DeleteAllPlots()
-OpenDatabase("../data/multi_rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
 AddPlot("Pseudocolor","sum")
 DrawPlots()
 Test("silo_20")
@@ -225,7 +225,7 @@ a=GetAnnotationAttributes()
 a.axes2D.visible = 1
 SetAnnotationAttributes(a)
 
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Curve","line")
 DrawPlots()
 Test("silo_23")
@@ -247,8 +247,8 @@ Test("silo_25")
 # data dir.
 #
 DeleteAllPlots()
-CloseDatabase("../data/multi_ucd3d.silo")
-OpenDatabase("../data/largefile.silo")
+CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/largefile.silo")
 AddPlot("Curve","sincurve")
 AddPlot("Curve","coscurve")
 DrawPlots()
@@ -281,7 +281,7 @@ Test("silo_28")
 #
 DeleteAllPlots()
 CloseDatabase("../data/multi_ucd3d_ti_* database")
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Pseudocolor","d_split")
 DrawPlots()
 t = GetLastError()
@@ -293,7 +293,7 @@ TestText("silo_29", t)
 # on
 #
 DeleteAllPlots()
-CloseDatabase("../data/multi_ucd3d.silo")
+CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 OpenDatabase("../data/histne_ucd3d_* database", 2)
 AddPlot("Pseudocolor", "d_dup")
 DrawPlots()
@@ -317,7 +317,7 @@ Test("silo_34")
 DeleteAllPlots()
 CloseDatabase("../data/histne_ucd3d_* database")
 SetTreatAllDBsAsTimeVarying(0)
-OpenDatabase("../data/odd_multi.silo")
+OpenDatabase("../data/silo_pdb_test_data/odd_multi.silo")
 AddPlot("Pseudocolor","cyc_00000/den")
 DrawPlots()
 ResetView()
@@ -327,8 +327,8 @@ Test("silo_35")
 # Test a database in which all timesteps are in one file
 #
 DeleteAllPlots()
-CloseDatabase("../data/odd_multi.silo")
-OpenDatabase("../data/wave_1file.visit")
+CloseDatabase("../data/silo_pdb_test_data/odd_multi.silo")
+OpenDatabase("../data/silo_hdf5_test_data/wave_1file.visit")
 AddPlot("Mesh","quadmesh")
 AddPlot("Pseudocolor","pressure")
 DrawPlots()
@@ -352,7 +352,7 @@ Test("silo_39")
 TestSection("Silo AMR w/Mrgtrees")
 LevelTwo = 77 # Set Id for Level 2 set for this mesh
 DeleteAllPlots()
-CloseDatabase("../data/wave_1file.visit")
+CloseDatabase("../data/silo_hdf5_test_data/wave_1file.visit")
 OpenDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
 AddPlot("Mesh","amr_mesh_wmrgtree")
 DrawPlots()

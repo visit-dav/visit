@@ -20,7 +20,7 @@ import visit_writer
 
 # BEGIN USER MODIFIABLE SECTION
 
-database = "../data/globe.silo"
+database = "../data/silo_hdf5_test_data/globe.silo"
 origin = (0,0,0)
 radius = 10 
 variable = "recenter(t) + 10*u"

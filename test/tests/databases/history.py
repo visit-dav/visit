@@ -19,7 +19,7 @@ a.legendInfoFlag = 1
 a.databaseInfoFlag =1
 SetAnnotationAttributes(a)
 
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 
 #
 # Test that we can detect that there is a problem and add 0's.
