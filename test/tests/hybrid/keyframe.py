@@ -23,7 +23,7 @@
 
 
 # Open a database.
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
  
 # Enable keyframe mode.
 k = GetKeyframeAttributes()
@@ -235,7 +235,7 @@ k.enabled = 1
 SetKeyframeAttributes(k)
 
 # Open a database.
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
  
 # Set the number of frames to be 9.
 AnimationSetNFrames(9)
@@ -320,7 +320,7 @@ DeleteAllPlots()
 ResetView()
 
 # Open a database.
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
 
 # Set the number of frames to be 6.
 AnimationSetNFrames(6)

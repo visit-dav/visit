@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 
 AddPlot("Tensor", "grad_tensor")
 t = TensorAttributes()

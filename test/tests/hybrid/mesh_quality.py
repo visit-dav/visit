@@ -19,7 +19,7 @@
 
 
 
-OpenDatabase("../data/ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/ucd3d.silo")
 AddPlot("Pseudocolor", "mesh_quality/ucdmesh3d/volume")
 DrawPlots()
 
@@ -43,7 +43,7 @@ Test("mesh_quality_02")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/tire.silo")
+OpenDatabase("../data/silo_hdf5_test_data/tire.silo")
 AddPlot("Pseudocolor", "mesh_quality/aspect")
 DrawPlots()
 v = View3DAttributes()

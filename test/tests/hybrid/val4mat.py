@@ -15,7 +15,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/thinplane.silo")
+OpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
 atts = PseudocolorAttributes()
 atts.minFlag = 1
 atts.min = 0.0

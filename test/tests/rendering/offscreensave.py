@@ -22,7 +22,7 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -79,7 +79,7 @@ Test("offscreen_08")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 
 # Test off screen save of a 2D window
 AddPlot("Mesh", "curvmesh2d")
@@ -101,7 +101,7 @@ Test("offscreen_10",swa)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()

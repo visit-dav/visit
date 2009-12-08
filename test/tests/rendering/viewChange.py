@@ -55,7 +55,7 @@ def InitAnnotation():
 
 def TestViewChangeSliceFlip():
     TestSection("Testing view changes with slice flip")
-    OpenDatabase("../data/wave0000.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/wave0000.silo")
     AddPlot("Pseudocolor", "pressure")
     AddOperator("Slice")
     slice = SliceAttributes()
@@ -75,7 +75,7 @@ def TestViewChangeSliceFlip():
 
 def TestViewChangeFullFrame():
     TestSection("Testing view changes with fullframe")
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     # We want to capture the image after toggling full frame mode, 
@@ -117,7 +117,7 @@ def TestViewChangeFullFrame():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Histogram", "u")
     DrawPlots()
     ResetView()
@@ -136,7 +136,7 @@ def TestViewChangeFullFrame():
 
 def TestViewChangeFullFrameWithGlyphs():
     TestSection("Testing view changes with fullframe and glyphed plots")
-    OpenDatabase("../data/fullframe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/fullframe.silo")
     AddPlot("Mesh", "fullframe")
     DrawPlots()
     ResetView()
@@ -189,7 +189,7 @@ def TestViewChangeFullFrameWithGlyphs():
 def TestViewChangeLogScaling2D():
     TestSection("Testing view changes with log scaling of 2D plots")
 
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     ResetView()
@@ -232,7 +232,7 @@ def TestViewChangeLogScaling2D():
 def TestViewChangeLogScalingCurves():
     TestSection("Testing view changes with log scaling of curves")
     # '8880:  Add curve plot.  Set scaling to log-log.  Add another curve plot.
-    OpenDatabase("../data/distribution.ultra")
+    OpenDatabase("../data/curve_test_data/distribution.ultra")
     AddPlot("Curve", "Laplace Distribution")
     # For log scaling to work with these curves, we need to transform
     # first.
@@ -273,7 +273,7 @@ def TestViewChangeLogScalingCurves():
 
     #8660  add log scaling to a curve put in an appropriate range via the
     #      box operator
-    OpenDatabase("../data/c063.curve")
+    OpenDatabase("../data/curve_test_data/c063.curve")
     AddPlot("Curve", "flat")
     AddPlot("Curve", "going_down")
     AddPlot("Curve", "going_up")

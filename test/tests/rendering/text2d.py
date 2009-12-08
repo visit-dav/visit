@@ -25,7 +25,7 @@ a.backgroundMode = a.Solid
 SetAnnotationAttributes(a)
 
 # Open up the database and do a plot.
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 

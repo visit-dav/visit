@@ -76,7 +76,7 @@ TestText("closedatabase06", testString)
 
 
 # Try adding some databases
-dbs = ("../data/wave.visit", "../data/globe.silo", "../data/curv3d.silo")
+dbs = ("../data/silo_hdf5_test_data/wave.visit", "../data/silo_hdf5_test_data/globe.silo", "../data/silo_hdf5_test_data/curv3d.silo")
 for db in dbs:
     OpenDatabase(db)
 

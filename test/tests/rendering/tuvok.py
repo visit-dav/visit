@@ -42,7 +42,7 @@ tuvok.rendererType = tex3d.Tuvok
 # We'll render twice: once via tex3d.  We're pretty particular about the OpenGL
 # state in Tuvok, and if we're not careful we'll set something that one of the
 # other plots isn't expecting.
-with Dataset("../data/rect3d.silo", "u") as r3d:
+with Dataset("../data/silo_hdf5_test_data/rect3d.silo", "u") as r3d:
   AddPlot("Volume", r3d.variable())
 
   SetPlotOptions(tex3d)
@@ -53,7 +53,7 @@ with Dataset("../data/rect3d.silo", "u") as r3d:
   DrawPlots()
   Test(tid.next())
 
-with Dataset("../data/noise.silo", "hardyglobal") as noise:
+with Dataset("../data/silo_hdf5_test_data/noise.silo", "hardyglobal") as noise:
   AddPlot("Volume", noise.variable())
   SetPlotOptions(tex3d)
   DrawPlots()
@@ -63,7 +63,7 @@ with Dataset("../data/noise.silo", "hardyglobal") as noise:
   DrawPlots()
   Test(tid.next())
 
-with Dataset("../data/FLOAT_indices.bov", "myvar") as floatbov:
+with Dataset("../data/bov_test_data/FLOAT_indices.bov", "myvar") as floatbov:
   AddPlot("Volume", floatbov.variable())
   SetPlotOptions(tex3d)
   DrawPlots()

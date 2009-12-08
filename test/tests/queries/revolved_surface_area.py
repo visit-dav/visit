@@ -21,7 +21,7 @@
 
 # Test for topological dimension 2.
 TurnOnAllAnnotations()
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -57,7 +57,7 @@ TestText("revolved_surface_area_03", text)
 
 # Test with 3D, isosurface, slice.
 DeleteAllPlots()
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Isosurface")
 SetOperatorOptions(iso_atts)

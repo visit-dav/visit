@@ -17,7 +17,7 @@ swa.outputToCurrentDirectory = 0
 swa.outputDirectory = "current"
 SetSaveWindowAttributes(swa)
 
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
 AddPlot("Pseudocolor","pressure")
 DrawPlots()
 

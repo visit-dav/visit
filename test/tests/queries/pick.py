@@ -185,7 +185,7 @@
 
 def Pick3DTo2D():
     # Testing pick on 3d plots projected to 2d via Slice and Cone operators
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Pseudocolor", "u")
     AddOperator("Slice")
     slice = SliceAttributes()
@@ -245,7 +245,7 @@ def Pick3DTo2D():
     #  When sliced along boundary between zones,
     #  pick with all materials returns different output than
     #  pick with some materials turned off.
-    OpenDatabase("../data/multi_rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
     AddPlot("Pseudocolor", "d")
     AddOperator("Slice")
     slice = SliceAttributes()
@@ -297,7 +297,7 @@ def Pick3DTo2D():
     ResetPickLetter()
 
 def Pick2D():
-    OpenDatabase("../data/ucd2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     ResetView()
@@ -316,7 +316,7 @@ def Pick2D():
     DeleteAllPlots()
 
     # Test PickByZone and PickByNode on data with ghost zones.
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -372,7 +372,7 @@ def Pick2D():
     DeleteAllPlots()
 
     # bug '5152, ascii data not reported as such.
-    OpenDatabase("../data/rect2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
     AddPlot("Pseudocolor", "ascii")
     DrawPlots()
 
@@ -406,7 +406,7 @@ def Pick2D():
 
 def PickOnionPeel():
     # Testing pick on 3d plots with OnionPeel operator
-    OpenDatabase("../data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
     AddPlot("Pseudocolor", "u")
     AddOperator("OnionPeel")
     op = OnionPeelAttributes()
@@ -453,7 +453,7 @@ def PickSubset():
     #Testing Pick's accuracy on a sil-restricted plot.
     #All the picks in this test should return zone 30.
     #From defect VisIt00003348
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Subset", "mat1")
     TurnMaterialsOff()
     TurnMaterialsOn("1")
@@ -491,7 +491,7 @@ def PickSubset():
 def PickMatFracsThreshold():
     # Testing pick on 3d plot with Threshold operator, returning
     # material var (mat fracs) and vector var. 
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     AddPlot("Pseudocolor", "p")
     thresh = ThresholdAttributes()
     thresh.upperBounds = (37.0)
@@ -560,7 +560,7 @@ def PickMatFracsThreshold():
 
 def PickReflect():
     # Testing pick on plot with Reflect operator.
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Pseudocolor", "u")
     AddOperator("Reflect")
     DrawPlots()
@@ -577,7 +577,7 @@ def PickReflect():
 
 
 def PickFilledBoundary():
-    OpenDatabase("../data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
     AddPlot("FilledBoundary", "mat1")
 
     AddOperator("Slice")
@@ -632,7 +632,7 @@ def PickFilledBoundary():
     # bug 6217 -- NodePick on Sliced FB returning wrong coords.
     # will test with Mesh, OnionPeeled Mesh and FB to verify
     # they all return the same nodes/zones and coords.
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Mesh", "mesh1")
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
@@ -672,7 +672,7 @@ def PickFilledBoundary():
 
 def PickMultiBlock():
     # Testing pick on 3d multi-domain plots 
-    OpenDatabase("../data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
     AddPlot("Pseudocolor", "u")
 
     DrawPlots()
@@ -736,7 +736,7 @@ def PickMultiBlock():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/multi_rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
     AddPlot("Mesh", "mesh1")
     TurnMaterialsOn()
     DrawPlots()
@@ -799,7 +799,7 @@ def PickMultiBlock():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/bigsil.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
     ResetView()
@@ -844,7 +844,7 @@ def PickMultiBlock():
     ResetPickLetter()
 
 def PickSurface():
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     AddPlot("Surface", "d")
     AddOperator("Slice")
     slice = SliceAttributes()
@@ -886,7 +886,7 @@ def PickSurface():
   
     DeleteAllPlots()
 
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Surface", "p")
     DrawPlots()
     ResetView()
@@ -918,7 +918,7 @@ def PickSurface():
 
     DeleteAllPlots() 
 
-    OpenDatabase("../data/ucd2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
     AddPlot("Surface", "d")
     DrawPlots()
     ResetView()
@@ -958,7 +958,7 @@ def PickSurface():
     ResetPickLetter()
 
 def PickBigSilMat():
-    OpenDatabase("../data/bigsil.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
     ResetView()
@@ -1121,7 +1121,7 @@ def PickOnionPeel2():
 
 def PickSpecMix():
     #VisIt '3864
-    OpenDatabase("../data/specmix_quad.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/specmix_quad.silo")
     AddPlot("Pseudocolor", "Species")
     DrawPlots()
     vars = ("default")
@@ -1195,7 +1195,7 @@ def PickSpecMix():
     ResetPickLetter()
 
 def PickCurve():
-    OpenDatabase("../data/curve.visit")
+    OpenDatabase("../data/curve_test_data/curve.visit")
     AddPlot("Curve", "parabolic")
     SetTimeSliderState(72)
     DrawPlots()
@@ -1298,7 +1298,7 @@ def PickMultiWindow():
 # being gone.
 #
 def PickBadEngineSetup(testName, GetRidOfEngineCallback):
-    OpenDatabase("../data/curv3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -1335,7 +1335,7 @@ def PickBadEngineSetup(testName, GetRidOfEngineCallback):
     AddWindow()
     SetActiveWindow(2)
     DeleteAllPlots()
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     SetActiveWindow(1)
@@ -1409,7 +1409,7 @@ def PickBoundary():
 
     ResetPickAttributes()
 
-    OpenDatabase("../data/curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
     AddPlot("Boundary", "mat1")
     DrawPlots()
 
@@ -1449,7 +1449,7 @@ def PickBoundary():
     DeleteAllPlots()
  
 
-    OpenDatabase("../data/specmix_quad.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/specmix_quad.silo")
     AddPlot("Boundary", "Material")
     DrawPlots()
     ResetView()
@@ -1476,7 +1476,7 @@ def PickBoundary():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/specmix_ucd.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/specmix_ucd.silo")
     AddPlot("Boundary", "Material")
     DrawPlots()
     ResetView()
@@ -1507,7 +1507,7 @@ def PickBoundary():
     #Test Sliced Boundary plots
     ResetOperatorOptions("Slice")
 
-    OpenDatabase("../data/curv3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
     AddPlot("Boundary", "mat1")
     AddOperator("Slice")
 
@@ -1541,7 +1541,7 @@ def PickBoundary():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/sid97.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/sid97.silo")
     AddPlot("Boundary", "mat1")
 
     AddOperator("Slice")
@@ -1593,7 +1593,7 @@ def PickBoundary():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     AddPlot("Boundary", "mat1")
 
     AddOperator("Slice")
@@ -1634,7 +1634,7 @@ def PickBoundary():
     ResetPickLetter()
 
 def PickVectorPlots():
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Vector", "vel")
     vector = VectorAttributes()
     vector.autoScale = 0
@@ -1765,7 +1765,7 @@ def PickVectorPlots():
     ResetPickLetter()
 
 def PickPointMeshes():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Pseudocolor", "PointVar")
     pc = PseudocolorAttributes()
     pc.pointSize = 1
@@ -1807,7 +1807,7 @@ def PickPointMeshes():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/multi_point2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_point2d.silo")
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.meshColor = (255, 0, 255, 255)
@@ -1842,7 +1842,7 @@ def PickPointMeshes():
     s = s + GetPickOutput()
 
     DeleteAllPlots()
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Subset", "PointMesh")
     DrawPlots()
     ResetView()
@@ -1859,7 +1859,7 @@ def PickPointMeshes():
     ResetPickLetter()
 
 def PickGlobalIds():
-    OpenDatabase("../data/global_node.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/global_node.silo")
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
     ResetView()
@@ -1936,7 +1936,7 @@ def PickGlobalIds():
     ResetPickLetter()
 
 def PickExpressions():
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     DefineScalarExpression("m1", 'matvf(mat1, ["1", "3"])')
     DefineScalarExpression("mir1", 'mirvf(mat1, zoneid(quadmesh3d), volume(quadmesh3d), 1)')
 
@@ -1972,7 +1972,7 @@ def PickExpressions():
     s = s + GetPickOutput()
 
     DeleteAllPlots()
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Pseudocolor", "t")
     DrawPlots()
     ResetView()
@@ -2238,7 +2238,7 @@ def PickSamrai():
     ResetPickLetter()
 
 def PickIndexSelect():
-    OpenDatabase("../data/rect2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
     AddPlot("Mesh", "quadmesh2d")
     AddPlot("Pseudocolor", "u")
     AddOperator("IndexSelect")
@@ -2290,7 +2290,7 @@ def PickIndexSelect():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("Pseudocolor", "d")
     SetActivePlots((0, 1))
@@ -2390,7 +2390,7 @@ def PickIndexSelect():
     ResetPickLetter()
 
 def PickTensors():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Mesh", "Mesh")
     DrawPlots()
     vars = ("grad_tensor")
@@ -2490,7 +2490,7 @@ def PickMili():
 
 def PickContour():
     #'7144
-    OpenDatabase("../data/multi_rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
     AddPlot("Contour", "d")
     contour = ContourAttributes()
     contour.contourNLevels = 4
@@ -2526,7 +2526,7 @@ def PickContour():
 
 def PickBox():
     #'7566
-    OpenDatabase("../data/rect2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
     AddPlot("Pseudocolor", "d")
     AddOperator("Box")
     box = BoxAttributes()
@@ -2554,7 +2554,7 @@ def PickBox():
 
 
     DeleteAllPlots()
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     AddPlot("Pseudocolor", "d")
     AddOperator("Box")
     box.minx = 0.3

@@ -38,7 +38,7 @@ def InitAnnotationsLegendOn():
     SetAnnotationAttributes(a)
 
 def TestVolumeScaling():
-    OpenDatabase("../data/rect3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
     AddPlot("Volume", "t")
     volAtts = VolumeAttributes()
     volAtts.rendererType = volAtts.Splatting
@@ -102,7 +102,7 @@ def TestVolumeScaling():
     DeleteAllPlots()
 
 def TestVolumeOpacity():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Volume", "hardyglobal")
     volAtts = VolumeAttributes()
     SetPlotOptions(volAtts)
@@ -145,7 +145,7 @@ def TestVolumeOpacity():
     DeleteAllPlots()
 
 def TestVolumeAspect():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Volume", "hardyglobal")
     DefineVectorExpression("disp", "{0,0,-0.9999*coord(Mesh)[2]}")
     AddOperator("Displace")
@@ -161,7 +161,7 @@ def TestVolumeAspect():
     DeleteAllPlots()
 
 def TestVolumeColorControlPoints():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Volume", "hardyglobal")
 
     # Modify colors. The default color table has 5 control points. Delete
@@ -203,7 +203,7 @@ def TestVolumeColorControlPoints():
     DeleteAllPlots()
 
 def TestVolumeGaussianControlPoints():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Volume", "hardyglobal")
 
     v = VolumeAttributes()

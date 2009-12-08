@@ -19,11 +19,11 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/wave0200.silo")
+OpenDatabase("../data/silo_hdf5_test_data/wave0200.silo")
 
 
 # Test general capability.
-DefineScalarExpression("cmfe", "conn_cmfe(<../data/wave0020.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe", "conn_cmfe(<../data/silo_hdf5_test_data/wave0020.silo:pressure>, quadmesh)")
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("conn_cmfe_01")
@@ -68,40 +68,40 @@ DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_06", t)
 
-DefineScalarExpression("cmfe4", "conn_cmfe(<../data/wave0100.silo:pressure>, quadmesh, pressure)")
+DefineScalarExpression("cmfe4", "conn_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>, quadmesh, pressure)")
 ChangeActivePlotsVar("cmfe4")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_07", t)
 
-DefineScalarExpression("cmfe5", "conn_cmfe(<../data/wave0100.silo:pressure>)")
+DefineScalarExpression("cmfe5", "conn_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>)")
 ChangeActivePlotsVar("cmfe5")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_08", t)
 
 # And one more cool picture just for grins.
-DefineScalarExpression("cmfe6", "conn_cmfe(<../data/wave0570.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe6", "conn_cmfe(<../data/silo_hdf5_test_data/wave0570.silo:pressure>, quadmesh)")
 DefineScalarExpression("max", "if(ge(pressure, cmfe6), pressure, cmfe6)")
 ChangeActivePlotsVar("max")
 DrawPlots()
 Test("conn_cmfe_09")
 
 # Invalid variable in new database.
-DefineScalarExpression("cmfe7", "conn_cmfe(<../data/globe.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe7", "conn_cmfe(<../data/silo_hdf5_test_data/globe.silo:pressure>, quadmesh)")
 ChangeActivePlotsVar("cmfe7")
 t = GetLastError()
 TestText("conn_cmfe_10", t)
 
 # Now a good variable, but connectivity doesn't match.
-DefineScalarExpression("cmfe8", "conn_cmfe(<../data/globe.silo:t>, quadmesh)")
+DefineScalarExpression("cmfe8", "conn_cmfe(<../data/silo_hdf5_test_data/globe.silo:t>, quadmesh)")
 ChangeActivePlotsVar("cmfe8")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_11", t)
 
 # Test multiple CMFEs
-DefineScalarExpression("cmfe9", "conn_cmfe(<../data/wave0100.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe9", "conn_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>, quadmesh)")
 DefineScalarExpression("max2", "if(ge(max, cmfe9), max, cmfe9)")
 ChangeActivePlotsVar("max2")
 DrawPlots()

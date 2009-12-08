@@ -17,7 +17,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 
     
 # Default use case

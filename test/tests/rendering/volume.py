@@ -58,7 +58,7 @@ DeleteAllPlots()
 
 # END SECTION TO BE MOVED
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Volume", "t")
 silr=SILRestriction()
 silr.TurnOffSet(4)

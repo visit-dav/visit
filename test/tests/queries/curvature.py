@@ -12,7 +12,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 DefineScalarExpression("curvature", "mean_curvature(quadmesh3d)") 
 AddPlot("Pseudocolor", "curvature")
 AddOperator("Isosurface")

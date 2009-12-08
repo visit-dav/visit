@@ -12,7 +12,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/sesame.pdb")
+OpenDatabase("../data/pdb_test_data/sesame.pdb")
 
 #
 # Test default full frame (became 'auto' 07Mar06)

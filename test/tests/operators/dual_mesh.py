@@ -19,7 +19,7 @@
 
 # Test 2D Case
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -48,7 +48,7 @@ Test("ops_dualmesh_mesh_plot_2d_02")
 DeleteAllPlots()
 
 # Test 3D Case
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 AddPlot("Pseudocolor", "d")
 view = GetView3D()
 view.viewNormal = (-0.5, 0.5, 0.7172)

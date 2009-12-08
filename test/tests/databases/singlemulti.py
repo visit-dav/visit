@@ -66,7 +66,7 @@ Test("singlemulti00")
 TestWindowInformation("singlemulti01")
 
 # Create a Pseudocolor plot of curv3d, a single time state database.
-OpenDatabase("../data/curv3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
 t = TransformAttributes()

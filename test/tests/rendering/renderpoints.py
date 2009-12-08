@@ -198,7 +198,7 @@ def main():
     # Turn off all annotation
     TurnOffAllAnnotations()
 
-    OpenDatabase("../data/galaxy0000.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/galaxy0000.silo")
 
     test0()
     test1()

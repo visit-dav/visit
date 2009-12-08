@@ -40,7 +40,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 
 DefineVectorExpression("grad_t", "gradient(t)")
 AddPlot("Vector", "grad_t")
@@ -64,7 +64,7 @@ DrawPlots()
 Test("field_op_02")
 DeleteAllPlots()
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 
 DefineVectorExpression("grad_d", "gradient(d)")
 AddPlot("Vector", "grad_d")
@@ -89,7 +89,7 @@ DrawPlots()
 Test("field_op_04")
 DeleteAllPlots()
 
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 
 AddPlot("Vector", "grad_d")
 v = VectorAttributes()
@@ -159,7 +159,7 @@ Test("field_op_09")
 DeleteAllPlots()
 
 # Test that we can calculate the Laplacian.
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 
 v = GetView3D()
 v.imageZoom = 1
@@ -210,7 +210,7 @@ DrawPlots()
 Test("field_op_13")
 
 DeleteAllPlots()
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 DefineScalarExpression("div2", "divergence(vel)")
 AddPlot("Pseudocolor", "div2")
 DrawPlots()
@@ -234,7 +234,7 @@ AddPlot("Pseudocolor", "jacobian")
 DrawPlots()
 Test("field_op_17")
 
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 DefineVectorExpression("mycurl", "curl(vel)")
 DefineScalarExpression("mydot", "dot(curl,vel)")
 DeleteAllPlots()

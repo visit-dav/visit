@@ -12,7 +12,7 @@
 
 
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 
 
 AddPlot("Pseudocolor", "d")

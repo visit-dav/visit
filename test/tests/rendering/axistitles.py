@@ -29,7 +29,7 @@ def SaveTestImage(name):
 #
 def Test2D():
     TestSection("Setting axis titles in 2D")
-    OpenDatabase("../data/noise2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise2d.silo")
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -71,7 +71,7 @@ def Test2D():
 #
 def Test3D():
     TestSection("Setting axis titles in 3D")
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 

@@ -31,7 +31,7 @@ DefineScalarExpression("var4", "var5 * var6")
 DefineScalarExpression("var7", "var8 / var9")
 
 # Open the first database, which has some expressions.
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "speed")
 DrawPlots()
 
@@ -53,7 +53,7 @@ TestText("exprList02", ExprStrings())
 
 # Open a new database. This should make the expression list contain the
 # expressions for rect3d and our scalar expressions.
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 TestText("exprList03", ExprStrings())
 
 # Add a plot

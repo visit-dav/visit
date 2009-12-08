@@ -49,7 +49,7 @@ SetAnnotationAttributes(a)
 
 
 # Open the database.
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 
 # Test the single color opacity for the Boundary plot
 AddPlot("Boundary", "mat1")

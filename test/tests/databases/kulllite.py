@@ -73,14 +73,14 @@ DeleteAllPlots()
 
 # Test reading of densities, for both per-zone quantities and per-zone,
 # per-material quantities.
-OpenDatabase("../data/2dOverlayTest21.pdb")
+OpenDatabase("../data/pdb_test_data/2dOverlayTest21.pdb")
 AddPlot("Pseudocolor", "density")
 DrawPlots()
 Test("kulllite_07")
 m = MaterialAttributes()
 m.forceMIR = 1
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/2dOverlayTest21.pdb")
+ReOpenDatabase("../data/pdb_test_data/2dOverlayTest21.pdb")
 Test("kulllite_08")
 
 Exit()

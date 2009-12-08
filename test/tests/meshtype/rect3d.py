@@ -31,7 +31,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 
 AddPlot("Pseudocolor", "d")
 pc=PseudocolorAttributes()

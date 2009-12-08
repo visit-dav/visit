@@ -17,7 +17,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/csg.silo")
+OpenDatabase("../data/silo_hdf5_test_data/csg.silo")
 
 mma=MeshManagementAttributes()
 mma.discretizationMode = mma.Uniform
@@ -130,7 +130,7 @@ DeleteAllPlots()
 # Now use Matt's Fusion data
 #
 DeleteAllPlots()
-CloseDatabase("../data/csg.silo")
+CloseDatabase("../data/silo_hdf5_test_data/csg.silo")
 mma.discretizationTolerance=(0.05, 0.25)
 mma.discretizationMode = mma.Adaptive
 SetMeshManagementAttributes(mma)

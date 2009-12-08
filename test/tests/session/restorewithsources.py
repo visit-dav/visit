@@ -19,7 +19,7 @@ Test("restorewithsources00")
 
 # Now, try restoring the session with a different data file. Note that since
 # there's just one source, we pass a string instead of a tuple of strings.
-RestoreSessionWithDifferentSources("tests/session/restorewithsources.session", 0, "../data/rect2d.silo")
+RestoreSessionWithDifferentSources("tests/session/restorewithsources.session", 0, "../data/silo_hdf5_test_data/rect2d.silo")
 Test("restorewithsources01")
 
 # Make sure that the plots are deleted

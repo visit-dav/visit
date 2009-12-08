@@ -18,7 +18,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/noise.silo")
+OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
 AddPlot("Pseudocolor", "PointVar")
 AddOperator("Resample")
 
@@ -96,7 +96,7 @@ Test("ops_resampleop_noise_hardy_small")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 AddPlot("Pseudocolor", "v")
 AddOperator("Resample")
 

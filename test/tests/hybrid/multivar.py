@@ -31,7 +31,7 @@
 
 
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 
 
 # Set up the isosurface operators attributes
@@ -83,7 +83,7 @@ Test("multivar_03")
 DeleteAllPlots()
 
 # Test multiple variables with different centerings with expressions ('7843)
-OpenDatabase("../data/curv3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
 DefineScalarExpression("x", "coord(curvmesh3d)[0]")
 DefineScalarExpression("y", "coord(curvmesh3d)[1]")
 DefineScalarExpression("z", "coord(curvmesh3d)[2]")

@@ -29,7 +29,7 @@ SetView3D(view)
 # The volume plot does not need ghost zones, so this will create one
 # set of MIRs.
 #
-OpenDatabase("../data/bigsil.silo")
+OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
 AddPlot("Volume", "dist")
 sil = SILRestriction()
 sets = sil.SetsInCategory("mat")

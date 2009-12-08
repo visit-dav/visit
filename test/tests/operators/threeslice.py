@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 
 def Test1():
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Pseudocolor", "hardyglobal")
     AddOperator("ThreeSlice")
     DrawPlots()

@@ -59,7 +59,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/bigsil.silo")
+OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
 
 DefineScalarExpression("radius_polar", "polar(mesh)[0]")
 AddPlot("Contour", "radius_polar")
@@ -68,7 +68,7 @@ Test("radius_ghosts")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 
 
 DefineScalarExpression("mag1", "magnitude(vel)")
@@ -276,7 +276,7 @@ DeleteAllPlots()
 # The constant (3.14159) will be the only variable in the dataset.  Test
 # that the constant creation logic can figure out that we must be making
 # an expression based on the mesh downstream.
-OpenDatabase("../data/rect3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
 DefineScalarExpression("sin_x", "sin(3.14159*coord(quadmesh3d)[0])")
 AddPlot("Pseudocolor", "sin_x")
 DrawPlots()
@@ -300,7 +300,7 @@ DeleteAllPlots()
 
 # Test that a variable (u) can be used in both the expression and downstream
 # in the pipeline.
-OpenDatabase("../data/globe.silo")
+OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
 AddPlot("Pseudocolor", "speed")
 AddOperator("Threshold")
 thresh = ThresholdAttributes()
@@ -356,7 +356,7 @@ DrawPlots()
 Test("long_identity_expr")
 
 DeleteAllPlots()
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 DefineScalarExpression("resrad", "resrad(recenter(u), 0.1)")
 AddPlot("Pseudocolor", "resrad")
 DrawPlots()

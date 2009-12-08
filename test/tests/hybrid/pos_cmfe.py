@@ -18,17 +18,17 @@
 
 
 
-OpenDatabase("../data/curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
 
 
 # Test general capability.
-DefineScalarExpression("cmfe", "pos_cmfe(<../data/ucd2d.silo:d>, curvmesh2d, -1.)")
+DefineScalarExpression("cmfe", "pos_cmfe(<../data/silo_hdf5_test_data/ucd2d.silo:d>, curvmesh2d, -1.)")
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("pos_cmfe_01")
 
 # Zonal vars
-DefineScalarExpression("cmfeZ", "pos_cmfe(<../data/ucd2d.silo:p>, curvmesh2d, -1.)")
+DefineScalarExpression("cmfeZ", "pos_cmfe(<../data/silo_hdf5_test_data/ucd2d.silo:p>, curvmesh2d, -1.)")
 DeleteAllPlots()
 AddPlot("Pseudocolor", "cmfeZ")
 DrawPlots()
@@ -73,20 +73,20 @@ DrawPlots()
 t = GetLastError()
 TestText("pos_cmfe_07", t)
 
-DefineScalarExpression("cmfe4", "pos_cmfe(<../data/wave0100.silo:pressure>, curvmesh2d)")
+DefineScalarExpression("cmfe4", "pos_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>, curvmesh2d)")
 ChangeActivePlotsVar("cmfe4")
 DrawPlots()
 t = GetLastError()
 TestText("pos_cmfe_08", t)
 
-DefineScalarExpression("cmfe5", "pos_cmfe(<../data/wave0100.silo:pressure>)")
+DefineScalarExpression("cmfe5", "pos_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>)")
 ChangeActivePlotsVar("cmfe5")
 DrawPlots()
 t = GetLastError()
 TestText("pos_cmfe_09", t)
 
 # Invalid variable in new database.
-DefineScalarExpression("cmfe6", "pos_cmfe(<../data/ucd2d.silo:xyz>, curvmesh2d, 0.)")
+DefineScalarExpression("cmfe6", "pos_cmfe(<../data/silo_hdf5_test_data/ucd2d.silo:xyz>, curvmesh2d, 0.)")
 ChangeActivePlotsVar("cmfe6")
 DrawPlots()
 t = GetLastError()
@@ -96,8 +96,8 @@ TestText("pos_cmfe_10", t)
 
 # 3D, multi-block to multi-block.
 DeleteAllPlots()
-OpenDatabase("../data/multi_ucd3d.silo")
-DefineScalarExpression("cmfe7", "pos_cmfe(<../data/multi_curv3d.silo:d>, mesh1, 0.)")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+DefineScalarExpression("cmfe7", "pos_cmfe(<../data/silo_hdf5_test_data/multi_curv3d.silo:d>, mesh1, 0.)")
 AddPlot("Pseudocolor", "cmfe7")
 DrawPlots()
 Test("pos_cmfe_11")
@@ -106,24 +106,24 @@ DeleteAllPlots()
 
 # multi-block to single-block.
 DeleteAllPlots()
-OpenDatabase("../data/curv3d.silo")
-DefineScalarExpression("cmfe8", "pos_cmfe(<../data/multi_curv3d.silo:d>, curvmesh3d, 0.)")
+OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+DefineScalarExpression("cmfe8", "pos_cmfe(<../data/silo_hdf5_test_data/multi_curv3d.silo:d>, curvmesh3d, 0.)")
 AddPlot("Pseudocolor", "cmfe8")
 DrawPlots()
 Test("pos_cmfe_12")
 
 # single-block to multi-block.
 DeleteAllPlots()
-OpenDatabase("../data/multi_curv3d.silo")
-DefineScalarExpression("cmfe9", "pos_cmfe(<../data/curv3d.silo:d>, mesh1, 0.)")
+OpenDatabase("../data/silo_hdf5_test_data/multi_curv3d.silo")
+DefineScalarExpression("cmfe9", "pos_cmfe(<../data/silo_hdf5_test_data/curv3d.silo:d>, mesh1, 0.)")
 AddPlot("Pseudocolor", "cmfe9")
 DrawPlots()
 Test("pos_cmfe_13")
 
 # single-block to multi-block -- vector
 DeleteAllPlots()
-OpenDatabase("../data/multi_ucd3d.silo")
-DefineVectorExpression("cmfe10", "pos_cmfe(gradient(<../data/curv3d.silo:d>), mesh1, {0,0,0})")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+DefineVectorExpression("cmfe10", "pos_cmfe(gradient(<../data/silo_hdf5_test_data/curv3d.silo:d>), mesh1, {0,0,0})")
 AddPlot("Vector", "cmfe10")
 vec = VectorAttributes()
 vec.nVectors = 400*36

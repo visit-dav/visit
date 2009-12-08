@@ -18,7 +18,7 @@
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Isovolume")
 iso_atts = IsovolumeAttributes()
@@ -37,7 +37,7 @@ TestText("scf_02", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 qota = GetQueryOverTimeAttributes()
@@ -50,7 +50,7 @@ SetAnnotationAttributes(a)
 Test("scf_03")
 
 DeleteAllPlots()
-OpenDatabase("../data/rect2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 i = ThresholdAttributes()
 i.lowerBounds = (0.0)

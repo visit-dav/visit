@@ -67,7 +67,7 @@ def TestMultiColor(section, plotAtts, decreasingOpacity):
 def test1():
     TestSection("Testing setting of multiColor in Boundary plot")
     # Set up the plot
-    OpenDatabase("../data/rect2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
     AddPlot("Boundary", "mat1")
     b = BoundaryAttributes()
     b.lineWidth = 4
@@ -82,7 +82,7 @@ def test1():
 def test2():
     TestSection("Testing setting of multiColor in Contour plot")
     # Set up the plot
-    OpenDatabase("../data/noise.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
     AddPlot("Contour", "hardyglobal")
     c = ContourAttributes()
     c.contourNLevels = 20
@@ -109,13 +109,13 @@ def test3():
     TestSection("Testing setting of multiColor in FilledBoundary plot")
     # Set up the plots. First we want globe so we can see something inside
     # of the Subset plot to make sure that setting alpha works.
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Pseudocolor", "w")
     p = PseudocolorAttributes()
     p.legendFlag = 0
     p.colorTableName = "xray"
     SetPlotOptions(p)
-    OpenDatabase("../data/bigsil.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
     AddPlot("FilledBoundary", "mat")
     f = FilledBoundaryAttributes()
     f.legendFlag = 0
@@ -153,13 +153,13 @@ def test4():
     TestSection("Testing setting of multiColor in Subset plot")
     # Set up the plots. First we want globe so we can see something inside
     # of the Subset plot to make sure that setting alpha works.
-    OpenDatabase("../data/globe.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
     AddPlot("Pseudocolor", "w")
     p = PseudocolorAttributes()
     p.legendFlag = 0
     p.colorTableName = "xray"
     SetPlotOptions(p)
-    OpenDatabase("../data/bigsil.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
     AddPlot("Subset", "domains")
     s = SubsetAttributes()
     s.legendFlag = 0
@@ -197,7 +197,7 @@ def test5():
     TestSection("Testing user defined colors for FilledBoundary")
 
     ResetView()
-    OpenDatabase("../data/globe_matcolors.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/globe_matcolors.silo")
     AddPlot("FilledBoundary","mat1")
     AddOperator("Slice")
     DrawPlots()

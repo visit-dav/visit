@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/multi_curv2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_curv2d.silo")
 
 AddPlot("Subset", "domains")
 DrawPlots()

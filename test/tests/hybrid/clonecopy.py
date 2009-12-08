@@ -45,7 +45,7 @@ a1.gradientColor2 = (0, 0, 0, 255)
 a1.backgroundMode = a1.Gradient
 
 # Set up the plots.
-OpenDatabase("../data/wave.visit")
+OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
 AddPlot("Subset", "Material")
 DrawPlots()
 v = View3DAttributes()

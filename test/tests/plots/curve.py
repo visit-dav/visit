@@ -26,7 +26,7 @@ def InitAnnotations():
 
 
 def Test1():
-    OpenDatabase("../data/distribution.ultra")
+    OpenDatabase("../data/curve_test_data/distribution.ultra")
     DefineCurveExpression("logED", "log10(<Exponential Distribution>)")
     DefineCurveExpression("logLap", "log10(<Laplace Distribution>)")
     AddPlot("Curve", "Exponential Distribution")
@@ -78,13 +78,13 @@ def Test1():
     Test("curve_1_07")
 
     DeleteAllPlots()
-    CloseDatabase("../data/distribution.ultra")
+    CloseDatabase("../data/curve_test_data/distribution.ultra")
 
 def TestOverlayCurves():
     TestSection("Overlay curves on 2D plots")
 
     # put up some 2D plots
-    OpenDatabase("../data/ucd2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
     AddPlot("Pseudocolor","d")    # id=0
     AddPlot("Mesh","ucdmesh2d")   # id=1
     SetActivePlots((1))
@@ -95,17 +95,17 @@ def TestOverlayCurves():
     SetOperatorOptions(ta)
     DrawPlots()
 
-    OpenDatabase("../data/ol_curveA.curve")
+    OpenDatabase("../data/curve_test_data/ol_curveA.curve")
     AddPlot("Curve","ol_curveA")  # id=2
     DrawPlots()
     Test("curve_2_01")
 
-    OpenDatabase("../data/ol_curveB.curve")
+    OpenDatabase("../data/curve_test_data/ol_curveB.curve")
     AddPlot("Curve","ol_curveB")  # id=3
     DrawPlots()
     Test("curve_2_02")
 
-    OpenDatabase("../data/ol_curveC.curve")
+    OpenDatabase("../data/curve_test_data/ol_curveC.curve")
     AddPlot("Curve","ol_curveC")  # id=4
     DrawPlots()
     Test("curve_2_03")
@@ -141,10 +141,10 @@ def TestOverlayCurves():
     HideActivePlots()
 
     DeleteAllPlots()
-    CloseDatabase("../data/ucd2d.silo")
-    CloseDatabase("../data/ol_curveA.curve")
-    CloseDatabase("../data/ol_curveB.curve")
-    CloseDatabase("../data/ol_curveC.curve")
+    CloseDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
+    CloseDatabase("../data/curve_test_data/ol_curveA.curve")
+    CloseDatabase("../data/curve_test_data/ol_curveB.curve")
+    CloseDatabase("../data/curve_test_data/ol_curveC.curve")
 
 def Main():
     InitAnnotations()

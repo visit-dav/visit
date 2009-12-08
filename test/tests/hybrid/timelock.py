@@ -171,7 +171,7 @@ def test1(testindex):
     SetCloneWindowOnFirstRef(1)
 
     # Copy wave.visit to this directory a few times.
-    f = open("../data/wave.visit", "rt")
+    f = open("../data/silo_hdf5_test_data/wave.visit", "rt")
     lines = f.readlines()
     f.close()
     f0 = open("wave.visit","wt")
@@ -261,7 +261,7 @@ def test2(testindex):
     SetAnnotationAttributes(b)
 
     SetCloneWindowOnFirstRef(0)
-    OpenDatabase("../data/dbA00.pdb")
+    OpenDatabase("../data/pdb_test_data/dbA00.pdb")
     AddPlot("FilledBoundary", "material(mesh)")
     DrawPlots()
     Test("timelock_%02d" % testindex)
@@ -307,7 +307,7 @@ def test3(testindex):
     # Turn on "CloneWindowOnFirstRef"
     SetCloneWindowOnFirstRef(1)
 
-    dbs = ("../data/wave.visit", "../data/wave_tv.visit")
+    dbs = ("../data/silo_hdf5_test_data/wave.visit", "../data/silo_hdf5_test_data/wave_tv.visit")
     OpenDatabase(dbs[0])
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()

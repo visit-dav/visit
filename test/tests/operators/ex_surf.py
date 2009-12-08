@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("ExternalSurface")
 DrawPlots()
@@ -35,7 +35,7 @@ TestText("ops_ex_surf_03", t)
 
 
 DeleteAllPlots()
-OpenDatabase("../data/ucd2d.silo")
+OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("ExternalSurface")
 DrawPlots()

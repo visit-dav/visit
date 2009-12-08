@@ -17,7 +17,7 @@
 
 def TestMaterials():
     TestSection("Materials in VTK")
-    OpenDatabase("../data/globe_mats.vtk")
+    OpenDatabase("../data/vtk_test_data/globe_mats.vtk")
 
     #
     # Test simple read and display of a material variable 
@@ -150,7 +150,7 @@ def TestXML():
 
 def TestHigherOrder():
     TestSection("Quadratic triangles in VTK")
-    OpenDatabase("../data/higher_order_triangles.vtk")
+    OpenDatabase("../data/vtk_test_data/higher_order_triangles.vtk")
     AddPlot("Mesh", "mesh");
     DrawPlots()
 
