@@ -74,8 +74,9 @@ int main()
     // 17 patches at level 2
     //  5 patches at level 3
     ns = new Namescheme("@level%d,patch%d"
-        "@(n/2)?((n/9)?((n/26)?3:2:):1:):0:"
-        "@(n/2)?((n/9)?((n/26)?n-26:n-9:):n-2:):n:");
+        "@(n/2)?((n/9)?((n/26)?3:2:):1:):0:"        // level part (1rst %d) 
+        "@(n/2)?((n/9)?((n/26)?n-26:n-9:):n-2:):n:" // patch part (2nd %d)
+    );
     if (strcmp(ns->GetName( 1), "level0,patch1")  != 0) return 1; // A
     if (strcmp(ns->GetName( 3), "level1,patch1")  != 0) return 1; // B
     if (strcmp(ns->GetName( 8), "level1,patch6")  != 0) return 1; // C
