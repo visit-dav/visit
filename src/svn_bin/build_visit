@@ -989,7 +989,7 @@ export ON_OPTIONAL="on"
 export DO_MORE="no"
 export ON_MORE="off"
 export DO_DBIO_ONLY="no"
-
+export DO_STATIC_BUILD="no"
 
 export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit/"
 # Setup svn path: use SVN_NERSC_NAME if set
@@ -2641,7 +2641,11 @@ function build_mesa
           error "Mesa: AIX autoconf failed!"
         fi
     fi
-    
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+         MESA_STATIC_DYNAMIC="--disable-shared --enable-static"
+    fi
+
     info 
     
     ./configure \
@@ -2656,7 +2660,7 @@ function build_mesa
       --enable-gl-osmesa           \
       --disable-glw                \
       --disable-glu                \
-      --disable-egl 
+      --disable-egl ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
        warn "Mesa: 'configure' for Mangled glX failed.  Giving up"
        return 1
@@ -2699,7 +2703,7 @@ function build_mesa
       --with-max-height=16384           \
       --disable-glw                     \
       --disable-glu                     \
-      --disable-egl 
+      --disable-egl  ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
        warn "Mesa: 'configure' for Mangled Offscreen failed.  Giving up"
        return 1
@@ -2802,9 +2806,10 @@ function build_qt
     cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
       
     #
-    # Determine if we build with Cocoa
+    # Platform specific configuration
     #
     if [[ "$OPSYS" == "Darwin" ]] ; then
+        # Determine if we build with Cocoa
         VER=$(uname -r)
         if [[ ${VER%%.*} -ge 10 ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -cocoa"
@@ -2817,7 +2822,19 @@ function build_qt
         if [[ "$GCC_BUILD_ARCH" == "x86_64" ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -arch x86_64"
         fi
+    elif [[ "$OPSYS" == "Linux" ]] ; then
+         # For OLD versions of linux, disable openssl
+        VER=$(uname -r)
+        if [[ "${VER:0:3}" == "2.4" ]] ; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
+        fi
     fi 
+
+    # We may be building statically.
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        # Protect the build by NOT using the system versions of the I/O libraries.
+        EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -static -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg"
+    fi
 
     #
     # Call configure
@@ -2872,11 +2889,11 @@ function build_qt
     #
     # Fix this by creating .so simlinks to the .a versions
     #
-    
-    if [[ "$OPSYS" == "AIX" ]]; then
+
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
         cd ${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/lib/
         for f in *.a; do ln -s $f ${f%\.*}.so; done
-    elif [[ "$OPSYS" == "Darwin" ]]; then
+    elif [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         QtTopDir="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
         QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg QtXml"
         for QtFW in $QtFrameworks; do
@@ -3431,6 +3448,13 @@ function build_vtk
     info "Executing CMake on VTK"
     cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
     CMAKE_BIN=${CMAKE_INSTALL}/cmake
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        VTK_SHARED_LIBS="OFF"
+        LIBEXT="a"
+    else
+        VTK_SHARED_LIBS="ON"
+        LIBEXT="${SO_EXT}"
+    fi
     if [[ "$OPSYS" == "Darwin" ]]; then
     VER=$(uname -r)
     if [[ ${VER%%.*} -ge 10 ]] ; then
@@ -3439,7 +3463,7 @@ function build_vtk
             -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
             -DVTK_USE_CARBON:BOOL=OFF\
             -DVTK_USE_COCOA:BOOL=ON\
-            -DBUILD_SHARED_LIBS:BOOL=ON\
+            -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
             -DBUILD_TESTING:BOOL=OFF\
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
@@ -3450,22 +3474,22 @@ function build_vtk
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DVTK_USE_TK=OFF\
             -DTK_INCLUDE_PATH:FILEPATH=""\
             -DTK_LIBRARY:FILEPATH=""\
             -DVTK_WRAP_PYTHON:BOOL=ON\
             -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
             -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
             -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
             .
     else
         ${CMAKE_BIN} \
             -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-            -DBUILD_SHARED_LIBS:BOOL=ON\
+            -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
             -DBUILD_TESTING:BOOL=OFF\
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
@@ -3476,23 +3500,23 @@ function build_vtk
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DVTK_USE_TK=OFF\
             -DTK_INCLUDE_PATH:FILEPATH=""\
             -DTK_LIBRARY:FILEPATH=""\
             -DVTK_WRAP_PYTHON:BOOL=ON\
             -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
             -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+            -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
             -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
             .
     fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
     ${CMAKE_BIN} \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-        -DBUILD_SHARED_LIBS:BOOL=ON\
+        -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
@@ -3505,23 +3529,23 @@ function build_vtk
         -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
         -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
         -DVTK_USE_TK=OFF\
         -DTK_INCLUDE_PATH:FILEPATH=""\
         -DTK_LIBRARY:FILEPATH=""\
         -DVTK_WRAP_PYTHON:BOOL=ON\
         -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
         -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-        -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+        -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
         -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
         .
     else
        if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
            ${CMAKE_BIN} \
                -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-               -DBUILD_SHARED_LIBS:BOOL=ON\
+               -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
                -DBUILD_TESTING:BOOL=OFF\
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=OFF\
@@ -3536,13 +3560,13 @@ function build_vtk
                -DVTK_WRAP_PYTHON:BOOL=ON\
                -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
                -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
                -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
                .
        else
            ${CMAKE_BIN} \
                -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
-               -DBUILD_SHARED_LIBS:BOOL=ON\
+               -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
                -DBUILD_TESTING:BOOL=OFF\
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=ON\
@@ -3552,16 +3576,16 @@ function build_vtk
                -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+               -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
                -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-               -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+               -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
                -DVTK_USE_TK=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
                -DTK_LIBRARY:FILEPATH=""\
                -DVTK_WRAP_PYTHON:BOOL=ON\
                -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
                -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"\
+               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
                -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
                .
        fi
@@ -3591,7 +3615,7 @@ function build_vtk
     #
     # If on Darwin, fix install names
     #
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "yes" && "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
         else
@@ -3773,7 +3797,9 @@ function build_python
         cxxFlags=`echo ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
     fi
     PYTHON_OPT="$cFlags"
-
+    if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+        PYTHON_SHARED="--enable-shared"
+    fi
     if [[ "$OPSYS" == "AIX" ]]; then
         info "Configuring Python (AIX): ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
              "--prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
@@ -3781,8 +3807,8 @@ function build_python
                 --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
     else
         info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "--enable-shared --prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
-        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" --enable-shared \
+             "${PYTHON_SHARED} --prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\" --disable-ipv6"
+        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" ${PYTHON_SHARED} \
                 --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
     fi
     if [[ $? != 0 ]] ; then
@@ -3807,7 +3833,7 @@ function build_python
     fi
 
 
-    if [[ "$OPSYS" == "AIX" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
         # configure flag --enable-shared doesn't work on llnl aix5 systems
         # we need to create the shared lib manually and place it in the
         # proper loc
@@ -3948,7 +3974,7 @@ function build_silo
     #
     info "Installing Silo"
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         mkdir "$VISITDIR/silo"
         mkdir "$VISITDIR/silo/${SILO_VERSION}"
         mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
@@ -4073,7 +4099,7 @@ function build_szip
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable, need to patch up the install path and
         # version information.
@@ -4135,7 +4161,9 @@ function build_hdf5
     cf_darwin=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        cf_darwin="--enable-shared --disable-static"
+        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+            cf_darwin="--enable-shared --disable-static"
+        fi
     else
         export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
     fi
@@ -4183,7 +4211,7 @@ function build_hdf5
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable, need to patch up the install path and
         # version information.
@@ -4324,7 +4352,7 @@ function build_mili
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     cp mili.h "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     cp mili_enum.h "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
         else
@@ -5397,7 +5425,7 @@ function build_hdf4
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -5538,7 +5566,11 @@ function build_netcdf
     cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
     info "Invoking command to configure NetCDF"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        EXTRA_FLAGS="--enable-largefile --enable-shared --disable-static"
+        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+            EXTRA_FLAGS="--enable-largefile --enable-shared --disable-static"
+        else
+            EXTRA_FLAGS="--enable-largefile"
+        fi
     else
         EXTRA_FLAGS=""
     fi
@@ -5574,7 +5606,7 @@ function build_netcdf
     #
     # Patch up the library names on Darwin.
     #
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         info "Creating dynamic libraries for NetCDF . . ."
         if [[ $ABS_PATH != "Yes" ]]; then
            install_name_tool -id @executable_path/../lib/libnetcdf.$SO_EXT $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.$SO_EXT
@@ -5646,7 +5678,7 @@ function build_cgns
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -5707,10 +5739,15 @@ function build_gdal
     cd $GDAL_BUILD_DIR || error "Can't cd to GDAL build dir."
     info "Invoking command to configure GDAL"
     if [[ "$OPSYS" == "Darwin" ]]; then
-       EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
+       if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+           EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
+       else
+           EXTRA_FLAGS="F77=\"\"--enable-static --disable-shared"
+       fi
     else
        EXTRA_FLAGS="--enable-static --disable-shared"
     fi
+
     if [[ "$OPSYS" == "Darwin" ]]; then
         # Check for version 6.x.x (MacOS 10.2, Jaguar)
         VER=$(uname -r)
@@ -5795,7 +5832,7 @@ EOF
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -5866,7 +5903,7 @@ function build_exodus
     mkdir "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
     mkdir "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -6511,7 +6548,7 @@ function build_boxlib
     mkdir "$VISITDIR/boxlib/$VISITARCH/lib"
     mkdir "$VISITDIR/boxlib/$VISITARCH/include/2D"
     mkdir "$VISITDIR/boxlib/$VISITARCH/include/3D"
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/boxlib/$VISITARCH/lib"
         else
@@ -6563,7 +6600,7 @@ function build_boxlib
     fi
     info "Installing Boxlib 2D. . ." 
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/boxlib/$VISITARCH/lib"
         else
@@ -6654,7 +6691,7 @@ function build_cfitsio
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -6778,7 +6815,7 @@ $LD_LIBRARY_PATH
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -6999,7 +7036,7 @@ function build_ccmio
         $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/include/libccmio
     cp libccmio/ccmio*.h $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/include
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable
         #
@@ -7063,7 +7100,11 @@ function build_tcmalloc
     # Build TCMALLOC
     #
     info "Building google-perftools . . . (~1 minutes)"
-    ./configure
+    if [[ "$DO_STATIC_BUILD" == "no" ]]; then 
+        ./configure
+    else
+        ./configure --enable-static --disable-shared
+    fi
     make
 
     info "Installing google-perftools . . ."
@@ -7071,7 +7112,7 @@ function build_tcmalloc
     mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}
     mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH
     mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
-    cp .libs/libtcmalloc.so* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
+    cp .libs/libtcmalloc.* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
 }
 
 # `car' returns the head of a list.
@@ -7147,18 +7188,23 @@ function build_icet
 
     info "Executing CMake on Ice-T"
     cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
-    touch fakempi.so
+    if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+        LIBEXT="${SO_EXT}"
+    else
+        LIBEXT="a"
+    fi
+    touch fakempi.${LIBEXT}
     ${CMAKE_BIN} \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
         -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
         -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${C_OPT_FLAGS}"\
         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.so"\
+        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
         -DBUILD_TESTING:BOOL=OFF\
         .
-    rm fakempi.so
+    rm fakempi.${LIBEXT}
 
     if [[ $? != 0 ]] ; then
        warn "Cannot get CMAKE to create the makefiles.  Giving up."
@@ -8209,6 +8255,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--qt" "Build Qt" "built by default unless --no-thirdparty flag is used"
   printf "%-15s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
   printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
+  printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
   printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
   printf "%-15s %s [%s]\n" "--szip" "Build with SZIP" "$DO_SZIP"
   printf "%-15s %s [%s]\n" "--tcmalloc" "Build tcmalloc from Google's perftools" "$DO_TCMALLOC"
@@ -8443,6 +8490,7 @@ for arg in "${arguments[@]}" ; do
         --silo) DO_SILO="yes"; ON_SILO="on";;
         --szip) DO_SZIP="yes"; ON_SZIP="on";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
+        --static) DO_STATIC_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;
         --svn) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
         --svn-anon) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
