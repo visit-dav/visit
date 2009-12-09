@@ -37,6 +37,7 @@
 *****************************************************************************/
 #include <Namescheme.h>
 #include <string.h>
+//#include <stdio.h>
 
 int main()
 {
@@ -55,16 +56,43 @@ int main()
         return 1;
     delete ns;
 
-    // Example of AMR-like naming convention where first 10
-    // patches are level 0, next 134 are level 1, next 1033
-    // are level 2
-    ns = new Namescheme("@level_%d,patch%d@(n/10)?((n/134)?((n/1033)?3:2:):1:):0:@(n/10)?((n/134)?((n/1033)?n-1033:n-134:):n-10:):n:");
-    if (strcmp(ns->GetName(7), "level_0,patch7") != 0)
-       return 1;
-    if (strcmp(ns->GetName(22), "level_1,patch12") != 0)
-       return 1;
-    if (strcmp(ns->GetName(1035), "level_3,patch2") != 0)
-       return 1;
+    // Example of AMR-like naming convention where we have the following
+    // assignment of pathces to levels starting with the patches on
+    // level 0 and ending with the patches on level 3...
+    //
+    // level: 0 0 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3
+    //           |             |                                 |
+    //        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 
+    // patch: 0 1 0 1 2 3 4 5 6 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 0 1 2 3 4
+    //           |             |                                 |
+    //        0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3
+    //     n: 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+    //          A   B         C D                     E         F G       H
+    //
+    //  2 patches at level 0
+    //  7 patches at level 1
+    // 17 patches at level 2
+    //  5 patches at level 3
+    ns = new Namescheme("@level%d,patch%d"
+        "@(n/2)?((n/9)?((n/26)?3:2:):1:):0:"
+        "@(n/2)?((n/9)?((n/26)?n-26:n-9:):n-2:):n:");
+    if (strcmp(ns->GetName( 1), "level0,patch1")  != 0) return 1; // A
+    if (strcmp(ns->GetName( 3), "level1,patch1")  != 0) return 1; // B
+    if (strcmp(ns->GetName( 8), "level1,patch6")  != 0) return 1; // C
+    if (strcmp(ns->GetName( 9), "level2,patch0")  != 0) return 1; // D
+    if (strcmp(ns->GetName(20), "level2,patch11") != 0) return 1; // E
+    if (strcmp(ns->GetName(25), "level2,patch16") != 0) return 1; // F
+    if (strcmp(ns->GetName(26), "level3,patch0")  != 0) return 1; // G
+    if (strcmp(ns->GetName(30), "level3,patch4")  != 0) return 1; // H
+#if 0
+    printf("\"%s\"\n", ns->GetName( 1));
+    printf("\"%s\"\n", ns->GetName( 3));
+    printf("\"%s\"\n", ns->GetName( 8));
+    printf("\"%s\"\n", ns->GetName( 9));
+    printf("\"%s\"\n", ns->GetName(20));
+    printf("\"%s\"\n", ns->GetName(25));
+    printf("\"%s\"\n", ns->GetName(26));
+#endif
     delete ns;
 
     // Test multiple conversion specifiers
