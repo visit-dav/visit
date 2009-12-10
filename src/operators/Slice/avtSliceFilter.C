@@ -850,17 +850,17 @@ avtSliceFilter::GetNormal(double &nx, double &ny, double &nz)
     // Compute the normal if this is a Theta/Phi axis type.
     if ( atts.GetAxisType() == SliceAttributes::ThetaPhi )
     {
-	double theta = (atts.GetTheta() - 90) * 0.017453292519943295;
-	double phi = (atts.GetPhi() - 90) * 0.017453292519943295;
-	nx = cos(theta)*sin(phi);
-	ny = sin(theta)*sin(phi);
-	nz = cos(phi);
+        double theta = (atts.GetTheta() - 90) * 0.017453292519943295;
+        double phi = (atts.GetPhi() - 90) * 0.017453292519943295;
+        nx = cos(theta)*sin(phi);
+        ny = sin(theta)*sin(phi);
+        nz = cos(phi);
     }
     else
     {
-	nx = atts.GetNormal()[0];
-	ny = atts.GetNormal()[1];
-	nz = atts.GetNormal()[2];
+        nx = atts.GetNormal()[0];
+        ny = atts.GetNormal()[1];
+        nz = atts.GetNormal()[2];
     }
 }
 
@@ -922,7 +922,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
     // We want to make sure for orthogonal slices that "intercept" is still
     // meaningful even when the normal is pointing in the negative direction
     if (nx+ny+nz < 0 && (atts.GetAxisType() != SliceAttributes::Arbitrary ||
-			 atts.GetAxisType() != SliceAttributes::ThetaPhi) )
+                         atts.GetAxisType() != SliceAttributes::ThetaPhi) )
     {
         nl *= -1;
     }

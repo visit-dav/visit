@@ -706,7 +706,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         cur_var = var_names_num_components.find(active_visit_var_name);
 
         if (active_visit_var_name == "amr_mesh" ||
-	    active_visit_var_name == "materials")
+            active_visit_var_name == "materials")
         {
             num_ghosts[0] = var_max_ghosts[0];
             num_ghosts[1] = var_max_ghosts[1];
@@ -1118,12 +1118,12 @@ avtSAMRAIFileFormat::ReadVar(int patch,
         H5Dclose(h5d_variable);      
         H5Sclose(memspace);
 
-	//
-	// Ok, now read any material-specific fractional values for this component
-	//
+        //
+        // Ok, now read any material-specific fractional values for this component
+        //
         hid_t h5d_mixvar = H5Dopen(h5f_file, mixvar);
-	if (h5d_mixvar < 0)
-	    continue;
+        if (h5d_mixvar < 0)
+            continue;
 
         // allocate a float buffer for the mixed values
         h5d_space = H5Dget_space(h5d_mixvar);
@@ -1356,9 +1356,9 @@ avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
     if (len == 1)
     {
         int *matlist_tmp = new int[ncells];
-	for (i = 0; i < ncells; i++)
-	    matlist_tmp[i] = matlist[0];
-	delete [] matlist;
+        for (i = 0; i < ncells; i++)
+            matlist_tmp[i] = matlist[0];
+        delete [] matlist;
 
         mat = new avtMaterial(num_mats,      //silomat->nmat,
                               matnos,        //silomat->matnos,
@@ -1376,7 +1376,7 @@ avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
 
         delete [] matlist_tmp;
 
-	return mat;
+        return mat;
     }
 
     // ok, try to read the mix info, if it exists
@@ -1541,7 +1541,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
             {
                 EXCEPTION2(UnexpectedValueException,
                     "a value for material_composition_flag of 0,1 or 2",
-		    matCompFlag);
+                    matCompFlag);
             }
         }
     }
@@ -1779,7 +1779,7 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
             else if (frac[z] != 0.0)
             {
                 EXCEPTION2(UnexpectedValueException, "a value between 0.0 and 1.0",
-		    frac[z]);
+                    frac[z]);
             }
         }
     }
@@ -1951,7 +1951,7 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
             {
                 EXCEPTION2(UnexpectedValueException,
                     "a value for material_composition_flag of 0,1 or 2",
-		    matCompFlag);
+                    matCompFlag);
             }
         }
     }
@@ -2586,7 +2586,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (num_patches > 1)
         {
             avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0",
-	        num_levels > 1 ? "levels" : "patches");
+                num_levels > 1 ? "levels" : "patches");
             char attribute[250];
             sprintf(attribute,"%d NULL ViewerPlot", INTERNAL_NODE);
             plot->AddAttribute(attribute);
@@ -2697,21 +2697,21 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(sil);
 #endif
 
-	for (i = 0; i < num_exprs; i++)
-	{
+        for (i = 0; i < num_exprs; i++)
+        {
             Expression exp;
             exp.SetName(expr_keys[i]);
             exp.SetDefinition(expr_defns[i]);
-	    if (expr_types[i] == "scalar")
+            if (expr_types[i] == "scalar")
                 exp.SetType(Expression::ScalarMeshVar);
-	    else if (expr_types[i] == "vector")
+            else if (expr_types[i] == "vector")
                 exp.SetType(Expression::VectorMeshVar);
-	    else if (expr_types[i] == "tensor")
+            else if (expr_types[i] == "tensor")
                 exp.SetType(Expression::TensorMeshVar);
-	    else if (expr_types[i] == "array")
+            else if (expr_types[i] == "array")
                 exp.SetType(Expression::ArrayMeshVar);
             md->AddExpression(&exp);
-	}
+        }
     }
 }
 
@@ -2803,7 +2803,7 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
 
         ReadSpeciesInfo(h5_file);
 
-	ReadExpressions(h5_file);
+        ReadExpressions(h5_file);
 
         cached_patches = new vtkDataSet**[num_patches];
         for (int p=0; p<num_patches; p++)
@@ -2885,13 +2885,13 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
     bool hasExpectedVersionNumber = false;
     for (int n = 0;
          n < sizeof(expected_version_number)/sizeof(expected_version_number[0]);
-	 n++)
+         n++)
     {
         if (obtained_version_number == expected_version_number[n])
-	{
-	    hasExpectedVersionNumber = true;
-	    break;
-	}
+        {
+            hasExpectedVersionNumber = true;
+            break;
+        }
     }
 
     if (hasExpectedVersionNumber == false)
@@ -2901,9 +2901,9 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
             "written for input to VisIt. However, the version of the writer "
             "SAMRAI used to produce this file, %f, does not match any of the "
             "version numbers the VisIt reader plugin you are now trying to use "
-	    "is designed for, %f, %f",
+            "is designed for, %f, %f",
             file_name.c_str(),obtained_version_number,
-	        expected_version_number[0],expected_version_number[1]);
+                expected_version_number[0],expected_version_number[1]);
         EXCEPTION1(InvalidFilesException, str);
     }
 }
@@ -4116,7 +4116,7 @@ avtSAMRAIFileFormat::ReadExpressions(hid_t &h5_file)
     num_exprs = -1;
     if (ReadDataset(h5_file, "/visit_expressions/expression_keys",
         "string", 1, &num_exprs, (void**) &expr_keys, isOptional)
-	&& num_exprs > 0)
+        && num_exprs > 0)
     {
         isOptional = false;
         ReadDataset(h5_file, "/visit_expressions/expression_types",
@@ -4361,10 +4361,10 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
         if (isOptional)
         {
             for (i = 0; i < ndims; i++)
-	    {
-		if (dims[i] == -1)
+            {
+                if (dims[i] == -1)
                     dims[i] = 0;
-	    }
+            }
             *data = 0;
             return false;
         }

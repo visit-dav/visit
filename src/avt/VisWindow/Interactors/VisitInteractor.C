@@ -991,45 +991,45 @@ VisitInteractor::ZoomCamera2D(double f)
     //
     if (fillViewportOnZoom && zoomFactor > 1. && !newView2D.fullFrame)
     {
-	//
-	// Determine the y scale factor to account for the viewport
-	// and window size.
-	//
-	int       size[2];
-	double    yScale;
+        //
+        // Determine the y scale factor to account for the viewport
+        // and window size.
+        //
+        int       size[2];
+        double    yScale;
 
         size[0] = rwi->GetRenderWindow()->GetSize()[0];
         size[1] = rwi->GetRenderWindow()->GetSize()[1]; 
 
-	yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
-		(newView2D.viewport[1] - newView2D.viewport[0])) *
-	    ((double) size[1] / (double) size[0]) ;
+        yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
+                (newView2D.viewport[1] - newView2D.viewport[0])) *
+            ((double) size[1] / (double) size[0]) ;
 
-	//
-	// We fill the viewport by only zooming one of the axes.  In
-	// the case where we will overshoot, we zoom the second axis a
-	// small amount so that we will just fill the viewport.
-	//
-	if ((yDist / xDist) < yScale)
-	{
-	    //
-	    // Handle the case where the x direction should be zoomed.
-	    //
-	    if ((xDist + 2.0 * dX) > (yDist / yScale))
-		dY = 0.;
-	    else
-		dY = ((xDist + 2.0 * dX) * yScale - yDist) / 2.0;
-	}
-	else
-	{
-	    //
-	    // Handle the case where the x direction should be zoomed.
-	    //
-	    if ((yDist + 2.0 * dY) > (xDist * yScale))
-		dX = 0.;
-	    else
-		dX = ((yDist + 2.0 * dY) / yScale - xDist) / 2.0;
-	}
+        //
+        // We fill the viewport by only zooming one of the axes.  In
+        // the case where we will overshoot, we zoom the second axis a
+        // small amount so that we will just fill the viewport.
+        //
+        if ((yDist / xDist) < yScale)
+        {
+            //
+            // Handle the case where the x direction should be zoomed.
+            //
+            if ((xDist + 2.0 * dX) > (yDist / yScale))
+                dY = 0.;
+            else
+                dY = ((xDist + 2.0 * dX) * yScale - yDist) / 2.0;
+        }
+        else
+        {
+            //
+            // Handle the case where the x direction should be zoomed.
+            //
+            if ((yDist + 2.0 * dY) > (xDist * yScale))
+                dX = 0.;
+            else
+                dX = ((yDist + 2.0 * dY) / yScale - xDist) / 2.0;
+        }
     }
 
     newView2D.window[0] -= dX;
@@ -1070,14 +1070,14 @@ VisitInteractor::ZoomCamera2D(const int x, const int y)
         double dyf = MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
 
-	//
-	// Perform zoom
-	//
-	ZoomCamera2D(dyf);
+        //
+        // Perform zoom
+        //
+        ZoomCamera2D(dyf);
 
-	//
-	// Update old mouse position
-	//
+        //
+        // Update old mouse position
+        //
         OldX = x;
         OldY = y;
     }

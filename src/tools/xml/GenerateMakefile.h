@@ -579,7 +579,7 @@ class MakefileGeneratorPlugin : public Plugin
                    "-lvisit_vtk -llightweight_visit_vtk "
                    "-lexpressions_par "
                    "$(EPARLIBS_FOR_MACOSX_PREBINDING) "
-		   "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(MPI_LIBS)" << endl;
+                   "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << VISIT_PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << VISIT_PLUGIN_EXTENSION << endl;

@@ -117,8 +117,8 @@ avtZoneTypeExpression::DeriveVariable(vtkDataSet *in_ds)
     {
         float val = (float) '?';
         switch (in_ds->GetCellType(i))
-	{
-	    // 2D cell types, lower case letters
+        {
+            // 2D cell types, lower case letters
             case VTK_EMPTY_CELL:     val = (float) 'e'; break;
             case VTK_VERTEX:         val = (float) 'v'; break;
             case VTK_POLY_VERTEX:    val = (float) 'w'; break;
@@ -130,7 +130,7 @@ avtZoneTypeExpression::DeriveVariable(vtkDataSet *in_ds)
             case VTK_PIXEL:          val = (float) 'x'; break;
             case VTK_QUAD:           val = (float) 'q'; break;
 
-	    // 3D cell types, upper case letters
+            // 3D cell types, upper case letters
             case VTK_TETRA:          val = (float) 'T'; break;
             case VTK_VOXEL:          val = (float) 'V'; break;
             case VTK_HEXAHEDRON:     val = (float) 'H'; break;

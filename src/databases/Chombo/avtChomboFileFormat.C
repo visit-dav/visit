@@ -989,7 +989,7 @@ avtChomboFileFormat::InitializeReader(void)
 
     if (nMaterials != 0)
     {
-	++nMaterials; // There is always one extra material
+        ++nMaterials; // There is always one extra material
     }
 
     //
@@ -2702,9 +2702,9 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     int nCells = 0;
     for (i = 0; i <= nMaterials - 2; ++i)
     {
-	sprintf(str,"fraction-%d", i);
+        sprintf(str,"fraction-%d", i);
         vtkDoubleArray *doubleArray = (vtkDoubleArray *)(GetVar(patch, str));
-	nCells = doubleArray->GetNumberOfTuples();
+        nCells = doubleArray->GetNumberOfTuples();
         mats[i] = doubleArray->GetPointer(0);
         deleteList.push_back(doubleArray);
     }
@@ -2714,10 +2714,10 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
 
     for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
     {
-	double frac = 1.0;
-	for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
-	    frac -= mats[matNo][cellNo];
-	addMatPtr[cellNo] = frac;
+        double frac = 1.0;
+        for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
+            frac -= mats[matNo][cellNo];
+        addMatPtr[cellNo] = frac;
     }
 
     mats[nMaterials - 1] = addMatPtr;

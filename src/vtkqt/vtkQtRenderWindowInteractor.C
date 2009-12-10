@@ -203,9 +203,9 @@ void vtkQtRenderWindowInteractor::mouseReleaseEvent(QMouseEvent *me) {
 void vtkQtRenderWindowInteractor::wheelEvent(QWheelEvent*we)
 {
     if (we->delta() > 0) 
-	InvokeEvent(vtkCommand::MouseWheelForwardEvent, NULL);
+        InvokeEvent(vtkCommand::MouseWheelForwardEvent, NULL);
     else if (we->delta() < 0)
-	InvokeEvent(vtkCommand::MouseWheelBackwardEvent, NULL);
+        InvokeEvent(vtkCommand::MouseWheelBackwardEvent, NULL);
 }
 
 void vtkQtRenderWindowInteractor::timer() {

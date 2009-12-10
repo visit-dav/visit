@@ -238,7 +238,7 @@ private:
     QCheckBox          *displayPickLetter;
     QSpinBox           *userMaxPickTabs;
 
-    int		        saveCount;
+    int                 saveCount;
 
     // Saving attributes for restoring them after re-doing a pick
     bool                createSpreadsheetSave;

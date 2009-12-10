@@ -414,10 +414,10 @@ avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       if (status != H5PART_SUCCESS) {
         EXCEPTION1(VisItException, "Could not read x or r coordinates");
       } else {
-	// Found r value so try phi (cylindrical or spherical)
-	status = H5PartReadDataFloat64(file, "phi", y);
-	if (status != H5PART_SUCCESS)
-	  EXCEPTION1(VisItException, "Could not read phi coordinates");
+        // Found r value so try phi (cylindrical or spherical)
+        status = H5PartReadDataFloat64(file, "phi", y);
+        if (status != H5PART_SUCCESS)
+          EXCEPTION1(VisItException, "Could not read phi coordinates");
       }
     }
     else {

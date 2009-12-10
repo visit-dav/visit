@@ -458,12 +458,12 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     
     if (atts.GetDefaultVarIsScalar())
     {
-	if (inPointData->GetArray(atts.GetDefaultVarName().c_str()) == NULL)
-	{
+        if (inPointData->GetArray(atts.GetDefaultVarName().c_str()) == NULL)
+        {
             EXCEPTION1(VisItException,
                 "Default scalar variable must be a nodal quantity "
                 "when point mesh output is requested.");
-	}
+        }
     }
 
     std::vector<float *> valueArrays;

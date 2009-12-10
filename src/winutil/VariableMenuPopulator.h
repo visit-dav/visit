@@ -122,7 +122,7 @@ public:
                                const avtDatabaseMetaData *,
                                const avtSIL *,
                                const ExpressionList *,
-			       bool);
+                               bool);
 
     int UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
                                  int varTypes,

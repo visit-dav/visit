@@ -11,35 +11,35 @@ enum OBJECTACTION
 { ABORT_IF_NOT_FOUND, IGNORE_IF_NOT_FOUND, WARN_IF_NOT_FOUND };
 typedef struct
 {
-	FILE *file;
-	char *name;
+    FILE *file;
+    char *name;
 } OBJECTFILE;
 
-typedef struct object_st	/* object structure for parsing routine */
+typedef struct object_st    /* object structure for parsing routine */
 {
-	char *name;
-	char *_class;
-	char *value;
-	char **valueptr;
+    char *name;
+    char *_class;
+    char *value;
+    char **valueptr;
 } OBJECT;
 
-typedef struct field_st		/* field structure for parsing routine */
+typedef struct field_st        /* field structure for parsing routine */
 {
-	int n;
-	int size;
-	int element_size;
-	void *v;
+    int n;
+    int size;
+    int element_size;
+    void *v;
 } FIELD;
 
 typedef struct FileList_st
 {
-	char *name;
-	int start, end;
+    char *name;
+    int start, end;
 } FileList;
 typedef struct pack_buf_st
 {
-	int n, nobject,mobject;
-	char *buffer;
+    int n, nobject,mobject;
+    char *buffer;
 } PACKBUF;
 
 OBJECT *object_initialize(char *name, char *_class, int size);

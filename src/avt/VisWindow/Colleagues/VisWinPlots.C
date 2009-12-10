@@ -450,20 +450,20 @@ VisWinPlots::CheckPlot(avtActor_p &p)
         // If the modes don't match then it is an error.
         //
         if (mediator.GetMode() == p->GetWindowMode())
-	    return;
+            return;
 
         if (p->AdaptsToAnyWindowMode())
             return;
 
         if (mediator.GetMode() == WINMODE_2D &&
-	    p->GetWindowMode() == WINMODE_CURVE)
-	    return;
+            p->GetWindowMode() == WINMODE_CURVE)
+            return;
        
         if (mediator.GetMode() == WINMODE_CURVE &&
-	    p->GetWindowMode() == WINMODE_2D)
+            p->GetWindowMode() == WINMODE_2D)
         {
             mediator.ChangeMode(WINMODE_2D);
-	    return;
+            return;
         }
 
         EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 

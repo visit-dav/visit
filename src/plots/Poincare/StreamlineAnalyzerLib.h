@@ -125,20 +125,20 @@ public:
                             unsigned int offset = 1 );
 
   void poloidalWindingCheck( vector< unsigned int > &poloidalWindingset,
-			     vector< pair < pair<unsigned int, unsigned int >,
-			                    double > > &windingSetList );
+                             vector< pair < pair<unsigned int, unsigned int >,
+                                            double > > &windingSetList );
 
   unsigned int
   poloidalWindingStats( unsigned int base_period,
-			vector< Point >& ridgelinePoints,
-			vector< Point >& poloidalWindingPoints,
-			vector< pair< unsigned int,
-		                      double > >& ridgelineSetList );
+                        vector< Point >& ridgelinePoints,
+                        vector< Point >& poloidalWindingPoints,
+                        vector< pair< unsigned int,
+                                      double > >& ridgelineSetList );
 
   double
   calculatePeriodVariance( vector< Point >& poloidalWinding_points,
-			   unsigned int poloidalWinding,
-			   bool zCheckOnly = false );
+                           unsigned int poloidalWinding,
+                           bool zCheckOnly = false );
 
   bool
   rationalCheck( vector< Point >& points,
@@ -152,7 +152,7 @@ public:
                 unsigned int toroidalWinding,
                 unsigned int &islands,
                 float &avenode,
-		bool &complete );
+                bool &complete );
 
   FieldlineInfo 
   fieldlineProperties( vector< Point > &ptList,

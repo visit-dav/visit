@@ -556,21 +556,21 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
 
         //
         // Check to see if there is an extension that matches.
-	// Look first using GeneralPluginInfo via PluginFileExtensions
-	// call (the newer way). If that yields nothing, then try the
-	// CommonPluginInfo via the GetDefaultExtensions (the old way).
+        // Look first using GeneralPluginInfo via PluginFileExtensions
+        // call (the newer way). If that yields nothing, then try the
+        // CommonPluginInfo via the GetDefaultExtensions (the old way).
         //
-	int j;
+        int j;
         vector<string> extensions = PluginFileExtensions(id);
         int nextensions = extensions.size();
-	bool shouldIssueObsoletePluginWarning = false;
-	if (nextensions == 0)
-	{
-	    if (info)
+        bool shouldIssueObsoletePluginWarning = false;
+        if (nextensions == 0)
+        {
+            if (info)
                 extensions = info->GetDefaultExtensions();
             nextensions = extensions.size();
-	    shouldIssueObsoletePluginWarning = nextensions > 0;
-	}
+            shouldIssueObsoletePluginWarning = nextensions > 0;
+        }
         for (j=0; j<nextensions && !foundMatch; j++)
         {
             string ext = extensions[j];
@@ -596,16 +596,16 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
         //
         // Check to see if there is an exact name that matches.
         // Again, get filenames first from GeneralPluginInfo and,
-	// failing that, then the older way (from CommonPluginInfo).
-	//
+        // failing that, then the older way (from CommonPluginInfo).
+        //
         vector<string> filenames = PluginFilenames(id);
         int nfiles = filenames.size();
-	if (nfiles == 0)
-	{
-	    if (info)
+        if (nfiles == 0)
+        {
+            if (info)
                 filenames = info->GetFilenames();
             nfiles = filenames.size();
-	    shouldIssueObsoletePluginWarning |= nfiles > 0;
+            shouldIssueObsoletePluginWarning |= nfiles > 0;
         }
         for (j=0; j<nfiles && !foundMatch; j++)
         {
@@ -619,9 +619,9 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
             rv.push_back(id);
 
         if (foundMatch && shouldIssueObsoletePluginWarning)
-	{
-	    static bool issuedWarning = false;
-	    if (!issuedWarning)
+        {
+            static bool issuedWarning = false;
+            if (!issuedWarning)
             {
                 cerr << "Warning: For plugin id = \"" << id
                      << "\", default file extensions/names found in" << endl;

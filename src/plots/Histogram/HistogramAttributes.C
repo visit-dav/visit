@@ -1290,9 +1290,9 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
     if (histogramType != obj.GetHistogramType())
         return true; 
     if ( dataScale != obj.GetDataScale() )
-	return true;
+        return true;
     if ( binScale != obj.GetBinScale() )
-	return true;
+        return true;
     return false;
 }
 

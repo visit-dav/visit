@@ -451,7 +451,7 @@ avtExtractor::ExtractLine(int xi, int yi, float z1, float z2,
 
 void  
 avtExtractor::StoreRay(int x, int y, int frontZ, int backZ,
-		       const float (*samples)[AVT_VARIABLE_LIMIT])
+                       const float (*samples)[AVT_VARIABLE_LIMIT])
 {
     avtRay *ray = volume->GetRay(x, y);
     ray->SetSamples(frontZ, backZ, samples);

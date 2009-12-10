@@ -189,26 +189,26 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
      //BTX
       enum
       {
-	 FILE_BIG_ENDIAN=0,
-	 FILE_LITTLE_ENDIAN=1
+         FILE_BIG_ENDIAN=0,
+         FILE_LITTLE_ENDIAN=1
       };
       enum UCDCell_type
       {
-	 PT    = 0,
-	 LINE  = 1,
-	 TRI   = 2,
-	 QUAD  = 3,
-	 TET   = 4,
-	 PYR   = 5,
-	 PRISM = 6,
-	 HEX   = 7
+         PT    = 0,
+         LINE  = 1,
+         TRI   = 2,
+         QUAD  = 3,
+         TET   = 4,
+         PYR   = 5,
+         PRISM = 6,
+         HEX   = 7
       };
       
       struct DataInfo {
-	    long foffset; // offset in binary file
-	    int  veclen;  // number of components in the node or cell variable
-	    float min[3]; // pre-calculated data minima (max size 3 for vectors)
-	    float max[3]; // pre-calculated data maxima (max size 3 for vectors)
+            long foffset; // offset in binary file
+            int  veclen;  // number of components in the node or cell variable
+            float min[3]; // pre-calculated data minima (max size 3 for vectors)
+            float max[3]; // pre-calculated data maxima (max size 3 for vectors)
       };
      //ETX
       

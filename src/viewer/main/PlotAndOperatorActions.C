@@ -926,11 +926,11 @@ AddPlotAction::Update()
             // Repopulate the menu variable list using information from the
             // new file.
             //
-	    bool treatAllDBsAsTimeVarying =
-	        ViewerWindowManager::Instance()->GetClientAtts()->GetTreatAllDBsAsTimeVarying();
+            bool treatAllDBsAsTimeVarying =
+                ViewerWindowManager::Instance()->GetClientAtts()->GetTreatAllDBsAsTimeVarying();
             if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
                                                    md, sil, exprList,
-						   treatAllDBsAsTimeVarying))
+                                                   treatAllDBsAsTimeVarying))
             {
                 // Print to the debug logs.
                 debug4 << "AddPlotAction::Update: Either the host or the database " << endl

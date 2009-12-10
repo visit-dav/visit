@@ -99,10 +99,10 @@ class avtGTCFileFormat : public avtSTMDFileFormat
     void                   ParallelReadVariable( int domain, int varDim, float *var, float *ids );
     void                   ParallelReadParticles( int domain, float *pts, float *ids );
     void                   BinData( int dim, parallelBuffer **array, float *vars, float *ids,
-				    float **myVars, float **myIds );
+                                    float **myVars, float **myIds );
     int *                  GetDataShareMatrix( parallelBuffer **array );
     void                   CommunicateData( int dim, int *dataShare, parallelBuffer **array,
-					    float **myPts, float **myIds );
+                                            float **myPts, float **myIds );
 #endif
     
 };

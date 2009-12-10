@@ -118,7 +118,7 @@ class PIPELINE_API avtExtractor
                                        float[AVT_VARIABLE_LIMIT],
                                        float[AVT_VARIABLE_LIMIT], int);
     virtual void           StoreRay(int, int, int, int,
-				    const float (*)[AVT_VARIABLE_LIMIT]);
+                                    const float (*)[AVT_VARIABLE_LIMIT]);
     
 
     void                   OrientTriangle(float [3], float [3],

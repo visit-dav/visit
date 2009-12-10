@@ -347,7 +347,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 //     else if (atts.GetTerminationType() == PoincareAttributes::Intersections)
     {
         poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
-				       atts.GetMinPunctures());
+                                       atts.GetMinPunctures());
 
         poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
         

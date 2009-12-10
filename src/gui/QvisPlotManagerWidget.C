@@ -842,7 +842,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             // check MustRepopulationOnStateChange, checking here saves
             // some GUI work, too.
             if (fileServer->GetTreatAllDBsAsTimeVarying() ||
-	        (md && md->GetMustRepopulateOnStateChange()))
+                (md && md->GetMustRepopulateOnStateChange()))
             {
                 UpdateVariableMenu();
                 UpdatePlotVariableMenu();
@@ -2715,7 +2715,7 @@ QvisPlotManagerWidget::redrawThisPlot()
 {
     // clear the plot:
     clearThisPlot();
-    drawThisPlot();		      
+    drawThisPlot();                      
 }
 
 // ****************************************************************************
@@ -2738,7 +2738,7 @@ QvisPlotManagerWidget::disconnectThisPlot()
 {
 
     // Disconnect the active plot from the time slider:
-    GetViewerMethods()->SetPlotFollowsTime();			      
+    GetViewerMethods()->SetPlotFollowsTime();                              
 }
 
 // ****************************************************************************

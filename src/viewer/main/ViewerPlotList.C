@@ -3365,10 +3365,10 @@ ViewerPlotList::ClearPlots(bool clearAll)
     for (int i = 0; i < nPlots; i++)
     {
         if(clearAll || plots[i].active)
-	{
+        {
             plots[i].plot->ClearActors();
             plots[i].realized = false;
-	}
+        }
     }
 
     //
@@ -3828,42 +3828,42 @@ ViewerPlotList::CopyActivePlots()
     for (i = 0; i < numInitialPlots; i++)
     {
         if (active[i])
-	{
+        {
     
-	    // create a copy of this plot:
+            // create a copy of this plot:
             ViewerPlot *src = plots[i].plot;
-	    ViewerPlot *dest = 0;
-	    TRY
-	    {
-	        dest = new ViewerPlot(*src);
-	    }
-	    CATCH( VisItException )
-	    {
-	        if (dest)
-	        {
-	            delete dest;
-		    dest = NULL;
-	        }
-	    }
-	    ENDTRY
-	
-	    if (dest != 0)
-	    {
-	        //
-	        // Add the new plot to the plot list.
-	        //
-	        SimpleAddPlot( dest, false );
-	        ++plotsAdded;
+            ViewerPlot *dest = 0;
+            TRY
+            {
+                dest = new ViewerPlot(*src);
+            }
+            CATCH( VisItException )
+            {
+                if (dest)
+                {
+                    delete dest;
+                    dest = NULL;
+                }
+            }
+            ENDTRY
+        
+            if (dest != 0)
+            {
+                //
+                // Add the new plot to the plot list.
+                //
+                SimpleAddPlot( dest, false );
+                ++plotsAdded;
 
-		// Make the original plot INactive...
-		plots[i].active = false;
-	    }
-	    else
-	    {
-	        Error(tr("Visit could not copy active plot."));
-	        return;
-	    }
-	}
+                // Make the original plot INactive...
+                plots[i].active = false;
+            }
+            else
+            {
+                Error(tr("Visit could not copy active plot."));
+                return;
+            }
+        }
     }
     delete [] active;
 
@@ -3873,8 +3873,8 @@ ViewerPlotList::CopyActivePlots()
     if (plotsAdded > 0)
     {
         UpdatePlotList();
-	UpdatePlotAtts();
-	UpdateSILRestrictionAtts();
+        UpdatePlotAtts();
+        UpdateSILRestrictionAtts();
     }
 }
 
@@ -3957,7 +3957,7 @@ ViewerPlotList::SetPlotFollowsTime()
         {
             if (plots[i].plot->FollowsTime()) 
                 plots[i].plot->SetFollowsTime( false );
-	    else
+            else
                 plots[i].plot->SetFollowsTime( true );
         }
     }
@@ -3999,10 +3999,10 @@ ViewerPlotList::RealizePlots(bool drawAllPlots)
     for (int i = 0; i < nPlots; i++)
     {
         if ( drawAllPlots || plots[i].active )
-	{
+        {
             plots[i].realized = true;
             plots[i].plot->SetErrorFlag(false);
-	}
+        }
     }
 
     //
@@ -5041,7 +5041,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
             debug5 << std::endl;
 
             // Set top set
-	    tmpSilr->SetTopSet(topSet);
+            tmpSilr->SetTopSet(topSet);
 
             // Storage for SIL set indices
             int *idx = new int[defaultSILRestrictionFromDatabase.size()];
@@ -6585,28 +6585,28 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
             if (globalWindowMode == WINMODE_NONE)
                 globalWindowMode = plotWindowMode;
             else
-	    {
-	        if (globalWindowMode == WINMODE_CURVE &&
-		    plotWindowMode == WINMODE_2D)
-		    globalWindowMode = WINMODE_2D;
-	        else if (globalWindowMode == WINMODE_2D &&
-		    plotWindowMode == WINMODE_CURVE)
-		    globalWindowMode = WINMODE_2D;
-	    }
+            {
+                if (globalWindowMode == WINMODE_CURVE &&
+                    plotWindowMode == WINMODE_2D)
+                    globalWindowMode = WINMODE_2D;
+                else if (globalWindowMode == WINMODE_2D &&
+                    plotWindowMode == WINMODE_CURVE)
+                    globalWindowMode = WINMODE_2D;
+            }
 
             bool dimMismatch = false;
             if (plotWindowMode != globalWindowMode)
             {
                 dimMismatch = true;
-	        if (globalWindowMode == WINMODE_2D && 
-	            plotWindowMode == WINMODE_CURVE)
+                if (globalWindowMode == WINMODE_2D && 
+                    plotWindowMode == WINMODE_CURVE)
                     dimMismatch = false;
                 if (adaptsToAny)
                     dimMismatch = false;
             }
             if (dimMismatch)
             {
-		if (errorCount == 0)
+                if (errorCount == 0)
                 {
                     Error(tr("The plot dimensions do not match."));
                     ++errorCount;
@@ -7298,7 +7298,7 @@ ViewerPlotList::UpdatePlotList() const
         plots[i].plot->InitializePlot(plot);
         plot.SetActiveFlag(plots[i].active);
         plot.SetHiddenFlag(plots[i].hidden);
-	plot.SetFollowsTime(plots[i].plot->FollowsTime());
+        plot.SetFollowsTime(plots[i].plot->FollowsTime());
 
         // Figure out the stage of completion that the plot is at.
         if (plots[i].plot->GetErrorFlag())

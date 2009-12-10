@@ -340,10 +340,10 @@ avtHexahedron27Extractor::QuadraticHexExtract(const avtHexahedron27 &hex)
 
 void  
 avtHexahedron27Extractor::StoreRay(int x, int y, int frontZ, int backZ,
-		                   const float (*samples)[AVT_VARIABLE_LIMIT])
+                           const float (*samples)[AVT_VARIABLE_LIMIT])
 {
     // The temporary ray we will fill up with samples
-	float (*tmp)[AVT_VARIABLE_LIMIT] = new float[backZ-frontZ+1][AVT_VARIABLE_LIMIT];
+    float (*tmp)[AVT_VARIABLE_LIMIT] = new float[backZ-frontZ+1][AVT_VARIABLE_LIMIT];
     float weight;
     int index;
   
@@ -386,7 +386,7 @@ avtHexahedron27Extractor::StoreRay(int x, int y, int frontZ, int backZ,
   
     // Finally store the actual ray sampels
     avtExtractor::StoreRay(x,y,frontZ,backZ,tmp);
-	delete [] tmp;
+    delete [] tmp;
 }
 
 
@@ -406,8 +406,8 @@ avtHexahedron27Extractor::TriLinearWeight(int v_index, float s, float t,
                                                        float u)
 {
     return 0.125*(  (1+sControlPointParam[v_index][0]*s)
-		  * (1+sControlPointParam[v_index][1]*t)
-		  * (1+sControlPointParam[v_index][2]*u));
+          * (1+sControlPointParam[v_index][1]*t)
+          * (1+sControlPointParam[v_index][2]*u));
 }
 
 
@@ -480,8 +480,8 @@ avtHexahedron27Extractor::ClosestParametricNeighbor(float s, float t, float u)
     for (int i = 0 ; i < 27 ; i++) 
     {
         tmp = sqrt(pow(sControlPointParam[i][0] - s,2) 
-	           + pow(sControlPointParam[i][1] - t,2) 
- 	           + pow(sControlPointParam[i][2] - u,2));
+               + pow(sControlPointParam[i][1] - t,2) 
+                + pow(sControlPointParam[i][2] - u,2));
         if (tmp < min) 
         {
             min = tmp;

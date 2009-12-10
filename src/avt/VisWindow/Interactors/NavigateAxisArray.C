@@ -402,9 +402,9 @@ NavigateAxisArray::ZoomCamera(const int x, const int y)
         double dxf = MotionFactor * (double)(x - OldX) /
                          (double)(Center[0]);
 
-	//
-	// Perform zoom
-	//
+        //
+        // Perform zoom
+        //
         if (shiftKeyDown || controlKeyDown)
         {
             if (axisOrientation == Vertical)
@@ -436,9 +436,9 @@ NavigateAxisArray::ZoomCamera(const int x, const int y)
         // Redraw
         rwi->Render();
 
-	//
-	// Update old mouse position
-	//
+        //
+        // Update old mouse position
+        //
         OldX = x;
         OldY = y;
     }
