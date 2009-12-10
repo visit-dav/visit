@@ -37,7 +37,7 @@ def GetCloseString(db):
 TurnOnAllAnnotations()
 
 # Open a database and create a plot
-db = "../data/wave*.silo database"
+db = "../data/silo_hdf5_test_data/wave*.silo database"
 OpenDatabase(db, 32)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()

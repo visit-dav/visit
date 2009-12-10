@@ -16,15 +16,15 @@ def test0(datapath):
     TestSection("Getting metadata")
 
     # Get metadata for various test datasets.
-    md = GetMetaData(datapath + "noise.silo")
+    md = GetMetaData(datapath + "silo_hdf5_test_data/noise.silo")
     TestText("metadata_0_00", str(md))
 
     # Get the metadata for the first time step
-    md = GetMetaData(datapath + "wave*.silo database")
+    md = GetMetaData(datapath + "silo_hdf5_test_data/wave*.silo database")
     TestText("metadata_0_01", str(md))
 
     # Get the metadata for the 17th time step where new variables appear
-    md = GetMetaData(datapath + "wave*.silo database", 17)
+    md = GetMetaData(datapath + "silo_hdf5_test_data/wave*.silo database", 17)
     TestText("metadata_0_02", str(md))
 
     # Get something with species and default plots.
@@ -47,7 +47,7 @@ def MakeSafe(varname):
 def test1(datapath):
     TestSection("Use the metadata to plot the variables.")
 
-    db = datapath + "noise.silo"
+    db = datapath + "silo_hdf5_test_data/noise.silo"
     OpenDatabase(db)
     md = GetMetaData(db)
 

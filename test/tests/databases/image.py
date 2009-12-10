@@ -66,12 +66,12 @@ DrawPlots()
 Test("image_03")
 
 DeleteAllPlots()
-f = open("../data/manhattan.imgvol", "wt")
+f = open("../data/Image_test_data/manhattan.imgvol", "wt")
 f.write("Z_STEP:60\n")
 for i in range(3):
    f.write("Image_test_data/manhattan.jpg\n")
 f.close()
-OpenDatabase("../data/manhattan.imgvol")
+OpenDatabase("../data/Image_test_data/manhattan.imgvol")
 AddPlot("Contour", "green")
 c = ContourAttributes()
 c.contourMethod = c.Value

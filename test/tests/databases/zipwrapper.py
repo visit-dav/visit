@@ -67,7 +67,7 @@ Test("ZipWrapper_01")
 DeleteAllPlots()
 CloseDatabase("../data/zipwrapper_test_data/multi_ucd.visit")
 
-OpenDatabase("../data/histz_*.silo.gz database", 3)
+OpenDatabase("../data/zipwrapper_test_data/histz_*.silo.gz database", 3)
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()
 v=GetView3D()
