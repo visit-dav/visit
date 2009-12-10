@@ -116,9 +116,9 @@ HideActivePlots()
 # 'virtual' database of multi-part silo files by
 # creating appropriately named links
 #
-os.system("rm -f ../data/gorfo*")
+os.system("rm -f ../data/silo_hdf5_test_data/gorfo*")
 cwd = os.getcwd()
-os.chdir("../data")
+os.chdir("../data/silo_hdf5_test_data/")
 i = 1
 for filename in os.listdir("."):
     if filename == "multipart_multi_ucd3d.silo":
@@ -139,7 +139,7 @@ os.chdir(cwd)
 # Test opening a 'virtual' database of multi-part silo files
 # at something other than its first timestep
 #
-OpenDatabase("../data/gorfo_* database",1)
+OpenDatabase("../data/silo_hdf5_test_data/gorfo_* database",1)
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh", "mesh1")
 DrawPlots()
@@ -152,7 +152,7 @@ Test("silo_06")
 #
 # remove all the gorfo files we created above
 #
-os.system("rm -f ../data/gorfo*")
+os.system("rm -f ../data/silo_hdf5_test_data/gorfo*")
 
 DeleteAllPlots()
 

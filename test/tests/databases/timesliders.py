@@ -194,7 +194,7 @@ TestWindowInformation("timesliders31")
 # Make sure that when we replace an MT database with an ST database, we get
 # the right time sliders.
 DeleteAllPlots()
-OpenDatabase("../data/wave*.silo database", 30)
+OpenDatabase("../data/silo_hdf5_test_data/wave*.silo database", 30)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 SetTheView()
