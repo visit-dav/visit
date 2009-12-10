@@ -552,7 +552,7 @@ SpreadsheetViewer::updateVariableMenus()
         plot->GetMetaData(),
         *plot->GetSILRestriction(),
         plot->GetViewerState()->GetExpressionList(),
-	treatAllDBsAsTimeVarying))
+        treatAllDBsAsTimeVarying))
     {
         QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator);
     }

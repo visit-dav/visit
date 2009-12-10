@@ -504,8 +504,8 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
         reToUse = string(re, 1, (last-re+1)-2); // -2 for '<' and '>' chars
         errno = 0;
         matchToExtract = strtol(last+3, 0, 10);
-	if (errno != 0)
-	    return retval;
+        if (errno != 0)
+            return retval;
     }
     else
     {
@@ -525,12 +525,12 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
     for (int i = 0; i < 255; i++)
     {
         if (pm[i].rm_so == -1)
-	    continue;
-	if (i == matchToExtract)
-	{
-	    retval = std::string(strToSearch, pm[i].rm_so,
-	                                      pm[i].rm_eo - pm[i].rm_so);
-	    break;
+            continue;
+        if (i == matchToExtract)
+        {
+            retval = std::string(strToSearch, pm[i].rm_so,
+                                              pm[i].rm_eo - pm[i].rm_so);
+            break;
         }
     }
     return retval;
@@ -752,8 +752,8 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
         // optional dot
         if (fmtStr[n] == '.')
         {
-	    n++;
-	    // walk over precision digits
+            n++;
+            // walk over precision digits
             while (fmtStr[n] >= '0' && fmtStr[n] <= '9')
                 n++;
         }
@@ -783,7 +783,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     for (i = 0; i < n-1; i++)
     {
         if (fmtStr[i] == '%' && fmtStr[i+1] != '%')
-	    ncspecs++;
+            ncspecs++;
     }
     if (ncspecs == 0)
         return true;
@@ -797,10 +797,10 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     // loop adding RE terms for each argument type
     for (i = 0; i < ncspecs; i++)
     {
-	if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
-	    break;
+        if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
+            break;
         re += typeNameToFmtREMap[string(currentArgTypeName)];
-	currentArgTypeName = va_arg(ap, const char *);
+        currentArgTypeName = va_arg(ap, const char *);
     }
     va_end(ap);
 

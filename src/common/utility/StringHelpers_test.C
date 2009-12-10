@@ -143,11 +143,11 @@ int main(int argc, char **argv)
         cerr << endl;
     }
 
-#define CHECK_PLURAL(noun,pnoun) 			\
-    if (Plural(#noun) != #pnoun)			\
-    {							\
-        cerr << "Problem pluralizing " #pnoun << endl;	\
-        return 1;					\
+#define CHECK_PLURAL(noun,pnoun)                         \
+    if (Plural(#noun) != #pnoun)                        \
+    {                                                        \
+        cerr << "Problem pluralizing " #pnoun << endl;        \
+        return 1;                                        \
     }
 
     CHECK_PLURAL(matrix,matrices);

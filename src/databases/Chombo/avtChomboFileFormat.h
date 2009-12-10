@@ -153,7 +153,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
 
     void                  *GetMaterial(const char *var, int patch, 
                                        const char *type,
-				       DestructorFunction &df);
+                                       DestructorFunction &df);
   
   protected:
     bool                   initializedReader;

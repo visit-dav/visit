@@ -127,20 +127,20 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
     if (scanfStr != "")
     {
         for (int i = 0; i < scanfStr.size()-1; i++)
-	{
-	    // all '%' except '%%' indicate an argument conversion specifier
-	    if (scanfStr[i] == '%' && scanfStr[i+1] != '%')
-	        nexpectedMatches++;
-	}
+        {
+            // all '%' except '%%' indicate an argument conversion specifier
+            if (scanfStr[i] == '%' && scanfStr[i+1] != '%')
+                nexpectedMatches++;
+        }
 
-	// in the scanf below, we assume a max of 16 conversion specifiers
-	if (nexpectedMatches > 16)
-	{
-	    char msg[256];
-	    SNPRINTF(msg, sizeof(msg), "scanf pattern contains %d conversion "
-	        "specifiers. Max is 16", nexpectedMatches);
-	    EXCEPTION1(ImproperUseException, msg);
-	}
+        // in the scanf below, we assume a max of 16 conversion specifiers
+        if (nexpectedMatches > 16)
+        {
+            char msg[256];
+            SNPRINTF(msg, sizeof(msg), "scanf pattern contains %d conversion "
+                "specifiers. Max is 16", nexpectedMatches);
+            EXCEPTION1(ImproperUseException, msg);
+        }
     }
 
     struct dirent *theDirEnt;
@@ -151,46 +151,46 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
         // and xlC.
         //
 #ifdef NAME_MAX
-	// check we didn't exceed name length
+        // check we didn't exceed name length
         if (strlen(theDirEnt->d_name) >= NAME_MAX) 
-	{
-	    char msg[NAME_MAX+1024];
-	    SNPRINTF(msg, sizeof(msg), "probable truncation of d_name member "
-	        "of dirent struct for entry...\n   \"%s\"", theDirEnt->d_name);
-	    EXCEPTION1(ImproperUseException, msg);
-	}
+        {
+            char msg[NAME_MAX+1024];
+            SNPRINTF(msg, sizeof(msg), "probable truncation of d_name member "
+                "of dirent struct for entry...\n   \"%s\"", theDirEnt->d_name);
+            EXCEPTION1(ImproperUseException, msg);
+        }
 #endif
 
-	// use either scanf pattern or regex pattern to match the entry
+        // use either scanf pattern or regex pattern to match the entry
         if (scanfStr != "")
-	{
-	    // we use this funky scanf call because we don't really
-	    // care about the data, here. Just whether we can get
-	    // a match. But, we'll need a place for scanf to store
-	    // anything it assigns and so we just stick it into dummy
-	    char dummyStr[2048];
+        {
+            // we use this funky scanf call because we don't really
+            // care about the data, here. Just whether we can get
+            // a match. But, we'll need a place for scanf to store
+            // anything it assigns and so we just stick it into dummy
+            char dummyStr[2048];
             int nmatch = sscanf(theDirEnt->d_name, scanfStr.c_str(),
-	                     (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-	                     (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-	                     (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-	                     (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-	                     (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-	                     (void*) dummyStr);
-	    if (nmatch == nexpectedMatches)
-	    {
-	        fnames.push_back(theDirEnt->d_name);
-		debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
-	    }
-	}
-	else if (regexStr != "")
-	{
-	    if (StringHelpers::FindRE(theDirEnt->d_name, regexStr.c_str()) !=
-	        StringHelpers::FindNone)
+                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                             (void*) dummyStr);
+            if (nmatch == nexpectedMatches)
             {
-	        fnames.push_back(theDirEnt->d_name);
-		debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
-	    }
-	}
+                fnames.push_back(theDirEnt->d_name);
+                debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
+            }
+        }
+        else if (regexStr != "")
+        {
+            if (StringHelpers::FindRE(theDirEnt->d_name, regexStr.c_str()) !=
+                StringHelpers::FindNone)
+            {
+                fnames.push_back(theDirEnt->d_name);
+                debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
+            }
+        }
     }
 
     closedir(theDir);
@@ -267,22 +267,22 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
     // from guessing cycle number from filename
     for (i = 0; i < n; i++)
     {
-	double rank = -1.0;
-	if (cycleRegex == "")
-	{
+        double rank = -1.0;
+        if (cycleRegex == "")
+        {
             string fullFileName = rootDir + "/" + fnames[i];
             VisItStat_t stbuf;
-	    if (VisItStat(fullFileName.c_str(), &stbuf) == 0)
-	        rank = (double) stbuf.st_mtime;
+            if (VisItStat(fullFileName.c_str(), &stbuf) == 0)
+                rank = (double) stbuf.st_mtime;
         }
-	else
-	{
-	    rank = (double) avtFileFormat::GuessCycle(fnames[i].c_str(),
-	                                              cycleRegex.c_str());
-	}
+        else
+        {
+            rank = (double) avtFileFormat::GuessCycle(fnames[i].c_str(),
+                                                      cycleRegex.c_str());
+        }
 
-	fnrs[i].fname = fnames[i];
-	fnrs[i].rank = rank; 
+        fnrs[i].fname = fnames[i];
+        fnrs[i].rank = rank; 
     }
 
     // sort this list
@@ -294,7 +294,7 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
     for (i = 0; i < n; i++)
     {
         fnames.push_back(fnrs[i].fname);
-	debug5 << "   \"" << fnrs[i].fname << "\"" << endl;
+        debug5 << "   \"" << fnrs[i].fname << "\"" << endl;
     }
 
     delete [] fnrs;
@@ -328,8 +328,8 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     if (nread >= sizeof(buf)-1)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Buffer size of %ld insufficient "
-	    "to read time header", sizeof(buf));
+        SNPRINTF(msg, sizeof(msg), "Buffer size of %ld insufficient "
+            "to read time header", sizeof(buf));
         EXCEPTION1(ImproperUseException, msg);
     }
     close(fd);
@@ -339,12 +339,12 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
 
     int nscan = sscanf(buf, " %lf time\n %d meqn\n %d ngrids\n %d naux\n %d ndims",
                          &(hdr->time), &(hdr->meqn), &(hdr->ngrids), &(hdr->naux),
-			 &(hdr->ndims));
+                         &(hdr->ndims));
     if (nscan != 5)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "scanf() matched only %d of 5 "
-	    "items in time header", nscan);
+        SNPRINTF(msg, sizeof(msg), "scanf() matched only %d of 5 "
+            "items in time header", nscan);
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -425,13 +425,13 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     if (thdr->ndims == 2)
     {
         int nscan = sscanf(buf, " %d grid_number\n %d AMR_level\n"
-	            " %d mx\n %d my\n"
-		    " %lf xlow\n %lf ylow\n"
-		    " %lf dx\n %lf dy\n",
+                    " %d mx\n %d my\n"
+                    " %lf xlow\n %lf ylow\n"
+                    " %lf dx\n %lf dy\n",
                     &(ghdr->grid_number), &(ghdr->AMR_level),
-		    &(ghdr->mx), &(ghdr->my),
-		    &(ghdr->xlow), &(ghdr->ylow),
-		    &(ghdr->dx), &(ghdr->dy));
+                    &(ghdr->mx), &(ghdr->my),
+                    &(ghdr->xlow), &(ghdr->ylow),
+                    &(ghdr->dx), &(ghdr->dy));
         if (nscan != 8)
         {
             EXCEPTION1(InvalidFilesException, "Unable to read grid header");
@@ -440,13 +440,13 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     else if (thdr->ndims == 3)
     {
         int nscan = sscanf(buf, " %d grid_number\n %d AMR_level\n"
-	            " %d mx\n %d my\n %d mz\n"
-		    " %lf xlow\n %lf ylow\n %lf zlow\n"
-		    " %lf dx\n %lf dy\n %lf dz\n",
+                    " %d mx\n %d my\n %d mz\n"
+                    " %lf xlow\n %lf ylow\n %lf zlow\n"
+                    " %lf dx\n %lf dy\n %lf dz\n",
                     &(ghdr->grid_number), &(ghdr->AMR_level),
-		    &(ghdr->mx), &(ghdr->my), &(ghdr->mz),
-		    &(ghdr->xlow), &(ghdr->ylow), &(ghdr->zlow),
-		    &(ghdr->dx), &(ghdr->dy), &(ghdr->dz));
+                    &(ghdr->mx), &(ghdr->my), &(ghdr->mz),
+                    &(ghdr->xlow), &(ghdr->ylow), &(ghdr->zlow),
+                    &(ghdr->dx), &(ghdr->dy), &(ghdr->dz));
         if (nscan != 11)
         {
             EXCEPTION1(InvalidFilesException, "Unable to read grid header");
@@ -455,7 +455,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     else
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Unsupported value of %d for 'ndims' "
+        SNPRINTF(msg, sizeof(msg), "Unsupported value of %d for 'ndims' "
             "in time header", thdr->ndims);
         EXCEPTION1(InvalidFilesException, msg);
     }
@@ -525,11 +525,11 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     while (ng < thdr->ngrids)
     {
         int nextoff;
-	GridHeader_t ghdr;
+        GridHeader_t ghdr;
         ReadGridHeader(fd, offset, thdr, &ghdr, &nextoff);
         gridHeaders.push_back(ghdr);
-	offset = nextoff;
-	ng++;
+        offset = nextoff;
+        ng++;
     }
     close(fd);
 
@@ -537,7 +537,7 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     for (int i = 0; i < gridHeaders.size(); i++)
     {
         const GridHeader_t &ghdr = gridHeaders[i];
-	if (gridHeaderMap.find(ghdr.AMR_level) == gridHeaderMap.end())
+        if (gridHeaderMap.find(ghdr.AMR_level) == gridHeaderMap.end())
             gridHeaderMap[ghdr.AMR_level-1] = ghdr; // claw indexes levels from 1
     }
 }
@@ -585,13 +585,13 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
         tmpStr[0] = '\0';
         nmatches = fscanf(bootFile, "TIME_FILES_REGEX=%s\n", tmpStr);
         if (nmatches != 1 || tmpStr[0] == '\0')
-	{
-	    EXCEPTION1(ImproperUseException, "Unable to find time files scanf|regex pattern");
-	}
-	else
-	{
-	    timeRegex = string(tmpStr);
-	}
+        {
+            EXCEPTION1(ImproperUseException, "Unable to find time files scanf|regex pattern");
+        }
+        else
+        {
+            timeRegex = string(tmpStr);
+        }
     }
     else
     {
@@ -606,13 +606,13 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
         tmpStr[0] = '\0';
         nmatches = fscanf(bootFile, "GRID_FILES_REGEX=%s\n", tmpStr);
         if (nmatches != 1 || tmpStr[0] == '\0')
-	{
-	    EXCEPTION1(ImproperUseException, "Unable to find grid files scanf|regex pattern");
-	}
-	else
-	{
-	    gridRegex = string(tmpStr);
-	}
+        {
+            EXCEPTION1(ImproperUseException, "Unable to find grid files scanf|regex pattern");
+        }
+        else
+        {
+            gridRegex = string(tmpStr);
+        }
     }
     else
     {
@@ -689,9 +689,9 @@ avtClawFileFormat::GetFilenames()
     if (gridFilenames.size() != timeFilenames.size())
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Number of time filenames, %ld, doesn't agree "
-	    " with number of grid filenames, %ld",
-	    timeFilenames.size(), gridFilenames.size());
+        SNPRINTF(msg, sizeof(msg), "Number of time filenames, %ld, doesn't agree "
+            " with number of grid filenames, %ld",
+            timeFilenames.size(), gridFilenames.size());
         EXCEPTION1(InvalidFilesException, msg);
     }
 
@@ -699,15 +699,15 @@ avtClawFileFormat::GetFilenames()
     if (sortTime)
     {
         TimeHeader_t thdr;
-	InitTimeHeader(&thdr);
-	SortFilenames(timeFilenames, cycleRegex, rootDir);
-	timeHeaders.resize(timeFilenames.size(), thdr);
+        InitTimeHeader(&thdr);
+        SortFilenames(timeFilenames, cycleRegex, rootDir);
+        timeHeaders.resize(timeFilenames.size(), thdr);
     }
     if (sortGrid)
     {
-	SortFilenames(gridFilenames, cycleRegex, rootDir);
-	gridHeaders.resize(gridFilenames.size());
-	gridHeaderMaps.resize(gridFilenames.size());
+        SortFilenames(gridFilenames, cycleRegex, rootDir);
+        gridHeaders.resize(gridFilenames.size());
+        gridHeaderMaps.resize(gridFilenames.size());
     }
 }
 
@@ -792,7 +792,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     // get the grid headers for this timestep if we don't already have 'em
     if (gridHeaders[timeState].size() == 0)
         ReadGridHeaders(rootDir, gridFilenames[timeState], &timeHdr, gridHeaders[timeState],
-	    gridHeaderMaps[timeState]);
+            gridHeaderMaps[timeState]);
     const vector<GridHeader_t> &gridHdrs = gridHeaders[timeState];
     const map<int, GridHeader_t> &levelsMap = gridHeaderMaps[timeState];
 
@@ -828,10 +828,10 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     {
            char tmpName[64];
            SNPRINTF(tmpName, sizeof(tmpName), "level%d,grid_num%d",
-	       gridHdrs[i].AMR_level, gridHdrs[i].grid_number);
+               gridHdrs[i].AMR_level, gridHdrs[i].grid_number);
 
-	   // subtract off group origin here because internally
-	   // visit is expecting zero-indexed arrays
+           // subtract off group origin here because internally
+           // visit is expecting zero-indexed arrays
            groupIds[i] = gridHdrs[i].AMR_level - 1; 
            blockPieceNames[i] = tmpName;
     }
@@ -961,35 +961,35 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         for (int i = 0; i < num_patches; i++)
         {
             vector<int> childPatches;
-	    float x0 = gridHdrs[i].xlow;
-	    float x1 = x0 + gridHdrs[i].mx * gridHdrs[i].dx;
-	    float y0 = gridHdrs[i].ylow;
-	    float y1 = y0 + gridHdrs[i].my * gridHdrs[i].dy;
-	    float z0 = gridHdrs[i].zlow;
-	    float z1 = z0 + gridHdrs[i].mz * gridHdrs[i].dz;
-	    for (int j = 0; j < num_patches; j++)
-	    {
-	        if (gridHdrs[j].AMR_level != gridHdrs[i].AMR_level+1)
-		    continue;
-
-	        float a0 = gridHdrs[j].xlow;
-	        float a1 = a0 + gridHdrs[j].mx * gridHdrs[j].dx;
-	        float b0 = gridHdrs[j].ylow;
-	        float b1 = b0 + gridHdrs[j].my * gridHdrs[j].dy;
-	        float c0 = gridHdrs[j].zlow;
-	        float c1 = c0 + gridHdrs[j].mz * gridHdrs[j].dz;
-
-		if (a0 >= x1 || x0 >= a1 ||
-		    b0 >= y1 || y0 >= b1 ||
-		    ((num_dims == 3) && (c0 >= z1 || z0 >= c1)))
+            float x0 = gridHdrs[i].xlow;
+            float x1 = x0 + gridHdrs[i].mx * gridHdrs[i].dx;
+            float y0 = gridHdrs[i].ylow;
+            float y1 = y0 + gridHdrs[i].my * gridHdrs[i].dy;
+            float z0 = gridHdrs[i].zlow;
+            float z1 = z0 + gridHdrs[i].mz * gridHdrs[i].dz;
+            for (int j = 0; j < num_patches; j++)
+            {
+                if (gridHdrs[j].AMR_level != gridHdrs[i].AMR_level+1)
                     continue;
 
-	        childPatches.push_back(j);
-	    }
+                float a0 = gridHdrs[j].xlow;
+                float a1 = a0 + gridHdrs[j].mx * gridHdrs[j].dx;
+                float b0 = gridHdrs[j].ylow;
+                float b1 = b0 + gridHdrs[j].my * gridHdrs[j].dy;
+                float c0 = gridHdrs[j].zlow;
+                float c1 = c0 + gridHdrs[j].mz * gridHdrs[j].dz;
 
-	    // the '+0.5' is because casting to (int) is a floor operation
-	    // and our floating pt. arithmatic might fall just below the
-	    // integral value it is intended to represent
+                if (a0 >= x1 || x0 >= a1 ||
+                    b0 >= y1 || y0 >= b1 ||
+                    ((num_dims == 3) && (c0 >= z1 || z0 >= c1)))
+                    continue;
+
+                childPatches.push_back(j);
+            }
+
+            // the '+0.5' is because casting to (int) is a floor operation
+            // and our floating pt. arithmatic might fall just below the
+            // integral value it is intended to represent
             vector<int> logExts(6);
             logExts[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx + 0.5); 
             logExts[1] = (int) (gridHdrs[i].ylow / gridHdrs[i].dy + 0.5); 
@@ -1078,7 +1078,7 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
     // get the grid headers for this timestep if we don't already have 'em
     if (gridHeaders[timeState].size() == 0)
         ReadGridHeaders(rootDir, gridFilenames[timeState], &timeHdr, gridHeaders[timeState],
-	    gridHeaderMaps[timeState]);
+            gridHeaderMaps[timeState]);
     const GridHeader_t &gridHdr = gridHeaders[timeState][domain];
 
     BuildDomainAuxiliaryInfo(timeState);
@@ -1163,7 +1163,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     // get the grid headers for this timestep if we don't already have 'em
     if (gridHeaders[timeState].size() == 0)
         ReadGridHeaders(rootDir, gridFilenames[timeState], &timeHdr, gridHeaders[timeState],
-	    gridHeaderMaps[timeState]);
+            gridHeaderMaps[timeState]);
     const GridHeader_t &gridHdr = gridHeaders[timeState][domain];
 
     // extract the 'meqn' column number from the variable name
@@ -1171,8 +1171,8 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     if (sscanf(varname, "col_%d", &colNeeded) != 1)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Unable to obtain meqn column number "
-	    "from \"%s\"", varname);
+        SNPRINTF(msg, sizeof(msg), "Unable to obtain meqn column number "
+            "from \"%s\"", varname);
         EXCEPTION1(InvalidVariableException, msg);
     }
 
@@ -1195,17 +1195,17 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     while (true)
     {
         char c0 = buf[lineOffset];
-	char c1 = buf[lineOffset+1];
+        char c1 = buf[lineOffset+1];
 
-	// every transition from space to numeric characters is
-	// beginning of a column
-	if (c0 == ' ' && (c1 >= '0' && c1 <= '9' || c1 == '.' || c1 =='-'))
-	{
-	    colCount++;
-	    if (colCount == colNeeded)
-	        break;
-	}
-	lineOffset++;
+        // every transition from space to numeric characters is
+        // beginning of a column
+        if (c0 == ' ' && (c1 >= '0' && c1 <= '9' || c1 == '.' || c1 =='-'))
+        {
+            colCount++;
+            if (colCount == colNeeded)
+                break;
+        }
+        lineOffset++;
     }
     lineOffset++;
 
@@ -1214,12 +1214,12 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     while (true)
     {
         char c0 = buf[lineOffset2];
-	if (c0 >= '0' && c0 <= '9' || 
-	    c0 == '.' || c0 =='-' || c0 == '+' || 
-	    c0 == 'e' || c0 == 'E')
+        if (c0 >= '0' && c0 <= '9' || 
+            c0 == '.' || c0 =='-' || c0 == '+' || 
+            c0 == 'e' || c0 == 'E')
             lineOffset2++;
-	else
-	    break;
+        else
+            break;
     }
 
     int nz = timeHdr.ndims == 3 ? gridHdr.mz : 1;
@@ -1233,30 +1233,30 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     for (int zi = 0; zi < nz; zi++)
     {
         for (int yi = 0; yi < gridHdr.my; yi++)
-	{
+        {
             for (int xi = 0; xi < gridHdr.mx; xi++)
-	    {
-		// pinch the string at end of column
-		*(bufp + lineOffset2) = '\0';
+            {
+                // pinch the string at end of column
+                *(bufp + lineOffset2) = '\0';
 
-		// convert this column's value to float
+                // convert this column's value to float
                 char *bufptmp = 0;
                 errno = 0;
-		float val = (float) strtod(bufp, &bufptmp);
+                float val = (float) strtod(bufp, &bufptmp);
                 if (((val == 0.0) && (bufp == bufptmp)) || (errno != 0))
-		{
+                {
                     char msg[256];
-	            SNPRINTF(msg, sizeof(msg), "Error converting ascii \"%s\" to float",
-		        bufp);
+                    SNPRINTF(msg, sizeof(msg), "Error converting ascii \"%s\" to float",
+                        bufp);
                     EXCEPTION1(InvalidVariableException, msg);
 
-		}
-		*datap++ = val;
-	        bufp += gridHdr.charsPerLine;
-	    }
-	    bufp += 3;
-	}
-	bufp += 3;
+                }
+                *datap++ = val;
+                bufp += gridHdr.charsPerLine;
+            }
+            bufp += 3;
+        }
+        bufp += 3;
     }
 
     delete [] buf;

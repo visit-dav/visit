@@ -218,7 +218,7 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
 
     if (gridType == AVT_RECTILINEAR_MESH)
     {
-	int i,j;
+        int i,j;
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
         rgrid->SetDimensions(dims);
 
@@ -228,7 +228,7 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         vtkFloatArray   *coords[3];
         for (i = 0 ; i < 3 ; i++)
         {
-	    int origin = 0;
+            int origin = 0;
             switch (i) {
             case 0: origin = origins[dom].x0; break;
             case 1: origin = origins[dom].y0; break;
@@ -243,15 +243,15 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
                 coords[i]->SetNumberOfTuples(1);
                 coords[i]->SetComponent(0, 0, 0.);
             }
-	    else
-	    {
+            else
+            {
                 coords[i]->SetNumberOfTuples(dims[i]);
                 for (j = 0 ; j < dims[i] ; j++)
                 {
                     coords[i]->SetComponent(j, 0, (float) (origin + j));
                 }
             }
-	}
+        }
 
         rgrid->SetDimensions(dims);
         rgrid->SetXCoordinates(coords[0]);
@@ -624,10 +624,10 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
     if (buff == "gridtype")
     {
         in >> buff;
-	if (buff == "rect")
-	    gridType = AVT_RECTILINEAR_MESH;
+        if (buff == "rect")
+            gridType = AVT_RECTILINEAR_MESH;
         else if (buff == "curv")
-	    gridType = AVT_CURVILINEAR_MESH;
+            gridType = AVT_CURVILINEAR_MESH;
     }
 
     for (i=0; i<ndomains; i++)
@@ -641,15 +641,15 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
         dzsize.push_back(z);
         numpts.push_back(x*y*z);
         debug4 << "domain " << i << ": xsize = "
-	       << x << ", ysize = " << y << ", zsize = " << z;
-	if (gridType == AVT_RECTILINEAR_MESH)
-	{
-	    origin_t o;
+               << x << ", ysize = " << y << ", zsize = " << z;
+        if (gridType == AVT_RECTILINEAR_MESH)
+        {
+            origin_t o;
             in >> o.x0 >> o.y0 >> o.z0;
-	    origins.push_back(o);
+            origins.push_back(o);
             debug4 << " (xo = " << o.x0 << ", yo = " << o.y0 << ", zo = " << o.z0 << ")";
-	}
-	debug4 << endl;
+        }
+        debug4 << endl;
     }
 }
 

@@ -277,9 +277,9 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
 
         if (strncmp("-debug",argv[i],6) == 0)
         {
-	    if ((strlen(argv[i]) > 7 && IsComponent(&argv[i][7])) ||
-	         strlen(argv[i]) == 6)
-	    {
+            if ((strlen(argv[i]) > 7 && IsComponent(&argv[i][7])) ||
+                 strlen(argv[i]) == 6)
+            {
                 debuglevel = 1;
                 if (i+1 < argc && isdigit(*(argv[i+1])))
                    debuglevel = atoi(argv[i+1]);
@@ -308,7 +308,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                 {
                     ++i;
                 }
-	    }
+            }
         }
         else if (strcmp("-debug-processor-stride", argv[i]) == 0)
         {

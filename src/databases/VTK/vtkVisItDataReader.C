@@ -351,15 +351,15 @@ double vtkVisItDataReader::ReadVal(int mode)
         if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
             IssueReadWarning(buf, errno);
         else // see if we've got a decimal fraction portion
-	{
-	    char *tmpstr1;
-	    double val = strtod(tmpstr, &tmpstr1);
-	    bool ok = false;
-	    if ((tmpstr1 == 0) || ((val == 0.0) && (tmpstr1 == tmpstr)))
-	        ok = true;
-	    if (!ok)
+        {
+            char *tmpstr1;
+            double val = strtod(tmpstr, &tmpstr1);
+            bool ok = false;
+            if ((tmpstr1 == 0) || ((val == 0.0) && (tmpstr1 == tmpstr)))
+                ok = true;
+            if (!ok)
                 IssueReadWarning(buf, -131);
-	}
+        }
     }
     else                // fail-safe as double
     {

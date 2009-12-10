@@ -279,13 +279,13 @@ avtHDF_UCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (i = 0 ; i < vnames.size() ; i++)
     {
         if (vnames[i] == "x" || vnames[i] == "y" || vnames[i] == "z" )
-	  ++cartesian;
+          ++cartesian;
 
         if (vnames[i] == "r" || vnames[i] == "phi" || vnames[i] == "z" )
-	  ++cylindrical;
+          ++cylindrical;
 
         if (vnames[i] == "r" || vnames[i] == "phi" || vnames[i] == "theta" )
-	  ++spherical;
+          ++spherical;
 
         if (vnames[i] == "z" || vnames[i] == "theta")
             is2D = false;
@@ -296,10 +296,10 @@ avtHDF_UCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     else /* if( cartesian >= 2)*/ { coordType = 0; }
 
     debug4 << (is2D ? "2d Mesh  " :  "3d Mesh  ")
-	 << (coordType==0 ? "Cartesian" :
-	     (coordType==1 ? "Cylindrical" :
-	      (coordType==2 ? "Spherical" : "Unknown") ) )
-	 << endl;
+         << (coordType==0 ? "Cartesian" :
+             (coordType==1 ? "Cylindrical" :
+              (coordType==2 ? "Spherical" : "Unknown") ) )
+         << endl;
 
     pmesh->name = "particles";
     pmesh->originalName = "particles";
@@ -346,8 +346,8 @@ vtkDataSet *
 avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
 {
   char *coord_names[3][3] = { { "x", "y", "z" },
-			      { "r", "phi", "z" },
-			      { "r", "phi", "theta" } };
+                              { "r", "phi", "z" },
+                              { "r", "phi", "theta" } };
 
   int t1 = visitTimer->StartTimer();
   
@@ -383,7 +383,7 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
   {
     if (i == 2 && is2D) {
       for (unsigned long j=0; j<numParticles; j++) // 2D data
-	pts[3*j+i] = 0.;
+        pts[3*j+i] = 0.;
       
       continue;
     }
@@ -401,18 +401,18 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
     // the queries outside ofthe loop.
     if (readAllData ) {
       if( i == 0 ) {
-	numParticles = dims[0];
+        numParticles = dims[0];
 
-	vtkpoints->SetNumberOfPoints((vtkIdType) numParticles);
+        vtkpoints->SetNumberOfPoints((vtkIdType) numParticles);
 
-	pts = (float *) vtkpoints->GetVoidPointer(0);
+        pts = (float *) vtkpoints->GetVoidPointer(0);
 
-	debug4<<"GetMesh:: " << numParticles << " particles... " << endl;
+        debug4<<"GetMesh:: " << numParticles << " particles... " << endl;
       }
       else if (dims[0] != numParticles) {
-	debug4<<coord_names[coordType][i]
-	      <<" dimensions != numParticles"<<endl;
-	EXCEPTION1(InvalidVariableException, coord_names[coordType][i]);
+        debug4<<coord_names[coordType][i]
+              <<" dimensions != numParticles"<<endl;
+        EXCEPTION1(InvalidVariableException, coord_names[coordType][i]);
       }
     }
 
@@ -420,12 +420,12 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
       double *data = new double[numParticles];
       
       if (readAllData)
-	reader.getData(coord_names[coordType][i], 0, data);
+        reader.getData(coord_names[coordType][i], 0, data);
       else
-	reader.getPointData(coord_names[coordType][i], 0, data, queryResults);
+        reader.getPointData(coord_names[coordType][i], 0, data, queryResults);
       
       for (unsigned long int j=0; j<numParticles; j++)
-	pts[3*j+i] = data[j];
+        pts[3*j+i] = data[j];
       
       delete[] data;
     }
@@ -433,18 +433,18 @@ avtHDF_UCFileFormat::GetMesh(int ts, const char *meshname)
       float *data = new float[numParticles];
       
       if (readAllData)
-	reader.getData(coord_names[coordType][i], 0, data);     
+        reader.getData(coord_names[coordType][i], 0, data);     
       else
-	reader.getPointData(coord_names[coordType][i], 0, data, queryResults);
+        reader.getPointData(coord_names[coordType][i], 0, data, queryResults);
 
       for (unsigned long int j=0; j<numParticles; j++)
-	pts[3*j+i] = data[j];
+        pts[3*j+i] = data[j];
 
       delete[] data;
     }
     else {
       debug4 << coord_names[coordType][i]
-	     <<" is neither float nor double"<<endl;
+             <<" is neither float nor double"<<endl;
       EXCEPTION1(InvalidVariableException, coord_names[coordType][i]);
     }
 

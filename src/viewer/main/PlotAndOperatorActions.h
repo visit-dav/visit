@@ -330,7 +330,7 @@ public:
 //
 // Notes:      
 //
-// Programmer: Ellen Tarwater	
+// Programmer: Ellen Tarwater
 // Creation:   Thurs, Dec 6, 2007
 //
 // Modifications:

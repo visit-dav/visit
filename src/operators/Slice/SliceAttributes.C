@@ -422,26 +422,26 @@ SliceAttributes::CopyAttributes(const AttributeGroup *atts)
             SetOriginType(Point);
             SetNormal(tmp->GetNormal());
             SetUpAxis(tmp->GetUpAxis());
-	    if ( GetAxisType() != Arbitrary && GetAxisType() != ThetaPhi )
-	         SetAxisType(Arbitrary);
+            if ( GetAxisType() != Arbitrary && GetAxisType() != ThetaPhi )
+                 SetAxisType(Arbitrary);
 
-	    //Set theta/phi.
-	    double n[3] = {tmp->GetNormal()[0],tmp->GetNormal()[1],tmp->GetNormal()[2]};
-	    double len = sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
-	    n[0] /= len;
-	    n[1] /= len;
-	    n[2] /= len;
-	    len = 1.0;
-	    double theta = atan2( n[1], n[0] ) * 57.29577951308232;
-	    double phi = acos( n[2] / len ) * 57.29577951308232;
-	    theta -= 90;
-	    phi -= 90;
-	    phi = - phi;
+            //Set theta/phi.
+            double n[3] = {tmp->GetNormal()[0],tmp->GetNormal()[1],tmp->GetNormal()[2]};
+            double len = sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+            n[0] /= len;
+            n[1] /= len;
+            n[2] /= len;
+            len = 1.0;
+            double theta = atan2( n[1], n[0] ) * 57.29577951308232;
+            double phi = acos( n[2] / len ) * 57.29577951308232;
+            theta -= 90;
+            phi -= 90;
+            phi = - phi;
 
-	    theta = (fabs(theta) < 1e-5 ? 0 : theta);
-	    phi = (fabs(phi) < 1e-5 ? 0 : phi);
-	    SetTheta( theta );
-	    SetPhi( phi );
+            theta = (fabs(theta) < 1e-5 ? 0 : theta);
+            phi = (fabs(phi) < 1e-5 ? 0 : phi);
+            SetTheta( theta );
+            SetPhi( phi );
 
             retval = true;
         }
@@ -1439,16 +1439,16 @@ SliceAttributes::UpdateOrthogonalAxes()
             // X: Y vs Z
             normal[0] = -1.; normal[1] =  0.; normal[2] =  0.;
             upAxis[0] =  0.; upAxis[1] =  1.; upAxis[2] =  0.;
-	    theta = 90;
-	    phi = 0;
+            theta = 90;
+            phi = 0;
         }
         else
         {
             // X: Z vs Y
             normal[0] =  1.; normal[1] =  0.; normal[2] =  0.;
             upAxis[0] =  0.; upAxis[1] =  0.; upAxis[2] =  1.;
-	    theta = -90;
-	    phi = 0;
+            theta = -90;
+            phi = 0;
         }
         break;
       case YAxis:
@@ -1457,16 +1457,16 @@ SliceAttributes::UpdateOrthogonalAxes()
             // Y: Z vs X
             normal[0] =  0.; normal[1] = -1.; normal[2] =  0.;
             upAxis[0] =  0.; upAxis[1] =  0.; upAxis[2] =  1.;
-	    theta = 180;
-	    phi = 0;
+            theta = 180;
+            phi = 0;
         }
         else
         {
             // Y: X vs Z
             normal[0] =  0.; normal[1] =  1.; normal[2] =  0.;
             upAxis[0] =  1.; upAxis[1] =  0.; upAxis[2] =  0.;
-	    theta = 0;
-	    phi = 0;
+            theta = 0;
+            phi = 0;
         }
         break;
       case ZAxis:
@@ -1475,16 +1475,16 @@ SliceAttributes::UpdateOrthogonalAxes()
             // Z: Y vs X
             normal[0] =  0.; normal[1] =  0.; normal[2] =  1.;
             upAxis[0] =  0.; upAxis[1] =  1.; upAxis[2] =  0.;
-	    theta = 0;
-	    phi = 90;
+            theta = 0;
+            phi = 90;
         }
         else
         {
             // Z: X vs Y
             normal[0] =  0.; normal[1] =  0.; normal[2] = -1.;
             upAxis[0] =  1.; upAxis[1] =  0.; upAxis[2] =  0.;
-	    theta = 0;
-	    phi = -90;
+            theta = 0;
+            phi = -90;
         }
         break;
       default:

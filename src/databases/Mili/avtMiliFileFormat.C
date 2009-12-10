@@ -754,7 +754,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     if (sand_arr->GetNumberOfTuples() != ncells[dom][mesh_id])
     {
         EXCEPTION2(UnexpectedValueException, ncells[dom][mesh_id],
-	                                     sand_arr->GetNumberOfTuples());
+                                             sand_arr->GetNumberOfTuples());
     }
     float *sand_vals = (float*) sand_arr->GetVoidPointer(0);
 

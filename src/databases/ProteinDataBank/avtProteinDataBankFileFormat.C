@@ -236,7 +236,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             new avtScalarMetaData(name_el, name_mesh, AVT_NODECENT);
         el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
         for (int a=0; a<=MAX_ELEMENT_NUMBER; a++)
-	    el_smd->AddEnumNameValue(element_names[a], a);
+            el_smd->AddEnumNameValue(element_names[a], a);
         md->Add(el_smd);
 
         // Add the compound scalars
@@ -246,7 +246,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 new avtScalarMetaData(name_cmp, name_mesh, AVT_NODECENT);
             cmp_smd->SetEnumerationType(avtScalarMetaData::ByValue);
             for (int a=0; a<compoundNames.size(); a++)
-	        cmp_smd->AddEnumNameValue(compoundNames[a], a);
+                cmp_smd->AddEnumNameValue(compoundNames[a], a);
             md->Add(cmp_smd);
             md->Add(new avtLabelMetaData(name_cmpnm, name_mesh, AVT_NODECENT));
         }

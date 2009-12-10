@@ -3452,7 +3452,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
             // is cached in the plugin and free'd later.
             if (ms)
             {
-                // Make sure its removed from the plugin's cache, too.
+                // Make sure it's removed from the plugin's cache, too.
                 RemoveMultimatspec(ms);
                 DBFreeMultimatspecies(ms);
             }
@@ -3568,19 +3568,19 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
 //    Mark C. Miller, Wed Aug 19 11:21:37 PDT 2009
 //    Reformatted with TOC_ENTRY macros to reduce size.
 // ****************************************************************************
-#define COPY_TOC_ENTRY(NM)						\
-    int      n ## NM = toc->n ## NM;					\
-    char   **NM ## _names = new char*[n ## NM];				\
-    for (i = 0 ; i < n ## NM; i++)					\
-    {									\
-        NM ## _names[i] = new char[strlen(toc->NM ## _names[i])+1];	\
-        strcpy(NM ## _names[i], toc->NM ## _names[i]);			\
+#define COPY_TOC_ENTRY(NM)                        \
+    int      n ## NM = toc->n ## NM;                    \
+    char   **NM ## _names = new char*[n ## NM];                \
+    for (i = 0 ; i < n ## NM; i++)                    \
+    {                                    \
+        NM ## _names[i] = new char[strlen(toc->NM ## _names[i])+1];    \
+        strcpy(NM ## _names[i], toc->NM ## _names[i]);            \
     }
-#define FREE_COPIED_TOC_ENTRY(NM)					\
-    for (i = 0 ; i < n ## NM; i++)					\
-    {									\
-        delete [] NM ## _names[i];					\
-    }									\
+#define FREE_COPIED_TOC_ENTRY(NM)                    \
+    for (i = 0 ; i < n ## NM; i++)                    \
+    {                                    \
+        delete [] NM ## _names[i];                    \
+    }                                    \
     delete [] NM ## _names;
 
 
@@ -8797,18 +8797,18 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
     vector<int> lnmingnvec;
     map<int,int> nodemap;
     int ncnttot = 0, lf, k;
-    for (lf = 0; lf < fcnt; lf++)		// lf = local face #
+    for (lf = 0; lf < fcnt; lf++)           // lf = local face #
     {
         int lnmingn;
         int mingn = INT_MAX;
-        int flidx = floffs[gz]+lf;		// flidx = index into facelist
-        int sgf = phzl->facelist[flidx];	// sgf = signed global face #
-        int gf = sgf < 0 ? ~sgf : sgf;		// gf = global face #
-        int ncnt = phzl->nodecnt[gf];		// ncnt = # nodes for this face
-        for (int ln = 0; ln < ncnt; ln++)	// ln = local node # 
+        int flidx = floffs[gz]+lf;          // flidx = index into facelist
+        int sgf = phzl->facelist[flidx];    // sgf = signed global face #
+        int gf = sgf < 0 ? ~sgf : sgf;      // gf = global face #
+        int ncnt = phzl->nodecnt[gf];       // ncnt = # nodes for this face
+        for (int ln = 0; ln < ncnt; ln++)   // ln = local node # 
         {
-            int nlidx = nloffs[gf]+ln;		// nlidx = index into nodelist
-            int gn = phzl->nodelist[nlidx];	// gn = global node #
+            int nlidx = nloffs[gf]+ln;      // nlidx = index into nodelist
+            int gn = phzl->nodelist[nlidx]; // gn = global node #
             if (gn < mingn)
             {
                 mingn = gn;
@@ -8834,12 +8834,12 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
     // Loop over faces, creating pyramid and tets using 4 or
     // 3 nodes on the face and the cell center.
     //
-    for (lf = 0; lf < fcnt; lf++)		// lf = local face #
+    for (lf = 0; lf < fcnt; lf++)               // lf = local face #
     {
-        int flidx = floffs[gz]+lf;		// flidx = index into facelist
-        int sgf = phzl->facelist[flidx];	// sgf = signed global face #
-        int gf = sgf < 0 ? ~sgf : sgf;		// gf = global face #
-        int ncnt = phzl->nodecnt[gf];		// ncnt = # nodes for this face
+        int flidx = floffs[gz]+lf;              // flidx = index into facelist
+        int sgf = phzl->facelist[flidx];        // sgf = signed global face #
+        int gf = sgf < 0 ? ~sgf : sgf;          // gf = global face #
+        int ncnt = phzl->nodecnt[gf];           // ncnt = # nodes for this face
         int newcellcnt = ncnt / 2 - ((ncnt%2)?0:1);
         int lnmingn = lnmingnvec[lf];
 
@@ -8953,9 +8953,9 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     for (i = 0, sum = 0; i < phzl->nzones; sum += phzl->facecnt[i], i++)
         floffs.push_back(sum);
     
-    for (int gz = 0; gz < phzl->nzones; gz++)		// gz = global zone #
+    for (int gz = 0; gz < phzl->nzones; gz++)        // gz = global zone #
     {
-        int fcnt = phzl->facecnt[gz];			// fcnt = # faces for this zone
+        int fcnt = phzl->facecnt[gz];            // fcnt = # faces for this zone
         unsigned int ocdata[2] = {domain, gz};
 
         if (fcnt == 4 || // Must be tet
@@ -8975,14 +8975,14 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             int first4NodeFace = -INT_MAX;
             int opposing3NodeFace = -INT_MAX;
             int opposing4NodeFace = -INT_MAX;
-            map<int, int> nodemap;			// Map used for unique node #'s
+            map<int, int> nodemap;            // Map used for unique node #'s
             int nloff;
-            for (int lf = 0; lf < fcnt; lf++)		// lf = local face #
+            for (int lf = 0; lf < fcnt; lf++)     // lf = local face #
             {
-                int flidx = floffs[gz]+lf;		// flidx = index into facelist
-                int sgf = phzl->facelist[flidx];	// sgf = signed global face #
-                int gf = sgf < 0 ? ~sgf : sgf;		// gf = global face #
-                int ncnt = phzl->nodecnt[gf];		// ncnt = # nodes for this face
+                int flidx = floffs[gz]+lf;        // flidx = index into facelist
+                int sgf = phzl->facelist[flidx];  // sgf = signed global face #
+                int gf = sgf < 0 ? ~sgf : sgf;    // gf = global face #
+                int ncnt = phzl->nodecnt[gf];     // ncnt = # nodes for this face
 
                 if (ncnt == 3)
                 {
@@ -9005,10 +9005,10 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 }
 
                 bool nodesInCommonWithFirst = false;
-                for (int ln = 0; ln < ncnt; ln++)	// ln = local node # 
+                for (int ln = 0; ln < ncnt; ln++)    // ln = local node # 
                 {
-                    int nlidx = nloffs[gf]+ln;		// nlidx = index into nodelist
-                    int gn = phzl->nodelist[nlidx];	// gn = global node #
+                    int nlidx = nloffs[gf]+ln;       // nlidx = index into nodelist
+                    int gn = phzl->nodelist[nlidx];  // gn = global node #
                     nodemap[gn] = ln;
 
                     // See if this face has any nodes in common with 'first'
@@ -9043,13 +9043,13 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
 
             int nids[8];
             map<int, int>::iterator it;
-            if (isNotZooElement)				// Arbitrary
+            if (isNotZooElement)                // Arbitrary
             {
                 ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
             }
             else if (fcnt == 4 && nodemap.size() == 4 &&
-                     num3NodeFaces == 4 && num4NodeFaces == 0)	// Tet
+                     num3NodeFaces == 4 && num4NodeFaces == 0)    // Tet
             {
                 // Just get all 4 nodes from the nodemap
                 for (it = nodemap.begin(), j = 0; it != nodemap.end() && j < 4; it++, j++)
@@ -9057,7 +9057,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 ArbInsertTet(ugrid, nids, ocdata, cellReMap);
             }
             else if (fcnt == 5 && nodemap.size() == 5 && 
-                     num3NodeFaces == 4 && num4NodeFaces == 1)	// Pyramid
+                     num3NodeFaces == 4 && num4NodeFaces == 1)    // Pyramid
             {
                 // Get first 4 nodes from first4NodeFace
                 nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
@@ -9072,7 +9072,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 ArbInsertPyramid(ugrid, nids, ocdata, cellReMap);
             }
             else if (fcnt == 5 && nodemap.size() == 6 && 
-                     num3NodeFaces == 2 && num4NodeFaces == 3)	// Prism/Wedge
+                     num3NodeFaces == 2 && num4NodeFaces == 3)    // Prism/Wedge
             {
                 // Get first 3 nodes from first3NodeFace
                 nloff = nloffs[first3NodeFace<0?~first3NodeFace:first3NodeFace]; 
@@ -9085,7 +9085,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                 ArbInsertWedge(ugrid, nids, ocdata, cellReMap);
             }
             else if (fcnt == 6 && nodemap.size() == 8 && 
-                     num3NodeFaces == 0 && num4NodeFaces == 6)	// Hex
+                     num3NodeFaces == 0 && num4NodeFaces == 6)    // Hex
             {
                 // Get first 4 nodes from first4NodeFace
                 nloff = nloffs[first4NodeFace<0?~first4NodeFace:first4NodeFace];
@@ -9097,13 +9097,13 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
                     nids[4+j] = phzl->nodelist[nloff+j];
                 ArbInsertHex(ugrid, nids, ocdata, cellReMap);
             }
-            else						// Arbitrary
+            else                        // Arbitrary
             {
                 ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                     cellReMap, nodeReMap);
             }
         }
-        else							// Arbitrary
+        else                            // Arbitrary
         {
             ArbInsertArbitrary(ugrid, phzl, gz, nloffs, floffs, ocdata,
                 cellReMap, nodeReMap);

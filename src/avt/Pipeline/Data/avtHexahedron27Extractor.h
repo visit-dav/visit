@@ -99,7 +99,7 @@ class PIPELINE_API avtHexahedron27Extractor : public avtHexahedronExtractor
 
 
     virtual void      StoreRay(int, int, int, int,
-			       const float (*)[AVT_VARIABLE_LIMIT]);
+                               const float (*)[AVT_VARIABLE_LIMIT]);
     float             TriLinearWeight(int, float, float, float);
     float             QuadraticWeight(int, float, float, float);
     float             ClosestParametricNeighbor(float, float, float);

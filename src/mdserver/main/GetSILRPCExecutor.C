@@ -130,7 +130,7 @@ GetSILRPCExecutor::Update(Subject *s)
         // Either send a successful reply or send an error.
         int t2 = visitTimer->StartTimer();
         parent->ReadSIL(rpc->GetFile(), rpc->GetTimeState(),
-	    rpc->GetTreatAllDBsAsTimeVarying());
+            rpc->GetTreatAllDBsAsTimeVarying());
         visitTimer->StopTimer(t2, "Reading SIL");
 #ifdef DEBUG
         debug2 << "SIL=" << endl;

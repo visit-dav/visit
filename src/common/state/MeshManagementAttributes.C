@@ -476,13 +476,13 @@ MeshManagementAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("discretizationTolerance")) != 0)
     {
-	if (node->AsDoubleVector().size() == 3)
+        if (node->AsDoubleVector().size() == 3)
             SetDiscretizationTolerance(node->AsDoubleVector());
         else
-	{
-	    MeshManagementAttributes tmp;
-	    SetDiscretizationTolerance(tmp.GetDiscretizationTolerance());
-	}
+        {
+            MeshManagementAttributes tmp;
+            SetDiscretizationTolerance(tmp.GetDiscretizationTolerance());
+        }
     }
     if((node = searchNode->GetNode("discretizationToleranceX")) != 0)
         SetDiscretizationToleranceX(node->AsDoubleVector());

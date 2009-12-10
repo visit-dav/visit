@@ -171,10 +171,10 @@ size_t ServerRead(int fd, void *buf, size_t count, int wait) {
         for(nread=0;nread<count&&wait;wait=(wait<0?-1:wait-1))
                 nread += read(fd, ((unsigned char *)buf)+nread, count-nread);
         if(nread-count) {
-		char tmp[500];
+                char tmp[500];
                 sprintf(tmp, "ServerRead(): \"read\" from file descriptor %d returned only %ld Bytes instead of %ld Bytes!\n", fd, nread, count);
-		VLIDEBUG << tmp;
-	}
+                VLIDEBUG << tmp;
+        }
         return nread;
 }
 
@@ -205,13 +205,13 @@ void GatherString(std::string *s, int myrank, int numproc) {
     if (myrank == 0)
     {
         for(int i = 1; i < numproc; ++i)
-	{
-		MPI_Status status;
-		memset(buffer, 0, 1024);
-		MPI_Recv(&len, 1, MPI_INT, i, 0, VISIT_MPI_COMM, &status);
-		MPI_Recv(buffer, len, MPI_CHAR, i, 0, VISIT_MPI_COMM, &status);
-		s[i].append(buffer);
-	}
+        {
+                MPI_Status status;
+                memset(buffer, 0, 1024);
+                MPI_Recv(&len, 1, MPI_INT, i, 0, VISIT_MPI_COMM, &status);
+                MPI_Recv(buffer, len, MPI_CHAR, i, 0, VISIT_MPI_COMM, &status);
+                s[i].append(buffer);
+        }
     }
 #endif
 }
@@ -226,10 +226,10 @@ void GatherInt(int *s, int myrank, int numproc) {
     if (myrank == 0)
     {
         for(int i = 1; i < numproc; ++i)
-	{
-		MPI_Status status;
-		MPI_Recv(&s[i], 1, MPI_INT, i, 0, VISIT_MPI_COMM, &status);
-	}
+        {
+                MPI_Status status;
+                MPI_Recv(&s[i], 1, MPI_INT, i, 0, VISIT_MPI_COMM, &status);
+        }
     }
 #endif
 }
@@ -292,12 +292,12 @@ avtVLIFileFormat::avtVLIFileFormat(const char *filename)
     // Check for valid parallel environment
     if (procCount > 1) 
     {
-	VLIDEBUG << "!!!! avtVLIFileFormat(): More than one engine, "
-	         << "but PARALLEL flag not set! Recompile vli library " 
-		 << "with -DPARALLEL flag." << endl;
-	EXCEPTION1(InvalidDBTypeException, "More than one engine, but " 
-	           "PARALLEL flag not set! Recompile vli library with " 
-		   "-DPARALLEL flag.");
+        VLIDEBUG << "!!!! avtVLIFileFormat(): More than one engine, "
+                 << "but PARALLEL flag not set! Recompile vli library " 
+                 << "with -DPARALLEL flag." << endl;
+        EXCEPTION1(InvalidDBTypeException, "More than one engine, but " 
+                   "PARALLEL flag not set! Recompile vli library with " 
+                   "-DPARALLEL flag.");
     }
 #endif
 
@@ -306,10 +306,10 @@ avtVLIFileFormat::avtVLIFileFormat(const char *filename)
     if (config->ReadConfigFile(filename) == NULL) {
         // Error: File could not be read
         VLIDEBUG << "!!!! avtVLIFileFormat(): File \"" << filename 
-	         << "\" corrupt or unreadable." << endl;
+                 << "\" corrupt or unreadable." << endl;
         delete config;
         EXCEPTION1(InvalidDBTypeException, "Either the file could not "
-	           "be read or it contains corrupt data");
+                   "be read or it contains corrupt data");
     } else {
         initialized = 1;
         startServers();
@@ -325,20 +325,20 @@ avtVLIFileFormat::avtVLIFileFormat(const char *filename)
 // ****************************************************************************
 
 avtVLIFileFormat::~avtVLIFileFormat() {
-	int conn;
-	VLIDEBUG << "---- ~avtVLIFileFormat()...";
-	if (procNum == 0) {
-		conn = InvokeRemoteCall(shostname[0], sport[0], 998);
-		if (conn != -1) close(conn);
-	}
-	ClearCache();
-	delete[] ehostname;
-	delete[] eport;
-	if (sport) delete[] sport;
-	if (shostname) delete[] shostname;
-	if (ptid) delete[] ((pthread_t *)ptid);
-	if (pacertid) delete[] ((pthread_t *)pacertid);
-	VLIDEBUG << " done!" << endl;
+        int conn;
+        VLIDEBUG << "---- ~avtVLIFileFormat()...";
+        if (procNum == 0) {
+                conn = InvokeRemoteCall(shostname[0], sport[0], 998);
+                if (conn != -1) close(conn);
+        }
+        ClearCache();
+        delete[] ehostname;
+        delete[] eport;
+        if (sport) delete[] sport;
+        if (shostname) delete[] shostname;
+        if (ptid) delete[] ((pthread_t *)ptid);
+        if (pacertid) delete[] ((pthread_t *)pacertid);
+        VLIDEBUG << " done!" << endl;
 }
 
 // ****************************************************************************
@@ -353,105 +353,105 @@ avtVLIFileFormat::~avtVLIFileFormat() {
 // ****************************************************************************
 
 void *avtVLIFileFormat::threadCommServer(void *in) {
-	VLIDEBUG << "**** Thread started: " << endl;
-	int socket = this->socket;
-	char tmp[500];
-	
-	while (1)
-	{
-		int conn = AcceptConnection(socket);
-		char c = '\0', d = '\0', buf[500], sbuf[255];
-		memset(buf, 0, 500);
-		VLIDEBUG << "**** Serving socket " << socket << " through connection " << conn << "." << endl;
-		ServerRead(conn, &c, 1, 1000);
-		if (c == 'i') //exchange info and approve
-		{
-			VLIDEBUG << "**** Checking information" << endl;
-			d = '1';
-			ServerRead(conn, buf, 39, -1);
-			char *dbuf = strdup(buf);
-			int _nservers = atoi(&dbuf[36]); dbuf[36] = 0;
-			int _nitems = atoi(&dbuf[21]); dbuf[21] = 0;
-			int _nattr = atoi(&dbuf[18]); dbuf[18] = 0;
-			int _itemsz = atoi(&dbuf[15]); dbuf[15] = 0;
-			int _dims[3];
-			_dims[2] = atoi(&dbuf[11]); dbuf[11] = 0;
-			_dims[1] = atoi(&dbuf[7]); dbuf[7] = 0;
-			_dims[0] = atoi(&dbuf[3]); dbuf[3] = 0;
-			int _files = atoi(dbuf);
-			sprintf(tmp, "**** nservers = %d, nitems = %d, nattr = %d, itemsz = %d, dims = %d %d %d, files = %d\n", _nservers, _nitems, _nattr, _itemsz, _dims[0], _dims[1], _dims[2], _files);
-			VLIDEBUG << tmp;
-			
-			this->shostname = new std::string[_nservers];
-			this->sport = new int[_nservers];
-			for(int i=0; i<_nservers; ++i)
-			{
-				char *st = NULL;
-				ServerRead(conn, sbuf, 255, -1);
-				if ((st = strstr(sbuf, ":")) != NULL) {
-					*st++ = 0; 
-					this->sport[i] = atoi(st);
-					this->shostname[i] = std::string(sbuf);
-				} else d = '0';
-				
-				sprintf(tmp, "**** Server %d: %s, port %d\n", i, this->shostname[i].c_str(), this->sport[i]);
-				VLIDEBUG << tmp;
-			}
-			
-			if ((_nservers != this->config->getNoDataServers()) ||
-			    (_nitems   != this->config->getDataset()->getNItems()) ||
-			    (_nattr    != this->config->getDataset()->getNAttributes()) ||
-			    (_files    != 1)
-			   ) {
-				d = '0';
-				VLIDEBUG << "**** Information mismatch!" << endl;
-			}
-			
-			if (this->procNum == 0) {
-				write(conn, &d, 1);
-				VLIDEBUG << "**** Approval notice sent (" << d << ")" << endl;
-			}
-			if (d == '1') this->info = true; 
-		}
-		if (c == 'l') // files loaded successfully
-		{
-			VLIDEBUG << "**** Files loaded successfully" << endl;
-			this->loaded = true;
-			pacertid = (void *) new pthread_t[1];
-			if (procNum == 0)	
-				pthread_create( (pthread_t *)pacertid, NULL, pacerStarter, (void *)this);
-		}
-		if (c == 'e') // indicates error
-		{
-			VLIDEBUG << "**** Server crashed!" << endl;
-			this->error = true; this->info = false; this->loaded = false;
-		}
-		close(conn);
-		if (this->procNum == 0) {
-			// Forward messages to all comm servers
-			for (int i = 1; i < this->procCount; ++i) {
-				int c2 = RequestConnection((char *)this->ehostname[i].c_str(), this->eport[i]);
-				write(c2, &c, 1);
-				if (c == 'i') {
-					write(c2, buf, 39);
-					char sbuf[255]; 
-					for (int j = 0; j < this->config->getNoDataServers(); ++j) {
-						sprintf(sbuf, "%s:%d", this->shostname[j].c_str(), this->sport[j]);
-						write(c2, sbuf, 255);
-					}
-				}
-			}
-			VLIDEBUG << "**** Message forwarded" << endl;
-		}
-		if ((c == 'e') || ((c == 'i') && (d == '0'))) {
-			// on error or information mismatch no more need for this thread as servers have shut down
-			VLIDEBUG << "**** Thread stopping NOW" << endl;
-			close(socket);
-			shutdown(socket, SHUT_RDWR);
-			this->socket = -1;
-			return(NULL); // same then pthread_exit(NULL)
-		}
-	}
+        VLIDEBUG << "**** Thread started: " << endl;
+        int socket = this->socket;
+        char tmp[500];
+        
+        while (1)
+        {
+                int conn = AcceptConnection(socket);
+                char c = '\0', d = '\0', buf[500], sbuf[255];
+                memset(buf, 0, 500);
+                VLIDEBUG << "**** Serving socket " << socket << " through connection " << conn << "." << endl;
+                ServerRead(conn, &c, 1, 1000);
+                if (c == 'i') //exchange info and approve
+                {
+                        VLIDEBUG << "**** Checking information" << endl;
+                        d = '1';
+                        ServerRead(conn, buf, 39, -1);
+                        char *dbuf = strdup(buf);
+                        int _nservers = atoi(&dbuf[36]); dbuf[36] = 0;
+                        int _nitems = atoi(&dbuf[21]); dbuf[21] = 0;
+                        int _nattr = atoi(&dbuf[18]); dbuf[18] = 0;
+                        int _itemsz = atoi(&dbuf[15]); dbuf[15] = 0;
+                        int _dims[3];
+                        _dims[2] = atoi(&dbuf[11]); dbuf[11] = 0;
+                        _dims[1] = atoi(&dbuf[7]); dbuf[7] = 0;
+                        _dims[0] = atoi(&dbuf[3]); dbuf[3] = 0;
+                        int _files = atoi(dbuf);
+                        sprintf(tmp, "**** nservers = %d, nitems = %d, nattr = %d, itemsz = %d, dims = %d %d %d, files = %d\n", _nservers, _nitems, _nattr, _itemsz, _dims[0], _dims[1], _dims[2], _files);
+                        VLIDEBUG << tmp;
+                        
+                        this->shostname = new std::string[_nservers];
+                        this->sport = new int[_nservers];
+                        for(int i=0; i<_nservers; ++i)
+                        {
+                                char *st = NULL;
+                                ServerRead(conn, sbuf, 255, -1);
+                                if ((st = strstr(sbuf, ":")) != NULL) {
+                                        *st++ = 0; 
+                                        this->sport[i] = atoi(st);
+                                        this->shostname[i] = std::string(sbuf);
+                                } else d = '0';
+                                
+                                sprintf(tmp, "**** Server %d: %s, port %d\n", i, this->shostname[i].c_str(), this->sport[i]);
+                                VLIDEBUG << tmp;
+                        }
+                        
+                        if ((_nservers != this->config->getNoDataServers()) ||
+                            (_nitems   != this->config->getDataset()->getNItems()) ||
+                            (_nattr    != this->config->getDataset()->getNAttributes()) ||
+                            (_files    != 1)
+                           ) {
+                                d = '0';
+                                VLIDEBUG << "**** Information mismatch!" << endl;
+                        }
+                        
+                        if (this->procNum == 0) {
+                                write(conn, &d, 1);
+                                VLIDEBUG << "**** Approval notice sent (" << d << ")" << endl;
+                        }
+                        if (d == '1') this->info = true; 
+                }
+                if (c == 'l') // files loaded successfully
+                {
+                        VLIDEBUG << "**** Files loaded successfully" << endl;
+                        this->loaded = true;
+                        pacertid = (void *) new pthread_t[1];
+                        if (procNum == 0)        
+                                pthread_create( (pthread_t *)pacertid, NULL, pacerStarter, (void *)this);
+                }
+                if (c == 'e') // indicates error
+                {
+                        VLIDEBUG << "**** Server crashed!" << endl;
+                        this->error = true; this->info = false; this->loaded = false;
+                }
+                close(conn);
+                if (this->procNum == 0) {
+                        // Forward messages to all comm servers
+                        for (int i = 1; i < this->procCount; ++i) {
+                                int c2 = RequestConnection((char *)this->ehostname[i].c_str(), this->eport[i]);
+                                write(c2, &c, 1);
+                                if (c == 'i') {
+                                        write(c2, buf, 39);
+                                        char sbuf[255]; 
+                                        for (int j = 0; j < this->config->getNoDataServers(); ++j) {
+                                                sprintf(sbuf, "%s:%d", this->shostname[j].c_str(), this->sport[j]);
+                                                write(c2, sbuf, 255);
+                                        }
+                                }
+                        }
+                        VLIDEBUG << "**** Message forwarded" << endl;
+                }
+                if ((c == 'e') || ((c == 'i') && (d == '0'))) {
+                        // on error or information mismatch no more need for this thread as servers have shut down
+                        VLIDEBUG << "**** Thread stopping NOW" << endl;
+                        close(socket);
+                        shutdown(socket, SHUT_RDWR);
+                        this->socket = -1;
+                        return(NULL); // same then pthread_exit(NULL)
+                }
+        }
 }
 
 // ****************************************************************************
@@ -466,17 +466,17 @@ void *avtVLIFileFormat::threadCommServer(void *in) {
 // ****************************************************************************
 
 int avtVLIFileFormat::startCommServer(std::string hostname) {
-	srand(time(NULL) + procNum + 17);
-	int port = 1024 + rand() % 8196;
-	
-	while ((socket = AllocateSocket(hostname, port)) == -1) {
-		port = 1024 + rand() % 8196;
-	}
-	
-	ptid = (void *) new pthread_t[1];
-	pthread_create( (pthread_t *)ptid, NULL, threadStarter, (void *)this);
-	
-	return port;
+        srand(time(NULL) + procNum + 17);
+        int port = 1024 + rand() % 8196;
+        
+        while ((socket = AllocateSocket(hostname, port)) == -1) {
+                port = 1024 + rand() % 8196;
+        }
+        
+        ptid = (void *) new pthread_t[1];
+        pthread_create( (pthread_t *)ptid, NULL, threadStarter, (void *)this);
+        
+        return port;
 }
 
 // ****************************************************************************
@@ -491,15 +491,15 @@ int avtVLIFileFormat::startCommServer(std::string hostname) {
 // ****************************************************************************
 
 void *avtVLIFileFormat::threadPacer(void *in) {
-	VLIDEBUG << "&&&& Pacer started " << endl;
-	while (1) {
-		while (inQuery) sleep(1);
-		if (! inQuery) { 
-			int c = InvokeRemoteCall(shostname[0], sport[0], 2);
-			if (c != -1) close(c);
-		}
-		sleep(30);
-	}
+        VLIDEBUG << "&&&& Pacer started " << endl;
+        while (1) {
+                while (inQuery) sleep(1);
+                if (! inQuery) { 
+                        int c = InvokeRemoteCall(shostname[0], sport[0], 2);
+                        if (c != -1) close(c);
+                }
+                sleep(30);
+        }
 }
 
 // ****************************************************************************
@@ -515,49 +515,49 @@ void *avtVLIFileFormat::threadPacer(void *in) {
 
 void avtVLIFileFormat::startServers(void) {
 #ifndef MDSERVER
-	VLIDEBUG << "---- avtVLIFileFormat() is starting up "
-	         << "communication servers now." << endl;
-	char hn[255];
-	gethostname(hn, 255u);
-	struct hostent *hostinfo = gethostbyname(hn);
-	strncpy(hn, hostinfo->h_name, 255);
-	ehostname[procNum] = std::string(hn);
-	eport[procNum] = startCommServer(ehostname[procNum]);
-	// Gather other engine hostnames and comm ports (on node 0 only)
-	GatherString(ehostname, procNum, procCount);
-	GatherInt(eport, procNum, procCount);
+        VLIDEBUG << "---- avtVLIFileFormat() is starting up "
+                 << "communication servers now." << endl;
+        char hn[255];
+        gethostname(hn, 255u);
+        struct hostent *hostinfo = gethostbyname(hn);
+        strncpy(hn, hostinfo->h_name, 255);
+        ehostname[procNum] = std::string(hn);
+        eport[procNum] = startCommServer(ehostname[procNum]);
+        // Gather other engine hostnames and comm ports (on node 0 only)
+        GatherString(ehostname, procNum, procCount);
+        GatherInt(eport, procNum, procCount);
         
-	if (procNum == 0) {
-		std::string syscall = std::string(config->getSyscall());
-		std::string::size_type loc = syscall.find( "{NSERVERS}", 0 );
-		std::stringstream oss; 
-		oss << config->getNoDataServers();
-		std::string nserv = std::string(oss.str());
-		if (loc != std::string::npos)
-		{
-			syscall.replace(loc, 10, nserv, 0, nserv.length());
-		}
-		loc = syscall.find( "{SERVER}" , 0 );
-		nserv = std::string(config->getServer());
-		nserv.append(" ");
-		
-		nserv.append(ehostname[procNum]);
-		nserv.append(":");
-		oss.str("");
-		oss << eport[procNum];
-		nserv.append(oss.str());
-		
-		nserv.append(" ");
-		nserv.append(config->getDatafile());
-		if (loc != std::string::npos)
-		{
-			syscall.replace(loc, 8, nserv, 0, nserv.length());
-		}
-		
-		syscall.append(" &");
-		VLIDEBUG << "---- executing \"" << syscall.c_str() << "\"\n";
-		system(syscall.c_str());
-	}
+        if (procNum == 0) {
+                std::string syscall = std::string(config->getSyscall());
+                std::string::size_type loc = syscall.find( "{NSERVERS}", 0 );
+                std::stringstream oss; 
+                oss << config->getNoDataServers();
+                std::string nserv = std::string(oss.str());
+                if (loc != std::string::npos)
+                {
+                        syscall.replace(loc, 10, nserv, 0, nserv.length());
+                }
+                loc = syscall.find( "{SERVER}" , 0 );
+                nserv = std::string(config->getServer());
+                nserv.append(" ");
+                
+                nserv.append(ehostname[procNum]);
+                nserv.append(":");
+                oss.str("");
+                oss << eport[procNum];
+                nserv.append(oss.str());
+                
+                nserv.append(" ");
+                nserv.append(config->getDatafile());
+                if (loc != std::string::npos)
+                {
+                        syscall.replace(loc, 8, nserv, 0, nserv.length());
+                }
+                
+                syscall.append(" &");
+                VLIDEBUG << "---- executing \"" << syscall.c_str() << "\"\n";
+                system(syscall.c_str());
+        }
 #endif
 }
 
@@ -678,13 +678,13 @@ void avtVLIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
 // ****************************************************************************
 
 float avtVLIFileFormat::ConvertToFloat(unsigned short data, int attrib) {
-	if (config->getDataset()->getAttribute(attrib)->GetIsScaled()==false)
-		return (float)data;
+        if (config->getDataset()->getAttribute(attrib)->GetIsScaled()==false)
+                return (float)data;
 
-	double min = config->getDataset()->getAttribute(attrib)->GetMin();
-	double max = config->getDataset()->getAttribute(attrib)->GetMax();
+        double min = config->getDataset()->getAttribute(attrib)->GetMin();
+        double max = config->getDataset()->getAttribute(attrib)->GetMax();
 
-	return ((((double)data) / 65535.0) * (max - min) + min);
+        return ((((double)data) / 65535.0) * (max - min) + min);
 }
 
 // ****************************************************************************
@@ -699,8 +699,8 @@ float avtVLIFileFormat::ConvertToFloat(unsigned short data, int attrib) {
 // ****************************************************************************
 
 int IsInVector(std::vector<int> v, int i) {
-	for (int k = 0; k < v.size(); ++k) if (v[k] == i) return k;
-	return -1;
+        for (int k = 0; k < v.size(); ++k) if (v[k] == i) return k;
+        return -1;
 }
 
 // ****************************************************************************
@@ -747,245 +747,245 @@ void avtVLIFileFormat::ClearCache() {
 // ****************************************************************************
 
 vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varname) {
-	int i, j, k, var = -1;
-	int nattr = this->config->getDataset()->getNAttributes();
-	VLIDataset* ds = config->getDataset();
+        int i, j, k, var = -1;
+        int nattr = this->config->getDataset()->getNAttributes();
+        VLIDataset* ds = config->getDataset();
 
-	VLIDEBUG<<"---- Query(int timestate = "<<timestate
-	        <<", int domain = "<<domain<<", const char *varname = \""
-        	<<(varname?varname:"(null)")<<"\")\n"<<endl;
-	
-	// Initialize queryObject if necessary
-	if (queryObjects.size() < nattr + 1) {
-		queryObjects.resize(nattr + 1, NULL);
-	}
+        VLIDEBUG<<"---- Query(int timestate = "<<timestate
+                <<", int domain = "<<domain<<", const char *varname = \""
+                <<(varname?varname:"(null)")<<"\")\n"<<endl;
+        
+        // Initialize queryObject if necessary
+        if (queryObjects.size() < nattr + 1) {
+                queryObjects.resize(nattr + 1, NULL);
+        }
 
-	// Check timestate and domain, clear queryObjects if necessary
-	if ( (timestate != queryTimestate) || (domain != queryDomain) ) {
-		ClearCache();
-		queryTimestate = timestate;
-		queryDomain = domain;
-	}
+        // Check timestate and domain, clear queryObjects if necessary
+        if ( (timestate != queryTimestate) || (domain != queryDomain) ) {
+                ClearCache();
+                queryTimestate = timestate;
+                queryDomain = domain;
+        }
 
-	// Set var <- varname index or "mesh"
-	if (varname != NULL) {
-		// Find index of varname -> var
-		for(i = 0; i < nattr; ++i)
-		{
-			std::string getName = std::string(varname);
-			if (getName.compare(ds->getAttribute(i)->GetName()) == 0) var = i;
-		}
-	
-		// Raise error if no recognized variable
-        	if (var == -1)
-		{
-			EXCEPTION1(InvalidVariableException, varname);
-			return NULL;
-		}
-	} else {
-	    var = nattr;
-	}
+        // Set var <- varname index or "mesh"
+        if (varname != NULL) {
+                // Find index of varname -> var
+                for(i = 0; i < nattr; ++i)
+                {
+                        std::string getName = std::string(varname);
+                        if (getName.compare(ds->getAttribute(i)->GetName()) == 0) var = i;
+                }
+        
+                // Raise error if no recognized variable
+                if (var == -1)
+                {
+                        EXCEPTION1(InvalidVariableException, varname);
+                        return NULL;
+                }
+        } else {
+            var = nattr;
+        }
 
-	// Check cache (hit: deliver, but delete from cache)
-	if (queryObjects[var] != NULL) {
-		vtkObject *rval = queryObjects[var];
-		queryObjects[var] = NULL;
-		return rval;
-	}
+        // Check cache (hit: deliver, but delete from cache)
+        if (queryObjects[var] != NULL) {
+                vtkObject *rval = queryObjects[var];
+                queryObjects[var] = NULL;
+                return rval;
+        }
 
 
-	// Cache did not contain object -> retrieve it
-	// When retrieving retrieve registered variables that are not in cache
+        // Cache did not contain object -> retrieve it
+        // When retrieving retrieve registered variables that are not in cache
 
-	// Set up vector with primary request
-	std::vector<int> request;
-	if (var != nattr) {
-		// Primary request is single var
-		request.push_back(var);
-	} else {
-		// Primary request is mesh
-		const int *axes = config->getAxis();
-		for (i = 0; i < 3; ++i) {
-			if (axes[i] != -1) request.push_back(axes[i]);
-		}
-		delete[] axes;
-	}
+        // Set up vector with primary request
+        std::vector<int> request;
+        if (var != nattr) {
+                // Primary request is single var
+                request.push_back(var);
+        } else {
+                // Primary request is mesh
+                const int *axes = config->getAxis();
+                for (i = 0; i < 3; ++i) {
+                        if (axes[i] != -1) request.push_back(axes[i]);
+                }
+                delete[] axes;
+        }
 
-	// Now add registered vars (if not contained already or in cache)
-	int dims = 0;
-	const int *axis = config->getAxis();
-	for(i = 0; i < 3; ++i) if (axis[i] != -1) dims++;
-	for (i = 0; i < registeredVars.size(); ++i) {
-		int v = registeredVars[i];
-		if ( (IsInVector(request, v) < dims) && (queryObjects[v] == NULL) )
-			request.push_back(v);
-	}
+        // Now add registered vars (if not contained already or in cache)
+        int dims = 0;
+        const int *axis = config->getAxis();
+        for(i = 0; i < 3; ++i) if (axis[i] != -1) dims++;
+        for (i = 0; i < registeredVars.size(); ++i) {
+                int v = registeredVars[i];
+                if ( (IsInVector(request, v) < dims) && (queryObjects[v] == NULL) )
+                        request.push_back(v);
+        }
 
-	VLIDEBUG << "---- Request: { ";
-	for(i = 0; i < request.size(); ++i) VLIDEBUG << request[i] << ", ";
-	VLIDEBUG << "}" << endl;
+        VLIDEBUG << "---- Request: { ";
+        for(i = 0; i < request.size(); ++i) VLIDEBUG << request[i] << ", ";
+        VLIDEBUG << "}" << endl;
 
-	// Init bounds
-	int *bounds = new int[2 * nattr];
-	for(i = 0; i < nattr; ++i) {
-		bounds[2 * i + 0] = 0;
-		bounds[2 * i + 1] = 65535;
-	}
-	
-	// Restrict time
-	int time = -1;
-	if (axis[3] != -1) {
-		time = timestate + (int)config->getDataset()->getAttribute(axis[3])->GetMin();
-		bounds[2 * axis[3]] = bounds[2 * axis[3] + 1] = time;
-	}
+        // Init bounds
+        int *bounds = new int[2 * nattr];
+        for(i = 0; i < nattr; ++i) {
+                bounds[2 * i + 0] = 0;
+                bounds[2 * i + 1] = 65535;
+        }
+        
+        // Restrict time
+        int time = -1;
+        if (axis[3] != -1) {
+                time = timestate + (int)config->getDataset()->getAttribute(axis[3])->GetMin();
+                bounds[2 * axis[3]] = bounds[2 * axis[3] + 1] = time;
+        }
 
-	// Restrict Threshold variables
-	for(i = 0; i < selList.size(); ++i)
-	{
-		if (std::string(selList[i]->GetType()) == std::string("Data Range Selection"))
-		{
-			avtDataRangeSelection *dr = (avtDataRangeSelection *) *(selList[i]);
-			int varn = -1;
-			for(j = 0; j < nattr; ++j) {
-				if ((dr->GetVariable()).compare(ds->getAttribute(j)->GetName()) == 0) varn = j;
-			}
-			double min = dr->GetMin();
-			double max = dr->GetMax();
-			if (varn != -1) {
-				// Set bounds[2 * varn] = "min", bounds[2 * varn + 1] = "max"
-				double varmax = ds->getAttribute(varn)->GetMax();
-				double varmin = ds->getAttribute(varn)->GetMin();
-				bool varscaled = ds->getAttribute(varn)->GetIsScaled();
+        // Restrict Threshold variables
+        for(i = 0; i < selList.size(); ++i)
+        {
+                if (std::string(selList[i]->GetType()) == std::string("Data Range Selection"))
+                {
+                        avtDataRangeSelection *dr = (avtDataRangeSelection *) *(selList[i]);
+                        int varn = -1;
+                        for(j = 0; j < nattr; ++j) {
+                                if ((dr->GetVariable()).compare(ds->getAttribute(j)->GetName()) == 0) varn = j;
+                        }
+                        double min = dr->GetMin();
+                        double max = dr->GetMax();
+                        if (varn != -1) {
+                                // Set bounds[2 * varn] = "min", bounds[2 * varn + 1] = "max"
+                                double varmax = ds->getAttribute(varn)->GetMax();
+                                double varmin = ds->getAttribute(varn)->GetMin();
+                                bool varscaled = ds->getAttribute(varn)->GetIsScaled();
 
-				if (max > varmax) max = varmax;
-				if (max < varmin) max = varmin;
-				if (min > varmax) min = varmax;
-				if (min < varmin) min = varmin;
+                                if (max > varmax) max = varmax;
+                                if (max < varmin) max = varmin;
+                                if (min > varmax) min = varmax;
+                                if (min < varmin) min = varmin;
 
-				int val;
-				val=(int)((min - varmin)/(varmax-varmin)*65536);
-				if (varscaled == false) val = (int)min;
-				bounds[2 * varn + 0] = val;
-				
-				val=(int)((max - varmin)/(varmax-varmin)*65536);
-				if (varscaled == false) val = (int)max;
-				bounds[2 * varn + 1] = val;
+                                int val;
+                                val=(int)((min - varmin)/(varmax-varmin)*65536);
+                                if (varscaled == false) val = (int)min;
+                                bounds[2 * varn + 0] = val;
+                                
+                                val=(int)((max - varmin)/(varmax-varmin)*65536);
+                                if (varscaled == false) val = (int)max;
+                                bounds[2 * varn + 1] = val;
 
-				//Mark selection as applied
-				(*selsApplied)[i] = true; 
-			}
-		}
-	}
-	
-	// Break up query in domains
-	// Break up point: largest range with lowest index
-	int nservers = procCount;
-	int diff = -1;
-	int indx = -1;
-	int run;
-	for(i = 0; i < nattr; ++i) {
-		int d_i = bounds[2*i+1] - bounds[2*i] + 1;
-		if (d_i > diff) diff = d_i, indx = i;
-		if (diff == 65536) break;
-	}
-	for(i = nservers; i > domain; --i) {
-		run = diff / i;
-		if ( (diff % i) > (i / 2) ) ++run;
-		diff -= run;
-	}
-	bounds[2 * indx + 1] = bounds[2 * indx] + diff + run - 1;
-	bounds[2 * indx] += diff;
+                                //Mark selection as applied
+                                (*selsApplied)[i] = true; 
+                        }
+                }
+        }
+        
+        // Break up query in domains
+        // Break up point: largest range with lowest index
+        int nservers = procCount;
+        int diff = -1;
+        int indx = -1;
+        int run;
+        for(i = 0; i < nattr; ++i) {
+                int d_i = bounds[2*i+1] - bounds[2*i] + 1;
+                if (d_i > diff) diff = d_i, indx = i;
+                if (diff == 65536) break;
+        }
+        for(i = nservers; i > domain; --i) {
+                run = diff / i;
+                if ( (diff % i) > (i / 2) ) ++run;
+                diff -= run;
+        }
+        bounds[2 * indx + 1] = bounds[2 * indx] + diff + run - 1;
+        bounds[2 * indx] += diff;
 
-	for(i=0;i<nattr;++i) VLIDEBUG << "bounds[" << i << "] = (" << bounds[2*i] << ", " << bounds[2*i+1] << ")" << endl; 
-	
-	// Request items from server, retrieve number of nodes
-	int *conn = new int[nservers];
-	int *n = new int[nservers];
-	int nnodes = 0;
-	unsigned short data;
+        for(i=0;i<nattr;++i) VLIDEBUG << "bounds[" << i << "] = (" << bounds[2*i] << ", " << bounds[2*i+1] << ")" << endl; 
+        
+        // Request items from server, retrieve number of nodes
+        int *conn = new int[nservers];
+        int *n = new int[nservers];
+        int nnodes = 0;
+        unsigned short data;
 
-	inQuery = true;
+        inQuery = true;
 
-	for(i = 0; i < nservers; ++i) {
-		conn[i] = InvokeRemoteCall(this->shostname[i], this->sport[i], 0);
-		int nr = request.size();
-		write(conn[i], &nr, sizeof(int));
-		for(j = 0; j < request.size(); ++j)
-			write(conn[i], &request[j], sizeof(int));
-		write(conn[i], bounds, 2 * nattr * sizeof(int));
-	}
-	for(i = 0; i < nservers; ++i) {
-		ServerRead(conn[i], &n[i], sizeof(int), -1);
-		nnodes += n[i];
-	}
+        for(i = 0; i < nservers; ++i) {
+                conn[i] = InvokeRemoteCall(this->shostname[i], this->sport[i], 0);
+                int nr = request.size();
+                write(conn[i], &nr, sizeof(int));
+                for(j = 0; j < request.size(); ++j)
+                        write(conn[i], &request[j], sizeof(int));
+                write(conn[i], bounds, 2 * nattr * sizeof(int));
+        }
+        for(i = 0; i < nservers; ++i) {
+                ServerRead(conn[i], &n[i], sizeof(int), -1);
+                nnodes += n[i];
+        }
 
-	// Initiate data structures for data items
-	float **cnt = new float*[nattr];
-	for (i=0;i<nattr;++i) cnt[i] = NULL; //DEBUG!
-	if (var == nattr) {
-		// Create vtkPoints object.
-		vtkPoints *points = vtkPoints::New();
-		queryObjects[var] = (vtkObject *)points;
-		points->SetNumberOfPoints(nnodes);
-		cnt[nattr] = (float *) points->GetVoidPointer(0);
-		i = dims;
-	} else i = 0; 
+        // Initiate data structures for data items
+        float **cnt = new float*[nattr];
+        for (i=0;i<nattr;++i) cnt[i] = NULL; //DEBUG!
+        if (var == nattr) {
+                // Create vtkPoints object.
+                vtkPoints *points = vtkPoints::New();
+                queryObjects[var] = (vtkObject *)points;
+                points->SetNumberOfPoints(nnodes);
+                cnt[nattr] = (float *) points->GetVoidPointer(0);
+                i = dims;
+        } else i = 0; 
 
-	for(; i < request.size(); ++i) {
-		vtkFloatArray *arr = vtkFloatArray::New();
-		queryObjects[request[i]] = (vtkObject *)arr;
-		arr->SetNumberOfTuples(nnodes);
-		cnt[request[i]] = (float *) arr->GetVoidPointer(0);
-	}
-	
-	// Read in data items from server
-	for(i = 0; i < nservers; ++i) {
-		for(j = k = 0; j < n[i]; ++j) {
-			if (var == nattr) {
-				for(k = 0; k < 3; ++k) {
-					if (k < dims) {
-						ServerRead(conn[i], &data, sizeof(unsigned short), -1);
-						*(cnt[nattr])++ = ConvertToFloat(data, axis[k]);
-					} else {
-						*(cnt[nattr])++ = .0f;
-					}
-				}
-			}
-			for(;k < request.size(); ++k) {
-				ServerRead(conn[i], &data, sizeof(unsigned short), -1);
-				*(cnt[request[k]])++ = ConvertToFloat(data, request[k]);
-			}
-		}
-		close(conn[i]);
-	}
+        for(; i < request.size(); ++i) {
+                vtkFloatArray *arr = vtkFloatArray::New();
+                queryObjects[request[i]] = (vtkObject *)arr;
+                arr->SetNumberOfTuples(nnodes);
+                cnt[request[i]] = (float *) arr->GetVoidPointer(0);
+        }
+        
+        // Read in data items from server
+        for(i = 0; i < nservers; ++i) {
+                for(j = k = 0; j < n[i]; ++j) {
+                        if (var == nattr) {
+                                for(k = 0; k < 3; ++k) {
+                                        if (k < dims) {
+                                                ServerRead(conn[i], &data, sizeof(unsigned short), -1);
+                                                *(cnt[nattr])++ = ConvertToFloat(data, axis[k]);
+                                        } else {
+                                                *(cnt[nattr])++ = .0f;
+                                        }
+                                }
+                        }
+                        for(;k < request.size(); ++k) {
+                                ServerRead(conn[i], &data, sizeof(unsigned short), -1);
+                                *(cnt[request[k]])++ = ConvertToFloat(data, request[k]);
+                        }
+                }
+                close(conn[i]);
+        }
 
-	inQuery = false;
+        inQuery = false;
 
-	if (var == nattr) {
-		// Create a vtkUnstructuredGrid to contain the points
-		vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-		ugrid->SetPoints((vtkPoints *)queryObjects[var]);
-		((vtkPoints *)queryObjects[var])->Delete();
-		ugrid->Allocate(nnodes);
-		vtkIdType _1vertex;
-		for(i = 0; i < nnodes; ++i) {
-			_1vertex = i;
-			ugrid->InsertNextCell(VTK_VERTEX, 1, &_1vertex);
-		}
-		queryObjects[var] = (vtkObject *)ugrid;
-	}
+        if (var == nattr) {
+                // Create a vtkUnstructuredGrid to contain the points
+                vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+                ugrid->SetPoints((vtkPoints *)queryObjects[var]);
+                ((vtkPoints *)queryObjects[var])->Delete();
+                ugrid->Allocate(nnodes);
+                vtkIdType _1vertex;
+                for(i = 0; i < nnodes; ++i) {
+                        _1vertex = i;
+                        ugrid->InsertNextCell(VTK_VERTEX, 1, &_1vertex);
+                }
+                queryObjects[var] = (vtkObject *)ugrid;
+        }
 
-	// Clean up
-	delete[] cnt;
-	delete[] n;
-	delete[] bounds;
-	delete[] conn;
-	delete[] axis;
+        // Clean up
+        delete[] cnt;
+        delete[] n;
+        delete[] bounds;
+        delete[] conn;
+        delete[] axis;
 
-	// return data (now in cache)
-	vtkObject *rv = queryObjects[var];
-	queryObjects[var] = NULL;
-	return rv;
+        // return data (now in cache)
+        vtkObject *rv = queryObjects[var];
+        queryObjects[var] = NULL;
+        return rv;
 }
 
 // ****************************************************************************
@@ -1011,12 +1011,12 @@ vtkObject *avtVLIFileFormat::Query(int timestate, int domain, const char *varnam
 // ****************************************************************************
 
 vtkDataSet *avtVLIFileFormat::GetMesh(int timestate, int domain, const char *meshname) {
-	// meshname will be ignored
-	VLIDEBUG<<"---- GetMesh(int timestate = "<<timestate<<", int domain = "<<domain<<", const char *meshname = \""<<meshname<<"\")\n"<<endl;
+        // meshname will be ignored
+        VLIDEBUG<<"---- GetMesh(int timestate = "<<timestate<<", int domain = "<<domain<<", const char *meshname = \""<<meshname<<"\")\n"<<endl;
 
-	while (!loaded) sleep(3);
+        while (!loaded) sleep(3);
 
-	return (vtkDataSet *)Query(timestate, domain, NULL);
+        return (vtkDataSet *)Query(timestate, domain, NULL);
 }
 
 // ****************************************************************************
@@ -1041,11 +1041,11 @@ vtkDataSet *avtVLIFileFormat::GetMesh(int timestate, int domain, const char *mes
 // ****************************************************************************
 
 vtkDataArray *avtVLIFileFormat::GetVar(int timestate, int domain, const char *varname) {
-	VLIDEBUG << "---- GetVar(int timestate = " << timestate << ", int domain = " << domain << ", const char *varname = \"" << varname << "\")" << endl;
+        VLIDEBUG << "---- GetVar(int timestate = " << timestate << ", int domain = " << domain << ", const char *varname = \"" << varname << "\")" << endl;
 
-	while (!loaded) sleep(3);
+        while (!loaded) sleep(3);
 
-	return (vtkDataArray *)Query(timestate, domain, varname);
+        return (vtkDataArray *)Query(timestate, domain, varname);
 }
 
 // ****************************************************************************
@@ -1113,7 +1113,7 @@ void avtVLIFileFormat::RegisterDataSelections(const std::vector<avtDataSelection
         {
             avtDataRangeSelection *dr = (avtDataRangeSelection *) *(sels[i]);
             VLIDEBUG << " [ \"" << (dr->GetVariable()).c_str() << "\" (" 
-	         << dr->GetMin() << ", " << dr->GetMax() << ") ]" << endl;
+                 << dr->GetMin() << ", " << dr->GetMax() << ") ]" << endl;
         }
         else VLIDEBUG << endl;
     }
@@ -1143,14 +1143,14 @@ void avtVLIFileFormat::RegisterVariableList(const char *primVar, const std::vect
     registeredVars.clear();
     for(i = 0; i < vars.size(); ++i)
     {
-	// Find variable
-	VLIDataset* ds = config->getDataset();
-	int cnt = ds->getNAttributes();
-	int nv = -1;
-	
-	for(int j = 0; j < cnt; ++j)
-	    if (vars[i].compare(ds->getAttribute(j)->GetName()) == 0) nv = j;
-	
+        // Find variable
+        VLIDataset* ds = config->getDataset();
+        int cnt = ds->getNAttributes();
+        int nv = -1;
+        
+        for(int j = 0; j < cnt; ++j)
+            if (vars[i].compare(ds->getAttribute(j)->GetName()) == 0) nv = j;
+        
         // If found, register variable
         if (nv != -1) registeredVars.push_back(nv);
     }

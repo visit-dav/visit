@@ -322,14 +322,14 @@ class PLOTTER_API avtPlot
     float                      GetCellCountMultiplierForSRThreshold() const;
     const PlotInfoAttributes  &GetPlotInformation() const; 
 
-    bool                      SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE);
-    bool                      ScaleModeRequiresUpdate(WINDOW_MODE, ScaleMode,
-                                                      ScaleMode rs);
-    virtual bool              NeedZBufferToCompositeEvenIn2D(void) 
+    bool                       SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE);
+    bool                       ScaleModeRequiresUpdate(WINDOW_MODE, ScaleMode,
+                                                       ScaleMode rs);
+    virtual bool               NeedZBufferToCompositeEvenIn2D(void) 
                                                           { return false; };
-    virtual void              RegisterNamedSelection(const std::string &) {;};
+    virtual void               RegisterNamedSelection(const std::string &) {;};
 
-    virtual avtFilter	      *GetFilterForTopOfPipeline() { return 0; }
+    virtual avtFilter         *GetFilterForTopOfPipeline() { return 0; }
 
   protected:
     bool                       needsRecalculation;

@@ -514,28 +514,28 @@ bool Ghost3Dmodule::init(MPI_Comm comm, Ghost3Dblock* blocks, int nblocks, int d
     if (partition_method) // partition the blocks
     {
       if (partition_method == 1) // with MeTiS
-	partition_blocks(blocks, nblocks, nprocs, false);
+        partition_blocks(blocks, nblocks, nprocs, false);
       else if (partition_method == 2) // randomly
-	partition_blocks_random(blocks, nblocks, nprocs);
+        partition_blocks_random(blocks, nblocks, nprocs);
       else if (partition_method == 3) // by slicing up the array
       partition_blocks_simple(blocks, nblocks, nprocs);
       else if (partition_method == 4) // with MeTiS (and weights)
-	partition_blocks(blocks, nblocks, nprocs, true);
+        partition_blocks(blocks, nblocks, nprocs, true);
       else
       {
-	fprintf(stderr, "ERROR: unknown partition_method %d\n", partition_method);
-	return false;
+        fprintf(stderr, "ERROR: unknown partition_method %d\n", partition_method);
+        return false;
       }
     }
     else // the user has partitioned the blocks and preset the proc_id's
     {
       for (i = 0; i < nblocks; i++)
       {
-	if (blocks[i].proc_id < 0 || blocks[i].proc_id >= nprocs)
-	{
-	  fprintf(stderr, "ERROR: preset proc_id of block %d is %d (invalid)\n", i, blocks[i].proc_id);
-	  return false;
-	}
+        if (blocks[i].proc_id < 0 || blocks[i].proc_id >= nprocs)
+        {
+          fprintf(stderr, "ERROR: preset proc_id of block %d is %d (invalid)\n", i, blocks[i].proc_id);
+          return false;
+        }
       }
     }
   }
@@ -582,58 +582,58 @@ bool Ghost3Dmodule::init(MPI_Comm comm, Ghost3Dblock* blocks, int nblocks, int d
       num_blocks++;
       for (k = 0; k < 6; k++)
       {
-	neighbor = block->neighbors[k];
-	// does this neighbor exist and is it on a different processor 
-	if (neighbor && neighbor->proc_id != rank)
-	{
-	  if (k&1)
-	  {
-	    // we will receive an face from this neighbour
-	    num_boundary_faces_recv++;
-	    block->receiving++;
-	    num_recv_from_proc[neighbor->proc_id]++;
-	    // what is the maximal amount of data for this face
-	    size = 2*(neighbor->size[((k/2)+1)%3]+2+2)*(neighbor->size[((k/2)+2)%3]+2+2);
-	    if (size > max_data_from_proc[neighbor->proc_id])
-	    {
-	      max_data_from_proc[neighbor->proc_id] = size;
-	    }
-	  }
-	  else
-	  {
-	    // we will send an face to this neighbour
-	    num_boundary_faces_send++;
-	    block->sending++;
-	  }
-	}
+        neighbor = block->neighbors[k];
+        // does this neighbor exist and is it on a different processor 
+        if (neighbor && neighbor->proc_id != rank)
+        {
+          if (k&1)
+          {
+            // we will receive an face from this neighbour
+            num_boundary_faces_recv++;
+            block->receiving++;
+            num_recv_from_proc[neighbor->proc_id]++;
+            // what is the maximal amount of data for this face
+            size = 2*(neighbor->size[((k/2)+1)%3]+2+2)*(neighbor->size[((k/2)+2)%3]+2+2);
+            if (size > max_data_from_proc[neighbor->proc_id])
+            {
+              max_data_from_proc[neighbor->proc_id] = size;
+            }
+          }
+          else
+          {
+            // we will send an face to this neighbour
+            num_boundary_faces_send++;
+            block->sending++;
+          }
+        }
       }
       if (block->receiving == 0)
       {
-	// add processable blocks to appropriate candidate queue
-	if (block->sending == 3)
-	{
-	  block->queued = true;
-	  candidate_queue[0]->push_back(block);
-	}
-	else if (block->sending == 2)
-	{
-	  block->queued = true;
-	  candidate_queue[1]->push_back(block);
-	}
-	else if (block->sending == 1)
-	{
-	  block->queued = true;
-	  candidate_queue[2]->push_back(block);
-	}
-	else 
-	{
-	  candidate_queue[4]->push_back(block);
-	}
+        // add processable blocks to appropriate candidate queue
+        if (block->sending == 3)
+        {
+          block->queued = true;
+          candidate_queue[0]->push_back(block);
+        }
+        else if (block->sending == 2)
+        {
+          block->queued = true;
+          candidate_queue[1]->push_back(block);
+        }
+        else if (block->sending == 1)
+        {
+          block->queued = true;
+          candidate_queue[2]->push_back(block);
+        }
+        else 
+        {
+          candidate_queue[4]->push_back(block);
+        }
       }
       else
       {
-	// add waiting blocks to recv hash
-	recv_hash->insert(my_hash::value_type(block->id, block));
+        // add waiting blocks to recv hash
+        recv_hash->insert(my_hash::value_type(block->id, block));
       }
 
       // this is the special dependency we need in the parallel case. there are three
@@ -644,121 +644,121 @@ bool Ghost3Dmodule::init(MPI_Comm comm, Ghost3Dblock* blocks, int nblocks, int d
 
       if (block->neighbors[1] == 0)
       {
-	if (block->neighbors[3] && block->neighbors[3]->proc_id == rank)
-	{
-	  if (block->neighbors[3]->neighbors[1] && block->neighbors[3]->neighbors[1]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[3]->neighbors[1]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) a\n", rank, block->id, block->neighbors[3]->neighbors[1]->id, block->neighbors[3]->neighbors[1]->proc_id);fflush(0);}
-	  }
-	}
+        if (block->neighbors[3] && block->neighbors[3]->proc_id == rank)
+        {
+          if (block->neighbors[3]->neighbors[1] && block->neighbors[3]->neighbors[1]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[3]->neighbors[1]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) a\n", rank, block->id, block->neighbors[3]->neighbors[1]->id, block->neighbors[3]->neighbors[1]->proc_id);fflush(0);}
+          }
+        }
       }
       else if (block->neighbors[3] == 0 || block->neighbors[3]->proc_id == rank)
       {
-	if (block->neighbors[1] && block->neighbors[1]->proc_id == rank)
-	{
-	  if (block->neighbors[1]->neighbors[3] && block->neighbors[1]->neighbors[3]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[1]->neighbors[3]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) b\n", rank, block->id, block->neighbors[1]->neighbors[3]->id, block->neighbors[1]->neighbors[3]->proc_id);fflush(0);}
-	  }
-	}
+        if (block->neighbors[1] && block->neighbors[1]->proc_id == rank)
+        {
+          if (block->neighbors[1]->neighbors[3] && block->neighbors[1]->neighbors[3]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[1]->neighbors[3]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) b\n", rank, block->id, block->neighbors[1]->neighbors[3]->id, block->neighbors[1]->neighbors[3]->proc_id);fflush(0);}
+          }
+        }
       }
 
       // second diagonal edge adjacency
 
       if (block->neighbors[1] == 0)
       {
-	if (block->neighbors[5] && block->neighbors[5]->proc_id == rank)
-	{
-	  if (block->neighbors[5]->neighbors[1] && block->neighbors[5]->neighbors[1]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[5]->neighbors[1]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) c\n", rank, block->id, block->neighbors[5]->neighbors[1]->id, block->neighbors[5]->neighbors[1]->proc_id);fflush(0);}
-	  }
-	}
+        if (block->neighbors[5] && block->neighbors[5]->proc_id == rank)
+        {
+          if (block->neighbors[5]->neighbors[1] && block->neighbors[5]->neighbors[1]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[5]->neighbors[1]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) c\n", rank, block->id, block->neighbors[5]->neighbors[1]->id, block->neighbors[5]->neighbors[1]->proc_id);fflush(0);}
+          }
+        }
       }
       else if (block->neighbors[5] == 0 || block->neighbors[5]->proc_id == rank)
       {
-	if (block->neighbors[1] && block->neighbors[1]->proc_id == rank)
-	{
-	  if (block->neighbors[1]->neighbors[5] && block->neighbors[1]->neighbors[5]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[1]->neighbors[5]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) d\n", rank, block->id, block->neighbors[1]->neighbors[5]->id, block->neighbors[1]->neighbors[5]->proc_id);fflush(0);}
-	  }
-	}
+        if (block->neighbors[1] && block->neighbors[1]->proc_id == rank)
+        {
+          if (block->neighbors[1]->neighbors[5] && block->neighbors[1]->neighbors[5]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[1]->neighbors[5]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) d\n", rank, block->id, block->neighbors[1]->neighbors[5]->id, block->neighbors[1]->neighbors[5]->proc_id);fflush(0);}
+          }
+        }
       }
 
       // third diagonal edge adjacency
 
       if (block->neighbors[3] == 0)
       {
-	if (block->neighbors[5] && block->neighbors[5]->proc_id == rank)
-	{
-	  if (block->neighbors[5]->neighbors[3] && block->neighbors[5]->neighbors[3]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[5]->neighbors[3]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) e\n", rank, block->id, block->neighbors[5]->neighbors[3]->id, block->neighbors[5]->neighbors[3]->proc_id);fflush(0);}
-	  }
-	}
+        if (block->neighbors[5] && block->neighbors[5]->proc_id == rank)
+        {
+          if (block->neighbors[5]->neighbors[3] && block->neighbors[5]->neighbors[3]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[5]->neighbors[3]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) e\n", rank, block->id, block->neighbors[5]->neighbors[3]->id, block->neighbors[5]->neighbors[3]->proc_id);fflush(0);}
+          }
+        }
       }
       else if (block->neighbors[5] == 0 || block->neighbors[5]->proc_id == rank)
       {
-	if (block->neighbors[3] && block->neighbors[3]->proc_id == rank)
-	{
-	  if (block->neighbors[3]->neighbors[5] && block->neighbors[3]->neighbors[5]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[3]->neighbors[5]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) f\n", rank, block->id, block->neighbors[3]->neighbors[5]->id, block->neighbors[3]->neighbors[5]->proc_id);fflush(0);}
-	  }
-	}
+        if (block->neighbors[3] && block->neighbors[3]->proc_id == rank)
+        {
+          if (block->neighbors[3]->neighbors[5] && block->neighbors[3]->neighbors[5]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[3]->neighbors[5]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) f\n", rank, block->id, block->neighbors[3]->neighbors[5]->id, block->neighbors[3]->neighbors[5]->proc_id);fflush(0);}
+          }
+        }
       }
 
       // only diagonal vertex edjacency
 
       if ((block->neighbors[1] == 0 || block->neighbors[1]->proc_id == rank) &&
-	  (block->neighbors[3] == 0 || block->neighbors[3]->proc_id == rank) &&
-	  (block->neighbors[5] == 0 || block->neighbors[5]->proc_id == rank))
+          (block->neighbors[3] == 0 || block->neighbors[3]->proc_id == rank) &&
+          (block->neighbors[5] == 0 || block->neighbors[5]->proc_id == rank))
       {
-	if ((block->neighbors[1] && (block->neighbors[1]->neighbors[3] == 0 || block->neighbors[1]->neighbors[3]->proc_id == rank)) &&
-	    (block->neighbors[1] && (block->neighbors[1]->neighbors[5] == 0 || block->neighbors[1]->neighbors[5]->proc_id == rank)) &&
-	    (block->neighbors[3] && (block->neighbors[3]->neighbors[1] == 0 || block->neighbors[3]->neighbors[1]->proc_id == rank)) &&
-	    (block->neighbors[3] && (block->neighbors[3]->neighbors[5] == 0 || block->neighbors[3]->neighbors[5]->proc_id == rank)) &&
-	    (block->neighbors[5] && (block->neighbors[5]->neighbors[1] == 0 || block->neighbors[5]->neighbors[1]->proc_id == rank)) &&
-	    (block->neighbors[5] && (block->neighbors[5]->neighbors[3] == 0 || block->neighbors[5]->neighbors[3]->proc_id == rank)))
-	{
-	  if (block->neighbors[1] && block->neighbors[1]->neighbors[3] && block->neighbors[1]->neighbors[3]->neighbors[5] && block->neighbors[1]->neighbors[3]->neighbors[5]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[1]->neighbors[3]->neighbors[5]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) A\n", rank, block->id, block->neighbors[1]->neighbors[3]->neighbors[5]->id, block->neighbors[1]->neighbors[3]->neighbors[5]->proc_id);fflush(0);}
-	  }
-	  else if (block->neighbors[1] && block->neighbors[1]->neighbors[5] && block->neighbors[1]->neighbors[5]->neighbors[3] && block->neighbors[1]->neighbors[5]->neighbors[3]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[1]->neighbors[5]->neighbors[3]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) B\n", rank, block->id, block->neighbors[1]->neighbors[5]->neighbors[3]->id, block->neighbors[1]->neighbors[5]->neighbors[3]->proc_id);fflush(0);}
-	  }
-	  else if (block->neighbors[3] && block->neighbors[3]->neighbors[1] && block->neighbors[3]->neighbors[1]->neighbors[5] && block->neighbors[3]->neighbors[1]->neighbors[5]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[3]->neighbors[1]->neighbors[5]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) C\n", rank, block->id, block->neighbors[3]->neighbors[1]->neighbors[5]->id, block->neighbors[3]->neighbors[1]->neighbors[5]->proc_id);fflush(0);}
-	  }
-	  else if (block->neighbors[3] && block->neighbors[3]->neighbors[5] && block->neighbors[3]->neighbors[5]->neighbors[1] && block->neighbors[3]->neighbors[5]->neighbors[1]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[3]->neighbors[5]->neighbors[1]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) D\n", rank, block->id, block->neighbors[3]->neighbors[5]->neighbors[1]->id, block->neighbors[3]->neighbors[5]->neighbors[1]->proc_id);fflush(0);}
-	  }
-	  else if (block->neighbors[5] && block->neighbors[5]->neighbors[1] && block->neighbors[5]->neighbors[1]->neighbors[3] && block->neighbors[5]->neighbors[1]->neighbors[3]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[5]->neighbors[1]->neighbors[3]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) E\n", rank, block->id, block->neighbors[5]->neighbors[1]->neighbors[3]->id, block->neighbors[5]->neighbors[1]->neighbors[3]->proc_id);fflush(0);}
-	  }
-	  else if (block->neighbors[5] && block->neighbors[5]->neighbors[3] && block->neighbors[5]->neighbors[3]->neighbors[1] && block->neighbors[5]->neighbors[3]->neighbors[1]->proc_id != rank)
-	  {
-	    add_dependency(block, block->neighbors[5]->neighbors[3]->neighbors[1]);
-	    if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) F\n", rank, block->id, block->neighbors[5]->neighbors[3]->neighbors[1]->id, block->neighbors[5]->neighbors[3]->neighbors[1]->proc_id);fflush(0);}
-	  }
-	}
+        if ((block->neighbors[1] && (block->neighbors[1]->neighbors[3] == 0 || block->neighbors[1]->neighbors[3]->proc_id == rank)) &&
+            (block->neighbors[1] && (block->neighbors[1]->neighbors[5] == 0 || block->neighbors[1]->neighbors[5]->proc_id == rank)) &&
+            (block->neighbors[3] && (block->neighbors[3]->neighbors[1] == 0 || block->neighbors[3]->neighbors[1]->proc_id == rank)) &&
+            (block->neighbors[3] && (block->neighbors[3]->neighbors[5] == 0 || block->neighbors[3]->neighbors[5]->proc_id == rank)) &&
+            (block->neighbors[5] && (block->neighbors[5]->neighbors[1] == 0 || block->neighbors[5]->neighbors[1]->proc_id == rank)) &&
+            (block->neighbors[5] && (block->neighbors[5]->neighbors[3] == 0 || block->neighbors[5]->neighbors[3]->proc_id == rank)))
+        {
+          if (block->neighbors[1] && block->neighbors[1]->neighbors[3] && block->neighbors[1]->neighbors[3]->neighbors[5] && block->neighbors[1]->neighbors[3]->neighbors[5]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[1]->neighbors[3]->neighbors[5]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) A\n", rank, block->id, block->neighbors[1]->neighbors[3]->neighbors[5]->id, block->neighbors[1]->neighbors[3]->neighbors[5]->proc_id);fflush(0);}
+          }
+          else if (block->neighbors[1] && block->neighbors[1]->neighbors[5] && block->neighbors[1]->neighbors[5]->neighbors[3] && block->neighbors[1]->neighbors[5]->neighbors[3]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[1]->neighbors[5]->neighbors[3]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) B\n", rank, block->id, block->neighbors[1]->neighbors[5]->neighbors[3]->id, block->neighbors[1]->neighbors[5]->neighbors[3]->proc_id);fflush(0);}
+          }
+          else if (block->neighbors[3] && block->neighbors[3]->neighbors[1] && block->neighbors[3]->neighbors[1]->neighbors[5] && block->neighbors[3]->neighbors[1]->neighbors[5]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[3]->neighbors[1]->neighbors[5]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) C\n", rank, block->id, block->neighbors[3]->neighbors[1]->neighbors[5]->id, block->neighbors[3]->neighbors[1]->neighbors[5]->proc_id);fflush(0);}
+          }
+          else if (block->neighbors[3] && block->neighbors[3]->neighbors[5] && block->neighbors[3]->neighbors[5]->neighbors[1] && block->neighbors[3]->neighbors[5]->neighbors[1]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[3]->neighbors[5]->neighbors[1]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) D\n", rank, block->id, block->neighbors[3]->neighbors[5]->neighbors[1]->id, block->neighbors[3]->neighbors[5]->neighbors[1]->proc_id);fflush(0);}
+          }
+          else if (block->neighbors[5] && block->neighbors[5]->neighbors[1] && block->neighbors[5]->neighbors[1]->neighbors[3] && block->neighbors[5]->neighbors[1]->neighbors[3]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[5]->neighbors[1]->neighbors[3]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) E\n", rank, block->id, block->neighbors[5]->neighbors[1]->neighbors[3]->id, block->neighbors[5]->neighbors[1]->neighbors[3]->proc_id);fflush(0);}
+          }
+          else if (block->neighbors[5] && block->neighbors[5]->neighbors[3] && block->neighbors[5]->neighbors[3]->neighbors[1] && block->neighbors[5]->neighbors[3]->neighbors[1]->proc_id != rank)
+          {
+            add_dependency(block, block->neighbors[5]->neighbors[3]->neighbors[1]);
+            if (LOG_FILE_OUTPUT) {printf( "[%d] add dependency from %d to %d (on %d) F\n", rank, block->id, block->neighbors[5]->neighbors[3]->neighbors[1]->id, block->neighbors[5]->neighbors[3]->neighbors[1]->proc_id);fflush(0);}
+          }
+        }
       }
       if (LOG_FILE_OUTPUT) {printf( "[%d] has block %d (recv %d / send %d)\n", rank, block->id, block->receiving, block->sending); fflush(0);} 
     }
@@ -783,10 +783,10 @@ bool Ghost3Dmodule::init(MPI_Comm comm, Ghost3Dblock* blocks, int nblocks, int d
     {
       if (num_recv_from_proc[i])
       {
-	from_proc_num_recv[j] = num_recv_from_proc[i];
-	from_proc_max_data[j] = max_data_from_proc[i];
-	from_proc_proc_id[j] = i;
-	j++;
+        from_proc_num_recv[j] = num_recv_from_proc[i];
+        from_proc_max_data[j] = max_data_from_proc[i];
+        from_proc_proc_id[j] = i;
+        j++;
       }
     }
   }
@@ -810,24 +810,24 @@ bool Ghost3Dmodule::init(MPI_Comm comm, Ghost3Dblock* blocks, int nblocks, int d
     {
       if (from_proc_num_recv[j])
       {
-	// create the receive buffer
-	size = dsize*from_proc_max_data[j]+sizeof(Ghost3Dheader);
-	from_proc_buffers[j+i*from_proc_num] = new unsigned char[size];
-	// post a receive request
-	MPI_Irecv(from_proc_buffers[j+i*from_proc_num],
-		  size,
-		  MPI_BYTE,
-		  from_proc_proc_id[j],
-		  FACE_TAG,
-		  MPI_COMM_WORLD,
-		  &(from_proc_requests[j+i*from_proc_num]));
-      	if (DEBUG_OUTPUT) { printf("[%d] Scheduling receipt for %d elements from proc %d\n",rank,from_proc_max_data[j],from_proc_proc_id[j]); fflush(NULL); }
-	from_proc_num_recv[j]--;
+        // create the receive buffer
+        size = dsize*from_proc_max_data[j]+sizeof(Ghost3Dheader);
+        from_proc_buffers[j+i*from_proc_num] = new unsigned char[size];
+        // post a receive request
+        MPI_Irecv(from_proc_buffers[j+i*from_proc_num],
+                  size,
+                  MPI_BYTE,
+                  from_proc_proc_id[j],
+                  FACE_TAG,
+                  MPI_COMM_WORLD,
+                  &(from_proc_requests[j+i*from_proc_num]));
+              if (DEBUG_OUTPUT) { printf("[%d] Scheduling receipt for %d elements from proc %d\n",rank,from_proc_max_data[j],from_proc_proc_id[j]); fflush(NULL); }
+        from_proc_num_recv[j]--;
       }
       else
       {
-	from_proc_buffers[j+i*from_proc_num] = 0;
-	from_proc_requests[j+i*from_proc_num] = MPI_REQUEST_NULL;
+        from_proc_buffers[j+i*from_proc_num] = 0;
+        from_proc_requests[j+i*from_proc_num] = MPI_REQUEST_NULL;
       }
     }
   }
@@ -942,46 +942,46 @@ int Ghost3Dmodule::selectBlock()
       if (DEBUG_OUTPUT) {printf("[%d] looking at queue %d with %d after processing %d of %d blocks\n",rank,i,j,num_processed_blocks,num_blocks); fflush(0);}
       while (j--)
       {
-	// get the front element
-	block = candidate_queue[i]->front();
-	candidate_queue[i]->pop_front();
-	if (DEBUG_OUTPUT) {printf("[%d] looking at queue %d block %d (%d)\n",rank,i,block->id,block->loaded); fflush(0);}
-	// has this block already been processed
-	if (block->loaded)
-	{
-	  // remove it and keep looking
-	  block = 0;
-	  continue;
-	}
-	// does this block have an allowed adjacency to previously processed blocks
-	if (!allowed_for_processing(block))
-	{
-	  if (DEBUG_OUTPUT) {printf("[%d] looking at queue %d block %d not allowed\n",rank,i,block->id); fflush(0);}
-	  // put it at the back of the queue and keep looking
-	  candidate_queue[i]->push_back(block);
-	  block = 0;
-	  continue;
-	}
-	break;
+        // get the front element
+        block = candidate_queue[i]->front();
+        candidate_queue[i]->pop_front();
+        if (DEBUG_OUTPUT) {printf("[%d] looking at queue %d block %d (%d)\n",rank,i,block->id,block->loaded); fflush(0);}
+        // has this block already been processed
+        if (block->loaded)
+        {
+          // remove it and keep looking
+          block = 0;
+          continue;
+        }
+        // does this block have an allowed adjacency to previously processed blocks
+        if (!allowed_for_processing(block))
+        {
+          if (DEBUG_OUTPUT) {printf("[%d] looking at queue %d block %d not allowed\n",rank,i,block->id); fflush(0);}
+          // put it at the back of the queue and keep looking
+          candidate_queue[i]->push_back(block);
+          block = 0;
+          continue;
+        }
+        break;
       }
       
       if (block)
       {
-	if (DEBUG_OUTPUT) printf("[%d] inside of queue %d we found block %d\n",rank,i,block->id);
-	// we found a block
-	block->queued = true;
-	// we add all unqueued face neighbours from this processor that are not receiving to queue 3
-	for (i = 0; i < 6; i++)
-	{
-	  if (block->neighbors[i] && block->neighbors[i]->queued == false && block->neighbors[i]->proc_id == rank && block->neighbors[i]->receiving == 0)
-	  {
-	    block->neighbors[i]->queued = true;
-	    candidate_queue[3]->push_back(block->neighbors[i]);
-	  }
-	}
-	// we put it into the field where processBlock() expects it
-	selected_block = block;
-	return block->id;
+        if (DEBUG_OUTPUT) printf("[%d] inside of queue %d we found block %d\n",rank,i,block->id);
+        // we found a block
+        block->queued = true;
+        // we add all unqueued face neighbours from this processor that are not receiving to queue 3
+        for (i = 0; i < 6; i++)
+        {
+          if (block->neighbors[i] && block->neighbors[i]->queued == false && block->neighbors[i]->proc_id == rank && block->neighbors[i]->receiving == 0)
+          {
+            block->neighbors[i]->queued = true;
+            candidate_queue[3]->push_back(block->neighbors[i]);
+          }
+        }
+        // we put it into the field where processBlock() expects it
+        selected_block = block;
+        return block->id;
       }   
     }
     
@@ -1028,17 +1028,17 @@ int Ghost3Dmodule::selectBlock()
       // has this block already been processed
       if (block->loaded)
       {
-	// remove it and keep looking
-	block = 0;
-	continue;
+        // remove it and keep looking
+        block = 0;
+        continue;
       }
       // does this block have an allowed adjacency to previously processed blocks
       if (!allowed_for_processing(block))
       {
-	// put it at the back of the queue and keep looking
-	candidate_queue[i]->push_back(block);
-	block = 0;
-	continue;
+        // put it at the back of the queue and keep looking
+        candidate_queue[i]->push_back(block);
+        block = 0;
+        continue;
       }
       // found a block ... queue face neighbours
       if (block->neighbors[1]) candidate_queue[0]->push_back(block->neighbors[1]); // in i dir
@@ -1131,15 +1131,15 @@ unsigned char* Ghost3Dmodule::processBlock(unsigned char* data_in, int* origin_o
       if (faces_size > faces_maxsize) faces_maxsize = faces_size;
       if (i < 2)
       {
-	block->faces[i]->alloc_and_init(dsize, 2, block_size[1], block_size[2], block_origin[0] + (i==0?0:block_size[0]-2), block_origin[1], block_origin[2]);
+        block->faces[i]->alloc_and_init(dsize, 2, block_size[1], block_size[2], block_origin[0] + (i==0?0:block_size[0]-2), block_origin[1], block_origin[2]);
       }
       else if (i < 4)
       {
-	block->faces[i]->alloc_and_init(dsize, block_size[0], 2, block_size[2], block_origin[0], block_origin[1] + (i==2?0:block_size[1]-2), block_origin[2]);
+        block->faces[i]->alloc_and_init(dsize, block_size[0], 2, block_size[2], block_origin[0], block_origin[1] + (i==2?0:block_size[1]-2), block_origin[2]);
       }
       else
       {
-	block->faces[i]->alloc_and_init(dsize, block_size[0], block_size[1], 2, block_origin[0], block_origin[1], block_origin[2] + (i==4?0:block_size[2]-2));
+        block->faces[i]->alloc_and_init(dsize, block_size[0], block_size[1], 2, block_origin[0], block_origin[1], block_origin[2] + (i==4?0:block_size[2]-2));
       }
       copy_face(block_data, block_origin, block_size, block->faces[i]->data, block->faces[i]->header->origin, block->faces[i]->header->size);
     }
@@ -1151,7 +1151,7 @@ unsigned char* Ghost3Dmodule::processBlock(unsigned char* data_in, int* origin_o
   block->loaded = true;
 
   if (DEBUG_OUTPUT) { printf("[%d] processed block %d kept these faces %d %d %d %d %d %d\n",rank, block->id, block->faces[0]!=0, block->faces[1]!=0, block->faces[2]!=0, block->faces[3]!=0, block->faces[4]!=0, block->faces[5]!=0); fflush(NULL); }
-	
+        
   // we may need to send something 
   i = 0;
   while (block->sending)
@@ -1165,28 +1165,28 @@ unsigned char* Ghost3Dmodule::processBlock(unsigned char* data_in, int* origin_o
       // make sure we have enough space for this non-blocking send
       if (send_request_num == send_request_alloc)
       {
-	// resize array
-	int j;
-	MPI_Request* temp_send_requests = new MPI_Request[send_request_alloc*2];
-	Ghost3Dface** temp_send_faces = new Ghost3Dface*[send_request_alloc*2];
-	for (j = 0; j < send_request_alloc; j++)
-	{
-	  temp_send_requests[j] = send_requests[j];
-	  temp_send_faces[j] = send_faces[j];
-	}
-	delete [] send_requests;
-	delete [] send_faces;
-	send_request_alloc = send_request_alloc*2;
-	send_requests = temp_send_requests;
-	send_faces = temp_send_faces;
+        // resize array
+        int j;
+        MPI_Request* temp_send_requests = new MPI_Request[send_request_alloc*2];
+        Ghost3Dface** temp_send_faces = new Ghost3Dface*[send_request_alloc*2];
+        for (j = 0; j < send_request_alloc; j++)
+        {
+          temp_send_requests[j] = send_requests[j];
+          temp_send_faces[j] = send_faces[j];
+        }
+        delete [] send_requests;
+        delete [] send_faces;
+        send_request_alloc = send_request_alloc*2;
+        send_requests = temp_send_requests;
+        send_faces = temp_send_faces;
       }
       MPI_Isend(block->faces[i]->header,
-		size,
-		MPI_BYTE,
-		block->neighbors[i]->proc_id,
-		FACE_TAG,
-		MPI_COMM_WORLD,
-		&(send_requests[send_request_num]));
+                size,
+                MPI_BYTE,
+                block->neighbors[i]->proc_id,
+                FACE_TAG,
+                MPI_COMM_WORLD,
+                &(send_requests[send_request_num]));
       if (DEBUG_OUTPUT) { printf("[%d] sent face %d of block %d to processor %d\n",rank,i, block->id, block->neighbors[i]->proc_id); fflush(NULL); }
       send_faces[send_request_num] = block->faces[i];
       send_request_num++;
@@ -1283,15 +1283,15 @@ unsigned char* Ghost3Dmodule::processBlock(unsigned char* data_in, int* origin_o
       if (faces_size > faces_maxsize) faces_maxsize = faces_size;
       if (i < 2)
       {
-	block->faces[i]->alloc_and_init(dsize, 2, block_size[1], block_size[2], block_origin[0] + (i==0?0:block_size[0]-2), block_origin[1], block_origin[2]);
+        block->faces[i]->alloc_and_init(dsize, 2, block_size[1], block_size[2], block_origin[0] + (i==0?0:block_size[0]-2), block_origin[1], block_origin[2]);
       }
       else if (i < 4)
       {
-	block->faces[i]->alloc_and_init(dsize, block_size[0], 2, block_size[2], block_origin[0], block_origin[1] + (i==2?0:block_size[1]-2), block_origin[2]);
+        block->faces[i]->alloc_and_init(dsize, block_size[0], 2, block_size[2], block_origin[0], block_origin[1] + (i==2?0:block_size[1]-2), block_origin[2]);
       }
       else
       {
-	block->faces[i]->alloc_and_init(dsize, block_size[0], block_size[1], 2, block_origin[0], block_origin[1], block_origin[2] + (i==4?0:block_size[2]-2));
+        block->faces[i]->alloc_and_init(dsize, block_size[0], block_size[1], 2, block_origin[0], block_origin[1], block_origin[2] + (i==4?0:block_size[2]-2));
       }
       copy_face(block_data, block_origin, block_size, block->faces[i]->data, block->faces[i]->header->origin, block->faces[i]->header->size);
     }
@@ -1496,69 +1496,69 @@ bool Ghost3Dmodule::allowed_for_processing(Ghost3Dblock* block)
     {
       for (i = 0; i < 2; i++)
       {
-	c = 0;
-	if (block->neighbors[i])
-	{
-	  if (block->neighbors[i]->loaded) c |= 64;
-	  if (block->neighbors[i]->neighbors[j])
-	  {
-	    if (block->neighbors[i]->neighbors[j]->loaded) c |= 8;
-	    if (block->neighbors[i]->neighbors[j]->neighbors[k])
-	    {
-	      if (block->neighbors[i]->neighbors[j]->neighbors[k]->loaded) c |= 1;	      
-	    }
-	  }
-	  if (block->neighbors[i]->neighbors[k])
-	  {
-	    if (block->neighbors[i]->neighbors[k]->loaded) c |= 4;
-	    if (block->neighbors[i]->neighbors[k]->neighbors[j])
-	    {
-	      if (block->neighbors[i]->neighbors[k]->neighbors[j]->loaded) c |= 1;	      
-	    }
-	  }
-	}
-	if (block->neighbors[j])
-	{
-	  if (block->neighbors[j]->loaded) c |= 32;
-	  if (block->neighbors[j]->neighbors[i])
-	  {
-	    if (block->neighbors[j]->neighbors[i]->loaded) c |= 8;
-	    if (block->neighbors[j]->neighbors[i]->neighbors[k])
-	    {
-	      if (block->neighbors[j]->neighbors[i]->neighbors[k]->loaded) c |= 1;	      
-	    }
-	  }
-	  if (block->neighbors[j]->neighbors[k])
-	  {
-	    if (block->neighbors[j]->neighbors[k]->loaded) c |= 2;
-	    if (block->neighbors[j]->neighbors[k]->neighbors[i])
-	    {
-	      if (block->neighbors[j]->neighbors[k]->neighbors[i]->loaded) c |= 1;	      
-	    }
-	  }	  
-	}
-	if (block->neighbors[k])
-	{
-	  if (block->neighbors[k]->loaded) c |= 16;
-	  if (block->neighbors[k]->neighbors[i])
-	  {
-	    if (block->neighbors[k]->neighbors[i]->loaded) c |= 4;
-	    if (block->neighbors[k]->neighbors[i]->neighbors[j])
-	    {
-	      if (block->neighbors[k]->neighbors[i]->neighbors[j]->loaded) c |= 1;	      
-	    }
-	  }
-	  if (block->neighbors[k]->neighbors[j])
-	  {
-	    if (block->neighbors[k]->neighbors[j]->loaded) c |= 2;
-	    if (block->neighbors[k]->neighbors[j]->neighbors[i])
-	    {
-	      if (block->neighbors[k]->neighbors[j]->neighbors[i]->loaded) c |= 1;	      
-	    }
-	  }	  
-	}
-	// check case number
-	if (invalid_cases_alt[c]) return false;
+        c = 0;
+        if (block->neighbors[i])
+        {
+          if (block->neighbors[i]->loaded) c |= 64;
+          if (block->neighbors[i]->neighbors[j])
+          {
+            if (block->neighbors[i]->neighbors[j]->loaded) c |= 8;
+            if (block->neighbors[i]->neighbors[j]->neighbors[k])
+            {
+              if (block->neighbors[i]->neighbors[j]->neighbors[k]->loaded) c |= 1;              
+            }
+          }
+          if (block->neighbors[i]->neighbors[k])
+          {
+            if (block->neighbors[i]->neighbors[k]->loaded) c |= 4;
+            if (block->neighbors[i]->neighbors[k]->neighbors[j])
+            {
+              if (block->neighbors[i]->neighbors[k]->neighbors[j]->loaded) c |= 1;              
+            }
+          }
+        }
+        if (block->neighbors[j])
+        {
+          if (block->neighbors[j]->loaded) c |= 32;
+          if (block->neighbors[j]->neighbors[i])
+          {
+            if (block->neighbors[j]->neighbors[i]->loaded) c |= 8;
+            if (block->neighbors[j]->neighbors[i]->neighbors[k])
+            {
+              if (block->neighbors[j]->neighbors[i]->neighbors[k]->loaded) c |= 1;              
+            }
+          }
+          if (block->neighbors[j]->neighbors[k])
+          {
+            if (block->neighbors[j]->neighbors[k]->loaded) c |= 2;
+            if (block->neighbors[j]->neighbors[k]->neighbors[i])
+            {
+              if (block->neighbors[j]->neighbors[k]->neighbors[i]->loaded) c |= 1;              
+            }
+          }          
+        }
+        if (block->neighbors[k])
+        {
+          if (block->neighbors[k]->loaded) c |= 16;
+          if (block->neighbors[k]->neighbors[i])
+          {
+            if (block->neighbors[k]->neighbors[i]->loaded) c |= 4;
+            if (block->neighbors[k]->neighbors[i]->neighbors[j])
+            {
+              if (block->neighbors[k]->neighbors[i]->neighbors[j]->loaded) c |= 1;              
+            }
+          }
+          if (block->neighbors[k]->neighbors[j])
+          {
+            if (block->neighbors[k]->neighbors[j]->loaded) c |= 2;
+            if (block->neighbors[k]->neighbors[j]->neighbors[i])
+            {
+              if (block->neighbors[k]->neighbors[j]->neighbors[i]->loaded) c |= 1;              
+            }
+          }          
+        }
+        // check case number
+        if (invalid_cases_alt[c]) return false;
       }
     }
   }
@@ -1773,7 +1773,7 @@ bool Ghost3Dmodule::receive_face(bool blocking)
     }
     recv_hash->erase(hash_element);
   }
-	
+        
   // create the face that was received
   int count;
   MPI_Get_count(&status, MPI_BYTE, &count);
@@ -1796,12 +1796,12 @@ bool Ghost3Dmodule::receive_face(bool blocking)
   if (from_proc_num_recv[k])
   {
     MPI_Irecv(from_proc_buffers[k_mult],
-	      dsize*from_proc_max_data[k]+sizeof(Ghost3Dheader),
-	      MPI_BYTE,
-	      from_proc_proc_id[k],
-	      FACE_TAG,
-	      MPI_COMM_WORLD,
-	      &(from_proc_requests[k_mult]));
+              dsize*from_proc_max_data[k]+sizeof(Ghost3Dheader),
+              MPI_BYTE,
+              from_proc_proc_id[k],
+              FACE_TAG,
+              MPI_COMM_WORLD,
+              &(from_proc_requests[k_mult]));
     if (DEBUG_OUTPUT) { printf("[%d] New Scheduling receipt from proc %d\n",rank,from_proc_proc_id[k]); fflush(NULL); }
     from_proc_num_recv[k]--;
   }

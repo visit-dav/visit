@@ -1008,11 +1008,11 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             int csgdom = dom, csgreg;
             md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
 
-	    debug1 << "Preparing to obtain CSG discretized grid for "
-	           << ", dom=" << dom
-		   << ", csgdom=" << csgdom
-		   << ", csgreg=" << csgreg
-		   << endl;
+            debug1 << "Preparing to obtain CSG discretized grid for "
+                   << ", dom=" << dom
+                   << ", csgdom=" << csgdom
+                   << ", csgreg=" << csgreg
+                   << endl;
 
             //
             // See if we have discretized result in xform's cache
@@ -1029,7 +1029,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     (olddataRequest->DiscMode() != dataRequest->DiscMode()))
                     dgrid = 0;
                 else
-	            debug1 << "Found discretized CSG grid in cache for current timestate." << endl;
+                    debug1 << "Found discretized CSG grid in cache for current timestate." << endl;
             }
 
             //
@@ -1041,7 +1041,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
 
             if (dgrid == 0)
             {
-	        debug1 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
+                debug1 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
 
                 vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(ds);
                 const double *bnds = csgmesh->GetBounds();
@@ -1126,7 +1126,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     vector<int> mapvals;
                     for (int j = 0; j < rv->GetNumberOfCells(); j++)
                         mapvals.push_back(csgreg);
-		    debug1 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
+                    debug1 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
                     newda = BuildMappedArray(da, mapvals);
                     if (newda)
                     {

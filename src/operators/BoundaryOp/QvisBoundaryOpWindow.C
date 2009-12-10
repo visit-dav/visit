@@ -177,14 +177,14 @@ QvisBoundaryOpWindow::UpdateWindow(bool doAll)
         }
 
         switch(i)
-	{
-	    case BoundaryOpAttributes::ID_smoothingLevel:
-		smoothingLevelButtons->blockSignals(true);
+        {
+            case BoundaryOpAttributes::ID_smoothingLevel:
+                smoothingLevelButtons->blockSignals(true);
         smoothingLevelButtons->button(atts->GetSmoothingLevel())
                                                             ->setChecked(true);
-		smoothingLevelButtons->blockSignals(false);
-		break;
-	}
+                smoothingLevelButtons->blockSignals(false);
+                break;
+        }
     }
 }
 

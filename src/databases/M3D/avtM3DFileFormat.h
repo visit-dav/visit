@@ -69,14 +69,14 @@
 class VarInfo
 {
  public:
-	VarInfo()
-	    { varName = ""; varDim = -1; dataID = -1; planeIdx = -1; }
-	VarInfo( std::string &nm, hid_t id, int dim, int idx=-1 )
-	    { varName = nm; dataID = id; varDim = dim; planeIdx = idx; }
+        VarInfo()
+            { varName = ""; varDim = -1; dataID = -1; planeIdx = -1; }
+        VarInfo( std::string &nm, hid_t id, int dim, int idx=-1 )
+            { varName = nm; dataID = id; varDim = dim; planeIdx = idx; }
 
-	std::string varName;
-	int varDim, planeIdx;
-	hid_t dataID;
+        std::string varName;
+        int varDim, planeIdx;
+        hid_t dataID;
 };
 
 // ****************************************************************************
@@ -92,10 +92,10 @@ class VarInfo
 class CellInfo
 {
  public:
-	CellInfo() { id = -1; numCells = -1; }
-	CellInfo( int i, int n ) { id = i; numCells = n; }
+        CellInfo() { id = -1; numCells = -1; }
+        CellInfo( int i, int n ) { id = i; numCells = n; }
 
-	int id, numCells;
+        int id, numCells;
 };
 
 
@@ -147,33 +147,33 @@ class avtM3DFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
-	void LoadFile();
-	void CalcPlaneAngularSpacing();
-	std::string GetPlaneName( const std::string &prefix, int p );
-	virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+        void LoadFile();
+        void CalcPlaneAngularSpacing();
+        std::string GetPlaneName( const std::string &prefix, int p );
+        virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-	//HDF5 helper functions.
-	bool ReadAttribute( hid_t parentID, const char *attr, void *value );
-	bool ReadStringAttribute( hid_t parentID, const char *attr, std::string *value );
-	hid_t NormalizeH5Type( hid_t type );
+        //HDF5 helper functions.
+        bool ReadAttribute( hid_t parentID, const char *attr, void *value );
+        bool ReadStringAttribute( hid_t parentID, const char *attr, std::string *value );
+        hid_t NormalizeH5Type( hid_t type );
 
-	//File member data.
-	hid_t m_fileID;
-	bool m_vValidFile;
-	std::string m_filename;
-	std::string m_XPClassStr, m_Plane3DString, m_Plane2DString, m_FullString;
-	std::vector<hid_t> m_coordIDs;
-	std::vector<float> m_timeSteps;
-	std::vector<CellInfo*> m_cellInfo;
-	std::vector<VarInfo*> m_scalarVarNames, m_vectorVarNames, m_tensorVarNames;
-	std::vector<VarInfo*> m_scalarVars, m_vectorVars, m_tensorVars;
-	std::vector<std::string> m_meshes, m_meshesPlane3D, m_meshesPlane2D;
-	std::vector<float> m_planeAngles;
-	std::vector<vtkTransform *> m_planeXforms;
-	bool m_planeAngleClash;
-	int m_nCellSets, m_nVars, m_nNodes;
-	int m_nPlanes, m_nPlanesPerProc;
-	float m_plane0Norm[3];
+        //File member data.
+        hid_t m_fileID;
+        bool m_vValidFile;
+        std::string m_filename;
+        std::string m_XPClassStr, m_Plane3DString, m_Plane2DString, m_FullString;
+        std::vector<hid_t> m_coordIDs;
+        std::vector<float> m_timeSteps;
+        std::vector<CellInfo*> m_cellInfo;
+        std::vector<VarInfo*> m_scalarVarNames, m_vectorVarNames, m_tensorVarNames;
+        std::vector<VarInfo*> m_scalarVars, m_vectorVars, m_tensorVars;
+        std::vector<std::string> m_meshes, m_meshesPlane3D, m_meshesPlane2D;
+        std::vector<float> m_planeAngles;
+        std::vector<vtkTransform *> m_planeXforms;
+        bool m_planeAngleClash;
+        int m_nCellSets, m_nVars, m_nNodes;
+        int m_nPlanes, m_nPlanesPerProc;
+        float m_plane0Norm[3];
 };
 
 

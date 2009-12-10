@@ -378,7 +378,7 @@ avtHexahedron20Extractor::StoreRay(int x, int y, int frontZ, int backZ,
                                    const float (*samples)[AVT_VARIABLE_LIMIT])
 {
     // The temporary ray we will fill up with samples
-	float (*tmp)[AVT_VARIABLE_LIMIT] = new float [backZ-frontZ+1][AVT_VARIABLE_LIMIT];
+    float (*tmp)[AVT_VARIABLE_LIMIT] = new float [backZ-frontZ+1][AVT_VARIABLE_LIMIT];
     float weight;
     int index;
   
@@ -422,7 +422,7 @@ avtHexahedron20Extractor::StoreRay(int x, int y, int frontZ, int backZ,
   
     // Finally store the actual ray samples
     avtExtractor::StoreRay(x,y,frontZ,backZ,tmp);
-	delete [] tmp;
+    delete [] tmp;
 }
 
 

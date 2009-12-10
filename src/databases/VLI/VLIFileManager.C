@@ -605,7 +605,7 @@ VLIDataset::Export(bool withAttributes)
             sprintf(buf, "attribute %d", i);
             DataNode *aNode = this->attributes[i].Export();
             aNode->SetKey(std::string(buf));
-	    node->AddNode(aNode);
+            node->AddNode(aNode);
         }
     }
     

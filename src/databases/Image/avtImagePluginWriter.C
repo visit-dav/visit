@@ -161,7 +161,7 @@ static void ConvertToUnsignedChar(unsigned char *obuf, const iT *ibuf, int n, bo
                 max = ibuf[i];
         }
         double range = (double) max - (double) min;
-	if (range == 0.0) range = 1.0;
+        if (range == 0.0) range = 1.0;
         for (i = 0; i < n; i++)
         {
             double t = ((double) ibuf[i] - (double) min) / range;
@@ -269,7 +269,7 @@ CreateImageData(int *dims, const double *spacing, vtkDataArray *da,
     {
         vtkUnsignedCharArray *uca = ConvertDataArrayToUnsignedChar(da, normalize);
         image->GetPointData()->SetScalars(uca);
-	uca->Delete();
+        uca->Delete();
     }
     else
     {
@@ -304,45 +304,45 @@ WriteImage(int format, int compression, int quality,
     switch (format)
     {
         case 0:
-	{
+        {
             vtkTIFFWriter *tiffWriter = vtkTIFFWriter::New();
-	    switch (compression)
-	    {
-	        case 0: tiffWriter->SetCompressionToNoCompression(); break;
-	        case 1: tiffWriter->SetCompressionToPackBits(); break;
-	        case 2: tiffWriter->SetCompressionToDeflate(); break;
-	    }
-	    writer = tiffWriter;
-	    ext = ".tif";
-	    break;
-	}
-        case 1:
-	{
-            writer = vtkPNGWriter::New();
-	    ext = ".png";
-	    break;
+            switch (compression)
+            {
+                case 0: tiffWriter->SetCompressionToNoCompression(); break;
+                case 1: tiffWriter->SetCompressionToPackBits(); break;
+                case 2: tiffWriter->SetCompressionToDeflate(); break;
+            }
+            writer = tiffWriter;
+            ext = ".tif";
+            break;
         }
-	case 2:
-	{
+        case 1:
+        {
+            writer = vtkPNGWriter::New();
+            ext = ".png";
+            break;
+        }
+        case 2:
+        {
             vtkJPEGWriter *jpegWriter = vtkJPEGWriter::New();
-	    jpegWriter->SetQuality(quality);
-	    jpegWriter->ProgressiveOff();
-	    writer = jpegWriter;
-	    ext = ".jpeg";
-	    break;
-	}
-	case 3:
-	{
+            jpegWriter->SetQuality(quality);
+            jpegWriter->ProgressiveOff();
+            writer = jpegWriter;
+            ext = ".jpeg";
+            break;
+        }
+        case 3:
+        {
             writer = vtkBMPWriter::New();
-	    ext = ".bmp";
-	    break;
-	}
-	case 4:
-	{
+            ext = ".bmp";
+            break;
+        }
+        case 4:
+        {
             writer = vtkPNMWriter::New();
-	    ext = ".pnm";
-	    break;
-	}
+            ext = ".pnm";
+            break;
+        }
     }
 
 
@@ -350,42 +350,42 @@ WriteImage(int format, int compression, int quality,
     {
         writer->SetFileDimensionality(3);
 
-	char prefix[256];
-	if (arrName)
-	{
+        char prefix[256];
+        if (arrName)
+        {
             SNPRINTF(prefix, sizeof(prefix), "%s_%s", fileName.c_str(), arrName);
-	}
-	else
-	{
-	    if (numArrs > 1)
-	        SNPRINTF(prefix, sizeof(prefix), "%s_%02d",
-	            fileName.c_str(), arrNum);
-	    else
-	        SNPRINTF(prefix, sizeof(prefix), "%s", fileName.c_str());
-	}
-	writer->SetFilePrefix(prefix);
+        }
+        else
+        {
+            if (numArrs > 1)
+                SNPRINTF(prefix, sizeof(prefix), "%s_%02d",
+                    fileName.c_str(), arrNum);
+            else
+                SNPRINTF(prefix, sizeof(prefix), "%s", fileName.c_str());
+        }
+        writer->SetFilePrefix(prefix);
 
-	char pattern[256];
-	SNPRINTF(pattern, sizeof(pattern), "%%s_%%03d%s", ext.c_str());
-	writer->SetFilePattern(pattern);
+        char pattern[256];
+        SNPRINTF(pattern, sizeof(pattern), "%%s_%%03d%s", ext.c_str());
+        writer->SetFilePattern(pattern);
     }
     else
     {
-	char filename[256];
-	if (arrName)
-	{
+        char filename[256];
+        if (arrName)
+        {
             SNPRINTF(filename, sizeof(filename), "%s_%s%s",
                 fileName.c_str(), arrName, ext.c_str());
-	}
-	else
-	{
-	    if (numArrs > 1)
-	        SNPRINTF(filename, sizeof(filename), "%s_%02d%s",
-	            fileName.c_str(), arrNum, ext.c_str());
-	    else
-	        SNPRINTF(filename, sizeof(filename), "%s%s",
-	            fileName.c_str(), ext.c_str());
-	}
+        }
+        else
+        {
+            if (numArrs > 1)
+                SNPRINTF(filename, sizeof(filename), "%s_%02d%s",
+                    fileName.c_str(), arrNum, ext.c_str());
+            else
+                SNPRINTF(filename, sizeof(filename), "%s%s",
+                    fileName.c_str(), ext.c_str());
+        }
         writer->SetFileName(filename);
     }
 
@@ -430,29 +430,29 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
     for (i = 0; i < 3; i++)
     {
         vtkDataArray *da;
-	switch (i)
-	{
-	    case 0: da = grid->GetXCoordinates(); break;
-	    case 1: da = grid->GetYCoordinates(); break;
-	    case 2: da = grid->GetZCoordinates(); break;
-	}
-	for (int j = 0; j < da->GetNumberOfTuples(); j++)
-	{
-	    if (da->GetComponent(j,0) != spacing[i])
-	    {
-	        spacing[i] = -1.0;
-		break;
-	    }
-	}
+        switch (i)
+        {
+            case 0: da = grid->GetXCoordinates(); break;
+            case 1: da = grid->GetYCoordinates(); break;
+            case 2: da = grid->GetZCoordinates(); break;
+        }
+        for (int j = 0; j < da->GetNumberOfTuples(); j++)
+        {
+            if (da->GetComponent(j,0) != spacing[i])
+            {
+                spacing[i] = -1.0;
+                break;
+            }
+        }
     }
     if (spacing[0] == -1 || spacing[1] == -1 || spacing[2] == -1 ||
         spacing[0] != spacing[1] || spacing[0] != spacing[2] ||
-	spacing[1] != spacing[2])
+        spacing[1] != spacing[2])
     {
-	char msg[256];
-	SNPRINTF(msg, sizeof(msg),
-	    "The dataset has non-uniform coordinate spacing.\n"
-	    "The ImagePlugin writer may convert it to uniform.\n");
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg),
+            "The dataset has non-uniform coordinate spacing.\n"
+            "The ImagePlugin writer may convert it to uniform.\n");
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }
@@ -470,18 +470,18 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         int ncomps = da->GetNumberOfComponents();
         if (ncomps == 2 || ncomps > 4)
         {
-	    char msg[256];
-	    SNPRINTF(msg, sizeof(msg),
-	        "An array on the dataset has an unusual number of\n"
+            char msg[256];
+            SNPRINTF(msg, sizeof(msg),
+                "An array on the dataset has an unusual number of\n"
                 "components, %d. It is being skipped.\n", ncomps);
             if (!avtCallback::IssueWarning(msg))
                 cerr << msg << endl;
             continue;
         }
-	vtkImageData *id = CreateImageData(gridDims, spacing, da, 0, normalize);
-	WriteImage(format, compression, quality, gridDims, id, fileName,
-	    da->GetName(), i, nArrs);
-	id->Delete();
+        vtkImageData *id = CreateImageData(gridDims, spacing, da, 0, normalize);
+        WriteImage(format, compression, quality, gridDims, id, fileName,
+            da->GetName(), i, nArrs);
+        id->Delete();
     }
 
     vtkCellData *cd = grid->GetCellData();
@@ -492,18 +492,18 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         int ncomps = da->GetNumberOfComponents();
         if (ncomps == 2 || ncomps > 4)
         {
-	    char msg[256];
-	    SNPRINTF(msg, sizeof(msg),
-	        "An array on the dataset has an unusual number of\n"
+            char msg[256];
+            SNPRINTF(msg, sizeof(msg),
+                "An array on the dataset has an unusual number of\n"
                 "components, %d. It is being skipped.\n", ncomps);
             if (!avtCallback::IssueWarning(msg))
                 cerr << msg << endl;
             continue;
         }
-	vtkImageData *id = CreateImageData(gridDims, spacing, da, 1, normalize);
-	WriteImage(format, compression, quality, gridDims, id, fileName,
-	    da->GetName(), i, nArrs);
-	id->Delete();
+        vtkImageData *id = CreateImageData(gridDims, spacing, da, 1, normalize);
+        WriteImage(format, compression, quality, gridDims, id, fileName,
+            da->GetName(), i, nArrs);
+        id->Delete();
     }
 }
 

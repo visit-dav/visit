@@ -115,8 +115,8 @@ avtGTCFileFormat::FreeUpResources(void)
     }
     if (particleHandle >= 0)
     {
-	H5Dclose(particleHandle);
-	particleHandle = -1;
+        H5Dclose(particleHandle);
+        particleHandle = -1;
     }
 
     initialized = false;
@@ -155,15 +155,15 @@ avtGTCFileFormat::Initialize()
     if (fileHandle < 0)
     {
         debug4 << mName << "Could not open " << GetFilename() << endl;
-	EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file since it is not even an HDF5 file.");
+        EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file since it is not even an HDF5 file.");
     }
 
     particleHandle = H5Dopen(fileHandle, "particle_data");
     if (particleHandle < 0)
     {
-	debug4 << mName << "Could not open particle_data" << endl;
-	EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file, "
-		   "since it is does not contain the dataset \"particle_data\"");
+        debug4 << mName << "Could not open particle_data" << endl;
+        EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file, "
+                   "since it is does not contain the dataset \"particle_data\"");
     }
 
     //Check variable's size.
@@ -173,11 +173,11 @@ avtGTCFileFormat::Initialize()
     int ndims = H5Sget_simple_extent_dims(dataspace, dims, NULL);
     if(ndims < 0 || ndims > 2)
     {
-	debug4 << mName << "Could not determine number of dimensions" << endl;
-	H5Sclose(sid);
-	H5Dclose(particleHandle);
-	H5Fclose(fileHandle);
-	EXCEPTION1(InvalidDBTypeException, "The GTC file has an invalid number of dimensions");
+        debug4 << mName << "Could not determine number of dimensions" << endl;
+        H5Sclose(sid);
+        H5Dclose(particleHandle);
+        H5Fclose(fileHandle);
+        EXCEPTION1(InvalidDBTypeException, "The GTC file has an invalid number of dimensions");
     }
     
     debug4 << mName << "Determining variable size" << endl;
@@ -185,11 +185,11 @@ avtGTCFileFormat::Initialize()
 
     if(val < 0 || dims[1] < 3)
     {
-	debug4 << mName << "Could not determine variable size" << endl;
-	H5Sclose(sid);
-	H5Dclose(particleHandle);
-	H5Fclose(fileHandle);
-	EXCEPTION1(InvalidDBTypeException, "The GTC file has an insufficient number of variables");
+        debug4 << mName << "Could not determine variable size" << endl;
+        H5Sclose(sid);
+        H5Dclose(particleHandle);
+        H5Fclose(fileHandle);
+        EXCEPTION1(InvalidDBTypeException, "The GTC file has an insufficient number of variables");
     }
     H5Sclose(dataspace);
 
@@ -206,12 +206,12 @@ avtGTCFileFormat::Initialize()
 
     startOffset = rank * nPoints;
     if ( rank < remainder )
-	startOffset += rank;
+        startOffset += rank;
     else
-	startOffset += remainder;
+        startOffset += remainder;
 
     if ( rank < remainder )
-	nPoints++;
+        nPoints++;
 #else
     nPoints = nTotalPoints;
     startOffset = 0;
@@ -253,9 +253,9 @@ avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add scalar variables.
     for ( int i = 3; i < nVars; i++ )
     {
-	string var = IndexToVarName( i );
-	if ( var != "" )
-	    AddScalarVarToMetaData(md, var, meshname, AVT_NODECENT);	
+        string var = IndexToVarName( i );
+        if ( var != "" )
+            AddScalarVarToMetaData(md, var, meshname, AVT_NODECENT);        
     }
 }
 
@@ -300,8 +300,8 @@ avtGTCFileFormat::GetMesh(int domain, const char *meshname)
     vtkIdType vertID;
     for ( int i = 0; i < nPoints; i++ )
     {
-	vertID = i;
-	grid->InsertNextCell( VTK_VERTEX, 1, &vertID );
+        vertID = i;
+        grid->InsertNextCell( VTK_VERTEX, 1, &vertID );
     }
 
     points->Delete();
@@ -372,8 +372,8 @@ avtGTCFileFormat::ReadVariable( int domain, int varIdx, int varDim, float **ptrV
     //Put the variables into the right order.
     for ( int i = 0; i < nPoints; i++ )
     {
-	int id = (int)ids[i] - startOffset - 1;
-	memcpy( (void *)&((*ptrVar)[i*varDim]), (void*)&var[id*varDim], varDim*sizeof(float) );
+        int id = (int)ids[i] - startOffset - 1;
+        memcpy( (void *)&((*ptrVar)[i*varDim]), (void*)&var[id*varDim], varDim*sizeof(float) );
     }
 
     delete [] ids;
@@ -468,13 +468,13 @@ avtGTCFileFormat::IndexToVarName( int idx ) const
 {
     string var = "";
     if ( idx == 3 )
-	var = "v_par";
+        var = "v_par";
     else if ( idx == 4 )
-	var = "v_perp";
+        var = "v_perp";
     else if ( idx == 5 )
-	var = "weight";
+        var = "weight";
     else if ( idx == 6 )
-	var = "id";
+        var = "id";
     return var;
 }
 
@@ -496,13 +496,13 @@ int
 avtGTCFileFormat::VarNameToIndex( const string &var ) const
 {
     if ( var == "v_par" )
-	return 3;
+        return 3;
     else if ( var == "v_perp" )
-	return 4;
+        return 4;
     else if ( var == "weight" )
-	return 5;
+        return 5;
     else if ( var == "id" )
-	return 6;
+        return 6;
     
     return -1;
 }
@@ -539,7 +539,7 @@ avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, floa
 
     parallelBuffer **particleArr = new parallelBuffer*[nProcs];
     for ( int i = 0; i < nProcs; i++ )
-	particleArr[i] = new parallelBuffer( varDim+1 );
+        particleArr[i] = new parallelBuffer( varDim+1 );
 
     BinData( varDim, particleArr, var, ids, &myVar, &myIds );
     int *dataShareMatrix = GetDataShareMatrix( particleArr );
@@ -547,7 +547,7 @@ avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, floa
 
     //Cleanup.
     for ( int i = 0; i < nProcs; i++ )
-	delete particleArr[i];
+        delete particleArr[i];
     delete [] particleArr;
     delete [] dataShareMatrix;    
 }
@@ -582,7 +582,7 @@ avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, floa
 
 void
 avtGTCFileFormat::BinData( int dim, parallelBuffer **array, float *vars, float *ids,
-			    float **myVarsPtr, float **myIdsPtr )
+                            float **myVarsPtr, float **myIdsPtr )
 {
     int ptCnt = nTotalPoints / nProcs;
     int remainder = nTotalPoints % nProcs;
@@ -592,42 +592,42 @@ avtGTCFileFormat::BinData( int dim, parallelBuffer **array, float *vars, float *
     
     for ( int i = 0; i < nPoints; i++ )
     {
-	int id = ((int) *ptrIDs) - 1; //Make the id 0...N-1 for the math below.
-	int whichProc;
+        int id = ((int) *ptrIDs) - 1; //Make the id 0...N-1 for the math below.
+        int whichProc;
 
-	// Determine which processor this ID goes to.
-	if ( id < (remainder * (ptCnt+1)) )
-	    whichProc = id / (ptCnt+1);
-	else
-	{
-	    int id2 = id - (remainder * (ptCnt+1));
-	    whichProc = remainder + id2/ptCnt;
-	}
+        // Determine which processor this ID goes to.
+        if ( id < (remainder * (ptCnt+1)) )
+            whichProc = id / (ptCnt+1);
+        else
+        {
+            int id2 = id - (remainder * (ptCnt+1));
+            whichProc = remainder + id2/ptCnt;
+        }
 
-	if ( whichProc < 0 || whichProc >= nProcs )
-	{
-	    char str[512];
-	    sprintf( str, "Bad Id mapping: %d ==> %d\n", id, whichProc );
-	    EXCEPTION1( InvalidDBTypeException, str );
-	}
+        if ( whichProc < 0 || whichProc >= nProcs )
+        {
+            char str[512];
+            sprintf( str, "Bad Id mapping: %d ==> %d\n", id, whichProc );
+            EXCEPTION1( InvalidDBTypeException, str );
+        }
 
-	// This is our data, so copy it to the front of the var, ids arrays.
-	if ( whichProc == rank )
-	{
-	    // ID
-	    *myIds++ = *ptrIDs++;
-	    for ( int j = 0; j < dim; j++ )
-		*myVars++ = *ptrVars++;
-	}
-	// This data isn't ours. Stash it in the buffer to be sent.	
-	else   
-	{
-	    // ID
-	    data[0] = *ptrIDs++;
-	    for ( int j = 0; j < dim; j++ )
-		data[j+1] = *ptrVars++;
-	    array[whichProc]->Add( data );
-	}
+        // This is our data, so copy it to the front of the var, ids arrays.
+        if ( whichProc == rank )
+        {
+            // ID
+            *myIds++ = *ptrIDs++;
+            for ( int j = 0; j < dim; j++ )
+                *myVars++ = *ptrVars++;
+        }
+        // This data isn't ours. Stash it in the buffer to be sent.        
+        else   
+        {
+            // ID
+            data[0] = *ptrIDs++;
+            for ( int j = 0; j < dim; j++ )
+                data[j+1] = *ptrVars++;
+            array[whichProc]->Add( data );
+        }
     }
     
     delete [] data;
@@ -661,13 +661,13 @@ avtGTCFileFormat::GetDataShareMatrix( parallelBuffer **array )
     int *particleCnts = new int[nProcs], *gatherCnts = new int[nProcs*nProcs];
     
     for ( int i = 0; i < nProcs; i++ )
-	particleCnts[i] = array[i]->Size();
+        particleCnts[i] = array[i]->Size();
 
     // Allgather is a little overkill, but there isn't much data.
     int err = MPI_Allgather( particleCnts, nProcs, MPI_INT,
-			     gatherCnts, nProcs*nProcs, MPI_INT, VISIT_MPI_COMM );
+                             gatherCnts, nProcs*nProcs, MPI_INT, VISIT_MPI_COMM );
     if ( err != MPI_SUCCESS )
-	EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Allgather() failure." );
+        EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Allgather() failure." );
     
     return gatherCnts;
 }
@@ -704,7 +704,7 @@ avtGTCFileFormat::GetDataShareMatrix( parallelBuffer **array )
 // ****************************************************************************
 void
 avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **array,
-				   float **myVarsPtr, float **myIdsPtr )
+                                   float **myVarsPtr, float **myIdsPtr )
 {
     int err;
     
@@ -714,20 +714,20 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
     int numSends = 0;
     for ( int i = 0; i < nProcs; i++ )
     {
-	MPI_Request req;
-	int sz = (dim+1) * array[i]->Size();
-	if ( sz == 0 )
-	    continue;
+        MPI_Request req;
+        int sz = (dim+1) * array[i]->Size();
+        if ( sz == 0 )
+            continue;
 
-	err = MPI_Isend( array[i]->Get(0), sz, MPI_FLOAT, i, rank, VISIT_MPI_COMM, &req );
-	if ( err != MPI_SUCCESS )
-	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Isend() failure." );
-	char str[512]; sprintf( str, "%d: sending to %d [%d]\n", rank, i, sz );
-	debug5 << str;
-	
-	requests.push_back( req );
-	requestRank.push_back( i );
-	numSends++;
+        err = MPI_Isend( array[i]->Get(0), sz, MPI_FLOAT, i, rank, VISIT_MPI_COMM, &req );
+        if ( err != MPI_SUCCESS )
+            EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Isend() failure." );
+        char str[512]; sprintf( str, "%d: sending to %d [%d]\n", rank, i, sz );
+        debug5 << str;
+        
+        requests.push_back( req );
+        requestRank.push_back( i );
+        numSends++;
     }
 
     //Do the recvs.
@@ -737,70 +737,70 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
     
     for ( int i = 0; i < nProcs; i++ )
     {
-	int sz = (dim+1) * shareMatrix[i*nProcs + rank];
-	bufs[i] = NULL;
-	if ( i == rank || sz == 0 )
-	    continue;
+        int sz = (dim+1) * shareMatrix[i*nProcs + rank];
+        bufs[i] = NULL;
+        if ( i == rank || sz == 0 )
+            continue;
 
-	bufs[i] = new float[sz];
-	MPI_Request req;
-	err = MPI_Irecv( bufs[i], sz, MPI_FLOAT, i, i, VISIT_MPI_COMM, &req );
-	if ( err != MPI_SUCCESS )
-	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Irecv() failure." );
-	
-	char str[512]; sprintf( str, "%d: receiving from %d [%d]\n", rank, i, sz );
-	debug5 << str;
-	
-	requests.push_back( req );
-	requestRank.push_back( i );
-	numRecvs++;
+        bufs[i] = new float[sz];
+        MPI_Request req;
+        err = MPI_Irecv( bufs[i], sz, MPI_FLOAT, i, i, VISIT_MPI_COMM, &req );
+        if ( err != MPI_SUCCESS )
+            EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Irecv() failure." );
+        
+        char str[512]; sprintf( str, "%d: receiving from %d [%d]\n", rank, i, sz );
+        debug5 << str;
+        
+        requests.push_back( req );
+        requestRank.push_back( i );
+        numRecvs++;
     }
 
     // Process the send/recvs as they complete.
     int numRequests = numSends+numRecvs;
     if ( numRequests > 0 )
     {
-	int num, nTotalReq = numRequests, *idxArray = new int[numRequests];
-	MPI_Status *statusArray = new MPI_Status[numRequests];
-	
-	while ( numRequests > 0 )
-	{
-	    err = MPI_Waitsome( nTotalReq, &requests[0], &num, idxArray, statusArray );
-	    if ( err != MPI_SUCCESS || num == MPI_UNDEFINED )
-		EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Waitany() failure." );
+        int num, nTotalReq = numRequests, *idxArray = new int[numRequests];
+        MPI_Status *statusArray = new MPI_Status[numRequests];
+        
+        while ( numRequests > 0 )
+        {
+            err = MPI_Waitsome( nTotalReq, &requests[0], &num, idxArray, statusArray );
+            if ( err != MPI_SUCCESS || num == MPI_UNDEFINED )
+                EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Waitany() failure." );
 
-	    debug5 << "Waitsome=: " << num << endl;
-	    for ( int i = 0; i < num; i++ )
-	    {
-		int idx = idxArray[i];
-		if ( idx < numSends )
-		{
-		    //Nothing to do for send.
-		}
-		else
-		{
-		    int src = requestRank[idx];
-		    int cnt = shareMatrix[src*nProcs + rank];
+            debug5 << "Waitsome=: " << num << endl;
+            for ( int i = 0; i < num; i++ )
+            {
+                int idx = idxArray[i];
+                if ( idx < numSends )
+                {
+                    //Nothing to do for send.
+                }
+                else
+                {
+                    int src = requestRank[idx];
+                    int cnt = shareMatrix[src*nProcs + rank];
 
-		    //Copy ID, var.
-		    float *bufPtr = bufs[src];
-		    for ( int j = 0; j < cnt; j++ )
-		    {
-			*myIds++ = *bufPtr++; // ID
-			for ( int k = 0; k < dim; k++ )
-			    *myVars++ = *bufPtr++;
-		    }
-		    delete [] bufs[src];
-		    bufs[src] = NULL;
-		}
-		requests[idx] = MPI_REQUEST_NULL;
-	    }
-	    
-	    numRequests -= num;
-	}
+                    //Copy ID, var.
+                    float *bufPtr = bufs[src];
+                    for ( int j = 0; j < cnt; j++ )
+                    {
+                        *myIds++ = *bufPtr++; // ID
+                        for ( int k = 0; k < dim; k++ )
+                            *myVars++ = *bufPtr++;
+                    }
+                    delete [] bufs[src];
+                    bufs[src] = NULL;
+                }
+                requests[idx] = MPI_REQUEST_NULL;
+            }
+            
+            numRequests -= num;
+        }
 
-	delete [] idxArray;
-	delete [] statusArray;
+        delete [] idxArray;
+        delete [] statusArray;
     }
 
 
@@ -854,7 +854,7 @@ parallelBuffer::parallelBuffer( int elemSz )
 parallelBuffer::~parallelBuffer()
 {
     if ( pArray )
-	free( pArray );
+        free( pArray );
     
     pArray = NULL;
     buffSize = size = 0;
@@ -882,14 +882,14 @@ parallelBuffer::AddElement( float *data )
     // Allocate array if needed.
     if ( buffSize == 0 )
     {
-	buffSize = 64; //Experiment to see if this is too big/too small.
-	pArray = (float *)malloc( buffSize*elemSize*sizeof(float) );
+        buffSize = 64; //Experiment to see if this is too big/too small.
+        pArray = (float *)malloc( buffSize*elemSize*sizeof(float) );
     }
     // Grow array if needed.
     else if ( size == buffSize )
     {
-	buffSize = buffSize*2;
-	pArray = (float *)realloc( pArray, buffSize*elemSize*sizeof(float) );
+        buffSize = buffSize*2;
+        pArray = (float *)realloc( pArray, buffSize*elemSize*sizeof(float) );
     }
 
     //Copy into array.

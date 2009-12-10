@@ -1148,16 +1148,16 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             const char *const meshNames[] = {"logical_mesh", "revolved_mesh", "mesh"};
             for (int m = 0; m < 3; m++)
             {
-	        if (!s && m) continue; // skip revloved & mesh for generic arrays
+                if (!s && m) continue; // skip revloved & mesh for generic arrays
 #if defined (_WIN32)
                 if (m == 1) continue; // skip revolved mesh on windows
 #endif
                 std::string theMeshName = meshNames[m];
                 std::string theVarName = theMeshName + "/" + newStr;
 
-		if (m == 0) addedLogicalMesh = true;
-		if (m == 1) addedRevolvedMesh = true;
-		if (m == 2) addedMesh = true;
+                if (m == 0) addedLogicalMesh = true;
+                if (m == 1) addedRevolvedMesh = true;
+                if (m == 2) addedMesh = true;
                 if (numFreeDims == 0)
                 {
                     avtScalarMetaData *smd = new avtScalarMetaData(
