@@ -387,7 +387,6 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        curve_test_data \
        h5nimrod_test_data \
        h5part_test_data \
-       hdf5_test_data \
        lines_test_data \
        miranda_test_data \
        okc_test_data \
@@ -398,10 +397,9 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        silo_hdf5_test_data \
        vtk_test_data \
        xdmf_test_data \
-       xyz_test_data
+       xyz_test_data \
+       zipwrapper_test_data
 
-      
-       
 
 ##
 ## Libraries and includes...
