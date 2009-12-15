@@ -80,21 +80,21 @@ FUNCTION(BUILD_DATA_TARGET target_name)
     SET(target_LIBS "")
 
     # cmake gymnastics to implement optional argument sections:
-    FOREACH( ARG IN ${ARGN})
+    FOREACH(ARG ${ARGN})
         IF("${ARG}" STREQUAL "INCLUDE_DIRS" OR
            "${ARG}" STREQUAL "LIB_DIRS" OR
            "${ARG}" STREQUAL "LIBS")
             #switch var name to extend
             SET(ARG_VAR target_${ARG})
         ELSE("${ARG}" STREQUAL "INCLUDE_DIRS" OR
-           "${ARG}" STREQUAL "LIB_DIRS" OR
-           "${ARG}" STREQUAL "LIBS")
+             "${ARG}" STREQUAL "LIB_DIRS" OR
+             "${ARG}" STREQUAL "LIBS")
             # add current arg into current varname
             SET("${ARG_VAR}" ${${ARG_VAR}} ${ARG})
         ENDIF("${ARG}" STREQUAL "INCLUDE_DIRS" OR
-           "${ARG}" STREQUAL "LIB_DIRS" OR
-           "${ARG}" STREQUAL "LIBS")
-    ENDFOREACH( ARG IN ${ARGN})
+              "${ARG}" STREQUAL "LIB_DIRS" OR
+              "${ARG}" STREQUAL "LIBS")
+    ENDFOREACH(ARG ${ARGN})
 
     INCLUDE_DIRECTORIES(${target_INCLUDE_DIRS})
     LINK_DIRECTORIES(${target_LIB_DIRS})
@@ -351,6 +351,7 @@ silo_hdf5_test_data
 silo_pdb_test_data
 tecplot_test_data
 visitdiff_test_data
+visit_dist_data
 visus_test_data
 vtk_cylindrical_test_data
 vtk_test_data
@@ -378,9 +379,27 @@ FOREACH(DATASET_TARGET ${ARCHIVED_TARGETS})
 ENDFOREACH(DATASET_TARGET IN ${ARCHIVED_DATASETS})
 
 #-----------------------------------------------------------------------------
-# Add the custom targets: "data" & "test"
+# Add custom targets: "data" & "test"
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(data DEPENDS ${DATA_TARGET_DEPENDS})
-ADD_CUSTOM_TARGET(test DEPENDS data)
+ADD_CUSTOM_TARGET(test)
+ADD_DEPENDENCIES(test data)
+
+#-----------------------------------------------------------------------------
+# Add install command for contents of "visit_dist_data"
+#-----------------------------------------------------------------------------
+
+SET(DIST_UNTAR_CMD "${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
+
+INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+
+INSTALL(DIRECTORY
+            ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
+        DESTINATION
+            data
+        DIRECTORY_PERMISSIONS
+            OWNER_READ OWNER_WRITE OWNER_EXECUTE
+            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+            WORLD_READ WORLD_EXECUTE)
 
 
