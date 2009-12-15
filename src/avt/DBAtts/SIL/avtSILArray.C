@@ -45,6 +45,7 @@
 #include <SILArrayAttributes.h>
 #include <avtSILRangeNamespace.h>
 #include <avtSILEnumeratedNamespace.h>
+#include <NameschemeAttributes.h>
 #include <snprintf.h>
 
 #include <cstring>
@@ -110,18 +111,51 @@ avtSILArray::avtSILArray(const stringVector &domainNames, int nSets,
 // ****************************************************************************
 //  Method: avtSILArray constructor
 //
+//  Programmer: Hank Childs
+//  Creation:   December 8, 2009
+//
+// ****************************************************************************
+
+avtSILArray::avtSILArray(const NameschemeAttributes &ns, int nSets, 
+                         int firstSetName, bool uniqueIDs,
+                         const string &cat,
+                         SILCategoryRole r, int parent)
+{
+    namescheme = ns;
+    iNumSets = nSets;
+    iFirstSetName = firstSetName;
+    bUseUniqueIDs = uniqueIDs;
+
+    iFirstSet = 0;
+    iColIndex = 0;
+
+    category = cat;
+    role = r;
+    iColParent = parent;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILArray constructor
+//
 //  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
 //  Modifications:
+//
 //    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
 //    Modified to handle arrays of domain names.
+//
+//    Hank Childs, Tue Dec  8 08:44:07 PST 2009
+//    Added support for nameschemes.
+//
 // ****************************************************************************
 
 avtSILArray::avtSILArray(const SILArrayAttributes &atts)
 {
     prefix = atts.GetPrefix();
     names = atts.GetNames();
+    namescheme = atts.GetNamescheme();
     iNumSets = atts.GetNumSets();
     iFirstSetName = atts.GetFirstSetName();
     bUseUniqueIDs = atts.GetUseUniqueIDs();
@@ -145,8 +179,13 @@ avtSILArray::avtSILArray(const SILArrayAttributes &atts)
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
 //  Modifications:
+//
 //    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
 //    Modified to handle arrays of domain names.
+//
+//    Hank Childs, Tue Dec  8 08:44:07 PST 2009
+//    Added support for nameschemes.
+//
 // ****************************************************************************
 
 SILArrayAttributes *
@@ -155,6 +194,7 @@ avtSILArray::MakeAttributes(void) const
     SILArrayAttributes *rv = new SILArrayAttributes;
     rv->SetPrefix(prefix);
     rv->SetNames(names);
+    rv->SetNamescheme(namescheme);
     rv->SetNumSets(iNumSets);
     rv->SetFirstSetName(iFirstSetName);
     rv->SetUseUniqueIDs(bUseUniqueIDs);
@@ -177,8 +217,13 @@ avtSILArray::MakeAttributes(void) const
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
 //  Modifications:
+//
 //    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
 //    Modified to handle arrays of domain names.
+//
+//    Hank Childs, Tue Dec  8 08:44:07 PST 2009
+//    Added support for nameschemes.
+//
 // ****************************************************************************
 
 avtSILSet_p  
@@ -189,7 +234,12 @@ avtSILArray::GetSILSet(int index) const
     char name[1024];
     avtSILSet_p rv;
 
-    if (names.size() != 0)
+    if (namescheme.GetNamescheme() != "")
+    {
+        std::string n = namescheme.GetName(index);
+        rv = new avtSILSet(n, id);
+    }
+    else if (names.size() != 0)
     {
         rv = new avtSILSet(names[index], id);
     }
@@ -205,6 +255,28 @@ avtSILArray::GetSILSet(int index) const
     }
     rv->AddMapIn(iColIndex);
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILArray::Print
+//
+//  Purpose:
+//      Prints out a description of what is in this SIL array.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2009
+//
+// ****************************************************************************
+
+void
+avtSILArray::Print(ostream &out) const
+{
+    out << "Array starting at " << iFirstSetName <<" going through " 
+        << iFirstSetName+iNumSets-1 << endl;
+    out << "Printing out first set as example: " << endl;
+    avtSILSet_p set = GetSILSet(0);
+    set->Print(out);
 }
 
 
@@ -352,8 +424,13 @@ avtSILArray::TurnSet(vector<unsigned char> &useSet,
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
 //  Modifications:
+//
 //    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
 //    Modified to handle arrays of domain names.
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Added support for nameschemes.
+//
 // ****************************************************************************
 int
 avtSILArray::GetSetIndex(const std::string &name) const
@@ -362,6 +439,17 @@ avtSILArray::GetSetIndex(const std::string &name) const
     int nMatches = 0;
     int i = -999;
 
+    if (namescheme.GetNamescheme() != "")
+    {
+        int ii = 0;
+        for (ii = 0 ; ii < iNumSets ; ii++)
+        {
+            std::string n = namescheme.GetName(ii);
+            if (n == name)
+                return (iFirstSet + ii);
+        }
+        return -1;
+    }
     if (names.size() != 0)
     {
         int ii = 0;
@@ -394,11 +482,37 @@ avtSILArray::GetSetIndex(const std::string &name) const
 }
 
 
+// ****************************************************************************
+//  Method: avtSILArray::IsCompatible
+//
+//  Purpose:
+//      Determines if two SIL arrays are compatible.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 14, 2009
+//
+// ****************************************************************************
 
+bool
+avtSILArray::IsCompatible(const avtSILArray *a) const
+{
+    if (iNumSets != a->iNumSets)
+        return false;
+    if (iFirstSet != a->iFirstSet)
+        return false;
+    if (prefix != a->prefix)
+        return false;
+    if (names.size() != a->names.size())
+        return false;
+    for (int i = 0 ; i < names.size() ; i++)
+    {
+        if (names[i] != a->names[i])
+            return false;
+    }
+    if (namescheme.GetNamescheme() != a->namescheme.GetNamescheme())
+        return false;
 
-
-
-
-
+    return true;
+}
 
 

@@ -50,6 +50,7 @@
 #include <avtSILCollection.h>
 #include <avtTypes.h>
 #include <vectortypes.h>
+#include <NameschemeAttributes.h>
 
 class SILArrayAttributes;
 
@@ -66,11 +67,16 @@ class SILArrayAttributes;
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
 //  Modifications:
+//
 //    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
 //    Added GetSILSetID method.
 //
 //    Dave Bremer, Fri Mar 28 19:38:29 PDT 2008
 //    Modified to handle an explicit list of names.
+//
+//    Hank Childs, Tue Dec  8 08:44:07 PST 2009
+//    Add support for name schemes.  Add Print method.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILArray
@@ -84,10 +90,14 @@ class DBATTS_API avtSILArray
                                     int nSets, int firstSetName, 
                                     bool uniqueIDs, const std::string &cat,
                                     SILCategoryRole r, int parent);
+                        avtSILArray(const NameschemeAttributes &namescheme, 
+                                    int nSets, int firstSetName, 
+                                    bool uniqueIDs, const std::string &cat,
+                                    SILCategoryRole r, int parent);
                         avtSILArray(const SILArrayAttributes &atts);
     virtual            ~avtSILArray() {;};
 
-
+    void                Print(ostream &) const;
     int                 GetNumSets() const   { return iNumSets; }
     avtSILSet_p         GetSILSet(int index) const;
     avtSILCollection_p  GetSILCollection() const;
@@ -101,12 +111,15 @@ class DBATTS_API avtSILArray
                                 SetState val, bool forLoadBalance) const;
     int                 GetSetIndex(const std::string &name) const;
 
+    bool                IsCompatible(const avtSILArray *) const;
+
     SILArrayAttributes *MakeAttributes(void) const;
 
   protected:
     //For making the sets
-    std::string      prefix;         //prefix or template for the block name
-    stringVector     names;  //explicit list of block names
+    std::string      prefix;     //prefix or template for the block name
+    stringVector     names;      //explicit list of block names
+    NameschemeAttributes namescheme;   //namescheme for labeling block names
 
     int              iNumSets;
     int              iFirstSetName;  //Often 0 or 1, depending for example on a 
@@ -129,6 +142,5 @@ typedef ref_ptr<avtSILArray> avtSILArray_p;
 
 
 #endif
-
 
 

@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTMESHMETADATA_NMETH 86
+#define AVTMESHMETADATA_NMETH 90
 void VISITPY_API           PyavtMeshMetaData_StartUp(avtMeshMetaData *subj, void *data);
 void VISITPY_API           PyavtMeshMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtMeshMetaData_GetMethodTable(int *nMethods);

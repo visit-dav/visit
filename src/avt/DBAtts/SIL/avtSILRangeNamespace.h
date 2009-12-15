@@ -42,8 +42,8 @@
 
 #ifndef AVT_SIL_RANGE_NAMESPACE_H
 #define AVT_SIL_RANGE_NAMESPACE_H
-#include <dbatts_exports.h>
 
+#include <dbatts_exports.h>
 
 #include <avtSILNamespace.h>
 
@@ -60,28 +60,36 @@
 //  Creation:   March 9, 2001
 //
 //  Modifications:
+//
 //    Dave Bremer, Wed Dec 19 12:38:52 PST 2007
 //    Added code to query for an element.
+//
+//    Hank Childs, Thu Dec 10 14:09:42 PST 2009
+//    Support new interface for getting elements.  Also add Print method.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRangeNamespace : public avtSILNamespace
 {
   public:
                                      avtSILRangeNamespace(int set, int min,
-                                                          int max);
+                                                          int max); // valid vals >= min & <= max
     virtual                         ~avtSILRangeNamespace() {;};
 
-    virtual const std::vector<int>  &GetAllElements(void) const;
+    virtual int                      GetNumberOfElements(void) const
+                                                { return maxRange-minRange+1; };
+    virtual int                      GetElement(int idx) const
+                                                { return minRange+idx; };
 
     virtual NamespaceAttributes     *GetAttributes(void) const;
 
     virtual bool                     ContainsElement(int e) const;
+    virtual void                     Print(ostream &) const;
 
   protected:
     int                              set;
     int                              minRange;
     int                              maxRange;
-    std::vector<int>                 setAsElementList;
 };
 
 

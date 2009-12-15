@@ -550,6 +550,9 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Dec 14 16:04:01 PST 2009
+//   Add support for new SIL interface.
+//
 // ****************************************************************************
 #include <avtSILRestriction.h>
 #include <ViewerPlot.h>
@@ -576,16 +579,15 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
         if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
         {
-            const std::vector<int> &setIds = collection->GetSubsetList();
-            nSets = setIds.size();
-            for(size_t si = 0; si < setIds.size() && !validName; ++si)
+            int nSets = collection->GetNumberOfSubsets(); 
+            for(size_t si = 0; si < nSets && !validName; ++si)
             {
                 if(!firstNameSet)
                 {
-                    firstName = silr->GetSILSet(setIds[si])->GetName();
+                    firstName = silr->GetSILSet(collection->GetSubset(si))->GetName();
                     firstNameSet = true;
                 }
-                validName = (silr->GetSILSet(setIds[si])->GetName() == 
+                validName = (silr->GetSILSet(collection->GetSubset(si))->GetName() == 
                              sAtts->GetSubsetName());
             }
             break;

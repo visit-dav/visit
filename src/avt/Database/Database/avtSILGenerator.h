@@ -53,6 +53,7 @@
 
 
 class     avtSIL;
+class     NameschemeAttributes;
 
 
 // ****************************************************************************
@@ -81,6 +82,10 @@ class     avtSIL;
 //
 //    Mark C. Miller, Wed Aug 26 11:08:47 PDT 2009
 //    Removed custom SIL stuff.
+//
+//    Hank Childs, Mon Dec  7 14:05:00 PST 2009
+//    Added various optimizations that enable the SIL object to get smaller.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -92,13 +97,17 @@ class DATABASE_API avtSILGenerator
     void                AddSubsets(avtSIL *, int, int, int, std::vector<int> &,
                                    const std::string &, const std::string &,
                                    const std::vector<std::string> &,
+                                   const NameschemeAttributes &,
                                    bool useSILArrays,
                                    SILCategoryRole cat = SIL_DOMAIN,
                                    bool onlyCreateSets = false);
-    void                AddGroups(avtSIL *, int, int, int,
+    vector<int>         AddGroups(avtSIL *, int, int, int, const std::string &,
+                                  const std::string &);
+    void                AddGroupCollections(avtSIL *, int, int,
                                   const std::vector<int> &,
-                                  const std::vector<int>&, const std::string &,
-                                  const std::string &, const std::string &);
+                                  const std::vector<int>&, 
+                                  const std::vector<int>&, 
+                                  const std::string &, const std::vector<int> &);
     void                AddMaterials(avtSIL *, int, const std::string &,
                                      const std::vector<std::string> &,
                                      std::vector<int> &, int);

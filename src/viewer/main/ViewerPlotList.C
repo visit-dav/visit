@@ -4936,6 +4936,9 @@ ViewerPlotList::OverlayDatabase(const EngineKey &key,
 //   Brad Whitlock, Tue Apr 29 16:05:55 PDT 2008
 //   Support for internationalization.
 //
+//   Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//   Adapt to new SIL interface.
+//
 // ****************************************************************************
 
 avtSILRestriction_p
@@ -5058,16 +5061,16 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
             for (int i = 0 ; i < mapsOut.size() ; i++)
             {
                 avtSILCollection_p coll = tmpSilr->GetSILCollection(mapsOut[i]);
-                const vector<int> &subsets = coll->GetSubsetList();
-                for (int j = 0 ;j<subsets.size() ; j++)
+                int nsets = coll->GetNumberOfSubsets();
+                for (int j = 0 ;j<nsets ; j++)
                     for (stringVector::iterator it = defaultSILRestrictionFromDatabase.begin();
                             it != defaultSILRestrictionFromDatabase.end(); ++it)
                             if (((*it)[0] == '+' || (*it)[0] == '-') &&  // entry references a sil set name?
-                                it->substr(1) == tmpSilr->GetSILSet(subsets[j])->GetName()) // name matches?
+                                it->substr(1) == tmpSilr->GetSILSet(coll->GetSubset(j))->GetName()) // name matches?
                             {
                                 debug5 << "Index for " << it->substr(1) << " is ";
-                                debug5 << subsets[j] << std::endl;
-                                idx[it - defaultSILRestrictionFromDatabase.begin()] = subsets[j];
+                                debug5 << coll->GetSubset(j) << std::endl;
+                                idx[it - defaultSILRestrictionFromDatabase.begin()] = coll->GetSubset(j);
                                 break;
                             }
             }

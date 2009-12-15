@@ -291,6 +291,9 @@ avtSIL::operator=(const avtSIL &sil)
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Added code to add an entry to collTable
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for accessing SIL subsets.
+//
 // ****************************************************************************
 
 void
@@ -338,19 +341,21 @@ avtSIL::AddCollection(avtSILCollection_p c)
     // The namespace knows all of the subsets that for the collection.
     //
     const avtSILNamespace *ns = c->GetSubsets();
-    const vector<int> &v = ns->GetAllElements();
+    int numElems = ns->GetNumberOfElements();
 
     //
     // Tell all of the subsets in the namespace that they have a map going
     // into them, if they aren't temporary subsets.  Otherwise, they'll 
     // have maps added on demand.
     //
-    for (int i = 0 ; i < v.size() ; i++)
+    for (int i = 0 ; i < numElems ; i++)
     {
-        int subset = v[i];
+        int subset = ns->GetElement(i);
         if (subset < 0 || subset >= setsSize)
         {
-            EXCEPTION2(BadIndexException, subset, setsSize);
+            // The set hasn't been added yet.  It is going to be an
+            // internal set and the map in will be determined dynamically.
+            continue;
         }
         avtSILSet_p  pSet = GetSILSetInternal(subset, isTemp, true);
         if (*pSet != NULL)
@@ -1314,6 +1319,10 @@ avtSIL::MakeSILAttributes(void) const
 //
 //    Mark C. Miller, Tue Oct 21 09:07:50 PDT 2008
 //    Modified to use GetSILSet; simplified logic for loops a bit
+//
+//    Hank Childs, Fri Dec 11 14:17:12 PST 2009
+//    Don't print sets for matrices or arrays.
+//
 // ****************************************************************************
 
 void
@@ -1333,12 +1342,31 @@ avtSIL::Print(ostream &out,
     bool useInfo;
 
     useInfo = perSetInfo.size() == GetNumSets();
-    for (i = 0 ; i < GetNumSets() ; i++)
+    int idx = 0;
+    for (int i = 0 ; i < setTable.size()/3 ; i++)
     {
-        out << "Set" << i << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
-
-        avtSILSet_p s = GetSILSet(i);
-        s->Print(out);
+        switch (setTable[3*i+1])
+        {
+          case WHOLE_SET:
+          case SUBSET:
+          {
+            out << "Set" << setTable[3*i+2] << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
+            avtSILSet_p s = GetSILSet(i);
+            s->Print(out);
+            break;
+          }
+          case ARRAY:
+            out << "Array " << setTable[3*i+2] << " of size " << setTable[3*i+3]-setTable[3*i+3-3] << endl;
+            arrays[setTable[3*i+2]]->Print(out);
+            break;
+          case MATRIX:
+            out << "Matrix " << setTable[3*i+2] << " of size " << setTable[3*i+3]-setTable[3*i+3-3] << endl;
+            matrices[setTable[3*i+2]]->Print(out);
+            break;
+          default:
+            out << "Unknown entry at setTable " << i << endl;
+            break;
+        }
     }
 
     int nColls = collections.size();
@@ -1349,17 +1377,7 @@ avtSIL::Print(ostream &out,
         avtSILCollection_p c = collections[i];
         c->Print(out);
     }
-
-    int nMats = matrices.size();
-    useInfo = perMatInfo.size() == nMats;
-    for (i = 0 ; i < nMats ; i++)
-    {
-        out << "Matrix " << i << " " << (useInfo ? perMatInfo[i].c_str() : "") << endl;
-        avtSILMatrix_p m = matrices[i];
-        m->Print(out);
-    }
 }
-
 
 
 // ****************************************************************************
@@ -1459,4 +1477,72 @@ avtSIL::FindColl(int iColl, EntryType &outType,
     }
     return false;
 }
+
+
+// ****************************************************************************
+//  Method: avtSIL::IsCompatible
+//
+//  Purpose:
+//      Determines if two SILs are compatible.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 14, 2009
+//
+// ****************************************************************************
+
+bool
+avtSIL::IsCompatible(const avtSIL *sil2) const
+{
+    int   i, j;
+
+    if (wholesList.size() != sil2->wholesList.size())
+        return false;
+
+    for (i = 0 ; i < wholesList.size() ; i++)
+        if (wholesList[i] != sil2->wholesList[i])
+            return false;
+
+    if (sets.size() != sil2->sets.size())
+        return false;
+
+    for (i = 0 ; i < sets.size() ; i++)
+    {
+        if ((sets[i]->GetName() != sil2->sets[i]->GetName()) ||
+            (sets[i]->GetIdentifier() != sil2->sets[i]->GetIdentifier()))
+            return false;
+    }
+
+    if (matrices.size() != sil2->matrices.size())
+        return false;
+
+    for (i = 0 ; i < matrices.size() ; i++)
+    {
+        const vector<int> &role1_1 = matrices[i]->GetSet1();
+        const vector<int> &role1_2 = matrices[i]->GetSet2();
+        const vector<int> &role2_1 = sil2->matrices[i]->GetSet1();
+        const vector<int> &role2_2 = sil2->matrices[i]->GetSet2();
+        if (role1_1.size() != role2_1.size())
+            return false;
+        for (j = 0 ; j < role1_1.size() ; j++)
+            if (role1_1[j] != role2_1[j])
+                return false;
+        if (role1_2.size() != role2_2.size())
+            return false;
+        for (j = 0 ; j < role1_2.size() ; j++)
+            if (role1_2[j] != role2_2[j])
+                return false;
+    }
+
+    if (arrays.size() != sil2->arrays.size())
+        return false;
+
+    for (i = 0 ; i < arrays.size() ; i++)
+    {
+        if (! arrays[i]->IsCompatible(*(sil2->arrays[i])))
+            return false;
+    }
+
+    return true;
+}
+
 

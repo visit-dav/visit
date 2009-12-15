@@ -103,6 +103,11 @@
 //
 //    Randy Hudson, February, 2008
 //    Added struct for "sim info" HDF5 DATASET so "file format version" can be read 
+//
+//    Hank Childs, Fri Dec 11 13:15:13 PST 2009
+//    Add support for the new, more efficient way of handling AMR meshes in the
+//    SIL.
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -250,6 +255,10 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::vector<hid_t>        particleVarTypes;
     std::map<std::string,int> particleOriginalIndexMap;
     std::vector<int>          leafBlocks;
+
+    std::vector<int>          patchesPerLevel;
+    std::vector<int>          visitIdToFLASHId;
+    std::vector<int>          FLASHIdToVisitId;
 };
 
 

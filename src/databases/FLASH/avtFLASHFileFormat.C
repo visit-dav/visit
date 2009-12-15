@@ -71,6 +71,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -428,6 +429,9 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Added support for concurrent block-level and block-processor subset pairs
 //      for both domain and morton curve meshes
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Add support for more efficient AMR data structure.
+//
 // ****************************************************************************
 
 void
@@ -435,8 +439,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     ReadAllMetaData();
 
-    if (!avtDatabase::OnlyServeUpMetaData())
-        BuildDomainNesting();
+    BuildDomainNesting();
 
     // grids
     //    for block and level SIL categories
@@ -460,28 +463,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->minSpatialExtents[2] = minSpatialExtents[2];
         mesh->maxSpatialExtents[2] = maxSpatialExtents[2];
 
-        // spoof a group/domain mesh for the AMR hierarchy
-        mesh->numBlocks = numBlocks;
-        mesh->blockTitle = "Blocks";
-        mesh->blockPieceName = "block";
-        // Level as group
-        mesh->numGroups = numLevels;
-        mesh->groupTitle = "Levels";
-        mesh->groupPieceName = "level";
-        mesh->numGroups = numLevels;
-
-        vector<int> groupIds(numBlocks);
-        vector<string> pieceNames(numBlocks);
-        // Level as group
-        for (int i = 0; i < numBlocks; i++)
-        {
-            char tmpName[64];
-            sprintf(tmpName,"level%d,block%d",blocks[i].level, blocks[i].ID);
-            groupIds[i] = blocks[i].level-1;
-            pieceNames[i] = tmpName;
-        }
-        mesh->blockNames = pieceNames;
-        mesh->groupIds = groupIds;
+        mesh->SetAMRInfo("level", "block", 1, patchesPerLevel);
         md->Add(mesh);
 
         // grid variables
@@ -740,11 +722,15 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Wed Nov 18 11:10:09 PST 2009
 //    Delete double precision particle data.
 //
+//    Hank Childs, Fri Dec 11 13:15:13 PST 2009
+//    Add support for reordering of indices for SIL efficiencies.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
+avtFLASHFileFormat::GetMesh(int visitDomain, const char *meshname)
 {
+    int domain = visitIdToFLASHId[visitDomain];
     ReadAllMetaData();
 
     if (string(meshname) == "mesh_blockandlevel")
@@ -1235,11 +1221,16 @@ avtFLASHFileFormat::GetMortonCurve()
 //    Brad Whitlock, Wed Nov 18 11:14:16 PST 2009
 //    Delete particle data arrays!
 //
+//    Hank Childs, Fri Dec 11 13:15:13 PST 2009
+//    Add support for reordering of indices for SIL efficiencies.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtFLASHFileFormat::GetVar(int domain, const char *vname)
+avtFLASHFileFormat::GetVar(int visitDomain, const char *vname)
 {
+    int domain = visitIdToFLASHId[visitDomain];
+
     ReadAllMetaData();
 
     // Strip prefix (submenu name (either "mesh_blockandlevel/" or "mesh_blockandproc/")) to leave actual var name
@@ -1455,11 +1446,16 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
 //
+//  Modifications:
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
+avtFLASHFileFormat::GetVectorVar(int visitDomain, const char *varname)
 {
+    // Is this necessary?  No.  But I don't want someone to get caught if
+    // they ever decide to implement this method.
+    //   int domain = visitIdToFLASHId[visitDomain];
     return NULL;
 }
 
@@ -1489,6 +1485,9 @@ avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
 //
 //    Randy Hudson, June 12, 2007
 //    Added call to ReadProcessorNumbers.
+//
+//    Hank Childs, Tue Dec 15 14:02:40 PST 2009
+//    Calculate some data members here when we read the blocks.
 //
 // ****************************************************************************
 void
@@ -1534,6 +1533,32 @@ avtFLASHFileFormat::ReadAllMetaData()
         ReadNodeTypes();
         ReadCoordinates();
         ReadProcessorNumbers();
+
+        patchesPerLevel.resize(numLevels);
+        int  i;
+
+        for (i = 0; i < numBlocks; i++)
+             patchesPerLevel[blocks[i].level-1]++;
+        
+        vector<int> numToThisPoint(numLevels);
+        numToThisPoint[0] = 0;
+        for (i = 1 ; i < numLevels ; i++)
+            numToThisPoint[i] = numToThisPoint[i-1] + patchesPerLevel[i-1];
+
+        visitIdToFLASHId.resize(numBlocks, -1);
+        vector<int> numForThisLevel(numLevels, 0);
+        for (i = 0 ; i < numBlocks ; i++)
+        {
+             int level = blocks[i].level-1;
+             int visitIdx = numToThisPoint[level] + numForThisLevel[level]++;
+             visitIdToFLASHId[visitIdx] = i;
+        }
+
+        FLASHIdToVisitId.resize(numBlocks, -1);
+        for (i = 0 ; i < numBlocks ; i++)
+        {
+             FLASHIdToVisitId[visitIdToFLASHId[i]] = i;
+        }
     }
 }
 
@@ -2524,13 +2549,15 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //    "BuildDomainNesting()" to process mesh "mesh_blockandproc", also assigned
 //    in "PopulateDatabaseMetaData()".
 //
+//    Hank Childs, Tue Dec 15 14:30:07 PST 2009
+//    Reorder indices to accommodate reordering of patches for SIL efficiency.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::BuildDomainNesting()
 {
-    if (numBlocks <= 1)
+    if (numBlocks <= 1 || avtDatabase::OnlyServeUpMetaData())
         return;
-
 
     //  ***********************************************************************
     //  PROCESS THE "mesh_blockandlevel" MESH
@@ -2545,6 +2572,7 @@ avtFLASHFileFormat::BuildDomainNesting()
     {
         int i;
 
+        int t1 = visitTimer->StartTimer();
         avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
         rdb->SetNumDomains(numBlocks);
         for (i = 0; i < numBlocks; i++)
@@ -2556,7 +2584,7 @@ avtFLASHFileFormat::BuildDomainNesting()
             logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
             logExts[4] = blocks[i].minGlobalLogicalExtents[2];
             logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-            rdb->SetIndicesForAMRPatch(i, blocks[i].level - 1, logExts);
+            rdb->SetIndicesForAMRPatch(FLASHIdToVisitId[i], blocks[i].level - 1, logExts);
         }
         rdb->CalculateBoundaries();
 
@@ -2564,6 +2592,7 @@ avtFLASHFileFormat::BuildDomainNesting()
                                          avtStructuredDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                             timestep, -1, vrdb);
+        visitTimer->StopTimer(t1, "FLASH setting up domain boundaries");
 
         //
         // build the avtDomainNesting object
@@ -2571,6 +2600,7 @@ avtFLASHFileFormat::BuildDomainNesting()
 
         if (numLevels > 0)
         {
+            int t2 = visitTimer->StartTimer();
             avtStructuredDomainNesting *dn =
                 new avtStructuredDomainNesting(numBlocks, numLevels);
 
@@ -2606,7 +2636,7 @@ avtFLASHFileFormat::BuildDomainNesting()
                     // if this is allowed to be 1-origin, the "-1" here
                     // needs to be removed
                     if (blocks[i].childrenIDs[j] >= 0)
-                        childBlocks.push_back(blocks[i].childrenIDs[j] - 1);
+                        childBlocks.push_back(FLASHIdToVisitId[blocks[i].childrenIDs[j] - 1]);
                 }
 
                 vector<int> logExts(6);
@@ -2625,7 +2655,7 @@ avtFLASHFileFormat::BuildDomainNesting()
                 else
                     logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
 
-                dn->SetNestingForDomain(i, blocks[i].level-1,
+                dn->SetNestingForDomain(FLASHIdToVisitId[i], blocks[i].level-1,
                                         childBlocks, logExts);
             }
 
@@ -2635,10 +2665,9 @@ avtFLASHFileFormat::BuildDomainNesting()
             cache->CacheVoidRef("mesh_blockandlevel",
                                 AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                 timestep, -1, vr);
-
+            visitTimer->StopTimer(t2, "FLASH setting up patch nesting");
         }
     }
-
 
     //  ***********************************************************************
     //  PROCESS THE "mesh_blockandproc" MESH
@@ -2664,7 +2693,7 @@ avtFLASHFileFormat::BuildDomainNesting()
             logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
             logExts[4] = blocks[i].minGlobalLogicalExtents[2];
             logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-            rdb->SetIndicesForAMRPatch(i, blocks[i].level - 1, logExts);
+            rdb->SetIndicesForAMRPatch(FLASHIdToVisitId[i], blocks[i].level - 1, logExts);
         }
         rdb->CalculateBoundaries();
 
@@ -2714,7 +2743,7 @@ avtFLASHFileFormat::BuildDomainNesting()
                     // if this is allowed to be 1-origin, the "-1" here
                     // needs to be removed
                     if (blocks[i].childrenIDs[j] >= 0)
-                        childBlocks.push_back(blocks[i].childrenIDs[j] - 1);
+                        childBlocks.push_back(FLASHIdToVisitId[blocks[i].childrenIDs[j] - 1]);
                 }
 
                 vector<int> logExts(6);
@@ -2733,7 +2762,7 @@ avtFLASHFileFormat::BuildDomainNesting()
                 else
                     logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
 
-                dn->SetNestingForDomain(i, blocks[i].level-1,
+                dn->SetNestingForDomain(FLASHIdToVisitId[i], blocks[i].level-1,
                                         childBlocks, logExts);
             }
 
@@ -2768,6 +2797,9 @@ avtFLASHFileFormat::BuildDomainNesting()
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Hank Childs, Tue Dec 15 14:30:07 PST 2009
+//    Reorder indices to accommodate reordering of patches for SIL efficiency.
+//
 // ****************************************************************************
 void *
 avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom, 
@@ -2791,7 +2823,7 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
         bounds[3] = blocks[b].maxSpatialExtents[1];
         bounds[4] = blocks[b].minSpatialExtents[2];
         bounds[5] = blocks[b].maxSpatialExtents[2];
-        itree->AddElement(b, bounds);
+        itree->AddElement(FLASHIdToVisitId[b], bounds);
     }
     itree->Calculate(true);
 

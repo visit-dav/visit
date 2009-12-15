@@ -65,6 +65,8 @@
     </Field>
     <Field name="blockNames" label="Block names" type="stringVector" access="public">
     </Field>
+    <Field name="blockNameScheme" label="namescheme for block" type="att" subtype="NameschemeAttributes" access="public">
+    </Field>
     <Field name="numGroups" label="Number of groups" type="int" access="public">
       0
     </Field>
@@ -78,6 +80,8 @@
       groups
     </Field>
     <Field name="groupIds" label="Group ids" type="intVector" access="public">
+    </Field>
+    <Field name="groupIdsBasedOnRange" label="Similar to groupIds, but do it based on ranges (for smaller memory footprint)" type="intVector" access="public">
     </Field>
     <Field name="disjointElements" label="Contains disjoint elements" type="bool" access="public">
       false
@@ -158,5 +162,7 @@
     <Function name="UnsetExtents" user="true" member="true">
     </Function>
     <Function name="Print" user="true" member="true">
+    </Function>
+    <Function name="SetAMRInfo" user="true" member="true">
     </Function>
   </Attribute>

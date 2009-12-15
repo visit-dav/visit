@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class SILArrayAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 10;
+    private static int numAdditionalAttributes = 11;
 
     public SILArrayAttributes()
     {
@@ -73,6 +73,7 @@ public class SILArrayAttributes extends AttributeSubject
         role = 0;
         colParent = 0;
         names = new Vector();
+        namescheme = new NameschemeAttributes();
     }
 
     public SILArrayAttributes(int nMoreFields)
@@ -89,6 +90,7 @@ public class SILArrayAttributes extends AttributeSubject
         role = 0;
         colParent = 0;
         names = new Vector();
+        namescheme = new NameschemeAttributes();
     }
 
     public SILArrayAttributes(SILArrayAttributes obj)
@@ -110,6 +112,7 @@ public class SILArrayAttributes extends AttributeSubject
         for(i = 0; i < obj.names.size(); ++i)
             names.addElement(new String((String)obj.names.elementAt(i)));
 
+        namescheme = new NameschemeAttributes(obj.namescheme);
 
         SelectAll();
     }
@@ -147,7 +150,8 @@ public class SILArrayAttributes extends AttributeSubject
                 (category.equals(obj.category)) &&
                 (role == obj.role) &&
                 (colParent == obj.colParent) &&
-                names_equal);
+                names_equal &&
+                (namescheme.equals(obj.namescheme)));
     }
 
     // Property setting methods
@@ -211,17 +215,24 @@ public class SILArrayAttributes extends AttributeSubject
         Select(9);
     }
 
+    public void SetNamescheme(NameschemeAttributes namescheme_)
+    {
+        namescheme = namescheme_;
+        Select(10);
+    }
+
     // Property getting methods
-    public String  GetPrefix() { return prefix; }
-    public int     GetNumSets() { return numSets; }
-    public int     GetFirstSetName() { return firstSetName; }
-    public boolean GetUseUniqueIDs() { return useUniqueIDs; }
-    public int     GetFirstSet() { return firstSet; }
-    public int     GetColIndex() { return colIndex; }
-    public String  GetCategory() { return category; }
-    public int     GetRole() { return role; }
-    public int     GetColParent() { return colParent; }
-    public Vector  GetNames() { return names; }
+    public String               GetPrefix() { return prefix; }
+    public int                  GetNumSets() { return numSets; }
+    public int                  GetFirstSetName() { return firstSetName; }
+    public boolean              GetUseUniqueIDs() { return useUniqueIDs; }
+    public int                  GetFirstSet() { return firstSet; }
+    public int                  GetColIndex() { return colIndex; }
+    public String               GetCategory() { return category; }
+    public int                  GetRole() { return role; }
+    public int                  GetColParent() { return colParent; }
+    public Vector               GetNames() { return names; }
+    public NameschemeAttributes GetNamescheme() { return namescheme; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -246,6 +257,8 @@ public class SILArrayAttributes extends AttributeSubject
             buf.WriteInt(colParent);
         if(WriteSelect(9, buf))
             buf.WriteStringVector(names);
+        if(WriteSelect(10, buf))
+            namescheme.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -282,6 +295,10 @@ public class SILArrayAttributes extends AttributeSubject
         case 9:
             SetNames(buf.ReadStringVector());
             break;
+        case 10:
+            namescheme.Read(buf);
+            Select(10);
+            break;
         }
     }
 
@@ -298,20 +315,22 @@ public class SILArrayAttributes extends AttributeSubject
         str = str + intToString("role", role, indent) + "\n";
         str = str + intToString("colParent", colParent, indent) + "\n";
         str = str + stringVectorToString("names", names, indent) + "\n";
+        str = str + indent + "namescheme = {\n" + namescheme.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
 
     // Attributes
-    private String  prefix;
-    private int     numSets;
-    private int     firstSetName;
-    private boolean useUniqueIDs;
-    private int     firstSet;
-    private int     colIndex;
-    private String  category;
-    private int     role;
-    private int     colParent;
-    private Vector  names; // vector of String objects
+    private String               prefix;
+    private int                  numSets;
+    private int                  firstSetName;
+    private boolean              useUniqueIDs;
+    private int                  firstSet;
+    private int                  colIndex;
+    private String               category;
+    private int                  role;
+    private int                  colParent;
+    private Vector               names; // vector of String objects
+    private NameschemeAttributes namescheme;
 }
 

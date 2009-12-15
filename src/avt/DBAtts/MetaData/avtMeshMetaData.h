@@ -43,6 +43,7 @@
 #include <avtTypes.h>
 #include <AttributeSubject.h>
 
+#include <NameschemeAttributes.h>
 
 // ****************************************************************************
 // Class: avtMeshMetaData
@@ -94,6 +95,7 @@ public:
     void SetExtents(const double *);
     void UnsetExtents();
     void Print(ostream &, int = 0) const;
+    void SetAMRInfo(const std::string &levelName, const std::string &patchName, int origin,const std::vector<int> &patchesPerLevel);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -119,11 +121,13 @@ public:
         ID_blockPieceName,
         ID_blockTitle,
         ID_blockNames,
+        ID_blockNameScheme,
         ID_numGroups,
         ID_groupOrigin,
         ID_groupPieceName,
         ID_groupTitle,
         ID_groupIds,
+        ID_groupIdsBasedOnRange,
         ID_disjointElements,
         ID_containsGhostZones,
         ID_containsOriginalCells,
@@ -143,54 +147,56 @@ public:
     };
 
 public:
-    std::string       name;
-    std::string       originalName;
-    bool              validVariable;
-    avtMeshType       meshType;
-    avtMeshCoordType  meshCoordType;
-    int               cellOrigin;
-    int               spatialDimension;
-    int               topologicalDimension;
-    std::string       xUnits;
-    std::string       yUnits;
-    std::string       zUnits;
-    std::string       xLabel;
-    std::string       yLabel;
-    std::string       zLabel;
-    bool              hasSpatialExtents;
-    double            minSpatialExtents[3];
-    double            maxSpatialExtents[3];
-    int               numBlocks;
-    int               blockOrigin;
-    std::string       blockPieceName;
-    std::string       blockTitle;
-    stringVector      blockNames;
-    int               numGroups;
-    int               groupOrigin;
-    std::string       groupPieceName;
-    std::string       groupTitle;
-    intVector         groupIds;
-    bool              disjointElements;
-    avtGhostType      containsGhostZones;
-    bool              containsOriginalCells;
-    bool              containsOriginalNodes;
-    bool              containsGlobalNodeIds;
-    bool              containsGlobalZoneIds;
-    LoadBalanceScheme loadBalanceScheme;
-    bool              nodesAreCritical;
-    float             unitCellVectors[9];
-    float             unitCellOrigin[3];
-    bool              rectilinearGridHasTransform;
-    double            rectilinearGridTransform[16];
-    int               nodeOrigin;
-    bool              containsExteriorBoundaryGhosts;
-    bool              hideFromGUI;
+    std::string          name;
+    std::string          originalName;
+    bool                 validVariable;
+    avtMeshType          meshType;
+    avtMeshCoordType     meshCoordType;
+    int                  cellOrigin;
+    int                  spatialDimension;
+    int                  topologicalDimension;
+    std::string          xUnits;
+    std::string          yUnits;
+    std::string          zUnits;
+    std::string          xLabel;
+    std::string          yLabel;
+    std::string          zLabel;
+    bool                 hasSpatialExtents;
+    double               minSpatialExtents[3];
+    double               maxSpatialExtents[3];
+    int                  numBlocks;
+    int                  blockOrigin;
+    std::string          blockPieceName;
+    std::string          blockTitle;
+    stringVector         blockNames;
+    NameschemeAttributes blockNameScheme;
+    int                  numGroups;
+    int                  groupOrigin;
+    std::string          groupPieceName;
+    std::string          groupTitle;
+    intVector            groupIds;
+    intVector            groupIdsBasedOnRange;
+    bool                 disjointElements;
+    avtGhostType         containsGhostZones;
+    bool                 containsOriginalCells;
+    bool                 containsOriginalNodes;
+    bool                 containsGlobalNodeIds;
+    bool                 containsGlobalZoneIds;
+    LoadBalanceScheme    loadBalanceScheme;
+    bool                 nodesAreCritical;
+    float                unitCellVectors[9];
+    float                unitCellOrigin[3];
+    bool                 rectilinearGridHasTransform;
+    double               rectilinearGridTransform[16];
+    int                  nodeOrigin;
+    bool                 containsExteriorBoundaryGhosts;
+    bool                 hideFromGUI;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiiissssssbDDiisss*iissi*bibbbbibFFbDibb"
+#define AVTMESHMETADATA_TMFS "ssbiiiiissssssbDDiisss*aiissi*i*bibbbbibFFbDibb"
 
 #endif

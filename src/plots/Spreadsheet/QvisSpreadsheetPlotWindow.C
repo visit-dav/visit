@@ -401,6 +401,9 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Mon Aug 11 16:19:39 PDT 2008
 //   Qt 4.
 //
+//   Hank Childs, Mon Dec 14 16:04:01 PST 2009
+//   Added support for new subset code.
+//
 // ****************************************************************************
 
 void
@@ -432,14 +435,14 @@ QvisSpreadsheetPlotWindow::UpdateSubsetNames()
                 avtSILCollection_p collection =restriction->GetSILCollection(cIndex);
                 if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
                 {
-                    const std::vector<int> &setIds = collection->GetSubsetList();
-                    for(int si = 0; si < setIds.size(); ++si)
+                    int nsets = collection->GetNumberOfSubsets();
+                    for(int si = 0; si < nsets; ++si)
                     {
-                        if(trav.UsesData(setIds[si]) ||
-                           restriction->GetSILSet(setIds[si])->GetName() == atts->GetSubsetName())
+                        if(trav.UsesData(collection->GetSubset(si)) ||
+                           restriction->GetSILSet(collection->GetSubset(si))->GetName() == atts->GetSubsetName())
                         {
                             subsetName->addItem(restriction->
-                                GetSILSet(setIds[si])->GetName().c_str()); 
+                                GetSILSet(collection->GetSubset(si))->GetName().c_str()); 
                         }
                     }
                     break;

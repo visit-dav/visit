@@ -85,28 +85,6 @@ avtSILEnumeratedNamespace::avtSILEnumeratedNamespace(const vector<int> &els)
 
 
 // ****************************************************************************
-//  Method: avtSILEnumeratedNamespace::GetAllElements
-//
-//  Purpose:
-//      Returns the element list for this namespace.  Since this is an
-//      enumerated namespace, this is exactly the elements we have previously
-//      enumerated.
-//
-//  Returns:     The element list.
-//
-//  Programmer:  Hank Childs
-//  Creation:    March 9, 2001
-//
-// ****************************************************************************
-
-const vector<int> &
-avtSILEnumeratedNamespace::GetAllElements(void) const
-{
-    return elements;
-}
-
-
-// ****************************************************************************
 //  Method: avtSILEnumeratedNamespace::GetAttributes
 //
 //  Purpose:
@@ -185,6 +163,30 @@ avtSILEnumeratedNamespace::ContainsElement(int e) const
         }
     }
     return false;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILEnumerateNamespace::Print
+//
+//  Purpose:
+//      Prints out the subsets
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2009
+//
+// ****************************************************************************
+
+void
+avtSILEnumeratedNamespace::Print(ostream &out) const
+{
+    std::vector<int>::const_iterator it;
+    out << "Subsets: ";
+    for (it = elements.begin() ; it != elements.end(); it++)
+    {
+        out << *it << ", ";
+    }
+    out << endl;
 }
 
 

@@ -223,6 +223,9 @@ Definition:
 //    I had left the type as EnumScalar before, which didn't cause any
 //    problems at the time, but is obviously not quite correct.)
 //
+//    Hank Childs, Tue Dec 15 15:08:41 PST 2009
+//    Add support for groups based on ranges.
+//
 // ****************************************************************************
 #include <stdio.h>
 
@@ -305,18 +308,31 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           debug5 << "Variable for subset plot is a group Mesh." << endl; 
           subsetAtts->SetSubsetType(SubsetAttributes::Group);
           defaultAtts->SetSubsetType(SubsetAttributes::Group);
-          for (size_t i = 0; i < mesh->groupIds.size(); i++)
+          if (mesh->groupIds.size() > 0)
           {
-              if (groupSet.count(mesh->groupIds[i]) == 0)
+              for (size_t i = 0; i < mesh->groupIds.size(); i++)
               {
-                  groupSet.insert(mesh->groupIds[i]);
-                  gIDS.push_back(mesh->groupIds[i]);
+                  if (groupSet.count(mesh->groupIds[i]) == 0)
+                  {
+                      groupSet.insert(mesh->groupIds[i]);
+                      gIDS.push_back(mesh->groupIds[i]);
+                  }
+              }
+              for (size_t i = 0; i < gIDS.size(); i++)
+              {
+                  sprintf(temp, "%d", gIDS[i]);
+                  sv.push_back(temp);
               }
           }
-          for (size_t i = 0; i < gIDS.size(); i++)
+          else
           {
-              sprintf(temp, "%d", gIDS[i]);
-              sv.push_back(temp);
+              int origin = mesh->groupOrigin;
+              int nGroups = mesh->groupIdsBasedOnRange.size()-1;
+              for (size_t i = 0; i < gIDS.size(); i++)
+              {
+                  sprintf(temp, "%d", origin+i);
+                  sv.push_back(temp);
+              }
           }
           break;
 

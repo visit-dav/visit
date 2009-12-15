@@ -68,36 +68,24 @@ avtSILRangeNamespace::avtSILRangeNamespace(int s, int min, int max)
     set = s;
     minRange = min;
     maxRange = max;
-
-    //
-    // We need to return a reference to a vector, so create one with the object
-    // that contains the one set we will point at.
-    //
-    setAsElementList.push_back(set);
 }
 
 
 // ****************************************************************************
-//  Method: avtSILRangeNamespace::GetAllElements
+//  Method: avtSILRangeNamespace::Print
 //
 //  Purpose:
-//      Returns the element list for this namespace.  There are actually
-//      elements from minRange to maxRange, but they are compressed into one
-//      set for conceptual purposes.  That set is the data member 'set'.  Since
-//      we need to return a reference to a vector, there is a data member
-//      kept around just to return -- setAsElementList.
+//      Prints out the subsets
 //
-//  Returns:     The element list for this namespace.
-//
-//  Programmer:  Hank Childs
-//  Creation:    March 9, 2001
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2009
 //
 // ****************************************************************************
 
-const vector<int> &
-avtSILRangeNamespace::GetAllElements(void) const
+void
+avtSILRangeNamespace::Print(ostream &out) const
 {
-    return setAsElementList;
+    out << "Subsets: " << minRange << "-" << maxRange << endl;
 }
 
 

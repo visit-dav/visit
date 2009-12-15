@@ -274,6 +274,9 @@ QvisSubsetPanelWidget::ViewSet(int id)
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//   Adapt to changes in SIL interface.
+//
 // ****************************************************************************
 
 void
@@ -292,20 +295,21 @@ QvisSubsetPanelWidget::ViewCollection(int id)
           
         SetTitle(collection->GetCategory().c_str());
         const avtSILNamespace *ns = collection->GetSubsets();
-        const std::vector<int> &sets = ns->GetAllElements();
+        int numElems = ns->GetNumberOfElements();
 
         avtSILRestrictionTraverser trav(restriction);
-        for(int i = 0; i < sets.size(); ++i)
+        for(int i = 0; i < numElems; ++i)
         {
-            avtSILSet_p set = restriction->GetSILSet(sets[i]);
+            int setIdx = ns->GetElement(i);
+            avtSILSet_p set = restriction->GetSILSet(setIdx);
 
             // Create an item for the set and set its checked value.
-            CheckedState s = S2S(trav.UsesSetData(sets[i]));
+            CheckedState s = S2S(trav.UsesSetData(setIdx));
             QString cname(set->GetName().c_str());
             QvisSubsetPanelItem *item = new QvisSubsetPanelItem(tree,
                                                                 cname,
                                                                 s,
-                                                                sets[i]);
+                                                                setIdx);
             numCheckable++;
 
             if(s == CompletelyChecked)

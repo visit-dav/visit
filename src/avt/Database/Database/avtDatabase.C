@@ -2424,6 +2424,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Removed std:: qualification on some STL classes due to use of using
 //    statements at top 
 //
+//    Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//    Adapt to new SIL interface.
+//
 // ****************************************************************************
 
 void               
@@ -2478,12 +2481,11 @@ avtDatabase::Query(PickAttributes *pa)
                 avtSILCollection_p collection = sil->GetSILCollection(cIndex);
                 if (*collection != NULL && collection->GetRole() == SIL_DOMAIN)
                 {
-                    const vector<int> &setIds = 
-                                                   collection->GetSubsetList();
-                    if (foundDomain >= 0 && foundDomain < setIds.size())
+                    int nSubsets = collection->GetNumberOfSubsets();
+                    if (foundDomain >= 0 && foundDomain < nSubsets)
                     {
                         pa->SetSubsetName(
-                               sil->GetSILSet(setIds[foundDomain])->GetName());
+                               sil->GetSILSet(collection->GetSubset(foundDomain))->GetName());
                         break;
                     }
                 }
