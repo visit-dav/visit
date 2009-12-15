@@ -226,6 +226,9 @@ static const int maxCoincidentNodelists = 12;
 //    Moved logic for 'old' extents interface to CommonPluginInfo where 
 //    old (obsolete) options can be merged with current interface. Also, use
 //    const char* symbol names for options defined in avtSiloOptions.h.
+//
+//    Mark C. Miller, Tue Dec 15 14:01:48 PST 2009
+//    Added metadataIsTimeVarying
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -246,6 +249,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     searchForAnnotInt = false;
     readGlobalInfo = false;
     connectivityIsTimeVarying = false;
+    metadataIsTimeVarying = false;
     groupInfo.haveGroups = false;
     hasDisjointElements = false;
     topDir = "/";
@@ -1330,6 +1334,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Modifications:
 //    Mark C. Miller, Thu Jun 18 20:55:49 PDT 2009
 //    Removed DBtoc* arg.
+//
+//    Mark C. Miller, Tue Dec 15 14:01:48 PST 2009
+//    Added metadataIsTimeVarying
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1376,6 +1383,14 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 DBReadVar(dbfile, "ConnectivityIsTimeVarying", &tvFlag);
                 if (tvFlag == 1)
                     connectivityIsTimeVarying = true;
+            }
+
+            if (DBInqVarExists(dbfile, "MetadataIsTimeVarying"))
+            {
+                int mdFlag;
+                DBReadVar(dbfile, "MetadataIsTimeVarying", &mdFlag);
+                if (mdFlag == 1)
+                    metadataIsTimeVarying = true;
             }
 
             if (DBInqVarExists(dbfile, "AlphabetizeVariables"))
