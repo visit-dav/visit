@@ -236,6 +236,9 @@ typedef struct _GroupInfo
 //    Mark C. Miller, Thu Oct 29 15:15:37 PDT 2009
 //    Removed arbMeshZoneRangesToSkip. Added HandleGlobalZoneIds. Adjusted
 //    interface to ReadInConnectivity.
+//
+//    Mark C. Miller, Tue Dec 15 13:50:40 PST 2009
+//    Added HasInvariantMetadata/SIL and metadataIsTimeVarying.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -267,6 +270,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     double                GetTime();
 
     void                  ActivateTimestep(void);
+    bool                  HasInvariantMetaData(void) const { return !metadataIsTimeVarying; };
+    bool                  HasInvariantSIL(void) const { return !metadataIsTimeVarying; };
 
   protected:
     enum AANTriState {Always=0, Auto, Never};
@@ -280,6 +285,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  searchForAnnotInt;
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
+    bool                  metadataIsTimeVarying;
     bool                  hasDisjointElements;
     string                codeNameGuess;
 
