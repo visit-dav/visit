@@ -27,4 +27,6 @@
     </Field>
     <Field name="names" label="names" type="stringVector">
     </Field>
+    <Field name="namescheme" label="namescheme" type="att" subtype="NameschemeAttributes">
+    </Field>
   </Attribute>

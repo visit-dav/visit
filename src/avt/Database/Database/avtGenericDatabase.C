@@ -4832,6 +4832,10 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    read. This is important for transformations such us changes from 
 //    double to single precision that reduce the memory footprint of a 
 //    dataset.
+//
+//    Hank Childs, Tue Dec 15 14:55:50 PST 2009
+//    Add support for group IDs based on ranges.
+//
 // ****************************************************************************
 
 void
@@ -4869,7 +4873,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 
     stringVector blockNames;
     intVector gIds;
+    intVector groupIdsBasedOnRange;
     int domOrigin = 0;
+    int grpOrigin = 0;
 
     avtSubsetType subT = GetMetaData(ts)->DetermineSubsetType(var);
     if (subT == AVT_DOMAIN_SUBSET || subT == AVT_GROUP_SUBSET)
@@ -4877,7 +4883,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         string meshName = GetMetaData(ts)->MeshForVar(var);
         blockNames =  GetMetaData(ts)->GetMesh(meshName)->blockNames;
         domOrigin  =  GetMetaData(ts)->GetMesh(meshName)->blockOrigin;
+        grpOrigin  =  GetMetaData(ts)->GetMesh(meshName)->groupOrigin;
         gIds       =  GetMetaData(ts)->GetMesh(meshName)->groupIds;
+        groupIdsBasedOnRange =  GetMetaData(ts)->GetMesh(meshName)->groupIdsBasedOnRange;
     }
 
     //
@@ -5013,7 +5021,19 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         else if (subT == AVT_GROUP_SUBSET)
         {
             char temp[512];
-            sprintf(temp, "%d", gIds[domains[i]]);
+            if (gIds.size() != 0)
+                sprintf(temp, "%d", gIds[domains[i]]);
+            else
+            {
+                int pos = grpOrigin;
+                for (int j = 0 ; j < groupIdsBasedOnRange.size()-1 ; j++)
+                {
+                    if (groupIdsBasedOnRange[j] <= domains[i] && domains[i] < groupIdsBasedOnRange[j+1])
+                        break;
+                    pos++;
+                }
+                sprintf(temp, "%d", pos);
+            }
             for (int l = 0; l < nmats; l++)
                 labels.push_back(temp);
         }

@@ -96,29 +96,6 @@ avtSILCollection::~avtSILCollection()
 
 
 // ****************************************************************************
-//  Method: avtSILCollection::GetSubsetList
-//
-//  Purpose:
-//      Get the list of subsets.  This goes through other routines, but
-//      streamlines their use to minimize the amount clients need to know
-//      about this class.
-//
-//  Returns:    A list of subsets.  These are the actual sets for an enumerated
-//              namespace, and a placeholder for a range namespace.
-// 
-//  Programmer: Hank Childs
-//  Creation:   May 21, 2001
-//
-// ****************************************************************************
-
-const vector<int> &
-avtSILCollection::GetSubsetList(void) const
-{
-    return subsets->GetAllElements();
-}
-
-
-// ****************************************************************************
 //  Method: avtSILCollection::Print
 //
 //  Purpose:
@@ -137,6 +114,10 @@ avtSILCollection::GetSubsetList(void) const
 //
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Push printing off the name spaces ... that way we don't have to
+//    enumerate all the values.
 //
 // ****************************************************************************
 
@@ -182,14 +163,8 @@ avtSILCollection::Print(ostream &out) const
 
     out << "\t\tSuperset is " << supersetIndex << endl;
 
-    const vector<int> &els = subsets->GetAllElements();
-    std::vector<int>::const_iterator it;
     out << "\t\t";
-    for (it = els.begin() ; it != els.end(); it++)
-    {
-        out << *it << ", ";
-    }
-    out << endl;
+    subsets->Print(out);
 }
 
 

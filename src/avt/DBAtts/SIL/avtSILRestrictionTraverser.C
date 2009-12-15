@@ -195,6 +195,11 @@ avtSILRestrictionTraverser::GetEnumerationCount()
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 26, 2008 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
 
 void
@@ -216,9 +221,9 @@ avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds(int parentId, int *minId,
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_ENUMERATION)
         {
-            const vector<int> &setList = coll->GetSubsetList();
-            for (int j = 0 ; j < setList.size() ; j++)
-                GetEnumerationMinMaxSetIds(setList[j], minId, maxId);
+            int numElems = coll->GetNumberOfSubsets();
+            for (int j = 0 ; j < numElems ; j++)
+                GetEnumerationMinMaxSetIds(coll->GetSubset(j), minId, maxId);
         }
     }
 }
@@ -237,6 +242,11 @@ avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds(int parentId, int *minId,
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 26, 2008 
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
 //
 // ****************************************************************************
 
@@ -258,9 +268,9 @@ avtSILRestrictionTraverser::GetEnumerationFromGraph(int matchedMapIndex,
     int minSetId =  INT_MAX;
     int maxSetId = -INT_MAX;
     avtSILCollection_p coll = silr->GetSILCollection(mapsOut[matchedMapIndex]);
-    const vector<int> &setList = coll->GetSubsetList();
-    for (j = 0 ; j < setList.size() ; j++)
-        GetEnumerationMinMaxSetIds(setList[j], &minSetId, &maxSetId);
+    int numElems = coll->GetNumberOfSubsets();
+    for (j = 0 ; j < numElems ; j++)
+        GetEnumerationMinMaxSetIds(coll->GetSubset(j), &minSetId, &maxSetId);
     int numSets = maxSetId - minSetId + 1;
 
     name = coll->GetCategory();
@@ -297,6 +307,9 @@ avtSILRestrictionTraverser::GetEnumerationFromGraph(int matchedMapIndex,
 //    Mark C. Miller, Mon Apr 14 15:28:11 PDT 2008
 //    Added code to deal with enumeration graphs
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
 
 bool
@@ -330,12 +343,12 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                 // look at each subset and determine if it is on or off.
                 //
                 name = coll->GetCategory();
-                const vector<int> &setList = coll->GetSubsetList();
-                enumList.resize(setList.size());
-                for (j = 0 ; j < setList.size() ; j++)
+                int numElems = coll->GetNumberOfSubsets();
+                enumList.resize(numElems);
+                for (j = 0 ; j < numElems ; j++)
                 {
                     // do a tiny bit of work to see if this enum has a graph
-                    avtSILSet_p tmpSet = silr->GetSILSet(setList[j]);
+                    avtSILSet_p tmpSet = silr->GetSILSet(coll->GetSubset(j));
                     const vector<int> &tmpMapsOut = tmpSet->GetMapsOut();
                     if (tmpMapsOut.size() > 0)
                     {
@@ -343,7 +356,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                         break;
                     }
 
-                    bool val = (useSet[setList[j]] != NoneUsed ? true : false);
+                    bool val = (useSet[coll->GetSubset(j)] != NoneUsed ? true : false);
                     enumList[j] = val;
                     if (!val)
                     {
@@ -386,6 +399,9 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
 //    Hank Childs, Fri Nov 22 14:06:36 PST 2002
 //    Moved into the SIL restriction traverser class.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
  
 bool
@@ -410,11 +426,11 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
             // Now that we have found the species collection, look at each
             // of the species subsets and determine if it is on or off.
             //
-            const vector<int> &setList = coll->GetSubsetList();
-            specList.resize(setList.size());
-            for (j = 0 ; j < setList.size() ; j++)
+            int numElems = coll->GetNumberOfSubsets();
+            specList.resize(numElems);
+            for (j = 0 ; j < numElems ; j++)
             {
-                bool val = (useSet[setList[j]] != NoneUsed ? true : false);
+                bool val = (useSet[coll->GetSubset(j)] != NoneUsed ? true : false);
                 specList[j] = val;
                 if (!val)
                 {
@@ -491,6 +507,9 @@ avtSILRestrictionTraverser::GetDomainListAllProcs(vector<int> &list)
 //
 //    Hank Childs, Sat Nov 15 18:06:24 CST 2008
 //    Add some logic for the special case where all domains are on.
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
 //
 // ****************************************************************************
  
@@ -573,12 +592,12 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
             for (j = 0 ; j < outmaps.size() ; j++)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(outmaps[j]);
-                const vector<int> &subsets =
-                                          coll->GetSubsets()->GetAllElements();
-                setList.reserve(setList.size() + subsets.size());
-                for (k = 0 ; k < subsets.size() ; k++)
+                const avtSILNamespace *ns = coll->GetSubsets();
+                int numElems = ns->GetNumberOfElements();
+                setList.reserve(setList.size() + numElems);
+                for (k = 0 ; k < numElems ; k++)
                 {
-                    setList.push_back(subsets[k]);
+                    setList.push_back(ns->GetElement(k));
                 }
             }
         }
@@ -625,6 +644,10 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
 //
 //    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
 //    Updated to handle avtSILArrays
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
  
 bool
@@ -667,10 +690,10 @@ avtSILRestrictionTraverser::UsesAllData(void)
             if (t == avtSIL::COLLECTION)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(collIndex);
-                const vector<int> &subsets = coll->GetSubsetList();
-                for (int k = 0; k < subsets.size(); k++)
+                int numElems = coll->GetNumberOfSubsets();
+                for (int k = 0 ; k < numElems ; k++)
                 {
-                    setList.push_back(subsets[k]);
+                    setList.push_back(coll->GetSubset(k));
                 }
             }
             else if (t == avtSIL::ARRAY)
@@ -739,6 +762,9 @@ avtSILRestrictionTraverser::UsesAllData(void)
 //    Hank Childs, Fri Nov 22 14:06:36 PST 2002
 //    Moved into the SIL restriction traverser class.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
  
 bool
@@ -782,8 +808,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
     // Determine how domains come off the top level set.  This is the maximum
     // domains possible.
     //
-    const vector<int> &targetDomainList = domainCollection->GetSubsetList();
-    int nTargetDomains = targetDomainList.size();
+    int nTargetDomains = domainCollection->GetNumberOfSubsets();
 
     //
     // Go through every one of the domains and see if it is being used.  If
@@ -794,7 +819,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
     bool retval = true;
     for (i = 0 ; i < nTargetDomains ; i++)
     {
-        if (useSet[targetDomainList[i]] == NoneUsed)
+        if (useSet[domainCollection->GetSubset(i)] == NoneUsed)
         {
             retval = false;
             break;
@@ -909,6 +934,9 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
 //    Hank Childs, Tue Dec  2 09:21:07 PST 2008
 //    Pair up an unmatched StartTimer.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
  
 void
@@ -975,18 +1003,19 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
                     }
                     else
                     {
-                        const vector<int> &subsets =
-                                          coll->GetSubsets()->GetAllElements();
+                        const avtSILNamespace *ns = coll->GetSubsets();
+                        int numElems = ns->GetNumberOfElements();
                         int usedOne = 0;
                         int didntUseOne = 0;
                         MaterialList l;
-                        for (int k = 0 ; k < subsets.size() ; k++)
+                        for (int k = 0 ; k < numElems ; k++)
                         {
-                            if (useSet[subsets[k]])
+                            int setId = ns->GetElement(k);
+                            if (useSet[setId])
                             {
                                 usedOne++;
                                 l.push_back(
-                                       silr->GetSILSet(subsets[k])->GetName());
+                                       silr->GetSILSet(setId)->GetName());
                             }
                             else
                             {
@@ -1001,14 +1030,15 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
                 else
                 {
                     const avtSILNamespace *ns = coll->GetSubsets();
-                    const vector<int> &subsets = ns->GetAllElements();
+                    int numElems = ns->GetNumberOfElements();
 
-                    for (int k = 0 ; k < subsets.size() ; k++)
+                    for (int k = 0 ; k < numElems ; k++)
                     {
-                        if (!setIsInProcessList[subsets[k]])
+                        int setId = ns->GetElement(k);
+                        if (!setIsInProcessList[setId])
                         {
-                            setsToProcess.push_back(subsets[k]);
-                            setIsInProcessList[subsets[k]] = true;
+                            setsToProcess.push_back(setId);
+                            setIsInProcessList[setId] = true;
                         }
                     }
                 }
@@ -1149,6 +1179,9 @@ avtSILRestrictionTraverser::UsesSetData(int setId) const
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
  
 bool
@@ -1178,10 +1211,10 @@ avtSILRestrictionTraverser::UsesAllMaterials()
             // Now that we have found the material collection, look at each
             // of the material subsets and determine if it is on or off.
             //
-            const vector<int> &setList = coll->GetSubsetList();
-            for (j = 0 ; j < setList.size() && allUsed; j++)
+            int numElems = coll->GetNumberOfSubsets();
+            for (j = 0 ; j < numElems && allUsed; j++)
             {
-                allUsed = (useSet[setList[j]] != NoneUsed); 
+                allUsed = (useSet[coll->GetSubset(j)] != NoneUsed); 
             }
         }
     }

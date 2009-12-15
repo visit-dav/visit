@@ -42,10 +42,12 @@
 
 #ifndef AVT_SIL_NAMESPACE_H
 #define AVT_SIL_NAMESPACE_H
+
 #include <dbatts_exports.h>
 
-
 #include <vector>
+
+#include <visitstream.h>
 
 class     NamespaceAttributes;
 
@@ -72,6 +74,11 @@ class     NamespaceAttributes;
 //
 //    Dave Bremer, Wed Dec 19 12:38:52 PST 2007
 //    Added code to query for an element.
+//
+//    Hank Childs, Thu Dec 10 14:01:43 PST 2009
+//    Change interface so it doesn't require making a big array.
+//    Also add a Print method.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILNamespace
@@ -79,7 +86,9 @@ class DBATTS_API avtSILNamespace
   public:
     virtual                         ~avtSILNamespace() {;};
 
-    virtual const std::vector<int>  &GetAllElements(void) const = 0;
+    virtual void                     Print(ostream &) const = 0;
+    virtual int                      GetNumberOfElements(void) const = 0;
+    virtual int                      GetElement(int) const = 0;
     virtual NamespaceAttributes     *GetAttributes(void) const = 0;
     virtual bool                     ContainsElement(int e) const = 0;
     static avtSILNamespace          *GetNamespace(const NamespaceAttributes *);

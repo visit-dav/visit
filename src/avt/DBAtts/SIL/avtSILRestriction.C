@@ -590,6 +590,10 @@ avtSILRestriction::SetTopSet(const char *meshname)
 //   
 //    Mark C. Miller, Wed Feb 25 17:10:12 PST 2009
 //    Fix error in indexing used to examine useSet state of material sets
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
 
 SetState
@@ -612,9 +616,9 @@ avtSILRestriction::EnsureRestrictionCorrectness()
         avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_MATERIAL)
         {
-            const vector<int> &matSetList = coll->GetSubsetList();
-            for (int j = 0 ; j < matSetList.size() && ! some_mats ; j++)
-                if( useSet[matSetList[j]] == SomeUsed)
+            int numMats = coll->GetNumberOfSubsets();
+            for (int j = 0 ; j < numMats && ! some_mats ; j++)
+                if (useSet[coll->GetSubset(j)] == SomeUsed)
                     some_mats = true;
         }
     }
@@ -633,9 +637,9 @@ avtSILRestriction::EnsureRestrictionCorrectness()
             if (coll->GetRole() == SIL_ENUMERATION)
             {
                 // if we have an enum turn on all subsets of this collection 
-                const vector<int> &subsets = coll->GetSubsetList();
-                for(int j = 0; j < subsets.size(); j++)
-                    TurnBoolSet(subsets[j], true);
+                int numElems = coll->GetNumberOfSubsets();
+                for (int j = 0 ; j < numElems ; j++)
+                    TurnBoolSet(coll->GetSubset(j), true);
             }
         }
     }
@@ -672,6 +676,9 @@ avtSILRestriction::EnsureRestrictionCorrectness()
 //
 //    Hank Childs, Mon Dec  1 15:27:59 PST 2008
 //    Add support for SomeUsedOtherProc.
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
 //
 // ****************************************************************************
 
@@ -720,10 +727,10 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
             if (t == avtSIL::COLLECTION || t == avtSIL::ARRAY)
             {
                 avtSILCollection_p coll = GetSILCollection(collIndex);
-                const vector<int> &subsets = coll->GetSubsetList();
-                for (int j = 0; j < subsets.size(); j++)
+                int numElems = coll->GetNumberOfSubsets();
+                for (int j = 0 ; j < numElems ; j++)
                 {
-                    SetState s = EnsureRestrictionCorrectness(subsets[j]);
+                    SetState s = EnsureRestrictionCorrectness(coll->GetSubset(j));
                     if(s == NoneUsed)
                         ++NoneUsedCount;
                     else if(s == SomeUsed)
@@ -935,6 +942,9 @@ avtSILRestriction::ReverseSet(int ind)
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
 
 void
@@ -954,6 +964,13 @@ avtSILRestriction::TurnBoolSet(int ind, bool b)
     //
     useSet[ind] = b ? AllUsed : NoneUsed;
 
+    EntryType t;
+    int outLocalIndex, outLocalSubIndex;
+    if (!FindSet(ind, t, outLocalIndex, outLocalSubIndex))
+        return;
+    if (t == ARRAY)
+        return;
+
     //
     // Turn all of its subsets off.
     //
@@ -962,10 +979,10 @@ avtSILRestriction::TurnBoolSet(int ind, bool b)
     for (int i = 0 ; i < mapsOut.size() ; i++)
     {
         avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
-        const vector<int> &subsets = coll->GetSubsetList();
-        for (int j = 0 ; j < subsets.size() ; j++)
+        int numElems = coll->GetNumberOfSubsets();
+        for (int j = 0 ; j < numElems ; j++)
         {
-            TurnBoolSet(subsets[j], b);
+            TurnBoolSet(coll->GetSubset(j), b);
         }
     }
 }
@@ -1273,6 +1290,9 @@ avtSILRestriction::RestrictDomainsForLoadBalance(const vector<int> &domains)
 //    Hank Childs, Mon Dec  1 15:27:59 PST 2008
 //    Add support for SomeUsedOtherProc.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
 
 void
@@ -1340,12 +1360,12 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
                 if (t == avtSIL::COLLECTION || t == avtSIL::ARRAY)
                 {
                     avtSILCollection_p coll = GetSILCollection(mapsOut[j]);
-                    const vector<int> &subsets =
-                                          coll->GetSubsets()->GetAllElements();
-                    setsToProcess.reserve( setsToProcess.size() + subsets.size());
-                    for (int k = 0 ; k < subsets.size() ; k++)
+                    const avtSILNamespace *ns = coll->GetSubsets();
+                    int numElems = ns->GetNumberOfElements();
+                    setsToProcess.reserve( setsToProcess.size() + numElems);
+                    for (int k = 0 ; k < numElems ; k++)
                     {
-                        setsToProcess.push_back(subsets[k]);
+                        setsToProcess.push_back(ns->GetElement(k));
                     }
                 }
             }
@@ -1390,10 +1410,10 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
                     if (t == avtSIL::COLLECTION)
                     {
                         avtSILCollection_p coll = GetSILCollection(mapsOut[k]);
-                        const vector<int> &subsets = coll->GetSubsetList();
-                        for (int l = 0; l < subsets.size(); l++)
+                        int numElems = coll->GetNumberOfSubsets();
+                        for (int l = 0 ; l < numElems ; l++)
                         {
-                            setsToTurnOff.push_back(subsets[l]);
+                            setsToTurnOff.push_back(coll->GetSubset(l));
                         }
                     }
                     else if (t == avtSIL::ARRAY)
@@ -1576,6 +1596,9 @@ avtSILRestriction::Print(ostream &out) const
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
+//
 // ****************************************************************************
 
 void
@@ -1647,11 +1670,18 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
         //
         // Add all of the maps of each of the subsets.
         //
-        const vector<int> subsets = nms->GetAllElements();
-        for (i = 0 ; i < subsets.size() ; i++)
+        int numElems = nms->GetNumberOfElements();
+        for (i = 0 ; i < numElems ; i++)
         {
-            isOn[subsets[i]] = true;
-            avtSILSet_p set = GetSILSet(subsets[i]);
+            int setId = nms->GetElement(i);
+            isOn[setId] = true;
+            EntryType t;
+            int outLocalIndex, outLocalSubIndex;
+            if (!FindSet(setId, t, outLocalIndex, outLocalSubIndex))
+                continue;
+            if (t == ARRAY)
+                continue;
+            avtSILSet_p set = GetSILSet(setId);
             const vector<int> &subsetMap = set->GetMapsOut();
             for (j = 0 ; j < subsetMap.size() ; j++)
             {
@@ -1671,6 +1701,15 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
     {
         if (isOn[i])
         {
+            EntryType t;
+            int outLocalIndex, outLocalSubIndex;
+            if (!FindSet(i, t, outLocalIndex, outLocalSubIndex))
+                continue;
+            if (t == ARRAY)
+            {
+                leaves.push_back(i);
+                continue;
+            }
             avtSILSet_p set = GetSILSet(i);
             const vector<int> &maps = set->GetMapsOut();
             if (maps.size() <= 0)
@@ -1696,6 +1735,11 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
 //
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Adapt to new interface for enumerating SIL subsets.
 //
 // ****************************************************************************
 
@@ -1772,11 +1816,19 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
         //
         // Add all of the maps of each of the subsets.
         //
-        const vector<int> subsets = nms->GetAllElements();
-        for (i = 0 ; i < subsets.size() ; i++)
+        int numElems = nms->GetNumberOfElements();
+        for (i = 0 ; i < numElems ; i++)
         {
-            isOn[subsets[i]] = true;
-            avtSILSet_p set = GetSILSet(subsets[i]);
+            int setId = nms->GetElement(i);
+            isOn[setId] = true;
+            EntryType t;
+            int outLocalIndex, outLocalSubIndex;
+            if (!FindSet(setId, t, outLocalIndex, outLocalSubIndex))
+                continue;
+            if (t == ARRAY)
+                continue;
+
+            avtSILSet_p set = GetSILSet(setId);
             const vector<int> &subsetMap = set->GetMapsOut();
             for (j = 0 ; j < subsetMap.size() ; j++)
             {
@@ -1844,11 +1896,15 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 //    names and IDs didn't match, then the handling for that case
 //    was non-existent.  Fixed now.
 //
+//    Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//    Add a timer.
+//
 // ****************************************************************************
 
 bool
 avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 {
+    int t1 = visitTimer->StartTimer();
     bool compatible = false;
     int i;
     vector<int> leaves;
@@ -1875,15 +1931,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     if (leaves.size() == otherLeaves.size())
     {
         // confirm all leaves names/ids match
-        compatible = true;
-        for (i = 0 ; i < leaves.size() && compatible ; i++)
-        {
-            avtSILSet_p set1 = GetSILSet(leaves[i]);
-            avtSILSet_p set2 = silr->GetSILSet(otherLeaves[i]);
-            if ((set1->GetName() != set2->GetName()) ||
-                (set1->GetIdentifier() != set2->GetIdentifier()))
-                compatible = false;
-        }
+        compatible = IsCompatible(*(silr));
     }
 
     if (compatible)
@@ -1963,6 +2011,8 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
         EnableCorrectnessChecking();
 
     }
+
+    visitTimer->StopTimer(t1, "SILR::SetFromCompatibleRestriction");
 
     // Note: current logic of this routine has compatible always being true.
     return compatible;

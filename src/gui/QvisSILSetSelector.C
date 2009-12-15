@@ -322,6 +322,9 @@ QvisSILSetSelector::FillCategoryBox()
 //   Brad Whitlock, Fri Jul 18 08:43:42 PDT 2008
 //   Qt 4.
 //
+//   Hank Childs, Fri Dec 11 11:37:48 PST 2009
+//   Adapt to changes in the SIL interface.
+//
 // ****************************************************************************
 
 void
@@ -343,12 +346,13 @@ QvisSILSetSelector::FillSubsetBox()
         avtSILCollection_p collection =restriction->GetSILCollection(colIndex); 
         if (*collection != NULL)
         {
-            intVector sets = collection->GetSubsetList();
-            for (int i = 0; i < sets.size(); ++i)
+            int numSubsets = collection->GetNumberOfSubsets();
+            for (int i = 0; i < numSubsets; ++i)
             {
-                if (silUseSet[sets[i]] != 0)
+                int setIdx = collection->GetSubset(i);
+                if (silUseSet[setIdx] != 0)
                 {
-                    avtSILSet_p set = restriction->GetSILSet(sets[i]);
+                    avtSILSet_p set = restriction->GetSILSet(setIdx);
                     subsetName->addItem(QString(set->GetName().c_str()));
                 } 
             } 

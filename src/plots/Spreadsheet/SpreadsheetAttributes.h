@@ -40,6 +40,7 @@
 #define SPREADSHEETATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <PlaneAttributes.h>
 #include <PickAttributes.h>
@@ -70,13 +71,23 @@ public:
         Z
     };
 
+    // These constructors are for objects of this class
     SpreadsheetAttributes();
     SpreadsheetAttributes(const SpreadsheetAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SpreadsheetAttributes(private_tmfs_t tmfs);
+    SpreadsheetAttributes(const SpreadsheetAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SpreadsheetAttributes();
 
     virtual SpreadsheetAttributes& operator = (const SpreadsheetAttributes &obj);
     virtual bool operator == (const SpreadsheetAttributes &obj) const;
     virtual bool operator != (const SpreadsheetAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SpreadsheetAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -178,7 +189,8 @@ public:
         ID_currentPickValid,
         ID_currentPickLetter,
         ID_pastPicks,
-        ID_pastPickLetters
+        ID_pastPickLetters,
+        ID__LAST
     };
 
 private:
@@ -202,6 +214,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SPREADSHEETATTRIBUTES_TMFS "ssbsbaiisbbiibsd*s*"
 
 #endif

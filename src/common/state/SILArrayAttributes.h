@@ -42,6 +42,8 @@
 #include <string>
 #include <AttributeSubject.h>
 
+#include <NameschemeAttributes.h>
+
 // ****************************************************************************
 // Class: SILArrayAttributes
 //
@@ -60,13 +62,23 @@
 class STATE_API SILArrayAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SILArrayAttributes();
     SILArrayAttributes(const SILArrayAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SILArrayAttributes(private_tmfs_t tmfs);
+    SILArrayAttributes(const SILArrayAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SILArrayAttributes();
 
     virtual SILArrayAttributes& operator = (const SILArrayAttributes &obj);
     virtual bool operator == (const SILArrayAttributes &obj) const;
     virtual bool operator != (const SILArrayAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SILArrayAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -78,6 +90,7 @@ public:
     void SelectPrefix();
     void SelectCategory();
     void SelectNames();
+    void SelectNamescheme();
 
     // Property setting methods
     void SetPrefix(const std::string &prefix_);
@@ -90,21 +103,24 @@ public:
     void SetRole(int role_);
     void SetColParent(int colParent_);
     void SetNames(const stringVector &names_);
+    void SetNamescheme(const NameschemeAttributes &namescheme_);
 
     // Property getting methods
-    const std::string  &GetPrefix() const;
-          std::string  &GetPrefix();
-    int                GetNumSets() const;
-    int                GetFirstSetName() const;
-    bool               GetUseUniqueIDs() const;
-    int                GetFirstSet() const;
-    int                GetColIndex() const;
-    const std::string  &GetCategory() const;
-          std::string  &GetCategory();
-    int                GetRole() const;
-    int                GetColParent() const;
-    const stringVector &GetNames() const;
-          stringVector &GetNames();
+    const std::string          &GetPrefix() const;
+          std::string          &GetPrefix();
+    int                        GetNumSets() const;
+    int                        GetFirstSetName() const;
+    bool                       GetUseUniqueIDs() const;
+    int                        GetFirstSet() const;
+    int                        GetColIndex() const;
+    const std::string          &GetCategory() const;
+          std::string          &GetCategory();
+    int                        GetRole() const;
+    int                        GetColParent() const;
+    const stringVector         &GetNames() const;
+          stringVector         &GetNames();
+    const NameschemeAttributes &GetNamescheme() const;
+          NameschemeAttributes &GetNamescheme();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -129,23 +145,28 @@ public:
         ID_category,
         ID_role,
         ID_colParent,
-        ID_names
+        ID_names,
+        ID_namescheme,
+        ID__LAST
     };
 
 private:
-    std::string  prefix;
-    int          numSets;
-    int          firstSetName;
-    bool         useUniqueIDs;
-    int          firstSet;
-    int          colIndex;
-    std::string  category;
-    int          role;
-    int          colParent;
-    stringVector names;
+    std::string          prefix;
+    int                  numSets;
+    int                  firstSetName;
+    bool                 useUniqueIDs;
+    int                  firstSet;
+    int                  colIndex;
+    std::string          category;
+    int                  role;
+    int                  colParent;
+    stringVector         names;
+    NameschemeAttributes namescheme;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SILARRAYATTRIBUTES_TMFS "siibiisiis*a"
 
 #endif

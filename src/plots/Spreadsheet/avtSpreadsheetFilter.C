@@ -117,6 +117,9 @@ avtSpreadsheetFilter::SetAtts(const SpreadsheetAttributes &a)
 //   Gunther H. Weber, Mon Feb  4 14:41:06 PST 2008
 //   Use doubles if they are a file's native precision
 //
+//   Hank Childs, Mon Dec 14 16:04:01 PST 2009
+//   Use new interface for SILs.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -137,16 +140,15 @@ avtSpreadsheetFilter::ModifyContract(avtContract_p spec)
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
         if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
         {
-            const std::vector<int> &setIds = collection->GetSubsetList();
-            nSets = setIds.size();
-            for(int si = 0; si < setIds.size() && setId==-1; ++si)
+            int nSets = collection->GetNumberOfSubsets();
+            for(int si = 0; si < nSets && setId==-1; ++si)
             {
                 if(firstSetId == -1)
-                    firstSetId = setIds[si];
-                if(silr->GetSILSet(setIds[si])->GetName() == 
+                    firstSetId = collection->GetSubset(si);
+                if(silr->GetSILSet(collection->GetSubset(si))->GetName() == 
                    atts.GetSubsetName())
                 {
-                    setId = setIds[si];
+                    setId = collection->GetSubset(si);
                 }
             }
             break;

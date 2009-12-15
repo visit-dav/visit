@@ -122,6 +122,10 @@ class   SILAttributes;
 //    Added tables to index sets and collections, allowing binary rather
 //    than linear searches for sets and collections, and added FindSet
 //    and FindColl to perform the searches.
+//
+//    Hank Childs, Mon Dec 14 13:33:27 PST 2009
+//    Added method IsCompatible.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSIL
@@ -162,6 +166,8 @@ class DBATTS_API avtSIL
 
     int                               GetSILSetID(int index) const;
     bool                              SILSetHasMapsOut(int index) const;
+
+    bool                              IsCompatible(const avtSIL *) const;
 
     typedef enum { 
         WHOLE_SET, 

@@ -8389,6 +8389,9 @@ visit_GetPlotInformation(PyObject *self, PyObject *args)
 //   Removed test for number of maps, so that domains can still be listed
 //   even with the presense of groups in the data. 
 //
+//   Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//   Adapt to new SIL interface.
+//
 // ****************************************************************************
 
 void
@@ -8406,16 +8409,16 @@ ListCategoryHelper(SILCategoryRole role)
             avtSILCollection_p collection = silr->GetSILCollection(i);
             if(collection->GetRole() == role)
             {
-                const std::vector<int> &sets = collection->GetSubsetList();
-                if(sets.size() > 0)
+                int nsets = collection->GetNumberOfSubsets();
+                if(nsets > 0)
                 {
                     if(collection->GetSupersetIndex() == silr->GetTopSet()) 
                     {
                         printf("%s:\n", collection->GetCategory().c_str());
-                        for(int j = 0; j < sets.size(); ++j)
+                        for(int j = 0; j < nsets; ++j)
                         {
-                            printf("\t\"%s\"   ", silr->GetSILSet(sets[j])->GetName().c_str());
-                            if(trav.UsesSetData(sets[j]) == NoneUsed)
+                            printf("\t\"%s\"   ", silr->GetSILSet(collection->GetSubset(j))->GetName().c_str());
+                            if(trav.UsesSetData(collection->GetSubset(j)) == NoneUsed)
                                 printf("off\n");
                             else
                                 printf("on\n");
@@ -8451,6 +8454,9 @@ ListCategoryHelper(SILCategoryRole role)
 //   Hank Childs, Mon Dec  2 14:11:12 PST 2002
 //   Use reference counted SIL restrictions to meet new interface.
 //
+//   Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//   Adapt to new SIL interface.
+//
 // ****************************************************************************
 
 PyObject *
@@ -8469,18 +8475,18 @@ GetCategoryTupleHelper(SILCategoryRole role)
             avtSILCollection_p collection = silr->GetSILCollection(i);
             if(collection->GetRole() == role)
             {
-                const std::vector<int> &sets = collection->GetSubsetList();
-                if(sets.size() > 0)
+                int nsets = collection->GetNumberOfSubsets();
+                if(nsets > 0)
                 {
                     // If more than one collection maps into this set, we don't
                     // want to display it because it's crossed with something else.
                     if(collection->GetSupersetIndex() == silr->GetTopSet() &&
-                       silr->GetSILSet(sets[0])->GetMapsIn().size() < 2)
+                       silr->GetSILSet(collection->GetSubset(0))->GetMapsIn().size() < 2)
                     {
-                        PyObject *tuple = PyTuple_New(sets.size());
-                        for(int j = 0; j < sets.size(); ++j)
+                        PyObject *tuple = PyTuple_New(nsets);
+                        for(int j = 0; j < nsets; ++j)
                         {
-                            PyObject *item = PyString_FromString(silr->GetSILSet(sets[j])->GetName().c_str());
+                            PyObject *item = PyString_FromString(silr->GetSILSet(collection->GetSubset(j))->GetName().c_str());
                             if(item == NULL)
                                 continue;
                             PyTuple_SET_ITEM(tuple, j, item);
@@ -8538,6 +8544,9 @@ GetCategoryTupleHelper(SILCategoryRole role)
 //   Gunther H. Weber, Tue Apr  1 16:50:33 PDT 2008
 //   Restore state of setApplySelection toggle
 //
+//   Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//   Adapt to new SIL interface.
+//
 // ****************************************************************************
 
 bool
@@ -8552,8 +8561,8 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
         avtSILCollection_p collection = silr->GetSILCollection(i);
         if(collection->GetRole() == role)
         {
-            const std::vector<int> &sets = collection->GetSubsetList();
-            if(sets.size() > 0)
+            int nsets = collection->GetNumberOfSubsets();
+            if(nsets > 0)
             {
                 if(collection->GetSupersetIndex() == silr->GetTopSet()) 
                 {
@@ -8564,14 +8573,14 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
                         for(int j = 0; j < names.size(); ++j)
                         {
                             bool nameMatched = false;
-                            for(int k = 0; k < sets.size(); ++k)
+                            for(int k = 0; k < nsets; ++k)
                             {
-                                if(names[j] == silr->GetSILSet(sets[k])->GetName())
+                                if(names[j] == silr->GetSILSet(collection->GetSubset(k))->GetName())
                                 {
                                     if(val)
-                                        silr->TurnOnSet(sets[k]);
+                                        silr->TurnOnSet(collection->GetSubset(k));
                                     else
-                                        silr->TurnOffSet(sets[k]);
+                                        silr->TurnOffSet(collection->GetSubset(k));
 
                                     nameMatched = true;
                                     break;

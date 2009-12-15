@@ -601,6 +601,9 @@ avtOnionPeelFilter::UpdateDataObjectInfo(void)
 //    requested from an avtSILSet, but the set goes out of scope and its maps
 //    out are deleted before this method is done using them.
 //
+//    Hank Childs, Mon Dec 14 16:43:16 PST 2009
+//    Update for new SIL interface.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -668,16 +671,20 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         avtSILSet_p pTopset = silr->GetSILSet(topset);
         const std::vector<int> &mapsOut = pTopset->GetRealMapsOut();
 
+        avtSILCollection_p speciesColl = NULL;
         for (i = 0 ; i < mapsOut.size() ; i++)
         {
             avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
             if (coll->GetRole() == SIL_SPECIES)
             {
-                species = coll->GetSubsets()->GetAllElements();
+                speciesColl = coll;
             }
         }
-        for (i = 0 ; i < species.size() ; i++)
-            setState.push_back(trav.UsesData(species[i]));
+        if (*speciesColl != NULL)
+        {
+            for (i = 0 ; i < speciesColl->GetNumberOfSubsets() ; i++)
+                setState.push_back(trav.UsesData(speciesColl->GetSubset(i)));
+        }
         // End logic for seeing which species is on.
 
         silr->TurnOffAll();
@@ -764,11 +771,11 @@ avtOnionPeelFilter::VerifyInput()
             EXCEPTION1(InvalidCategoryException, category.c_str()); 
         }
 
-        const vector<int> &els = coll->GetSubsetList();
+        int nEls = coll->GetNumberOfSubsets();
         bool validSet = false;
-        for (int i = 0; i < els.size() && !validSet; i++)
+        for (int i = 0; i < nEls && !validSet; i++)
         {
-            validSet = (setID == els[i]);
+            validSet = (setID == coll->GetSubset(i));
         }
 
         if (!validSet)

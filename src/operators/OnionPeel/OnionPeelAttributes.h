@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: OnionPeelAttributes
 //
@@ -70,13 +71,23 @@ public:
         SeedNode
     };
 
+    // These constructors are for objects of this class
     OnionPeelAttributes();
     OnionPeelAttributes(const OnionPeelAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    OnionPeelAttributes(private_tmfs_t tmfs);
+    OnionPeelAttributes(const OnionPeelAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~OnionPeelAttributes();
 
     virtual OnionPeelAttributes& operator = (const OnionPeelAttributes &obj);
     virtual bool operator == (const OnionPeelAttributes &obj) const;
     virtual bool operator != (const OnionPeelAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const OnionPeelAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -144,7 +155,8 @@ public:
         ID_index,
         ID_logical,
         ID_requestedLayer,
-        ID_seedType
+        ID_seedType,
+        ID__LAST
     };
 
 private:
@@ -159,6 +171,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ONIONPEELATTRIBUTES_TMFS "ibssi*bii"
 
 #endif

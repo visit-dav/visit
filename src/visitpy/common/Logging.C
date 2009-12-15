@@ -44,6 +44,7 @@
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 #include <snprintf.h>
 #include <visit-config.h>
 
@@ -801,10 +802,16 @@ static std::string log_SetKeyframeAttributesRPC(ViewerRPC *rpc)
 //   I removed a call to the SIL traverser's UsesAllData method because it
 //   was causing a crash sometimes.
 //
+//   Hank Childs, Mon Dec 14 13:12:58 PST 2009
+//   Reverse ordering for two conditions in an if test.  One is cheap, the
+//   other expensive.  By reversing them, the overall time is much faster
+//   (because of short circuiting).
+//
 // ****************************************************************************
 
 static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
 {
+    int t1 = visitTimer->StartTimer();
     std::string s("silr = SILRestriction()\n");
     int nsets[2] = {0,0};
     avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
@@ -826,8 +833,8 @@ static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
         intVector sets;
         for(setid = 0; setid < restriction->GetNumSets(); ++setid)
         {
-            if(restriction->GetSILSet(setid)->GetMapsOut().size() == 0 &&
-               !trav.UsesData(setid))
+            if(!trav.UsesData(setid) &&
+               restriction->GetSILSet(setid)->GetMapsOut().size() == 0)
             {
                 sets.push_back(setid);
             }
@@ -870,8 +877,8 @@ static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
         intVector sets;
         for(setid = 0; setid < restriction->GetNumSets(); ++setid)
         {
-            if(restriction->GetSILSet(setid)->GetMapsOut().size() == 0 &&
-               trav.UsesData(setid))
+            if(trav.UsesData(setid) &&
+               restriction->GetSILSet(setid)->GetMapsOut().size() == 0)
             {
                 sets.push_back(setid);
             }
@@ -911,6 +918,7 @@ static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
     s += "SetPlotSILRestriction(silr ,";
     s += (applyAll ? "1" : "0");
     s += ")\n";
+    visitTimer->StopTimer(t1, "Setting up log string for sil restrictions");
     return s;
 }
 

@@ -42,8 +42,8 @@
 
 #ifndef AVT_SIL_COLLECTION_H
 #define AVT_SIL_COLLECTION_H
-#include <dbatts_exports.h>
 
+#include <dbatts_exports.h>
 
 #include <visitstream.h>
 
@@ -52,8 +52,7 @@
 
 #include <ref_ptr.h>
 
-
-class     avtSILNamespace;
+#include <avtSILNamespace.h>
 
 
 typedef enum
@@ -86,8 +85,14 @@ typedef enum
 //  Creation:   March 8, 2001
 //
 //  Modifications:
+//
 //    Dave Bremer, Thu Dec 20 14:23:29 PST 2007
 //    Added the ContainsElement method
+//
+//    Hank Childs, Thu Dec 10 15:01:59 PST 2009
+//    Remove method GetSubsetList, add GetNumberOfSubsets, GetSubset in its
+//    place (prevents memory bloat).
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILCollection
@@ -108,7 +113,10 @@ class DBATTS_API avtSILCollection
 
     void                    Print(ostream &) const;
 
-    const std::vector<int> &GetSubsetList(void) const;
+    int                     GetNumberOfSubsets(void) const
+                                  { return subsets->GetNumberOfElements(); };
+    int                     GetSubset(int idx) const
+                                  { return subsets->GetElement(idx); };
 
     bool                    ContainsElement(int e) const;
 

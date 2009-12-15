@@ -42,8 +42,8 @@
 
 #ifndef AVT_SIL_ENUMERATED_NAMESPACE_H
 #define AVT_SIL_ENUMERATED_NAMESPACE_H
-#include <dbatts_exports.h>
 
+#include <dbatts_exports.h>
 
 #include <avtSILNamespace.h>
 
@@ -60,8 +60,13 @@
 //  Creation:   March 9, 2001
 //
 //  Modifications:
+//
 //    Dave Bremer, Wed Dec 19 12:38:52 PST 2007
 //    Added code to query for an element.
+// 
+//    Hank Childs, Thu Dec 10 14:01:43 PST 2009
+//    Change interface for getting elements.  Also add Print method.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILEnumeratedNamespace : public avtSILNamespace
@@ -70,9 +75,13 @@ class DBATTS_API avtSILEnumeratedNamespace : public avtSILNamespace
                         avtSILEnumeratedNamespace(const std::vector<int> &);
     virtual            ~avtSILEnumeratedNamespace() {;};
 
-    virtual const std::vector<int>  &GetAllElements(void) const;
+    virtual int                      GetNumberOfElements(void) const
+                                                 { return elements.size(); };
+    virtual int                      GetElement(int idx) const
+                                                 { return elements[idx]; };
     virtual NamespaceAttributes     *GetAttributes(void) const;
     virtual bool                     ContainsElement(int e) const;
+    virtual void                     Print(ostream &) const;
 
   protected:
     std::vector<int>    elements;

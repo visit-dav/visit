@@ -282,10 +282,14 @@ SILRestriction_SetName(PyObject *self, PyObject *args)
 //   Changed pointer to SIL restriction to reference counted pointer to a SIL
 //   restriction.  This is consistent with handling elsewhere in the code.
 //
-//    Dave Bremer, Thu Jan 31 17:52:55 PST 2008
-//    Fixed a bug in which a vector<int> &sets is requested from an 
-//    avtSILCollection, but the collection goes out of scope and its vector 
-//    of sets is deleted before this method is done using them.
+//   Dave Bremer, Thu Jan 31 17:52:55 PST 2008
+//   Fixed a bug in which a vector<int> &sets is requested from an 
+//   avtSILCollection, but the collection goes out of scope and its vector 
+//   of sets is deleted before this method is done using them.
+// 
+//   Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//   Adapt to new SIL interface.
+//
 // ****************************************************************************
 
 static PyObject *
@@ -318,14 +322,14 @@ SILRestriction_SetsInCategory(PyObject *self, PyObject *args)
 
     // Get the subset list.
     avtSILCollection_p col = silr->GetSILCollection(collectionIndex);
-    const std::vector<int> &sets = col->GetSubsetList();
+    int numSubsets = col->GetNumberOfSubsets();
 
     // Allocate a tuple the with enough entries to hold the Collection
     // subset list.
-    PyObject *retval = PyTuple_New(sets.size());
-    for(i = 0; i < sets.size(); ++i)
+    PyObject *retval = PyTuple_New(numSubsets);
+    for(i = 0; i < numSubsets; ++i)
     {
-        PyObject *dval = PyLong_FromLong((long)sets[i]);
+        PyObject *dval = PyLong_FromLong((long)col->GetSubset(i));
         if(dval == NULL)
             continue;
         PyTuple_SET_ITEM(retval, i, dval);

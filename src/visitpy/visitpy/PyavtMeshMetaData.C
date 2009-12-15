@@ -42,6 +42,7 @@
 #include <snprintf.h>
 #include <avtTypes.h>
 #include <avtTypes.h>
+#include <PyNameschemeAttributes.h>
 #include <avtTypes.h>
 #include <avtTypes.h>
 
@@ -227,6 +228,11 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "blockNameScheme.";
+        str += PyNameschemeAttributes_ToString(&atts->blockNameScheme, objPrefix.c_str());
+    }
     SNPRINTF(tmpStr, 1000, "%snumGroups = %d\n", prefix, atts->numGroups);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sgroupOrigin = %d\n", prefix, atts->groupOrigin);
@@ -243,6 +249,22 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
             SNPRINTF(tmpStr, 1000, "%d", groupIds[i]);
             str += tmpStr;
             if(i < groupIds.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &groupIdsBasedOnRange = atts->groupIdsBasedOnRange;
+        SNPRINTF(tmpStr, 1000, "%sgroupIdsBasedOnRange = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < groupIdsBasedOnRange.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", groupIdsBasedOnRange[i]);
+            str += tmpStr;
+            if(i < groupIdsBasedOnRange.size() - 1)
             {
                 SNPRINTF(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -1029,6 +1051,42 @@ avtMeshMetaData_GetBlockNames(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+avtMeshMetaData_SetBlockNameScheme(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyNameschemeAttributes_Check(newValue))
+    {
+        fprintf(stderr, "The blockNameScheme field can only be set with NameschemeAttributes objects.\n");
+        return NULL;
+    }
+
+    obj->data->blockNameScheme = *PyNameschemeAttributes_FromPyObject(newValue);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtMeshMetaData_GetBlockNameScheme(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyNameschemeAttributes_Wrap(&obj->data->blockNameScheme);
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyNameschemeAttributes_SetParent(retval, self);
+
+    return retval;
+}
+
+/*static*/ PyObject *
 avtMeshMetaData_SetNumGroups(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
@@ -1184,6 +1242,69 @@ avtMeshMetaData_GetGroupIds(PyObject *self, PyObject *args)
     PyObject *retval = PyTuple_New(groupIds.size());
     for(size_t i = 0; i < groupIds.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(groupIds[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+
+    intVector  &vec = obj->data->groupIdsBasedOnRange;
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the groupIdsBasedOnRange in the object as modified.
+    obj->data->SelectAll();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtMeshMetaData_GetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    // Allocate a tuple the with enough entries to hold the groupIdsBasedOnRange.
+    const intVector &groupIdsBasedOnRange = obj->data->groupIdsBasedOnRange;
+    PyObject *retval = PyTuple_New(groupIdsBasedOnRange.size());
+    for(size_t i = 0; i < groupIdsBasedOnRange.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(groupIdsBasedOnRange[i])));
     return retval;
 }
 
@@ -1683,6 +1804,8 @@ PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
     {"GetBlockTitle", avtMeshMetaData_GetBlockTitle, METH_VARARGS},
     {"SetBlockNames", avtMeshMetaData_SetBlockNames, METH_VARARGS},
     {"GetBlockNames", avtMeshMetaData_GetBlockNames, METH_VARARGS},
+    {"SetBlockNameScheme", avtMeshMetaData_SetBlockNameScheme, METH_VARARGS},
+    {"GetBlockNameScheme", avtMeshMetaData_GetBlockNameScheme, METH_VARARGS},
     {"SetNumGroups", avtMeshMetaData_SetNumGroups, METH_VARARGS},
     {"GetNumGroups", avtMeshMetaData_GetNumGroups, METH_VARARGS},
     {"SetGroupOrigin", avtMeshMetaData_SetGroupOrigin, METH_VARARGS},
@@ -1693,6 +1816,8 @@ PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
     {"GetGroupTitle", avtMeshMetaData_GetGroupTitle, METH_VARARGS},
     {"SetGroupIds", avtMeshMetaData_SetGroupIds, METH_VARARGS},
     {"GetGroupIds", avtMeshMetaData_GetGroupIds, METH_VARARGS},
+    {"SetGroupIdsBasedOnRange", avtMeshMetaData_SetGroupIdsBasedOnRange, METH_VARARGS},
+    {"GetGroupIdsBasedOnRange", avtMeshMetaData_GetGroupIdsBasedOnRange, METH_VARARGS},
     {"SetDisjointElements", avtMeshMetaData_SetDisjointElements, METH_VARARGS},
     {"GetDisjointElements", avtMeshMetaData_GetDisjointElements, METH_VARARGS},
     {"SetContainsGhostZones", avtMeshMetaData_SetContainsGhostZones, METH_VARARGS},
@@ -1819,6 +1944,8 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
         return avtMeshMetaData_GetBlockTitle(self, NULL);
     if(strcmp(name, "blockNames") == 0)
         return avtMeshMetaData_GetBlockNames(self, NULL);
+    if(strcmp(name, "blockNameScheme") == 0)
+        return avtMeshMetaData_GetBlockNameScheme(self, NULL);
     if(strcmp(name, "numGroups") == 0)
         return avtMeshMetaData_GetNumGroups(self, NULL);
     if(strcmp(name, "groupOrigin") == 0)
@@ -1829,6 +1956,8 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
         return avtMeshMetaData_GetGroupTitle(self, NULL);
     if(strcmp(name, "groupIds") == 0)
         return avtMeshMetaData_GetGroupIds(self, NULL);
+    if(strcmp(name, "groupIdsBasedOnRange") == 0)
+        return avtMeshMetaData_GetGroupIdsBasedOnRange(self, NULL);
     if(strcmp(name, "disjointElements") == 0)
         return avtMeshMetaData_GetDisjointElements(self, NULL);
     if(strcmp(name, "containsGhostZones") == 0)
@@ -1941,6 +2070,8 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMeshMetaData_SetBlockTitle(self, tuple);
     else if(strcmp(name, "blockNames") == 0)
         obj = avtMeshMetaData_SetBlockNames(self, tuple);
+    else if(strcmp(name, "blockNameScheme") == 0)
+        obj = avtMeshMetaData_SetBlockNameScheme(self, tuple);
     else if(strcmp(name, "numGroups") == 0)
         obj = avtMeshMetaData_SetNumGroups(self, tuple);
     else if(strcmp(name, "groupOrigin") == 0)
@@ -1951,6 +2082,8 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMeshMetaData_SetGroupTitle(self, tuple);
     else if(strcmp(name, "groupIds") == 0)
         obj = avtMeshMetaData_SetGroupIds(self, tuple);
+    else if(strcmp(name, "groupIdsBasedOnRange") == 0)
+        obj = avtMeshMetaData_SetGroupIdsBasedOnRange(self, tuple);
     else if(strcmp(name, "disjointElements") == 0)
         obj = avtMeshMetaData_SetDisjointElements(self, tuple);
     else if(strcmp(name, "containsGhostZones") == 0)

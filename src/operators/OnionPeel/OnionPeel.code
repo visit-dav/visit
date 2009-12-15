@@ -27,6 +27,9 @@ Definition:
 //    Hank Childs, Tue Nov 18 09:39:37 PST 2008
 //    Account for new optimization in CompactSILAttributes.
 //
+//    Hank Childs, Mon Dec 14 16:43:16 PST 2009
+//    Update for new SIL interface.
+//
 // ****************************************************************************
 #include <avtSIL.h>
 #include <avtSILRestriction.h>
@@ -90,17 +93,17 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                            restriction->GetSILCollection(colIndex); 
             if (*collection != NULL)
             {
-                std::vector<int> sets = collection->GetSubsetList();
-                for (size_t i = 0; i < sets.size() && !subsetNameValid; ++i)
+                int nSets = collection->GetNumberOfSubsets();
+                for (size_t i = 0; i < nSets && !subsetNameValid; ++i)
                 {
                     bool isOn = false;
                     if (silAtts->GetTopSetIsAllOn())
                         isOn = true;
                     else
-                        isOn = (useSet[sets[i]] != 0);
+                        isOn = (useSet[collection->GetSubset(i)] != 0);
                     if (isOn)
                     {
-                        avtSILSet_p set = restriction->GetSILSet(sets[i]);
+                        avtSILSet_p set = restriction->GetSILSet(collection->GetSubset(i));
                         if (set->GetName() == subsetName)
                         {
                             subsetNameValid = true;

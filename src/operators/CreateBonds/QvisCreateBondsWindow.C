@@ -437,6 +437,9 @@ QvisCreateBondsWindow::elementVariableChanged(const QString &varName)
 //    Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
 //    Qt4 Port.
 //
+//    Hank Childs, Mon Dec 14 16:43:16 PST 2009
+//    Support new SIL interface.
+//
 // ****************************************************************************
 void QvisCreateBondsWindow::UpdateWindowSingleItem()
 {
@@ -485,12 +488,12 @@ void QvisCreateBondsWindow::UpdateWindowSingleItem()
             avtSILCollection_p col = sil->GetSILCollection(i);
             if (col->GetCategory() == "element")
             {
-                const std::vector<int> &sets = col->GetSubsetList();
-                if (sets.size() < 100)
+                int nSets = col->GetNumberOfSubsets();
+                if (nSets < 100)
                 {
-                    for (int j = 0; j < sets.size(); j++)
+                    for (int j = 0; j < nSets; j++)
                     {
-                        avtSILSet_p set = sil->GetSILSet(sets[j]);
+                        avtSILSet_p set = sil->GetSILSet(col->GetSubset(j));
                         const string &name = set->GetName();
                         int element = ElementNameToAtomicNumber(name.c_str());
                         if (element != -1)

@@ -171,11 +171,13 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     blockPieceName = obj.blockPieceName;
     blockTitle = obj.blockTitle;
     blockNames = obj.blockNames;
+    blockNameScheme = obj.blockNameScheme;
     numGroups = obj.numGroups;
     groupOrigin = obj.groupOrigin;
     groupPieceName = obj.groupPieceName;
     groupTitle = obj.groupTitle;
     groupIds = obj.groupIds;
+    groupIdsBasedOnRange = obj.groupIdsBasedOnRange;
     disjointElements = obj.disjointElements;
     containsGhostZones = obj.containsGhostZones;
     containsOriginalCells = obj.containsOriginalCells;
@@ -402,11 +404,13 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (blockPieceName == obj.blockPieceName) &&
             (blockTitle == obj.blockTitle) &&
             (blockNames == obj.blockNames) &&
+            (blockNameScheme == obj.blockNameScheme) &&
             (numGroups == obj.numGroups) &&
             (groupOrigin == obj.groupOrigin) &&
             (groupPieceName == obj.groupPieceName) &&
             (groupTitle == obj.groupTitle) &&
             (groupIds == obj.groupIds) &&
+            (groupIdsBasedOnRange == obj.groupIdsBasedOnRange) &&
             (disjointElements == obj.disjointElements) &&
             (containsGhostZones == obj.containsGhostZones) &&
             (containsOriginalCells == obj.containsOriginalCells) &&
@@ -587,11 +591,13 @@ avtMeshMetaData::SelectAll()
     Select(ID_blockPieceName,                 (void *)&blockPieceName);
     Select(ID_blockTitle,                     (void *)&blockTitle);
     Select(ID_blockNames,                     (void *)&blockNames);
+    Select(ID_blockNameScheme,                (void *)&blockNameScheme);
     Select(ID_numGroups,                      (void *)&numGroups);
     Select(ID_groupOrigin,                    (void *)&groupOrigin);
     Select(ID_groupPieceName,                 (void *)&groupPieceName);
     Select(ID_groupTitle,                     (void *)&groupTitle);
     Select(ID_groupIds,                       (void *)&groupIds);
+    Select(ID_groupIdsBasedOnRange,           (void *)&groupIdsBasedOnRange);
     Select(ID_disjointElements,               (void *)&disjointElements);
     Select(ID_containsGhostZones,             (void *)&containsGhostZones);
     Select(ID_containsOriginalCells,          (void *)&containsOriginalCells);
@@ -948,6 +954,9 @@ avtMeshMetaData::UnsetExtents()
 //    Hank Childs, Sun Oct 28 09:17:48 PST 2007
 //    Added containsExteriorBoundaryGhosts
 //
+//    Hank Childs, Fri Dec 11 14:17:12 PST 2009
+//    Add support for new SIL-efficiency data members.
+//
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -985,18 +994,36 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Title for individual piece in domain hierarchy is "
         << blockPieceName.c_str() << endl;
+    if (blockNameScheme.GetNamescheme() != "")
+    {
+        Indent(out, indent);
+        out << "The name scheme is: " << blockNameScheme.GetNamescheme() << endl;
+    }
 
     Indent(out, indent);
     out << "Number of groups = " << numGroups << endl;
     if(numGroups > 0)
     {
         Indent(out, indent);
-        out << "Group ids are:";
-        for (size_t i = 0 ; i < groupIds.size() ; i++)
+        out << "Group ids are: ";
+        if (groupIdsBasedOnRange.size() > 0)
         {
-            out << groupIds[i];
-            if(i  < groupIds.size() - 1)
-                out << ", ";
+            for (size_t i = 0 ; i < groupIdsBasedOnRange.size()-1 ; i++)
+            {
+                out << i << ": " << groupIdsBasedOnRange[i] << "-" 
+                    << groupIdsBasedOnRange[i+1]-1;
+                if (i < groupIdsBasedOnRange.size()-1)
+                    out << ", ";
+            }
+        }
+        else
+        {
+            for (size_t i = 0 ; i < groupIds.size() ; i++)
+            {
+                out << groupIds[i];
+                if(i < groupIds.size() - 1)
+                    out << ", ";
+            }
         }
         out << endl;
     }
@@ -1171,5 +1198,95 @@ avtMeshMetaData::Print(ostream &out, int indent) const
                 << "]" << endl;
         }
     }
+}
+
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetAMRInfo
+//
+//  Purpose:
+//      Sets meta data for AMR meshes.  Specifically, it sets up the names
+//      for the levels/patches and the information between the levels and
+//      the patches.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2009
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetAMRInfo(const std::string &levelName,
+                            const std::string &patchName, int origin,
+                            const std::vector<int> &patchesPerLevel)
+{
+    int  i;
+    int  nlevels = patchesPerLevel.size();
+
+    // Basic setup stuff
+    int  numBlocks = 0;
+    for (i = 0 ; i < nlevels ; i++)
+        numBlocks += patchesPerLevel[i];
+    this->numBlocks = numBlocks;
+    this->blockTitle = patchName + "s";
+    this->blockPieceName = patchName;
+    this->numGroups = nlevels;
+    this->groupTitle = levelName + "s";
+    this->groupPieceName = levelName;
+    this->blockOrigin = origin;
+    this->groupOrigin = origin;
+
+    vector<int> groupIds(nlevels+1);
+    groupIds[0] = 0;
+    for (i = 1 ; i < nlevels+1 ; i++)
+    {
+        groupIds[i] = groupIds[i-1] + patchesPerLevel[i-1];
+    }
+    this->groupIdsBasedOnRange = groupIds;
+    vector<int> numbelow(nlevels);
+    numbelow[0] = 0;
+    for (i = 1 ; i < nlevels ; i++)
+        numbelow[i] = numbelow[i-1]+patchesPerLevel[i-1];
+    char str[128];
+    sprintf(str, "@%s%%d,%s%%d@", levelName.c_str(), patchName.c_str());
+    std::string base_string = str;
+    for (i = 1 ; i < nlevels ; i++)
+    {
+        sprintf(str, "(n/%d)", numbelow[i]);
+        base_string += str;
+        if (i != (nlevels-1))
+            base_string += "?(";
+    }
+    for (i = nlevels-1 ; i >= 0 ; i--)
+    {
+        if (i == (nlevels-1))
+            sprintf(str, "?%d", i+origin);
+        else if (i > 0)
+            sprintf(str, ":%d:)", i+origin);
+        else
+            sprintf(str, ":%d:@", i+origin);
+        base_string += str;
+    }
+    for (i = 1 ; i < nlevels ; i++)
+    {
+        sprintf(str, "(n/%d)", numbelow[i]);
+        base_string += str;
+        if (i != (nlevels-1))
+            base_string += "?(";
+        else
+            base_string += "?";
+    }
+    for (i = nlevels-1 ; i >= 0 ; i--)
+    {
+        if (i == (nlevels-1))
+            sprintf(str, "n+%d-%d", origin, numbelow[i]);
+        else if (i > 0)
+            sprintf(str, ":n+%d-%d:)", origin, numbelow[i]);
+        else
+            sprintf(str, ":n+%d:", origin);
+        base_string += str;
+    }
+
+    NameschemeAttributes atts;
+    atts.SetNamescheme(base_string);
+    this->blockNameScheme = atts;
 }
 
