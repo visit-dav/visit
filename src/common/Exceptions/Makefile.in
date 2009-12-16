@@ -103,6 +103,9 @@
 #    Tom Fogal, Tue Jun 30 19:52:21 MDT 2009
 #    Add define for symbol export.
 #
+#    Tom Fogal, Tue Dec  8 14:15:32 MST 2009
+#    Added Plotter/LibraryNotFoundException.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -155,7 +158,8 @@ Pipeline_src= \
   Pipeline/UnexpectedValueException.C
 
 Plotter_src= \
-  Plotter/InvalidColortableException.C
+  Plotter/InvalidColortableException.C \
+  Plotter/LibraryNotFoundException.C
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@ -DAVTEXCEPTION_EXPORTS
