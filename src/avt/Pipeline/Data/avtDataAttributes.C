@@ -4772,6 +4772,9 @@ avtDataAttributes::AddPlotInformation(const std::string &key,
 //    More aggressive about not overwriting stack string.
 //    Increase the length a bit as well.
 //
+//    Hank Childs, Tue Dec 15 15:50:42 PST 2009
+//    Added dumping of labels.
+//
 // ****************************************************************************
 
 static const char *
@@ -4929,6 +4932,13 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("X Label", xLabel.c_str());
     webpage->AddTableEntry2("Y Label", yLabel.c_str());
     webpage->AddTableEntry2("Z Label", zLabel.c_str());
+    if (labels.size() > 0)
+    {
+        std::string l = "";
+        for (int i = 0 ; i < labels.size() ; i++)
+            l += labels[i] + "; ";
+        webpage->AddTableEntry2("Labels", l.c_str());
+    }
     webpage->EndTable();
     webpage->AddSubheading("File information");
     webpage->StartTable();
