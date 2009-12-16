@@ -248,9 +248,9 @@ IF(SILO_FOUND)
                             ${VISIT_BINARY_DIR}/include
                             ${VISIT_SOURCE_DIR}/include
                           LIB_DIRS
-                            ${SILO_LIBRARY_DIR}
+                            ${PDB_LIBRARY_DIR}
                         LIBS
-                            ${SILO_LIB}
+                            ${PDB_LIB}
                         )
     ENDFOREACH(PDB_TARGET ${PDB_TARGETS})
     # Build Silo Targets
