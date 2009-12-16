@@ -252,6 +252,9 @@ VisWinRendering::~VisWinRendering()
 //    Tom Fogal, Tue Nov 24 11:24:57 MST 2009
 //    Force a render so that we can initialize GLEW.
 //
+//    Tom Fogal, Tue Dec 15 10:53:21 MST 2009
+//    Remove GLEW initialization from here, move it elsewhere.
+//
 // ****************************************************************************
  
 void
@@ -259,10 +262,6 @@ VisWinRendering::InitializeRenderWindow(vtkRenderWindow *renWin)
 {
     renWin->SetNumberOfLayers(3);
 
-    debug3 << "Forcing render for GL context initialization..." << std::endl;
-    renWin->Render();
-    avt::glew::initialize();
- 
     renWin->AddRenderer(background);
     renWin->AddRenderer(canvas);
     renWin->AddRenderer(foreground);
@@ -869,6 +868,10 @@ VisWinRendering::MotionEnd(void)
 //    Jeremy Meredith, Thu Sep 13 15:42:06 PDT 2001
 //    Added a call to wait for the window manager to grab the window.
 //
+//    Tom Fogal, Tue Dec 15 10:52:51 MST 2009
+//    Move GLEW initialization here, causing initialization to be done
+//    a bit more lazily.
+//
 // ****************************************************************************
 
 void
@@ -876,8 +879,10 @@ VisWinRendering::Realize(void)
 {
     if (realized == false)
     {
+        debug3 << "Forcing GL context initialization..." << std::endl;
         RealizeRenderWindow();
         realized = true;
+        avt::glew::initialize();
     }
 }
 
