@@ -80,7 +80,7 @@
 #define __glew_h__
 #define __GLEW_H__
 
-#if defined(__gl_h_) || defined(__GL_H__)
+#if defined(__gl_h_) || defined(__GL_H__) || defined(__X_GL_H)
 #error gl.h included before glew.h
 #endif
 #if defined(__glext_h_) || defined(__GLEXT_H_)
@@ -92,6 +92,7 @@
 
 #define __gl_h_
 #define __GL_H__
+#define __X_GL_H
 #define __glext_h_
 #define __GLEXT_H_
 #define __gl_ATI_h_
@@ -13584,7 +13585,6 @@ struct GLEWContextStruct
 {
 #endif /* GLEW_MX */
 
-GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_1;
 GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_1;
 GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_2;
 GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_3;
