@@ -3620,7 +3620,7 @@ function build_vtk
     #
     # If on Darwin, fix install names
     #
-    if [[ "$DO_STATIC_BUILD" == "yes" && "$OPSYS" == "Darwin" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
         else
