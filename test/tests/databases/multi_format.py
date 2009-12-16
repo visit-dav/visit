@@ -12,10 +12,13 @@
 #    Brad Whitlock, Wed Mar 9 09:15:30 PDT 2005
 #    Removed deprecated functions.
 #
+#    Tom Fogal, Tue Dec 15 17:34:00 MST 2009
+#    Fix path to data.
+#
 # ----------------------------------------------------------------------------
 
 
-db = ("../data/pdb_test_data/wave*.silo database",
+db = ("../data/silo_pdb_test_data/wave*.silo database",
       "../data/pdb_test_data/allinone00.pdb")
 
 # Create a Pseudocolor plot of wave.

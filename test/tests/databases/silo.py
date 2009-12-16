@@ -51,6 +51,10 @@
 #
 #    Mark C. Miller, Mon Sep 28 20:58:24 PDT 2009
 #    Added tests for AMR data from Silo file using MRG Trees.
+#
+#    Tom Fogal, Wed Dec 16 13:11:19 MST 2009
+#    Fixed a path to a data file.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -248,7 +252,7 @@ Test("silo_25")
 #
 DeleteAllPlots()
 CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
-OpenDatabase("../data/silo_hdf5_test_data/largefile.silo")
+OpenDatabase("../data/largefile.silo")
 AddPlot("Curve","sincurve")
 AddPlot("Curve","coscurve")
 DrawPlots()
