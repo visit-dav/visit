@@ -884,6 +884,9 @@ static void *threaded_accept_callback(void *data)
 //   Kathleen Bonnell, Wed Aug 22 18:00:57 PDT 2007 
 //   Added 'Sleep' command to while-loop to speed up launch on Windows. 
 //
+//   Tom Fogal, Wed Dec  9 11:09:07 MST 2009
+//   Fix pthread_create error return detection.
+//
 // ****************************************************************************
 
 int
@@ -936,7 +939,7 @@ RemoteProcess::MultiThreadedAcceptSocket()
     // Create the thread pthread style.
     pthread_t tid;
     if(pthread_create(&tid, &thread_atts, threaded_accept_callback,
-       (void *)&cb) == -1)
+       (void *)&cb) != 0)
     {
         validThread = false;
     }
