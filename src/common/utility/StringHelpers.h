@@ -99,6 +99,8 @@ namespace StringHelpers
     std::string UTILITY_API cdr(const std::string, const char separator);
     void UTILITY_API append(std::vector<std::string> &,
                             std::vector<std::string>);
+    std::vector<std::string> UTILITY_API split(const std::string,
+                                               const char separator);
 
     std::string UTILITY_API Plural(const std::string &noun);
 
