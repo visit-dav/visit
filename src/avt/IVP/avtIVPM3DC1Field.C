@@ -37,96 +37,207 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtIVPM3DField.C                              //
+//                             avtIVPM3DC1Field.C                            //
 // ************************************************************************* //
 
-#include "avtIVPM3DField.h"
+#include "avtIVPM3DC1Field.h"
+
+#include <DebugStream.h>
+
+#include <vtkCellData.h>
+#include <vtkIntArray.h>
+#include <vtkFloatArray.h>
 
 #define ELEMENT_SIZE 7
 #define SCALAR_SIZE 20
 
 // ****************************************************************************
-//  Method: avtIVPM3DField constructor
+//  Method: avtIVPM3DC1Field constructor
 //
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
 
-avtIVPM3DField::avtIVPM3DField( vtkVisItInterpolatedVelocityField* velocity ) 
+avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity ) 
  : avtIVPVTKField(velocity)
 {
-}
+  // Pick off all of the data stored with the vtk field.
+  vtkDataSet *ds = velocity->GetDataSet();
+
+  // Get the numver of elements for checking the validity of the data.
+
+  // Because the triangluar mesh is defined by using non unique points
+  // and the data is cell centered data VisIt moves it out to the
+  // nodes thus there are 3 times the number of original values.
+  nelms =
+    ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfTuples() / 3;
+
+  // Dummy variable to the template class
+  int   *intPtr, intVar;
+  float *fltPtr, fltVar;
+
+  // Single values from the header attributes.
+  intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", nelms, 1 );
+  linflag = intPtr[0];
+  delete [] intPtr;
+
+  intPtr = SetDataPointer( ds, intVar, "hidden/header/ntor",   nelms, 1 );
+  tmode = intPtr[0];
+  delete [] intPtr;
 
 
-// ****************************************************************************
-//  Method: avtIVPM3DField destructor
-//
-//  Creationist: Allen Sanderson
-//  Creation:   20 November 2009
-//
-// ****************************************************************************
+  fltPtr = SetDataPointer( ds, fltVar, "hidden/header/bzero",  nelms, 1 );
+  bzero = fltPtr[0];
+  delete [] fltPtr;
 
-avtIVPM3DField::~avtIVPM3DField()
-{
-  free(neighbors);
-  free(trigtable);
-}
+  fltPtr = SetDataPointer( ds, fltVar, "hidden/header/rzero",  nelms, 1 );
+  rzero = fltPtr[0];
+  delete [] fltPtr;
 
+  // The mesh elements.
+  elements = SetDataPointer( ds, fltVar, "hidden/elements",  nelms, ELEMENT_SIZE );
 
-// ****************************************************************************
-//  Method: setValues
-//
-//  Creationist: Allen Sanderson
-//  Creation:   20 November 2009
-//
-// ****************************************************************************
-void avtIVPM3DField::setValues(vtkDataSet *ds)
-{
-  int index;
+  // Vector values from the field.
+  psi0  = SetDataPointer( ds, fltVar, "hidden/equilibrium/psi", nelms, SCALAR_SIZE );
+  f0    = SetDataPointer( ds, fltVar, "hidden/equilibrium/f",   nelms, SCALAR_SIZE );
+  psinr = SetDataPointer( ds, fltVar, "hidden/psi",             nelms, SCALAR_SIZE );
+  psini = SetDataPointer( ds, fltVar, "hidden/psi_i",           nelms, SCALAR_SIZE );
+  fnr   = SetDataPointer( ds, fltVar, "hidden/f",               nelms, SCALAR_SIZE );
+  fni   = SetDataPointer( ds, fltVar, "hidden/f_i",             nelms, SCALAR_SIZE );
 
+  // Now set some values using the above data.
   F0 = -bzero * rzero;
  
   findElementNeighbors();
+}
 
-  // Single values from the header attributes.
-  linflag = ((int*)
-             ds->GetPointData()->GetArray("linflag", index)->GetVoidPointer(0))[0];
 
-  tmode = ((int*)
-           ds->GetPointData()->GetArray("tmode", index)->GetVoidPointer(0))[0];
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field constructor
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
 
-  bzero = ((double*)
-           ds->GetPointData()->GetArray("bzero", index)->GetVoidPointer(0))[0];
+avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr, int nelements ) 
+  : elements( elementsPtr), neighbors(0),
+    psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0), nelms(nelements)
+{
+  findElementNeighbors();
+}
 
-  rzero = ((double*)
-           ds->GetPointData()->GetArray("rzero", index)->GetVoidPointer(0))[0];
 
-  // Scalar values from the mesh.
-  elements = (double*)
-    ds->GetPointData()->GetArray("elements", index)->GetVoidPointer(0);
-  // Single values from the mesh.
-  nelms = ((int*)
-           ds->GetPointData()->GetArray("nelms", index)->GetVoidPointer(0))[0];
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field destructor
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
 
-  // Scalar values from the field
-  psi0 = (double*)
-    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+template< class type >
+type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
+                                        const type var,
+                                        const char* varname,
+                                        const int ntuples,
+                                        const int ncomponents )
+{
+  vtkDataArray *array = ds->GetPointData()->GetArray(varname);
 
-  f0 = (double*)
-    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+  if( array == 0 )
+  {
+    debug1 << "Variable " << varname
+           << " does not exist"
+           << endl;
+    
+    return 0;
+  }
 
-  psinr = (double*)
-    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+  if( ntuples != array->GetNumberOfTuples() / 3 ||
+      ncomponents != array->GetNumberOfComponents() )
+  {
+    debug1 << "Variable " << varname
+           << " size does not equal the number elements and/or components"
+           << endl;
+    
+    return 0;
+  }
 
-  psini = (double*)
-    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+  type* newptr = new type[ntuples*ncomponents];
 
-  fnr = (double*)
-    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+  if( newptr == 0 )
+  {
+    debug1 << "Variable " << varname << " can not allocated" << endl;
+    return 0;
+  }
 
-  fni = (double*)
-    ds->GetPointData()->GetArray("psi0", index)->GetVoidPointer(0);
+  // Because the triangluar mesh is defined by using non unique points
+  // and the data is cell centered data VisIt moves it out to the
+  // nodes. So create a new structure that is what is really needed.
+  if( array->IsA("vtkIntArray") ) 
+  {
+    int* ptr = (int*) array->GetVoidPointer(0);
+
+    for( int i=0; i<ntuples; ++i )
+      for( int j=0; j<ncomponents; ++j )
+        newptr[i*ncomponents+j] = ptr[i*3*ncomponents+j];
+
+    return newptr;
+  }
+  else if( array->IsA("vtkFloatArray") ) 
+  {
+    float* ptr = (float*) array->GetVoidPointer(0);
+
+    for( int i=0; i<ntuples; ++i )
+      for( int j=0; j<ncomponents; ++j )
+        newptr[i*ncomponents+j] = ptr[i*3*ncomponents+j];
+
+    return newptr;
+  }
+  else if( array->IsA("vtkDoubleArray") ) 
+  {
+    double* ptr = (double*) array->GetVoidPointer(0);
+
+    for( int i=0; i<ntuples; ++i )
+      for( int j=0; j<ncomponents; ++j )
+        newptr[i*ncomponents+j] = ptr[i*3*ncomponents+j];
+
+    return newptr;
+  }
+  else
+  {
+    debug1 << "avtIVPM3DC1Field::SetDataPointer "
+           << "Variable " << varname
+           << " is not of type float - can not safely down cast"
+           << endl;
+    
+    return 0;
+  }
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field destructor
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+
+avtIVPM3DC1Field::~avtIVPM3DC1Field()
+{
+  if( neighbors ) free(neighbors);
+  if( trigtable ) free(trigtable);
+
+  if( elements ) delete [] elements;
+  if( psi0 )     delete [] psi0;
+  if( f0 )       delete [] f0;
+  if( psinr )    delete [] psinr;
+  if( psini )    delete [] psini;
+  if( fnr )      delete [] fnr;
+  if( fni )      delete [] fni;
 }
 
 
@@ -137,11 +248,12 @@ void avtIVPM3DField::setValues(vtkDataSet *ds)
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DField::findElementNeighbors()
+void avtIVPM3DC1Field::findElementNeighbors()
 {
-  v_entry *vert_list;
-  edge    *edge_list;
-  double  *ptr, x[3], y[3], co, sn;
+  v_entry *vert_list = 0;
+  edge    *edge_list = 0;
+  float   *ptr;
+  double  x[3], y[3], co, sn;
   int     el, vert, tri[3], vlen;
 
   /* Allocate, initialize neighbor table */
@@ -206,9 +318,9 @@ void avtIVPM3DField::findElementNeighbors()
       add_edge(edge_list, tri, vert, el, neighbors);
   } /* end loop el */
 
-  fprintf(stderr, "%d / %d unique vertices\n", vlen, 3*nelms);
-  fprintf(stderr, "Neighbors of element 0: %d, %d, %d\n", neighbors[0],
-          neighbors[1], neighbors[2]);
+//   fprintf(stderr, "%d / %d unique vertices\n", vlen, 3*nelms);
+//   fprintf(stderr, "Neighbors of element 0: %d, %d, %d\n", neighbors[0],
+//           neighbors[1], neighbors[2]);
 
   /* Use unique vert list to find mesh bounds */
   Rmin = Rmax = vert_list[0].x;
@@ -220,8 +332,8 @@ void avtIVPM3DField::findElementNeighbors()
     if (zmax < vert_list[vert].y) zmax = vert_list[vert].y;    
   }
 
-  fprintf(stderr, "R bounds: %lf, %lf\nz bounds: %lf, %lf\n",
-          Rmin, Rmax, zmin, zmax);
+//   fprintf(stderr, "R bounds: %lf, %lf\nz bounds: %lf, %lf\n",
+//           Rmin, Rmax, zmin, zmax);
   
   free(vert_list);
   free(edge_list);
@@ -235,8 +347,8 @@ void avtIVPM3DField::findElementNeighbors()
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DField::register_vert(v_entry *vlist, int *len,
-                                   double x, double y, int *index)
+void avtIVPM3DC1Field::register_vert(v_entry *vlist, int *len,
+                                     double x, double y, int *index)
 {
   const double tol=2.5e-13;
   double dx, dy;
@@ -264,8 +376,8 @@ void avtIVPM3DField::register_vert(v_entry *vlist, int *len,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DField::add_edge(edge *list, int *tri,
-                              int side, int el, int *nlist)
+void avtIVPM3DC1Field::add_edge(edge *list, int *tri,
+                                int side, int el, int *nlist)
 {
   int  i, v1, v2, vo;
   edge *ed;
@@ -297,10 +409,38 @@ void avtIVPM3DField::add_edge(edge *list, int *tri,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-int avtIVPM3DField::get_tri_coords2D(avtVec &xin, double *xout)
+int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout)
+{
+  float     *tri;
+  double     co, sn, rrel, zrel;
+
+  /* Compute coordinates local to the current element */
+  co = trigtable[2*el];
+  sn = trigtable[2*el + 1];
+  
+  tri = elements + ELEMENT_SIZE*el;
+  
+  rrel = xin[0] - (tri[4] + tri[1]*co);
+  zrel = xin[2] - (tri[5] + tri[1]*sn);
+  
+  xout[0] = rrel*co + zrel*sn;  /* = xi */
+  xout[1] = zrel*co - rrel*sn;  /* = eta */
+
+  return el;
+}
+
+
+// ****************************************************************************
+//  Method: get_tri_coords2D
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout)
 {
   static int el=0;
-  double     *tri;
+  float     *tri;
   double     co, sn, rrel, zrel;
   int        last=-1, next, flag0, flag1, flag2;
 
@@ -317,7 +457,6 @@ int avtIVPM3DField::get_tri_coords2D(avtVec &xin, double *xout)
 
     xout[0] = rrel*co + zrel*sn;  /* = xi */
     xout[1] = zrel*co - rrel*sn;  /* = eta */
-
     /* Determine whether point is inside element */
     if ((flag0 = ((*tri + tri[1])*xout[1] < 0.0))) /* "Outside" side 0? */
       if ((next = neighbors[3*el]) >= 0) {
@@ -354,15 +493,34 @@ int avtIVPM3DField::get_tri_coords2D(avtVec &xin, double *xout)
 }
 
 // ****************************************************************************
+//  Method: interp basic interpolation
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords)
+{
+  float *a = var + SCALAR_SIZE*el;
+  double xi = *lcoords, eta = lcoords[1];
+
+  return *a + eta*(a[2] + eta*(a[5] + eta*(a[9] + eta*(a[14] + eta*a[19])))) +
+    xi*(a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + eta*a[18]))) +
+        xi*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17])) +
+            xi*(a[6] + eta*(a[11] + eta*a[16]) +
+                xi*(a[10] + xi*a[15]))));
+}
+
+// ****************************************************************************
 //  Method: interpdR interpolation in dR
 //
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-double avtIVPM3DField::interpdR(double *var, int el, double *lcoords)
+float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords)
 {
-  double *a = var + SCALAR_SIZE*el;
+  float *a = var + SCALAR_SIZE*el;
   double xi = lcoords[0], eta = lcoords[1], xicoef, etacoef;
 
   xicoef = a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
@@ -385,9 +543,9 @@ double avtIVPM3DField::interpdR(double *var, int el, double *lcoords)
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-double avtIVPM3DField::interpdz(double *var, int el, double *lcoords)
+float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords)
 {
-  double *a = var + SCALAR_SIZE*el;
+  float *a = var + SCALAR_SIZE*el;
   double xi = lcoords[0], eta = lcoords[1], xicoef, etacoef;
 
   xicoef = a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
@@ -411,9 +569,9 @@ double avtIVPM3DField::interpdz(double *var, int el, double *lcoords)
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-double avtIVPM3DField::interpdR2(double *var, int el, double *lcoords)
+float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords)
 {
-  double *a = var + SCALAR_SIZE*el;
+  float *a = var + SCALAR_SIZE*el;
   double co=trigtable[2*el], sn=trigtable[2*el + 1];
   double xi = lcoords[0], eta = lcoords[1], xixicoef, etaetacoef, xietacoef;
 
@@ -441,9 +599,9 @@ double avtIVPM3DField::interpdR2(double *var, int el, double *lcoords)
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-double avtIVPM3DField::interpdz2(double *var, int el, double *lcoords)
+float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords)
 {
-  double *a = var + SCALAR_SIZE*el;
+  float *a = var + SCALAR_SIZE*el;
   double co=trigtable[2*el], sn=trigtable[2*el + 1];
   double xi = lcoords[0], eta = lcoords[1], xixicoef, etaetacoef, xietacoef;
 
@@ -471,9 +629,9 @@ double avtIVPM3DField::interpdz2(double *var, int el, double *lcoords)
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-double avtIVPM3DField::interpdRdz(double *var, int el, double *lcoords)
+float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords)
 {
-  double *a = var + SCALAR_SIZE*el;
+  float *a = var + SCALAR_SIZE*el;
   double co=trigtable[2*el], sn=trigtable[2*el + 1];
   double xi = lcoords[0], eta = lcoords[1], xixicoef, etaetacoef, xietacoef;
 

@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define POINCAREATTRIBUTES_NMETH 80
 void           PyPoincareAttributes_StartUp(PoincareAttributes *subj, void *data);
 void           PyPoincareAttributes_CloseDown();
-PyMethodDef *   PyPoincareAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyPoincareAttributes_GetMethodTable(int *nMethods);
 bool           PyPoincareAttributes_Check(PyObject *obj);
 PoincareAttributes *  PyPoincareAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyPoincareAttributes_New();
-PyObject *      PyPoincareAttributes_Wrap(const PoincareAttributes *attr);
+PyObject *     PyPoincareAttributes_New();
+PyObject *     PyPoincareAttributes_Wrap(const PoincareAttributes *attr);
 void           PyPoincareAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyPoincareAttributes_SetDefaults(const PoincareAttributes *atts);
 std::string    PyPoincareAttributes_GetLogString();
 std::string    PyPoincareAttributes_ToString(const PoincareAttributes *, const char *);
+PyObject *     PyPoincareAttributes_getattr(PyObject *self, char *name);
+int            PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH];
 
 #endif
 

@@ -85,6 +85,8 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtIVPVTKTimeVaryingField.h>
 #include <avtIVPDopri5.h>
 #include <avtIVPAdamsBashforth.h>
+#include <avtIVPM3DC1Integrator.h>
+#include <avtIVPM3DC1Field.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
@@ -1898,9 +1900,10 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         velocity1->SetNextTime(t2);
     }
 
-    double end = termination;
-    if (slSeg->dir == avtStreamlineWrapper::BWD)
-        end = - end;
+    // FIX ME - This code is not on the branch?????
+//     double end = termination;
+//     if (slSeg->dir == avtStreamlineWrapper::BWD)
+//       end = - end;
 
     //slSeg->Debug();
     int numSteps = slSeg->sl->size();
@@ -1924,17 +1927,24 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         }
         else
         {
+          if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR) {
+            avtIVPM3DC1Field field(velocity1);
+            result = slSeg->sl->Advance(&field,
+                                        slSeg->terminationType,
+                                        slSeg->termination);
+          } else {
             avtIVPVTKField field(velocity1);
             result = slSeg->sl->Advance(&field,
                                         slSeg->terminationType,
                                         slSeg->termination);
+          }
         }
         
         // Termination criteria was met.
         slSeg->terminated = (result == avtIVPSolver::TERMINATE);
         debug5<<"Advance:= "<<result<<endl;
         debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
-
+        
     }
     else
         result = avtIVPSolver::TERMINATE;
@@ -2140,6 +2150,12 @@ avtStreamlineFilter::PreExecute(void)
     else if (integrationType == STREAMLINE_INTEGRATE_ADAMS_BASHFORTH)
     {
         solver = new avtIVPAdamsBashforth;
+        solver->SetMaximumStepSize(maxStepLength);
+        solver->SetTolerances(relTol, absTol);
+    }
+    else if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
+    {
+        solver = new avtIVPM3DC1Integrator;
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTol);
     }
@@ -2605,7 +2621,7 @@ avtStreamlineFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
     //Whole domain, ask intervalTree.
     if (useWholeBox)
         intervalTree->GetExtents( boxExtents );
-        
+
     float dX = boxExtents[1] - boxExtents[0];
     float dY = boxExtents[3] - boxExtents[2];
     float dZ = boxExtents[5] - boxExtents[4];

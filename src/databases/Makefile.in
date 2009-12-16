@@ -399,6 +399,7 @@ HDF5_TARGET= \
 	GTC \
 	H5Nimrod \
 	M3D \
+	M3DC1 \
 	PFLOTRAN \
 	Pixie \
 	SAMRAI \

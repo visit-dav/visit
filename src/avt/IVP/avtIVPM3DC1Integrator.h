@@ -37,35 +37,35 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtIVPM3DSolver.h                      //
+//                              avtIVPM3DC1Integrator.h                      //
 // ************************************************************************* //
 
-#ifndef AVT_IVPM3DSOLVER_H
-#define AVT_IVPM3DSOLVER_H
+#ifndef AVT_IVP_M3D_C1_INTEGRATOR_H
+#define AVT_IVP_M3D_C1_INTEGRATOR_H
 
 #include <avtIVPSolver.h>
 #include <ivp_exports.h>
 
 // ****************************************************************************
-//  Class: avtIVPM3DSolver
+//  Class: avtIVPM3DC1Integrator
 //
 //  Purpose:
-//      An implementation of avtIVPSolver which models the 5th-order 
-//      Adams-Bashforth multi-step method.
+//      An implementation of avtIVPSolver which models the Newton's Method
+//      for M3D C1 Elements.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
 //
 // ****************************************************************************
 
-class IVP_API avtIVPM3DSolver: public avtIVPSolver
+class IVP_API avtIVPM3DC1Integrator: public avtIVPSolver
 {
   public:
-    avtIVPM3DSolver();
-    ~avtIVPM3DSolver();
+    avtIVPM3DC1Integrator();
+    ~avtIVPM3DC1Integrator();
 
     // begin a new IVP solution
-    virtual void     Reset( const double& t_start, const avtVecRef& y_start );
+    virtual void     Reset( const double& t_start, const avtVector& y_start );
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
@@ -76,12 +76,12 @@ class IVP_API avtIVPM3DSolver: public avtIVPSolver
 
     virtual void    OnExitDomain();
 
-    virtual avtVec GetCurrentY() const;
+    virtual avtVector GetCurrentY() const;
     virtual double GetCurrentT() const;
     virtual double GetNextStepSize() const;
     virtual double GetMaximumStepSize() const;
 
-    virtual void   SetCurrentY( const avtVec &newY );
+    virtual void   SetCurrentY( const avtVector &newY );
     virtual void   SetCurrentT( double newT );
     virtual void   SetNextStepSize( const double& h );
     virtual void   SetMaximumStepSize( const double& hMax );
@@ -90,9 +90,9 @@ class IVP_API avtIVPM3DSolver: public avtIVPSolver
 
     virtual void   SetTolerances(const double& reltol, const double& abstol);
 
-    virtual avtIVPM3DSolver* Clone() const
+    virtual avtIVPM3DC1Integrator* Clone() const
     {
-        return new avtIVPM3DSolver( *this );
+        return new avtIVPM3DC1Integrator( *this );
     }
 
   protected:
@@ -100,24 +100,24 @@ class IVP_API avtIVPM3DSolver: public avtIVPSolver
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
     avtIVPSolver::Result  vpstep(const avtIVPField* field,
-                                 avtVec &yCur, double h, avtVec &yInt);
+                                 avtVector &yCur, double h, avtVector &yInt);
 
     avtIVPSolver::Result partial_step(const avtIVPField* field,
-                                      avtVec &yInt, int iflow, double h, avtVec &yNew);
+                                      double *yInt, int iflow, double h, double *yNew);
 
     int advance(const avtIVPField* field,
-                avtVec &x, int iflow, int icomp, double h, double xacc);
+                double *x, int iflow, int icomp, double h, double xacc);
 
     int getBfield(const avtIVPField* field,
-                  avtVec &x, int iflow, int icomp,
+                  double *x, int iflow, int icomp,
                   double *Bout, int dflag, double *Bpout);
 
     int getBfield1(const avtIVPField* field,
-                   avtVec &x, int iflow, int icomp, double *Bout,
+                   double *x, int iflow, int icomp, double *Bout,
                    int dflag, double *Bpout);
 
     int getBfield2(const avtIVPField* field,
-                     avtVec &x, int iflow, int icomp, double *Bout,
+                     double *x, int iflow, int icomp, double *Bout,
                      int dflag, double *Bpout);
 
   private:
@@ -128,8 +128,8 @@ class IVP_API avtIVPM3DSolver: public avtIVPSolver
     unsigned int max_degenerate_iterations;
     unsigned int degenerate_iterations;
     double stiffness_eps;
-    avtVec yCur;
-    avtVec ys[2];
+    avtVector yCur;
+    avtVector ys[2];
 };
 
 #endif
