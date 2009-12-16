@@ -95,8 +95,8 @@ namespace StringHelpers
     const char UTILITY_API *Basename(const char *path);
     const char UTILITY_API *Dirname(const char *path);
 
-    std::string UTILITY_API car(const std::string);
-    std::string UTILITY_API cdr(const std::string);
+    std::string UTILITY_API car(const std::string, const char separator);
+    std::string UTILITY_API cdr(const std::string, const char separator);
     void UTILITY_API append(std::vector<std::string> &,
                             std::vector<std::string>);
 
