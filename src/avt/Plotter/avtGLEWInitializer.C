@@ -39,10 +39,14 @@
 // ************************************************************************* //
 //                            GLEWInitializer.C                              //
 // ************************************************************************* //
+#include <algorithm>
+#include <iterator>
 #include "avtGLEWInitializer.h"
 #include <avtCallback.h>
 #include <DebugStream.h>
+#include <LibraryNotFoundException.h>
 #include <RuntimeSetting.h>
+#include <StringHelpers.h>
 
 namespace avt { namespace glew {
 
@@ -50,7 +54,7 @@ namespace avt { namespace glew {
 static bool initialized = false;
 
 // ****************************************************************************
-//  Function: visit::glew::initialize
+//  Function: avt::glew::initialize
 //
 //  Purpose: Initializes GLEW using GL library from RuntimeSetting.
 //           Maintains state to avoid duplicate initialization.
@@ -65,6 +69,10 @@ static bool initialized = false;
 //
 //    Tom Fogal, Tue Nov 24 10:48:00 MST 2009
 //    Update for GLEW API change.
+//
+//    Tom Fogal, Tue Dec  8 14:07:38 MST 2009
+//    Allow colon-separated list of libraries, trying them in sequence until
+//    one works.
 //
 // ****************************************************************************
 bool initialize(bool force)
@@ -92,15 +100,40 @@ bool initialize(bool force)
         libtype = GLEW_LIB_TYPE_NATIVE;
     }
 
-    debug1 << "Initializing GLEW using library: " << gl_lib << std::endl;
-    GLenum err = glewInitLibrary(gl_lib.c_str(), libtype, convention);
-    initialized = true;
-    if(GLEW_OK != err)
+    typedef std::vector<std::string> stringvec;
+    stringvec gl_libs = StringHelpers::split(gl_lib, ':');
+    stringvec gl_errors;
+    for(stringvec::const_iterator lib = gl_libs.begin(); lib != gl_libs.end();
+        ++lib)
     {
-        debug1 << "GLEW initialization FAILED: " << glewGetErrorString(err)
-               << "\nCalling OpenGL at this point will likely segfault!"
-               << std::endl;
-        initialized = false;
+        debug4 << "Initializing GLEW using library: " << *lib << std::endl;
+        GLenum err = glewInitLibrary(lib->c_str(), libtype, convention);
+        if(GLEW_OK == err)
+        {
+            initialized = true;
+            break;
+        }
+        else
+        {
+            std::ostringstream errmsg;
+            errmsg << "GLEW init with library '" << *lib << "' "
+                   << "failed: " << glewGetErrorString(err);
+            debug4 << errmsg.str() << std::endl;
+            gl_errors.push_back(errmsg.str());
+        }
+    }
+
+    if(!initialized)
+    {
+        std::ostringstream noGL;
+        noGL << "GLEW initialization FAILED.\n";
+        std::copy(gl_errors.begin(), gl_errors.end(),
+                  std::ostream_iterator<std::string>(noGL, "\n"));
+        std::string env_var = use_mesa ? "VISIT_MESA_LIB" : "VISIT_GL_LIB";
+        std::string cmd_line = use_mesa ? "--mesa-lib" : "--system-gl-lib";
+        noGL << "\nTry setting the " << env_var << " environment variable, "
+             << "or using the " << cmd_line << " command line option.";
+        EXCEPTION1(LibraryNotFoundException, noGL.str());
     }
 
     return initialized;
