@@ -284,11 +284,15 @@ static int _glewInitFunctionLoader()
   if (err != ERROR_SUCCESS)
   {
     error("Could not find dynamic loading function; %d", err);
+    FreeLibrary(dso_handle);
+    dso_handle = NULL;
     return GLEW_ERROR_GPA;
   }
 #else
   if((dl_error = dlerror()) != NULL) {
     error("Could not find dynamic loading function: %s", dl_error);
+    dlclose(dso_handle);
+    dso_handle = NULL;
     return GLEW_ERROR_GPA;
   }
 #endif
@@ -9003,29 +9007,6 @@ PFNWGLBINDTEXIMAGEARBPROC __wglewBindTexImageARB = NULL;
 PFNWGLRELEASETEXIMAGEARBPROC __wglewReleaseTexImageARB = NULL;
 PFNWGLSETPBUFFERATTRIBARBPROC __wglewSetPbufferAttribARB = NULL;
 
-PFNWGLCHOOSEPIXELFORMATPROC __wglewChoosePixelFormat = NULL;
-PFNWGLCOPYCONTEXTPROC __wglewCopyContext = NULL;
-PFNWGLCREATECONTEXTPROC __wglewCreateContext = NULL;
-PFNWGLCREATELAYERCONTEXTPROC __wglewCreateLayerContext = NULL;
-PFNWGLDELETECONTEXTPROC __wglewDeleteContext = NULL;
-PFNWGLDESCRIBELAYERPLANEPROC __wglewDescribeLayerPlane = NULL;
-PFNWGLDESCRIBEPIXELFORMATPROC __wglewDescribePixelFormat = NULL;
-PFNWGLGETCURRENTCONTEXTPROC __wglewGetCurrentContext = NULL;
-PFNWGLGETCURRENTDCPROC __wglewGetCurrentDC = NULL;
-PFNWGLGETDEFAULTPROCADDRESSPROC __wglewGetDefaultProcAddress = NULL;
-PFNWGLGETLAYERPALETTEENTRIESPROC __wglewGetLayerPaletteEntries = NULL;
-PFNWGLGETPIXELFORMATPROC __wglewGetPixelFormat = NULL;
-PFNWGLGETPROCADDRESSPROC __wglewGetProcAddress = NULL;
-PFNWGLMAKECURRENTPROC __wglewMakeCurrent = NULL;
-PFNWGLREALIZELAYERPALETTEPROC __wglewRealizeLayerPalette = NULL;
-PFNWGLSETLAYERPALETTEENTRIESPROC __wglewSetLayerPaletteEntries = NULL;
-PFNWGLSETPIXELFORMATPROC __wglewSetPixelFormat = NULL;
-PFNWGLSHARELISTSPROC __wglewShareLists = NULL;
-PFNWGLSWAPBUFFERSPROC __wglewSwapBuffers = NULL;
-PFNWGLSWAPLAYERBUFFERSPROC __wglewSwapLayerBuffers = NULL;
-PFNWGLUSEFONTBITMAPSAPROC __wglewUseFontBitmapsA = NULL;
-PFNWGLUSEFONTBITMAPSWPROC __wglewUseFontBitmapsW = NULL;
-
 PFNWGLBINDDISPLAYCOLORTABLEEXTPROC __wglewBindDisplayColorTableEXT = NULL;
 PFNWGLCREATEDISPLAYCOLORTABLEEXTPROC __wglewCreateDisplayColorTableEXT = NULL;
 PFNWGLDESTROYDISPLAYCOLORTABLEEXTPROC __wglewDestroyDisplayColorTableEXT = NULL;
@@ -9118,7 +9099,6 @@ PFNWGLSWAPBUFFERSMSCOMLPROC __wglewSwapBuffersMscOML = NULL;
 PFNWGLSWAPLAYERBUFFERSMSCOMLPROC __wglewSwapLayerBuffersMscOML = NULL;
 PFNWGLWAITFORMSCOMLPROC __wglewWaitForMscOML = NULL;
 PFNWGLWAITFORSBCOMLPROC __wglewWaitForSbcOML = NULL;
-GLboolean __WGLEW_core_api = GL_FALSE;
 GLboolean __WGLEW_3DFX_multisample = GL_FALSE;
 GLboolean __WGLEW_3DL_stereo_control = GL_FALSE;
 GLboolean __WGLEW_AMD_gpu_association = GL_FALSE;
@@ -9164,40 +9144,6 @@ GLboolean __WGLEW_NV_video_output = GL_FALSE;
 GLboolean __WGLEW_OML_sync_control = GL_FALSE;
 
 #endif /* !GLEW_MX */
-
-#ifdef WGL_core_api
-
-static GLboolean _glewInit_WGL_core_api (WGLEW_CONTEXT_ARG_DEF_INIT)
-{
-  GLboolean r = GL_FALSE;
-
-  r = ((wglChoosePixelFormat = (PFNWGLCHOOSEPIXELFORMATPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglChoosePixelFormat"))) == NULL) || r;
-  r = ((wglCopyContext = (PFNWGLCOPYCONTEXTPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglCopyContext"))) == NULL) || r;
-  r = ((wglCreateContext = (PFNWGLCREATECONTEXTPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglCreateContext"))) == NULL) || r;
-  r = ((wglCreateLayerContext = (PFNWGLCREATELAYERCONTEXTPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglCreateLayerContext"))) == NULL) || r;
-  r = ((wglDeleteContext = (PFNWGLDELETECONTEXTPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglDeleteContext"))) == NULL) || r;
-  r = ((wglDescribeLayerPlane = (PFNWGLDESCRIBELAYERPLANEPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglDescribeLayerPlane"))) == NULL) || r;
-  r = ((wglDescribePixelFormat = (PFNWGLDESCRIBEPIXELFORMATPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglDescribePixelFormat"))) == NULL) || r;
-  r = ((wglGetCurrentContext = (PFNWGLGETCURRENTCONTEXTPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglGetCurrentContext"))) == NULL) || r;
-  r = ((wglGetCurrentDC = (PFNWGLGETCURRENTDCPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglGetCurrentDC"))) == NULL) || r;
-  r = ((wglGetDefaultProcAddress = (PFNWGLGETDEFAULTPROCADDRESSPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglGetDefaultProcAddress"))) == NULL) || r;
-  r = ((wglGetLayerPaletteEntries = (PFNWGLGETLAYERPALETTEENTRIESPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglGetLayerPaletteEntries"))) == NULL) || r;
-  r = ((wglGetPixelFormat = (PFNWGLGETPIXELFORMATPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglGetPixelFormat"))) == NULL) || r;
-  r = ((wglGetProcAddress = (PFNWGLGETPROCADDRESSPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglGetProcAddress"))) == NULL) || r;
-  r = ((wglMakeCurrent = (PFNWGLMAKECURRENTPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglMakeCurrent"))) == NULL) || r;
-  r = ((wglRealizeLayerPalette = (PFNWGLREALIZELAYERPALETTEPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglRealizeLayerPalette"))) == NULL) || r;
-  r = ((wglSetLayerPaletteEntries = (PFNWGLSETLAYERPALETTEENTRIESPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglSetLayerPaletteEntries"))) == NULL) || r;
-  r = ((wglSetPixelFormat = (PFNWGLSETPIXELFORMATPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglSetPixelFormat"))) == NULL) || r;
-  r = ((wglShareLists = (PFNWGLSHARELISTSPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglShareLists"))) == NULL) || r;
-  r = ((wglSwapBuffers = (PFNWGLSWAPBUFFERSPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglSwapBuffers"))) == NULL) || r;
-  r = ((wglSwapLayerBuffers = (PFNWGLSWAPLAYERBUFFERSPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglSwapLayerBuffers"))) == NULL) || r;
-  r = ((wglUseFontBitmapsA = (PFNWGLUSEFONTBITMAPSAPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglUseFontBitmapsA"))) == NULL) || r;
-  r = ((wglUseFontBitmapsW = (PFNWGLUSEFONTBITMAPSWPROC)glewGetProcAddress(fqn_from_convention(glew_convention, "wglUseFontBitmapsW"))) == NULL) || r;
-
-  return r;
-}
-
-#endif /* WGL_core_api */
 
 #ifdef WGL_3DFX_multisample
 
@@ -9897,23 +9843,6 @@ PFNWGLUSEFONTBITMAPSWPROC __wglewUseFontBitmapsW = __wglewUseFontBitmapsW_stub;
 static PFNWGLGETEXTENSIONSSTRINGARBPROC _wglewGetExtensionsStringARB = NULL;
 static PFNWGLGETEXTENSIONSSTRINGEXTPROC _wglewGetExtensionsStringEXT = NULL;
 
-static HMODULE hGdi;
-static int WINAPI __glewGdiChoosePixelFormat_stub(HDC hdc, PIXELFORMATDESCRIPTOR *ppfd)
-{
-  if (dso_handle == NULL)
-  {
-    dso_handle = GetModuleHandle(glew_gl_lib);
-    if (dso_handle == NULL)
-    {
-      dso_handle = LoadLibrary(glew_gl_lib);
-    }
-  }
-  hGdi = GetModuleHandle("gdi32.dll");
-  __glewGdiChoosePixelFormat = (PFNCHOOSEPIXELFORMATPROC)GetProcAddress(hGdi, "ChoosePixelFormat");
-  return __glewGdiChoosePixelFormat(hdc, ppfd);
-}
-PFNCHOOSEPIXELFORMATPROC __glewGdiChoosePixelFormat = __glewGdiChoosePixelFormat_stub;
-
 GLboolean wglewGetExtension (const char* name)
 {    
   GLubyte* p;
@@ -10004,10 +9933,6 @@ GLenum wglewContextInit (WGLEW_CONTEXT_ARG_DEF_LIST)
 #ifdef WGL_ATI_render_texture_rectangle
   CONST_CAST(WGLEW_ATI_render_texture_rectangle) = wglewGetExtension("WGL_ATI_render_texture_rectangle");
 #endif /* WGL_ATI_render_texture_rectangle */
-#ifdef WGL_core_api
-  CONST_CAST(WGLEW_core_api) = wglewGetExtension("WGL_core_api");
-  if (glewExperimental || WGLEW_core_api|| crippled) CONST_CAST(WGLEW_core_api)= !_glewInit_WGL_core_api(GLEW_CONTEXT_ARG_VAR_INIT);
-#endif /* WGL_core_api */
 #ifdef WGL_EXT_depth_float
   CONST_CAST(WGLEW_EXT_depth_float) = wglewGetExtension("WGL_EXT_depth_float");
 #endif /* WGL_EXT_depth_float */
@@ -13922,16 +13847,6 @@ GLboolean wglewIsSupported (const char* name)
         if (_glewStrSame3(&pos, &len, (const GLubyte*)"render_texture_rectangle", 24))
         {
           ret = WGLEW_ATI_render_texture_rectangle;
-          continue;
-        }
-#endif
-      }
-      if (_glewStrSame2(&pos, &len, (const GLubyte*)"core_", 5))
-      {
-#ifdef WGL_core_api
-        if (_glewStrSame3(&pos, &len, (const GLubyte*)"api", 3))
-        {
-          ret = WGLEW_core_api;
           continue;
         }
 #endif
