@@ -77,7 +77,11 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *sourceType_names = "SpecifiedPoint, SpecifiedLine, SpecifiedPlane";
+    SNPRINTF(tmpStr, 1000, "%sminPunctures = %g\n", prefix, atts->GetMinPunctures());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaxPunctures = %g\n", prefix, atts->GetMaxPunctures());
+    str += tmpStr;
+    const char *sourceType_names = "SpecifiedPoint, SpecifiedLine";
     switch (atts->GetSourceType())
     {
       case PoincareAttributes::SpecifiedPoint:
@@ -88,20 +92,10 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::SpecifiedPlane:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPlane  # %s\n", prefix, prefix, sourceType_names);
-          str += tmpStr;
-          break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminPunctures = %g\n", prefix, atts->GetMinPunctures());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxPunctures = %g\n", prefix, atts->GetMaxPunctures());
-    str += tmpStr;
     {   const double *pointSource = atts->GetPointSource();
         SNPRINTF(tmpStr, 1000, "%spointSource = (", prefix);
         str += tmpStr;
@@ -150,81 +144,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    {   const double *planeOrigin = atts->GetPlaneOrigin();
-        SNPRINTF(tmpStr, 1000, "%splaneOrigin = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", planeOrigin[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const double *planeNormal = atts->GetPlaneNormal();
-        SNPRINTF(tmpStr, 1000, "%splaneNormal = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", planeNormal[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const double *planeUpAxis = atts->GetPlaneUpAxis();
-        SNPRINTF(tmpStr, 1000, "%splaneUpAxis = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", planeUpAxis[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    SNPRINTF(tmpStr, 1000, "%splaneRadius = %g\n", prefix, atts->GetPlaneRadius());
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
-    str += tmpStr;
-    const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
-    str += tmpStr;
-    if(atts->GetVerboseFlag())
-        SNPRINTF(tmpStr, 1000, "%sverboseFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sverboseFlag = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetLightingFlag())
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabsTol = %g\n", prefix, atts->GetAbsTol());
     str += tmpStr;
     const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator";
     switch (atts->GetIntegrationType())
@@ -245,22 +165,93 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
     }
 
-    if(atts->GetShowStreamlines())
-        SNPRINTF(tmpStr, 1000, "%sshowStreamlines = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowStreamlines = 0\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
     str += tmpStr;
-    if(atts->GetShowPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
-    if(atts->GetShowLines())
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 0\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%sabsTol = %g\n", prefix, atts->GetAbsTol());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaxToroidalWinding = %d\n", prefix, atts->GetMaxToroidalWinding());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%shitRate = %g\n", prefix, atts->GetHitRate());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sadjustPlane = %d\n", prefix, atts->GetAdjustPlane());
+    str += tmpStr;
+    const char *overlaps_names = "Raw, Remove, Merge, Smooth";
+    switch (atts->GetOverlaps())
+    {
+      case PoincareAttributes::Raw:
+          SNPRINTF(tmpStr, 1000, "%soverlaps = %sRaw  # %s\n", prefix, prefix, overlaps_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Remove:
+          SNPRINTF(tmpStr, 1000, "%soverlaps = %sRemove  # %s\n", prefix, prefix, overlaps_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Merge:
+          SNPRINTF(tmpStr, 1000, "%soverlaps = %sMerge  # %s\n", prefix, prefix, overlaps_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Smooth:
+          SNPRINTF(tmpStr, 1000, "%soverlaps = %sSmooth  # %s\n", prefix, prefix, overlaps_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *showCurves_names = "Curves, Surfaces";
+    switch (atts->GetShowCurves())
+    {
+      case PoincareAttributes::Curves:
+          SNPRINTF(tmpStr, 1000, "%sshowCurves = %sCurves  # %s\n", prefix, prefix, showCurves_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Surfaces:
+          SNPRINTF(tmpStr, 1000, "%sshowCurves = %sSurfaces  # %s\n", prefix, prefix, showCurves_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%snumberPlanes = %d\n", prefix, atts->GetNumberPlanes());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    str += tmpStr;
+    if(atts->GetMinFlag())
+        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetMaxFlag())
+        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+    str += tmpStr;
+    const char *colorType_names = "ColorBySingleColor, ColorByColorTable";
+    switch (atts->GetColorType())
+    {
+      case PoincareAttributes::ColorBySingleColor:
+          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::ColorByColorTable:
+          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const unsigned char *singleColor = atts->GetSingleColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     const char *colorBy_names = "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
         "WindingPointOrder, ToroidalWindings, PoloidalWindings, SafetyFactor, "
@@ -315,118 +306,36 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxToroidalWinding = %d\n", prefix, atts->GetMaxToroidalWinding());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shitRate = %g\n", prefix, atts->GetHitRate());
-    str += tmpStr;
-    const char *showCurves_names = "Curves, Surfaces";
-    switch (atts->GetShowCurves())
-    {
-      case PoincareAttributes::Curves:
-          SNPRINTF(tmpStr, 1000, "%sshowCurves = %sCurves  # %s\n", prefix, prefix, showCurves_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::Surfaces:
-          SNPRINTF(tmpStr, 1000, "%sshowCurves = %sSurfaces  # %s\n", prefix, prefix, showCurves_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    SNPRINTF(tmpStr, 1000, "%sadjustPlane = %d\n", prefix, atts->GetAdjustPlane());
-    str += tmpStr;
     if(atts->GetShowIslands())
         SNPRINTF(tmpStr, 1000, "%sshowIslands = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sshowIslands = 0\n", prefix);
     str += tmpStr;
-    const char *overlaps_names = "Raw, Remove, Merge, Smooth";
-    switch (atts->GetOverlaps())
-    {
-      case PoincareAttributes::Raw:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sRaw  # %s\n", prefix, prefix, overlaps_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::Remove:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sRemove  # %s\n", prefix, prefix, overlaps_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::Merge:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sMerge  # %s\n", prefix, prefix, overlaps_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::Smooth:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sSmooth  # %s\n", prefix, prefix, overlaps_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
-    str += tmpStr;
-    if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+    if(atts->GetShowLines())
+        SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%sshowLines = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+    if(atts->GetShowPoints())
+        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
-    const char *colorType_names = "ColorBySingleColor, ColorByColorTable";
-    switch (atts->GetColorType())
-    {
-      case PoincareAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::ColorByColorTable:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    {   const double *intersectPlaneOrigin = atts->GetIntersectPlaneOrigin();
-        SNPRINTF(tmpStr, 1000, "%sintersectPlaneOrigin = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", intersectPlaneOrigin[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const double *intersectPlaneNormal = atts->GetIntersectPlaneNormal();
-        SNPRINTF(tmpStr, 1000, "%sintersectPlaneNormal = (", prefix);
-        str += tmpStr;
-        for(int i = 0; i < 3; ++i)
-        {
-            SNPRINTF(tmpStr, 1000, "%g", intersectPlaneNormal[i]);
-            str += tmpStr;
-            if(i < 2)
-            {
-                SNPRINTF(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        SNPRINTF(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
+    if(atts->GetVerboseFlag())
+        SNPRINTF(tmpStr, 1000, "%sverboseFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sverboseFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetLegendFlag())
+        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetLightingFlag())
+        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -437,63 +346,6 @@ PoincareAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the sourceType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetSourceType(PoincareAttributes::SourceType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid sourceType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "SpecifiedPoint, SpecifiedLine, SpecifiedPlane.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetSourceType(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the maxStepLength in the object.
-    obj->data->SetMaxStepLength(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
-    return retval;
 }
 
 /*static*/ PyObject *
@@ -541,6 +393,39 @@ PoincareAttributes_GetMaxPunctures(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxPunctures());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the sourceType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetSourceType(PoincareAttributes::SourceType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid sourceType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "SpecifiedPoint, SpecifiedLine.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetSourceType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
     return retval;
 }
 
@@ -707,192 +592,6 @@ PoincareAttributes_GetLineEnd(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    double *dvals = obj->data->GetPlaneOrigin();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
-    {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
-    }
-
-    // Mark the planeOrigin in the object as modified.
-    obj->data->SelectPlaneOrigin();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetPlaneOrigin(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the planeOrigin.
-    PyObject *retval = PyTuple_New(3);
-    const double *planeOrigin = obj->data->GetPlaneOrigin();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(planeOrigin[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    double *dvals = obj->data->GetPlaneNormal();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
-    {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
-    }
-
-    // Mark the planeNormal in the object as modified.
-    obj->data->SelectPlaneNormal();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the planeNormal.
-    PyObject *retval = PyTuple_New(3);
-    const double *planeNormal = obj->data->GetPlaneNormal();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(planeNormal[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    double *dvals = obj->data->GetPlaneUpAxis();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
-    {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
-    }
-
-    // Mark the planeUpAxis in the object as modified.
-    obj->data->SelectPlaneUpAxis();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetPlaneUpAxis(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the planeUpAxis.
-    PyObject *retval = PyTuple_New(3);
-    const double *planeUpAxis = obj->data->GetPlaneUpAxis();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(planeUpAxis[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetPlaneRadius(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the planeRadius in the object.
-    obj->data->SetPlaneRadius(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetPlaneRadius(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPlaneRadius());
-    return retval;
-}
-
-/*static*/ PyObject *
 PoincareAttributes_SetPointDensity(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -917,175 +616,59 @@ PoincareAttributes_GetPointDensity(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetColorTableName(PyObject *self, PyObject *args)
+PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetColorTableName(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetSingleColor(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int c[4];
-    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    // Set the integrationType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetIntegrationType(PoincareAttributes::IntegrationType(ival));
+    else
     {
-        c[3] = 255;
-        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
-        {
-            double dr, dg, db, da;
-            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
-            {
-                c[0] = int(dr);
-                c[1] = int(dg);
-                c[2] = int(db);
-                c[3] = int(da);
-            }
-            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
-            {
-                c[0] = int(dr);
-                c[1] = int(dg);
-                c[2] = int(db);
-                c[3] = 255;
-            }
-            else
-            {
-                PyObject *tuple = NULL;
-                if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return NULL;
-
-                if(!PyTuple_Check(tuple))
-                    return NULL;
-
-                // Make sure that the tuple is the right size.
-                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return NULL;
-
-                // Make sure that all elements in the tuple are ints.
-                for(int i = 0; i < PyTuple_Size(tuple); ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyInt_Check(item))
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
-                    else if(PyFloat_Check(item))
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
-                    else
-                        return NULL;
-                }
-            }
-        }
-        PyErr_Clear();
+        fprintf(stderr, "An invalid integrationType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "DormandPrince, AdamsBashforth, M3DC1Integrator.");
+        return NULL;
     }
 
-    // Set the singleColor in the object.
-    ColorAttribute ca(c[0], c[1], c[2], c[3]);
-    obj->data->SetSingleColor(ca);
-
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetSingleColor(PyObject *self, PyObject *args)
+PoincareAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the singleColor.
-    PyObject *retval = PyTuple_New(4);
-    const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
-    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(singleColor[0])));
-    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(singleColor[1])));
-    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(singleColor[2])));
-    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(singleColor[3])));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
     return retval;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetVerboseFlag(PyObject *self, PyObject *args)
+PoincareAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the verboseFlag in the object.
-    obj->data->SetVerboseFlag(ival != 0);
+    // Set the maxStepLength in the object.
+    obj->data->SetMaxStepLength(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetVerboseFlag(PyObject *self, PyObject *args)
+PoincareAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetVerboseFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetLegendFlag(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetLegendFlag(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetLightingFlag(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lightingFlag in the object.
-    obj->data->SetLightingFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetLightingFlag(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetLightingFlag()?1L:0L);
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
     return retval;
 }
 
@@ -1134,170 +717,6 @@ PoincareAttributes_GetAbsTol(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTol());
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the integrationType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetIntegrationType(PoincareAttributes::IntegrationType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "DormandPrince, AdamsBashforth, M3DC1Integrator.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetIntegrationType(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetShowStreamlines(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showStreamlines in the object.
-    obj->data->SetShowStreamlines(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetShowStreamlines(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowStreamlines()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetShowPoints(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showPoints in the object.
-    obj->data->SetShowPoints(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetShowPoints(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetShowLines(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showLines in the object.
-    obj->data->SetShowLines(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetShowLines(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowLines()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetNumberPlanes(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the numberPlanes in the object.
-    obj->data->SetNumberPlanes((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetNumberPlanes(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberPlanes()));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetColorBy(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the colorBy in the object.
-    if(ival >= 0 && ival < 11)
-        obj->data->SetColorBy(PoincareAttributes::ColorBy(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorBy value was given. "
-                        "Valid values are in the range of [0,10]. "
-                        "You can also use the following names: "
-                        "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
-                        "WindingPointOrder, ToroidalWindings, PoloidalWindings, SafetyFactor, "
-                        "Confidence, RidgelineVariance.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetColorBy(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColorBy()));
     return retval;
 }
 
@@ -1374,39 +793,6 @@ PoincareAttributes_GetHitRate(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetShowCurves(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showCurves in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetShowCurves(PoincareAttributes::ShowMeshType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid showCurves value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Curves, Surfaces.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetShowCurves(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetShowCurves()));
-    return retval;
-}
-
-/*static*/ PyObject *
 PoincareAttributes_SetAdjustPlane(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -1427,30 +813,6 @@ PoincareAttributes_GetAdjustPlane(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAdjustPlane()));
-    return retval;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_SetShowIslands(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showIslands in the object.
-    obj->data->SetShowIslands(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetShowIslands(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowIslands()?1L:0L);
     return retval;
 }
 
@@ -1484,6 +846,63 @@ PoincareAttributes_GetOverlaps(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOverlaps()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetShowCurves(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showCurves in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetShowCurves(PoincareAttributes::ShowMeshType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid showCurves value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Curves, Surfaces.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowCurves(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetShowCurves()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetNumberPlanes(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the numberPlanes in the object.
+    obj->data->SetNumberPlanes((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetNumberPlanes(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberPlanes()));
     return retval;
 }
 
@@ -1617,110 +1036,282 @@ PoincareAttributes_GetColorType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetIntersectPlaneOrigin(PyObject *self, PyObject *args)
+PoincareAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
-    double *dvals = obj->data->GetIntersectPlaneOrigin();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
         {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
             {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
             }
         }
-        else
-            return NULL;
+        PyErr_Clear();
     }
 
-    // Mark the intersectPlaneOrigin in the object as modified.
-    obj->data->SelectIntersectPlaneOrigin();
+    // Set the singleColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetSingleColor(ca);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetIntersectPlaneOrigin(PyObject *self, PyObject *args)
+PoincareAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the intersectPlaneOrigin.
-    PyObject *retval = PyTuple_New(3);
-    const double *intersectPlaneOrigin = obj->data->GetIntersectPlaneOrigin();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(intersectPlaneOrigin[i]));
+    // Allocate a tuple the with enough entries to hold the singleColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(singleColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(singleColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(singleColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(singleColor[3])));
     return retval;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetIntersectPlaneNormal(PyObject *self, PyObject *args)
+PoincareAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
-    double *dvals = obj->data->GetIntersectPlaneNormal();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
-    {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
 
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
-    }
-
-    // Mark the intersectPlaneNormal in the object as modified.
-    obj->data->SelectIntersectPlaneNormal();
+    // Set the colorTableName in the object.
+    obj->data->SetColorTableName(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetIntersectPlaneNormal(PyObject *self, PyObject *args)
+PoincareAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the intersectPlaneNormal.
-    PyObject *retval = PyTuple_New(3);
-    const double *intersectPlaneNormal = obj->data->GetIntersectPlaneNormal();
-    for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(intersectPlaneNormal[i]));
+    PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetColorBy(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the colorBy in the object.
+    if(ival >= 0 && ival < 11)
+        obj->data->SetColorBy(PoincareAttributes::ColorBy(ival));
+    else
+    {
+        fprintf(stderr, "An invalid colorBy value was given. "
+                        "Valid values are in the range of [0,10]. "
+                        "You can also use the following names: "
+                        "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
+                        "WindingPointOrder, ToroidalWindings, PoloidalWindings, SafetyFactor, "
+                        "Confidence, RidgelineVariance.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetColorBy(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetColorBy()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetShowIslands(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showIslands in the object.
+    obj->data->SetShowIslands(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowIslands(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowIslands()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetShowLines(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showLines in the object.
+    obj->data->SetShowLines(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowLines(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowLines()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetShowPoints(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showPoints in the object.
+    obj->data->SetShowPoints(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowPoints(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetVerboseFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the verboseFlag in the object.
+    obj->data->SetVerboseFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetVerboseFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetVerboseFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetLegendFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the legendFlag in the object.
+    obj->data->SetLegendFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetLegendFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetLightingFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lightingFlag in the object.
+    obj->data->SetLightingFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetLightingFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLightingFlag()?1L:0L);
     return retval;
 }
 
@@ -1728,70 +1319,42 @@ PoincareAttributes_GetIntersectPlaneNormal(PyObject *self, PyObject *args)
 
 PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"Notify", PoincareAttributes_Notify, METH_VARARGS},
-    {"SetSourceType", PoincareAttributes_SetSourceType, METH_VARARGS},
-    {"GetSourceType", PoincareAttributes_GetSourceType, METH_VARARGS},
-    {"SetMaxStepLength", PoincareAttributes_SetMaxStepLength, METH_VARARGS},
-    {"GetMaxStepLength", PoincareAttributes_GetMaxStepLength, METH_VARARGS},
     {"SetMinPunctures", PoincareAttributes_SetMinPunctures, METH_VARARGS},
     {"GetMinPunctures", PoincareAttributes_GetMinPunctures, METH_VARARGS},
     {"SetMaxPunctures", PoincareAttributes_SetMaxPunctures, METH_VARARGS},
     {"GetMaxPunctures", PoincareAttributes_GetMaxPunctures, METH_VARARGS},
+    {"SetSourceType", PoincareAttributes_SetSourceType, METH_VARARGS},
+    {"GetSourceType", PoincareAttributes_GetSourceType, METH_VARARGS},
     {"SetPointSource", PoincareAttributes_SetPointSource, METH_VARARGS},
     {"GetPointSource", PoincareAttributes_GetPointSource, METH_VARARGS},
     {"SetLineStart", PoincareAttributes_SetLineStart, METH_VARARGS},
     {"GetLineStart", PoincareAttributes_GetLineStart, METH_VARARGS},
     {"SetLineEnd", PoincareAttributes_SetLineEnd, METH_VARARGS},
     {"GetLineEnd", PoincareAttributes_GetLineEnd, METH_VARARGS},
-    {"SetPlaneOrigin", PoincareAttributes_SetPlaneOrigin, METH_VARARGS},
-    {"GetPlaneOrigin", PoincareAttributes_GetPlaneOrigin, METH_VARARGS},
-    {"SetPlaneNormal", PoincareAttributes_SetPlaneNormal, METH_VARARGS},
-    {"GetPlaneNormal", PoincareAttributes_GetPlaneNormal, METH_VARARGS},
-    {"SetPlaneUpAxis", PoincareAttributes_SetPlaneUpAxis, METH_VARARGS},
-    {"GetPlaneUpAxis", PoincareAttributes_GetPlaneUpAxis, METH_VARARGS},
-    {"SetPlaneRadius", PoincareAttributes_SetPlaneRadius, METH_VARARGS},
-    {"GetPlaneRadius", PoincareAttributes_GetPlaneRadius, METH_VARARGS},
     {"SetPointDensity", PoincareAttributes_SetPointDensity, METH_VARARGS},
     {"GetPointDensity", PoincareAttributes_GetPointDensity, METH_VARARGS},
-    {"SetColorTableName", PoincareAttributes_SetColorTableName, METH_VARARGS},
-    {"GetColorTableName", PoincareAttributes_GetColorTableName, METH_VARARGS},
-    {"SetSingleColor", PoincareAttributes_SetSingleColor, METH_VARARGS},
-    {"GetSingleColor", PoincareAttributes_GetSingleColor, METH_VARARGS},
-    {"SetVerboseFlag", PoincareAttributes_SetVerboseFlag, METH_VARARGS},
-    {"GetVerboseFlag", PoincareAttributes_GetVerboseFlag, METH_VARARGS},
-    {"SetLegendFlag", PoincareAttributes_SetLegendFlag, METH_VARARGS},
-    {"GetLegendFlag", PoincareAttributes_GetLegendFlag, METH_VARARGS},
-    {"SetLightingFlag", PoincareAttributes_SetLightingFlag, METH_VARARGS},
-    {"GetLightingFlag", PoincareAttributes_GetLightingFlag, METH_VARARGS},
+    {"SetIntegrationType", PoincareAttributes_SetIntegrationType, METH_VARARGS},
+    {"GetIntegrationType", PoincareAttributes_GetIntegrationType, METH_VARARGS},
+    {"SetMaxStepLength", PoincareAttributes_SetMaxStepLength, METH_VARARGS},
+    {"GetMaxStepLength", PoincareAttributes_GetMaxStepLength, METH_VARARGS},
     {"SetRelTol", PoincareAttributes_SetRelTol, METH_VARARGS},
     {"GetRelTol", PoincareAttributes_GetRelTol, METH_VARARGS},
     {"SetAbsTol", PoincareAttributes_SetAbsTol, METH_VARARGS},
     {"GetAbsTol", PoincareAttributes_GetAbsTol, METH_VARARGS},
-    {"SetIntegrationType", PoincareAttributes_SetIntegrationType, METH_VARARGS},
-    {"GetIntegrationType", PoincareAttributes_GetIntegrationType, METH_VARARGS},
-    {"SetShowStreamlines", PoincareAttributes_SetShowStreamlines, METH_VARARGS},
-    {"GetShowStreamlines", PoincareAttributes_GetShowStreamlines, METH_VARARGS},
-    {"SetShowPoints", PoincareAttributes_SetShowPoints, METH_VARARGS},
-    {"GetShowPoints", PoincareAttributes_GetShowPoints, METH_VARARGS},
-    {"SetShowLines", PoincareAttributes_SetShowLines, METH_VARARGS},
-    {"GetShowLines", PoincareAttributes_GetShowLines, METH_VARARGS},
-    {"SetNumberPlanes", PoincareAttributes_SetNumberPlanes, METH_VARARGS},
-    {"GetNumberPlanes", PoincareAttributes_GetNumberPlanes, METH_VARARGS},
-    {"SetColorBy", PoincareAttributes_SetColorBy, METH_VARARGS},
-    {"GetColorBy", PoincareAttributes_GetColorBy, METH_VARARGS},
     {"SetMaxToroidalWinding", PoincareAttributes_SetMaxToroidalWinding, METH_VARARGS},
     {"GetMaxToroidalWinding", PoincareAttributes_GetMaxToroidalWinding, METH_VARARGS},
     {"SetOverrideToroidalWinding", PoincareAttributes_SetOverrideToroidalWinding, METH_VARARGS},
     {"GetOverrideToroidalWinding", PoincareAttributes_GetOverrideToroidalWinding, METH_VARARGS},
     {"SetHitRate", PoincareAttributes_SetHitRate, METH_VARARGS},
     {"GetHitRate", PoincareAttributes_GetHitRate, METH_VARARGS},
-    {"SetShowCurves", PoincareAttributes_SetShowCurves, METH_VARARGS},
-    {"GetShowCurves", PoincareAttributes_GetShowCurves, METH_VARARGS},
     {"SetAdjustPlane", PoincareAttributes_SetAdjustPlane, METH_VARARGS},
     {"GetAdjustPlane", PoincareAttributes_GetAdjustPlane, METH_VARARGS},
-    {"SetShowIslands", PoincareAttributes_SetShowIslands, METH_VARARGS},
-    {"GetShowIslands", PoincareAttributes_GetShowIslands, METH_VARARGS},
     {"SetOverlaps", PoincareAttributes_SetOverlaps, METH_VARARGS},
     {"GetOverlaps", PoincareAttributes_GetOverlaps, METH_VARARGS},
+    {"SetShowCurves", PoincareAttributes_SetShowCurves, METH_VARARGS},
+    {"GetShowCurves", PoincareAttributes_GetShowCurves, METH_VARARGS},
+    {"SetNumberPlanes", PoincareAttributes_SetNumberPlanes, METH_VARARGS},
+    {"GetNumberPlanes", PoincareAttributes_GetNumberPlanes, METH_VARARGS},
     {"SetMin", PoincareAttributes_SetMin, METH_VARARGS},
     {"GetMin", PoincareAttributes_GetMin, METH_VARARGS},
     {"SetMax", PoincareAttributes_SetMax, METH_VARARGS},
@@ -1802,10 +1365,24 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMaxFlag", PoincareAttributes_GetMaxFlag, METH_VARARGS},
     {"SetColorType", PoincareAttributes_SetColorType, METH_VARARGS},
     {"GetColorType", PoincareAttributes_GetColorType, METH_VARARGS},
-    {"SetIntersectPlaneOrigin", PoincareAttributes_SetIntersectPlaneOrigin, METH_VARARGS},
-    {"GetIntersectPlaneOrigin", PoincareAttributes_GetIntersectPlaneOrigin, METH_VARARGS},
-    {"SetIntersectPlaneNormal", PoincareAttributes_SetIntersectPlaneNormal, METH_VARARGS},
-    {"GetIntersectPlaneNormal", PoincareAttributes_GetIntersectPlaneNormal, METH_VARARGS},
+    {"SetSingleColor", PoincareAttributes_SetSingleColor, METH_VARARGS},
+    {"GetSingleColor", PoincareAttributes_GetSingleColor, METH_VARARGS},
+    {"SetColorTableName", PoincareAttributes_SetColorTableName, METH_VARARGS},
+    {"GetColorTableName", PoincareAttributes_GetColorTableName, METH_VARARGS},
+    {"SetColorBy", PoincareAttributes_SetColorBy, METH_VARARGS},
+    {"GetColorBy", PoincareAttributes_GetColorBy, METH_VARARGS},
+    {"SetShowIslands", PoincareAttributes_SetShowIslands, METH_VARARGS},
+    {"GetShowIslands", PoincareAttributes_GetShowIslands, METH_VARARGS},
+    {"SetShowLines", PoincareAttributes_SetShowLines, METH_VARARGS},
+    {"GetShowLines", PoincareAttributes_GetShowLines, METH_VARARGS},
+    {"SetShowPoints", PoincareAttributes_SetShowPoints, METH_VARARGS},
+    {"GetShowPoints", PoincareAttributes_GetShowPoints, METH_VARARGS},
+    {"SetVerboseFlag", PoincareAttributes_SetVerboseFlag, METH_VARARGS},
+    {"GetVerboseFlag", PoincareAttributes_GetVerboseFlag, METH_VARARGS},
+    {"SetLegendFlag", PoincareAttributes_SetLegendFlag, METH_VARARGS},
+    {"GetLegendFlag", PoincareAttributes_GetLegendFlag, METH_VARARGS},
+    {"SetLightingFlag", PoincareAttributes_SetLightingFlag, METH_VARARGS},
+    {"GetLightingFlag", PoincareAttributes_GetLightingFlag, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1834,51 +1411,25 @@ PoincareAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyPoincareAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "minPunctures") == 0)
+        return PoincareAttributes_GetMinPunctures(self, NULL);
+    if(strcmp(name, "maxPunctures") == 0)
+        return PoincareAttributes_GetMaxPunctures(self, NULL);
     if(strcmp(name, "sourceType") == 0)
         return PoincareAttributes_GetSourceType(self, NULL);
     if(strcmp(name, "SpecifiedPoint") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SpecifiedPoint));
     if(strcmp(name, "SpecifiedLine") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SpecifiedLine));
-    if(strcmp(name, "SpecifiedPlane") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::SpecifiedPlane));
 
-    if(strcmp(name, "maxStepLength") == 0)
-        return PoincareAttributes_GetMaxStepLength(self, NULL);
-    if(strcmp(name, "minPunctures") == 0)
-        return PoincareAttributes_GetMinPunctures(self, NULL);
-    if(strcmp(name, "maxPunctures") == 0)
-        return PoincareAttributes_GetMaxPunctures(self, NULL);
     if(strcmp(name, "pointSource") == 0)
         return PoincareAttributes_GetPointSource(self, NULL);
     if(strcmp(name, "lineStart") == 0)
         return PoincareAttributes_GetLineStart(self, NULL);
     if(strcmp(name, "lineEnd") == 0)
         return PoincareAttributes_GetLineEnd(self, NULL);
-    if(strcmp(name, "planeOrigin") == 0)
-        return PoincareAttributes_GetPlaneOrigin(self, NULL);
-    if(strcmp(name, "planeNormal") == 0)
-        return PoincareAttributes_GetPlaneNormal(self, NULL);
-    if(strcmp(name, "planeUpAxis") == 0)
-        return PoincareAttributes_GetPlaneUpAxis(self, NULL);
-    if(strcmp(name, "planeRadius") == 0)
-        return PoincareAttributes_GetPlaneRadius(self, NULL);
     if(strcmp(name, "pointDensity") == 0)
         return PoincareAttributes_GetPointDensity(self, NULL);
-    if(strcmp(name, "colorTableName") == 0)
-        return PoincareAttributes_GetColorTableName(self, NULL);
-    if(strcmp(name, "singleColor") == 0)
-        return PoincareAttributes_GetSingleColor(self, NULL);
-    if(strcmp(name, "verboseFlag") == 0)
-        return PoincareAttributes_GetVerboseFlag(self, NULL);
-    if(strcmp(name, "legendFlag") == 0)
-        return PoincareAttributes_GetLegendFlag(self, NULL);
-    if(strcmp(name, "lightingFlag") == 0)
-        return PoincareAttributes_GetLightingFlag(self, NULL);
-    if(strcmp(name, "relTol") == 0)
-        return PoincareAttributes_GetRelTol(self, NULL);
-    if(strcmp(name, "absTol") == 0)
-        return PoincareAttributes_GetAbsTol(self, NULL);
     if(strcmp(name, "integrationType") == 0)
         return PoincareAttributes_GetIntegrationType(self, NULL);
     if(strcmp(name, "DormandPrince") == 0)
@@ -1888,14 +1439,59 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "M3DC1Integrator") == 0)
         return PyInt_FromLong(long(PoincareAttributes::M3DC1Integrator));
 
-    if(strcmp(name, "showStreamlines") == 0)
-        return PoincareAttributes_GetShowStreamlines(self, NULL);
-    if(strcmp(name, "showPoints") == 0)
-        return PoincareAttributes_GetShowPoints(self, NULL);
-    if(strcmp(name, "showLines") == 0)
-        return PoincareAttributes_GetShowLines(self, NULL);
+    if(strcmp(name, "maxStepLength") == 0)
+        return PoincareAttributes_GetMaxStepLength(self, NULL);
+    if(strcmp(name, "relTol") == 0)
+        return PoincareAttributes_GetRelTol(self, NULL);
+    if(strcmp(name, "absTol") == 0)
+        return PoincareAttributes_GetAbsTol(self, NULL);
+    if(strcmp(name, "maxToroidalWinding") == 0)
+        return PoincareAttributes_GetMaxToroidalWinding(self, NULL);
+    if(strcmp(name, "overrideToroidalWinding") == 0)
+        return PoincareAttributes_GetOverrideToroidalWinding(self, NULL);
+    if(strcmp(name, "hitRate") == 0)
+        return PoincareAttributes_GetHitRate(self, NULL);
+    if(strcmp(name, "adjustPlane") == 0)
+        return PoincareAttributes_GetAdjustPlane(self, NULL);
+    if(strcmp(name, "overlaps") == 0)
+        return PoincareAttributes_GetOverlaps(self, NULL);
+    if(strcmp(name, "Raw") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Raw));
+    if(strcmp(name, "Remove") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Remove));
+    if(strcmp(name, "Merge") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Merge));
+    if(strcmp(name, "Smooth") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Smooth));
+
+    if(strcmp(name, "showCurves") == 0)
+        return PoincareAttributes_GetShowCurves(self, NULL);
+    if(strcmp(name, "Curves") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Curves));
+    if(strcmp(name, "Surfaces") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Surfaces));
+
     if(strcmp(name, "numberPlanes") == 0)
         return PoincareAttributes_GetNumberPlanes(self, NULL);
+    if(strcmp(name, "min") == 0)
+        return PoincareAttributes_GetMin(self, NULL);
+    if(strcmp(name, "max") == 0)
+        return PoincareAttributes_GetMax(self, NULL);
+    if(strcmp(name, "minFlag") == 0)
+        return PoincareAttributes_GetMinFlag(self, NULL);
+    if(strcmp(name, "maxFlag") == 0)
+        return PoincareAttributes_GetMaxFlag(self, NULL);
+    if(strcmp(name, "colorType") == 0)
+        return PoincareAttributes_GetColorType(self, NULL);
+    if(strcmp(name, "ColorBySingleColor") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::ColorBySingleColor));
+    if(strcmp(name, "ColorByColorTable") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::ColorByColorTable));
+
+    if(strcmp(name, "singleColor") == 0)
+        return PoincareAttributes_GetSingleColor(self, NULL);
+    if(strcmp(name, "colorTableName") == 0)
+        return PoincareAttributes_GetColorTableName(self, NULL);
     if(strcmp(name, "colorBy") == 0)
         return PoincareAttributes_GetColorBy(self, NULL);
     if(strcmp(name, "OriginalValue") == 0)
@@ -1921,53 +1517,18 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "RidgelineVariance") == 0)
         return PyInt_FromLong(long(PoincareAttributes::RidgelineVariance));
 
-    if(strcmp(name, "maxToroidalWinding") == 0)
-        return PoincareAttributes_GetMaxToroidalWinding(self, NULL);
-    if(strcmp(name, "overrideToroidalWinding") == 0)
-        return PoincareAttributes_GetOverrideToroidalWinding(self, NULL);
-    if(strcmp(name, "hitRate") == 0)
-        return PoincareAttributes_GetHitRate(self, NULL);
-    if(strcmp(name, "showCurves") == 0)
-        return PoincareAttributes_GetShowCurves(self, NULL);
-    if(strcmp(name, "Curves") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Curves));
-    if(strcmp(name, "Surfaces") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Surfaces));
-
-    if(strcmp(name, "adjustPlane") == 0)
-        return PoincareAttributes_GetAdjustPlane(self, NULL);
     if(strcmp(name, "showIslands") == 0)
         return PoincareAttributes_GetShowIslands(self, NULL);
-    if(strcmp(name, "overlaps") == 0)
-        return PoincareAttributes_GetOverlaps(self, NULL);
-    if(strcmp(name, "Raw") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Raw));
-    if(strcmp(name, "Remove") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Remove));
-    if(strcmp(name, "Merge") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Merge));
-    if(strcmp(name, "Smooth") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Smooth));
-
-    if(strcmp(name, "min") == 0)
-        return PoincareAttributes_GetMin(self, NULL);
-    if(strcmp(name, "max") == 0)
-        return PoincareAttributes_GetMax(self, NULL);
-    if(strcmp(name, "minFlag") == 0)
-        return PoincareAttributes_GetMinFlag(self, NULL);
-    if(strcmp(name, "maxFlag") == 0)
-        return PoincareAttributes_GetMaxFlag(self, NULL);
-    if(strcmp(name, "colorType") == 0)
-        return PoincareAttributes_GetColorType(self, NULL);
-    if(strcmp(name, "ColorBySingleColor") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::ColorBySingleColor));
-    if(strcmp(name, "ColorByColorTable") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::ColorByColorTable));
-
-    if(strcmp(name, "intersectPlaneOrigin") == 0)
-        return PoincareAttributes_GetIntersectPlaneOrigin(self, NULL);
-    if(strcmp(name, "intersectPlaneNormal") == 0)
-        return PoincareAttributes_GetIntersectPlaneNormal(self, NULL);
+    if(strcmp(name, "showLines") == 0)
+        return PoincareAttributes_GetShowLines(self, NULL);
+    if(strcmp(name, "showPoints") == 0)
+        return PoincareAttributes_GetShowPoints(self, NULL);
+    if(strcmp(name, "verboseFlag") == 0)
+        return PoincareAttributes_GetVerboseFlag(self, NULL);
+    if(strcmp(name, "legendFlag") == 0)
+        return PoincareAttributes_GetLegendFlag(self, NULL);
+    if(strcmp(name, "lightingFlag") == 0)
+        return PoincareAttributes_GetLightingFlag(self, NULL);
 
     return Py_FindMethod(PyPoincareAttributes_methods, self, name);
 }
@@ -1982,70 +1543,42 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "sourceType") == 0)
-        obj = PoincareAttributes_SetSourceType(self, tuple);
-    else if(strcmp(name, "maxStepLength") == 0)
-        obj = PoincareAttributes_SetMaxStepLength(self, tuple);
-    else if(strcmp(name, "minPunctures") == 0)
+    if(strcmp(name, "minPunctures") == 0)
         obj = PoincareAttributes_SetMinPunctures(self, tuple);
     else if(strcmp(name, "maxPunctures") == 0)
         obj = PoincareAttributes_SetMaxPunctures(self, tuple);
+    else if(strcmp(name, "sourceType") == 0)
+        obj = PoincareAttributes_SetSourceType(self, tuple);
     else if(strcmp(name, "pointSource") == 0)
         obj = PoincareAttributes_SetPointSource(self, tuple);
     else if(strcmp(name, "lineStart") == 0)
         obj = PoincareAttributes_SetLineStart(self, tuple);
     else if(strcmp(name, "lineEnd") == 0)
         obj = PoincareAttributes_SetLineEnd(self, tuple);
-    else if(strcmp(name, "planeOrigin") == 0)
-        obj = PoincareAttributes_SetPlaneOrigin(self, tuple);
-    else if(strcmp(name, "planeNormal") == 0)
-        obj = PoincareAttributes_SetPlaneNormal(self, tuple);
-    else if(strcmp(name, "planeUpAxis") == 0)
-        obj = PoincareAttributes_SetPlaneUpAxis(self, tuple);
-    else if(strcmp(name, "planeRadius") == 0)
-        obj = PoincareAttributes_SetPlaneRadius(self, tuple);
     else if(strcmp(name, "pointDensity") == 0)
         obj = PoincareAttributes_SetPointDensity(self, tuple);
-    else if(strcmp(name, "colorTableName") == 0)
-        obj = PoincareAttributes_SetColorTableName(self, tuple);
-    else if(strcmp(name, "singleColor") == 0)
-        obj = PoincareAttributes_SetSingleColor(self, tuple);
-    else if(strcmp(name, "verboseFlag") == 0)
-        obj = PoincareAttributes_SetVerboseFlag(self, tuple);
-    else if(strcmp(name, "legendFlag") == 0)
-        obj = PoincareAttributes_SetLegendFlag(self, tuple);
-    else if(strcmp(name, "lightingFlag") == 0)
-        obj = PoincareAttributes_SetLightingFlag(self, tuple);
+    else if(strcmp(name, "integrationType") == 0)
+        obj = PoincareAttributes_SetIntegrationType(self, tuple);
+    else if(strcmp(name, "maxStepLength") == 0)
+        obj = PoincareAttributes_SetMaxStepLength(self, tuple);
     else if(strcmp(name, "relTol") == 0)
         obj = PoincareAttributes_SetRelTol(self, tuple);
     else if(strcmp(name, "absTol") == 0)
         obj = PoincareAttributes_SetAbsTol(self, tuple);
-    else if(strcmp(name, "integrationType") == 0)
-        obj = PoincareAttributes_SetIntegrationType(self, tuple);
-    else if(strcmp(name, "showStreamlines") == 0)
-        obj = PoincareAttributes_SetShowStreamlines(self, tuple);
-    else if(strcmp(name, "showPoints") == 0)
-        obj = PoincareAttributes_SetShowPoints(self, tuple);
-    else if(strcmp(name, "showLines") == 0)
-        obj = PoincareAttributes_SetShowLines(self, tuple);
-    else if(strcmp(name, "numberPlanes") == 0)
-        obj = PoincareAttributes_SetNumberPlanes(self, tuple);
-    else if(strcmp(name, "colorBy") == 0)
-        obj = PoincareAttributes_SetColorBy(self, tuple);
     else if(strcmp(name, "maxToroidalWinding") == 0)
         obj = PoincareAttributes_SetMaxToroidalWinding(self, tuple);
     else if(strcmp(name, "overrideToroidalWinding") == 0)
         obj = PoincareAttributes_SetOverrideToroidalWinding(self, tuple);
     else if(strcmp(name, "hitRate") == 0)
         obj = PoincareAttributes_SetHitRate(self, tuple);
-    else if(strcmp(name, "showCurves") == 0)
-        obj = PoincareAttributes_SetShowCurves(self, tuple);
     else if(strcmp(name, "adjustPlane") == 0)
         obj = PoincareAttributes_SetAdjustPlane(self, tuple);
-    else if(strcmp(name, "showIslands") == 0)
-        obj = PoincareAttributes_SetShowIslands(self, tuple);
     else if(strcmp(name, "overlaps") == 0)
         obj = PoincareAttributes_SetOverlaps(self, tuple);
+    else if(strcmp(name, "showCurves") == 0)
+        obj = PoincareAttributes_SetShowCurves(self, tuple);
+    else if(strcmp(name, "numberPlanes") == 0)
+        obj = PoincareAttributes_SetNumberPlanes(self, tuple);
     else if(strcmp(name, "min") == 0)
         obj = PoincareAttributes_SetMin(self, tuple);
     else if(strcmp(name, "max") == 0)
@@ -2056,10 +1589,24 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMaxFlag(self, tuple);
     else if(strcmp(name, "colorType") == 0)
         obj = PoincareAttributes_SetColorType(self, tuple);
-    else if(strcmp(name, "intersectPlaneOrigin") == 0)
-        obj = PoincareAttributes_SetIntersectPlaneOrigin(self, tuple);
-    else if(strcmp(name, "intersectPlaneNormal") == 0)
-        obj = PoincareAttributes_SetIntersectPlaneNormal(self, tuple);
+    else if(strcmp(name, "singleColor") == 0)
+        obj = PoincareAttributes_SetSingleColor(self, tuple);
+    else if(strcmp(name, "colorTableName") == 0)
+        obj = PoincareAttributes_SetColorTableName(self, tuple);
+    else if(strcmp(name, "colorBy") == 0)
+        obj = PoincareAttributes_SetColorBy(self, tuple);
+    else if(strcmp(name, "showIslands") == 0)
+        obj = PoincareAttributes_SetShowIslands(self, tuple);
+    else if(strcmp(name, "showLines") == 0)
+        obj = PoincareAttributes_SetShowLines(self, tuple);
+    else if(strcmp(name, "showPoints") == 0)
+        obj = PoincareAttributes_SetShowPoints(self, tuple);
+    else if(strcmp(name, "verboseFlag") == 0)
+        obj = PoincareAttributes_SetVerboseFlag(self, tuple);
+    else if(strcmp(name, "legendFlag") == 0)
+        obj = PoincareAttributes_SetLegendFlag(self, tuple);
+    else if(strcmp(name, "lightingFlag") == 0)
+        obj = PoincareAttributes_SetLightingFlag(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -64,8 +64,7 @@ public:
     enum SourceType
     {
         SpecifiedPoint,
-        SpecifiedLine,
-        SpecifiedPlane
+        SpecifiedLine
     };
     enum IntegrationType
     {
@@ -133,105 +132,81 @@ public:
     void SelectPointSource();
     void SelectLineStart();
     void SelectLineEnd();
-    void SelectPlaneOrigin();
-    void SelectPlaneNormal();
-    void SelectPlaneUpAxis();
-    void SelectColorTableName();
     void SelectSingleColor();
-    void SelectIntersectPlaneOrigin();
-    void SelectIntersectPlaneNormal();
+    void SelectColorTableName();
 
     // Property setting methods
-    void SetSourceType(SourceType sourceType_);
-    void SetMaxStepLength(double maxStepLength_);
     void SetMinPunctures(double minPunctures_);
     void SetMaxPunctures(double maxPunctures_);
+    void SetSourceType(SourceType sourceType_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
     void SetLineEnd(const double *lineEnd_);
-    void SetPlaneOrigin(const double *planeOrigin_);
-    void SetPlaneNormal(const double *planeNormal_);
-    void SetPlaneUpAxis(const double *planeUpAxis_);
-    void SetPlaneRadius(double planeRadius_);
     void SetPointDensity(int pointDensity_);
-    void SetColorTableName(const std::string &colorTableName_);
-    void SetSingleColor(const ColorAttribute &singleColor_);
-    void SetVerboseFlag(bool verboseFlag_);
-    void SetLegendFlag(bool legendFlag_);
-    void SetLightingFlag(bool lightingFlag_);
+    void SetIntegrationType(IntegrationType integrationType_);
+    void SetMaxStepLength(double maxStepLength_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
-    void SetIntegrationType(IntegrationType integrationType_);
-    void SetShowStreamlines(bool showStreamlines_);
-    void SetShowPoints(bool showPoints_);
-    void SetShowLines(bool showLines_);
-    void SetNumberPlanes(int numberPlanes_);
-    void SetColorBy(ColorBy colorBy_);
     void SetMaxToroidalWinding(int maxToroidalWinding_);
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
     void SetHitRate(double hitRate_);
-    void SetShowCurves(ShowMeshType showCurves_);
     void SetAdjustPlane(int adjustPlane_);
-    void SetShowIslands(bool showIslands_);
     void SetOverlaps(OverlapType overlaps_);
+    void SetShowCurves(ShowMeshType showCurves_);
+    void SetNumberPlanes(int numberPlanes_);
     void SetMin(double min_);
     void SetMax(double max_);
     void SetMinFlag(bool minFlag_);
     void SetMaxFlag(bool maxFlag_);
     void SetColorType(ColoringMethod colorType_);
-    void SetIntersectPlaneOrigin(const double *intersectPlaneOrigin_);
-    void SetIntersectPlaneNormal(const double *intersectPlaneNormal_);
+    void SetSingleColor(const ColorAttribute &singleColor_);
+    void SetColorTableName(const std::string &colorTableName_);
+    void SetColorBy(ColorBy colorBy_);
+    void SetShowIslands(bool showIslands_);
+    void SetShowLines(bool showLines_);
+    void SetShowPoints(bool showPoints_);
+    void SetVerboseFlag(bool verboseFlag_);
+    void SetLegendFlag(bool legendFlag_);
+    void SetLightingFlag(bool lightingFlag_);
 
     // Property getting methods
-    SourceType           GetSourceType() const;
-    double               GetMaxStepLength() const;
     double               GetMinPunctures() const;
     double               GetMaxPunctures() const;
+    SourceType           GetSourceType() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
     const double         *GetLineStart() const;
           double         *GetLineStart();
     const double         *GetLineEnd() const;
           double         *GetLineEnd();
-    const double         *GetPlaneOrigin() const;
-          double         *GetPlaneOrigin();
-    const double         *GetPlaneNormal() const;
-          double         *GetPlaneNormal();
-    const double         *GetPlaneUpAxis() const;
-          double         *GetPlaneUpAxis();
-    double               GetPlaneRadius() const;
     int                  GetPointDensity() const;
-    const std::string    &GetColorTableName() const;
-          std::string    &GetColorTableName();
-    const ColorAttribute &GetSingleColor() const;
-          ColorAttribute &GetSingleColor();
-    bool                 GetVerboseFlag() const;
-    bool                 GetLegendFlag() const;
-    bool                 GetLightingFlag() const;
+    IntegrationType      GetIntegrationType() const;
+    double               GetMaxStepLength() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
-    IntegrationType      GetIntegrationType() const;
-    bool                 GetShowStreamlines() const;
-    bool                 GetShowPoints() const;
-    bool                 GetShowLines() const;
-    int                  GetNumberPlanes() const;
-    ColorBy              GetColorBy() const;
     int                  GetMaxToroidalWinding() const;
     int                  GetOverrideToroidalWinding() const;
     double               GetHitRate() const;
-    ShowMeshType         GetShowCurves() const;
     int                  GetAdjustPlane() const;
-    bool                 GetShowIslands() const;
     OverlapType          GetOverlaps() const;
+    ShowMeshType         GetShowCurves() const;
+    int                  GetNumberPlanes() const;
     double               GetMin() const;
     double               GetMax() const;
     bool                 GetMinFlag() const;
     bool                 GetMaxFlag() const;
     ColoringMethod       GetColorType() const;
-    const double         *GetIntersectPlaneOrigin() const;
-          double         *GetIntersectPlaneOrigin();
-    const double         *GetIntersectPlaneNormal() const;
-          double         *GetIntersectPlaneNormal();
+    const ColorAttribute &GetSingleColor() const;
+          ColorAttribute &GetSingleColor();
+    const std::string    &GetColorTableName() const;
+          std::string    &GetColorTableName();
+    ColorBy              GetColorBy() const;
+    bool                 GetShowIslands() const;
+    bool                 GetShowLines() const;
+    bool                 GetShowPoints() const;
+    bool                 GetVerboseFlag() const;
+    bool                 GetLegendFlag() const;
+    bool                 GetLightingFlag() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -282,93 +257,79 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_sourceType = 0,
-        ID_maxStepLength,
-        ID_minPunctures,
+        ID_minPunctures = 0,
         ID_maxPunctures,
+        ID_sourceType,
         ID_pointSource,
         ID_lineStart,
         ID_lineEnd,
-        ID_planeOrigin,
-        ID_planeNormal,
-        ID_planeUpAxis,
-        ID_planeRadius,
         ID_pointDensity,
-        ID_colorTableName,
-        ID_singleColor,
-        ID_verboseFlag,
-        ID_legendFlag,
-        ID_lightingFlag,
+        ID_integrationType,
+        ID_maxStepLength,
         ID_relTol,
         ID_absTol,
-        ID_integrationType,
-        ID_showStreamlines,
-        ID_showPoints,
-        ID_showLines,
-        ID_numberPlanes,
-        ID_colorBy,
         ID_maxToroidalWinding,
         ID_overrideToroidalWinding,
         ID_hitRate,
-        ID_showCurves,
         ID_adjustPlane,
-        ID_showIslands,
         ID_overlaps,
+        ID_showCurves,
+        ID_numberPlanes,
         ID_min,
         ID_max,
         ID_minFlag,
         ID_maxFlag,
         ID_colorType,
-        ID_intersectPlaneOrigin,
-        ID_intersectPlaneNormal,
+        ID_singleColor,
+        ID_colorTableName,
+        ID_colorBy,
+        ID_showIslands,
+        ID_showLines,
+        ID_showPoints,
+        ID_verboseFlag,
+        ID_legendFlag,
+        ID_lightingFlag,
         ID__LAST
     };
 
 private:
-    int            sourceType;
-    double         maxStepLength;
     double         minPunctures;
     double         maxPunctures;
+    int            sourceType;
     double         pointSource[3];
     double         lineStart[3];
     double         lineEnd[3];
-    double         planeOrigin[3];
-    double         planeNormal[3];
-    double         planeUpAxis[3];
-    double         planeRadius;
     int            pointDensity;
-    std::string    colorTableName;
-    ColorAttribute singleColor;
-    bool           verboseFlag;
-    bool           legendFlag;
-    bool           lightingFlag;
+    int            integrationType;
+    double         maxStepLength;
     double         relTol;
     double         absTol;
-    int            integrationType;
-    bool           showStreamlines;
-    bool           showPoints;
-    bool           showLines;
-    int            numberPlanes;
-    int            colorBy;
     int            maxToroidalWinding;
     int            overrideToroidalWinding;
     double         hitRate;
-    int            showCurves;
     int            adjustPlane;
-    bool           showIslands;
     int            overlaps;
+    int            showCurves;
+    int            numberPlanes;
     double         min;
     double         max;
     bool           minFlag;
     bool           maxFlag;
     int            colorType;
-    double         intersectPlaneOrigin[3];
-    double         intersectPlaneNormal[3];
+    ColorAttribute singleColor;
+    std::string    colorTableName;
+    int            colorBy;
+    bool           showIslands;
+    bool           showLines;
+    bool           showPoints;
+    bool           verboseFlag;
+    bool           legendFlag;
+    bool           lightingFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idddDDDDDDdisabbbddibbbiiiidiibiddbbiDD"
+#define POINCAREATTRIBUTES_TMFS "ddiDDDiidddiidiiiiddbbiasibbbbbb"
 
 #endif
