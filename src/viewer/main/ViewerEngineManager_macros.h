@@ -95,10 +95,11 @@
                    retval = false; \
                 } \
             } \
-            CATCH(VisItException) \
+            CATCH(VisItException e) \
             { \
                 retry = false; \
                 retval = false; \
+                avtCallback::IssueWarning(e.Message().c_str()); \
             } \
             ENDTRY \
         } \
