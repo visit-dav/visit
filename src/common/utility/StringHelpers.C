@@ -816,17 +816,22 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
 // ****************************************************************************
 //  Function: car
 //
-//  Purpose: Pulls the first word out of a space-separated string.
+//  Purpose: Pulls the first word out of a delimited string.
 //
 //  Programmer: Tom Fogal
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Nov  4 17:14:29 MST 2009
+//    Take an argument to use as the separating character.
+//
 // ****************************************************************************
 std::string
-StringHelpers::car(const std::string s)
+StringHelpers::car(const std::string s, const char separator)
 {
-    if(s.find(' ') != std::string::npos) {
-        return s.substr(0, s.find(' '));
+    if(s.find(separator) != std::string::npos) {
+        return s.substr(0, s.find(separator));
     }
     return s;
 }
@@ -834,18 +839,23 @@ StringHelpers::car(const std::string s)
 // ****************************************************************************
 //  Function: cdr
 //
-//  Purpose: Removes the first word from a space-separated string.
+//  Purpose: Removes the first word from a delimited string.
 //
 //  Programmer: Tom Fogal
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Nov  4 17:14:29 MST 2009
+//    Take an argument to use as the separating character.
+//
 // ****************************************************************************
 std::string
-StringHelpers::cdr(const std::string s)
+StringHelpers::cdr(const std::string s, const char separator)
 {
-    std::string::size_type space;
-    if((space = s.find(' ')) != std::string::npos) {
-        return s.substr(space+1);
+    std::string::size_type sep;
+    if((sep = s.find(separator)) != std::string::npos) {
+        return s.substr(sep+1);
     }
     return s;
 }

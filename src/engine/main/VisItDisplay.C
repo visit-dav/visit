@@ -103,15 +103,20 @@ format(std::string s, size_t node, size_t display)
 //  Programmer: Tom Fogal
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Nov  4 17:31:31 MST 2009
+//    Update for StringHelpers API.
+//
 // ****************************************************************************
 std::vector<std::string>
 split(std::string str, size_t node, size_t display)
 {
     namespace SH = StringHelpers;
     std::vector<std::string> ret;
-    ret.push_back(format(SH::car(str), node, display));
+    ret.push_back(format(SH::car(str, ' '), node, display));
     if(str.find(' ') != std::string::npos) {
-        SH::append(ret, split(SH::cdr(str), node, display));
+        SH::append(ret, split(SH::cdr(str, ' '), node, display));
     }
     return ret;
 }
