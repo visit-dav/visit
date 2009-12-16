@@ -36,10 +36,11 @@
 *
 *****************************************************************************/
 
+#include <cassert>
+#include <cstdio>
 #include <StringHelpers.h>
 #include <visitstream.h>
 #include <vector>
-#include <stdio.h>
 
 using namespace StringHelpers;
 using std::vector;
@@ -94,9 +95,42 @@ int main(int argc, char **argv)
        s_to_num_tmp != 2147483648UL)
         falseNegatives.push_back(__LINE__);
 
+    {
+        const std::string lgl_one = "libGL.so.1";
+        const std::string lgl = "libGL.so";
+        const std::string abs = "/path/to/Whatever.so";
+        const std::string spaces = "/spaces/in the/path";
+        std::string s = lgl_one + ":" + lgl + ":" + abs + ":" + spaces;
+        std::vector<std::string> splitstr = split(s, ':');
+        assert(splitstr.size() == 4);
+        if(splitstr[0] != lgl_one) { falseNegatives.push_back(__LINE__); }
+        if(splitstr[1] != lgl)     { falseNegatives.push_back(__LINE__); }
+        if(splitstr[2] != abs)     { falseNegatives.push_back(__LINE__); }
+        if(splitstr[3] != spaces)  { falseNegatives.push_back(__LINE__); }
+    }
+
     //
     // conversions that should fail
     //
+    {
+        std::string s = "::::";
+        std::vector<std::string> splitstr = split(s, ':');
+        assert(splitstr.size() == 4);
+    }
+    {
+        std::string s = "a:b:c:";
+        std::vector<std::string> splitstr = split(s, ':');
+        assert(splitstr.size() == 3);
+        if(splitstr[0] != "a") { falsePositives.push_back(__LINE__); }
+        if(splitstr[1] != "b") { falsePositives.push_back(__LINE__); }
+        if(splitstr[2] != "c") { falsePositives.push_back(__LINE__); }
+    }
+    {
+        std::string no_colon = "test";
+        std::vector<std::string> splitstr = split(no_colon, ':');
+        assert(splitstr.size() == 1);
+        if(splitstr[0] != no_colon) { falsePositives.push_back(__LINE__); }
+    }
 
     // fewer args than conversion specifiers
     if (ValidatePrintfFormatString("%d %d %d", "int", "int"))
