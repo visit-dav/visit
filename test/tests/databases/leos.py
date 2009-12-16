@@ -9,10 +9,14 @@
 #  Programmer: Mark C. Miller 
 #  Date:       July 20, 2005 
 #
+#  Modifications:
+#    Tom Fogal, Wed Dec 16 13:12:57 MST 2009
+#    Fixed a bad path.
+#
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/pdb_test_data/sesame.pdb")
+OpenDatabase("../data/sesame.pdb")
 
 #
 # Test default full frame (became 'auto' 07Mar06)
