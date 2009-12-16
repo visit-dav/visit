@@ -207,6 +207,9 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Brad Whitlock, Tue Jun 24 15:40:29 PDT 2008
 //    Added plugin managers.
 //
+//    Tom Fogal, Wed Dec  9 14:10:01 MST 2009
+//    Remove creation of window 0; we'll do it dynamically when needed.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -216,9 +219,6 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     requireOriginalNodes = false;
     inQueryMode = false;
     uniqueNetworkId = 0;
-
-    // stuff to support scalable rendering. We always have window 0
-    NewVisWindow(0);
 
     avtCallback::RegisterGetDatabaseCallback(GetDatabase, this);
     avtApplyDDFExpression::RegisterGetDDFCallback(GetDDFCallbackBridge, this);
