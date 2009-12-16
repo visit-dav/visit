@@ -76,35 +76,29 @@ struct s
     static runtime_type runtime_settings;
 };
 
+#ifdef __APPLE__
+  static const char lib_osmesa[] = "./lib/libOSMesa.dylib";
+  static const char lib_gl[] =
+    "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
+#elif defined(_WIN32)
+  static const char lib_osmesa[] = "./lib/libOSMesa.dll";
+  static const char lib_gl[] = "opengl32.dll";
+#elif defined(_AIX)
+  static const char lib_osmesa[] = "./lib/libOSMesa.so";
+  static const char lib_gl[] = "libGL.a(shr_64.o):libGL.a(shr.o)";
+#else
+  static const char lib_osmesa[] = "./lib/libOSMesa.so";
+  static const char lib_gl[] = "libGL.so.1:libGL.so";
+#endif
+
 // Keep this ordered by key (first field per entry).
 // Strings are special: if they start with ".", they're assumed to be a
 // relative path, and get our installation directory prepended.
 const struct Setting s::settings[] = {
-#ifdef __APPLE__
-    {"mesa-lib", "./lib/libOSMesa.dylib", true, "--mesa-lib", "VISIT_MESA_LIB",
+    {"mesa-lib", lib_osmesa, true, "--mesa-lib", "VISIT_MESA_LIB",
      "Library with mangled offscreen mesa symbols."},
-#elif defined(_WIN32)
-    {"mesa-lib", "./lib/libOSMesa.dll", true, "--mesa-lib", "VISIT_MESA_LIB",
-     "Library with mangled offscreen mesa symbols."},
-#else
-    {"mesa-lib", "./lib/libOSMesa.so", true, "--mesa-lib", "VISIT_MESA_LIB",
-     "Library with mangled offscreen mesa symbols."},
-#endif
-#ifdef __APPLE__
-    {"system-gl",
-     "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", true,
-     "--system-gl-lib", "VISIT_GL_LIB",
-     "Library (dylib) which implements OpenGL."},
-#elif defined(_WIN32)
-    {"system-gl", "opengl32.dll", true, "--system-gl-lib", "VISIT_GL_LIB",
-     "Library (.dll) which implements OpenGL."},
-#elif defined(_AIX)
-    {"system-gl", "libGL.a(shr_64.o)", true, "--system-gl-lib",
-     "VISIT_GL_LIB", "Library (.so, .a) which implements OpenGL."},
-#else
-    {"system-gl", "libGL.so.1", true, "--system-gl-lib",
-     "VISIT_GL_LIB", "Library (.so) which implements OpenGL."},
-#endif
+    {"system-gl", lib_gl, true, "--system-gl-lib", "VISIT_GL_LIB",
+     "Library which implements OpenGL."},
     {"tuvok-shader-dir", "./share/Shaders", true, "--tuvok-shaders",
      "VISIT_TUVOK_SHADER_DIR", "Directory which holds Tuvok's GLSL shaders."}
 };
