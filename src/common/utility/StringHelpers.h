@@ -53,9 +53,6 @@
 #include <cstdlib>
 #include <snprintf.h>
 
-using std::string;
-using std::vector;
-
 #if __GNUC__ >= 3
 #   define MUST_CHECK __attribute__ ((warn_unused_result))
 #else
@@ -64,42 +61,46 @@ using std::vector;
 
 namespace StringHelpers
 {
-   const string NON_RELEVANT_CHARS = "`~!@#$%^&*()-_=+{[}]|\\:;\"'<,>.?/0123456789";
+    const std::string NON_RELEVANT_CHARS =
+      "`~!@#$%^&*()-_=+{[}]|\\:;\"'<,>.?/0123456789";
 
-   enum FindResult {FindNone = -1, FindError = -2};
+    enum FindResult {FindNone = -1, FindError = -2};
 
-   void UTILITY_API GroupStrings(vector<string> stringList,
-                     vector<vector<string> > &stringGroups,
-                     vector<string> &groupNames,
-                     int numLeadingVals = 3,
-                     string nonRelevantChars = NON_RELEVANT_CHARS);
-   void UTILITY_API GroupStringsAsPaths(vector<string> stringList,
-                     vector<vector<string> > &stringGroups,
-                     vector<string> &groupNames);
-   void UTILITY_API GroupStringsFixedAlpha(vector<string> stringList,
-                     int numGroups,
-                     vector<vector<string> > &stringGroups);
-   void UTILITY_API GroupStringsFixedAlpha(
-                     const std::set<std::string> &stringList,
-                     int numGroups,
-                     vector<std::set<std::string> > &stringGroups);
+    void UTILITY_API GroupStrings(std::vector<std::string> stringList,
+                       std::vector<std::vector<std::string> > &stringGroups,
+                       std::vector<std::string> &groupNames,
+                       int numLeadingVals = 3,
+                       std::string nonRelevantChars = NON_RELEVANT_CHARS);
+    void UTILITY_API GroupStringsAsPaths(std::vector<std::string> stringList,
+                       std::vector<std::vector<std::string> > &stringGroups,
+                       std::vector<std::string> &groupNames);
+    void UTILITY_API GroupStringsFixedAlpha(std::vector<std::string> stringList,
+                       int numGroups,
+                       std::vector<std::vector<std::string> > &stringGroups);
+    void UTILITY_API GroupStringsFixedAlpha(
+                       const std::set<std::string> &stringList,
+                       int numGroups,
+                       std::vector<std::set<std::string> > &stringGroups);
 
+    int UTILITY_API FindRE(const std::string &s, const std::string &re);
+    int UTILITY_API FindRE(const char *stringToSearch, const char *re);
+    bool UTILITY_API ReplaceRE(std::string &s, const std::string &re,
+                               const std::string &repl);
+    std::string UTILITY_API ExtractRESubstr(const char *stringToSearch,
+                                            const char *re);
 
-   int UTILITY_API FindRE(const string &s, const string &re);
-   int UTILITY_API FindRE(const char *stringToSearch, const char *re);
-   bool UTILITY_API ReplaceRE(string &s, const string &re, const string &repl);
-   string UTILITY_API ExtractRESubstr(const char *stringToSearch, const char *re);
+    bool UTILITY_API ValidatePrintfFormatString(const char *fmtStr,
+                                                const char *arg1Type, ...);
 
-   bool UTILITY_API ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... );
+    const char UTILITY_API *Basename(const char *path);
+    const char UTILITY_API *Dirname(const char *path);
 
-   const char UTILITY_API *Basename(const char *path);
-   const char UTILITY_API *Dirname(const char *path);
+    std::string UTILITY_API car(const std::string);
+    std::string UTILITY_API cdr(const std::string);
+    void UTILITY_API append(std::vector<std::string> &,
+                            std::vector<std::string>);
 
-   string UTILITY_API car(const string);
-   string UTILITY_API cdr(const string);
-   void UTILITY_API append(std::vector<std::string> &, std::vector<std::string>);
-
-   string UTILITY_API Plural(const string &noun);
+    std::string UTILITY_API Plural(const std::string &noun);
 
 
 // ****************************************************************************
