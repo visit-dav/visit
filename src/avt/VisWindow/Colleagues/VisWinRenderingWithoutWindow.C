@@ -119,3 +119,24 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
     return renWin;
 }
 
+// ****************************************************************************
+//  Method: VisWinRenderingWithoutWindow::RealizeRenderWindow
+//
+//  Purpose:
+//      Forces VTK to initialize the underlying window.
+//
+//  Programmer: Tom Fogal
+//  Creation:   December 9th, 2009
+//
+// ****************************************************************************
+
+void
+VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
+{
+  // We'd like to do something lighter weight, but this seems to be the only
+  // way to *force* VTK to initialize in all cases.  The good news is that this
+  // method is typically called before we've got data in the RW, so it
+  // shouldn't be as heavy as it looks at first glance.
+  renWin->SetSize(300,300);
+  renWin->Render();
+}
