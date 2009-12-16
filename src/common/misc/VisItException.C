@@ -282,6 +282,9 @@ typedef struct
 //
 //   Sean Ahern, Mon Dec 10 15:33:50 EST 2007
 //   Added ExpressionParseException.
+//
+//   Tom Fogal, Tue Dec  8 15:48:23 MST 2009
+//   Added LibraryNotFoundException.
 
 static const exception_info exception_tree[] =
 {
@@ -329,6 +332,7 @@ static const exception_info exception_tree[] =
     {"InvalidTimeStepException",           "DatabaseException"},
     {"InvalidVariableException",           "DatabaseException"},
     {"InvalidZoneTypeException",           "DatabaseException"},
+    {"LibraryNotFoundException",           "PlotterException"},
     {"LogicalIndexException",              "PipelineException"},
     {"LostConnectionException",            "VisItException"},
     {"NoCurveException",                   "PipelineException"},
