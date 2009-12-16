@@ -39,14 +39,6 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
         SetLineEnd(line->GetPoint2());
         retval = true;
     }
-    else if(atts->TypeName() == "PlaneAttributes")
-    {
-        const PlaneAttributes *plane = (const PlaneAttributes *)atts;
-        SetPlaneOrigin(plane->GetOrigin());
-        SetPlaneNormal(plane->GetNormal());
-        SetPlaneUpAxis(plane->GetUpAxis());
-        retval = true;
-    }
     return retval;
 }
 
@@ -87,14 +79,6 @@ PoincareAttributes::CreateCompatible(const std::string &tname) const
         l->SetPoint1(GetLineStart());
         l->SetPoint2(GetLineEnd());
         retval = l;
-    }
-    else if (tname == "PlaneAttributes")
-    {
-        PlaneAttributes *p = new PlaneAttributes;
-        p->SetOrigin(GetPlaneOrigin());
-        p->SetNormal(GetPlaneNormal());
-        p->SetUpAxis(GetPlaneUpAxis());
-        retval = p;
     }
     return retval;
 }
@@ -155,38 +139,22 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
                               (POINT_DIFFERS(lineStart, obj.lineStart) ||
                                POINT_DIFFERS(lineEnd, obj.lineEnd)));
     
-    // If we're in plane source mode and the plane differs, sourcePlaneDiffers
-    // evaluates to true.
-    bool sourcePlaneDiffers = ((sourceType == SpecifiedPlane) &&
-                               (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
-                                POINT_DIFFERS(planeNormal, obj.planeNormal) ||
-                                POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
-                                planeRadius != obj.planeRadius));
-//    bool intPlaneDiffers = ((terminationType == Intersections) &&
-//                            (POINT_DIFFERS(intersectPlaneOrigin, obj.intersectPlaneOrigin) ||
-//                             POINT_DIFFERS(intersectPlaneNormal, obj.intersectPlaneNormal)));
-
     // Other things need to be true before we start paying attention to
     // point density.
-    bool densityMatters = (sourceType == SpecifiedLine ||
-                           sourceType == SpecifiedPlane) &&
-        (pointDensity != obj.pointDensity);
+    bool densityMatters = ((sourceType == SpecifiedLine) &&
+                           (pointDensity != obj.pointDensity));
 
-    bool radiusMatters = (planeRadius != obj.planeRadius);
+    return (minPunctures != obj.minPunctures ||
+            maxPunctures != obj.maxPunctures ||
+            sourcePointsDiffer ||
+            sourceLineDiffers ||
+            densityMatters ||
 
-    return (sourceType != obj.sourceType) ||
-//           (termination != obj.termination) ||
-//           (terminationType != obj.terminationType) ||
-           (integrationType != obj.integrationType) ||
-           (maxStepLength != obj.maxStepLength) ||
-           (relTol != obj.relTol) ||
-           (absTol != obj.absTol) ||
-           sourcePointsDiffer ||
-           sourceLineDiffers ||
-           sourcePlaneDiffers ||
-//           intPlaneDiffers ||
-           densityMatters ||
-           radiusMatters;
+            sourceType != obj.sourceType ||
+            integrationType != obj.integrationType ||
+            maxStepLength != obj.maxStepLength ||
+            relTol != obj.relTol ||
+            absTol != obj.absTol);
 }
 
 Function: PoincareAttsRequireRecalculation
@@ -209,13 +177,19 @@ bool
 PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
     return maxToroidalWinding != obj.maxToroidalWinding ||
+           overrideToroidalWinding != obj.overrideToroidalWinding ||
            hitRate != obj.hitRate ||
            adjustPlane != obj.adjustPlane ||
            overlaps != obj.overlaps ||
-           numberPlanes != obj.numberPlanes ||
-           overrideToroidalWinding != obj.overrideToroidalWinding ||
-           colorBy != obj.colorBy ||
+
            showCurves != obj.showCurves ||
+           numberPlanes != obj.numberPlanes ||
+
+           colorBy != obj.colorBy ||
+
+           showIslands != obj.showIslands ||
+           showLines != obj.showLines ||
+           showPoints != obj.showPoints ||
            verboseFlag != obj.verboseFlag;
 }
 

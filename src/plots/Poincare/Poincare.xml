@@ -6,11 +6,11 @@
       avtPoincareFilter.C
       StreamlineAnalyzerLib.C
     </Files>
+
     <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
       <Enum name="SourceType">
         SpecifiedPoint
         SpecifiedLine
-        SpecifiedPlane
       </Enum>
 
       <Enum name="IntegrationType">
@@ -49,17 +49,16 @@
 	Confidence
 	RidgelineVariance
       </Enum>
-      <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
-        SpecifiedPoint
-      </Field>
-      <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
-      </Field>
+
       <Field name="minPunctures" label="Minimum number of Punctures" type="double">
         10.000000
       </Field>
       <Field name="maxPunctures" label="Maximum number of Punctures" type="double">
         100.000000
+      </Field>
+
+      <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
+        SpecifiedPoint
       </Field>
       <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
         0.000000
@@ -76,44 +75,16 @@
         0.000000
         0.000000
       </Field>
-      <Field name="planeOrigin" label="Plane Source Point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        0.000000
-        0.000000
-      </Field>
-      <Field name="planeNormal" label="Plane Source Normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        1.000000
-        0.000000
-      </Field>
-      <Field name="planeUpAxis" label="Plane Source Up Axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        0.000000
-        1.000000
-      </Field>
-      <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
-        1.000000
-      </Field>
-      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane">
+      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine">
         1
       </Field>
-      <Field name="colorTableName" label="Color table" type="colortable">
-        Default
+
+
+      <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
+        AdamsBashforth
       </Field>
-      <Field name="singleColor" label="Single color" type="color" length="4">
-        0
-        0
-        0
-        255
-      </Field>
-      <Field name="verboseFlag" label="verbose" type="bool">
-        true
-      </Field>
-      <Field name="legendFlag" label="Legend" type="bool">
-        true
-      </Field>
-      <Field name="lightingFlag" label="Lighting" type="bool">
-        true
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
         0.000100
@@ -121,24 +92,7 @@
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
       </Field>
-      <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
-        AdamsBashforth
-      </Field>
-      <Field name="showStreamlines" label="Show Streamlines" type="bool">
-        false
-      </Field>
-      <Field name="showPoints" label="Show Points" type="bool">
-        false
-      </Field>
-      <Field name="showLines" label="Show Lines" type="bool">
-        true
-      </Field>
-      <Field name="numberPlanes" label="numberPlanes" type="int">
-        1
-      </Field>
-      <Field name="colorBy" label="colorBy" type="enum" subtype="ColorBy">
-        SafetyFactor
-      </Field>
+
       <Field name="maxToroidalWinding" label="maxToroidalWinding" type="int">
         30
       </Field>
@@ -148,18 +102,20 @@
       <Field name="hitRate" label="hitRate" type="double">
         0.900000
       </Field>
-      <Field name="showCurves" label="showCurves" type="enum" subtype="ShowMeshType">
-        Curves
-      </Field>
       <Field name="adjustPlane" label="adjustPlane" type="int">
         -1
-      </Field>
-      <Field name="showIslands" label="showIslands" type="bool">
-        false
       </Field>
       <Field name="overlaps" label="overlaps" type="enum" subtype="OverlapType">
         Remove
       </Field>
+
+      <Field name="showCurves" label="showCurves" type="enum" subtype="ShowMeshType">
+        Curves
+      </Field>
+      <Field name="numberPlanes" label="numberPlanes" type="int">
+        1
+      </Field>
+
       <Field name="min" label="min" type="double">
         0.000000
       </Field>
@@ -172,19 +128,43 @@
       <Field name="maxFlag" label="maxFlag" type="bool">
         false
       </Field>
+
       <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
         ColorBySingleColor
       </Field>
-      <Field name="intersectPlaneOrigin" label="intersectPlaneOrigin" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        0.000000
+
+      <Field name="singleColor" label="Single color" type="color" length="4">
+        0
+        0
+        0
+        255
       </Field>
-      <Field name="intersectPlaneNormal" label="intersectPlaneNormal" type="doubleArray" length="3">
-        0.000000
-        1.000000
-        0.000000
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
       </Field>
+      <Field name="colorBy" label="colorBy" type="enum" subtype="ColorBy">
+        SafetyFactor
+      </Field>
+
+      <Field name="showIslands" label="showIslands" type="bool">
+        false
+      </Field>
+      <Field name="showLines" label="Show Lines" type="bool">
+        true
+      </Field>
+      <Field name="showPoints" label="Show Points" type="bool">
+        false
+      </Field>
+      <Field name="verboseFlag" label="verbose" type="bool">
+        true
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
