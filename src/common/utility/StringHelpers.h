@@ -118,6 +118,9 @@ namespace StringHelpers
 //    Tom Fogal, Fri Aug 29 16:15:17 EDT 2008
 //    Reorganized to propagate error upward.
 //
+//    Tom Fogal, Tue Sep 23 11:08:02 MDT 2008
+//    Removed a statically-false branch which was causing an annoying warning.
+//
 // ****************************************************************************
     template<typename UT>
     MUST_CHECK bool str_to_u_numeric(const char * const s, UT *retval)
@@ -163,9 +166,6 @@ namespace StringHelpers
         }
         if(end == s) {
             // junk characters start the string .. is this a number?
-            return false;
-        }
-        if(ret < 0) {
             return false;
         }
         return true;
