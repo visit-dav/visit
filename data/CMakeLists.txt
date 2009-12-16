@@ -245,6 +245,7 @@ IF(SILO_FOUND)
         BUILD_DATA_TARGET(${PDB_TARGET}
                           INCLUDE_DIRS
                             ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${VISIT_BINARY_DIR}/include
                             ${VISIT_SOURCE_DIR}/include
                           LIB_DIRS
                             ${SILO_LIBRARY_DIR}
