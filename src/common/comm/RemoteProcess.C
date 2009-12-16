@@ -57,6 +57,9 @@
 #include <PTY.h>
 #include <signal.h>
 #endif
+#if defined(__linux__)
+#include <sched.h>
+#endif
 
 #include <visit-config.h>
 
@@ -886,6 +889,7 @@ static void *threaded_accept_callback(void *data)
 //
 //   Tom Fogal, Wed Dec  9 11:09:07 MST 2009
 //   Fix pthread_create error return detection.
+//   Yield the thread when we're waiting for another thread to complete.
 //
 // ****************************************************************************
 
@@ -980,6 +984,8 @@ RemoteProcess::MultiThreadedAcceptSocket()
                 MUTEX_UNLOCK(cb.mutex);
 #ifdef WIN32
                 Sleep(1);
+#elif defined(__linux__)
+                sched_yield();
 #endif
             }
             while(noDescriptor && noProcessError && noCancel);
