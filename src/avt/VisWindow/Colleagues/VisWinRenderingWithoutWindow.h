@@ -66,6 +66,9 @@ class     vtkRenderWindow;
 //      Kathleen Bonnell, Tue Feb 11 11:28:03 PST 2003  
 //      Removed member 'iren'.  Made GetRenderWindowInteractor return NULL. 
 //
+//      Tom Fogal, Wed Dec  9 15:44:56 MST 2009
+//      Define RealizeRenderWindow.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
@@ -93,10 +96,6 @@ class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
     virtual vtkRenderWindowInteractor *GetRenderWindowInteractor(void)
                                            { return NULL; };
 
-    virtual void                       RealizeRenderWindow(void) {;};
+    virtual void                       RealizeRenderWindow(void);
 };
-
-
 #endif
-
-
