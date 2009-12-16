@@ -49,6 +49,7 @@
 #include <map>
 #include <string>
 #include <cstring>
+#include <sstream>
 #include <vector>
 
 #include <visit-config.h>
@@ -913,6 +914,33 @@ StringHelpers::append(std::vector<std::string> &argv,
     }
     lst.erase(lst.begin());
     append(argv, lst);
+}
+
+// ****************************************************************************
+//  Function: split
+//
+//  Purpose: Splits a string based on a delimiter
+//
+//  Programmer: Tom Fogal
+//  Creation:   December 7, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::vector<std::string>
+StringHelpers::split(const std::string input, const char separator)
+{
+    std::istringstream iss(input);
+    std::string cur;
+    std::vector<std::string> retval;
+    while(std::getline(iss, cur, separator))
+    {
+        if(iss)
+        {
+            retval.push_back(cur);
+        }
+    }
+    return retval;
 }
 
 // ****************************************************************************
