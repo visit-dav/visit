@@ -12,6 +12,30 @@
         SpecifiedLine
         SpecifiedPlane
       </Enum>
+
+      <Enum name="IntegrationType">
+        DormandPrince
+        AdamsBashforth
+        M3DC1Integrator
+      </Enum>
+
+      <Enum name="OverlapType">
+        Raw
+        Remove
+        Merge
+        Smooth
+      </Enum>
+
+      <Enum name="ShowMeshType">
+        Curves
+        Surfaces
+      </Enum>
+
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByColorTable
+      </Enum>
+
       <Enum name="ColorBy">
         OriginalValue
         InputOrder
@@ -24,24 +48,6 @@
         SafetyFactor
 	Confidence
 	RidgelineVariance
-      </Enum>
-      <Enum name="ShowMeshType">
-        Curves
-        Surfaces
-      </Enum>
-      <Enum name="OverlapType">
-        Raw
-        Remove
-        Merge
-        Smooth
-      </Enum>
-      <Enum name="IntegrationType">
-        DormandPrince
-        AdamsBashforth
-      </Enum>
-      <Enum name="ColoringMethod">
-        ColorBySingleColor
-        ColorByColorTable
       </Enum>
       <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
         SpecifiedPoint
@@ -123,6 +129,9 @@
       </Field>
       <Field name="showPoints" label="Show Points" type="bool">
         false
+      </Field>
+      <Field name="showLines" label="Show Lines" type="bool">
+        true
       </Field>
       <Field name="numberPlanes" label="numberPlanes" type="int">
         1

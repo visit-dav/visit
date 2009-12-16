@@ -81,76 +81,37 @@ PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttribut
 }
 
 //
-// Enum conversion methods for PoincareAttributes::ColorBy
+// Enum conversion methods for PoincareAttributes::IntegrationType
 //
 
-static const char *ColorBy_strings[] = {
-"OriginalValue", "InputOrder", "PointIndex", 
-"Plane", "WindingOrder", "WindingPointOrder", 
-"ToroidalWindings", "PoloidalWindings", "SafetyFactor", 
-"Confidence", "RidgelineVariance"};
+static const char *IntegrationType_strings[] = {
+"DormandPrince", "AdamsBashforth", "M3DC1Integrator"
+};
 
 std::string
-PoincareAttributes::ColorBy_ToString(PoincareAttributes::ColorBy t)
+PoincareAttributes::IntegrationType_ToString(PoincareAttributes::IntegrationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 11) index = 0;
-    return ColorBy_strings[index];
+    if(index < 0 || index >= 3) index = 0;
+    return IntegrationType_strings[index];
 }
 
 std::string
-PoincareAttributes::ColorBy_ToString(int t)
+PoincareAttributes::IntegrationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 11) ? 0 : t;
-    return ColorBy_strings[index];
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return IntegrationType_strings[index];
 }
 
 bool
-PoincareAttributes::ColorBy_FromString(const std::string &s, PoincareAttributes::ColorBy &val)
+PoincareAttributes::IntegrationType_FromString(const std::string &s, PoincareAttributes::IntegrationType &val)
 {
-    val = PoincareAttributes::OriginalValue;
-    for(int i = 0; i < 11; ++i)
+    val = PoincareAttributes::DormandPrince;
+    for(int i = 0; i < 3; ++i)
     {
-        if(s == ColorBy_strings[i])
+        if(s == IntegrationType_strings[i])
         {
-            val = (ColorBy)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
-// Enum conversion methods for PoincareAttributes::ShowMeshType
-//
-
-static const char *ShowMeshType_strings[] = {
-"Curves", "Surfaces"};
-
-std::string
-PoincareAttributes::ShowMeshType_ToString(PoincareAttributes::ShowMeshType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return ShowMeshType_strings[index];
-}
-
-std::string
-PoincareAttributes::ShowMeshType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return ShowMeshType_strings[index];
-}
-
-bool
-PoincareAttributes::ShowMeshType_FromString(const std::string &s, PoincareAttributes::ShowMeshType &val)
-{
-    val = PoincareAttributes::Curves;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == ShowMeshType_strings[i])
-        {
-            val = (ShowMeshType)i;
+            val = (IntegrationType)i;
             return true;
         }
     }
@@ -196,36 +157,36 @@ PoincareAttributes::OverlapType_FromString(const std::string &s, PoincareAttribu
 }
 
 //
-// Enum conversion methods for PoincareAttributes::IntegrationType
+// Enum conversion methods for PoincareAttributes::ShowMeshType
 //
 
-static const char *IntegrationType_strings[] = {
-"DormandPrince", "AdamsBashforth"};
+static const char *ShowMeshType_strings[] = {
+"Curves", "Surfaces"};
 
 std::string
-PoincareAttributes::IntegrationType_ToString(PoincareAttributes::IntegrationType t)
+PoincareAttributes::ShowMeshType_ToString(PoincareAttributes::ShowMeshType t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return IntegrationType_strings[index];
+    return ShowMeshType_strings[index];
 }
 
 std::string
-PoincareAttributes::IntegrationType_ToString(int t)
+PoincareAttributes::ShowMeshType_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return IntegrationType_strings[index];
+    return ShowMeshType_strings[index];
 }
 
 bool
-PoincareAttributes::IntegrationType_FromString(const std::string &s, PoincareAttributes::IntegrationType &val)
+PoincareAttributes::ShowMeshType_FromString(const std::string &s, PoincareAttributes::ShowMeshType &val)
 {
-    val = PoincareAttributes::DormandPrince;
+    val = PoincareAttributes::Curves;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == IntegrationType_strings[i])
+        if(s == ShowMeshType_strings[i])
         {
-            val = (IntegrationType)i;
+            val = (ShowMeshType)i;
             return true;
         }
     }
@@ -269,14 +230,51 @@ PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttr
     return false;
 }
 
-// Type map format string
-const char *PoincareAttributes::TypeMapFormatString = "idddDDDDDDdisabbbddibbiiiidiibiddbbiDD";
+//
+// Enum conversion methods for PoincareAttributes::ColorBy
+//
+
+static const char *ColorBy_strings[] = {
+"OriginalValue", "InputOrder", "PointIndex", 
+"Plane", "WindingOrder", "WindingPointOrder", 
+"ToroidalWindings", "PoloidalWindings", "SafetyFactor", 
+"Confidence", "RidgelineVariance"};
+
+std::string
+PoincareAttributes::ColorBy_ToString(PoincareAttributes::ColorBy t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 11) index = 0;
+    return ColorBy_strings[index];
+}
+
+std::string
+PoincareAttributes::ColorBy_ToString(int t)
+{
+    int index = (t < 0 || t >= 11) ? 0 : t;
+    return ColorBy_strings[index];
+}
+
+bool
+PoincareAttributes::ColorBy_FromString(const std::string &s, PoincareAttributes::ColorBy &val)
+{
+    val = PoincareAttributes::OriginalValue;
+    for(int i = 0; i < 11; ++i)
+    {
+        if(s == ColorBy_strings[i])
+        {
+            val = (ColorBy)i;
+            return true;
+        }
+    }
+    return false;
+}
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
 // Purpose: 
-//   Constructor for the PoincareAttributes class.
+//   Init utility for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
 //
@@ -287,9 +285,7 @@ const char *PoincareAttributes::TypeMapFormatString = "idddDDDDDDdisabbbddibbiii
 //   
 // ****************************************************************************
 
-PoincareAttributes::PoincareAttributes() : 
-    AttributeSubject(PoincareAttributes::TypeMapFormatString),
-    colorTableName("Default"), singleColor(0, 0, 0)
+void PoincareAttributes::Init()
 {
     sourceType = SpecifiedPoint;
     maxStepLength = 0.1;
@@ -323,6 +319,7 @@ PoincareAttributes::PoincareAttributes() :
     integrationType = AdamsBashforth;
     showStreamlines = false;
     showPoints = false;
+    showLines = true;
     numberPlanes = 1;
     colorBy = SafetyFactor;
     maxToroidalWinding = 30;
@@ -343,13 +340,15 @@ PoincareAttributes::PoincareAttributes() :
     intersectPlaneNormal[0] = 0;
     intersectPlaneNormal[1] = 1;
     intersectPlaneNormal[2] = 0;
+
+    PoincareAttributes::SelectAll();
 }
 
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
 // Purpose: 
-//   Copy constructor for the PoincareAttributes class.
+//   Copy utility for the PoincareAttributes class.
 //
 // Note:       Autogenerated by xml2atts.
 //
@@ -360,8 +359,7 @@ PoincareAttributes::PoincareAttributes() :
 //   
 // ****************************************************************************
 
-PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) : 
-    AttributeSubject(PoincareAttributes::TypeMapFormatString)
+void PoincareAttributes::Copy(const PoincareAttributes &obj)
 {
     sourceType = obj.sourceType;
     maxStepLength = obj.maxStepLength;
@@ -403,6 +401,7 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     integrationType = obj.integrationType;
     showStreamlines = obj.showStreamlines;
     showPoints = obj.showPoints;
+    showLines = obj.showLines;
     numberPlanes = obj.numberPlanes;
     colorBy = obj.colorBy;
     maxToroidalWinding = obj.maxToroidalWinding;
@@ -426,7 +425,98 @@ PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) :
     intersectPlaneNormal[2] = obj.intersectPlaneNormal[2];
 
 
-    SelectAll();
+    PoincareAttributes::SelectAll();
+}
+
+// Type map format string
+const char *PoincareAttributes::TypeMapFormatString = POINCAREATTRIBUTES_TMFS;
+const AttributeGroup::private_tmfs_t PoincareAttributes::TmfsStruct = {POINCAREATTRIBUTES_TMFS};
+
+
+// ****************************************************************************
+// Method: PoincareAttributes::PoincareAttributes
+//
+// Purpose: 
+//   Default constructor for the PoincareAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PoincareAttributes::PoincareAttributes() : 
+    AttributeSubject(PoincareAttributes::TypeMapFormatString),
+    colorTableName("Default"), singleColor(0, 0, 0)
+{
+    PoincareAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: PoincareAttributes::PoincareAttributes
+//
+// Purpose: 
+//   Constructor for the derived classes of PoincareAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PoincareAttributes::PoincareAttributes(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs),
+    colorTableName("Default"), singleColor(0, 0, 0)
+{
+    PoincareAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: PoincareAttributes::PoincareAttributes
+//
+// Purpose: 
+//   Copy constructor for the PoincareAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj) : 
+    AttributeSubject(PoincareAttributes::TypeMapFormatString)
+{
+    PoincareAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: PoincareAttributes::PoincareAttributes
+//
+// Purpose: 
+//   Copy constructor for derived classes of the PoincareAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PoincareAttributes::PoincareAttributes(const PoincareAttributes &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    PoincareAttributes::Copy(obj);
 }
 
 // ****************************************************************************
@@ -468,70 +558,9 @@ PoincareAttributes&
 PoincareAttributes::operator = (const PoincareAttributes &obj)
 {
     if (this == &obj) return *this;
-    sourceType = obj.sourceType;
-    maxStepLength = obj.maxStepLength;
-    minPunctures = obj.minPunctures;
-    maxPunctures = obj.maxPunctures;
-    pointSource[0] = obj.pointSource[0];
-    pointSource[1] = obj.pointSource[1];
-    pointSource[2] = obj.pointSource[2];
 
-    lineStart[0] = obj.lineStart[0];
-    lineStart[1] = obj.lineStart[1];
-    lineStart[2] = obj.lineStart[2];
+    PoincareAttributes::Copy(obj);
 
-    lineEnd[0] = obj.lineEnd[0];
-    lineEnd[1] = obj.lineEnd[1];
-    lineEnd[2] = obj.lineEnd[2];
-
-    planeOrigin[0] = obj.planeOrigin[0];
-    planeOrigin[1] = obj.planeOrigin[1];
-    planeOrigin[2] = obj.planeOrigin[2];
-
-    planeNormal[0] = obj.planeNormal[0];
-    planeNormal[1] = obj.planeNormal[1];
-    planeNormal[2] = obj.planeNormal[2];
-
-    planeUpAxis[0] = obj.planeUpAxis[0];
-    planeUpAxis[1] = obj.planeUpAxis[1];
-    planeUpAxis[2] = obj.planeUpAxis[2];
-
-    planeRadius = obj.planeRadius;
-    pointDensity = obj.pointDensity;
-    colorTableName = obj.colorTableName;
-    singleColor = obj.singleColor;
-    verboseFlag = obj.verboseFlag;
-    legendFlag = obj.legendFlag;
-    lightingFlag = obj.lightingFlag;
-    relTol = obj.relTol;
-    absTol = obj.absTol;
-    integrationType = obj.integrationType;
-    showStreamlines = obj.showStreamlines;
-    showPoints = obj.showPoints;
-    numberPlanes = obj.numberPlanes;
-    colorBy = obj.colorBy;
-    maxToroidalWinding = obj.maxToroidalWinding;
-    overrideToroidalWinding = obj.overrideToroidalWinding;
-    hitRate = obj.hitRate;
-    showCurves = obj.showCurves;
-    adjustPlane = obj.adjustPlane;
-    showIslands = obj.showIslands;
-    overlaps = obj.overlaps;
-    min = obj.min;
-    max = obj.max;
-    minFlag = obj.minFlag;
-    maxFlag = obj.maxFlag;
-    colorType = obj.colorType;
-    intersectPlaneOrigin[0] = obj.intersectPlaneOrigin[0];
-    intersectPlaneOrigin[1] = obj.intersectPlaneOrigin[1];
-    intersectPlaneOrigin[2] = obj.intersectPlaneOrigin[2];
-
-    intersectPlaneNormal[0] = obj.intersectPlaneNormal[0];
-    intersectPlaneNormal[1] = obj.intersectPlaneNormal[1];
-    intersectPlaneNormal[2] = obj.intersectPlaneNormal[2];
-
-
-    SelectAll();
     return *this;
 }
 
@@ -616,6 +645,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (integrationType == obj.integrationType) &&
             (showStreamlines == obj.showStreamlines) &&
             (showPoints == obj.showPoints) &&
+            (showLines == obj.showLines) &&
             (numberPlanes == obj.numberPlanes) &&
             (colorBy == obj.colorBy) &&
             (maxToroidalWinding == obj.maxToroidalWinding) &&
@@ -838,6 +868,7 @@ PoincareAttributes::SelectAll()
     Select(ID_integrationType,         (void *)&integrationType);
     Select(ID_showStreamlines,         (void *)&showStreamlines);
     Select(ID_showPoints,              (void *)&showPoints);
+    Select(ID_showLines,               (void *)&showLines);
     Select(ID_numberPlanes,            (void *)&numberPlanes);
     Select(ID_colorBy,                 (void *)&colorBy);
     Select(ID_maxToroidalWinding,      (void *)&maxToroidalWinding);
@@ -1018,6 +1049,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("showPoints", showPoints));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showLines, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showLines", showLines));
     }
 
     if(completeSave || !FieldsEqual(ID_numberPlanes, &defaultObject))
@@ -1210,7 +1247,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetIntegrationType(IntegrationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1224,6 +1261,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowStreamlines(node->AsBool());
     if((node = searchNode->GetNode("showPoints")) != 0)
         SetShowPoints(node->AsBool());
+    if((node = searchNode->GetNode("showLines")) != 0)
+        SetShowLines(node->AsBool());
     if((node = searchNode->GetNode("numberPlanes")) != 0)
         SetNumberPlanes(node->AsInt());
     if((node = searchNode->GetNode("colorBy")) != 0)
@@ -1482,6 +1521,13 @@ PoincareAttributes::SetShowPoints(bool showPoints_)
 {
     showPoints = showPoints_;
     Select(ID_showPoints, (void *)&showPoints);
+}
+
+void
+PoincareAttributes::SetShowLines(bool showLines_)
+{
+    showLines = showLines_;
+    Select(ID_showLines, (void *)&showLines);
 }
 
 void
@@ -1784,6 +1830,12 @@ PoincareAttributes::GetShowPoints() const
     return showPoints;
 }
 
+bool
+PoincareAttributes::GetShowLines() const
+{
+    return showLines;
+}
+
 int
 PoincareAttributes::GetNumberPlanes() const
 {
@@ -2002,6 +2054,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_integrationType:         return "integrationType";
     case ID_showStreamlines:         return "showStreamlines";
     case ID_showPoints:              return "showPoints";
+    case ID_showLines:               return "showLines";
     case ID_numberPlanes:            return "numberPlanes";
     case ID_colorBy:                 return "colorBy";
     case ID_maxToroidalWinding:      return "maxToroidalWinding";
@@ -2064,6 +2117,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_integrationType:         return FieldType_enum;
     case ID_showStreamlines:         return FieldType_bool;
     case ID_showPoints:              return FieldType_bool;
+    case ID_showLines:               return FieldType_bool;
     case ID_numberPlanes:            return FieldType_int;
     case ID_colorBy:                 return FieldType_enum;
     case ID_maxToroidalWinding:      return FieldType_int;
@@ -2126,6 +2180,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_integrationType:         return "enum";
     case ID_showStreamlines:         return "bool";
     case ID_showPoints:              return "bool";
+    case ID_showLines:               return "bool";
     case ID_numberPlanes:            return "int";
     case ID_colorBy:                 return "enum";
     case ID_maxToroidalWinding:      return "int";
@@ -2308,6 +2363,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (showPoints == obj.showPoints);
         }
         break;
+    case ID_showLines:
+        {  // new scope
+        retval = (showLines == obj.showLines);
+        }
+        break;
     case ID_numberPlanes:
         {  // new scope
         retval = (numberPlanes == obj.numberPlanes);
@@ -2465,6 +2525,9 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
                                 POINT_DIFFERS(planeNormal, obj.planeNormal) ||
                                 POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
                                 planeRadius != obj.planeRadius));
+//    bool intPlaneDiffers = ((terminationType == Intersections) &&
+//                            (POINT_DIFFERS(intersectPlaneOrigin, obj.intersectPlaneOrigin) ||
+//                             POINT_DIFFERS(intersectPlaneNormal, obj.intersectPlaneNormal)));
 
     // Other things need to be true before we start paying attention to
     // point density.
@@ -2475,8 +2538,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     bool radiusMatters = (planeRadius != obj.planeRadius);
 
     return (sourceType != obj.sourceType) ||
-           (minPunctures != obj.minPunctures) ||
-           (maxPunctures != obj.maxPunctures) ||
+//           (termination != obj.termination) ||
+//           (terminationType != obj.terminationType) ||
            (integrationType != obj.integrationType) ||
            (maxStepLength != obj.maxStepLength) ||
            (relTol != obj.relTol) ||
@@ -2484,6 +2547,7 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
+//           intPlaneDiffers ||
            densityMatters ||
            radiusMatters;
 }

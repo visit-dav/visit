@@ -275,8 +275,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             if (DebugStream::Level5())
                 debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
             if (intersectionsSet)
-                HandleIntersections((end>0), step, termType, end, &result);
-
+              HandleIntersections((end>0), step, termType, end, &result);
         }
         catch( avtIVPField::Undefined& )
         {

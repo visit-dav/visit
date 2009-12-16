@@ -330,39 +330,30 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     // Set the streamline attributes.
     if (atts.GetIntegrationType() == PoincareAttributes::DormandPrince)
         poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORMAND_PRINCE);
-    else // if (atts.GetIntegratorType() == AdamsBashforth)
+    else if (atts.GetIntegrationType() == PoincareAttributes::AdamsBashforth)
         poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_ADAMS_BASHFORTH);
+    else if (atts.GetIntegrationType() == PoincareAttributes::M3DC1Integrator)
+        poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR);
 
     poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_STATIC_DOMAINS,
                                            10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
 
-//     if (atts.GetTerminationType() == PoincareAttributes::Distance)
-//         poincareFilter->SetTermination(STREAMLINE_TERMINATE_DISTANCE, atts.GetTermination());
-//     else if (atts.GetTerminationType() == PoincareAttributes::Time)
-//         poincareFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
-//     else if (atts.GetTerminationType() == PoincareAttributes::Steps)
-//         poincareFilter->SetTermination(STREAMLINE_TERMINATE_STEPS, atts.GetTermination());
-//     else if (atts.GetTerminationType() == PoincareAttributes::Intersections)
-    {
-        poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
-                                       atts.GetMinPunctures());
+    // Make the number of punctures 2x because the analysis uses only
+    // the punctures in the same direction as the plane.
+    poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
+                                   2*atts.GetMinPunctures());
 
-        poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
-        
-        vtkPlane *intPlane = vtkPlane::New();
-        intPlane->SetOrigin(atts.GetIntersectPlaneOrigin()[0],
-                            atts.GetIntersectPlaneOrigin()[1],
-                            atts.GetIntersectPlaneOrigin()[2]);
-        intPlane->SetNormal(atts.GetIntersectPlaneNormal()[0],
-                            atts.GetIntersectPlaneNormal()[1],
-                            atts.GetIntersectPlaneNormal()[2]);
-        
-        poincareFilter->SetIntersectionObject(intPlane);
-        
-        intPlane->Delete();
-    }
+    poincareFilter->SetMaxPunctures(2*atts.GetMaxPunctures());
+    
+    vtkPlane *intPlane = vtkPlane::New();
+    intPlane->SetOrigin( 0,0,0 ); 
+    intPlane->SetNormal( 0,1,0 ); 
+    
+    poincareFilter->SetIntersectionObject(intPlane);
+    
+    intPlane->Delete();
     
     poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
     poincareFilter->SetShowStart(false);
@@ -381,16 +372,9 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
         poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
         break;
-
-      case PoincareAttributes::SpecifiedPlane:
-        poincareFilter->SetSourceType(STREAMLINE_SOURCE_PLANE);
-        poincareFilter->SetPlaneSource(atts.GetPlaneOrigin(),
-                                       atts.GetPlaneNormal(),
-                                       atts.GetPlaneUpAxis(),
-                                       atts.GetPlaneRadius());
-        break;
     }
 
+    poincareFilter->SetShowLines(atts.GetShowLines());
     poincareFilter->SetShowPoints(atts.GetShowPoints());
     poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
@@ -429,7 +413,6 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     varMapper->TurnLightingOn();
     varMapper->SetSpecularIsInappropriate(false);
     SetLegend(atts.GetLegendFlag());
-
 }
 
 // ****************************************************************************

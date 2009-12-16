@@ -71,6 +71,13 @@ avtIVPVTKField::avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity )
 }
 
 
+avtIVPVTKField::avtIVPVTKField() 
+    : iv(0)
+{
+    normalized = false;
+}
+
+
 // ****************************************************************************
 //  Method: avtIVPVTKField destructor
 //
@@ -81,7 +88,8 @@ avtIVPVTKField::avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity )
 
 avtIVPVTKField::~avtIVPVTKField()
 {
-    iv->Delete();
+    if( iv )
+      iv->Delete();
 }
 
 // ****************************************************************************

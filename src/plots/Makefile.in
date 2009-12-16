@@ -173,7 +173,7 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         MultiCurve ParallelCoordinates Pseudocolor Scatter \
+         MultiCurve ParallelCoordinates Pseudocolor Poincare Scatter \
          Spreadsheet Streamline Subset Surface Tensor Truecolor Vector \
          Volume WellBore
 

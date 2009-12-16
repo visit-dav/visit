@@ -45,12 +45,10 @@
 class PoincareAttributes;
 class QLabel;
 class QCheckBox;
-class QGroupBox;
 class QLineEdit;
 class QSpinBox;
 class QVBox;
 class QButtonGroup;
-class QComboBox;
 class QvisColorTableButton;
 class QvisOpacitySlider;
 class QvisColorButton;
@@ -70,17 +68,6 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
-//    Jeremy Meredith, Tue Apr 14 16:16:56 EDT 2009
-//    Reworked and reorganized to make more usable.
-//
-//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
-//    GUI reorganization.
-//
-//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
-//    GUI reorganization.
-//
-//    Dave Pugmire, Tue Aug 11 10:33:05 EDT 2009
-//    Add number of intersections termination criterion
 //   
 // ****************************************************************************
 
@@ -115,9 +102,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void planeNormalProcessText();
     void planeUpAxisProcessText();
     void planeRadiusProcessText();
-    void pointDensityChanged(int val);
-    void intersectPlanePointSourceProcessText();
-    void intersectPlaneNormalSourceProcessText();
+    void pointDensityProcessText();
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void singleColorChanged(const QColor &color);
     void verboseFlagChanged(bool val);
@@ -128,32 +113,29 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void integrationTypeChanged(int val);
     void showStreamlinesChanged(bool val);
     void showPointsChanged(bool val);
-    void numberPlanesSizeChanged(int val);
+    void numberPlanesProcessText();
     void colorByChanged(int val);
-    void maxToroidalWindingSizeChanged(int val);
+    void maxToroidalWindingProcessText();
     void overrideToroidalWindingProcessText();
     void hitRateProcessText();
-    void displayTypeChanged(int val);
+    void showCurvesChanged(int val);
     void adjustPlaneProcessText();
     void showIslandsChanged(bool val);
     void overlapsChanged(int val);
-    void colorModeChanged(int val);
-    void minToggled(bool on);
-    void maxToggled(bool on);
-    void processMaxLimitText();
-    void processMinLimitText();
+    void minProcessText();
+    void maxProcessText();
+    void minFlagChanged(bool val);
+    void maxFlagChanged(bool val);
+    void colorTypeChanged(int val);
+    void intersectPlaneOriginProcessText();
+    void intersectPlaneNormalProcessText();
   private:
     int plotType;
-
-    // streamline options
-    QComboBox *sourceType;
-    QGroupBox *sourceAtts;
-    QComboBox *directionType;
+    QWidget      *sourceType;
+    QButtonGroup *sourceTypeButtonGroup;
     QLineEdit *maxStepLength;
     QLineEdit *minPunctures;
     QLineEdit *maxPunctures;
-    QLineEdit *relTol;
-    QLineEdit *absTol;
     QLineEdit *pointSource;
     QLineEdit *lineStart;
     QLineEdit *lineEnd;
@@ -161,43 +143,38 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *planeNormal;
     QLineEdit *planeUpAxis;
     QLineEdit *planeRadius;
-    QSpinBox  *pointDensity;
-    /*
-    QLineEdit *intPlnLocation;
-    QLineEdit *intPlnNormal;
-    QLabel *intPlnLocationLabel;
-    QLabel *intPlnNormalLabel;
-    */
-    QComboBox *integrationType;
-
-    // display options
+    QLineEdit *pointDensity;
     QvisColorTableButton *colorTableName;
     QvisColorButton *singleColor;
     QCheckBox *verboseFlag;
     QCheckBox *legendFlag;
     QCheckBox *lightingFlag;
-    QComboBox *ColorBy;
-    QComboBox *DisplayType;
-    QGroupBox *limitsGrp;
-    QGroupBox *colorGrp;
-    QButtonGroup *colorModeButtons;
-    QCheckBox *minToggle;
-    QCheckBox *maxToggle;
-    QLineEdit *maxLineEdit;
-    QLineEdit *minLineEdit;
-
-    QCheckBox *showIslands;
+    QLineEdit *relTol;
+    QLineEdit *absTol;
+    QWidget      *integrationType;
+    QButtonGroup *integrationTypeButtonGroup;
+    QCheckBox *showStreamlines;
     QCheckBox *showPoints;
-
-    // poincare options
-    QSpinBox *NumberPlanes;
-    QSpinBox *MaxToroidalWinding;
-    QLineEdit *OverrideToroidalWinding;
-    QLineEdit *HitRate;
-    QLineEdit *AdjustPlane;
-    QButtonGroup *Overlaps;
-
-    // labels
+    QLineEdit *numberPlanes;
+    QWidget      *colorBy;
+    QButtonGroup *colorByButtonGroup;
+    QLineEdit *maxToroidalWinding;
+    QLineEdit *overrideToroidalWinding;
+    QLineEdit *hitRate;
+    QWidget      *showCurves;
+    QButtonGroup *showCurvesButtonGroup;
+    QLineEdit *adjustPlane;
+    QCheckBox *showIslands;
+    QWidget      *overlaps;
+    QButtonGroup *overlapsButtonGroup;
+    QLineEdit *min;
+    QLineEdit *max;
+    QCheckBox *minFlag;
+    QCheckBox *maxFlag;
+    QWidget      *colorType;
+    QButtonGroup *colorTypeButtonGroup;
+    QLineEdit *intersectPlaneOrigin;
+    QLineEdit *intersectPlaneNormal;
     QLabel *sourceTypeLabel;
     QLabel *maxStepLengthLabel;
     QLabel *minPuncturesLabel;
@@ -210,19 +187,24 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *planeUpAxisLabel;
     QLabel *planeRadiusLabel;
     QLabel *pointDensityLabel;
+    QLabel *colorTableNameLabel;
+    QLabel *singleColorLabel;
     QLabel *relTolLabel;
     QLabel *absTolLabel;
-    QLabel *terminationTypeLabel;
     QLabel *integrationTypeLabel;
-    QLabel *NumberPlanesLabel;
-    QLabel *ColorStyleLabel;
-    QLabel *MaxToroidalWindingLabel;
-    QLabel *OverrideToroidalWindingLabel;
-    QLabel *HitRateLabel;
-    QLabel *DisplayTypeLabel;
-    QLabel *AdjustPlaneLabel;
-    QLabel *OverlapsLabel;
-    QLabel *ColorByLabel;
+    QLabel *numberPlanesLabel;
+    QLabel *colorByLabel;
+    QLabel *maxToroidalWindingLabel;
+    QLabel *overrideToroidalWindingLabel;
+    QLabel *hitRateLabel;
+    QLabel *showCurvesLabel;
+    QLabel *adjustPlaneLabel;
+    QLabel *overlapsLabel;
+    QLabel *minLabel;
+    QLabel *maxLabel;
+    QLabel *colorTypeLabel;
+    QLabel *intersectPlaneOriginLabel;
+    QLabel *intersectPlaneNormalLabel;
 
     PoincareAttributes *atts;
 };

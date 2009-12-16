@@ -84,6 +84,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                                   { return "Performing Poincare"; };
 
     void SetVerboseFlag( unsigned int val )  {verboseFlag=val;}
+    void SetShowLines( unsigned int val ) {showLines=val;}
     void SetShowPoints( unsigned int val ) {showPoints=val;}
     void SetColorBy( unsigned int value );
     void SetMaxToroidalWinding( unsigned int value );
@@ -135,13 +136,14 @@ class avtPoincareFilter : public avtStreamlineFilter
                            unsigned int islands,
                            unsigned int poloidalWindings,
                            unsigned int color,
-                           double color_value );
+                           double color_value,
+                           bool ptFlag );
 
     // Poincare filter methods.
     bool                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
 
-    bool                      verboseFlag, showPoints;
+    bool                      verboseFlag, showLines, showPoints;
 
     FusionPSE::FieldlineLib FLlib;         
 

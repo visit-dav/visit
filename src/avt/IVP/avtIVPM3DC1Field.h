@@ -37,13 +37,13 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtIVPM3DField.h                             //
+//                            avtIVPM3DC1Field.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_IVPM3DFIELD_H
-#define AVT_IVPM3DFIELD_H
+#ifndef AVT_IVP_M3D_FIELD_H
+#define AVT_IVP_M3D_FIELD_H
 
-#include <avtIVPVTKField.h>
+#include "avtIVPVTKField.h"
 
 #include <vtkVisItInterpolatedVelocityField.h>
 #include <vtkDataSet.h>
@@ -53,7 +53,7 @@
 
 
 // ****************************************************************************
-//  Class:  avtIVPM3DField
+//  Class:  avtIVPM3DC1Field
 //
 //  Purpose:
 //    A wrapper class to allow the use of vtkDataSets as IVP fields for 
@@ -65,7 +65,7 @@
 //
 // ****************************************************************************
 
-class IVP_API avtIVPM3DField: public avtIVPVTKField
+class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 {
  protected:
 /* Local typedefs */
@@ -83,37 +83,46 @@ class IVP_API avtIVPM3DField: public avtIVPVTKField
   } edge;
   
   public:
-    avtIVPM3DField( vtkVisItInterpolatedVelocityField* velocity ); 
+    avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity ); 
+    avtIVPM3DC1Field( float *elementsPtr, int nelements );
 
-    ~avtIVPM3DField();
+    ~avtIVPM3DC1Field();
 
     vtkVisItInterpolatedVelocityField* GetBaseField() { return iv; }    
-
-    void setValues(vtkDataSet *ds);
 
     void findElementNeighbors();
     void register_vert(v_entry *vlist, int *len,
                        double x, double y, int *index);
     void add_edge(edge *list, int *tri, int side, int el, int *nlist);
 
-    int get_tri_coords2D(avtVec &x, double *xout);
+    int get_tri_coords2D(double *x, double *xout);
+    int get_tri_coords2D(double *x, int el, double *xout);
 
-    double interpdR  (double *var, int el, double *lcoords);
-    double interpdz  (double *var, int el, double *lcoords);
-    double interpdR2 (double *var, int el, double *lcoords);
-    double interpdz2 (double *var, int el, double *lcoords);
-    double interpdRdz(double *var, int el, double *lcoords);
+    float interp    (float *var, int el, double *lcoords);
+    float interpdR  (float *var, int el, double *lcoords);
+    float interpdz  (float *var, int el, double *lcoords);
+    float interpdR2 (float *var, int el, double *lcoords);
+    float interpdz2 (float *var, int el, double *lcoords);
+    float interpdRdz(float *var, int el, double *lcoords);
 
  protected:
+    template< class type >
+      type* SetDataPointer( vtkDataSet *ds,
+                            const type var,
+                            const char* varname,
+                            const int ntuples,
+                            const int ncomponents );
+
     // Variables calculated in findElementNeighbors (trigtable,
     // neighbors) or read as part of the mesh (elements).
-    double *elements, *trigtable;   /* Geometry of each triangle */
-    int    *neighbors;              /* Element neighbor table for efficient searches */
+    float *elements;
+    double *trigtable;   /* Geometry of each triangle */
+    int    *neighbors;   /* Element neighbor table for efficient searches */
 
  public:
     // FIX ME - variables on the mesh
-    double *psi0, *f0;                  /* Equilibrium field */
-    double *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
+    float *psi0, *f0;                  /* Equilibrium field */
+    float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
 
     // FIX ME - variable based on attributes (bzero and rzero)
     double F0;                      /* Strength of vacuum toroidal field */

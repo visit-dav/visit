@@ -60,12 +60,27 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 38;
+    private static int numAdditionalAttributes = 39;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
     public final static int SOURCETYPE_SPECIFIEDLINE = 1;
     public final static int SOURCETYPE_SPECIFIEDPLANE = 2;
+
+    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
+    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
+    public final static int INTEGRATIONTYPE_M3DC1INTEGRATOR = 2;
+
+    public final static int OVERLAPTYPE_RAW = 0;
+    public final static int OVERLAPTYPE_REMOVE = 1;
+    public final static int OVERLAPTYPE_MERGE = 2;
+    public final static int OVERLAPTYPE_SMOOTH = 3;
+
+    public final static int SHOWMESHTYPE_CURVES = 0;
+    public final static int SHOWMESHTYPE_SURFACES = 1;
+
+    public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
+    public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 1;
 
     public final static int COLORBY_ORIGINALVALUE = 0;
     public final static int COLORBY_INPUTORDER = 1;
@@ -78,20 +93,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int COLORBY_SAFETYFACTOR = 8;
     public final static int COLORBY_CONFIDENCE = 9;
     public final static int COLORBY_RIDGELINEVARIANCE = 10;
-
-    public final static int SHOWMESHTYPE_CURVES = 0;
-    public final static int SHOWMESHTYPE_SURFACES = 1;
-
-    public final static int OVERLAPTYPE_RAW = 0;
-    public final static int OVERLAPTYPE_REMOVE = 1;
-    public final static int OVERLAPTYPE_MERGE = 2;
-    public final static int OVERLAPTYPE_SMOOTH = 3;
-
-    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
-    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
-
-    public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
-    public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 1;
 
 
     public PoincareAttributes()
@@ -138,6 +139,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
+        showLines = true;
         numberPlanes = 1;
         colorBy = COLORBY_SAFETYFACTOR;
         maxToroidalWinding = 30;
@@ -206,6 +208,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         showStreamlines = false;
         showPoints = false;
+        showLines = true;
         numberPlanes = 1;
         colorBy = COLORBY_SAFETYFACTOR;
         maxToroidalWinding = 30;
@@ -282,6 +285,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         integrationType = obj.integrationType;
         showStreamlines = obj.showStreamlines;
         showPoints = obj.showPoints;
+        showLines = obj.showLines;
         numberPlanes = obj.numberPlanes;
         colorBy = obj.colorBy;
         maxToroidalWinding = obj.maxToroidalWinding;
@@ -387,6 +391,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (integrationType == obj.integrationType) &&
                 (showStreamlines == obj.showStreamlines) &&
                 (showPoints == obj.showPoints) &&
+                (showLines == obj.showLines) &&
                 (numberPlanes == obj.numberPlanes) &&
                 (colorBy == obj.colorBy) &&
                 (maxToroidalWinding == obj.maxToroidalWinding) &&
@@ -601,88 +606,94 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(21);
     }
 
+    public void SetShowLines(boolean showLines_)
+    {
+        showLines = showLines_;
+        Select(22);
+    }
+
     public void SetNumberPlanes(int numberPlanes_)
     {
         numberPlanes = numberPlanes_;
-        Select(22);
+        Select(23);
     }
 
     public void SetColorBy(int colorBy_)
     {
         colorBy = colorBy_;
-        Select(23);
+        Select(24);
     }
 
     public void SetMaxToroidalWinding(int maxToroidalWinding_)
     {
         maxToroidalWinding = maxToroidalWinding_;
-        Select(24);
+        Select(25);
     }
 
     public void SetOverrideToroidalWinding(int overrideToroidalWinding_)
     {
         overrideToroidalWinding = overrideToroidalWinding_;
-        Select(25);
+        Select(26);
     }
 
     public void SetHitRate(double hitRate_)
     {
         hitRate = hitRate_;
-        Select(26);
+        Select(27);
     }
 
     public void SetShowCurves(int showCurves_)
     {
         showCurves = showCurves_;
-        Select(27);
+        Select(28);
     }
 
     public void SetAdjustPlane(int adjustPlane_)
     {
         adjustPlane = adjustPlane_;
-        Select(28);
+        Select(29);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(29);
+        Select(30);
     }
 
     public void SetOverlaps(int overlaps_)
     {
         overlaps = overlaps_;
-        Select(30);
+        Select(31);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(31);
+        Select(32);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(32);
+        Select(33);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(33);
+        Select(34);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(34);
+        Select(35);
     }
 
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(35);
+        Select(36);
     }
 
     public void SetIntersectPlaneOrigin(double[] intersectPlaneOrigin_)
@@ -690,7 +701,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         intersectPlaneOrigin[0] = intersectPlaneOrigin_[0];
         intersectPlaneOrigin[1] = intersectPlaneOrigin_[1];
         intersectPlaneOrigin[2] = intersectPlaneOrigin_[2];
-        Select(36);
+        Select(37);
     }
 
     public void SetIntersectPlaneOrigin(double e0, double e1, double e2)
@@ -698,7 +709,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         intersectPlaneOrigin[0] = e0;
         intersectPlaneOrigin[1] = e1;
         intersectPlaneOrigin[2] = e2;
-        Select(36);
+        Select(37);
     }
 
     public void SetIntersectPlaneNormal(double[] intersectPlaneNormal_)
@@ -706,7 +717,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         intersectPlaneNormal[0] = intersectPlaneNormal_[0];
         intersectPlaneNormal[1] = intersectPlaneNormal_[1];
         intersectPlaneNormal[2] = intersectPlaneNormal_[2];
-        Select(37);
+        Select(38);
     }
 
     public void SetIntersectPlaneNormal(double e0, double e1, double e2)
@@ -714,7 +725,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         intersectPlaneNormal[0] = e0;
         intersectPlaneNormal[1] = e1;
         intersectPlaneNormal[2] = e2;
-        Select(37);
+        Select(38);
     }
 
     // Property getting methods
@@ -740,6 +751,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetIntegrationType() { return integrationType; }
     public boolean        GetShowStreamlines() { return showStreamlines; }
     public boolean        GetShowPoints() { return showPoints; }
+    public boolean        GetShowLines() { return showLines; }
     public int            GetNumberPlanes() { return numberPlanes; }
     public int            GetColorBy() { return colorBy; }
     public int            GetMaxToroidalWinding() { return maxToroidalWinding; }
@@ -805,36 +817,38 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(21, buf))
             buf.WriteBool(showPoints);
         if(WriteSelect(22, buf))
-            buf.WriteInt(numberPlanes);
+            buf.WriteBool(showLines);
         if(WriteSelect(23, buf))
-            buf.WriteInt(colorBy);
+            buf.WriteInt(numberPlanes);
         if(WriteSelect(24, buf))
-            buf.WriteInt(maxToroidalWinding);
+            buf.WriteInt(colorBy);
         if(WriteSelect(25, buf))
-            buf.WriteInt(overrideToroidalWinding);
+            buf.WriteInt(maxToroidalWinding);
         if(WriteSelect(26, buf))
-            buf.WriteDouble(hitRate);
+            buf.WriteInt(overrideToroidalWinding);
         if(WriteSelect(27, buf))
-            buf.WriteInt(showCurves);
+            buf.WriteDouble(hitRate);
         if(WriteSelect(28, buf))
-            buf.WriteInt(adjustPlane);
+            buf.WriteInt(showCurves);
         if(WriteSelect(29, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteInt(adjustPlane);
         if(WriteSelect(30, buf))
-            buf.WriteInt(overlaps);
+            buf.WriteBool(showIslands);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(min);
+            buf.WriteInt(overlaps);
         if(WriteSelect(32, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(min);
         if(WriteSelect(33, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteDouble(max);
         if(WriteSelect(34, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(minFlag);
         if(WriteSelect(35, buf))
-            buf.WriteInt(colorType);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(36, buf))
-            buf.WriteDoubleArray(intersectPlaneOrigin);
+            buf.WriteInt(colorType);
         if(WriteSelect(37, buf))
+            buf.WriteDoubleArray(intersectPlaneOrigin);
+        if(WriteSelect(38, buf))
             buf.WriteDoubleArray(intersectPlaneNormal);
     }
 
@@ -910,51 +924,54 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetShowPoints(buf.ReadBool());
             break;
         case 22:
-            SetNumberPlanes(buf.ReadInt());
+            SetShowLines(buf.ReadBool());
             break;
         case 23:
-            SetColorBy(buf.ReadInt());
+            SetNumberPlanes(buf.ReadInt());
             break;
         case 24:
-            SetMaxToroidalWinding(buf.ReadInt());
+            SetColorBy(buf.ReadInt());
             break;
         case 25:
-            SetOverrideToroidalWinding(buf.ReadInt());
+            SetMaxToroidalWinding(buf.ReadInt());
             break;
         case 26:
-            SetHitRate(buf.ReadDouble());
+            SetOverrideToroidalWinding(buf.ReadInt());
             break;
         case 27:
-            SetShowCurves(buf.ReadInt());
+            SetHitRate(buf.ReadDouble());
             break;
         case 28:
-            SetAdjustPlane(buf.ReadInt());
+            SetShowCurves(buf.ReadInt());
             break;
         case 29:
-            SetShowIslands(buf.ReadBool());
+            SetAdjustPlane(buf.ReadInt());
             break;
         case 30:
-            SetOverlaps(buf.ReadInt());
+            SetShowIslands(buf.ReadBool());
             break;
         case 31:
-            SetMin(buf.ReadDouble());
+            SetOverlaps(buf.ReadInt());
             break;
         case 32:
-            SetMax(buf.ReadDouble());
+            SetMin(buf.ReadDouble());
             break;
         case 33:
-            SetMinFlag(buf.ReadBool());
+            SetMax(buf.ReadDouble());
             break;
         case 34:
-            SetMaxFlag(buf.ReadBool());
+            SetMinFlag(buf.ReadBool());
             break;
         case 35:
-            SetColorType(buf.ReadInt());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 36:
-            SetIntersectPlaneOrigin(buf.ReadDoubleArray());
+            SetColorType(buf.ReadInt());
             break;
         case 37:
+            SetIntersectPlaneOrigin(buf.ReadDoubleArray());
+            break;
+        case 38:
             SetIntersectPlaneNormal(buf.ReadDoubleArray());
             break;
         }
@@ -994,9 +1011,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
         if(integrationType == INTEGRATIONTYPE_ADAMSBASHFORTH)
             str = str + "INTEGRATIONTYPE_ADAMSBASHFORTH";
+        if(integrationType == INTEGRATIONTYPE_M3DC1INTEGRATOR)
+            str = str + "INTEGRATIONTYPE_M3DC1INTEGRATOR";
         str = str + "\n";
         str = str + boolToString("showStreamlines", showStreamlines, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
+        str = str + boolToString("showLines", showLines, indent) + "\n";
         str = str + intToString("numberPlanes", numberPlanes, indent) + "\n";
         str = str + indent + "colorBy = ";
         if(colorBy == COLORBY_ORIGINALVALUE)
@@ -1082,6 +1102,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            integrationType;
     private boolean        showStreamlines;
     private boolean        showPoints;
+    private boolean        showLines;
     private int            numberPlanes;
     private int            colorBy;
     private int            maxToroidalWinding;

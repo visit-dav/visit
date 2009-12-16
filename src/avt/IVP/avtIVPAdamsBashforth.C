@@ -41,7 +41,6 @@
 // ************************************************************************* //
 
 #include <avtIVPAdamsBashforth.h>
-#include <avtIVPDopri5.h>
 #include <avtIVPStateHelper.h>
 #include <DebugStream.h>
 

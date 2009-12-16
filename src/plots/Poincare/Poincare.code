@@ -162,9 +162,9 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
                                 POINT_DIFFERS(planeNormal, obj.planeNormal) ||
                                 POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
                                 planeRadius != obj.planeRadius));
-    bool intPlaneDiffers = ((terminationType == Intersections) &&
-                            (POINT_DIFFERS(intersectPlaneOrigin, obj.intersectPlaneOrigin) ||
-                             POINT_DIFFERS(intersectPlaneNormal, obj.intersectPlaneNormal)));
+//    bool intPlaneDiffers = ((terminationType == Intersections) &&
+//                            (POINT_DIFFERS(intersectPlaneOrigin, obj.intersectPlaneOrigin) ||
+//                             POINT_DIFFERS(intersectPlaneNormal, obj.intersectPlaneNormal)));
 
     // Other things need to be true before we start paying attention to
     // point density.
@@ -175,8 +175,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     bool radiusMatters = (planeRadius != obj.planeRadius);
 
     return (sourceType != obj.sourceType) ||
-           (termination != obj.termination) ||
-           (terminationType != obj.terminationType) ||
+//           (termination != obj.termination) ||
+//           (terminationType != obj.terminationType) ||
            (integrationType != obj.integrationType) ||
            (maxStepLength != obj.maxStepLength) ||
            (relTol != obj.relTol) ||
@@ -184,7 +184,7 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
-           intPlaneDiffers ||
+//           intPlaneDiffers ||
            densityMatters ||
            radiusMatters;
 }

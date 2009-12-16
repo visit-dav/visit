@@ -299,9 +299,10 @@ class avtIVPSolver
     virtual void    Reset(const double& t_start, const avtVector& y_start) = 0;
 
     virtual Result  Step(const avtIVPField* field,
-                         const TerminateType &type,
+                         const TerminateType &termType,
                          const double &end,
                          avtIVPStep* ivpstep = 0 ) = 0;
+
     virtual void    OnExitDomain() {}
     virtual avtVector  GetCurrentY() const = 0;
     virtual double  GetCurrentT() const = 0;

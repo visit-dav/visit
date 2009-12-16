@@ -40,6 +40,7 @@
 #define POINCAREATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -66,6 +67,29 @@ public:
         SpecifiedLine,
         SpecifiedPlane
     };
+    enum IntegrationType
+    {
+        DormandPrince,
+        AdamsBashforth,
+        M3DC1Integrator
+    };
+    enum OverlapType
+    {
+        Raw,
+        Remove,
+        Merge,
+        Smooth
+    };
+    enum ShowMeshType
+    {
+        Curves,
+        Surfaces
+    };
+    enum ColoringMethod
+    {
+        ColorBySingleColor,
+        ColorByColorTable
+    };
     enum ColorBy
     {
         OriginalValue,
@@ -80,36 +104,24 @@ public:
         Confidence,
         RidgelineVariance
     };
-    enum ShowMeshType
-    {
-        Curves,
-        Surfaces
-    };
-    enum OverlapType
-    {
-        Raw,
-        Remove,
-        Merge,
-        Smooth
-    };
-    enum IntegrationType
-    {
-        DormandPrince,
-        AdamsBashforth
-    };
-    enum ColoringMethod
-    {
-        ColorBySingleColor,
-        ColorByColorTable
-    };
 
+    // These constructors are for objects of this class
     PoincareAttributes();
     PoincareAttributes(const PoincareAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PoincareAttributes(private_tmfs_t tmfs);
+    PoincareAttributes(const PoincareAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PoincareAttributes();
 
     virtual PoincareAttributes& operator = (const PoincareAttributes &obj);
     virtual bool operator == (const PoincareAttributes &obj) const;
     virtual bool operator != (const PoincareAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PoincareAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -152,6 +164,7 @@ public:
     void SetIntegrationType(IntegrationType integrationType_);
     void SetShowStreamlines(bool showStreamlines_);
     void SetShowPoints(bool showPoints_);
+    void SetShowLines(bool showLines_);
     void SetNumberPlanes(int numberPlanes_);
     void SetColorBy(ColorBy colorBy_);
     void SetMaxToroidalWinding(int maxToroidalWinding_);
@@ -200,6 +213,7 @@ public:
     IntegrationType      GetIntegrationType() const;
     bool                 GetShowStreamlines() const;
     bool                 GetShowPoints() const;
+    bool                 GetShowLines() const;
     int                  GetNumberPlanes() const;
     ColorBy              GetColorBy() const;
     int                  GetMaxToroidalWinding() const;
@@ -229,30 +243,30 @@ public:
 protected:
     static std::string SourceType_ToString(int);
 public:
-    static std::string ColorBy_ToString(ColorBy);
-    static bool ColorBy_FromString(const std::string &, ColorBy &);
+    static std::string IntegrationType_ToString(IntegrationType);
+    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
-    static std::string ColorBy_ToString(int);
-public:
-    static std::string ShowMeshType_ToString(ShowMeshType);
-    static bool ShowMeshType_FromString(const std::string &, ShowMeshType &);
-protected:
-    static std::string ShowMeshType_ToString(int);
+    static std::string IntegrationType_ToString(int);
 public:
     static std::string OverlapType_ToString(OverlapType);
     static bool OverlapType_FromString(const std::string &, OverlapType &);
 protected:
     static std::string OverlapType_ToString(int);
 public:
-    static std::string IntegrationType_ToString(IntegrationType);
-    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
+    static std::string ShowMeshType_ToString(ShowMeshType);
+    static bool ShowMeshType_FromString(const std::string &, ShowMeshType &);
 protected:
-    static std::string IntegrationType_ToString(int);
+    static std::string ShowMeshType_ToString(int);
 public:
     static std::string ColoringMethod_ToString(ColoringMethod);
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
     static std::string ColoringMethod_ToString(int);
+public:
+    static std::string ColorBy_ToString(ColorBy);
+    static bool ColorBy_FromString(const std::string &, ColorBy &);
+protected:
+    static std::string ColorBy_ToString(int);
 public:
 
     // Keyframing methods
@@ -290,6 +304,7 @@ public:
         ID_integrationType,
         ID_showStreamlines,
         ID_showPoints,
+        ID_showLines,
         ID_numberPlanes,
         ID_colorBy,
         ID_maxToroidalWinding,
@@ -305,7 +320,8 @@ public:
         ID_maxFlag,
         ID_colorType,
         ID_intersectPlaneOrigin,
-        ID_intersectPlaneNormal
+        ID_intersectPlaneNormal,
+        ID__LAST
     };
 
 private:
@@ -331,6 +347,7 @@ private:
     int            integrationType;
     bool           showStreamlines;
     bool           showPoints;
+    bool           showLines;
     int            numberPlanes;
     int            colorBy;
     int            maxToroidalWinding;
@@ -350,6 +367,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define POINCAREATTRIBUTES_TMFS "idddDDDDDDdisabbbddibbbiiiidiibiddbbiDD"
 
 #endif
