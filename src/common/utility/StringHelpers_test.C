@@ -43,6 +43,7 @@
 
 using namespace StringHelpers;
 using std::vector;
+using std::string;
 
 int main(int argc, char **argv)
 {
