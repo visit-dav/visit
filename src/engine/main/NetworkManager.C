@@ -2890,7 +2890,6 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     const AnnotationObjectList &aolist, const VisualCueList &visCues,
     const int *fns, int windowID, int annotMode)
 {
-
     if (viswinMap.find(windowID) == viswinMap.end())
         NewVisWindow(windowID);
 
@@ -4310,6 +4309,9 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 //    Brad Whitlock, Mon Jan 28 10:47:35 PDT 2008
 //    Changed for updated AnnotationAttributes.
 //
+//    Tom Fogal, Tue Dec  8 16:57:21 MST 2009
+//    Detect failed window initialization and erase the window from the map.
+//
 // ****************************************************************************
 
 void
@@ -4334,9 +4336,20 @@ NetworkManager::NewVisWindow(int winID)
 
     debug1 << "Creating new VisWindow for id=" << winID << endl;
 
-    viswinMap[winID].viswin = new VisWindow();
-    viswinMap[winID].visualCuesNeedUpdate = false;
-    viswinMap[winID].markedForDeletion = false;
+    TRY
+    {
+        viswinMap[winID].viswin = new VisWindow();
+        viswinMap[winID].visualCuesNeedUpdate = false;
+        viswinMap[winID].markedForDeletion = false;
+        viswinMap[winID].viswin->Realize();
+    }
+    CATCHALL
+    {
+        debug1 << "VisWindow initialization failed." << std::endl;
+        viswinMap.erase(winID);
+        RETHROW;
+    }
+    ENDTRY
 
     AnnotationAttributes &annotAtts = viswinMap[winID].annotationAttributes;
 
