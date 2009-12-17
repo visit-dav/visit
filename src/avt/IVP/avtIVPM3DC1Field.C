@@ -488,7 +488,8 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout)
       break;
   } /* end loop count */
 
-  /* fprintf(stderr, "Searched %d elements.\n", count); */
+// fprintf(stderr, "Searched %d elements.\n", count);
+
   return el;
 }
 
@@ -649,4 +650,60 @@ float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords)
     xi*(2.0*a[7] + 3.0*xi*a[11]);
 
   return (xixicoef - etaetacoef)*co*sn + xietacoef*(co*co - sn*sn);
+}
+
+
+// ****************************************************************************
+//  Method: interpBcomps
+//
+//  Simultaneously interpolate all three cylindrical components of
+//  magnetic field
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
+                                    int element, double *xieta)
+{
+  float *B_R   = &(B[0]);
+  float *B_z   = &(B[2]);
+  float *B_phi = &(B[1]);
+
+  double co, sn, dfnrdr, dfnidr;
+
+  /* n=0 components */
+  /* B_R = -1/R dpsi/dz - df'/dR */
+  *B_R = -interpdz(psi0, element, xieta) / x[0];
+
+  /* B_z = 1/R dpsi/dR - df'/dz */
+  *B_z = interpdR(psi0, element, xieta) / x[0];
+
+  /* B_phi = d^2f/dR^2 + 1/R df/dR + d^2f/dz^2 + F0/R^2 */
+  *B_phi = interpdR2(f0, element, xieta) +
+    interpdz2(f0, element, xieta) +
+    (interpdR(f0, element, xieta) + F0/x[0])/ x[0];
+
+  /* n>0 components, if applicable */
+  if (linflag) {
+    co = cos(tmode * x[1]);  sn = sin(tmode * x[1]);
+
+    dfnrdr = interpdR(fnr, element, xieta);
+    dfnidr = interpdR(fni, element, xieta);
+
+    *B_R += (interpdz(psini, element, xieta)*sn -
+             interpdz(psinr, element, xieta)*co) / x[0]
+      + tmode*(dfnrdr*sn + dfnidr*co);
+
+    *B_z += (interpdR(psinr, element, xieta)*co -
+             interpdR(psini, element, xieta)*sn)/ x[0]
+      + tmode*(interpdz(fnr, element, xieta)*sn +
+                      interpdz(fni, element, xieta)*co);
+
+    *B_phi += (interpdR2(fnr, element, xieta) +
+               interpdz2(fnr, element, xieta))*co
+      - (interpdR2(fni, element, xieta) +
+         interpdz2(fni, element, xieta))*sn +
+      (dfnrdr*co - dfnidr*sn) / x[0];
+  }
 }
