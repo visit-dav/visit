@@ -42,10 +42,6 @@
 #include <PyPoincareAttributes.h>
 #include <PoincarePluginInfo.h>
 
-#if defined(__APPLE__)
-#define GetScriptingInfo Poincare_GetScriptingInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
@@ -56,7 +52,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* GetScriptingInfo()
+extern "C" PLOT_EXPORT ScriptingPlotPluginInfo* Poincare_GetScriptingInfo()
 {
     return new PoincareScriptingPluginInfo;
 }
