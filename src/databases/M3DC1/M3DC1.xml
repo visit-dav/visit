@@ -6,6 +6,7 @@
     <LIBS>
       $(HDF5_LIB)
       $(ZLIB_LIB)
+      -lavtivp_ser
     </LIBS>
     <Extensions>
       h5
