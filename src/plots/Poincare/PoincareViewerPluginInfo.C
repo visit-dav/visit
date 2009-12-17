@@ -44,10 +44,6 @@
 #include <QApplication>
 #include <avtPoincarePlot.h>
 
-#if defined(__APPLE__)
-#define GetViewerInfo Poincare_GetViewerInfo
-#endif
-
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //
@@ -58,7 +54,7 @@
 //  Creation:   omitted
 //
 // ****************************************************************************
-extern "C" PLOT_EXPORT ViewerPlotPluginInfo* GetViewerInfo()
+extern "C" PLOT_EXPORT ViewerPlotPluginInfo* Poincare_GetViewerInfo()
 {
     PoincareViewerPluginInfo::InitializeGlobalObjects();
     return new PoincareViewerPluginInfo;
