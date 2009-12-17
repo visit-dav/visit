@@ -211,8 +211,14 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
     // This vector is the dummy vector
-    AddVectorVarToMetaData( md, "B", string("mesh") + string(level),
-                            AVT_ZONECENT, 3); //m_dataLocation, 3 );
+    // For now the mesh is the same mesh as the original mesh because
+    // of needing it for the integration.
+
+    AddVectorVarToMetaData( md, "B", string("mesh"),
+                            AVT_ZONECENT, 3);
+
+//     AddVectorVarToMetaData( md, "B", string("mesh") + string(level),
+//                             m_dataLocation, 3 );
 
 
     // Hidden refined meshes for working with the interpolated data
@@ -854,9 +860,9 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   vtkDataArray* vtkVar = GetFieldVar( timestate, varname );
   float* values = (float*) vtkVar->GetVoidPointer(0);
 
+  // Get the value at the node of each element on the linear mesh.
   int nvalues;
 
-  // Get the value at the node of each element on the linear mesh.
   if( m_dataLocation == AVT_NODECENT)
     nvalues = npts;
   // Get the value at the center of each element on the linear mesh.
@@ -874,7 +880,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   // Pointer to the field variable on the linear mesh.
   float* varPtr = (float *) var->GetVoidPointer(0);
 
-  int index;
+  int element;
   double centroid[3], xieta[2];
 
   if( m_dataLocation == AVT_NODECENT)
@@ -893,16 +899,27 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
         centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
         centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
 
-        index = m3dField.get_tri_coords2D(centroid, xieta);
+        if( (element = m3dField.get_tri_coords2D(centroid, xieta)) < 0 )
+        {
+          debug1 << "avtM3DC1FileFormat::GetVar - Can not find element for "
+                 << centroid[0] << "  "<< centroid[1] << "  "<< centroid[2]
+                 << endl;
+        }
       }
 
       double pt[3] = {pts[0],pts[1],pts[2]};
 
       /* Find the element containing the point; get local coords xi,eta */
-      if ((index = m3dField.get_tri_coords2D(pt, index, xieta)) < 0)
-        *varPtr++ = 0;
+      if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) >= 0)
+        *varPtr++ = m3dField.interp(values, element, xieta);
       else
-        *varPtr++ = m3dField.interp(values, index, xieta);
+      {
+        debug1 << "avtM3DC1FileFormat::GetVar - Can not find element for "
+               << pt[0] << "  "<< pt[1] << "  "<< pt[2]
+               << endl;
+        
+        *varPtr++ = 0;
+      }
 
       pts += 3;
     }
@@ -910,7 +927,6 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   
   else if( m_dataLocation == AVT_ZONECENT)
   {
-      
     for( int i=0; i<npts; i+=3 )
     {
       centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
@@ -918,11 +934,17 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
       centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
 
       /* Find the element containing the point; get local coords xi,eta */
-      if ((index = m3dField.get_tri_coords2D(centroid, xieta)) < 0)
-        *varPtr++ = 0;
+      if ((element = m3dField.get_tri_coords2D(centroid, xieta)) >= 0)
+        *varPtr++ = m3dField.interp(values, element, xieta);
       else
-        *varPtr++ = m3dField.interp(values, index, xieta);
-
+      {
+        debug1 << "avtM3DC1FileFormat::GetVar - Can not find element for "
+               << centroid[0] << "  "<< centroid[1] << "  "<< centroid[2]
+               << endl;
+        
+        *varPtr++ = 0;
+      }
+      
       pts += 9;
     }
   }
@@ -965,33 +987,191 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
   }
   else if( strcmp(varname, "B") == 0 )
   {
+    // FIXME - TEMPORARY UNITL FIX FOR MIXED NODE AND ZONE
+    avtCentering dataLocation = m_dataLocation;
+    m_dataLocation = AVT_ZONECENT;
+    
+    // First get the elements for this variable so that the variable can
+    // be interpolated onto the linear mesh.
+    float* elements = GetElements(timestate, "mesh");
+
+    // Create a temporary mesh for getting the correct field variable
+    // values on the linear mesh.
+
+    // For now the mesh is the same mesh as the original mesh because
+    // of needing it for the integration.
+    vtkPoints *vtkPts = GetMeshPoints( elements,
+                                       1, 0);
+//  vtkPoints *vtkPts = GetMeshPoints( elements,
+//                                     m_poloidalPlanes, m_refinementLevel);
+
+    float* pts = (float *) vtkPts->GetVoidPointer(0);
+    int npts = vtkPts->GetNumberOfPoints();
+
+    // Get the M3D C1 field so the variables can be interpolated on the
+    // linear mesh.
+    avtIVPM3DC1Field m3dField(elements, nelms);
+
+    // Header variables are at the top level group.
+    hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
+    if ( rootID < 0 )
+      EXCEPTION2( UnexpectedValueException, "Root Group", "NOT FOUND" );
+
+    // Get the field variable to be interpolated on the linear mesh.
+    if ( ! ReadAttribute( rootID, "linear", &(m3dField.linflag) ) )
+      EXCEPTION2( UnexpectedValueException, "linear",
+                  "Not found or wrong type" );
+      
+    if ( ! ReadAttribute( rootID, "ntor", &(m3dField.tmode) ) )
+      EXCEPTION2( UnexpectedValueException, "ntor",
+                  "Not found or wrong type" );
+      
+    if ( ! ReadAttribute( rootID, "bzero", &(m3dField.bzero) ) )
+      EXCEPTION2( UnexpectedValueException, "bzero",
+                  "Not found or wrong type" );
+      
+    if ( ! ReadAttribute( rootID, "rzero", &(m3dField.rzero) ) )
+      EXCEPTION2( UnexpectedValueException, "rzero",
+                  "Not found or wrong type" );
+
+    m3dField.F0 = -m3dField.bzero * m3dField.rzero;
+      
+    H5Gclose( rootID );
+    
+    // Variables on the mesh - N elements x 20
+    vtkDataArray* vtkVarF0 = GetFieldVar( timestate, "equilibrium/f");  
+    m3dField.f0 = (float*) vtkVarF0->GetVoidPointer(0);
+
+    vtkDataArray* vtkVarPsi0 = GetFieldVar( timestate, "equilibrium/psi");
+    m3dField.psi0 = (float*) vtkVarPsi0->GetVoidPointer(0);
+    
+    vtkDataArray* vtkVarF = GetFieldVar( timestate, "f");
+    m3dField.fnr = (float*) vtkVarF->GetVoidPointer(0);
+
+    vtkDataArray* vtkVarF_i = GetFieldVar( timestate, "f_i");
+    m3dField.fni = (float*) vtkVarF_i->GetVoidPointer(0);
+
+    vtkDataArray* vtkVarPsi = GetFieldVar( timestate, "psi");
+    m3dField.psinr = (float*) vtkVarPsi->GetVoidPointer(0);
+
+    vtkDataArray* vtkVarPsi_i = GetFieldVar( timestate, "psi_i");
+    m3dField.psini = (float*) vtkVarPsi_i->GetVoidPointer(0);
+    
+    // Get the value at the node of each element on the linear mesh.
+    int nvalues;
+
+    if( m_dataLocation == AVT_NODECENT)
+      nvalues = npts;
+    // Get the value at the center of each element on the linear mesh.
+    else if( m_dataLocation == AVT_ZONECENT)
+      nvalues = npts / 3;
+    
+    // VTK structure for the field variable on the linear mesh.
     vtkFloatArray *var = vtkFloatArray::New();
 
-    // When getting a vector var it will be put on the interpolated
-    // linear grid. 
-    int ntuples = nelms * m_poloidalPlanes * pow(3.0, m_refinementLevel);
-
-    // For node data increase the data size by three.
-//     if( m_dataLocation == AVT_NODECENT)
-//       ntuples *= 3;
-    
     // Set the number of components before setting the number of tuples
     // for proper memory allocation.
     var->SetNumberOfComponents( 3 );
-    var->SetNumberOfTuples( ntuples );
+    var->SetNumberOfTuples( nvalues );
 
+    // Pointer to the field variable on the linear mesh.
     float* varPtr = (float *) var->GetVoidPointer(0);
 
-    // For now the data is dummy data.    
-    for(int i=0; i<3*ntuples; ++i )
-      *varPtr++ = 1;
+    int element;
+    float B[3];
+    double centroid[3], xieta[2];
 
+    if( m_dataLocation == AVT_NODECENT)
+    {
+      for( int i=0; i<npts; ++i )
+      {
+        // Find the element containing the point; get local coords
+        // xi,eta. We only want the index so that we know which element
+        // the nodes are part of. Do this once so that it is
+        // faster. Also it ensures that the correct element is found
+        // because the points lie on the element.
+        // 
+        if( i % 3 == 0 )
+        {
+          centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
+          centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
+          centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
+          
+          element = m3dField.get_tri_coords2D(centroid, xieta);
+        }
+        
+        double pt[3] = {pts[0],pts[1],pts[2]};
+            
+        /* Find the element containing the point; get local coords xi,eta */
+        if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) < 0) 
+        {
+          *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
+        }
+        else 
+        {
+          m3dField.interpBcomps(B, pt, element, xieta);
+        
+          *varPtr++ = B[0]; *varPtr++ = B[1]; *varPtr++ = B[2];
+        }
+        
+        pts += 3;
+      }
+    }
+  
+    else if( m_dataLocation == AVT_ZONECENT)
+    {
+      for( int i=0; i<npts; i+=3 )
+      {
+        centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
+        centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
+        centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
+        
+        /* Find the element containing the point; get local coords xi,eta */
+        if ((element = m3dField.get_tri_coords2D(centroid, xieta)) < 0) 
+        {
+          *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
+        }
+        else 
+        {
+          m3dField.interpBcomps(B, centroid, element, xieta);
+        
+          *varPtr++ = B[0]; *varPtr++ = B[1]; *varPtr++ = B[2];
+        }
+
+        pts += 9;
+      }
+    }
+    
+    // Set the pointers to null as the VTK delete operation will take
+    // of deleting the data. Normally the M3DCIField thinks it needs
+    // to delete the data.
+    m3dField.f0 = 0;
+    m3dField.psi0 = 0;    
+    m3dField.fnr = 0;
+    m3dField.fni = 0;
+    m3dField.psinr = 0;
+    m3dField.psini = 0;
+
+    vtkPts->Delete();
+
+    vtkVarF0->Delete();    
+    vtkVarPsi0->Delete();
+   
+    vtkVarF->Delete();
+    vtkVarF_i->Delete();
+    vtkVarPsi->Delete();
+    vtkVarPsi_i->Delete();
+
+    // FIXME - TEMPORARY UNITL FIX FOR MIXED NODE AND ZONE 
+    m_dataLocation = dataLocation;
+  
     return var;
   }
 
   else
     return 0;
 }
+
 
 
 // ****************************************************************************

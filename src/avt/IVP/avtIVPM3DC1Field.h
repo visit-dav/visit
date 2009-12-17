@@ -105,6 +105,8 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
     float interpdz2 (float *var, int el, double *lcoords);
     float interpdRdz(float *var, int el, double *lcoords);
 
+    void interpBcomps(float *B, double *x, int element, double *xieta);
+
  protected:
     template< class type >
       type* SetDataPointer( vtkDataSet *ds,
@@ -120,28 +122,28 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
     int    *neighbors;   /* Element neighbor table for efficient searches */
 
  public:
-    // FIX ME - variables on the mesh
+    //  variables on the mesh
     float *psi0, *f0;                  /* Equilibrium field */
     float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
 
-    // FIX ME - variable based on attributes (bzero and rzero)
+    // variable based on attributes (bzero and rzero)
     double F0;                      /* Strength of vacuum toroidal field */
     
     // Variables calculated in findElementNeighbors
     double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
 
-    // FIX ME - unused variables read from header attributes
+    // unused variables read from header attributes
     // (xlim, zlim) or explicitly set (psilim).
 //  double xlim, zlim, psilim;      /* Information about limiting surface */
 
-    // FIX ME - unused variables read from header attributes (ntime == nframes)
+    // unused variables read from header attributes (ntime == nframes)
 //  int    nframes;
 
-    // FIX ME - variables read from header attributes (linear == linflag,
+    // variables read from header attributes (linear == linflag,
     // ntor == tmode) or part of the mesh (nelms).
     int linflag, nelms, tmode;
 
-    // FIX ME - variables read from header attributes.
+    // variables read from header attributes.
     double bzero, rzero;
 };
 
