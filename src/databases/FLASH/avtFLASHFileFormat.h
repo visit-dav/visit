@@ -59,6 +59,9 @@
 
 #include <vtkPolyData.h>
 
+class     DBOptionsAttributes;
+
+
 // ****************************************************************************
 //  Class: avtFLASHFileFormat
 //
@@ -108,12 +111,15 @@
 //    Add support for the new, more efficient way of handling AMR meshes in the
 //    SIL.
 //
+//    Hank Childs, Thu Dec 17 14:07:52 PST 2009
+//    Add support for database options.
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtFLASHFileFormat(const char *);
+                       avtFLASHFileFormat(const char *, DBOptionsAttributes *&);
     virtual           ~avtFLASHFileFormat();
 
     virtual bool           HasInvariantMetaData(void) const { return false; };
@@ -259,6 +265,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::vector<int>          patchesPerLevel;
     std::vector<int>          visitIdToFLASHId;
     std::vector<int>          FLASHIdToVisitId;
+    bool                      showProcessors;
 };
 
 
