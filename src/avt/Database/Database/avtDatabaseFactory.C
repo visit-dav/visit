@@ -266,6 +266,12 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Hank Childs, Thu Dec 17 17:49:54 PST 2009
+//    If a plugin was extended to include read options, and if the user
+//    previously had saved their settings, then ignore the empty options
+//    and get the options directly from the plugin.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -336,6 +342,13 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         // Set the opening options
         const DBOptionsAttributes *opts = 
             defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+
+        if (opts->GetNames().size() == 0)
+            // The options aren't in the default options.  Maybe defaults
+            // have been added to the plugin since they saved their settings.
+            // Try to get it from the plugin.
+            opts = info->GetReadOptions();
+
         if (opts && info)
             info->SetReadOptions(new DBOptionsAttributes(*opts));
         plugins.push_back(info ? info->GetName(): "");
@@ -372,6 +385,12 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 // Set the opening options
                 const DBOptionsAttributes *opts = 
                     defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+                if (opts->GetNames().size() == 0)
+                    // The options aren't in the default options.  Maybe
+                    // defaults have been added to the plugin since they saved 
+                    // their settings. Try to get it from the plugin.
+                    opts = info->GetReadOptions();
+
                 if (opts && info)
                     info->SetReadOptions(new DBOptionsAttributes(*opts));
                 TRY
@@ -401,6 +420,12 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         // Set the opening options
         const DBOptionsAttributes *opts = 
             defaultFileOpenOptions.GetOpenOptionsForID(ids[i]);
+        if (opts->GetNames().size() == 0)
+            // The options aren't in the default options.  Maybe
+            // defaults have been added to the plugin since they saved 
+            // their settings. Try to get it from the plugin.
+            opts = info->GetReadOptions();
+
         if (opts && info)
             info->SetReadOptions(new DBOptionsAttributes(*opts));
         debug3 << "avtDatabaseFactory: trying extension-matched format "
@@ -438,6 +463,12 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 defaultFileOpenOptions.GetOpenOptionsForID(fallbackid);
             if (opts && info)
                 info->SetReadOptions(new DBOptionsAttributes(*opts));
+            if (opts->GetNames().size() == 0)
+                // The options aren't in the default options.  Maybe
+                // defaults have been added to the plugin since they saved 
+                // their settings. Try to get it from the plugin.
+                opts = info->GetReadOptions();
+
             plugins.push_back(info ? info->GetName() : "");
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
