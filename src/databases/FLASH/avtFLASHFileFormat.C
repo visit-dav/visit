@@ -66,6 +66,8 @@
 #include <avtStructuredDomainNesting.h>
 #include <avtIntervalTree.h>
 
+#include <DBOptionsAttributes.h>
+
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
@@ -235,9 +237,13 @@ avtFLASHFileFormat::FinalizeHDF5(void)
 //    Randy Hudson, January 30, 2008
 //    Added initialization of fileFormatVersion
 //
+//    Hank Childs, Thu Dec 17 14:07:52 PST 2009
+//    Added database options (for toggling between processors or levels).
+//
 // ****************************************************************************
 
-avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
+avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename, 
+                                       DBOptionsAttributes *&opts)
     : avtSTMDFileFormat(&cfilename, 1)
 {
     filename  = cfilename;
@@ -248,6 +254,8 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
     numProcessors = 0;
     file_has_procnum = false;
     fileFormatVersion = -1;
+
+    showProcessors = opts->GetBool("Show generating processor instead of refinement level");
 
     // do HDF5 library initialization on consturction of first instance
     if (avtFLASHFileFormat::objcnt == 0)
@@ -432,6 +440,9 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Hank Childs, Fri Dec 11 11:37:48 PST 2009
 //    Add support for more efficient AMR data structure.
 //
+//    Hank Childs, Thu Dec 17 14:07:52 PST 2009
+//    Added database options (for toggling between processors or levels).
+//
 // ****************************************************************************
 
 void
@@ -446,8 +457,8 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (numBlocks > 0)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = "mesh_blockandlevel";
-        mesh->originalName = "mesh_blockandlevel";
+        mesh->name = "amr_mesh";
+        mesh->originalName = "amr_mesh";
 
         mesh->meshType = AVT_AMR_MESH;
         mesh->topologicalDimension = dimension;
@@ -470,62 +481,98 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (int v = 0 ; v < varNames.size(); v++)
         {
             // Create var names for unique submenu for block and level
-            string composite = "mesh_blockandlevel/" + varNames[v];
-            AddScalarVarToMetaData(md, composite, "mesh_blockandlevel", AVT_ZONECENT);
+            AddScalarVarToMetaData(md, varNames[v], "amr_mesh", AVT_ZONECENT);
         }
+
+        avtMeshMetaData *mcblmesh = new avtMeshMetaData;
+        mcblmesh->name = "morton_blockandlevel";
+        mcblmesh->originalName = "morton_blockandlevel";
+
+        mcblmesh->meshType = AVT_UNSTRUCTURED_MESH;
+        mcblmesh->topologicalDimension = 1;    //    It's a curve
+        mcblmesh->spatialDimension = dimension;
+        mcblmesh->blockOrigin = 1;
+        mcblmesh->groupOrigin = 1;
+
+        mcblmesh->hasSpatialExtents = true;
+        mcblmesh->minSpatialExtents[0] = minSpatialExtents[0];
+        mcblmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+        mcblmesh->minSpatialExtents[1] = minSpatialExtents[1];
+        mcblmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+        mcblmesh->minSpatialExtents[2] = minSpatialExtents[2];
+        mcblmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+
+        // DEFINING SUBSETS ON M. CURVE MESH (LIKE THAT ON BASE MESH "mesh")
+        // spoof a group/domain mesh for the AMR hierarchy
+        mcblmesh->numBlocks = numBlocks;
+        mcblmesh->blockTitle = "Blocks";
+        mcblmesh->blockPieceName = "block";
+        // Level as group
+        mcblmesh->numGroups = numLevels;
+        mcblmesh->groupTitle = "Levels";
+        mcblmesh->groupPieceName = "level";
+        mcblmesh->numGroups = numLevels;
+
+        mcblmesh->blockNameScheme = mesh->blockNameScheme;
+        mcblmesh->groupIdsBasedOnRange = mesh->groupIdsBasedOnRange;
+
+        md->Add(mcblmesh);
     }
 
-    //    for block and processor SIL categories
-    if (numBlocks > 0)
+    if (showProcessors)
     {
-        avtMeshMetaData *bpmesh = new avtMeshMetaData;
-        bpmesh->originalName = "mesh_blockandproc";
-        bpmesh->name = "mesh_blockandproc";
-
-        bpmesh->meshType = AVT_AMR_MESH;
-        bpmesh->topologicalDimension = dimension;
-        bpmesh->spatialDimension = dimension;
-        bpmesh->blockOrigin = 1;
-        bpmesh->groupOrigin = 0;
-
-        bpmesh->hasSpatialExtents = true;
-        bpmesh->minSpatialExtents[0] = minSpatialExtents[0];
-        bpmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
-        bpmesh->minSpatialExtents[1] = minSpatialExtents[1];
-        bpmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
-        bpmesh->minSpatialExtents[2] = minSpatialExtents[2];
-        bpmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
-
-        // spoof a group/domain mesh for the AMR hierarchy
-        bpmesh->numBlocks = numBlocks;
-        bpmesh->blockTitle = "Blocks";
-        bpmesh->blockPieceName = "block";
-        // Processor number as group
-        bpmesh->numGroups = numProcessors;
-        bpmesh->groupTitle = "Processors";
-        bpmesh->groupPieceName = "processor";
-        bpmesh->numGroups = numProcessors;
-
-        vector<int> groupIds(numBlocks);
-        vector<string> pieceNames(numBlocks);
-        // Processor number as group
-        for (int i = 0; i < numBlocks; i++)
+        //    for block and processor SIL categories
+        if (numBlocks > 0)
         {
-            char tmpName[64];
-            sprintf(tmpName,"processor%d,block%d",blocks[i].procnum, blocks[i].ID);
-            groupIds[i] = blocks[i].procnum;
-            pieceNames[i] = tmpName;
-        }
-        bpmesh->blockNames = pieceNames;
-        bpmesh->groupIds = groupIds;
-        md->Add(bpmesh);
-
-        // grid variables
-        for (int v = 0 ; v < varNames.size(); v++)
-        {
-            // Create var names for unique submenu for block and level
-            string composite = "mesh_blockandproc/" + varNames[v];
-            AddScalarVarToMetaData(md, composite, "mesh_blockandproc", AVT_ZONECENT);
+            avtMeshMetaData *bpmesh = new avtMeshMetaData;
+            bpmesh->originalName = "mesh_blockandproc";
+            bpmesh->name = "mesh_blockandproc";
+    
+            bpmesh->meshType = AVT_AMR_MESH;
+            bpmesh->topologicalDimension = dimension;
+            bpmesh->spatialDimension = dimension;
+            bpmesh->blockOrigin = 1;
+            bpmesh->groupOrigin = 0;
+    
+            bpmesh->hasSpatialExtents = true;
+            bpmesh->minSpatialExtents[0] = minSpatialExtents[0];
+            bpmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+            bpmesh->minSpatialExtents[1] = minSpatialExtents[1];
+            bpmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+            bpmesh->minSpatialExtents[2] = minSpatialExtents[2];
+            bpmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+    
+            // spoof a group/domain mesh for the AMR hierarchy
+            bpmesh->numBlocks = numBlocks;
+            bpmesh->blockTitle = "Blocks";
+            bpmesh->blockPieceName = "block";
+            // Processor number as group
+            bpmesh->numGroups = numProcessors;
+            bpmesh->groupTitle = "Processors";
+            bpmesh->groupPieceName = "processor";
+            bpmesh->numGroups = numProcessors;
+    
+            vector<int> groupIds(numBlocks);
+            vector<string> pieceNames(numBlocks);
+            // Processor number as group
+            for (int i = 0; i < numBlocks; i++)
+            {
+                char tmpName[64];
+                sprintf(tmpName,"processor%d,block%d",blocks[i].procnum, blocks[i].ID);
+                groupIds[i] = blocks[i].procnum;
+                pieceNames[i] = tmpName;
+            }
+            bpmesh->blockNames = pieceNames;
+            bpmesh->groupIds = groupIds;
+            md->Add(bpmesh);
+    
+            // grid variables
+            for (int v = 0 ; v < varNames.size(); v++)
+            {
+                // Create var names for unique submenu for block and level
+                string composite = "mesh_blockandproc/" + varNames[v];
+                AddScalarVarToMetaData(md, composite, "mesh_blockandproc", AVT_ZONECENT);
+            }
         }
     }
 
@@ -569,100 +616,55 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     }
 
-    // Morton curve
-    //    for block and level SIL categories
-    if (numBlocks > 0)
+    if (showProcessors)
     {
-        avtMeshMetaData *mcblmesh = new avtMeshMetaData;
-        mcblmesh->name = "morton_blockandlevel";
-        mcblmesh->originalName = "morton_blockandlevel";
-
-        mcblmesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mcblmesh->topologicalDimension = 1;    //    It's a curve
-        mcblmesh->spatialDimension = dimension;
-        mcblmesh->blockOrigin = 1;
-        mcblmesh->groupOrigin = 1;
-
-        mcblmesh->hasSpatialExtents = true;
-        mcblmesh->minSpatialExtents[0] = minSpatialExtents[0];
-        mcblmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
-        mcblmesh->minSpatialExtents[1] = minSpatialExtents[1];
-        mcblmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
-        mcblmesh->minSpatialExtents[2] = minSpatialExtents[2];
-        mcblmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
-
-        // DEFINING SUBSETS ON M. CURVE MESH (LIKE THAT ON BASE MESH "mesh")
-        // spoof a group/domain mesh for the AMR hierarchy
-        mcblmesh->numBlocks = numBlocks;
-        mcblmesh->blockTitle = "Blocks";
-        mcblmesh->blockPieceName = "block";
-        // Level as group
-        mcblmesh->numGroups = numLevels;
-        mcblmesh->groupTitle = "Levels";
-        mcblmesh->groupPieceName = "level";
-        mcblmesh->numGroups = numLevels;
-
-        vector<int> groupIds(numBlocks);
-        vector<string> pieceNames(numBlocks);
-        // Level as group
-        for (int i = 0; i < numBlocks; i++)
+        //    for block and processor SIL categories
+        if (numBlocks > 0)
         {
-            char tmpName[64];
-            sprintf(tmpName,"level%d,block%d",blocks[i].level, blocks[i].ID);
-            groupIds[i] = blocks[i].level-1;
-            pieceNames[i] = tmpName;
+            avtMeshMetaData *mcbpmesh = new avtMeshMetaData;
+            mcbpmesh->name = "morton_blockandproc";
+            mcbpmesh->originalName = "morton_blockandproc";
+    
+            mcbpmesh->meshType = AVT_UNSTRUCTURED_MESH;
+            mcbpmesh->topologicalDimension = 1;    //    It's a curve
+            mcbpmesh->spatialDimension = dimension;
+            mcbpmesh->blockOrigin = 1;
+            mcbpmesh->groupOrigin = 0;
+    
+            mcbpmesh->hasSpatialExtents = true;
+            mcbpmesh->minSpatialExtents[0] = minSpatialExtents[0];
+            mcbpmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+            mcbpmesh->minSpatialExtents[1] = minSpatialExtents[1];
+            mcbpmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+            mcbpmesh->minSpatialExtents[2] = minSpatialExtents[2];
+            mcbpmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+    
+            // DEFINING SUBSETS ON M. CURVE MESH (LIKE THAT ON BASE MESH "mesh")
+            // spoof a group/domain mesh for the AMR hierarchy
+            mcbpmesh->numBlocks = numBlocks;
+            mcbpmesh->blockTitle = "Blocks";
+            mcbpmesh->blockPieceName = "block";
+            // Processor number as group
+            mcbpmesh->numGroups = numProcessors;
+            mcbpmesh->groupTitle = "Processors";
+            mcbpmesh->groupPieceName = "processor";
+            mcbpmesh->numGroups = numProcessors;
+    
+            vector<int> groupIds(numBlocks);
+            vector<string> pieceNames(numBlocks);
+            // Processor number as group
+            for (int i = 0; i < numBlocks; i++)
+            {
+                char tmpName[64];
+                sprintf(tmpName,"processor%d,block%d",blocks[i].procnum, blocks[i].ID);
+                groupIds[i] = blocks[i].procnum;
+                pieceNames[i] = tmpName;
+            }
+            mcbpmesh->blockNames = pieceNames;
+            mcbpmesh->groupIds = groupIds;
+
+            md->Add(mcbpmesh);
         }
-        mcblmesh->blockNames = pieceNames;
-        mcblmesh->groupIds = groupIds;
-
-        md->Add(mcblmesh);
-    }
-    //    for block and processor SIL categories
-    if (numBlocks > 0)
-    {
-        avtMeshMetaData *mcbpmesh = new avtMeshMetaData;
-        mcbpmesh->name = "morton_blockandproc";
-        mcbpmesh->originalName = "morton_blockandproc";
-
-        mcbpmesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mcbpmesh->topologicalDimension = 1;    //    It's a curve
-        mcbpmesh->spatialDimension = dimension;
-        mcbpmesh->blockOrigin = 1;
-        mcbpmesh->groupOrigin = 0;
-
-        mcbpmesh->hasSpatialExtents = true;
-        mcbpmesh->minSpatialExtents[0] = minSpatialExtents[0];
-        mcbpmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
-        mcbpmesh->minSpatialExtents[1] = minSpatialExtents[1];
-        mcbpmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
-        mcbpmesh->minSpatialExtents[2] = minSpatialExtents[2];
-        mcbpmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
-
-        // DEFINING SUBSETS ON M. CURVE MESH (LIKE THAT ON BASE MESH "mesh")
-        // spoof a group/domain mesh for the AMR hierarchy
-        mcbpmesh->numBlocks = numBlocks;
-        mcbpmesh->blockTitle = "Blocks";
-        mcbpmesh->blockPieceName = "block";
-        // Processor number as group
-        mcbpmesh->numGroups = numProcessors;
-        mcbpmesh->groupTitle = "Processors";
-        mcbpmesh->groupPieceName = "processor";
-        mcbpmesh->numGroups = numProcessors;
-
-        vector<int> groupIds(numBlocks);
-        vector<string> pieceNames(numBlocks);
-        // Processor number as group
-        for (int i = 0; i < numBlocks; i++)
-        {
-            char tmpName[64];
-            sprintf(tmpName,"processor%d,block%d",blocks[i].procnum, blocks[i].ID);
-            groupIds[i] = blocks[i].procnum;
-            pieceNames[i] = tmpName;
-        }
-        mcbpmesh->blockNames = pieceNames;
-        mcbpmesh->groupIds = groupIds;
-
-        md->Add(mcbpmesh);
     }
 
     // Populate cycle and time
@@ -728,13 +730,13 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // ****************************************************************************
 
 vtkDataSet *
-avtFLASHFileFormat::GetMesh(int visitDomain, const char *meshname)
+avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 {
-    int domain = visitIdToFLASHId[visitDomain];
     ReadAllMetaData();
 
-    if (string(meshname) == "mesh_blockandlevel")
+    if (string(meshname) == "amr_mesh")
     {
+        int theRealDomain = visitIdToFLASHId[domain];
         // rectilinear mesh
         vtkFloatArray  *coords[3];
         int i;
@@ -750,8 +752,8 @@ avtFLASHFileFormat::GetMesh(int visitDomain, const char *meshname)
                 }
                 else
                 {
-                    double minExt = blocks[domain].minSpatialExtents[i];
-                    double maxExt = blocks[domain].maxSpatialExtents[i];
+                    double minExt = blocks[theRealDomain].minSpatialExtents[i];
+                    double maxExt = blocks[theRealDomain].maxSpatialExtents[i];
                     double c = minExt + double(j) *
                         (maxExt-minExt) / double(block_ndims[i]-1);
                     coords[i]->SetComponent(j, 0, c);
@@ -1229,14 +1231,20 @@ avtFLASHFileFormat::GetMortonCurve()
 vtkDataArray *
 avtFLASHFileFormat::GetVar(int visitDomain, const char *vname)
 {
-    int domain = visitIdToFLASHId[visitDomain];
-
     ReadAllMetaData();
 
-    // Strip prefix (submenu name (either "mesh_blockandlevel/" or "mesh_blockandproc/")) to leave actual var name
+    // Strip prefix (submenu name ("mesh_blockandproc/")) to leave actual var name
     string vn_str = vname;
     size_t pos = vn_str.find("/"); // position of "/" in str
-    string vn_substr = vn_str.substr (pos+1); // get from just after "/" to the end
+    int theRealDomain = visitDomain;
+    string vn_substr = vn_str;
+    if (pos != string::npos)
+        // We have a variable in a subdirectory.  Strip out the '/'
+        vn_substr = vn_str.substr (pos+1); // get from just after "/" to the end
+    else
+        // We have a variable on the main mesh.  Convert its domain.
+        theRealDomain = visitIdToFLASHId[visitDomain];
+
 
     if (particleOriginalIndexMap.count(vname))
     {
@@ -1330,7 +1338,7 @@ avtFLASHFileFormat::GetVar(int visitDomain, const char *vname)
 #endif
         hsize_t stride[5], count[5];
     
-        start[0]  = domain;
+        start[0]  = theRealDomain;
         start[1]  = 0;
         start[2]  = 0;
         start[3]  = 0;
@@ -2552,7 +2560,11 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //    Hank Childs, Tue Dec 15 14:30:07 PST 2009
 //    Reorder indices to accommodate reordering of patches for SIL efficiency.
 //
+//    Hank Childs, Thu Dec 17 14:07:52 PST 2009
+//    Added database options (for toggling between processors or levels).
+//
 // ****************************************************************************
+
 void
 avtFLASHFileFormat::BuildDomainNesting()
 {
@@ -2560,11 +2572,11 @@ avtFLASHFileFormat::BuildDomainNesting()
         return;
 
     //  ***********************************************************************
-    //  PROCESS THE "mesh_blockandlevel" MESH
+    //  PROCESS THE "amr_mesh" MESH
     //  ***********************************************************************
 
     // first, look to see if we don't already have it cached
-    void_ref_ptr vrTmp = cache->GetVoidRef("mesh_blockandlevel",
+    void_ref_ptr vrTmp = cache->GetVoidRef("amr_mesh",
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                    timestep, -1);
 
@@ -2662,7 +2674,7 @@ avtFLASHFileFormat::BuildDomainNesting()
             void_ref_ptr vr = void_ref_ptr(dn,
                                          avtStructuredDomainNesting::Destruct);
 
-            cache->CacheVoidRef("mesh_blockandlevel",
+            cache->CacheVoidRef("amr_mesh",
                                 AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                 timestep, -1, vr);
             visitTimer->StopTimer(t2, "FLASH setting up patch nesting");
@@ -2673,108 +2685,112 @@ avtFLASHFileFormat::BuildDomainNesting()
     //  PROCESS THE "mesh_blockandproc" MESH
     //  ***********************************************************************
 
-    // first, look to see if we don't already have it cached
-    void_ref_ptr vrTmp2 = cache->GetVoidRef("mesh_blockandproc",
-                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                   timestep, -1);
-
-    if ((*vrTmp2 == NULL))
+    if (showProcessors)
     {
-        int i;
-
-        avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
-        rdb->SetNumDomains(numBlocks);
-        for (i = 0; i < numBlocks; i++)
+        // first, look to see if we don't already have it cached
+        void_ref_ptr vrTmp2 = cache->GetVoidRef("mesh_blockandproc",
+                                       AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                       timestep, -1);
+    
+        if ((*vrTmp2 == NULL))
         {
-            int logExts[6];
-            logExts[0] = blocks[i].minGlobalLogicalExtents[0];
-            logExts[1] = blocks[i].maxGlobalLogicalExtents[0];
-            logExts[2] = blocks[i].minGlobalLogicalExtents[1];
-            logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
-            logExts[4] = blocks[i].minGlobalLogicalExtents[2];
-            logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-            rdb->SetIndicesForAMRPatch(FLASHIdToVisitId[i], blocks[i].level - 1, logExts);
-        }
-        rdb->CalculateBoundaries();
-
-        void_ref_ptr vrdb = void_ref_ptr(rdb,
-                                         avtStructuredDomainBoundaries::Destruct);
-        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                            timestep, -1, vrdb);
-
-        //
-        // build the avtDomainNesting object
-        //
-
-        if (numLevels > 0)
-        {
-            avtStructuredDomainNesting *dn =
-                new avtStructuredDomainNesting(numBlocks, numLevels);
-
-            dn->SetNumDimensions(dimension);
-
-            //
-            // Set refinement level ratio information
-            //
-
-            // NOTE: FLASH files always have a 2:1 ratio
-            vector<int> ratios(3);
-            ratios[0] = 1;
-            ratios[1] = 1;
-            ratios[2] = 1;
-            dn->SetLevelRefinementRatios(0, ratios);
-            for (i = 1; i < numLevels; i++)
-            {
-                vector<int> ratios(3);
-                ratios[0] = 2;
-                ratios[1] = 2;
-                ratios[2] = 2;
-                dn->SetLevelRefinementRatios(i, ratios);
-            }
-
-            //
-            // set each domain's level, children and logical extents
-            //
+            int i;
+    
+            avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
+            rdb->SetNumDomains(numBlocks);
             for (i = 0; i < numBlocks; i++)
             {
-                vector<int> childBlocks;
-                for (int j = 0; j < numChildrenPerBlock; j++)
-                {
-                    // if this is allowed to be 1-origin, the "-1" here
-                    // needs to be removed
-                    if (blocks[i].childrenIDs[j] >= 0)
-                        childBlocks.push_back(FLASHIdToVisitId[blocks[i].childrenIDs[j] - 1]);
-                }
-
-                vector<int> logExts(6);
-
+                int logExts[6];
                 logExts[0] = blocks[i].minGlobalLogicalExtents[0];
-                logExts[1] = blocks[i].minGlobalLogicalExtents[1];
-                logExts[2] = blocks[i].minGlobalLogicalExtents[2];
-
-                logExts[3] = blocks[i].maxGlobalLogicalExtents[0]-1;
-                if (dimension >= 2)
-                    logExts[4] = blocks[i].maxGlobalLogicalExtents[1]-1;
-                else
-                    logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
-                if (dimension >= 3)
-                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2]-1;
-                else
-                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-
-                dn->SetNestingForDomain(FLASHIdToVisitId[i], blocks[i].level-1,
-                                        childBlocks, logExts);
+                logExts[1] = blocks[i].maxGlobalLogicalExtents[0];
+                logExts[2] = blocks[i].minGlobalLogicalExtents[1];
+                logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
+                logExts[4] = blocks[i].minGlobalLogicalExtents[2];
+                logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
+                rdb->SetIndicesForAMRPatch(FLASHIdToVisitId[i], blocks[i].level - 1, logExts);
             }
-
-            void_ref_ptr vr = void_ref_ptr(dn,
-                                         avtStructuredDomainNesting::Destruct);
-
-            cache->CacheVoidRef("mesh_blockandproc",
-                                AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                timestep, -1, vr);
+            rdb->CalculateBoundaries();
+    
+            void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                             avtStructuredDomainBoundaries::Destruct);
+            cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                timestep, -1, vrdb);
+    
+            //
+            // build the avtDomainNesting object
+            //
+    
+            if (numLevels > 0)
+            {
+                avtStructuredDomainNesting *dn =
+                    new avtStructuredDomainNesting(numBlocks, numLevels);
+    
+                dn->SetNumDimensions(dimension);
+    
+                //
+                // Set refinement level ratio information
+                //
+    
+                // NOTE: FLASH files always have a 2:1 ratio
+                vector<int> ratios(3);
+                ratios[0] = 1;
+                ratios[1] = 1;
+                ratios[2] = 1;
+                dn->SetLevelRefinementRatios(0, ratios);
+                for (i = 1; i < numLevels; i++)
+                {
+                    vector<int> ratios(3);
+                    ratios[0] = 2;
+                    ratios[1] = 2;
+                    ratios[2] = 2;
+                    dn->SetLevelRefinementRatios(i, ratios);
+                }
+    
+                //
+                // set each domain's level, children and logical extents
+                //
+                for (i = 0; i < numBlocks; i++)
+                {
+                    vector<int> childBlocks;
+                    for (int j = 0; j < numChildrenPerBlock; j++)
+                    {
+                        // if this is allowed to be 1-origin, the "-1" here
+                        // needs to be removed
+                        if (blocks[i].childrenIDs[j] >= 0)
+                            childBlocks.push_back(FLASHIdToVisitId[blocks[i].childrenIDs[j] - 1]);
+                    }
+    
+                    vector<int> logExts(6);
+    
+                    logExts[0] = blocks[i].minGlobalLogicalExtents[0];
+                    logExts[1] = blocks[i].minGlobalLogicalExtents[1];
+                    logExts[2] = blocks[i].minGlobalLogicalExtents[2];
+    
+                    logExts[3] = blocks[i].maxGlobalLogicalExtents[0]-1;
+                    if (dimension >= 2)
+                        logExts[4] = blocks[i].maxGlobalLogicalExtents[1]-1;
+                    else
+                        logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
+                    if (dimension >= 3)
+                        logExts[5] = blocks[i].maxGlobalLogicalExtents[2]-1;
+                    else
+                        logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
+    
+                    dn->SetNestingForDomain(FLASHIdToVisitId[i], blocks[i].level-1,
+                                            childBlocks, logExts);
+                }
+    
+                void_ref_ptr vr = void_ref_ptr(dn,
+                                             avtStructuredDomainNesting::Destruct);
+    
+                cache->CacheVoidRef("mesh_blockandproc",
+                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                    timestep, -1, vr);
+            }
         }
     }
 }
+
 
 // ****************************************************************************
 //  Method:  avtFLASHFileFormat::GetAuxiliaryData
