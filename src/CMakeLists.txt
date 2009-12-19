@@ -664,9 +664,9 @@ IF (WIN32)
   # cmake automatically uses _DEBUG and MDd for Debug flags, but our
   # third-party libs are NOT debug versions, so we won't be able to
   # link against them if those defines are used.  Use our own instead.
-  SET (CMAKE_CXX_FLAGS_DEBUG "/MD /Zi /Ob0 /Od /RTC1" CACHE STRING 
+  SET (CMAKE_CXX_FLAGS_DEBUG "/MD /ZI /Ob0 /Od /RTC1" CACHE STRING 
        "Flags used by the compiler during debug builds." FORCE)
-  SET (CMAKE_C_FLAGS_DEBUG "/MD /Zi /Ob0 /Od /RTC1" CACHE STRING 
+  SET (CMAKE_C_FLAGS_DEBUG "/MD /ZI /Ob0 /Od /RTC1" CACHE STRING 
        "Flags used by the compiler during debug builds." FORCE)
   SET (CMAKE_EXE_LINKER_FLAGS_DEBUG "/INCREMENTAL:YES" CACHE STRING 
        "Flags used by the linker during debug builds." FORCE)
