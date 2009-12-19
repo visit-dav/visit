@@ -1,6 +1,22 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+#ifdef __APPLE__
+// If we're on Apple then use the mangled Mesa GLU functions since it's 
+// not readily apparent where else we can find them.
+#define gluTess             mgluTess
+#define gluDeleteTess       mgluDeleteTess
+#define gluNewTess          mgluNewTess
+#define gluTessBeginContour mgluTessBeginContour
+#define gluTessBeginPolygon mgluTessBeginPolygon
+#define gluTessCallback     mgluTessCallback
+#define gluTessEndContour   mgluTessEndContour
+#define gluTessEndPolygon   mgluTessEndPolygon
+#define gluTessNormal       mgluTessNormal
+#define gluTessProperty     mgluTessProperty
+#define gluTessVertex       mgluTessVertex
+#endif
 #include <GL/glu.h>
 #include <snprintf.h>
 #include <map>

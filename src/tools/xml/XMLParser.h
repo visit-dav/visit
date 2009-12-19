@@ -202,6 +202,9 @@ ParseCharacters(const QString &buff)
 //    Jeremy Meredith, Mon Feb 23 17:37:33 EST 2009
 //    Don't just check if init is nonnull, check if it's true.
 //
+//    Kathleen Bonnell, Wed May 27 9:01:52 MST 2009 
+//    Added support for windows-only mdserver and engine files (WM, WE).
+//
 //    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
 //    Added support for custom base class for derived state objects.
 //
@@ -549,6 +552,18 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->jfiles.clear();
                     comps3 |= COMP_JAVA;
                     currentPlugin->customjfiles = true;
+                }
+                else if (comps2[i] == "WM")
+                {
+                    currentPlugin->wmfiles.clear();
+                    comps3 |= COMP_MDSERVER;
+                    currentPlugin->customwmfiles = true;
+                }
+                else if (comps2[i] == "WE")
+                {
+                    currentPlugin->wefiles.clear();
+                    comps3 |= COMP_ENGINE;
+                    currentPlugin->customwefiles = true;
                 }
                 else
                     throw QString("invalid file '%1' for components attribute of Files tag").arg(comps2[i]);

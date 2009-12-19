@@ -39,6 +39,7 @@
 #include <avtMesaSpreadsheetTraceRenderer.h>
 
 #include <GL/gl_mangle.h>
+#include <GL/gl.h>
 
 #define avtOpenGLSpreadsheetTraceRenderer avtMesaSpreadsheetTraceRenderer
 #define VTK_IMPLEMENT_MESA_CXX

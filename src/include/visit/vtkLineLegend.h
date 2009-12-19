@@ -1,1 +1,0 @@
-../../avt/Plotter/vtk/vtkLineLegend.h

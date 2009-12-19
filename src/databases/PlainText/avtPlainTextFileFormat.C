@@ -43,8 +43,6 @@
 #include <avtPlainTextFileFormat.h>
 
 #include <cstring>
-#include <string.h>
-
 #include <string>
 
 #include <vtkPointData.h>

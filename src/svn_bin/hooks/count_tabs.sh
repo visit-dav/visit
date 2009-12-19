@@ -40,6 +40,9 @@
 #   Cyrus Harrison, Tue Dec 16 14:42:52 PST 2008
 #   Added *.cmake files to the list of files we permit tabs in.
 #
+#   Kathleen Bonnell, Mon Jan 26 17:16:17 PST 2009
+#   Added windowsbuild/ThirdParty to the skip list.
+#
 #   Mark C. Miller, Thu Mar 12 09:23:57 PDT 2009
 #   Shortened switch statement for exception cases. Added bin/db_mktmpl as
 #   an exception
@@ -74,13 +77,16 @@ while read fline; do
     # Filter out other cases HandleCommonSkipCases doesn't catch
     #
     case $fname in
-        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake|*.tcl)
+        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake|*.tcl|*/windowsbuild/ThirdParty/*)
             continue
             ;;
         */src/configure|*/src/aclocal.m4|*/svn_bin/build_visit|*/bin/db_mktmpl)
             continue
             ;;
         *Makefile)
+            continue
+            ;;
+        *CMakeLists.txt)
             continue
             ;;
         *png)

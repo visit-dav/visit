@@ -1,0 +1,8 @@
+Nix the stuff that I'm ignorant about
+
+Verify RGB-to-everything (especially HSL) with dense sampling
+of RGB cube.
+
+
+
+

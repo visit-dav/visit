@@ -55,13 +55,14 @@
 #include <TimingsManager.h>
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
-#if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-#else
-#include <GL/gl.h>
+  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
+    #include <OpenGL/gl.h>
+  #else
+    #if defined(_WIN32)
+      #include <windows.h>
+    #endif
+    #include <GL/gl.h>
+  #endif
 #endif
 
 

@@ -1,1 +1,0 @@
-../../avt/Queries/Queries/avtMemoryUsageQuery.h

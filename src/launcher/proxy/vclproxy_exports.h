@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(LAUNCHER_PROXY_EXPORTS)
+# if __GNUC__ >= 4 && (defined(LAUNCHER_PROXY_EXPORTS) || defined(vclproxy_EXPORTS))
 #   define LAUNCHER_PROXY_API __attribute__ ((visibility("default")))
 # else
 #   define LAUNCHER_PROXY_API /* hidden by default */

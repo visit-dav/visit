@@ -40,7 +40,7 @@
 #define MIR_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(MIR_EXPORTS) || defined(avtmir_ser_EXPORTS) || defined(avtmir_par_EXPORTS)
+#if defined(AVTMIR_EXPORTS) || defined(avtmir_ser_EXPORTS) || defined(avtmir_par_EXPORTS)
 #define MIR_API __declspec(dllexport)
 #else
 #define MIR_API __declspec(dllimport)
@@ -60,7 +60,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(MIR_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTMIR_EXPORTS) || defined(avtmir_ser_EXPORTS) || defined(avtmir_par_EXPORTS))
 #   define MIR_API __attribute__ ((visibility("default")))
 # else
 #   define MIR_API /* hidden by default */

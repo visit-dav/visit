@@ -356,8 +356,8 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
   hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
   hid_t spaceId = H5Dget_space(datasetId);
   size_t rank = H5Sget_simple_extent_ndims(spaceId);
-  hsize_t sdim[rank];
-  H5Sget_simple_extent_dims(spaceId, sdim, NULL);
+  std::vector<hsize_t> sdim(rank);
+  H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
 
   // Sanity check.  
   if( rank != 2 || sdim[0] != nelms || sdim[1] != ELEMENT_SIZE )
@@ -755,8 +755,8 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   // Read in the dataset information.
   hid_t spaceId = H5Dget_space(datasetId);
   size_t rank = H5Sget_simple_extent_ndims(spaceId);
-  hsize_t sdim[rank];
-  H5Sget_simple_extent_dims(spaceId, sdim, NULL);
+  std::vector<hsize_t> sdim(rank);
+  H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
   
   if( rank != 2 || sdim[0] != nelms || sdim[1] != nComponents )
       EXCEPTION2( UnexpectedValueException,
@@ -1332,8 +1332,8 @@ herr_t groupIterator(hid_t locId, const char* name, void* opdata) {
       hid_t datasetId = H5Dopen(locId, name, H5P_DEFAULT);
       hid_t spaceId = H5Dget_space(datasetId);
       size_t rank = H5Sget_simple_extent_ndims(spaceId);
-      hsize_t sdim[rank];
-      H5Sget_simple_extent_dims(spaceId, sdim, NULL);
+      std::vector<hsize_t> sdim(rank);
+      H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
 
       H5Dclose(spaceId);
       H5Dclose(datasetId);
@@ -1438,8 +1438,8 @@ avtM3DC1FileFormat::LoadFile()
     hid_t datasetId = H5Dopen(groupId, "elements", H5P_DEFAULT);
     hid_t spaceId = H5Dget_space(datasetId);
     size_t rank = H5Sget_simple_extent_ndims(spaceId);
-    hsize_t sdim[rank];
-    H5Sget_simple_extent_dims(spaceId, sdim, NULL);
+    std::vector<hsize_t> sdim(rank);
+    H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
     
     H5Dclose(spaceId);
     H5Dclose(datasetId);
@@ -1518,8 +1518,8 @@ avtM3DC1FileFormat::LoadFile()
 
             hid_t spaceId = H5Dget_space(datasetId);
             size_t rank = H5Sget_simple_extent_ndims(spaceId);
-            hsize_t sdim[rank];
-            H5Sget_simple_extent_dims(spaceId, sdim, NULL);
+            std::vector<hsize_t> sdim(rank);
+            H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
             
             H5Dclose(spaceId);
             H5Dclose(datasetId);
@@ -1551,8 +1551,8 @@ avtM3DC1FileFormat::LoadFile()
         hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
         hid_t spaceId = H5Dget_space(datasetId);
         size_t rank = H5Sget_simple_extent_ndims(spaceId);
-        hsize_t sdim[rank];
-        H5Sget_simple_extent_dims(spaceId, sdim, NULL);
+        std::vector<hsize_t> sdim(rank);
+        H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
     
         H5Dclose(spaceId);
         H5Dclose(datasetId);
@@ -1570,3 +1570,4 @@ avtM3DC1FileFormat::LoadFile()
 
     debug1 << "SUCCESS in opening M3D C1 file " << m_filename << endl;
 }
+

@@ -1,0 +1,34 @@
+make new calls for setting the different kinds of options, so that
+reliance on var-args is minimized
+
+for super long things like "tend glyph", it would be nice to have
+seperator lines between the long versions of options, to visually
+group them somewhat.
+
+currently the "input nrrd" option to unu comes last as a way of allowing
+hest to do error checking on all other (more error prone) options.  But
+it would be nice to indicate a parsing order seperate from the option order.
+
+basic problems with hest:
+
+- there's no such thing as a trully optional parameter: data is needed
+for all options, whether it comes from the default string or the
+command line, and its an error if no data is found.  Not having
+optional parameters is getting in the way of things like allowing "unu
+make" taking centerings.
+
+- there's no way to tell whether the information for any given option 
+came from the default string, or from the command line
+
+- there's no way to access the string that was parsed to get the
+information for an option (could be from default, or command-line,
+or response file)
+
+- (from tendGlyph.c): learned: a huge problem with hest and its
+var-arg-based hestOptAdd is that it can't tell when you've based
+multiple strings for the detailed usage information by accident.  I
+had accidentally inserted a comma into my multi-line string for the
+"info" arg, relying on the automatic string concatenation, and ended
+up passing total garbage to hestOptAdd for the airEnum pointer,
+causing me to think that the tenGlyphType airEnum was malformed, when
+it was in fact fine ... 

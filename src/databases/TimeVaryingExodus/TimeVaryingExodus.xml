@@ -5,6 +5,13 @@
       avtTimeVaryingExodusFileFormat.C
       vtkExodusReader.C
     </Files>
-    <CXXFLAGS> $(EXODUS_FLAGS) </CXXFLAGS>
-    <LIBS>     $(EXODUS_LIBS)  </LIBS>
+    <CXXFLAGS>
+      ${EXODUSII_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${EXODUSII_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${EXODUSII_LIB}
+    </LIBS>
   </Plugin>

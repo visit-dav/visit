@@ -1,0 +1,102 @@
+##
+## Set the VISITHOME environment variable.
+##
+SET(VISITHOME /usr/gapps/visit)
+SET(VISITARCH linux_rhel4_gcc_3.4.6)
+
+SET(VISIT_CXX_FLAGS -Wno-deprecated)
+
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/5.0/${VISITARCH})
+
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0c/test/${VISITARCH}/lib/vtk-5.0)
+
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.4.3/${VISITARCH}/bin)
+
+SET(GLEW_DIR ${VISITHOME}/glew/1.3.4/${VISITARCH})
+
+VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/${VISITARCH})
+
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
+
+VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
+
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.6.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+
+VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.3.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
+
+##
+## Use VisIt's Python.
+##
+#PYDIR=$VISITHOME/python/2.5/$VISITARCH
+#PYVERSION=python2.5
+
+##
+## Add parallel arguments.
+##
+SET(VISIT_MPI_LIBRARY_DIR /misc/gapps/mpich/1.2.4/Linux/serial/64/debug/lib)
+SET(VISIT_MPI_CXX_FLAGS "-I/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/include")
+SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
+SET(VISIT_MPI_LIBS mpich)
+
+
+##
+## If enable_viewer_mesa_stub in not set, then disable it.
+##
+#if test -z "$enable_viewer_mesa_stub"; then
+#   enable_viewer_mesa_stub=no
+#fi
+
+##
+## Database reader plugin support libraries
+##
+###############################################################################
+
+##
+## Boxlib
+##
+#DEFAULT_BOXLIB2D_INCLUDE=$VISITHOME/boxlib/$VISITARCH/include/2D
+#DEFAULT_BOXLIB2D_LIBS=$VISITHOME/boxlib/$VISITARCH/lib
+#DEFAULT_BOXLIB3D_INCLUDE=$VISITHOME/boxlib/$VISITARCH/include/3D
+#DEFAULT_BOXLIB3D_LIBS=$VISITHOME/boxlib/$VISITARCH/lib
+
+##
+## CFITSIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/${VISITARCH})
+
+##
+## Exodus
+##
+#DEFAULT_EXODUS_INCLUDES=$VISITHOME/exodus/4.46/$VISITARCH/inc
+#DEFAULT_EXODUS_LIBRARY=$VISITHOME/exodus/4.46/$VISITARCH/lib
+
+
+##
+## H5PART
+##
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.4.0/${VISITARCH})
+
+
+##
+## Mili
+##
+#VISIT_MILI_DIR=$VISITHOME/mili/1.10.0/$VISITARCH
+
+##
+## netCDF
+##
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.0/${VISITARCH})
+
+
+##
+## ViSUS 
+##
+#DEFAULT_VISUS_INCLUDE=/usr/gapps/visit/visus/$VISITARCH/include
+#DEFAULT_VISUS_LIB=/usr/gapps/visit/visus/$VISITARCH/lib
+
+
+#DEFAULT_TCMALLOC_DIR=$VISITHOME/google-perftools/0.97/linux-i686_gcc-3.2.3/lib

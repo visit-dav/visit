@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
   <Plugin name="FLASH" type="database" label="FLASH" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" specifiedFilenames="false">
     <CXXFLAGS>
-      $(HDF5_INCLUDE)
+      ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
+    <LDFLAGS>
+      ${HDF5_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS>
-      $(HDF5_LIB)
-      $(ZLIB_LIB)
+      ${HDF5_LIB} 
+      ${ZLIB_LIB}
     </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

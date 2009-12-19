@@ -44,6 +44,7 @@
 
 // Mangle the GL calls to mgl.
 #include <GL/gl_mangle.h>
+#include <GL/gl.h>
 
 #define avtOpenGLMoleculeRenderer avtMesaMoleculeRenderer
 #define avtOpenGLAtomTexturer avtMesaAtomTexturer

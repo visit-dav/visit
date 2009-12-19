@@ -1,1 +1,0 @@
-../../avt/Database/Formats/avtSTSDFileFormat.h

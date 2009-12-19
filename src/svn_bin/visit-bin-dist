@@ -420,6 +420,15 @@
 #
 #------------------------------------------------------------------------------
 
+
+#------------------------------------------------------------------------------
+#                        THIS SCRIPT IS OBSOLETE
+#------------------------------------------------------------------------------
+echo "***"
+echo "*** The visit-bin-dist script is obsolete. Run 'make package' from the src directory instead."
+echo "***"
+exit 0
+
 set DataFiles = "TRUE"
 set QtLibs = "TRUE"
 set MesaLibs = "TRUE"

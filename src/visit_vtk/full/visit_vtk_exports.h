@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(VISIT_VTK_EXPORTS)
+# if __GNUC__ >= 4 && (defined(VISIT_VTK_EXPORTS) || defined(visit_vtk_EXPORTS))
 #   define VISIT_VTK_API __attribute__ ((visibility("default")))
 # else
 #   define VISIT_VTK_API /* hidden by default */

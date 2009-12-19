@@ -1,0 +1,14 @@
+Changes from 1.4:
+
+- added hestParseOrDie(), which basically encapsulates the way
+that everything else in Teem uses hest: if they didn't give you
+command-line args, or the args can't be parsed, then complain
+and exit(1).
+- added hestElideSingleEmptyStringDefault and the associated
+member of the hparm struct, elideSingleEmptyStringDefault.
+With this true, if parsing a single string, and the default
+is "", then the default will not be displayed in the glossary.
+
+from 1.5beta0:
+- added hestCleverPluralizeOtherY, which is smartness on how
+to pluralize callback objects, when their name ends with Y

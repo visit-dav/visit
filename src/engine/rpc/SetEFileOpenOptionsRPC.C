@@ -37,7 +37,6 @@
 *****************************************************************************/
 
 #include <SetEFileOpenOptionsRPC.h>
-#include <ChangeDirectoryException.h>
 #include <DebugStream.h>
 
 using std::string;

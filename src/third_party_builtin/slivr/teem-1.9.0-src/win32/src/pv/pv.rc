@@ -1,0 +1,166 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+PV MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open Image...\tCtrl+O",      IDM_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "&Next Image\tCtrl+N, Space",  IDM_FILE_NEXT
+        MENUITEM "&Previous Image\tCtrl+P, Backspace", IDM_FILE_PREVIOUS
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tAlt+X, Escape, Q",     IDM_FILE_EXIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Normal\tn",                  IDM_OPTIONS_NORMAL
+        MENUITEM "&Maxpect\tM",                 IDM_OPTIONS_MAXPECT
+        MENUITEM "&Double Size\t>",             IDM_OPTIONS_DOUBLE
+        MENUITEM "&Half Size\t<",               IDM_OPTIONS_HALF
+        MENUITEM "10% &Larger\t.",              IDM_OPTIONS_LARGER
+        MENUITEM "10% &Smaller\t,",             IDM_OPTIONS_SMALLER
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      IDM_HELP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+PV ACCELERATORS DISCARDABLE 
+BEGIN
+    ",",            IDM_OPTIONS_SMALLER,    ASCII,  NOINVERT
+    ".",            IDM_OPTIONS_LARGER,     ASCII,  NOINVERT
+    "<",            IDM_OPTIONS_HALF,       ASCII,  NOINVERT
+    ">",            IDM_OPTIONS_DOUBLE,     ASCII,  NOINVERT
+    "M",            IDM_OPTIONS_MAXPECT,    ASCII,  NOINVERT
+    "N",            IDM_FILE_NEXT,          VIRTKEY, CONTROL, NOINVERT
+    "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
+    "P",            IDM_FILE_PREVIOUS,      VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        IDM_FILE_PREVIOUS,      VIRTKEY, NOINVERT
+    VK_ESCAPE,      IDM_FILE_EXIT,          VIRTKEY, NOINVERT
+    VK_SPACE,       IDM_FILE_NEXT,          VIRTKEY, NOINVERT
+    "X",            IDM_FILE_EXIT,          VIRTKEY, ALT, NOINVERT
+    "n",            IDM_OPTIONS_NORMAL,     ASCII,  NOINVERT
+    "q",            IDM_FILE_EXIT,          ASCII,  NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+PV                      ICON    DISCARDABLE     "pv.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+ABOUT DIALOG DISCARDABLE  0, 0, 186, 94
+STYLE DS_MODALFRAME | WS_POPUP
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,68,67,50,14
+    CTEXT           "pv 1.0 - Win32 PNG Image Viewer",IDC_STATIC,39,17,110,8,
+                    SS_CENTERIMAGE
+    LTEXT           "(c) 2000 Willem van Schaik",IDC_STATIC,49,46,88,8,
+                    SS_CENTERIMAGE
+    LTEXT           "(c) 2002 Milan Ikits",IDC_STATIC,62,35,60,8,
+                    SS_CENTERIMAGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    "ABOUT", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

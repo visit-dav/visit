@@ -1,0 +1,30 @@
+Changes from 1.4:
+
+- API RENAME: airMopInit --> airMopNew
+- API RENAME: airEnumValidVal --> airEnumValValid
+- API RENAME: AIR_INSIDE --> AIR_IN_CL, AIR_BETWEEN --> AIR_IN_OP
+- API CHANGE: On Windows, AIR_EXISTS expands to airExist_d(), which
+may be slow, because it uses 64-bit integer bit-masking operations,
+but we'll have to find out.  Non-Windows: use !((x)-(x)).
+- API CHANGE: airSanity() makes sure that sizeof(float)==sizeof(int)==4
+and sizeof(double)==sizeof(long long)==8, in order to justify the
+bitmasking behind AIR_EXISTS_F() and AIR_EXISTS_D().
+- API NEW: added AIR_EXISTS_F(), a macro for testing non-specialness which
+uses bit masking instead of the !((x)-(x)) trick.  Is therefore robust 
+against all stripes of optimizing compilers, but unfortunately can ONLY
+take a "float" as argument.  Basis of airExists_f().
+- API NEW: added AIR_EXISTS_D(), like AIR_EXISTS_F(), but for doubles.
+Basis of airExists_d().
+- API NEW: airFPGen_d(), airFPClass_d(), airFPFprintf_d()
+- API NEW: airFPPartsToVal_d(), airFPValToParts_d().
+- API NEW: added airMy32Bit and AIR_32BIT
+- API NEW: added AIR_SIZE_T_FMT which is the format string you need to
+print something of type size_t.  But you need to compile with 
+TEEM_32BIT defined to 0 or 1
+- API NEW: airEnumDesc, airEnumFmtDesc
+
+754.c:
+- NEW: _airDouble allows accessing a double as a double, as one
+airULLong, as two unsigned ints, or as the three fields (sign,
+exp, frac).  These are used in airFPFprintf_d().
+

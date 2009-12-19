@@ -1,1 +1,0 @@
-../../avt/Plotter/avtExternallyRenderedImagesActor.h

@@ -40,7 +40,7 @@
 #define QUERY_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(QUERY_EXPORTS) || defined(avtquery_ser_EXPORTS) || defined(avtquery_par_EXPORTS)
+#if defined(AVTQUERY_EXPORTS) || defined(avtquery_ser_EXPORTS) || defined(avtquery_par_EXPORTS)
 #define QUERY_API __declspec(dllexport)
 #else
 #define QUERY_API __declspec(dllimport)
@@ -56,7 +56,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(QUERY_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTQUERY_EXPORTS) || defined(avtquery_ser_EXPORTS) || defined(avtquery_par_EXPORTS))
 #   define QUERY_API __attribute__ ((visibility("default")))
 # else
 #   define QUERY_API /* hidden by default */

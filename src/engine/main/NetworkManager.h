@@ -50,6 +50,7 @@
 #include <string>
 #include <deque>
 #include <map>
+#include <engine_main_exports.h>
 
 class AttributeGroup;
 class CompactSILRestrictionAttributes;
@@ -407,7 +408,7 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //
 // ****************************************************************************
 
-class NetworkManager
+class ENGINE_MAIN_API NetworkManager
 {
     typedef std::map<std::string, stringVector> StringVectorMap;
     struct render_state {

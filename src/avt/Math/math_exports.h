@@ -40,7 +40,7 @@
 #define MATH_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(MATH_EXPORTS) || defined(avtmath_EXPORTS)
+#if defined(AVTMATH_EXPORTS) || defined(avtmath_EXPORTS)
 #define MATH_API __declspec(dllexport)
 #else
 #define MATH_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(MATH_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTMATH_EXPORTS) || defined(avtmath_EXPORTS))
 #   define MATH_API __attribute__ ((visibility("default")))
 # else
 #   define MATH_API /* hidden by default */

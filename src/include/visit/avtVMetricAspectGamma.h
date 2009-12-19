@@ -1,1 +1,0 @@
-../../avt/Expressions/MeshQuality/avtVMetricAspectGamma.h

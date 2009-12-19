@@ -1,0 +1,46 @@
+Changes from 1.5beta0 ----------------------------------------
+
+- INTERFACE NEW (lut.c, rmap.c, imap.c): added -min and -max flags
+to allow specifying the used input range
+- INTERFACE NEW (unrrdu.h flotsam.c, save.c): now allow specifying
+flags for gzip and bzip2 compression
+- INTERFACE NEW (heq.c): added -a flag for new "amount" argument to
+nrrdHistoEq()
+- convert.c, quantize.c, resample.c: more usage info
+
+Changes from 1.4 ------------------------------------------
+
+private.h:
+- changed SAVE macro to take file name as first arg, this 
+change affected all *.c files.
+
+unu.c, Makefile:
+- removed "(unrrdu)" from main unu banner
+- added imap.c and with that, "unu imap", for applying
+irregular maps
+
+gamma.c, histo.c, jhisto.c, quantize.c:
+- nrrdMinMaxClever() renamed to nrrdMinMaxCleverSet()
+
+heq.c:
+- added "-m" flag to allow learning of the regular map
+used to achieve histogram equalization
+
+lut.c, rmap.c, imap.c:
+- added "-t" flag to specify output type (previously always
+used map type), and in lut and rmap, added proper handling
+of the "-r" rescaling flag.
+
+lut.c:
+- INTERFACE CHANGE: "-l" flag changed to "-m", in order to
+agree with flag for unu rmap and unu imap.
+- change to nrrdApply1DLut() call: added "rescale" argument.
+
+make.c:
+- added "-c" flag to allow setting the content
+- added "-h" flag to allow generation of detached header
+files; this turned out to be rather annoying.
+
+rmap.c:
+- change to nrrdApply1DRegMap() call: added "rescale" argument.
+

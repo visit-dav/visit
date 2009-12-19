@@ -40,7 +40,7 @@
 #define QTVISWINDOW_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(QTVISWINDOW_EXPORTS) || defined (avtqtviswindow_EXPORTS)
+#if defined(AVTQTVISWINDOW_EXPORTS) || defined (avtqtviswindow_EXPORTS)
 #define QTVISWINDOW_API __declspec(dllexport)
 #else
 #define QTVISWINDOW_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(QTVISWINDOW_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTQTVISWINDOW_EXPORTS) || defined (avtqtviswindow_EXPORTS))
 #   define QTVISWINDOW_API __attribute__ ((visibility("default")))
 # else
 #   define QTVISWINDOW_API /* hidden by default */

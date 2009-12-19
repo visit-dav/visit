@@ -1,1 +1,0 @@
-../../common/plugin/DatabasePluginInfo.h

@@ -1,0 +1,92 @@
+# Microsoft Developer Studio Project File - Name="teem_static" - Package Owner=<4>
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
+# ** DO NOT EDIT **
+
+# TARGTYPE "Win32 (x86) Static Library" 0x0104
+
+CFG=teem_static - Win32 Debug
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
+!MESSAGE 
+!MESSAGE NMAKE /f "teem_static.mak".
+!MESSAGE 
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "teem_static.mak" CFG="teem_static - Win32 Debug"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "teem_static - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "teem_static - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE 
+
+# Begin Project
+# PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+CPP=cl.exe
+RSC=rc.exe
+
+!IF  "$(CFG)" == "teem_static - Win32 Release"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "../lib/static"
+# PROP BASE Intermediate_Dir "static/Release"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "lib/static"
+# PROP Intermediate_Dir "static/Release"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W1 /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W1 /O2 /I "../../include" /I "../include" TEEMALLINC /D "WIN32" /D "WIN32_LEAN_AND_MEAN" /D "VC_EXTRALEAN" /D TEEM_ENDIAN=1234 /D TEEM_QNANHIBIT=1 /D TEEM_DIO=0 /D TEEM_32BIT=1 /D TEEM_ZLIB=1 /D TEEM_BZIP2=1 /D TEEM_PNG=1 /D "TEEM_STATIC" /YX /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo /out:"../lib/static/teem.lib"
+
+!ELSEIF  "$(CFG)" == "teem_static - Win32 Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "lib"
+# PROP BASE Intermediate_Dir "static/Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../lib/static"
+# PROP Intermediate_Dir "static/Debug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W1 /Gm /GX /ZI /Od /D "WIN32" /YX /FD /GZ /c
+# ADD CPP /nologo /MD /W1 /Zi /Od /I "../../include" /I "../include" TEEMALLINC /D "WIN32" /D "WIN32_LEAN_AND_MEAN" /D "VC_EXTRALEAN" /D TEEM_ENDIAN=1234 /D TEEM_QNANHIBIT=1 /D TEEM_DIO=0 /D TEEM_32BIT=1 /D TEEM_ZLIB=1 /D TEEM_BZIP2=1 /D TEEM_PNG=1 /D "TEEM_STATIC" /YX /FD /Fd"../lib/static/teem_d.pdb" /GZ /c
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo /out:"../lib/static/teem_d.lib"
+
+!ENDIF 
+
+# Begin Target
+
+# Name "teem_static - Win32 Release"
+# Name "teem_static - Win32 Debug"
+# Begin Group "Source Files"
+
+# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+TEEMALLDOTC# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+TEEMALLDOTH# End Group
+# End Target
+# End Project

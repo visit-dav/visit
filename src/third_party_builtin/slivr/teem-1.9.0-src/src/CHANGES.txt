@@ -1,0 +1,79 @@
+(this is only a high-level description, see CHANGES.txt in
+the individual library directories)
+
+Changes from 1.5beta1 ----------------------------------------------
+
+Many big changes.  Forgot to document them.
+
+All TEEM_USABLE-related stuff nixed from GNUmakefiles.  Dumb idea.
+
+Ray tracer "echo" resurrected, and ten now depends on it.
+
+Changes from 1.5beta0 ----------------------------------------------
+
+The complete HTML documentation is now in a seperate CVS tree, called
+"teemdoc", because it was getting too big.
+
+Added the "moss" library for image manipulation, and the command-line
+"ilk" program for doing geometric transforms on images.
+
+"gkms" has been hest-ified.
+
+"unu save" can now take arguments controlling the compression
+encodings: level and strategy.
+
+Various "unu" commands' usage information expanded.
+
+New measures have been added to gage's gageVec kind, enabling
+multi-gradient measures in volumes of RGB, for instance.  These are
+accessible from the "vprobe" binary as well.
+
+The "usable" notion in the GNUmakefiles, described below, is still
+broken, but the broken functionality is not invoked unless TEEM_USABLE
+is set.  This hasn't been a problem.
+
+Changes from 1.4 ---------------------------------------------------
+
+The complete HTML documentation for teem is now included with the
+distribution.  What is online at <http://www.cs.utah.edu/~gk/teem/>
+is a snapshot of the web pages included in the CVS tree.
+
+Makefiles have been completely rewritten, to avoid use of recursive
+make, and to support the notion of a library being "usable": somewhere
+between installed and in-development.  New makefile bits: "setenv
+TEEM_DEST" to a directory with lib, bin, and include subdirectories,
+and all the install teem stuff will be put there.  Creating megalibs
+libteem.a and libteem.so is now part of doing a "make install" in the
+top-level source directory.  Support for optional external libraries
+(like zlib) is not handled in the makefiles; "setenv TEEM_ZLIB" turns
+on compilation with zlib.
+
+Along with TEEM_DIO, TEEM_ENDIAN, TEEM_QNANHIBIT, there is now also
+TEEM_32BIT, which is 1 if 4 == sizeof(size_t) and 0 if 8 ==
+sizeof(size_t).  Accordingly, there is also now AIR_32BIT which is
+available simply by including air.h and linking against the air
+library.
+
+Top-level Makefile now correctly handles "-j" option on recursive
+makes.
+
+mite: a new library, with "miter" program: simple scalar volume
+renderer.
+
+nrrd: can now read and write 1D data from plain text files, known as
+"tables", since previously the data read from plain text files was
+strictly 2D.
+
+nrrd: can now do irregular as well as regular univariate colormaps.
+Can do gzip + gzip2 compression, and hex encoding.
+
+gage: total re-write, so that now gageUpdate() does the padding
+necessary based on query and kernels.  This makes using gage much much
+simpler.  bane, mite, mrender, and qbert all cheer.
+
+It is no longer the case that library can have their functions and
+#defines use a shorter prefix.  hoovRender --> hooverRender, unuCmd
+--> unrrduCmd.  No one is using these libraries besides teem, probably,
+but at least now the policy is absolutely consistent.
+
+

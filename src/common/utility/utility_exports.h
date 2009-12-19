@@ -56,7 +56,7 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# if __GNUC__ >= 4 && defined(UTILITY_EXPORTS)
+# if __GNUC__ >= 4 && (defined(UTILITY_EXPORTS) || defined(visitcommon_EXPORTS))
 #   define UTILITY_API __attribute__ ((visibility("default")))
 # else
 #   define UTILITY_API /* hidden by default */

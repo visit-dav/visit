@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
   <Plugin name="NETCDF" type="database" label="NETCDF" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
     <CXXFLAGS>
-      $(NETCDF_INCLUDE)
+      ${NETCDF_INCLUDE_DIR}
     </CXXFLAGS>
+    <LDFLAGS>
+      ${NETCDF_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS>
-      $(NETCDF_LIB)
+      ${NETCDF_LIB}
     </LIBS>
     <Extensions>
       nc

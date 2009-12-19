@@ -39,7 +39,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <visit-config.h>
 #include <math_exports.h>
 #include <visitstream.h>
 

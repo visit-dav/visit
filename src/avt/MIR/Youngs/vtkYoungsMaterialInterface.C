@@ -614,7 +614,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
                             vtkIdType id = remCellPointIds[i];
                             if( id < 0 )
                             {
-                                id = -prevPointsMap.size()-1;
+                                id = -(int)prevPointsMap.size()-1;
                                 DBG_ASSERT( (-id-1) == prevPointsMap.size() );
                                 prevPointsMap.push_back( std::make_pair( m , Mats[m].pointCount+ni ) ); // intersection points will be added first
                                 ni++;
@@ -742,7 +742,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
 
                         for(int i=0;i<nInterfaceEdges;i++)
                         {
-                            vtkIdType id = -prevPointsMap.size() - 1;
+                            vtkIdType id = -(int)prevPointsMap.size() - 1;
                             DBG_ASSERT( (-id-1) == prevPointsMap.size() );
                             prevPointsMap.push_back( std::make_pair( m , Mats[m].pointCount+i ) ); // we know that interpolated points will be added consecutively
                             nextCell.pointIds[i] = id;

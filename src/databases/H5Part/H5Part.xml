@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
-  <Plugin name="H5Part" type="database" label="H5Part" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true" specifiedFilenames="false">
-    <CXXFLAGS>
-      $(HDF5_INCLUDE)
-      $(H5PART_INCLUDE)
+  <Plugin name="H5Part" type="database" label="H5Part" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true">
+    <CXXFLAGS> 
+        ${HDF5_INCLUDE_DIR} 
+        ${H5PART_INCLUDE_DIR} 
     </CXXFLAGS>
-    <LIBS>
-      $(H5PART_LIB)
-      $(HDF5_LIB)
-      $(ZLIB_LIB)
+    <LDFLAGS> 
+        ${HDF5_LIBRARY_DIR} 
+        ${H5PART_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS> 
+        ${H5PART_LIB} 
+        ${HDF5_LIB} 
+        ${ZLIB_LIB} 
     </LIBS>
     <Extensions>
       h5part

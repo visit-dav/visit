@@ -74,6 +74,9 @@
 //    Cyrus Harrison, Fri Sep 19 13:46:16 PDT 2008
 //    Added support for custom libs for gui,engine, mdserver, viewer
 //
+//    Kathleen Bonnell, Wed May 26 9:03:27 MST 2009 
+//    Added support for custom windows files for mdserver and engine.
+//
 //    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
 //    Split custom engine libs into serial and parallel versions.
 //
@@ -116,10 +119,14 @@ public:
     std::vector<QString> vlibs;      // viewer libs
     bool custommfiles;
     std::vector<QString> mfiles;     // mdserver files
-    bool custommlibs;
+    bool customwmfiles;
+    std::vector<QString> wmfiles;    // mdserver files for windows
+    bool custommlibs; 
     std::vector<QString> mlibs;      // mdserver libs
     bool customefiles;
     std::vector<QString> efiles;     // engine files
+    bool customwefiles;
+    std::vector<QString> wefiles;    // engine files for windows
     bool customelibsSer;
     std::vector<QString> elibsSer;      // engine libs
     bool customelibsPar;
@@ -163,10 +170,14 @@ public:
           vlibs(),
           custommfiles(false),
           mfiles(),
+          customwmfiles(false),
+          wmfiles(),
           custommlibs(false),
           mlibs(),
           customefiles(false),
           efiles(),
+          customwefiles(false),
+          wefiles(),
           customelibsSer(false),
           elibsSer(),
           customelibsPar(false),

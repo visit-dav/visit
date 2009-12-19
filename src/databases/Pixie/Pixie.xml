@@ -1,8 +1,18 @@
 <?xml version="1.0"?>
   <Plugin name="Pixie" type="database" label="Pixie" version="1.0" dbtype="MTSD">
-    <Extensions> h5 </Extensions>
-    <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
+    <Extensions> 
+      h5 
+    </Extensions>
+    <CXXFLAGS> 
+      ${HDF5_INCLUDE_DIR} 
+    </CXXFLAGS>
+    <LDFLAGS>  
+      ${HDF5_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS>     
+      ${HDF5_LIB} 
+      ${ZLIB_LIB} 
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Pixie.code">
       <Function name="PixieCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>

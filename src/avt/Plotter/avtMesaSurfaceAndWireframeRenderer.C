@@ -43,11 +43,8 @@
 
 #include <avtMesaSurfaceAndWireframeRenderer.h>
 
-#if !defined(_WIN32)
-// Do not include mangled Mesa on windows until we figure out what to do.
-#include "MangleMesaInclude/gl_mangle.h"
-#include "MangleMesaInclude/gl.h"
-#endif
+#include <GL/gl_mangle.h>
+#include <GL/gl.h>
 
 #define avtOpenGLSurfaceAndWireframeRenderer avtMesaSurfaceAndWireframeRenderer
 

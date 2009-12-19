@@ -43,3 +43,5 @@
 
 #include "vtkOpenGLTexturedBackgroundMapper.C"
 #undef vtkOpenGLTexturedBackgroundMapper
+#undef VTK_IMPLEMENT_MESA_CXX
+

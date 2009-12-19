@@ -1,0 +1,24 @@
+examples of usage with the important unu commands
+
+make "unu make" into a nrrd function
+
+enable the unu 2op and 3op operations that output integers to save
+the output as, say, signed char, instead of float.  This is different
+than being able to change input type, for operations like "gt".
+
+----- Teem 1.5beta1 cut-off -----
+
+----- Teem 1.5 cut-off -----
+
+figure out why I was getting a MIO (memory in use) error with 
+unu resample when I had the bug in nrrdAlloc_nva (where the
+axes sizes were never actually set, so they were both zero).
+
+make darn sure that nobody uses printf(), only fprintf()
+
+standardize and document use of special single characters
+for meaning as unrrdu arguments:
+M : max position along an axis, equal to #samples-1
+# : ?
+- : standard in and standard out
+any others?

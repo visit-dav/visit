@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="BOW" type="database" label="BOW" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
-    <LDFLAGS>
-      -lbow -lz
-    </LDFLAGS>
+    <LIBS>
+      bow
+      z
+    </LIBS>
     <Extensions>
       txt
     </Extensions>

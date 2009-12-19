@@ -1,0 +1,196 @@
+Things for Gordon to do with each teem release:
+
+-2) make sure there are no tabs:
+cat > tab.txt
+(tab) (return)
+^D
+
+find . -name \*.c -exec grep -f tab.txt {} \; -print
+find . -name \*.h -exec grep -f tab.txt {} \; -print
+find . -name \*.txt -exec grep -f tab.txt {} \; -print
+rm -f tab.txt
+
+-1) update TEEM_VERSION stuff in air/air.h and airTeemReleaseDate in air/misc.c
+
+0) Bring documentation up-to-date with source tree
+make sure all the unrrdu pages agree with unu usage info
+cd ~/teem
+cp README.txt ~/teemdoc/html/tree/
+cp src/README.txt ~/teemdoc/html/tree/src/
+cp src/CHANGES.txt ~/teemdoc/html/tree/src/
+cp src/TODO.txt ~/teemdoc/html/tree/src/
+cp src/LICENSE.txt ~/teemdoc/html/tree/src/
+(cd ~/teemdoc; cvs commit -m "pre-release text file update")
+
+1) Check namespace safety
+  a) Make sure all library symbols are properly prefixed.  On linux,
+  this should return nothing (actually this shows lots of Bzip2 stuff, why?):
+  cd teem/linux.32/lib
+  nm libteem.so \
+  | grep -v "gcc2_compiled." | grep -v " U " | grep -v " A " \
+  | grep -v " t Letext" \
+  | grep -v " air" | grep -v " _air" \
+  | grep -v " hest" | grep -v " _hest" \
+  | grep -v " biff" | grep -v " _biff" \
+  | grep -v " ell" | grep -v " _ell" \
+  | grep -v " nrrd" | grep -v " _nrrd" \
+  | grep -v " unrrdu" | grep -v " _unrrdu" \
+  | grep -v " dye" | grep -v " _dye" \
+  | grep -v " moss" | grep -v " _moss" \
+  | grep -v " gage" | grep -v " _gage" \
+  | grep -v " bane" | grep -v " _bane" \
+  | grep -v " limn" | grep -v " _limn" \
+  | grep -v " hoover" | grep -v " _hoover" \
+  | grep -v " mite" | grep -v " _mite" \
+  | grep -v " alan" | grep -v " _alan" \
+  | grep -v " coil" | grep -v " _coil" \
+  | grep -v " ten" | grep -v " _ten" \
+  | grep -v " echo" | grep -v " _echo" \
+  | grep -v " push" | grep -v " _push"
+  b) Make sure #defines in header files are properly prefixed:
+  cd ../../include
+  grep #define teem/*.h | grep -v _export \
+  | grep -v " echo" | grep -v " ell" | grep -v " gage" \
+  | grep -v " AIR" | grep -v " _AIR" \
+  | grep -v " HEST" | grep -v " _HEST" \
+  | grep -v " BIFF" | grep -v " _BIFF" \
+  | grep -v " ELL" | grep -v " _ELL" \
+  | grep -v " NRRD" | grep -v " _NRRD" \
+  | grep -v " UNRRDU" | grep -v " _UNRRDU" \
+  | grep -v " DYE" | grep -v " _DYE" \
+  | grep -v " MOSS" | grep -v " _MOSS" \
+  | grep -v " GAGE" | grep -v " _GAGE" \
+  | grep -v " BANE" | grep -v " _BANE" \
+  | grep -v " LIMN" | grep -v " _LIMN" \
+  | grep -v " HOOVER" | grep -v " _HOOVER" \
+  | grep -v " MITE" | grep -v " _MITE" | grep -v "mite_" \
+  | grep -v " ALAN" | grep -v " _ALAN" \
+  | grep -v " COIL" | grep -v " _COIL" \
+  | grep -v " ECHO" | grep -v " _ECHO" \
+  | grep -v " TEN" | grep -v " _TEN" \
+  | grep -v " PUSH" | grep -v " _PUSH"
+
+2) Make sure it works
+  "make teem/dev teem/install" on every supported architecture,
+  and make sure Windows stuff also still works (if new files or
+  libraries were added)
+
+2.5) cvs branch/tag confusion:
+cd ~/teem              (my working checkout)
+cvs tag Teem-1-9-0-bp
+cvs tag -b Teem-1-9-0
+mkdir ~/Teem-1-9-0
+cd ~/Teem-1-9-0
+cvs -d:ext:kindlmann@cvs.sourceforge.net:/cvsroot/teem co -r Teem-1-9-0 teem
+cd teem
+cvs update -dAP -r Teem-1-9-0    (probably unnecessary)
+cvs tag Teem-1-9-0-pb
+
+3) Create source-only tgz:
+(for anonymous checkout:
+cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/teem/ login
+<hit return>
+cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/teem/ co teem
+)
+setenv VERSION <<version>>
+cvs -d:ext:kindlmann@cvs.sourceforge.net:/cvsroot/teem co teem
+cd teem
+find . -name CVS  -exec rm -rf {} \;
+rm -rf darwin linux linux.64/
+cd ..; mv teem teem-${VERSION}-src
+tar czvf teem-${VERSION}-src.tar.gz teem-${VERSION}-src
+mv teem-${VERSION}-src.tar.gz ~/rel
+
+cvs -d:ext:kindlmann@cvs.sourceforge.net:/cvsroot/teem co NrrdIO
+cd NrrdIO
+find . -name CVS  -exec rm -rf {} \;
+cd ..; mv NrrdIO NrrdIO-${VERSION}-src
+tar czvf NrrdIO-${VERSION}-src.tar.gz NrrdIO-${VERSION}-src
+mv NrrdIO-${VERSION}-src.tar.gz ~/rel
+
+4) Checkout a tree:
+
+"make teem/install" on all platforms ...
+
+rapture/ray/muse:
+setenv TEEM_ARCH irix6.64
+setenv TEEM_PNG
+setenv TEEM_ZLIB
+setenv TEEM_BZIP2
+setenv TEEM_BZIP2_LPATH -L/home/sci/gk/usr/irix6.64/lib
+setenv TEEM_BZIP2_IPATH -I/home/sci/gk/usr/include
+setenv TEEM_PNG_LPATH -L/home/sci/gk/usr/irix6.64/lib
+setenv TEEM_PNG_IPATH -I/home/sci/gk/usr/irix6.64/include
+
+(options for being multi-threaded)
+setenv TEEM_PTHREAD
+setenv TEEM_LINK_SHARED
+setenv PATH ${PATH}:/home/sci/gk/usr/local/irix6.64/bin
+setenv LD_LIBRARY64_PATH ${LD_LIBRARY64_PATH}:/home/sci/gk/usr/local/irix6.64/lib
+
+vision:
+setenv TEEM_ARCH solaris
+setenv TEEM_PNG
+setenv TEEM_ZLIB
+setenv TEEM_BZIP2
+setenv TEEM_BZIP2_LPATH -L/home/gk/lib
+setenv TEEM_BZIP2_IPATH -I/home/gk/include
+setenv TEEM_ZLIB_LPATH -L/home/gk/lib
+setenv TEEM_ZLIB_IPATH -I/home/gk/include
+setenv TEEM_PNG_LPATH -L/usr/local/lib
+setenv TEEM_PNG_IPATH -I/usr/local/include
+
+
+5) Create Unix-ish binary builds (without src or docs):
+   for each TEEM_ARCH in:
+   irix6.n32 linux.ia64 linux.amd64 linux.32 cygwin solaris darwin.32 darwin.64
+-  ssh to some ARCH machine, copy teem-VERSION-src.tar.gz there if needed
+-  setenv TEEM_XXX for all the externals that it makes sense to 
+      compile into the distributed statically linked binaries
+setenv VERSION <<<version>>>
+tar xzvf ~/rel/teem-${VERSION}-src.tar.gz
+cd teem-${VERSION}-src; setenv TEEM_DEST `pwd`
+cd src; make; cd ..
+mv src/LICENSE.txt . 
+yes | rm -rf README.txt aix cygwin darwin.32 darwin.64 irix6.64 \
+      irix6.n32 linux.32 linux.amd64 linux.ia64 solaris win32 src
+cd ..
+mv teem-${VERSION}-src teem-${VERSION}-${TEEM_ARCH}
+tar czvf teem-${VERSION}-${TEEM_ARCH}.tar.gz teem-${VERSION}-${TEEM_ARCH}
+mv -f teem-${VERSION}-${TEEM_ARCH}.tar.gz ~/rel
+yes | rm -rf teem-${VERSION}-${TEEM_ARCH}
+
+6) Create Windows binary builds.
+
+7) put the builds on sourceforge:
+cd ~/rel
+ftp upload.sourceforge.net
+binary
+prompt
+cd incoming
+mput *.tar.gz
+
+8) make a CVS tag for the version
+cvs rtag version-X_X_X teem
+(can't use "." in cvs tag name)
+
+9) update online documentation (which may be done more often than releases)
+cd ~/teemdoc
+cvs commit -m "pre-release doc update"
+
+ssh kindlmann@shell.sf.net
+
+cd teem/htdocs
+cvs update
+exit
+
+
+
+
+
+
+
+
+for Deft:
+cvs -d:ext:kindlmann@cvs.sourceforge.net:/cvsroot/teem init
+cvs -d:ext:kindlmann@cvs.sourceforge.net:/cvsroot/teem import -m "initial import" Deft Deft start

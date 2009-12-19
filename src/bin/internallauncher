@@ -1804,16 +1804,6 @@ if ($exe_name eq "engine")
 # If there is no version, then this is a development executable.
 if ($ver eq "")
 {
-    if (! -x "$visitdir/exe/$exe_name")
-    {
-        print STDERR "Development version of '$exe_name' does not exist.\n";
-        if ($exe_name eq "engine_par")
-        {
-            print STDERR "Note that the serial engine may still work.\n";
-        }
-        exit 1;
-    }
-
     $archdir = $defaultarch;
 
     $visitarchdir   = "$visitdir";
@@ -1829,6 +1819,16 @@ if ($ver eq "")
     $visitultradir = "$visitdir/ultrawrapper";
     $visitplugins = "$visitdir/plugins";
     $publicversion = 0;
+
+    if (! -x "$visitbindir/$exe_name")
+    {
+        print STDERR "Development version of '$exe_name' does not exist.\n";
+        if ($exe_name eq "engine_par")
+        {
+            print STDERR "Note that the serial engine may still work.\n";
+        }
+        exit 1;
+    }
 }
 else # We're running a public version.
 {

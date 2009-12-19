@@ -1210,90 +1210,51 @@ cd ..
 VisIt
 ======
 
-VisIt uses GNU's autoconf system to provide platform independence when
-building VisIt in a UNIX environment. Autoconf creates a script called
-configure that tests your system for various libraries and programs required
-to build VisIt.  Follow the directions listed below to build VisIt.
-More information about building VisIt follows after that.
+VisIt uses the CMake build system to generate a cross-platform build system 
+that works on Windows, MacOS X, and UNIX. CMake uses a file called CMakeLists.txt
+to generate Makefiles or project files for your environment. We recommand using
+the build_visit script since it will build all of VisIt's 3rd party dependencies
+and it will generate a `hostname`.conf file that can be used to inform cmake
+about the libraries that you will be using when compiling VisIt. Follow the 
+directions listed below to build VisIt. More information about building VisIt 
+follows after that.
 
 #
-# Build and install it in the visit directory.
+# Build and install it
 #
 gunzip visit1.12.1.tar.gz
 tar xf visit1.12.1.tar
-cd visit1.12.1/src/config-site
-echo VISITHOME=$VISITDIR > `hostname`.conf
-sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
-cd ..
-
-#
-# For itanium (ia64) systems add the -fPIC flag to the CFLAGS and CXXFLAGS
-# in the env command for configure.  For opteron systems add the "-m64 -fPIC"
-# flags to the CFLAGS and CXXFLAGS in the env command for configure.
-#
-env CFLAGS=-O2 CXXFLAGS=-O2 ./configure
+cp `hostname`.conf visit1.12.1/src/config-site
+cd visit1.12.1/src
+cmake -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=/where/to/install/visit .
 make
-clearcase_bin/visit-bin-dist
 
 #
-# Use the appropriate install command based on the operating system on
-# which you built VisIt.
+# Install VisIt
 #
-clearcase_bin/visit-install 1.12.1 aix $VISITDIR
-clearcase_bin/visit-install 1.12.1 aix64 $VISITDIR
-clearcase_bin/visit-install 1.12.1 darwin-i386 $VISITDIR
-clearcase_bin/visit-install 1.12.1 darwin-ppc $VISITDIR
-clearcase_bin/visit-install 1.12.1 linux $VISITDIR
-clearcase_bin/visit-install 1.12.1 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.12.1 linux-x86_64 $VISITDIR
+make install
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the
 configure script or can listed by the configure script by typing
 "./configure -help".  The most commonly used options are:
 
-  --enable-parallel       make the parallel version
-  --disable-scripting     build without Python scripting capability
-  --enable-java           build the Java interface library
-  --enable-buildall       build all plugins
+  -DVISIT_PARALLEL:BOOL=ON            make the parallel version
+  -DVISIT_JAVA:BOOL=ON                build the Java interface library
+  -DVISIT_BUILD_ALL_PLUGINS:BOOL=ON   build all plugins
 
-  --with-netcdf=INC,LIB   Location of NetCDF header and library
-  --with-hdf5=INC,LIB     Location of HDF5 header and library
+  -DVISIT_NETCDF_DIR:PATH=path        Location of NetCDF header and library
+  -DVISIT_HDF5_DIR:PATH=path          Location of HDF5 header and library
 
-  --with-exodus[=<DIR>]           enable Exodus driver
-  --with-exodus-include[=<DIR>]   specify Exodus include path
-  --with-exodus-lib[=<DIR>]       specify Exodus lib path
-
-The enable parallel option builds the parallel version of VisIt.  Parallel
-versions are supported on SGI, IBM AIX, Tru64, and some linux systems.  The
-disable scripting option builds VisIt without the Python scripting.  The
-enable buildall option builds all the VisIt plugins.  By default, only the
-most common plugins are built.
+The VISIT_PARALLEL option builds the parallel version of VisIt.  Parallel
+versions are supported on SGI, IBM AIX, Tru64, MacOS X, and most linux systems.
+The VISIT_BUILD_ALL_PLUGINS option builds all the VisIt plugins.  By default, 
+only the most common plugins are built.
 
 The second group of options are used when building with support for reading
-netcf files or files based on hdf5.  The third group of options are used when
-building with support for reading exodus files.
+netcf files or files based on hdf5. 
 
-Some platforms (especially SUSE) have compilation problems with 
-"plots/Volume/avtOpenGL3DTextureVolumeRenderer.C".  We are currently working
-on using an extension wrangler type approach to deal with this.  In the
-interim, you can avoid this problem by adding:
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-extern PFNGLTEXIMAGE3DEXTPROC glTexImage3D;
-#endif
-
-to the file after the standard includes.
-
-Note about fonts used in VisIt
-===============================
-It has been reported that the font that VisIt uses by default is larger than
-some users prefer. If you want to use a smaller font size, you can now pass 
-the -font argument to VisIt with an XLFD font name or a Qt font name as 
-returned by QFont::toString (see http://doc.trolltech.com/3.0/qfont.html#toString).
-You can also set the font in the VisIt GUI's Appearance window. If you would
-rather change the name of the default font that is compiled into VisIt then you
-can replace the font name in the AppearanceAttributes state object located in
-./common/state/AppearanceAttributes.C.
+Many more options are available and you can find out more about them if you
+run ccmake to configure VisIt.
 
 If you have any problems send e-mail to visit-developers@ornl.gov.

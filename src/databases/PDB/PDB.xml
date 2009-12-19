@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
   <Plugin name="PDB" type="database" label="PDB" version="1.1" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true">
     <CXXFLAGS>
-      $(PDB_INCLUDE)
+      ${PDB_INCLUDE_DIR} ${VISIT_INCLUDE_DIR}/third_party_builtin/bow
     </CXXFLAGS>
+    <LDFLAGS>
+      ${PDB_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS>
-      $(PDB_LIB) -lbow
+      ${PDB_LIB} bow
     </LIBS>
     <Extensions>
       pdb
@@ -12,6 +15,7 @@
     </Extensions>
     <Files components="M">
       avtPDBFileFormat.C
+      avtPDBOptions.C
       MaterialEncoder.C
       PDBFileObject.C
       PDBReader.C
@@ -26,6 +30,7 @@
     </Files>
     <Files components="E">
       avtPDBFileFormat.C
+      avtPDBOptions.C
       MaterialEncoder.C
       PDBFileObject.C
       PDBReader.C

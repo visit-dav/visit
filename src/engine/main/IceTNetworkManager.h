@@ -41,6 +41,7 @@
 
 #include <NetworkManager.h>
 #include <GL/ice-t.h>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class: IceTNetworkManager
@@ -73,7 +74,7 @@
 //
 // ****************************************************************************
 
-class IceTNetworkManager: public NetworkManager
+class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
 {
  public:
                IceTNetworkManager(void);

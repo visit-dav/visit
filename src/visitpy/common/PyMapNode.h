@@ -45,8 +45,8 @@
 // Helper to convert a VisIt MapNode to a python dictonary.
 //
 
-//VISITPY_API PyObject *PyMapNode_Wrap(const MapNode&);
-PyObject *PyMapNode_Wrap(const MapNode&);
+VISITPY_API PyObject *PyMapNode_Wrap(const MapNode&);
+//PyObject *PyMapNode_Wrap(const MapNode&);
 
 #endif
 

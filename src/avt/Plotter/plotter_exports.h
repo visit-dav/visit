@@ -40,7 +40,7 @@
 #define PLOTTER_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(PLOTTER_EXPORTS) || defined(avtplotter_ser_EXPORTS)
+#if defined(AVTPLOTTER_EXPORTS) || defined(avtplotter_ser_EXPORTS) || defined(avtplotter_par_EXPORTS)
 #define PLOTTER_API __declspec(dllexport)
 #else
 #define PLOTTER_API __declspec(dllimport)
@@ -56,7 +56,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(PLOTTER_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTPLOTTER_EXPORTS) || defined(avtplotter_ser_EXPORTS) || defined(avtplotter_par_EXPORTS))
 #   define PLOTTER_API __attribute__ ((visibility("default")))
 # else
 #   define PLOTTER_API /* hidden by default */

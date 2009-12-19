@@ -54,7 +54,7 @@ public class ViewerMethods
      *
      * @param p The ViewerProxy that contains this object.
      */
-    public ViewerMethods(ViewerProxy p)
+    public ViewerMethods(ProxyInterface p)
     {
         proxy = p;
     }
@@ -3387,5 +3387,5 @@ public class ViewerMethods
         return proxy.GetSynchronous() ? proxy.Synchronize() : true;
     }
 
-    private ViewerProxy proxy;
+    private ProxyInterface proxy;
 }

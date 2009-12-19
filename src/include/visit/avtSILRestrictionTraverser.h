@@ -1,1 +1,0 @@
-../../avt/DBAtts/SIL/avtSILRestrictionTraverser.h

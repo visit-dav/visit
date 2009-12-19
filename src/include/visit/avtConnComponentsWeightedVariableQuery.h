@@ -1,1 +1,0 @@
-../../avt/Queries/Queries/avtConnComponentsWeightedVariableQuery.h

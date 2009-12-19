@@ -67,19 +67,6 @@
 
 // HACK HACK
 #include <GL/gl.h>
-#ifdef VTK_USE_MANGLED_MESA
-extern "C" {
-#if defined(_WIN32)
-// On Windows, we get these functions from a DLL so we have to have
-// the proper API macros.
-GLAPI void GLAPIENTRY mglDepthMask(GLboolean);
-GLAPI void GLAPIENTRY mglColorMask(GLboolean,GLboolean,GLboolean,GLboolean);
-#else
-void mglDepthMask(GLboolean);
-void mglColorMask(GLboolean,GLboolean,GLboolean,GLboolean);
-#endif
-}
-#endif
 
 static void RemoveCullers(vtkRenderer *);
 
@@ -1061,30 +1048,13 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         // data.  Unless I override vtkRenderWindow, vtkOpenGLRenderWindow,
         // vtkXOpenGLRenderWindow, vtkWin32OpenGLRenderWindow,
         // vtkMesaRenderWindow, vtkXMesaRenderWindow, and so on....
-#ifdef VTK_USE_MANGLED_MESA
-        if (renWin->IsA("vtkMesaRenderWindow"))
-        {
-            mglDepthMask(GL_FALSE);
-            renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
-            mglDepthMask(GL_TRUE);
+        glDepthMask(GL_FALSE);
+        renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
+        glDepthMask(GL_TRUE);
 
-            mglColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-            renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
-            mglColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-        }
-        else
-        {
-#endif
-            glDepthMask(GL_FALSE);
-            renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
-            glDepthMask(GL_TRUE);
-
-            glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-            renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
-            glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-#ifdef VTK_USE_MANGLED_MESA
-        }
-#endif
+        glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+        renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
+        glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
     }
 
     //

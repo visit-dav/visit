@@ -1,0 +1,18 @@
+Changes from 1.4:
+
+hoover.h:
+- API NEW: created typedefs for hoovRenderBegin_t,
+hoovThreadBegin_t, hoovRayBegin_t, hoovSample_t, 
+hoovRayEnd_t, hoovThreadEnd_t, and hoovRenderEnd_t.
+This doesn't change the type of any of the callbacks,
+but it makes it allows a hoover user to write
+callbacks which have specific struct pointers as
+arguments, instead of just void*, since the callback
+can be cast to one of the types above.
+
+Makefile:
+- FILENAME CHANGE: bin/measurend.c --> bin/mrender.c
+
+bin/mrender.c
+- callbacks don't have void* args anymore.
+

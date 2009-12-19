@@ -41,6 +41,7 @@
 
 #include <string>
 #include <vector>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class:  VisItDisplay
@@ -58,7 +59,7 @@
 //
 // ****************************************************************************
 
-class VisItDisplay
+class ENGINE_MAIN_API VisItDisplay
 {
   public:
     virtual ~VisItDisplay() {}

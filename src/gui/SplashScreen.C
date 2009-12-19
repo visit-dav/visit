@@ -48,8 +48,8 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QDesktopWidget>
-#include <visit-config.h>   // For version number, svn revision
 #include <InstallationFunctions.h>
+#include <ConfigureInfo.h>
 
 #define MULTIPLE_IMAGES
 #define TIMER_DURATION 2*1000     // 2 seconds
@@ -161,7 +161,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
 
     // If the window manager is dumb enough to put decorations on this
     // window, at least put a reasonable title on it.
-    QString caption(tr("VisIt %1 splash screen").arg(VISIT_VERSION));
+    QString caption(tr("VisIt %1 splash screen").arg(visitcommon::Version().c_str()));
     setWindowTitle(caption);
 
     // Set up a box to put the picture in
@@ -200,10 +200,10 @@ SplashScreen::SplashScreen(bool cyclePictures)
     QString ver;
     bool drawVersion = false;
     int major = 0, minor = 0, patch = 0;
-    int ret = GetVisItVersionFromString(VISIT_VERSION, major, minor, patch);
+    int ret = GetVisItVersionFromString(visitcommon::Version().c_str(), major, minor, patch);
     if(ret < 0)
     {
-        ver = QString(VISIT_VERSION);
+        ver = QString(visitcommon::Version().c_str());
         if(ver.right(1) == "b")
             ver = tr("Beta");
         drawVersion = true;
@@ -252,10 +252,10 @@ SplashScreen::SplashScreen(bool cyclePictures)
     lLayout->addWidget(new QLabel(C, this));
 
     QString versionText;
-    versionText.sprintf("VisIt %s, ", VISIT_VERSION);
+    versionText.sprintf("VisIt %s, ", visitcommon::Version().c_str());
     versionText += tr("svn revision");
     versionText += " ";
-    versionText += VISIT_SVN_REVISION;
+    versionText += QString(visitcommon::SVNVersion().c_str());
 
     // Create a lookup of month names so the internationalization
     // files don't have to change.

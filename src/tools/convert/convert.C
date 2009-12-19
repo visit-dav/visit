@@ -47,6 +47,11 @@
 #include <DatabasePluginInfo.h>
 #include <VisItInit.h>
 
+#ifdef DBIO_ONLY
+// Disable expressions during the VISIT_DBIO_ONLY build mode.
+#define DISABLE_EXPRESSIONS
+#endif
+
 #ifndef DISABLE_EXPRESSIONS
 #include <ExprParser.h>
 #include <ParsingExprList.h>

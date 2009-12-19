@@ -1,1 +1,0 @@
-../../avt/VisWindow/Tools/VisitSphereTool.h

@@ -1,0 +1,31 @@
+Changes from 1.5beta0: ------------------------------------------
+
+- API NEW: added new measures to the gageVec kind for dealing with
+3-scalar datasets, such as RGB color volumes:
+  gageVecGradient0,   /*  6: gradient of 1st component of vector: GT[3] */
+  gageVecGradient1,   /*  7: gradient of 2nd component of vector: GT[3] */
+  gageVecGradient2,   /*  8: gradient of 3rd component of vector: GT[3] */
+  gageVecMultiGrad,   /*  9: sum of outer products of gradients: GT[9] */
+  gageVecL2MG,        /* 10: L2 norm of multi-gradient: *GT */
+  gageVecMGEval,      /* 11: eigenvalues of multi-gradient: GT[3] */
+  gageVecMGEvec,      /* 12: eigenvectors of multi-gradient: GT[9] */
+
+Changes from 1.4: -----------------------------------------------
+
+- TOTAL API CHANGE: All but the low-level filtering code has been
+re-written.  Basically, whereas before I refused to have gage do any
+of the padding required to produce the volume that was probed, now
+gage has _gageStandardPadder() and _gageStandardNixer() as the default
+means of creating and destroying padded volumes.  Alternate padders
+and nixers could be set, but this has yet to be exploited or tested.
+This change means that gage can be more automated, so as to keep track
+of all the dependencies (like query, kernels, and k3pack) which
+determine how much padding is needed, and can generate the padded
+volume as part of gageUpdate().  This allows you to change querying
+parameters after gageProbe(), then call gageUpdate(), and then go back
+to probing.  A new flag in the gageContext, noRepadWhenSmaller, does
+what it says, so that one padding can be used for queries requiring
+different amounts of padding.
+- API NEW: there are now GAGE_SCL_*_BIT and GAGE_VEC_*_BIT #defines
+which are the bit-shifted enum values, ready to by |'ed together to
+make a query

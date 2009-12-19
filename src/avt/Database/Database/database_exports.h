@@ -40,7 +40,7 @@
 #define DATABASE_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(DATABASE_EXPORTS) || defined(avtdatabase_ser_EXPORTS) || defined(avtdatabase_par_EXPORTS)
+#if defined(AVTDATABASE_EXPORTS) || defined(avtdatabase_ser_EXPORTS) || defined(avtdatabase_par_EXPORTS)
 #define DATABASE_API __declspec(dllexport)
 #else
 #define DATABASE_API __declspec(dllimport)
@@ -60,7 +60,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(DATABASE_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTDATABASE_EXPORTS) || defined(avtdatabase_ser_EXPORTS) || defined(avtdatabase_par_EXPORTS))
 #   define DATABASE_API __attribute__ ((visibility("default")))
 # else
 #   define DATABASE_API /* hidden by default */

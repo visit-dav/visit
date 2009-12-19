@@ -1,1 +1,0 @@
-../../gui/QvisPickWindow.h

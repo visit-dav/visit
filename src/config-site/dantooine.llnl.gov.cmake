@@ -1,0 +1,96 @@
+#/Users/whitlock2/i386-apple-darwin8.8.1/bin/cmake
+
+SET(VISITHOME /Users/whitlock2/Development/visit)
+SET(VISITARCH i386-apple-darwin8)
+SET(VISITARCH2 i386-apple-darwin8_gcc-4.0.1)
+SET(VISITARCH3 i386-apple-darwin8_gcc-4.0)
+
+SET(VISIT_VERBOSE_MAKEFILE TRUE)
+
+# Set VISIT_VTK_DIR, which is used by the FindVTK module to locate VTK)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR "${VISITHOME}/vtk/5.0.0c/${VISITARCH2}")
+
+# Add Qt's qmake to the path so we can use CMake's Qt4 autodetection.
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.5/bin)
+
+# Set the location for where we find Python
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH3})
+
+# Set the location for where we find Mesa
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH2})
+
+# Set up the variables needed for MPI
+SET(VISIT_MPI_LIBRARY_DIR /Users/whitlock2/i386-apple-darwin8.8.1/lib)
+SET(VISIT_MPI_CXX_FLAGS "-D_REENTRANT -I/Users/whitlock2/i386-apple-darwin8.8.1/include")
+SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR} -Wl,-u,_munmap -Wl,-multiply_defined,suppress")
+##SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR} -Wl,-undefined,dynamic_lookup -Wl,-u,_munmap -Wl,-multiply_defined,suppress")
+SET(VISIT_MPI_LIBS mpi_cxx mpi open-rte open-pal)
+
+##
+## Database reader plugin support libraries
+##
+##############################################################
+
+##
+## AdvIO
+##
+VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+
+##
+## CCMIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
+
+##
+## CFITSIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/${VISITARCH})
+
+##
+## CGNS
+##
+VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/${VISITARCH})
+
+##
+## ExodusII
+##
+VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.46/${VISITARCH})
+
+##
+## GDAL
+##
+VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.3.2/${VISITARCH})
+
+##
+## HDF4
+##
+VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH2}/lib sz)
+
+##
+## HDF5
+##
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.1/${VISITARCH2})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH2}/lib sz)
+
+##
+## H5Part
+##
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.4.0/${VISITARCH2})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+
+##
+## Mili
+##
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.10a/${VISITARCH})
+
+##
+## NETCDF
+##
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.3/${VISITARCH2})
+
+##
+## Silo
+##
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7/${VISITARCH2})
+VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})

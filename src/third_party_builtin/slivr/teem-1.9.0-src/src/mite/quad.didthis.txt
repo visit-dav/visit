@@ -1,0 +1,75 @@
+alias quadvol ../nrrd/test/quadvol
+alias PAD "unu pad -min -1 -1 0 -max M+1 M+1 M -b pad -v -3"
+alias QUAD "quadvol -s 20 20 20 -min -1.1 -1.1 -1.1 -max 1.1 1.1 1.1 "
+
+QUAD -c  0.8 -0.8  -off  0.00 | PAD -o 04.nrrd
+QUAD -c  0.4 -0.8  -off  0.22 | PAD -o 14.nrrd
+QUAD -c  0.0 -0.8  -off  0.45 | PAD -o 24.nrrd
+QUAD -c -0.4 -0.8  -off  0.67 | PAD -o 34.nrrd
+QUAD -c -0.8 -0.8  -off  0.90 | PAD -o 44.nrrd
+
+QUAD -c  0.8 -0.4  -off -0.22 | PAD -o 03.nrrd
+QUAD -c  0.4 -0.4  -off -0.00 | PAD -o 13.nrrd
+QUAD -c  0.0 -0.4  -off  0.23 | PAD -o 23.nrrd
+QUAD -c -0.4 -0.4  -off  0.45 | PAD -o 33.nrrd
+
+QUAD -c  0.8  0.0  -off -0.45 | PAD -o 02.nrrd
+QUAD -c  0.4  0.0  -off -0.23 | PAD -o 12.nrrd
+QUAD -c  0.0  0.0  -off  0.00 | PAD -o 22.nrrd
+
+QUAD -c  0.8  0.4  -off -0.67 | PAD -o 01.nrrd
+QUAD -c  0.4  0.4  -off -0.45 | PAD -o 11.nrrd
+
+QUAD -c  0.8  0.8  -off -0.90 | PAD -o 00.nrrd
+
+
+unu 2op x 00.nrrd 0 | unu 2op - - 10 -o BB.nrrd
+
+unu join -i 04.nrrd 14.nrrd 24.nrrd 34.nrrd 44.nrrd -a 0 -o 4.nrrd
+unu join -i 03.nrrd 13.nrrd 23.nrrd 33.nrrd BB.nrrd -a 0 -o 3.nrrd
+unu join -i 02.nrrd 12.nrrd 22.nrrd BB.nrrd BB.nrrd -a 0 -o 2.nrrd
+unu join -i 01.nrrd 11.nrrd BB.nrrd BB.nrrd BB.nrrd -a 0 -o 1.nrrd
+unu join -i 00.nrrd BB.nrrd BB.nrrd BB.nrrd BB.nrrd -a 0 -o 0.nrrd
+
+unu join -i 0.nrrd 1.nrrd 2.nrrd 3.nrrd 4.nrrd -a 1 \
+ | unu axinfo -a 0 -sp 0.105263 \
+ | unu axinfo -a 1 -sp 0.105263 -o quad.nrrd
+
+echo "0 1" \
+ | unu reshape -s 1 2 \
+ | unu resample -s = 512 -k tent \
+ | unu save -f text -o ramp.txt
+
+echo "-1.0 0.0   -0.1 0.0    0.1 1.0    1.0 1.0" \
+ | unu reshape -s 2 4 \
+ | unu imap -i ramp.txt -r -m - \
+ | unu axinfo -a 0 -l "A" \
+ | unu axinfo -a 1 -l "gage(v)" -mm -1.0 1.0 -o txf.nrrd
+
+echo "1 0 1     0.65 0.65 0.75      0 0.78 0" \
+ | unu reshape -s 3 3 \
+ | unu rmap -i ramp.txt -m - \
+ | unu axdelete -a 1 \
+ | unu axinfo -a 0 -l "RGB" \
+ | unu axinfo -a 1 -l "gage(k2)" -mm -2.2 2.2 -o txf2.nrrd
+
+echo unu axinfo -a 1 -l "gage(gc)" -mm -4 4 -o txf2.nrrd
+echo unu axinfo -a 1 -l "gage(mc)" -mm -2.2 2.2 -o txf2.nrrd
+echo unu axinfo -a 1 -l "gage(k1)" -mm -2.2 2.2 -o txf2.nrrd
+echo unu axinfo -a 1 -l "gage(k2)" -mm -2.2 2.2 -o txf2.nrrd
+
+miter -i quad.nrrd \
+  -k00 cubic:1,0 -k11 cubicd:1,0 -k22 cubicdd:1,0 \
+  -or -rh -fr 1 -3 7.5 \
+  -dn -2 -di 0 -df 2 -ar \
+  -ur -1.3 1.3 -vr -1.3 1.3 \
+  -ld -1 -1 -2 -ads 0.3 0.7 0.23 -sp 60 \
+  -is 400 400 -step 0.01 \
+  -txf txf.nrrd txf2.nrrd \
+  -o rend.nrrd
+
+rm -f {4,3,2,1,0}{4,3,2,1,0}.nrrd
+rm -f {4,3,2,1,0}.nrrd
+rm -f BB.nrrd
+rm -f quad.nrrd
+rm -f ramp.txt txf.nrrd txf2.nrrd

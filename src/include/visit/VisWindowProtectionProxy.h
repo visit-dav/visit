@@ -1,1 +1,0 @@
-../../avt/VisWindow/Proxies/VisWindowProtectionProxy.h

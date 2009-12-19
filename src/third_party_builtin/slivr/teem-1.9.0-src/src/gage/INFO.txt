@@ -1,0 +1,207 @@
+what passes for documentation about gage:
+
+cheat sheet for using gage: --------------------------------------
+
+1) Create a context (ctx) with gageContextNew().
+2) For each of the volumes to probe, create a pervolume (pvl) with
+   gagePerVolumeNew(), and pass this the volume that you want to
+   probe.  As the name implies, you use one gagePerVolume per volume.
+3) Attach the pervolume(s) to the context with gagePerVolumeAttach().
+4) If you want verbose feedback, gageSet(ctx, gageParmVerbose, 1), which
+   sets the verbosity in the context and all attached pervolumes
+4) For each of the volumes, calculate the bitflag query according to the
+   various measures you care about.  If in a scalar volume you want value
+   and gradient magnitude, then your query should be:
+     (1<<gageSclValue) | (1<<gageSclGradMag)
+   or equivalently:
+      GAGE_SCL_VALUE_BIT | GAGE_SCL_GRADMAG_BIT
+5) Make calls to gageQuerySet(pvl), gageKernelSet(ctx), and gageSet(ctx), to
+   set up the context with the answers to get, the kernels to use, and
+   any other parameters to set.  There is no need in gage to directly
+   set or read the members of a struct except:
+   
+   and the kernels to use.  Use gageSet() to set other int flags.
+   These calls can be made in any order.  Calls with int return should
+   be checked for erroneous (non-zero) return, and then biffGetDone(GAGE)
+   to see the error messages.
+6) Call gageUpdate() and check the return to make sure everything is okay.
+7) Start probing away with gageProbe().  
+8) When all done, gageContextNix() will clean up all the attached pervolumes
+   and any memory they allocated.
+
+Pointers to the answers you care about can be gotten from the ans
+struct hanging off each pervolume, or by calling gageAnswerPointer().
+If you ever change state in the context (with calls to functions
+listed in step 5), you should call gageUpdate() once before starting
+to call gageProbe() again.
+
+For multi-threaded usage, calling gageContextCopy() immediately after
+gageUpdate() will result in a new context, complete with attached
+pervolumes, all ready to be passed to gageProbe(). If making multiple
+copies, always copy the original.  HOWEVER, the copy context is not
+intended as a general-purpose independent context: it shares pointers
+to unpadded and padded volumes with the original context. The ONLY
+thing you should do with either a context copy, or a context that has
+been copied, is call gageProbe().  If any parameters need to be
+changed, delete the copy with gageContextNix(), make necessary
+gage*Set() calls, then gageUpdate(), then gageContextCopy() again.
+Avoiding this annoyance would require far too much cleverness.
+
+------------------------------------------------------------------
+
+gage is for measuring things in volumes by using convolution.
+Currently, scalar and 3-vector volumes are supported, but gage can
+easily be extended to other kinds of data.  The convolution is between
+the discretely sampled data on the regular 3D grid (comprising the
+volume dataset), and a set of continuous kernels.  Of course, the
+datasets are given as Nrrds, and the kernels are given as NrrdKernels.
+The quantities that can be measured with gage are basically values and
+derivatives of various types.  Currently, they are as follows:
+
+For scalar fields:
+  gageSclValue,       /*  0: data value: *GT */
+  gageSclGradVec,     /*  1: gradient vector, un-normalized: GT[3] */
+  gageSclGradMag,     /*  2: gradient magnitude: *GT */
+  gageSclNormal,      /*  3: gradient vector, normalized: GT[3] */
+  gageSclHessian,     /*  4: Hessian: GT[9] (column-order) */
+  gageSclLaplacian,   /*  5: Laplacian: Dxx + Dyy + Dzz: *GT */
+  gageSclHessEval,    /*  6: Hessian's eigenvalues: GT[3] */
+  gageSclHessEvec,    /*  7: Hessian's eigenvectors: GT[9] */
+  gageScl2ndDD,       /*  8: 2nd dir.deriv. along gradient: *GT */
+  gageSclGeomTens,    /*  9: symm. matrix w/ evals 0,K1,K2 and evecs grad,
+                             curvature directions: GT[9] */
+  gageSclCurvedness,  /* 10: L2 norm of K1, K2 (not Koen.'s "C"): *GT */
+  gageSclShapeTrace,  /* 11, (K1+K2)/Curvedness: *GT */
+  gageSclShapeIndex,  /* 12: Koen.'s shape index, ("S"): *GT */
+  gageSclK1K2,        /* 13: principle curvature magnitudes: GT[2] */
+  gageSclCurvDir,     /* 14: principle curvature directions: GT[6] */
+
+For 3-vector fields:
+  gageVecVector,      /*  0: component-wise-interpolatd (CWI) vector: GT[3] */
+  gageVecLength,      /*  1: length of CWI vector: *GT */
+  gageVecNormalized,  /*  2: normalized CWI vector: GT[3] */
+  gageVecJacobian,    /*  3: component-wise Jacobian: GT[9]
+                             0:dv_x/dx  3:dv_x/dy  6:dv_x/dz
+                             1:dv_y/dx  4:dv_y/dy  7:dv_y/dz
+                             2:dv_z/dx  5:dv_z/dy  8:dv_z/dz */
+  gageVecDivergence,  /*  4: divergence (based on Jacobian): *GT */
+  gageVecCurl,        /*  5: curl (based on Jacobian): *GT */
+
+Some terminology: A "measure" usually refers to one of the quantities
+listed above.  A "kind" is a type of volume that gage knows how to
+measure things in.  Currently the kinds supported by gage are scalar
+and 3-vector.  These are generally identified with the
+prefixes/strings "scl" and "vec", respectively.  All the functions and
+information which are needed to handle one kind, such as information
+about the available measures, and the functions for computing answers,
+comprise the gageKind struct.  gage supplies two of these: a
+gageKindScl and gageKindVec.
+
+gage has been designed to make it relatively easy to add new measures
+to existing kinds.  Whole new kinds are supported simply by supplying
+pointers to different gageKinds. Also, gage can simultaneously probe
+multiple volumes, of the same or of different kinds, by a clean
+seperation between the information and state which is specific to each
+kind of volume, versus that which is general across all kinds of
+volumes.
+
+All of the measures that gage handles are floating point.  While it
+would be ideal if the choice between float and double could be made at
+run time, this would rather complicated.  This could all be templated
+pretty easily, but until then, the choice between float and double is
+made at compile time, by setting the "gage_t" typedef.  Its not
+pretty, but it is also far from the greatest shortcoming in gage.
+
+The kernels used in the convolution are of two basic
+types: those for "reconstructing values" and those for "measuring
+derivatives".  Reconstructing values usually means simple
+interpolation, but not if some smoothing is desired.  Examples include
+"tent" (for trilinear interpolation), "cubic:0,0.5" (Catmull-Rom), and
+"cubic:1,0" (B-spline, which isn't interpolating because it smooths
+slightly).  "Measuring derivatives" means measuring a derivative of
+the sampled field by convoluting with the derivative of a
+reconstruction kernel.  The order of the derivative is determined by
+how many derivatives have been taken: "fordif", "cendif", "cubicd:1,0"
+are all for measuring first derivatives, "cubicdd:1,0", "gaussdd:2,6"
+are for second derivatives.  All these kernel identifications are
+strings recognized by nrrdKernelParse().
+
+Measuring a derivative in a volume is always accomplished by partial
+derivatives, such as reconstruction in Y and Z and a first derivative
+in X, to compute a partial derivative WRT to X.  However, the
+reconstruction that is done in the context of derivative measurement
+(such as along Y and Z for a first partial in X) can be different than
+reconstruction of values alone; some smoothing may be desired, for
+instance.  gage distinguishes between these two types of
+reconstruction.  The same applies for second derivatives, but in this
+context one has three distinct kernels, for value reconstruction and
+for first and second derivative measurement.  The way that these
+different kernels are identified in gage is with a two-digit scheme,
+with the first number giving the context, and the second number giving
+the measurement:
+
+00: reconstructing values for the sake of reconstructing values
+10: reconstructing values for the sake of 1st derivatives
+11: measuring 1st derivatives for the sake of 1st derivatives
+20: reconstructing values for the sake of 2nd derivatives
+21: measuring 1st derivatives for the sake of 2nd derivatives
+22: measuring 2nd derivatives for the sake of 2nd derivatives
+
+A basic assumption in gage is that the interesting quantities are
+either values in, or derivatives of, the given field, or something
+that can be calculated from some combination of these.  For example,
+the second derivative of a scalar field is the Hessian matrix, and the
+Laplacian is computed as the trace of this.  While one could desire a
+fast Laplacian calculation that does not first compute the
+off-diagonal elements of the Hessian, or a divergence calculation that
+does not compute the off-diagonal elements of the Jacobian, this sort
+of special-case short-circuiting is not currently supported, because
+of the resulting code complexity and the relative rarity of situations
+where I have found this crucial.
+
+Because of this assumption, every value that gage can measure can be
+characterized in terms of the derivatives upon which it depends.  The
+determination of the second directional derivative along the gradient
+direction requires both the Hessian and the gradient, for example.
+The information about the derivative requirements in recorded as
+bitflags in the _gageSclNeedDeriv[] and _gageVecNeedDeriv[] arrays,
+for the scalar and vector measures respectively.  All of the measures
+are broken down in terms of prerequisites in order to facilitate a
+common machinery (implemented in gageQuerySet()) for recursively
+expanding user-specified queries into all all necessary measures.
+
+Except for the fundamental value and derivative measures, gage's
+measures are split into two stages: first measure the prerequiste
+values and derivatives, and then compute the measure from these.  The
+first stage is called the "filtering" stage, and is implemented by the
+gageKind's "filter" method.  The second is called the "answering"
+stage, and is implemented by the gageKind's "answer" method.  All of
+the convolution is done in the filtering stage, and nothing else.  The
+role of the answering stage is to do all the math needed to operate on
+the filtering results to get the desired measures.
+
+The method chosen for storing the intermediate (resulting from
+filtering) and final answer values was that of a common scratch-space:
+a long flat array in which all the possible measures have an allocated
+space.  This is called the main answer array; examples are in the
+"ans" arrays in the gageSclAnswer and gageVecAnswer structs. In the
+case of measuring a normalized gradient in a scalar field, the first
+derivative (un-normalized gradient) is measured and stored in the
+answer array, the gradient length is computed (and stored in the
+answer array), and then the normalized gradient is computed and
+stored.  The caller is then responsible for retrieving the requested
+measure from the answer array.  In the gageSclAnswer and gageVecAnswer
+structs, retrieving the requested answers is facilitated by a set of
+convenience pointers pointing to appropriate locations along the
+answer array.
+
+One of the strengths of gage is its ability to handle multiple volumes
+simultaneously.  This is facilitated by the difference between the
+gageContext and the gagePerVolume structs.  Information and state
+specific to the dimensions and aspect ratio of a volume, but general
+with respect to the kind of the volume, such as arrays of filter
+weights to be used for convolution, is kept in the gageContext.
+Information and state specific to one instance of one kind of volume
+is kept in a gagePerVolume.  Multiple gagePerVolumes can be attached
+to a gageContext (with gagePerVolumeAttach()), so that a single call
+to gageProbe() can result in multiple kind's answers being computed.

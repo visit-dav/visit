@@ -12,6 +12,10 @@ exec perl -x $0 ${1+"$@"};
 #
 #   Mark C. Miller, Mon Jun 22 22:05:56 PDT 2009
 #   Adjusted to deal with tree in which there is no 'data' dir.
+#
+#   Brad Whitlock, Tue Nov 17 11:40:57 PST 2009
+#   I made it add the CMake directory to the list of files.
+#
 
 if  (! -d "src")
 {
@@ -64,6 +68,7 @@ if ($ARGV[0] eq "-dbio-only")
 {
     push @files, get_svn_norecursive  "./src";
     push @files, get_svn_recursive    "./src/ac";
+    push @files, get_svn_recursive    "./src/CMake";
     push @files, get_svn_norecursive  "./src/common";
     push @files, get_svn_norecursive  "./src/common/Exceptions";
     push @files, get_svn_recursive    "./src/common/Exceptions/Database";
@@ -104,6 +109,7 @@ else
 {
     push @files, get_svn_norecursive  "./src";
     push @files, get_svn_recursive    "./src/ac";
+    push @files, get_svn_recursive    "./src/CMake";
     push @files, get_svn_recursive    "./src/common";
     push @files, get_svn_recursive    "./src/visit_vtk";
     push @files, get_svn_recursive    "./src/engine";

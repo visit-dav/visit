@@ -1,1 +1,2 @@
-../Shapefile/PolygonToTriangles.C
+#define PolygonToTriangles ccmPolygonToTriangles
+#include "../Shapefile/PolygonToTriangles.C"

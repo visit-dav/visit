@@ -51,6 +51,7 @@
 
 #include <avtContract.h>
 #include <avtIOInformation.h>
+#include <engine_main_exports.h>
 
 class     avtDatabase;
 
@@ -162,7 +163,7 @@ struct IOInfo
 //
 // ****************************************************************************
 
-class LoadBalancer
+class ENGINE_MAIN_API LoadBalancer
 {
   public:
                                   LoadBalancer(int nProcs, int rank);

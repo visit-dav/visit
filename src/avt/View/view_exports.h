@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(AVTVIEW_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTVIEW_EXPORTS) || defined(avtview_EXPORTS))
 #   define AVTVIEW_API __attribute__ ((visibility("default")))
 # else
 #   define AVTVIEW_API /* hidden by default */

@@ -68,7 +68,9 @@
 #include <mach-o/dyld.h>
 #include <dirent.h>
 #else
-#include <dlfcn.h>
+#  ifndef VISIT_STATIC
+#    include <dlfcn.h>
+#  endif
 #include <dirent.h>
 #endif
 
@@ -80,7 +82,7 @@ using std::sort;
 
 #define MAX_PLUGINERROR 500
 
-#ifdef STATIC
+#ifdef VISIT_STATIC
 extern void *fake_dlsym(const string &);
 extern void StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &,
                                    const string &);
@@ -510,7 +512,7 @@ PluginManager::EnablePlugin(const string &id)
 void
 PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 {
-#ifdef STATIC
+#ifdef VISIT_STATIC
     StaticGetSupportedLibs(libs, managerName);
     return;
 #endif
@@ -1506,7 +1508,7 @@ PluginManager::PluginOpen(const string &pluginFile)
     }
 
     handle = (void *)lib;
-#elif defined(STATIC)
+#elif defined(VISIT_STATIC)
     debug1 << "Not opening " << pluginFile << " because this is a static build." << endl;
 #else
     // dlopen the plugin
@@ -1571,7 +1573,7 @@ PluginManager::PluginOpen(const string &pluginFile)
 void *
 PluginManager::PluginSymbol(const string &symbol, bool noError)
 {
-    void *retval;
+    void *retval = 0;
 
     string symbolName(symbol);
 
@@ -1600,17 +1602,19 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
             symbolName = string(pluginPrefix + "_" + symbol);
         //  debug4 << "PluginSymbol: sym: " << symbolName << endl;
     }
-    
-#if defined(_WIN32)
-    retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
-#else
-  #if defined(STATIC)
+
+#if defined(VISIT_STATIC)
+// Static
     retval = fake_dlsym(symbolName);
     if (retval == NULL)
         debug1 << "fake_dlsym was not able to return " << symbolName << endl;
-  #else
+#else 
+// Dynamic
+#if defined(_WIN32)
+    retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
+#else
     retval = dlsym(handle, symbolName.c_str());
-  #endif
+#endif
 #endif
 
     // If the symbol was not found, print the error message if appropriate.
@@ -1642,7 +1646,7 @@ PluginManager::PluginError() const
     va_list *va = 0;
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
                   pluginError, MAX_PLUGINERROR, va);
-#else
+#elif !defined(VISIT_STATIC)
     strncpy(pluginError, dlerror(), MAX_PLUGINERROR);
 #endif
     return pluginError;
@@ -1670,6 +1674,7 @@ PluginManager::PluginError() const
 void
 PluginManager::PluginClose()
 {
+#if !defined(VISIT_STATIC)
 #if defined(_WIN32)
     if(handle)
     {
@@ -1692,6 +1697,7 @@ PluginManager::PluginClose()
         }
         handle = 0;
     }
+#endif
 #endif
 
     openPlugin = "";

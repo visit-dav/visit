@@ -7,6 +7,7 @@
     </Extensions>
     <Files components="M,E">
       avtZipWrapperFileFormatInterface.C
+      avtZipWrapperOptions.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

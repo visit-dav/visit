@@ -1,0 +1,57 @@
+---------------------------------------------------------------
+SunOS PLUS Solaris still leading (Score:1)
+by Guy Harris (guy@netapp.com) on Wednesday November 11, @12:21AM 
+(User Info)  
+---------------------------------------------------------------
+
+SunOS is the name Sun gave to their OS when they decided that calling
+it "Sun UNIX 4.2BSD Release X.Y" could get AT&T to complain that they
+didn't have rights to the UNIX trademark (this was back when, as I
+remember, AT&T said it wasn't UNIX if you change anything other than
+what you needed to port it to one of the CPUs for which they had
+official ports - and, yes, I remember that issue coming up when I was
+at Sun for 4.0, the first one that called itself "SunOS" when it
+booted).
+
+
+Solaris is the name Sun gave to the SunOS plus OpenWindows
+combination, at about the time their first SVR4-based release came
+out; they gave the name both to the one with SunOS 4.1[.y] and the one
+with SunOS 5.x, but, as
+
+1) 5.x, being SVR4-based, was quite different from 4.x
+
+and
+
+2) Sun never came out with a standalone SunOS 5.x release, but they
+   had SunOS 4.x before they had Solaris
+
+people often think of "SunOS" as referring to pre-5.x SunOS and
+"Solaris" as referring to 5.x.
+
+(The notion of "SunOS 5.x" existed before there was any notion of
+"Solaris"; I was there when the SVR4 work started, and there wasn't
+any notion of "Solaris"....)
+ 
+---------------------------------------------------------------
+SunOS PLUS Solaris still leading (Score:1)
+by Brian Knotts (bknotts@netscape.net) on Wednesday November 11, @12:33AM 
+(User Info)  
+---------------------------------------------------------------
+
+Well, technically Solaris *is* SunOS; as 'uname -sr' will tell you,
+Solaris 2.5.1, for instance, is SunOS 5.5.1. But, technicalities
+aside...  SunOS 4.x.x is an older, sort-of-BSD-like (?) UNIX (Not sure
+about that one, as I haven't worked much with BSD). Solaris is SysV.
+
+More practically speaking, although a fine OS in its time, SunOS is
+getting kinda old and crufty, and has limits that are increasingly
+difficult to deal with. Solaris is a more modern UNIX.
+
+The two systems look and act noticeably different, which I understand
+did cause some pain during the transition, but you gotta give Sun
+credit for biting the bullet and doing the right thing, unlike some
+other companies we know...
+
+
+ 

@@ -173,6 +173,10 @@
 #    Hank Childs, Thu Oct 15 06:28:42 PDT 2009
 #    Corrected print statement.
 #
+#    Brad Whitlock, Fri Dec 18 11:06:19 PDT 2009
+#    I changed it to install output from "make package", which is in a
+#    slightly different format than before.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -484,15 +488,10 @@ if (! -e "$dir"/data)           mkdir "$dir"/data
 # installation in a consistent state with the exception of the
 # data directory.
 #
-if ($logging == false) then
-   cp distribution/visit/bin/legacylauncher "$dir"/bin/legacylauncher+
-else
-   sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/legacylauncher > "$dir"/bin/legacylauncher+
-endif
-cp distribution/visit/bin/frontendlauncher "$dir"/bin/frontendlauncher+
-cp distribution/visit/bin/xml2plugin       "$dir"/bin/xml2plugin+
-cp distribution/visit/bin/visit_plugin     "$dir"/bin/visit_plugin+
-cp distribution/visit/bin/mkgrdbl          "$dir"/bin/mkgrdbl+
+cp distribution/$base.$platform/bin/frontendlauncher "$dir"/bin/frontendlauncher+
+cp distribution/$base.$platform/bin/xml2plugin       "$dir"/bin/xml2plugin+
+cp distribution/$base.$platform/bin/visit_plugin     "$dir"/bin/visit_plugin+
+cp distribution/$base.$platform/bin/mkgrdbl          "$dir"/bin/mkgrdbl+
 
 if (-e "$dir"/$version) then
    mv "$dir"/$version "$dir"/$version+
@@ -500,7 +499,7 @@ if (-e "$dir"/$version) then
 endif
 if (! -e "$dir"/$version+)                 mkdir "$dir"/$version+
 
-cd distribution/visit/$version
+cd distribution/$base.$platform/$version
 
 # Determine the platform
 set findcli = `find . -name cli`
@@ -516,7 +515,7 @@ end
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
 cd ../../..
-cp distribution/visit/data/* "$dir"/data
+cp distribution/$base.$platform/data/* "$dir"/data
 
 #
 # Store some of the installation options so they can be used by VisIt when
@@ -588,7 +587,6 @@ endif
 #
 chmod $dir_permission "$dir"
 chmod $dir_permission "$dir"/bin
-chmod $dir_permission "$dir"/bin/legacylauncher+
 chmod $dir_permission "$dir"/bin/frontendlauncher+
 chmod $dir_permission "$dir"/bin/xml2plugin+
 chmod $dir_permission "$dir"/bin/visit_plugin+
@@ -616,7 +614,6 @@ chmod $dir_permission "$dir"/$version+/bin/*
 #
 if ($group_ownership != none) then
     chgrp $group_ownership "$dir"/bin
-    chgrp $group_ownership "$dir"/bin/legacylauncher+
     chgrp $group_ownership "$dir"/bin/frontendlauncher+
     chgrp $group_ownership "$dir"/bin/xml2plugin+
     chgrp $group_ownership "$dir"/bin/visit_plugin+
@@ -628,7 +625,7 @@ if ($group_ownership != none) then
 endif
 
 if ($logging == true) then
-    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
+    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/$base.$platform/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
     chmod $dir_permission "$dir"/$version+/bin/internallauncher
     touch "$dir"/$version+/usagelog
     touch "$dir"/$version+/cli_usagelog
@@ -648,7 +645,7 @@ rm -rf distribution
 #
 # Make the symbolic links for the programs
 #
-set programs = "curv3dprep makemili mpeg2encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+set programs = "curv3dprep makemili mpeg2encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd "$dir"/bin
 foreach prog ($programs)
@@ -675,8 +672,6 @@ if (-e $version) then
    rm -f $version
    mv $version+ $version
 endif
-if (-e bin/legacylauncher)       rm -f bin/legacylauncher
-mv bin/legacylauncher+ bin/legacylauncher
 if (-e bin/frontendlauncher)     rm -f bin/frontendlauncher
 mv bin/frontendlauncher+ bin/frontendlauncher
 if (-e bin/xml2plugin)           rm -f bin/xml2plugin

@@ -5,8 +5,15 @@
       avtExodusFileFormat.C
       vtkVisItExodusReader.C
     </Files>
-    <CXXFLAGS> $(EXODUS_FLAGS) </CXXFLAGS>
-    <LIBS>     $(EXODUS_LIBS)  </LIBS>
+    <CXXFLAGS>
+      ${EXODUSII_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${EXODUSII_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${EXODUSII_LIB}
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Exodus.code">
       <Function name="ExodusCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>

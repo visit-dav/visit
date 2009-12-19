@@ -1,1 +1,0 @@
-../../avt/DBAtts/MetaData/avtCurveMetaData.h

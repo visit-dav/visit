@@ -42,6 +42,7 @@
 #include <avtDataObject.h>
 #include <avtPlot.h>
 #include <DataNetwork.h>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class: ClonedDataNetwork
@@ -56,7 +57,7 @@
 //
 // ****************************************************************************
 
-class ClonedDataNetwork : public DataNetwork
+class ENGINE_MAIN_API ClonedDataNetwork : public DataNetwork
 {
 public:
                           ClonedDataNetwork(DataNetwork *);

@@ -1,0 +1,39 @@
+to add zlib compression to nrrd:
+
+change to meaning of "byte skip": in uncompressed data, the bytes are
+skipped by _nrrdReadNrrd() before the _nrrdReadData*() function is
+called.  In compressed data, they are not skipped in _nrrdReadNrrd(),
+and it is the job of the _nrrdReadData*() function to skip the bytes
+in the decompressed stream.
+
+-- arraysNrrd.c: added elements to nrrdEncodingEndianMatters[] and
+nrrdEncodingCompression[] (unconditionally), and added a conditional value
+to nrrdEncodingAvailable[]
+
+-- enumsNrrd.c: added elements to _nrrdEncoding{Str,StrEqv,ValEqv}
+(unconditionally) (actually, had to create the Eqv arrays, but further
+new encodings won't need to)
+
+-- gzio.c: had to hack with the zlib library because of API deficiencies
+
+-- nrrd.h: added "int encoding" arg to nrrdFitsInFormat, because now we
+have encodings that may not fit in a given format
+
+-- nrrdEnums.h: added nrrdEncodingGzip to nrrdEncoding*
+enum. (unconditionally).  If we did this conditional on TEEM_ZLIB then
+anyone wanting to use nrrd with zlib would also have to define TEEM_ZLIB...
+
+-- privateNrrd.h: (conditionally) added declarations for the new zlib
+interface functions that were created in gzio.c
+
+-- read.c: created new function, _nrrdReadDataZlib, for reading data
+with zlib compression, and (unconditionally) added it to the
+nrrdReadData[] array.  If TEEM_ZLIB isn't turned, you get a stub
+function with a biff message saying, "sorry, zlib not enabled"
+
+-- simple.c: added "int encoding" arg to nrrdFitsInFormat(), because now we
+have encodings that may not fit in a given format
+
+-- write.c: created new function, _nrrdWriteDataZlib, for writing data
+with zlib compression, and (unconditionally) added it to the
+nrrdWriteData[] array

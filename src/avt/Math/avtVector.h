@@ -39,7 +39,6 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <visit-config.h>
 #include <math.h>
 #include <math_exports.h>
 #include <visitstream.h>

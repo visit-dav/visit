@@ -40,7 +40,6 @@
 //                            avtGenericDatabase.C                           //
 // ************************************************************************* //
 
-#include <visit-config.h>
 #include <avtGenericDatabase.h>
 #include <algorithm>
 #include <float.h>

@@ -40,7 +40,7 @@
 #define IVP_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(IVP_EXPORTS) || defined(avtivp_EXPORTS)
+#if defined(AVTIVP_EXPORTS) || defined(avtivp_EXPORTS)
 #define IVP_API __declspec(dllexport)
 #else
 #define IVP_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(IVP_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTIVP_EXPORTS) || defined(avtivp_EXPORTS))
 #   define IVP_API __attribute__ ((visibility("default")))
 # else
 #   define IVP_API /* hidden by default */

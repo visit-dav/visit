@@ -69,8 +69,6 @@
 #ifndef VIS_WINDOW_TYPES_H
 #define VIS_WINDOW_TYPES_H
 
-#include <visit-config.h>
-
 typedef enum
 {
     WINMODE_2D            = 0,

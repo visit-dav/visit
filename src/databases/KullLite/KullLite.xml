@@ -1,8 +1,15 @@
 <?xml version="1.0"?>
   <Plugin name="KullLite" label="KullLite" type="database" dbtype="STMD" version="1.0">
     <Extensions> pdb mkf </Extensions>
-    <CXXFLAGS> $(PDB_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(PDB_LIB)     </LIBS>
+    <CXXFLAGS>
+       ${PDB_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS> 
+       ${PDB_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+       ${PDB_LIB}
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="KullLite.code">
       <Function name="KullLiteCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>
