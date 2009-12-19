@@ -978,28 +978,6 @@ ENDIF(NOT WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
 
 #-----------------------------------------------------------------------------
-# copy third party dlls to better location for running VisIt from the
-# build dir on windows
-#-----------------------------------------------------------------------------
-#IF (WIN32 AND "VISIT_EXECUTABLE_DIR" MATCHES "^VISIT_EXECUTABLE_DIR$")
-#    MESSAGE(STATUS "copying third partys to executable dir")
-#    IF (NOT EXISTS ${VISIT_EXECUTABLE_DIR}/ThirdParty)
-#        FILE(MAKE_DIRECTORY ${VISIT_EXECUTABLE_DIR}/ThirdParty)
-#    ENDIF (NOT EXISTS ${VISIT_EXECUTABLE_DIR}/ThirdParty)
-#    FOREACH(TP boxlib bz2 ccmio cfistsio cgns exodus gdal h5part hdf4 hdf5 Mesa netcdf Qt silo szip zlib)
-#        FILE(COPY ${VISIT_WINDOWS_DIR}/ThirdParty/${TP}/lib/${VISIT_MSVC_VERSION}/*.dll 
-#             DESTINATION ${VISIT_EXECUTABLE_DIR}/ThirdParty/
-#        )
-#    ENDFOREACH(TP)
-#    FILE(COPY ${VISIT_WINDOWS_DIR}/ThirdParty/Python25/${VISIT_MSVC_VERSION}/DLLs/*.dll 
-#         DESTINATION ${VISIT_EXEUCTABLE_DIR}/ThirdParty/
-#    ) 
-#    FILE(COPY ${VISIT_WINDOWS_DIR}/ThirdParty/vtk-5.0.d/${VISIT_MSVC_VERSION}/bin/*.dll 
-#         DESTINATION ${VISIT_EXEUCTABLE_DIR}/ThirdParty/
-#    ) 
-#ENDIF (WIN32)
-
-#-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
 #          packages up a VisIt distribution.
 #-----------------------------------------------------------------------------
