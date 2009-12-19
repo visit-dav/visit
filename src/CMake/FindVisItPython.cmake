@@ -64,21 +64,21 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 
 # Modified from CMakeFindFrameworks to take firstdir argument, which lets us
 # find our own framework path ahead of the system's.
-MACRO(VISIT_FIND_FRAMEWORKS fwk firstdir)
-  SET(${fwk}_FRAMEWORKS)
-  IF(APPLE)
-    FOREACH(dir ${firstdir}/${fwk}.framework)
-      IF(EXISTS ${dir})
-        SET(${fwk}_FRAMEWORKS ${${fwk}_FRAMEWORKS} ${dir})
-      ENDIF(EXISTS ${dir})
-    ENDFOREACH(dir)
-  ENDIF(APPLE)
-ENDMACRO(VISIT_FIND_FRAMEWORKS)
+#MACRO(VISIT_FIND_FRAMEWORKS fwk firstdir)
+#  SET(${fwk}_FRAMEWORKS)
+#  IF(APPLE)
+#    FOREACH(dir ${firstdir}/${fwk}.framework)
+#      IF(EXISTS ${dir})
+#        SET(${fwk}_FRAMEWORKS ${${fwk}_FRAMEWORKS} ${dir})
+#      ENDIF(EXISTS ${dir})
+#    ENDFOREACH(dir)
+#  ENDIF(APPLE)
+#ENDMACRO(VISIT_FIND_FRAMEWORKS)
 
 # Search for the python framework on Apple.
-IF(APPLE)
-    VISIT_FIND_FRAMEWORKS(Python ${PYTHON_DIR})
-ENDIF(APPLE)
+#IF(APPLE)
+#    VISIT_FIND_FRAMEWORKS(Python ${PYTHON_DIR})
+#ENDIF(APPLE)
 
 MESSAGE(STATUS "Looking for Python")
 
