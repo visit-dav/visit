@@ -3,9 +3,9 @@
     <CXXFLAGS>
       $(ENSIGHT_FLAGS)
     </CXXFLAGS>
-    <LDFLAGS>
+    <LIBS>
       $(ENSIGHT_LIBS)
-    </LDFLAGS>
+    </LIBS>
     <Extensions>
       case
     </Extensions>

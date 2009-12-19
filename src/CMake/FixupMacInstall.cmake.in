@@ -1,0 +1,7 @@
+MESSAGE(STATUS "Fixing up Mac bundles")
+
+EXECUTE_PROCESS(COMMAND 
+    /bin/sh @VISIT_BINARY_DIR@/CMake/FixupMacInstall.sh "@CMAKE_INSTALL_PREFIX@/@VISIT_INSTALLED_VERSION_BIN@" 
+    OUTPUT_VARIABLE fixupOutput)
+
+MESSAGE(STATUS ${fixupOutput})

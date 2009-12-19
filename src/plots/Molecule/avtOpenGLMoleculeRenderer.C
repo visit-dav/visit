@@ -83,8 +83,6 @@
     #endif
     #include <GL/gl.h>
   #endif
-#else
-  #include <GL/gl.h>
 #endif
 
 #define SHORTEN_BONDS

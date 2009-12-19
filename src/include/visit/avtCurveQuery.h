@@ -1,1 +1,0 @@
-../../avt/Queries/Abstract/avtCurveQuery.h

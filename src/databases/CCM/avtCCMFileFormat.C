@@ -1778,7 +1778,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(points->GetNumberOfPoints());
     VertexManager uniqueVerts(pts);
-    PolygonToTriangles tess(&uniqueVerts);
+    ccmPolygonToTriangles tess(&uniqueVerts);
     unsigned int oc[2] = {dom, 0};
     
     int useCount = 0;
@@ -1961,7 +1961,7 @@ avtCCMFileFormat::TesselateCells2D(const int domain, const CellInfoVector &civ,
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(points->GetNumberOfPoints());
     VertexManager uniqueVerts(pts);
-    PolygonToTriangles tess(&uniqueVerts);
+    ccmPolygonToTriangles tess(&uniqueVerts);
     unsigned int oc[2] = {dom, 0};
 
     int useCount = 0;

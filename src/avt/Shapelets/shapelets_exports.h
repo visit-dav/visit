@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(AVTSHAPELETS_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTSHAPELETS_EXPORTS) || defined(avtshapelets_EXPORTS))
 #   define AVTSHAPELETS_API __attribute__ ((visibility("default")))
 # else
 #   define AVTSHAPELETS_API /* hidden by default */

@@ -138,10 +138,10 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-install-thirdparty >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist >> ../../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ../..
+make package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
 rm -f resultlog
 echo "        build of visit on crier"        > resultlog 2>&1
@@ -192,19 +192,19 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=32
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/purple1441_32.conf >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/purple1441_32.conf --enable-install-thirdparty >> ../../buildlog 2>&1
 gmake -j 4 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
-mv visit\$ver2.aix.tar.gz ../..
+gmake package >> ../../buildlog 2>&1
+mv visit\$ver2.ibm-aix-pwr-xlc.tar.gz ../..
 cd ../..
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
 OBJECT_MODE=64
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel --enable-install-thirdparty >> ../../buildlog 2>&1
 gmake -j 4 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
-mv visit\$ver2.aix64.tar.gz ../..
+gmake package >> ../../buildlog 2>&1
+mv visit\$ver2.ibm-aix-pwr64-xlc.tar.gz ../..
 cd ../..
 echo "        build of visit on purple"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
@@ -263,9 +263,9 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel --enable-install-thirdparty >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist >> ../../buildlog 2>&1
+make package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog

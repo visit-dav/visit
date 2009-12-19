@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(MDSERVER_MAIN_EXPORTS)
+# if __GNUC__ >= 4 && (defined(MDSMAIN_EXPORTS) || defined(mdserverproxy_EXPORTS))
 #   define MDSERVER_MAIN_API __attribute__ ((visibility("default")))
 # else
 #   define MDSERVER_MAIN_API /* hidden by default */

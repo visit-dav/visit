@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(ENGINE_RPC_EXPORTS)
+# if __GNUC__ >= 4 && (defined(ENGINE_RPC_EXPORTS) || defined (enginerpc_EXPORTS))
 #   define ENGINE_RPC_API __attribute__ ((visibility("default")))
 # else
 #   define ENGINE_RPC_API /* hidden by default */

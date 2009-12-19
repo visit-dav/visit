@@ -44,7 +44,7 @@ extern "C" {
 #endif
 
 #if defined(_WIN32)
-#ifdef REMOTE_COMMAND_EXPORTS
+#if defined(REMOTE_COMMAND_EXPORTS) || defined(remotecommand_EXPORTS)
 #define REMOTE_COMMAND_API __declspec(dllexport)
 #else
 #define REMOTE_COMMAND_API __declspec(dllimport)

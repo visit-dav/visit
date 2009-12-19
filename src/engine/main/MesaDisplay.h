@@ -40,6 +40,7 @@
 #define VISIT_MESA_DISPLAY_H
 
 #include <VisItDisplay.h>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class:  MesaDisplay
@@ -52,7 +53,7 @@
 //
 // ****************************************************************************
 
-class MesaDisplay : public VisItDisplay
+class ENGINE_MAIN_API MesaDisplay : public VisItDisplay
 {
   public:
                    MesaDisplay();

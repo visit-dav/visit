@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(AVTDDF_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTDDF_EXPORTS) || defined(avtddf_ser_EXPORTS) || defined(avtddf_par_EXPORTS))
 #   define AVTDDF_API __attribute__ ((visibility("default")))
 # else
 #   define AVTDDF_API /* hidden by default */

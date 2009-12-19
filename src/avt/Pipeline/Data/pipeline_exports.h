@@ -40,7 +40,7 @@
 #define PIPELINE_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(PIPELINE_EXPORTS) || defined(avtpipeline_ser_EXPORTS) || defined(avtpipeline_par_EXPORTS)
+#if defined(AVTPIPELINE_EXPORTS) || defined(avtpipeline_ser_EXPORTS) || defined(avtpipeline_par_EXPORTS)
 #define PIPELINE_API __declspec(dllexport)
 #else
 #define PIPELINE_API __declspec(dllimport)
@@ -68,7 +68,7 @@
 
 #endif
 #else
-# if __GNUC__ >= 4 && defined(PIPELINE_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTPIPELINE_EXPORTS) || defined(avtpipeline_ser_EXPORTS) || defined(avtpipeline_par_EXPORTS))
 #   define PIPELINE_API __attribute__ ((visibility("default")))
 # else
 #   define PIPELINE_API /* hidden by default */

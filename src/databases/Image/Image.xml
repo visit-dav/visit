@@ -26,6 +26,7 @@
     <Files components="E">
       vtkStimulateReader.C
       avtImageFileFormat.C
+      avtImageOptions.C
       avtImagePluginWriter.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">

@@ -1,1 +1,0 @@
-../../avt/VisWindow/Colleagues/VisWinLighting.h

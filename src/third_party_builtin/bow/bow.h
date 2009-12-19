@@ -150,7 +150,7 @@ void lib_quit_bow();
 #include "fwav.h"
 
 
-
+#include <bow_exports.h>
     
 #define BOWGLOBAL_ERROR_MAX 8
 
@@ -200,27 +200,27 @@ struct bowinfo_structdef {               /* information on bofs stored in bow */
 
 
 
-    bowglobal bowglobal_create(gzlib_alloctype my_alloc,
+    bowglobal BOW_API bowglobal_create(gzlib_alloctype my_alloc,
         gzlib_freetype my_free,void *opaque);
 
-    void bowglobal_destroy(bowglobal bg);
+    void BOW_API bowglobal_destroy(bowglobal bg);
 
-    int bof2bow(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
+    int BOW_API bof2bow(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
         int x0,int y0,int z0,float *vtab,float v0,float v1,float q,
         char **rbow,int *rbowsize);
 
-    float *bow2bof(bowglobal bg,char *bow,int bowi);
+    BOW_API float *  bow2bof(bowglobal bg,char *bow,int bowi);
 
-    bowinfo bow_getbowinfo(bowglobal bg,char *bow);
+    bowinfo BOW_API bow_getbowinfo(bowglobal bg,char *bow);
 
-    void bow_freebowinfo(bowglobal bg,bowinfo binf);
+    void BOW_API bow_freebowinfo(bowglobal bg,bowinfo binf);
 
-    char *bow_cat(bowglobal bg,int numbow,char **bowtab);
+    BOW_API char * bow_cat(bowglobal bg,int numbow,char **bowtab);
 
-    int bow_test(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
+    int BOW_API bow_test(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
         int x0,int y0,int z0,float *vsum,float v0,float v1,char *bow);
 
-    void bow_ntitab(bowglobal bg,int xs,int ys,int zs,int *ntab,int *rntimax);
+    void BOW_API bow_ntitab(bowglobal bg,int xs,int ys,int zs,int *ntab,int *rntimax);
 
 
 #endif

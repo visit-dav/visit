@@ -21,6 +21,9 @@
 #   main file loop to account for fact that FLIST file now includes file
 #   status chars as well as file name.
 #
+#   Kathleen Bonnell, Mon Jan 26 17:16:17 PST 2009
+#   Added windowsbuild/ThirdParty to the skip list.
+#
 #   Tom Fogal, Sun Mar 22 16:10:25 MST 2009
 #   I added a case for build_visit to be ignored.
 #
@@ -100,6 +103,9 @@ while read fline; do
             continue
             ;;
         *windowsbuild/script/*)
+            continue
+            ;;
+        *windowsbuild/ThirdParty/*)
             continue
             ;;
         *.bat)

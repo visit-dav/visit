@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(GUI_EXPORTS)
+# if __GNUC__ >= 4 && (defined(GUI_EXPORTS) || defined(gui_EXPORTS))
 #   define GUI_API __attribute__ ((visibility("default")))
 # else
 #   define GUI_API /* hidden by default */

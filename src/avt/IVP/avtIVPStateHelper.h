@@ -104,6 +104,7 @@ public:
         Accept(v.x);
         Accept(v.y);
         Accept(v.z);
+        return *this;
     }
     /*
     avtIVPStateHelper& Accept( avtVecArray& va )

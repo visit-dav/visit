@@ -1,6 +1,17 @@
 <?xml version="1.0"?>
   <Plugin name="Tetrad" label="Tetrad" type="database" dbtype="MTSD" version="1.0">
-    <Extensions> h5 hdf5 </Extensions>
-    <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
+    <Extensions> 
+      h5 
+      hdf5 
+    </Extensions>
+    <CXXFLAGS> 
+      ${HDF5_INCLUDE_DIR} 
+    </CXXFLAGS>
+    <LDFLAGS>  
+      ${HDF5_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS>     
+      ${HDF5_LIB} 
+      ${ZLIB_LIB} 
+    </LIBS>
   </Plugin>

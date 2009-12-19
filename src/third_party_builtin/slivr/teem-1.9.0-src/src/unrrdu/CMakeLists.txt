@@ -1,0 +1,61 @@
+ADD_LIBRARY(unrrdu
+  1op.c
+  2op.c
+  3op.c
+  about.c
+  env.c
+  axdelete.c
+  axinfo.c
+  axinsert.c
+  axmerge.c
+  axsplit.c
+  block.c
+  ccadj.c
+  ccfind.c
+  ccmerge.c
+  ccsettle.c
+  cmedian.c
+  convert.c
+  crop.c
+  data.c
+  dhisto.c
+  dice.c
+  flip.c
+  flotsam.c
+  gamma.c
+  head.c
+  heq.c
+  histax.c
+  histo.c
+  imap.c
+  inset.c
+  jhisto.c
+  join.c
+  lut.c
+  lut2.c
+  make.c
+  minmax.c
+  mlut.c
+  mrmap.c
+  pad.c
+  permute.c
+  project.c
+  quantize.c
+  resample.c
+  reshape.c
+  rmap.c
+  save.c
+  shuffle.c
+  slice.c
+  splice.c
+  subst.c
+  swap.c
+  tile.c
+  unblock.c
+  unorient.c
+  unquantize.c
+  untile.c
+)
+
+TARGET_LINK_LIBRARIES(unrrdu nrrd biff hest air)
+VISIT_INSTALL_TARGETS(unrrdu)

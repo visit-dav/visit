@@ -5,10 +5,12 @@
     </Extensions>
     <Files components="M">
       avtMFIXFileFormat.C
+      avtMFIXOptions.C
       vtkMFIXReader.C
     </Files>
     <Files components="E">
       avtMFIXFileFormat.C
+      avtMFIXOptions.C
       vtkMFIXReader.C
     </Files>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">

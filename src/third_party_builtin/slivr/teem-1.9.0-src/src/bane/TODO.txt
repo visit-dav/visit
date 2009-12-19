@@ -1,0 +1,25 @@
+make all the constants that GKMSInit sets be global defaults, so that
+gkms can see them too.
+
+--- Teem1.5 cutoff ---
+
+generate string representations of inclusion strategies (unparse them),
+and save these as comments in the histovolume, and save all other gkms
+parameters in generated nrrds
+
+make sure that the NUM_PARM_MAX values are correct
+
+when 6pack filtering is in gage, support it in bane
+
+use airMop
+
+after regular and irregular maps are finished and debugged in nrrd,
+they should be used for opacity function calculation from boundary
+emphasis function control points
+
+make new range called "baneRangeValCent" which is values conceptually
+centered around some background value, which isn't necessarily zero,
+and store that value in the baneRange struct itself.
+
+the hard part:
+- use gage for multi-modal data, making a 4D histogram volume

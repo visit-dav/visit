@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(WINUTIL_EXPORTS)
+# if __GNUC__ >= 4 && (defined(WINUTIL_EXPORTS) || defined(winutil_EXPORTS))
 #   define WINUTIL_API __attribute__ ((visibility("default")))
 # else
 #   define WINUTIL_API /* hidden by default */

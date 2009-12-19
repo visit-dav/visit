@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <avtGLEWInitializer.h>
+#include <GL/gl.h>
 
 #include "vtkVisItMesaPolyDataMapper.h"
 #include "vtkRenderWindow.h"
@@ -40,6 +41,6 @@
 #define vtkVisItOpenGLPolyDataMapper vtkVisItMesaPolyDataMapper
 #include "vtkVisItOpenGLPolyDataMapper.C"
 #undef vtkVisItOpenGLPolyDataMapper
-
+#undef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkVisItMesaPolyDataMapper, "$Revision: 1.12 $");
 vtkStandardNewMacro(vtkVisItMesaPolyDataMapper);

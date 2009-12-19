@@ -1,1 +1,0 @@
-../../avt/Math/avtBezierSegment.h

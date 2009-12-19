@@ -9099,6 +9099,7 @@ PFNWGLSWAPBUFFERSMSCOMLPROC __wglewSwapBuffersMscOML = NULL;
 PFNWGLSWAPLAYERBUFFERSMSCOMLPROC __wglewSwapLayerBuffersMscOML = NULL;
 PFNWGLWAITFORMSCOMLPROC __wglewWaitForMscOML = NULL;
 PFNWGLWAITFORSBCOMLPROC __wglewWaitForSbcOML = NULL;
+GLboolean __WGLEW_core_api = GL_FALSE;
 GLboolean __WGLEW_3DFX_multisample = GL_FALSE;
 GLboolean __WGLEW_3DL_stereo_control = GL_FALSE;
 GLboolean __WGLEW_AMD_gpu_association = GL_FALSE;

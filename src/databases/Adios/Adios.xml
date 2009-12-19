@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="Adios" type="database" label="Adios" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
     <CXXFLAGS>
-      $(ADIOS_INCLUDE)
+      $(ADIOS_INCLUDE_DIR)
     </CXXFLAGS>
     <LDFLAGS>
-      $(ADIOS_LIB)
+      $(ADIOS_LIBRARY_DIR)
     </LDFLAGS>
     <Extensions>
       bp

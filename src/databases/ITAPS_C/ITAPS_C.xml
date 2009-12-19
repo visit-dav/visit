@@ -4,17 +4,27 @@
      must be formatted as single lines so that configure
      can perform the necessary sed substitutions. -->
     <Extensions> cub </Extensions>
-    <CXXFLAGS> -DITAPS_C $(ITAPS_C_INCLUDE) </CXXFLAGS>
-    <LIBS> $(ITAPS_C_LIB) </LIBS>
+    <CXXFLAGS>
+       -DITAPS_C
+       ${ITAPS_C_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+       ${ITAPS_C_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+       $(ITAPS_C_LIB)
+    </LIBS>
     <Files components="M">
       avtITAPS_CFileFormat.C
       avtITAPS_CUtility.C
       avtITAPS_CWriter.C
+      avtITAPS_COptions.C
     </Files>
     <Files components="E">
       avtITAPS_CFileFormat.C
       avtITAPS_CUtility.C
       avtITAPS_CWriter.C
+      avtITAPS_COptions.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true">
     </Attribute>

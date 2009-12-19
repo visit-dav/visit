@@ -40,7 +40,7 @@
 #define VISITPY_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef VISITPY_EXPORTS
+#if defined(VISITPY_EXPORTS) || defined(visitpy_EXPORTS)
 #define VISITPY_API __declspec(dllexport)
 #else
 #define VISITPY_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(VISITPY_EXPORTS)
+# if __GNUC__ >= 4 && (defined(VISITPY_EXPORTS) || defined(visitpy_EXPORTS))
 #   define VISITPY_API __attribute__ ((visibility("default")))
 # else
 #   define VISITPY_API /* hidden by default */

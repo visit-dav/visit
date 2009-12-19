@@ -1,1 +1,0 @@
-../../common/plugin/OperatorPluginInfo.h

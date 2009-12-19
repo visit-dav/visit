@@ -1,0 +1,117 @@
+
+get back verbose IO messages about fread-vs-directIO
+
+call fflush(file) before airDioTest() ? 
+remove calls to nrrdPeripheral*: starting at apply1D.c
+line 398 histogram.c - finish that thought
+sampleUnits map to histogram axis with all things histo
+
+enable imagemagick-style format flagging on filenames ("PNM:-"),
+thereby obviating "unu save -f pnm" steps in pipes to standard out 
+
+support TIFF format
+support Analyze format
+support FITS format
+
+to expand multiple-format handling: in nrrdRead(), generalize
+_nrrdOneLine to some more generation _nrrdReadStart, which puts some
+portion of the read file into nio.  Th various formats' readTest()
+methods need to look at that content, possibly reading in more of the
+file, in order to see if they will accept the file one of their own.
+The nrrdFormatAll array (or whatever its been renamed to) may need some
+care in how the formats are ordered, so that if a given filename could
+belong to more than one format (for writing) or if the initial content
+of a filename could be in more than one format (for reading), then 
+perhaps the ordering of nrrdFormatAll would impose some preferential
+ordering on the formats.
+
+unu heq should not DIE if min==max, it should just be a no-op.
+unu heq -s 2 shouldn't DIE if there are only 2 bins with any hits
+
+follow heq with clamp so that there's no value wrap-around
+(noticed this with unu heq -a -1)
+
+test working with nout==nin
+nrrdContentSet
+nrrdConvert
+nrrdQuantize
+nrrdUnquantize
+
+test regular and irregular colormaps with only 2 points, purify unu
+{lut, rmap, imap} with scalar and nonscalar, type same and different
+than map type.
+
+check resampler getting info with NULL kernel on each axis
+(bug that Joe and I had with qbert when no resmapling was needed)
+
+write a select() function to replace qsort() in median calculation
+
+be sure to test all non-boolean state/default variables
+
+add one-line descriptions to function declarations in nrrd.h
+
+fftw integration!!
+
+2D rmaps
+
+see if the use of airSinglePrintf in accessors.c, with %.8g or whatever,
+is really the right thing to do in the most general case
+
+see which of the nrrdDef* variables are actually used, but this
+is harder than just grepping through files for the nrrdDef* name;
+you have to see where the variable is used that initially is set
+to the nrrdDef* value.
+
+Bricking!
+
+kernels: teach them their derivatives, or if they are derivatives,
+and how accurate they are.  Perhaps kernels don't actually belong in nrrd.
+
+split?  (reverse of join)
+
+clarify and document all IO stuff
+
+other encodings- base 85
+
+no other big things for nrrd planned...
+
+----- Teem 1.7 cut-off -----
+
+test suite
+
+make movies from volumes of RGB
+
+make nrrdDescribe() a little prettier
+
+create textual representation of resampling parameters
+
+revisit resampler, one last time
+go through all functions to:
+- determine when nin can == nout
+- pass "content" correctly
+- make sure content adjustment agrees with unrrdu
+
+try setting NRRD_DIM_MAX to 2 or 3 and doing lots of unrrdu stuff
+
+determine which of the things below should be transferred to rules.txt
+
+verify behavior WRT min/max/center:
+  reorder.c, measr.c, histogram.c, map.c, arith.c, filt.c
+verify behavior WRT blocks:
+  all
+verify that all axis and nrrd fields are accounted for
+  all functions making a "nout" from a "nin"
+ 
+debug and scrutinize current implementation of all "nhdr" related behavior
+
+clarify policy regarding when data in the nrrd will be free()ed
+
+determine a consistent policy regarding assumptions and expections
+surrounding use of the min and max fields, perhaps also oldMin and oldMax
+
+try to enforce the policy that variables which exist solely to be
+a local copy of values in nrrds should be **eliminated**.  This
+simplifies understanding how a procedure works.
+
+where does nrrd check to see it got a reasonable axis size,
+how and when does nrrd set the default size to 0

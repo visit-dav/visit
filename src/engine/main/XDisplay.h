@@ -40,6 +40,7 @@
 #define VISIT_X_DISPLAY_H
 
 #include <VisItDisplay.h>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class:  XDisplay
@@ -53,7 +54,7 @@
 //
 // ****************************************************************************
 
-class XDisplay : public VisItDisplay
+class ENGINE_MAIN_API XDisplay : public VisItDisplay
 {
   public:
                    XDisplay();

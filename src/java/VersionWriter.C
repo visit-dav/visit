@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 #include <stdio.h>
-#include <visit-config.h>
+#include <string>
 
 // ****************************************************************************
 // Function: main
@@ -52,18 +52,41 @@
 // Creation:   Wed Aug 21 12:24:23 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 19 16:44:51 PST 2009
+//   Get the input and output file from the command line.
+//
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
     FILE *fp = NULL;
-    const char *ver = VISIT_VERSION;
     int i, reached_end = 0, retval = 1;
 
+    if(argc != 3)
+    {
+        fprintf(stderr, "Usage: %s versionfile outputfile\n", argv[0]);
+        return -1;
+    }
+
+    std::string ver("2.0");
+    if((fp = fopen(argv[1], "rt")) != NULL)
+    {
+        char s[2] = {'\0', '\0'};
+        ver = "";
+        while(!feof(fp))
+        {
+            s[0] = (char)fgetc(fp);
+            if(s[0] != '\n')
+                ver += s;
+            else
+                break;
+        }
+        fclose(fp);
+    }
+        
     // Open the file and write the Java class.
-    if((fp = fopen("Version.java", "wb")) != NULL)
+    if((fp = fopen(argv[2], "wt")) != NULL)
     {
         printf("Writing Version.java\n");
         fprintf(fp, "package llnl.visit;\n");

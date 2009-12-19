@@ -1,1 +1,0 @@
-../../viewer/main/ViewerQueryManager.h

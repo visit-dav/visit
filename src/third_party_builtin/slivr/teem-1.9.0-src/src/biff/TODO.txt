@@ -1,0 +1,8 @@
+*** fix memory-in-use problem after a biffGetDone()
+
+biffDisable()
+
+allow more flexibility in logging- not just strings, but ints, or both
+make this all thread safe- the "keys" that are used should somehow
+ be make specific to a given thread, 
+ or at least this specificity should be enabled at caller's request

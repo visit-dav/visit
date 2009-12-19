@@ -46,147 +46,12 @@
 //    Qt 4. Use QTextStream.
 //
 // ****************************************************************************
-#include <QString>
-#include <QTextStream>
-QTextStream cOut(stdout), cErr(stderr);
-QString Endl("\n");
-
-#include <qxml.h>
-#include "Field.h"
-#include "Attribute.h"
-#include "Enum.h"
-#include "Plugin.h"
-
-#include <BJHash.h>
-#include <stdio.h>
-#ifndef WIN32
-#include <unistd.h>
-#endif
-
-vector<EnumType*> EnumType::enums;
-
-bool print   = true;
-bool clobber = false;
-bool installpublic  = false;
-bool installprivate = false;
-bool outputtoinputdir = false;
-QString currentInputDir = "";
-QString preHeaderLeader = "pre_";
-
-const char *copyright_str = 
-"/*****************************************************************************\n"
-"*\n"
-"* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC\n"
-"* Produced at the Lawrence Livermore National Laboratory\n"
-"* LLNL-CODE-400124\n"
-"* All rights reserved.\n"
-"*\n"
-"* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The\n"
-"* full copyright notice is contained in the file COPYRIGHT located at the root\n"
-"* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.\n"
-"*\n"
-"* Redistribution  and  use  in  source  and  binary  forms,  with  or  without\n"
-"* modification, are permitted provided that the following conditions are met:\n"
-"*\n"
-"*  - Redistributions of  source code must  retain the above  copyright notice,\n"
-"*    this list of conditions and the disclaimer below.\n"
-"*  - Redistributions in binary form must reproduce the above copyright notice,\n"
-"*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the\n"
-"*    documentation and/or other materials provided with the distribution.\n"
-"*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may\n"
-"*    be used to endorse or promote products derived from this software without\n"
-"*    specific prior written permission.\n"
-"*\n"
-"* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"\n"
-"* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE\n"
-"* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE\n"
-"* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,\n"
-"* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY\n"
-"* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL\n"
-"* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR\n"
-"* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER\n"
-"* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT\n"
-"* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY\n"
-"* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH\n"
-"* DAMAGE.\n"
-"*\n"
-"*****************************************************************************/\n";
-
-const char *java_copyright_str = 
-"// ***************************************************************************\n"
-"//\n"
-"// Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC\n"
-"// Produced at the Lawrence Livermore National Laboratory\n"
-"// LLNL-CODE-400124\n"
-"// All rights reserved.\n"
-"//\n"
-"// This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The\n"
-"// full copyright notice is contained in the file COPYRIGHT located at the root\n"
-"// of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.\n"
-"//\n"
-"// Redistribution  and  use  in  source  and  binary  forms,  with  or  without\n"
-"// modification, are permitted provided that the following conditions are met:\n"
-"//\n"
-"//  - Redistributions of  source code must  retain the above  copyright notice,\n"
-"//    this list of conditions and the disclaimer below.\n"
-"//  - Redistributions in binary form must reproduce the above copyright notice,\n"
-"//    this  list of  conditions  and  the  disclaimer (as noted below)  in  the\n"
-"//    documentation and/or other materials provided with the distribution.\n"
-"//  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may\n"
-"//    be used to endorse or promote products derived from this software without\n"
-"//    specific prior written permission.\n"
-"//\n"
-"// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"\n"
-"// AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE\n"
-"// IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE\n"
-"// ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,\n"
-"// LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY\n"
-"// DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL\n"
-"// DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR\n"
-"// SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER\n"
-"// CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT\n"
-"// LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY\n"
-"// OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH\n"
-"// DAMAGE.\n"
-"//\n"
-"// ***************************************************************************\n";
-
-#ifdef TEST_ONLY
-#endif
-#ifdef GENERATE_ATTS
-#include "GenerateAtts.h"
-#endif
-#ifdef GENERATE_WINDOW
-#include "GenerateWindow.h"
-#endif
-#ifdef GENERATE_INFO
-#include "GenerateInfo.h"
-#endif
-#ifdef GENERATE_MAKEFILE
-#include "GenerateMakefile.h"
-#endif
-#ifdef GENERATE_AVT
-#include "GenerateAVT.h"
-#endif
-#ifdef GENERATE_PYTHON
-#include "GeneratePython.h"
-#endif
-#ifdef GENERATE_JAVA
-#include "GenerateJava.h"
-#endif
-#ifdef GENERATE_PROJECTFILE
-bool generateVersion7Projects = true;
-  #ifdef _WIN32
-    bool buildforvisitsource = false;
-    QString fullVisItDir = "";
-    QString fullCurrentDir = "";
-    QString privatePluginDir = "";
-  #endif
-#include "GenerateProjectFile.h"
-#endif
 
 #include "XMLParser.h"
 
+// Prototypes
+void CallGenerator(const QString &docType, Attribute *att, Plugin *plugin, const QString & file);
+void ProcessFile(QString file);
 
 // ***************************************************************************
 //  Function: Die
@@ -219,17 +84,14 @@ PrintUsage(const char *prog)
     cErr << "    options:" << Endl;
     cErr << "        -clobber       overwrite old files if possible" << Endl;
     cErr << "        -noprint       no debug output" << Endl;
-    cErr << "        -public        (xml2makefile only) install publicly" 
+    cErr << "        -public        (xml2makefile/xml2cmake only) install publicly" 
          << Endl;
-    cErr << "        -private       (xml2makefile only) install privately" 
+    cErr << "        -private       (xml2makefile/xml2cmake only) install privately" 
          << Endl;
     cErr << "        -outputtoinputdir  store results in same location as "
          << ".xml file" << Endl;
-#ifdef GENERATE_PROJECTFILE
-    cErr << "        -version7      (xml2projectfile only) make MSVC .Net "
-         << "2003 projects (default)" << Endl;
-    cErr << "        -version8      (xml2projectfile only) COMING SOON "
-          << "make MSVC 2005 projects " << Endl;
+#ifdef EXTRA_PRINTUSAGE
+    ExtraPrintUsage();
 #endif
 }
 
@@ -438,8 +300,6 @@ CloseHeader(QTextStream &file, const QString &pre_name_withoutpath)
     }
 }
 
-void ProcessFile(QString file);
-
 // ****************************************************************************
 //  Function:  main
 //
@@ -531,6 +391,13 @@ void ProcessFile(QString file);
 //    Kathleen Bonnell, Thu Apr 17 09:55:07 PDT 2008
 //    Remove -version6 (no longer supported), add -version8 (coming soon).
 //
+//    Brad Whitlock, Thu Jan 29 16:36:08 PST 2009
+//    I moved special argument handling into the HandleArgv function.
+//
+//    Brad Whitlock, Mon Dec 14 12:16:27 PDT 2009
+//    I added -dv so we can have it behave differently when installed vs
+//    not installed.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -540,6 +407,10 @@ int main(int argc, char *argv[])
         PrintUsage(argv[0]);
         exit(1);
     }
+
+#ifdef HANDLE_ARGV
+    HandleArgv(argc, argv);
+#endif
 
     for (int i=1; i<argc; i++)
     {
@@ -575,27 +446,17 @@ int main(int argc, char *argv[])
                 argv[j] = argv[j+1];
             i--;
         }
-#ifdef GENERATE_PROJECTFILE
-        else if (strcmp(argv[i], "-version7") == 0)
-        {
-            generateVersion7Projects = true;
-            argc--;
-            for (int j=i; j<argc; j++)
-                argv[j] = argv[j+1];
-            i--;
-        }
-        else if (strcmp(argv[i], "-version8") == 0)
-        {
-            generateVersion7Projects = false;
-            argc--;
-            for (int j=i; j<argc; j++)
-                argv[j] = argv[j+1];
-            i--;
-        }
-#endif
         else if (strcmp(argv[i], "-outputtoinputdir") == 0)
         {
             outputtoinputdir = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+        else if (strcmp(argv[i], "-dv") == 0)
+        {
+            using_dev = true;
             argc--;
             for (int j=i; j<argc; j++)
                 argv[j] = argv[j+1];
@@ -648,6 +509,9 @@ int main(int argc, char *argv[])
 //    Cyrus Harrison, Wed Oct  1 10:34:01 PDT 2008
 //    Use "Die" on fatal error.
 //
+//    Brad Whitlock, Thu Jan 29 16:24:59 PST 2009
+//    I moved all of the code into routines called CallGenerator.
+//
 // ****************************************************************************
 
 void
@@ -689,11 +553,6 @@ ProcessFile(QString file)
             attribute = parser.attribute;
         else if(plugin != NULL)
             attribute = plugin->atts;
-
-#ifndef GENERATE_MAKEFILE
-        if(attribute == NULL && plugin->type != "database")
-            throw "Cannot generate code for this XML file.";
-#endif
     }
     catch (const char *s)
     {
@@ -733,9 +592,15 @@ ProcessFile(QString file)
                 cOut << Endl;
             }
             if (docType == "Plugin")
-                plugin->Print(cOut);
+            {
+                if(plugin != NULL)
+                    plugin->Print(cOut);
+            }
             else if (docType == "Attribute")
-                attribute->Print(cOut);
+            {
+                if(attribute != NULL)
+                    attribute->Print(cOut);
+            }
             else
             {
                 cErr << "Document type "
@@ -746,386 +611,7 @@ ProcessFile(QString file)
             cOut << Endl;
         }
 
-#ifdef GENERATE_ATTS
-        if (docType == "Plugin" && plugin->type == "database")
-        {
-            cErr << "No attributes to generate for database plugins\n";
-        }
-        else
-        {
-            // atts writer mode
-            QFile *fh;
-            if ((fh = Open("pre_"+attribute->name+".h")) != 0)
-            {
-                QTextStream h(fh);
-                attribute->WriteHeader(h);
-                CloseHeader(h, "pre_"+attribute->name+".h");
-            }
-
-            QFile *fc;
-            if ((fc = Open(attribute->name+".C")) != 0)
-            {
-                QTextStream c(fc);
-                attribute->WriteSource(c);
-                fc->close();
-                delete fc;
-            }
-        }
-#endif
-#ifdef GENERATE_WINDOW
-        if (docType == "Plugin" && plugin->type == "database")
-        {
-            cErr << "No window to generate for database plugins\n";
-        }
-        else
-        {
-            // window writer mode
-            if (docType == "Plugin")
-            {
-                attribute->windowname = plugin->windowname;
-                attribute->plugintype = plugin->type;
-            }
-
-            QFile *fh;
-            if ((fh = Open("pre_"+attribute->windowname+".h")) != 0)
-            {
-                QTextStream h(fh);
-                attribute->WriteHeader(h);
-                CloseHeader(h, "pre_"+attribute->windowname+".h");
-            }
-
-            QFile *fc;
-            if ((fc = Open(attribute->windowname+".C")) != 0)
-            {
-                QTextStream c(fc);
-                attribute->WriteSource(c);
-                fc->close();
-                delete fc;
-            }
-        }
-#endif
-#ifdef GENERATE_INFO
-        // info writer mode
-        if (docType == "Plugin" && plugin->type == "database")
-        {
-            QFile *fih;
-            if ((fih = Open(plugin->name+"PluginInfo.h")) != 0)
-            {
-                QTextStream ih(fih);
-                plugin->WriteInfoHeader(ih);
-                fih->close();
-                delete fih;
-            }
-
-            QFile *fic;
-            if ((fic = Open(plugin->name+"PluginInfo.C")) != 0)
-            {
-                QTextStream ic(fic);
-                plugin->WriteInfoSource(ic);
-                fic->close();
-                delete fic;
-            }
-
-            QFile *fcc;
-            if ((fcc = Open(plugin->name+"CommonPluginInfo.C")) != 0)
-            {
-                QTextStream cc(fcc);
-                plugin->WriteCommonInfoSource(cc);
-                fcc->close();
-                delete fcc;
-            }
-
-            QFile *fmc;
-            if ((fmc = Open(plugin->name+"MDServerPluginInfo.C")) != 0)
-            {
-                QTextStream mc(fmc);
-                plugin->WriteMDServerInfoSource(mc);
-                fmc->close();
-                delete fmc;
-            }
-
-            QFile *fec;
-            if ((fec = Open(plugin->name+"EnginePluginInfo.C")) != 0)
-            {
-                QTextStream ec(fec);
-                plugin->WriteEngineInfoSource(ec);
-                fec->close();
-                delete fec;
-            }
-        }
-        else
-        {
-            QFile *fih;
-            if ((fih = Open(plugin->name+"PluginInfo.h")) != 0)
-            {
-                QTextStream ih(fih);
-                plugin->WriteInfoHeader(ih);
-                fih->close();
-                delete fih;
-            }
-
-            QFile *fic;
-            if ((fic = Open(plugin->name+"PluginInfo.C")) != 0)
-            {
-                QTextStream ic(fic);
-                plugin->WriteInfoSource(ic);
-                fic->close();
-                delete fic;
-            }
-
-            QFile *fcc;
-            if ((fcc = Open(plugin->name+"CommonPluginInfo.C")) != 0)
-            {
-                QTextStream cc(fcc);
-                plugin->WriteCommonInfoSource(cc);
-                fcc->close();
-                delete fcc;
-            }
-
-            QFile *fgc;
-            if ((fgc = Open(plugin->name+"GUIPluginInfo.C")) != 0)
-            {
-                QTextStream gc(fgc);
-                plugin->WriteGUIInfoSource(gc);
-                fgc->close();
-                delete fgc;
-            }
-
-            QFile *fvc;
-            if ((fvc = Open(plugin->name+"ViewerPluginInfo.C")) != 0)
-            {
-                QTextStream vc(fvc);
-                plugin->WriteViewerInfoSource(vc);
-                fvc->close();
-                delete fvc;
-            }
-
-            QFile *fec;
-            if ((fec = Open(plugin->name+"EnginePluginInfo.C")) != 0)
-            {
-                QTextStream ec(fec);
-                plugin->WriteEngineInfoSource(ec);
-                fec->close();
-                delete fec;
-            }
-
-            QFile *fsc;
-            if ((fsc = Open(plugin->name+"ScriptingPluginInfo.C")) != 0)
-            {
-                QTextStream sc(fsc);
-                plugin->WriteScriptingInfoSource(sc);
-                fsc->close();
-                delete fsc;
-            }
-        }
-#endif
-#ifdef GENERATE_MAKEFILE
-        // makefile writer mode
-        QFile *fout;
-        if ((fout = Open("Makefile")) != 0)
-        {
-            QTextStream out(fout);
-            plugin->WriteMakefile(out);
-            fout->close();
-            delete fout;
-        }
-#endif
-#ifdef GENERATE_AVT
-        if (docType == "Plugin" && plugin->type == "database")
-        {
-            // avt writer mode
-            QFile *ffh;
-            if ((ffh = Open(QString("avt") + plugin->name + "FileFormat.h")) != 0)
-            {
-                QTextStream fh(ffh);
-                plugin->WriteFileFormatReaderHeader(fh);
-                ffh->close();
-                delete ffh;
-            }
-
-            QFile *ffc;
-            if ((ffc = Open(QString("avt") + plugin->name + "FileFormat.C")) != 0)
-            {
-                QTextStream fc(ffc);
-                plugin->WriteFileFormatReaderSource(fc);
-                ffc->close();
-                delete ffc;
-            }
-
-            if (plugin->haswriter)
-            {
-                // avt writer mode
-                QFile *fwh;
-                if ((fwh = Open(QString("avt") + plugin->name + "Writer.h")) != 0)
-                {
-                    QTextStream wh(fwh);
-                    plugin->WriteFileFormatWriterHeader(wh);
-                    fwh->close();
-                    delete fwh;
-                }
-
-                QFile *fwc;
-                if ((fwc = Open(QString("avt") + plugin->name + "Writer.C")) != 0)
-                {
-                    QTextStream wc(fwc);
-                    plugin->WriteFileFormatWriterSource(wc);
-                    fwc->close();
-                    delete fwc;
-                }
-            }
-            if (plugin->hasoptions)
-            {
-                // DB options mode.
-                QFile *fwh;
-                if ((fwh = Open(QString("avt") + plugin->name + "Options.h")) != 0)
-                {
-                    QTextStream wh(fwh);
-                    plugin->WriteFileFormatOptionsHeader(wh);
-                    fwh->close();
-                    delete fwh;
-                }
-
-                QFile *fwc;
-                if ((fwc = Open(QString("avt") + plugin->name + "Options.C")) != 0)
-                {
-                    QTextStream wc(fwc);
-                    plugin->WriteFileFormatOptionsSource(wc);
-                    fwc->close();
-                    delete fwc;
-                }
-            }
-        }
-        else
-        {
-            // avt filters
-            QFile *ffh;
-            if ((ffh = Open(QString("avt") + plugin->name + "Filter.h")) != 0)
-            {
-                QTextStream fh(ffh);
-                plugin->WriteFilterHeader(fh);
-                ffh->close();
-                delete ffh;
-            }
-
-            QFile *ffc;
-            if ((ffc = Open(QString("avt") + plugin->name + "Filter.C")) != 0)
-            {
-                QTextStream fc(ffc);
-                plugin->WriteFilterSource(fc);
-                ffc->close();
-                delete ffc;
-            }
-
-            if (plugin->type=="plot")
-            {
-                QFile *fph;
-                if ((fph = Open(QString("avt") + plugin->name + "Plot.h")) != 0)
-                {
-                    QTextStream ph(fph);
-                    plugin->WritePlotHeader(ph);
-                    fph->close();
-                    delete fph;
-                }
-
-                QFile *fpc;
-                if ((fpc = Open(QString("avt") + plugin->name + "Plot.C")) != 0)
-                {
-                    QTextStream pc(fpc);
-                    plugin->WritePlotSource(pc);
-                    fpc->close();
-                    delete fpc;
-                }
-            }
-        }
-#endif
-#ifdef GENERATE_PYTHON
-        if (docType == "Plugin" && plugin->type == "database")
-        {
-            cErr << "No python to generate for database plugins\n";
-        }
-        else
-        {
-            // scripting writer mode
-            QString prefix("Py");
-            QFile *fh;
-            if ((fh = Open("pre_"+prefix+attribute->name+".h")) != 0)
-            {
-                QTextStream h(fh);
-
-                if (docType == "Plugin")
-                {
-                    plugin->WriteHeader(h);
-                }
-                else 
-                {
-                    attribute->WriteHeader(h);
-                }
-                CloseHeader(h, "pre_"+prefix+attribute->name+".h");
-            }
-
-            QFile *fs;
-            if ((fs = Open(prefix+attribute->name+".C")) != 0)
-            {
-                QTextStream s(fs);
-                attribute->WriteSource(s);
-                fs->close();
-                delete fs;
-            }
-        }
-#endif
-#ifdef GENERATE_JAVA
-        if (docType == "Plugin" && plugin->type == "database")
-        {
-            cErr << "No java to generate for database plugins\n";
-        }
-        else
-        {
-            if (docType == "Plugin")
-            {
-                attribute->pluginVersion = plugin->version;
-                attribute->pluginName = plugin->name;
-                attribute->pluginType = plugin->type;
-            }
-
-            // java atts writer mode
-            QFile *fj;
-            if ((fj = Open(attribute->name+".java")) != 0)
-            {
-                QTextStream j(fj);
-                attribute->WriteSource(j);
-                fj->close();
-                delete fj;
-            }
-        }
-#endif
-#ifdef GENERATE_PROJECTFILE
-        if (docType == "Plugin")
-        {
-  #ifdef _WIN32
-            // find full path to this executable
-            fullVisItDir = "";
-            char *tmp = new char[MAX_PATH];
-            if (GetModuleFileName(NULL, tmp, 100) != 0)
-            {
-                fullVisItDir = tmp;
-                int lastslash = fullVisItDir.lastIndexOf("\\");
-                if (lastslash >= 0)
-                    fullVisItDir = fullVisItDir.left(lastslash+1);
-            }
-            // find full path to file
-            if (GetFullPathName(file.toStdString().c_str(), 100, tmp, NULL) > 0)
-            {
-                fullCurrentDir = tmp;
-            }
-  #endif
-            // project file writer mode
-            plugin->WriteProjectFiles(Open, generateVersion7Projects);
-        }
-        else
-        {
-            cErr << "No project files to generate for non-plugins." << Endl;
-        }
-#endif
+        CallGenerator(docType, attribute, plugin, file);
 
         cOut.flush();
         cErr.flush();

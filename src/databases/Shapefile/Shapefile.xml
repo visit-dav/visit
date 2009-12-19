@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="Shapefile" type="database" label="ESRI Shapefile" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
+    <CXXFLAGS>
+      ${MESA_INCLUDE_DIR}
+    </CXXFLAGS>
     <LIBS>
-      -lGLU
+      ${OPENGL_glu_LIBRARY}
     </LIBS>
     <Extensions>
       shp
@@ -10,11 +13,13 @@
     </Extensions>
     <Files components="M">
       avtShapefileFileFormat.C
+      avtShapefileOptions.C
       esriShapefile.C
       dbfFile.C
     </Files>
     <Files components="E">
       avtShapefileFileFormat.C
+      avtShapefileOptions.C
       esriShapefile.C
       dbfFile.C
     </Files>

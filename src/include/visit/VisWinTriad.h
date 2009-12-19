@@ -1,1 +1,0 @@
-../../avt/VisWindow/Colleagues/VisWinTriad.h

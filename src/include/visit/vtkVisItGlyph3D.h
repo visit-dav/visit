@@ -1,1 +1,0 @@
-../../visit_vtk/full/vtkVisItGlyph3D.h

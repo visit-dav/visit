@@ -42,8 +42,6 @@
 
 #include <avtTecplotWriter.h>
 
-#include <visit-config.h>
-
 #include <vector>
 
 #include <avtDatabaseMetaData.h>

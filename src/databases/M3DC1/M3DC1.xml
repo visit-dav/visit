@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
   <Plugin name="M3DC1" type="database" label="avtM3DC1" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" specifiedFilenames="false">
     <CXXFLAGS>
-      $(HDF5_INCLUDE)
+      ${HDF5_INCLUDE_DIR}
+      ${VISIT_INCLUDE_DIR}/avt/IVP
     </CXXFLAGS>
+    <LDFLAGS>
+      ${HDF5_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS>
-      $(HDF5_LIB)
-      $(ZLIB_LIB)
-      -lavtivp_ser
+      ${HDF5_LIB}
+      ${ZLIB_LIB}
+      avtivp
     </LIBS>
     <Extensions>
       h5

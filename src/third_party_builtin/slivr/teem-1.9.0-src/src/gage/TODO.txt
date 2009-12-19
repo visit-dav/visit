@@ -1,0 +1,15 @@
+add flags for explicitly specifying gmax, hmax, vrange
+
+------- Teem 1.5 cutoff ---------
+
+6pack filtering, adapt vector stuff
+
+change type of iv3Fill to take (int xi,int yi,int zi) instead of void
+*here; one step towards supporting bricking.
+
+test: two pervolumes with different sized volumes
+test: NRWS doing its job
+
+retest comparison of upsampling by probing and by unu resample
+
+make the curvature direction code (scl.c) more robust

@@ -1,0 +1,15 @@
+
+fix airSinglePrintf to not put a space before double-type special values
+("%4s" hack has to go)
+
+----- Teem 1.6 cut-off -----
+
+complete fprintf/sprintf/printf stand-in
+complete fscanf/sscanf stand-in
+
+arrays: make the integer function returns be more useful than just
+error indication, as in, when you increment an array, return the index
+of the first of the new elements now valid
+
+Decide if air will have a general-purpose thread-safe progress indication
+scheme, or if this will be each library's responsibility

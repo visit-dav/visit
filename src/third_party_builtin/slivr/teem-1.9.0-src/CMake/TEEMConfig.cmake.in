@@ -1,0 +1,36 @@
+#-----------------------------------------------------------------------------
+#
+# TEEMConfig.cmake - TEEM CMake configuration file for external projects.
+#
+# This file is configured by TEEM and used by the UseTEEM.cmake module
+# to load TEEM's settings for an external project.
+
+# The TEEM source tree.
+SET(TEEM_SOURCE_DIR "@TEEM_SOURCE_DIR@")
+
+# The TEEM include file directories.
+SET(TEEM_EXECUTABLE_DIRS "@TEEM_EXECUTABLE_DIRS@")
+SET(TEEM_LIBRARY_DIRS "@TEEM_LIBRARY_DIRS@")
+SET(TEEM_LIBRARIES "@TEEM_LIBRARIES@")
+SET(TEEM_INCLUDE_DIRS "@TEEM_INCLUDE_DIRS@")
+
+# The C flags added by TEEM to the cmake-configured flags.
+SET(TEEM_REQUIRED_C_FLAGS "@TEEM_REQUIRED_C_FLAGS@")
+
+# The TEEM version number
+SET(TEEM_VERSION_MAJOR "@TEEM_VERSION_MAJOR@")
+SET(TEEM_VERSION_MINOR "@TEEM_VERSION_MINOR@")
+SET(TEEM_VERSION_PATCH "@TEEM_VERSION_PATCH@")
+
+# Is TEEM using shared libraries?
+SET(TEEM_BUILD_SHARED_LIBS "@BUILD_SHARED_LIBS@")
+SET(TEEM_BUILD_SETTINGS_FILE "@TEEM_BUILD_SETTINGS_FILE@")
+
+# The location of the UseTEEM.cmake file.
+SET(TEEM_USE_FILE "@TEEM_USE_FILE@")
+
+# The ExodusII library dependencies.
+IF(NOT TEEM_NO_LIBRARY_DEPENDS)
+  INCLUDE("@TEEM_LIBRARY_DEPENDS_FILE@")
+ENDIF(NOT TEEM_NO_LIBRARY_DEPENDS)
+

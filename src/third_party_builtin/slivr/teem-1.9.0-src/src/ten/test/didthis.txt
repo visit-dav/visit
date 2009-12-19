@@ -1,0 +1,41 @@
+mkdir ps
+
+echo "1   0.8 0.8 0.8   -1 -1 -3" \
+ | emap -i - -fr 0 0 -1 -up 0 1 0 -rh -amb 0.2 0.2 0.2 -o emap.nrrd
+
+alias DOIT "unu reshape -s 7 9 9 3 3 | unu permute -p 0 1 3 2 4 | unu reshape -s 7 27 27 1 | unu pad -min 0 0 0 -1 -max M M M 1 -b pad -v 0 | tend glyph -sat 0.0 -wd 0.3 0.1 0 -gsc 0.06 -psc 260 -fr 0 0 -1 -up 0 1 0 -rh -ur -1.1 1.1 -vr -1.1 1.1 -or -atr 0 -emap emap.nrrd -g b -gr 6"
+
+alias DOIT "unu reshape -s 7 4 4 2 2 | unu permute -p 0 1 3 2 4 | unu reshape -s 7 8 8 1 | unu pad -min 0 0 0 -1 -max M M M 1 -b pad -v 0 | tend glyph -sat 0 -wd 0.3 0.1 0 -gsc 0.13 -psc 220 -fr 0 0 -1 -up 0 1 0 -rh -ur -1.2 1.2 -vr -1.2 1.2 -or -emap emap.nrrd -atr 0 -g q -gr 15"
+
+echo "0 0 0 0 0 0 0 0" \
+ | unu reshape -s 2 2 2 \
+ | unu resample -s 9 9 9 -o z.nrrd
+echo 1 \
+ | unu reshape -s 1 1 1 \
+ | unu inset -i z.nrrd -s - -min 7 4 4 -o mask.nrrd
+unu reshape -i mask.nrrd -s 1 9 9 3 3 \
+ | unu permute -p 0 1 3 2 4 \
+ | unu reshape -s 1 27 27 1 \
+ | unu pad -min 0 0 0 -1 -max M M M 1 -b pad -v 0 \
+ | unu axdelete -a 0 -o mask.nrrd
+
+test/tg -c 0.0300 0.0450 | DOIT -o ps/box00.ps
+test/tg -c 0.2333 0.0100 | DOIT -o ps/box10.ps
+test/tg -c 0.0100 0.2333 | DOIT -o ps/box01.ps
+test/tg -c 0.4666 0.0100 | DOIT -o ps/box20.ps
+test/tg -c 0.2333 0.2333 | DOIT -o ps/box11.ps
+test/tg -c 0.0100 0.4666 | DOIT -o ps/box02.ps
+test/tg -c 0.7000 0.0100 | DOIT -o ps/box30.ps
+test/tg -c 0.4666 0.2333 | DOIT -o ps/box21.ps
+test/tg -c 0.2333 0.4666 | DOIT -o ps/box12.ps
+test/tg -c 0.0100 0.7000 | DOIT -o ps/box03.ps
+
+rm -f z.nrrd mask.nrrd
+
+open ps/box00.ps ps/box10.ps ps/box01.ps \
+     ps/box20.ps ps/box11.ps ps/box02.ps \
+     ps/box30.ps ps/box21.ps ps/box12.ps ps/box03.ps
+
+
+
+

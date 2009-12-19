@@ -48,6 +48,7 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class: DataNetwork
@@ -112,7 +113,7 @@
 //    Add a variable field.
 //
 // ****************************************************************************
-class DataNetwork
+class ENGINE_MAIN_API DataNetwork
 {
 public:
              DataNetwork(void);

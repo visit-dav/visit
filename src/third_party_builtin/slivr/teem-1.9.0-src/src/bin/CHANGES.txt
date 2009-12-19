@@ -1,0 +1,6 @@
+Changes from 1.5beta0 -----------------------------------------------
+
+- INTERFACE CHANGE (unu.c): when you type "unu bcmd" where bcmd is not a
+recognized command, you don't get the whole unu command listing
+- INTERFACE CHANGE (gkms.c): completely re-written, now based on hest.
+All the functionality should still be there, and then some.

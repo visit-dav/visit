@@ -137,6 +137,9 @@
 //    Kathleen Bonnell, Wed Dec 17 15:23:05 MST 2008
 //    Change qt includes/libs to match QT 4.
 //
+//    Kathleen Bonnell, Wed May 27 9:05:15 MST 2009
+//    Added support for custom windows files for mdserver and engine.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin : public Plugin
@@ -616,6 +619,8 @@ protected:
             AddElements(srcFiles, efiles);
         else
             AddElements(srcFiles, defaultefiles);
+        if(customwefiles)
+            AddElements(srcFiles, wefiles);
 
         WriteProjectHelper(out, "plots", 'E', "ENGINE_PLUGIN_EXPORTS",
             "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib "
@@ -952,6 +957,9 @@ protected:
             AddElements(srcFiles, efiles);
         else
             AddElements(srcFiles, defaultefiles);
+
+        if(customwefiles)
+            AddElements(srcFiles, wefiles);
 
         WriteProjectHelper(out, "operators", 'E', "ENGINE_PLUGIN_EXPORTS",
             "state.lib misc.lib plugin.lib plotter.lib avtfilters.lib "
@@ -1312,6 +1320,11 @@ protected:
             {
                 for (size_t i=0; i<defaultmfiles.size(); i++)
                     srcFiles.push_back(defaultmfiles[i]);
+            }
+            if (customwmfiles)
+            {
+                for (size_t i=0; i<wmfiles.size(); i++)
+                    srcFiles.push_back(wmfiles[i]);
             }
             ThirdParty(tplibs, tpincs, tppreproc, version7);
         }

@@ -1,0 +1,47 @@
+setenv CAM "-fr 0 0 -30 -up 0 1 0 -rh"
+
+echo "1   1 1 1   -1 -1 -3" \
+ | emap -i - $CAM -o emap.nrrd
+
+alias DOIT tend glyph -rt -emap emap.nrrd -bg 0 0 0.15 -sat 0 $CAM \
+  -ur -1.2 1.2 -vr -0.9 0.9 -is 720 540 -or -atr 0 -ns 16
+
+test/tt -n 7 -p -0.45 0.2 -0.35 \
+ | DOIT -g b -gsc 0.23 \
+ | unu crop -min 0 0 0 -max 2 M M \
+ | unu quantize -b 8 -min 0 -max 1 -o tri-box.png &
+test/tt -n 7 -p -0.45 0.2 -0.35 \
+ | DOIT -g s -gsc 0.29 \
+ | unu crop -min 0 0 0 -max 2 M M \
+ | unu quantize -b 8 -min 0 -max 1 -o tri-sph.png &
+test/tt -n 7 -p -0.45 0.2 -0.35 \
+ | DOIT -g c -gsc 0.25 \
+ | unu crop -min 0 0 0 -max 2 M M \
+ | unu quantize -b 8 -min 0 -max 1 -o tri-cyl.png &
+test/tt -n 7 -p -0.45 0.2 -0.35 \
+ | DOIT -g q -gsc 0.27  -ns 1 \
+ | unu crop -min 0 0 0 -max 2 M M \
+ | unu quantize -b 8 -min 0 -max 1 -o tri-sqd.png
+
+
+
+echo "1   1 1 1   0 0 -4" \
+ | emap -i - $CAM -amb 0 0 0 -o tmp0.nrrd
+unu 2op ^ tmp0.nrrd 2 | unu 2op - 1 - | unu 2op x - 3.14159 | unu 1op cos \
+ | unu 2op + - 1 | unu 2op / - 2 -o tmp1.nrrd
+unu 3op lerp 1.0 tmp0.nrrd tmp1.nrrd -o emap.nrrd
+rm -f tmp0.nrrd tmp1.nrrd
+
+
+alias DOIT tend glyph -rt -emap emap.nrrd -bg 1 1 1 -sat 0 $CAM \
+  -ur -1.2 1.2 -vr -0.9 0.9 -is 720 540 -or -atr 0 -ns 16
+
+test/tt -n 7 -p -0.45 0.2 -0.35 -ca 0.6 \
+ | DOIT -g q -sh 4 -gsc 0.27 \
+ | unu crop -min 0 0 0 -max 2 M M \
+ | unu quantize -b 8 -min 0 -max 1 -o tri-sqd2.png
+
+unu pad -i tri-sqd2.png -min 0 0 -90 -max M M m+719 \
+ | unu gamma -g 1.4 -max 240 \
+ | unu quantize -b 8 -min 0 -max 240 -o tri-sqd2-pad.png
+

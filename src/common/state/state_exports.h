@@ -54,7 +54,7 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# if __GNUC__ >= 4 && defined(STATE_EXPORTS)
+# if __GNUC__ >= 4 && (defined(STATE_EXPORTS) || defined(visitcommon_EXPORTS))
 #   define STATE_API __attribute__ ((visibility("default")))
 # else
 #   define STATE_API /* hidden by default */

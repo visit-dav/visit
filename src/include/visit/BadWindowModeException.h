@@ -1,1 +1,0 @@
-../../avt/VisWindow/Exceptions/BadWindowModeException.h

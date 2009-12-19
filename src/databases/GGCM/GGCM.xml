@@ -5,6 +5,7 @@
     </Extensions>
 	<Files components="M">
 		avtGGCMFileFormat.C
+                avtGGCMOptions.C
 		ggcm_grid.C
 		ggcm_grid_gse.C
 		ggcm_field_matrix.C
@@ -14,6 +15,7 @@
 	</Files>
 	<Files components="E">
 		avtGGCMFileFormat.C
+                avtGGCMOptions.C
 		ggcm_grid.C
 		ggcm_grid_gse.C
 		ggcm_field_matrix.C

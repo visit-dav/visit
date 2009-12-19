@@ -276,7 +276,7 @@ import java.util.prefs.BackingStoreException;
  *   </p>
  * @author Brad Whitlock
  */
-public class ViewerProxy implements SimpleObserver
+public class ViewerProxy implements SimpleObserver, ProxyInterface
 {
     /**
      * Contructor for the ViewerProxy class. Basic initialization is performed.

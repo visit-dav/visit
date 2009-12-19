@@ -43,6 +43,7 @@
 #include <avtMesa3DTextureVolumeRenderer.h>
 
 #include <GL/gl_mangle.h>
+#include <GL/gl.h>
 
 #define avtOpenGL3DTextureVolumeRenderer avtMesa3DTextureVolumeRenderer
 #define VTK_IMPLEMENT_MESA_CXX

@@ -1,28 +1,31 @@
 <?xml version="1.0"?>
   <Plugin name="Volume" type="plot" label="Volume" version="1.1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Volume.xpm">
     <CXXFLAGS>
-      $(SLIVR_INCLUDE)
-      $(GLEW_INCLUDE)
-      -I$(TOPDIR)/include/tuvok/IO/3rdParty/boost
-      -I$(TOPDIR)/include/tuvok/IO/3rdParty
-      -I$(TOPDIR)/include/tuvok/3rdParty
-      -I$(TOPDIR)/include/tuvok
+      ${QT_QTOPENGL_INCLUDE_DIR}
+      ${SLIVR_INCLUDE_DIR}
+      ${GLEW_INCLUDE_DIR}
+      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost
+      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty
+      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
+      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
+      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok
+      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok
     </CXXFLAGS>
     <LDFLAGS>
-      $(TUVOK_LIB)
-      $(QT_LDFLAGS) $(QT_CORE_LIB) $(QT_GUI_LIB) $(QT_OPENGL_LIB)
+      ${TUVOK_LIB}
+      ${QT_LDFLAGS} ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_OPENGL_LIB}
     </LDFLAGS>
     <Files components="G">
-      $(SLIVR_GUI_IMPL)
+      ${SLIVR_GUI_IMPL}
       TransferFunctionWidget.C
       VolumeRLEFunctions.C
     </Files>
     <LIBS components="G">
-      $(TUVOK_LIB)
-      $(QT_OPENGL_LIB)
-      $(SLIVR_LIBS)
-      $(GLEW_LIBS)
-      $(GL_LIBS)
+      ${TUVOK_LIB}
+      ${QT_QTOPENGL_LIB}
+      ${SLIVR_LIB}
+      ${GLEW_LIB}
+      ${OPENGL_gl_LIBRARY}
     </LIBS>
     <Files components="S">
       TransferFunctionWidget.C
@@ -44,10 +47,10 @@
       TransferFunctionWidget.C
     </Files>
     <LIBS components="V">
-      $(TUVOK_LIB)
-      $(SLIVR_LIBS)
-      $(GLEW_LIBS)
-      $(GL_LIBS)
+      ${TUVOK_LIB}
+      ${SLIVR_LIB}
+      ${GLEW_LIB}
+      ${OPENGL_gl_LIBRARY}
     </LIBS>
     <Files components="E">
       VolumeFunctions.C
@@ -65,19 +68,19 @@
       TransferFunctionWidget.C
     </Files>
     <LIBS components="ESer">
-      $(TUVOK_LIB)
-      $(SLIVR_LIBS)
-      $(GLEW_LIBS)
-      $(GL_LIBS)
+      ${TUVOK_LIB}
+      ${SLIVR_LIB}
+      ${GLEW_LIB}
+      ${OPENGL_gl_LIBRARY}
     </LIBS>
     <LIBS components="EPar">
-      $(TUVOK_LIB)
-      $(SLIVR_LIBS)
-      $(GLEW_LIBS)
-      $(GL_LIBS)
+      ${TUVOK_LIB}
+      ${SLIVR_LIB}
+      ${GLEW_LIB}
+      ${OPENGL_gl_LIBRARY}
     </LIBS>
     <Files components="W">
-      $(SLIVR_GUI_HDR)
+      ${SLIVR_GUI_HDR}
     </Files>
     <Files components="J">
       TransferFunctionWidget.java

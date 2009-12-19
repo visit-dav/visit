@@ -64,7 +64,6 @@ void lib_quit_bow()
 
 /* lib_public include: */
 #include "bow.h"
-#include "Utility.h"
 
 //
 // Make some substitutions so the code is portable to Windows.
@@ -731,7 +730,6 @@ static void find_tmpdir(char *tmpdir)
 // Let's duplicate some code from FileFunctions.C because we can't go
 // introducing a libmisc.so dependency into libbow.so because libmisc.so
 // hasn't even been compiled yet.
-#include <visit-config.h>
 #if defined(_WIN32)
   typedef struct _stat VisItStat_t;
   typedef off_t VisItOff_t;

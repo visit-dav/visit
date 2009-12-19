@@ -1,1 +1,0 @@
-../../common/state/ViewCurveAttributes.h

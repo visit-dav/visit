@@ -1,1 +1,0 @@
-../../gui/QvisGaussianOpacityBar.h

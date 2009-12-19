@@ -1,0 +1,8 @@
+
+Changes from 1.5beta0 ---------------------------------------------
+
+- BUG FIX (inc.c): the min and max increments use to nibble at the
+histogram in percentile-based inclusion were set wrong, meaning that
+only baneRangeFloat ranges were computed correctly.
+- API NEW (gkms*.c): all the smarts of the "gkms" program are now in
+the bane library, just like unrrdu commands

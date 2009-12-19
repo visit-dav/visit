@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(MDSERVER_RPC_EXPORTS)
+# if __GNUC__ >= 4 && (defined(MDSERVER_RPC_EXPORTS) || defined(mdserverrpc_EXPORTS))
 #   define MDSERVER_RPC_API __attribute__ ((visibility("default")))
 # else
 #   define MDSERVER_RPC_API /* hidden by default */

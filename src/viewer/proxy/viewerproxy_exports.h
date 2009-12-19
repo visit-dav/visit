@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(VIEWER_PROXY_EXPORTS)
+# if __GNUC__ >= 4 && (defined(VIEWER_PROXY_EXPORTS) || defined(viewerproxy_EXPORTS))
 #   define VIEWER_PROXY_API __attribute__ ((visibility("default")))
 # else
 #   define VIEWER_PROXY_API /* hidden by default */

@@ -40,7 +40,7 @@
 #define AVTFILEWRITER_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(AVTFILEWRITER_EXPORTS) || defined(avtwriter_ser_EXPORTS) || defined(avtwriter_par_EXPORTS)
+#if defined(AVTWRITER_EXPORTS) || defined(avtwriter_ser_EXPORTS) || defined(avtwriter_par_EXPORTS)
 #define AVTFILEWRITER_API __declspec(dllexport)
 #else
 #define AVTFILEWRITER_API __declspec(dllimport)
@@ -54,7 +54,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(AVTFILEWRITER_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTWRITER_EXPORTS) || defined(avtwriter_ser_EXPORTS) || defined(avtwriter_par_EXPORTS))
 #   define AVTFILEWRITER_API __attribute__ ((visibility("default")))
 # else
 #   define AVTFILEWRITER_API /* hidden by default */

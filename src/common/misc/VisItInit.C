@@ -55,6 +55,7 @@
 #include <new>
 #include <cstring>
 
+#include <ConfigureInfo.h>
 #include <DebugStreamFull.h>
 #include <DebugStream.h>
 #include <InstallationFunctions.h>
@@ -343,10 +344,10 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
         }
         else if (strcmp("-svn_revision",  argv[i]) == 0)
         {
-            if (strcmp(VISIT_SVN_REVISION, "") == 0)
+            if(visitcommon::SVNVersion() == "")
                 cerr << "SVN revision is unknown!" << endl;
             else
-                cerr << "Built from revision " << VISIT_SVN_REVISION << endl;
+                cerr << "Built from revision " << visitcommon::SVNVersion() << endl;
             exit(0);
         }
     }
@@ -363,7 +364,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     if(home != 0)
     {
         homedir = std::string(home);
-        if(homedir[homedir.size() - 1] != VISIT_SLASH_CHAR)
+        if(homedir[homedir.size() - 1] != visitcommon::SlashChar())
             homedir += VISIT_SLASH_STRING;
         homedir += executableName;
         strcpy(progname_wo_dir, homedir.c_str());
@@ -649,7 +650,7 @@ RemovePrependedDirs(const char *path, char *name)
     //
     int  len = strlen(path);
     int lastSlash;
-    for (lastSlash=len ; path[lastSlash]!=VISIT_SLASH_CHAR && lastSlash>=0 ; lastSlash--)
+    for (lastSlash=len ; path[lastSlash]!=visitcommon::SlashChar() && lastSlash>=0 ; lastSlash--)
     {
         continue;
     }
@@ -664,7 +665,7 @@ RemovePrependedDirs(const char *path, char *name)
 
     //
     //
-    if (path[lastSlash] == VISIT_SLASH_CHAR)
+    if (path[lastSlash] == visitcommon::SlashChar())
     {
         strcpy(name, path + lastSlash + 1);
     }

@@ -1,0 +1,164 @@
+--------- teem 1.9 cut-off
+
+for cmake:
+ - get some basic tests working (if only nrrdSanity)
+ - build pv on windows
+ - see if wild-card expansion works as expected on windows
+ - make cmd-line utilities link with static libs
+ - enable turning on zlib, bz2, threads, and png
+
+[portable54-250:~/d/parepi/6] gk%
+tend estim -new -sigma 0.01 -est wls -i 6crop-dwi.nrrd \
+   -B kvp -knownB0 false -t 250 -o tmp.nrrd
+   0.0%tend estim: trouble doing estimation:
+[ten] tenEstimate1TensorVolume4D: failed at sample 40
+[ten] tenEstimate1TensorSingle_d:
+[ten] _tenEstimate1TensorSingle: estimation failed
+[ten] _tenEstimate1Tensor_WLS: trying to improve on first WLS
+[ten] _tenEstimate1TensorSimulateSingle
+
+
+gage: re-modularize to facilitate probing bricked data
+
+nrrd: look into Pade approximations for windowed sinc() kernels
+
+make system really botched: change the size of the tenFiberContext
+(added a field or two), do a make ten/install, then cd ../push; rm -f test/pusher
+make install; make; and you'll STILL get memory errors due to seeing 
+library/object files which use the older context size.  Do a top-level
+make clobber, and then things work.  This is crap.
+I think the problem is that development object files of push were not
+recompiled when they should have been- doing a make clobber; make in push
+solved the problem...
+(noted earlier:)
+- HUGE PROBLEM: change limn.h, cd ../ten, make, nothing to be done WRONG
+- HUGE PROBLEM: make a change in nrrdEnums.h, which unrrdu/project.c 
+  uses directly. recompile, and nrrd gets compiled, but not unrrdu,
+  so unu doesn't get updated correctly!
+- HUGE PROBLEM: add a macro in ELL, make install in ell,
+  cd limn, make ../limn/test/tiso, doesn't see new header
+  and fails at link-time with "<new macro> symbol undefined"
+- want seperate directories for static and shared libraries
+- want bin/dev and bin/install targets
+
+add BSD architecture that guy emailed me about
+
+unu: jhisto works with axis[0] elements when given a single nrrd
+
+nrrd: add fft support
+nrrd: add support for VFF file format
+nrrd: add support for NIFTI-1 file format
+
+air: make airOneLine return number of bytes read; current return
+  of string length is entirely redundant with return of strlen()
+  and then enable the ftell() check after PNG magic read
+
+nrrd: generalize I/O so that magic needn't be on line by itself
+
+bin/unu: valgrid parsing of encoding stuff
+
+fix "gkms pvg": try to reproduce problem with mouse data
+
+qbert: downsmpl x+y, upsmplpad on Z error about unequal centers
+
+qbert on cygwin: running out of memory w/out error
+
+tend epireg: figure out how to do fitting without HST estimation
+
+mite big changes -----------------
+- do precomputation of opacity volume when required for tensor shading
+
+gage changes into bane:
+teem\src\bane\hvol.c(167) : warning C4700: local variable 'hist' used
+  without having been initialized
+- try gkms hvol with three explicit ranges
+- remove excess NULL pointer checks between answer and answer wrapper
+- valgrind
+
+
+finish big changes
+- ADD gkms back into teem bins!
+
+ell: debug SVD of things based on negative eigenvalues
+ - add flag to say: always positive sv's, or always right-handed rotations
+
+leaf: do it
+
+DESTROY the airType* enum! I wasted quite awhile debugging a problem caused by:
+  if (nrrdAlloc(nout, airTypeFloat, 3, size[0], size[1], size[2])) { ...
+Do you see the problem?  Grrr.
+
+PLEASE figure out why I can't say
+
+   -t "unsigned char"
+
+to unu make, unu convert and the like.
+Does it have to do with airStrtokQuoting?
+Why not? I hate this crap.
+
+debug rendering of ML with windowed sinc
+
+hest: add { } commenting
+
+nrrd: have to add more internal types to stuff in arith.c for these:
+new nrrdBinaryOps: bit-wise and (&), or (|), xor (^)
+new nrrdUnaryOps: bit-wise not (^), expm1
+
+
+SEGFAULT:  in muse/usr/sci/data/Medical/cat-array/bisti/rend
+gkms hvol -s a:-1200,6000 a:0,3100 a:-1000,1000 -i CFC.nrrd -o CFC-hvol.nrrd 
+
+nrrd: speed up nrrdCCFind
+
+bane: finish updating tutorial
+
+nrrd: nrrdKernel*Parse should allocate the thing and return it, instead of
+returning an int error code 
+
+dye: see if dyeColorParse should allocate the thing and return it
+
+FAQ on teem coding standards
+Banks's policy.txt:
+ - documenting cross-code assumptions and dependencies
+
+image registration tool for small translational errors
+
+air: make floating point stuff more like C++: lots of per-arch #defines
+
+echo: test textured lights
+
+bin/emap: allow generating envmaps useful for specular highlights
+
+mite: add diffuse and specular envmap
+
+make: figure out shared libraries on cygwin.
+make: Test that shared libraries work everywhere they should.
+
+limn: make it smarter- so that joining parts together is possible in a
+way that facilitates transformations and correct drawing.  This really
+requires general data structures for 2-D graphics primatives...
+
+make: finish documenting how GNUMake works for teem
+
+unrrdu: standardize hest framework for doing unu/gkms/tend style programs
+
+dye: colormaps
+
+dye: hest callbacks
+
+air:  think about implementing a fabs() and dabs() with bitmasking
+
+nrrd: figure out some framework for lazy evaluation stuff
+
+write a paper about nrrd!
+include a list of published papers using teem:
+Kindlmann: Superquadric Tensor Glyphs
+Kindlmann Vis03: Curvature-Based Transfer Functions
+Lefohn Vis03: Interactive Deformation and Visualization of Level Set Surfaces Using Graphics Hardware
+Lefohn TVCG July/August 04: A Streaming Narrow-Band Algorithm: Interactive Computation and Visualization of Level Sets
+Kniss VisSym04: Medical Applications of Multi-field Volume Rendering and VR Techniques
+Deschamps TVCG04: Fast Evolution of Image Manifolds and Application to Filtering and Segmentation in 3D Medical Images
+ikits Vis03: A Constraint-based Technique for Haptic Volume Exploration
+fout Eurovis 05: High-Quality Rendering of Compressed Volume Data Formats
+callahan TVCG May/June 05: Hardware-Assisted Visibility Sorting for Unstructured Volume Rendering
+jorik blaas vis05 fiber paper

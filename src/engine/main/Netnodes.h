@@ -43,6 +43,7 @@
 #include <avtDatabase.h>
 #include <avtFilter.h>
 #include <string>
+#include <engine_main_exports.h>
 
 // ****************************************************************************
 //  Class: Netnode
@@ -59,7 +60,7 @@
 //    Add support for getting direct access to filters.
 //
 // ****************************************************************************
-class Netnode
+class ENGINE_MAIN_API Netnode
 {
 public:
     virtual ~Netnode(void) {};
@@ -92,7 +93,7 @@ public:
 //    Added method to return the raw database.
 //
 // ****************************************************************************
-class NetnodeDB: public Netnode
+class ENGINE_MAIN_API NetnodeDB: public Netnode
 {
 public:
     NetnodeDB(avtDatabase *);
@@ -130,7 +131,7 @@ protected:
 //  Modifications:
 //
 // ****************************************************************************
-class NetnodeFilter: public Netnode
+class ENGINE_MAIN_API NetnodeFilter: public Netnode
 {
 public:
     NetnodeFilter(avtFilter *_filter, const std::string &type)
@@ -161,7 +162,7 @@ protected:
 //
 // ****************************************************************************
 
-class NetnodeTransition: public NetnodeFilter
+class ENGINE_MAIN_API NetnodeTransition: public NetnodeFilter
 {
 public:
              NetnodeTransition(avtDataObject_p input);

@@ -40,22 +40,21 @@
 #define PY_TRANSFERFUNCTIONWIDGET_H
 #include <Python.h>
 #include <TransferFunctionWidget.h>
-#include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyTransferFunctionWidget_StartUp(TransferFunctionWidget *subj, void *data);
-void VISITPY_API           PyTransferFunctionWidget_CloseDown();
-VISITPY_API PyMethodDef *   PyTransferFunctionWidget_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyTransferFunctionWidget_Check(PyObject *obj);
-VISITPY_API TransferFunctionWidget *  PyTransferFunctionWidget_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyTransferFunctionWidget_New();
-VISITPY_API PyObject *      PyTransferFunctionWidget_Wrap(const TransferFunctionWidget *attr);
-void VISITPY_API           PyTransferFunctionWidget_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyTransferFunctionWidget_SetDefaults(const TransferFunctionWidget *atts);
-std::string VISITPY_API    PyTransferFunctionWidget_GetLogString();
-std::string VISITPY_API    PyTransferFunctionWidget_ToString(const TransferFunctionWidget *, const char *);
+void            PyTransferFunctionWidget_StartUp(TransferFunctionWidget *subj, void *data);
+void            PyTransferFunctionWidget_CloseDown();
+PyMethodDef *   PyTransferFunctionWidget_GetMethodTable(int *nMethods);
+bool            PyTransferFunctionWidget_Check(PyObject *obj);
+TransferFunctionWidget *  PyTransferFunctionWidget_FromPyObject(PyObject *obj);
+PyObject *      PyTransferFunctionWidget_New();
+PyObject *      PyTransferFunctionWidget_Wrap(const TransferFunctionWidget *attr);
+void            PyTransferFunctionWidget_SetParent(PyObject *obj, PyObject *parent);
+void            PyTransferFunctionWidget_SetDefaults(const TransferFunctionWidget *atts);
+std::string     PyTransferFunctionWidget_GetLogString();
+std::string     PyTransferFunctionWidget_ToString(const TransferFunctionWidget *, const char *);
 
 #endif
 

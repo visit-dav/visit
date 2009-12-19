@@ -40,7 +40,7 @@
 #define DBATTS_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(DBATTS_EXPORTS) || defined(avtdbatts_EXPORTS)
+#if defined(AVTDBATTS_EXPORTS) || defined(avtdbatts_EXPORTS)
 #define DBATTS_API __declspec(dllexport)
 #else
 #define DBATTS_API __declspec(dllimport)
@@ -56,7 +56,7 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && defined(DBATTS_EXPORTS)
+# if __GNUC__ >= 4 && (defined(AVTDBATTS_EXPORTS) || defined(avtdbatts_EXPORTS))
 #   define DBATTS_API __attribute__ ((visibility("default")))
 # else
 #   define DBATTS_API /* hidden by default */

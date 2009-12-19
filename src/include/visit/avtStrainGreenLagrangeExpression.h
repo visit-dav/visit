@@ -1,1 +1,0 @@
-../../avt/Expressions/Derivations/avtStrainGreenLagrangeExpression.h

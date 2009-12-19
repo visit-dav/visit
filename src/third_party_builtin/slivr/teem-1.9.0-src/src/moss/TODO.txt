@@ -1,0 +1,6 @@
+- nix all the mossMat stuff- and change over to using a 9-element matrix,
+since this is needed to represent the general perspective transforms
+which underlying doing mosiacs
+
+- add mosaic stuff from old moss
+

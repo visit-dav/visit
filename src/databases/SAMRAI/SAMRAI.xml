@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
   <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" mdspecificcode="true" dbtype="STMD">
-    <Extensions> samrai </Extensions>
-    <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
+    <Extensions> 
+      samrai 
+    </Extensions>
+    <CXXFLAGS> 
+      ${HDF5_INCLUDE_DIR} 
+    </CXXFLAGS>
+    <LDFLAGS>  
+      ${HDF5_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS>     
+      ${HDF5_LIB} 
+      ${ZLIB_LIB} 
+    </LIBS>
   </Plugin>

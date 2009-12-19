@@ -1,1 +1,0 @@
-../../avt/Pipeline/Sinks/avtSamplePointsSink.h

@@ -1,0 +1,31 @@
+Changes from 1.4:
+
+limn.h:
+- API CHANGE: limn is stupider about lights- there is no more
+notion of have a collection of "set" lights, and no more
+ability to turn on lights without knowing the index of the
+light.  So now limnLightSet() requires an index "which".
+Also, in the limnLight struct, it is the _dir vector which
+is set by the user (via limnLightSet()), and then the
+dir vector is either copied from _dir (world space lights)
+or transformed through V2W (view space lights).
+- API CHANGE: limnLightToggle() renamed limnLightSwitch()
+- #DEFINE RENAME: LIMN_MAXLIT --> LIMN_LITE_NUM
+- API NEW: limnLightReset() initializes lights
+
+light.c:
+- all changes associated with simplifying the limnLight
+struct, and swapping roles of _dir and dir; see limn.h
+changelog
+
+Makefile:
+- added test/tcam.c, a little program for demonstrating
+calculation of world-to-view and view-to-world transforms
+given from,at,up locations
+
+hest.c:
+- clarified command-line flags for limn cam parameters
+
+test/light.c
+- fixed to comply with Teem-1.4 limnCam, and with post-1.4
+changes described elsewhere

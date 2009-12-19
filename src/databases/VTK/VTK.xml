@@ -10,6 +10,7 @@
     </Extensions>
     <Files components="M">
       avtVTKFileFormat.C
+      avtVTKOptions.C
       vtkVisItDataReader.C
       vtkVisItDataSetReader.C
       vtkVisItPolyDataReader.C
@@ -41,6 +42,7 @@
     </Files>
     <Files components="E">
       avtVTKFileFormat.C
+      avtVTKOptions.C
       avtVTKWriter.C
       vtkVisItDataReader.C
       vtkVisItDataSetReader.C

@@ -1,12 +1,15 @@
 <?xml version="1.0"?>
   <Plugin name="Adventure" type="database" label="Adventure" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
     <CXXFLAGS>
-      $(ADVIO_INCLUDE)
+      ${ADVIO_INCLUDE_DIR}
     </CXXFLAGS>
     <LIBS>
-      $(ADVIO_LIB)
-      -lvisit_verdict
+      ${ADVIO_LIB}
+      visit_verdict
     </LIBS>
+    <LDFLAGS>
+      ${ADVIO_LIBRARY_DIR}
+    </LDFLAGS>
     <Extensions>
       adv
       inp

@@ -41,6 +41,6 @@
 #define vtkOpenGLStructuredGridMapper vtkMesaStructuredGridMapper
 #include "vtkOpenGLStructuredGridMapper.C"
 #undef vtkOpenGLStructuredGridMapper
-
+#undef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkMesaStructuredGridMapper, "$Revision: 1.12 $");
 vtkStandardNewMacro(vtkMesaStructuredGridMapper);

@@ -77,6 +77,8 @@
 
 #include <float.h>
 
+#include <visit-config.h>
+
 // This array contains strings that correspond to the file types that are 
 // enumerated in the DatasetFileFormat enum.
 const char *avtDatasetFileWriter::extensions[] = { ".curve", ".obj",

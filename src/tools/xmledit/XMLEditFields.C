@@ -54,7 +54,36 @@
 #include <QRadioButton>
 #include <QTextEdit>
 
-#include <QNarrowLineEdit.h>
+// ****************************************************************************
+//  Class:  QNarrowLineEdit
+//
+//  Purpose:
+//    A QLineEdit that has a narrower default size.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 25, 2001
+//
+// ****************************************************************************
+class QNarrowLineEdit : public QLineEdit
+{
+  public:
+    QNarrowLineEdit(QWidget *p)
+        : QLineEdit(p)
+    {
+    }
+    QNarrowLineEdit(const QString &s, QWidget *p)
+        : QLineEdit(s, p)
+    {
+    }
+    QSize sizeHint() const
+    {
+        QSize size = QLineEdit::sizeHint();
+        QFontMetrics fm(font());
+        int w = fm.width('x') * 4; // 4 characters
+        size.setWidth(w);
+        return size;
+    }
+};
 
 // ****************************************************************************
 //  Constructor:  XMLEditFields::XMLEditFields
