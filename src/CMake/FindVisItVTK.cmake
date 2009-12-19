@@ -72,36 +72,40 @@ ELSE(APPLE)
     ENDIF(WIN32)
 ENDIF(APPLE)
 
-FOREACH(VTKLIB libvtkCommon
-    libvtkCommonPythonD
-    libvtkDICOMParser
-    libvtkFiltering
-    libvtkFilteringPythonD
-    libvtkGenericFiltering
-    libvtkGenericFilteringPythonD
-    libvtkGraphics
-    libvtkGraphicsPythonD
-    libvtkHybrid
-    libvtkHybridPythonD
-    libvtkIO
-    libvtkIOPythonD
-    libvtkImaging
-    libvtkImagingPythonD
-    libvtkMPEG2Encode
-    libvtkRendering
-    libvtkRenderingPythonD
-    libvtkVolumeRendering
-    libvtkVolumeRenderingPythonD
-    libvtkexpat
-    libvtkfreetype
-    libvtkftgl
-    libvtkjpeg
-    libvtkpng
-    libvtksys
-    libvtktiff
-    libvtkzlib
+FOREACH(VTKLIB vtkCommon
+    vtkCommonPythonD
+    vtkDICOMParser
+    vtkFiltering
+    vtkFilteringPythonD
+    vtkGenericFiltering
+    vtkGenericFilteringPythonD
+    vtkGraphics
+    vtkGraphicsPythonD
+    vtkHybrid
+    vtkHybridPythonD
+    vtkIO
+    vtkIOPythonD
+    vtkImaging
+    vtkImagingPythonD
+    vtkMPEG2Encode
+    vtkRendering
+    vtkRenderingPythonD
+    vtkVolumeRendering
+    vtkVolumeRenderingPythonD
+    vtkexpat
+    vtkfreetype
+    vtkftgl
+    vtkjpeg
+    vtkpng
+    vtksys
+    vtktiff
+    vtkzlib
 )
-    SET(LIBNAME ${VTK_LIBRARY_DIRS}/${VTKLIB}.${SO_EXT})
+    IF(WIN32)
+        SET(LIBNAME ${VTK_RUNTIME_DIRS}/${VTKLIB}.${SO_EXT})
+    ELSE(WIN32)
+        SET(LIBNAME ${VTK_LIBRARY_DIRS}/lib${VTKLIB}.${SO_EXT})
+    ENDIF(WIN32)
     IF(EXISTS ${LIBNAME})
         THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
     ENDIF(EXISTS ${LIBNAME})

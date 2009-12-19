@@ -43,6 +43,11 @@
 #
 
 FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
+    IF(WIN32)
+        IF(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+            FILE(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+        ENDIF(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+    ENDIF(WIN32)
     SET(tmpLIBFILE ${LIBFILE})
     GET_FILENAME_COMPONENT(LIBEXT ${tmpLIBFILE} EXT)
     IF(NOT ${LIBEXT} STREQUAL ".a")
@@ -71,6 +76,13 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                             )
+                            # On Windows, we also need to copy the file to the 
+                            # binary dir so our out of source builds can run.
+                            IF(WIN32)
+                                EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+                                        ${curPATH}/${curNAMEWE}.dll
+                                        ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+                            ENDIF(WIN32)
                         ENDIF(IS_DIRECTORY ${curNAME})
                     ENDIF(EXISTS ${curNAME})
                 ENDFOREACH(X)
@@ -94,9 +106,12 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 # On Windows, we also need to copy the file to the binary dir so
                 # our out of source builds can run.
                 IF(WIN32)
+                    # determine the corresponding dll to the lib
+                    GET_FILENAME_COMPONENT(curNAMEWE ${tmpLIBFILE} NAME_WE)
+                    GET_FILENAME_COMPONENT(curPATH ${tmpLIBFILE} PATH)
                     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-                            ${tmpLIBFILE}
-                            ${VISIT_EXECUTABLE_DIR})
+                            ${curPATH}/${curNAMEWE}.dll
+                            ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
                 ENDIF(WIN32)
             ENDIF(IS_DIRECTORY ${tmpLIBFILE})
 #            MESSAGE("**We need to install lib ${tmpLIBFILE}")
