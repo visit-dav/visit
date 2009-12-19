@@ -9116,7 +9116,6 @@ GLboolean __WGLEW_ARB_pixel_format_float = GL_FALSE;
 GLboolean __WGLEW_ARB_render_texture = GL_FALSE;
 GLboolean __WGLEW_ATI_pixel_format_float = GL_FALSE;
 GLboolean __WGLEW_ATI_render_texture_rectangle = GL_FALSE;
-GLboolean __WGLEW_core_api = GL_FALSE;
 GLboolean __WGLEW_EXT_depth_float = GL_FALSE;
 GLboolean __WGLEW_EXT_display_color_table = GL_FALSE;
 GLboolean __WGLEW_EXT_extensions_string = GL_FALSE;
