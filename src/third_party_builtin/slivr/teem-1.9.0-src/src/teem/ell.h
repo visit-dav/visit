@@ -41,10 +41,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(ell_EXPORTS) || defined(teem_EXPORTS))
 #  define ELL_EXPORT __attribute__ ((visibility("default")))
+#  define ELL_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define ELL_EXPORT extern
+#  define ELL_EXPORT2 extern
 # endif
-#define ELL_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

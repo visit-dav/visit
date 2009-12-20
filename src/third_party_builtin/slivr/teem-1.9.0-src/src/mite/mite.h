@@ -42,10 +42,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(mite_EXPORTS) || defined(teem_EXPORTS))
 #  define MITE_EXPORT __attribute__ ((visibility("default")))
+#  define MITE_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define MITE_EXPORT extern
+#  define MITE_EXPORT2 extern
 # endif
-#define MITE_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

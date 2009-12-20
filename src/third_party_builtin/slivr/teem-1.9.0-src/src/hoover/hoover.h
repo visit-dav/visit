@@ -43,10 +43,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(hoover_EXPORTS) || defined(teem_EXPORTS))
 #  define HOOVER_EXPORT __attribute__ ((visibility("default")))
+#  define HOOVER_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define HOOVER_EXPORT extern
+#  define HOOVER_EXPORT2 extern
 # endif
-#define HOOVER_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

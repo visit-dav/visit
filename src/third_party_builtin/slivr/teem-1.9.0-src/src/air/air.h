@@ -70,10 +70,11 @@ extern "C" {
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(air_EXPORTS) || defined(teem_EXPORTS))
 #  define AIR_EXPORT __attribute__ ((visibility("default")))
+#  define AIR_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define AIR_EXPORT extern
+#  define AIR_EXPORT2 extern
 # endif
-#define AIR_EXPORT2 extern
 #endif
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MINGW32__)

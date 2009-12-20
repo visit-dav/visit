@@ -42,10 +42,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(push_EXPORTS) || defined(teem_EXPORTS))
 #  define PUSH_EXPORT __attribute__ ((visibility("default")))
+#  define PUSH_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define PUSH_EXPORT extern
+#  define PUSH_EXPORT2 extern
 # endif
-#define PUSH_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

@@ -47,10 +47,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(ten_EXPORTS) || defined(teem_EXPORTS))
 #  define TEN_EXPORT __attribute__ ((visibility("default")))
+#  define TEN_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define TEN_EXPORT extern
+#  define TEN_EXPORT2 extern
 # endif
-#define TEN_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus
