@@ -43,10 +43,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(coil_EXPORTS) || defined(teem_EXPORTS))
 #  define COIL_EXPORT __attribute__ ((visibility("default")))
+#  define COIL_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define COIL_EXPORT extern
+#  define COIL_EXPORT2 extern
 # endif
-#define COIL_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

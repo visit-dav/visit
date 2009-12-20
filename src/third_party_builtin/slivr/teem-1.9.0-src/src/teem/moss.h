@@ -45,10 +45,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(moss_EXPORTS) || defined(teem_EXPORTS))
 #  define MOSS_EXPORT __attribute__ ((visibility("default")))
+#  define MOSS_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define MOSS_EXPORT extern
+#  define MOSS_EXPORT2 extern
 # endif
-#define MOSS_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

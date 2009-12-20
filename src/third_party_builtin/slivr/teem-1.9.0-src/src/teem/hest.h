@@ -40,10 +40,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(hest_EXPORTS) || defined(teem_EXPORTS))
 #  define HEST_EXPORT __attribute__ ((visibility("default")))
+#  define HEST_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define HEST_EXPORT extern
+#  define HEST_EXPORT2 extern
 # endif
-#define HEST_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

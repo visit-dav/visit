@@ -43,10 +43,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(gage_EXPORTS) || defined(teem_EXPORTS))
 #  define GAGE_EXPORT __attribute__ ((visibility("default")))
+#  define GAGE_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define GAGE_EXPORT extern
+#  define GAGE_EXPORT2 extern
 # endif
-#define GAGE_EXPORT2 extern
 #endif
 
 #ifdef __cplusplus

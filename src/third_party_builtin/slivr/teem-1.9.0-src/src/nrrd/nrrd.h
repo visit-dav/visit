@@ -53,10 +53,11 @@
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(nrrd_EXPORTS) || defined(teem_EXPORTS))
 #  define NRRD_EXPORT __attribute__ ((visibility("default")))
+#  define NRRD_EXPORT2 extern __attribute__ ((visibility("default")))
 # else
 #  define NRRD_EXPORT extern
+#  define NRRD_EXPORT2 extern
 # endif
-#define NRRD_EXPORT2 extern
 #endif
 /* ---- END non-NrrdIO */
 
