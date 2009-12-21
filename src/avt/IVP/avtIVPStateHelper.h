@@ -101,9 +101,7 @@ public:
     
     avtIVPStateHelper& Accept(avtVector &v)
     {
-        Accept(v.x);
-        Accept(v.y);
-        Accept(v.z);
+        return Accept(v.x).Accept(v.y).Accept(v.z);
         return *this;
     }
     /*

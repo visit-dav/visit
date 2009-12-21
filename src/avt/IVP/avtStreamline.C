@@ -798,8 +798,4 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     }    
     if (DebugStream::Level5())
         debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
-    
-    //FIX THIS!!!
-    if (intersectionsSet != true || intersectionsSet != false)
-        intersectionsSet = false;
 }
