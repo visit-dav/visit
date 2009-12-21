@@ -746,6 +746,10 @@
 #     This is necessary b/c python's build system does not build an exe that
 #     runs without setting LD_LIBRARY_PATH if a non standard prefix is used.
 #
+#     Jeremy Meredith, Mon Dec 21 12:42:52 EST 2009
+#     Removed one final use of .conf, changed to .cmake.
+#     Fixed a few bugs in the way the host .cmake file is generated.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7669,8 +7673,8 @@ function build_hostconf
     # First line of config-site file provides a hit to the location
     # of cmake.
 
-    echo "#$VISITHOME/cmake/$CMAKE_VERSION/\$VISITARCH/bin/cmake" >> $HOSTCONF
-    echo "##" > $HOSTCONF
+    echo "#$THIRD_PARTY_PATH/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" > $HOSTCONF
+    echo "##" >> $HOSTCONF
     echo "## $0 generated host.cmake" >> $HOSTCONF
     echo "## created: $(date)" >> $HOSTCONF
     echo "## system: $(uname -a)" >> $HOSTCONF
@@ -8025,7 +8029,7 @@ function build_visit
         VISIT_DIR=${VISIT_FILE%.tar*}/src
         cd "${VISIT_DIR}"
     fi
-    cp $START_DIR/$(hostname).conf config-site
+    cp $START_DIR/$(hostname).cmake config-site
 
     #
     # Call configure
