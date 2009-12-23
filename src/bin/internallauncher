@@ -537,6 +537,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Mon Nov 23 08:01:17 PST 2009
 #    Incorporate Brutus specific code from Stefan Kerkemeier.
 #
+#    Hank Childs, Tue Dec 22 22:44:13 MST 2009
+#    Incorporate Saguaro (ASU) specific code.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1427,6 +1430,15 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /lens/ )
     {
         $IsRunningOnLens_ORNL = 1;
     }
+}
+
+# ----
+# HACK for saguaro @ ASU
+# ----
+$IsRunningOnSaguaro_ASU = 0;
+if ( ($parallel) and $exe_name eq "engine" and ($host eq "saguaro1.local" or $host eq "saguaro2.local"))
+{
+    $IsRunningOnSaguaro_ASU = 1;
 }
 
 # ----
@@ -2397,7 +2409,14 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
             if ($sublauncher eq "mpiexec")
             {
-                @mpicmd = ("mpiexec");
+                if ($IsRunningOnSaguaro_ASU)
+                {
+                    @mpicmd = ("/packages/gcc-openmpi-1.2.7/bin/mpiexec");
+                }
+                else
+                {
+                    @mpicmd = ("mpiexec");
+                }
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n", $procs if $procs_set;
                 push @mpicmd, "-machinefile", $machinefile if $machinefile_set;
