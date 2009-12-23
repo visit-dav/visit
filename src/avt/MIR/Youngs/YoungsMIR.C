@@ -137,7 +137,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         }
     }
 
-    // gradietn
+    // gradient
     vtkCQS *cqs = vtkCQS::New();
     cqs->SetInput(ds);
     ds = cqs->GetOutput();

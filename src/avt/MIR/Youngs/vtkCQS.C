@@ -142,7 +142,8 @@ int vtkCQS::RequestData(vtkInformation *request,
         // -= 3 D =-
         if( cell->GetCellDimension() == 3 )
         {
-            if( np == 3 ) // cell is a tetrahedra
+            // JSM December 23, 2009: tet is 4 points, not 3
+            if( np == 4 ) // cell is a tetrahedra
             {
                 TETRA_CQS_VECTOR( cellPoints[0], cellPoints[1], cellPoints[2], cellPoints[3] , tmp );
                 ADD_VEC(cellVectors[3],tmp);
@@ -156,7 +157,7 @@ int vtkCQS::RequestData(vtkInformation *request,
                 TETRA_CQS_VECTOR( cellPoints[3], cellPoints[0], cellPoints[1], cellPoints[2] , tmp );
                 ADD_VEC(cellVectors[2],tmp);
             }
-            else if( np > 3 )
+            else if( np > 4 )
             {
                 vtkCell3D* cell3d = static_cast<vtkCell3D*>( cell );
                 int nf = cell->GetNumberOfFaces();
@@ -216,8 +217,15 @@ int vtkCQS::RequestData(vtkInformation *request,
             {
                 for(int f=0;f<np;f++)
                 {
-                    const int e0 = f;
-                    const int e1 = (f+1)%np;
+                    int e0 = f;
+                    int e1 = (f+1)%np;
+                    // JSM December 23, 2009: Added pixel support via
+                    // fixup; clockwise ordering is assumed here
+                    if (cell->GetCellType() == VTK_PIXEL)
+                    {
+                        if (e0==2) e0=3; else if (e0==3) e0=2;
+                        if (e1==2) e1=3; else if (e1==3) e1=2;
+                    }
                     double tmp[3];
                     TRIANGLE_CQS_VECTOR( cellCenter , cellPoints[e0] , cellPoints[e1] , tmp );
                     ADD_VEC( cellVectors[e1] , tmp );

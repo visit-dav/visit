@@ -421,12 +421,32 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         // copy points and point ids to lacal arrays.
         // IMPORTANT NOTE : A negative point id refers to a point in the previous material.
         // the material number and real point id can be found through the prevPointsMap.
-        for(int p=0;p<cell.np;p++)
+        if (cell.type == VTK_PIXEL)
         {
-            cell.pointIds[p] = vtkcell->GetPointId(p);
-            DBG_ASSERT( cell.pointIds[p]>=0 && cell.pointIds[p]<nPoints );
-            vtkcell->GetPoints()->GetPoint( p , cell.points[p] );
+            // JSM December 23, 2009:
+            // Add PIXEL support; assumptions are made that the cell
+            // connectivity is ordered clockwise like a POLYGON or QUAD.
+            int s0 = 0, s1 = 1, s2 = 3, s3 = 2;
+            cell.pointIds[0] = vtkcell->GetPointId(s0);
+            vtkcell->GetPoints()->GetPoint( s0 , cell.points[0] );
+            cell.pointIds[1] = vtkcell->GetPointId(s1);
+            vtkcell->GetPoints()->GetPoint( s1 , cell.points[1] );
+            cell.pointIds[2] = vtkcell->GetPointId(s2);
+            vtkcell->GetPoints()->GetPoint( s2 , cell.points[2] );
+            cell.pointIds[3] = vtkcell->GetPointId(s3);
+            vtkcell->GetPoints()->GetPoint( s3 , cell.points[3] );
+            cell.type = VTK_POLYGON;
         }
+        else
+        {
+            for(int p=0;p<cell.np;p++)
+            {
+                cell.pointIds[p] = vtkcell->GetPointId(p);
+                DBG_ASSERT( cell.pointIds[p]>=0 && cell.pointIds[p]<nPoints );
+                vtkcell->GetPoints()->GetPoint( p , cell.points[p] );
+            }
+        }
+
 
         // Triangulate cell.
         // IMPORTANT NOTE: triangulation is given with mesh point ids (not local cell ids)
