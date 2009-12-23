@@ -540,6 +540,10 @@ $0 = shift @ARGV;
 #    Hank Childs, Tue Dec 22 22:44:13 MST 2009
 #    Incorporate Saguaro (ASU) specific code.
 #
+#    Hank Childs, Wed Dec 23 10:36:01 PST 2009
+#    Re-add ability to launch an engine from the command line, which was 
+#    mistakenly removed during my parallel visitconvert change.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1292,6 +1296,41 @@ if (($procs_set) and ($procs < 1))
     exit 1;
 }
 
+@engine_parallel_args = ();
+$had_to_strip_parallel_args = 0;
+if ((($parallel) or ($launchengine)) and
+    (($exe_name eq "gui") or ($exe_name eq "viewer") or ($exe_name eq "cli")))
+{
+    $had_to_strip_parallel_args = 1;
+    # If we're trying to run in parallel, or we've been explicitly
+    # told to launch an engine, add any parallel arguments back on
+    push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
+    push @engine_parallel_args, "-l",  $launch           if ($launch_set);
+    push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
+    push @engine_parallel_args, "-np", $procs            if ($procs_set);
+    push @engine_parallel_args, "-nn", $nodes            if ($nodes_set);
+    push @engine_parallel_args, "-n",  $name             if ($name_set);
+    push @engine_parallel_args, "-p",  $part             if ($part_set);
+    push @engine_parallel_args, "-b",  $bank             if ($bank_set);
+    push @engine_parallel_args, "-t",  $time             if ($time_set);
+    push @engine_parallel_args, "-machinefile",  $machinefile if ($machinefile_set);
+
+    # ... but don't confuse the script
+    $parallel=0;
+    $launchargs_set=0;
+    $procs_set=0;
+    $name_set=0;
+    $part_set=0;
+    $bank_set=0;
+    $time_set=0;
+    $nodes_set=0;
+    $machinefile_set=0;
+
+    # If we didn't specify a location for the engine, assume localhost.
+    push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
+    push @visitargs, "-launchengine", $launchengine if ($launchengine);
+}
+
 # -----------------------------------------------------------------------------
 #                  Hostname Overrides and Host-specific Hacks
 # -----------------------------------------------------------------------------
@@ -1883,6 +1922,15 @@ else # We're running a public version.
     $visitultradir = "$visitdir/$archdir/ultrawrapper";
     $visitplugins = "$visitdir/$archdir/plugins";
     $publicversion = 1;
+}
+
+if ($had_to_strip_parallel_args)
+{
+    if (scalar(@engine_parallel_args) > 0)
+    {
+        $engine_arg_string = ";".join(';', @engine_parallel_args);
+        push @visitargs, "-engineargs", $engine_arg_string;
+    }
 }
 
 
