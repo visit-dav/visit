@@ -1566,6 +1566,10 @@ PP_ZFileReader::FreeUpResources()
 //   Rename ghost data array.  Also set appropriate ghost type using new
 //   convention.
 //
+//   Brad Whitlock, Wed Dec 23 10:11:31 PST 2009
+//   I removed code to create avtRealDims since it started preventing the
+//   ghost zones from being removed.
+//
 // ****************************************************************************
 
 void
@@ -1600,20 +1604,6 @@ PP_ZFileReader::CreateGhostZones(const int *ireg, vtkDataSet *ds)
         ds->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete();
         ptIds->Delete();
-
-        vtkIntArray *realDims = vtkIntArray::New();
-        realDims->SetName("avtRealDims");
-        realDims->Allocate(6);
-        realDims->SetValue(0, 0);
-        realDims->SetValue(1, kmax-1);
-        realDims->SetValue(2, 0);
-        realDims->SetValue(3, lmax-1);
-        realDims->SetValue(4, 0);
-        realDims->SetValue(5, 0);
-        ds->GetFieldData()->AddArray(realDims);
-        ds->GetFieldData()->CopyFieldOn("avtRealDims");
-        realDims->Delete();
-        ds->SetUpdateGhostLevel(0);
     }
 }
 
