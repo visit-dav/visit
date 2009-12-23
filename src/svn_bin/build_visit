@@ -755,6 +755,7 @@
 #
 #     Tom Fogal, Tue Dec 22 14:20:51 MST 2009
 #     Revert above change, at least on Linux.
+#     Add missing CMake type specifier.
 #
 # *****************************************************************************
 #                                                                             #
@@ -3510,7 +3511,7 @@ function build_vtk
             -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
             -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DVTK_USE_TK=OFF\
+            -DVTK_USE_TK:BOOL=OFF\
             -DTK_INCLUDE_PATH:FILEPATH=""\
             -DTK_LIBRARY:FILEPATH=""\
             -DVTK_WRAP_PYTHON:BOOL=ON\
@@ -3536,7 +3537,7 @@ function build_vtk
             -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
             -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-            -DVTK_USE_TK=OFF\
+            -DVTK_USE_TK:BOOL=OFF\
             -DTK_INCLUDE_PATH:FILEPATH=""\
             -DTK_LIBRARY:FILEPATH=""\
             -DVTK_WRAP_PYTHON:BOOL=ON\
@@ -3565,7 +3566,7 @@ function build_vtk
         -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
         -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
-        -DVTK_USE_TK=OFF\
+        -DVTK_USE_TK:BOOL=OFF\
         -DTK_INCLUDE_PATH:FILEPATH=""\
         -DTK_LIBRARY:FILEPATH=""\
         -DVTK_WRAP_PYTHON:BOOL=ON\
@@ -3587,7 +3588,7 @@ function build_vtk
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
                -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-               -DVTK_USE_TK=OFF\
+               -DVTK_USE_TK:BOOL=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
                -DTK_LIBRARY:FILEPATH=""\
                -DVTK_WRAP_PYTHON:BOOL=ON\
@@ -3614,7 +3615,7 @@ function build_vtk
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
                -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-               -DVTK_USE_TK=OFF\
+               -DVTK_USE_TK:BOOL=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
                -DTK_LIBRARY:FILEPATH=""\
                .
@@ -3634,7 +3635,7 @@ function build_vtk
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
                -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-               -DVTK_USE_TK=OFF\
+               -DVTK_USE_TK:BOOL=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
                -DTK_LIBRARY:FILEPATH=""\
                -DVTK_WRAP_PYTHON:BOOL=ON\
