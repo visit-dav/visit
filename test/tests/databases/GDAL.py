@@ -92,13 +92,6 @@ def test1(datapath):
     test0_and_1(datapath + "DEM/Morrison.dem", "GDAL_1_")
 
 def main():
-    a = AnnotationAttributes()
-    a.axes3D.visible = 0
-    a.axes3D.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    SetAnnotationAttributes(a)
-
     # Draw antialiased lines
     r = GetRenderingAttributes()
     r.antialiasing = 1

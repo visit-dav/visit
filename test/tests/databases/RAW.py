@@ -86,14 +86,6 @@ def test0(datapath):
     DeleteAllPlots()
 
 def main():
-    a = AnnotationAttributes()
-    a.axes3D.xAxis.label.visible = 0
-    a.axes3D.yAxis.label.visible = 0
-    a.axes3D.zAxis.label.visible = 0
-    a.databaseInfoFlag = 0
-    a.userInfoFlag = 0
-    SetAnnotationAttributes(a)
-
     datapath = "../data/RAW_test_data/"
     test0(datapath)
 
