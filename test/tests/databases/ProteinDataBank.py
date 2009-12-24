@@ -53,17 +53,6 @@ def LabelTest(testname, var, zoomview):
     SetView3D(oldview)
 
 
-# Set up the annotations
-a = AnnotationAttributes()
-a.userInfoFlag = 0
-a.axes3D.visible = 0
-a.axes3D.bboxFlag = 0
-a.backgroundMode = a.Solid
-a.foregroundColor = (0, 0, 0, 255)
-a.backgroundColor = (255, 255, 255, 255)
-a.databaseInfoFlag = 0
-SetAnnotationAttributes(a)
-
 def AddMoleculePlot(db, var):
     OpenDatabase(db)
     AddPlot("Molecule", var)
@@ -354,12 +343,22 @@ def test4():
     Test("proteindb_4_01")
 
 
-# Call the tests
-test0()
-test1()
-test2()
-test3()
-#test4()
+def main():
+    # Set the window background color
+    a = GetAnnotationAttributes()
+    a.backgroundMode = a.Solid
+    a.foregroundColor = (0, 0, 0, 255)
+    a.backgroundColor = (255, 255, 255, 255)
+    a.databaseInfoFlag = 0
+    SetAnnotationAttributes(a)
 
+    # Call the tests
+    test0()
+    test1()
+    test2()
+    test3()
+    #test4()
+
+main()
 Exit()
 

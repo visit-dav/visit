@@ -19,16 +19,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Set up the annotations
-a = AnnotationAttributes()
-a.userInfoFlag = 0
-a.axesFlag = 0
-a.bboxFlag = 0
-a.backgroundMode = a.Solid
-a.backgroundColor = (180, 180, 180, 255)
-a.foregroundColor = (255, 255, 255, 255)
-SetAnnotationAttributes(a)
-
 def AddMeshPlot():
     AddPlot("Mesh", "mesh")
     m = MeshAttributes()
@@ -195,6 +185,13 @@ def test3(datapath):
     CloseDatabase(datapath + db)
 
 def main():
+    # Set up the window background color
+    a = GetAnnotationAttributes()
+    a.backgroundMode = a.Solid
+    a.backgroundColor = (180, 180, 180, 255)
+    a.foregroundColor = (255, 255, 255, 255)
+    SetAnnotationAttributes(a)
+
     DefineScalarExpression("one", "(zoneid(mesh) + 1) / (zoneid(mesh) + 1)")
 
     datapath = "../data/ANSYS_test_data/"

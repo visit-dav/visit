@@ -19,11 +19,8 @@
 #
 # ----------------------------------------------------------------------------
 
-# Set up the annotations
-a = AnnotationAttributes()
-a.userInfoFlag = 0
-a.axes3D.visible = 0
-a.axes3D.bboxFlag = 0
+# Set up the window background color
+a = GetAnnotationAttributes()
 a.backgroundMode = a.Solid
 a.backgroundColor = (0, 0, 0, 255)
 a.foregroundColor = (255, 255, 255, 255)
@@ -102,7 +99,7 @@ DrawPlots()
 
 # Add a time slider
 slider = CreateAnnotationObject("TimeSlider")
-slider.text = "Progress"
+slider.text = ""
 slider.height = 0.1
 
 # Animate through the rest of the frames

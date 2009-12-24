@@ -5,7 +5,7 @@
 #
 #  Tests:      mesh      - 3D structured, unstructured, single and 
 #                          multiple domain
-#              plots     - Contour, Mesh, Pseudocolor, Streamline, Subset
+#              plots     - Contour, Mesh, Pseudocolor, Subset
 #              operators - Clip, Slice
 #
 #  Programmer: Brad Whitlock
@@ -117,22 +117,6 @@ def test0(datapath):
     DrawPlots()
     Test("CGNS_0_06")
 
-    AddPlot("Streamline", "Momentum")
-    AddOperator("Slice")
-    s = StreamlineAttributes()
-    s.sourceType = s.SpecifiedLine
-    s.lineStart = (-0.0331738, -0.822069, 0)
-    s.lineEnd = (-0.5, 1, 0.)
-    s.maxStepLength = 0.01
-    s.termination = 1000
-    s.terminationType = s.Time
-    s.pointDensity = 30
-    s.coloringMethod = s.Solid
-    s.legendFlag = 0
-    s.showStart = 0
-    SetPlotOptions(s)
-    DrawPlots()
-    Test("CGNS_0_07")
     DeleteAllPlots()
 
 
@@ -306,13 +290,6 @@ def test2(datapath):
 
 
 def main():
-    a = AnnotationAttributes()
-    a.axes3D.visible = 0
-    a.axes3D.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    SetAnnotationAttributes(a)
-
     # Draw antialiased lines
     r = GetRenderingAttributes()
     r.antialiasing = 1

@@ -13,16 +13,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Set up the annotations
-a = AnnotationAttributes()
-a.userInfoFlag = 0
-a.axes3D.visible = 0
-a.axes3D.bboxFlag = 0
-a.backgroundMode = a.Solid
-a.backgroundColor = (180, 180, 180, 255)
-a.foregroundColor = (255, 255, 255, 255)
-SetAnnotationAttributes(a)
-
 def AddMeshPlot():
     AddPlot("Mesh", "mesh")
     m = MeshAttributes()
@@ -351,6 +341,13 @@ def test7(datapath):
     CloseDatabase(datapath + db)
 
 def main():
+    # Set the window background color
+    a = GetAnnotationAttributes()
+    a.backgroundMode = a.Solid
+    a.backgroundColor = (180, 180, 180, 255)
+    a.foregroundColor = (255, 255, 255, 255)
+    SetAnnotationAttributes(a)
+
     DefineScalarExpression("one", "(zoneid(mesh) + 1) / (zoneid(mesh) + 1)")
 
     datapath = "../data/NASTRAN_test_data/"
