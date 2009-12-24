@@ -435,7 +435,7 @@ PP_ZFileReader::Initialize()
                 debug4 << "Added " << nodalVar << " to the list of nodal vars."
                        << endl;
             }
-            free_void_mem((void *)pc_list, CHARARRAY_TYPE);
+            pdb_free_void_mem((void *)pc_list, CHARARRAY_TYPE);
         }
         else
         {
@@ -2423,7 +2423,7 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
             const double *src = (const double *)pos->second->data;
             for(int i = 0; i < n; ++i)
                 *dest++ = float(*src++);
-            free_void_mem(pos->second->data, DOUBLEARRAY_TYPE);
+            pdb_free_void_mem(pos->second->data, DOUBLEARRAY_TYPE);
             pos->second->data = (void *)fdata;
             pos->second->dataType = FLOATARRAY_TYPE;
         }
@@ -3600,7 +3600,7 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                                 *fptr++ = float(*src++);
                             
                             // Free the old data.
-                            free_void_mem(volfmm_data->data, DOUBLEARRAY_TYPE);
+                            pdb_free_void_mem(volfmm_data->data, DOUBLEARRAY_TYPE);
 
                             // Store the converted float data.
                             volfmm_data->data = (void *)f;

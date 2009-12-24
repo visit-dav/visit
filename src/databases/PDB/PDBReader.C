@@ -277,7 +277,7 @@ PDBReader::VariableData::FreeData()
 {
     if(data != 0)
     {
-        free_void_mem(data, dataType);
+        pdb_free_void_mem(data, dataType);
         data = 0;
         dataType = NO_TYPE;
     }

@@ -53,7 +53,12 @@ MACRO(THIRDPARTY_DEPENDENT_PLUGINS libname targets)
                 SET(TMP_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} ${${libdir}})
             ENDIF(${libdir})
             IF(${libs})
-                SET(TMP_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} ${${libs}})
+                FOREACH(lib ${${libs}})
+                    LIST(FIND TMP_THIRDPARTY_IO_LIB ${lib} findVar)
+                    IF(findVar EQUAL -1)
+                        SET(TMP_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} ${lib})
+                    ENDIF(findVar EQUAL -1)
+                ENDFOREACH(lib)
             ENDIF(${libs})
         ENDIF(VISIT_STATIC)
         SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${alltargets})
@@ -77,7 +82,11 @@ THIRDPARTY_DEPENDENT_PLUGINS(CGNS     CGNS)
 THIRDPARTY_DEPENDENT_PLUGINS(EXODUSII Exodus TimeVaryingExodus)
 THIRDPARTY_DEPENDENT_PLUGINS(FASTBIT  HDF_UC)
 THIRDPARTY_DEPENDENT_PLUGINS(GDAL     GDAL)
-THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos Enzo ZeusMP)
+IF(NOT VISIT_STATIC)
+    # There's a problem including HDF4 and Netcdf in the same executable due to some
+    # netcdf-like symbols in libmfhdf
+    THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos Enzo ZeusMP)
+ENDIF(NOT VISIT_STATIC)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
 Chombo
 CosmosPP

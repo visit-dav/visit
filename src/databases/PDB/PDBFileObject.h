@@ -117,6 +117,6 @@ private:
 template <class T>
 void free_mem(T *);
 
-void free_void_mem(void *, TypeEnum);
+void pdb_free_void_mem(void *, TypeEnum);
 
 #endif

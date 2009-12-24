@@ -871,7 +871,7 @@ Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceI
             else
                 debug4 << "Unsupported type" << endl;
 
-            free_void_mem(val, t);
+            pdb_free_void_mem(val, t);
             delete [] dims;
         }
 
