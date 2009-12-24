@@ -80,34 +80,52 @@ class EngineOperatorPluginInfo;
 
 
 #define CHECK_PLUGIN(X) \
-   { \
-   std::string thisPlugin = #X; \
-   std::string combined = thisPlugin + "VisItPluginVersion"; \
-   if (sym == combined) \
-       return (void *) &X##VisItPluginVersion; \
-   combined = thisPlugin + "_GetGeneralInfo"; \
-   if (sym == combined) \
-       return (void *) &X##_GetGeneralInfo; \
-   combined = thisPlugin + "_GetEngineInfo"; \
-   if (sym == combined) \
-       return (void *) &X##_GetEngineInfo; \
-   }
+   if (sym == #X"VisItPluginVersion") \
+       retval = (void *) &X##VisItPluginVersion; \
+   else if (sym == #X"_GetGeneralInfo") \
+       retval = (void *) &X##_GetGeneralInfo; \
+   else if (sym == #X"_GetEngineInfo") \
+       retval = (void *) &X##_GetEngineInfo; \
+
+
+// Split apart to make it compile faster
+#define PLUGIN_VERB CHECK_PLUGIN
+static void *
+plot_dlsym(const std::string &sym)
+{
+    void *retval = NULL;
+    #include <enabled_plots.h>
+    return retval;
+}
+
+static void *
+operator_dlsym(const std::string &sym)
+{
+    void *retval = NULL;
+    #include <enabled_operators.h>
+    return retval;
+}
+
+static void *
+database_dlsym(const std::string &sym)
+{
+    void *retval = NULL;
+    #include <enabled_databases.h>
+    return retval;
+}
+#undef PLUGIN_VERB
 
 void *
 fake_dlsym(const std::string &sym)
 {
     debug1 << "Asked for " << sym << endl;
-
-// Check plot plugins.
-#define PLUGIN_VERB CHECK_PLUGIN
-#include <enabled_plots.h>
-
-// Check operator plugins.
-#include <enabled_plots.h>
-
-// Check database plugins.
-#include <enabled_databases.h>
-#undef PLUGIN_VERB
+    void *ptr = NULL;
+    if((ptr = plot_dlsym(sym)) != NULL)
+        return ptr;
+    if((ptr = operator_dlsym(sym)) != NULL)
+        return ptr;
+    if((ptr = database_dlsym(sym)) != NULL)
+        return ptr;
 
     debug1 << "fake_dlsym can't find symbol " << sym << endl;
     return NULL;
@@ -115,75 +133,61 @@ fake_dlsym(const std::string &sym)
 
 
 #ifdef PARALLEL
-
-  #define ADD_DATABASE_PLUGIN(X) { std::string thisPlugin = #X; \
-                        std::pair<std::string, std::string> p("", "libE"+thisPlugin+"Database_par.a");  libs.push_back(p); \
-                        std::pair<std::string, std::string> p2("", "libI"+thisPlugin+"Database.a");  libs.push_back(p2); \
-    }
-
+  #define ADD_DATABASE_PLUGIN(X) \
+       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Database_par.a"));; \
+       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Operator.a"));
 #else
-
-  #define ADD_DATABASE_PLUGIN(X) { std::string thisPlugin = #X; \
-                        std::pair<std::string, std::string> p("", "libE"+thisPlugin+"Database_ser.a");  libs.push_back(p); \
-                        std::pair<std::string, std::string> p2("", "libI"+thisPlugin+"Database.a");  libs.push_back(p2); \
-   }
-
+  #define ADD_DATABASE_PLUGIN(X) \
+       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Database_ser.a"));; \
+       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Operator.a"));
 #endif
 
 #ifdef PARALLEL
-
-  #define ADD_OPERATOR_PLUGIN(X) { std::string thisPlugin = #X; \
-                        std::pair<std::string, std::string> p("", "libE"+thisPlugin+"Operator_par.a");  libs.push_back(p); \
-                        std::pair<std::string, std::string> p2("", "libI"+thisPlugin+"Operator.a");  libs.push_back(p2); \
-    }
-
+  #define ADD_OPERATOR_PLUGIN(X) \
+       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Operator_par.a"));; \
+       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Operator.a"));
 #else
-
-  #define ADD_OPERATOR_PLUGIN(X) { std::string thisPlugin = #X; \
-                        std::pair<std::string, std::string> p("", "libE"+thisPlugin+"Operator_ser.a");  libs.push_back(p); \
-                        std::pair<std::string, std::string> p2("", "libI"+thisPlugin+"Operator.a");  libs.push_back(p2); \
-   }
-
+  #define ADD_OPERATOR_PLUGIN(X) \
+       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Operator_ser.a"));; \
+       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Operator.a"));
 #endif
 
 #ifdef PARALLEL
-
-  #define ADD_PLOT_PLUGIN(X) { std::string thisPlugin = #X; \
-                        std::pair<std::string, std::string> p("", "libE"+thisPlugin+"Plot_par.a");  libs.push_back(p); \
-                        std::pair<std::string, std::string> p2("", "libI"+thisPlugin+"Plot.a");  libs.push_back(p2); \
-    }
-
+  #define ADD_PLOT_PLUGIN(X) \
+       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Plot_par.a")); \
+       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Plot.a"));
 #else
-
-  #define ADD_PLOT_PLUGIN(X) { std::string thisPlugin = #X; \
-                        std::pair<std::string, std::string> p("", "libE"+thisPlugin+"Plot_ser.a");  libs.push_back(p); \
-                        std::pair<std::string, std::string> p2("", "libI"+thisPlugin+"Plot.a");  libs.push_back(p2); \
-   }
-
+  #define ADD_PLOT_PLUGIN(X) \
+       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Plot_ser.a")); \
+       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Plot.a"));
 #endif
 
 void
 StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &libs,
                        const std::string &pluginType)
 {
-#define PLUGIN_VERB ADD_PLOT_PLUGIN
-
     if (pluginType == "plot")
     {
         // Add the plots.
+#define PLUGIN_VERB ADD_PLOT_PLUGIN
 #include <enabled_plots.h>
+#undef PLUGIN_VERB
     }
 
     if (pluginType == "operator")
     {
         // Add the operators
+#define PLUGIN_VERB ADD_OPERATOR_PLUGIN
 #include <enabled_operators.h>
+#undef PLUGIN_VERB
     }
     
     if (pluginType == "database")
     {
         // Add the databases
+#define PLUGIN_VERB ADD_DATABASE_PLUGIN
 #include <enabled_databases.h>
+#undef PLUGIN_VERB
     }
 
 #undef PLUGIN_VERB

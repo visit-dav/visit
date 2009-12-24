@@ -1326,11 +1326,15 @@ AddUniquePluginDir(stringVector &pluginDirs, const std::string &path)
 //    Brad Whitlock, Wed Jun 17 16:28:14 PDT 2009
 //    I made it use AddUniquePluginDir so we don't add a path multiple times.
 //
+//    Brad Whitlock, Wed Dec 23 15:40:03 PST 2009
+//    Don't bother doing anything if VisIt is static.
+//
 // ****************************************************************************
 
 void
 PluginManager::SetPluginDir(const char *PluginDir)
 {
+#ifndef VISIT_STATIC
     const char *plugindir = 0;
     if (PluginDir == 0)
     {
@@ -1361,7 +1365,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
                     EXCEPTION1(VisItException,
                         "The path to AppData variable could not be found.");
                 }
- #else
+#else
                 EXCEPTION1(VisItException,
                     "The environment variable VISITPLUGINDIR must be defined.");
 #endif
@@ -1402,6 +1406,7 @@ PluginManager::SetPluginDir(const char *PluginDir)
         if (*c)
             c++;
     }
+#endif
 }
 
 // ****************************************************************************

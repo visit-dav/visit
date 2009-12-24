@@ -1983,7 +1983,7 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
                 }
 
                 // Free the data that was read from the PDB file.
-                free_void_mem(data, dataType);
+                pdb_free_void_mem(data, dataType);
                 delete [] dims;
             }
             else
@@ -2593,7 +2593,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                 }
                 double *old = (double *) members[i]->data;
                 members[i]->data = xyzloc;
-                free_void_mem((void *)old, members[i]->dataType);
+                pdb_free_void_mem((void *)old, members[i]->dataType);
                 members[i]->ndims = 2;
                 members[i]->dims[0] = 6;
                 members[i]->dims[1] = ndom;
@@ -2626,7 +2626,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                 }
                 char *old = (char *) members[i]->data;
                 members[i]->data = prefix;
-                free_void_mem((void *)old, members[i]->dataType);
+                pdb_free_void_mem((void *)old, members[i]->dataType);
                 members[i]->ndims = 2;
                 members[i]->dims[0] = len;
                 members[i]->dims[1] = ndom;
@@ -2683,7 +2683,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                     strncpy(viz_nams+nd+len, oldnam+j*len, len);
                 }
                 members[i]->data = (void *) viz_nams;
-                free_void_mem((void *)oldnam, members[i]->dataType);
+                pdb_free_void_mem((void *)oldnam, members[i]->dataType);
                 members[i]->ndims = 3;
                 members[i]->dims[0] = len;
                 members[i]->dims[1] = 2;
@@ -2947,7 +2947,7 @@ PF3DFileFormat::MasterInformation::MemberData::MemberData() : name()
 PF3DFileFormat::MasterInformation::MemberData::~MemberData()
 {
     if(data != 0)
-        free_void_mem(data, dataType);
+        pdb_free_void_mem(data, dataType);
 }
 
 // ****************************************************************************

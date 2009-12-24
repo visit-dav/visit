@@ -90,17 +90,6 @@ static void  OrderWedgePoints(const vector< vector<int> > &, int *);
  
 const char   *avtKullLiteFileFormat::MESHNAME = "mesh";
 
-//
-// Define some functions so if PDB was compiled with a weird non-g++ compiler,
-// we still have symbols that we need in order to link.
-//
-extern "C" void ieee_handler(int)           { }
-extern "C" void standard_arithmetic(int)    { }
-extern "C" void nonstandard_arithmetic(int) { }
-extern "C" void __mth_i_dpowd(void)         { }
-extern "C" void __arg_reduce_(void)         { }
-extern "C" void __pgdbg_stub(void)          { }
-
 // ****************************************************************************
 //  Method: avtKullLiteFileFormat constructor
 //

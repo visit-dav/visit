@@ -161,7 +161,7 @@ JMFileFormat::VarItem::~VarItem()
     if(dims != 0)
         delete [] dims;
     if(data != 0)
-        free_void_mem(data, type);
+        pdb_free_void_mem(data, type);
 }
 
 // ****************************************************************************
@@ -808,7 +808,7 @@ JMFileFormat::ReadIREG()
             long *src = (long *)ireg->data;
             for(int i = 0; i < ireg->nTotalElements; ++i)
                 imats[i] = (int)src[i];
-            free_void_mem(ireg->data, ireg->type);
+            pdb_free_void_mem(ireg->data, ireg->type);
             ireg->data = (void*)imats;
             ireg->type = INTEGERARRAY_TYPE;
         }
@@ -1062,7 +1062,7 @@ JMFileFormat::GetVar(int timestate, const char *varname)
             var_data, var->type, nvals);
     }
 #ifdef REVERSE_DATA
-    free_void_mem(var_data, var->type);
+    pdb_free_void_mem(var_data, var->type);
 #endif
 
     return arr;

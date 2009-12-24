@@ -40,19 +40,6 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
-#if !defined(__APPLE__)
-//
-// Define some functions so if PDB was compiled with a weird non-g++ compiler,
-// we still have symbols that we need in order to link.
-//
-extern "C" void ieee_handler(int)           { }
-extern "C" void standard_arithmetic(int)    { }
-extern "C" void nonstandard_arithmetic(int) { }
-extern "C" void __mth_i_dpowd(void)         { }
-extern "C" void __arg_reduce_(void)         { }
-extern "C" void __pgdbg_stub(void)          { }
-#endif
-
 //
 // Define functions to free memory.
 //
@@ -80,7 +67,7 @@ void free_mem(T *ptr)
 }
 
 // ****************************************************************************
-// Function: free_void_mem
+// Function: pdb_free_void_mem
 //
 // Purpose: 
 //   Function to free void* memory.
@@ -97,7 +84,7 @@ void free_mem(T *ptr)
 // ****************************************************************************
 
 void
-free_void_mem(void *ptr, TypeEnum t)
+pdb_free_void_mem(void *ptr, TypeEnum t)
 {
     char   *cptr = (char *)  ptr;
     int    *iptr = (int *)   ptr;
@@ -422,7 +409,7 @@ PDBFileObject::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
                 debug4 << "PDBFileObject::ReadValues: PD_read failed for " << name
                        << ". " << PDBLIB_ERRORSTRING << endl;
 
-                free_void_mem(retval, *t);
+                pdb_free_void_mem(retval, *t);
                 retval = 0;
                 *t = NO_TYPE;
                 *nTotalElements = 0;
@@ -503,7 +490,7 @@ PDBFileObject::GetString(const char *name, char **str, int *len)
                     *len = length;
             }
             else
-                free_void_mem(val, t);
+                pdb_free_void_mem(val, t);
         }
     }
 
@@ -619,13 +606,13 @@ PDBFileObject::GetDoubleArray(const char *name, double **d, int *nvals)
                 double *dptr = dstorage;
                 for(int i = 0; i < length; ++i)
                     *dptr++ = double(*fptr++);
-                free_void_mem(val, t);
+                pdb_free_void_mem(val, t);
 
                 *d = dstorage;
                 *nvals = length;
             }
             else
-                free_void_mem(val, t);
+                pdb_free_void_mem(val, t);
         }
     }
 
@@ -747,7 +734,7 @@ PDBFileObject::GetIntegerArray(const char *name, int **i, int *nvals)
                 *nvals = length;
             }
             else
-                free_void_mem(val, t);
+                pdb_free_void_mem(val, t);
         }
     }
 
