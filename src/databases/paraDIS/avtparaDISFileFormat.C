@@ -88,12 +88,21 @@ avtparaDISFileFormat::avtparaDISFileFormat(const char *filename)
     mVerbosity(0), mFilename(filename) {
  
   paraDIS_init(); 
-  mVerbosity = DebugStream::GetLevel(); 
+  if (debug1_real) mVerbosity++;
+  if (debug2_real) mVerbosity++;
+  if (debug3_real) mVerbosity++;
+  if (debug4_real) mVerbosity++;
+  if (debug5_real) mVerbosity++;
+  
   string debugfile ; 
+  char *paradis_verbose = getenv("PARADIS_VERBOSE"); 
+  if (paradis_verbose) {
+    mVerbosity = atoi(paradis_verbose); 
+  }
+  
   if (mVerbosity) {
     debugfile = "paradis_debug_out.log";
   }
-  
   paraDIS_SetVerbosity(mVerbosity, debugfile.c_str()); 
   /*!
     Write out files
