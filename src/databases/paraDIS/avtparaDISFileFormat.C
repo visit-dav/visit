@@ -88,12 +88,8 @@ avtparaDISFileFormat::avtparaDISFileFormat(const char *filename)
     mVerbosity(0), mFilename(filename) {
  
   paraDIS_init(); 
-  if (debug1_real) mVerbosity++;
-  if (debug2_real) mVerbosity++;
-  if (debug3_real) mVerbosity++;
-  if (debug4_real) mVerbosity++;
-  if (debug5_real) mVerbosity++;
-  
+  mVerbosity = DebugStream::GetLevel(); 
+ 
   string debugfile ; 
   char *paradis_verbose = getenv("PARADIS_VERBOSE"); 
   if (paradis_verbose) {
