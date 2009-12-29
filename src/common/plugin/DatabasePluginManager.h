@@ -93,6 +93,9 @@ class EngineDatabasePluginInfo;
 //    Replaced "Extensions" and "Filenames" with "FilePatterns".  Added
 //    filePatternsStrict and opensWholeDirectory.
 //
+//    Jeremy Meredith, Tue Dec 29 15:52:06 EST 2009
+//    Added ability to report warnings occurring during file opening.
+//
 // ****************************************************************************
 
 class PLUGIN_API DatabasePluginManager : public PluginManager
@@ -118,6 +121,8 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
 
     std::vector<std::string>        GetMatchingPluginIds(const char *fname,
                                         bool searchAll = false);
+
+    void                            ReportWarning(const std::string &w);
 
   private:
     virtual bool                    LoadGeneralPluginInfo();
