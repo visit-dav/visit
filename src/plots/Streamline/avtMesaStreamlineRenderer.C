@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400124
+* LLNL-CODE-400142
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -37,55 +37,22 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtStreamlinePolyDataFilter.h                      //
+//                           avtMesaStreamlineRenderer.C                       //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_POLY_DATA_FILTER_H
-#define AVT_STREAMLINE_POLY_DATA_FILTER_H
+#include <avtMesaStreamlineRenderer.h>
 
-#include <avtStreamlineFilter.h>
+// Mangle the GL calls to mgl.
+#include <GL/gl_mangle.h>
 
+#define avtOpenGLStreamlineRenderer avtMesaStreamlineRenderer
+#define avtOpenGLAtomTexturer avtMesaAtomTexturer
 
-// ****************************************************************************
-// Class: avtStreamlinePolyDataFilter
-//
-// Purpose:
-//     This class inherits from avtStreamlineFilter and its sole job is to
-//     implement CreateStreamlineOutput, which it does by creating vtkPolyData.
-//
-// Notes:  The original implementation of CreateStreamlineOutput was in
-//         avtStreamlineFilter and was by Dave Pugmire.  That code was moved to
-//         this module by Hank Childs during a later refactoring that allowed
-//         the avtStreamlineFilter to be used in more places.
-//
-// Programmer: Hank Childs (refactoring) / Dave Pugmire (actual code)
-// Creation:   December 2, 2008
-//
-//   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved GetVTKPolyData from avtStreamlineWrapper to here.
-//
-//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the streamlines plots.
-//
-// ****************************************************************************
+#define VTK_IMPLEMENT_MESA_CXX
 
-class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
-{
-  public:
-                              avtStreamlinePolyDataFilter() {}
-    virtual                  ~avtStreamlinePolyDataFilter() {}
-    static                    std::string colorvarArrayName;
-    static                    std::string paramArrayName;
-    static                    std::string opacityArrayName;
-    static                    std::string thetaArrayName;
+#include "avtOpenGLStreamlineRenderer.C"
 
-  protected:
-    vtkPolyData*              GetVTKPolyData(avtStreamline *sl, int id);
-    void                      CreateStreamlineOutput( 
-                                 vector<avtStreamlineWrapper *> &streamlines );
-};
-
-
-#endif
+#undef  avtOpenGLStreamlineRenderer
+#undef  avtOpenGLAtomTexturer
 
 

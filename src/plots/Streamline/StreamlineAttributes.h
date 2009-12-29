@@ -109,6 +109,12 @@ public:
         DormandPrince,
         AdamsBashforth
     };
+    enum OpacityType
+    {
+        None,
+        Constant,
+        VariableRange
+    };
 
     // These constructors are for objects of this class
     StreamlineAttributes();
@@ -147,6 +153,7 @@ public:
     void SelectColorTableName();
     void SelectSingleColor();
     void SelectColoringVariable();
+    void SelectOpacityVariable();
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
@@ -189,6 +196,20 @@ public:
     void SetLegendMaxFlag(bool legendMaxFlag_);
     void SetLegendMin(double legendMin_);
     void SetLegendMax(double legendMax_);
+    void SetDisplayBegin(double displayBegin_);
+    void SetDisplayEnd(double displayEnd_);
+    void SetDisplayBeginFlag(bool displayBeginFlag_);
+    void SetDisplayEndFlag(bool displayEndFlag_);
+    void SetSeedDisplayRadius(double seedDisplayRadius_);
+    void SetOpacityType(OpacityType opacityType_);
+    void SetOpacityVariable(const std::string &opacityVariable_);
+    void SetOpacity(double opacity_);
+    void SetOpacityVarMin(double opacityVarMin_);
+    void SetOpacityVarMax(double opacityVarMax_);
+    void SetOpacityVarMinFlag(bool opacityVarMinFlag_);
+    void SetOpacityVarMaxFlag(bool opacityVarMaxFlag_);
+    void SetTubeDisplayDensity(int tubeDisplayDensity_);
+    void SetSeedDisplayDensity(int seedDisplayDensity_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -243,6 +264,21 @@ public:
     bool                 GetLegendMaxFlag() const;
     double               GetLegendMin() const;
     double               GetLegendMax() const;
+    double               GetDisplayBegin() const;
+    double               GetDisplayEnd() const;
+    bool                 GetDisplayBeginFlag() const;
+    bool                 GetDisplayEndFlag() const;
+    double               GetSeedDisplayRadius() const;
+    OpacityType          GetOpacityType() const;
+    const std::string    &GetOpacityVariable() const;
+          std::string    &GetOpacityVariable();
+    double               GetOpacity() const;
+    double               GetOpacityVarMin() const;
+    double               GetOpacityVarMax() const;
+    bool                 GetOpacityVarMinFlag() const;
+    bool                 GetOpacityVarMaxFlag() const;
+    int                  GetTubeDisplayDensity() const;
+    int                  GetSeedDisplayDensity() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -283,6 +319,11 @@ public:
     static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
     static std::string IntegrationType_ToString(int);
+public:
+    static std::string OpacityType_ToString(OpacityType);
+    static bool OpacityType_FromString(const std::string &, OpacityType &);
+protected:
+    static std::string OpacityType_ToString(int);
 public:
 
     // Keyframing methods
@@ -336,6 +377,20 @@ public:
         ID_legendMaxFlag,
         ID_legendMin,
         ID_legendMax,
+        ID_displayBegin,
+        ID_displayEnd,
+        ID_displayBeginFlag,
+        ID_displayEndFlag,
+        ID_seedDisplayRadius,
+        ID_opacityType,
+        ID_opacityVariable,
+        ID_opacity,
+        ID_opacityVarMin,
+        ID_opacityVarMax,
+        ID_opacityVarMinFlag,
+        ID_opacityVarMaxFlag,
+        ID_tubeDisplayDensity,
+        ID_seedDisplayDensity,
         ID__LAST
     };
 
@@ -380,11 +435,25 @@ private:
     bool           legendMaxFlag;
     double         legendMin;
     double         legendMax;
+    double         displayBegin;
+    double         displayEnd;
+    bool           displayBeginFlag;
+    bool           displayEndFlag;
+    double         seedDisplayRadius;
+    int            opacityType;
+    std::string    opacityVariable;
+    double         opacity;
+    double         opacityVarMin;
+    double         opacityVarMax;
+    bool           opacityVarMinFlag;
+    bool           opacityVarMaxFlag;
+    int            tubeDisplayDensity;
+    int            seedDisplayDensity;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibdiisabbiddiiiiiibsbbdd"
+#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibdiisabbiddiiiiiibsbbddddbbdisdddbbii"
 
 #endif

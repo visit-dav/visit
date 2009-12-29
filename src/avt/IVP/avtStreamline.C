@@ -139,7 +139,30 @@ avtStreamline::~avtStreamline()
     _ivpSolver = NULL;
     for(iterator si = begin(); si != end(); si++)
          delete *si;
-}    
+}
+
+// ****************************************************************************
+//  Method: avtStreamline::GetVariableIdx
+//
+//  Purpose:
+//      Lookup the index of a variable.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 29, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtStreamline::GetVariableIdx(const std::string &var) const
+{
+    for (int i = 0; i < scalars.size(); i++)
+        if (scalars[i] == var)
+            return i;
+
+    return -1;
+}
 
 
 // ****************************************************************************
@@ -243,6 +266,9 @@ avtStreamline::Advance(const avtIVPField* field,
 //   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //   Add new termination criterion: Number of intersections with an object.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Generalize the compute scalar variable.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -334,8 +360,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 step->ComputeVorticity(field);
             if (scalarValueType & SPEED)
                 step->ComputeSpeed(field);
-            if (scalarValueType & SCALAR_VARIABLE)
-                step->ComputeScalarVariable(field);
+            if (!scalars.empty())
+                step->ComputeScalarVariables(scalars, field);
             
             if (end < 0) //backwards
                 _steps.push_front( step );

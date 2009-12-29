@@ -1,8 +1,14 @@
 <?xml version="1.0"?>
   <Plugin name="Streamline" type="plot" label="Streamline" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="vector" iconFile="Streamline.xpm">
     <Files components="V">
+      avtStreamlineRenderer.C
+      avtMesaStreamlineRenderer.C
+      avtOpenGLStreamlineRenderer.C
     </Files>
     <Files components="E">
+      avtStreamlineRenderer.C
+      avtMesaStreamlineRenderer.C
+      avtOpenGLStreamlineRenderer.C
     </Files>
     <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">
@@ -45,6 +51,11 @@
       <Enum name="IntegrationType">
         DormandPrince
         AdamsBashforth
+      </Enum>
+      <Enum name="OpacityType">
+        None
+        Constant
+        VariableRange
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
@@ -194,6 +205,47 @@
       </Field>
       <Field name="legendMax" label="legendMax" type="double">
         1.000000
+      </Field>
+      <Field name="displayBegin" label="displayBegin" type="double">
+        0.000000
+      </Field>
+      <Field name="displayEnd" label="displayEnd" type="double">
+        1.000000
+      </Field>
+      <Field name="displayBeginFlag" label="displayBeginFlag" type="bool">
+        false
+      </Field>
+      <Field name="displayEndFlag" label="displayEndFlag" type="bool">
+        false
+      </Field>
+      <Field name="seedDisplayRadius" label="displaySeedRadius" type="double">
+        0.250000
+      </Field>
+      <Field name="opacityType" label="opacityType" type="enum" subtype="OpacityType">
+        None
+      </Field>
+      <Field name="opacityVariable" label="opacityVariable" type="string">
+      </Field>
+      <Field name="opacity" label="opacity" type="double">
+        1.000000
+      </Field>
+      <Field name="opacityVarMin" label="opacityVarMin" type="double">
+        0.000000
+      </Field>
+      <Field name="opacityVarMax" label="opacityVarMax" type="double">
+        1.000000
+      </Field>
+      <Field name="opacityVarMinFlag" label="opacityVarMinFlag" type="bool">
+        false
+      </Field>
+      <Field name="opacityVarMaxFlag" label="opactityVarMaxFlag" type="bool">
+        false
+      </Field>
+      <Field name="tubeDisplayDensity" label="tubeDisplayDensity" type="int">
+        10
+      </Field>
+      <Field name="seedDisplayDensity" label="seedDisplayDensity" type="int">
+        1
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

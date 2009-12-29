@@ -312,6 +312,44 @@ StreamlineAttributes::IntegrationType_FromString(const std::string &s, Streamlin
     return false;
 }
 
+//
+// Enum conversion methods for StreamlineAttributes::OpacityType
+//
+
+static const char *OpacityType_strings[] = {
+"None", "Constant", "VariableRange"
+};
+
+std::string
+StreamlineAttributes::OpacityType_ToString(StreamlineAttributes::OpacityType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return OpacityType_strings[index];
+}
+
+std::string
+StreamlineAttributes::OpacityType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return OpacityType_strings[index];
+}
+
+bool
+StreamlineAttributes::OpacityType_FromString(const std::string &s, StreamlineAttributes::OpacityType &val)
+{
+    val = StreamlineAttributes::None;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == OpacityType_strings[i])
+        {
+            val = (OpacityType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
 //
@@ -393,6 +431,19 @@ void StreamlineAttributes::Init()
     legendMaxFlag = false;
     legendMin = 0;
     legendMax = 1;
+    displayBegin = 0;
+    displayEnd = 1;
+    displayBeginFlag = false;
+    displayEndFlag = false;
+    seedDisplayRadius = 0.25;
+    opacityType = None;
+    opacity = 1;
+    opacityVarMin = 0;
+    opacityVarMax = 1;
+    opacityVarMinFlag = false;
+    opacityVarMaxFlag = false;
+    tubeDisplayDensity = 10;
+    seedDisplayDensity = 1;
 
     StreamlineAttributes::SelectAll();
 }
@@ -478,6 +529,20 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     legendMaxFlag = obj.legendMaxFlag;
     legendMin = obj.legendMin;
     legendMax = obj.legendMax;
+    displayBegin = obj.displayBegin;
+    displayEnd = obj.displayEnd;
+    displayBeginFlag = obj.displayBeginFlag;
+    displayEndFlag = obj.displayEndFlag;
+    seedDisplayRadius = obj.seedDisplayRadius;
+    opacityType = obj.opacityType;
+    opacityVariable = obj.opacityVariable;
+    opacity = obj.opacity;
+    opacityVarMin = obj.opacityVarMin;
+    opacityVarMax = obj.opacityVarMax;
+    opacityVarMinFlag = obj.opacityVarMinFlag;
+    opacityVarMaxFlag = obj.opacityVarMaxFlag;
+    tubeDisplayDensity = obj.tubeDisplayDensity;
+    seedDisplayDensity = obj.seedDisplayDensity;
 
     StreamlineAttributes::SelectAll();
 }
@@ -716,7 +781,21 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (legendMinFlag == obj.legendMinFlag) &&
             (legendMaxFlag == obj.legendMaxFlag) &&
             (legendMin == obj.legendMin) &&
-            (legendMax == obj.legendMax));
+            (legendMax == obj.legendMax) &&
+            (displayBegin == obj.displayBegin) &&
+            (displayEnd == obj.displayEnd) &&
+            (displayBeginFlag == obj.displayBeginFlag) &&
+            (displayEndFlag == obj.displayEndFlag) &&
+            (seedDisplayRadius == obj.seedDisplayRadius) &&
+            (opacityType == obj.opacityType) &&
+            (opacityVariable == obj.opacityVariable) &&
+            (opacity == obj.opacity) &&
+            (opacityVarMin == obj.opacityVarMin) &&
+            (opacityVarMax == obj.opacityVarMax) &&
+            (opacityVarMinFlag == obj.opacityVarMinFlag) &&
+            (opacityVarMaxFlag == obj.opacityVarMaxFlag) &&
+            (tubeDisplayDensity == obj.tubeDisplayDensity) &&
+            (seedDisplayDensity == obj.seedDisplayDensity));
 }
 
 // ****************************************************************************
@@ -999,6 +1078,20 @@ StreamlineAttributes::SelectAll()
     Select(ID_legendMaxFlag,             (void *)&legendMaxFlag);
     Select(ID_legendMin,                 (void *)&legendMin);
     Select(ID_legendMax,                 (void *)&legendMax);
+    Select(ID_displayBegin,              (void *)&displayBegin);
+    Select(ID_displayEnd,                (void *)&displayEnd);
+    Select(ID_displayBeginFlag,          (void *)&displayBeginFlag);
+    Select(ID_displayEndFlag,            (void *)&displayEndFlag);
+    Select(ID_seedDisplayRadius,         (void *)&seedDisplayRadius);
+    Select(ID_opacityType,               (void *)&opacityType);
+    Select(ID_opacityVariable,           (void *)&opacityVariable);
+    Select(ID_opacity,                   (void *)&opacity);
+    Select(ID_opacityVarMin,             (void *)&opacityVarMin);
+    Select(ID_opacityVarMax,             (void *)&opacityVarMax);
+    Select(ID_opacityVarMinFlag,         (void *)&opacityVarMinFlag);
+    Select(ID_opacityVarMaxFlag,         (void *)&opacityVarMaxFlag);
+    Select(ID_tubeDisplayDensity,        (void *)&tubeDisplayDensity);
+    Select(ID_seedDisplayDensity,        (void *)&seedDisplayDensity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1273,6 +1366,90 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("legendMax", legendMax));
     }
 
+    if(completeSave || !FieldsEqual(ID_displayBegin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayBegin", displayBegin));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displayEnd, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayEnd", displayEnd));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displayBeginFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayBeginFlag", displayBeginFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displayEndFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayEndFlag", displayEndFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_seedDisplayRadius, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("seedDisplayRadius", seedDisplayRadius));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacityType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityType", OpacityType_ToString(opacityType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacityVariable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityVariable", opacityVariable));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacity", opacity));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacityVarMin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityVarMin", opacityVarMin));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacityVarMax, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityVarMax", opacityVarMax));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacityVarMinFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityVarMinFlag", opacityVarMinFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacityVarMaxFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityVarMaxFlag", opacityVarMaxFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tubeDisplayDensity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tubeDisplayDensity", tubeDisplayDensity));
+    }
+
+    if(completeSave || !FieldsEqual(ID_seedDisplayDensity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("seedDisplayDensity", seedDisplayDensity));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1487,6 +1664,48 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetLegendMin(node->AsDouble());
     if((node = searchNode->GetNode("legendMax")) != 0)
         SetLegendMax(node->AsDouble());
+    if((node = searchNode->GetNode("displayBegin")) != 0)
+        SetDisplayBegin(node->AsDouble());
+    if((node = searchNode->GetNode("displayEnd")) != 0)
+        SetDisplayEnd(node->AsDouble());
+    if((node = searchNode->GetNode("displayBeginFlag")) != 0)
+        SetDisplayBeginFlag(node->AsBool());
+    if((node = searchNode->GetNode("displayEndFlag")) != 0)
+        SetDisplayEndFlag(node->AsBool());
+    if((node = searchNode->GetNode("seedDisplayRadius")) != 0)
+        SetSeedDisplayRadius(node->AsDouble());
+    if((node = searchNode->GetNode("opacityType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetOpacityType(OpacityType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OpacityType value;
+            if(OpacityType_FromString(node->AsString(), value))
+                SetOpacityType(value);
+        }
+    }
+    if((node = searchNode->GetNode("opacityVariable")) != 0)
+        SetOpacityVariable(node->AsString());
+    if((node = searchNode->GetNode("opacity")) != 0)
+        SetOpacity(node->AsDouble());
+    if((node = searchNode->GetNode("opacityVarMin")) != 0)
+        SetOpacityVarMin(node->AsDouble());
+    if((node = searchNode->GetNode("opacityVarMax")) != 0)
+        SetOpacityVarMax(node->AsDouble());
+    if((node = searchNode->GetNode("opacityVarMinFlag")) != 0)
+        SetOpacityVarMinFlag(node->AsBool());
+    if((node = searchNode->GetNode("opacityVarMaxFlag")) != 0)
+        SetOpacityVarMaxFlag(node->AsBool());
+    if((node = searchNode->GetNode("tubeDisplayDensity")) != 0)
+        SetTubeDisplayDensity(node->AsInt());
+    if((node = searchNode->GetNode("seedDisplayDensity")) != 0)
+        SetSeedDisplayDensity(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1786,6 +2005,104 @@ StreamlineAttributes::SetLegendMax(double legendMax_)
 {
     legendMax = legendMax_;
     Select(ID_legendMax, (void *)&legendMax);
+}
+
+void
+StreamlineAttributes::SetDisplayBegin(double displayBegin_)
+{
+    displayBegin = displayBegin_;
+    Select(ID_displayBegin, (void *)&displayBegin);
+}
+
+void
+StreamlineAttributes::SetDisplayEnd(double displayEnd_)
+{
+    displayEnd = displayEnd_;
+    Select(ID_displayEnd, (void *)&displayEnd);
+}
+
+void
+StreamlineAttributes::SetDisplayBeginFlag(bool displayBeginFlag_)
+{
+    displayBeginFlag = displayBeginFlag_;
+    Select(ID_displayBeginFlag, (void *)&displayBeginFlag);
+}
+
+void
+StreamlineAttributes::SetDisplayEndFlag(bool displayEndFlag_)
+{
+    displayEndFlag = displayEndFlag_;
+    Select(ID_displayEndFlag, (void *)&displayEndFlag);
+}
+
+void
+StreamlineAttributes::SetSeedDisplayRadius(double seedDisplayRadius_)
+{
+    seedDisplayRadius = seedDisplayRadius_;
+    Select(ID_seedDisplayRadius, (void *)&seedDisplayRadius);
+}
+
+void
+StreamlineAttributes::SetOpacityType(StreamlineAttributes::OpacityType opacityType_)
+{
+    opacityType = opacityType_;
+    Select(ID_opacityType, (void *)&opacityType);
+}
+
+void
+StreamlineAttributes::SetOpacityVariable(const std::string &opacityVariable_)
+{
+    opacityVariable = opacityVariable_;
+    Select(ID_opacityVariable, (void *)&opacityVariable);
+}
+
+void
+StreamlineAttributes::SetOpacity(double opacity_)
+{
+    opacity = opacity_;
+    Select(ID_opacity, (void *)&opacity);
+}
+
+void
+StreamlineAttributes::SetOpacityVarMin(double opacityVarMin_)
+{
+    opacityVarMin = opacityVarMin_;
+    Select(ID_opacityVarMin, (void *)&opacityVarMin);
+}
+
+void
+StreamlineAttributes::SetOpacityVarMax(double opacityVarMax_)
+{
+    opacityVarMax = opacityVarMax_;
+    Select(ID_opacityVarMax, (void *)&opacityVarMax);
+}
+
+void
+StreamlineAttributes::SetOpacityVarMinFlag(bool opacityVarMinFlag_)
+{
+    opacityVarMinFlag = opacityVarMinFlag_;
+    Select(ID_opacityVarMinFlag, (void *)&opacityVarMinFlag);
+}
+
+void
+StreamlineAttributes::SetOpacityVarMaxFlag(bool opacityVarMaxFlag_)
+{
+    opacityVarMaxFlag = opacityVarMaxFlag_;
+    Select(ID_opacityVarMaxFlag, (void *)&opacityVarMaxFlag);
+}
+
+void
+StreamlineAttributes::SetTubeDisplayDensity(int tubeDisplayDensity_)
+{
+    tubeDisplayDensity = tubeDisplayDensity_;
+    Select(ID_tubeDisplayDensity, (void *)&tubeDisplayDensity);
+}
+
+void
+StreamlineAttributes::SetSeedDisplayDensity(int seedDisplayDensity_)
+{
+    seedDisplayDensity = seedDisplayDensity_;
+    Select(ID_seedDisplayDensity, (void *)&seedDisplayDensity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2104,6 +2421,96 @@ StreamlineAttributes::GetLegendMax() const
     return legendMax;
 }
 
+double
+StreamlineAttributes::GetDisplayBegin() const
+{
+    return displayBegin;
+}
+
+double
+StreamlineAttributes::GetDisplayEnd() const
+{
+    return displayEnd;
+}
+
+bool
+StreamlineAttributes::GetDisplayBeginFlag() const
+{
+    return displayBeginFlag;
+}
+
+bool
+StreamlineAttributes::GetDisplayEndFlag() const
+{
+    return displayEndFlag;
+}
+
+double
+StreamlineAttributes::GetSeedDisplayRadius() const
+{
+    return seedDisplayRadius;
+}
+
+StreamlineAttributes::OpacityType
+StreamlineAttributes::GetOpacityType() const
+{
+    return OpacityType(opacityType);
+}
+
+const std::string &
+StreamlineAttributes::GetOpacityVariable() const
+{
+    return opacityVariable;
+}
+
+std::string &
+StreamlineAttributes::GetOpacityVariable()
+{
+    return opacityVariable;
+}
+
+double
+StreamlineAttributes::GetOpacity() const
+{
+    return opacity;
+}
+
+double
+StreamlineAttributes::GetOpacityVarMin() const
+{
+    return opacityVarMin;
+}
+
+double
+StreamlineAttributes::GetOpacityVarMax() const
+{
+    return opacityVarMax;
+}
+
+bool
+StreamlineAttributes::GetOpacityVarMinFlag() const
+{
+    return opacityVarMinFlag;
+}
+
+bool
+StreamlineAttributes::GetOpacityVarMaxFlag() const
+{
+    return opacityVarMaxFlag;
+}
+
+int
+StreamlineAttributes::GetTubeDisplayDensity() const
+{
+    return tubeDisplayDensity;
+}
+
+int
+StreamlineAttributes::GetSeedDisplayDensity() const
+{
+    return seedDisplayDensity;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2180,6 +2587,12 @@ StreamlineAttributes::SelectColoringVariable()
     Select(ID_coloringVariable, (void *)&coloringVariable);
 }
 
+void
+StreamlineAttributes::SelectOpacityVariable()
+{
+    Select(ID_opacityVariable, (void *)&opacityVariable);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2244,6 +2657,20 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_legendMaxFlag:             return "legendMaxFlag";
     case ID_legendMin:                 return "legendMin";
     case ID_legendMax:                 return "legendMax";
+    case ID_displayBegin:              return "displayBegin";
+    case ID_displayEnd:                return "displayEnd";
+    case ID_displayBeginFlag:          return "displayBeginFlag";
+    case ID_displayEndFlag:            return "displayEndFlag";
+    case ID_seedDisplayRadius:         return "seedDisplayRadius";
+    case ID_opacityType:               return "opacityType";
+    case ID_opacityVariable:           return "opacityVariable";
+    case ID_opacity:                   return "opacity";
+    case ID_opacityVarMin:             return "opacityVarMin";
+    case ID_opacityVarMax:             return "opacityVarMax";
+    case ID_opacityVarMinFlag:         return "opacityVarMinFlag";
+    case ID_opacityVarMaxFlag:         return "opacityVarMaxFlag";
+    case ID_tubeDisplayDensity:        return "tubeDisplayDensity";
+    case ID_seedDisplayDensity:        return "seedDisplayDensity";
     default:  return "invalid index";
     }
 }
@@ -2308,6 +2735,20 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_legendMaxFlag:             return FieldType_bool;
     case ID_legendMin:                 return FieldType_double;
     case ID_legendMax:                 return FieldType_double;
+    case ID_displayBegin:              return FieldType_double;
+    case ID_displayEnd:                return FieldType_double;
+    case ID_displayBeginFlag:          return FieldType_bool;
+    case ID_displayEndFlag:            return FieldType_bool;
+    case ID_seedDisplayRadius:         return FieldType_double;
+    case ID_opacityType:               return FieldType_enum;
+    case ID_opacityVariable:           return FieldType_string;
+    case ID_opacity:                   return FieldType_double;
+    case ID_opacityVarMin:             return FieldType_double;
+    case ID_opacityVarMax:             return FieldType_double;
+    case ID_opacityVarMinFlag:         return FieldType_bool;
+    case ID_opacityVarMaxFlag:         return FieldType_bool;
+    case ID_tubeDisplayDensity:        return FieldType_int;
+    case ID_seedDisplayDensity:        return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -2372,6 +2813,20 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_legendMaxFlag:             return "bool";
     case ID_legendMin:                 return "double";
     case ID_legendMax:                 return "double";
+    case ID_displayBegin:              return "double";
+    case ID_displayEnd:                return "double";
+    case ID_displayBeginFlag:          return "bool";
+    case ID_displayEndFlag:            return "bool";
+    case ID_seedDisplayRadius:         return "double";
+    case ID_opacityType:               return "enum";
+    case ID_opacityVariable:           return "string";
+    case ID_opacity:                   return "double";
+    case ID_opacityVarMin:             return "double";
+    case ID_opacityVarMax:             return "double";
+    case ID_opacityVarMinFlag:         return "bool";
+    case ID_opacityVarMaxFlag:         return "bool";
+    case ID_tubeDisplayDensity:        return "int";
+    case ID_seedDisplayDensity:        return "int";
     default:  return "invalid index";
     }
 }
@@ -2638,6 +3093,76 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (legendMax == obj.legendMax);
         }
         break;
+    case ID_displayBegin:
+        {  // new scope
+        retval = (displayBegin == obj.displayBegin);
+        }
+        break;
+    case ID_displayEnd:
+        {  // new scope
+        retval = (displayEnd == obj.displayEnd);
+        }
+        break;
+    case ID_displayBeginFlag:
+        {  // new scope
+        retval = (displayBeginFlag == obj.displayBeginFlag);
+        }
+        break;
+    case ID_displayEndFlag:
+        {  // new scope
+        retval = (displayEndFlag == obj.displayEndFlag);
+        }
+        break;
+    case ID_seedDisplayRadius:
+        {  // new scope
+        retval = (seedDisplayRadius == obj.seedDisplayRadius);
+        }
+        break;
+    case ID_opacityType:
+        {  // new scope
+        retval = (opacityType == obj.opacityType);
+        }
+        break;
+    case ID_opacityVariable:
+        {  // new scope
+        retval = (opacityVariable == obj.opacityVariable);
+        }
+        break;
+    case ID_opacity:
+        {  // new scope
+        retval = (opacity == obj.opacity);
+        }
+        break;
+    case ID_opacityVarMin:
+        {  // new scope
+        retval = (opacityVarMin == obj.opacityVarMin);
+        }
+        break;
+    case ID_opacityVarMax:
+        {  // new scope
+        retval = (opacityVarMax == obj.opacityVarMax);
+        }
+        break;
+    case ID_opacityVarMinFlag:
+        {  // new scope
+        retval = (opacityVarMinFlag == obj.opacityVarMinFlag);
+        }
+        break;
+    case ID_opacityVarMaxFlag:
+        {  // new scope
+        retval = (opacityVarMaxFlag == obj.opacityVarMaxFlag);
+        }
+        break;
+    case ID_tubeDisplayDensity:
+        {  // new scope
+        retval = (tubeDisplayDensity == obj.tubeDisplayDensity);
+        }
+        break;
+    case ID_seedDisplayDensity:
+        {  // new scope
+        retval = (seedDisplayDensity == obj.seedDisplayDensity);
+        }
+        break;
     default: retval = false;
     }
 
@@ -2670,6 +3195,9 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 //    Hank Childs, Sun May  3 11:49:31 CDT 2009
 //    Add support for point lists.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
 //
 // ****************************************************************************
 
@@ -2731,12 +3259,17 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         sourceType == SpecifiedBox) &&
         (pointDensity != obj.pointDensity);
 
-    bool radiusMatters = (radius != obj.radius);
+    //If opacity is turned on, or the variable changes...
+    bool opacityMatters = (opacityType == VariableRange) &&
+                          (obj.opacityType != VariableRange ||
+                           opacityVariable != obj.opacityVariable);
+
+    //Ribbons requires the engine to calculate vorticity.
+    bool displayMatters = (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons);
 
     return (sourceType != obj.sourceType) ||
            (StreamlineDirection != obj.StreamlineDirection) ||
-           (displayMethod != obj.displayMethod) ||
-           (showStart != obj.showStart) ||
+           displayMatters ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
            (integrationType != obj.integrationType) ||
@@ -2746,13 +3279,13 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
            (pathlines != obj.pathlines) ||
            (coloringVariable != obj.coloringVariable) ||
+           opacityMatters ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
            sourcePointListDiffers ||
            boxSourceDiffers ||
-           densityMatters ||
-           radiusMatters;
+           densityMatters;
 }
 

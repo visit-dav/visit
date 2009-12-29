@@ -55,6 +55,7 @@
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
+#include <QvisOpacitySlider.h>
 #include <stdio.h>
 
 
@@ -162,6 +163,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
 //   Add color by variable.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 void
@@ -240,8 +244,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     pointDensity = new QSpinBox(topPageSource);
     pointDensity->setMinimum(1);
     pointDensity->setMaximum(1000);
-    connect(pointDensity, SIGNAL(valueChanged(int)), 
-            this, SLOT(pointDensityChanged(int)));
+    connect(pointDensity, SIGNAL(valueChanged(int)), this, SLOT(pointDensityChanged(int)));
     hLayout->addWidget(pointDensity,1,1);
 
     // Create a group box for the source attributes.
@@ -369,48 +372,154 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sLayout->addWidget(pointListLabel,16,0);
     sLayout->addWidget(pointList, 17,0);
 
-    //
     // Create appearance-related widgets.
-    //
     QWidget *pageAppearance = new QWidget(central);
     tabs->addTab(pageAppearance, tr("Appearance"));
-    QGridLayout *aLayout = new QGridLayout(pageAppearance);
-    aLayout->setMargin(10);
-    aLayout->setSpacing(5);
+    CreateAppearanceTab(pageAppearance);
+    
+    // Create advanced widgets.
+    QWidget *pageAdvanced = new QWidget(central);
+    tabs->addTab(pageAdvanced, tr("Advanced"));
+    CreateAdvancedTab(pageAdvanced);
+
+    legendFlag = new QCheckBox(tr("Legend"), central);
+    connect(legendFlag, SIGNAL(toggled(bool)),
+            this, SLOT(legendFlagChanged(bool)));
+    mainLayout->addWidget(legendFlag, 7,0);
+
+    lightingFlag = new QCheckBox(tr("Lighting"), central);
+    connect(lightingFlag, SIGNAL(toggled(bool)),
+            this, SLOT(lightingFlagChanged(bool)));
+    mainLayout->addWidget(lightingFlag, 7,1);
+}
+
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::CreateAppearanceTab
+//
+// Purpose: 
+//   Populates the appearance tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
+{
+    int row = 0;
+    QGridLayout *appearanceLayout = new QGridLayout(pageAppearance);
+    appearanceLayout->setMargin(10);
+    appearanceLayout->setSpacing(5);
+
+    QGroupBox *displayGrp = new QGroupBox(pageAppearance);
+    displayGrp->setTitle(tr("Display options"));
+    appearanceLayout->addWidget(displayGrp, row, 0, 1, 5);
+    row++;
+
+    QGridLayout *dLayout = new QGridLayout(displayGrp);
+    dLayout->setSpacing(10);
+    dLayout->setColumnStretch(1,10);
+    int dRow = 0;
 
     // Create widgets that help determine the appearance of the streamlines.
-    displayMethod = new QComboBox(pageAppearance);
+    displayMethod = new QComboBox(displayGrp);
     displayMethod->addItem(tr("Lines"), 0);
     displayMethod->addItem(tr("Tubes"), 1);
     displayMethod->addItem(tr("Ribbons"), 2);
     connect(displayMethod, SIGNAL(activated(int)),
             this, SLOT(displayMethodChanged(int)));
-    aLayout->addWidget(new QLabel(tr("Display as"), pageAppearance), 0,0);
-    aLayout->addWidget(displayMethod, 0,1);
+    dLayout->addWidget(new QLabel(tr("Draw as"), displayGrp), dRow,0);
+    dRow++;
+    
+    dLayout->addWidget(displayMethod, dRow,0);
 
-    showStart = new QCheckBox(tr("Show start"), pageAppearance);
-    connect(showStart, SIGNAL(toggled(bool)),
-            this, SLOT(showStartChanged(bool)));
-    aLayout->addWidget(showStart, 1,1);
-
-    radius = new QLineEdit(pageAppearance);
-    connect(radius, SIGNAL(returnPressed()),
-            this, SLOT(radiusProcessText()));
-    radiusLabel = new QLabel(tr("Radius"), pageAppearance);
-    radiusLabel->setBuddy(radius);
-    radiusLabel->setToolTip(tr("Radius used for tubes and ribbons."));
-    aLayout->addWidget(radiusLabel,2,0);
-    aLayout->addWidget(radius, 2,1);
-
-    lineWidth = new QvisLineWidthWidget(0, pageAppearance);
+    //--lines
+    lineWidth = new QvisLineWidthWidget(0, displayGrp);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Line width"), pageAppearance);
+    lineWidthLabel = new QLabel(tr("Width"), displayGrp);
     lineWidthLabel->setBuddy(lineWidth);
-    aLayout->addWidget(lineWidthLabel,3,0);
-    aLayout->addWidget(lineWidth, 3,1);
+    dLayout->addWidget(lineWidthLabel,dRow,1);
+    dLayout->addWidget(lineWidth, dRow,2);
 
-    coloringMethod = new QComboBox(pageAppearance);
+    //--tube/ribbon
+    radius = new QLineEdit(displayGrp);
+    connect(radius, SIGNAL(returnPressed()),
+            this, SLOT(radiusProcessText()));
+    radiusLabel = new QLabel(tr("Radius"), displayGrp);
+    radiusLabel->setBuddy(radius);
+    radiusLabel->setToolTip(tr("Radius used for tubes and ribbons."));
+    dLayout->addWidget(radiusLabel,dRow,1);
+    dLayout->addWidget(radius, dRow,2);
+
+
+    tubeDisplayDensity = new QSpinBox(displayGrp);
+    tubeDisplayDensity->setMinimum(2);
+    tubeDisplayDensity->setMaximum(100);
+    tubeDisplayDensityLabel = new QLabel(tr("Display density"), displayGrp);
+    connect(tubeDisplayDensity, SIGNAL(valueChanged(int)), this, SLOT(tubeDisplayDensityChanged(int)));
+    dLayout->addWidget(tubeDisplayDensityLabel, dRow,3);
+    dLayout->addWidget(tubeDisplayDensity, dRow,4);
+    dRow++;
+
+    showSeeds = new QCheckBox(tr("Show seeds"), displayGrp);
+    connect(showSeeds, SIGNAL(toggled(bool)),
+            this, SLOT(showSeedsChanged(bool)));
+    dLayout->addWidget(showSeeds, dRow,0);
+
+
+    seedRadius = new QLineEdit(displayGrp);
+    connect(seedRadius, SIGNAL(returnPressed()), this, SLOT(seedRadiusProcessText()));
+    seedRadiusLabel = new QLabel(tr("Radius"), displayGrp);
+    seedRadiusLabel->setBuddy(seedRadius);
+    seedRadiusLabel->setToolTip(tr("Radius for seed point display."));
+    dLayout->addWidget(seedRadiusLabel,dRow,1);
+    dLayout->addWidget(seedRadius, dRow,2);
+
+    seedDisplayDensity = new QSpinBox(displayGrp);
+    seedDisplayDensity->setMinimum(1);
+    seedDisplayDensity->setMaximum(5);
+    seedDisplayDensityLabel = new QLabel(tr("Display density"), displayGrp);
+    connect(seedDisplayDensity, SIGNAL(valueChanged(int)), this, SLOT(seedDisplayDensityChanged(int)));
+    dLayout->addWidget(seedDisplayDensityLabel, dRow,3);
+    dLayout->addWidget(seedDisplayDensity, dRow,4);
+
+    dRow++;
+
+    displayLabel = new QLabel(tr("Display"), displayGrp);
+    displayBeginToggle = new QCheckBox(tr("Begin"), displayGrp);
+    displayEndToggle = new QCheckBox(tr("End"), displayGrp);
+    connect(displayBeginToggle, SIGNAL(toggled(bool)), this, SLOT(displayBeginToggled(bool)));
+    connect(displayEndToggle, SIGNAL(toggled(bool)), this, SLOT(displayEndToggled(bool)));
+
+    displayBeginEdit = new QLineEdit(displayGrp);
+    displayEndEdit = new QLineEdit(displayGrp);
+    connect(displayBeginEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayBeginText()));
+    connect(displayEndEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayEndText()));
+
+    dLayout->addWidget(displayLabel, dRow,0);
+    dLayout->addWidget(displayEndToggle, dRow,1);
+    dLayout->addWidget(displayEndEdit, dRow,2);
+    dRow++;
+    dLayout->addWidget(displayBeginToggle, dRow,1);
+    dLayout->addWidget(displayBeginEdit, dRow,2);
+    dRow++;
+
+
+    QGroupBox *colorGrp = new QGroupBox(pageAppearance);
+    colorGrp->setTitle(tr("Color options"));
+    appearanceLayout->addWidget(colorGrp, row, 0, 1, 5);
+    row++;
+
+    QGridLayout *cLayout = new QGridLayout(colorGrp);
+    cLayout->setSpacing(10);
+    cLayout->setColumnStretch(1,10);
+    int cRow = 0;
+
+    coloringMethod = new QComboBox(colorGrp);
     coloringMethod->addItem(tr("Solid"),0);
     coloringMethod->addItem(tr("Speed"),1);
     coloringMethod->addItem(tr("Vorticity magnitude"),2);
@@ -420,56 +529,120 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     coloringMethod->addItem(tr("Variable"),6);
     connect(coloringMethod, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
-    aLayout->addWidget(new QLabel(tr("Color by"), pageAppearance), 4,0);
-    aLayout->addWidget(coloringMethod, 4,1);
+    cLayout->addWidget(new QLabel(tr("Color by"), colorGrp), cRow,0);
+    cLayout->addWidget(coloringMethod, cRow, 1);
 
-    varLabel = new QLabel(tr("Color Variable"), pageAppearance);
+    varLabel = new QLabel(tr("Variable"), colorGrp);
     var = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
-                                 pageAppearance);
-    aLayout->addWidget(varLabel,5,0);
-    aLayout->addWidget(var,5,1);
+                                 colorGrp);
+    cLayout->addWidget(varLabel,cRow,2);
+    cLayout->addWidget(var,cRow,3);
     connect(var, SIGNAL(activated(const QString &)),
             this, SLOT(coloringVariableChanged(const QString&)));
+    cRow++;
 
-    colorTableName = new QvisColorTableButton(pageAppearance);
+
+    //--table
+    colorTableName = new QvisColorTableButton(colorGrp);
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
-    colorTableNameLabel = new QLabel(tr("Color table"), pageAppearance);
+    colorTableNameLabel = new QLabel(tr("Color table"), colorGrp);
     colorTableNameLabel->setBuddy(colorTableName);
-    aLayout->addWidget(colorTableNameLabel,6,0);
-    aLayout->addWidget(colorTableName, 6,1, Qt::AlignLeft);
+    cLayout->addWidget(colorTableNameLabel,cRow,0);
+    cLayout->addWidget(colorTableName, cRow,1, Qt::AlignLeft);
 
-    singleColor = new QvisColorButton(pageAppearance);
+    //--single
+    singleColor = new QvisColorButton(colorGrp);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
-    singleColorLabel = new QLabel(tr("Single color"), pageAppearance);
+    singleColorLabel = new QLabel(tr("Single color"), colorGrp);
     singleColorLabel->setBuddy(singleColor);
-    aLayout->addWidget(singleColorLabel,7,0);
-    aLayout->addWidget(singleColor, 7,1, Qt::AlignLeft);
+    cLayout->addWidget(singleColorLabel,cRow,0);
+    cLayout->addWidget(singleColor, cRow,1, Qt::AlignLeft);
+    cRow++;
 
-    
     //min/max display.
-    limitsLabel = new QLabel(tr("Limits"), pageAppearance);
-    legendMaxToggle = new QCheckBox(tr("Max"), pageAppearance);
-    legendMinToggle = new QCheckBox(tr("Min"), pageAppearance);
+    limitsLabel = new QLabel(tr("Limits"), colorGrp);
+    legendMaxToggle = new QCheckBox(tr("Max"), colorGrp);
+    legendMinToggle = new QCheckBox(tr("Min"), colorGrp);
     connect(legendMaxToggle, SIGNAL(toggled(bool)), this, SLOT(legendMaxToggled(bool)));
     connect(legendMinToggle, SIGNAL(toggled(bool)), this, SLOT(legendMinToggled(bool)));
 
-    legendMaxEdit = new QLineEdit(pageAppearance);
-    legendMinEdit = new QLineEdit(pageAppearance);
+    legendMaxEdit = new QLineEdit(colorGrp);
+    legendMinEdit = new QLineEdit(colorGrp);
     connect(legendMaxEdit, SIGNAL(returnPressed()), this, SLOT(processMaxLimitText()));
     connect(legendMinEdit, SIGNAL(returnPressed()), this, SLOT(processMinLimitText()));
-    aLayout->addWidget(limitsLabel, 8,0);
-    aLayout->addWidget(legendMaxToggle, 8,1);
-    aLayout->addWidget(legendMaxEdit, 8,2);
-    aLayout->addWidget(legendMinToggle, 9,1);
-    aLayout->addWidget(legendMinEdit, 9,2);
+    cLayout->addWidget(limitsLabel, cRow,0);
+    cLayout->addWidget(legendMaxToggle, cRow,1);
+    cLayout->addWidget(legendMaxEdit, cRow,2);
+    cRow++;
+    cLayout->addWidget(legendMinToggle, cRow,1);
+    cLayout->addWidget(legendMinEdit, cRow,2);
+    cRow++;
 
-    //
-    // Create advanced widgets.
-    //
-    QWidget *pageAdvanced = new QWidget(central);
-    tabs->addTab(pageAdvanced, tr("Advanced"));
+    
+    // Create the opacity widgets.
+    opacityType = new QComboBox(colorGrp);
+    opacityType->addItem(tr("None"),0);
+    opacityType->addItem(tr("Constant"),1);
+    opacityType->addItem(tr("Variable Range"),2);
+    connect(opacityType, SIGNAL(activated(int)),
+            this, SLOT(opacityTypeChanged(int)));
+    cLayout->addWidget(new QLabel(tr("Opacity"), colorGrp), cRow,0);
+    cLayout->addWidget(opacityType, cRow, 1);
+
+    opacityVarLabel = new QLabel(tr("Variable"), colorGrp);
+    opacityVar = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
+                                 colorGrp);
+    cLayout->addWidget(opacityVarLabel,cRow,2);
+    cLayout->addWidget(opacityVar,cRow,3);
+    connect(opacityVar, SIGNAL(activated(const QString &)),
+            this, SLOT(opacityVariableChanged(const QString&)));
+
+    cRow++;
+    opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, colorGrp);
+    opacitySlider->setTickInterval(64);
+    opacitySlider->setGradientColor(QColor(0, 0, 0));
+    connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(opacityChanged(int, const void*)));
+    cLayout->addWidget(opacitySlider, cRow, 1, 1,3);
+    cRow++;
+
+    opacityMinToggle = new QCheckBox(tr("Opacity Min"), displayGrp);
+    opacityMaxToggle = new QCheckBox(tr("Opacity Max"), displayGrp);
+    connect(opacityMinToggle, SIGNAL(toggled(bool)), this, SLOT(opacityMinToggled(bool)));
+    connect(opacityMaxToggle, SIGNAL(toggled(bool)), this, SLOT(opacityMaxToggled(bool)));
+
+    opacityVarMin = new QLineEdit(colorGrp);
+    opacityVarMax = new QLineEdit(colorGrp);
+
+    connect(opacityVarMin, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMin()));
+    connect(opacityVarMax, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMax()));
+    cLayout->addWidget(opacityMaxToggle, cRow, 1);
+    cLayout->addWidget(opacityVarMax, cRow, 2);
+    cRow++;
+    cLayout->addWidget(opacityMinToggle, cRow, 1);
+    cLayout->addWidget(opacityVarMin, cRow, 2);
+    cRow++;   
+}
+
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::CreateAdvancedTab
+//
+// Purpose: 
+//   Populates the advanced tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
+{
+    int row = 0;
     QGridLayout *advGLayout = new QGridLayout(pageAdvanced);
     advGLayout->setMargin(5);
     advGLayout->setSpacing(5);
@@ -560,17 +733,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(relTolProcessText()));
     intGLayout->addWidget(relTolLabel, 3,0);
     intGLayout->addWidget(relTol, 3,1);
-
-
-    legendFlag = new QCheckBox(tr("Legend"), central);
-    connect(legendFlag, SIGNAL(toggled(bool)),
-            this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 7,0);
-
-    lightingFlag = new QCheckBox(tr("Lighting"), central);
-    connect(lightingFlag, SIGNAL(toggled(bool)),
-            this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 7,1);
 }
 
 // ****************************************************************************
@@ -651,6 +813,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
 //   Added workGroupSize for the masterSlave algorithm.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
 //
 // ****************************************************************************
 
@@ -753,29 +918,72 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             pointDensity->setValue(streamAtts->GetPointDensity());
             pointDensity->blockSignals(false);
             break;
+
+          case StreamlineAttributes::ID_tubeDisplayDensity:
+            tubeDisplayDensity->blockSignals(true);
+            tubeDisplayDensity->setValue(streamAtts->GetTubeDisplayDensity());
+            tubeDisplayDensity->blockSignals(false);
+            break;
+
+          case StreamlineAttributes::ID_seedDisplayDensity:
+            seedDisplayDensity->blockSignals(true);
+            seedDisplayDensity->setValue(streamAtts->GetSeedDisplayDensity());
+            seedDisplayDensity->blockSignals(false);
+            break;
+
         case StreamlineAttributes::ID_displayMethod:
             { // new scope
-            bool showLines = streamAtts->GetDisplayMethod() == 
-                StreamlineAttributes::Lines;
-            bool showTubes = streamAtts->GetDisplayMethod() == 
-                StreamlineAttributes::Tubes;
-            bool showRibbons = streamAtts->GetDisplayMethod() == 
-                StreamlineAttributes::Ribbons;
-            radius->setEnabled(showTubes || showRibbons || showStart);
-            radiusLabel->setEnabled(showTubes || showRibbons || showStart);
-            lineWidth->setEnabled(showLines);
-            lineWidthLabel->setEnabled(showLines);
+            if (streamAtts->GetDisplayMethod() == StreamlineAttributes::Lines)
+            {
+                lineWidth->show();
+                lineWidthLabel->show();
+
+                radius->hide();
+                radiusLabel->hide();
+                tubeDisplayDensityLabel->hide();
+                tubeDisplayDensity->hide();
+            }
+            else
+            {
+                lineWidth->hide();
+                lineWidthLabel->hide();
+
+                radius->show();
+                radiusLabel->show();
+                tubeDisplayDensityLabel->show();
+                tubeDisplayDensity->show();
+                seedDisplayDensityLabel->show();
+                seedDisplayDensity->show();
+            }
 
             displayMethod->blockSignals(true);
             displayMethod->setCurrentIndex(int(streamAtts->GetDisplayMethod()));
             displayMethod->blockSignals(false);
             }
             break;
+            
+        case StreamlineAttributes::ID_coloringVariable:
+            temp = streamAtts->GetColoringVariable().c_str();
+            var->setText(temp);
+          break;
+          
         case StreamlineAttributes::ID_showStart:
-            showStart->blockSignals(true);
-            showStart->setChecked(streamAtts->GetShowStart());
-            showStart->blockSignals(false);
+            seedRadius->setEnabled(streamAtts->GetShowStart());
+            seedRadiusLabel->setEnabled(streamAtts->GetShowStart());
+            seedDisplayDensity->setEnabled(streamAtts->GetShowStart());
+            seedDisplayDensityLabel->setEnabled(streamAtts->GetShowStart());
+
+
+            showSeeds->blockSignals(true);
+            showSeeds->setChecked(streamAtts->GetShowStart());
+            showSeeds->blockSignals(false);
             break;
+            
+        case StreamlineAttributes::ID_seedDisplayRadius:
+            temp.setNum(streamAtts->GetSeedDisplayRadius());
+            seedRadius->setText(temp);
+            break;
+
         case StreamlineAttributes::ID_radius:
             temp.setNum(streamAtts->GetRadius());
             radius->setText(temp);
@@ -790,8 +998,20 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             bool needCT = streamAtts->GetColoringMethod() != StreamlineAttributes::Solid;
             colorTableName->setEnabled(needCT);
             colorTableNameLabel->setEnabled(needCT);
-            singleColor->setEnabled(!needCT);
-            singleColorLabel->setEnabled(!needCT);
+            if (needCT)
+            {
+                singleColor->hide();
+                singleColorLabel->hide();
+                colorTableName->show();
+                colorTableNameLabel->show();
+            }
+            else
+            {
+                singleColor->show();
+                singleColorLabel->show();
+                colorTableName->hide();
+                colorTableNameLabel->hide();
+            }
 
             legendMaxToggle->setEnabled(needCT);
             legendMinToggle->setEnabled(needCT);
@@ -919,6 +1139,107 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(streamAtts->GetLegendMax());
             legendMaxEdit->setText(temp);
             break;
+
+          case StreamlineAttributes::ID_displayBeginFlag:
+            displayBeginToggle->blockSignals(true);
+            displayBeginToggle->setChecked(streamAtts->GetDisplayBeginFlag());
+
+            displayBeginEdit->setEnabled(streamAtts->GetDisplayBeginFlag());
+            displayBeginToggle->blockSignals(false);
+            break;
+
+          case StreamlineAttributes::ID_displayEndFlag:
+            displayEndToggle->blockSignals(true);
+            displayEndToggle->setChecked(streamAtts->GetDisplayEndFlag());
+
+            displayEndEdit->setEnabled(streamAtts->GetDisplayEndFlag());
+            displayEndToggle->blockSignals(false);
+            break;
+
+          case StreamlineAttributes::ID_displayBegin:
+            displayBeginEdit->setEnabled(streamAtts->GetDisplayBeginFlag());
+            temp.setNum(streamAtts->GetDisplayBegin());
+            displayBeginEdit->setText(temp);
+            break;
+          case StreamlineAttributes::ID_displayEnd:
+            displayEndEdit->setEnabled(streamAtts->GetDisplayEndFlag());
+            temp.setNum(streamAtts->GetDisplayEnd());
+            displayEndEdit->setText(temp);
+            break;
+
+          case StreamlineAttributes::ID_opacityVariable:
+            temp = streamAtts->GetOpacityVariable().c_str();
+            opacityVar->setText(temp);
+            break;
+            
+          case StreamlineAttributes::ID_opacity:
+            opacitySlider->blockSignals(true);
+            opacitySlider->setValue(int(streamAtts->GetOpacity() * 255.0));
+            opacitySlider->blockSignals(false);
+            break;
+
+          case StreamlineAttributes::ID_opacityVarMin:
+            temp.setNum(streamAtts->GetOpacityVarMin());
+            opacityVarMin->setText(temp);
+            break;
+
+          case StreamlineAttributes::ID_opacityVarMax:
+            temp.setNum(streamAtts->GetOpacityVarMax());
+            opacityVarMax->setText(temp);
+            break;
+            
+          case StreamlineAttributes::ID_opacityType:
+            if (streamAtts->GetOpacityType() == StreamlineAttributes::None)
+            {
+                opacitySlider->hide();
+                opacityVar->hide();
+                opacityVarLabel->hide();
+                opacityMinToggle->hide();
+                opacityMaxToggle->hide();
+                opacityVarMin->hide();
+                opacityVarMax->hide();
+            }
+            else if (streamAtts->GetOpacityType() == StreamlineAttributes::Constant)
+            {
+                opacitySlider->show();
+                opacityVar->hide();
+                opacityVarLabel->hide();
+                opacityMinToggle->hide();
+                opacityMaxToggle->hide();
+                opacityVarMin->hide();
+                opacityVarMax->hide();
+            }
+            else if (streamAtts->GetOpacityType() == StreamlineAttributes::VariableRange)
+            {
+                opacitySlider->show();
+                opacityVar->show();
+                opacityVarLabel->show();
+                opacityMinToggle->show();
+                opacityMaxToggle->show();
+                opacityVarMin->show();
+                opacityVarMax->show();
+            }
+            
+            opacityType->blockSignals(true);
+            opacityType->setCurrentIndex(int(streamAtts->GetOpacityType()));
+            opacityType->blockSignals(false);
+            break;
+            
+            case StreamlineAttributes::ID_opacityVarMinFlag:
+              opacityMinToggle->blockSignals(true);
+              opacityMinToggle->setChecked(streamAtts->GetOpacityVarMinFlag());
+              
+              opacityVarMin->setEnabled(streamAtts->GetOpacityVarMinFlag());
+              opacityMinToggle->blockSignals(false);
+              break;
+
+            case StreamlineAttributes::ID_opacityVarMaxFlag:
+              opacityMaxToggle->blockSignals(true);
+              opacityMaxToggle->setChecked(streamAtts->GetOpacityVarMaxFlag());
+              
+              opacityVarMax->setEnabled(streamAtts->GetOpacityVarMaxFlag());
+              opacityMaxToggle->blockSignals(false);
+              break;
         }
     }
 }
@@ -1237,8 +1558,6 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
     }
 }
 
-
-
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::GetCurrentValues
 //
@@ -1268,6 +1587,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
 //   Added workGroupSize for the masterSlave algorithm.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
 //
 // ****************************************************************************
 
@@ -1576,6 +1898,100 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetLegendMax(streamAtts->GetLegendMax());
         }
     }
+    // Display begin
+    if(which_widget == StreamlineAttributes::ID_displayBegin || doAll)
+    {
+        double val;
+        bool valGood = LineEditGetDouble(displayBeginEdit, val);
+        bool rangeGood = true;
+        if (valGood && streamAtts->GetDisplayBeginFlag() && streamAtts->GetDisplayEndFlag())
+            rangeGood = (val < streamAtts->GetDisplayEnd());
+        
+        if (valGood && rangeGood)
+            streamAtts->SetDisplayBegin(val);
+        else
+        {
+            ResettingError(tr("Display Begin"),
+                           DoubleToQString(streamAtts->GetDisplayBegin()));
+            streamAtts->SetDisplayBegin(streamAtts->GetDisplayBegin());
+        }
+    }
+    // Display end
+    if(which_widget == StreamlineAttributes::ID_displayEnd || doAll)
+    {
+        double val;
+        bool valGood = LineEditGetDouble(displayEndEdit, val);
+        bool rangeGood = true;
+        if (valGood && streamAtts->GetDisplayBeginFlag() && streamAtts->GetDisplayEndFlag())
+            rangeGood = (val > streamAtts->GetDisplayBegin());
+        
+        if (valGood && rangeGood)
+            streamAtts->SetDisplayEnd(val);
+        else
+        {
+            ResettingError(tr("Display End"),
+                           DoubleToQString(streamAtts->GetDisplayEnd()));
+            streamAtts->SetDisplayEnd(streamAtts->GetDisplayEnd());
+        }
+    }
+
+    // tubeDisplayDensity
+    if (which_widget == StreamlineAttributes::ID_tubeDisplayDensity|| doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = tubeDisplayDensity->value();
+        streamAtts->SetTubeDisplayDensity(val);
+    }
+
+    // seedRadius
+    if(which_widget == StreamlineAttributes::ID_seedDisplayRadius || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(seedRadius, val))
+            streamAtts->SetSeedDisplayRadius(val);
+        else
+        {
+            ResettingError(tr("Seed radius"),
+                DoubleToQString(streamAtts->GetSeedDisplayRadius()));
+            streamAtts->SetSeedDisplayRadius(streamAtts->GetSeedDisplayRadius());
+        }
+    }
+
+    // seedDisplayDensity
+    if (which_widget == StreamlineAttributes::ID_seedDisplayDensity|| doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = seedDisplayDensity->value();
+        streamAtts->SetSeedDisplayDensity(val);
+    }
+    
+    // opacityMin
+    if(which_widget == StreamlineAttributes::ID_opacityVarMin || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(opacityVarMin, val))
+            streamAtts->SetOpacityVarMin(val);
+        else
+        {
+            ResettingError(tr("Opacity Min"),
+                DoubleToQString(streamAtts->GetOpacityVarMin()));
+            streamAtts->SetOpacityVarMin(streamAtts->GetOpacityVarMin());
+        }
+    }
+
+    // opacityMax
+    if(which_widget == StreamlineAttributes::ID_opacityVarMax || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(opacityVarMax, val))
+            streamAtts->SetOpacityVarMax(val);
+        else
+        {
+            ResettingError(tr("Opacity Max"),
+                DoubleToQString(streamAtts->GetOpacityVarMax()));
+            streamAtts->SetOpacityVarMax(streamAtts->GetOpacityVarMax());
+        }
+    }
 }
 
 
@@ -1843,10 +2259,30 @@ QvisStreamlinePlotWindow::displayMethodChanged(int val)
 }
 
 void
-QvisStreamlinePlotWindow::showStartChanged(bool val)
+QvisStreamlinePlotWindow::opacityTypeChanged(int val)
+{
+    streamAtts->SetOpacityType((StreamlineAttributes::OpacityType)val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::opacityVariableChanged(const QString &var)
+{
+    streamAtts->SetOpacityVariable(var.toStdString());
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::opacityChanged(int opacity, const void*)
+{
+    streamAtts->SetOpacity((double)opacity/255.);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::showSeedsChanged(bool val)
 {
     streamAtts->SetShowStart(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1854,6 +2290,13 @@ void
 QvisStreamlinePlotWindow::radiusProcessText()
 {
     GetCurrentValues(StreamlineAttributes::ID_radius);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::seedRadiusProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_seedDisplayRadius);
     Apply();
 }
 
@@ -1964,6 +2407,20 @@ QvisStreamlinePlotWindow::legendMinToggled(bool val)
 }
 
 void
+QvisStreamlinePlotWindow::displayBeginToggled(bool val)
+{
+    streamAtts->SetDisplayBeginFlag(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::displayEndToggled(bool val)
+{
+    streamAtts->SetDisplayEndFlag(val);
+    Apply();
+}
+
+void
 QvisStreamlinePlotWindow::processMinLimitText()
 {
     GetCurrentValues(StreamlineAttributes::ID_legendMin);
@@ -1974,5 +2431,61 @@ void
 QvisStreamlinePlotWindow::processMaxLimitText()
 {
     GetCurrentValues(StreamlineAttributes::ID_legendMax);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::opacityMinToggled(bool val)
+{
+    streamAtts->SetOpacityVarMinFlag(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::opacityMaxToggled(bool val)
+{
+    streamAtts->SetOpacityVarMaxFlag(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processOpacityVarMin()
+{
+    GetCurrentValues(StreamlineAttributes::ID_opacityVarMin);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processOpacityVarMax()
+{
+    GetCurrentValues(StreamlineAttributes::ID_opacityVarMax);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processDisplayBeginText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_displayBegin);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processDisplayEndText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_displayEnd);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::seedDisplayDensityChanged(int val)
+{
+    streamAtts->SetSeedDisplayDensity(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::tubeDisplayDensityChanged(int val)
+{
+    streamAtts->SetTubeDisplayDensity(val);
     Apply();
 }

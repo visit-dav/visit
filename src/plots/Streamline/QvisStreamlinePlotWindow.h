@@ -52,6 +52,7 @@ class QvisColorTableButton;
 class QvisColorButton;
 class QvisLineWidthWidget;
 class QvisVariableButton;
+class QvisOpacitySlider;
 class StreamlineAttributes;
 
 // ****************************************************************************
@@ -103,6 +104,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Mon Nov 23 09:38:53 EST 2009
 //   Add min/max options to color table.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -123,6 +127,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     virtual void makeDefault();
     virtual void reset();
   protected:
+    void CreateAppearanceTab(QWidget *);
+    void CreateAdvancedTab(QWidget *);
+    
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
@@ -155,8 +162,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void maxDomainCacheChanged(int val);
     void workGroupSizeChanged(int val);
     void displayMethodChanged(int val);
-    void showStartChanged(bool val);
+    void showSeedsChanged(bool val);
     void radiusProcessText();
+    void seedRadiusProcessText();
     void lineWidthChanged(int style);
     void coloringMethodChanged(int val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
@@ -166,11 +174,24 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void pathlineFlagChanged(bool val);
     void useWholeBoxChanged(bool val);
     void coloringVariableChanged(const QString &var);
+    void opacityTypeChanged(int val);
+    void opacityVariableChanged(const QString &var);
+    void opacityChanged(int opacity, const void*);
     void boxExtentsProcessText();
     void legendMaxToggled(bool);
     void legendMinToggled(bool);
     void processMaxLimitText();
     void processMinLimitText();
+    void processDisplayBeginText();
+    void processDisplayEndText();
+    void opacityMinToggled(bool);
+    void opacityMaxToggled(bool);
+    void processOpacityVarMin();
+    void processOpacityVarMax();
+    void displayBeginToggled(bool);
+    void displayEndToggled(bool);
+    void tubeDisplayDensityChanged(int);
+    void seedDisplayDensityChanged(int);
 
   private:
     int plotType;
@@ -209,7 +230,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *boxExtentsLabel[3];
     QSpinBox  *pointDensity;
     QComboBox *displayMethod;
-    QCheckBox *showStart;
+    QCheckBox *showSeeds;
+    QLabel    *seedRadiusLabel;
+    QLineEdit *seedRadius;
     QLineEdit *radius;
     QLabel    *radiusLabel;
     QvisLineWidthWidget *lineWidth;
@@ -239,6 +262,23 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *legendMinToggle;
     QLineEdit *legendMaxEdit;
     QLineEdit *legendMinEdit;
+    QLabel    *displayLabel;
+    QCheckBox *displayBeginToggle;
+    QCheckBox *displayEndToggle;
+    QLineEdit *displayBeginEdit;
+    QLineEdit *displayEndEdit;
+    QComboBox *opacityType;
+    QLabel    *opacityVarLabel;
+    QvisVariableButton *opacityVar;
+    QvisOpacitySlider *opacitySlider;
+    QCheckBox *opacityMinToggle;
+    QCheckBox *opacityMaxToggle;
+    QLineEdit *opacityVarMin;
+    QLineEdit *opacityVarMax;
+    QLabel    *tubeDisplayDensityLabel;
+    QLabel    *seedDisplayDensityLabel;
+    QSpinBox  *tubeDisplayDensity;
+    QSpinBox  *seedDisplayDensity;
 
     StreamlineAttributes *streamAtts;
 };

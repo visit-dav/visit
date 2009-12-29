@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 40;
+    private static int numAdditionalAttributes = 54;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -98,6 +98,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
+
+    public final static int OPACITYTYPE_NONE = 0;
+    public final static int OPACITYTYPE_CONSTANT = 1;
+    public final static int OPACITYTYPE_VARIABLERANGE = 2;
 
 
     public StreamlineAttributes()
@@ -180,6 +184,20 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         legendMaxFlag = false;
         legendMin = 0;
         legendMax = 1;
+        displayBegin = 0;
+        displayEnd = 1;
+        displayBeginFlag = false;
+        displayEndFlag = false;
+        seedDisplayRadius = 0.25;
+        opacityType = OPACITYTYPE_NONE;
+        opacityVariable = new String("");
+        opacity = 1;
+        opacityVarMin = 0;
+        opacityVarMax = 1;
+        opacityVarMinFlag = false;
+        opacityVarMaxFlag = false;
+        tubeDisplayDensity = 10;
+        seedDisplayDensity = 1;
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -262,6 +280,20 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         legendMaxFlag = false;
         legendMin = 0;
         legendMax = 1;
+        displayBegin = 0;
+        displayEnd = 1;
+        displayBeginFlag = false;
+        displayEndFlag = false;
+        seedDisplayRadius = 0.25;
+        opacityType = OPACITYTYPE_NONE;
+        opacityVariable = new String("");
+        opacity = 1;
+        opacityVarMin = 0;
+        opacityVarMax = 1;
+        opacityVarMinFlag = false;
+        opacityVarMaxFlag = false;
+        tubeDisplayDensity = 10;
+        seedDisplayDensity = 1;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -347,6 +379,20 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         legendMaxFlag = obj.legendMaxFlag;
         legendMin = obj.legendMin;
         legendMax = obj.legendMax;
+        displayBegin = obj.displayBegin;
+        displayEnd = obj.displayEnd;
+        displayBeginFlag = obj.displayBeginFlag;
+        displayEndFlag = obj.displayEndFlag;
+        seedDisplayRadius = obj.seedDisplayRadius;
+        opacityType = obj.opacityType;
+        opacityVariable = new String(obj.opacityVariable);
+        opacity = obj.opacity;
+        opacityVarMin = obj.opacityVarMin;
+        opacityVarMax = obj.opacityVarMax;
+        opacityVarMinFlag = obj.opacityVarMinFlag;
+        opacityVarMaxFlag = obj.opacityVarMaxFlag;
+        tubeDisplayDensity = obj.tubeDisplayDensity;
+        seedDisplayDensity = obj.seedDisplayDensity;
 
         SelectAll();
     }
@@ -454,7 +500,21 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (legendMinFlag == obj.legendMinFlag) &&
                 (legendMaxFlag == obj.legendMaxFlag) &&
                 (legendMin == obj.legendMin) &&
-                (legendMax == obj.legendMax));
+                (legendMax == obj.legendMax) &&
+                (displayBegin == obj.displayBegin) &&
+                (displayEnd == obj.displayEnd) &&
+                (displayBeginFlag == obj.displayBeginFlag) &&
+                (displayEndFlag == obj.displayEndFlag) &&
+                (seedDisplayRadius == obj.seedDisplayRadius) &&
+                (opacityType == obj.opacityType) &&
+                (opacityVariable.equals(obj.opacityVariable)) &&
+                (opacity == obj.opacity) &&
+                (opacityVarMin == obj.opacityVarMin) &&
+                (opacityVarMax == obj.opacityVarMax) &&
+                (opacityVarMinFlag == obj.opacityVarMinFlag) &&
+                (opacityVarMaxFlag == obj.opacityVarMaxFlag) &&
+                (tubeDisplayDensity == obj.tubeDisplayDensity) &&
+                (seedDisplayDensity == obj.seedDisplayDensity));
     }
 
     public String GetName() { return "Streamline"; }
@@ -772,6 +832,90 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(39);
     }
 
+    public void SetDisplayBegin(double displayBegin_)
+    {
+        displayBegin = displayBegin_;
+        Select(40);
+    }
+
+    public void SetDisplayEnd(double displayEnd_)
+    {
+        displayEnd = displayEnd_;
+        Select(41);
+    }
+
+    public void SetDisplayBeginFlag(boolean displayBeginFlag_)
+    {
+        displayBeginFlag = displayBeginFlag_;
+        Select(42);
+    }
+
+    public void SetDisplayEndFlag(boolean displayEndFlag_)
+    {
+        displayEndFlag = displayEndFlag_;
+        Select(43);
+    }
+
+    public void SetSeedDisplayRadius(double seedDisplayRadius_)
+    {
+        seedDisplayRadius = seedDisplayRadius_;
+        Select(44);
+    }
+
+    public void SetOpacityType(int opacityType_)
+    {
+        opacityType = opacityType_;
+        Select(45);
+    }
+
+    public void SetOpacityVariable(String opacityVariable_)
+    {
+        opacityVariable = opacityVariable_;
+        Select(46);
+    }
+
+    public void SetOpacity(double opacity_)
+    {
+        opacity = opacity_;
+        Select(47);
+    }
+
+    public void SetOpacityVarMin(double opacityVarMin_)
+    {
+        opacityVarMin = opacityVarMin_;
+        Select(48);
+    }
+
+    public void SetOpacityVarMax(double opacityVarMax_)
+    {
+        opacityVarMax = opacityVarMax_;
+        Select(49);
+    }
+
+    public void SetOpacityVarMinFlag(boolean opacityVarMinFlag_)
+    {
+        opacityVarMinFlag = opacityVarMinFlag_;
+        Select(50);
+    }
+
+    public void SetOpacityVarMaxFlag(boolean opacityVarMaxFlag_)
+    {
+        opacityVarMaxFlag = opacityVarMaxFlag_;
+        Select(51);
+    }
+
+    public void SetTubeDisplayDensity(int tubeDisplayDensity_)
+    {
+        tubeDisplayDensity = tubeDisplayDensity_;
+        Select(52);
+    }
+
+    public void SetSeedDisplayDensity(int seedDisplayDensity_)
+    {
+        seedDisplayDensity = seedDisplayDensity_;
+        Select(53);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
@@ -813,6 +957,20 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetLegendMaxFlag() { return legendMaxFlag; }
     public double         GetLegendMin() { return legendMin; }
     public double         GetLegendMax() { return legendMax; }
+    public double         GetDisplayBegin() { return displayBegin; }
+    public double         GetDisplayEnd() { return displayEnd; }
+    public boolean        GetDisplayBeginFlag() { return displayBeginFlag; }
+    public boolean        GetDisplayEndFlag() { return displayEndFlag; }
+    public double         GetSeedDisplayRadius() { return seedDisplayRadius; }
+    public int            GetOpacityType() { return opacityType; }
+    public String         GetOpacityVariable() { return opacityVariable; }
+    public double         GetOpacity() { return opacity; }
+    public double         GetOpacityVarMin() { return opacityVarMin; }
+    public double         GetOpacityVarMax() { return opacityVarMax; }
+    public boolean        GetOpacityVarMinFlag() { return opacityVarMinFlag; }
+    public boolean        GetOpacityVarMaxFlag() { return opacityVarMaxFlag; }
+    public int            GetTubeDisplayDensity() { return tubeDisplayDensity; }
+    public int            GetSeedDisplayDensity() { return seedDisplayDensity; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -897,6 +1055,34 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(legendMin);
         if(WriteSelect(39, buf))
             buf.WriteDouble(legendMax);
+        if(WriteSelect(40, buf))
+            buf.WriteDouble(displayBegin);
+        if(WriteSelect(41, buf))
+            buf.WriteDouble(displayEnd);
+        if(WriteSelect(42, buf))
+            buf.WriteBool(displayBeginFlag);
+        if(WriteSelect(43, buf))
+            buf.WriteBool(displayEndFlag);
+        if(WriteSelect(44, buf))
+            buf.WriteDouble(seedDisplayRadius);
+        if(WriteSelect(45, buf))
+            buf.WriteInt(opacityType);
+        if(WriteSelect(46, buf))
+            buf.WriteString(opacityVariable);
+        if(WriteSelect(47, buf))
+            buf.WriteDouble(opacity);
+        if(WriteSelect(48, buf))
+            buf.WriteDouble(opacityVarMin);
+        if(WriteSelect(49, buf))
+            buf.WriteDouble(opacityVarMax);
+        if(WriteSelect(50, buf))
+            buf.WriteBool(opacityVarMinFlag);
+        if(WriteSelect(51, buf))
+            buf.WriteBool(opacityVarMaxFlag);
+        if(WriteSelect(52, buf))
+            buf.WriteInt(tubeDisplayDensity);
+        if(WriteSelect(53, buf))
+            buf.WriteInt(seedDisplayDensity);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1024,6 +1210,48 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 39:
             SetLegendMax(buf.ReadDouble());
             break;
+        case 40:
+            SetDisplayBegin(buf.ReadDouble());
+            break;
+        case 41:
+            SetDisplayEnd(buf.ReadDouble());
+            break;
+        case 42:
+            SetDisplayBeginFlag(buf.ReadBool());
+            break;
+        case 43:
+            SetDisplayEndFlag(buf.ReadBool());
+            break;
+        case 44:
+            SetSeedDisplayRadius(buf.ReadDouble());
+            break;
+        case 45:
+            SetOpacityType(buf.ReadInt());
+            break;
+        case 46:
+            SetOpacityVariable(buf.ReadString());
+            break;
+        case 47:
+            SetOpacity(buf.ReadDouble());
+            break;
+        case 48:
+            SetOpacityVarMin(buf.ReadDouble());
+            break;
+        case 49:
+            SetOpacityVarMax(buf.ReadDouble());
+            break;
+        case 50:
+            SetOpacityVarMinFlag(buf.ReadBool());
+            break;
+        case 51:
+            SetOpacityVarMaxFlag(buf.ReadBool());
+            break;
+        case 52:
+            SetTubeDisplayDensity(buf.ReadInt());
+            break;
+        case 53:
+            SetSeedDisplayDensity(buf.ReadInt());
+            break;
         }
     }
 
@@ -1131,6 +1359,27 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("legendMaxFlag", legendMaxFlag, indent) + "\n";
         str = str + doubleToString("legendMin", legendMin, indent) + "\n";
         str = str + doubleToString("legendMax", legendMax, indent) + "\n";
+        str = str + doubleToString("displayBegin", displayBegin, indent) + "\n";
+        str = str + doubleToString("displayEnd", displayEnd, indent) + "\n";
+        str = str + boolToString("displayBeginFlag", displayBeginFlag, indent) + "\n";
+        str = str + boolToString("displayEndFlag", displayEndFlag, indent) + "\n";
+        str = str + doubleToString("seedDisplayRadius", seedDisplayRadius, indent) + "\n";
+        str = str + indent + "opacityType = ";
+        if(opacityType == OPACITYTYPE_NONE)
+            str = str + "OPACITYTYPE_NONE";
+        if(opacityType == OPACITYTYPE_CONSTANT)
+            str = str + "OPACITYTYPE_CONSTANT";
+        if(opacityType == OPACITYTYPE_VARIABLERANGE)
+            str = str + "OPACITYTYPE_VARIABLERANGE";
+        str = str + "\n";
+        str = str + stringToString("opacityVariable", opacityVariable, indent) + "\n";
+        str = str + doubleToString("opacity", opacity, indent) + "\n";
+        str = str + doubleToString("opacityVarMin", opacityVarMin, indent) + "\n";
+        str = str + doubleToString("opacityVarMax", opacityVarMax, indent) + "\n";
+        str = str + boolToString("opacityVarMinFlag", opacityVarMinFlag, indent) + "\n";
+        str = str + boolToString("opacityVarMaxFlag", opacityVarMaxFlag, indent) + "\n";
+        str = str + intToString("tubeDisplayDensity", tubeDisplayDensity, indent) + "\n";
+        str = str + intToString("seedDisplayDensity", seedDisplayDensity, indent) + "\n";
         return str;
     }
 
@@ -1176,5 +1425,19 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        legendMaxFlag;
     private double         legendMin;
     private double         legendMax;
+    private double         displayBegin;
+    private double         displayEnd;
+    private boolean        displayBeginFlag;
+    private boolean        displayEndFlag;
+    private double         seedDisplayRadius;
+    private int            opacityType;
+    private String         opacityVariable;
+    private double         opacity;
+    private double         opacityVarMin;
+    private double         opacityVarMax;
+    private boolean        opacityVarMinFlag;
+    private boolean        opacityVarMaxFlag;
+    private int            tubeDisplayDensity;
+    private int            seedDisplayDensity;
 }
 

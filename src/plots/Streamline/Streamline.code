@@ -183,6 +183,9 @@ Definition:
 //    Hank Childs, Sun May  3 11:49:31 CDT 2009
 //    Add support for point lists.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -243,12 +246,17 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         sourceType == SpecifiedBox) &&
         (pointDensity != obj.pointDensity);
 
-    bool radiusMatters = (radius != obj.radius);
+    //If opacity is turned on, or the variable changes...
+    bool opacityMatters = (opacityType == VariableRange) &&
+                          (obj.opacityType != VariableRange ||
+                           opacityVariable != obj.opacityVariable);
+
+    //Ribbons requires the engine to calculate vorticity.
+    bool displayMatters = (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons);
 
     return (sourceType != obj.sourceType) ||
            (StreamlineDirection != obj.StreamlineDirection) ||
-           (displayMethod != obj.displayMethod) ||
-           (showStart != obj.showStart) ||
+           displayMatters ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
            (integrationType != obj.integrationType) ||
@@ -258,13 +266,13 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
            (pathlines != obj.pathlines) ||
            (coloringVariable != obj.coloringVariable) ||
+           opacityMatters ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
            sourcePointListDiffers ||
            boxSourceDiffers ||
-           densityMatters ||
-           radiusMatters;
+           densityMatters;
 }
 
