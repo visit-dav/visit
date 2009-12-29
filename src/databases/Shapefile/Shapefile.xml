@@ -6,11 +6,11 @@
     <LIBS>
       ${OPENGL_glu_LIBRARY}
     </LIBS>
-    <Extensions>
-      shp
-      shx
-      dbf
-    </Extensions>
+    <FilePatterns>
+      *.shp
+      *.shx
+      *.dbf
+    </FilePatterns>
     <Files components="M">
       avtShapefileFileFormat.C
       avtShapefileOptions.C

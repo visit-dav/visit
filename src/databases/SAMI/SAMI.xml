@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="SAMI" type="database" label="SAMI" version="1.0" dbtype="STSD">
-    <Extensions> 
-      sami 
-    </Extensions>
+    <FilePatterns> 
+      *.sami 
+    </FilePatterns>
     <CXXFLAGS> 
       ${SILO_INCLUDE_DIR} 
     </CXXFLAGS>

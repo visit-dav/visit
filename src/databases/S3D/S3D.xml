@@ -10,9 +10,9 @@
       ${NETCDF_CXX_LIB}
       ${NETCDF_LIB}
     </LIBS>
-    <Extensions>
-      s3d
-    </Extensions>
+    <FilePatterns>
+      *.s3d
+    </FilePatterns>
     <Files components="M">
       avtS3DFileFormat.C
     </Files>

@@ -6,9 +6,9 @@
     <LIBS>
       $(ENSIGHT_LIBS)
     </LIBS>
-    <Extensions>
-      case
-    </Extensions>
+    <FilePatterns>
+      *.case
+    </FilePatterns>
     <Files components="M">
       avtEnSightFileFormat.C
       vtkVisItGenericEnSightReader.C

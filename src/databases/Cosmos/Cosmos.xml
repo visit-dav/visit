@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Cosmos" label="Cosmos" type="database" dbtype="MTMD" version="1.0">
-    <Extensions> 
-      cosmos 
-    </Extensions>
+    <FilePatterns> 
+      *.cosmos 
+    </FilePatterns>
     <CXXFLAGS> 
       ${HDF4_INCLUDE_DIR} 
     </CXXFLAGS>

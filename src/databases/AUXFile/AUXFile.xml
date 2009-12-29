@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
   <Plugin name="AUXFile" label="AUX" type="database" dbtype="STSD" version="1.0">
-    <Extensions> aux </Extensions>
+    <FilePatterns> *.aux </FilePatterns>
   </Plugin>

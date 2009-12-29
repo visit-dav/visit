@@ -3,9 +3,9 @@
     <LIBS>
       ${Z_LIB}
     </LIBS>
-    <Extensions>
-      bov
-    </Extensions>
+    <FilePatterns>
+      *.bov
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

@@ -10,9 +10,9 @@
       ${HDF5_LIB} 
       ${ZLIB_LIB}
     </LIBS>
-    <Extensions>
-      .h5nimrod
-    </Extensions>
+    <FilePatterns>
+      *.h5nimrod
+    </FilePatterns>
     <Files components="M">
       avtH5NimrodFileFormat.C
       H5utils.C

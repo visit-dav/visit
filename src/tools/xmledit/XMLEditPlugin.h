@@ -86,8 +86,12 @@ class QGroupBox;
 //    Brad Whitlock, Fri Mar 7 10:55:40 PDT 2008
 //    Added some group boxes.
 //
-//   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
-//   Ported to Qt 4.4
+//    Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
+//    Ported to Qt 4.4
+//
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
 // ****************************************************************************
 
@@ -113,9 +117,9 @@ class XMLEditPlugin : public QFrame
     void pluginTypeChanged(int);
     void varTypesChanged();
     void dbTypeChanged(int);
-    void extensionsTextChanged(const QString&);
-    void filenamesTextChanged(const QString&);
-    void specifiedFilenamesChanged(bool);
+    void filePatternsTextChanged(const QString&);
+    void filePatternsStrictChanged(bool);
+    void opensWholeDirectoryChanged(bool);
   private:
     XMLDocument     *xmldoc;
 
@@ -144,9 +148,9 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeArray;
     QGroupBox       *dbPluginGroup;
     QComboBox       *dbType;
-    QLineEdit       *extensions;
-    QLineEdit       *filenames;
-    QCheckBox       *specifiedFilenames;
+    QLineEdit       *filePatterns;
+    QCheckBox       *filePatternsStrict;
+    QCheckBox       *opensWholeDirectory;
 };
 
 #endif

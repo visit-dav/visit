@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="SAR" type="database" label="SAR" version="1.0" enabled="true" mdspecificcode="false" dbtype="STSD" haswriter="false">
-    <Extensions>
-      sar SAR
-    </Extensions>
+    <FilePatterns>
+      *.sar
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

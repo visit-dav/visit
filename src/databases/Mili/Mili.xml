@@ -9,10 +9,10 @@
     <LIBS>
       ${MILI_LIB}
     </LIBS>
-    <Extensions>
-      .mili
-      .m
-    </Extensions>
+    <FilePatterns>
+      *.mili
+      *.m
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

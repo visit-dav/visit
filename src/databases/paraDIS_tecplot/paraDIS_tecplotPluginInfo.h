@@ -71,7 +71,9 @@ class paraDIS_tecplotGeneralPluginInfo : public virtual GeneralDatabasePluginInf
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
-    virtual std::vector<std::string>  GetDfltExtsFromGen() const;
+    virtual std::vector<std::string> GetDefaultFilePatterns() const;
+    virtual bool  AreDefaultFilePatternsStrict() const;
+    virtual bool  OpensWholeDirectory() const;
 };
 
 class paraDIS_tecplotCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual paraDIS_tecplotGeneralPluginInfo

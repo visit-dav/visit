@@ -9,28 +9,28 @@
     <LIBS>
       ${GDAL_LIB}
     </LIBS>
-    <Extensions>
-      adf
-      asc
-      bt
-      ddf
-      dem
-      ecw
-      gxf
-      jp2
-      map
-      mem
-      mpl
-      mpr
-      n1
-      nat
-      ntf
-      pix
-      rsw
-      sid
-      vrt
-      xpm
-    </Extensions>
+    <FilePatterns>
+      *.adf
+      *.asc
+      *.bt
+      *.ddf
+      *.dem
+      *.ecw
+      *.gxf
+      *.jp2
+      *.map
+      *.mem
+      *.mpl
+      *.mpr
+      *.n1
+      *.nat
+      *.ntf
+      *.pix
+      *.rsw
+      *.sid
+      *.vrt
+      *.xpm
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

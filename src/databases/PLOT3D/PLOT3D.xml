@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="PLOT3D" label="PLOT3D" type="database" dbtype="STMD" version="1.0">
-    <Extensions> q x vp3d </Extensions>
+    <FilePatterns>
+      *.q
+      *.x
+      *.vp3d
+    </FilePatterns>
   </Plugin>

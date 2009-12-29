@@ -84,8 +84,12 @@
 //    Brad Whitlock, Fri Mar 7 10:35:57 PDT 2008
 //    Reorganized some widgets.
 //
-//   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
-//   Ported to Qt 4.4
+//    Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
+//    Ported to Qt 4.4
+//
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
 // ****************************************************************************
 
@@ -226,9 +230,19 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     dbPluginLayout->addWidget(dbType, dbRow, 1);
     dbRow++;
 
-    dbPluginLayout->addWidget(new QLabel(tr("Extensions"), dbPluginGroup), dbRow, 0);
-    extensions = new QLineEdit(dbPluginGroup);
-    dbPluginLayout->addWidget(extensions, dbRow, 1);
+    dbPluginLayout->addWidget(new QLabel(tr("Default file name patterns"), dbPluginGroup), dbRow, 0);
+    filePatterns = new QLineEdit(dbPluginGroup);
+    dbPluginLayout->addWidget(filePatterns, dbRow, 1);
+    dbRow++;
+
+    filePatternsStrict = new QCheckBox(tr("File name patterns are strict by default"), dbPluginGroup);
+    filePatternsStrict->setChecked(false);
+    dbPluginLayout->addWidget(filePatternsStrict, dbRow,0,1,2);
+    dbRow++;
+
+    opensWholeDirectory = new QCheckBox(tr("File format opens a whole directory (not a single file)"), dbPluginGroup);
+    opensWholeDirectory->setChecked(false);
+    dbPluginLayout->addWidget(opensWholeDirectory, dbRow,0,1,2);
     dbRow++;
 
     hasWriter = new QCheckBox(tr("File format can also write data"), dbPluginGroup);
@@ -241,16 +255,6 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     dbPluginLayout->addWidget(hasOptions, dbRow,0, 1,2);
     dbRow++;
 
-    specifiedFilenames = new QCheckBox(tr("Format uses explicit filenames"), dbPluginGroup);
-    specifiedFilenames->setChecked(false);
-    dbPluginLayout->addWidget(specifiedFilenames, dbRow,0,1,2);
-    dbRow++;
-
-    dbPluginLayout->addWidget(new QLabel(tr("Filenames"), dbPluginGroup), dbRow, 0);
-    filenames = new QLineEdit(dbPluginGroup);
-    dbPluginLayout->addWidget(filenames, dbRow,1);
-    dbRow++;
-    
     innerdbPluginLayout->addLayout(dbPluginLayout);
     
     topLayout->setRowStretch(row, 100);
@@ -272,8 +276,12 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
             this,  SLOT(pluginTypeChanged(int)));
     connect(dbType, SIGNAL(activated(int)),
             this,  SLOT(dbTypeChanged(int)));
-    connect(extensions, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(extensionsTextChanged(const QString &)));
+    connect(filePatterns, SIGNAL(textChanged(const QString &)),
+            this,  SLOT(filePatternsTextChanged(const QString &)));
+    connect(filePatternsStrict, SIGNAL(toggled(bool)),
+            this, SLOT(filePatternsStrictChanged(bool)));
+    connect(opensWholeDirectory, SIGNAL(toggled(bool)),
+            this, SLOT(opensWholeDirectoryChanged(bool)));
     connect(varTypeMesh, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
     connect(varTypeScalar, SIGNAL(clicked()),
@@ -306,10 +314,6 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
             this, SLOT(hasOptionsChanged(bool)));
     connect(enabledByDefault, SIGNAL(toggled(bool)),
             this, SLOT(enabledByDefaultChanged(bool)));
-    connect(specifiedFilenames, SIGNAL(toggled(bool)),
-            this, SLOT(specifiedFilenamesChanged(bool)));
-    connect(filenames, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(filenamesTextChanged(const QString &)));
 }
 
 // ****************************************************************************
@@ -343,8 +347,12 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
 //    Hank Childs, Thu Jan 10 13:56:32 PST 2008
 //    Added the ability to have a plugin only open explicit filenames.
 //
-//   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
-//   Ported to Qt 4.4
+//    Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
+//    Ported to Qt 4.4
+//
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
 // ****************************************************************************
 
@@ -373,8 +381,7 @@ XMLEditPlugin::UpdateWindowContents()
         enabledByDefault->setChecked(xmldoc->plugin->enabledByDefault);
 
         dbType->setCurrentIndex(0);
-        extensions->setText("");
-        filenames->setText("");
+        filePatterns->setText("");
         if (xmldoc->plugin->type == "plot")
         {
             iconFile->setText(xmldoc->plugin->iconFile);
@@ -419,11 +426,11 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(false);
             hasWriter->setChecked(xmldoc->plugin->haswriter);
             hasOptions->setChecked(xmldoc->plugin->hasoptions);
-            specifiedFilenames->setChecked(xmldoc->plugin->specifiedFilenames);
+            filePatternsStrict->setChecked(xmldoc->plugin->filePatternsStrict);
+            opensWholeDirectory->setChecked(xmldoc->plugin->opensWholeDirectory);
 
             pluginType->setCurrentIndex(3);
-            extensions->setText(JoinValues(xmldoc->plugin->extensions, ' '));
-            filenames->setText(JoinValues(xmldoc->plugin->filenames, ' '));
+            filePatterns->setText(JoinValues(xmldoc->plugin->filePatterns, ' '));
             if      (xmldoc->plugin->dbtype == "STSD")
                 dbType->setCurrentIndex(1);
             else if (xmldoc->plugin->dbtype == "MTSD")
@@ -441,7 +448,6 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(false);
             hasWriter->setChecked(false);
             hasOptions->setChecked(false);
-            specifiedFilenames->setChecked(false);
             enabledByDefault->setChecked(true);
             pluginType->setCurrentIndex(0);
         }
@@ -467,11 +473,11 @@ XMLEditPlugin::UpdateWindowContents()
         iconFile->setText("");
         hasWriter->setChecked(false);
         hasOptions->setChecked(false);
-        specifiedFilenames->setChecked(false);
         pluginType->setCurrentIndex(0);
         dbType->setCurrentIndex(0);
-        extensions->setText("");
-        filenames->setText("");
+        filePatterns->setText("");
+        filePatternsStrict->setChecked(false);
+        opensWholeDirectory->setChecked(false);
         enabledByDefault->setChecked(true);
     }
 
@@ -514,6 +520,10 @@ XMLEditPlugin::UpdateWindowContents()
 //    Brad Whitlock, Fri Mar 7 10:58:47 PDT 2008
 //    Added group boxes.
 //
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
+//
 // ****************************************************************************
 
 void
@@ -543,12 +553,12 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeArray->setEnabled(plot);
     dbPluginGroup->setEnabled(db);
     dbType->setEnabled(db);
-    extensions->setEnabled(db);
-    filenames->setEnabled(db && xmldoc->plugin->specifiedFilenames);
+    filePatterns->setEnabled(db);
+    filePatternsStrict->setEnabled(db);
+    opensWholeDirectory->setEnabled(db);
     hasIcon->setEnabled(op || plot);
     hasWriter->setEnabled(db);
     hasOptions->setEnabled(db);
-    specifiedFilenames->setEnabled(db);
     enabledByDefault->setEnabled(plugin);
     bool val = (op || plot) && (xmldoc->plugin->iconFile.length() > 0);
     iconFile->setEnabled(val);
@@ -586,6 +596,10 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Hank Childs, Thu Jan 10 13:56:32 PST 2008
 //    Added the ability to have a plugin only open explicit filenames.
 //
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
+//
 // ****************************************************************************
 
 void
@@ -607,13 +621,13 @@ XMLEditPlugin::BlockAllSignals(bool block)
     varTypeLabel->blockSignals(block);
     varTypeArray->blockSignals(block);
     dbType->blockSignals(block);
-    extensions->blockSignals(block);
-    filenames->blockSignals(block);
+    filePatterns->blockSignals(block);
+    filePatternsStrict->blockSignals(block);
+    opensWholeDirectory->blockSignals(block);
     hasIcon->blockSignals(block);
     iconFile->blockSignals(block);
     hasWriter->blockSignals(block);
     hasOptions->blockSignals(block);
-    specifiedFilenames->blockSignals(block);
     enabledByDefault->blockSignals(block);
 }
 
@@ -777,24 +791,41 @@ XMLEditPlugin::hasWriterChanged(bool val)
 }
 
 // ****************************************************************************
-// Method: XMLEditPlugin::specifiedFilenamesChanged
+// Method: XMLEditPlugin::filePatternsStrictChanged
 //
-// Programmer: Hank Childs
-// Creation:   January 10, 2008
+// Programmer: Jeremy Meredith
+// Creation:   December 28, 2009
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-XMLEditPlugin::specifiedFilenamesChanged(bool val)
+XMLEditPlugin::filePatternsStrictChanged(bool val)
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->specifiedFilenames = val;
+    xmldoc->plugin->filePatternsStrict = val;
+}
 
-    UpdateWindowSensitivity();
+// ****************************************************************************
+// Method: XMLEditPlugin::opensWholeDirectoryChanged
+//
+// Programmer: Jeremy Meredith
+// Creation:   December 28, 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEditPlugin::opensWholeDirectoryChanged(bool val)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->opensWholeDirectory = val;
 }
 
 // ****************************************************************************
@@ -886,36 +917,19 @@ XMLEditPlugin::dbTypeChanged(int index)
 }
 
 // ****************************************************************************
-//  Method:  XMLEditPlugin::extensionsTextChanged
+//  Method:  XMLEditPlugin::filePatternsTextChanged
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    October 17, 2002
+//  Creation:    December 28, 2009
 //
 // ****************************************************************************
 void
-XMLEditPlugin::extensionsTextChanged(const QString &text)
+XMLEditPlugin::filePatternsTextChanged(const QString &text)
 {
     if (xmldoc->docType != "Plugin")
         return;
 
-    xmldoc->plugin->extensions = SplitValues(text);
-}
-
-// ****************************************************************************
-//  Method:  XMLEditPlugin::filenamesTextChanged
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 10, 2008
-//
-// ****************************************************************************
-
-void
-XMLEditPlugin::filenamesTextChanged(const QString &text)
-{
-    if (xmldoc->docType != "Plugin")
-        return;
-
-    xmldoc->plugin->filenames = SplitValues(text);
+    xmldoc->plugin->filePatterns = SplitValues(text);
 }
 
 // ****************************************************************************

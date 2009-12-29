@@ -86,8 +86,12 @@ class EngineDatabasePluginInfo;
 //    Removed singleton characteristics.
 //
 //    Brad Whitlock, Wed Jun 17 10:24:46 PDT 2009
-//    I added arguments to Initialize and I overrode the new BroadcastGeneralInfo
-//    method.
+//    I added arguments to Initialize and I overrode the new
+//    BroadcastGeneralInfo method.
+//
+//    Jeremy Meredith, Tue Dec 29 11:40:42 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Added
+//    filePatternsStrict and opensWholeDirectory.
 //
 // ****************************************************************************
 
@@ -108,8 +112,9 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
     CommonDatabasePluginInfo       *GetCommonPluginInfo(const std::string&);
     EngineDatabasePluginInfo       *GetEnginePluginInfo(const std::string&);
     bool                            PluginHasWriter(const std::string&);
-    std::vector<std::string>        PluginFileExtensions(const std::string&);
-    std::vector<std::string>        PluginFilenames(const std::string&);
+    std::vector<std::string>        PluginFilePatterns(const std::string&);
+    bool                            PluginFilePatternsAreStrict(const std::string&);
+    bool                            PluginOpensWholeDirectory(const std::string&);
 
     std::vector<std::string>        GetMatchingPluginIds(const char *fname,
                                         bool searchAll = false);
@@ -125,8 +130,9 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
 
     // arrays containing all plugins (appends the ones in PluginManager.C)
     std::vector<bool>                       haswriter;
-    std::vector<std::vector<std::string> >  extensions;
-    std::vector<std::vector<std::string> >  filenames;
+    std::vector<std::vector<std::string> >  filePatterns;
+    std::vector<bool>                       filePatternsAreStrict;
+    std::vector<bool>                       opensWholeDirectory;
 
     // arrays containing enabled plugins
     std::vector<CommonDatabasePluginInfo*>      commonPluginInfo;

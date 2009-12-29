@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="ProteinDataBank" type="database" label="ProteinDataBank" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
-    <Extensions>
-      ent
-      pdb
-    </Extensions>
+    <FilePatterns>
+      *.ent
+      *.pdb
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

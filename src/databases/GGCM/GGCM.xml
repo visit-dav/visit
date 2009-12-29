@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="GGCM" type="database" label="GGCM" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true">
-    <Extensions>
-      3df
-    </Extensions>
+    <FilePatterns>
+      *.3df
+    </FilePatterns>
 	<Files components="M">
 		avtGGCMFileFormat.C
                 avtGGCMOptions.C

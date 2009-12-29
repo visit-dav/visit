@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
-  <Plugin name="Adios" type="database" label="Adios" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
+  <Plugin name="Adios" type="database" label="Adios" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false">
     <CXXFLAGS>
       $(ADIOS_INCLUDE_DIR)
     </CXXFLAGS>
     <LDFLAGS>
       $(ADIOS_LIBRARY_DIR)
     </LDFLAGS>
-    <Extensions>
-      bp
-    </Extensions>
+    <FilePatterns>
+      *.bp
+    </FilePatterns>
     <LIBS components="M">
       -ladiosread_nompi
     </LIBS>

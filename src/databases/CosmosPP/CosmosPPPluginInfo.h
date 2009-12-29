@@ -71,7 +71,9 @@ class CosmosPPGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
-    virtual std::vector<std::string>  GetDfltExtsFromGen() const;
+    virtual std::vector<std::string> GetDefaultFilePatterns() const;
+    virtual bool  AreDefaultFilePatternsStrict() const;
+    virtual bool  OpensWholeDirectory() const;
 };
 
 class CosmosPPCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual CosmosPPGeneralPluginInfo

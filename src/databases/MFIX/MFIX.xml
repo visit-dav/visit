@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="MFIX" type="database" label="MFIX" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true">
-    <Extensions>
-      .RES
-    </Extensions>
+    <FilePatterns>
+      *.RES
+    </FilePatterns>
     <Files components="M">
       avtMFIXFileFormat.C
       avtMFIXOptions.C

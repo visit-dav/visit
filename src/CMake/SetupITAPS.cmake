@@ -39,6 +39,9 @@
 #    Made all messages 'STATUS', otherwise they appear as errors when using 
 #    CMake gui.
 #
+#    Jeremy Meredith, Mon Dec 28 16:05:49 EST 2009
+#    File extensions no longer exist; switched to file patterns.
+#
 #****************************************************************************/
 
 FUNCTION(ITAPS_ADD_IMPLEMENTATION IMPL)
@@ -88,12 +91,12 @@ FUNCTION(ITAPS_INCLUDE_DIRECTORIES IMPL)
     ENDFOREACH(X)
 ENDFUNCTION(ITAPS_INCLUDE_DIRECTORIES IMPL)
 
-FUNCTION(ITAPS_FILE_EXTENSIONS IMPL)
+FUNCTION(ITAPS_FILE_PATTERNS IMPL)
     ITAPS_ADD_IMPLEMENTATION(${IMPL})
     FOREACH(X ${ARGN})
-        ADD_UNIQUE_LIST_VALUE(ITAPS_${IMPL}_FILE_EXTENSIONS "ITAPS ${IMPL} file extensions" ${X})
+        ADD_UNIQUE_LIST_VALUE(ITAPS_${IMPL}_FILE_PATTERNS "ITAPS ${IMPL} file patterns" ${X})
     ENDFOREACH(X)
-ENDFUNCTION(ITAPS_FILE_EXTENSIONS IMPL)
+ENDFUNCTION(ITAPS_FILE_PATTERNS IMPL)
 
 FUNCTION(ITAPS_LINK_LIBRARIES IMPL)
     ITAPS_ADD_IMPLEMENTATION(${IMPL})
@@ -111,7 +114,7 @@ ENDFUNCTION(ITAPS_LINK_DIRECTORIES IMPL)
 
 #
 # Creates new ITAPS plugins for the implementations that have been defined via
-# calls to ITAPS_INCLUDE_DIRECTORIES, ITAPS_FILE_EXTENSIONS, ITAPS_LINK_LIBRARIES,
+# calls to ITAPS_INCLUDE_DIRECTORIES, ITAPS_FILE_PATTERNS, ITAPS_LINK_LIBRARIES,
 # ITAPS_LINK_DIRECTORIES.
 #
 # Sets up cache variables:
@@ -125,7 +128,7 @@ FUNCTION(CONFIGURE_ITAPS)
         MESSAGE(STATUS "--  ${IMPL}")
         # Just print info for now
         #MESSAGE(STATUS "    includes  =${ITAPS_${IMPL}_INCLUDE_DIR}")
-        #MESSAGE(STATUS "    extensions=${ITAPS_${IMPL}_FILE_EXTENSIONS}")
+        #MESSAGE(STATUS "    patterns  =${ITAPS_${IMPL}_FILE_PATTERNS}")
         #MESSAGE(STATUS "    libraries =${ITAPS_${IMPL}_LIB}}")
         #MESSAGE(STATUS "    libdirs   =${ITAPS_${IMPL}_LIBRARY_DIR}}")
 
@@ -159,16 +162,16 @@ FUNCTION(CONFIGURE_ITAPS)
 
             # Assemble some extension code.
             SET(defExt "")
-            SET(allExts ${ITAPS_${IMPL}_FILE_EXTENSIONS})
+            SET(allExts ${ITAPS_${IMPL}_FILE_PATTERNS})
             FOREACH(ext ${allExts})
-                SET(defExt "${defExt}defaultExtensions.push_back(\"${ext}\");")
+                SET(defExt "${defExt}defaultPatterns.push_back(\"${ext}\");")
             ENDFOREACH(ext)
             STRING(LENGTH "${defExt}" SLEN)
 
             STRING(REPLACE "ITAPS_C" ITAPS_${IMPL} NEWCONTENTS "${FILECONTENTS}")
             IF(${F} MATCHES "ITAPS_CPluginInfo.C")
                 IF(${SLEN} GREATER 0)
-                    STRING(REPLACE "defaultExtensions.push_back(\"cub\");" "${defExt}" EXTCONTENTS "${NEWCONTENTS}")
+                    STRING(REPLACE "defaultPatterns.push_back(\"cub\");" "${defExt}" EXTCONTENTS "${NEWCONTENTS}")
                     SET(NEWCONTENTS "${EXTCONTENTS}")
                     UNSET(EXTCONTENTS)
                 ENDIF(${SLEN} GREATER 0)

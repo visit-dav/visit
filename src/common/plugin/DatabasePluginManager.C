@@ -45,6 +45,7 @@
 #include <PluginBroadcaster.h>
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
+#include <Utility.h>
 #include <visitstream.h>
 #include <visit-config.h>
 #include <string>
@@ -145,6 +146,9 @@ DatabasePluginManager::Initialize(const PluginCategory pluginCategory,
 // Creation:   Thu Jun 18 11:30:15 PDT 2009
 //
 // Modifications:
+//    Jeremy Meredith, Tue Dec 29 11:40:42 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Added
+//    filePatternsStrict and opensWholeDirectory.
 //   
 // ****************************************************************************
 
@@ -154,8 +158,9 @@ DatabasePluginManager::BroadcastGeneralInfo(PluginBroadcaster *broadcaster)
     PluginManager::BroadcastGeneralInfo(broadcaster);
 
     broadcaster->BroadcastBoolVector(haswriter);
-    broadcaster->BroadcastStringVectorVector(extensions);
-    broadcaster->BroadcastStringVectorVector(filenames);
+    broadcaster->BroadcastStringVectorVector(filePatterns);
+    broadcaster->BroadcastBoolVector(filePatternsAreStrict);
+    broadcaster->BroadcastBoolVector(opensWholeDirectory);
 }
 
 // ****************************************************************************
@@ -251,6 +256,11 @@ DatabasePluginManager::GetCommonPluginInfo(const string &id)
 //
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Added code to update extensions and filenames.
+//
+//    Jeremy Meredith, Tue Dec 29 11:40:42 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Added
+//    filePatternsStrict and opensWholeDirectory.
+//
 // ****************************************************************************
 
 bool
@@ -287,8 +297,9 @@ DatabasePluginManager::LoadGeneralPluginInfo()
     versions  .push_back(info->GetVersion());
     enabled   .push_back(info->EnabledByDefault());
     haswriter .push_back(info->HasWriter());
-    extensions.push_back(info->GetDfltExtsFromGen());
-    filenames .push_back(info->GetFilenamesFromGen());
+    filePatterns.push_back(info->GetDefaultFilePatterns());
+    filePatternsAreStrict.push_back(info->AreDefaultFilePatternsStrict());
+    opensWholeDirectory.push_back(info->OpensWholeDirectory());
     delete info;
     return true;
 }
@@ -450,52 +461,83 @@ DatabasePluginManager::PluginHasWriter(const string &id)
 }
 
 // ****************************************************************************
-//  Method:  DatabasePluginManager::PluginDefaultExtensions
+//  Method:  DatabasePluginManager::PluginFilePatterns
 //
-//  Purpose: Returns file extensions for a plugin 
+//  Purpose:
+//    Returns file name patterns for a plugin 
 //
 //  Arguments:
 //    id         the plugin id
 //
-//  Programmer:  Mark C. Miller
-//  Creation:    August 3, 2007 
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 29, 2009
 //
 // ****************************************************************************
 vector<string>
-DatabasePluginManager::PluginFileExtensions(const string &id)
+DatabasePluginManager::PluginFilePatterns(const string &id)
 {
     vector<string> retval;
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
         if(index < names.size())
-            retval = extensions[index];
+            retval = filePatterns[index];
     }
 
     return retval;
 }
 
 // ****************************************************************************
-//  Method:  DatabasePluginManager::PluginDefaultFilenames
+//  Method:  DatabasePluginManager::PluginFilePatternsAreStrict
 //
-//  Purpose: Returns filenames for a plugin 
+//  Purpose:
+//    Returns true for a plugin filename patterns are intended
+//    to be interpreted strictly.
 //
 //  Arguments:
 //    id         the plugin id
 //
-//  Programmer:  Mark C. Miller
-//  Creation:    August 3, 2007 
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 29, 2009
 //
 // ****************************************************************************
-vector<string>
-DatabasePluginManager::PluginFilenames(const string &id)
+bool
+DatabasePluginManager::PluginFilePatternsAreStrict(const string &id)
 {
-    vector<string> retval;
+    bool retval = false;
     if(allindexmap.find(id) != allindexmap.end())
     {
         int index = allindexmap[id];
         if(index < names.size())
-            retval = filenames[index];
+            retval = filePatternsAreStrict[index];
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method:  DatabasePluginManager::PluginOpensWholeDirectory
+//
+//  Purpose:
+//    Returns true if a plugin is intended to be handed a whole
+//    directory to open, not just a single file.
+//
+//  Arguments:
+//    id         the plugin id
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 29, 2009
+//
+// ****************************************************************************
+bool
+DatabasePluginManager::PluginOpensWholeDirectory(const string &id)
+{
+    bool retval = false;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < names.size())
+            retval = opensWholeDirectory[index];
     }
 
     return retval;
@@ -519,6 +561,12 @@ DatabasePluginManager::PluginFilenames(const string &id)
 //    Kathleen Bonnell, Tue Sep 11 08:56:42 PDT 2007 
 //    Replace 'and' with '&&' for compilation on windows. 
 // 
+//    Jeremy Meredith, Tue Dec 29 11:42:47 EST 2009
+//    Replaced simple extension and full-filename matching with single
+//    comprehensive file pattern match.  Broke compile compatibility with old
+//    plugins as part of this change, so removed code to check for deprecated
+//    *info generated code.
+//
 // ****************************************************************************
 vector<string>
 DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll)
@@ -551,87 +599,16 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
     for (i=0; i<iMax; i++)
     {
         string id = searchAll ? GetAllID(i) : GetEnabledID(i);
-        CommonDatabasePluginInfo *info = GetCommonPluginInfo(id);
+        vector<string> patterns = PluginFilePatterns(id);
+        int nPatterns = patterns.size();
         bool foundMatch = false;
-
-        //
-        // Check to see if there is an extension that matches.
-        // Look first using GeneralPluginInfo via PluginFileExtensions
-        // call (the newer way). If that yields nothing, then try the
-        // CommonPluginInfo via the GetDefaultExtensions (the old way).
-        //
-        int j;
-        vector<string> extensions = PluginFileExtensions(id);
-        int nextensions = extensions.size();
-        bool shouldIssueObsoletePluginWarning = false;
-        if (nextensions == 0)
+        for (int j=0; j<nPatterns && !foundMatch; j++)
         {
-            if (info)
-                extensions = info->GetDefaultExtensions();
-            nextensions = extensions.size();
-            shouldIssueObsoletePluginWarning = nextensions > 0;
-        }
-        for (j=0; j<nextensions && !foundMatch; j++)
-        {
-            string ext = extensions[j];
-            if (ext[0] != '.')
-            {
-                ext = string(".") + extensions[j];
-            }
-#if defined(_WIN32)
-            if (file.length() >= ext.length())
-            {
-                string fileExt(file.substr(file.length() - ext.length()));
-                foundMatch = (_stricmp(fileExt.c_str(), ext.c_str()) == 0);
-            }
-#else
-            if (file.length() >= ext.length() &&
-                file.substr(file.length() - ext.length()) == ext)
-            {
-                foundMatch = true;
-            }
-#endif
-        }
-
-        //
-        // Check to see if there is an exact name that matches.
-        // Again, get filenames first from GeneralPluginInfo and,
-        // failing that, then the older way (from CommonPluginInfo).
-        //
-        vector<string> filenames = PluginFilenames(id);
-        int nfiles = filenames.size();
-        if (nfiles == 0)
-        {
-            if (info)
-                filenames = info->GetFilenames();
-            nfiles = filenames.size();
-            shouldIssueObsoletePluginWarning |= nfiles > 0;
-        }
-        for (j=0; j<nfiles && !foundMatch; j++)
-        {
-            if (filenames[j] == file)
-            {
-                foundMatch = true;
-            }
+            foundMatch |= WildcardStringMatch(patterns[j], file);
         }
 
         if (foundMatch)
             rv.push_back(id);
-
-        if (foundMatch && shouldIssueObsoletePluginWarning)
-        {
-            static bool issuedWarning = false;
-            if (!issuedWarning)
-            {
-                cerr << "Warning: For plugin id = \"" << id
-                     << "\", default file extensions/names found in" << endl;
-                cerr << "CommonPluginInfo indicating obsolete plugin code." << endl;
-                cerr << "Please re-generate the plugin info files using xml2info." << endl;
-                cerr << "This message will continue to appear, once per session," << endl;
-                cerr << "until the problem has been addressed." << endl;
-                issuedWarning = true;
-            }
-        }
     }
 
     return rv;

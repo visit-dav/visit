@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="LAMMPS" type="database" label="LAMMPS" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
-    <Extensions>
-      eam EAM
-      meam MEAM
-      rigid RIGID
-      dump DUMP
-    </Extensions>
+    <FilePatterns>
+      *.eam
+      *.meam
+      *.rigid
+      *.dump
+    </FilePatterns>
     <Files components="M">
       avtLAMMPSFileFormat.C
       avtLAMMPSStructureFileFormat.C

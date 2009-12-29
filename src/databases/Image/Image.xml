@@ -1,28 +1,18 @@
 <?xml version="1.0"?>
   <Plugin name="Image" type="database" label="Image" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true">
-    <Extensions>
-      pnm
-      ppm
-      png
-      tiff
-      jpeg
-      jpg
-      tif
-      PNM
-      PPM
-      PNG
-      TIFF
-      JPEG
-      JPG
-      TIF
-      bmp
-      BMP
-      sdt
-      SDT
-      spr
-      SPR
-      imgvol
-    </Extensions>
+    <FilePatterns>
+      *.pnm
+      *.ppm
+      *.png
+      *.tiff
+      *.jpeg
+      *.jpg
+      *.tif
+      *.bmp
+      *.sdt
+      *.spr
+      *.imgvol
+    </FilePatterns>
     <Files components="E">
       vtkStimulateReader.C
       avtImageFileFormat.C

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="ExtrudedVol" type="database" label="ExtrudedVol" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true">
-    <Extensions>
-      exvol
-    </Extensions>
+    <FilePatterns>
+      *.exvol
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

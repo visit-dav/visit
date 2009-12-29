@@ -10,9 +10,9 @@
       ${HDF5_LIB}
       ${ZLIB_LIB}
     </LIBS>
-    <Extensions>
-      h5
-    </Extensions>
+    <FilePatterns>
+      *.h5
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true">
     </Attribute>
   </Plugin>

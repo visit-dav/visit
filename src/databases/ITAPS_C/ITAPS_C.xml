@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="ITAPS_C" type="database" label="ITAPS_C" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" specifiedFilenames="false">
+  <Plugin name="ITAPS_C" type="database" label="ITAPS_C" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" filePatternsStrict="false">
 <!-- The following 3 lines for Extensions CXXFLAGS, LIBS
      must be formatted as single lines so that configure
      can perform the necessary sed substitutions. -->
-    <Extensions> cub </Extensions>
+    <FilePatterns>
+       *.cub 
+    </FilePatterns>
     <CXXFLAGS>
        -DITAPS_C
        ${ITAPS_C_INCLUDE_DIR}

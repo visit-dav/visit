@@ -111,6 +111,11 @@ class DatabasePluginManager;
 //    Jeremy Meredith, Thu Aug  7 16:22:24 EDT 2008
 //    Use const char* for the functions likely to return a string literal.
 //
+//    Jeremy Meredith, Mon Dec 28 15:08:45 EST 2009
+//    Changed file matching behavior to use patterns and a strictness
+//    flag.  Made pure virtual so plugin developers will know to re-run info
+//    xml code generation tool.  Removed deprecated versions of this code.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -122,10 +127,9 @@ class PLUGIN_API GeneralDatabasePluginInfo
     virtual const char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
     virtual bool  HasWriter() const { return false; }
-    virtual std::vector<std::string>  GetDfltExtsFromGen() const
-                                   { std::vector<std::string> rv; return rv; };
-    virtual std::vector<std::string>  GetFilenamesFromGen() const
-                                   { std::vector<std::string> rv; return rv; };
+    virtual std::vector<std::string>  GetDefaultFilePatterns() const = 0;
+    virtual bool  AreDefaultFilePatternsStrict() const { return false; }
+    virtual bool  OpensWholeDirectory() const { return false; }
 };
 
 class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePluginInfo
@@ -135,10 +139,6 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
     virtual                          ~CommonDatabasePluginInfo();
 
     virtual DatabaseType              GetDatabaseType() = 0;
-    virtual std::vector<std::string>  GetDefaultExtensions()
-                                   { std::vector<std::string> rv; return rv; };
-    virtual std::vector<std::string>  GetFilenames()
-                                   { std::vector<std::string> rv; return rv; };
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock) = 0;
 

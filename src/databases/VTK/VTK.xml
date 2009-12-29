@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
   <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true">
-    <Extensions>
-      vtk
-      vts
-      vtr 
-      vtu
-      vti
-      vtp
-    </Extensions>
+    <FilePatterns>
+      *.vtk
+      *.vts
+      *.vtr 
+      *.vtu
+      *.vti
+      *.vtp
+    </FilePatterns>
     <Files components="M">
       avtVTKFileFormat.C
       avtVTKOptions.C

@@ -9,9 +9,9 @@
     <LIBS>
       ${HDF4_LIB}
     </LIBS>
-    <Extensions>
-      zeus
-    </Extensions>
+    <FilePatterns>
+      *.zeus
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>
   </Plugin>

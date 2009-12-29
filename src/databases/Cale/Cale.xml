@@ -9,10 +9,10 @@
     <LIBS>
       ${PDB_LIB}
     </LIBS>
-    <Extensions>
-      pdb
-      cale
-    </Extensions>
+    <FilePatterns>
+      *.pdb
+      *.cale
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Cale.code">
       <Function name="CaleCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>

@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Vista" type="database" label="Vista" version="1.0" dbtype="STMD">
-    <Extensions> vista </Extensions>
+    <FilePatterns>
+        *.vista
+    </FilePatterns>
     <Files components="E,M">
         avtVistaFileFormat.C 
         avtVistaAle3dFileFormat.C 
