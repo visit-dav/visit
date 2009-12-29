@@ -9,10 +9,10 @@
     <LIBS>
       ${PDB_LIB} bow
     </LIBS>
-    <Extensions>
-      pdb
-      r0000
-    </Extensions>
+    <FilePatterns>
+      *.pdb
+      *.r0000
+    </FilePatterns>
     <Files components="M">
       avtPDBFileFormat.C
       avtPDBOptions.C

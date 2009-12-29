@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Dyna3D" type="database" label="Dyna3D input data" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
-    <Extensions>
-      dyn
-    </Extensions>
+    <FilePatterns>
+      *.dyn
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="false">
     </Attribute>
   </Plugin>

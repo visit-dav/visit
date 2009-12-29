@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Pixie" type="database" label="Pixie" version="1.0" dbtype="MTSD">
-    <Extensions> 
-      h5 
-    </Extensions>
+    <FilePatterns> 
+      *.h5 
+    </FilePatterns>
     <CXXFLAGS> 
       ${HDF5_INCLUDE_DIR} 
     </CXXFLAGS>

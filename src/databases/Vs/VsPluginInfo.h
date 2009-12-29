@@ -1,15 +1,15 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400142
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
 * full copyright notice is contained in the file COPYRIGHT located at the root
 * of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
 *
-* Redistribution  and  use in  source  and  binary  forms,  with  or  without
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
 * modification, are permitted provided that the following conditions are met:
 *
 *  - Redistributions of  source code must  retain the above  copyright notice,
@@ -71,7 +71,9 @@ class VsGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual const char* GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
-    virtual std::vector<std::string>  GetDfltExtsFromGen() const;
+    virtual std::vector<std::string> GetDefaultFilePatterns() const;
+    virtual bool  AreDefaultFilePatternsStrict() const;
+    virtual bool  OpensWholeDirectory() const;
 };
 
 class VsCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual VsGeneralPluginInfo

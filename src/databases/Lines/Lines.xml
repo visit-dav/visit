@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
   <Plugin name="Lines" label="Lines" type="database" dbtype="STMD" version="1.0">
-    <Extensions> </Extensions>
+    <FilePatterns> </FilePatterns>
   </Plugin>

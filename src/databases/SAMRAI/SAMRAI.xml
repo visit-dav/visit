@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" mdspecificcode="true" dbtype="STMD">
-    <Extensions> 
-      samrai 
-    </Extensions>
+    <FilePatterns> 
+      *.samrai 
+    </FilePatterns>
     <CXXFLAGS> 
       ${HDF5_INCLUDE_DIR} 
     </CXXFLAGS>

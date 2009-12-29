@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="Enzo" label="Enzo" type="database" dbtype="STMD" version="1.0">
-    <Extensions> hierarchy boundary </Extensions>
+  <Plugin name="Enzo" label="Enzo" type="database" dbtype="STMD" version="1.0" filePatternsStrict="true">
+    <FilePatterns>
+      *.hierarchy
+      *.boundary
+    </FilePatterns>
     <CXXFLAGS> 
         ${HDF4_INCLUDE_DIR}
         ${HDF5_INCLUDE_DIR} 

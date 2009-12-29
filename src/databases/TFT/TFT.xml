@@ -1,13 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="TFT" type="database" label="TFT" version="1.0" enabled="true" dbtype="STSD" haswriter="false">
-    <Extensions>
-      dat
-      DAT
-      Dat
-      tft
-      TFT
-      Tft
-    </Extensions>
+    <FilePatterns>
+      *.dat
+      *.tft
+    </FilePatterns>
     <Attribute persistent="false">
     </Attribute>
   </Plugin>

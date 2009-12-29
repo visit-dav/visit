@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="PLOT2D" label="PLOT2D" type="database" dbtype="STSD" version="1.0">
-    <Extensions> p2d </Extensions>
+    <FilePatterns>
+      *.p2d
+    </FilePatterns>
   </Plugin>

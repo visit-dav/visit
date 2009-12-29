@@ -9,11 +9,11 @@
     <LIBS>
       ${CFITSIO_LIB}
     </LIBS>
-    <Extensions>
-      fit
-      fits
-      imh
-    </Extensions>
+    <FilePatterns>
+      *.fit
+      *.fits
+      *.imh
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

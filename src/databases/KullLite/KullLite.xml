@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="KullLite" label="KullLite" type="database" dbtype="STMD" version="1.0">
-    <Extensions> pdb mkf </Extensions>
+    <FilePatterns>
+       *.pdb
+       *.mkf
+    </FilePatterns>
     <CXXFLAGS>
        ${PDB_INCLUDE_DIR}
     </CXXFLAGS>

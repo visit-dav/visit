@@ -112,6 +112,10 @@
 //    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
 //    Split custom engine libs into serial and parallel versions.
 //
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -196,7 +200,8 @@ class Plugin : public PluginBase
             WriteTagAttr(out, "dbtype", dbtype);
             WriteTagAttr(out, "haswriter", Bool2Text(haswriter));
             WriteTagAttr(out, "hasoptions", Bool2Text(hasoptions));
-            WriteTagAttr(out, "specifiedFilenames", Bool2Text(specifiedFilenames));
+            WriteTagAttr(out, "filePatternsStrict", Bool2Text(filePatternsStrict));
+            WriteTagAttr(out, "opensWholeDirectory", Bool2Text(opensWholeDirectory));
         }
         FinishOpenTag(out);
 
@@ -221,18 +226,11 @@ class Plugin : public PluginBase
             WriteCloseTag(out, "LIBS", indent);
         }
 
-        if (type == "database" && extensions.size() > 0)
+        if (type == "database" && filePatterns.size() > 0)
         {
-            WriteOpenTag(out, "Extensions", indent);
-            WriteValues(out, extensions, indent);
-            WriteCloseTag(out, "Extensions", indent);
-        }
-
-        if (type == "database" && filenames.size() > 0)
-        {
-            WriteOpenTag(out, "Filenames", indent);
-            WriteValues(out, filenames, indent);
-            WriteCloseTag(out, "Filenames", indent);
+            WriteOpenTag(out, "FilePatterns", indent);
+            WriteValues(out, filePatterns, indent);
+            WriteCloseTag(out, "FilePatterns", indent);
         }
 
         if (customgfiles)

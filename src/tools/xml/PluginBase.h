@@ -80,6 +80,10 @@
 //    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
 //    Split custom engine libs into serial and parallel versions.
 //
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -95,7 +99,6 @@ public:
 
     bool    haswriter;
     bool    hasoptions;
-    bool    specifiedFilenames;  // For DB plugins
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    hasEngineSpecificCode;
@@ -105,8 +108,9 @@ public:
     std::vector<QString> cxxflags;
     std::vector<QString> ldflags;
     std::vector<QString> libs;
-    std::vector<QString> extensions; // for DB plugins
-    std::vector<QString> filenames;  // for DB plugins
+    std::vector<QString> filePatterns;        // for DB plugins
+    bool                 filePatternsStrict;  // for DB plugins
+    bool                 opensWholeDirectory; // for DB plugins
     bool customgfiles;
     std::vector<QString> gfiles;     // gui files
     bool customglibs;
@@ -147,7 +151,6 @@ public:
           iconFile(ifile),
           haswriter(hw),
           hasoptions(ho),
-          specifiedFilenames(false),
           enabledByDefault(true),
           has_MDS_specific_code(false),
           hasEngineSpecificCode(false),
@@ -156,8 +159,9 @@ public:
           cxxflags(),
           ldflags(),
           libs(),
-          extensions(),
-          filenames(),
+          filePatterns(),
+          filePatternsStrict(false),
+          opensWholeDirectory(false),
           customgfiles(false),
           gfiles(),
           customglibs(false),

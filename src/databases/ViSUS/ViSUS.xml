@@ -10,10 +10,10 @@
       ${VISUS_LIB}
       -lz
     </LIBS>
-    <Extensions>
-      idx
-      vis
-    </Extensions>
+    <FilePatterns>
+      *.idx
+      *.vis
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>
   </Plugin>

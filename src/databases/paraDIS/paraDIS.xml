@@ -30,11 +30,11 @@ RC_cpp_lib/pathutil.C
       -IRC_c_lib
       -IRC_cpp_lib
     </CXXFLAGS>
-    <Extensions>
-      prds
-      dat
-      data
-    </Extensions>
+    <FilePatterns>
+      *.prds
+      *.dat
+      *.data
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

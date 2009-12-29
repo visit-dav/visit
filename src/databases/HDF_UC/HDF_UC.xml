@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="HDF_UC" type="database" label="HDF_UC" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" specifiedFilenames="false">
+  <Plugin name="HDF_UC" type="database" label="HDF_UC" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false">
     <CXXFLAGS>
       ${HDF5_INCLUDE_DIR}
       ${FASTBIT_INCLUDE_DIR}
@@ -16,10 +16,10 @@
       ${HDF5_LIB}
       ${ZLIB_LIB}
     </LIBS>
-    <Extensions>
-      h5
-      h5part
-    </Extensions>
+    <FilePatterns>
+      *.h5
+      *.h5part
+    </FilePatterns>
     <Files components="M">
       avtHDF_UCFileFormat.C
       avtHDF_UCOptions.C

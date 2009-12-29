@@ -9,9 +9,9 @@
     <LDFLAGS>
       ${CGNS_LIBRARY_DIR}
     </LDFLAGS>
-    <Extensions>
-      cgns
-    </Extensions>
+    <FilePatterns>
+      *.cgns
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>
   </Plugin>

@@ -363,6 +363,9 @@ CreateMessageStrings(char **lists, int *count, int nl)
 //    Brad Whitlock, Fri Apr 30 16:13:50 PST 2004
 //    I made it case insensitive on Windows.
 //
+//    Jeremy Meredith, Mon Dec 28 15:40:12 EST 2009
+//    I made the case-insensitivity apply to all platforms.
+//
 // ****************************************************************************
 
 bool
@@ -372,7 +375,6 @@ WildcardStringMatch(const std::string &p, const std::string &s)
     return WildcardStringMatch(p.c_str(), s.c_str());
 }
 
-#if defined(_WIN32)
 inline bool
 CaseInsensitiveCompare(char p, char s)
 {
@@ -392,7 +394,6 @@ CaseInsensitiveCompare(char p, char s)
 
     return retval;
 }
-#endif
 
 bool
 WildcardStringMatch(const char *p, const char *s)
@@ -416,12 +417,7 @@ WildcardStringMatch(const char *p, const char *s)
     // and consume one char
     if ( *p == '?' ||
         (*p == '#' && *s >= '0' && *s <= '9') ||
-#if defined(_WIN32)
-         CaseInsensitiveCompare(*p, *s)
-#else
-         *p == *s
-#endif
-       )
+         CaseInsensitiveCompare(*p, *s))
     {
         return WildcardStringMatch(&p[1], &s[1]);
     }

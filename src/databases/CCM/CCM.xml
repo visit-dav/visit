@@ -11,9 +11,9 @@
       ${CCMIO_LIB}
       ${OPENGL_glu_LIBRARY}
     </LIBS>
-    <Extensions>
-      ccm
-    </Extensions>
+    <FilePatterns>
+      *.ccm
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

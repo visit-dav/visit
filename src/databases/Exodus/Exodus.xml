@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
   <Plugin name="Exodus" label="Exodus" type="database" dbtype="MTSD" version="1.0">
-    <Extensions> ex e exo ex2 exII exii gen EX E EXO EX2 EXII exoII EXOII GEN exodus EXODUS nemesis NEMESIS </Extensions>
+    <FilePatterns>
+    *.ex
+    *.e
+    *.exo
+    *.ex2
+    *.exii
+    *.gen
+    *.exoii
+    *.exodus
+    *.nemesis
+    </FilePatterns>
     <Files components="M,E">
       avtExodusFileFormat.C
       vtkVisItExodusReader.C

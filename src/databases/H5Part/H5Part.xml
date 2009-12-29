@@ -13,9 +13,9 @@
         ${HDF5_LIB} 
         ${ZLIB_LIB} 
     </LIBS>
-    <Extensions>
-      h5part
-    </Extensions>
+    <FilePatterns>
+      *.h5part
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

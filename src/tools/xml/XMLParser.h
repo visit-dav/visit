@@ -210,6 +210,11 @@ ParseCharacters(const QString &buff)
 //
 //    Jeremy Meredith, Tue Sep  8 15:11:35 EDT 2009
 //    Split custom engine libs into serial and parallel versions.
+//
+//    Jeremy Meredith, Tue Dec 29 11:21:30 EST 2009
+//    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
+//    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -298,13 +303,9 @@ class XMLParser : public QXmlDefaultHandler
             {
                 currentPlugin->ldflags.push_back(strings[i]);
             }
-            else if (currentTag == "Extensions")
+            else if (currentTag == "FilePatterns")
             {
-                currentPlugin->extensions.push_back(strings[i]);
-            }
-            else if (currentTag == "Filenames")
-            {
-                currentPlugin->filenames.push_back(strings[i]);
+                currentPlugin->filePatterns.push_back(strings[i]);
             }
         }
         return true;
@@ -326,7 +327,6 @@ class XMLParser : public QXmlDefaultHandler
             QString dbtype    = atts.value("dbtype");
             QString haswriter = atts.value("haswriter");
             QString hasoptions= atts.value("hasoptions");
-            QString specifiedFilename = atts.value("specifiedFilename");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
@@ -334,6 +334,8 @@ class XMLParser : public QXmlDefaultHandler
             QString engspecific= atts.value("engspecificcode");
             QString onlyengine= atts.value("onlyengine");
             QString noengine  = atts.value("noengine");
+            QString filePatternsStrict = atts.value("filePatternsStrict");
+            QString opensWholeDirectory = atts.value("opensWholeDirectory");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
@@ -352,9 +354,13 @@ class XMLParser : public QXmlDefaultHandler
             {
                 currentPlugin->hasEngineSpecificCode = Text2Bool(engspecific);
             }
-            if (!specifiedFilename.isNull())
+            if (!filePatternsStrict.isNull())
             {
-                currentPlugin->specifiedFilenames = Text2Bool(specifiedFilename);
+                currentPlugin->filePatternsStrict = Text2Bool(filePatternsStrict);
+            }
+            if (!opensWholeDirectory.isNull())
+            {
+                currentPlugin->opensWholeDirectory = Text2Bool(opensWholeDirectory);
             }
         }
         else if (tag == "Attribute")
@@ -491,10 +497,7 @@ class XMLParser : public QXmlDefaultHandler
         else if (tag == "LDFLAGS")
         {
         }
-        else if (tag == "Extensions")
-        {
-        }
-        else if (tag == "Filenames")
+        else if (tag == "FilePatterns")
         {
         }
         else if (tag == "Files")
@@ -779,10 +782,7 @@ class XMLParser : public QXmlDefaultHandler
         {
             currentLibComponents = COMP_NONE;
         }
-        else if (tag == "Extensions")
-        {
-        }
-        else if (tag == "Filenames")
+        else if (tag == "FilePatterns")
         {
         }
         else if (tag == "Files")

@@ -4,9 +4,9 @@
       bow
       z
     </LIBS>
-    <Extensions>
-      txt
-    </Extensions>
+    <FilePatterns>
+      *.txt
+    </FilePatterns>
     <Files components="M">
       avtBOWFileFormat.C
     </Files>

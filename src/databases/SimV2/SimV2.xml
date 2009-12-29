@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="SimV2" type="database" label="SimulationV2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false" specifiedFilenames="false">
-    <Extensions>
-      sim2
-    </Extensions>
+  <Plugin name="SimV2" type="database" label="SimulationV2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false" filePatternsStrict="false">
+    <FilePatterns>
+      *.sim2
+    </FilePatterns>
     <Files components="E">
       avtSimV2FileFormat.C
       avtSimV2Writer.C

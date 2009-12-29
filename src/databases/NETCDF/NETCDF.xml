@@ -9,12 +9,12 @@
     <LIBS>
       ${NETCDF_LIB}
     </LIBS>
-    <Extensions>
-      nc
-      cdf
-      elev
-      ncd
-    </Extensions>
+    <FilePatterns>
+      *.nc
+      *.cdf
+      *.elev
+      *.ncd
+    </FilePatterns>
     <Files components="M">
       avtNETCDFFileFormat.C
       avtBasicNETCDFFileFormat.C

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="OVERFLOW" type="database" label="OVERFLOW" version="1.0" enabled="true" mdspecificcode="false" dbtype="STMD" haswriter="false">
-    <Extensions>
-      dat
-      save
-    </Extensions>
+    <FilePatterns>
+      *.dat
+      *.save
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

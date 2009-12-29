@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Silo" type="database" label="Silo" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true">
+  <Plugin name="Silo" type="database" label="Silo" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${SILO_INCLUDE_DIR}
     </CXXFLAGS>
@@ -9,10 +9,10 @@
     <LIBS>
       ${SILO_LIB}
     </LIBS>
-    <Extensions>
-      silo
-      pdb
-    </Extensions>
-    <Attribute name="" purpose="" persistent="true">
+    <FilePatterns>
+      *.silo
+      *.pdb
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
