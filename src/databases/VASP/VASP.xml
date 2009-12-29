@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="VASP" type="database" label="VASP" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
     <FilePatterns>
-      OUTCAR*
-      POSCAR*
-      CHGCAR*
+      OUT*
+      POS*
+      CHG*
     </FilePatterns>
     <Files components="M">
       avtVASPFileFormat.C

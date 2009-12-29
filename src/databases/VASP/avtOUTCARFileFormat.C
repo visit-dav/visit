@@ -586,6 +586,9 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    assumes all atoms are of the first species.
 //    Also, read "POTIM" field used to calculate time values.
 //
+//    Jeremy Meredith, Tue Dec 29 13:47:35 EST 2009
+//    Added some error checks.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -822,6 +825,11 @@ avtOUTCARFileFormat::ReadAllMetaData()
 
         in.getline(line, 132);
     }
+
+    // error check
+    if (natoms == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(),
+                 "Got zero atoms; assuming it's not an OUTCAR format.");
 
     allatoms.resize(ntimesteps>0 ? ntimesteps : 1);
 }
