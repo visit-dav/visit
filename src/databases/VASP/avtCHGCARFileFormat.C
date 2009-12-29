@@ -740,6 +740,9 @@ avtCHGCARFileFormat::DoDomainDecomposition()
 //    created for testing did, and there's no reason not to make the reader
 //    more robust to account for it.  (It's an ASCII format, after all.)
 //
+//    Jeremy Meredith, Tue Dec 29 13:38:26 EST 2009
+//    Added some error testing to make sure the file is viable.
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -750,7 +753,7 @@ avtCHGCARFileFormat::ReadAllMetaData()
     metadata_read = true;
 
     char line[2048];
-    in.getline(line, 2048);
+    in.getline(line, 2048); // title line
 
     double scale = 0.;
     double lat[3][3];
@@ -758,6 +761,11 @@ avtCHGCARFileFormat::ReadAllMetaData()
     in >> lat[0][0] >> lat[0][1] >> lat[0][2];
     in >> lat[1][0] >> lat[1][1] >> lat[1][2];
     in >> lat[2][0] >> lat[2][1] >> lat[2][2];
+
+    // error check
+    if (scale == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(), "Scale was not "
+                   "a nonzero real number; does not match CHGCAR format.");
 
     if (lat[0][1]==0 &&
         lat[0][2]==0 &&
@@ -778,16 +786,21 @@ avtCHGCARFileFormat::ReadAllMetaData()
             unitCell[i][j] = scale*lat[i][j];
 
     in.getline(line, 2048); // skip rest of last lattice line
-    in.getline(line, 2048); // get atom counts
+    in.getline(line, 2048); // get atom counts line
     string atomcountline(line);
 
     natoms = 0;
     int tmp = 0;
-    std::istringstream count_in(atomcountline);
+    std::istringstream count_in(atomcountline); // parse atom counts
     while (count_in >> tmp)
     {
         natoms += tmp;
     }
+
+    // error check
+    if (natoms == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(),
+                 "Could not parse atom counts; does not match CHGCAR format.");
 
     in.getline(line,2048); // skip next line
 
@@ -798,6 +811,14 @@ avtCHGCARFileFormat::ReadAllMetaData()
     in.getline(line,2048); // skip blank line
 
     in >> globalZDims[0] >> globalZDims[1] >> globalZDims[2];
+
+    // error check
+    if (globalZDims[0] == 0 ||
+        globalZDims[1] == 0 ||
+        globalZDims[2] == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(),
+                   "Could not parse dims; does not match CHGCAR format.");
+
     globalNDims[0] = globalZDims[0]+1;
     globalNDims[1] = globalZDims[1]+1;
     globalNDims[2] = globalZDims[2]+1;
@@ -817,6 +838,11 @@ avtCHGCARFileFormat::ReadAllMetaData()
             values_per_line++;
         attempts++;
     }
+
+    // error check
+    if (values_per_line == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(), "Could not count "
+                   "values per line; does not appear to match CHGCAR format.");
 
     // Mark the start of the volumetric grid data
     int values_per_vol = globalZDims[0]*globalZDims[1]*globalZDims[2];

@@ -166,9 +166,9 @@ std::vector<std::string>
 VASPGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("OUTCAR*");
-    defaultPatterns.push_back("POSCAR*");
-    defaultPatterns.push_back("CHGCAR*");
+    defaultPatterns.push_back("OUT*");
+    defaultPatterns.push_back("POS*");
+    defaultPatterns.push_back("CHG*");
 
     return defaultPatterns;
 }

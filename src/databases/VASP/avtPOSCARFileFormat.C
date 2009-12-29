@@ -394,6 +394,8 @@ avtPOSCARFileFormat::GetVectorVar(const char *varname)
 //  Creation:    January  8, 2008
 //
 //  Modifications:
+//   Jeremy Meredith, Tue Dec 29 13:41:16 EST 2009
+//   Added some error checks.
 //
 // ****************************************************************************
 void
@@ -428,12 +430,17 @@ avtPOSCARFileFormat::ReadFile()
     }
 
     // Read the scale and lattice vectors
-    double scale;
+    double scale = 0;
     double lat[3][3];
     in >> scale;
     in >> lat[0][0] >> lat[0][1] >> lat[0][2];
     in >> lat[1][0] >> lat[1][1] >> lat[1][2];
     in >> lat[2][0] >> lat[2][1] >> lat[2][2];
+
+    // error check
+    if (scale == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(), "Scale was not "
+                   "a nonzero real number; does not match POSCAR format.");
 
     for (int i=0; i<3; i++)
         for (int j=0; j<3; j++)
@@ -453,6 +460,11 @@ avtPOSCARFileFormat::ReadFile()
         species_counts.push_back(tmp);
         natoms += tmp;
     }
+
+    // error check
+    if (natoms == 0)
+        EXCEPTION2(InvalidFilesException, filename.c_str(),
+                 "Could not parse atom counts; does not match POSCAR format.");
 
     // next line is either Selective dynamics or Cartesian/Direct
     bool selective_dynamics = false;
