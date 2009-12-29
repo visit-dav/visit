@@ -791,6 +791,25 @@ avtStreamlineFilter::SetColoringMethod(int m, const string &var)
     coloringVariable = var;
 }
 
+// ****************************************************************************
+//  Method:  avtStreamlineFilter::SetOpacityVariable
+//
+//  Purpose:
+//    Set the opacity variable.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    December 29, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetOpacityVariable(const std::string &var)
+{
+    opacityVariable = var;
+}
+
 
 // ****************************************************************************
 // Method: avtStreamlineFilter::SetDisplayMethod
@@ -1852,6 +1871,12 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                                      double *extents,
                                      int maxSteps )
 {
+    slSeg->sl->scalars.resize(0);
+    if (coloringVariable != "")
+        slSeg->sl->scalars.push_back(coloringVariable);
+    if (opacityVariable != "")
+        slSeg->sl->scalars.push_back(opacityVariable);
+    
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
 
     if (DebugStream::Level5())
@@ -2413,6 +2438,7 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
     if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
         scalarVal = (avtStreamline::ScalarValueType)(scalarVal | avtStreamline::VORTICITY);
 
+
     for (int i = 0; i < pts.size(); i++)
     {
         double xyz[3] = {pts[i].x, pts[i].y, pts[i].z};
@@ -2701,55 +2727,6 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::StartSphere
-//
-//  Purpose:
-//      Make the geometry for the sphere that the streamline originates from.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
-//   Add dataSpatialDimension.
-//
-// ****************************************************************************
-
-vtkPolyData *
-avtStreamlineFilter::StartSphere(float val, double pt[3])
-{
-    // Create the sphere polydata.
-    vtkSphereSource *sphere = vtkSphereSource::New();
-    sphere->SetCenter(pt[0], pt[1], pt[2]);
-    sphere->SetRadius(radius * 2.);
-    sphere->SetLatLongTessellation(1);
-    sphere->SetPhiResolution(8);
-    sphere->SetThetaResolution(8);
-    vtkPolyData *sphereData = sphere->GetOutput();
-    sphereData->Update();
-
-    // Set the sphere's scalar to val.
-    vtkFloatArray *arr = vtkFloatArray::New();
-    int npts = sphereData->GetNumberOfPoints();
-    arr->SetNumberOfTuples(npts);
-    for (int i = 0; i < npts; ++i)
-        arr->SetTuple1(i, val);
-
-    // If we're not 3D, make the sphere be 2D.
-    if(dataSpatialDimension <= 2)
-        SetZToZero(sphereData);
-
-    sphereData->GetPointData()->SetScalars(arr);
-    arr->Delete();
-    sphereData->Register(NULL);
-    sphere->Delete();
-
-    return sphereData;
-}
-
-
-// ****************************************************************************
 //  Method: avtStreamlineFilter::ModifyContract
 //
 //  Purpose:
@@ -2808,6 +2785,8 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         out_dr->AddSecondaryVariable(coloringVariable.c_str());
+    if (opacityVariable != "")
+        out_dr->AddSecondaryVariable(opacityVariable.c_str());
 
     if (doPathlines)
     {

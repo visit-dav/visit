@@ -54,6 +54,12 @@
 #include <vtkTubeFilter.h>
 
 
+std::string avtStreamlinePolyDataFilter::colorvarArrayName = "colorVar";
+std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
+std::string avtStreamlinePolyDataFilter::opacityArrayName = "opacity";
+std::string avtStreamlinePolyDataFilter::thetaArrayName = "theta";
+
+
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateStreamlineOutput
 //
@@ -80,6 +86,9 @@
 //   Dave Pugmire, Tue Feb  3 11:00:54 EST 2009
 //   Changed debugs.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 void
@@ -100,8 +109,8 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
     {
         avtStreamlineWrapper *slSeg = (avtStreamlineWrapper *) streamlines[i];
         vector<float> thetas;
-        vtkPolyData *pd = GetVTKPolyData(slSeg->sl, slSeg->id, thetas);
-        
+        vtkPolyData *pd = GetVTKPolyData(slSeg->sl, slSeg->id);
+
         if (pd == NULL)
             continue;
 
@@ -115,126 +124,9 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
         pd->SetSource(NULL);
         clean->Delete();
 
-        if (showStart)
-        {
-            float val = pd->GetPointData()->GetScalars()->GetTuple1(0);
-            double *pt = NULL;
-            if (slSeg->dir == avtStreamlineWrapper::FWD)
-                pt = pd->GetPoints()->GetPoint(0);
-            else
-                pt = pd->GetPoints()->GetPoint(
-                                       pd->GetPoints()->GetNumberOfPoints()-1);
-            vtkPolyData *ball = StartSphere(val, pt);
-            
-            append->AddInput(ball);
-            ball->Delete();
-        }
-        
-        if (doTubes)
-        {
-            vtkTubeFilter* tubes = vtkTubeFilter::New();
-            tubes->SetRadius(radius);
-            tubes->SetNumberOfSides(8);
-            tubes->SetRadiusFactor(2.);
-            tubes->SetCapping(1);
-            tubes->ReleaseDataFlagOn();
-            tubes->SetInput(pd);
-            tubes->Update();
-            
-            pd->Delete();
-            pd = tubes->GetOutput();
-            pd->Register(NULL);
-            pd->SetSource(NULL);
-            tubes->Delete();
-            
-            append->AddInput(pd);
-        }
-        else if (doRibbons)
-        {
-            vtkRibbonFilter* ribbons = vtkRibbonFilter::New();
-            ribbons->SetWidth(radius);
+        append->AddInput(pd);
 
-            int nPts = pd->GetPointData()->GetNumberOfTuples();
-            
-            vtkIdList *ids = vtkIdList::New();
-            vtkPoints *pts = vtkPoints::New();
-            vtkCellArray *lines = vtkCellArray::New();
-            for (int i = 0; i < nPts; i++)
-            {
-                vtkIdType id = pts->InsertNextPoint(
-                                                 pd->GetPoints()->GetPoint(i));
-                ids->InsertNextId(id);
-            }
-
-            lines->InsertNextCell(ids);
-            //Create normals, initialize them. (Remove the init later....)
-            vtkFloatArray *normals = vtkFloatArray::New();
-            normals->SetNumberOfComponents(3);
-            normals->SetNumberOfTuples(nPts);
-
-            vtkPolyLine *lineNormalGenerator = vtkPolyLine::New();
-            lineNormalGenerator->GenerateSlidingNormals(pts, lines, normals);
-            
-            //Now, rotate the normals according to the vorticity..
-            //double normal[3], local1[3], local2[3],length,costheta, sintheta;
-            double normal[3], tan[3], biNormal[3], p0[3], p1[3];
-            for (int i = 0; i < nPts; i++)
-            {
-                double theta = thetas[i];
-
-                pts->GetPoint(i, p0);
-                if (i < nPts-1)
-                    pts->GetPoint(i+1, p1);
-                else
-                {
-                    pts->GetPoint(i-1, p0);
-                    pts->GetPoint(i, p1);
-                }
-                for (int j = 0; j < 3; j++)
-                    tan[j] = p1[j]-p0[j];
-
-                //cout<<i<<": p= ["<<p0[0]<<" "<<p0[1]<<" "<<p0[2]<<"] ["
-                //    <<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<"]\n";
-                //cout<<i<<": T=["<<tan[0]<<" "<<tan[1]<<" "<<tan[2]<<"]\n\n";
-                normals->GetTuple(i, normal);
-                vtkMath::Normalize(tan);
-                vtkMath::Normalize(normal);
-
-                vtkMath::Cross(normal, tan, biNormal);
-                double cosTheta = cos(theta);
-                double sinTheta = sin(theta);
-                for (int j = 0; j < 3; j++)
-                    normal[j] = cosTheta*normal[j] + sinTheta*biNormal[j];
-                
-                //cout<<i<<": T=["<<tan[0]<<" "<<tan[1]<<" "<<tan[2]<<"] N= ["
-                //    <<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<endl;
-                normals->SetTuple(i,normal);
-            }
-
-            ids->Delete();
-            pts->Delete();
-            lines->Delete();
-            
-            pd->GetPointData()->SetNormals(normals);
-            normals->Delete();
-            lineNormalGenerator->Delete();
-
-            ribbons->SetInput(pd);
-            ribbons->Update();
-            
-            pd->Delete();
-            pd = ribbons->GetOutput();
-            pd->Register(NULL);
-            pd->SetSource(NULL);
-
-            ribbons->Delete();
-            append->AddInput(pd);
-        }
-        else
-        {
-            append->AddInput(pd);
-            pd->Delete();
-        }
+        pd->Delete();
     }
 
     append->Update();
@@ -275,9 +167,7 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 // ****************************************************************************
 
 vtkPolyData *
-avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl,
-                                            int id,
-                                            vector<float> &thetas)
+avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
 {
     if (sl == NULL || sl->size() == 0)
         return NULL;
@@ -285,17 +175,31 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl,
     vtkPoints *points = vtkPoints::New();
     vtkCellArray *cells = vtkCellArray::New();
     vtkFloatArray *scalars = vtkFloatArray::New();
+    vtkFloatArray *params = vtkFloatArray::New();
+    vtkFloatArray *thetas = NULL;
+    vtkFloatArray *opacity = NULL;
+
+    if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
+        thetas = vtkFloatArray::New();
+
+    int opacityIdx = -1;
+    if (opacityVariable != "")
+    {
+        opacityIdx = sl->GetVariableIdx(opacityVariable);
+        if (opacityIdx == -1)
+            EXCEPTION1(ImproperUseException, "Unknown opacity variable.");
+        opacity = vtkFloatArray::New();
+    }
     
     cells->InsertNextCell(sl->size());
     scalars->Allocate(sl->size());
+    params->Allocate(sl->size());
     avtStreamline::iterator siter;
     
     unsigned int i = 0;
-    float val = 0.0, theta = 0.0;
-    debug5<<"Create vtkPolyData\n";
+    float val = 0.0, theta = 0.0, param = 0.0;
     for(siter = sl->begin(); siter != sl->end(); ++siter, i++)
     {
-        debug5<<i<<": "<< (*siter)->front()<<endl;
         points->InsertPoint(i, (*siter)->front()[0], (*siter)->front()[1], 
                             (dataSpatialDimension > 2 ? (*siter)->front()[2] : 0.0));
         cells->InsertCellPoint(i);
@@ -328,6 +232,15 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl,
         {
             val = (float)id;
         }
+
+        if (terminationType == avtIVPSolver::TIME)
+            param = step->tEnd;
+        else if (terminationType == avtIVPSolver::DISTANCE)
+            param += step->length();
+        else if (terminationType == avtIVPSolver::STEPS)
+            param = param+1.0;
+        else
+            param = param+1.0;
         
         //Ribbon display, record the angle.
         if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
@@ -335,22 +248,44 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl,
             double dT = (step->tEnd - step->tStart);
             float scaledVort = step->vorticity * dT;
             theta += scaledVort;
-            thetas.push_back(theta);
+            thetas->InsertTuple1(i,theta);
+        }
+        if (opacity)
+        {
+            opacity->InsertTuple1(i, step->scalarValues[opacityIdx]);
         }
         
         scalars->InsertTuple1(i, val);
+        params->InsertTuple1(i, param);
     }
     
     //Create the polydata.
     vtkPolyData *pd = vtkPolyData::New();
     pd->SetPoints(points);
     pd->SetLines(cells);
-    scalars->SetName("colorVar");
-    pd->GetPointData()->SetScalars(scalars);
+    scalars->SetName(colorvarArrayName.c_str());
+    params->SetName(paramArrayName.c_str());
+    
+    pd->GetPointData()->AddArray(scalars);
+    pd->GetPointData()->AddArray(params);
+    
+    if (thetas)
+    {
+        thetas->SetName(thetaArrayName.c_str());
+        pd->GetPointData()->AddArray(thetas);
+        thetas->Delete();
+    }
+    if (opacity)
+    {
+        opacity->SetName(thetaArrayName.c_str());
+        pd->GetPointData()->AddArray(opacity);
+        opacity->Delete();
+    }
 
     points->Delete();
     cells->Delete();
     scalars->Delete();
+    params->Delete();
 
     return pd;
 }

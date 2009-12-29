@@ -44,6 +44,8 @@
 
 #include <avtShiftCenteringFilter.h>
 #include <avtStreamlinePolyDataFilter.h>
+#include <avtStreamlineRenderer.h>
+#include <avtUserDefinedMapper.h>
 #include <avtVariableLegend.h>
 #include <avtVariableMapper.h>
 #include <avtLookupTable.h>
@@ -60,19 +62,23 @@
 //    Eric Brugger, Wed Jul 16 11:14:52 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 avtStreamlinePlot::avtStreamlinePlot()
 {
-    colorsInitialized = false;
 #ifdef ENGINE
     streamlineFilter = new avtStreamlinePolyDataFilter;
 #endif
     shiftCenteringFilter = NULL;
-
     avtLUT = new avtLookupTable; 
-    varMapper = new avtVariableMapper;
-    varMapper->SetLookupTable(avtLUT->GetLookupTable());
+    renderer = avtStreamlineRenderer::New();
+    
+    avtCustomRenderer_p cr;
+    CopyTo(cr, renderer);
+    mapper  = new avtUserDefinedMapper(cr);
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Streamline");
@@ -94,6 +100,9 @@ avtStreamlinePlot::avtStreamlinePlot()
 //
 //  Modifications:
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 avtStreamlinePlot::~avtStreamlinePlot()
@@ -110,16 +119,18 @@ avtStreamlinePlot::~avtStreamlinePlot()
         delete shiftCenteringFilter;
         shiftCenteringFilter = NULL;
     }
-    if (varMapper != NULL)
+    if (mapper != NULL)
     {
-        delete varMapper;
-        varMapper = NULL;
+        delete mapper;
+        mapper = NULL;
     }
     if (avtLUT != NULL)
     {
         delete avtLUT;
         avtLUT = NULL;
     }
+
+    renderer = NULL;
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.
@@ -158,12 +169,15 @@ avtStreamlinePlot::Create()
 //
 //  Modifications:
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 avtMapper *
 avtStreamlinePlot::GetMapper(void)
 {
-    return varMapper;
+    return mapper;
 }
 
 // ****************************************************************************
@@ -262,12 +276,22 @@ avtStreamlinePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Shift the streamline plot towards the front, so it will show up over 
 //    Pseudocolor plots.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 void
 avtStreamlinePlot::CustomizeBehavior(void)
 {
-    SetLegendRanges();
+    UpdateMapperAndLegend();
+
+    if (atts.GetOpacityType() != StreamlineAttributes::None)
+    {
+        behavior->SetRenderOrder(MUST_GO_LAST);
+        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+    }
+
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.3);
 }
@@ -345,21 +369,17 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Wed Jun 10 16:26:25 EDT 2009
 //   Add color by variable.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 void
 avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 {
-    const StreamlineAttributes *newAtts = (const StreamlineAttributes *)a;
-
-    // See if the colors will need to be updated.
-    bool updateColors = (!colorsInitialized) ||
-       (atts.GetColorTableName() != newAtts->GetColorTableName());
-
-    // See if any attributes that require the plot to be regenerated were
-    // changed and copy the state object.
-    needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
-    atts = *newAtts;
+    renderer->SetAtts(a);
+    needsRecalculation = atts.ChangesRequireRecalculation(*(const StreamlineAttributes*)a);
+    atts = *(const StreamlineAttributes*)a;
 
 #ifdef ENGINE
     //
@@ -395,40 +415,27 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
                                         atts.GetColoringVariable());
+    if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
+        streamlineFilter->SetOpacityVariable(atts.GetOpacityVariable());
 #endif
 
-    //
-    // Set whether or not lighting is on.
-    //
-    SetLighting(atts.GetLightingFlag());
+    UpdateMapperAndLegend();
 
-    //
-    // Update the plot's colors if needed.
-    //
-    if(atts.GetColoringMethod() != StreamlineAttributes::Solid)
+    if (atts.GetLegendFlag())
     {
-        if (updateColors || atts.GetColorTableName() == "Default")
-        {
-            colorsInitialized = true;
-            SetColorTable(atts.GetColorTableName().c_str());
-        }
+        varLegend->LegendOn();
+        varLegend->SetLookupTable(avtLUT->GetLookupTable());
     }
     else
-    {
-        // Set a single color into the LUT.
-        avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
-    }
-
-    SetLineWidth(atts.GetLineWidth());
-
-    //
-    // Update the legend.
-    //
+        varLegend->LegendOff();
+    
+    
     if (atts.GetColoringMethod() == StreamlineAttributes::Solid)
-        varLegend->SetColorBarVisibility(0);
+        avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
     else
-        varLegend->SetColorBarVisibility(1);
-    SetLegend(atts.GetLegendFlag());
+        varLegend->SetLookupTable(avtLUT->GetLookupTable());
+
+    SetLighting(atts.GetLightingFlag());
 }
 
 // ****************************************************************************
@@ -460,49 +467,6 @@ avtStreamlinePlot::SetColorTable(const char *ctName)
         return avtLUT->SetColorTable(ctName, namesMatch);
 }
 
-// ****************************************************************************
-//  Method: avtStreamlinePlot::SetLegend
-//
-//  Purpose:
-//    Turns the legend on or off.
-//
-//  Arguments:
-//    legendOn  : true if the legend should be turned on, false otherwise.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Oct 7 15:54:28 PST 2002
-//
-//  Modifications:
-//
-//   Dave Pugmire, Mon Nov 23 09:38:53 EST 2009
-//   Add min/max options to color table.
-//
-// ****************************************************************************
-
-void
-avtStreamlinePlot::SetLegend(bool legendOn)
-{
-    if (legendOn)
-    {
-        // Set scaling.
-        varLegend->LegendOn();
-        varLegend->SetLookupTable(avtLUT->GetLookupTable());
-        varLegend->SetScaling();
-        varMapper->SetLookupTable(avtLUT->GetLookupTable());
-
-        //  Retrieve the actual range of the data
-        if (atts.GetLegendMinFlag() || atts.GetLegendMaxFlag())
-            varMapper->SetLimitsMode(2);
-        else
-            varMapper->SetLimitsMode(0);
-        
-        SetLegendRanges();
-    }
-    else
-    {
-        varLegend->LegendOff();
-    }
-}
 
 // ****************************************************************************
 //  Method: avtStreamlinePlot::SetLighting
@@ -521,6 +485,9 @@ avtStreamlinePlot::SetLegend(bool legendOn)
 //    Hank Childs, Fri Oct 29 10:06:24 PDT 2004
 //    Account for specular lighting.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 void
@@ -528,13 +495,11 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 {
     if (lightingOn)
     {
-        varMapper->TurnLightingOn();
-        varMapper->SetSpecularIsInappropriate(false);
+        mapper->GlobalLightingOff();
     }
     else
     {
-        varMapper->TurnLightingOff();
-        varMapper->SetSpecularIsInappropriate(true);
+        mapper->GlobalLightingOn();
     }
 }
 
@@ -558,54 +523,28 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 //   Dave Pugmire, Mon Nov 23 09:38:53 EST 2009
 //   Add min/max options to color table.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 void
-avtStreamlinePlot::SetLegendRanges()
+avtStreamlinePlot::UpdateMapperAndLegend()
 {
-    double min=0.0, max=0.0;
-    varMapper->GetVarRange(min, max);
+    double min = 0.0, max = 1.0;
+    if (*(mapper->GetInput()) != NULL)
+        mapper->GetRange(min, max);
 
     if (atts.GetLegendMinFlag())
-    {
         min = atts.GetLegendMin();
-        varMapper->SetMin(min);
-    }
     if (atts.GetLegendMaxFlag())
-    {
         max = atts.GetLegendMax();
-        varMapper->SetMax(max);
-    }
+    renderer->SetRange(min, max);
     
-    //
     // Set the range for the legend's text and colors.
-    //
     varLegend->SetScaling(0);
     varLegend->SetVarRange(min, max);
     varLegend->SetRange(min, max);
-}
-
-
-// ****************************************************************************
-// Method: avtStreamlinePlot::SetLineWidth
-//
-// Purpose: 
-//   Sets the streamline's line width.
-//
-// Arguments:
-//   lw : The new line width.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 15:52:09 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtStreamlinePlot::SetLineWidth(int lw)
-{
-    varMapper->SetLineWidth(Int2LineWidth(lw));
 }
 
 // ****************************************************************************

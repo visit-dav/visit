@@ -254,10 +254,14 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVector &pt ) const
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Generalize the compute scalar variable.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKField::ComputeScalarVariable(const double& t,
+avtIVPVTKField::ComputeScalarVariable(const std::string &var,
+                                      const double& t,
                                       const avtVector &pt) const
 {
     vtkDataSet *ds = iv->GetDataSet();
@@ -273,9 +277,9 @@ avtIVPVTKField::ComputeScalarVariable(const double& t,
     
     double value = 0.0;
     //See if we have node centered data...
-    if (ds->GetPointData()->GetScalars() != NULL)
+    if (ds->GetPointData()->GetScalars(var.c_str()) != NULL)
     {
-        vtkDataArray *data = ds->GetPointData()->GetScalars();
+        vtkDataArray *data = ds->GetPointData()->GetScalars(var.c_str());
         for (int i = 0; i < numPts; i++)
         {
             int id = cell->PointIds->GetId(i);
@@ -283,9 +287,9 @@ avtIVPVTKField::ComputeScalarVariable(const double& t,
             value += v*weights[i];
         }
     }
-    else if (ds->GetCellData()->GetScalars() != NULL)
+    else if (ds->GetCellData()->GetScalars(var.c_str()) != NULL)
     {
-        vtkDataArray *data = ds->GetCellData()->GetScalars();
+        vtkDataArray *data = ds->GetCellData()->GetScalars(var.c_str());
         int id = cell->PointIds->GetId(0);
         data->GetTuple(id,&value);
     }

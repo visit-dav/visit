@@ -47,6 +47,8 @@
 #include <avtIVPField.h>
 #include <avtBezierSegment.h>
 #include <MemStream.h>
+#include <string>
+#include <vector>
 
 struct avtIVPStateHelper;
 
@@ -101,6 +103,9 @@ struct avtIVPStateHelper;
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Generalize the compute scalar variable.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
@@ -121,10 +126,12 @@ public:
     {
         speed = velEnd.length();
     }
-    void   ComputeScalarVariable(const avtIVPField *field)
+    void   ComputeScalarVariables(const std::vector<std::string> &s, const avtIVPField *field)
     {
-        scalarValue = field->ComputeScalarVariable(tEnd, lastV());
+        for (int i = 0; i < s.size(); i++)
+            scalarValues.push_back(field->ComputeScalarVariable(s[i], tEnd, lastV()));
     }
+                
     void   ComputeVorticity(const avtIVPField *field)
     {
         double tMid = tStart + (tEnd-tStart)/2.0;
@@ -158,6 +165,7 @@ public:
     double tStart, tEnd;
     avtVector velStart, velEnd;
     double speed, vorticity, scalarValue;
+    std::vector<double> scalarValues;
 };
 
 

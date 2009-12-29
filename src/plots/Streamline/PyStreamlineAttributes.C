@@ -450,6 +450,63 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slegendMax = %g\n", prefix, atts->GetLegendMax());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdisplayBegin = %g\n", prefix, atts->GetDisplayBegin());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdisplayEnd = %g\n", prefix, atts->GetDisplayEnd());
+    str += tmpStr;
+    if(atts->GetDisplayBeginFlag())
+        SNPRINTF(tmpStr, 1000, "%sdisplayBeginFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdisplayBeginFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetDisplayEndFlag())
+        SNPRINTF(tmpStr, 1000, "%sdisplayEndFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdisplayEndFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sseedDisplayRadius = %g\n", prefix, atts->GetSeedDisplayRadius());
+    str += tmpStr;
+    const char *opacityType_names = "None, Constant, VariableRange";
+    switch (atts->GetOpacityType())
+    {
+      case StreamlineAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sNone  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Constant:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sConstant  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::VariableRange:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sVariableRange  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sopacityVarMin = %g\n", prefix, atts->GetOpacityVarMin());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sopacityVarMax = %g\n", prefix, atts->GetOpacityVarMax());
+    str += tmpStr;
+    if(atts->GetOpacityVarMinFlag())
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMinFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMinFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetOpacityVarMaxFlag())
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMaxFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sopacityVarMaxFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stubeDisplayDensity = %d\n", prefix, atts->GetTubeDisplayDensity());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sseedDisplayDensity = %d\n", prefix, atts->GetSeedDisplayDensity());
+    str += tmpStr;
     return str;
 }
 
@@ -1819,6 +1876,351 @@ StreamlineAttributes_GetLegendMax(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetDisplayBegin(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the displayBegin in the object.
+    obj->data->SetDisplayBegin(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetDisplayBegin(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetDisplayBegin());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetDisplayEnd(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the displayEnd in the object.
+    obj->data->SetDisplayEnd(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetDisplayEnd(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetDisplayEnd());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetDisplayBeginFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the displayBeginFlag in the object.
+    obj->data->SetDisplayBeginFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetDisplayBeginFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDisplayBeginFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetDisplayEndFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the displayEndFlag in the object.
+    obj->data->SetDisplayEndFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetDisplayEndFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDisplayEndFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetSeedDisplayRadius(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the seedDisplayRadius in the object.
+    obj->data->SetSeedDisplayRadius(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetSeedDisplayRadius(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSeedDisplayRadius());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacityType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetOpacityType(StreamlineAttributes::OpacityType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid opacityType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "None, Constant, VariableRange.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacityType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOpacityType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacityVariable(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the opacityVariable in the object.
+    obj->data->SetOpacityVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacityVariable(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetOpacityVariable().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacity(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacity in the object.
+    obj->data->SetOpacity(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacity(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacityVarMin(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacityVarMin in the object.
+    obj->data->SetOpacityVarMin(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacityVarMin(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacityVarMin());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacityVarMax(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacityVarMax in the object.
+    obj->data->SetOpacityVarMax(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacityVarMax(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacityVarMax());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacityVarMinFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityVarMinFlag in the object.
+    obj->data->SetOpacityVarMinFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacityVarMinFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOpacityVarMinFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetOpacityVarMaxFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityVarMaxFlag in the object.
+    obj->data->SetOpacityVarMaxFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetOpacityVarMaxFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOpacityVarMaxFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTubeDisplayDensity(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the tubeDisplayDensity in the object.
+    obj->data->SetTubeDisplayDensity((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTubeDisplayDensity(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTubeDisplayDensity()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetSeedDisplayDensity(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the seedDisplayDensity in the object.
+    obj->data->SetSeedDisplayDensity((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetSeedDisplayDensity(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSeedDisplayDensity()));
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
@@ -1903,6 +2305,34 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetLegendMin", StreamlineAttributes_GetLegendMin, METH_VARARGS},
     {"SetLegendMax", StreamlineAttributes_SetLegendMax, METH_VARARGS},
     {"GetLegendMax", StreamlineAttributes_GetLegendMax, METH_VARARGS},
+    {"SetDisplayBegin", StreamlineAttributes_SetDisplayBegin, METH_VARARGS},
+    {"GetDisplayBegin", StreamlineAttributes_GetDisplayBegin, METH_VARARGS},
+    {"SetDisplayEnd", StreamlineAttributes_SetDisplayEnd, METH_VARARGS},
+    {"GetDisplayEnd", StreamlineAttributes_GetDisplayEnd, METH_VARARGS},
+    {"SetDisplayBeginFlag", StreamlineAttributes_SetDisplayBeginFlag, METH_VARARGS},
+    {"GetDisplayBeginFlag", StreamlineAttributes_GetDisplayBeginFlag, METH_VARARGS},
+    {"SetDisplayEndFlag", StreamlineAttributes_SetDisplayEndFlag, METH_VARARGS},
+    {"GetDisplayEndFlag", StreamlineAttributes_GetDisplayEndFlag, METH_VARARGS},
+    {"SetSeedDisplayRadius", StreamlineAttributes_SetSeedDisplayRadius, METH_VARARGS},
+    {"GetSeedDisplayRadius", StreamlineAttributes_GetSeedDisplayRadius, METH_VARARGS},
+    {"SetOpacityType", StreamlineAttributes_SetOpacityType, METH_VARARGS},
+    {"GetOpacityType", StreamlineAttributes_GetOpacityType, METH_VARARGS},
+    {"SetOpacityVariable", StreamlineAttributes_SetOpacityVariable, METH_VARARGS},
+    {"GetOpacityVariable", StreamlineAttributes_GetOpacityVariable, METH_VARARGS},
+    {"SetOpacity", StreamlineAttributes_SetOpacity, METH_VARARGS},
+    {"GetOpacity", StreamlineAttributes_GetOpacity, METH_VARARGS},
+    {"SetOpacityVarMin", StreamlineAttributes_SetOpacityVarMin, METH_VARARGS},
+    {"GetOpacityVarMin", StreamlineAttributes_GetOpacityVarMin, METH_VARARGS},
+    {"SetOpacityVarMax", StreamlineAttributes_SetOpacityVarMax, METH_VARARGS},
+    {"GetOpacityVarMax", StreamlineAttributes_GetOpacityVarMax, METH_VARARGS},
+    {"SetOpacityVarMinFlag", StreamlineAttributes_SetOpacityVarMinFlag, METH_VARARGS},
+    {"GetOpacityVarMinFlag", StreamlineAttributes_GetOpacityVarMinFlag, METH_VARARGS},
+    {"SetOpacityVarMaxFlag", StreamlineAttributes_SetOpacityVarMaxFlag, METH_VARARGS},
+    {"GetOpacityVarMaxFlag", StreamlineAttributes_GetOpacityVarMaxFlag, METH_VARARGS},
+    {"SetTubeDisplayDensity", StreamlineAttributes_SetTubeDisplayDensity, METH_VARARGS},
+    {"GetTubeDisplayDensity", StreamlineAttributes_GetTubeDisplayDensity, METH_VARARGS},
+    {"SetSeedDisplayDensity", StreamlineAttributes_SetSeedDisplayDensity, METH_VARARGS},
+    {"GetSeedDisplayDensity", StreamlineAttributes_GetSeedDisplayDensity, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2072,6 +2502,41 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetLegendMin(self, NULL);
     if(strcmp(name, "legendMax") == 0)
         return StreamlineAttributes_GetLegendMax(self, NULL);
+    if(strcmp(name, "displayBegin") == 0)
+        return StreamlineAttributes_GetDisplayBegin(self, NULL);
+    if(strcmp(name, "displayEnd") == 0)
+        return StreamlineAttributes_GetDisplayEnd(self, NULL);
+    if(strcmp(name, "displayBeginFlag") == 0)
+        return StreamlineAttributes_GetDisplayBeginFlag(self, NULL);
+    if(strcmp(name, "displayEndFlag") == 0)
+        return StreamlineAttributes_GetDisplayEndFlag(self, NULL);
+    if(strcmp(name, "seedDisplayRadius") == 0)
+        return StreamlineAttributes_GetSeedDisplayRadius(self, NULL);
+    if(strcmp(name, "opacityType") == 0)
+        return StreamlineAttributes_GetOpacityType(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::None));
+    if(strcmp(name, "Constant") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Constant));
+    if(strcmp(name, "VariableRange") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::VariableRange));
+
+    if(strcmp(name, "opacityVariable") == 0)
+        return StreamlineAttributes_GetOpacityVariable(self, NULL);
+    if(strcmp(name, "opacity") == 0)
+        return StreamlineAttributes_GetOpacity(self, NULL);
+    if(strcmp(name, "opacityVarMin") == 0)
+        return StreamlineAttributes_GetOpacityVarMin(self, NULL);
+    if(strcmp(name, "opacityVarMax") == 0)
+        return StreamlineAttributes_GetOpacityVarMax(self, NULL);
+    if(strcmp(name, "opacityVarMinFlag") == 0)
+        return StreamlineAttributes_GetOpacityVarMinFlag(self, NULL);
+    if(strcmp(name, "opacityVarMaxFlag") == 0)
+        return StreamlineAttributes_GetOpacityVarMaxFlag(self, NULL);
+    if(strcmp(name, "tubeDisplayDensity") == 0)
+        return StreamlineAttributes_GetTubeDisplayDensity(self, NULL);
+    if(strcmp(name, "seedDisplayDensity") == 0)
+        return StreamlineAttributes_GetSeedDisplayDensity(self, NULL);
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -2166,6 +2631,34 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetLegendMin(self, tuple);
     else if(strcmp(name, "legendMax") == 0)
         obj = StreamlineAttributes_SetLegendMax(self, tuple);
+    else if(strcmp(name, "displayBegin") == 0)
+        obj = StreamlineAttributes_SetDisplayBegin(self, tuple);
+    else if(strcmp(name, "displayEnd") == 0)
+        obj = StreamlineAttributes_SetDisplayEnd(self, tuple);
+    else if(strcmp(name, "displayBeginFlag") == 0)
+        obj = StreamlineAttributes_SetDisplayBeginFlag(self, tuple);
+    else if(strcmp(name, "displayEndFlag") == 0)
+        obj = StreamlineAttributes_SetDisplayEndFlag(self, tuple);
+    else if(strcmp(name, "seedDisplayRadius") == 0)
+        obj = StreamlineAttributes_SetSeedDisplayRadius(self, tuple);
+    else if(strcmp(name, "opacityType") == 0)
+        obj = StreamlineAttributes_SetOpacityType(self, tuple);
+    else if(strcmp(name, "opacityVariable") == 0)
+        obj = StreamlineAttributes_SetOpacityVariable(self, tuple);
+    else if(strcmp(name, "opacity") == 0)
+        obj = StreamlineAttributes_SetOpacity(self, tuple);
+    else if(strcmp(name, "opacityVarMin") == 0)
+        obj = StreamlineAttributes_SetOpacityVarMin(self, tuple);
+    else if(strcmp(name, "opacityVarMax") == 0)
+        obj = StreamlineAttributes_SetOpacityVarMax(self, tuple);
+    else if(strcmp(name, "opacityVarMinFlag") == 0)
+        obj = StreamlineAttributes_SetOpacityVarMinFlag(self, tuple);
+    else if(strcmp(name, "opacityVarMaxFlag") == 0)
+        obj = StreamlineAttributes_SetOpacityVarMaxFlag(self, tuple);
+    else if(strcmp(name, "tubeDisplayDensity") == 0)
+        obj = StreamlineAttributes_SetTubeDisplayDensity(self, tuple);
+    else if(strcmp(name, "seedDisplayDensity") == 0)
+        obj = StreamlineAttributes_SetSeedDisplayDensity(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

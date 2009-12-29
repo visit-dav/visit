@@ -277,10 +277,14 @@ EXCEPTION0(ImproperUseException); // didn't do this.
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Generalize the compute scalar variable.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeScalarVariable(const double &t,
+avtIVPVTKTimeVaryingField::ComputeScalarVariable(const std::string &var,
+                                                 const double &t,
                                                  const avtVector &pt) const
 {
     EXCEPTION0(ImproperUseException); // didn't do this.

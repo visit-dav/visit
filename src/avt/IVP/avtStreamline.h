@@ -114,8 +114,11 @@ class vtkObject;
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Option to serialize steps.
 //
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
+//   Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//   Switch from avtVec to avtVector.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Generalize the compute scalar variable.
 //
 // ****************************************************************************
 
@@ -160,6 +163,8 @@ class IVP_API avtStreamline
                         avtIVPSolver *solver,
                         bool serializeSteps=false);
 
+    int       GetVariableIdx(const std::string &var) const;
+
   protected:
     avtStreamline( const avtStreamline& );
     avtStreamline& operator=( const avtStreamline& );
@@ -199,6 +204,8 @@ class IVP_API avtStreamline
   public:
     //Bookeeping
     int id;
+
+    std::vector<std::string> scalars;
 };
 
 #endif // AVT_STREAMLINE_H

@@ -203,6 +203,9 @@ class avtSLAlgorithm;
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   Added ID member data and new seedpoint generation methods.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -244,6 +247,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      SetPointDensity(int den);
     void                      SetStreamlineDirection(int dir);
     void                      SetColoringMethod(int, const std::string &var="");
+    void                      SetOpacityVariable(const std::string &var);
 
   protected:
     int    sourceType;   
@@ -259,7 +263,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     int    pointDensity1, pointDensity2, pointDensity3;
     int    streamlineDirection;
     int    coloringMethod;
-    std::string coloringVariable;
+    std::string coloringVariable, opacityVariable;
     int    dataSpatialDimension;
     avtSLAlgorithm *slAlgo;
 
@@ -322,7 +326,6 @@ class AVTFILTERS_API avtStreamlineFilter :
     virtual bool              DomainLoaded(DomainType &) const;
 
     void                      SetZToZero(vtkPolyData *) const;
-    vtkPolyData *             StartSphere(float val, double pt[3]);
 
     void                      GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromLine(std::vector<avtVector> &pts);

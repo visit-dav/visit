@@ -47,12 +47,14 @@
 #include <avtPlot.h>
 
 #include <StreamlineAttributes.h>
+#include <avtStreamlineRenderer.h>
 
 class     avtLookupTable;
 class     avtShiftCenteringFilter;
 class     avtStreamlinePolyDataFilter;
 class     avtVariableLegend;
 class     avtVariableMapper;
+class     avtUserDefinedMapper;
 
 // ****************************************************************************
 //  Class:  avtStreamlinePlot
@@ -77,6 +79,9 @@ class     avtVariableMapper;
 //    Hank Childs, Tue Dec  2 13:54:46 PST 2008
 //    Use an avtStreamlinePolyDataFilter to fit the new class refactoring.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the streamlines plots.
+//
 // ****************************************************************************
 
 class avtStreamlinePlot : public avtLineDataPlot
@@ -97,15 +102,15 @@ class avtStreamlinePlot : public avtLineDataPlot
                                               { return true; };
 
   protected:
-    StreamlineAttributes        atts;
-    bool                        colorsInitialized;
 
-    avtVariableMapper          *varMapper;
+    StreamlineAttributes        atts;
+    avtUserDefinedMapper       *mapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
-    avtStreamlinePolyDataFilter  *streamlineFilter;
+    avtStreamlinePolyDataFilter *streamlineFilter;
     avtShiftCenteringFilter    *shiftCenteringFilter;
     avtLookupTable             *avtLUT;
+    avtStreamlineRenderer_p     renderer;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
@@ -115,10 +120,8 @@ class avtStreamlinePlot : public avtLineDataPlot
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
 
-    void                        SetLegendRanges();
-    void                        SetLegend(bool);
+    void                        UpdateMapperAndLegend();
     void                        SetLighting(bool);
-    void                        SetLineWidth(int);
 };
 
 

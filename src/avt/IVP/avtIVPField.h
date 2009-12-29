@@ -46,6 +46,7 @@
 #include <stdexcept>
 #include <avtVector.h>
 #include <ivp_exports.h>
+#include <string>
 
 
 // ****************************************************************************
@@ -75,6 +76,9 @@
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Generalize the compute scalar variable.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
@@ -95,7 +99,8 @@ class IVP_API avtIVPField
                                     const avtVector& x) const = 0;
     virtual double       ComputeVorticity(const double& t, 
                                           const avtVector& x ) const = 0;
-    virtual double       ComputeScalarVariable(const double& t,
+    virtual double       ComputeScalarVariable(const std::string &var,
+                                               const double& t,
                                                const avtVector& x) const = 0;
 
     virtual bool         IsInside(const double& t, 
