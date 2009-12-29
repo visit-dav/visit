@@ -613,3 +613,23 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
 
     return rv;
 }
+
+// ****************************************************************************
+// Method:  DatabasePluginManager::ReportWarning
+//
+// Purpose:
+//   Mechanism by which we can report warnings about non-fatal incidents
+//   that occurred while opening a file.
+//
+// Arguments:
+//   s          the warning to report
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 29, 2009
+//
+// ****************************************************************************
+void
+DatabasePluginManager::ReportWarning(const std::string &w)
+{
+    pluginInitErrors += w;
+}

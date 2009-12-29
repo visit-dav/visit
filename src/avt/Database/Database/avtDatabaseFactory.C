@@ -275,6 +275,11 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Brad Whitlock, Tue Dec 22 10:14:23 PDT 2009
 //    I added a guard against using options that could be NULL.
 //
+//    Jeremy Meredith, Tue Dec 29 17:03:57 EST 2009
+//    Attempt to open using *all* plugins which match a given file's name.
+//    If more than one can set up the database without error, present a warning
+//    to the user.  The first one found still wins, however.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -419,37 +424,71 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     //
     // Check to see if there is an extension that matches.
     //
-    vector<string> ids = dbmgr->GetMatchingPluginIds(filelist[fileIndex]);
-    for (int i = 0; i < ids.size() && rv == 0; i++)
+    if (rv == NULL)
     {
-        CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(ids[i]);
-        // Set the opening options
-        const DBOptionsAttributes *opts = 
-            defaultFileOpenOptions.GetOpenOptionsForID(ids[i]);
-        if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+        vector<string> succeeded;
+        vector<string> ids = dbmgr->GetMatchingPluginIds(filelist[fileIndex]);
+        for (int i = 0; i < ids.size(); i++)
         {
-            // The options aren't in the default options.  Maybe
-            // defaults have been added to the plugin since they saved 
-            // their settings. Try to get it from the plugin.
-            opts = info->GetReadOptions();
-        }
+            CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(ids[i]);
+            // Set the opening options
+            const DBOptionsAttributes *opts = 
+                defaultFileOpenOptions.GetOpenOptionsForID(ids[i]);
+            if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+            {
+                // The options aren't in the default options.  Maybe
+                // defaults have been added to the plugin since they saved 
+                // their settings. Try to get it from the plugin.
+                opts = info->GetReadOptions();
+            }
 
-        if (opts && info)
-            info->SetReadOptions(new DBOptionsAttributes(*opts));
-        debug3 << "avtDatabaseFactory: trying extension-matched format "
-               << ids[i] << endl;
-        TRY
-        {
-            plugins.push_back(info ? info->GetName() : "");
-            rv = SetupDatabase(info, filelist, filelistN, timestep,
+            if (opts && info)
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
+            debug3 << "avtDatabaseFactory: trying extension-matched format "
+                   << ids[i] << endl;
+            TRY
+            {
+                plugins.push_back(info ? info->GetName() : "");
+                avtDatabase *dbtmp =
+                    SetupDatabase(info, filelist, filelistN, timestep,
                                fileIndex, nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying);
+                if (dbtmp)
+                {
+                    succeeded.push_back(ids[i]);
+                    if (rv==NULL)
+                        rv = dbtmp;
+                }
+            }
+            CATCHALL
+            {
+            }
+            ENDTRY
         }
-        CATCHALL
+        if (succeeded.size() > 1)
         {
-            rv = NULL;
+            string warning = "Multiple file format reader plugins matched "
+                             "the filename and would have been able to "
+                             "successfully open the file: ";
+            for (int i=0; i<succeeded.size(); i++)
+            {
+                if (i == succeeded.size()-1)
+                    warning += " and ";
+                else if (i > 0)
+                    warning += ", ";
+                warning += succeeded[i];
+            }
+            warning += ".  Using " + succeeded[0] + " to open the file.\n\n";
+            warning += "If " + succeeded[0] + " is not the format of this "
+                       "file, either manually select the correct file format "
+                       "reader when opening the file, set the automatic "
+                       "detection options to ensure the correct plugin is "
+                       "preferred for this file, disable the incorrectly "
+                       "chosen plugins, or request that the developers of the "
+                       "incorrect plugins add code to distinguish your file "
+                       "from one of theirs.";
+            dbmgr->ReportWarning(warning);
         }
-        ENDTRY
     }
 
     //
