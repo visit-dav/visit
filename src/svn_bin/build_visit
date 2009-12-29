@@ -757,6 +757,11 @@
 #     Revert above change, at least on Linux.
 #     Add missing CMake type specifier.
 #
+#     Cyrus Harrison, Tue Dec 29 14:07:52 PST 2009
+#     Removed stray instance of $VISITDIR & changed hostconf generator to use
+#     ITAPS_FILE_PATTERNS  instead of ITAPS_FILE_EXTENSIONS to match
+#     Jeremy's change to db plugins.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7948,8 +7953,7 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_ICET_DIR \${VISITHOME}/icet/$ICET_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
-    
-    $VISITDIR/
+
     if [[ "$DO_ITAPS" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7958,7 +7962,7 @@ function build_hostconf
         echo "## MOAB implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(MOAB \${VISITHOME}/itaps/MOAB/$ITAPS_MOAB_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
-        echo "ITAPS_FILE_EXTENSIONS(MOAB cub)" >> $HOSTCONF
+        echo "ITAPS_FILE_PATTERNS(MOAB *.cub)" >> $HOSTCONF
         echo "ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5 sz z netcdf_c++ netcdf vtkGraphics)" \
         >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(MOAB " \
@@ -7969,13 +7973,13 @@ function build_hostconf
         echo "## FMDB implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(FMDB \${VISITHOME}/itaps/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/include/FMDB)" \
         >> $HOSTCONF
-        echo "ITAPS_FILE_EXTENSIONS(FMDB sms)" >> $HOSTCONF
+        echo "ITAPS_FILE_PATTERNS(FMDB *.sms)" >> $HOSTCONF
         echo "ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil vtkGraphics)" >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(FMDB \${VISITHOME}/itaps/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/lib)" >> $HOSTCONF
         echo "## GRUMMP implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
-        echo "ITAPS_FILE_EXTENSIONS(GRUMMP bdry smesh vmesh)" >> $HOSTCONF
+        echo "ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)" >> $HOSTCONF
         echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_base SUMAAlog_lite OptMS vtkGraphics)" \
         >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/lib)" \
