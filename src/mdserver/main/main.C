@@ -218,8 +218,12 @@ main(int argc, char *argv[])
 //   Jeremy Meredith, Thu Jan 24 14:46:20 EST 2008
 //   Added the assume_format argument.
 //
-//    Jeremy Meredith, Wed Mar 19 13:47:09 EDT 2008
-//    Obsolete -default_format, add -fallback_format in its place.
+//   Jeremy Meredith, Wed Mar 19 13:47:09 EDT 2008
+//   Obsolete -default_format, add -fallback_format in its place.
+//
+//   Jeremy Meredith, Wed Dec 30 14:46:31 EST 2009
+//   Removed assume and fallback format options.  This is obsolete with
+//   the new file format detection now in visit proper.
 //
 // ****************************************************************************
 
@@ -241,22 +245,6 @@ ProcessCommandLine(int argc, char *argv[])
         else if(strcmp(argv[i], "-noconnect") == 0)
         {
             runApp = false;
-        }
-        else if (strcmp(argv[i], "-fallback_format") == 0)
-        {
-            if ((i+1) < argc)
-            {
-                avtDatabaseFactory::SetFallbackFormat(argv[i+1]);
-                i++;
-            }
-        }
-        else if (strcmp(argv[i], "-assume_format") == 0)
-        {
-            if ((i+1) < argc)
-            {
-                avtDatabaseFactory::SetFormatToTryFirst(argv[i+1]);
-                i++;
-            }
         }
     }
 

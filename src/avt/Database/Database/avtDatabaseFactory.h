@@ -113,6 +113,11 @@ class DatabasePluginManager;
 //    Mark C. Miller, Tue May 19 21:26:53 PDT 2009
 //    Added methods to retrieve fallback and first format as well as default
 //    file open options.
+//
+//    Jeremy Meredith, Wed Dec 30 16:32:35 EST 2009
+//    Removed fallback and assumed format entirely.  They have been subsumed
+//    by a more advanced file format detection method.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -128,15 +133,9 @@ class DATABASE_API avtDatabaseFactory
                                            std::vector<std::string> &,
                                            const char * = NULL, bool = false,
                                            bool = false);
-    static void                  SetFallbackFormat(const char *);
-    static void                  SetFormatToTryFirst(const char *);
     static void                  SetDefaultFileOpenOptions(const
                                                            FileOpenOptions &f);
 
-    static const char           *GetFormatToTryFirst()
-                                     {return formatToTryFirst;};
-    static const char           *GetFallbackFormat()
-                                     {return fallbackFormat;};
     static const FileOpenOptions &GetDefaultFileOpenOptions()
                                      { return defaultFileOpenOptions;};
 
@@ -159,8 +158,6 @@ class DATABASE_API avtDatabaseFactory
                                                const char * const *, int,
                                                int, int, int, bool, bool);
 
-    static char                 *fallbackFormat;
-    static char                 *formatToTryFirst;
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
     static bool                  createVectorMagnitudeExpressions;

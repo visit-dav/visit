@@ -47,6 +47,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include <visitstream.h>
 #include <sys/stat.h>
@@ -80,8 +81,6 @@ using std::vector;
 //
 // Static data members
 //
-char  *avtDatabaseFactory::fallbackFormat = strdup("Silo");// not const; can't
-char  *avtDatabaseFactory::formatToTryFirst = NULL;        // use literal as-is
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
@@ -91,63 +90,6 @@ FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
 // Function Prototypes
 //
 static void CheckPermissions(const char *);
-
-
-// ****************************************************************************
-//  Method: avtDatabaseFactory::SetFallbackFormat
-//
-//  Purpose:
-//      Sets the fallback format to use if the file type cannot be determined
-//      by looking at extensions.
-//
-//  Arguments:
-//      format  The name of the format to use (example: "Silo")
-//
-//  Programmer: Hank Childs
-//  Creation:   May 9, 2004
-//
-//  Modifications:
-//    Jeremy Meredith, Wed Mar 19 14:09:36 EDT 2008
-//    Renamed defaultFormat to fallbackFormat for clarity.
-//
-// ****************************************************************************
-
-void
-avtDatabaseFactory::SetFallbackFormat(const char *f)
-{
-    //
-    // It's quite possible that the current format string is pointing to 
-    // something on the heap (in which case we should free it).  However, it
-    // might be pointing to something in the program portion of memory, which
-    // would be a bad thing to delete.  So just leak it.  It's only a few
-    // bytes.
-    fallbackFormat = new char[strlen(f)+1];
-    strcpy(fallbackFormat, f);
-}
-
-
-// ****************************************************************************
-//  Method: avtDatabaseFactory::SetFormatToTryFirst
-//
-//  Purpose:
-//      Sets the format to use before trying various ones from a file
-//      extension pattern.
-//
-//  Arguments:
-//      format  The name of the format to use (example: "Silo")
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   January 24, 2008
-//
-// ****************************************************************************
-
-void
-avtDatabaseFactory::SetFormatToTryFirst(const char *f)
-{
-    // Safer to allocate and leak a small string.
-    formatToTryFirst = new char[strlen(f)+1];
-    strcpy(formatToTryFirst, f);
-}
 
 
 // ****************************************************************************
@@ -280,6 +222,10 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    If more than one can set up the database without error, present a warning
 //    to the user.  The first one found still wins, however.
 //
+//    Jeremy Meredith, Wed Dec 30 11:41:46 EST 2009
+//    Improved the warning about multiple successful plugins.
+//    Also, use *all* remaining file format reader plugins as fallback formats.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -377,63 +323,88 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     }
  
     //
-    // If we have a format we're supposed to try first, do that now.
+    // If we have preferred formats, try them now.
     //
-    if (rv == NULL && formatToTryFirst != NULL)
+    vector<string> &preferred = defaultFileOpenOptions.GetPreferredIDs();
+    for (int i = 0 ; i < preferred.size() && rv == NULL ; i++)
     {
-        debug3 << "avtDatabaseFactory: trying assumed format "
-               << formatToTryFirst << endl;
-        int formatindex = dbmgr->GetAllIndexFromName(formatToTryFirst);
-        if (formatindex >= 0)
+        string formatid = preferred[i];
+        // For some reason, disabling of db plugins at load time is
+        // apparently not working at the moment.  That's okay, we can
+        // double check here that the current ID is enabled with no harm.
+        if (!defaultFileOpenOptions.IsIDEnabled(formatid))
         {
-            string formatid = dbmgr->GetAllID(formatindex);
-            if (dbmgr->PluginAvailable(formatid))
-            {
-                CommonDatabasePluginInfo *info = 
-                    dbmgr->GetCommonPluginInfo(formatid);
-                // Set the opening options
-                const DBOptionsAttributes *opts = 
-                    defaultFileOpenOptions.GetOpenOptionsForID(formatid);
-                if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
-                {
-                    // The options aren't in the default options.  Maybe
-                    // defaults have been added to the plugin since they saved 
-                    // their settings. Try to get it from the plugin.
-                    opts = info->GetReadOptions();
-                }
+            debug1 << "Warning: plugin "<<formatid<<" claims to be "
+                   << "disabled but wasn't.\n";
+            continue;
+        }
 
-                if (opts && info)
-                    info->SetReadOptions(new DBOptionsAttributes(*opts));
-                TRY
-                {
-                    plugins.push_back(info ? info->GetName(): "");
-                    rv = SetupDatabase(info, filelist, filelistN,
-                                       timestep, fileIndex,
-                                       nBlocks, forceReadAllCyclesAndTimes,
-                                       treatAllDBsAsTimeVarying);
-                }
-                CATCHALL
-                {
-                    rv = NULL;
-                }
-                ENDTRY
+        debug3 << "avtDatabaseFactory: trying preferred format "
+               << formatid << endl;
+        if (dbmgr->PluginAvailable(formatid))
+        {
+            CommonDatabasePluginInfo *info = 
+                dbmgr->GetCommonPluginInfo(formatid);
+            // Set the opening options
+            const DBOptionsAttributes *opts = 
+                defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+            if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+            {
+                // The options aren't in the default options.  Maybe
+                // defaults have been added to the plugin since they saved 
+                // their settings. Try to get it from the plugin.
+                opts = info->GetReadOptions();
             }
+
+            if (opts && info)
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
+            TRY
+            {
+                plugins.push_back(info ? info->GetName(): "");
+                rv = SetupDatabase(info, filelist, filelistN,
+                                   timestep, fileIndex,
+                                   nBlocks, forceReadAllCyclesAndTimes,
+                                   treatAllDBsAsTimeVarying);
+            }
+            CATCHALL
+            {
+                rv = NULL;
+            }
+            ENDTRY
         }
     }
  
     //
-    // Check to see if there is an extension that matches.
+    // Check to see if there is an extension that matches.  For all that
+    // match, try them to see if they work.  If more than one works, use the
+    // first, but warn that it was ambiguous.
     //
+    vector<string> fileMatchedIds =
+        dbmgr->GetMatchingPluginIds(filelist[fileIndex]);
     if (rv == NULL)
     {
         vector<string> succeeded;
-        vector<string> ids = dbmgr->GetMatchingPluginIds(filelist[fileIndex]);
-        for (int i = 0; i < ids.size(); i++)
+        for (int i = 0; i < fileMatchedIds.size(); i++)
         {
-            CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(ids[i]);
+            // For some reason, disabling of db plugins at load time is
+            // apparently not working at the moment.  That's okay, we can
+            // double check here that the current ID is enabled with no harm.
+            if (!defaultFileOpenOptions.IsIDEnabled(fileMatchedIds[i]))
+            {
+                debug1 << "Warning: plugin "<<fileMatchedIds[i]<<" claims to "
+                       << "be disabled but wasn't.\n";
+                continue;
+            }
+
+            // don't try any preferred ones; they already all failed
+            if (std::find(preferred.begin(), preferred.end(),
+                          fileMatchedIds[i]) != preferred.end())
+                continue;
+
+            CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(fileMatchedIds[i]);
             // Set the opening options
             const DBOptionsAttributes *opts = 
-                defaultFileOpenOptions.GetOpenOptionsForID(ids[i]);
+                defaultFileOpenOptions.GetOpenOptionsForID(fileMatchedIds[i]);
             if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
             {
                 // The options aren't in the default options.  Maybe
@@ -445,7 +416,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             if (opts && info)
                 info->SetReadOptions(new DBOptionsAttributes(*opts));
             debug3 << "avtDatabaseFactory: trying extension-matched format "
-                   << ids[i] << endl;
+                   << fileMatchedIds[i] << endl;
             TRY
             {
                 plugins.push_back(info ? info->GetName() : "");
@@ -455,7 +426,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                treatAllDBsAsTimeVarying);
                 if (dbtmp)
                 {
-                    succeeded.push_back(ids[i]);
+                    succeeded.push_back(info->GetName());
                     if (rv==NULL)
                         rv = dbtmp;
                 }
@@ -467,9 +438,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         }
         if (succeeded.size() > 1)
         {
-            string warning = "Multiple file format reader plugins matched "
-                             "the filename and would have been able to "
-                             "successfully open the file: ";
+            string used = succeeded[0];
+            string warning = "Multiple file format reader plugins (";
             for (int i=0; i<succeeded.size(); i++)
             {
                 if (i == succeeded.size()-1)
@@ -478,38 +448,61 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     warning += ", ";
                 warning += succeeded[i];
             }
-            warning += ".  Using " + succeeded[0] + " to open the file.\n\n";
-            warning += "If " + succeeded[0] + " is not the format of this "
-                       "file, either manually select the correct file format "
-                       "reader when opening the file, set the automatic "
-                       "detection options to ensure the correct plugin is "
-                       "preferred for this file, disable the incorrectly "
-                       "chosen plugins, or request that the developers of the "
-                       "incorrect plugins add code to distinguish your file "
-                       "from one of theirs.";
+            warning += ") matched the filename and would have been able to "
+                       "successfully open the file.\n\n";
+            warning += "We will try the first successful one: "+used+".\n\n";
+            warning += "If this is not a " + used + " file, you can "
+                       "manually select the correct file format reader "
+                       "when opening the file, set the automatic detection "
+                       "options to ensure the correct plugin is preferred "
+                       "for this file, disable the " + used +
+                       " plugin, or request that the developers of the " +
+                       used + " plugin add code to distinguish your file "
+                       "from one of theirs.\n\n";
+            warning += "If this *is* a "+used+" file, "
+                       "ensuring the other file reader plugins listed above "
+                       "do not successfully open this type of file will "
+                       "prevent this warning in the future.\n";
             dbmgr->ReportWarning(warning);
         }
     }
 
     //
-    // If no file extension match, then we fall back to the given database type
+    // If no file extension matched, then try remaining ones (unless they are
+    // strictly unable to open the given file without a matching filename).
+    // Warn if this succeeds, because it was just a wild guess that worked.
     //
-    string fallbackDatabaseType(fallbackFormat);
     if (rv == NULL)
     {
-        debug3 << "avtDatabaseFactory: trying fallback format "
-               << fallbackFormat << endl;
-        int fallbackindex = dbmgr->GetAllIndexFromName(fallbackDatabaseType);
-        if (fallbackindex != -1)
+        string succeeded = "";
+        for (int i = 0; i < dbmgr->GetNEnabledPlugins() && rv == NULL; i++)
         {
-            string fallbackid = dbmgr->GetAllID(fallbackindex);
-            CommonDatabasePluginInfo *info = 
-                                         dbmgr->GetCommonPluginInfo(fallbackid);
+            string id = dbmgr->GetEnabledID(i);
+            if (!defaultFileOpenOptions.IsIDEnabled(id))
+            {
+                debug1 << "Warning: plugin "<<id<<" claims to be "
+                       << "disabled but wasn't.\n";
+                continue;
+            }
+
+            // don't try any preferred ones; they already all failed
+            if (std::find(preferred.begin(), preferred.end(), id) !=
+                                                               preferred.end())
+                continue;
+
+            // don't try any filename-matched ones either; they also all failed
+            if (std::find(fileMatchedIds.begin(), fileMatchedIds.end(), id) !=
+                                                          fileMatchedIds.end())
+                continue;
+
+            CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(id);
+            // if this is strict about filename matching, don't try it either
+            if (info->AreDefaultFilePatternsStrict())
+                continue;
+
             // Set the opening options
             const DBOptionsAttributes *opts = 
-                defaultFileOpenOptions.GetOpenOptionsForID(fallbackid);
-            if (opts && info)
-                info->SetReadOptions(new DBOptionsAttributes(*opts));
+                defaultFileOpenOptions.GetOpenOptionsForID(id);
             if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
             {
                 // The options aren't in the default options.  Maybe
@@ -518,18 +511,53 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 opts = info->GetReadOptions();
             }
 
-            plugins.push_back(info ? info->GetName() : "");
-            rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                               nBlocks, forceReadAllCyclesAndTimes,
+            if (opts && info)
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
+            debug3 << "avtDatabaseFactory: fallback pass, trying format "
+                   << id << endl;
+            TRY
+            {
+                plugins.push_back(info ? info->GetName() : "");
+                rv = SetupDatabase(info, filelist, filelistN, timestep,
+                               fileIndex, nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying);
+                if (rv)
+                    succeeded = id;
+            }
+            CATCHALL
+            {
+                rv = false;
+            }
+            ENDTRY
         }
-        else
+        if (rv)
         {
-            char msg[1000];
-            SNPRINTF(msg, sizeof(msg),
-                    "The fallback file format plugin '%s' was not available.",
-                    fallbackDatabaseType.c_str());
-            EXCEPTION1(ImproperUseException, msg);
+            string warning = "No preferred file format readers could open "
+                             "this file.  ";
+            if (fileMatchedIds.size() == 0)
+            {
+                warning += "Additionally, no other file format readers claim "
+                           "to support your file based on its name.  ";
+            }
+            else
+            {
+                warning += "Additionally, none of the other readers which "
+                           "claim to support your file based on its name (";
+                for (int i=0; i<fileMatchedIds.size(); i++)
+                {
+                    if (i == fileMatchedIds.size()-1)
+                        warning += " and ";
+                    else if (i > 0)
+                        warning += ", ";
+                    warning += fileMatchedIds[i];
+                }
+                warning += ") could open it.  ";
+            }
+            warning += "Therefore, we have attempted to try the other "
+                       "enabled file format readers, and found that the " +
+                       succeeded + " plugin worked.  Opening using the " +
+                       succeeded + " reader.\n\n";
+            dbmgr->ReportWarning(warning);
         }
     }
 

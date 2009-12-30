@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class FileOpenOptions extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 4;
+    private static int numAdditionalAttributes = 5;
 
     public FileOpenOptions()
     {
@@ -68,6 +68,7 @@ public class FileOpenOptions extends AttributeSubject
         typeIDs = new Vector();
         openOptions = new Vector();
         Enabled = new Vector();
+        preferredIDs = new Vector();
     }
 
     public FileOpenOptions(int nMoreFields)
@@ -78,6 +79,7 @@ public class FileOpenOptions extends AttributeSubject
         typeIDs = new Vector();
         openOptions = new Vector();
         Enabled = new Vector();
+        preferredIDs = new Vector();
     }
 
     public FileOpenOptions(FileOpenOptions obj)
@@ -108,6 +110,10 @@ public class FileOpenOptions extends AttributeSubject
             Integer iv = (Integer)obj.Enabled.elementAt(i);
             Enabled.addElement(new Integer(iv.intValue()));
         }
+        preferredIDs = new Vector(obj.preferredIDs.size());
+        for(i = 0; i < obj.preferredIDs.size(); ++i)
+            preferredIDs.addElement(new String((String)obj.preferredIDs.elementAt(i)));
+
 
         SelectAll();
     }
@@ -162,11 +168,21 @@ public class FileOpenOptions extends AttributeSubject
             Integer Enabled2 = (Integer)obj.Enabled.elementAt(i);
             Enabled_equal = Enabled1.equals(Enabled2);
         }
+        // Compare the elements in the preferredIDs vector.
+        boolean preferredIDs_equal = (obj.preferredIDs.size() == preferredIDs.size());
+        for(i = 0; (i < preferredIDs.size()) && preferredIDs_equal; ++i)
+        {
+            // Make references to String from Object.
+            String preferredIDs1 = (String)preferredIDs.elementAt(i);
+            String preferredIDs2 = (String)obj.preferredIDs.elementAt(i);
+            preferredIDs_equal = preferredIDs1.equals(preferredIDs2);
+        }
         // Create the return value
         return (typeNames_equal &&
                 typeIDs_equal &&
                 openOptions_equal &&
-                Enabled_equal);
+                Enabled_equal &&
+                preferredIDs_equal);
     }
 
     // Property setting methods
@@ -188,11 +204,18 @@ public class FileOpenOptions extends AttributeSubject
         Select(3);
     }
 
+    public void SetPreferredIDs(Vector preferredIDs_)
+    {
+        preferredIDs = preferredIDs_;
+        Select(4);
+    }
+
     // Property getting methods
     public Vector GetTypeNames() { return typeNames; }
     public Vector GetTypeIDs() { return typeIDs; }
     public Vector GetOpenOptions() { return openOptions; }
     public Vector GetEnabled() { return Enabled; }
+    public Vector GetPreferredIDs() { return preferredIDs; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -212,6 +235,8 @@ public class FileOpenOptions extends AttributeSubject
         }
         if(WriteSelect(3, buf))
             buf.WriteIntVector(Enabled);
+        if(WriteSelect(4, buf))
+            buf.WriteStringVector(preferredIDs);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -240,6 +265,9 @@ public class FileOpenOptions extends AttributeSubject
         case 3:
             SetEnabled(buf.ReadIntVector());
             break;
+        case 4:
+            SetPreferredIDs(buf.ReadStringVector());
+            break;
         }
     }
 
@@ -259,6 +287,7 @@ public class FileOpenOptions extends AttributeSubject
         }
         str = str + "}\n";
         str = str + intVectorToString("Enabled", Enabled, indent) + "\n";
+        str = str + stringVectorToString("preferredIDs", preferredIDs, indent) + "\n";
         return str;
     }
 
@@ -301,5 +330,6 @@ public class FileOpenOptions extends AttributeSubject
     private Vector typeIDs; // vector of String objects
     private Vector openOptions; // vector of DBOptionsAttributes objects
     private Vector Enabled; // vector of Integer objects
+    private Vector preferredIDs; // vector of String objects
 }
 

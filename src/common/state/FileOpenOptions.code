@@ -150,3 +150,30 @@ FileOpenOptions::GetOpenOptionsForID(const std::string &id)
     return NULL;
 }
 
+Function: IsIDEnabled
+Declaration: bool IsIDEnabled(const std::string&);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::IsIDEnabled
+//
+// Purpose:
+//   Convenience function to find the Enabled value for the given id.
+//
+// Arguments:
+//   id         the id for which to search
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+bool
+FileOpenOptions::IsIDEnabled(const std::string &id)
+{
+    for (size_t i=0; i<typeIDs.size(); i++)
+    {
+        if (typeIDs[i] == id)
+            return Enabled[i];
+    }
+    return true; // default is what, true?
+}
+

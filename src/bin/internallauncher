@@ -544,6 +544,10 @@ $0 = shift @ARGV;
 #    Re-add ability to launch an engine from the command line, which was 
 #    mistakenly removed during my parallel visitconvert change.
 #
+#    Jeremy Meredith, Wed Dec 30 16:32:35 EST 2009
+#    Removed fallback and assumed format entirely.  They have been subsumed
+#    by a more advanced file format detection method.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -806,11 +810,6 @@ $fullusage = "$usage
         -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline
                              execution.
-        -fallback_format     Sets the database plugin format to use as a
-                             fallback if a file type cannot be determined
-                             from its extension.
-        -assume_format       Sets the database plugin format to try before
-                             all others when attempting to guess the format.
         -dir <directory>     Run a version of VisIt in the specified directory.
                              The directory argument should specify the 
                              path to a visit installation directory.
@@ -1116,24 +1115,17 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
                                           if ($launchengine eq "") { $launchengine="localhost"; }
                                           elsif ($launchengine =~ /^-/) { unshift @ARGV, $launchengine; $launchengine = "localhost";}}
-    elsif ($arg eq "-default_format" )
+    elsif ($arg eq "-default_format" or
+           $arg eq "-assume_format" or
+           $arg eq "-fallback_format")
     {
-        # NOTE: This code was added for 1.9.0 to obsolete -default_format.
-        # It can be removed in later versions after we're sure no one is
-        # still using -default_format.
+        # All obsolete in 2.0.
         print STDERR "\n";
-        print STDERR "ERROR: -default_format was obsoleted due to ambiguity.\n";
+        print STDERR "ERROR: -default_format, -assume_format, and -fallback_format\n";
+        print STDERR "are all obsolete.  Automatic file format detection has been\n";
+        print STDERR "improved in version 2.0, and any adjustments, if still\n";
+        print STDERR "necessary, can be made within VisIt proper.\n";
         print STDERR "\n";
-        print STDERR "Please choose one of these more specific options instead:\n";
-        print STDERR "       -assume_format <fmt>\n";
-        print STDERR "       -fallback_format <fmt>\n";
-        print STDERR "\n";
-        print STDERR "An assumed format is tried before any file extension\n";
-        print STDERR "matching logic and is useful for choosing between file\n";
-        print STDERR "format reader plugins supporting the same extensions.\n";
-        print STDERR "A fallback format is tried last, and is typically used\n";
-        print STDERR "to specify a format reader for files which do not have\n";
-        print STDERR "an extension matching those known by the file readers.\n";
         exit(1);
     }
     elsif ($arg eq "-gdb")              { $debug_gdb = 1; $gdb_xterm = 1;}
