@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class DBOptionsAttributes;
 #include <DBPluginInfoAttributes.h>
 
@@ -62,13 +63,23 @@ class DBOptionsAttributes;
 class STATE_API FileOpenOptions : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     FileOpenOptions();
     FileOpenOptions(const FileOpenOptions &obj);
+protected:
+    // These constructors are for objects derived from this class
+    FileOpenOptions(private_tmfs_t tmfs);
+    FileOpenOptions(const FileOpenOptions &obj, private_tmfs_t tmfs);
+public:
     virtual ~FileOpenOptions();
 
     virtual FileOpenOptions& operator = (const FileOpenOptions &obj);
     virtual bool operator == (const FileOpenOptions &obj) const;
     virtual bool operator != (const FileOpenOptions &obj) const;
+private:
+    void Init();
+    void Copy(const FileOpenOptions &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -81,11 +92,13 @@ public:
     void SelectTypeIDs();
     void SelectOpenOptions();
     void SelectEnabled();
+    void SelectPreferredIDs();
 
     // Property setting methods
     void SetTypeNames(const stringVector &typeNames_);
     void SetTypeIDs(const stringVector &typeIDs_);
     void SetEnabled(const intVector &Enabled_);
+    void SetPreferredIDs(const stringVector &preferredIDs_);
 
     // Property getting methods
     const stringVector &GetTypeNames() const;
@@ -96,6 +109,8 @@ public:
           AttributeGroupVector &GetOpenOptions();
     const intVector    &GetEnabled() const;
           intVector    &GetEnabled();
+    const stringVector &GetPreferredIDs() const;
+          stringVector &GetPreferredIDs();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -123,13 +138,16 @@ public:
     // User-defined methods
     void MergeNewFromPluginInfo(const DBPluginInfoAttributes*);
     const DBOptionsAttributes *GetOpenOptionsForID(const std::string&);
+    bool IsIDEnabled(const std::string&);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_typeNames = 0,
         ID_typeIDs,
         ID_openOptions,
-        ID_Enabled
+        ID_Enabled,
+        ID_preferredIDs,
+        ID__LAST
     };
 
 protected:
@@ -139,9 +157,12 @@ private:
     stringVector         typeIDs;
     AttributeGroupVector openOptions;
     intVector            Enabled;
+    stringVector         preferredIDs;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define FILEOPENOPTIONS_TMFS "s*s*a*i*s*"
 
 #endif

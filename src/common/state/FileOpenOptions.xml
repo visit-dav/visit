@@ -8,9 +8,13 @@
     </Field>
     <Field name="Enabled" label="Enabled" type="intVector">
     </Field>
+    <Field name="preferredIDs" label="preferredIDs" type="stringVector">
+    </Field>
     <Function name="MergeNewFromPluginInfo" user="true" member="true">
     </Function>
     <Function name="GetOpenOptionsForID" user="true" member="true">
+    </Function>
+    <Function name="IsIDEnabled" user="true" member="true">
     </Function>
     <Include file="header" quoted="false">
       DBPluginInfoAttributes.h

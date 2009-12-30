@@ -49,6 +49,7 @@
 #include <QRadioButton>
 #include <QTreeWidget>
 #include <QHeaderView>
+#include <QListWidget>
 
 #include <PluginManagerAttributes.h>
 #include <FileOpenOptions.h>
@@ -200,6 +201,9 @@ QvisPluginWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Cyrus Harrison, Thu Jul 10 13:58:23 PDT 2008
 //    Fixed porting mistake and look and feel of tree widgets.
 //
+//    Jeremy Meredith, Wed Dec 30 16:44:25 EST 2009
+//    Added ability to set preferred file format plugins.
+//
 // ****************************************************************************
 
 void
@@ -225,7 +229,7 @@ QvisPluginWindow::CreateWindowContents()
     listPlots->setRootIsDecorated(false);
     // add header item
     QStringList plotHeaders;
-    plotHeaders << tr("Enabled") << tr("Name") << tr("Version");
+    plotHeaders << tr("Enabled") << tr("Version") << tr("Name");
     listPlots->setHeaderLabels(plotHeaders);
     listPlots->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
     listPlots->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
@@ -245,7 +249,7 @@ QvisPluginWindow::CreateWindowContents()
     listOperators->setRootIsDecorated(false);
 
     QStringList operatorHeaders;
-    operatorHeaders << tr("Enabled") << tr("Name") << tr("Version");
+    operatorHeaders << tr("Enabled") << tr("Version") << tr("Name");
     listOperators->setHeaderLabels(operatorHeaders);
     listOperators->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
     listOperators->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
@@ -257,7 +261,10 @@ QvisPluginWindow::CreateWindowContents()
     // Create the database page
     //
     pageDatabases = new QWidget(central);
-    QVBoxLayout *db_layout= new QVBoxLayout(pageDatabases);
+    QHBoxLayout *db_toplayout = new QHBoxLayout(pageDatabases);
+    QFrame      *db_lframe = new QFrame(pageDatabases);
+    db_toplayout->addWidget(db_lframe);
+    QVBoxLayout *db_llayout= new QVBoxLayout(db_lframe);
     
     tabs->addTab(pageDatabases, tr("Databases"));
 
@@ -265,37 +272,76 @@ QvisPluginWindow::CreateWindowContents()
     listDatabases->setRootIsDecorated(false);
 
     QStringList dbHeaders;
-    dbHeaders << tr("Enabled") << tr("Name") << tr("Open Options");
+    dbHeaders << tr("Enabled") << tr("Has\nOpts") << tr("Name");
     listDatabases->setHeaderLabels(dbHeaders);
-    listDatabases->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
-    listDatabases->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
+    listDatabases->headerItem()->setTextAlignment(1, Qt::AlignCenter);
+    listDatabases->headerItem()->setTextAlignment(2, Qt::AlignCenter);
     listDatabases->header()->setResizeMode(0,QHeaderView::ResizeToContents);
     listDatabases->header()->setResizeMode(1,QHeaderView::ResizeToContents);
-    db_layout->addWidget(listDatabases);
+    db_llayout->addWidget(listDatabases);
 
-    QGroupBox *grpBox = new QGroupBox(central);
+    QFrame *grpBox = new QFrame(pageDatabases);
     QHBoxLayout *grp_layout = new QHBoxLayout(grpBox);
+    grp_layout->setContentsMargins(5,5,5,5);
 
     // Add select all and unselect all buttons.
-    selectAllReadersButton = new QPushButton(tr("Select all"), grpBox);
+    selectAllReadersButton = new QPushButton(tr("Enable all"), grpBox);
     connect(selectAllReadersButton, SIGNAL(clicked()),
             this, SLOT(selectAllReadersButtonClicked()));
     grp_layout->addWidget(selectAllReadersButton);
 
-    unSelectAllReadersButton = new QPushButton(tr("Unselect all"), grpBox);
+    unSelectAllReadersButton = new QPushButton(tr("Disable all"), grpBox);
     connect(unSelectAllReadersButton, SIGNAL(clicked()),
             this, SLOT(unSelectAllReadersButtonClicked()));
     grp_layout->addWidget(unSelectAllReadersButton);
-    
-    databaseOptionsSetButton = new QPushButton(tr("Set Default Open Options"), grpBox);
+    db_llayout->addWidget(grpBox);
+
+    QFrame      *db_rframe = new QFrame(pageDatabases);
+    db_toplayout->addWidget(db_rframe);
+    QVBoxLayout *db_rlayout= new QVBoxLayout(db_rframe);
+
+    databaseOptionsSetButton = new QPushButton(tr("Set default open options"),
+                                               pageDatabases);
     connect(databaseOptionsSetButton, SIGNAL(clicked()),
             this, SLOT(databaseOptionsSetButtonClicked()));
     connect(listDatabases, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), 
             this, SLOT(databaseSelectedItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
     
-    db_layout->addWidget(grpBox);
-    db_layout->addWidget(databaseOptionsSetButton);
+    db_rlayout->addWidget(databaseOptionsSetButton);
     
+    dbAddToPreferedButton = new QPushButton(tr("Add to preferred list"),
+                                            pageDatabases);
+    connect(dbAddToPreferedButton, SIGNAL(clicked()),
+            this, SLOT(dbAddToPreferedButtonClicked()));
+    db_rlayout->addWidget(dbAddToPreferedButton);
+
+    QGroupBox *preferredGroup = new QGroupBox("Preferred Database Plugins",
+                                              pageDatabases);
+    db_rlayout->addWidget(preferredGroup);
+    QGridLayout *preferredLayout = new QGridLayout(preferredGroup);
+
+    listPreferredDBs = new QListWidget(preferredGroup);
+    preferredLayout->addWidget(listPreferredDBs, 0,0, 1,3);
+    connect(listPreferredDBs,
+            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), 
+            this,
+            SLOT(dbPreferredListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+    
+    dbPreferredUpButton = new QPushButton(tr("Up"), preferredGroup);
+    connect(dbPreferredUpButton, SIGNAL(clicked()),
+            this, SLOT(dbPreferredUpButtonClicked()));
+    preferredLayout->addWidget(dbPreferredUpButton, 1,0);
+
+    dbPreferredDownButton = new QPushButton(tr("Down"), preferredGroup);
+    connect(dbPreferredDownButton, SIGNAL(clicked()),
+            this, SLOT(dbPreferredDownButtonClicked()));
+    preferredLayout->addWidget(dbPreferredDownButton, 1,1);
+
+    dbPreferredRemoveButton = new QPushButton(tr("Remove"), preferredGroup);
+    connect(dbPreferredRemoveButton, SIGNAL(clicked()),
+            this, SLOT(dbPreferredRemoveButtonClicked()));
+    preferredLayout->addWidget(dbPreferredRemoveButton, 1,2);
+
     // Show the appropriate page based on the activeTab setting.
     tabs->blockSignals(true);
     tabs->setCurrentIndex(activeTab);
@@ -377,6 +423,9 @@ QvisPluginWindow::Update(Subject *s)
 //    Cyrus Harrison, Tue Jul  8 16:03:44 PDT 2008
 //    Fixed problem where database were shown in the operators tab.
 //
+//    Jeremy Meredith, Wed Dec 30 16:44:25 EST 2009
+//    Added ability to set preferred file format plugins.
+//
 // ****************************************************************************
 
 void
@@ -387,7 +436,7 @@ QvisPluginWindow::UpdateWindow(bool doAll)
     {
         listPlots->clear();
         listPlots->setSortingEnabled(true);
-        listPlots->sortByColumn(1,Qt::AscendingOrder);
+        listPlots->sortByColumn(2,Qt::AscendingOrder);
         plotIDs.clear();
         plotItems.clear();
         
@@ -397,8 +446,8 @@ QvisPluginWindow::UpdateWindow(bool doAll)
             {
                 QTreeWidgetItem *item = new QTreeWidgetItem(listPlots);
                 item->setCheckState(0,pluginAtts->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
-                item->setText(1,pluginAtts->GetName()[i].c_str());
-                item->setText(2,pluginAtts->GetVersion()[i].c_str());
+                item->setText(1,pluginAtts->GetVersion()[i].c_str());
+                item->setText(2,pluginAtts->GetName()[i].c_str());
                 
                 plotItems.push_back(item);
                 plotIDs.push_back(pluginAtts->GetId()[i]);
@@ -407,7 +456,7 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 
         listOperators->clear();
         listOperators->setSortingEnabled(true);
-        listOperators->sortByColumn(1,Qt::AscendingOrder);
+        listOperators->sortByColumn(2,Qt::AscendingOrder);
         operatorIDs.clear();
         operatorItems.clear();
         for (i=0; i<pluginAtts->GetName().size(); i++)
@@ -416,8 +465,8 @@ QvisPluginWindow::UpdateWindow(bool doAll)
             {
                 QTreeWidgetItem *item = new QTreeWidgetItem(listOperators);
                 item->setCheckState(0,pluginAtts->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
-                item->setText(1,pluginAtts->GetName()[i].c_str());
-                item->setText(2,pluginAtts->GetVersion()[i].c_str());
+                item->setText(1,pluginAtts->GetVersion()[i].c_str());
+                item->setText(2,pluginAtts->GetName()[i].c_str());
                 
                 operatorItems.push_back(item);
                 operatorIDs.push_back(pluginAtts->GetId()[i]);
@@ -429,25 +478,36 @@ QvisPluginWindow::UpdateWindow(bool doAll)
     {
         listDatabases->clear();
         listDatabases->setSortingEnabled(true);
-        listDatabases->sortByColumn(1,Qt::AscendingOrder);
+        listDatabases->sortByColumn(2,Qt::AscendingOrder);
 
         databaseItems.clear();
         databaseIndexes.clear();
         for (i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
-        {
-            
+        {            
             QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
             item->setCheckState(0,fileOpenOptions->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
-            item->setText(1,fileOpenOptions->GetTypeNames()[i].c_str());
-            
+
             if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
-                item->setText(2, "  " );
+                item->setText(1, "  " );
             else
-                item->setText(2, "  X " );
+                item->setText(1, "  X " );
+
+            item->setText(2,fileOpenOptions->GetTypeNames()[i].c_str());
+
             databaseItems.push_back(item);
             databaseIndexes.push_back(i);
         }
         databaseOptionsSetButton->setEnabled(false);
+        dbAddToPreferedButton->setEnabled(false);
+
+        listPreferredDBs->clear();
+        for (i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+        {
+            listPreferredDBs->addItem(fileOpenOptions->GetPreferredIDs()[i].c_str());
+        }
+        dbPreferredRemoveButton->setEnabled(false);
+        dbPreferredUpButton->setEnabled(false);
+        dbPreferredDownButton->setEnabled(false);
     }
 }
 
@@ -479,8 +539,8 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
 //    Update the FileOpenOptions for enable/disable DB plugins.
 //
-//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
-//   Support for internationalization.
+//    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//    Support for internationalization.
 //
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
@@ -678,23 +738,14 @@ QvisPluginWindow::tabSelected(int tab)
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Wed Dec 30 16:44:59 EST 2009
+//    Moved some contents to a common function.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::databaseOptionsSetButtonClicked()
 {
-    QTreeWidgetItem *item = listDatabases->currentItem();
-    if (!item)
-        return;
-
-    int index = -1;
-    for (int i=0; i<databaseItems.size(); i++)
-    {
-        if (item == databaseItems[i])
-        {
-            index = i;
-            break;
-        }
-    }
+    int index = getCurrentlySelectedDBIndex();
     if (index == -1)
         return;
 
@@ -742,21 +793,15 @@ QvisPluginWindow::databaseOptionsSetButtonClicked()
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Wed Dec 30 16:44:59 EST 2009
+//    Moved contents to a common function.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::databaseSelectedItemChanged(QTreeWidgetItem *item,
                                               QTreeWidgetItem *prev_item)
 {
-    for (int i=0; i<databaseItems.size(); i++)
-    {
-        if (item == databaseItems[i])
-        {
-            const DBOptionsAttributes &opts =
-                fileOpenOptions->GetOpenOptions(databaseIndexes[i]);
-            databaseOptionsSetButton->setEnabled(opts.GetNumberOfOptions()>0);
-            break;
-        }
-    }
+    UpdateWidgetSensitivites();
 }
 
 // ****************************************************************************
@@ -813,4 +858,279 @@ QvisPluginWindow::unSelectAllReadersButtonClicked()
 {
     for (int i=0; i<databaseItems.size(); i++)
         databaseItems[i]->setCheckState(0,Qt::Unchecked);
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::dbAddToPreferedButtonClicked
+//
+// Purpose:
+//   callback for the "Add to preferred list"  button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+void
+QvisPluginWindow::dbAddToPreferedButtonClicked()
+{
+    int index = getCurrentlySelectedDBIndex();
+    if (index < 0)
+        return;
+
+    string id = fileOpenOptions->GetTypeIDs()[index];
+    if (! preferredOptionsContainsID(id))
+    {
+        fileOpenOptions->GetPreferredIDs().push_back(id);
+        fileOpenOptions->SelectPreferredIDs();
+        listPreferredDBs->addItem(id.c_str());
+        UpdateWidgetSensitivites();
+    }
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::dbPreferredUpButtonClicked
+//
+// Purpose:
+//   callback for the "Up" button in the preferred list
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+void
+QvisPluginWindow::dbPreferredUpButtonClicked()
+{
+    vector<string> &preferred = fileOpenOptions->GetPreferredIDs();
+    int index = getCurrentlySelectedPreferredIndex();
+    if (index < 1)
+        return;
+    string id = preferred[index];
+    preferred[index] = preferred[index-1];
+    preferred[index-1] = id;
+    fileOpenOptions->SelectPreferredIDs();
+
+    listPreferredDBs->clear();
+    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+        listPreferredDBs->addItem(preferred[i].c_str());
+    listPreferredDBs->setCurrentRow(index-1);
+    UpdateWidgetSensitivites();
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::dbPreferredDownButtonClicked
+//
+// Purpose:
+//   callback for the "Down" button in the preferred list
+//
+// Arguments:
+//   remove
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+void
+QvisPluginWindow::dbPreferredDownButtonClicked()
+{
+    vector<string> &preferred = fileOpenOptions->GetPreferredIDs();
+    int index = getCurrentlySelectedPreferredIndex();
+    if (index < 0 || index >= preferred.size() - 1)
+        return;
+    string id = preferred[index];
+    preferred[index] = preferred[index+1];
+    preferred[index+1] = id;
+    fileOpenOptions->SelectPreferredIDs();
+
+    listPreferredDBs->clear();
+    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+        listPreferredDBs->addItem(preferred[i].c_str());
+    listPreferredDBs->setCurrentRow(index+1);
+    UpdateWidgetSensitivites();
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::dbPreferredRemoveButtonClicked
+//
+// Purpose:
+//   callback for the "Remove" button in the preferred list
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+void
+QvisPluginWindow::dbPreferredRemoveButtonClicked()
+{
+    vector<string> &preferred = fileOpenOptions->GetPreferredIDs();
+    int index = getCurrentlySelectedPreferredIndex();
+    if (index < 0)
+        return;
+    for (int i=index; i<preferred.size()-1; i++)
+        preferred[i] = preferred[i+1];
+    preferred.pop_back();
+    fileOpenOptions->SelectPreferredIDs();
+    
+    listPreferredDBs->clear();
+    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+        listPreferredDBs->addItem(preferred[i].c_str());
+    UpdateWidgetSensitivites();
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::getCurrentlySelectedDBIndex
+//
+// Purpose:
+//   Get the index in the list of the currently selected db plugin
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+int
+QvisPluginWindow::getCurrentlySelectedDBIndex()
+{
+    QTreeWidgetItem *item = listDatabases->currentItem();
+    if (!item)
+        return -1;
+
+    int index = -1;
+    for (int i=0; i<databaseItems.size(); i++)
+    {
+        if (item == databaseItems[i])
+        {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::getCurrentlySelectedPreferredIndex
+//
+// Purpose:
+//   Get the index in the list of the currently selected preferred db plugin
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+int
+QvisPluginWindow::getCurrentlySelectedPreferredIndex()
+{
+    QListWidgetItem *item = listPreferredDBs->currentItem();
+    vector<string> &preferred = fileOpenOptions->GetPreferredIDs();
+    if (!item)
+        return -1;
+
+    int index = -1;
+    for (int i=0; i<preferred.size(); i++)
+    {
+        if (preferred[i] == item->text().toStdString())
+        {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::preferredOptionsContainsID
+//
+// Purpose:
+//   return true if the given ID is in the current set of preferred db plugins
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+bool
+QvisPluginWindow::preferredOptionsContainsID(const std::string &id)
+{
+    for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+    {
+        if (fileOpenOptions->GetPreferredIDs()[i] == id)
+            return true;
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::dbPreferredListItemChanged
+//
+// Purpose:
+//   callback when the preferred db plugin list selection changes
+//
+// Arguments:
+//   item, prev_item    the new and old selections
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+void
+QvisPluginWindow::dbPreferredListItemChanged(QListWidgetItem *item,
+                                             QListWidgetItem *prev_item)
+{
+    UpdateWidgetSensitivites();
+}
+
+// ****************************************************************************
+// Method:  QvisPluginWindow::UpdateWidgetSensitivites
+//
+// Purpose:
+//   Set the enabled state of widgets based on the current attributes.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+
+void
+QvisPluginWindow::UpdateWidgetSensitivites()
+{
+    vector<string> &preferred = fileOpenOptions->GetPreferredIDs();
+    int pindex = getCurrentlySelectedPreferredIndex();
+    dbPreferredRemoveButton->setEnabled(pindex != -1);
+    dbPreferredUpButton->setEnabled(pindex > 0);
+    dbPreferredDownButton->setEnabled(pindex >= 0 &&
+                                      pindex < preferred.size() - 1);        
+
+    int dbindex = getCurrentlySelectedDBIndex();
+    const DBOptionsAttributes &opts =
+        fileOpenOptions->GetOpenOptions(databaseIndexes[dbindex]);
+    databaseOptionsSetButton->setEnabled(opts.GetNumberOfOptions()>0);
+    dbAddToPreferedButton->setEnabled(
+        !preferredOptionsContainsID(fileOpenOptions->GetTypeIDs()
+                                    [databaseIndexes[dbindex]]));
 }

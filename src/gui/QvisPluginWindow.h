@@ -57,6 +57,8 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QCheckListItem;
 class QPushButton;
+class QListWidget;
+class QListWidgetItem;
 
 // ****************************************************************************
 // Class: QvisPluginWindow
@@ -85,6 +87,9 @@ class QPushButton;
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Wed Dec 30 16:44:25 EST 2009
+//    Added ability to set preferred file format plugins.
+//
 // ****************************************************************************
 
 class GUI_API QvisPluginWindow : public QvisPostableWindowSimpleObserver
@@ -110,6 +115,10 @@ signals:
 protected:
     virtual void UpdateWindow(bool doAll);
     void Apply(bool dontIgnore = false);
+    int getCurrentlySelectedDBIndex();
+    int getCurrentlySelectedPreferredIndex();
+    bool preferredOptionsContainsID(const std::string&);
+    void UpdateWidgetSensitivites();
 private slots:
     virtual void apply();
     void tabSelected(int);
@@ -117,6 +126,11 @@ private slots:
     void databaseSelectedItemChanged(QTreeWidgetItem*,QTreeWidgetItem*);
     void selectAllReadersButtonClicked();
     void unSelectAllReadersButtonClicked();
+    void dbAddToPreferedButtonClicked();
+    void dbPreferredUpButtonClicked();
+    void dbPreferredDownButtonClicked();
+    void dbPreferredRemoveButtonClicked();
+    void dbPreferredListItemChanged(QListWidgetItem*,QListWidgetItem*);
 private:
     PluginManagerAttributes *pluginAtts;
     FileOpenOptions         *fileOpenOptions;
@@ -128,9 +142,14 @@ private:
     QTreeWidget     *listOperators;
     QWidget         *pageDatabases;
     QTreeWidget     *listDatabases;
-    QPushButton     *databaseOptionsSetButton;
     QPushButton     *selectAllReadersButton;
     QPushButton     *unSelectAllReadersButton;
+    QPushButton     *databaseOptionsSetButton;
+    QPushButton     *dbAddToPreferedButton;
+    QListWidget     *listPreferredDBs;
+    QPushButton     *dbPreferredUpButton;
+    QPushButton     *dbPreferredDownButton;
+    QPushButton     *dbPreferredRemoveButton;
 
     std::vector<QTreeWidgetItem*>  plotItems;
     std::vector<std::string>       plotIDs;

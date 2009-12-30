@@ -259,16 +259,23 @@ GetPluginInfo(DatabasePluginManager *dbmgr, const char *arg0, const char *plugin
 //  Programmer: Mark C. Miller
 //  Creation:   May 19, 2009 
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Dec 30 15:04:36 EST 2009
+//    We made the "assumed format" in the database factory deprecated.
+//    However, it was simple to leave the command-line option in place
+//    for convert as a special case, so the argument is simply passed in now.
+//
 // ****************************************************************************
 
 static void
-HandleReadOptions(bool noOptions, DatabasePluginManager *dbmgr, const char *arg0)
+HandleReadOptions(bool noOptions, DatabasePluginManager *dbmgr,
+                  const char *arg0, string assumedFormat)
 {
-    const char *assumeFormat = avtDatabaseFactory::GetFormatToTryFirst();
-    if (!assumeFormat)
+    if (assumedFormat == "")
         return;
 
-    EngineDatabasePluginInfo *edpir = GetPluginInfo(dbmgr, arg0, assumeFormat);
+    EngineDatabasePluginInfo *edpir = GetPluginInfo(dbmgr, arg0,
+                                                    assumedFormat.c_str());
     DBOptionsAttributes *opts = edpir->GetReadOptions();
 
     // Don't query user for options if they specifically asked NOT to be.
@@ -377,6 +384,12 @@ HandleReadOptions(bool noOptions, DatabasePluginManager *dbmgr, const char *arg0
 //    Hank Childs, Thu Nov  5 17:17:35 PST 2009
 //    Only have proc 0 print out error messages.  Also call MPI_Finalize.
 //
+//    Jeremy Meredith, Wed Dec 30 15:04:36 EST 2009
+//    We obsoleted the assumed and fallback format command line options.
+//    However, it was simple to leave the command-line option in place
+//    for convert as a special case for handling read options, so we simply
+//    track that argument value manually now.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -404,6 +417,7 @@ int main(int argc, char *argv[])
         UsageAndExit(dbmgr, argv[0]);
     }
 
+    string assumedFormat = "";
     bool noOptions = false;
     bool doClean = false;
     bool disableMIR = false;
@@ -452,21 +466,13 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-            else if (strcmp(argv[i], "-fallback_format") == 0)
-            {
-                if ((i+1) >= argc)
-                    UsageAndExit(dbmgr, argv[0]);
-                i++;
-
-                avtDatabaseFactory::SetFallbackFormat(argv[i]);
-            }
             else if (strcmp(argv[i], "-assume_format") == 0)
             {
                 if ((i+1) >= argc)
                     UsageAndExit(dbmgr, argv[0]);
                 i++;
 
-                avtDatabaseFactory::SetFormatToTryFirst(argv[i]);
+                assumedFormat = argv[i];
             }
             else if (strcmp(argv[i], "-no_options") == 0)
                 noOptions = true;
@@ -482,7 +488,7 @@ int main(int argc, char *argv[])
     //
     // Handle read options if we need to.
     //
-    HandleReadOptions(noOptions, dbmgr, argv[0]);
+    HandleReadOptions(noOptions, dbmgr, argv[0], assumedFormat);
 
     //
     // Instantiate the database.

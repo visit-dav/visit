@@ -186,7 +186,7 @@ ANALYZEGeneralPluginInfo::GetDefaultFilePatterns() const
 bool
 ANALYZEGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************
