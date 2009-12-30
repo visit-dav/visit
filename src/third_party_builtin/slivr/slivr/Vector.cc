@@ -39,6 +39,8 @@
  *
  */
 
+#include <cstdio>
+
 #include <slivr/Vector.h>
 #include <slivr/Point.h>
 #include <assert.h>

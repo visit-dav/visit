@@ -454,7 +454,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(
         // OpenGL supports glTexImage3D.
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
-#elif HAVE_LIBGLEW 
+#elif defined(HAVE_LIBGLEW)
         if (GLEW_EXT_texture3D)
         {
             // glTexImage3D via GLEW.

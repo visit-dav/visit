@@ -494,12 +494,12 @@ QvisColorGridWidget::drawItem(QPainter &paint, int index)
                 paint.setPen(QColor(255,255,255));
             else
                 paint.setPen(QColor(0,0,0));
-            char txt[100];
+            QString txt;
             if (numGridSquares == MAX_ELEMENT_NUMBER &&
                 index < MAX_ELEMENT_NUMBER)
-                sprintf(txt,"%s",element_names[index]);
+                txt.sprintf("%s",element_names[index]);
             else
-                sprintf(txt,"%d",index);
+                txt.sprintf("%d",index);
             paint.drawText(QRect(x,y,boxWidth,boxHeight),
                            Qt::AlignHCenter | Qt::AlignVCenter,
                            txt);

@@ -38,6 +38,8 @@
  *
  */
 
+#include <cstdio>
+
 #include <slivr/Transform.h>
 #include <slivr/Point.h>
 #include <slivr/Plane.h>

@@ -38,7 +38,7 @@
  *   Date ?
  *
  */
-
+#include <cstdio>
 #include <slivr/Point.h>
 #include <slivr/Vector.h>
 #include <iostream>
