@@ -13,7 +13,10 @@
     </CXXFLAGS>
     <LDFLAGS>
       ${TUVOK_LIB}
-      ${QT_LDFLAGS} ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_OPENGL_LIB}
+      ${QT_LDFLAGS}
+      ${QT_CORE_LIB}
+      ${QT_GUI_LIB}
+      ${QT_OPENGL_LIB}
     </LDFLAGS>
     <Files components="G">
       ${SLIVR_GUI_IMPL}
@@ -112,6 +115,12 @@
         GaussianMode
         ColorTableMode
       </Enum>
+      <Enum name="LowGradientLightingReduction">
+        Off
+        Low
+        Medium
+        High
+      </Enum>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -191,6 +200,9 @@
       </Field>
       <Field name="transferFunctionDim" label="Dimension of the transfer function" type="int">
         1
+      </Field>
+      <Field name="lowGradientLightingReduction" label="lowGradientLightingReduction" type="enum" subtype="LowGradientLightingReduction">
+        Off
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

@@ -60,9 +60,14 @@
 //    Hank Childs, Wed Feb 13 15:34:07 PST 2002
 //    Changed default light.
 //
+//    Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//    Added ability to reduce amount of lighting for low-gradient-mag areas.
+//    Default values to constructor leave the old behavior (i.e. gradmax=0).
+//
 // ****************************************************************************
 
-avtPhong::avtPhong()
+avtPhong::avtPhong(double gmax, double lpow)
+    : gradMax(gmax), lightingPower(lpow)
 {
 }
 
@@ -106,6 +111,9 @@ avtPhong::~avtPhong()
 //      Hank Childs, Wed Aug 19 19:09:08 PDT 2009
 //      If the gradient is 0 magnitude, then don't apply lighting to that 
 //      sample.
+//
+//      Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//      Added ability to reduce amount of lighting for low-gradient-mag areas.
 //
 // ****************************************************************************
 
@@ -189,6 +197,19 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             double diffuse = grad[0]*dir[0] + grad[1]*dir[1] + grad[2]*dir[2];
             if (diffuse < 0.)
                 diffuse *= -1.; // setting to 0 would be one-sided lighting
+
+            double diffuseScale = 1.0;
+            if (gradMax > 0)
+            {
+                diffuseScale = mag / gradMax;
+                if (diffuseScale < 0)
+                    diffuseScale = 0;
+                if (diffuseScale > 1)
+                    diffuseScale = 1;
+                diffuseScale = pow(diffuseScale, lightingPower);
+            }
+            diffuse = 1.0 - (diffuseScale * (1.0-diffuse));
+
             r += brightness*diffuse*rgb[0];
             g += brightness*diffuse*rgb[1];
             b += brightness*diffuse*rgb[2];

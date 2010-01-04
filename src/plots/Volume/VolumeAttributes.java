@@ -63,7 +63,7 @@ import llnl.visit.TransferFunctionWidget;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 28;
+    private static int numAdditionalAttributes = 29;
 
     // Enum values
     public final static int RENDERER_SPLATTING = 0;
@@ -86,6 +86,11 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int OPACITYMODES_FREEFORMMODE = 0;
     public final static int OPACITYMODES_GAUSSIANMODE = 1;
     public final static int OPACITYMODES_COLORTABLEMODE = 2;
+
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_OFF = 0;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_LOW = 1;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_MEDIUM = 2;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGH = 3;
 
 
     public VolumeAttributes()
@@ -122,6 +127,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         rendererSamples = 3f;
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
+        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -158,6 +164,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         rendererSamples = 3f;
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
+        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -204,6 +211,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         }
 
         transferFunctionDim = obj.transferFunctionDim;
+        lowGradientLightingReduction = obj.lowGradientLightingReduction;
 
         SelectAll();
     }
@@ -264,7 +272,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (sampling == obj.sampling) &&
                 (rendererSamples == obj.rendererSamples) &&
                 transferFunction2DWidgets_equal &&
-                (transferFunctionDim == obj.transferFunctionDim));
+                (transferFunctionDim == obj.transferFunctionDim) &&
+                (lowGradientLightingReduction == obj.lowGradientLightingReduction));
     }
 
     public String GetName() { return "Volume"; }
@@ -434,6 +443,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(27);
     }
 
+    public void SetLowGradientLightingReduction(int lowGradientLightingReduction_)
+    {
+        lowGradientLightingReduction = lowGradientLightingReduction_;
+        Select(28);
+    }
+
     // Property getting methods
     public boolean                  GetLegendFlag() { return legendFlag; }
     public boolean                  GetLightingFlag() { return lightingFlag; }
@@ -463,6 +478,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public float                    GetRendererSamples() { return rendererSamples; }
     public Vector                   GetTransferFunction2DWidgets() { return transferFunction2DWidgets; }
     public int                      GetTransferFunctionDim() { return transferFunctionDim; }
+    public int                      GetLowGradientLightingReduction() { return lowGradientLightingReduction; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -530,6 +546,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         }
         if(WriteSelect(27, buf))
             buf.WriteInt(transferFunctionDim);
+        if(WriteSelect(28, buf))
+            buf.WriteInt(lowGradientLightingReduction);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -632,6 +650,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         case 27:
             SetTransferFunctionDim(buf.ReadInt());
             break;
+        case 28:
+            SetLowGradientLightingReduction(buf.ReadInt());
+            break;
         }
     }
 
@@ -712,6 +733,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         }
         str = str + "}\n";
         str = str + intToString("transferFunctionDim", transferFunctionDim, indent) + "\n";
+        str = str + indent + "lowGradientLightingReduction = ";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_OFF)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_OFF";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_LOW)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_LOW";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_MEDIUM)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_MEDIUM";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_HIGH)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_HIGH";
+        str = str + "\n";
         return str;
     }
 
@@ -778,5 +809,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private float                    rendererSamples;
     private Vector                   transferFunction2DWidgets; // vector of TransferFunctionWidget objects
     private int                      transferFunctionDim;
+    private int                      lowGradientLightingReduction;
 }
 

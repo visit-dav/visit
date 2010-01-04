@@ -141,6 +141,9 @@ typedef int WidgetID;
 //    I reorganized the window a little and added methods for dealing with
 //    histogram data.
 //
+//   Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//   Added ability to reduce amount of lighting for low-gradient-mag areas.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -186,6 +189,7 @@ private slots:
     void attenuationChanged(int opacity);
     void legendToggled(bool val);
     void lightingToggled(bool val);
+    void lowGradientLightingReductionChanged(int val);
     void colorMinToggled(bool val);
     void colorMinProcessText();
     void colorMaxToggled(bool val);
@@ -264,6 +268,8 @@ private:
     // General widgets
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
+    QLabel                   *lowGradientLightingReductionLabel;
+    QComboBox                *lowGradientLightingReductionCombo;
     QCheckBox                *softwareToggle;
     QCheckBox                *smoothDataToggle;
     QComboBox                *rendererTypesComboBox;
