@@ -55,6 +55,7 @@
 #include <ImproperUseException.h>
 #include <DebugStream.h>
 #include <avtMaterial.h>
+#include <TimingsManager.h>
 
 #include <string>
 #include <vector>
@@ -96,6 +97,10 @@ YoungsMIR::~YoungsMIR()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August  4, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jan  4 15:09:23 EST 2010
+//    Added some timings.
+//
 // ****************************************************************************
 bool
 YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
@@ -104,11 +109,14 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     vtkDataSet *ds =vtkDataSet::SafeDownCast(orig_ds->NewInstance());
     ds->ShallowCopy(orig_ds);
 
+    int th_full = visitTimer->StartTimer();
 
     // Pack the material
+    int th_packmat = visitTimer->StartTimer();
     avtMaterial *mat = orig_mat->CreatePackedMaterial();
     mapMatToUsedMat = orig_mat->GetMapMatToUsedMat();
     mapUsedMatToMat = orig_mat->GetMapUsedMatToMat();
+    visitTimer->StopTimer(th_packmat, "MIR: Pack material");
 
     //vector<string> matNames = mat->GetMaterials();
     int nmats = mat->GetNMaterials();
@@ -138,6 +146,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     }
 
     // gradient
+    int th_grad = visitTimer->StartTimer();
     vtkCQS *cqs = vtkCQS::New();
     cqs->SetInput(ds);
     ds = cqs->GetOutput();
@@ -163,16 +172,20 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         ds->Register(NULL);
         grad->Delete();
     }
+    visitTimer->StopTimer(th_grad, "MIR: Gradient");
 
     // recenter the gradient!
+    int th_recenter = visitTimer->StartTimer();
     vtkVisItPointDataToCellData *pd2cd = vtkVisItPointDataToCellData::New();
     pd2cd->SetInput(ds);
     ds = pd2cd->GetOutput();
     ds->Update();
     ds->Register(NULL);
     pd2cd->Delete();
+    visitTimer->StopTimer(th_recenter, "MIR: Recenter gradients");
 
 
+    int th_youngs = visitTimer->StartTimer();
     vtkYoungsMaterialInterface *youngs = new vtkYoungsMaterialInterface();
     youngs->SetFillMaterial(true);
     for (int m=0; m<nmats; m++)
@@ -186,6 +199,9 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
 
     output = new vtkDataSet*[nmats];
     youngs->Execute(ds, output);
+    visitTimer->StopTimer(th_youngs, "MIR: Actual PLIC execution");
+
+    visitTimer->StopTimer(th_full, "MIR: Full reconstruction");
 
 #if 0
     if (false)
@@ -275,6 +291,10 @@ YoungsMIR::Reconstruct2DMesh(vtkDataSet *ds, avtMaterial *mat)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August  4, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jan  4 15:09:23 EST 2010
+//    Added some timings.
+//
 // ****************************************************************************
 vtkDataSet *
 YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds, 
@@ -284,6 +304,8 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 {
     if (mats.size() == 0)
         return NULL;
+
+    int timerHandle = visitTimer->StartTimer();
 
     // Collect up all the data sets we're asked for
     vector<int>         matIndex;
@@ -312,6 +334,7 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     vtkDataSet *retval = NULL;
     if (matDS.size() == 0)
     {
+        visitTimer->StopTimer(timerHandle, "MIR: Getting empty clean dataset");
         return NULL;
     }
     else if (matDS.size() == 1)
@@ -361,6 +384,7 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         outmat->Delete();
     }
 
+    visitTimer->StopTimer(timerHandle, "MIR: Getting clean dataset");
     return retval;
 }
 
