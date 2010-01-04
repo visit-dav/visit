@@ -1,4 +1,4 @@
-#/usr/gapps/visit/cmake/2.6.4/linux_rhel4_gcc_3.4.6/bin/cmake
+#/usr/gapps/visit/cmake/2.6.4/linux-i686_gcc-3.2/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Tue Dec 22 12:32:41 PST 2009
