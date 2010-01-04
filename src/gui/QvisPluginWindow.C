@@ -1114,6 +1114,10 @@ QvisPluginWindow::dbPreferredListItemChanged(QListWidgetItem *item,
 // Programmer:  Jeremy Meredith
 // Creation:    December 30, 2009
 //
+// Modifications:
+//   Jeremy Meredith, Mon Jan  4 14:27:17 EST 2010
+//   Fixed sensitivity bug.
+//
 // ****************************************************************************
 
 void
@@ -1127,10 +1131,18 @@ QvisPluginWindow::UpdateWidgetSensitivites()
                                       pindex < preferred.size() - 1);        
 
     int dbindex = getCurrentlySelectedDBIndex();
-    const DBOptionsAttributes &opts =
-        fileOpenOptions->GetOpenOptions(databaseIndexes[dbindex]);
-    databaseOptionsSetButton->setEnabled(opts.GetNumberOfOptions()>0);
-    dbAddToPreferedButton->setEnabled(
-        !preferredOptionsContainsID(fileOpenOptions->GetTypeIDs()
-                                    [databaseIndexes[dbindex]]));
+    if (dbindex >= 0)
+    {
+        const DBOptionsAttributes &opts =
+            fileOpenOptions->GetOpenOptions(databaseIndexes[dbindex]);
+        databaseOptionsSetButton->setEnabled(opts.GetNumberOfOptions()>0);
+        dbAddToPreferedButton->setEnabled(dbindex > 0 &&
+            !preferredOptionsContainsID(fileOpenOptions->GetTypeIDs()
+                                        [databaseIndexes[dbindex]]));
+    }
+    else
+    {
+        databaseOptionsSetButton->setEnabled(false);
+        dbAddToPreferedButton->setEnabled(false);
+    }
 }
