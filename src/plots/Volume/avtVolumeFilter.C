@@ -251,6 +251,10 @@ avtVolumeFilter::Execute(void)
 //    Lighting queues should be taken from the gradient of the opacity var,
 //    not the color var.
 //
+//    Jeremy Meredith, Mon Jan  4 17:09:25 EST 2010
+//    Optionally, set up the Phong shader to reduce the amount of lighting
+//    applied to low-gradient areas.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -329,18 +333,6 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
  */
             range[1] = (actualRange[1]) / 4.;
         }
-    }
-
-    avtFlatLighting fl;
-    avtLightingModel *lm = &fl;
-    avtPhong phong;
-    if (atts.GetLightingFlag())
-    {
-        lm = &phong;
-    }
-    else
-    {
-        lm = &fl;
     }
 
     //
@@ -455,6 +447,35 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         EXCEPTION1(InvalidVariableException, gradName);
     }
     gradIndex = newGradIndex;
+
+    //
+    // Set up lighting
+    //
+    avtFlatLighting fl;
+    avtLightingModel *lm = &fl;
+    double gradMax = 0.0, lightingPower = 1.0;
+    if (atts.GetLowGradientLightingReduction() != VolumeAttributes::Off)
+    {
+        double gradRange[2] = {0,0};
+        GetDataExtents(gradRange, gradName);
+        gradMax = gradRange[1];
+        switch (atts.GetLowGradientLightingReduction())
+        {
+          case VolumeAttributes::Low:      lightingPower = 0.25;  break;
+          case VolumeAttributes::Medium:   lightingPower = 1.;    break;
+          case VolumeAttributes::High:     lightingPower = 4.;    break;
+          default: break;
+        }
+    }
+    avtPhong phong(gradMax, lightingPower);
+    if (atts.GetLightingFlag())
+    {
+        lm = &phong;
+    }
+    else
+    {
+        lm = &fl;
+    }
 
     avtOpacityMap *om2 = NULL;
     if (primIndex == opacIndex)

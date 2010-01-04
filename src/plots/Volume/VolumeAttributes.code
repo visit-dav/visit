@@ -494,31 +494,6 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
     return !same;
 }
 
-Function: SetRendererType
-Declaration: void SetRendererType(Renderer rendererType_);
-Definition:
-void
-VolumeAttributes::SetRendererType(VolumeAttributes::Renderer rendererType_)
-{
-    rendererType = rendererType_;
-    Select(ID_rendererType, (void *)&rendererType);
-    if(rendererType != SLIVR && transferFunctionDim > 1)
-        SetTransferFunctionDim(1);
-}
-
-Function: SetTransferFunctionDim
-Declaration: void SetTransferFunctionDim(int transferFunctionDim_);
-Definition:
-void
-VolumeAttributes::SetTransferFunctionDim(int transferFunctionDim_)
-{
-    int d = transferFunctionDim_;
-    if(d < 1 || d > 2 || rendererType != SLIVR)
-        d = 1;
-    transferFunctionDim = d;
-    Select(ID_transferFunctionDim, (void *)&transferFunctionDim);
-}
-
 Target: xml2python
 Function: VolumeAttributes_SetFreeformOpacity
 Declaration: VolumeAttributes_SetFreeformOpacity
@@ -594,9 +569,34 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+Target: xml2atts
+Function: SetRendererType
+Declaration: void SetRendererType(Renderer rendererType_);
+Definition:
+void
+VolumeAttributes::SetRendererType(VolumeAttributes::Renderer rendererType_)
+{
+    rendererType = rendererType_;
+    Select(ID_rendererType, (void *)&rendererType);
+    if(rendererType != SLIVR && transferFunctionDim > 1)
+        SetTransferFunctionDim(1);
+}
+
+Function: SetTransferFunctionDim
+Declaration: void SetTransferFunctionDim(int transferFunctionDim_);
+Definition:
+void
+VolumeAttributes::SetTransferFunctionDim(int transferFunctionDim_)
+{
+    int d = transferFunctionDim_;
+    if(d < 1 || d > 2 || rendererType != SLIVR)
+        d = 1;
+    transferFunctionDim = d;
+    Select(ID_transferFunctionDim, (void *)&transferFunctionDim);
+}
 
 Target: xml2info
-Function:  VolumeViewerPluginInfo::Permits2DViewScaling
+Function: VolumeViewerPluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:
 bool
@@ -604,3 +604,4 @@ VolumeViewerPluginInfo::Permits2DViewScaling() const
 {
     return false;
 }
+

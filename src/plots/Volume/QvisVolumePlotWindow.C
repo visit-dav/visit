@@ -728,6 +728,8 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 // Creation:   Fri Jul 18 14:58:34 PDT 2008
 //
 // Modifications:
+//   Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//   Added ability to reduce amount of lighting for low-gradient-mag areas.
 //   
 // ****************************************************************************
 
@@ -865,6 +867,23 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
     connect(smoothDataToggle, SIGNAL(toggled(bool)),
             this, SLOT(smoothDataToggled(bool)));
     rendererOptionsLayout->addWidget(smoothDataToggle,row,2);
+    ++row;
+
+    // Create the low gradient lighting reduction combo.
+    lowGradientLightingReductionLabel =
+        new QLabel(tr("Low gradient lighting reduction factor"),central);
+    rendererOptionsLayout->addWidget(lowGradientLightingReductionLabel,
+                                     row,0,1,2);
+
+    lowGradientLightingReductionCombo = new QComboBox(central);
+    lowGradientLightingReductionCombo->addItem("Off");
+    lowGradientLightingReductionCombo->addItem("Low");
+    lowGradientLightingReductionCombo->addItem("Medium");
+    lowGradientLightingReductionCombo->addItem("High");
+    connect(lowGradientLightingReductionCombo, SIGNAL(activated(int)),
+            this, SLOT(lowGradientLightingReductionChanged(int)));
+    rendererOptionsLayout->addWidget(lowGradientLightingReductionCombo,
+                                     row,2);
     ++row;
 }
 
@@ -1019,6 +1038,10 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   Added support for getting alphas from color table instead of
 //   set via freeform/gaussian editor.
 //
+//   Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//   Added ability to reduce amount of lighting for low-gradient-mag areas.
+//   Applies only to the software volume renderer for the moment.
+//
 // ****************************************************************************
 
 void
@@ -1056,6 +1079,12 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             lightingToggle->blockSignals(true);
             lightingToggle->setChecked(volumeAtts->GetLightingFlag());
             lightingToggle->blockSignals(false);
+            break;
+        case VolumeAttributes::ID_lowGradientLightingReduction:
+            lowGradientLightingReductionCombo->blockSignals(true);
+            lowGradientLightingReductionCombo->setCurrentIndex(
+                           (int)volumeAtts->GetLowGradientLightingReduction());
+            lowGradientLightingReductionCombo->blockSignals(false);
             break;
         case VolumeAttributes::ID_colorControlPoints:
             UpdateColorControlPoints();
@@ -1173,6 +1202,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
+                lowGradientLightingReductionLabel->setEnabled(false);
+                lowGradientLightingReductionCombo->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1199,6 +1230,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
+                lowGradientLightingReductionLabel->setEnabled(false);
+                lowGradientLightingReductionCombo->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1224,6 +1257,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(true);
                 rasterizationButton->setEnabled(true);
                 kernelButton->setEnabled(true);
+                lowGradientLightingReductionLabel->setEnabled(true);
+                lowGradientLightingReductionCombo->setEnabled(true);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1249,6 +1284,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(true);
                 rasterizationButton->setEnabled(true);
                 kernelButton->setEnabled(true);
+                lowGradientLightingReductionLabel->setEnabled(false);
+                lowGradientLightingReductionCombo->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1274,6 +1311,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
+                lowGradientLightingReductionLabel->setEnabled(false);
+                lowGradientLightingReductionCombo->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1305,6 +1344,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
+                lowGradientLightingReductionLabel->setEnabled(false);
+                lowGradientLightingReductionCombo->setEnabled(false);
             }
 #ifdef HAVE_LIBSLIVR
             // Just for now, disable the opacity variable if we are using the
@@ -2563,6 +2604,29 @@ void
 QvisVolumePlotWindow::lightingToggled(bool)
 {
     volumeAtts->SetLightingFlag(!volumeAtts->GetLightingFlag());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::gradientMagAffectsLightingToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the toogle for
+//   whether or not the gradient magnitude affects lighting is clicked.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January  4, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
+{
+    volumeAtts->SetLowGradientLightingReduction(
+        (VolumeAttributes::LowGradientLightingReduction)val);
     SetUpdate(false);
     Apply();
 }

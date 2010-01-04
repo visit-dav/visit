@@ -40,6 +40,7 @@
 #define VOLUMEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 class TransferFunctionWidget;
 #include <ColorControlPointList.h>
 #include <GaussianControlPointList.h>
@@ -93,14 +94,31 @@ public:
         GaussianMode,
         ColorTableMode
     };
+    enum LowGradientLightingReduction
+    {
+        Off,
+        Low,
+        Medium,
+        High
+    };
 
+    // These constructors are for objects of this class
     VolumeAttributes();
     VolumeAttributes(const VolumeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    VolumeAttributes(private_tmfs_t tmfs);
+    VolumeAttributes(const VolumeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~VolumeAttributes();
 
     virtual VolumeAttributes& operator = (const VolumeAttributes &obj);
     virtual bool operator == (const VolumeAttributes &obj) const;
     virtual bool operator != (const VolumeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const VolumeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -143,6 +161,7 @@ public:
     void SetSampling(SamplingType sampling_);
     void SetRendererSamples(float rendererSamples_);
     void SetTransferFunctionDim(int transferFunctionDim_);
+    void SetLowGradientLightingReduction(LowGradientLightingReduction lowGradientLightingReduction_);
 
     // Property getting methods
     bool                           GetLegendFlag() const;
@@ -178,6 +197,7 @@ public:
     const AttributeGroupVector     &GetTransferFunction2DWidgets() const;
           AttributeGroupVector     &GetTransferFunction2DWidgets();
     int                            GetTransferFunctionDim() const;
+    LowGradientLightingReduction   GetLowGradientLightingReduction() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -220,6 +240,11 @@ public:
     static bool OpacityModes_FromString(const std::string &, OpacityModes &);
 protected:
     static std::string OpacityModes_ToString(int);
+public:
+    static std::string LowGradientLightingReduction_ToString(LowGradientLightingReduction);
+    static bool LowGradientLightingReduction_FromString(const std::string &, LowGradientLightingReduction &);
+protected:
+    static std::string LowGradientLightingReduction_ToString(int);
 public:
 
     // Keyframing methods
@@ -270,7 +295,9 @@ public:
         ID_sampling,
         ID_rendererSamples,
         ID_transferFunction2DWidgets,
-        ID_transferFunctionDim
+        ID_transferFunctionDim,
+        ID_lowGradientLightingReduction,
+        ID__LAST
     };
 
 protected:
@@ -304,9 +331,12 @@ private:
     float                    rendererSamples;
     AttributeGroupVector     transferFunction2DWidgets;
     int                      transferFunctionDim;
+    int                      lowGradientLightingReduction;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VOLUMEATTRIBUTES_TMFS "bbafiaisUbfbfbfbfbiiiiidifa*ii"
 
 #endif

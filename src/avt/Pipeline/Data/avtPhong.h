@@ -68,16 +68,22 @@
 //    Actually enabled this (after almost 8 years!!) and made several changes
 //    to make it work.
 //
+//    Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//    Added ability to reduce amount of lighting for low-gradient-mag areas.
+//    Default values to constructor leave the old behavior (i.e. gradmax=0).
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPhong : public avtLightingModel
 {
   public:
-                           avtPhong();
+                           avtPhong(double gradMax=0.,double lightingPower=1.);
     virtual               ~avtPhong();
 
     virtual void           AddLighting(int, const avtRay *, unsigned char *)
                              const;
+  private:
+    double                 gradMax, lightingPower;
 };
 
 
