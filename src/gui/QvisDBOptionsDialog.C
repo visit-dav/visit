@@ -71,6 +71,10 @@
 //    Mark C. Miller, Mon Mar 16 23:10:47 PDT 2009
 //    Added logic to skip obsolete options. Fixed issue setting current
 //    index for Enums (combo boxes).
+//
+//    Jeremy Meredith, Mon Jan  4 14:27:45 EST 2010
+//    Fixed bug with floats.
+//
 // ****************************************************************************
 
 QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
@@ -114,7 +118,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             txt.setNum(atts->GetFloat(name));
             ledit = new QLineEdit(txt, this);
             grid->addWidget(new QLabel(name.c_str(), this), i, 0);
-            grid->addWidget(lineedits[i], i, 1);
+            grid->addWidget(ledit, i, 1);
             lineedits.append(ledit);
             break;
           case DBOptionsAttributes::Double:
