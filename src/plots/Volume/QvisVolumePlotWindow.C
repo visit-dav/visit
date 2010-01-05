@@ -1070,6 +1070,10 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   curve shape power, and an optional max-grad-mag-value clamp useful both
 //   as an extra tweak and for making animations not have erratic lighting.
 //
+//   Jeremy Meredith, Tue Jan  5 15:51:26 EST 2010
+//   The low-gradient-mag lighting reduction now also applies to the 
+//   3D texturing and splatting volume renderers.
+//
 // ****************************************************************************
 
 void
@@ -1115,11 +1119,15 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             lowGradientLightingReductionCombo->blockSignals(false);
             lowGradientClampToggle->setEnabled(
                 volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
             lowGradientClamp->setEnabled(
                 volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
                 volumeAtts->GetLowGradientLightingClampFlag() &&
-                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
             break;
         case VolumeAttributes::ID_lowGradientLightingClampFlag:
             lowGradientClampToggle->blockSignals(true);
@@ -1129,7 +1137,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             lowGradientClamp->setEnabled(
                 volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
                 volumeAtts->GetLowGradientLightingClampFlag() &&
-                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
             break;
         case VolumeAttributes::ID_lowGradientLightingClampValue:
             lowGradientClamp->blockSignals(true);
@@ -1253,10 +1263,15 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
-                lowGradientLightingReductionLabel->setEnabled(false);
-                lowGradientLightingReductionCombo->setEnabled(false);
-                lowGradientClampToggle->setEnabled(false);
-                lowGradientClamp->setEnabled(false);
+                lowGradientLightingReductionLabel->setEnabled(true);
+                lowGradientLightingReductionCombo->setEnabled(true);
+                lowGradientClampToggle->setEnabled(
+                            volumeAtts->GetLowGradientLightingReduction() !=
+                                                        VolumeAttributes::Off);
+                lowGradientClamp->setEnabled(
+                            volumeAtts->GetLowGradientLightingReduction() !=
+                                                      VolumeAttributes::Off &&
+                            volumeAtts->GetLowGradientLightingClampFlag());
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1283,10 +1298,15 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
-                lowGradientLightingReductionLabel->setEnabled(false);
-                lowGradientLightingReductionCombo->setEnabled(false);
-                lowGradientClampToggle->setEnabled(false);
-                lowGradientClamp->setEnabled(false);
+                lowGradientLightingReductionLabel->setEnabled(true);
+                lowGradientLightingReductionCombo->setEnabled(true);
+                lowGradientClampToggle->setEnabled(
+                            volumeAtts->GetLowGradientLightingReduction() !=
+                                                        VolumeAttributes::Off);
+                lowGradientClamp->setEnabled(
+                            volumeAtts->GetLowGradientLightingReduction() !=
+                                                      VolumeAttributes::Off &&
+                            volumeAtts->GetLowGradientLightingClampFlag());
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -2712,6 +2732,11 @@ QvisVolumePlotWindow::lightingToggled(bool)
 //   Added more settings for low-gradient-mag area lighting reduction: more
 //   curve shape power, and an optional max-grad-mag-value clamp useful both
 //   as an extra tweak and for making animations not have erratic lighting.
+//
+//   Jeremy Meredith, Tue Jan  5 15:51:26 EST 2010
+//   The low-gradient-mag lighting reduction now also applies to the 
+//   3D texturing and splatting volume renderers.
+//
 // ****************************************************************************
 
 void
@@ -2721,11 +2746,15 @@ QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
         (VolumeAttributes::LowGradientLightingReduction)val);
     lowGradientClampToggle->setEnabled(
                 volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
-                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
     lowGradientClamp->setEnabled(
                 volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
                 volumeAtts->GetLowGradientLightingClampFlag() &&
-                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
     SetUpdate(false);
     Apply();
 }
@@ -2742,6 +2771,9 @@ QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
 // Creation:   January  5, 2010
 //
 // Modifications:
+//   Jeremy Meredith, Tue Jan  5 15:51:26 EST 2010
+//   The low-gradient-mag lighting reduction now also applies to the 
+//   3D texturing and splatting volume renderers.
 //   
 // ****************************************************************************
 
@@ -2752,7 +2784,9 @@ QvisVolumePlotWindow::lowGradientClampToggled(bool val)
     lowGradientClamp->setEnabled(
                 volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
                 volumeAtts->GetLowGradientLightingClampFlag() &&
-                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+                (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Texture3D ||
+                 volumeAtts->GetRendererType() == VolumeAttributes::Splatting));
     SetUpdate(false);
     Apply();
 }

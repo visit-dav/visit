@@ -175,6 +175,11 @@ avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 //    Brad Whitlock, Wed Apr 22 12:01:26 PDT 2009
 //    I changed the interface.
 //
+//    Jeremy Meredith, Tue Jan  5 15:49:43 EST 2010
+//    Added ability to reduce amount of lighting for low-gradient-mag areas.
+//    This was already enabled, to some degree, by default, but it's now both
+//    optional and configurable.
+//
 // ****************************************************************************
 
 void
@@ -479,7 +484,37 @@ avtOpenGLSplattingVolumeRenderer::Render(
 
                     // Amount of shading should be somewhat proportional
                     // to the magnitude of the gradient
-                    float gm = pow(volume.gmn[index], 0.25f);
+                    float gm = 1.0;
+                    if (props.atts.GetLowGradientLightingReduction() !=
+                        VolumeAttributes::Off)
+                    {
+                        double lp = 1.0;
+                        switch (props.atts.GetLowGradientLightingReduction())
+                        {
+                          case VolumeAttributes::Lowest:  lp = 1./16.;break;
+                          case VolumeAttributes::Lower:   lp = 1./8.; break;
+                          case VolumeAttributes::Low:     lp = 1./4.; break;
+                          case VolumeAttributes::Medium:  lp = 1./2.; break;
+                          case VolumeAttributes::High:    lp = 1.;    break;
+                          case VolumeAttributes::Higher:  lp = 2.;    break;
+                          case VolumeAttributes::Highest: lp = 4.;    break;
+                          default: break;
+                        }
+                        if (props.atts.GetLowGradientLightingClampFlag())
+                        {
+                            gm = volume.gm[index] /
+                                props.atts.GetLowGradientLightingClampValue();
+                        }
+                        else
+                        {
+                            gm = volume.gmn[index];
+                        }
+                        gm = pow(gm, lp);
+                    }
+                    if (gm < 0)
+                        gm = 0;
+                    if (gm > 1)
+                        gm = 1;
 
                     // Get the base lit brightness 
                     float grad[3] = {gi,gj,gk};

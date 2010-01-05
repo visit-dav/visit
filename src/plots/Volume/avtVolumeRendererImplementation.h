@@ -64,6 +64,9 @@ class vtkDataArray;
 //    I gathered properties into structs that we can pass to Render. I
 //    also added the window size to the struct.
 //
+//    Jeremy Meredith, Tue Jan  5 15:53:30 EST 2010
+//    Added storage of unnormalize gradient magnitude and its maximum value.
+//
 // ****************************************************************************
 
 class avtVolumeRendererImplementation
@@ -104,7 +107,8 @@ class avtVolumeRendererImplementation
         VolumeData() : data(), opacity()
         {
             grid = NULL;
-            gx = gy = gz = gmn = NULL;
+            gx = gy = gz = gm = gmn = NULL;
+            gm_max = 0;
         }
 
         VariableData        data;
@@ -113,7 +117,9 @@ class avtVolumeRendererImplementation
         float              *gx;
         float              *gy;
         float              *gz;
+        float              *gm;
         float              *gmn;
+        float               gm_max;
     };
 
                    avtVolumeRendererImplementation() { }

@@ -261,6 +261,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Brad Whitlock, Wed Jun 10 14:00:37 PST 2009
 //    I made Mesa support be conditional.
 //
+//    Jeremy Meredith, Tue Jan  5 15:48:41 EST 2010
+//    Output un-normalized gradient magnitude and actual calculated maximum.
+//
 // ****************************************************************************
 
 void
@@ -375,7 +378,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         vd.gx = gx;
         vd.gy = gy;
         vd.gz = gz;
+        vd.gm = gm;
         vd.gmn = gmn;
+        vd.gm_max = gm_max;
 
         StackTimer t2("Implementation Render");
         rendererImplementation->Render(props, vd);
@@ -438,6 +443,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    Brad Whitlock, Mon Dec 15 13:24:12 PST 2008
 //    I moved most of the code to helper functions.
 //
+//    Jeremy Meredith, Tue Jan  5 15:48:41 EST 2010
+//    Output un-normalized gradient magnitude and actual calculated maximum.
+//
 // ****************************************************************************
 
 void
@@ -474,7 +482,7 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
         gm  = new float[nels];
         gmn = new float[nels];
         float ghostval = omax+osize;
-        VolumeCalculateGradient(atts, grid, opac, gx, gy, gz, gm, gmn, ghostval);
+        gm_max = VolumeCalculateGradient(atts, grid, opac, gx, gy, gz, gm, gmn, ghostval);
     }
 
     data->Delete();
