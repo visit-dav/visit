@@ -120,9 +120,6 @@ IF(ITAPS_DIRS)
     SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${ITAPS_DIRS})
 ENDIF(ITAPS_DIRS)
 
-# These have 3rd party builtin dependencies
-# BOW
-
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
     SET(ALL_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} CACHE INTERNAL "List of all I/O lib dirs")
@@ -136,6 +133,7 @@ ANSYS
 AUXFile
 AugDecomp
 BOV
+BOW
 CEAucd
 CMAT
 CTRL

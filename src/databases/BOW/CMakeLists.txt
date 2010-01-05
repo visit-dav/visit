@@ -45,6 +45,7 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
+${VISIT_INCLUDE_DIR}/third_party_builtin/bow 
 )
 
 
@@ -58,7 +59,7 @@ SET(INSTALLTARGETS IBOWDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MBOWDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MBOWDatabase visitcommon avtdbatts avtdatabase_ser bow z )
+    TARGET_LINK_LIBRARIES(MBOWDatabase visitcommon avtdbatts avtdatabase_ser bow )
     SET_TARGET_PROPERTIES(MBOWDatabase
         PROPERTIES
         COMPILE_FLAGS "-DMDSERVER"
@@ -67,7 +68,7 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EBOWDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EBOWDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser bow z )
+TARGET_LINK_LIBRARIES(EBOWDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser bow )
 SET_TARGET_PROPERTIES(EBOWDatabase_ser
     PROPERTIES
     COMPILE_FLAGS "-DENGINE"
@@ -76,7 +77,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EBOWDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBOWDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBOWDatabase_par visitcommon avtdatabase_par avtpipeline_par bow z )
+    TARGET_LINK_LIBRARIES(EBOWDatabase_par visitcommon avtdatabase_par avtpipeline_par bow )
     SET_TARGET_PROPERTIES(EBOWDatabase_par
         PROPERTIES
         COMPILE_FLAGS "-DENGINE"

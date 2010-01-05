@@ -1,3 +1,5 @@
+#/Users/whitlock2/Development/visit/cmake/2.6.4/i386-apple-darwin9_gcc-4.0/bin/cmake
+
 ##
 ## ./build_visit generated host.cmake
 ## created: Tue Dec 15 14:31:16 PST 2009
