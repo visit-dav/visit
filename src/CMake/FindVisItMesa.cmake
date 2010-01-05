@@ -42,6 +42,9 @@
 #   Kathleen Bonnell, Wed Dec  9 15:13:27 MT 2009
 #   Copy Mesa dlls to execution directory for OSMesa test on windows.
 #
+#   Kathleen Bonnell, Tue Jan  5 14:13:43 PST 2009
+#   Use cmake 2.6.4 (rather than 2.8) compatible version of copying files.
+#
 #****************************************************************************/
 
 # Use the VTK_DIR hint from the config-site .cmake file 
@@ -83,8 +86,8 @@ IF ("HAVE_OSMESA_SIZE" MATCHES "^HAVE_OSMESA_SIZE$")
    
     IF (WIN32) 
         # Need these dlls to run the program
-        FILE(COPY ${MESA_LIBRARY_DIR}/MesaGL32.dll DESTINATION ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/)
-        FILE(COPY ${MESA_LIBRARY_DIR}/osmesa32.dll DESTINATION ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/MesaGL32.dll ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/MesaGL32.dll)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/osmesa32.dll  ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/osmesa32.dll)
     ENDIF (WIN32) 
 
     TRY_RUN(TRY_RUN_RESULT HAVE_OSMESA_SIZE
