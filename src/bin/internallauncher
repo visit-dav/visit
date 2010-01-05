@@ -548,6 +548,9 @@ $0 = shift @ARGV;
 #    Removed fallback and assumed format entirely.  They have been subsumed
 #    by a more advanced file format detection method.
 #
+#    Hank Childs, Tue Jan  5 07:16:29 PST 2010
+#    Replace xml2makefile with xml2cmake.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -874,10 +877,10 @@ $fullusage = "$usage
                              sleeps such that polling happens at the rate of 20
                              times per second.
 
-    Developer options
+    Developer options (most for xml2... tools)
     ---------------------------------------------------------------------------
-        -public              xml2makefile: force install plugins publicly
-        -private             xml2makefile: force install plugins privately
+        -public              xml2cmake: force install plugins publicly
+        -private             xml2cmake: force install plugins privately
         -clobber             Permit xml2... tools to overwrite old files
         -noprint             Silence debugging output from xml2... tools
         -outputtoinputdir    Force xml2... tools to write output files to
