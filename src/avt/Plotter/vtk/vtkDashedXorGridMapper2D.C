@@ -294,13 +294,9 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
         
         overlay = new QLabel(0, Qt::FramelessWindowHint);
         overlay->setAttribute(Qt::WA_TranslucentBackground);
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 0))
         // FIXME? We should need the following, but it triggers a Qt
         // bug and  strangely everything seems to work without it.
-        // The Qt 4.4.6 Beta seems to fix the problem, so we set
-        // the appropriate flag.
-        overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-#endif
+        // overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
         overlay->setAutoFillBackground(false);
         overlay->setGeometry(info->x, info->y, info->w, info->h);
         QPixmap pixmap(info->w, info->h);;
