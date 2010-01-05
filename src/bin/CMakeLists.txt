@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#  Hank Childs, Tue Jan  5 07:13:58 PST 2010
+#  Remove xml2makefile and xml2projectfile.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -69,9 +72,7 @@ SET(VISIT_BIN_FILES
         xml2cmake
         xml2info
         xml2java
-        xml2makefile
         xml2plugin
-        xml2projectfile
         xml2python
         xml2window
         xmledit
