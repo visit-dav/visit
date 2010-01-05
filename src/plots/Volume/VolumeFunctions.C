@@ -895,14 +895,18 @@ VolumeGradient_Sobel(vtkRectilinearGrid  *grid, vtkDataArray *opac,
 //   gmn  : Optional output array for the normalized gradient magnitude
 //   ghostval : The ghost value.
 //
+// Returns: the maximum gradient magnitude in the data
+//
 // Programmer: Brad Whitlock
 // Creation:   Wed Dec 17 16:06:14 PST 2008
 //
 // Modifications:
+//   Jeremy Meredith, Tue Jan  5 15:51:03 EST 2010
+//   Had it return the maximum gradient magnitude.
 //
 // ****************************************************************************
 
-void
+float
 VolumeCalculateGradient(const VolumeAttributes &atts, 
     vtkRectilinearGrid  *grid, vtkDataArray *opac,
     float *gx, float *gy, float *gz, float *gm, float *gmn, float ghostval)
@@ -928,6 +932,8 @@ VolumeCalculateGradient(const VolumeAttributes &atts,
         for (int n=0; n<nels; n++)
             gmn[n] /= maxmag;
     }
+
+    return maxmag;
 }
 
 // ****************************************************************************

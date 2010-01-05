@@ -46,6 +46,11 @@ class VolumeAttributes;
 // These functions are shared between the volume renderer and a filter that
 // does work on the engine.
 //
+// Modifications:
+//   Jeremy Meredith, Tue Jan  5 15:48:10 EST 2010
+//   Added return value from gradient calculation of maximum gradient value.
+//
+
 
 vtkDataArray *VolumeGetScalar(const VolumeAttributes &atts, vtkDataSet *ds);
 
@@ -63,7 +68,7 @@ void VolumeGetOpacityExtents(const VolumeAttributes &atts,
                              vtkDataArray *opac,
                              float &omin, float &omax, float &osize);
 
-void VolumeCalculateGradient(const VolumeAttributes &atts,
+float VolumeCalculateGradient(const VolumeAttributes &atts,
                              vtkRectilinearGrid  *grid,
                              vtkDataArray *opac,
                              float *gx, float *gy, float *gz,

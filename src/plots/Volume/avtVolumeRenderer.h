@@ -82,6 +82,9 @@ class avtVolumeRendererImplementation;
 //    Brad Whitlock, Mon Dec 15 14:36:29 PST 2008
 //    I removed some methods.
 //
+//    Jeremy Meredith, Tue Jan  5 15:52:32 EST 2010
+//    Added value for actual gradient magnitude maximum.
+//
 // ****************************************************************************
 
 class avtVolumeRenderer : public avtCustomRenderer
@@ -110,7 +113,7 @@ class avtVolumeRenderer : public avtCustomRenderer
 
     float                   vmin,vmax,vsize;
     float                   omin,omax,osize;
-    float                  *gx, *gy, *gz, *gm, *gmn;
+    float                  *gx, *gy, *gz, *gm, *gmn, gm_max;
 
     bool                    reducedDetail;
 
