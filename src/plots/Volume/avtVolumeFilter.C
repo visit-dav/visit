@@ -255,6 +255,11 @@ avtVolumeFilter::Execute(void)
 //    Optionally, set up the Phong shader to reduce the amount of lighting
 //    applied to low-gradient areas.
 //
+//    Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//    Added more settings for low-gradient-mag area lighting reduction: more
+//    curve shape power, and an optional max-grad-mag-value clamp useful both
+//    as an extra tweak and for making animations not have erratic lighting.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -456,14 +461,22 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     double gradMax = 0.0, lightingPower = 1.0;
     if (atts.GetLowGradientLightingReduction() != VolumeAttributes::Off)
     {
-        double gradRange[2] = {0,0};
-        GetDataExtents(gradRange, gradName);
-        gradMax = gradRange[1];
+        gradMax = atts.GetLowGradientLightingClampValue();
+        if (atts.GetLowGradientLightingClampFlag() == false)
+        {
+            double gradRange[2] = {0,0};
+            GetDataExtents(gradRange, gradName);
+            gradMax = gradRange[1];
+        }
         switch (atts.GetLowGradientLightingReduction())
         {
-          case VolumeAttributes::Low:      lightingPower = 0.25;  break;
-          case VolumeAttributes::Medium:   lightingPower = 1.;    break;
-          case VolumeAttributes::High:     lightingPower = 4.;    break;
+          case VolumeAttributes::Lowest:   lightingPower = 1./16.; break;
+          case VolumeAttributes::Lower:    lightingPower = 1./8.;  break;
+          case VolumeAttributes::Low:      lightingPower = 1./4.;  break;
+          case VolumeAttributes::Medium:   lightingPower = 1./2.;  break;
+          case VolumeAttributes::High:     lightingPower = 1.;     break;
+          case VolumeAttributes::Higher:   lightingPower = 2.;     break;
+          case VolumeAttributes::Highest:  lightingPower = 4.;     break;
           default: break;
         }
     }

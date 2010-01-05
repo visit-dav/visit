@@ -117,9 +117,13 @@
       </Enum>
       <Enum name="LowGradientLightingReduction">
         Off
+        Lowest
+        Lower
         Low
         Medium
         High
+        Higher
+        Highest
       </Enum>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -203,6 +207,12 @@
       </Field>
       <Field name="lowGradientLightingReduction" label="lowGradientLightingReduction" type="enum" subtype="LowGradientLightingReduction">
         Off
+      </Field>
+      <Field name="lowGradientLightingClampFlag" label="lowGradientLightingClampFlag" type="bool">
+        false
+      </Field>
+      <Field name="lowGradientLightingClampValue" label="lowGradientLightingClampFlag" type="double">
+        1.000000
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

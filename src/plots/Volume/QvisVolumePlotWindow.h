@@ -141,8 +141,13 @@ typedef int WidgetID;
 //    I reorganized the window a little and added methods for dealing with
 //    histogram data.
 //
-//   Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
-//   Added ability to reduce amount of lighting for low-gradient-mag areas.
+//    Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
+//    Added ability to reduce amount of lighting for low-gradient-mag areas.
+//
+//    Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//    Added more settings for low-gradient-mag area lighting reduction: more
+//    curve shape power, and an optional max-grad-mag-value clamp useful both
+//    as an extra tweak and for making animations not have erratic lighting.
 //
 // ****************************************************************************
 
@@ -190,6 +195,8 @@ private slots:
     void legendToggled(bool val);
     void lightingToggled(bool val);
     void lowGradientLightingReductionChanged(int val);
+    void lowGradientClampToggled(bool val);
+    void lowGradientClampProcessText();
     void colorMinToggled(bool val);
     void colorMinProcessText();
     void colorMaxToggled(bool val);
@@ -270,6 +277,8 @@ private:
     QCheckBox                *lightingToggle;
     QLabel                   *lowGradientLightingReductionLabel;
     QComboBox                *lowGradientLightingReductionCombo;
+    QCheckBox                *lowGradientClampToggle;
+    QLineEdit                *lowGradientClamp;
     QCheckBox                *softwareToggle;
     QCheckBox                *smoothDataToggle;
     QComboBox                *rendererTypesComboBox;

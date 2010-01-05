@@ -731,6 +731,11 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 //   Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
 //   Added ability to reduce amount of lighting for low-gradient-mag areas.
 //   
+//   Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//   Added more settings for low-gradient-mag area lighting reduction: more
+//   curve shape power, and an optional max-grad-mag-value clamp useful both
+//   as an extra tweak and for making animations not have erratic lighting.
+//
 // ****************************************************************************
 
 void
@@ -873,17 +878,35 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
     lowGradientLightingReductionLabel =
         new QLabel(tr("Low gradient lighting reduction factor"),central);
     rendererOptionsLayout->addWidget(lowGradientLightingReductionLabel,
-                                     row,0,1,2);
+                                     row,0, 1,2);
 
     lowGradientLightingReductionCombo = new QComboBox(central);
     lowGradientLightingReductionCombo->addItem("Off");
+    lowGradientLightingReductionCombo->addItem("Lowest");
+    lowGradientLightingReductionCombo->addItem("Lower");
     lowGradientLightingReductionCombo->addItem("Low");
     lowGradientLightingReductionCombo->addItem("Medium");
     lowGradientLightingReductionCombo->addItem("High");
+    lowGradientLightingReductionCombo->addItem("Higher");
+    lowGradientLightingReductionCombo->addItem("Highest");
     connect(lowGradientLightingReductionCombo, SIGNAL(activated(int)),
             this, SLOT(lowGradientLightingReductionChanged(int)));
     rendererOptionsLayout->addWidget(lowGradientLightingReductionCombo,
                                      row,2);
+    ++row;
+
+    lowGradientClampToggle =
+        new QCheckBox(tr("Low gradient lighting reduction, max value"),central);
+    connect(lowGradientClampToggle, SIGNAL(toggled(bool)),
+            this, SLOT(lowGradientClampToggled(bool)));
+    rendererOptionsLayout->addWidget(lowGradientClampToggle, row,0, 1,2);
+
+    lowGradientClamp = new QLineEdit(colorWidgetGroup);
+    lowGradientClamp->setMaximumWidth(maxWidth);
+    lowGradientClamp->setEnabled(volumeAtts->GetUseColorVarMax());
+    connect(lowGradientClamp, SIGNAL(returnPressed()),
+            this, SLOT(lowGradientClampProcessText()));
+    rendererOptionsLayout->addWidget(lowGradientClamp, row, 2);
     ++row;
 }
 
@@ -1042,6 +1065,11 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   Added ability to reduce amount of lighting for low-gradient-mag areas.
 //   Applies only to the software volume renderer for the moment.
 //
+//   Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//   Added more settings for low-gradient-mag area lighting reduction: more
+//   curve shape power, and an optional max-grad-mag-value clamp useful both
+//   as an extra tweak and for making animations not have erratic lighting.
+//
 // ****************************************************************************
 
 void
@@ -1085,6 +1113,29 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             lowGradientLightingReductionCombo->setCurrentIndex(
                            (int)volumeAtts->GetLowGradientLightingReduction());
             lowGradientLightingReductionCombo->blockSignals(false);
+            lowGradientClampToggle->setEnabled(
+                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
+                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+            lowGradientClamp->setEnabled(
+                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
+                volumeAtts->GetLowGradientLightingClampFlag() &&
+                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+            break;
+        case VolumeAttributes::ID_lowGradientLightingClampFlag:
+            lowGradientClampToggle->blockSignals(true);
+            lowGradientClampToggle->setChecked(
+                           volumeAtts->GetLowGradientLightingClampFlag());
+            lowGradientClampToggle->blockSignals(false);
+            lowGradientClamp->setEnabled(
+                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
+                volumeAtts->GetLowGradientLightingClampFlag() &&
+                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+            break;
+        case VolumeAttributes::ID_lowGradientLightingClampValue:
+            lowGradientClamp->blockSignals(true);
+            temp.setNum(volumeAtts->GetLowGradientLightingClampValue());
+            lowGradientClamp->setText(temp);
+            lowGradientClamp->blockSignals(false);
             break;
         case VolumeAttributes::ID_colorControlPoints:
             UpdateColorControlPoints();
@@ -1204,6 +1255,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 kernelButton->setEnabled(false);
                 lowGradientLightingReductionLabel->setEnabled(false);
                 lowGradientLightingReductionCombo->setEnabled(false);
+                lowGradientClampToggle->setEnabled(false);
+                lowGradientClamp->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1232,6 +1285,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 kernelButton->setEnabled(false);
                 lowGradientLightingReductionLabel->setEnabled(false);
                 lowGradientLightingReductionCombo->setEnabled(false);
+                lowGradientClampToggle->setEnabled(false);
+                lowGradientClamp->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1259,6 +1314,13 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 kernelButton->setEnabled(true);
                 lowGradientLightingReductionLabel->setEnabled(true);
                 lowGradientLightingReductionCombo->setEnabled(true);
+                lowGradientClampToggle->setEnabled(
+                            volumeAtts->GetLowGradientLightingReduction() !=
+                                                        VolumeAttributes::Off);
+                lowGradientClamp->setEnabled(
+                            volumeAtts->GetLowGradientLightingReduction() !=
+                                                      VolumeAttributes::Off &&
+                            volumeAtts->GetLowGradientLightingClampFlag());
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1286,6 +1348,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 kernelButton->setEnabled(true);
                 lowGradientLightingReductionLabel->setEnabled(false);
                 lowGradientLightingReductionCombo->setEnabled(false);
+                lowGradientClampToggle->setEnabled(false);
+                lowGradientClamp->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1313,6 +1377,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 kernelButton->setEnabled(false);
                 lowGradientLightingReductionLabel->setEnabled(false);
                 lowGradientLightingReductionCombo->setEnabled(false);
+                lowGradientClampToggle->setEnabled(false);
+                lowGradientClamp->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -1346,6 +1412,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 kernelButton->setEnabled(false);
                 lowGradientLightingReductionLabel->setEnabled(false);
                 lowGradientLightingReductionCombo->setEnabled(false);
+                lowGradientClampToggle->setEnabled(false);
+                lowGradientClamp->setEnabled(false);
             }
 #ifdef HAVE_LIBSLIVR
             // Just for now, disable the opacity variable if we are using the
@@ -1826,6 +1894,11 @@ QvisVolumePlotWindow::Update2DTransferFunction()
 //   Added support for getting alphas from color table instead of
 //   set via freeform/gaussian editor.
 //
+//   Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//   Added more settings for low-gradient-mag area lighting reduction: more
+//   curve shape power, and an optional max-grad-mag-value clamp useful both
+//   as an extra tweak and for making animations not have erratic lighting.
+//
 // ****************************************************************************
 
 void
@@ -2053,6 +2126,22 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 #endif
+    if(which_widget == VolumeAttributes::ID_lowGradientLightingClampValue
+       || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(lowGradientClamp, val) && val>0)
+            volumeAtts->SetLowGradientLightingClampValue(val);
+        else
+        {
+            msg = tr("The value for the low gradient lighting max clamp "
+                     "was invalid. Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetLowGradientLightingClampValue());
+            Message(msg);
+        }
+    }
+
+
 }
 
 // ****************************************************************************
@@ -2619,7 +2708,10 @@ QvisVolumePlotWindow::lightingToggled(bool)
 // Creation:   January  4, 2010
 //
 // Modifications:
-//
+//   Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//   Added more settings for low-gradient-mag area lighting reduction: more
+//   curve shape power, and an optional max-grad-mag-value clamp useful both
+//   as an extra tweak and for making animations not have erratic lighting.
 // ****************************************************************************
 
 void
@@ -2627,6 +2719,62 @@ QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
 {
     volumeAtts->SetLowGradientLightingReduction(
         (VolumeAttributes::LowGradientLightingReduction)val);
+    lowGradientClampToggle->setEnabled(
+                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
+                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+    lowGradientClamp->setEnabled(
+                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
+                volumeAtts->GetLowGradientLightingClampFlag() &&
+                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::lowGradientClampToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the low gradient
+//   lighting clamp flag is toggled.
+//   
+//
+// Programmer: Jeremy Meredith
+// Creation:   January  5, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::lowGradientClampToggled(bool val)
+{
+    volumeAtts->SetLowGradientLightingClampFlag(val);
+    lowGradientClamp->setEnabled(
+                volumeAtts->GetLowGradientLightingReduction() != VolumeAttributes::Off &&
+                volumeAtts->GetLowGradientLightingClampFlag() &&
+                volumeAtts->GetRendererType() == VolumeAttributes::RayCasting);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::lowGradientClampProcessText
+//
+//  Purpose:
+//    Qt slot function, called when the low gradient lighting clamp
+//    value is changed.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  5, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::lowGradientClampProcessText()
+{
+    GetCurrentValues(VolumeAttributes::ID_lowGradientLightingClampValue);
     SetUpdate(false);
     Apply();
 }
@@ -2634,7 +2782,6 @@ QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::colorMinToggled
 //
-// Purpose: 
 //   This is a Qt slot function that is called when the extents for the colors
 //   toggle is clicked.
 //
