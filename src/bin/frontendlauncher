@@ -305,7 +305,7 @@ if (-d "$visitdir/exe")
     # We want to make sure we know if we are trying to launch a public
     # version from under a development version.  Keep track of this.
     # (Note -- don't add it on our own if we're launching a tool.)
-    if ($using_dev or $progname eq "visit")
+    if ($using_dev or $progname eq "visit" or $progname eq "xml2cmake")
     {
         # stick the -dv at beginning of args to ensure it comes
         # before any '-s' option.
