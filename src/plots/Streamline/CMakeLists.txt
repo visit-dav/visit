@@ -24,13 +24,28 @@ QT_WRAP_CPP(GStreamlinePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
 SET(LIBV_SOURCES
 StreamlineViewerPluginInfo.C
 avtStreamlinePlot.C
+avtStreamlineRenderer.C
+avtMesaStreamlineRenderer.C
+avtOpenGLStreamlineRenderer.C
 ${COMMON_SOURCES}
 )
 
 SET(LIBE_SOURCES
 StreamlineEnginePluginInfo.C
 avtStreamlinePlot.C
+avtStreamlineRenderer.C
+avtMesaStreamlineRenderer.C
+avtOpenGLStreamlineRenderer.C
 ${COMMON_SOURCES}
+)
+
+SET_SOURCE_FILES_PROPERTIES(avtOpenGLStreamlineRenderer.C 
+    PROPERTIES
+    COMPILE_FLAGS "-I ${OPENGL_INCLUDE_DIR}"
+)
+SET_SOURCE_FILES_PROPERTIES(avtMesaStreamlineRenderer.C 
+    PROPERTIES
+    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR}"
 )
 
 INCLUDE_DIRECTORIES(
