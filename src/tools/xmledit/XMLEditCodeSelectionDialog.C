@@ -98,12 +98,8 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     pluginLayout->setSpacing(5);
     buttons[ID_XML2WINDOW] = new QCheckBox(tr("Window"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2WINDOW]);
-#if defined(_WIN32)
-    buttons[ID_XML2MAKEFILE] = new QCheckBox(tr("Project file"), pluginGroup);
-#else
-    buttons[ID_XML2MAKEFILE] = new QCheckBox(tr("Makefile"), pluginGroup);
-#endif
-    pluginLayout->addWidget(buttons[ID_XML2MAKEFILE]);
+    buttons[ID_XML2CMAKE] = new QCheckBox(tr("CMake"), pluginGroup);
+    pluginLayout->addWidget(buttons[ID_XML2CMAKE]);
     buttons[ID_XML2INFO] = new QCheckBox(tr("Plugin information"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2INFO]);
     buttons[ID_XML2AVT] = new QCheckBox(tr("AVT code skeleton"), pluginGroup);

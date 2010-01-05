@@ -96,7 +96,7 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
     tabs->addTab(plugintab, tr("Plugin"));
 
     makefiletab = new XMLEditMakefile(this);
-    tabs->addTab(makefiletab, tr("Makefile"));
+    tabs->addTab(makefiletab, tr("CMake"));
    
     attributetab = new XMLEditAttribute(this);
     tabs->addTab(attributetab, tr("Attribute"));
@@ -365,7 +365,7 @@ XMLEdit::generateCode()
     useTool[ID_XML2JAVA] = true;
     useTool[ID_XML2PYTHON] = true;
     useTool[ID_XML2WINDOW] = firstGeneration;
-    useTool[ID_XML2MAKEFILE] = firstGeneration;
+    useTool[ID_XML2CMAKE] = firstGeneration;
     useTool[ID_XML2INFO] = firstGeneration;
     useTool[ID_XML2AVT] = firstGeneration;
 
@@ -373,7 +373,7 @@ XMLEdit::generateCode()
     toolEnabled[ID_XML2JAVA] = true;
     toolEnabled[ID_XML2PYTHON] = true;
     toolEnabled[ID_XML2WINDOW] = plugin;
-    toolEnabled[ID_XML2MAKEFILE] = plugin;
+    toolEnabled[ID_XML2CMAKE] = plugin;
     toolEnabled[ID_XML2INFO] = plugin;
     toolEnabled[ID_XML2AVT] = plugin;
 

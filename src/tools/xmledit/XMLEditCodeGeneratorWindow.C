@@ -188,13 +188,7 @@ void
 XMLEditCodeGeneratorWindow::generateOne()
 {
     static const char *xmlTools[] = {"xml2atts", "xml2java", "xml2python",
-    "xml2window",
-#if defined(WIN32)
-    "xml2projectfile",
-#else
-    "xml2makefile",
-#endif
-    "xml2info", "xml2avt"};
+       "xml2window", "xml2cmake", "xml2info", "xml2avt"};
 
     cleanupProcess();
 
@@ -207,10 +201,6 @@ XMLEditCodeGeneratorWindow::generateOne()
         QStringList arguments;
         arguments << "-clobber";
         
-#if defined(WIN32)
-        if(toolIndex == ID_XML2MAKEFILE)
-            arguments << "-version7";
-#endif
         arguments << xmlFile;
 
         // Set the process's working directory.
