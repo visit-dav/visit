@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="BOW" type="database" label="BOW" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/bow
+    </CXXFLAGS>
     <LIBS>
       bow
-      z
     </LIBS>
     <FilePatterns>
       *.txt
