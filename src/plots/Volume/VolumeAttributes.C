@@ -236,21 +236,22 @@ VolumeAttributes::OpacityModes_FromString(const std::string &s, VolumeAttributes
 //
 
 static const char *LowGradientLightingReduction_strings[] = {
-"Off", "Low", "Medium", 
-"High"};
+"Off", "Lowest", "Lower", 
+"Low", "Medium", "High", 
+"Higher", "Highest"};
 
 std::string
 VolumeAttributes::LowGradientLightingReduction_ToString(VolumeAttributes::LowGradientLightingReduction t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return LowGradientLightingReduction_strings[index];
 }
 
 std::string
 VolumeAttributes::LowGradientLightingReduction_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return LowGradientLightingReduction_strings[index];
 }
 
@@ -258,7 +259,7 @@ bool
 VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, VolumeAttributes::LowGradientLightingReduction &val)
 {
     val = VolumeAttributes::Off;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == LowGradientLightingReduction_strings[i])
         {
@@ -313,6 +314,8 @@ void VolumeAttributes::Init()
     rendererSamples = 3;
     transferFunctionDim = 1;
     lowGradientLightingReduction = Off;
+    lowGradientLightingClampFlag = false;
+    lowGradientLightingClampValue = 1;
 
     VolumeAttributes::SelectAll();
 }
@@ -381,6 +384,8 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
 
     transferFunctionDim = obj.transferFunctionDim;
     lowGradientLightingReduction = obj.lowGradientLightingReduction;
+    lowGradientLightingClampFlag = obj.lowGradientLightingClampFlag;
+    lowGradientLightingClampValue = obj.lowGradientLightingClampValue;
 
     VolumeAttributes::SelectAll();
 }
@@ -586,7 +591,9 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (rendererSamples == obj.rendererSamples) &&
             transferFunction2DWidgets_equal &&
             (transferFunctionDim == obj.transferFunctionDim) &&
-            (lowGradientLightingReduction == obj.lowGradientLightingReduction));
+            (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
+            (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
+            (lowGradientLightingClampValue == obj.lowGradientLightingClampValue));
 }
 
 // ****************************************************************************
@@ -730,35 +737,37 @@ VolumeAttributes::NewInstance(bool copy) const
 void
 VolumeAttributes::SelectAll()
 {
-    Select(ID_legendFlag,                   (void *)&legendFlag);
-    Select(ID_lightingFlag,                 (void *)&lightingFlag);
-    Select(ID_colorControlPoints,           (void *)&colorControlPoints);
-    Select(ID_opacityAttenuation,           (void *)&opacityAttenuation);
-    Select(ID_opacityMode,                  (void *)&opacityMode);
-    Select(ID_opacityControlPoints,         (void *)&opacityControlPoints);
-    Select(ID_resampleTarget,               (void *)&resampleTarget);
-    Select(ID_opacityVariable,              (void *)&opacityVariable);
-    Select(ID_freeformOpacity,              (void *)freeformOpacity, 256);
-    Select(ID_useColorVarMin,               (void *)&useColorVarMin);
-    Select(ID_colorVarMin,                  (void *)&colorVarMin);
-    Select(ID_useColorVarMax,               (void *)&useColorVarMax);
-    Select(ID_colorVarMax,                  (void *)&colorVarMax);
-    Select(ID_useOpacityVarMin,             (void *)&useOpacityVarMin);
-    Select(ID_opacityVarMin,                (void *)&opacityVarMin);
-    Select(ID_useOpacityVarMax,             (void *)&useOpacityVarMax);
-    Select(ID_opacityVarMax,                (void *)&opacityVarMax);
-    Select(ID_smoothData,                   (void *)&smoothData);
-    Select(ID_samplesPerRay,                (void *)&samplesPerRay);
-    Select(ID_rendererType,                 (void *)&rendererType);
-    Select(ID_gradientType,                 (void *)&gradientType);
-    Select(ID_num3DSlices,                  (void *)&num3DSlices);
-    Select(ID_scaling,                      (void *)&scaling);
-    Select(ID_skewFactor,                   (void *)&skewFactor);
-    Select(ID_sampling,                     (void *)&sampling);
-    Select(ID_rendererSamples,              (void *)&rendererSamples);
-    Select(ID_transferFunction2DWidgets,    (void *)&transferFunction2DWidgets);
-    Select(ID_transferFunctionDim,          (void *)&transferFunctionDim);
-    Select(ID_lowGradientLightingReduction, (void *)&lowGradientLightingReduction);
+    Select(ID_legendFlag,                    (void *)&legendFlag);
+    Select(ID_lightingFlag,                  (void *)&lightingFlag);
+    Select(ID_colorControlPoints,            (void *)&colorControlPoints);
+    Select(ID_opacityAttenuation,            (void *)&opacityAttenuation);
+    Select(ID_opacityMode,                   (void *)&opacityMode);
+    Select(ID_opacityControlPoints,          (void *)&opacityControlPoints);
+    Select(ID_resampleTarget,                (void *)&resampleTarget);
+    Select(ID_opacityVariable,               (void *)&opacityVariable);
+    Select(ID_freeformOpacity,               (void *)freeformOpacity, 256);
+    Select(ID_useColorVarMin,                (void *)&useColorVarMin);
+    Select(ID_colorVarMin,                   (void *)&colorVarMin);
+    Select(ID_useColorVarMax,                (void *)&useColorVarMax);
+    Select(ID_colorVarMax,                   (void *)&colorVarMax);
+    Select(ID_useOpacityVarMin,              (void *)&useOpacityVarMin);
+    Select(ID_opacityVarMin,                 (void *)&opacityVarMin);
+    Select(ID_useOpacityVarMax,              (void *)&useOpacityVarMax);
+    Select(ID_opacityVarMax,                 (void *)&opacityVarMax);
+    Select(ID_smoothData,                    (void *)&smoothData);
+    Select(ID_samplesPerRay,                 (void *)&samplesPerRay);
+    Select(ID_rendererType,                  (void *)&rendererType);
+    Select(ID_gradientType,                  (void *)&gradientType);
+    Select(ID_num3DSlices,                   (void *)&num3DSlices);
+    Select(ID_scaling,                       (void *)&scaling);
+    Select(ID_skewFactor,                    (void *)&skewFactor);
+    Select(ID_sampling,                      (void *)&sampling);
+    Select(ID_rendererSamples,               (void *)&rendererSamples);
+    Select(ID_transferFunction2DWidgets,     (void *)&transferFunction2DWidgets);
+    Select(ID_transferFunctionDim,           (void *)&transferFunctionDim);
+    Select(ID_lowGradientLightingReduction,  (void *)&lowGradientLightingReduction);
+    Select(ID_lowGradientLightingClampFlag,  (void *)&lowGradientLightingClampFlag);
+    Select(ID_lowGradientLightingClampValue, (void *)&lowGradientLightingClampValue);
 }
 
 // ****************************************************************************
@@ -999,6 +1008,18 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("lowGradientLightingReduction", LowGradientLightingReduction_ToString(lowGradientLightingReduction)));
     }
 
+    if(completeSave || !FieldsEqual(ID_lowGradientLightingClampFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lowGradientLightingClampFlag", lowGradientLightingClampFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lowGradientLightingClampValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lowGradientLightingClampValue", lowGradientLightingClampValue));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1185,7 +1206,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 8)
                 SetLowGradientLightingReduction(LowGradientLightingReduction(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1195,6 +1216,10 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
                 SetLowGradientLightingReduction(value);
         }
     }
+    if((node = searchNode->GetNode("lowGradientLightingClampFlag")) != 0)
+        SetLowGradientLightingClampFlag(node->AsBool());
+    if((node = searchNode->GetNode("lowGradientLightingClampValue")) != 0)
+        SetLowGradientLightingClampValue(node->AsDouble());
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -1406,6 +1431,20 @@ VolumeAttributes::SetLowGradientLightingReduction(VolumeAttributes::LowGradientL
     Select(ID_lowGradientLightingReduction, (void *)&lowGradientLightingReduction);
 }
 
+void
+VolumeAttributes::SetLowGradientLightingClampFlag(bool lowGradientLightingClampFlag_)
+{
+    lowGradientLightingClampFlag = lowGradientLightingClampFlag_;
+    Select(ID_lowGradientLightingClampFlag, (void *)&lowGradientLightingClampFlag);
+}
+
+void
+VolumeAttributes::SetLowGradientLightingClampValue(double lowGradientLightingClampValue_)
+{
+    lowGradientLightingClampValue = lowGradientLightingClampValue_;
+    Select(ID_lowGradientLightingClampValue, (void *)&lowGradientLightingClampValue);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1612,6 +1651,18 @@ VolumeAttributes::LowGradientLightingReduction
 VolumeAttributes::GetLowGradientLightingReduction() const
 {
     return LowGradientLightingReduction(lowGradientLightingReduction);
+}
+
+bool
+VolumeAttributes::GetLowGradientLightingClampFlag() const
+{
+    return lowGradientLightingClampFlag;
+}
+
+double
+VolumeAttributes::GetLowGradientLightingClampValue() const
+{
+    return lowGradientLightingClampValue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1869,35 +1920,37 @@ VolumeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:                   return "legendFlag";
-    case ID_lightingFlag:                 return "lightingFlag";
-    case ID_colorControlPoints:           return "colorControlPoints";
-    case ID_opacityAttenuation:           return "opacityAttenuation";
-    case ID_opacityMode:                  return "opacityMode";
-    case ID_opacityControlPoints:         return "opacityControlPoints";
-    case ID_resampleTarget:               return "resampleTarget";
-    case ID_opacityVariable:              return "opacityVariable";
-    case ID_freeformOpacity:              return "freeformOpacity";
-    case ID_useColorVarMin:               return "useColorVarMin";
-    case ID_colorVarMin:                  return "colorVarMin";
-    case ID_useColorVarMax:               return "useColorVarMax";
-    case ID_colorVarMax:                  return "colorVarMax";
-    case ID_useOpacityVarMin:             return "useOpacityVarMin";
-    case ID_opacityVarMin:                return "opacityVarMin";
-    case ID_useOpacityVarMax:             return "useOpacityVarMax";
-    case ID_opacityVarMax:                return "opacityVarMax";
-    case ID_smoothData:                   return "smoothData";
-    case ID_samplesPerRay:                return "samplesPerRay";
-    case ID_rendererType:                 return "rendererType";
-    case ID_gradientType:                 return "gradientType";
-    case ID_num3DSlices:                  return "num3DSlices";
-    case ID_scaling:                      return "scaling";
-    case ID_skewFactor:                   return "skewFactor";
-    case ID_sampling:                     return "sampling";
-    case ID_rendererSamples:              return "rendererSamples";
-    case ID_transferFunction2DWidgets:    return "transferFunction2DWidgets";
-    case ID_transferFunctionDim:          return "transferFunctionDim";
-    case ID_lowGradientLightingReduction: return "lowGradientLightingReduction";
+    case ID_legendFlag:                    return "legendFlag";
+    case ID_lightingFlag:                  return "lightingFlag";
+    case ID_colorControlPoints:            return "colorControlPoints";
+    case ID_opacityAttenuation:            return "opacityAttenuation";
+    case ID_opacityMode:                   return "opacityMode";
+    case ID_opacityControlPoints:          return "opacityControlPoints";
+    case ID_resampleTarget:                return "resampleTarget";
+    case ID_opacityVariable:               return "opacityVariable";
+    case ID_freeformOpacity:               return "freeformOpacity";
+    case ID_useColorVarMin:                return "useColorVarMin";
+    case ID_colorVarMin:                   return "colorVarMin";
+    case ID_useColorVarMax:                return "useColorVarMax";
+    case ID_colorVarMax:                   return "colorVarMax";
+    case ID_useOpacityVarMin:              return "useOpacityVarMin";
+    case ID_opacityVarMin:                 return "opacityVarMin";
+    case ID_useOpacityVarMax:              return "useOpacityVarMax";
+    case ID_opacityVarMax:                 return "opacityVarMax";
+    case ID_smoothData:                    return "smoothData";
+    case ID_samplesPerRay:                 return "samplesPerRay";
+    case ID_rendererType:                  return "rendererType";
+    case ID_gradientType:                  return "gradientType";
+    case ID_num3DSlices:                   return "num3DSlices";
+    case ID_scaling:                       return "scaling";
+    case ID_skewFactor:                    return "skewFactor";
+    case ID_sampling:                      return "sampling";
+    case ID_rendererSamples:               return "rendererSamples";
+    case ID_transferFunction2DWidgets:     return "transferFunction2DWidgets";
+    case ID_transferFunctionDim:           return "transferFunctionDim";
+    case ID_lowGradientLightingReduction:  return "lowGradientLightingReduction";
+    case ID_lowGradientLightingClampFlag:  return "lowGradientLightingClampFlag";
+    case ID_lowGradientLightingClampValue: return "lowGradientLightingClampValue";
     default:  return "invalid index";
     }
 }
@@ -1922,35 +1975,37 @@ VolumeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:                   return FieldType_bool;
-    case ID_lightingFlag:                 return FieldType_bool;
-    case ID_colorControlPoints:           return FieldType_att;
-    case ID_opacityAttenuation:           return FieldType_float;
-    case ID_opacityMode:                  return FieldType_enum;
-    case ID_opacityControlPoints:         return FieldType_att;
-    case ID_resampleTarget:               return FieldType_int;
-    case ID_opacityVariable:              return FieldType_variablename;
-    case ID_freeformOpacity:              return FieldType_ucharArray;
-    case ID_useColorVarMin:               return FieldType_bool;
-    case ID_colorVarMin:                  return FieldType_float;
-    case ID_useColorVarMax:               return FieldType_bool;
-    case ID_colorVarMax:                  return FieldType_float;
-    case ID_useOpacityVarMin:             return FieldType_bool;
-    case ID_opacityVarMin:                return FieldType_float;
-    case ID_useOpacityVarMax:             return FieldType_bool;
-    case ID_opacityVarMax:                return FieldType_float;
-    case ID_smoothData:                   return FieldType_bool;
-    case ID_samplesPerRay:                return FieldType_int;
-    case ID_rendererType:                 return FieldType_enum;
-    case ID_gradientType:                 return FieldType_enum;
-    case ID_num3DSlices:                  return FieldType_int;
-    case ID_scaling:                      return FieldType_enum;
-    case ID_skewFactor:                   return FieldType_double;
-    case ID_sampling:                     return FieldType_enum;
-    case ID_rendererSamples:              return FieldType_float;
-    case ID_transferFunction2DWidgets:    return FieldType_attVector;
-    case ID_transferFunctionDim:          return FieldType_int;
-    case ID_lowGradientLightingReduction: return FieldType_enum;
+    case ID_legendFlag:                    return FieldType_bool;
+    case ID_lightingFlag:                  return FieldType_bool;
+    case ID_colorControlPoints:            return FieldType_att;
+    case ID_opacityAttenuation:            return FieldType_float;
+    case ID_opacityMode:                   return FieldType_enum;
+    case ID_opacityControlPoints:          return FieldType_att;
+    case ID_resampleTarget:                return FieldType_int;
+    case ID_opacityVariable:               return FieldType_variablename;
+    case ID_freeformOpacity:               return FieldType_ucharArray;
+    case ID_useColorVarMin:                return FieldType_bool;
+    case ID_colorVarMin:                   return FieldType_float;
+    case ID_useColorVarMax:                return FieldType_bool;
+    case ID_colorVarMax:                   return FieldType_float;
+    case ID_useOpacityVarMin:              return FieldType_bool;
+    case ID_opacityVarMin:                 return FieldType_float;
+    case ID_useOpacityVarMax:              return FieldType_bool;
+    case ID_opacityVarMax:                 return FieldType_float;
+    case ID_smoothData:                    return FieldType_bool;
+    case ID_samplesPerRay:                 return FieldType_int;
+    case ID_rendererType:                  return FieldType_enum;
+    case ID_gradientType:                  return FieldType_enum;
+    case ID_num3DSlices:                   return FieldType_int;
+    case ID_scaling:                       return FieldType_enum;
+    case ID_skewFactor:                    return FieldType_double;
+    case ID_sampling:                      return FieldType_enum;
+    case ID_rendererSamples:               return FieldType_float;
+    case ID_transferFunction2DWidgets:     return FieldType_attVector;
+    case ID_transferFunctionDim:           return FieldType_int;
+    case ID_lowGradientLightingReduction:  return FieldType_enum;
+    case ID_lowGradientLightingClampFlag:  return FieldType_bool;
+    case ID_lowGradientLightingClampValue: return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -1975,35 +2030,37 @@ VolumeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:                   return "bool";
-    case ID_lightingFlag:                 return "bool";
-    case ID_colorControlPoints:           return "att";
-    case ID_opacityAttenuation:           return "float";
-    case ID_opacityMode:                  return "enum";
-    case ID_opacityControlPoints:         return "att";
-    case ID_resampleTarget:               return "int";
-    case ID_opacityVariable:              return "variablename";
-    case ID_freeformOpacity:              return "ucharArray";
-    case ID_useColorVarMin:               return "bool";
-    case ID_colorVarMin:                  return "float";
-    case ID_useColorVarMax:               return "bool";
-    case ID_colorVarMax:                  return "float";
-    case ID_useOpacityVarMin:             return "bool";
-    case ID_opacityVarMin:                return "float";
-    case ID_useOpacityVarMax:             return "bool";
-    case ID_opacityVarMax:                return "float";
-    case ID_smoothData:                   return "bool";
-    case ID_samplesPerRay:                return "int";
-    case ID_rendererType:                 return "enum";
-    case ID_gradientType:                 return "enum";
-    case ID_num3DSlices:                  return "int";
-    case ID_scaling:                      return "enum";
-    case ID_skewFactor:                   return "double";
-    case ID_sampling:                     return "enum";
-    case ID_rendererSamples:              return "float";
-    case ID_transferFunction2DWidgets:    return "attVector";
-    case ID_transferFunctionDim:          return "int";
-    case ID_lowGradientLightingReduction: return "enum";
+    case ID_legendFlag:                    return "bool";
+    case ID_lightingFlag:                  return "bool";
+    case ID_colorControlPoints:            return "att";
+    case ID_opacityAttenuation:            return "float";
+    case ID_opacityMode:                   return "enum";
+    case ID_opacityControlPoints:          return "att";
+    case ID_resampleTarget:                return "int";
+    case ID_opacityVariable:               return "variablename";
+    case ID_freeformOpacity:               return "ucharArray";
+    case ID_useColorVarMin:                return "bool";
+    case ID_colorVarMin:                   return "float";
+    case ID_useColorVarMax:                return "bool";
+    case ID_colorVarMax:                   return "float";
+    case ID_useOpacityVarMin:              return "bool";
+    case ID_opacityVarMin:                 return "float";
+    case ID_useOpacityVarMax:              return "bool";
+    case ID_opacityVarMax:                 return "float";
+    case ID_smoothData:                    return "bool";
+    case ID_samplesPerRay:                 return "int";
+    case ID_rendererType:                  return "enum";
+    case ID_gradientType:                  return "enum";
+    case ID_num3DSlices:                   return "int";
+    case ID_scaling:                       return "enum";
+    case ID_skewFactor:                    return "double";
+    case ID_sampling:                      return "enum";
+    case ID_rendererSamples:               return "float";
+    case ID_transferFunction2DWidgets:     return "attVector";
+    case ID_transferFunctionDim:           return "int";
+    case ID_lowGradientLightingReduction:  return "enum";
+    case ID_lowGradientLightingClampFlag:  return "bool";
+    case ID_lowGradientLightingClampValue: return "double";
     default:  return "invalid index";
     }
 }
@@ -2187,6 +2244,16 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_lowGradientLightingReduction:
         {  // new scope
         retval = (lowGradientLightingReduction == obj.lowGradientLightingReduction);
+        }
+        break;
+    case ID_lowGradientLightingClampFlag:
+        {  // new scope
+        retval = (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag);
+        }
+        break;
+    case ID_lowGradientLightingClampValue:
+        {  // new scope
+        retval = (lowGradientLightingClampValue == obj.lowGradientLightingClampValue);
         }
         break;
     default: retval = false;

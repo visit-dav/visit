@@ -277,11 +277,20 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     }
     SNPRINTF(tmpStr, 1000, "%stransferFunctionDim = %d\n", prefix, atts->GetTransferFunctionDim());
     str += tmpStr;
-    const char *lowGradientLightingReduction_names = "Off, Low, Medium, High";
+    const char *lowGradientLightingReduction_names = "Off, Lowest, Lower, Low, Medium, "
+        "High, Higher, Highest";
     switch (atts->GetLowGradientLightingReduction())
     {
       case VolumeAttributes::Off:
           SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sOff  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::Lowest:
+          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sLowest  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::Lower:
+          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sLower  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Low:
@@ -296,10 +305,25 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sHigh  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
+      case VolumeAttributes::Higher:
+          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sHigher  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::Highest:
+          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sHighest  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          str += tmpStr;
+          break;
       default:
           break;
     }
 
+    if(atts->GetLowGradientLightingClampFlag())
+        SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampValue = %g\n", prefix, atts->GetLowGradientLightingClampValue());
+    str += tmpStr;
     return str;
 }
 
@@ -1214,14 +1238,15 @@ VolumeAttributes_SetLowGradientLightingReduction(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the lowGradientLightingReduction in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 8)
         obj->data->SetLowGradientLightingReduction(VolumeAttributes::LowGradientLightingReduction(ival));
     else
     {
         fprintf(stderr, "An invalid lowGradientLightingReduction value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
-                        "Off, Low, Medium, High.");
+                        "Off, Lowest, Lower, Low, Medium, "
+                        "High, Higher, Highest.");
         return NULL;
     }
 
@@ -1234,6 +1259,54 @@ VolumeAttributes_GetLowGradientLightingReduction(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLowGradientLightingReduction()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetLowGradientLightingClampFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lowGradientLightingClampFlag in the object.
+    obj->data->SetLowGradientLightingClampFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetLowGradientLightingClampFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLowGradientLightingClampFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetLowGradientLightingClampValue(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the lowGradientLightingClampValue in the object.
+    obj->data->SetLowGradientLightingClampValue(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetLowGradientLightingClampValue(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetLowGradientLightingClampValue());
     return retval;
 }
 
@@ -1302,6 +1375,10 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetTransferFunctionDim", VolumeAttributes_GetTransferFunctionDim, METH_VARARGS},
     {"SetLowGradientLightingReduction", VolumeAttributes_SetLowGradientLightingReduction, METH_VARARGS},
     {"GetLowGradientLightingReduction", VolumeAttributes_GetLowGradientLightingReduction, METH_VARARGS},
+    {"SetLowGradientLightingClampFlag", VolumeAttributes_SetLowGradientLightingClampFlag, METH_VARARGS},
+    {"GetLowGradientLightingClampFlag", VolumeAttributes_GetLowGradientLightingClampFlag, METH_VARARGS},
+    {"SetLowGradientLightingClampValue", VolumeAttributes_SetLowGradientLightingClampValue, METH_VARARGS},
+    {"GetLowGradientLightingClampValue", VolumeAttributes_GetLowGradientLightingClampValue, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1427,13 +1504,25 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetLowGradientLightingReduction(self, NULL);
     if(strcmp(name, "Off") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Off));
+    if(strcmp(name, "Lowest") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Lowest));
+    if(strcmp(name, "Lower") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Lower));
     if(strcmp(name, "Low") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Low));
     if(strcmp(name, "Medium") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Medium));
     if(strcmp(name, "High") == 0)
         return PyInt_FromLong(long(VolumeAttributes::High));
+    if(strcmp(name, "Higher") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Higher));
+    if(strcmp(name, "Highest") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Highest));
 
+    if(strcmp(name, "lowGradientLightingClampFlag") == 0)
+        return VolumeAttributes_GetLowGradientLightingClampFlag(self, NULL);
+    if(strcmp(name, "lowGradientLightingClampValue") == 0)
+        return VolumeAttributes_GetLowGradientLightingClampValue(self, NULL);
 
     return Py_FindMethod(PyVolumeAttributes_methods, self, name);
 }
@@ -1504,6 +1593,10 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetTransferFunctionDim(self, tuple);
     else if(strcmp(name, "lowGradientLightingReduction") == 0)
         obj = VolumeAttributes_SetLowGradientLightingReduction(self, tuple);
+    else if(strcmp(name, "lowGradientLightingClampFlag") == 0)
+        obj = VolumeAttributes_SetLowGradientLightingClampFlag(self, tuple);
+    else if(strcmp(name, "lowGradientLightingClampValue") == 0)
+        obj = VolumeAttributes_SetLowGradientLightingClampValue(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

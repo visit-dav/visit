@@ -63,7 +63,7 @@ import llnl.visit.TransferFunctionWidget;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 29;
+    private static int numAdditionalAttributes = 31;
 
     // Enum values
     public final static int RENDERER_SPLATTING = 0;
@@ -88,9 +88,13 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int OPACITYMODES_COLORTABLEMODE = 2;
 
     public final static int LOWGRADIENTLIGHTINGREDUCTION_OFF = 0;
-    public final static int LOWGRADIENTLIGHTINGREDUCTION_LOW = 1;
-    public final static int LOWGRADIENTLIGHTINGREDUCTION_MEDIUM = 2;
-    public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGH = 3;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_LOWEST = 1;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_LOWER = 2;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_LOW = 3;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_MEDIUM = 4;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGH = 5;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGHER = 6;
+    public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGHEST = 7;
 
 
     public VolumeAttributes()
@@ -128,6 +132,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
         lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
+        lowGradientLightingClampFlag = false;
+        lowGradientLightingClampValue = 1;
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -165,6 +171,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
         lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
+        lowGradientLightingClampFlag = false;
+        lowGradientLightingClampValue = 1;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -212,6 +220,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
         transferFunctionDim = obj.transferFunctionDim;
         lowGradientLightingReduction = obj.lowGradientLightingReduction;
+        lowGradientLightingClampFlag = obj.lowGradientLightingClampFlag;
+        lowGradientLightingClampValue = obj.lowGradientLightingClampValue;
 
         SelectAll();
     }
@@ -273,7 +283,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (rendererSamples == obj.rendererSamples) &&
                 transferFunction2DWidgets_equal &&
                 (transferFunctionDim == obj.transferFunctionDim) &&
-                (lowGradientLightingReduction == obj.lowGradientLightingReduction));
+                (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
+                (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
+                (lowGradientLightingClampValue == obj.lowGradientLightingClampValue));
     }
 
     public String GetName() { return "Volume"; }
@@ -449,6 +461,18 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(28);
     }
 
+    public void SetLowGradientLightingClampFlag(boolean lowGradientLightingClampFlag_)
+    {
+        lowGradientLightingClampFlag = lowGradientLightingClampFlag_;
+        Select(29);
+    }
+
+    public void SetLowGradientLightingClampValue(double lowGradientLightingClampValue_)
+    {
+        lowGradientLightingClampValue = lowGradientLightingClampValue_;
+        Select(30);
+    }
+
     // Property getting methods
     public boolean                  GetLegendFlag() { return legendFlag; }
     public boolean                  GetLightingFlag() { return lightingFlag; }
@@ -479,6 +503,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public Vector                   GetTransferFunction2DWidgets() { return transferFunction2DWidgets; }
     public int                      GetTransferFunctionDim() { return transferFunctionDim; }
     public int                      GetLowGradientLightingReduction() { return lowGradientLightingReduction; }
+    public boolean                  GetLowGradientLightingClampFlag() { return lowGradientLightingClampFlag; }
+    public double                   GetLowGradientLightingClampValue() { return lowGradientLightingClampValue; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -548,6 +574,10 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(transferFunctionDim);
         if(WriteSelect(28, buf))
             buf.WriteInt(lowGradientLightingReduction);
+        if(WriteSelect(29, buf))
+            buf.WriteBool(lowGradientLightingClampFlag);
+        if(WriteSelect(30, buf))
+            buf.WriteDouble(lowGradientLightingClampValue);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -653,6 +683,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         case 28:
             SetLowGradientLightingReduction(buf.ReadInt());
             break;
+        case 29:
+            SetLowGradientLightingClampFlag(buf.ReadBool());
+            break;
+        case 30:
+            SetLowGradientLightingClampValue(buf.ReadDouble());
+            break;
         }
     }
 
@@ -736,13 +772,23 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + indent + "lowGradientLightingReduction = ";
         if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_OFF)
             str = str + "LOWGRADIENTLIGHTINGREDUCTION_OFF";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_LOWEST)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_LOWEST";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_LOWER)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_LOWER";
         if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_LOW)
             str = str + "LOWGRADIENTLIGHTINGREDUCTION_LOW";
         if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_MEDIUM)
             str = str + "LOWGRADIENTLIGHTINGREDUCTION_MEDIUM";
         if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_HIGH)
             str = str + "LOWGRADIENTLIGHTINGREDUCTION_HIGH";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_HIGHER)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_HIGHER";
+        if(lowGradientLightingReduction == LOWGRADIENTLIGHTINGREDUCTION_HIGHEST)
+            str = str + "LOWGRADIENTLIGHTINGREDUCTION_HIGHEST";
         str = str + "\n";
+        str = str + boolToString("lowGradientLightingClampFlag", lowGradientLightingClampFlag, indent) + "\n";
+        str = str + doubleToString("lowGradientLightingClampValue", lowGradientLightingClampValue, indent) + "\n";
         return str;
     }
 
@@ -810,5 +856,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private Vector                   transferFunction2DWidgets; // vector of TransferFunctionWidget objects
     private int                      transferFunctionDim;
     private int                      lowGradientLightingReduction;
+    private boolean                  lowGradientLightingClampFlag;
+    private double                   lowGradientLightingClampValue;
 }
 

@@ -97,9 +97,13 @@ public:
     enum LowGradientLightingReduction
     {
         Off,
+        Lowest,
+        Lower,
         Low,
         Medium,
-        High
+        High,
+        Higher,
+        Highest
     };
 
     // These constructors are for objects of this class
@@ -162,6 +166,8 @@ public:
     void SetRendererSamples(float rendererSamples_);
     void SetTransferFunctionDim(int transferFunctionDim_);
     void SetLowGradientLightingReduction(LowGradientLightingReduction lowGradientLightingReduction_);
+    void SetLowGradientLightingClampFlag(bool lowGradientLightingClampFlag_);
+    void SetLowGradientLightingClampValue(double lowGradientLightingClampValue_);
 
     // Property getting methods
     bool                           GetLegendFlag() const;
@@ -198,6 +204,8 @@ public:
           AttributeGroupVector     &GetTransferFunction2DWidgets();
     int                            GetTransferFunctionDim() const;
     LowGradientLightingReduction   GetLowGradientLightingReduction() const;
+    bool                           GetLowGradientLightingClampFlag() const;
+    double                         GetLowGradientLightingClampValue() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -297,6 +305,8 @@ public:
         ID_transferFunction2DWidgets,
         ID_transferFunctionDim,
         ID_lowGradientLightingReduction,
+        ID_lowGradientLightingClampFlag,
+        ID_lowGradientLightingClampValue,
         ID__LAST
     };
 
@@ -332,11 +342,13 @@ private:
     AttributeGroupVector     transferFunction2DWidgets;
     int                      transferFunctionDim;
     int                      lowGradientLightingReduction;
+    bool                     lowGradientLightingClampFlag;
+    double                   lowGradientLightingClampValue;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbafiaisUbfbfbfbfbiiiiidifa*ii"
+#define VOLUMEATTRIBUTES_TMFS "bbafiaisUbfbfbfbfbiiiiidifa*iibd"
 
 #endif
