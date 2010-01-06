@@ -432,7 +432,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(
                            {
                                gm = volume.gmn[index];
                            }
-                           gm = pow(gm, lp);
+                           gm = pow((double)gm, lp);
                         }
                         if (gm < 0)
                             gm = 0;
