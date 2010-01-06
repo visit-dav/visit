@@ -79,6 +79,12 @@ exec perl -x $0 ${1+"$@"};
 #
 #    Mark C. Miller, Wed Jul  8 16:52:17 PDT 2009
 #    Alter fix applied above for pwd to use getcwd() instead of $ENV{PWD}.
+#
+#    Jeremy Meredith, Wed Jan  6 11:30:14 EST 2010
+#    If user specified all three components of a non-beta version with -v,
+#    (e.g. -v 1.12.0), then we assume they meant to use -forceversion and
+#    add that value for them.
+#
 ###############################################################################
 
 
@@ -256,6 +262,9 @@ elsif ($ver_set)
         ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+$/$1/;
         ($ver_patch = $ver) =~ s/^\d+\.\d+\.(\d+)$/$1/;
         ($ver_beta  = -1);
+        print STDERR "WARNING: full patchlevel was specified with -v.\n";
+        print STDERR "Assuming '-forceversion $ver' was intended.\n";
+        push @visitargs, "-forceversion", $ver;
     } elsif (grep /^\d+\.\d+b$/, $ver) {
         # e.g. -v 1.7b
         ($ver_major = $ver) =~ s/^(\d+)\.\d+b$/$1/;
