@@ -360,6 +360,9 @@ CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 # Configure OpenGL support.
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 
+# Configure Mesa support.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
+
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
@@ -644,7 +647,6 @@ SET(VISIT_COMMON_INCLUDES
     )
 
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
 # Override the OPENGL_glu_LIBRARY returned by CMake on the Mac because the
 # AGL framework does NOT contain gluTess functions. We want to instead use
 # Mesa's GLU functions.
@@ -666,7 +668,7 @@ IF (WIN32)
   # link against them if those defines are used.  Use our own instead.
   SET (CMAKE_CXX_FLAGS_DEBUG "/MD /ZI /Ob0 /Od /RTC1" CACHE STRING 
        "Flags used by the compiler during debug builds." FORCE)
-  SET (CMAKE_C_FLAGS_DEBUG "/MD /ZI /Ob0 /Od /RTC1" CACHE STRING 
+  SET (CMAKE_C_FLAGS_DEBUG "/MD /Zi /Ob0 /Od /RTC1" CACHE STRING 
        "Flags used by the compiler during debug builds." FORCE)
   SET (CMAKE_EXE_LINKER_FLAGS_DEBUG "/INCREMENTAL:YES" CACHE STRING 
        "Flags used by the linker during debug builds." FORCE)
