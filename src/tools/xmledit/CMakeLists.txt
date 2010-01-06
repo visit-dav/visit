@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -95,8 +95,22 @@ SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
 SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC")
+SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC")
 
-TARGET_LINK_LIBRARIES(xmledit ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTXML_LIBRARY})
+SET(RELEVANT_QT_LIBS 
+${QT_QTGUI_LIBRARY}
+${QT_QTXML_LIBRARY}
+${QT_QTCORE_LIBRARY}
+)
+IF(VISIT_STATIC)
+    SET(RELEVANT_QT_LIBS
+        ${RELEVANT_QT_LIBS}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTXML_LIB_DEPENDENCIES}
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+    )
+ENDIF(VISIT_STATIC)
+
+TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
 
 VISIT_INSTALL_TARGETS(xmledit)

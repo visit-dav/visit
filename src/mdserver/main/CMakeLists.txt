@@ -59,6 +59,11 @@ SetMFileOpenOptionsRPCExecutor.C
 main.C
 )
 
+# If the mdserver is static then we need some static symbol lookup functions
+IF(VISIT_STATIC)
+    SET(MDSERVER_STATIC_SOURCES MDServerStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
+
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -79,11 +84,17 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${MESA_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${GLEW_LIBRARY_DIR})
+LINK_DIRECTORIES(
+${LIBRARY_OUTPUT_PATH}
+${MESA_LIBRARY_DIR}
+${VTK_LIBRARY_DIRS}
+${GLEW_LIBRARY_DIR}
+${ALL_THIRDPARTY_IO_LIBRARY_DIR}
+)
 
-ADD_EXECUTABLE(mdserver ${MDSERVER_SOURCES})
+ADD_EXECUTABLE(mdserver ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES})
 TARGET_LINK_LIBRARIES(mdserver 
-    ${mdserver_EDatabase}
+    ${mdserver_MDatabase}
     ${mdserver_IDatabase}
     mdserverrpc 
     visitcommon 
@@ -109,7 +120,7 @@ TARGET_LINK_LIBRARIES(mdserver
 # sources are built
 IF(VISIT_STATIC)
     ADD_DEPENDENCIES(mdserver
-        ${mdserver_EDatabase}
+        ${mdserver_MDatabase}
         ${mdserver_IDatabase}
     )
 ENDIF(VISIT_STATIC)

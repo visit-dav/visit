@@ -65,7 +65,7 @@ SET(INSTALLTARGETS IShapefileDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MShapefileDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MShapefileDatabase visitcommon avtdbatts avtdatabase_ser ${OPENGL_glu_LIBRARY} )
+    TARGET_LINK_LIBRARIES(MShapefileDatabase visitcommon avtdbatts avtdatabase_ser ${TESSELLATION_LIBRARY} )
     SET_TARGET_PROPERTIES(MShapefileDatabase
         PROPERTIES
         COMPILE_FLAGS "-DMDSERVER"
@@ -74,7 +74,7 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EShapefileDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EShapefileDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${OPENGL_glu_LIBRARY} )
+TARGET_LINK_LIBRARIES(EShapefileDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${TESSELLATION_LIBRARY} )
 SET_TARGET_PROPERTIES(EShapefileDatabase_ser
     PROPERTIES
     COMPILE_FLAGS "-DENGINE"
@@ -83,7 +83,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EShapefileDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EShapefileDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EShapefileDatabase_par visitcommon avtdatabase_par avtpipeline_par ${OPENGL_glu_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EShapefileDatabase_par visitcommon avtdatabase_par avtpipeline_par ${TESSELLATION_LIBRARY} )
     SET_TARGET_PROPERTIES(EShapefileDatabase_par
         PROPERTIES
         COMPILE_FLAGS "-DENGINE"

@@ -57,6 +57,11 @@ QvisOpacitySlider.C
 Synchronizer.C
 )
 
+# If the viewer is static then we need some static symbol lookup functions
+IF(VISIT_STATIC)
+    SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
+
 SET(MCURVIT_MOC_SOURCES
 MultiCurveProcessor.h
 MultiCurveViewer.h
@@ -110,7 +115,7 @@ vtkftgl
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
 
-ADD_EXECUTABLE(mcurvit MACOSX_BUNDLE ${MCURVIT_SOURCES})
+ADD_EXECUTABLE(mcurvit MACOSX_BUNDLE ${MCURVIT_SOURCES} ${STATIC_SOURCES})
 SET(MACOSX_BUNDLE_BUNDLE_NAME          "MCurveIt ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_INFO_STRING          "Curve visualizer")
 SET(MACOSX_BUNDLE_ICON_FILE            ${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns)
@@ -122,19 +127,48 @@ SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
 SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "MCurveIt version ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "MCurveIt ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC")
+SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC")
+
+SET(VIEWER_QT_LIBS 
+${QT_QTGUI_LIBRARY}
+${QT_QTOPENGL_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
+${QT_QTCORE_LIBRARY}
+)
+IF(VISIT_STATIC)
+    SET(VIEWER_QT_LIBS 
+        ${VIEWER_QT_LIBS}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTOPENGL_LIB_DEPENDENCIES}
+        ${QT_QTNETWORK_LIB_DEPENDENCIES}
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+    )
+ENDIF(VISIT_STATIC)
 
 TARGET_LINK_LIBRARIES(mcurvit
+${viewer_exe_IOperator}
+${viewer_exe_VOperator}
+${viewer_exe_IPlot}
+${viewer_exe_VPlot}
 viewer
 viewerrpc
 visitcommon
 vtkqt
 avtdbatts
-${QT_QTCORE_LIBRARY}
-${QT_QTGUI_LIBRARY}
-${QT_QTXML_LIBRARY}
+${VIEWER_QT_LIBS}
 ${VTK_EXTRA_LIBS}
 ${MESA_LIBS}
 )
+
+# If we're building statically then the viewer can't be linked until the plugin
+# sources are built
+IF(VISIT_STATIC)
+    ADD_DEPENDENCIES(mcurvit
+        ${viewer_exe_IOperator}
+        ${viewer_exe_VOperator}
+        ${viewer_exe_IPlot}
+        ${viewer_exe_VPlot}
+    )
+ENDIF(VISIT_STATIC)
 
 VISIT_INSTALL_TARGETS(mcurvit)
