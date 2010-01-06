@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -38,130 +38,73 @@
 #
 #****************************************************************************/
 
-SET(SOURCES
-CommandParser.C
-SimpleVisApp.C
-Synchronizer.C
-main.C
-)
-
-# If the viewer is static then we need some static symbol lookup functions
-IF(VISIT_STATIC)
-    SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
-ENDIF(VISIT_STATIC)
-
-# The subset of the sources that have Q_OBJECT in their header.
-SET(MOC_SOURCES
-CommandParser.h
-SimpleVisApp.h
-Synchronizer.h
-)
-QT_WRAP_CPP(embedded SOURCES ${MOC_SOURCES})
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/engine/proxy
-${VISIT_SOURCE_DIR}/engine/rpc
+${VISIT_SOURCE_DIR}/common
+${VISIT_SOURCE_DIR}/gui
 ${VISIT_SOURCE_DIR}/mdserver/proxy
 ${VISIT_SOURCE_DIR}/mdserver/rpc
-${VISIT_SOURCE_DIR}/viewer/main
 ${VISIT_SOURCE_DIR}/viewer/proxy
 ${VISIT_SOURCE_DIR}/viewer/rpc
-${VISIT_SOURCE_DIR}/vtkqt
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
-${QT_QTOPENGL_INCLUDE_DIR}
-${QT_QTNETWORK_INCLUDE_DIR}
-${VTK_INCLUDE_DIRS}
+${VISIT_SOURCE_DIR}/winutil
+${QT_INCLUDE_DIR} 
+${QT_QTCORE_INCLUDE_DIR} 
+${QT_QTGUI_INCLUDE_DIR} 
+${QT_QTOPENGL_INCLUDE_DIR} 
+${QT_QTNETWORK_INCLUDE_DIR} 
+${QT_QTXML_INCLUDE_DIR} 
+${QT_QTUITOOLS_INCLUDE_DIR}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${QT_LIBRARY_DIR})
 
+IF(VISIT_STATIC)
+    # If the gui is static then we need some static symbol lookup functions
+    SET(GUI_STATIC_SOURCES GUIStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
+
+#****************************** The gui executable ***************************
 IF(NOT APPLE)
-    ADD_EXECUTABLE(embedded ${SOURCES} ${STATIC_SOURCES})
+    ADD_EXECUTABLE(gui_exe main.C ${GUI_STATIC_SOURCES})
 ELSE(NOT APPLE)
     SET(GUI_ICON_FILE VisItIcon.icns)
     SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE} PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources
     )
 
-    ADD_EXECUTABLE(embedded MACOSX_BUNDLE ${SOURCES}  ${STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE})
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "Embedded viewer example ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_INFO_STRING          "Embedded viewer example")
+    ADD_EXECUTABLE(gui_exe MACOSX_BUNDLE main.C ${GUI_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE})
+    SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_INFO_STRING          "Graphical client for VisIt")
     SET(MACOSX_BUNDLE_ICON_FILE            ${GUI_ICON_FILE})
     SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
-    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "Embedded viewer example version ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "Embedded viewer example ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
     SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC")
 ENDIF(NOT APPLE)
 
-SET(VIEWER_QT_LIBS 
-${QT_QTGUI_LIBRARY}
-${QT_QTOPENGL_LIBRARY}
-${QT_QTNETWORK_LIBRARY}
-${QT_QTCORE_LIBRARY}
-)
-IF(VISIT_STATIC)
-    SET(VIEWER_QT_LIBS 
-        ${VIEWER_QT_LIBS}
-        ${QT_QTGUI_LIB_DEPENDENCIES}
-        ${QT_QTOPENGL_LIB_DEPENDENCIES}
-        ${QT_QTNETWORK_LIB_DEPENDENCIES}
-        ${QT_QTCORE_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
-
-TARGET_LINK_LIBRARIES(embedded 
-${viewer_exe_IOperator}
-${viewer_exe_VOperator}
-${viewer_exe_IPlot}
-${viewer_exe_VPlot}
-avtdatabase_ser 
-avtdbatts
-avtfilters_ser 
-avtivp
-avtmath
-avtmir_ser 
-avtpipeline_ser
-avtplotter_ser 
-avtqtviswindow
-avtview 
-avtviswindow_ser
-avtwriter_ser 
-engineproxy
-enginerpc
-lightweight_visit_vtk
-mdserverproxy
-mdserverrpc
-vclproxy
-vclrpc
-viewer
-viewerrpc 
-visit_verdict 
-visit_vtk
-vtkqt
-${VIEWER_QT_LIBS}
+SET_TARGET_PROPERTIES(gui_exe PROPERTIES OUTPUT_NAME gui)
+TARGET_LINK_LIBRARIES(gui_exe 
+gui
+${gui_exe_IOperator}
+${gui_exe_GOperator}
+${gui_exe_IPlot}
+${gui_exe_GPlot}
 )
 
-IF(APPLE)
-    SET_TARGET_PROPERTIES(embedded 
-        PROPERTIES
-        LINK_FLAGS "-framework Carbon"
-    )
-ENDIF(APPLE)
-
-# If we're building statically then the viewer can't be linked until the plugin
+# If we're building statically then the gui can't be linked until the plugin
 # sources are built
 IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(embedded
-        ${viewer_exe_IOperator}
-        ${viewer_exe_VOperator}
-        ${viewer_exe_IPlot}
-        ${viewer_exe_VPlot}
+    ADD_DEPENDENCIES(gui_exe
+        ${gui_exe_IOperator}
+        ${gui_exe_GOperator}
+        ${gui_exe_IPlot}
+        ${gui_exe_GPlot}
     )
 ENDIF(VISIT_STATIC)
+
+# Install these targets
+VISIT_INSTALL_TARGETS(gui_exe)

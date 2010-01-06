@@ -246,7 +246,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
     lrLayout->addLayout(rLayout );
     
 
-    QString C("(c) 2000-2009 LLNS. ");
+    QString C("(c) 2000-2010 LLNS. ");
     C += tr("All Rights Reserved");
     C += ".";
     lLayout->addWidget(new QLabel(C, this));
@@ -272,9 +272,9 @@ SplashScreen::SplashScreen(bool cyclePictures)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 11;
+    int currentMonth = 2;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2009", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2010", this));
 
     copyrightButton = 0;
     contributorButton = 0;

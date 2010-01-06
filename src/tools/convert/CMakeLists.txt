@@ -78,7 +78,12 @@ ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH}
+${MESA_LIBRARY_DIR}
+${GLEW_LIBRARY_DIR}
+${VTK_LIBRARY_DIRS}
+${ALL_THIRDPARTY_IO_LIBRARY_DIR}
+)
 
 SET(VTK_EXTRA_LIBS
 vtkjpeg 
@@ -91,19 +96,26 @@ vtkfreetype
 vtkftgl
 )
 
+IF(VISIT_STATIC)
+    SET(CONVERT_STATIC_SOURCES ConvertStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
+
 #********************************* SERIAL ************************************
-ADD_EXECUTABLE(convert_ser convert.C)
+ADD_EXECUTABLE(convert_ser convert.C ${CONVERT_STATIC_SOURCES})
 VISIT_INSTALL_TARGETS(convert_ser)
 
 IF(VISIT_DBIO_ONLY)
     SET_TARGET_PROPERTIES(convert_ser PROPERTIES OUTPUT_NAME convert_ser_lite)
     TARGET_LINK_LIBRARIES(convert_ser 
+        ${engine_ser_exe_IDatabase}
+        ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
         avtdbatts
         avtpipeline_ser
         lightweight_visit_vtk 
         visitcommon
-        visit_vtk 
+        visit_vtk
+        ${ALL_THIRDPARTY_IO_LIB} 
         ${VTK_EXTRA_LIBS}
         ${MESA_LIBS}
         ${GL_LIBS}
@@ -112,6 +124,8 @@ IF(VISIT_DBIO_ONLY)
     )
 ELSE(VISIT_DBIO_ONLY)
     TARGET_LINK_LIBRARIES(convert_ser 
+        ${engine_ser_exe_IDatabase}
+        ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
         avtdbatts
         avtddf_ser 
@@ -127,6 +141,7 @@ ELSE(VISIT_DBIO_ONLY)
         visitcommon
         visit_verdict  
         visit_vtk 
+        ${ALL_THIRDPARTY_IO_LIB} 
         ${VTK_EXTRA_LIBS}
         ${MESA_LIBS}
         ${GL_LIBS}
@@ -135,14 +150,25 @@ ELSE(VISIT_DBIO_ONLY)
     )
 ENDIF(VISIT_DBIO_ONLY)
 
+# If we're building statically then convert can't be linked until the plugin
+# sources are built
+IF(VISIT_STATIC)
+    ADD_DEPENDENCIES(convert_ser
+        ${engine_ser_exe_IDatabase}
+        ${engine_ser_exe_EDatabase_ser}
+    )
+ENDIF(VISIT_STATIC)
+
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
-    ADD_PARALLEL_EXECUTABLE(convert_par convert.C)
+    ADD_PARALLEL_EXECUTABLE(convert_par convert.C ${CONVERT_STATIC_SOURCES})
     VISIT_INSTALL_TARGETS(convert_par)
 
     IF(VISIT_DBIO_ONLY)
         SET_TARGET_PROPERTIES(convert_par PROPERTIES OUTPUT_NAME convert_par_lite)
         TARGET_LINK_LIBRARIES(convert_par 
+            ${engine_par_exe_IDatabase_par}
+            ${engine_par_exe_EDatabase_par}
             avtdatabase_par
             avtdbatts
             avtpipeline_par
@@ -150,6 +176,7 @@ IF(VISIT_PARALLEL)
             visitcommon
             visit_verdict  
             visit_vtk 
+            ${ALL_THIRDPARTY_IO_LIB} 
             ${VTK_EXTRA_LIBS}
             ${MESA_LIBS}
             ${GL_LIBS}
@@ -158,6 +185,8 @@ IF(VISIT_PARALLEL)
         )
     ELSE(VISIT_DBIO_ONLY)
         TARGET_LINK_LIBRARIES(convert_par 
+            ${engine_par_exe_IDatabase_par}
+            ${engine_par_exe_EDatabase_par}
             avtdatabase_par
             avtdbatts
             avtddf_par 
@@ -173,6 +202,7 @@ IF(VISIT_PARALLEL)
             visitcommon
             visit_verdict  
             visit_vtk 
+            ${ALL_THIRDPARTY_IO_LIB} 
             ${VTK_EXTRA_LIBS}
             ${MESA_LIBS}
             ${GL_LIBS}
@@ -180,4 +210,13 @@ IF(VISIT_PARALLEL)
             ${ZLIB_LIB} 
         )
     ENDIF(VISIT_DBIO_ONLY)
+
+    # If we're building statically then convert_par can't be linked until the 
+    # plugin sources are built
+    IF(VISIT_STATIC)
+        ADD_DEPENDENCIES(convert_par
+            ${engine_par_exe_IDatabase_par}
+            ${engine_par_exe_EDatabase_par}
+        )
+    ENDIF(VISIT_STATIC)
 ENDIF(VISIT_PARALLEL)

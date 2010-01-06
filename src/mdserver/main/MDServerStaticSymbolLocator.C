@@ -42,36 +42,12 @@
 #include <DebugStream.h>
 
 class GeneralDatabasePluginInfo;
-class EngineDatabasePluginInfo;
-class GeneralPlotPluginInfo;
-class EnginePlotPluginInfo;
-class GeneralOperatorPluginInfo;
-class EngineOperatorPluginInfo;
+class MDServerDatabasePluginInfo;
 
 #define DECLARE_DATABASE(X) \
    extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralDatabasePluginInfo *X##_GetGeneralInfo(void); \
-   extern "C" EngineDatabasePluginInfo *X##_GetEngineInfo(void);
-
-#define DECLARE_OPERATOR(X) \
-   extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralOperatorPluginInfo *X##_GetGeneralInfo(void); \
-   extern "C" EngineOperatorPluginInfo *X##_GetEngineInfo(void);
-
-#define DECLARE_PLOT(X) \
-   extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralPlotPluginInfo *X##_GetGeneralInfo(void); \
-   extern "C" EnginePlotPluginInfo *X##_GetEngineInfo(void);
-
-// Declare the plots.
-#define PLUGIN_VERB DECLARE_PLOT
-#include <enabled_plots.h>
-#undef PLUGIN_VERB
-
-// Declare the operators.
-#define PLUGIN_VERB DECLARE_OPERATOR
-#include <enabled_operators.h>
-#undef PLUGIN_VERB
+   extern "C" GeneralDatabasePluginInfo *X##_GetGeneralInfo(); \
+   extern "C" MDServerDatabasePluginInfo *X##_GetMDServerInfo();
 
 // Declare the databases.
 #define PLUGIN_VERB DECLARE_DATABASE
@@ -84,28 +60,11 @@ class EngineOperatorPluginInfo;
        retval = (void *) &X##VisItPluginVersion; \
    else if (sym == #X"_GetGeneralInfo") \
        retval = (void *) &X##_GetGeneralInfo; \
-   else if (sym == #X"_GetEngineInfo") \
-       retval = (void *) &X##_GetEngineInfo; \
+   else if (sym == #X"_GetMDServerInfo") \
+       retval = (void *) &X##_GetMDServerInfo; \
 
 
-// Split apart to make it compile faster
 #define PLUGIN_VERB CHECK_PLUGIN
-static void *
-plot_dlsym(const std::string &sym)
-{
-    void *retval = NULL;
-    #include <enabled_plots.h>
-    return retval;
-}
-
-static void *
-operator_dlsym(const std::string &sym)
-{
-    void *retval = NULL;
-    #include <enabled_operators.h>
-    return retval;
-}
-
 static void *
 database_dlsym(const std::string &sym)
 {
@@ -120,10 +79,6 @@ fake_dlsym(const std::string &sym)
 {
     debug1 << "Asked for " << sym << endl;
     void *ptr = NULL;
-    if((ptr = plot_dlsym(sym)) != NULL)
-        return ptr;
-    if((ptr = operator_dlsym(sym)) != NULL)
-        return ptr;
     if((ptr = database_dlsym(sym)) != NULL)
         return ptr;
 
@@ -131,57 +86,14 @@ fake_dlsym(const std::string &sym)
     return NULL;
 }
 
-
-#ifdef PARALLEL
-  #define ADD_DATABASE_PLUGIN(X) \
-       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Database_par.a"));; \
-       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Database.a"));
-#else
-  #define ADD_DATABASE_PLUGIN(X) \
-       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Database_ser.a"));; \
-       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Database.a"));
-#endif
-
-#ifdef PARALLEL
-  #define ADD_OPERATOR_PLUGIN(X) \
-       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Operator_par.a"));; \
-       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Operator.a"));
-#else
-  #define ADD_OPERATOR_PLUGIN(X) \
-       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Operator_ser.a"));; \
-       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Operator.a"));
-#endif
-
-#ifdef PARALLEL
-  #define ADD_PLOT_PLUGIN(X) \
-       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Plot_par.a")); \
-       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Plot.a"));
-#else
-  #define ADD_PLOT_PLUGIN(X) \
-       libs.push_back(std::pair<std::string, std::string>("", "libE"#X"Plot_ser.a")); \
-       libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Plot.a"));
-#endif
+#define ADD_DATABASE_PLUGIN(X) \
+    libs.push_back(std::pair<std::string, std::string>("", "libM"#X"Database.a"));; \
+    libs.push_back(std::pair<std::string, std::string>("", "libI"#X"Database.a"));
 
 void
 StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &libs,
                        const std::string &pluginType)
-{
-    if (pluginType == "plot")
-    {
-        // Add the plots.
-#define PLUGIN_VERB ADD_PLOT_PLUGIN
-#include <enabled_plots.h>
-#undef PLUGIN_VERB
-    }
-
-    if (pluginType == "operator")
-    {
-        // Add the operators
-#define PLUGIN_VERB ADD_OPERATOR_PLUGIN
-#include <enabled_operators.h>
-#undef PLUGIN_VERB
-    }
-    
+{   
     if (pluginType == "database")
     {
         // Add the databases

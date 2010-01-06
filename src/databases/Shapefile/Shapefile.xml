@@ -4,7 +4,7 @@
       ${MESA_INCLUDE_DIR}
     </CXXFLAGS>
     <LIBS>
-      ${OPENGL_glu_LIBRARY}
+      ${TESSELLATION_LIBRARY}
     </LIBS>
     <FilePatterns>
       *.shp

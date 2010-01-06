@@ -91,6 +91,11 @@ VisItViewer.C
 WindowActions.C
 )
 
+# If the viewer is static then we need some static symbol lookup functions
+IF(VISIT_STATIC)
+    SET(VIEWER_STATIC_SOURCES ViewerStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
+
 SET(VIEWERLIB_MOC_SOURCES
 PlotAndOperatorActions.h
 ViewerAction.h
@@ -164,6 +169,20 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${
 #*************************** The viewer library ******************************
 ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
 
+SET(VIEWER_QT_LIBS 
+${QT_QTGUI_LIBRARY}
+${QT_QTOPENGL_LIBRARY}
+${QT_QTCORE_LIBRARY}
+)
+IF(VISIT_STATIC)
+    SET(VIEWER_QT_LIBS 
+        ${VIEWER_QT_LIBS}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTOPENGL_LIB_DEPENDENCIES}
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+    )
+ENDIF(VISIT_STATIC)
+
 TARGET_LINK_LIBRARIES(viewer 
 viewerrpc
 visitcommon
@@ -183,18 +202,19 @@ avtviswindow_ser
 avtwriter_ser
 avtqtviswindow
 winutil
-${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
+${VIEWER_QT_LIBS}
+)
 
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
-    ADD_EXECUTABLE(viewer_exe viewer.C)
+    ADD_EXECUTABLE(viewer_exe viewer.C ${VIEWER_STATIC_SOURCES})
 ELSE(NOT APPLE)
     SET(VIEWER_ICON_FILE VisItIcon.icns)
     SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE} PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources
     )
 
-    ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
+    ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
     SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
     SET(MACOSX_BUNDLE_ICON_FILE            ${VIEWER_ICON_FILE})
@@ -202,7 +222,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC")
 ENDIF(NOT APPLE)
 
 SET_TARGET_PROPERTIES(viewer_exe PROPERTIES OUTPUT_NAME viewer)
@@ -211,7 +231,7 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_VOperator}
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
-    viewer 
+    viewer
     vtkexpat
     vtkpng
     vtkjpeg

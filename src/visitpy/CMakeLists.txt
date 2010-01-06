@@ -138,6 +138,9 @@ visitpy/PyWindowInformation.C
 SET(CLI_SOURCES
 cli/cli.C
 )
+IF(VISIT_STATIC)
+    SET(CLI_SOURCES ${CLI_SOURCES} cli/ScriptingStaticSymbolLocator.C)
+ENDIF(VISIT_STATIC)
 
 INCLUDE_DIRECTORIES(
 ${VISIT_COMMON_INCLUDES}
@@ -180,6 +183,10 @@ ${COMMON_SOURCES}
 ${CLI_SOURCES}
 )
 TARGET_LINK_LIBRARIES(cli 
+${cli_IOperator}
+${cli_SOperator}
+${cli_IPlot}
+${cli_SPlot}
 viewerproxy
 viewerrpc
 avtdbatts
@@ -198,31 +205,42 @@ IF(NOT WIN32)
     ENDIF(NOT APPLE)
 ENDIF(NOT WIN32)
 
-# Create the visitmodule
-PYTHON_ADD_MODULE(visitmodule
-${COMMON_SOURCES}
-)
-SET_TARGET_PROPERTIES(visitmodule PROPERTIES PREFIX "")
-TARGET_LINK_LIBRARIES(visitmodule 
-viewerproxy
-viewerrpc
-avtdbatts
-visitcommon
-visitpy
-${PYTHON_LIBRARIES}
-)
+# If we're building statically then the cli can't be linked until the plugin
+# sources are built
+IF(VISIT_STATIC)
+    ADD_DEPENDENCIES(cli
+        ${cli_IOperator}
+        ${cli_SOperator}
+        ${cli_IPlot}
+        ${cli_SPlot}
+    )
 
-# Create the front end visit module
-IF(NOT WIN32)
-  PYTHON_ADD_MODULE(visitfrontend
-  visitmodule/visitfrontend.c
-  )
-  SET_TARGET_PROPERTIES(visitfrontend PROPERTIES PREFIX "" OUTPUT_NAME visit)
-  TARGET_LINK_LIBRARIES(visitfrontend
-  ${PYTHON_LIBRARIES}
-)
-ENDIF(NOT WIN32)
+    VISIT_INSTALL_TARGETS(cli)
+ELSE(VISIT_STATIC)
+    # Create the visitmodule
+    PYTHON_ADD_MODULE(visitmodule
+        ${COMMON_SOURCES}
+    )
+    SET_TARGET_PROPERTIES(visitmodule PROPERTIES PREFIX "")
+    TARGET_LINK_LIBRARIES(visitmodule 
+        viewerproxy
+        viewerrpc
+        avtdbatts
+        visitcommon
+        visitpy
+        ${PYTHON_LIBRARIES}
+    )
 
+    # Create the front end visit module
+    IF(NOT WIN32)
+        PYTHON_ADD_MODULE(visitfrontend
+            visitmodule/visitfrontend.c
+        )
+        SET_TARGET_PROPERTIES(visitfrontend PROPERTIES PREFIX "" OUTPUT_NAME visit)
+        TARGET_LINK_LIBRARIES(visitfrontend
+            ${PYTHON_LIBRARIES}
+        )
+    ENDIF(NOT WIN32)
 
-
-VISIT_INSTALL_TARGETS(visitpy cli visitmodule)
+    VISIT_INSTALL_TARGETS(visitpy cli visitmodule)
+ENDIF(VISIT_STATIC)

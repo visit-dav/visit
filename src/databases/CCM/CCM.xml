@@ -9,7 +9,7 @@
     </LDFLAGS>
     <LIBS>
       ${CCMIO_LIB}
-      ${OPENGL_glu_LIBRARY}
+      ${TESSELLATION_LIBRARY}
     </LIBS>
     <FilePatterns>
       *.ccm
