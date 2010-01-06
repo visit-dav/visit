@@ -65,8 +65,10 @@
 #include <DebugStream.h>
 #include <StringHelpers.h>
 
+#ifdef HAVE_LIBHDF4
 #include <hdf.h>
 #include <mfhdf.h>
+#endif
 
 #ifdef HAVE_LIBHDF5
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
@@ -540,6 +542,10 @@ avtEnzoFileFormat::ReadParameterFile()
 //    matches the format for a grid-group in the new format.
 //    This is for support for the new "Packed AMR" format.
 //
+//    Jeremy Meredith, Wed Jan  6 14:57:18 EST 2010
+//    Make HDF4 code conditionally compiled so we can support an
+//    HDF5-only build for this plugin as well.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::DetermineVariablesFromGridFile()
@@ -570,6 +576,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
     string gridFileName = grids[smallest_grid].gridFileName;
     debug3 << "Smallest Enzo grid with particles was # "<<smallest_grid<<endl;
 
+#ifdef HAVE_LIBHDF4
     int32 file_handle = SDstart(gridFileName.c_str(), DFACC_READ);
     if (file_handle >= 0)
     {
@@ -613,15 +620,24 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
             }
         }
 
-        SDend(file_handle); 
+        SDend(file_handle);
     }
     else
+#endif
     {
 #ifdef HAVE_LIBHDF5
         hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
         if (fileId < 0)
         {
+#ifdef HAVE_LIBHDF4
             EXCEPTION1(InvalidFilesException, gridFileName.c_str());
+#else
+            EXCEPTION2(InvalidFilesException, gridFileName.c_str(),
+                       "The HDF5 library failed to open this file and this"
+                       "installation of the Enzo plugin is NOT compiled with "
+                       "HDF4 support. So, the file may be an HDF4 file but if "
+                       "so, it cannot be opened with this installation.");
+#endif
         }
 
         fileType = ENZO_FT_HDF5;
@@ -1194,6 +1210,10 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    matches the format for a grid-group in the new format.
 //    This is for support for the new "Packed AMR" format.
 //
+//    Jeremy Meredith, Wed Jan  6 14:57:18 EST 2010
+//    Make HDF4 code conditionally compiled so we can support an
+//    HDF5-only build for this plugin as well.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1240,6 +1260,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
     }
     else if (fileType == ENZO_FT_HDF4)
     {
+#ifdef HAVE_LIBHDF4
         // particle mesh
         string particleFileName = grids[domain+1].particleFileName;
 
@@ -1387,6 +1408,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         }
 #endif
         return ugrid;
+#endif
     }
     else if (fileType == ENZO_FT_HDF5)
     {
@@ -1718,6 +1740,10 @@ avtEnzoFileFormat::BuildDomainNesting()
 //    times, this happens (e.g. Dark_Matter_Density), and it seems
 //    to work okay if we just return NULL here.
 //
+//    Jeremy Meredith, Wed Jan  6 14:57:18 EST 2010
+//    Make HDF4 code conditionally compiled so we can support an
+//    HDF5-only build for this plugin as well.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1727,6 +1753,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
 
     if (fileType == ENZO_FT_HDF4)
     {
+#ifdef HAVE_LIBHDF4
         // HDF4 STUFF
         string gridFileName = grids[domain+1].gridFileName;
 
@@ -1816,6 +1843,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         SDend(file_handle);
 
         return fa;
+#endif
     }
     else
     {
@@ -1951,6 +1979,8 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         return fa;
 #endif
     }
+
+    return NULL;
 }
 
 

@@ -13,6 +13,9 @@
 /* Define if you have the gdal library. */
 #cmakedefine HAVE_LIBGDAL
 
+/* Define if you have hdf4. */
+#cmakedefine HAVE_LIBHDF4
+
 /* Define if you have hdf5. */
 #cmakedefine HAVE_LIBHDF5
 

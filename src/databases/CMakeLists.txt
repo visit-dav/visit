@@ -85,11 +85,12 @@ THIRDPARTY_DEPENDENT_PLUGINS(GDAL     GDAL)
 IF(NOT VISIT_STATIC)
     # There's a problem including HDF4 and Netcdf in the same executable due to some
     # netcdf-like symbols in libmfhdf
-    THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos Enzo ZeusMP)
+    THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos ZeusMP)
 ENDIF(NOT VISIT_STATIC)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
 Chombo
 CosmosPP
+Enzo
 FLASH
 GTC
 H5Nimrod
