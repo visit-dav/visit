@@ -226,6 +226,9 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Improved the warning about multiple successful plugins.
 //    Also, use *all* remaining file format reader plugins as fallback formats.
 //
+//    Jeremy Meredith, Wed Jan  6 15:36:13 EST 2010
+//    Small fix to warning messages.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -442,7 +445,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             string warning = "Multiple file format reader plugins (";
             for (int i=0; i<succeeded.size(); i++)
             {
-                if (i == succeeded.size()-1)
+                if (i > 0 && i == succeeded.size()-1)
                     warning += " and ";
                 else if (i > 0)
                     warning += ", ";
@@ -545,7 +548,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                            "claim to support your file based on its name (";
                 for (int i=0; i<fileMatchedIds.size(); i++)
                 {
-                    if (i == fileMatchedIds.size()-1)
+                    if (i > 0 && i == fileMatchedIds.size()-1)
                         warning += " and ";
                     else if (i > 0)
                         warning += ", ";
