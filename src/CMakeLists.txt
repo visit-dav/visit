@@ -455,6 +455,8 @@ ENDIF(GDAL_FOUND)
 
 # Configure HDF4 support.
 IF(VISIT_STATIC)
+  # There's a problem including HDF4 and Netcdf in the same executable due
+  # to some netcdf-like symbols in libmfhdf
   MESSAGE(STATUS "HDF4 disabled for static builds due to collision with NetCDF.")
 ELSE(VISIT_STATIC)
   INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF4.cmake)
