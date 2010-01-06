@@ -43,7 +43,9 @@
 #include <avtExecuteThenTimeLoopFilter.h>
 
 #include <avtCallback.h>
+#include <avtDataAttributes.h>
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtExtents.h>
 #include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
@@ -165,8 +167,13 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 //  Programmer: Hank Childs
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//
 //    Hank Childs, Mon Feb 23 19:20:14 PST 2009
 //    Use the contract from the original execution.
+//
+//    Hank Childs, Tue Jan  5 13:14:37 PST 2010
+//    Merge in the extents from each time slice.
 //
 // ****************************************************************************
 
@@ -203,6 +210,25 @@ avtExecuteThenTimeLoopFilter::Execute(void)
         avtDataset *ds = *(eef.GetTypedOutput());
         avtDataTree_p tree = ds->GetDataTree();
         Iterate(currentTime, tree);
+
+        // Merge the extents
+        avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+        avtDataAttributes &inAtts = ds->GetInfo().GetAttributes();
+        outAtts.GetTrueSpatialExtents()->Merge(*(inAtts.GetTrueSpatialExtents()));
+        outAtts.GetCumulativeTrueSpatialExtents()->Merge(*(inAtts.GetCumulativeTrueSpatialExtents()));
+        outAtts.GetEffectiveSpatialExtents()->Merge(*(inAtts.GetEffectiveSpatialExtents()));
+        outAtts.GetCurrentSpatialExtents()->Merge(*(inAtts.GetCurrentSpatialExtents()));
+        outAtts.GetCumulativeCurrentSpatialExtents()->Merge(*(inAtts.GetCumulativeCurrentSpatialExtents()));
+    
+        for (int j = 0 ; j < outAtts.GetNumberOfVariables() ; j++)
+        {
+            const char *vname = outAtts.GetVariableName(j).c_str();
+            outAtts.GetTrueDataExtents(vname)->Merge(*(inAtts.GetTrueDataExtents(vname)));
+            outAtts.GetCumulativeTrueDataExtents(vname)->Merge(*(inAtts.GetCumulativeTrueDataExtents(vname)));
+            outAtts.GetEffectiveDataExtents(vname)->Merge(*(inAtts.GetEffectiveDataExtents(vname)));
+            outAtts.GetCurrentDataExtents(vname)->Merge(*(inAtts.GetCurrentDataExtents(vname)));
+            outAtts.GetCumulativeCurrentDataExtents(vname)->Merge(*(inAtts.GetCumulativeCurrentDataExtents(vname)));
+        }
 
         avtCallback::ResetTimeout(5*60);
     } 
