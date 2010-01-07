@@ -65,6 +65,9 @@ using namespace std;
 //    Clean-up. Support files with only field data (and no particles). Do not
 //    allocate problem sized memory in constructor.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.  Added error detection.
+//
 // ****************************************************************************
 
 avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
@@ -137,6 +140,12 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
 
     //point vars
     int npointvars = H5PartGetNumDatasets(file); /* get number of datasets in timestep 0 */
+    if (npointvars<0)
+    {
+        H5PartCloseFile(file);
+        EXCEPTION1(VisItException, "Could not read number of datasets.");
+    }
+
     pointvarnames.resize(npointvars);
     debug5 << "constructor: nvariables: " << npointvars << "\n";
 
@@ -168,7 +177,10 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         status = H5BlockGetFieldInfo (file, idx, name, lenName,
                 &gridRank, gridDims, &fieldDims);
         if ( status != H5PART_SUCCESS ) 
+        {
+            H5PartCloseFile(file);
             EXCEPTION1(VisItException, "Could not read field information.");
+        }
 
         fieldNames.push_back(name);
         fieldExtents.push_back((int)fieldDims);

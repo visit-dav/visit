@@ -152,6 +152,9 @@ avtPFLOTRANFileFormat::GetNTimesteps(void)
 //    Added an explicit conversion from a char* to a string to make the
 //    MIPSpro compiler happy.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.
+//
 // ****************************************************************************
 
 void
@@ -178,6 +181,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
     hid_t coordsGID = H5Gopen(fileID, "Coordinates");
     if (coordsGID < 0)
     {
+        H5Fclose(fileID);
         debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the Coordinates group in file " << filename << endl;
         EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have a Coordinates group.");
     }
@@ -186,18 +190,21 @@ avtPFLOTRANFileFormat::LoadFile(void)
         dimID[dim] = H5Dopen(coordsGID, coordNames[dim].c_str());
         if (dimID[dim] < 0)
         {
+            H5Fclose(fileID);
             debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the " << coordNames[dim] << "dataset in file " << filename << endl;
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
         }
         hid_t dimSpaceID = H5Dget_space(dimID[dim]);
         if (dimSpaceID < 0)
         {
+            H5Fclose(fileID);
             debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not get the space information for the " << coordNames[dim] << " coordinate in file " << filename << endl;
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
         }
         int ndims = H5Sget_simple_extent_ndims(dimSpaceID);
         if (ndims != 1)
         {
+            H5Fclose(fileID);
             debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "The " << coordNames[dim] << " coordinate is not one dimensional" << endl;
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since some coordinate data is not one dimensional.");
         }

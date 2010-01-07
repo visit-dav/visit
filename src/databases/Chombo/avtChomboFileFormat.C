@@ -374,6 +374,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Tue Sep 15 11:26:12 PDT 2009
 //    Added support for 3D mappings for 2D files.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.
+//
 // ****************************************************************************
 
 extern "C"  herr_t
@@ -419,6 +422,7 @@ avtChomboFileFormat::InitializeReader(void)
     hid_t slash = H5Gopen(file_handle, "/");
     if (slash < 0)
     {
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
                                            "have the \"/\" group.");
     }
@@ -450,6 +454,8 @@ avtChomboFileFormat::InitializeReader(void)
         hid_t time_id = H5Aopen_name(slash, "time");
         if (time_id < 0)
         {
+            H5Gclose(slash);
+            H5Fclose(file_handle);
             EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
                                                "have time in \"/\" group.");
         }
@@ -467,6 +473,8 @@ avtChomboFileFormat::InitializeReader(void)
         hid_t cycle_id = H5Aopen_name(slash, "iteration");
         if (cycle_id < 0)
         {
+            H5Gclose(slash);
+            H5Fclose(file_handle);
             EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
                                              "have iteration in \"/\" group.");
         }
@@ -486,6 +494,8 @@ avtChomboFileFormat::InitializeReader(void)
         hid_t time_id = H5Aopen_name(slash, "data_centering");
         if (time_id < 0)
         {
+            H5Gclose(slash);
+            H5Fclose(file_handle);
             EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
                                                "have data_centering in \"/\" group.");
         }
@@ -520,17 +530,21 @@ avtChomboFileFormat::InitializeReader(void)
     hid_t nl_id = H5Aopen_name(slash, "num_levels");
     if (nl_id < 0)
     {
+        H5Gclose(slash);
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
                                            "have num_levels in \"/\" group.");
     }
     H5Aread(nl_id, H5T_NATIVE_INT, &num_levels);
+    H5Aclose(nl_id);
     if (num_levels <= 0)
     {
         debug1 << "ERROR: Number of levels (" << num_levels 
                << ") must be at least 1" << endl;
+        H5Gclose(slash);
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidFilesException, filenames[0]);
     }
-    H5Aclose(nl_id);
 
     //
     // Determine how many variables there are.
