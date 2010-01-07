@@ -125,9 +125,12 @@ static std::string compile_time_default(int i)
     // prepend our arch dir.
     if(s::settings[i].isFile && s::settings[i].default_value[0] == '.')
     {
-        retval = GetVisItInstallationDirectory() + "/";
+        retval = GetVisItArchitectureDirectory() + 
+                 std::string(s::settings[i].default_value + 1);
     }
-    retval += s::settings[i].default_value;
+    else
+        retval = s::settings[i].default_value;
+
     return retval;
 }
 
