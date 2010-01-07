@@ -2341,6 +2341,10 @@ void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex,
 }
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Jeremy Meredith, Thu Jan  7 13:42:21 EST 2010
+//    Added an error check.
+//
 void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector) 
 {
   int max = 0;
@@ -2415,8 +2419,14 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
   ifstream tfile(fileName);
 #endif
 
-  int numberOfVariablesInSPX = 
-    this->SPXToNVarTable->GetValue(this->VariableIndexToSPX->GetValue(maxVar));
+  if (this->VariableIndexToSPX->GetNumberOfTuples() <= maxVar)
+      EXCEPTION1(InvalidFilesException, this->FileName);
+
+  int tmpval = this->VariableIndexToSPX->GetValue(maxVar);
+  if (this->SPXToNVarTable->GetNumberOfTuples() <= tmpval)
+      EXCEPTION1(InvalidFilesException, this->FileName);
+
+  int numberOfVariablesInSPX = this->SPXToNVarTable->GetValue(tmpval);
   int offset = 512-(int)sizeof(float) + 
     512*(numberOfVariablesInSPX*SPXRecordsPerTimestep);
   tfile.clear();

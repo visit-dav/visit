@@ -240,8 +240,6 @@ protected:
                                        //  this is a table that looks 
                                        //  up the appropriate timestep 
                                        // for the particular variable.
-  vtkIntArray *variableIndexToSPX;  //  This gives the spx file number for the 
-                                    //  particular variable.
   vtkIntArray *VariableIndexToSPX;  //  This gives the spx file number for the 
                                     //  particular variable.
   vtkIntArray *SPXTimestepIndexTable; //  This a table look up for the index 
