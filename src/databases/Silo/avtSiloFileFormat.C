@@ -1749,6 +1749,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 vector<int> amr_group_ids;
                 vector<string> amr_block_names;
 
+#ifndef WIN32
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,2)
                 if (mm->mrgtree_name != 0)
@@ -1758,6 +1759,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                         &mt, &num_amr_groups, &amr_group_ids, &amr_block_names,
                         dontForceSingle);
                 }
+#endif
 #endif
 #endif
 
