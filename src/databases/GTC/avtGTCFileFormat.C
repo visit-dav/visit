@@ -136,6 +136,9 @@ avtGTCFileFormat::FreeUpResources(void)
 //    Hank Childs, Wed Jul  9 06:34:05 PDT 2008
 //    Uncomment code disabling error printing.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.  
+//
 // ****************************************************************************
 
 bool
@@ -162,6 +165,7 @@ avtGTCFileFormat::Initialize()
     if (particleHandle < 0)
     {
         debug4 << mName << "Could not open particle_data" << endl;
+        H5Fclose(fileHandle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file, "
                    "since it is does not contain the dataset \"particle_data\"");
     }

@@ -229,6 +229,9 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Jeremy Meredith, Wed Jan  6 15:36:13 EST 2010
 //    Small fix to warning messages.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:03 EST 2010
+//    Fixed a typo.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -529,7 +532,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             }
             CATCHALL
             {
-                rv = false;
+                rv = NULL;
             }
             ENDTRY
         }

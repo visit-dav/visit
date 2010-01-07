@@ -87,6 +87,9 @@ static int          TimeIndexPairSorter(const void *, const void *);
 //    Hank Childs, Wed Jul  9 06:29:53 PDT 2008
 //    Don't print out a lot of error statements.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.
+//
 // ****************************************************************************
 
 avtTetradFileFormat::avtTetradFileFormat(const char *fname)
@@ -103,6 +106,7 @@ avtTetradFileFormat::avtTetradFileFormat(const char *fname)
     int cell_array = H5Dopen(file_handle, "CellArray");
     if (cell_array < 0)
     {
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Tetrad file, since "
                           "it is does not contain the dataset \"cell_array\"");
     }

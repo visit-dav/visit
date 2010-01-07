@@ -269,6 +269,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Gunther H. Weber, Wed Oct  8 16:50:31 PDT 2008
 //   Added test for TechX VizSchema
 //
+//   Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//   Close all open ids when returning an exception.  Added error detection.
+//
 // ****************************************************************************
     
 void
@@ -300,6 +303,7 @@ avtPixieFileFormat::Initialize()
         if (cell_array >= 0)
         {
             H5Dclose(cell_array);
+            H5Fclose(fileId);
             EXCEPTION1(InvalidDBTypeException,
                "Cannot be a Pixie file because it looks like a Tetrad file.");
         }
@@ -307,6 +311,7 @@ avtPixieFileFormat::Initialize()
         if (control >= 0)
         {
             H5Dclose(control);
+            H5Fclose(fileId);
             EXCEPTION1(InvalidDBTypeException,
                "Cannot be a Pixie file because it looks like an UNIC file.");
         }
@@ -318,6 +323,7 @@ avtPixieFileFormat::Initialize()
             {
                 H5Aclose(vsVersion);
                 H5Gclose(runInfo);
+                H5Fclose(fileId);
                 EXCEPTION1(InvalidDBTypeException,
                         "Cannot be a Pixie file because it looks like a VizSchema file.");
             }
@@ -327,6 +333,7 @@ avtPixieFileFormat::Initialize()
             {
                 H5Aclose(vsVsVersion);
                 H5Gclose(runInfo);
+                H5Fclose(fileId);
                 EXCEPTION1(InvalidDBTypeException,
                         "Cannot be a Pixie file because it looks like a VizSchema file.");
             }
@@ -338,6 +345,7 @@ avtPixieFileFormat::Initialize()
             {
                 H5Aclose(software);
                 H5Aclose(version);
+                H5Fclose(fileId);
                 EXCEPTION1(InvalidDBTypeException,
                         "Cannot be a Pixie file because it looks like a legacy VizSchema file.");
             }
@@ -349,6 +357,7 @@ avtPixieFileFormat::Initialize()
         int gid;
         if ((gid = H5Gopen(fileId, "/")) < 0)
         {
+            H5Fclose(fileId);
             EXCEPTION1(InvalidFilesException, (const char *)filenames[0]);
         }
         TraversalInfo info;
@@ -1563,12 +1572,20 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
 //   Luis Chacon, Wed Feb 25 15:40:06 EST 2009
 //   Modified the reader to handle time-changing meshes.
 //
+//   Jeremy Meredith, Thu Jan  7 15:35:18 EST 2010
+//   Skip ".." group names.
+//
 // ****************************************************************************
 
 herr_t
 avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
     void *op_data)
 {
+    // Silo files have a ".." group.  Don't process that....  Ideally we
+    // might detect and skip hard links, but this doesn't come up often.
+    if (string(name)=="..")
+        return 0;
+
     hid_t                   obj;
     H5G_stat_t              statbuf;
 

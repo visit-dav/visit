@@ -1497,6 +1497,9 @@ avtFLASHFileFormat::GetVectorVar(int visitDomain, const char *varname)
 //    Hank Childs, Tue Dec 15 14:02:40 PST 2009
 //    Calculate some data members here when we read the blocks.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadAllMetaData()
@@ -1528,6 +1531,7 @@ avtFLASHFileFormat::ReadAllMetaData()
 
     if (numParticles == 0 && numBlocks == 0)
     {
+        H5Fclose(fileId);
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
@@ -1584,6 +1588,9 @@ avtFLASHFileFormat::ReadAllMetaData()
 //    Randy Hudson, Apr 4, 2007
 //    Added support for (old) files w/o "processor number".
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.
+//
 // ****************************************************************************
 
 // Support for files w/o "processor number"
@@ -1593,6 +1600,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
     if (rootId < 0)
     {
         debug5 << "[avtFLASHFileFormat::ReadProcessorNumbers] - Didn't open root group" << endl;
+        H5Fclose(fileId);
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
     hsize_t num_obj;
@@ -1600,6 +1608,8 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
     if (errId < 0)
     {
         debug5 << "[avtFLASHFileFormat::ReadProcessorNumbers] - Can't get # of objects in root group" << endl;
+        H5Gclose(rootId);
+        H5Fclose(fileId);
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
     hsize_t idx;
@@ -1628,6 +1638,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
         hid_t procnumId = H5Dopen(fileId, "processor number");
         if (procnumId < 0)
         {
+            H5Fclose(fileId);
             EXCEPTION1(InvalidFilesException, filename.c_str());
         }
 

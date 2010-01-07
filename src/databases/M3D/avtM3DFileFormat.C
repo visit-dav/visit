@@ -867,6 +867,9 @@ avtM3DFileFormat::ReadAttribute( hid_t parentID, const char *attr, void *value )
 //    Dave Pugmire, Tue Jul 21 16:23:42 EDT 2009
 //    Turn off 2D and 3D planes for now.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.  Added error detection.
+//
 // ****************************************************************************
 void
 avtM3DFileFormat::LoadFile()
@@ -882,21 +885,36 @@ avtM3DFileFormat::LoadFile()
 
     hid_t rootID = H5Gopen( m_fileID, "/" );
     if ( rootID < 0 )
+    {
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "Root Group", "NOT FOUND" );
+    }
 
     // Read XPClass name and check for validity.
     string xpClass;
     if ( ! ReadStringAttribute( rootID, "XP_CLASS", &xpClass ) || xpClass != m_XPClassStr)
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "XP_CLASS", "Not found or wrong type" );
+    }
 
     // Read in step and time information.
     int numTimeSteps;
     if ( ! ReadAttribute( rootID, "nsteps", &numTimeSteps ) )
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "nsteps", "Not found or wrong type" );                
+    }
 
     float *times = new float[numTimeSteps];
     if ( ! ReadAttribute( rootID, "time", times ) )
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "time", "Not found or wrong type" );                
+    }
     for ( int i = 0; i < numTimeSteps; i++ )
         m_timeSteps.push_back( times[i] );
     delete [] times;
@@ -915,13 +933,25 @@ avtM3DFileFormat::LoadFile()
     H5Gclose( groupid );
 
     if ( ! ReadAttribute( rootID, "nnodes", &m_nNodes ) )
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "nnodes", "Not found or wrong type" );                
+    }
     
     if ( ! ReadAttribute( rootID, "ncell_sets", &m_nCellSets ) )
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "ncell_sets", "Not found or wrong type" );                
+    }
     
     if ( ! ReadAttribute( rootID, "nnode_data", &m_nVars ) )
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
         EXCEPTION2( UnexpectedValueException, "nnode_data", "Not found or wrong type" );                
+    }
     
     //Load basic info on variables.
     for ( int t = 0; t < m_timeSteps.size(); t++ )

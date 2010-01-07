@@ -120,6 +120,9 @@ static void dbg_string_attrib(hid_t id, const std::string &str)
 //    Tom Fogal, Wed Apr 29 16:11:41 MDT 2009
 //    Handle errors when reading string attributes.
 //
+//    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
+//    Close all open ids when returning an exception.  Added error detection.
+//
 // ****************************************************************************
 
 avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
@@ -144,9 +147,21 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     dbg_string_attrib(root_id, "Description");
     dbg_string_attrib(root_id, "Source");
 
-    H5NIMROD_read_attrib (root_id, "time", &time);
+    if (H5NIMROD_read_attrib (root_id, "time", &time) == H5NIMROD_ERR)
+    {
+        H5Gclose(root_id);
+        H5Fclose(file);
+        EXCEPTION1 (InvalidFilesException, filename);
+    }
+
     debug5 << "time: " << time << std::endl;
     hid_t grid_id = H5Gopen (file, "/GRID");
+    if (grid_id < 0)
+    {
+        H5Gclose(root_id);
+        H5Fclose(file);
+        EXCEPTION1 (InvalidFilesException, filename);
+    }
 
     string_attrib = NULL;
     H5NIMROD_read_string_attrib (grid_id, "Coordinate System", &string_attrib);
@@ -156,6 +171,9 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         if (strstr(string_attrib, "Cartesian - XYZ") == NULL)
         {
             debug5 << "Cannot handle non cartesian coordinates" << std::endl;
+            H5Gclose(root_id);
+            H5Gclose(grid_id);
+            H5Fclose(file);
             EXCEPTION2(UnexpectedValueException, "Cartesian - XYZ",
                        string_attrib);
         }
@@ -173,7 +191,11 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     {
         structured = 0;
         debug5 << "Cannot handle unstructured mesh" << std::endl;
-        EXCEPTION2 (UnexpectedValueException, "Structured", string_attrib);
+        H5Gclose(root_id);
+        H5Gclose(grid_id);
+        H5Fclose (file);
+        EXCEPTION2 (UnexpectedValueException, "Structured",
+                    string_attrib ? string_attrib : "NULL");
     }
     if(string_attrib)
     {
@@ -186,6 +208,9 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if (ndims != 3)
     {
         debug5 << "Cannot handle other than 3 dimensional data" << std::endl;
+        H5Gclose(root_id);
+        H5Gclose(grid_id);
+        H5Fclose (file);
         EXCEPTION2 (UnexpectedValueException, 3, ndims);
     }
     // points
@@ -375,8 +400,6 @@ avtH5NimrodFileFormat::PopulateDatabaseMetaData (avtDatabaseMetaData * md,
 vtkDataSet *
 avtH5NimrodFileFormat::GetMesh (int timestate, const char *meshname)
 {
-    //YOU MUST IMPLEMENT THIS
-
     vtkStructuredGrid *dataset = vtkStructuredGrid::New ();
     vtkPoints *vtkpoints = vtkPoints::New ();
     vtkpoints->SetDataTypeToFloat ();
