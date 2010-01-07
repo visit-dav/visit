@@ -166,6 +166,7 @@ ENDIF(VISIT_DBIO_ONLY)
 OPTION(VISIT_DISABLE_SELECT "Disable use of the select() function" OFF)
 OPTION(VISIT_USE_NOSPIN_BCAST "Use VisIt's no-spin Bcast in parallel" ON)
 OPTION(VISIT_INSTALL_THIRD_PARTY "Install VisIt's 3rd party I/O libs and includes to permit plugin development" OFF)
+OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel shared libraries; just with executables" OFF)
 
 MACRO(VISIT_3RDPARTY_OPTION vvar comment libvar)
     # Create an option 
@@ -590,6 +591,7 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target sources)
         SET_TARGET_PROPERTIES(${target} PROPERTIES
             COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
         )
+	
         IF(VISIT_PARALLEL_LINKER_FLAGS)
             SET(PAR_LINK_FLAGS "")
             FOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
@@ -626,7 +628,9 @@ FUNCTION(ADD_PARALLEL_LIBRARY target sources)
                 LINK_FLAGS ${PAR_LINK_FLAGS}
             )
         ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-        TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+        IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
+            TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+        ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
     ENDIF(VISIT_PARALLEL_CXXFLAGS)
 ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 
