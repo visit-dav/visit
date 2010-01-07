@@ -39,6 +39,8 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStringArray.h>
 
+#include <InvalidFilesException.h>
+
 vtkCxxRevisionMacro(vtkMFIXReader, "$Revision: 1.6 $");
 vtkStandardNewMacro(vtkMFIXReader);
 
@@ -879,6 +881,10 @@ void vtkMFIXReader::SkipBytes(istream& in, int n)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:23:40 EST 2010
+//   Make sure we don't hit EOF prematurely.
+//
 void vtkMFIXReader::GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n)
 {
   const int numberOfDoublesInBlock = 512/sizeof(double);
@@ -898,6 +904,8 @@ void vtkMFIXReader::GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n)
   for (int i=0; i<numberOfRecords; ++i)
     {
     in.read( (char*)&tempArray , 512 );
+    if (!in)
+        EXCEPTION1(InvalidFilesException, "unknown");
     for (int j=0; j<numberOfDoublesInBlock; ++j)
       {
       if (c < n) 
@@ -912,6 +920,10 @@ void vtkMFIXReader::GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:23:40 EST 2010
+//   Make sure we don't hit EOF prematurely.
+//
 void vtkMFIXReader::GetBlockOfInts(istream& in, vtkIntArray *v, int n)
 {
   const int numberOfIntsInBlock = 512/sizeof(int);
@@ -931,6 +943,8 @@ void vtkMFIXReader::GetBlockOfInts(istream& in, vtkIntArray *v, int n)
   for (int i = 0; i < numberOfRecords; ++i)
     {
     in.read( (char*)&tempArray , 512 );
+    if (!in)
+        EXCEPTION1(InvalidFilesException, "unknown");
     for (int j=0; j<numberOfIntsInBlock; ++j)
       {
       if (c < n)
@@ -945,6 +959,10 @@ void vtkMFIXReader::GetBlockOfInts(istream& in, vtkIntArray *v, int n)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:23:40 EST 2010
+//   Make sure we don't hit EOF prematurely.
+//
 void vtkMFIXReader::GetBlockOfFloats(istream& in, vtkFloatArray *v, int n)
 {
   const int numberOfFloatsInBlock = 512/sizeof(float);
@@ -965,6 +983,8 @@ void vtkMFIXReader::GetBlockOfFloats(istream& in, vtkFloatArray *v, int n)
   for (int i=0; i<numberOfRecords; ++i)
     {
     in.read( (char*)&tempArray , 512 );
+    if (!in)
+        EXCEPTION1(InvalidFilesException, "unknown");
     for (int j=0; j<numberOfFloatsInBlock; ++j)
       {
       if (c < n) 

@@ -94,10 +94,10 @@ avtSARFileFormat::avtSARFileFormat(const char *filename)
 
     if (nondigit)
     {
-        cerr << "HAS NON DIGIT" << endl;
-        cerr << "X = " << filename + xStart << endl;
-        cerr << "Y = " << filename + yStart << endl;
-        cerr << "Z = " << filename + zStart << endl;
+        //cerr << "HAS NON DIGIT" << endl;
+        //cerr << "X = " << filename + xStart << endl;
+        //cerr << "Y = " << filename + yStart << endl;
+        //cerr << "Z = " << filename + zStart << endl;
         EXCEPTION1(InvalidFilesException,
                           "Name must be of the form <text>####x####x####.sar");
     }

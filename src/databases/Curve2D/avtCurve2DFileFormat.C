@@ -56,6 +56,7 @@
 #include <avtDatabaseMetaData.h>
 
 #include <DebugStream.h>
+#include <StringHelpers.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
@@ -628,6 +629,10 @@ avtCurve2DFileFormat::ReadFile(void)
 //
 //    Mark C. Miller, Wed Nov 15 16:24:06 PST 2006
 //    Reset errno before calling strtod
+//
+//    Jeremy Meredith, Thu Jan  7 12:11:29 EST 2010
+//    Make sure read data is ASCII.
+//
 // ****************************************************************************
 
 CurveToken
@@ -635,6 +640,10 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
 {
     char line[256];
     ifile.getline(line, 256, '\n');
+
+    // Do an ASCII check.  We only support text files.
+    if (!StringHelpers::IsPureASCII(line,256))
+        EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
 
     //
     // Parenthesis are special characters for variables names, etc, so just

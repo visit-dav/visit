@@ -50,6 +50,7 @@
 #include <vtkPoints.h>
 
 #include <FileFunctions.h>
+#include <StringHelpers.h>
 
 #include <snprintf.h>
 
@@ -225,6 +226,9 @@ avtRAWFileFormat::NewPD(int nCells)
 // Creation:   Sat Sep 29 16:09:20 PST 2007
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:05:31 EST 2010
+//   ifstream can generate errors instead of eofs.  Changed the test used.
+//   Check the first 100 lines for non-ASCII characters.
 //   
 // ****************************************************************************
 
@@ -266,10 +270,12 @@ avtRAWFileFormat::ReadFile(const char *name)
     char   line[1024];
     double pts[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
     int nc = 0;
-    for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
+    for(int lineIndex = 0; ifile.good(); ++lineIndex)
     {
         // Get the line
         ifile.getline(line, 1024);
+        if (lineIndex<100 && !StringHelpers::IsPureASCII(line, 1024))
+            EXCEPTION2(InvalidFilesException, name, "Not ASCII.");
 
         // Skip leading spaces.
         char *cptr = line;

@@ -53,6 +53,8 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <StringHelpers.h>
+#include <InvalidFilesException.h>
 
 
 using std::vector;
@@ -372,6 +374,9 @@ avtLinesFileFormat::ReadFile(void)
 //    Hank Childs, Tue Aug 28 10:58:15 PDT 2001
 //    Added string argument for the line name.
 //
+//    Jeremy Meredith, Thu Jan  7 13:00:32 EST 2010
+//    Check for ASCII data.
+//
 // ****************************************************************************
 
 bool
@@ -380,6 +385,11 @@ avtLinesFileFormat::GetPoint(ifstream &ifile, float &x, float &y, float &z,
 {
     char line[256];
     ifile.getline(line, 256, '\n');
+
+    // Do an ASCII check.  We only support text files.
+    if (!StringHelpers::IsPureASCII(line,256))
+        EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
+
     ln = line;
 
     char *ystr = NULL;

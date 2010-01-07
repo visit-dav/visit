@@ -57,6 +57,7 @@
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
+#include <StringHelpers.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -457,6 +458,9 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //    Brad Whitlock, Mon Apr 27 09:00:52 PDT 2009
 //    I increased the line length from 4K to 32K.
 //
+//    Jeremy Meredith, Wed Jan  6 13:26:52 EST 2010
+//    Check for an ASCII file or empty data.
+//
 // ****************************************************************************
 
 void
@@ -476,13 +480,19 @@ avtPlainTextFileFormat::ReadFile()
     for (int l=0; l<skipLines; l++)
     {
         in.getline(buff, linelen);
+        if (!StringHelpers::IsPureASCII(buff, linelen))
+            EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
     }
+
 
     // actually read the data; one vector per row
     ncolumns = 0;
     nrows = 0;
     bool firstRow = true;
     in.getline(buff, linelen);
+    if (!StringHelpers::IsPureASCII(buff, linelen))
+        EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
+
     bool comma = false;
     for (char *p=buff; *p!='\0'; p++)
         if (*p == ',')
@@ -572,13 +582,32 @@ avtPlainTextFileFormat::ReadFile()
         firstRow = false;
         in.getline(buff, linelen);
 
+        if (nrows < 5)
+        {
+            // Check the first several rows to make sure it's ASCII.
+            if (!StringHelpers::IsPureASCII(buff, linelen))
+                EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
+        }
+        else
+        {
 #ifdef MDSERVER
-        // We don't need to know how many rows there are in the
-        // MDServer, nor do we need to read all the data.
-        break;
+            // We don't need to know how many rows there are in the
+            // MDServer, nor do we need to read all the data.  We do
+            // want to make sure there's at least one row of data,
+            // though, because if not, its probably not even a plain
+            // text file.  And we probably don't want to break out
+            // until we've got a good clue this file is truly ASCII.
+            break;
 #endif
+        }
     }
     delete [] buff;
+
+    if (ncolumns == 0 || nrows == 0)
+    {
+        EXCEPTION2(InvalidFilesException, filename.c_str(),
+                   "Couldn't parse anything meaningful from the file.");
+    }
 
     // fix up variable names
     if (format == Grid)

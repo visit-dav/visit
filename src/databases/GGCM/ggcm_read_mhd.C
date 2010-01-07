@@ -20,6 +20,11 @@
  *   sense anymore anyway.  You can grep it out of the subversion logs / old
  *   versions if you really want it.
  ****/
+
+//   Jeremy Meredith, Wed Jan  6 17:46:31 EST 2010
+//   Added VisIt exceptions in place of aborts.
+//
+
 #include "libggcm.h"
 
 #include <stdio.h>
@@ -28,6 +33,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <InvalidFilesException.h>
+
 /** fscanf that is expected to work; aborts on error */
 #define SCAN(fp, match, v1)                   \
     {                                         \
@@ -35,7 +42,7 @@
         err = fscanf(fp, match, v1);          \
         if(err == EOF) {                      \
             perror("scanning in libggcm");    \
-            abort();                          \
+            EXCEPTION1(InvalidFilesException, mhd->filename); \
         }                                     \
     }
 /** more stringent; give the number of arguments which must match. */
@@ -46,7 +53,7 @@
         if(err == EOF || err != num) {                    \
             perror("scanning in libggcm");                \
             fprintf(stderr, "%d matches\n", err);         \
-            abort();                                      \
+            EXCEPTION1(InvalidFilesException, mhd->filename); \
         }                                                 \
     }
 
@@ -122,6 +129,7 @@ MHDdata *ggcm_read_metadata(const char *filename)
 
     head = prev = cur = (MHDdata *)malloc(sizeof(MHDdata));
     head->mhd_fp = fopen(filename, "r");
+    strcpy(head->filename,filename); // for error reporting
 
     len = 1024;
     line = (char *)malloc(len);
@@ -174,7 +182,7 @@ static int ggcm_read_field_metadata(MHDdata *mhd)
     fscanf(mhd->mhd_fp, "FIELD-%[^\n ]\n", junk);
     if(ferror(mhd->mhd_fp)) {
         perror("Unrecoverable reading field metadata");
-        abort();
+        EXCEPTION1(InvalidFilesException, mhd->filename);
     }
     if(feof(mhd->mhd_fp)) {
         return 0;

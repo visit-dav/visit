@@ -493,6 +493,9 @@ ProcessComponent(char *line, const int compno, const int ncomps,
 //    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
 //    Made it use VisItStat instead of stat
 //
+//    Jeremy Meredith, Thu Jan  7 12:53:18 EST 2010
+//    Added some simple error checking.
+//
 // ****************************************************************************
 
 bool
@@ -603,12 +606,17 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
 
         // Get the line
         ifile.getline(line, 1024);
+        if (!ifile)
+            EXCEPTION1(InvalidFilesException, filename);
 
         // Determine what the line is for.
         if(card == 0)
         {
             char *valstart = line + 2 + 3 * SHORT_FIELD_WIDTH;
             char *valend = valstart + SHORT_FIELD_WIDTH;
+
+            if (strlen(line) <= (valstart-line))
+                EXCEPTION1(InvalidFilesException, filename);
 
             // Ignore N2,N3,N4,N5 for now.
 

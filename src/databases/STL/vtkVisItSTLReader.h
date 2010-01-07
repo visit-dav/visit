@@ -39,6 +39,10 @@ class vtkFloatArray;
 class vtkPointLocator;
 class vtkPoints;
 
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:19:03 EST 2010
+//   Added support for optional strict error checking.
+//
 class vtkVisItSTLReader : public vtkPolyDataSource 
 {
 public:
@@ -66,6 +70,12 @@ public:
   vtkBooleanMacro(Merging,int);
 
   // Description:
+  // Turn on/off stricter file detection.
+  vtkSetMacro(Strict,int);
+  vtkGetMacro(Strict,int);
+  vtkBooleanMacro(Strict,int);
+
+  // Description:
   // Turn on/off tagging of solids with scalars.
   vtkSetMacro(ScalarTags,int);
   vtkGetMacro(ScalarTags,int);
@@ -88,6 +98,8 @@ protected:
   char *FileName;
   int Merging;
   int ScalarTags;
+  int Strict;
+  int CheckOnly;
   vtkPointLocator *Locator;
 
   void Execute();

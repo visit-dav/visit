@@ -55,6 +55,10 @@
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2002
 //
+//  Modifications:
+//   Jeremy Meredith, Thu Jan  7 11:46:03 EST 2010
+//   Added ability for mdserver to check the file.
+//
 // ****************************************************************************
 
 class avtSTLFileFormat : public avtSTSDFileFormat
@@ -75,6 +79,7 @@ class avtSTLFileFormat : public avtSTSDFileFormat
   protected:
     vtkDataSet           *dataset;
     bool                  readInDataset;
+    bool                  checkedFile;
 
     static const char    *MESHNAME;
 

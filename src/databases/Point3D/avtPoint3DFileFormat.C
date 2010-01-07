@@ -56,6 +56,7 @@
 
 #include <InstallationFunctions.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
 
 const char      *avtPoint3DFileFormat::MESHNAME = "points";
 
@@ -295,6 +296,9 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Sat Mar 17 16:29:45 PDT 2007
 //    Make reading for meta-data more lightweight.
 //
+//    Jeremy Meredith, Thu Jan  7 12:04:12 EST 2010
+//    Check some lines to make sure it's ASCII.
+//
 // ****************************************************************************
 
 void
@@ -318,6 +322,8 @@ avtPoint3DFileFormat::ReadData(void)
     {
         char buf[1024];
         ifile >> buf;
+        if (!StringHelpers::IsPureASCII(buf, 1024))
+            EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
         varnames.push_back(buf);
     }
 
@@ -329,16 +335,22 @@ avtPoint3DFileFormat::ReadData(void)
     // We read out the four variables, but not the newline at the end.
     // Get that now.
     ifile.getline(line, 1024);
+    if (!StringHelpers::IsPureASCII(line, 1024))
+        EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
 
     vector<float> var1;
     vector<float> var2;
     vector<float> var3;
     vector<float> var4;
 
+    int linesToCheckForAscii = 100;
     while (!ifile.eof())
     {
         line[0] = '\0';
         ifile.getline(line, 1024);
+        if (--linesToCheckForAscii > 0 &&
+            !StringHelpers::IsPureASCII(line, 1024))
+            EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
 
         // Allow the user to specify "coordflag" in the file.
         if(line[0] == '#')

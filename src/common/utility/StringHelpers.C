@@ -1049,3 +1049,42 @@ StringHelpers::Plural(const string &s)
     // We have no other choice but to simply try adding 's'
     return ps + "s";
 }
+
+
+// ****************************************************************************
+// Method:  StringHelpers::IsPureASCII
+//
+// Purpose:
+//   Check to see if a string is purely ASCII printable characters.
+//
+// Arguments:
+//   txt        the string data
+//   length     the maximum number of bytes to check
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January  7, 2010
+//
+// ****************************************************************************
+bool
+StringHelpers::IsPureASCII(const std::string &txt)
+{
+    return IsPureASCII(txt.c_str(), txt.length());
+}
+
+bool
+StringHelpers::IsPureASCII(const char *const txt, int length)
+{
+    for (int i=0; i<length; i++)
+    {
+        const char &c = txt[i];
+
+        if ((c>1 && c<7) || (c>13 && c<32) || c>127)
+            return false;
+
+        // if it is an ascii string, don't check past its terminator
+        if (c==0)
+            break;
+    }
+    return true;
+}
+

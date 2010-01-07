@@ -57,6 +57,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <AtomicProperties.h>
+#include <StringHelpers.h>
 #include <snprintf.h>
 
 #include <DebugStream.h>
@@ -895,6 +896,9 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //    Moved HETNAM parsing into this function so that we can create the
 //    enumerated scalar to include new residue types defined in this file.
 //
+//    Jeremy Meredith, Thu Jan  7 13:00:03 EST 2010
+//    Error on non-ascii data.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -916,6 +920,9 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
     std::string source;
     while (in)
     {
+        if (!StringHelpers::IsPureASCII(line, 82))
+            EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
+
         string record(line,0,6);
         if (readingHetnam && record != "HETNAM")
         {

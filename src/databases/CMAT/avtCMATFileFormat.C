@@ -127,6 +127,10 @@ avtCMATFileFormat::FreeUpResources(void)
 // Creation:   Fri Dec 17 13:33:58 PST 2004
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:14:24 EST 2010
+//   For some reason we were only re-throwing the exception on the engine,
+//   but it's the mdserver which really needs to know this, so I changed it.
+//   Now we correctly fail to open files which are not CMAT files.
 //
 // ****************************************************************************
 
@@ -141,10 +145,7 @@ avtCMATFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     CATCH(InvalidFilesException)
     {
-#ifndef MDSERVER
-        // Only rethrow the exception on the engine.
         RETHROW;
-#endif
     }
     ENDTRY
 

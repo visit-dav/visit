@@ -90,8 +90,9 @@ using std::map;
 avtVistaFileFormat::
 VistaTree::VistaTree(const char *buf, size_t size)
 {
-    theVistaString = new char[size];
+    theVistaString = new char[size+1];
     memcpy(theVistaString, buf, size);
+    theVistaString[size] = '\0';
     VisitParseInternal(theVistaString, &top);
     ExtractAttr(top);
 }

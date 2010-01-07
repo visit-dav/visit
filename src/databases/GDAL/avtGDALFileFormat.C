@@ -72,8 +72,8 @@ bool avtGDALFileFormat::gdalInit = false;
 //
 // ****************************************************************************
 
-avtGDALFileFormat::avtGDALFileFormat(const char *filename)
-    : avtSTMDFileFormat(&filename, 1), meshInfo()
+avtGDALFileFormat::avtGDALFileFormat(const char *filename_)
+    : avtSTMDFileFormat(&filename_, 1), meshInfo(), filename(filename_)
 {
     poDataset = 0;
     xdims = 0, ydims = 0;
@@ -204,6 +204,9 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #endif
     }
     ENDTRY
+
+    if (!poDataset)
+        EXCEPTION1(InvalidFilesException,filename);
 
     // Come up with an informative database comment.
     std::string title;
