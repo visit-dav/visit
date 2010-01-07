@@ -1626,6 +1626,9 @@ PF3DFileFormat::GetVariableIndex(const std::string &name) const
 // ****************************************************************************
 
 #ifdef DEBUG_PRINT
+#ifdef VISIT_STATIC
+ostream &operator << (ostream &os, bowinfo binf);
+#else
 ostream &
 operator << (ostream &os, bowinfo binf)
 {
@@ -1665,9 +1668,10 @@ operator << (ostream &os, bowinfo binf)
     return os;
 }
 #endif
+#endif
 
 // ****************************************************************************
-// Method: my_bow_alloc
+// Method: pf3d_bow_alloc
 //
 // Purpose: 
 //   Called to allocate memory for the bow library.
@@ -1679,18 +1683,18 @@ operator << (ostream &os, bowinfo binf)
 //   
 // ****************************************************************************
 
-void *my_bow_alloc(void *opaque, size_t size)
+static void *pf3d_bow_alloc(void *opaque, size_t size)
 {
     long nLongs = (size / sizeof(long)) + (((size % sizeof(long)) > 0) ? 1 : 0);
     void *retval = (void *)(new long[nLongs]);
-//        debug4 << "my_bow_alloc2: alloc " << retval << "(" << size
+//        debug4 << "pf3d_bow_alloc2: alloc " << retval << "(" << size
 //               << " bytes,  allocated " << nLongs << " longs)" << endl;
 
     return retval;
 }
 
 // ****************************************************************************
-// Method: my_bow_free
+// Method: pf3d_bow_free
 //
 // Purpose: 
 //   Called to deallocate memory for the bow library.
@@ -1702,11 +1706,11 @@ void *my_bow_alloc(void *opaque, size_t size)
 //   
 // ****************************************************************************
 
-void my_bow_free(void *opaque, void *ptr)
+static void pf3d_bow_free(void *opaque, void *ptr)
 {
     if(ptr != 0) 
     {
-//        debug4 << "my_bow_free: freeing " << ptr << endl;
+//        debug4 << "pf3d_bow_free: freeing " << ptr << endl;
         long *lptr =  (long*)ptr;
         delete [] lptr;
     }
@@ -1833,7 +1837,7 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
                         bowinfo   binf; // Information record from bow buffer.
 
                         // Start bow session using custom memory routines.
-                        bg = bowglobal_create(my_bow_alloc, my_bow_free, 0);
+                        bg = bowglobal_create(pf3d_bow_alloc, pf3d_bow_free, 0);
 
                         // Get the information for the brick of wavelets.
                         binf = bow_getbowinfo(bg, (char*)data);
