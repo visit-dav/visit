@@ -61,6 +61,7 @@
 #include <math.h>
 //#include <byteswap.h>
 #include <InvalidDBTypeException.h>
+#include <InvalidFilesException.h>
 #include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
 #include <avtIntervalTree.h>
@@ -115,6 +116,10 @@ void avtGadgetFileFormat::swap_Nbyte(char *data,int n,int m)
 
 using     std::string;
 
+// Modifications
+//   Jeremy Meredith, Thu Jan  7 12:08:10 EST 2010
+//   Throw exception with obviously incorrect format.
+//
 int avtGadgetFileFormat::get_block_names(FILE *fd, char **labels, int *vflag, int *numblocks)
 {
   rewind(fd);
@@ -135,6 +140,7 @@ int avtGadgetFileFormat::get_block_names(FILE *fd, char **labels, int *vflag, in
          {
 
            printf("incorrect format (blksize=%d)!\n",blksize);
+           EXCEPTION1(InvalidFilesException, "unknown");
            //exit(1);
          }
        else
@@ -172,6 +178,10 @@ int avtGadgetFileFormat::get_block_names(FILE *fd, char **labels, int *vflag, in
 /*-------- returns length of block found, -------------------------------------*/
 /*-------- the file fd points to starting point of block ----------------------*/
 /*-----------------------------------------------------------------------------*/
+// Modifications
+//   Jeremy Meredith, Thu Jan  7 12:08:10 EST 2010
+//   Throw exception with obviously incorrect format.
+//
 int avtGadgetFileFormat::find_block(FILE *fd,const char *label)
 {
   int4bytes blocksize=0;
@@ -196,6 +206,7 @@ int avtGadgetFileFormat::find_block(FILE *fd,const char *label)
        if(blksize != 8)
          {
            printf("incorrect format (blksize=%d)!\n",blksize);
+           EXCEPTION1(InvalidFilesException, "unknown");
            //exit(1);
          }
        else

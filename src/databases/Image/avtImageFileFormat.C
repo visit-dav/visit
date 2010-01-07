@@ -154,6 +154,9 @@ avtImageFileFormat::~avtImageFileFormat()
 //     Jeremy Meredith, Thu Aug  7 16:12:17 EDT 2008
 //     Use const char* for string literals.
 //
+//     Jeremy Meredith, Thu Jan  7 12:52:02 EST 2010
+//     Make sure dot position exists before using it; otherwise we crash.
+//
 // ****************************************************************************
 
 void
@@ -168,7 +171,10 @@ avtImageFileFormat::Initialize(void)
     for(i=0; i<fname.size(); i++)
         if(fname[i] == '.')
             start = i;
-    fext = string(fname, start+1, fname.size()-1);
+    if (i>=fname.size())
+        fext = "";
+    else
+        fext = string(fname, start+1, fname.size()-1);
 
     debug4 << "File extension: " << fext.c_str() << endl;
 

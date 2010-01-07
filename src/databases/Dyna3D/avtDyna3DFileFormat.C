@@ -340,7 +340,7 @@ avtDyna3DFileFormat::SkipToSection(ifstream &ifile, const char *section)
 }
 
 // ****************************************************************************
-// Method: avtDyna3DFileFormat::ReadControlCard2
+// Method: avtDyna3DFileFormat::ReadControlCard <n>
 //
 // Purpose: 
 //   Read control card 2 since it contains information about the number
@@ -357,6 +357,8 @@ avtDyna3DFileFormat::SkipToSection(ifstream &ifile, const char *section)
 // Creation:   Mon Nov 27 16:23:01 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan  7 12:01:03 EST 2010
+//    Getline can generate errors instead of eofs.  Changed the test used.
 //   
 // ****************************************************************************
 
@@ -479,7 +481,7 @@ avtDyna3DFileFormat::ReadControlCard9(ifstream &ifile)
             if(strncmp(line, "endfree", 7) == 0)
                 break;
             GetLine(ifile);
-        } while(!ifile.eof());
+        } while(ifile.good());
     }
 }
 

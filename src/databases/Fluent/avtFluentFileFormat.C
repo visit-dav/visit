@@ -305,6 +305,10 @@ avtFluentFileFormat::GetVectorVar(int domain, const char *varname)
 //  Modifications:
 //    Kathleen Bonnell, Thu Dec 21 10:23:19 PST 2006
 //    Specify binary file when opening.
+//
+//    Jeremy Meredith, Thu Jan  7 12:08:53 EST 2010
+//    Comment out debug printing.
+//
 //----------------------------------------------------------------------------
 int avtFluentFileFormat::OpenCaseFile(const char *filename)
 {
@@ -316,7 +320,7 @@ int avtFluentFileFormat::OpenCaseFile(const char *filename)
     }
   else
     {
-    cout << "Could not open " << filename << endl;
+    //cout << "Could not open " << filename << endl;
     return 0;
     }
 }
@@ -325,6 +329,10 @@ int avtFluentFileFormat::OpenCaseFile(const char *filename)
 //  Modifications:
 //    Kathleen Bonnell, Thu Dec 21 10:23:19 PST 2006
 //    Specify binary file when opening.
+//
+//    Jeremy Meredith, Thu Jan  7 12:08:53 EST 2010
+//    Comment out debug printing.
+//
 //----------------------------------------------------------------------------
 int avtFluentFileFormat::OpenDataFile(const char *filename)
 {
@@ -340,7 +348,7 @@ int avtFluentFileFormat::OpenDataFile(const char *filename)
     }
   else
     {
-    cout << "Could not open " << dfilename << endl;
+    //cout << "Could not open " << dfilename << endl;
     return 0;
     }
 }

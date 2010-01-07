@@ -185,7 +185,7 @@ DDCMDGeneralPluginInfo::GetDefaultFilePatterns() const
 bool
 DDCMDGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

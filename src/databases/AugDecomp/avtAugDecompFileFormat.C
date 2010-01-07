@@ -88,6 +88,9 @@ class  avtBreakEncapsulationGenericDatabase : public avtGenericDatabase
 //    Pass a pointer to the plugin info. That's how we get the plugin manager
 //    since it's no longer a singleton.
 //
+//    Jeremy Meredith, Thu Jan  7 12:09:53 EST 2010
+//    Check to make sure we correctly read the number of subsets and domains.
+//
 // ****************************************************************************
 
 avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
@@ -119,12 +122,20 @@ avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
 
     int numSubsets;
     ifile >> numSubsets;
+    if (!ifile)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }        
     subset_names.resize(numSubsets);
     for (int i = 0 ; i < numSubsets ; i++)
         ifile >> subset_names[i];
 #ifdef ENGINE
     int numDomains;
     ifile >>  numDomains;
+    if (!ifile)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }        
     zone_counts.resize(numDomains);
     subset_vals.resize(numDomains);
     for (int i = 0 ; i < numDomains ; i++)

@@ -65,6 +65,7 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 
 #include <XDMFParser.h>
 
@@ -2250,6 +2251,10 @@ avtXDMFFileFormat::ParseXdmf()
 //    I enhanced the routine to be insensitive to the case for element names,
 //    attribute names, and attribute values that were not names.
 //
+//    Jeremy Meredith, Thu Jan  7 12:32:55 EST 2010
+//    An XML file can't start with random text.  It has to be a comment
+//    or open tag.  We used to "successfully" parse any old file here.
+//
 // ****************************************************************************
 
 void
@@ -2258,6 +2263,13 @@ avtXDMFFileFormat::ParseXMLFile(void)
     xdmfParser.SetInputFileName(fname.c_str());
 
     XDMFParser::ElementType elementType = xdmfParser.GetNextElement();
+    if (elementType == XDMFParser::TYPE_CDATA)
+    {
+        // If the first thing in the file isn't an open tag or a comment,
+        // it's not and XML file.  Error out.
+        EXCEPTION2(InvalidFilesException, fname.c_str(),
+                   "Not an XML format file.");
+    }
     while (elementType != XDMFParser::TYPE_EOF)
     {
         if (elementType == XDMFParser::TYPE_START_TAG)

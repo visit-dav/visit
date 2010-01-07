@@ -1398,6 +1398,8 @@ avtBOWFileFormat::HeaderData::~HeaderData()
 // Creation:   Fri Mar 31 10:04:18 PDT 2006
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:29:43 EST 2010
+//   Add an "else" condition where we throw an error.
 //   
 // ****************************************************************************
 
@@ -1488,6 +1490,11 @@ avtBOWFileFormat::HeaderData::Read(const char *filename)
             {
                 EXCEPTION1(InvalidFilesException, filename);
             }
+        }
+        else
+        {
+            EXCEPTION2(InvalidFilesException, filename,
+                       "Unexpected line in file.");
         }
     }
 

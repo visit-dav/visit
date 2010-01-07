@@ -62,6 +62,8 @@ class vtkUnsignedCharArray;
 // Creation:   Tue Sep 6 11:54:59 PDT 2005
 //
 // Modifications:
+//   Jeremy Meredith, Wed Jan  6 17:14:05 EST 2010
+//   Track filename for error reporting.
 //
 // ****************************************************************************
 
@@ -104,6 +106,7 @@ protected:
     float          ymin;
     float          ymax;
     bool           invertYValues;
+    const char    *filename;
 
     virtual void   PopulateDatabaseMetaData(avtDatabaseMetaData *);
 

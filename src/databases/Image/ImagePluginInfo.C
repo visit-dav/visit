@@ -195,7 +195,7 @@ ImageGeneralPluginInfo::GetDefaultFilePatterns() const
 bool
 ImageGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

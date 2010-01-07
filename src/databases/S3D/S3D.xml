@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="S3D" type="database" label="S3D combustion code restart files" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+  <Plugin name="S3D" type="database" label="S3D combustion code restart files" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="true">
     <CXXFLAGS>
       ${NETCDF_INCLUDE_DIR}
     </CXXFLAGS>

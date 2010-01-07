@@ -1486,12 +1486,16 @@ avtSpheralFileFormat::ReadNodeList(istream &ifile, int nodeListIndex)
 //  Programmer: Hank Childs
 //  Creation:   March 13, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan  7 12:01:03 EST 2010
+//    ifstream can generate errors instead of eofs.  Changed the test used.
+//
 // ****************************************************************************
 
 int
 avtSpheralFileFormat::GetLine(istream &ifile, char *line, vector<int> &offsets)
 {
-    if (ifile.eof())
+    if (!ifile.good())
     {
         debug1 << "File ended prematurely" << endl;
         EXCEPTION1(InvalidFilesException, current_file.c_str());

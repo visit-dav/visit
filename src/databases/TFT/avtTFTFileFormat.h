@@ -58,6 +58,8 @@
 //  Creation:   Tue Feb 22 16:04:15 PST 2005
 //
 //  Modifications:
+//   Jeremy Meredith, Wed Jan  6 16:10:06 EST 2010
+//   Added some error checking to make sure we had an ASCII file.
 //
 // ****************************************************************************
 
@@ -91,7 +93,7 @@ protected:
     public:
                      CurveData();
         virtual     ~CurveData();
-        bool         Read(ifstream &, bool &, float &);
+        bool         Read(ifstream &, bool &, float &, const char *);
         std::string  GetLine(ifstream &);
         std::string  StripExcess(const std::string &input);
         void         GetLabelsAndUnits(const std::string &, std::string &,

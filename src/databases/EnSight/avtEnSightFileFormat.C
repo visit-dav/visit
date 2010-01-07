@@ -109,6 +109,9 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Account for timestep and file set numbers in case file.  Also allow for
 //    wildcards in geometry file names.
 //
+//    Jeremy Meredith, Thu Jan  7 12:34:08 EST 2010
+//    File reading can generated errors instead of eofs.  Changed the test.
+//
 // ****************************************************************************
 
 void
@@ -154,7 +157,7 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
     char type_line[1024] = { '\0' };
     char model_line[1024] = { '\0' };
 
-    while (!case_file.eof())
+    while (case_file.good())
     {
         char line[1024];
         case_file.getline(line, 1024);

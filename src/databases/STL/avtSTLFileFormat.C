@@ -49,6 +49,8 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
+#include <avtDatabase.h>
 
 
 //
@@ -67,6 +69,10 @@ const char   *avtSTLFileFormat::MESHNAME = "STL_mesh";
 //  Programmer:  Hank Childs
 //  Creation:    May 24, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan  7 12:20:01 EST 2010
+//    Initialize checkedFile.
+//
 // ****************************************************************************
 
 avtSTLFileFormat::avtSTLFileFormat(const char *fname) 
@@ -74,6 +80,7 @@ avtSTLFileFormat::avtSTLFileFormat(const char *fname)
 {
     dataset = NULL;
     readInDataset = false;
+    checkedFile = false;
 }
 
 
@@ -112,6 +119,9 @@ avtSTLFileFormat::~avtSTLFileFormat()
 //    Brad Whitlock, Thu Apr  2 16:15:31 PDT 2009
 //    I renamed the STL reader to vtkVisItSTLReader to avoid crashes on Mac.
 //
+//    Jeremy Meredith, Thu Jan  7 11:28:44 EST 2010
+//    Added new Strict option to reader, and enabled it in mdserver.
+//
 // ****************************************************************************
 
 void
@@ -133,6 +143,8 @@ avtSTLFileFormat::ReadInDataset(void)
     // Create a file reader and set our dataset to be its output.
     //
     vtkVisItSTLReader *reader = vtkVisItSTLReader::New();
+    if (avtDatabase::OnlyServeUpMetaData())
+        reader->StrictOn();
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
     dataset->Register(NULL);
@@ -260,11 +272,34 @@ avtSTLFileFormat::FreeUpResources(void)
 //    from it anyway.  The VTK routines assume that the dataset being read
 //    in is truly an STL file.
 //
+//    Jeremy Meredith, Thu Jan  7 11:29:01 EST 2010
+//    Okay, we're reading it now despite the penalty.  It's necessary to
+//    make sure this really is an STL file in the meta-data server.
+//
 // ****************************************************************************
 
 void
 avtSTLFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    if (avtDatabase::OnlyServeUpMetaData())
+    {
+        if (!checkedFile)
+        {
+            ReadInDataset();
+            if (!dataset ||
+                dataset->GetNumberOfCells() == 0 ||
+                dataset->GetNumberOfPoints() == 0)
+            {
+                EXCEPTION2(InvalidFilesException,filename,
+                           "Empty dataset assumed to be erroneous file."); 
+            }
+            dataset->Delete();
+            dataset = NULL;
+            readInDataset = false;
+            checkedFile = true;
+        }
+    }
+
     int spat = 3;
     int topo = 2;
 

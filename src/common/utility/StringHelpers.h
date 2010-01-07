@@ -103,6 +103,8 @@ namespace StringHelpers
                                                const char separator);
 
     std::string UTILITY_API Plural(const std::string &noun);
+    bool UTILITY_API IsPureASCII(const std::string &txt);
+    bool UTILITY_API IsPureASCII(const char *const txt, int length);
 
 
 // ****************************************************************************

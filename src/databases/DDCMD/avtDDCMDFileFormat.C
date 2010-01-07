@@ -101,6 +101,9 @@ using     std::max;
 //    Eric Brugger, Fri Dec  5 16:39:53 PST 2008
 //    I enhanced the reader to read ascii atom files.
 //
+//    Jeremy Meredith, Thu Jan  7 12:25:48 EST 2010
+//    Error if we can't open the file.  Stop reading at EOF.
+//
 // ****************************************************************************
 
 DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
@@ -118,13 +121,15 @@ DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
     sprintf(string, "%s/%s#000000", fname, subname);
 
     file = fopen(string, "r");
+    if (!file)
+        EXCEPTION1(InvalidFilesException, fname);
     maxlen = 4096;
     header = string;
     headerlength = 0;
     fgets(header, maxlen - headerlength, file);
     headerlength = strlen(header);
     fgets(h = header + headerlength, maxlen - headerlength, file);
-    while(*h != '\n')
+    while(*h != '\n' && !feof(file))
     {
         headerlength = strlen(header);
         fgets(h = header + headerlength, maxlen-headerlength, file);
@@ -2189,6 +2194,9 @@ avtDDCMDFileFormat::GetRectilinearVar(const char *varname)
 //    in the file, then it assumes that it is cgrid to maintain backward
 //    compatability.
 //
+//    Jeremy Meredith, Thu Jan  7 12:28:16 EST 2010
+//    Check some array bounds.  Make sure we can open the file.
+//
 // ****************************************************************************
 
 avtDDCMDFileFormat::avtDDCMDFileFormat(const char *filename)
@@ -2198,6 +2206,10 @@ avtDDCMDFileFormat::avtDDCMDFileFormat(const char *filename)
     // Store the directory name with the data files.
     //
     string name(filename);
+    if (name.length() < 6)
+        EXCEPTION2(InvalidFilesException, filename,
+                   "Filename not at least 6 characters.");
+
     fname = name.substr(0,name.length()-6);
 
     //
@@ -2212,15 +2224,22 @@ avtDDCMDFileFormat::avtDDCMDFileFormat(const char *filename)
     FILE     *file;
 
     file = fopen(filename, "r");
+    if (!file)
+        EXCEPTION1(InvalidFilesException, filename);
+
     str[0] = '\0';
     maxlen = 1024;
     buf = str;
     b = str;
-    while (b != NULL)
+    while (b != NULL && lbuf < 1023)
     {
         lbuf = strlen(buf);
         b = fgets(buf + lbuf, maxlen - lbuf, file);
     }
+    if (lbuf >= 1023)
+        EXCEPTION2(InvalidFilesException, filename,
+                   "First line was more than 1023 bytes.");
+
     fclose(file);
 
     if (lbuf == 0)

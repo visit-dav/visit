@@ -185,7 +185,7 @@ S3DGeneralPluginInfo::GetDefaultFilePatterns() const
 bool
 S3DGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

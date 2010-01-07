@@ -54,6 +54,7 @@
 
 #include <DebugStream.h>
 #include <Utility.h>
+#include <StringHelpers.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -314,6 +315,8 @@ avtTFTFileFormat::GetVar(const char *name)
 // Creation:   Tue Feb 22 17:51:52 PST 2005
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:17:37 EST 2010
+//   Pass filename for error reporting.
 //   
 // ****************************************************************************
 
@@ -333,7 +336,7 @@ avtTFTFileFormat::Initialize()
         do
         {
             CurveData *curve = new CurveData;
-            if(curve->Read(ifile, hasValidTime, time))
+            if(curve->Read(ifile, hasValidTime, time, filename))
             {
                 if(curve->title.size() > 0)
                     lastTitle = curve->title;
@@ -575,11 +578,14 @@ avtTFTFileFormat::CurveData::GetLabelsAndUnits(const std::string &input,
 // Creation:   Tue Feb 22 19:18:04 PST 2005
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:17:59 EST 2010
+//   Check the data to make sure it's ASCII.
 //   
 // ****************************************************************************
 
 bool
-avtTFTFileFormat::CurveData::Read(ifstream &ifile, bool &setTime, float &time)
+avtTFTFileFormat::CurveData::Read(ifstream &ifile, bool &setTime, float &time,
+                                  const char *filename)
 {
     bool retval = true;
     char line[1024];
@@ -589,6 +595,8 @@ avtTFTFileFormat::CurveData::Read(ifstream &ifile, bool &setTime, float &time)
     // Get the number of points.
     //
     ifile.getline(line, 1024);
+    if (!StringHelpers::IsPureASCII(line,1024))
+        EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
     if(sscanf(line, "%d %d %d %d %d", &readHeader,&b,&c,&nPoints, &d) == 5)
     {
         if(nPoints < 0)

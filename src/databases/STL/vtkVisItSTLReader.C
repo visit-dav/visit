@@ -23,6 +23,7 @@
 #include "vtkPolyData.h"
 
 #include <ctype.h>
+#include <InvalidFilesException.h>
 
 vtkCxxRevisionMacro(vtkVisItSTLReader, "$Revision: 1.69 $");
 vtkStandardNewMacro(vtkVisItSTLReader);
@@ -31,12 +32,18 @@ vtkStandardNewMacro(vtkVisItSTLReader);
 #define VTK_BINARY 1
 
 // Construct object with merging set to true.
+
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:20:01 EST 2010
+//   Initialize Strict.
+//
 vtkVisItSTLReader::vtkVisItSTLReader()
 {
   this->FileName = NULL;
   this->Merging = 1;
   this->ScalarTags = 0;
   this->Locator = NULL;
+  this->Strict = 0;
 }
 
 vtkVisItSTLReader::~vtkVisItSTLReader()
@@ -221,6 +228,22 @@ void vtkVisItSTLReader::Execute()
   output->Squeeze();
 }
 
+#if defined(_WIN32)
+// for _strnicmp
+#include <string.h>
+#define STRNCASECMP _strnicmp
+#else
+// for strcasecmp
+#include <strings.h>
+#define STRNCASECMP strncasecmp
+#endif
+
+
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:20:01 EST 2010
+//   Use strict to make sure file length, header information, and
+//   data values are reasonable.
+//
 int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts, 
                                 vtkCellArray *newPolys)
 {
@@ -233,6 +256,18 @@ int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts,
   facet_t facet;
 
   vtkDebugMacro(<< " Reading BINARY STL file");
+
+  fseek(fp,0,SEEK_END);
+  long bytes = ftell(fp);
+  rewind(fp);
+  long ntris_check = (bytes-84)/50;
+  long remainder = (bytes-84)%50;
+  if (this->Strict && remainder != 0)
+  {
+      EXCEPTION2(InvalidFilesException, FileName,
+                 "Binary STL file did not have an even multiple of 3 points "
+                 "and 1 normal; assuming it's not an STL file.");
+  }
 
   //  File is read to obtain raw information as well as bounding box
   //
@@ -248,6 +283,13 @@ int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts,
     vtkDebugMacro(<< "Bad binary count: attempting to correct (" 
     << numTris << ")");
     }
+  if (this->Strict && numTris > 0 && ntris_check != numTris)
+  {
+      EXCEPTION2(InvalidFilesException, FileName,
+                 "Binary STL file did not agree between the number of "
+                 "triangles in the header and the length of the file; "
+                 "assuming it's not an STL file.");
+  }
 
   for ( i=0; fread(&facet,48,1,fp) > 0; i++ )
     {
@@ -273,6 +315,16 @@ int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts,
     pts[2] = newPts->InsertNextPoint(facet.v3);
 
     newPolys->InsertNextCell(3,pts);
+    const float lim = 1e+30;
+    if (this->Strict && 
+        (fabs(facet.v1[0])>lim||fabs(facet.v1[1])>lim||fabs(facet.v1[2])>lim||
+         fabs(facet.v2[0])>lim||fabs(facet.v2[1])>lim||fabs(facet.v2[2])>lim||
+         fabs(facet.v3[0])>lim||fabs(facet.v3[1])>lim||fabs(facet.v3[2])>lim))
+    {
+        EXCEPTION2(InvalidFilesException, FileName,
+                   "Found exceptionally large magnitude, nan, or infinite "
+                   "value.  Assuming this is not really a Binary STL file.");
+    }
 
     if ( (i % 5000) == 0 && i != 0 )
       {
@@ -284,6 +336,11 @@ int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts,
   return 0;
 }
 
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:20:01 EST 2010
+//   Make sure ASCII STL file actually starts with "solid" as required when
+//   strict checking is turned on.
+//
 int vtkVisItSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts, 
                                vtkCellArray *newPolys, vtkFloatArray *scalars)
 {
@@ -298,6 +355,11 @@ int vtkVisItSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts,
   //  Ingest header and junk to get to first vertex
   //
   fgets (line, 255, fp);
+  if (this->Strict && STRNCASECMP(line, "solid", 5) != 0)
+  {
+      EXCEPTION2(InvalidFilesException, FileName,
+                 "File was ASCII but did not start with 'solid'.");      
+  }
 
   done = (fscanf(fp,"%s %*s %f %f %f\n", line, x, x+1, x+2)==EOF);
 
@@ -353,16 +415,20 @@ int vtkVisItSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts,
   return 0;
 }
 
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:20:01 EST 2010
+//   Check 2k bytes instead of 256.
+//
 int vtkVisItSTLReader::GetSTLFileType(FILE *fp)
 {
-  unsigned char header[256];
+  unsigned char header[2048];
   int type, i;
   int numChars;
 
   //  Read a little from the file to figure what type it is.
   //
-  // skip 255 characters so we are past any first line comment */
-  numChars = static_cast<int>(fread ((unsigned char *)header, 1, 255, fp));
+  // skip 2047 characters so we are past any first line comment */
+  numChars = static_cast<int>(fread ((unsigned char *)header, 1, 2047, fp));
   for (i = 0, type=VTK_ASCII; i< numChars && type == VTK_ASCII; i++) // don't test \0
     {
     if (header[i] > 127)

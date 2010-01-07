@@ -50,6 +50,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 
 
 //
@@ -125,6 +126,10 @@ avtWavefrontOBJFileFormat::~avtWavefrontOBJFileFormat()
 //    would load the one defined in this plugin, rather than the one in the
 //    vtk library.
 //
+//    Jeremy Meredith, Thu Jan  7 12:35:04 EST 2010
+//    The VTK reader will parse just about anything, but at least it returns
+//    an empty dataset for some erroneous cases.  Error on an empty dataset.
+//
 // ****************************************************************************
 
 void
@@ -148,6 +153,9 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     vtkVisItOBJReader *reader = vtkVisItOBJReader::New();
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
+    if (dataset->GetNumberOfPoints() == 0 && dataset->GetNumberOfCells() == 0)
+        EXCEPTION2(InvalidFilesException, filename, "No OBJ data in the file.");
+        
     dataset->Register(NULL);
 
     //
