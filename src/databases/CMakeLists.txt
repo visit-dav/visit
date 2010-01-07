@@ -115,6 +115,18 @@ THIRDPARTY_DEPENDENT_PLUGINS(SIMULATION SimV1 SimV1Writer)
 # Add ITAPS
 IF(ITAPS_DIRS)
     SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${ITAPS_DIRS})
+    IF(VISIT_STATIC)
+        FOREACH(impl ${ITAPS_DIRS})
+            SET(itapslib "${impl}_LIB")
+            IF(${itapslib})
+                SET(TMP_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} ${${itapslib}})
+            ENDIF(${itapslib})
+            SET(itapslibdir "${impl}_LIBRARY_DIR")
+            IF(${itapslibdir})
+                SET(TMP_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} ${${itapslibdir}})
+            ENDIF(${itapslibdir})
+        ENDFOREACH(impl)
+    ENDIF(VISIT_STATIC)
 ENDIF(ITAPS_DIRS)
 
 # Save the list of all library dirs and libs so the engine can use it
