@@ -375,6 +375,9 @@ private:
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Jan  8 08:59:16 PST 2010
+//   Contribute gcc 4.4 patch from Jed Brown.
+//
 // ****************************************************************************
 
 int
@@ -425,7 +428,7 @@ main(int argc, char *argv[])
             colorLUT[i] = 0.;
         else
         {
-            char *c = strstr(s, "c ");
+            const char *c = strstr(s, "c ");
             if(c != 0)
             {
                 char hex[100];
