@@ -175,6 +175,9 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 //    Hank Childs, Tue Jan  5 13:14:37 PST 2010
 //    Merge in the extents from each time slice.
 //
+//    Hank Childs, Wed Jan  6 16:13:00 PST 2010
+//    Only merge the extents if they have the same dimension.
+//
 // ****************************************************************************
 
 void
@@ -214,11 +217,14 @@ avtExecuteThenTimeLoopFilter::Execute(void)
         // Merge the extents
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
         avtDataAttributes &inAtts = ds->GetInfo().GetAttributes();
-        outAtts.GetTrueSpatialExtents()->Merge(*(inAtts.GetTrueSpatialExtents()));
-        outAtts.GetCumulativeTrueSpatialExtents()->Merge(*(inAtts.GetCumulativeTrueSpatialExtents()));
-        outAtts.GetEffectiveSpatialExtents()->Merge(*(inAtts.GetEffectiveSpatialExtents()));
-        outAtts.GetCurrentSpatialExtents()->Merge(*(inAtts.GetCurrentSpatialExtents()));
-        outAtts.GetCumulativeCurrentSpatialExtents()->Merge(*(inAtts.GetCumulativeCurrentSpatialExtents()));
+        if (outAtts.GetSpatialDimension() == inAtts.GetSpatialDimension())
+        {
+            outAtts.GetTrueSpatialExtents()->Merge(*(inAtts.GetTrueSpatialExtents()));
+            outAtts.GetCumulativeTrueSpatialExtents()->Merge(*(inAtts.GetCumulativeTrueSpatialExtents()));
+            outAtts.GetEffectiveSpatialExtents()->Merge(*(inAtts.GetEffectiveSpatialExtents()));
+            outAtts.GetCurrentSpatialExtents()->Merge(*(inAtts.GetCurrentSpatialExtents()));
+            outAtts.GetCumulativeCurrentSpatialExtents()->Merge(*(inAtts.GetCumulativeCurrentSpatialExtents()));
+        }
     
         for (int j = 0 ; j < outAtts.GetNumberOfVariables() ; j++)
         {
