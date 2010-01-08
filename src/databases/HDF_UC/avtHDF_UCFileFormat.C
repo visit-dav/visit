@@ -600,6 +600,9 @@ avtHDF_UCFileFormat::GetVectorVar(int ts, const char *varname)
 //    Hank Childs, Thu Mar  6 08:59:57 PST 2008
 //    Add skeleton for creating an avtIdentifierSelection.
 //
+//    Hank Childs, Thu Jan  7 16:46:10 PST 2010
+//    Handle the case where an expression is sent in more gracefully.
+//
 // ****************************************************************************
 
 void *
@@ -615,7 +618,16 @@ avtHDF_UCFileFormat::GetAuxiliaryData(const char *var, int ts, const char *type,
     {
       debug4 << "HDF_UC TRYING TO GET HISTOGRAM!!" << endl;
       avtHistogramSpecification *spec = (avtHistogramSpecification *) s;
-      ConstructHistogram(spec);
+      TRY
+      {
+          ConstructHistogram(spec);
+      }
+      CATCHALL
+      {
+          debug1 << "\nException thrown when constructing a histogram." << endl;
+          debug1 << "This is normal when an expression is passed in.\n" << endl;
+      }
+      ENDTRY
       
       // We don't return the spec ... it was passed in as an input, which we
       // then populated.
