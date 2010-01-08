@@ -45,9 +45,6 @@
 
 class DBOptionsAttributes;
 
-#include <string>
-
-
 // ****************************************************************************
 //  Functions: avtM3DC1Options
 //
