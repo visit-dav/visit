@@ -122,6 +122,10 @@ avtSTLFileFormat::~avtSTLFileFormat()
 //    Jeremy Meredith, Thu Jan  7 11:28:44 EST 2010
 //    Added new Strict option to reader, and enabled it in mdserver.
 //
+//    Jeremy Meredith, Fri Jan  8 16:34:36 EST 2010
+//    Enable strict mode based on the new file format strict mode, not
+//    blindly in the meta-data server.
+//
 // ****************************************************************************
 
 void
@@ -143,8 +147,7 @@ avtSTLFileFormat::ReadInDataset(void)
     // Create a file reader and set our dataset to be its output.
     //
     vtkVisItSTLReader *reader = vtkVisItSTLReader::New();
-    if (avtDatabase::OnlyServeUpMetaData())
-        reader->StrictOn();
+    reader->SetStrict(GetStrictMode());
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
     dataset->Register(NULL);

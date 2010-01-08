@@ -121,6 +121,9 @@ class     avtVariableCache;
 //    operating in isolation and thus cannot assume other processors will
 //    read some of its data.
 //
+//    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
+//    Added ability to turn on stricter file format error checking.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -138,6 +141,9 @@ class DATABASE_API avtFileFormat
     void                  RegisterDatabaseMetaData(avtDatabaseMetaData *);
     virtual void          PopulateIOInformation(avtIOInformation &);
     void                  SetCache(avtVariableCache *);
+
+    void                  SetStrictMode(bool v) { strictMode = v;    }
+    bool                  GetStrictMode()       { return strictMode; }
 
     virtual const char   *GetType(void) = 0;
     virtual const char   *GetFilename(void) = 0;
@@ -210,6 +216,7 @@ class DATABASE_API avtFileFormat
     bool                  closingFile;
     char                 *materialName;
     std::vector<int>      fileIndicesForDescriptorManager;
+    bool                  strictMode;
 
     // This data member is for file formats that do their 
     // own domain decomposition.

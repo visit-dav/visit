@@ -299,6 +299,9 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Jan  7 12:04:12 EST 2010
 //    Check some lines to make sure it's ASCII.
 //
+//    Jeremy Meredith, Fri Jan  8 16:17:34 EST 2010
+//    Added extra error checking and forced more parsing in strict mode.
+//
 // ****************************************************************************
 
 void
@@ -327,7 +330,7 @@ avtPoint3DFileFormat::ReadData(void)
         varnames.push_back(buf);
     }
 
-    if (avtDatabase::OnlyServeUpMetaData())
+    if (avtDatabase::OnlyServeUpMetaData() && !GetStrictMode())
         return;
 
     char     line[1024];
@@ -373,8 +376,13 @@ avtPoint3DFileFormat::ReadData(void)
         }
         else
         {
-            float a, b, c, d;
-            sscanf(line, "%f %f %f %f", &a, &b, &c, &d);
+            float a=0, b=0, c=0, d=0;
+            int n = sscanf(line, "%f %f %f %f", &a, &b, &c, &d);
+            if (GetStrictMode() && n != 4)
+            {
+                EXCEPTION2(InvalidFilesException, filename,
+                           "Bad line in file; less than four values");
+            }
             var1.push_back(a);
             var2.push_back(b);
             var3.push_back(c);

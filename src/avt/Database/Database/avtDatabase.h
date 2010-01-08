@@ -290,6 +290,10 @@ typedef struct {
 //
 //    Mark C. Miller, Mon Feb  9 14:15:05 PST 2009
 //    Added method to convert 1D Var MDs to Curve MDs in metadata.
+//
+//    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
+//    Added ability to turn on stricter file format error checking.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -361,6 +365,8 @@ class DATABASE_API avtDatabase
                                     { ignoreExtents = set; };
     bool                        GetIgnoreExtents() const
                                     { return ignoreExtents; };
+
+    virtual void                SetStrictMode(bool) { }
 
     // methods useful for decomposing rectlinear data on the fly during read
     static double               RectilinearDecompCost(int i, int j, int k,

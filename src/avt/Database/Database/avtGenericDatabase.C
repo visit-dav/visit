@@ -11148,3 +11148,24 @@ avtGenericDatabase::CreateAMRIndices(avtDatasetCollection &dsc,
     }
     src->DatabaseProgress(1, 0, progressString);
 }
+
+
+// ****************************************************************************
+// Method:  avtGenericDatabase::SetStrictMode
+//
+// Purpose:
+//   Enabled strict file reading mode.
+//
+// Arguments:
+//   strictMode   true to enable extra error checking
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January  8, 2010
+//
+// ****************************************************************************
+void
+avtGenericDatabase::SetStrictMode(bool strictMode)
+{
+    if (Interface)
+        Interface->SetStrictMode(strictMode);
+}

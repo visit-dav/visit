@@ -43,6 +43,7 @@
 #include <avtFileFormatInterface.h>
 
 #include <avtFileFormat.h>
+#include <DebugStream.h>
 
 
 using     std::vector;
@@ -394,5 +395,29 @@ avtFileFormatInterface::SetResultMustBeProducedOnlyOnThisProcessor(bool b)
     for (int i = 0 ; i < nFormats ; i++)
     {
         GetFormat(i)->SetResultMustBeProducedOnlyOnThisProcessor(b);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::SetStrictMode
+//
+//  Purpose:
+//      Tells the file format whether it should be strict about returning
+//      errors on files that may actually be of this type of format.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January  8, 2010
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::SetStrictMode(bool strictMode)
+{
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        avtFileFormat *ff = GetFormat(i);
+        ff->SetStrictMode(strictMode);
     }
 }

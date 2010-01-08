@@ -200,6 +200,9 @@ avtLinesFileFormat::GetVar(int, const char *name)
 //    Hank Childs, Tue Apr  8 09:10:58 PDT 2003
 //    Make sure we have read in the file.
 //
+//    Jeremy Meredith, Fri Jan  8 16:40:54 EST 2010
+//    If we didn't get any data, it's not a Lines file so throw an exception.
+//
 // ****************************************************************************
 
 void
@@ -208,6 +211,9 @@ avtLinesFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (!readInFile)
     {
         ReadFile();
+        if (lines.size() == 0)
+            EXCEPTION2(InvalidFilesException, GetFilename(),
+                       "Parsed nothing useful from the file.");
     }
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
@@ -377,6 +383,9 @@ avtLinesFileFormat::ReadFile(void)
 //    Jeremy Meredith, Thu Jan  7 13:00:32 EST 2010
 //    Check for ASCII data.
 //
+//    Jeremy Meredith, Fri Jan  8 16:40:39 EST 2010
+//    Only check for ascii data in strict mode (for performance).
+//
 // ****************************************************************************
 
 bool
@@ -387,7 +396,7 @@ avtLinesFileFormat::GetPoint(ifstream &ifile, float &x, float &y, float &z,
     ifile.getline(line, 256, '\n');
 
     // Do an ASCII check.  We only support text files.
-    if (!StringHelpers::IsPureASCII(line,256))
+    if (GetStrictMode() && !StringHelpers::IsPureASCII(line,256))
         EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
 
     ln = line;
