@@ -213,6 +213,9 @@ class    avtVariableCache;
 //    Hank Childs, Fri Apr  3 23:39:26 CDT 2009
 //    Added SetResultMustProducedOnlyOnThisProcessor.
 //
+//    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
+//    Added ability to turn on stricter file format error checking.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -253,6 +256,7 @@ class DATABASE_API avtFileFormatInterface
     void                    TurnMaterialSelectionOff(void);
     void                    TurnMaterialSelectionOn(const char *);
     void                    SetResultMustBeProducedOnlyOnThisProcessor(bool);
+    void                    SetStrictMode(bool strictMode);
 
     void                    RegisterDataSelections(
                                 const std::vector<avtDataSelection_p>& selList,

@@ -899,6 +899,10 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //    Jeremy Meredith, Thu Jan  7 13:00:03 EST 2010
 //    Error on non-ascii data.
 //
+//    Jeremy Meredith, Fri Jan  8 16:38:33 EST 2010
+//    Only check for ASCII data in strict mode (for performance reasons).
+//    In strict mode, also check record types against a "complete" set.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -920,7 +924,7 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
     std::string source;
     while (in)
     {
-        if (!StringHelpers::IsPureASCII(line, 82))
+        if (GetStrictMode() && !StringHelpers::IsPureASCII(line, 82))
             EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
 
         string record(line,0,6);
@@ -986,6 +990,74 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
                 longhetnam += "\n";
             longhetnam += TrimTrailingSpaces(line + 15);
             hetnam = het;
+        }
+        else if (GetStrictMode())
+        {
+            if (record != "AGGRGT" &&
+                record != "AGRDES" &&
+                record != "ANISOU" &&
+                record != "ATOM  " &&
+                record != "AUTHOR" &&
+                record != "CAVEAT" &&
+                record != "CISPEP" &&
+                record != "CMPDES" &&
+                record != "COMPND" &&
+                record != "CONECT" &&
+                record != "CRYST1" &&
+                record != "DBREF " &&
+                record != "END"    && // since nothing follows END, it may
+                record != "END "   && // not be padded with whitespace
+                record != "END  "  &&
+                record != "END   " &&
+                record != "ENDMDL" &&
+                record != "EXPDTA" &&
+                record != "FORMUL" &&
+                record != "FTNOTE" &&
+                record != "HEADER" &&
+                record != "HELIX " &&
+                record != "HET   " &&
+                record != "HETATM" &&
+                record != "HETNAM" &&
+                record != "HETSYN" &&
+                record != "JRNL  " &&
+                record != "KEYWDS" &&
+                record != "LINK  " &&
+                record != "MASTER" &&
+                record != "MDLTYP" &&
+                record != "MODEL " &&
+                record != "MODRES" &&
+                record != "MTRIX1" &&
+                record != "MTRIX2" &&
+                record != "MTRIX3" &&
+                record != "MTXDES" &&
+                record != "NUMMDL" &&
+                record != "OBSLTE" &&
+                record != "ORIGX1" &&
+                record != "ORIGX2" &&
+                record != "ORIGX3" &&
+                record != "REMARK" &&
+                record != "REVDAT" &&
+                record != "SCALE1" &&
+                record != "SCALE2" &&
+                record != "SCALE3" &&
+                record != "SEQADV" &&
+                record != "SEQRES" &&
+                record != "SHEET " &&
+                record != "SIGUIJ" &&
+                record != "SITE  " &&
+                record != "SOURCE" &&
+                record != "SPLIT " &&
+                record != "SPRSDE" &&
+                record != "SSBOND" &&
+                record != "SYMDES" &&
+                record != "SYMOP " &&
+                record != "TER   " &&
+                record != "TITLE " &&
+                record != "USER  ")
+            {
+                EXCEPTION2(InvalidFilesException, filename.c_str(),
+                           "Unknown record type:"+record+".");
+            }
         }
         in.getline(line, 82);
     }

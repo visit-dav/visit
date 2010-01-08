@@ -230,6 +230,10 @@ avtRAWFileFormat::NewPD(int nCells)
 //   ifstream can generate errors instead of eofs.  Changed the test used.
 //   Check the first 100 lines for non-ASCII characters.
 //   
+//   Jeremy Meredith, Fri Jan  8 16:18:13 EST 2010
+//   Make sure scanf succeeded in strict mode.
+//   Throw exception on a bad domain name in strict mode.
+//
 // ****************************************************************************
 
 void
@@ -287,10 +291,15 @@ avtRAWFileFormat::ReadFile(const char *name)
         {
 #ifndef MDSERVER
             // We found a line with points. Read the line and add a triangle cell.
-            sscanf(cptr, "%lg %lg %lg %lg %lg %lg %lg %lg %lg",
-                   &pts[0], &pts[1], &pts[2],
-                   &pts[3], &pts[4], &pts[5],
-                   &pts[6], &pts[7], &pts[8]);
+            int n = sscanf(cptr, "%lg %lg %lg %lg %lg %lg %lg %lg %lg",
+                           &pts[0], &pts[1], &pts[2],
+                           &pts[3], &pts[4], &pts[5],
+                           &pts[6], &pts[7], &pts[8]);
+            if (GetStrictMode() && n != 9)
+            {
+                EXCEPTION2(InvalidFilesException, GetFilename(),
+                           "Bad line in file; less than nine values");
+            }
             vtkIdType ids[3];
             ids[0] = vertexMgr->GetVertexId(pts);
             ids[1] = vertexMgr->GetVertexId(pts + 3);
@@ -351,7 +360,14 @@ avtRAWFileFormat::ReadFile(const char *name)
                 debug4 << mName << "Domain " << domain << " is called: " << cptr << endl;
             }
             else
-                debug4 << mName << "Bad domain name" << endl;
+            {
+                debug4 << mName << "Empty domain name" << endl;
+                if (GetStrictMode())
+                {
+                    EXCEPTION2(InvalidFilesException, GetFilename(),
+                               "Empty domain name.");
+                }
+            }
         }
     }
 

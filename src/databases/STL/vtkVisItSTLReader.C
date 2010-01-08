@@ -244,6 +244,10 @@ void vtkVisItSTLReader::Execute()
 //   Use strict to make sure file length, header information, and
 //   data values are reasonable.
 //
+//   Jeremy Meredith, Fri Jan  8 16:35:12 EST 2010
+//   Check for big floats is not restricted to strict mode only;
+//   it can apparently cause a seg fault in the VTK point merge code.
+//
 int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts, 
                                 vtkCellArray *newPolys)
 {
@@ -315,11 +319,12 @@ int vtkVisItSTLReader::ReadBinarySTL(FILE *fp, vtkPoints *newPts,
     pts[2] = newPts->InsertNextPoint(facet.v3);
 
     newPolys->InsertNextCell(3,pts);
+    // The VTK merging process can crash later with big values.  We need
+    // to do this check even if we're not being strict.
     const float lim = 1e+30;
-    if (this->Strict && 
-        (fabs(facet.v1[0])>lim||fabs(facet.v1[1])>lim||fabs(facet.v1[2])>lim||
-         fabs(facet.v2[0])>lim||fabs(facet.v2[1])>lim||fabs(facet.v2[2])>lim||
-         fabs(facet.v3[0])>lim||fabs(facet.v3[1])>lim||fabs(facet.v3[2])>lim))
+    if (fabs(facet.v1[0])>lim||fabs(facet.v1[1])>lim||fabs(facet.v1[2])>lim ||
+        fabs(facet.v2[0])>lim||fabs(facet.v2[1])>lim||fabs(facet.v2[2])>lim ||
+        fabs(facet.v3[0])>lim||fabs(facet.v3[1])>lim||fabs(facet.v3[2])>lim)
     {
         EXCEPTION2(InvalidFilesException, FileName,
                    "Found exceptionally large magnitude, nan, or infinite "

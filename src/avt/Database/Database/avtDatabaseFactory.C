@@ -232,6 +232,10 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Jeremy Meredith, Thu Jan  7 15:36:03 EST 2010
 //    Fixed a typo.
 //
+//    Jeremy Meredith, Fri Jan  8 16:12:42 EST 2010
+//    Added a new strict file reading mode used when we're trying to
+//    determine what type of file something is.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -315,7 +319,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         plugins.push_back(info ? info->GetName(): "");
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes,
-                           treatAllDBsAsTimeVarying);
+                           treatAllDBsAsTimeVarying, false);
 
         if (rv == NULL)
         {
@@ -370,7 +374,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 rv = SetupDatabase(info, filelist, filelistN,
                                    timestep, fileIndex,
                                    nBlocks, forceReadAllCyclesAndTimes,
-                                   treatAllDBsAsTimeVarying);
+                                   treatAllDBsAsTimeVarying, false);
             }
             CATCHALL
             {
@@ -429,7 +433,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 avtDatabase *dbtmp =
                     SetupDatabase(info, filelist, filelistN, timestep,
                                fileIndex, nBlocks, forceReadAllCyclesAndTimes,
-                               treatAllDBsAsTimeVarying);
+                               treatAllDBsAsTimeVarying, false);
                 if (dbtmp)
                 {
                     succeeded.push_back(info->GetName());
@@ -526,7 +530,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 plugins.push_back(info ? info->GetName() : "");
                 rv = SetupDatabase(info, filelist, filelistN, timestep,
                                fileIndex, nBlocks, forceReadAllCyclesAndTimes,
-                               treatAllDBsAsTimeVarying);
+                               treatAllDBsAsTimeVarying, true);
                 if (rv)
                     succeeded = id;
             }
@@ -621,6 +625,10 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
 //    Correct default argument usage.  A missing argument caused 
 //    treatAllDBsAsTimeVarying to be interpreted as forceReadThisStateCycleTime
 //
+//    Jeremy Meredith, Fri Jan  8 16:12:42 EST 2010
+//    Added a new strict file reading mode used when we're trying to
+//    determine what type of file something is.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -628,7 +636,8 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                                   const char * const *filelist, int filelistN, 
                                   int timestep, int fileIndex, int nBlocks,
                                   bool forceReadAllCyclesAndTimes,
-                                  bool treatAllDBsAsTimeVarying)
+                                  bool treatAllDBsAsTimeVarying, 
+                                  bool strictMode)
 {
     if (info == 0)
     {
@@ -638,7 +647,8 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     }
 
     debug4 << "Trying to open the file with the "
-           << info->GetName() << " file format." << endl;
+           << info->GetName() << " file format, "
+           << "strict mode is "<<(strictMode?"on":"off") << endl;
 
     int t0 = visitTimer->StartTimer();
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
@@ -657,6 +667,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     if (rv != NULL)
     {
         int t0 = visitTimer->StartTimer();
+        rv->SetStrictMode(strictMode);
         if (timestep != -2)
             rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());

@@ -118,6 +118,9 @@ class DatabasePluginManager;
 //    Removed fallback and assumed format entirely.  They have been subsumed
 //    by a more advanced file format detection method.
 //
+//    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
+//    Added ability to turn on stricter file format error checking.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -156,7 +159,7 @@ class DATABASE_API avtDatabaseFactory
   protected:
     static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
                                                const char * const *, int,
-                                               int, int, int, bool, bool);
+                                               int, int, int, bool, bool,bool);
 
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;

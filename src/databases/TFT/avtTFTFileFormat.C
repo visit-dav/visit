@@ -318,6 +318,9 @@ avtTFTFileFormat::GetVar(const char *name)
 //   Jeremy Meredith, Thu Jan  7 12:17:37 EST 2010
 //   Pass filename for error reporting.
 //   
+//   Jeremy Meredith, Fri Jan  8 16:33:32 EST 2010
+//   In strict mode, made bad curve parse error be exception.
+//
 // ****************************************************************************
 
 void
@@ -386,11 +389,19 @@ avtTFTFileFormat::Initialize()
             }
             else
             {
-                debug4 << "Deleting the curve associated with "
-                       << curve->title.c_str()
-                       << " because we could not read in all of its data."
-                       << endl;
-                delete curve;
+                if (GetStrictMode())
+                {
+                    EXCEPTION2(InvalidFilesException, GetFilename(),
+                               "Could not read one of the assumed curves.");
+                }
+                else
+                {
+                    debug4 << "Deleting the curve associated with "
+                           << curve->title.c_str()
+                           << " because we could not read in all of its data."
+                           << endl;
+                    delete curve;
+                }
             }
         } while(!ifile.fail());
 

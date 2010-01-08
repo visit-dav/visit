@@ -92,6 +92,9 @@ const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME / 10.0;
 //    Hank Childs, Fri Apr  3 23:39:26 CDT 2009
 //    Initialize resultMustBeProducedOnlyOnThisProcessor.
 //
+//    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
+//    Added ability to turn on stricter file format error checking.
+//
 // ****************************************************************************
 
 avtFileFormat::avtFileFormat()
@@ -103,6 +106,7 @@ avtFileFormat::avtFileFormat()
     metadata = NULL;
     closingFile = false;
     resultMustBeProducedOnlyOnThisProcessor = false;
+    strictMode = false;
 }
 
 

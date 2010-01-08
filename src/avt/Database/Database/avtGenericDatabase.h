@@ -336,6 +336,9 @@ class     vtkUnstructuredGrid;
 //    Jeremy Meredith, Fri Feb 13 12:04:16 EST 2009
 //    Added MIR iteration capability.
 //
+//    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
+//    Added ability to turn on stricter file format error checking.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -365,6 +368,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     const int, const char *, double[3], int &);
     virtual void               GetDomainName(const std::string &, const int ts,
                                     const int dom, std::string &);
+
+    virtual void               SetStrictMode(bool);
 
   protected:
     avtFileFormatInterface    *Interface;

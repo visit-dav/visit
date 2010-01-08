@@ -306,6 +306,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Bonnell, Tue Jan 20 11:12:54 PST 2009
 //    Add spatial extents.
 //
+//    Jeremy Meredith, Fri Jan  8 16:32:25 EST 2010
+//    Made warning be invalid file exception in strict mode.
+//
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -450,6 +453,9 @@ avtCurve2DFileFormat::ReadFile(void)
           }
           case INVALID_POINT:
           {
+              if (this->GetStrictMode())
+                  EXCEPTION2(InvalidFilesException, GetFilename(),
+                             "Found a bad point");
               if (xl.size())
               {
                   INVALID_POINT_WARNING(xl[xl.size()-1]);
@@ -464,6 +470,9 @@ avtCurve2DFileFormat::ReadFile(void)
           {
               if (lastt == VALID_XVALUE)
               {
+                  if (this->GetStrictMode())
+                      EXCEPTION2(InvalidFilesException, GetFilename(),
+                                 "Found a bad point");
                   INVALID_POINT_WARNING(x);
                   useCentering = AVT_NODECENT;
               }
@@ -633,6 +642,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Jeremy Meredith, Thu Jan  7 12:11:29 EST 2010
 //    Make sure read data is ASCII.
 //
+//    Jeremy Meredith, Fri Jan  8 16:32:40 EST 2010
+//    Only to ASCII check in strict mode since it's basically the whole file.
+//
 // ****************************************************************************
 
 CurveToken
@@ -642,7 +654,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     ifile.getline(line, 256, '\n');
 
     // Do an ASCII check.  We only support text files.
-    if (!StringHelpers::IsPureASCII(line,256))
+    if (GetStrictMode() && !StringHelpers::IsPureASCII(line,256))
         EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
 
     //
