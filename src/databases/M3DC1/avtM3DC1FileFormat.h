@@ -118,6 +118,7 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     int m_refinementLevel;
     int m_poloidalPlanes;
     avtCentering m_dataLocation;
+    float m_perturbationScale;
 
     std::vector<float> m_timeSteps;
 

@@ -82,7 +82,8 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
                                        DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1),
     m_filename(filename),
-    m_poloidalPlanes(1), m_refinementLevel(0), m_dataLocation(AVT_NODECENT)
+    m_poloidalPlanes(1), m_refinementLevel(0), m_dataLocation(AVT_NODECENT),
+    m_perturbationScale(1.5)
 {
     if (readOpts != NULL) {
       for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
@@ -99,6 +100,8 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
           else if( dataLocation == 1 )
             m_dataLocation = AVT_ZONECENT;
         }
+        else if (readOpts->GetName(i) == "Perturbation scaling")
+          m_perturbationScale = readOpts->GetDouble("Perturbation scaling");
       }
     }
 
@@ -983,7 +986,35 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     char varStr[64];
 
     strcpy( varStr, &(varname[7]) );
-    return GetFieldVar( timestate, varStr);
+    
+    if( m_perturbationScale == 1.0 ||
+        (strcmp(varname, "hidden/f" ) &&
+         strcmp(varname, "hidden/f_i" ) &&
+         strcmp(varname, "hidden/psi" ) &&
+         strcmp(varname, "hidden/psi_i" ) ) )
+    {
+      return GetFieldVar( timestate, varStr );
+    }
+
+    // The user can scale the perturbed variables by a scaling factor
+    // set when the file is openned.
+    else
+    {
+      debug1 << "avtM3DC1FileFormat::GetVectorVar - Scaling "
+             << varname << " by " << m_perturbationScale << endl;
+
+      vtkDataArray* vtkVar = GetFieldVar( timestate, varStr );
+
+      float* values = (float*) vtkVar->GetVoidPointer(0);
+      
+      unsigned int nvals =
+        vtkVar->GetNumberOfTuples() * vtkVar->GetNumberOfComponents();
+      
+      for( unsigned int i=0; i<nvals; ++i )
+        *values++ *= m_perturbationScale;
+
+      return vtkVar;
+    } 
   }
   else if( strcmp(varname, "B") == 0 )
   {
