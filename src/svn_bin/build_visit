@@ -765,6 +765,9 @@
 #     Tom Fogal, Tue Jan  5 19:44:21 MST 2010
 #     Linux: Switch mangled Mesa and OSMesa library settings.
 #
+#     Tom Fogal, Wed Jan  6 18:53:08 MST 2010
+#     Add -pthread to python link flags.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3878,7 +3881,7 @@ function build_python
             return 1
             fi
 
-            PYTHON_LDFLAGS="-Wl,-rpath,${PYTHON_PREFIX_DIR}/lib/"
+            PYTHON_LDFLAGS="-Wl,-rpath,${PYTHON_PREFIX_DIR}/lib/ -pthread"
         fi
     fi
     if [[ "$OPSYS" == "AIX" ]]; then
