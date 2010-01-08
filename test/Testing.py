@@ -1508,6 +1508,10 @@ def TurnOffAllAnnotations(givenAtts=0):
 #    Mark C. Miller, Tue Jan 29 16:37:53 PST 2008
 #    Removed 'optimized' mode. Added -numdifftol command line option
 #    and numdifftol global tolerance for relative numerical differences.
+#
+#    Tom Fogal, Wed Jan  6 18:06:09 MST 2010
+#    Print out the import error so we have a chance of debugging it.
+#
 # ----------------------------------------------------------------------------
 
 import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
@@ -1561,8 +1565,8 @@ skipCases = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
 if usePIL:
     try:
         from PIL import Image, ImageChops, ImageStat
-    except:
-        print "WARNING: unable to import modules from PIL" 
+    except ImportError, err:
+        print "WARNING: unable to import modules from PIL: ", err
         usePIL = 0
 else:
     if os.path.isfile("baseline/cksums.txt"):
