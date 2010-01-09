@@ -14,6 +14,11 @@ SET(VISITARCH linux-x86_64_gcc-4.4)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 
 ##
+## Do not build Tuvok
+##
+VISIT_OPTION_DEFAULT(VISIT_TUVOK OFF)
+
+##
 ## Specify the location of the mesa include files and libraries.
 ##
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH})
@@ -43,6 +48,8 @@ SET(VISIT_CXX_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS")
 SET(VISIT_MPI_CXX_FLAGS "-DMPICH_IGNORE_CXX_SEEK -I/opt/mpt/default/xt/mpich2-gnu/include")
 # Get these via CC -v
 SET(VISIT_MPI_LIBS /opt/mpt/default/xt/mpich2-gnu/lib/libmpich.a /opt/mpt/default/xt/pmi/lib/libpmi.a /opt/mpt/default/xt/util/lib/libalpslli.a /opt/mpt/default/xt/util/lib/libalpsutil.a /opt/xt-service/default/lib/snos64/libportals.a pthread rt)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
 
 ##
 ## Database reader plugin support libraries
