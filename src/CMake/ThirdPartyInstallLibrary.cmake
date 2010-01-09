@@ -61,20 +61,28 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 GET_FILENAME_COMPONENT(curEXT ${LIBREALPATH} EXT)
                 STRING(REPLACE "." ";" extList ${curEXT})
                 SET(curNAME "${curPATH}/${curNAMEWE}")
+                # Come up with all of the possible library and symlink names
+                SET(allNAMES "${curNAME}${LIBEXT}")
                 FOREACH(X ${extList})
                     SET(curNAME "${curNAME}.${X}")
-                    IF(EXISTS ${curNAME})
-#                        MESSAGE("** Need to install ${curNAME}")
-                        IF(IS_DIRECTORY ${curNAME})
-                            INSTALL(DIRECTORY ${curNAME}
+                    SET(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")
+                ENDFOREACH(X)
+                # Add the names that exist to the install.
+                FOREACH(curNAMEWithExt ${allNAMES})
+                    IF(EXISTS ${curNAMEWithExt})
+                        #MESSAGE("** Need to install ${curNAMEWithExt}")
+                        IF(IS_DIRECTORY ${curNAMEWithExt})
+                            INSTALL(DIRECTORY ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                                CONFIGURATIONS Debug;Release
                             )
-                        ELSE(IS_DIRECTORY ${curNAME})
-                            INSTALL(FILES ${curNAME}
+                        ELSE(IS_DIRECTORY ${curNAMEWithExt})
+                            INSTALL(FILES ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                                CONFIGURATIONS Debug;Release
                             )
                             # On Windows, we also need to copy the file to the 
                             # binary dir so our out of source builds can run.
@@ -83,9 +91,9 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                         ${curPATH}/${curNAMEWE}.dll
                                         ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
                             ENDIF(WIN32)
-                        ENDIF(IS_DIRECTORY ${curNAME})
-                    ENDIF(EXISTS ${curNAME})
-                ENDFOREACH(X)
+                        ENDIF(IS_DIRECTORY ${curNAMEWithExt})
+                    ENDIF(EXISTS ${curNAMEWithExt})
+                ENDFOREACH(curNAMEWithExt)
             ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*"))
         ELSE(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             # We need to install just the library
@@ -95,12 +103,14 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    CONFIGURATIONS Debug;Release
                 )
             ELSE(IS_DIRECTORY ${tmpLIBFILE})
                 # Create an install target for just the library file
                 INSTALL(FILES ${tmpLIBFILE}
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    CONFIGURATIONS Debug;Release
                 )
 
                 # On Windows, we also need to copy the file to the binary dir so
@@ -123,6 +133,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             INSTALL(FILES ${tmpLIBFILE}
                 DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+                CONFIGURATIONS Debug;Release
             )
 
             # TODO: We could install windows import libraries here...
@@ -144,6 +155,7 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/${lcpkg}
                 DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                CONFIGURATIONS Debug;Release
                 FILES_MATCHING 
                 PATTERN "*.h"
                 PATTERN "*.H"
