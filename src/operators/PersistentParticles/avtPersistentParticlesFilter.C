@@ -55,6 +55,7 @@
 //Use of named selection
 #include <avtCallback.h>
 #include <avtContract.h>
+#include <avtParallel.h>
 #include <avtIdentifierSelection.h>
 
 
@@ -68,7 +69,8 @@
 
 avtPersistentParticlesFilter::avtPersistentParticlesFilter()
 {
-      particlePathData = NULL;
+    particlePathData = NULL;
+    haveData = true;
 }
 
 
@@ -182,13 +184,29 @@ avtPersistentParticlesFilter::ExamineContract(avtContract_p in_contract)
 //  Programmer: Oliver Ruebel
 //  Creation:   May 07, 2009
 //
-//  Oliver Ruebel, Thu May 11 10:50
+//
+//  Modifications:
+//  
+//    Hank Childs, Thu Jan  7 16:14:55 PST 2010
+//    Add an exception if there are transform operators above stream in the
+//    pipeline.
 //
 // ****************************************************************************
 
 void
 avtPersistentParticlesFilter::Execute(void)
 {
+    if ( (! GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved()) ||
+         (! GetInput()->GetInfo().GetValidity().GetZonesPreserved()) ||
+         (! GetInput()->GetInfo().GetValidity().GetNodesPreserved()))
+    {
+        std::string msg("The PersistentParticle operator is implemented "
+                        "such that it must be the first operator applied."
+                        "  Please try again, moving all operators after "
+                        "PersistentParticles in the pipeline.");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
     int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates(); 
     int lastState = numStates-1;
     int myStart = atts.GetStartIndex();
@@ -320,14 +338,14 @@ avtPersistentParticlesFilter::InspectPrincipalData(void)
 //      the information from the current time slice to the new dataset with
 //      the particle paths. 
 //
-//  Modifications:
-//    Oliver Ruebel, Mo Mar 28 2009
-//    Clean-up. Removed cout statements used for debugging and added comments
-//
 //  Programmer: Hank Childs
 //  Creation:   January 25, 2008
 //
 //  Modifications:
+//
+//    Oliver Ruebel, Mon Mar 28 2009
+//    Clean-up. Removed cout statements used for debugging and added comments
+//
 //    Kathleen Bonnell, Mon Apr 20 17:49:52 MST 2009
 //    Use vtk's SafeDownCast method instead of dynamic_cast.
 //
@@ -335,46 +353,229 @@ avtPersistentParticlesFilter::InspectPrincipalData(void)
 //    Remove unneeded call to GetNumberOfZones (found while adding support 
 //    for long longs).
 //
+//    Oliver Ruebel, Thu Dec. 03 2009
+//    Added functionality for replacing data dimensions to allow tracing in
+//    arbitrary dimensions
+//
+//    Oliver Ruebel, Mon Dec. 07 2009
+//    Splitted function inot IterateMergeData and IterateTraceData to ease
+//    readability
+//
 // ****************************************************************************
-
 void
 avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
 {
+    if( ! atts.GetConnectParticles() ){
+            IterateMergeData( ts , tree );
+    }else{
+            IterateTraceData( ts , tree );
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtPersistentParticlesFilter::IterateMergeData
+//
+//  Purpose:
+//      Merge the data of the current time slice with the previous ones.
+//
+//  Arguments:
+//       ts int : The input timestep.
+//       tree avtDataTree_p : The input dataset.
+//
+//  Programmer: Oliver Ruebel
+//  Creation:   December 07, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  5 15:32:52 PST 2010
+//    Add support for parallel and also for polydata.
+//
+// ****************************************************************************
+void
+avtPersistentParticlesFilter::IterateMergeData(int ts, avtDataTree_p tree)
+{
     //Merge the datasets but do not connect the particles
-    if( ! atts.GetConnectParticles() )
-    {
-        trees.push_back(tree);
+    trees.push_back(tree);
+
+    //Define whether any dimensions needs to be replaced
+    bool replaceX = (atts.GetTraceVariableX() != "default");
+    bool replaceY = (atts.GetTraceVariableY() != "default");
+    bool replaceZ = (atts.GetTraceVariableZ() != "default");
+    //We are done if data only needs to be merged
+    if( !(replaceX || replaceY || replaceZ) ){
         return;
     }
+    //If data is only merged (i.e. no paths are computed) but at least one
+    //variable needs to be replaced, then replace the variable and return.
 
-    //if connectParticles is set then compute a new dataset describing
-    //the geometry of particle paths's
+    //Get the needed data.
+    vtkPointSet*         uGrid     =0;
+    vtkPoints*           currPoints=0;
+    vtkDataArray*        currXData =0;
+    vtkDataArray*        currYData =0;
+    vtkDataArray*        currZData =0;
 
     //Ask for the dataset
     vtkDataSet **dsets;
     int nds;
     dsets = tree->GetAllLeaves(nds);
-    if (nds != 1)
+    int nds2 = nds;
+    SumIntAcrossAllProcessors(nds2);
+    if (nds2 < 1 || nds > 1)
     {
         EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
                                          " in avtDataTree");
     }
-    vtkDataSet *currDs = dsets[0];
-    vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::SafeDownCast(currDs);
-    if (uGrid == 0)
+
+    if (nds == 0)
     {
-        EXCEPTION1(ImproperUseException, "Filter only supports "
-                                         "vtkUnstructuredGrid data");    
+        haveData = false;
+        return;
     }
 
-    //Get the data from the current timestep
-    vtkPoints*    currPoints = uGrid->GetPoints();
-    vtkDataArray* currWeight = uGrid->GetPointData()->GetArray( atts.GetIndexVariable().c_str() );
-    vtkPointData* currData   = uGrid->GetPointData();
-    if (currWeight == 0)
+    vtkDataSet *currDs = dsets[0];
+    uGrid = vtkPointSet::SafeDownCast(currDs);
+    if (uGrid == 0)
     {
-        EXCEPTION1(ImproperUseException, "Index variable not found.");    
+        EXCEPTION1(ImproperUseException, "avtPersistentParticlesFilter only supports "
+                                         "vtkPointSet data");
     }
+    //Get the point data from the current timestep
+    currPoints = uGrid->GetPoints();
+    //Get the data to be used as x variable
+    currXData = 0;
+    if( replaceX ){
+            currXData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableX().c_str() );
+            if( currXData == 0 )  EXCEPTION1(ImproperUseException, "X coordinate variable not found.");
+
+    }
+    //Get the data to be used as y variable
+    currYData = 0;
+    if( replaceY  ){
+            currYData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableY().c_str() );
+            if( currYData == 0 )  EXCEPTION1(ImproperUseException, "Y coordinate variable not found.");
+    }
+    //Get the data to be used as z variable
+    currZData = 0;
+    if( atts.GetTraceVariableZ() != "default" ){
+            currZData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableZ().c_str() );
+            if( currZData == 0 )  EXCEPTION1(ImproperUseException, "Z coordinate variable not found.");
+    }
+
+    //Replace the requested data dimensions
+    unsigned int nPoints = uGrid->GetNumberOfPoints();
+    for (unsigned int i = 0; i < nPoints; ++i) {
+       //Get the next point and update its coordinates if necessary
+       double* nextPoint = currPoints->GetPoint(i);
+       if (replaceX)
+           nextPoint[0] = currXData->GetTuple1(i);
+       if (replaceY)
+           nextPoint[1] = currYData->GetTuple1(i);
+       if (replaceZ)
+       nextPoint[2] = currZData->GetTuple1(i);
+       currPoints->SetPoint(i , nextPoint);
+     }
+}
+
+
+// ****************************************************************************
+//  Method: avtPersistentParticlesFilter::IterateTraceData
+//
+//  Purpose:
+//      Merge the data of the current time slice with the previous ones.
+//      Trace the particles over time and define their path by connecting
+//      the corresponding particles.
+//
+//  Arguments:
+//       ts int : The input timestep.
+//       tree avtDataTree_p : The input dataset.
+//
+//  Programmer: Oliver Ruebel
+//  Creation:   December 07, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  5 15:32:52 PST 2010
+//    Add support for parallel, polydata, and vector data.
+//
+// ****************************************************************************
+void
+avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
+{
+    //Define whether any dimensions needs to be replaced
+    bool replaceX = (atts.GetTraceVariableX() != "default");
+    bool replaceY = (atts.GetTraceVariableY() != "default");
+    bool replaceZ = (atts.GetTraceVariableZ() != "default");
+
+    //Get the needed data.
+    vtkPointSet*         uGrid     =0;
+    vtkPoints*           currPoints=0;
+    vtkDataArray*        currWeight=0;
+    vtkDataArray*        currXData =0;
+    vtkDataArray*        currYData =0;
+    vtkDataArray*        currZData =0;
+    vtkPointData*        currData  =0;
+
+    //Ask for the dataset
+    vtkDataSet **dsets;
+    int nds;
+    dsets = tree->GetAllLeaves(nds);
+    int nds2 = nds;
+    SumIntAcrossAllProcessors(nds2);
+    if (nds2 < 1 || nds > 1)
+    {
+        EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
+                                         " in avtDataTree");
+    }
+
+    if (nds == 0)
+    {
+        haveData = false;
+        return;
+    }
+
+    vtkDataSet *currDs = dsets[0];
+    uGrid = vtkPointSet::SafeDownCast(currDs);
+    if (uGrid == 0)
+    {
+        EXCEPTION1(ImproperUseException, "avtPersistentParticlesFilter only supports "
+                                         "vtkPointSets data");
+    }
+
+    //Get the point data from the current timestep
+    currPoints = uGrid->GetPoints();
+    //Get the ID variable. Use the mainVariable if default is specified
+    currWeight = 0;
+    if( atts.GetIndexVariable() != "default" ){
+        currWeight = uGrid->GetPointData()->GetArray( atts.GetIndexVariable().c_str() );
+    }else{
+          currWeight = uGrid->GetPointData()->GetArray( mainVariable.c_str() );
+    }
+    if (currWeight == 0){
+        EXCEPTION1(ImproperUseException, "Index variable not found.");
+    }
+    //Get the data to be used as x variable
+    currXData = 0;
+    if( replaceX ){
+            currXData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableX().c_str() );
+            if( currXData == 0 )  EXCEPTION1(ImproperUseException, "X coordinate variable not found.");
+
+    }
+    //Get the data to be used as y variable
+    currYData = 0;
+    if( replaceY  ){
+            currYData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableY().c_str() );
+            if( currYData == 0 )  EXCEPTION1(ImproperUseException, "Y coordinate variable not found.");
+    }
+    //Get the data to be used as z variable
+    currZData = 0;
+    if( atts.GetTraceVariableZ() != "default" ){
+            currZData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableZ().c_str() );
+            if( currZData == 0 )  EXCEPTION1(ImproperUseException, "Z coordinate variable not found.");
+    }
+    //Get the current PointData
+    currData   = uGrid->GetPointData();
 
     //Create a new output dataset if needed
     //If first timestep or if output dataset has not been created yet
@@ -388,21 +589,17 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
           particlePathData = vtkUnstructuredGrid::New();
           particlePathData->SetPoints( vtkPoints::New() );
           vtkPointData* allData = uGrid->GetPointData();
-          for( int i=0 ; i<allData->GetNumberOfArrays() ; i++)
-          {
-            vtkFloatArray* newArray = vtkFloatArray::New();
-            newArray->SetName( allData->GetArray(i)->GetName()        );
-            particlePathData->GetPointData()->AddArray( newArray );
-            newArray->Delete(); 
-          }
+          particlePathData->GetPointData()->ShallowCopy(allData);
     }
 
     //Write the current particles into a map to decide which ones should be traced
-    int nPoints = uGrid->GetNumberOfPoints(); 
+    //Check if particle ID is unique, if not then stop tracing of that particle
+    int nPoints = uGrid->GetNumberOfPoints();
     std::map<double , bool> trace;
     int numSkipped = 0;
     for( unsigned int i=0 ; i<nPoints ;++i )
     {
+              //if particle ID is not already in the map then true, else false
             std::map<double , bool >::iterator fP = trace.find( currWeight->GetTuple1(i) );
             trace[currWeight->GetTuple1(i)] = (fP==trace.end());
             if( fP!=trace.end() ){
@@ -417,9 +614,17 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
           {
                 //Get the current particle path if it is already defined
                 std::map<double , int >::iterator lastPoint = particlePaths.find( currWeight->GetTuple1(i) );
+                //Get the next point and update its coordinates if necessary
+                    double* nextPathPoint = currPoints->GetPoint(i);
+                    if( replaceX )
+                            nextPathPoint[0] = currXData->GetTuple1(i);
+                    if( replaceY )
+                            nextPathPoint[1] = currYData->GetTuple1(i);
+                    if( replaceZ )
+                            nextPathPoint[2] = currZData->GetTuple1(i);
                 //Add the point to the map
-                vtkPoints* pathPoints = particlePathData->GetPoints();
-                pathPoints->InsertNextPoint( currPoints->GetPoint(i) );
+                    vtkPoints* pathPoints = particlePathData->GetPoints();
+                    pathPoints->InsertNextPoint( nextPathPoint );
                 particlePathData->SetPoints( pathPoints );
 
                 //The index of the new point
@@ -428,9 +633,9 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
                 //Copy the pointdata from the input mesh to the output mesh
                 vtkPointData* allData = particlePathData->GetPointData();
                 for( int j=0 ; j<allData->GetNumberOfArrays() ; j++) {
-                      allData->GetArray(j)->InsertTuple1(
+                      allData->GetArray(j)->InsertTuple(
                       newPointIndex  ,
-                              currData->GetArray(j)->GetTuple1(i)
+                              currData->GetArray(j)->GetTuple(i)
                       );
                 }
 
@@ -451,7 +656,6 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtPersistentParticlesFilter::Finalize
 //
@@ -470,11 +674,19 @@ avtPersistentParticlesFilter::Iterate(int ts, avtDataTree_p tree)
 //  Programmer: Hank Childs
 //  Creation:   January 25, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  5 15:32:52 PST 2010
+//    Add support for the parallel case (where there is no data on some procs).
+//
 // ****************************************************************************
 
 void
 avtPersistentParticlesFilter::Finalize(void)
 {
+     if (! haveData)
+         return;
+
       //Merge the data but do not connect the traces of particles
       if( ! atts.GetConnectParticles() ){
           avtDataTree_p newTree = new avtDataTree(trees.size(), &(trees[0]));
@@ -527,7 +739,13 @@ avtPersistentParticlesFilter::ModifyContract(avtContract_p in_contract)
     //add the index variable to the contract if necessay
     if( atts.GetIndexVariable() != "default")
        out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetIndexVariable().c_str() );
-
+    //add the tracing variables to the contract if necessary
+    if( atts.GetTraceVariableX() != "default")
+       out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetTraceVariableX().c_str() );
+    if( atts.GetTraceVariableY() != "default")
+       out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetTraceVariableY().c_str() );
+    if( atts.GetTraceVariableZ() != "default")
+       out_contract->GetDataRequest()->AddSecondaryVariable( atts.GetTraceVariableZ().c_str() );
     mainVariable = string( out_contract->GetDataRequest()->GetVariable());
     SetContract(out_contract);
     return out_contract;
@@ -537,15 +755,39 @@ avtPersistentParticlesFilter::ModifyContract(avtContract_p in_contract)
 // ****************************************************************************
 //  Method: avtPersistentParticlesFilter::UpdateDataObjectInfo
 //
-//  Purpose:
+//  Purpose: Update the information about the data object, in this case the
+//           topology and spatial dimensionality.
+//
+//  Modification:
+//  Oliver Ruebel, Thu Dec 12 2009
+//  Set spatial dimensions to 3D if necessary. This became necessary because
+//  the user now can specify in which data dimensions the tracing should be
+//  done, i.e., even if the data is 2D the output traces may be 3D (or 2D).
 //
 // ****************************************************************************
 void
 avtPersistentParticlesFilter::UpdateDataObjectInfo(void)
 {
+    //Define the topology of the output data
     avtDataObject_p           out_data_object = GetOutput();
     avtDataObjectInformation &out_data_info   = out_data_object->GetInfo();
     avtDataAttributes        &out_data_atts   = out_data_info.GetAttributes();
+    avtDataValidity &out_data_validity = GetOutput()->GetInfo().GetValidity();
     out_data_atts.SetTopologicalDimension(2); //we have lines as output
-    out_data_atts.SetCentering( AVT_NODECENT );
+    out_data_atts.SetCentering( AVT_NODECENT ); //the output is node centered data
+
+    //In case that we have a 2D dataset but the output data is 3D we also
+    //need to update the dimensionality of the data
+    if( atts.GetTraceVariableZ() != "default" && out_data_atts.GetSpatialDimension()!=3 ){
+         //Update the data validity
+           out_data_validity.InvalidateSpatialMetaData();
+           out_data_validity.InvalidateZones();
+           out_data_validity.SetPointsWereTransformed(true);
+           //update the spatial dimensions
+           out_data_atts.SetSpatialDimension(3);
+           out_data_atts.SetCanUseTransform(false);
+           if( out_data_atts.HasInvTransform() ){
+                   out_data_atts.SetCanUseInvTransform(false);
+           }
+    }
 }

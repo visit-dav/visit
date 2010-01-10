@@ -158,18 +158,42 @@ QvisPersistentParticlesWindow::CreateWindowContents()
             this, SLOT(strideProcessText()));
     mainLayout->addWidget(stride, 4,1);
 
-    indexVariableLabel = new QLabel(tr("Index Variable"), central);
-    mainLayout->addWidget(indexVariableLabel,5,0);
-    int indexVariableMask = QvisVariableButton::Scalars;
-    indexVariable = new QvisVariableButton(true, true, true, indexVariableMask, central);
-    connect(indexVariable, SIGNAL(activated(const QString&)),
-            this, SLOT(indexVariableChanged(const QString&)));
-    mainLayout->addWidget(indexVariable, 5,1);
+    traceVariableXLabel = new QLabel(tr("X-Coordinate"), central);
+    mainLayout->addWidget(traceVariableXLabel,5,0);
+    int traceVariableXMask = QvisVariableButton::Scalars;
+    traceVariableX = new QvisVariableButton(true, true, true, traceVariableXMask, central);
+    connect(traceVariableX, SIGNAL(activated(const QString&)),
+            this, SLOT(traceVariableXChanged(const QString&)));
+    mainLayout->addWidget(traceVariableX, 5,1);
+
+    traceVariableYLabel = new QLabel(tr("Y-Coordinate"), central);
+    mainLayout->addWidget(traceVariableYLabel,6,0);
+    int traceVariableYMask = QvisVariableButton::Scalars;
+    traceVariableY = new QvisVariableButton(true, true, true, traceVariableYMask, central);
+    connect(traceVariableY, SIGNAL(activated(const QString&)),
+            this, SLOT(traceVariableYChanged(const QString&)));
+    mainLayout->addWidget(traceVariableY, 6,1);
+
+    traceVariableZLabel = new QLabel(tr("Z-Coordinate"), central);
+    mainLayout->addWidget(traceVariableZLabel,7,0);
+    int traceVariableZMask = QvisVariableButton::Scalars;
+    traceVariableZ = new QvisVariableButton(true, true, true, traceVariableZMask, central);
+    connect(traceVariableZ, SIGNAL(activated(const QString&)),
+            this, SLOT(traceVariableZChanged(const QString&)));
+    mainLayout->addWidget(traceVariableZ, 7,1);
 
     connectParticles = new QCheckBox(tr("Connect Particles"), central);
     connect(connectParticles, SIGNAL(toggled(bool)),
             this, SLOT(connectParticlesChanged(bool)));
-    mainLayout->addWidget(connectParticles, 6,0);
+    mainLayout->addWidget(connectParticles, 8,0);
+
+    indexVariableLabel = new QLabel(tr("Index Variable"), central);
+    mainLayout->addWidget(indexVariableLabel,9,0);
+    int indexVariableMask = QvisVariableButton::Scalars;
+    indexVariable = new QvisVariableButton(true, true, true, indexVariableMask, central);
+    connect(indexVariable, SIGNAL(activated(const QString&)),
+            this, SLOT(indexVariableChanged(const QString&)));
+    mainLayout->addWidget(indexVariable, 9,1);
 
 }
 
@@ -224,15 +248,42 @@ QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
           case PersistentParticlesAttributes::ID_stride:
             stride->setText(IntToQString(atts->GetStride()));
             break;
+          case PersistentParticlesAttributes::ID_traceVariableX:
+            traceVariableX->blockSignals(true);
+            traceVariableX->setText(QString(atts->GetTraceVariableX().c_str()));
+            traceVariableX->blockSignals(false);
+            break;
+          case PersistentParticlesAttributes::ID_traceVariableY:
+            traceVariableY->blockSignals(true);
+            traceVariableY->setText(QString(atts->GetTraceVariableY().c_str()));
+            traceVariableY->blockSignals(false);
+            break;
+          case PersistentParticlesAttributes::ID_traceVariableZ:
+            traceVariableZ->blockSignals(true);
+            traceVariableZ->setText(QString(atts->GetTraceVariableZ().c_str()));
+            traceVariableZ->blockSignals(false);
+            break;
+          case PersistentParticlesAttributes::ID_connectParticles:
+            if (atts->GetConnectParticles() == true)
+            {
+                indexVariable->setEnabled(true);
+                if(indexVariableLabel)
+                    indexVariableLabel->setEnabled(true);
+            }
+            else
+            {
+                indexVariable->setEnabled(false);
+                if(indexVariableLabel)
+                    indexVariableLabel->setEnabled(false);
+            }
+            connectParticles->blockSignals(true);
+            connectParticles->setChecked(atts->GetConnectParticles());
+            connectParticles->blockSignals(false);
+            break;
           case PersistentParticlesAttributes::ID_indexVariable:
             indexVariable->blockSignals(true);
             indexVariable->setText(QString(atts->GetIndexVariable().c_str()));
             indexVariable->blockSignals(false);
-            break;
-          case PersistentParticlesAttributes::ID_connectParticles:
-            connectParticles->blockSignals(true);
-            connectParticles->setChecked(atts->GetConnectParticles());
-            connectParticles->blockSignals(false);
             break;
         }
     }
@@ -352,9 +403,27 @@ QvisPersistentParticlesWindow::strideProcessText()
 
 
 void
-QvisPersistentParticlesWindow::indexVariableChanged(const QString &varName)
+QvisPersistentParticlesWindow::traceVariableXChanged(const QString &varName)
 {
-    atts->SetIndexVariable(varName.toStdString());
+    atts->SetTraceVariableX(varName.toStdString());
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPersistentParticlesWindow::traceVariableYChanged(const QString &varName)
+{
+    atts->SetTraceVariableY(varName.toStdString());
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPersistentParticlesWindow::traceVariableZChanged(const QString &varName)
+{
+    atts->SetTraceVariableZ(varName.toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -364,6 +433,14 @@ void
 QvisPersistentParticlesWindow::connectParticlesChanged(bool val)
 {
     atts->SetConnectParticles(val);
+    Apply();
+}
+
+
+void
+QvisPersistentParticlesWindow::indexVariableChanged(const QString &varName)
+{
+    atts->SetIndexVariable(varName.toStdString());
     SetUpdate(false);
     Apply();
 }

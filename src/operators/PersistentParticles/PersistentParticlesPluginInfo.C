@@ -96,7 +96,7 @@ PersistentParticlesGeneralPluginInfo::GetName() const
 const char *
 PersistentParticlesGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "2.0";
 }
 
 // ****************************************************************************
@@ -115,7 +115,7 @@ PersistentParticlesGeneralPluginInfo::GetVersion() const
 const char *
 PersistentParticlesGeneralPluginInfo::GetID() const
 {
-    return "PersistentParticles_1.0";
+    return "PersistentParticles_2.0";
 }
 // ****************************************************************************
 //  Method: PersistentParticlesGeneralPluginInfo::EnabledByDefault

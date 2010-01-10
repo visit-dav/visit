@@ -49,7 +49,7 @@
 
 #include <PersistentParticlesAttributes.h>
 
-#include <map>
+#include <map.h>
 #include <vtkUnstructuredGrid.h>
 
 class vtkDataSet;
@@ -105,8 +105,12 @@ class avtPersistentParticlesFilter
     virtual void                    UpdateDataObjectInfo(void);
 
    private:
-     string                         mainVariable;   
+    void IterateMergeData(int, avtDataTree_p);
+    void IterateTraceData(int, avtDataTree_p);
+
+    string mainVariable;   
     int activeTimeStep;
+    bool haveData;
 };
 
 
