@@ -61,6 +61,7 @@ Lineout
 Merge
 OnionPeel
 PDF
+PersistentParticles
 Project
 Reflect
 Replicate

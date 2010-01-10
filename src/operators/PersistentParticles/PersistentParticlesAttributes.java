@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PersistentParticlesAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 7;
+    private static int numAdditionalAttributes = 10;
 
     public PersistentParticlesAttributes()
     {
@@ -70,8 +70,11 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         stopIndex = 1;
         stopIndexRelative = false;
         stride = 1;
-        indexVariable = new String("");
+        traceVariableX = new String("");
+        traceVariableY = new String("");
+        traceVariableZ = new String("");
         connectParticles = false;
+        indexVariable = new String("");
     }
 
     public PersistentParticlesAttributes(int nMoreFields)
@@ -83,8 +86,11 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         stopIndex = 1;
         stopIndexRelative = false;
         stride = 1;
-        indexVariable = new String("");
+        traceVariableX = new String("");
+        traceVariableY = new String("");
+        traceVariableZ = new String("");
         connectParticles = false;
+        indexVariable = new String("");
     }
 
     public PersistentParticlesAttributes(PersistentParticlesAttributes obj)
@@ -96,8 +102,11 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         stopIndex = obj.stopIndex;
         stopIndexRelative = obj.stopIndexRelative;
         stride = obj.stride;
-        indexVariable = new String(obj.indexVariable);
+        traceVariableX = new String(obj.traceVariableX);
+        traceVariableY = new String(obj.traceVariableY);
+        traceVariableZ = new String(obj.traceVariableZ);
         connectParticles = obj.connectParticles;
+        indexVariable = new String(obj.indexVariable);
 
         SelectAll();
     }
@@ -120,12 +129,15 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
                 (stopIndex == obj.stopIndex) &&
                 (stopIndexRelative == obj.stopIndexRelative) &&
                 (stride == obj.stride) &&
-                (indexVariable.equals(obj.indexVariable)) &&
-                (connectParticles == obj.connectParticles));
+                (traceVariableX.equals(obj.traceVariableX)) &&
+                (traceVariableY.equals(obj.traceVariableY)) &&
+                (traceVariableZ.equals(obj.traceVariableZ)) &&
+                (connectParticles == obj.connectParticles) &&
+                (indexVariable.equals(obj.indexVariable)));
     }
 
     public String GetName() { return "PersistentParticles"; }
-    public String GetVersion() { return "1.0"; }
+    public String GetVersion() { return "2.0"; }
 
     // Property setting methods
     public void SetStartIndex(int startIndex_)
@@ -158,16 +170,34 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         Select(4);
     }
 
-    public void SetIndexVariable(String indexVariable_)
+    public void SetTraceVariableX(String traceVariableX_)
     {
-        indexVariable = indexVariable_;
+        traceVariableX = traceVariableX_;
         Select(5);
+    }
+
+    public void SetTraceVariableY(String traceVariableY_)
+    {
+        traceVariableY = traceVariableY_;
+        Select(6);
+    }
+
+    public void SetTraceVariableZ(String traceVariableZ_)
+    {
+        traceVariableZ = traceVariableZ_;
+        Select(7);
     }
 
     public void SetConnectParticles(boolean connectParticles_)
     {
         connectParticles = connectParticles_;
-        Select(6);
+        Select(8);
+    }
+
+    public void SetIndexVariable(String indexVariable_)
+    {
+        indexVariable = indexVariable_;
+        Select(9);
     }
 
     // Property getting methods
@@ -176,8 +206,11 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
     public int     GetStopIndex() { return stopIndex; }
     public boolean GetStopIndexRelative() { return stopIndexRelative; }
     public int     GetStride() { return stride; }
-    public String  GetIndexVariable() { return indexVariable; }
+    public String  GetTraceVariableX() { return traceVariableX; }
+    public String  GetTraceVariableY() { return traceVariableY; }
+    public String  GetTraceVariableZ() { return traceVariableZ; }
     public boolean GetConnectParticles() { return connectParticles; }
+    public String  GetIndexVariable() { return indexVariable; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -193,9 +226,15 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         if(WriteSelect(4, buf))
             buf.WriteInt(stride);
         if(WriteSelect(5, buf))
-            buf.WriteString(indexVariable);
+            buf.WriteString(traceVariableX);
         if(WriteSelect(6, buf))
+            buf.WriteString(traceVariableY);
+        if(WriteSelect(7, buf))
+            buf.WriteString(traceVariableZ);
+        if(WriteSelect(8, buf))
             buf.WriteBool(connectParticles);
+        if(WriteSelect(9, buf))
+            buf.WriteString(indexVariable);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -218,10 +257,19 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
             SetStride(buf.ReadInt());
             break;
         case 5:
-            SetIndexVariable(buf.ReadString());
+            SetTraceVariableX(buf.ReadString());
             break;
         case 6:
+            SetTraceVariableY(buf.ReadString());
+            break;
+        case 7:
+            SetTraceVariableZ(buf.ReadString());
+            break;
+        case 8:
             SetConnectParticles(buf.ReadBool());
+            break;
+        case 9:
+            SetIndexVariable(buf.ReadString());
             break;
         }
     }
@@ -234,8 +282,11 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         str = str + intToString("stopIndex", stopIndex, indent) + "\n";
         str = str + boolToString("stopIndexRelative", stopIndexRelative, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
-        str = str + stringToString("indexVariable", indexVariable, indent) + "\n";
+        str = str + stringToString("traceVariableX", traceVariableX, indent) + "\n";
+        str = str + stringToString("traceVariableY", traceVariableY, indent) + "\n";
+        str = str + stringToString("traceVariableZ", traceVariableZ, indent) + "\n";
         str = str + boolToString("connectParticles", connectParticles, indent) + "\n";
+        str = str + stringToString("indexVariable", indexVariable, indent) + "\n";
         return str;
     }
 
@@ -246,7 +297,10 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
     private int     stopIndex;
     private boolean stopIndexRelative;
     private int     stride;
-    private String  indexVariable;
+    private String  traceVariableX;
+    private String  traceVariableY;
+    private String  traceVariableZ;
     private boolean connectParticles;
+    private String  indexVariable;
 }
 

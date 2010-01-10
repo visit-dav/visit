@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PersistentParticlesAttributes
 //
@@ -59,13 +60,23 @@
 class PersistentParticlesAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PersistentParticlesAttributes();
     PersistentParticlesAttributes(const PersistentParticlesAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PersistentParticlesAttributes(private_tmfs_t tmfs);
+    PersistentParticlesAttributes(const PersistentParticlesAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PersistentParticlesAttributes();
 
     virtual PersistentParticlesAttributes& operator = (const PersistentParticlesAttributes &obj);
     virtual bool operator == (const PersistentParticlesAttributes &obj) const;
     virtual bool operator != (const PersistentParticlesAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PersistentParticlesAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -74,6 +85,9 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectTraceVariableX();
+    void SelectTraceVariableY();
+    void SelectTraceVariableZ();
     void SelectIndexVariable();
 
     // Property setting methods
@@ -82,8 +96,11 @@ public:
     void SetStopIndex(int stopIndex_);
     void SetStopIndexRelative(bool stopIndexRelative_);
     void SetStride(int stride_);
-    void SetIndexVariable(const std::string &indexVariable_);
+    void SetTraceVariableX(const std::string &traceVariableX_);
+    void SetTraceVariableY(const std::string &traceVariableY_);
+    void SetTraceVariableZ(const std::string &traceVariableZ_);
     void SetConnectParticles(bool connectParticles_);
+    void SetIndexVariable(const std::string &indexVariable_);
 
     // Property getting methods
     int               GetStartIndex() const;
@@ -91,9 +108,15 @@ public:
     int               GetStopIndex() const;
     bool              GetStopIndexRelative() const;
     int               GetStride() const;
+    const std::string &GetTraceVariableX() const;
+          std::string &GetTraceVariableX();
+    const std::string &GetTraceVariableY() const;
+          std::string &GetTraceVariableY();
+    const std::string &GetTraceVariableZ() const;
+          std::string &GetTraceVariableZ();
+    bool              GetConnectParticles() const;
     const std::string &GetIndexVariable() const;
           std::string &GetIndexVariable();
-    bool              GetConnectParticles() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -114,8 +137,12 @@ public:
         ID_stopIndex,
         ID_stopIndexRelative,
         ID_stride,
+        ID_traceVariableX,
+        ID_traceVariableY,
+        ID_traceVariableZ,
+        ID_connectParticles,
         ID_indexVariable,
-        ID_connectParticles
+        ID__LAST
     };
 
 private:
@@ -124,11 +151,16 @@ private:
     int         stopIndex;
     bool        stopIndexRelative;
     int         stride;
-    std::string indexVariable;
+    std::string traceVariableX;
+    std::string traceVariableY;
+    std::string traceVariableZ;
     bool        connectParticles;
+    std::string indexVariable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PERSISTENTPARTICLESATTRIBUTES_TMFS "ibibisssbs"
 
 #endif
