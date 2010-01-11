@@ -1,8 +1,11 @@
                          Building VisIt on MacOS X
                          =========================
 
-This document describes how to build VisIt on MacOS X under at least 10.4.x 
-on Intel and 10.3.9 on PPC. 
+This document describes how to build VisIt on MacOS X under at least
+10.4.x on Intel and 10.3.9 on PPC.  Do note that *building* under OS
+X 10.6 ("Snow Leopard") is not supported in the VisIt 1.12 release
+series.  Binaries built on earlier versions of Mac OS X should still
+run fine on Snow Leopard, however.
 
 build_visit
   The recomended method for building VisIt on MacOS X is to use the 
@@ -11,11 +14,12 @@ build_visit
   Note: you may need to restore the execute permissions after downloading
   with, chmod +x build_visit
   Using build_visit a basic build for the Mac can be initiated with:
-     ./build_visit -z
+     ./build_visit --console
   The above command will download the required VisIt and 3rd party source code,
   configuring, and building it all using your C++ compiler. The full-blown
   version of VisIt (same as the binary distribution minus Mili) use:
-    ./build_visit -45bcefgnrwz 
+    ./build_visit --hdf4 --hdf5 --boxlib --cgns --exodus --cfitsio --gdal \
+      --netcdf --h5part --python --console
   Some users are more comfortable with a GUI interface. The build_visit script
   optionally uses dialog, a script-interpreter which providing a set of curses
   widgets, similar to the what is used in Linux kernel configuration. Dialog
@@ -1284,7 +1288,11 @@ I needed to do a machine merge in order to get a universal binary.
 # Build Boxlib.
 #
 # Boxlib requires a Fortran compiler, skip the Boxlib building if you
-# don't have access to a Fortran compiler
+# don't have access to a Fortran compiler.
+# Do note that the 3D version of BoxLib appears to have issues on the
+# Mac.  The build seems okay but 3D BoxLib files do not load on some
+# Mac systems.  The exact issue is not known, but the VisIt team would
+# welcome contributions to address the problem.
 
 tar -zxf boxlib.tar.gz
 cd CCSEApps/BoxLib
