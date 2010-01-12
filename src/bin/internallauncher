@@ -551,6 +551,11 @@ $0 = shift @ARGV;
 #    Hank Childs, Tue Jan  5 07:16:29 PST 2010
 #    Replace xml2makefile with xml2cmake.
 #
+#    Gunther H. Weber, Mon Jan 11 17:21:57 PST 2010
+#    Added VISITHOME and VISITARCHHOME to the list of environment variables
+#    passed to qsub to ensure that parallel engine on Franklin finds
+#    libOSMesa.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2593,7 +2598,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             # Add the env variables.
             if (! $IsRunningOnRanger_TACC)
             {
-                push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
+                push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITHOME=$ENV{VISITHOME},VISITARCHHOME=$ENV{VISITARCHHOME},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
             }
 
             # parse for '-l vis' so it can be separated from the
