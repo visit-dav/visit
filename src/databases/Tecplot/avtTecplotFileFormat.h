@@ -74,6 +74,8 @@ class vtkUnstructuredGrid;
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Mark C. Miller, Tue Jan 12 17:35:54 PST 2010
+//    Added solTime data member and GetTime() method.
 // ****************************************************************************
 
 class avtTecplotFileFormat : public avtSTMDFileFormat
@@ -88,6 +90,8 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+
+    double                 GetTime() { return solTime;} ;
 
   protected:
     std::string GetNextToken();
@@ -118,6 +122,7 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     int Zindex;
     int spatialDimension;
     int topologicalDimension;
+    double solTime;
 
     std::string title;
     int                       numTotalVars;
