@@ -43,6 +43,7 @@
 #include "iBase.h"
 #include "iMesh.h"
 
+#include <stdlib.h>
 #include <snprintf.h>
 #include <map>
 #include <string>
