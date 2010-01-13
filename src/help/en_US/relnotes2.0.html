@@ -60,6 +60,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.0</font></b></p>
 <ul>
+  <li>When available, the IceT parallel compositor is used by default.  A new
+      flag, <TT>-no-icet</TT> was added to explicitly disable IceT.  The old
+      flag, <TT>-icet</TT>, was maintained for compatibility reasons.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -169,7 +172,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 2.0</font></b></p>
 <ul>
   <li>VisIt's user interface has been ported to Qt4.</li>
-  <li>It is now easier to integrate Ice-T into VisIt, in terms of build_visit and configure. Testing showed that this library made a substantial speedup with parallel rendering and is worth the compile-time effort.</li>
+  <li>It is now easier to integrate IceT into VisIt, in terms of build_visit and
+      CMake.  Testing showed that this library made a substantial speedup with
+      parallel rendering and is worth the compile-time effort.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -177,6 +182,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href="relnotes1.11.1.html">VisIt 1.11.1 Release Notes</a>.</p>
+of VisIt: <a href="relnotes1.12.2.html">VisIt 1.12.2 Release Notes</a>.</p>
 </body>
 </html>

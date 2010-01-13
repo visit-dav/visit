@@ -166,7 +166,8 @@ std::vector<std::string>
 GGCMGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.3df");
+    defaultPatterns.push_back("*.3df.*");
+    defaultPatterns.push_back("*.mer.*");
 
     return defaultPatterns;
 }

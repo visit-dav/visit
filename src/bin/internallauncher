@@ -551,6 +551,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Tue Jan  5 07:16:29 PST 2010
 #    Replace xml2makefile with xml2cmake.
 #
+#    Tom Fogal, Sat Jan  9 13:33:59 MST 2010
+#    Add -no-icet fullhelp output.
+#
 #    Gunther H. Weber, Mon Jan 11 17:21:57 PST 2010
 #    Added VISITHOME and VISITARCHHOME to the list of environment variables
 #    passed to qsub to ensure that parallel engine on Franklin finds
@@ -702,7 +705,8 @@ $fullusage = "$usage
         -expedite            Makes DPCS give priority scheduling.
 
         -icet                In scalable rendering mode, use the IceT parallel
-                             image compositor.
+                             image compositor (default).
+        -no-icet             Do not use the IceT parallel compositor.
 
     Hardware accelerated parallel (scalable) rendering options
     ---------------------------------------------------------------------------

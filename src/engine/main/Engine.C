@@ -268,6 +268,9 @@ protected:
 //    Brad Whitlock, Thu Apr 23 12:05:16 PDT 2009
 //    Disable simulation plugins by default.
 //
+//    Tom Fogal, Fri Jan  8 17:09:26 MST 2010
+//    Enable IceT by default.
+//
 // ****************************************************************************
 
 Engine::Engine() : viewerArgs()
@@ -317,7 +320,11 @@ Engine::Engine() : viewerArgs()
     simulationCommandRPC = NULL;
     setEFileOpenOptionsRPC = NULL;
 
+#if defined(PARALLEL) && defined(HAVE_ICET)
+    useIceT = true;
+#else
     useIceT = false;
+#endif
     nDisplays = 0;
     renderingDisplay = NULL;
 }
@@ -1743,6 +1750,9 @@ Engine::ProcessInput()
 //    Hank Childs, Sat Apr 11 23:41:27 CDT 2009
 //    Added -never-output-timings flag.
 //
+//    Tom Fogal, Fri Jan  8 17:10:25 MST 2010
+//    Add "-no-icet" flag.
+//
 // ****************************************************************************
 
 void
@@ -1939,6 +1949,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-icet") == 0)
         {
             this->useIceT = true;
+        }
+        else if (strcmp(argv[i], "-no-icet") == 0)
+        {
+            this->useIceT = false;
         }
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
