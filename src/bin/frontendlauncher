@@ -85,6 +85,9 @@ exec perl -x $0 ${1+"$@"};
 #    (e.g. -v 1.12.0), then we assume they meant to use -forceversion and
 #    add that value for them.
 #
+#    Tom Fogal, Fri Jan  8 12:33:01 MST 2010
+#    Fixed launching convert_par.
+#
 ###############################################################################
 
 
@@ -212,7 +215,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-visitconvert_par" or
            $arg eq "-convert_par")
     {
-        $progname = "visitconvert_par";
+        $progname = "convert_par";
     }
     elsif ($arg eq "-mpeg2encode"     or
            $arg eq "-mpeg_encode")

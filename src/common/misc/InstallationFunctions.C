@@ -53,6 +53,7 @@
 #include <pwd.h>
 #endif
 
+#include <DebugStream.h>
 #include <Environment.h>
 #include <FileFunctions.h>
 
@@ -605,6 +606,9 @@ GetVisItInstallationDirectory(const char *version)
 //   Tom Fogal, Sun Apr 19 12:47:42 MST 2009
 //   Use `Environment' to simplify and fix a compilation error.
 //
+//   Tom Fogal, Mon Jan 11 22:09:23 MST 2010
+//   Give a warning when relying on the compile-time default.
+//
 // ****************************************************************************
 
 std::string
@@ -641,10 +645,17 @@ GetVisItArchitectureDirectory(const char *version)
 #else
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.
-    std::string archDir(std::string("/usr/local/visit/") + std::string(VISIT_VERSION));
+    std::string archDir(std::string("/usr/local/visit/") +
+                        std::string(VISIT_VERSION));
     const std::string adir = Environment::get("VISITARCHHOME");
     if(!adir.empty())
         archDir = adir;
+    else
+    {
+        debug1 << "WARNING: Using default '/usr/local/visit' architecture "
+                  "directory.  This is unlikely to be correct -- set your "
+                  "'VISITARCHHOME' environment variable!" << std::endl;
+    }
     return archDir;
 #endif
 }
