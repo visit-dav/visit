@@ -42,6 +42,7 @@
 
 #include <avtTecplotFileFormat.h>
 
+#include <stdlib.h>
 #include <string>
 
 #include <vtkPointData.h>
@@ -843,6 +844,8 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Add some support for new ways you can specify zone headers in
 //    recent tecplot flavors, including new keywords.
 //
+//    Mark C. Miller, Tue Jan 12 17:36:23 PST 2010
+//    Added logic to parse SOLUTIONTIME and set solTime.
 // ****************************************************************************
 
 void
@@ -1034,6 +1037,7 @@ avtTecplotFileFormat::ReadFile()
                      tok != "F"  &&
                      tok != "ZONETYPE"  &&
                      tok != "DATAPACKING"  &&
+                     tok != "SOLUTIONTIME"  &&
                      tok != "VARLOCATION"  &&
                      tok != "DT" &&
                      tok != "D"))
@@ -1074,6 +1078,10 @@ avtTecplotFileFormat::ReadFile()
                 else if (tok == "F" || tok == "DATAPACKING")
                 {
                     format = GetNextToken();
+                }
+                else if (tok == "SOLUTIONTIME")
+                {
+                    solTime = strtod(GetNextToken().c_str(),0);
                 }
                 else if (tok == "VARLOCATION")
                 {
@@ -1255,6 +1263,8 @@ avtTecplotFileFormat::ReadFile()
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Initialized topo dim to zero to allow for point meshes 
 //
+//    Mark C. Miller, Tue Jan 12 17:36:41 PST 2010
+//    Initialize solTime.
 // ****************************************************************************
 
 avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
@@ -1273,6 +1283,7 @@ avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
     topologicalDimension = 0;
     spatialDimension = 1;
     numTotalVars = 0;
+    solTime = avtFileFormat::INVALID_TIME;
 }
 
 
