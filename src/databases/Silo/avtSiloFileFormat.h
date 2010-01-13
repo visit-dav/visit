@@ -239,6 +239,9 @@ typedef struct _GroupInfo
 //
 //    Mark C. Miller, Tue Dec 15 13:50:40 PST 2009
 //    Added HasInvariantMetadata/SIL and metadataIsTimeVarying.
+//
+//    Mark C. Miller, Tue Jan 12 17:48:39 PST 2010
+//    Made HandleGlobalZoneIds work for different versions of Silo.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -383,7 +386,15 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *GetCurve(DBfile *, const char *);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+    void                  HandleGlobalZoneIds(const char *, int, void*, int, int);
+#else
     void                  HandleGlobalZoneIds(const char *, int, int*, int);
+#endif
+#else
+    void                  HandleGlobalZoneIds(const char *, int, int*, int);
+#endif
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
                                              DBzonelist *, int,
                                              const char *,int);

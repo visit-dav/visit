@@ -59,6 +59,7 @@
 #include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
+#include <vtkLongLongArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -7150,42 +7151,75 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Jan 12 17:49:18 PST 2010
+//    Made it it able to push data into the resultant vtkDataArray. Added
+//    support for DB_LONG_LONG.
 // ****************************************************************************
 
 static vtkDataArray *
-CreateDataArray(int silotype, size_t &sz)
+CreateDataArray(int silotype, void *data, int numvals)
 { 
-    vtkDataArray *d = 0;
+    vtkDataArray *da = 0;
     switch(silotype)
     {
     case DB_DOUBLE:
-        d = vtkDoubleArray::New();
-        sz = sizeof(double);
-        break;
-    case DB_INT:
-        d = vtkIntArray::New();
-        sz = sizeof(int);
-        break;
-    case DB_LONG:
-        d = vtkLongArray::New();
-        sz = sizeof(long);
-        break;
-    case DB_SHORT:
-        d = vtkShortArray::New();
-        sz = sizeof(short);
-        break;
-    case DB_CHAR:
-        d = vtkCharArray::New();
-        sz = sizeof(char);
-        break;
-    case DB_FLOAT:
-    default:
-        d = vtkFloatArray::New();
-        sz = sizeof(float);
+    {
+        vtkDoubleArray *d = vtkDoubleArray::New();
+        if (data) d->SetArray((double*)data, numvals, 0);
+        da = d;
         break;
     }
+    case DB_INT:
+    {
+        vtkIntArray *d = vtkIntArray::New();
+        if (data) d->SetArray((int*)data, numvals, 0);
+        da = d;
+        break;
+    }
+    case DB_LONG:
+    {
+        vtkLongArray *d = vtkLongArray::New();
+        if (data) d->SetArray((long*)data, numvals, 0);
+        da = d;
+        break;
+    }
+    case DB_SHORT:
+    {
+        vtkShortArray *d = vtkShortArray::New();
+        if (data) d->SetArray((short*)data, numvals, 0);
+        da = d;
+        break;
+    }
+    case DB_CHAR:
+    {
+        vtkCharArray *d = vtkCharArray::New();
+        if (data) d->SetArray((char*)data, numvals, 0);
+        da = d;
+        break;
+    }
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+    case DB_LONG_LONG:
+    {
+        vtkLongLongArray *d = vtkLongLongArray::New();
+        if (data) d->SetArray((long long*)data, numvals, 0);
+        da = d;
+        break;
+    }
+#endif
+#endif
+    case DB_FLOAT:
+    default:
+    {
+        vtkFloatArray *d = vtkFloatArray::New();
+        if (data) d->SetArray((float*)data, numvals, 0);
+        da = d;
+        break;
+    }
+    }
+    if (data) da->SetNumberOfComponents(1);
 
-    return d;
+    return da;
 }
 
 // ****************************************************************************
@@ -7438,6 +7472,8 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 //    Brad Whitlock, Fri Aug  7 10:33:26 PDT 2009
 //    I created more types of vtkDataArray to add support beyond float/double.
 //
+//    Mark C. Miller, Tue Jan 12 17:50:52 PST 2010
+//    Use CreateDataArray.
 // ****************************************************************************
 
 template <class T>
@@ -7481,16 +7517,16 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    size_t sz = 0;
-    vtkDataArray *scalars = CreateDataArray(qv->datatype, sz);
-    scalars->SetNumberOfTuples(qv->nels);
-
+    vtkDataArray *scalars;
     if (qv->major_order == DB_ROWMAJOR || qv->ndims <= 1)
     {
-        memcpy(scalars->GetVoidPointer(0), qv->vals[0], sz*qv->nels);
+        scalars = CreateDataArray(qv->datatype, (void*) qv->vals[0], qv->nels);
+        qv->vals[0] = 0; // the vtkDataArray now owns the data.
     }
     else
     {
+        scalars = CreateDataArray(qv->datatype, 0, 0);
+        scalars->SetNumberOfTuples(qv->nels);
         void *var2 = scalars->GetVoidPointer(0);
         void *var  = qv->vals[0];
 
@@ -7564,6 +7600,9 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Thu Nov 12 14:56:15 PST 2009
 //    Changed logic for exception for variable with more than 1 component
 //    to use 'nvals' instead of 'ndims'
+//
+//    Mark C. Miller, Tue Jan 12 17:51:42 PST 2010
+//    Changed interface to CreateDataArray.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7592,11 +7631,8 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    size_t sz = 0;
-    vtkDataArray *scalars = CreateDataArray(mv->datatype, sz);
-    scalars->SetNumberOfTuples(mv->nels);
-    memcpy(scalars->GetVoidPointer(0), mv->vals[0], sz*mv->nels);
-
+    vtkDataArray *scalars = CreateDataArray(mv->datatype, (void*)mv->vals[0], mv->nels);
+    mv->vals[0] = 0; // vtkDataArray now owns the data.
     DBFreeMeshvar(mv);
 
     return scalars;
@@ -7614,6 +7650,8 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Brad Whitlock, Fri Aug  7 11:01:59 PDT 2009
 //    I added non-float support.
 //
+//    Mark C. Miller, Tue Jan 12 17:51:59 PST 2010
+//    Changed interface to CreateDataArray.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7637,11 +7675,8 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    size_t sz = 0;
-    vtkDataArray *scalars = CreateDataArray(csgv->datatype, sz);
-    scalars->SetNumberOfTuples(csgv->nels);
-    memcpy(scalars->GetVoidPointer(0), csgv->vals[0], sz*csgv->nels);
-
+    vtkDataArray *scalars = CreateDataArray(csgv->datatype, (void*)csgv->vals[0], csgv->nels); 
+    csgv->vals[0] = 0; // vtkDataArray no owns the data.
     DBFreeCsgvar(csgv);
 
     return scalars;
@@ -7720,11 +7755,27 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //
 //    Mark C. Miller, Fri Oct 30 14:03:13 PDT 2009
 //    Handle Silo's DB_DTPTR configuration option.
+//
+//    Mark C. Miller, Tue Jan 12 17:52:15 PST 2010
+//    Handle different version of Silo interface. Added support for all of
+//    Silo's integral types and not just DB_INT.
 // ****************************************************************************
 
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+void
+avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
+    void *gzoneno, int lgzoneno, int gnznodtype)
+#else
 void
 avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     int *gzoneno, int lgzoneno)
+#endif
+#else
+void
+avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
+    int *gzoneno, int lgzoneno)
+#endif
 {
     //
     // Lookup an arb. poly remap data we might need.
@@ -7741,6 +7792,11 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     DBucdvar tmp;
     tmp.centering = DB_ZONECENT;
     tmp.datatype = DB_INT;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+    tmp.datatype = gnznodtype;
+#endif
+#endif
     tmp.nels = lgzoneno;
     tmp.nvals = 1;
 #ifdef DB_DTPTR
@@ -7750,7 +7806,20 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     tmp.vals = (float**) new float*[1]; 
     tmp.vals[0] = (float*) gzoneno; 
 #endif
-    vtkDataArray *arr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
+
+    vtkDataArray *arr;
+    if (tmp.datatype == DB_SHORT)
+        arr = CopyUcdVar<short,vtkShortArray>(&tmp, *remap);
+    else if (tmp.datatype == DB_INT)
+        arr = CopyUcdVar<int,vtkIntArray>(&tmp, *remap);
+    else if (tmp.datatype == DB_LONG)
+        arr = CopyUcdVar<long,vtkLongArray>(&tmp, *remap);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+    else if (tmp.datatype == DB_LONG_LONG)
+        arr = CopyUcdVar<long long,vtkLongLongArray>(&tmp, *remap);
+#endif
+#endif
     delete [] tmp.vals;
 
     //
@@ -7858,6 +7927,10 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 //    Removed logic/warning for skipping arb. polyhedral zones that are
 //    embedded in 'ordinary' zonelist. They are now correctly handled in
 //    ReadInConnectivity.
+//
+//    Mark C. Miller, Tue Jan 12 17:53:17 PST 2010
+//    Use CreateDataArray for global node numbers and handle long long case
+//    as well. Vary interface to HandleGlobalZoneIds for versions of Silo. 
 // ****************************************************************************
 
 vtkDataSet *
@@ -7931,14 +8004,16 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     //
     if (um->gnodeno != NULL)
     {
-        //
-        // Create a vtkInt array whose contents are the actual gnodeno data
-        //
-        vtkIntArray *arr = vtkIntArray::New();
-        arr->SetNumberOfComponents(1);
-        arr->SetNumberOfTuples(um->nnodes);
-        int *ptr = arr->GetPointer(0);
-        memcpy(ptr, um->gnodeno, um->nnodes*sizeof(int));
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+        vtkDataArray *arr = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes); 
+#else
+        vtkDataArray *arr = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
+#endif
+#else
+        vtkDataArray *arr = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
+#endif
+        um->gnodeno = 0; // vtkDataArray now owns the data.
 
         //
         // Cache this VTK object but in the VoidRefCache, not the VTK cache
@@ -7963,9 +8038,21 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
             mesh, domain);
         rv = ugrid;
 
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+        if (um->zones->gzoneno != NULL)
+            HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
+                um->zones->nzones, um->zones->gnznodtype);
+#else
         if (um->zones->gzoneno != NULL)
             HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
                 um->zones->nzones);
+#endif
+#else
+        if (um->zones->gzoneno != NULL)
+            HandleGlobalZoneIds(mesh, domain, um->zones->gzoneno,
+                um->zones->nzones);
+#endif
 
     }
     else if (fl != NULL && um->phzones == NULL)
@@ -7993,9 +8080,21 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         }
         ReadInArbConnectivity(mesh, ugrid, um, domain);
 
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+        if (um->phzones->gzoneno != NULL)
+            HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
+                um->phzones->nzones, um->phzones->gnznodtype);
+#else
         if (um->phzones->gzoneno != NULL)
             HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
                 um->phzones->nzones);
+#endif
+#else
+        if (um->phzones->gzoneno != NULL)
+            HandleGlobalZoneIds(mesh, domain, um->phzones->gzoneno,
+                um->phzones->nzones);
+#endif
     }
 
     points->Delete();
@@ -11379,6 +11478,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Moved code to set data read mask back to its original value to *before*
 //    throwing of exeption.
+//
+//    Mark C. Miller, Tue Jan 12 17:55:14 PST 2010
+//    Use CreateDataArray for global node numbers, handling long long case.
 // ****************************************************************************
 
 vtkDataArray *
@@ -11414,20 +11516,19 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
 
-    vtkIntArray *rv = NULL;
+    vtkDataArray *rv = NULL;
     if (um->gnodeno != NULL)
     {
-        //
-        // Create a vtkInt array whose contents are the actual gnodeno data
-        //
-        rv = vtkIntArray::New();
-        rv->SetArray(um->gnodeno, um->nnodes, 0);
-        rv->SetNumberOfComponents(1);
-
-        //
-        // Since vtkIntArray now owns the data, we remove it from um
-        //
-        um->gnodeno = NULL;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+        rv = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes); 
+#else
+        rv = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
+#endif
+#else
+        rv = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
+#endif
+        um->gnodeno = 0; // vtkDataArray owns the data now.
     }
 
     DBFreeUcdmesh(um);
@@ -11462,6 +11563,9 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 //    library where attempt to DBGetUcdmesh causes call to DBGetZonelist
 //    and a subsequent segv down in the bowels of Silo due to invalid
 //    assumptions regarding the existence of certain zonelist strutures.
+//
+//    Mark C. Miller, Tue Jan 12 17:55:54 PST 2010
+//    Use CreateDataArray for global zone numbers, handling long long too.
 // ****************************************************************************
 
 vtkDataArray *
@@ -11493,20 +11597,19 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
 
-    vtkIntArray *rv = NULL;
+    vtkDataArray *rv = NULL;
     if (um->zones->gzoneno != NULL)
     {
-        //
-        // Create a vtkInt array whose contents are the actual gnodeno data
-        //
-        rv = vtkIntArray::New();
-        rv->SetArray(um->zones->gzoneno, um->zones->nzones, 0);
-        rv->SetNumberOfComponents(1);
-
-        //
-        // Since vtkIntArray now owns the data, we remove it from um
-        //
-        um->zones->gzoneno = NULL;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+        rv = CreateDataArray(um->zones->gnznodtype, um->zones->gzoneno, um->zones->nzones); 
+#else
+        rv = CreateDataArray(DB_INT, um->zones->gzoneno, um->zones->nzones); 
+#endif
+#else
+        rv = CreateDataArray(DB_INT, um->zones->gzoneno, um->zones->nzones); 
+#endif
+        um->zones->gzoneno = 0; // vtkDataArray owns the data now.
     }
 
     DBFreeUcdmesh(um);
