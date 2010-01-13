@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Wed Jan 13 11:23:39 CST 2010
+#   Rename convert to visitconvert, to avoid name conflicts with other tools.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -101,12 +104,12 @@ IF(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 #********************************* SERIAL ************************************
-ADD_EXECUTABLE(convert_ser convert.C ${CONVERT_STATIC_SOURCES})
-VISIT_INSTALL_TARGETS(convert_ser)
+ADD_EXECUTABLE(visitconvert_ser convert.C ${CONVERT_STATIC_SOURCES})
+VISIT_INSTALL_TARGETS(visitconvert_ser)
 
 IF(VISIT_DBIO_ONLY)
-    SET_TARGET_PROPERTIES(convert_ser PROPERTIES OUTPUT_NAME convert_ser_lite)
-    TARGET_LINK_LIBRARIES(convert_ser 
+    SET_TARGET_PROPERTIES(visitconvert_ser PROPERTIES OUTPUT_NAME visitconvert_ser_lite)
+    TARGET_LINK_LIBRARIES(visitconvert_ser 
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
@@ -123,7 +126,7 @@ IF(VISIT_DBIO_ONLY)
         ${ZLIB_LIB}
     )
 ELSE(VISIT_DBIO_ONLY)
-    TARGET_LINK_LIBRARIES(convert_ser 
+    TARGET_LINK_LIBRARIES(visitconvert_ser 
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
@@ -153,7 +156,7 @@ ENDIF(VISIT_DBIO_ONLY)
 # If we're building statically then convert can't be linked until the plugin
 # sources are built
 IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(convert_ser
+    ADD_DEPENDENCIES(visitconvert_ser
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
     )
@@ -161,12 +164,12 @@ ENDIF(VISIT_STATIC)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
-    ADD_PARALLEL_EXECUTABLE(convert_par convert.C ${CONVERT_STATIC_SOURCES})
-    VISIT_INSTALL_TARGETS(convert_par)
+    ADD_PARALLEL_EXECUTABLE(visitconvert_par convert.C ${CONVERT_STATIC_SOURCES})
+    VISIT_INSTALL_TARGETS(visitconvert_par)
 
     IF(VISIT_DBIO_ONLY)
-        SET_TARGET_PROPERTIES(convert_par PROPERTIES OUTPUT_NAME convert_par_lite)
-        TARGET_LINK_LIBRARIES(convert_par 
+        SET_TARGET_PROPERTIES(visitconvert_par PROPERTIES OUTPUT_NAME visitconvert_par_lite)
+        TARGET_LINK_LIBRARIES(visitconvert_par 
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
@@ -184,7 +187,7 @@ IF(VISIT_PARALLEL)
             ${ZLIB_LIB} 
         )
     ELSE(VISIT_DBIO_ONLY)
-        TARGET_LINK_LIBRARIES(convert_par 
+        TARGET_LINK_LIBRARIES(visitconvert_par 
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
@@ -211,10 +214,10 @@ IF(VISIT_PARALLEL)
         )
     ENDIF(VISIT_DBIO_ONLY)
 
-    # If we're building statically then convert_par can't be linked until the 
+    # If we're building statically then visitconvert_par can't be linked until the 
     # plugin sources are built
     IF(VISIT_STATIC)
-        ADD_DEPENDENCIES(convert_par
+        ADD_DEPENDENCIES(visitconvert_par
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
         )

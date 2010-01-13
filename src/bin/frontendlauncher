@@ -88,6 +88,10 @@ exec perl -x $0 ${1+"$@"};
 #    Tom Fogal, Fri Jan  8 12:33:01 MST 2010
 #    Fixed launching convert_par.
 #
+#    Hank Childs, Wed Jan 13 11:19:00 CST 2010
+#    Renamed convert_par to visitconvert_par.  (The name "convert" collides
+#    with other tools.)
+#
 ###############################################################################
 
 
@@ -215,7 +219,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-visitconvert_par" or
            $arg eq "-convert_par")
     {
-        $progname = "convert_par";
+        $progname = "visitconvert_par";
     }
     elsif ($arg eq "-mpeg2encode"     or
            $arg eq "-mpeg_encode")
