@@ -157,6 +157,10 @@ avtImageFileFormat::~avtImageFileFormat()
 //     Jeremy Meredith, Thu Jan  7 12:52:02 EST 2010
 //     Make sure dot position exists before using it; otherwise we crash.
 //
+//     Jeremy Meredith, Thu Jan 14 12:04:27 EST 2010
+//     Oops, previous fix was neither correct nor sufficient.
+//     Used modern for loop scoping to clarify.
+//
 // ****************************************************************************
 
 void
@@ -167,11 +171,11 @@ avtImageFileFormat::Initialize(void)
     haveInitialized = true;
 
     // find the file extension
-    int i, start;
-    for(i=0; i<fname.size(); i++)
+    int start = fname.size();
+    for(int i=0; i<fname.size(); i++)
         if(fname[i] == '.')
             start = i;
-    if (i>=fname.size())
+    if (start>=fname.size())
         fext = "";
     else
         fext = string(fname, start+1, fname.size()-1);
@@ -182,7 +186,7 @@ avtImageFileFormat::Initialize(void)
     if (fext == "imgvol")
     {
         ReadImageVolumeHeader();
-        for(i=0; i<subImages[0].size(); i++)
+        for(int i=0; i<subImages[0].size(); i++)
             if(subImages[0][i] == '.')
                 start = i;
         image_fext = string(subImages[0], start+1, subImages[0].size()-1);
@@ -197,7 +201,7 @@ avtImageFileFormat::Initialize(void)
     bool hasColorChannels = true;
     int numExtsWithoutColorChannels = 4;
     const char *extsWithoutColorChannels[4] = { "spr", "SPR", "sdt", "SDT" };
-    for (i = 0 ; i < numExtsWithoutColorChannels ; i++)
+    for (int i = 0 ; i < numExtsWithoutColorChannels ; i++)
         if (image_fext == extsWithoutColorChannels[i])
             hasColorChannels = false;
 
