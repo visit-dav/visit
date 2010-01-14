@@ -43,6 +43,13 @@
 #   Undid above change as it turns out the value gets cached regardless of
 #   an SET() command here. This was not observed in earlier tests because
 #   I was ctrl-C'ing after the cmake process had past the point I was testing.
+#
+#   Mark C. Miller, Thu Jan 14 12:01:48 PST 2010
+#   Added -D_LARGEFILE64_SOURCE to definitions for UNIX systems. This could
+#   be a bit too global of a context in which to set it. We'll see. I also
+#   added logic to set CMAKE_REQUIRED_DEFINITIONS prior to checking size
+#   of off64_t. In theory, we might need to set CMAKE_REQUIRED_INCLUDES 
+#   too but that was not required on the systems I tested.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -534,6 +541,7 @@ ENDIF(VISUS_FOUND)
 IF(CMAKE_HOST_UNIX)
   SET(ZLIB_LIB z)
   SET(DL_LIB dl)
+  ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
 ELSE(CMAKE_HOST_UNIX)
   IF(WIN32)
       SET(ZLIB_LIBRARY_DIR ${VISIT_WINDOWS_DIR}/ThirdParty/zlib/lib/${VISIT_MSVC_VERSION})
@@ -790,6 +798,7 @@ SET(SIZEOF_UNSIGNED_LONG        ${CMAKE_SIZEOF_UNSIGNED_LONG})
 SET(SIZEOF_UNSIGNED_LONG_LONG   ${CMAKE_SIZEOF_UNSIGNED_LONG_LONG})
 SET(SIZEOF_UNSIGNED_SHORT       ${CMAKE_SIZEOF_UNSIGNED_SHORT})
 SET(SIZEOF_VOID_P               ${CMAKE_SIZEOF_VOID_P})
+SET(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE)
 CHECK_TYPE_SIZE("off64_t" SIZEOF_OFF64_T)
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
