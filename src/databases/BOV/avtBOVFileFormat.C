@@ -67,6 +67,7 @@
 
 #include <Expression.h>
 #include <Utility.h>
+#include <StringHelpers.h>
 
 #include <DebugStream.h>
 #include <BadDomainException.h>
@@ -1588,6 +1589,11 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Wed Apr  8 09:45:38 PDT 2009
 //    I added short int support.
 //
+//    Jeremy Meredith, Thu Jan 14 10:43:17 EST 2010
+//    Changed the way exceptions are generated so it works in parallel.
+//    Changed "eof" test to "good" test since eof alone might hang.
+//    Added a check in strict mode to make sure the first 100 lines are ASCII.
+//
 // ****************************************************************************
 
 void
@@ -1604,15 +1610,29 @@ avtBOVFileFormat::ReadTOC(void)
         ifstream ifile(fname);
         if (ifile.fail())
         {
+            bool error=true;
+            BroadcastBool(error);
             EXCEPTION1(InvalidFilesException, fname);
         }
 
+        int linecount = 0;
         char buff[32768]; // Is this big enough?
-        while (!ifile.eof())
+        while (ifile.good())
         {
             buff[0] = '\0';
             char *line = buff;
             ifile.getline(line, 32768);
+            if (GetStrictMode() && linecount < 100)
+            {
+                linecount++;
+                if (!StringHelpers::IsPureASCII(line, 327678))
+                {
+                    bool error=true;
+                    BroadcastBool(error);
+                    EXCEPTION1(InvalidFilesException, fname);
+                }
+            }
+
             int nparts = FormatLine(line);
             if (nparts <= 0)
                 continue;
@@ -1782,6 +1802,18 @@ avtBOVFileFormat::ReadTOC(void)
                 line += strlen("DIVIDE_BRICK:") + 1;
                 divideBrick = (strcmp(line, "true") == 0);
             }
+        }
+
+        bool error=false;
+        BroadcastBool(error);
+    }
+    else // PAR_Rank != 0
+    {
+        bool error=false;
+        BroadcastBool(error);
+        if (error)
+        {
+            EXCEPTION1(InvalidFilesException, fname);
         }
     }
 
