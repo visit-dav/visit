@@ -496,6 +496,9 @@ ProcessComponent(char *line, const int compno, const int ncomps,
 //    Jeremy Meredith, Thu Jan  7 12:53:18 EST 2010
 //    Added some simple error checking.
 //
+//    Jeremy Meredith, Thu Jan 14 11:37:39 EST 2010
+//    Was slightly too aggressive with one of the new error checks.
+//
 // ****************************************************************************
 
 bool
@@ -606,7 +609,7 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
 
         // Get the line
         ifile.getline(line, 1024);
-        if (!ifile)
+        if (ifile.fail() && !ifile.eof())
             EXCEPTION1(InvalidFilesException, filename);
 
         // Determine what the line is for.
