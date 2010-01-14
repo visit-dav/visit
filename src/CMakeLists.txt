@@ -36,6 +36,8 @@
 #
 # Modifications:
 #
+#   Mark C. Miller, Wed Jan 13 18:30:38 PST 2010
+#   Added logic to ensure FORCE_ITAPS_REGEN is never cached in an ON state.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -492,6 +494,8 @@ ENDIF(H5PART_FOUND)
 
 # Configure ITAPS support -- it's treated specially.
 CONFIGURE_ITAPS()
+# Ensure the forcing option is NEVER cached as ON
+SET(FORCE_ITAPS_REGEN OFF)
 
 # Configure Mili support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
