@@ -58,6 +58,8 @@
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
+SetPreferredFileFormats("Silo_1.0")
+
 OpenDatabase("../data/silo_hdf5_test_data/multipart_multi_ucd3d.silo")
 
 #
@@ -174,7 +176,7 @@ Test("silo_08")
 # all empty domains. So we go from 1 to end and
 # back around to 1 purposely avoiding 0
 DeleteAllPlots()
-OpenDatabase("../data/hist_ucd3d_* database",1)
+OpenDatabase("../data/silo_hdf5_test_data/hist_ucd3d_* database",1)
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()
 
@@ -263,7 +265,7 @@ Test("silo_26")
 #
 DeleteAllPlots()
 CloseDatabase("/usr/gapps/visit/data/largefile.silo")
-OpenDatabase("../data/multi_ucd3d_ti_* database",2)
+OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d_ti_* database",2)
 AddPlot("Pseudocolor","d")
 DrawPlots()
 ResetView()
@@ -284,7 +286,7 @@ Test("silo_28")
 # invalidated by VisIt
 #
 DeleteAllPlots()
-CloseDatabase("../data/multi_ucd3d_ti_* database")
+CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d_ti_* database")
 OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
 AddPlot("Pseudocolor","d_split")
 DrawPlots()
@@ -298,7 +300,7 @@ TestText("silo_29", t)
 #
 DeleteAllPlots()
 CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
-OpenDatabase("../data/histne_ucd3d_* database", 2)
+OpenDatabase("../data/silo_hdf5_test_data/histne_ucd3d_* database", 2)
 AddPlot("Pseudocolor", "d_dup")
 DrawPlots()
 Test("silo_30")
@@ -319,7 +321,7 @@ Test("silo_34")
 # Test a database with some odd multi-block structure
 #
 DeleteAllPlots()
-CloseDatabase("../data/histne_ucd3d_* database")
+CloseDatabase("../data/silo_hdf5_test_data/histne_ucd3d_* database")
 SetTreatAllDBsAsTimeVarying(0)
 OpenDatabase("../data/silo_pdb_test_data/odd_multi.silo")
 AddPlot("Pseudocolor","cyc_00000/den")
