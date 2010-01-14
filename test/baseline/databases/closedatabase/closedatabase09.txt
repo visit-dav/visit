@@ -1,5 +1,5 @@
-The database VISIT_TOP_DIR/data/globe.silo was closed.
-sources = ("localhost:VISIT_TOP_DIR/data/wave.visit")
+The database VISIT_TOP_DIR/data/silo_hdf5_test_data/globe.silo was closed.
+sources = ("localhost:VISIT_TOP_DIR/data/silo_hdf5_test_data/wave.visit")
 windows = (1, 2)
 activeWindow = 1
 iconifiedFlag = 0

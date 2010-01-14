@@ -1,4 +1,4 @@
-sources = ("localhost:VISIT_TOP_DIR/data/wave*.silo database")
+sources = ("localhost:VISIT_TOP_DIR/data/silo_hdf5_test_data/wave*.silo database")
 windows = (1)
 activeWindow = 0
 iconifiedFlag = 0

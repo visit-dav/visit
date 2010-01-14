@@ -1,4 +1,4 @@
-The database VISIT_TOP_DIR/data/wave.visit was closed.
+The database VISIT_TOP_DIR/data/silo_hdf5_test_data/wave.visit was closed.
 sources = ()
 windows = (1, 2)
 activeWindow = 1
