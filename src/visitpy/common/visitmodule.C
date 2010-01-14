@@ -5788,7 +5788,7 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-//  Method:  visit_GetDefaultFileOpenOptions
+//  Method:  visit_SetDefaultFileOpenOptions
 //
 //  Purpose:
 //    Takes the name of a plugin and a set of options for it as a dictionary,
@@ -5850,6 +5850,75 @@ visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
         VisItErrorFunc(msg);
         return NULL;
     }
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+//  Method:  visit_GetPreferredFileFormats
+//
+//  Purpose:
+//    Gets the list of preferred file format read plugin ids.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 14, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+STATIC PyObject *
+visit_GetPreferredFileFormats(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    MUTEX_LOCK();
+    FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
+    MUTEX_UNLOCK();
+
+    const stringVector &ids = foo->GetPreferredIDs();
+    PyObject *retval = PyTuple_New(ids.size());
+
+    for(int i = 0; i < ids.size(); ++i)
+    {
+        PyObject *s = PyString_FromString(ids[i].c_str());
+        PyTuple_SET_ITEM(retval, i, s);
+    }
+    return retval;
+}
+
+// ****************************************************************************
+//  Method:  visit_SetPreferredFileFormats
+//
+//  Purpose:
+//    Sets the list of preferred file format read plugin ids.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 14, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+STATIC PyObject *
+visit_SetPreferredFileFormats(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    PyObject *tuple;
+    stringVector newIDs;
+    if (!PyArg_ParseTuple(args, "O", &tuple) ||
+        !GetStringVectorFromPyObject(tuple, newIDs))
+    {
+        VisItErrorFunc("Expected a tuple of strings for the plugin IDs.");
+        return NULL;
+    }
+
+
+    MUTEX_LOCK();
+    FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
+    foo->SetPreferredIDs(newIDs);
+    foo->Notify();
+    GetViewerMethods()->SetDefaultFileOpenOptions();
+    MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
 }
@@ -14024,6 +14093,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Tue Oct 20 16:14:06 PDT 2009
 //   I added functions to manipulate the plot list ordering.
 //
+//   Jeremy Meredith, Thu Jan 14 15:41:01 EST 2010
+//   Added get/set for preferred file formats.
+//
 // ****************************************************************************
 
 static void
@@ -14191,6 +14263,8 @@ AddDefaultMethods()
     
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
+    AddMethod("GetPreferredFileFormats", visit_GetPreferredFileFormats,
+              visit_GetPreferredFileFormats_doc);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes,
                                              visit_GetRenderingAttributes_doc);
     AddMethod("GetQueryOverTimeAttributes", visit_GetQueryOverTimeAttributes,
@@ -14340,6 +14414,8 @@ AddDefaultMethods()
     AddMethod("SetPlotOrderToLast", visit_SetPlotOrderToLast, NULL /*DOCUMENT ME*/);
     AddMethod("SetPlotSILRestriction", visit_SetPlotSILRestriction,
                                               visit_SetPlotSILRestriction_doc);
+    AddMethod("SetPreferredFileFormats", visit_SetPreferredFileFormats,
+              visit_SetPreferredFileFormats_doc);
     AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes,
                                                visit_SetPrinterAttributes_doc);
     AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes,
