@@ -42,6 +42,12 @@
 #    Jeremy Meredith, Mon Dec 28 16:05:49 EST 2009
 #    File extensions no longer exist; switched to file patterns.
 #
+#    Mark C. Miller, Wed Jan 13 16:15:39 PST 2010
+#    Replaced explicit listing of ITAPS_C source files with more general
+#    logic that uses globs on *.[Ch]. Added more logic to handle cases where
+#    it appears the generated files have been modified. It that case, we
+#    error fataly unless the option FORCE_ITAPS_REGEN is on.
+#
 #****************************************************************************/
 
 FUNCTION(ITAPS_ADD_IMPLEMENTATION IMPL)
@@ -113,6 +119,14 @@ FUNCTION(ITAPS_LINK_DIRECTORIES IMPL)
 ENDFUNCTION(ITAPS_LINK_DIRECTORIES IMPL)
 
 #
+# Option to control force overwrite of ITAPS_XXX plugin files when they are
+# regenerated and their contents differ from previous. Note that in
+# CMakeLists.txt we set this option back to OFF to ensure it is NEVER cached
+# in an ON state. 
+#
+OPTION(FORCE_ITAPS_REGEN "Force overwrite of files in generated ITAPS_XXX plugin dirs" OFF)
+
+#
 # Creates new ITAPS plugins for the implementations that have been defined via
 # calls to ITAPS_INCLUDE_DIRECTORIES, ITAPS_FILE_PATTERNS, ITAPS_LINK_LIBRARIES,
 # ITAPS_LINK_DIRECTORIES.
@@ -139,23 +153,20 @@ FUNCTION(CONFIGURE_ITAPS)
         ENDIF(NOT EXISTS ${IMPLDIR})
         SET(ITAPS_DIRS ${ITAPS_DIRS} ITAPS_${IMPL} CACHE INTERNAL "ITAPS source directories")
 
-        # Copy each file to from ITAPS_C to the new location, rename it,
+        # Build a list of the ITAPS_C source files
+        FILE(GLOB ITAPS_ABS_FILES ${VISIT_SOURCE_DIR}/databases/ITAPS_C/*.[Ch]
+                              ${VISIT_SOURCE_DIR}/databases/ITAPS_C/ITAPS_C.xml
+                              ${VISIT_SOURCE_DIR}/databases/ITAPS_C/CMakeLists.txt)
+
+        UNSET(ITAPS_FILES)
+        FOREACH(F ${ITAPS_ABS_FILES})
+            GET_FILENAME_COMPONENT(TMP ${F} NAME)
+            SET(ITAPS_FILES ${ITAPS_FILES};${TMP})
+        ENDFOREACH(F)
+
+        # Copy each file from ITAPS_C to the new location, rename it,
         # and do some string replacements.
-        FOREACH(F CMakeLists.txt
-            ITAPS_C.xml
-            ITAPS_CCommonPluginInfo.C
-            ITAPS_CEnginePluginInfo.C
-            ITAPS_CMDServerPluginInfo.C
-            ITAPS_CPluginInfo.C
-            ITAPS_CPluginInfo.h
-            avtITAPS_CFileFormat.C
-            avtITAPS_CFileFormat.h
-            avtITAPS_COptions.C
-            avtITAPS_COptions.h
-            avtITAPS_CUtility.C
-            avtITAPS_CUtility.h
-            avtITAPS_CWriter.C
-            avtITAPS_CWriter.h)
+        FOREACH(F ${ITAPS_FILES})
             # Read the original file
 #            MESSAGE(STATUS "Reading ${VISIT_SOURCE_DIR}/databases/ITAPS_C/${F}")
             FILE(READ ${VISIT_SOURCE_DIR}/databases/ITAPS_C/${F} FILECONTENTS)
@@ -187,16 +198,29 @@ FUNCTION(CONFIGURE_ITAPS)
             IF(EXISTS ${IMPLDIR}/${NEWNAME})
                 FILE(READ ${IMPLDIR}/${NEWNAME} OLDCONTENTS)
                 IF("${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
-                    SET(WRITE_NEW_FILE 0)
+                    # Save out the new file
+                    MESSAGE(STATUS "NEW FILE: ${IMPLDIR}/${NEWNAME}")
+                    FILE(WRITE ${IMPLDIR}/${NEWNAME} "${NEWCONTENTS}")
+                ELSE("${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
+                    IF(FORCE_ITAPS_REGEN)
+                        # Save out the new file
+                        MESSAGE(STATUS "NEW FILE: ${IMPLDIR}/${NEWNAME}")
+                        FILE(WRITE ${IMPLDIR}/${NEWNAME} "${NEWCONTENTS}")
+                    ELSE(FORCE_ITAPS_REGEN)
+                        MESSAGE(FATAL_ERROR "${IMPLDIR}/${NEWNAME} "
+                            "needs to get re-generated. However, that file appears to have been changed "
+                            "and re-generating it will destroy those changes. You can encounter this "
+                            "condition if you have been working in the ITAPS_C plugin sources and are "
+                            "trying to re-configure/re-cmake. In that case, simply set the FORCE_ITAPS_REGEN "
+                            "option to ON. If, however, you have perhaps inadvertently edited the file "
+                            "manually, yourself, then ensure whatever changes you need get propogated back "
+                            "to the corresponding (true) source file in the ITAPS_C directory BEFORE "
+                            "re-configuring/re-cmaking with FORCE_ITAPS_REGEN option set to on.")
+                    ENDIF(FORCE_ITAPS_REGEN)
                 ENDIF("${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
                 UNSET(OLDCONTENTS)
             ENDIF(EXISTS ${IMPLDIR}/${NEWNAME})
 
-            # Save out the new file
-            IF(WRITE_NEW_FILE)
-                MESSAGE(STATUS "NEW FILE: ${IMPLDIR}/${NEWNAME}")
-                FILE(WRITE ${IMPLDIR}/${NEWNAME} "${NEWCONTENTS}")
-            ENDIF(WRITE_NEW_FILE)
             UNSET(FILECONTENTS)
             UNSET(NEWCONTENTS)
         ENDFOREACH(F)

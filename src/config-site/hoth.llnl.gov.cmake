@@ -4,6 +4,11 @@
 ## created: Wed Jan  6 16:28:23 PST 2010
 ## system: Linux naboo.llnl.gov 2.4.21-27.0.2c.ELsmp #1 SMP Thu Aug 4 18:32:37 PDT 2005 i686 i686 i386 GNU/Linux
 ## by: whitlock2
+##
+## Mark C. Miller, Tue Jan 12 17:58:32 PST 2010
+## Updated to HDF5 1.8.4 and Silo 4.7.2. Left ITAPS-MOAB at HDF5-1.8.2.
+## That could be problematic with BOTH Silo and ITAPS-MOAB are used in
+## the same session.
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -106,8 +111,8 @@ VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.2/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR /usr/gapps/silo/hdf5/1.8.4/i686_Linux_ELsmp)
+VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/gapps/silo/szip/2.1/i686_Linux_ELsmp/lib sz /usr/lib z)
 
 ##
 ## ITAPS
@@ -146,7 +151,7 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR /usr/gapps/silo/4.7.2/i686_Linux_ELsmp)
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
