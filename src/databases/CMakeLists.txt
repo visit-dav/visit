@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#    Jeremy Meredith, Thu Jan 14 12:32:46 EST 2010
+#    Added Rect and Hex back to the optional plugins.
 #
 #****************************************************************************/
 SET(THIRDPARTY_DEPENDENT_PLUGINS)
@@ -193,6 +195,8 @@ IF (NOT WIN32)
         ZipWrapper
     )
     SET(OPTIONAL_DATABASE_PLUGINS
+        Hex
+        Rect
         VLI
     )
 ENDIF (NOT WIN32)
