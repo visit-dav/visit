@@ -204,20 +204,20 @@ FUNCTION(CONFIGURE_ITAPS)
                 FILE(READ ${IMPLDIR}/${NEWNAME} OLDCONTENTS)
                 IF(EXISTS ${IMPLDIR_COPY}/${NEWNAME})
                     FILE(READ ${IMPLDIR_COPY}/${NEWNAME} OLDCONTENTS_COPY)
+                    IF(NOT "${OLDCONTENTS_COPY}" STREQUAL "${OLDCONTENTS}")
+                        MESSAGE(FATAL_ERROR "${IMPLDIR}/${NEWNAME} "
+                            "needs to get re-generated. However, that file appears to have been changed "
+                            "from what was originally generated and re-generating it will destroy those "
+                            "changes. If you have edited this file and/or other ITAPS source files in "
+                            "directories OTHER THAN the ITAPS_C directory, be aware that the files in "
+                            "the ITAPS_C directory are the TRUE SOURCE and all others are essentially "
+                            "copies of that directory. Please ensure whatever changes you need get "
+                            "propogated back to the corresponding (TRUE) source files in the ITAPS_C "
+                            "directory and then remove either the one file ${IMPLDIR}/${NEWNAME} "
+                            "or if there are several files that have been changed, then you can remove "
+                            "the entire directory ${IMPLDIR} before re-cmaking/re-configuring.")
+                    ENDIF(NOT "${OLDCONTENTS_COPY}" STREQUAL "${OLDCONTENTS}")
                 ENDIF(EXISTS ${IMPLDIR_COPY}/${NEWNAME})
-                IF(NOT "${OLDCONTENTS_COPY}" STREQUAL "${OLDCONTENTS}")
-                    MESSAGE(FATAL_ERROR "${IMPLDIR}/${NEWNAME} "
-                        "needs to get re-generated. However, that file appears to have been changed "
-                        "from what was originally generated and re-generating it will destroy those "
-                        "changes. If you have edited this file and/or other ITAPS source files in "
-                        "directories OTHER THAN the ITAPS_C directory, be aware that the files in "
-                        "the ITAPS_C directory are the TRUE SOURCE and all others are essentially "
-                        "copies of that directory. Please ensure whatever changes you need get "
-                        "propogated back to the corresponding (TRUE) source files in the ITAPS_C "
-                        "directory and then remove either the one file ${IMPLDIR}/${NEWNAME} "
-                        "or if there are several files that have been changed, then you can remove "
-                        "the entire directory ${IMPLDIR} before re-cmaking/re-configuring.")
-                ENDIF(NOT "${OLDCONTENTS_COPY}" STREQUAL "${OLDCONTENTS}")
                 IF(NOT "${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
                     # Save out the new file
                     MESSAGE(STATUS "    NEW FILE: ${IMPLDIR}/${NEWNAME}")
