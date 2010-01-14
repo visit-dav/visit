@@ -294,6 +294,41 @@ MACRO(VISIT_INSTALL_TARGETS)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS Debug;Release
         )
+        IF(APPLE)
+            FOREACH(target ${ARGN})
+                GET_TARGET_PROPERTY(type ${target} TYPE)
+                IF(${type} STREQUAL "SHARED_LIBRARY")
+                    SET(filename lib${target}.dylib)
+                    INSTALL(CODE 
+                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                             COMMAND /bin/sh ${VISIT_BINARY_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}
+                             OUTPUT_VARIABLE OSXOUT)
+                         MESSAGE(STATUS \"\${OSXOUT}\")
+                        ")
+                ELSEIF(${type} STREQUAL "EXECUTABLE")
+                    GET_TARGET_PROPERTY(filename ${target} OUTPUT_NAME)
+                    IF(filename STREQUAL "filename-NOTFOUND")
+                        SET(filename ${target})
+                    ENDIF(filename STREQUAL "filename-NOTFOUND")
+                    GET_TARGET_PROPERTY(bundle ${target} MACOSX_BUNDLE)
+                    IF(${bundle} STREQUAL "ON")
+                        INSTALL(CODE 
+                            "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                                COMMAND /bin/sh ${VISIT_BINARY_DIR}/CMake/osxfixup -bundle ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN} ${filename}
+                                OUTPUT_VARIABLE OSXOUT)
+                             MESSAGE(STATUS \"\${OSXOUT}\")
+                            ")
+                    ELSE(${bundle} STREQUAL "ON")
+                        INSTALL(CODE 
+                            "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                                COMMAND /bin/sh ${VISIT_BINARY_DIR}/CMake/osxfixup -exe ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${filename}
+                                OUTPUT_VARIABLE OSXOUT)
+                             MESSAGE(STATUS \"\${OSXOUT}\")
+                            ")
+                    ENDIF(${bundle} STREQUAL "ON")
+                ENDIF(${type} STREQUAL "SHARED_LIBRARY")
+            ENDFOREACH(target)
+        ENDIF(APPLE)
     ENDIF(VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
@@ -305,6 +340,17 @@ MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS Debug;Release
         )
+        IF(APPLE)
+            FOREACH(target ${ARGN})
+                SET(filename lib${target}.dylib)
+                INSTALL(CODE 
+                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                         COMMAND /bin/sh ${VISIT_BINARY_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/databases/${filename}
+                         OUTPUT_VARIABLE OSXOUT)
+                     MESSAGE(STATUS \"\${OSXOUT}\")
+                    ")
+            ENDFOREACH(target)
+        ENDIF(APPLE)
     ENDIF(NOT VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_DATABASE_PLUGINS)
 
@@ -316,6 +362,17 @@ MACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS Debug;Release
         )
+        IF(APPLE)
+            FOREACH(target ${ARGN})
+                SET(filename lib${target}.dylib)
+                INSTALL(CODE 
+                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                         COMMAND /bin/sh ${VISIT_BINARY_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/operators/${filename}
+                         OUTPUT_VARIABLE OSXOUT)
+                     MESSAGE(STATUS \"\${OSXOUT}\")
+                    ")
+            ENDFOREACH(target)
+        ENDIF(APPLE)
     ENDIF(NOT VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
 
@@ -327,6 +384,17 @@ MACRO(VISIT_INSTALL_PLOT_PLUGINS)
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS Debug;Release
         )
+        IF(APPLE)
+            FOREACH(target ${ARGN})
+                SET(filename lib${target}.dylib)
+                INSTALL(CODE 
+                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                         COMMAND /bin/sh ${VISIT_BINARY_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/plots/${filename}
+                         OUTPUT_VARIABLE OSXOUT)
+                     MESSAGE(STATUS \"\${OSXOUT}\")
+                    ")
+            ENDFOREACH(target)
+        ENDIF(APPLE)
     ENDIF(NOT VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
 
@@ -1043,12 +1111,6 @@ ENDIF(NOT WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 # CPack -- This leverages our install targets to provide a "make package" that
 #          packages up a VisIt distribution.
 #-----------------------------------------------------------------------------
-IF(APPLE)
-    CONFIGURE_FILE(${VISIT_SOURCE_DIR}/CMake/FixupMacInstall.cmake.in
-                   ${VISIT_BINARY_DIR}/CMake/FixupMacInstall.cmake @ONLY IMMEDIATE)
-    # FOR NOW #INSTALL(SCRIPT ${VISIT_BINARY_DIR}/CMake/FixupMacInstall.cmake)
-ENDIF(APPLE)
-
 SET(CPACK_PACKAGE_NAME "visit")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
 SET(CPACK_PACKAGE_VENDOR "LLNS")
