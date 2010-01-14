@@ -1,31 +1,53 @@
-#/Users/whitlock2/i386-apple-darwin8.8.1/bin/cmake
+#/Users/whitlock2/Development/visit/cmake/2.8.0/i386-apple-darwin8_gcc-4.0/bin/cmake
+##
+## ./build_visit generated host.cmake
+## created: Tue Jan  5 14:00:25 PST 2010
+## system: Darwin dantooine.llnl.gov 8.11.1 Darwin Kernel Version 8.11.1: Wed Oct 10 18:23:28 PDT 2007; root:xnu-792.25.20~1/RELEASE_I386 i386 i386
+## by: whitlock2
 
+##
+## Setup VISITHOME & VISITARCH variables.
+##
 SET(VISITHOME /Users/whitlock2/Development/visit)
-SET(VISITARCH i386-apple-darwin8)
-SET(VISITARCH2 i386-apple-darwin8_gcc-4.0.1)
-SET(VISITARCH3 i386-apple-darwin8_gcc-4.0)
+SET(VISITARCH i386-apple-darwin8_gcc-4.0)
 
-SET(VISIT_VERBOSE_MAKEFILE TRUE)
+##
+## Specify the location of the mesa.
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH})
 
-# Set VISIT_VTK_DIR, which is used by the FindVTK module to locate VTK)
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR "${VISITHOME}/vtk/5.0.0c/${VISITARCH2}")
+##
+## Specify the location of the vtk.
+##
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0d/${VISITARCH}/lib/vtk-5.0/)
 
-# Add Qt's qmake to the path so we can use CMake's Qt4 autodetection.
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.5/bin)
+##
+## Specify the Qt4 binary dir. 
+## (qmake us used to locate & setup Qt4 dependencies)
+##
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.4.3/${VISITARCH}/bin)
 
-# Set the location for where we find Python
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH3})
+##
+## Specify the location of the python.
+##
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
-# Set the location for where we find Mesa
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH2})
+##
+## Compiler flags.
+##
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions")
 
-# Set up the variables needed for MPI
-SET(VISIT_MPI_LIBRARY_DIR /Users/whitlock2/i386-apple-darwin8.8.1/lib)
-SET(VISIT_MPI_CXX_FLAGS "-D_REENTRANT -I/Users/whitlock2/i386-apple-darwin8.8.1/include")
-SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR} -Wl,-u,_munmap -Wl,-multiply_defined,suppress")
-##SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR} -Wl,-undefined,dynamic_lookup -Wl,-u,_munmap -Wl,-multiply_defined,suppress")
-SET(VISIT_MPI_LIBS mpi_cxx mpi open-rte open-pal)
+##
+## Parallel Build Setup.
+##
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /Users/whitlock2/i386-apple-darwin8.8.1/bin/mpic++)
 
+##############################################################
 ##
 ## Database reader plugin support libraries
 ##
@@ -34,12 +56,7 @@ SET(VISIT_MPI_LIBS mpi_cxx mpi open-rte open-pal)
 ##
 ## AdvIO
 ##
-VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
-
-##
-## CCMIO
-##
-VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 
 ##
 ## CFITSIO
@@ -62,35 +79,39 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.46/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.3.2/${VISITARCH})
 
 ##
-## HDF4
+## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH2}/lib sz)
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.4.2/${VISITARCH})
 
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.1/${VISITARCH2})
-VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH2}/lib sz)
-
-##
-## H5Part
-##
-VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.4.0/${VISITARCH2})
-VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
 
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.10a/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.10.0/${VISITARCH})
 
 ##
-## NETCDF
+## NetCDF
 ##
-VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.3/${VISITARCH2})
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.3/${VISITARCH})
+
+##
+## SZIP
+##
+VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
+
+##
+## CCMIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
 
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7/${VISITARCH2})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+

@@ -55,6 +55,12 @@ IF (WIN32)
 ELSE (WIN32)
     SET_UP_THIRD_PARTY(MESA lib include MesaGL OSMesa)
 
+    # If we're on Apple, set up MesaGLU too. This is mostly to ensure that it gets installed.
+    IF(APPLE)
+        SET(MESAGLU_DIR ${MESA_DIR})
+        SET_UP_THIRD_PARTY(MESAGLU lib include MesaGLU)
+    ENDIF(APPLE)
+
     # Install Mesa headers
     INSTALL(DIRECTORY ${MESA_INCLUDE_DIR}
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/mesa

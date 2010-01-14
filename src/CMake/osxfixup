@@ -1,0 +1,163 @@
+#!/bin/sh
+
+################################################################################
+# Program: osxfixup
+#
+# Purpose: This script uses install_name_tool to make all references to libraries
+#          in a shared library or executable into @executable_path/../lib
+#          relative references. This enables the programs to be moved to a
+#          computer other than where they were built.
+#
+# Programmer: Brad Whitlock
+# Date: Wed Jan 13 15:41:40 PST 2010
+#
+# Modifications:
+#
+################################################################################
+
+#
+# This function runs install_name_tool on a dylib and replaces all instances of 
+# /User/*/lib/lib*.dylib with @executable_path/../lib/lib*.dylib to make the dylib
+# execute relative.
+#
+# $1 : The whole path and name of the dylib file
+#
+function fixup_dylib
+{
+    # if $1 is a symlink, return
+    if test -h $1 ; then
+        echo "Skipping $1 because it is a symlink"
+        return 0
+    fi
+
+    # Get the name of this library from otool since it might not match quite 
+    # what's in $1 because of version number differences.
+    thisLibrary=$(otool -D $1 | tail -n 1)
+    s=$(echo $thisLibrary | grep ".framework")
+    if [[ $s != "" ]] ; then
+        # Framework
+        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+        thisLibraryName1=$(echo "$1" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib//g")
+        thisLibraryName2=$(echo "$thisLibrary" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib//g")
+    else
+        # Library
+        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+        thisLibraryName1=$(echo "$1" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/lib/g")
+        thisLibraryName2=$(echo "$thisLibrary" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/lib/g")
+    fi
+#    echo "thisLibrary = $thisLibrary"
+#    echo "thisLibraryFixed = $thisLibraryFixed"
+#    echo "thisLibraryName1 = $thisLibraryName1"
+#    echo "thisLibraryName2 = $thisLibraryName2"
+
+    sharedLibs=$(otool -L $1 | grep "/Users" | grep -v "$thisLibraryName1" | grep -v "$thisLibraryName2" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+#    echo "sharedLibs = $sharedLibs"
+    command=""
+    for library in $sharedLibs ; do
+        s=$(echo $library | grep "/Users")
+        if [[ $s != "" ]] ; then
+            framework=$(echo $library | grep ".framework")
+            if [[ $framework != "" ]] ; then
+                newlibrary=$(echo $library | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+            else
+                newlibrary=$(echo $library | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+            fi
+#            echo "$library -> $newlibrary"
+            command="$command -change $library $newlibrary"
+        fi
+    done
+
+    echo "Making dylib execute relative: $1"
+    if [[ "$command" != "" ]] ; then
+        install_name_tool $command $1
+    fi
+    install_name_tool -id $thisLibraryFixed $1
+    
+    return 1
+}
+
+#
+# Fix up an executable program so that its shared libraries are referenced 
+# relative to @executable_path/../lib.
+#
+# $1 : The whole path and name of the application
+#
+function fixup_exe
+{
+    # if $1 is a symlink, return
+    if test -h $1 ; then
+        echo "Skipping $1 because it is a symlink"
+        return 0
+    fi
+
+    # Get the name of this library from otool since it might not match quite 
+    # what's in $1 because of version number differences.
+    thisLibrary=$(otool -D $1 | tail -n 1 | sed "s/\://g")
+    thisLibraryFixed=$(echo "$thisLibrary" | sed "s/\/Users[A-Za-z0-9_. \/-]*\/bin/@executable_path\/..\/bin/g")
+#    echo "thisLibrary = $thisLibrary"
+#    echo "thisLibraryFixed = $thisLibraryFixed"
+
+    sharedLibs=$(otool -L $1 | grep -v ":" | grep "/Users" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+    command=""
+    for library in $sharedLibs ; do
+        s=$(echo $library | grep "/Users")
+        if [[ $s != "" ]] ; then
+            framework=$(echo $library | grep ".framework")
+            if [[ $framework != "" ]] ; then
+                newlibrary=$(echo $library | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+            else
+                newlibrary=$(echo $library | sed "s/\/Users[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+            fi
+#            echo "$library -> $newlibrary"
+            command="$command -change $library $newlibrary"
+        fi
+    done
+
+    if [[ "$command" != "" ]] ; then
+        echo "Making executable execute relative $1"
+        install_name_tool $command $1
+    else
+        echo "Skipping $1"
+    fi
+    return 1
+}
+
+#
+# Fixes up the application and makes some symlinks that make the bundle work.
+#
+# $1 : The path to the architecture bin directory
+# $2 : The undecorated name of the application (e.g. "gui")
+#
+function fixup_bundle
+{
+    # First, fixup the program
+    fixup_exe "$1/$2.app/Contents/MacOS/$2"
+
+    # Also, add some symlinks that we need
+ 
+    # cd into the destination bin directory.
+    pushd . > /dev/null
+    cd "$1"
+
+    # Make a link to the actual app down in the bundle.
+    ln -s $2.app/Contents/MacOS/$2 .
+    
+    # cd into the .app bundle
+    cd $2.app/Contents
+    ln -s ../../../lib .
+
+    # Make a link up to visit
+    cd MacOS
+    ln -s ../../../../../../bin/visit .
+    popd > /dev/null
+}
+
+# main
+if [[ $1 == "-exe" ]] ; then
+    fixup_exe "$2"
+elif [[ $1 == "-bundle" ]] ; then
+    fixup_bundle "$2" "$3" 
+else
+    fixup_dylib "$2"
+fi
+
