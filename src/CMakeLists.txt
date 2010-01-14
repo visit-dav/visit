@@ -38,6 +38,11 @@
 #
 #   Mark C. Miller, Wed Jan 13 18:30:38 PST 2010
 #   Added logic to ensure FORCE_ITAPS_REGEN is never cached in an ON state.
+#
+#   Mark C. Miller, Thu Jan 14 10:36:49 PST 2010
+#   Undid above change as it turns out the value gets cached regardless of
+#   an SET() command here. This was not observed in earlier tests because
+#   I was ctrl-C'ing after the cmake process had past the point I was testing.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -494,8 +499,6 @@ ENDIF(H5PART_FOUND)
 
 # Configure ITAPS support -- it's treated specially.
 CONFIGURE_ITAPS()
-# Ensure the forcing option is NEVER cached as ON
-SET(FORCE_ITAPS_REGEN OFF)
 
 # Configure Mili support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
@@ -1059,4 +1062,3 @@ ELSE(WIN32)
     SET(CPACK_GENERATOR "TGZ")
 ENDIF(WIN32)
 INCLUDE(CPack)
-

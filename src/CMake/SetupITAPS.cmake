@@ -48,6 +48,16 @@
 #    it appears the generated files have been modified. It that case, we
 #    error fataly unless the option FORCE_ITAPS_REGEN is on.
 #
+#    Mark C. Miller, Thu Jan 14 10:52:19 PST 2010
+#    Removed FORCE_ITAPS_REGEN option as there was really no way for it
+#    to work in such a way that it would NOT get cached. Previous tests
+#    indicating that it was NOT getting cached were the result of having
+#    ctrl-C'd the cmake process prior to its completion. I also made the 
+#    logic smarter about knowing when generated files have changed. It
+#    now makes a copy of the generated files in a separate dir in the 
+#    databases directory and compares contents to this prestine copies to
+#    identify cases where an ITAPS_XXX plugin source file has been
+#    changed.
 #****************************************************************************/
 
 FUNCTION(ITAPS_ADD_IMPLEMENTATION IMPL)
@@ -119,14 +129,6 @@ FUNCTION(ITAPS_LINK_DIRECTORIES IMPL)
 ENDFUNCTION(ITAPS_LINK_DIRECTORIES IMPL)
 
 #
-# Option to control force overwrite of ITAPS_XXX plugin files when they are
-# regenerated and their contents differ from previous. Note that in
-# CMakeLists.txt we set this option back to OFF to ensure it is NEVER cached
-# in an ON state. 
-#
-OPTION(FORCE_ITAPS_REGEN "Force overwrite of files in generated ITAPS_XXX plugin dirs" OFF)
-
-#
 # Creates new ITAPS plugins for the implementations that have been defined via
 # calls to ITAPS_INCLUDE_DIRECTORIES, ITAPS_FILE_PATTERNS, ITAPS_LINK_LIBRARIES,
 # ITAPS_LINK_DIRECTORIES.
@@ -137,9 +139,9 @@ OPTION(FORCE_ITAPS_REGEN "Force overwrite of files in generated ITAPS_XXX plugin
 FUNCTION(CONFIGURE_ITAPS)
     # For each implementation, we must copy the source directory
     SET(ITAPS_DIRS CACHE INTERNAL "ITAPS source directories")
-    MESSAGE(STATUS "-- Configuring ITAPS")
+    MESSAGE(STATUS "Configuring ITAPS")
     FOREACH(IMPL ${ITAPS_IMPLEMENTATIONS})
-        MESSAGE(STATUS "--  ${IMPL}")
+        MESSAGE(STATUS "  ${IMPL}")
         # Just print info for now
         #MESSAGE(STATUS "    includes  =${ITAPS_${IMPL}_INCLUDE_DIR}")
         #MESSAGE(STATUS "    patterns  =${ITAPS_${IMPL}_FILE_PATTERNS}")
@@ -148,9 +150,13 @@ FUNCTION(CONFIGURE_ITAPS)
 
         # Create the directories if they do not exist.
         SET(IMPLDIR ${VISIT_SOURCE_DIR}/databases/ITAPS_${IMPL})
+        SET(IMPLDIR_COPY ${VISIT_SOURCE_DIR}/databases/.ITAPS_${IMPL}_copy)
         IF(NOT EXISTS ${IMPLDIR})
             FILE(MAKE_DIRECTORY ${IMPLDIR})
         ENDIF(NOT EXISTS ${IMPLDIR})
+        IF(NOT EXISTS ${IMPLDIR_COPY})
+            FILE(MAKE_DIRECTORY ${IMPLDIR_COPY})
+        ENDIF(NOT EXISTS ${IMPLDIR_COPY})
         SET(ITAPS_DIRS ${ITAPS_DIRS} ITAPS_${IMPL} CACHE INTERNAL "ITAPS source directories")
 
         # Build a list of the ITAPS_C source files
@@ -194,33 +200,38 @@ FUNCTION(CONFIGURE_ITAPS)
             # If the file already exists, read it so we can compare the
             # file's contents with what we've created. If they differ then
             # write out the new file.
-            SET(WRITE_NEW_FILE 1)
             IF(EXISTS ${IMPLDIR}/${NEWNAME})
                 FILE(READ ${IMPLDIR}/${NEWNAME} OLDCONTENTS)
-                IF("${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
+                IF(EXISTS ${IMPLDIR_COPY}/${NEWNAME})
+                    FILE(READ ${IMPLDIR_COPY}/${NEWNAME} OLDCONTENTS_COPY)
+                ENDIF(EXISTS ${IMPLDIR_COPY}/${NEWNAME})
+                IF(NOT "${OLDCONTENTS_COPY}" STREQUAL "${OLDCONTENTS}")
+                    MESSAGE(FATAL_ERROR "${IMPLDIR}/${NEWNAME} "
+                        "needs to get re-generated. However, that file appears to have been changed "
+                        "from what was originally generated and re-generating it will destroy those "
+                        "changes. If you have edited this file and/or other ITAPS source files in "
+                        "directories OTHER THAN the ITAPS_C directory, be aware that the files in "
+                        "the ITAPS_C directory are the TRUE SOURCE and all others are essentially "
+                        "copies of that directory. Please ensure whatever changes you need get "
+                        "propogated back to the corresponding (TRUE) source files in the ITAPS_C "
+                        "directory and then remove either the one file ${IMPLDIR}/${NEWNAME} "
+                        "or if there are several files that have been changed, then you can remove "
+                        "the entire directory ${IMPLDIR} before re-cmaking/re-configuring.")
+                ENDIF(NOT "${OLDCONTENTS_COPY}" STREQUAL "${OLDCONTENTS}")
+                IF(NOT "${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
                     # Save out the new file
-                    MESSAGE(STATUS "NEW FILE: ${IMPLDIR}/${NEWNAME}")
+                    MESSAGE(STATUS "    NEW FILE: ${IMPLDIR}/${NEWNAME}")
                     FILE(WRITE ${IMPLDIR}/${NEWNAME} "${NEWCONTENTS}")
-                ELSE("${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
-                    IF(FORCE_ITAPS_REGEN)
-                        # Save out the new file
-                        MESSAGE(STATUS "NEW FILE: ${IMPLDIR}/${NEWNAME}")
-                        FILE(WRITE ${IMPLDIR}/${NEWNAME} "${NEWCONTENTS}")
-                    ELSE(FORCE_ITAPS_REGEN)
-                        MESSAGE(FATAL_ERROR "${IMPLDIR}/${NEWNAME} "
-                            "needs to get re-generated. However, that file appears to have been changed "
-                            "and re-generating it will destroy those changes. You can encounter this "
-                            "condition if you have been working in the ITAPS_C plugin sources and are "
-                            "trying to re-configure/re-cmake. In that case, simply set the FORCE_ITAPS_REGEN "
-                            "option to ON. If, however, you have perhaps inadvertently edited the file "
-                            "manually, yourself, then ensure whatever changes you need get propogated back "
-                            "to the corresponding (true) source file in the ITAPS_C directory BEFORE "
-                            "re-configuring/re-cmaking with FORCE_ITAPS_REGEN option set to on.")
-                    ENDIF(FORCE_ITAPS_REGEN)
-                ENDIF("${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
+                    FILE(WRITE ${IMPLDIR_COPY}/${NEWNAME} "${NEWCONTENTS}")
+                ENDIF(NOT "${NEWCONTENTS}" STREQUAL "${OLDCONTENTS}")
                 UNSET(OLDCONTENTS)
+                UNSET(OLDCONTENTS_COPY)
+            ELSE(EXISTS ${IMPLDIR}/${NEWNAME})
+                # Save out the new file
+                MESSAGE(STATUS "    NEW FILE: ${IMPLDIR}/${NEWNAME}")
+                FILE(WRITE ${IMPLDIR}/${NEWNAME} "${NEWCONTENTS}")
+                FILE(WRITE ${IMPLDIR_COPY}/${NEWNAME} "${NEWCONTENTS}")
             ENDIF(EXISTS ${IMPLDIR}/${NEWNAME})
-
             UNSET(FILECONTENTS)
             UNSET(NEWCONTENTS)
         ENDFOREACH(F)
