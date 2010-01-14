@@ -15,6 +15,9 @@
 #    Hank Childs, Fri May 20 15:08:37 PDT 2005
 #    Added tests for image volumes.
 #
+#    Jeremy Meredith, Thu Jan 14 12:09:57 EST 2010
+#    Changed the way the imgvol test file was created.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -69,7 +72,7 @@ DeleteAllPlots()
 f = open("../data/Image_test_data/manhattan.imgvol", "wt")
 f.write("Z_STEP:60\n")
 for i in range(3):
-   f.write("Image_test_data/manhattan.jpg\n")
+   f.write("manhattan.jpg\n")
 f.close()
 OpenDatabase("../data/Image_test_data/manhattan.imgvol")
 AddPlot("Contour", "green")
