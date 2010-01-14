@@ -9,6 +9,11 @@
 ## Updated to HDF5 1.8.4 and Silo 4.7.2. Left ITAPS-MOAB at HDF5-1.8.2.
 ## That could be problematic with BOTH Silo and ITAPS-MOAB are used in
 ## the same session.
+##
+## Mark C. Miller, Thu Jan 14 13:30:36 PST 2010
+## Reverted to HDF5 1.8.2 and pointed to new installation for Silo
+## 4.7.2 using HDF5 1.8.2 as well as installed in the shared/static
+## dirs.
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -111,8 +116,8 @@ VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR /usr/gapps/silo/hdf5/1.8.4/i686_Linux_ELsmp)
-VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/gapps/silo/szip/2.1/i686_Linux_ELsmp/lib sz /usr/lib z)
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
 
 ##
 ## ITAPS
@@ -151,7 +156,7 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR /usr/gapps/silo/4.7.2/i686_Linux_ELsmp)
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
