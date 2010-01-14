@@ -13,12 +13,15 @@
 #    Changed number of vectors in vector plot to match the old behavior.
 #    (We now account for how many domains there are.)
 #
+#    Jeremy Meredith, Thu Jan 14 11:19:12 EST 2010
+#    Changed the path to the test data.
+#
 # ----------------------------------------------------------------------------
 import os, string
 
 
 
-OpenDatabase("../data/miranda_raw/TG_vortex/plot.raw")
+OpenDatabase("../data/miranda_test_data/TG_vortex/plot.raw")
 
 AddPlot("Pseudocolor","density")
 DrawPlots()
@@ -47,7 +50,7 @@ SetView3D(v)
 Test("miranda_raw_reader5")
 
 DeleteAllPlots()
-ReplaceDatabase("../data/miranda_raw/jet_2d/plot_mat_t83.raw")
+ReplaceDatabase("../data/miranda_test_data/jet_2d/plot_mat_t83.raw")
 
 
 SetTimeSliderState(0)
