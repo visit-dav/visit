@@ -559,6 +559,13 @@ $0 = shift @ARGV;
 #    passed to qsub to ensure that parallel engine on Franklin finds
 #    libOSMesa.
 #
+#    Gunther H. Weber, Thu Jan 14 11:51:13 PST 2010
+#    Added support for hopper.nersc.gov. IMPORTANT: Since it is necessary to
+#    chage the port number for a parallel launch on Hopper, the port argument
+#    is now also intercepted, removed and later re-added. This changes the
+#    order in which it is passed to the executables. The "-port xxx" option
+#    will now immediately follow the "-host xxxx" option. 
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1097,6 +1104,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-machinefile") { $machinefile = shift; $machinefile_set = 1; }
     elsif ($arg eq "-expedite")  { if($exe_name eq "engine") { $expedite_engine = 1;} else { push @visitargs, $arg; }}
     elsif ($arg eq "-host")      { $remotehost = shift; $remotehost_set = 1; }
+    elsif ($arg eq "-port" )     { $remoteport = shift; $remoteport_set = 1;}
     elsif ($arg eq "-key" )      { $security_key = shift; $security_key_set = 1;}
     elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; $exe_name_passed = 1;}
     elsif ($arg eq "-gui" )      { $exe_name = "gui"; $exe_name_passed = 1;}
@@ -1568,6 +1576,25 @@ if ( $host =~ /^nid/ )
 }
 
 # ----
+# HACK for franklin @ NERSC
+#
+# ----
+$IsRunningOnHopperNERSC = 0;
+if ( $host =~ /^hopper/ )
+{
+    $IsRunningOnHopperNERSC = 1;
+    $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.3.3/snos/lib64";
+
+    if ($parallel and ($exe_name eq "engine"))
+    {
+        $loginnodeport = $remoteport;
+        $remoteport = "\$MOM_PORT";
+        $loginnodehost = $remotehost;
+        $remotehost = "\$MOM_HOST";
+    }
+}
+
+# ----
 # HACK for yana and hopi @ LLNL
 #
 # ----
@@ -1614,6 +1641,13 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /brutus/ )
    $remotehost = $remotehost . ".hpc-net.ethz.ch";
 }
 
+#  We stripped off the "port" argument above, so put it back here. Put it
+#  at the beginning so that it ends after the -host argument, see below.
+if (remoteport_set)
+{
+    unshift @visitargs, $remoteport;
+    unshift @visitargs, "-port";
+}
 
 #  We stripped off the "host" argument above, so put it back here.
 #  This allowed us to change it if needed, e.g. for the Q machine.
@@ -2496,7 +2530,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 @mpicmd = ("aprun");
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n",  $procs if $procs_set;
-                if ( $IsRunningOnFranklinNERSC || $IsRunningOnJaguarCNL_ORNL )
+                if ( $IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC || $IsRunningOnJaguarCNL_ORNL )
                 {
                     push @mpicmd, "$visitbindir/env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
                 }
@@ -2567,6 +2601,13 @@ if ($procs_set or ($parallel and $parlaunch_set))
             }
             print TFILE $cdcmd;
             print TFILE $limitcmd;
+            if ($IsRunningOnHopperNERSC)
+            {
+                print TFILE "MOM_HOST=\`hostname\`\n";
+                print TFILE "$visitbindir/visit_socket_relay $loginnodehost $loginnodeport > $tfilename.port\n";
+                print TFILE "MOM_PORT=\`cat $tfilename.port\`\n";
+                print TFILE "rm $tfilename.port\n";
+            }
             print TFILE "@sublaunchprecmd", "\n", if $sublaunchprecmd_set;
             print TFILE "@mpicmd";
             print TFILE "@sublaunchpostcmd", "\n", if $sublaunchpostcmd_set;
@@ -2643,7 +2684,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 }
                 push @parcmd, "-pe", "${tacc_way}way", $tacc_procs;
             }
-            elsif ($IsRunningOnFranklinNERSC)
+            elsif ($IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC)
             {
                 push @parcmd, "-l", "mppwidth=$procs";
                 if ($nodes_set) {
@@ -2676,6 +2717,13 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @parcmd, $tfilename;
             push @printcmd, $cdcmd;
             push @printcmd, $limitcmd;
+            if ($IsRunningOnHopperNERSC)
+            {
+                push @printcmd, "MOM_HOST=\`hostname\`\n";
+                push @printcmd, "$visitbindir/visit_socket_relay $loginnodehost $loginnodeport > $tfilename.port\n";
+                push @printcmd, "MOM_PORT=\`cat $tfilename.port\`\n";
+                push @printcmd, "rm $tfilename.port\n";
+            }
             push @printcmd, $libcmd; 
             push @printcmd, $ldlibcmd; 
             push @printcmd, $plugincmd; 

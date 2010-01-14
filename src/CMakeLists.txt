@@ -173,6 +173,7 @@ OPTION(VISIT_DISABLE_SELECT "Disable use of the select() function" OFF)
 OPTION(VISIT_USE_NOSPIN_BCAST "Use VisIt's no-spin Bcast in parallel" ON)
 OPTION(VISIT_INSTALL_THIRD_PARTY "Install VisIt's 3rd party I/O libs and includes to permit plugin development" OFF)
 OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel shared libraries; just with executables" OFF)
+OPTION(VISIT_CREATE_SOCKET_RELAY "Create a seprate executable that forwards VisIt's socket connection between engine and component launcher" OFF)
 
 MACRO(VISIT_3RDPARTY_OPTION vvar comment libvar)
     # Create an option 
