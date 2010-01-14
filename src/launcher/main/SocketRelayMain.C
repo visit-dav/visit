@@ -36,70 +36,73 @@
 *
 *****************************************************************************/
 
-#ifndef SOCKET_BRIDGE_H
-#define SOCKET_BRIDGE_H
+#include <iostream>
+#include <cstdlib>
+#include <SocketBridge.h>
 
-#if defined(_WIN32)
-#include <winsock2.h>
-#else
-#include <sys/types.h>
-#include <sys/select.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#endif
 
 // ****************************************************************************
-// Class: SocketBridge
+// Function: main
 //
 // Purpose:
-//   This class bridges two local ports.
+//   This is the main function for the VisIt socket relay that forwards the
+//   VisIt communication between engine and component launcher.
 //
 // Notes:      
 //
-// Programmer: Jeremy Meredith
-// Creation:   May 23, 2007
+// Programmer: Gunther H. Weber
+// Creation:   Thu Jan 14 15:21:38 PST 2010
 //
 // Modifications:
-//    Thomas R. Treadway, Mon Jun  4 09:54:17 PDT 2007
-//    Added types.h for fd_set definition.
-//
-//    Cyrus Harrison, Thu Jun  7 11:44:07 PDT 2007
-//    Added <sys/select.h> for AIX fd_set definition 
-//
-//    Gunther H. Weber, Thu Jan 14 11:38:27 PST 2010
-//    Added ability to connect bridge to other host than localhost.
 //
 // ****************************************************************************
 
-class SocketBridge
+int main(int argc, const char* argv[])
 {
-  public:
-          SocketBridge(int from, int to, const char* toHost="localhost");
-         ~SocketBridge();
+    if (argc != 3)
+    {
+        std::cerr << "Error: Usage " << argv[0] << " <remoteHost> <remotePort>" << std::endl;
+        exit(1);
+    }
 
-    void  Bridge();
+    const char *remoteHost = argv[1];
+    int remotePort = std::atoi(argv[2]);
 
-  protected:
-    int   NumActiveBridges();
-    bool  GetListenActivity();
-    int   GetOriginatingActivity();
-    int   GetTerminatingActivity();
-    void  WaitForActivity();
-    void  StartNewBridge();
-    void  CloseBridge(int index);
-    void  ForwardOrigToTerm(int index);
-    void  ForwardTermToOrig(int index);
+    // Like in the component launcher we pick a random port and assume that
+    // it is available.
+    int lowerLocalPort = 10000;
+    int upperLocalPort = 40000;
+    int localPortRange = 1+upperLocalPort-lowerLocalPort;
+    srand48(long(time(0)));
+    int newlocalport = lowerLocalPort+(lrand48()%localPortRange);
+    std::cout << newlocalport << std::endl;
 
-  private:
-    int                from_port;
-    int                to_port;
-    const char        *to_host;
-    struct sockaddr_in listen_sock;
-    int                listen_fd;
-    int                originating_fd[1000];
-    int                terminating_fd[1000];
-    int                num_bridges;
-    fd_set             activity;
-};
-
-#endif
+    switch (fork())
+    {
+        case -1:
+            // Could not fork.
+            exit(-1);
+            break;
+        case 0:
+            {
+                // The child process will start the bridge
+                // Close stdin and any other file descriptors.
+                fclose(stdin);
+                for (int k = 3 ; k < 32 ; ++k)
+                {
+                    close(k);
+                }
+                SocketBridge bridge(newlocalport, remotePort, remoteHost);
+                bridge.Bridge();
+                exit(0);
+                break;
+            }
+        default:
+            // Parent process continues on as normal
+            // Caution: there is a slight race condition here, though
+            // it would require the engine to launch and try to connect
+            // back before the child process got the bridge set up.
+            // The odds of this happening are low, but it should be fixed.
+            break;
+    }
+}

@@ -87,12 +87,16 @@ static void CloseSocket(int fd);
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Gunther H. Weber, Thu Jan 14 11:38:27 PST 2010
+//    Added ability to connect bridge to other host than localhost.
+//
 // ****************************************************************************
-SocketBridge::SocketBridge(int from, int to)
+SocketBridge::SocketBridge(int from, int to, const char* toHost)
 {
     num_bridges = 0;
     from_port = from;
     to_port = to;
+    to_host = toHost;
 
     listen_fd = Listen(from_port, listen_sock);
     if (listen_fd<0)
@@ -244,6 +248,10 @@ SocketBridge::WaitForActivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Gunther H. Weber, Thu Jan 14 11:38:27 PST 2010
+//    Added ability to connect bridge to other host than localhost.
+//
 // ****************************************************************************
 void
 SocketBridge::StartNewBridge()
@@ -253,7 +261,7 @@ SocketBridge::StartNewBridge()
         EXCEPTION0(CouldNotConnectException);
     originating_fd[num_bridges] = ofd;
 
-    int tfd = Connect("localhost", to_port);
+    int tfd = Connect(to_host, to_port);
     if (tfd == -1)
         EXCEPTION0(CouldNotConnectException);
     terminating_fd[num_bridges] = tfd;
