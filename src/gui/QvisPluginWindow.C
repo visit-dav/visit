@@ -320,8 +320,15 @@ QvisPluginWindow::CreateWindowContents()
     db_rlayout->addWidget(preferredGroup);
     QGridLayout *preferredLayout = new QGridLayout(preferredGroup);
 
+    QLabel *preferredHintLabel = new QLabel(
+        "This is a list of plugins which are tried when no formats which "
+        "support the given file name pattern could successfully open the "
+        "file.  These fallback plugins are tried in order.", preferredGroup);
+    preferredHintLabel->setWordWrap(true);
+    preferredLayout->addWidget(preferredHintLabel, 0,0, 1,3);
+
     listPreferredDBs = new QListWidget(preferredGroup);
-    preferredLayout->addWidget(listPreferredDBs, 0,0, 1,3);
+    preferredLayout->addWidget(listPreferredDBs, 1,0, 1,3);
     connect(listPreferredDBs,
             SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), 
             this,
@@ -330,17 +337,17 @@ QvisPluginWindow::CreateWindowContents()
     dbPreferredUpButton = new QPushButton(tr("Up"), preferredGroup);
     connect(dbPreferredUpButton, SIGNAL(clicked()),
             this, SLOT(dbPreferredUpButtonClicked()));
-    preferredLayout->addWidget(dbPreferredUpButton, 1,0);
+    preferredLayout->addWidget(dbPreferredUpButton, 2,0);
 
     dbPreferredDownButton = new QPushButton(tr("Down"), preferredGroup);
     connect(dbPreferredDownButton, SIGNAL(clicked()),
             this, SLOT(dbPreferredDownButtonClicked()));
-    preferredLayout->addWidget(dbPreferredDownButton, 1,1);
+    preferredLayout->addWidget(dbPreferredDownButton, 2,1);
 
     dbPreferredRemoveButton = new QPushButton(tr("Remove"), preferredGroup);
     connect(dbPreferredRemoveButton, SIGNAL(clicked()),
             this, SLOT(dbPreferredRemoveButtonClicked()));
-    preferredLayout->addWidget(dbPreferredRemoveButton, 1,2);
+    preferredLayout->addWidget(dbPreferredRemoveButton, 2,2);
 
     // Show the appropriate page based on the activeTab setting.
     tabs->blockSignals(true);
