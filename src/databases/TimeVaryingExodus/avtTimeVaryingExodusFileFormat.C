@@ -54,6 +54,7 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 
 
 using     std::string;
@@ -99,6 +100,10 @@ avtTimeVaryingExodusFileFormat::avtTimeVaryingExodusFileFormat(
 //  Programmer: Hank Childs
 //  Creation:   April 7, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Jan 15 18:01:31 EST 2010
+//    Add a minimal level of sanity checking to see if this is an exodus file.
+//
 // ****************************************************************************
 
 void
@@ -114,6 +119,7 @@ avtTimeVaryingExodusFileFormat::ReadInDataset(void)
     //
     // Determine what the blocks are and how many there are.
     //
+    bool anyValidBlocks = false;
     numBlocks = rdr->GetNumberOfBlocks();
     validBlock.resize(numBlocks);
     blockId.resize(numBlocks);
@@ -122,12 +128,22 @@ avtTimeVaryingExodusFileFormat::ReadInDataset(void)
         if (rdr->GetNumberOfElementsInBlock(i) != 0)
         {
             validBlock[i] = true;
+            anyValidBlocks = true;
         }
         else
         {
             validBlock[i] = false;
         }
         blockId[i] = rdr->GetBlockId(i);
+    }
+
+    //
+    // If we got no valid blocks, this probably wasn't an Exodus file.
+    //
+    if (!anyValidBlocks)
+    {
+        EXCEPTION2(InvalidFilesException, GetFilename(),
+                   "Couldn't read anything viable from the file.");
     }
 
     //

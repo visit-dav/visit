@@ -56,6 +56,7 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 
 
 using     std::string;
@@ -145,6 +146,9 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
 //    Added support for element block names.
 //
+//    Jeremy Meredith, Fri Jan 15 18:01:31 EST 2010
+//    Add a minimal level of sanity checking to see if this is an exodus file.
+//
 // ****************************************************************************
 
 void
@@ -160,6 +164,7 @@ avtExodusFileFormat::ReadInFile(void)
     //
     // Determine what the blocks are and how many there are.
     //
+    bool anyValidBlocks = false;
     numBlocks = rdr->GetNumberOfBlocks();
     validBlock.resize(numBlocks);
     blockId.resize(numBlocks);
@@ -169,6 +174,7 @@ avtExodusFileFormat::ReadInFile(void)
         if (rdr->GetNumberOfElementsInBlock(i) != 0)
         {
             validBlock[i] = true;
+            anyValidBlocks = true;
         }
         else
         {
@@ -176,6 +182,15 @@ avtExodusFileFormat::ReadInFile(void)
         }
         blockId[i] = rdr->GetBlockId(i);
         blockName[i] = rdr->GetBlockName(i);
+    }
+
+    //
+    // If we got no valid blocks, this probably wasn't an Exodus file.
+    //
+    if (!anyValidBlocks)
+    {
+        EXCEPTION2(InvalidFilesException, GetFilename(),
+                   "Couldn't read anything viable from the file.");
     }
 
     //

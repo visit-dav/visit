@@ -166,7 +166,10 @@ std::vector<std::string>
 CEAucdGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.inp");
+    defaultPatterns.push_back("U_#*.inp");
+    defaultPatterns.push_back("U_#*_#*.inp");
+    defaultPatterns.push_back("UCD_#*");
+    defaultPatterns.push_back("UCD_#*_#*");
 
     return defaultPatterns;
 }
@@ -185,7 +188,7 @@ CEAucdGeneralPluginInfo::GetDefaultFilePatterns() const
 bool
 CEAucdGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

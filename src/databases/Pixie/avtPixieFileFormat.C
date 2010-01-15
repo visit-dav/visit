@@ -77,13 +77,16 @@
 #include <visit-hdf5.h>
 
 
-#define MAKE_SURE_THE_FILE_IS_NOT_OTHER_FORMAT
-
 // ****************************************************************************
 //  Method: avtPixie constructor
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Aug 13 14:31:43 PST 2004
+//
+//  Modifications:
+//   Jeremy Meredith, Fri Jan 15 17:22:30 EST 2010
+//   Don't need to call Initialize here -- it will be called when we need it,
+//   even if we are being strict about ruling out non-Pixie files.
 //
 // ****************************************************************************
 
@@ -94,14 +97,6 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename)
      fileId = -1;
      nTimeStates = 0;
      haveMeshCoords = false;
-
-#ifdef MAKE_SURE_THE_FILE_IS_NOT_OTHER_FORMAT
-     // This sucks to have to call this here but it's the only way to
-     // make sure that this file format does not suck up other file formats'
-     // data. This is primarily a check to make sure that the Tetrad
-     // file format, which also has a .h5 extension continues to work.
-     Initialize();
-#endif
 }
 
 // ****************************************************************************
@@ -275,6 +270,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Jeremy Meredith, Fri Jan 15 17:07:33 EST 2010
 //   Added detection of and failure for Silo-looking HDF5 files.
 //
+//   Jeremy Meredith, Fri Jan 15 17:25:23 EST 2010
+//   Use runtime strictness checking behavior.
+//
 // ****************************************************************************
     
 void
@@ -292,78 +290,80 @@ avtPixieFileFormat::Initialize()
             EXCEPTION1(InvalidFilesException, (const char *)filenames[0]);
         }
 
-#ifdef MAKE_SURE_THE_FILE_IS_NOT_OTHER_FORMAT
-        // Turn off error message printing.
-        H5Eset_auto(0,0);
+        if (GetStrictMode())
+        {
+            // Turn off error message printing.
+            H5Eset_auto(0,0);
 
-        //
-        // See if the file format looks like a Tetrad file. I know it's
-        // hackish to have to check like this but how else should it be
-        // done when we don't want Pixie to read HDF5 files that happen
-        // to have Tetrad stuff in them.
-        //
-        hid_t siloDir = H5Gopen(fileId, ".silo");
-        if (siloDir >= 0)
-        {
-            H5Gclose(siloDir);
-            H5Fclose(fileId);
-            EXCEPTION1(InvalidDBTypeException,
-                       "Cannot be a Pixie file because it looks like a Silo file.");
-        }
-        hid_t cell_array = H5Dopen(fileId, "CellArray");
-        if (cell_array >= 0)
-        {
-            H5Dclose(cell_array);
-            H5Fclose(fileId);
-            EXCEPTION1(InvalidDBTypeException,
-               "Cannot be a Pixie file because it looks like a Tetrad file.");
-        }
-        hid_t control = H5Dopen(fileId, "CONTROL");
-        if (control >= 0)
-        {
-            H5Dclose(control);
-            H5Fclose(fileId);
-            EXCEPTION1(InvalidDBTypeException,
-               "Cannot be a Pixie file because it looks like an UNIC file.");
-        }
-        hid_t runInfo = H5Gopen(fileId, "runInfo");
-        if (runInfo >= 0)
-        {
-            hid_t vsVersion = H5Aopen_name(runInfo, "vsVersion");
-            if (vsVersion >= 0)
+            //
+            // See if the file format looks like a Tetrad file. I know it's
+            // hackish to have to check like this but how else should it be
+            // done when we don't want Pixie to read HDF5 files that happen
+            // to have Tetrad stuff in them.
+            //
+            hid_t siloDir = H5Gopen(fileId, ".silo");
+            if (siloDir >= 0)
             {
-                H5Aclose(vsVersion);
+                H5Gclose(siloDir);
+                H5Fclose(fileId);
+                EXCEPTION1(InvalidDBTypeException,
+                           "Cannot be a Pixie file because it looks like a Silo file.");
+            }
+            hid_t cell_array = H5Dopen(fileId, "CellArray");
+            if (cell_array >= 0)
+            {
+                H5Dclose(cell_array);
+                H5Fclose(fileId);
+                EXCEPTION1(InvalidDBTypeException,
+                           "Cannot be a Pixie file because it looks like a Tetrad file.");
+            }
+            hid_t control = H5Dopen(fileId, "CONTROL");
+            if (control >= 0)
+            {
+                H5Dclose(control);
+                H5Fclose(fileId);
+                EXCEPTION1(InvalidDBTypeException,
+                           "Cannot be a Pixie file because it looks like an UNIC file.");
+            }
+            hid_t runInfo = H5Gopen(fileId, "runInfo");
+            if (runInfo >= 0)
+            {
+                hid_t vsVersion = H5Aopen_name(runInfo, "vsVersion");
+                if (vsVersion >= 0)
+                {
+                    H5Aclose(vsVersion);
+                    H5Gclose(runInfo);
+                    H5Fclose(fileId);
+                    EXCEPTION1(InvalidDBTypeException,
+                               "Cannot be a Pixie file because it looks like a VizSchema file.");
+                }
+
+                hid_t vsVsVersion = H5Aopen_name(runInfo, "vsVsVersion");
+                if (vsVsVersion >= 0)
+                {
+                    H5Aclose(vsVsVersion);
+                    H5Gclose(runInfo);
+                    H5Fclose(fileId);
+                    EXCEPTION1(InvalidDBTypeException,
+                               "Cannot be a Pixie file because it looks like a VizSchema file.");
+                }
+
+                hid_t software = H5Aopen_name(runInfo, "software");
+                hid_t version = H5Aopen_name(runInfo, "version");
                 H5Gclose(runInfo);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                        "Cannot be a Pixie file because it looks like a VizSchema file.");
+                if (software >=0 && version >=0)
+                {
+                    H5Aclose(software);
+                    H5Aclose(version);
+                    H5Fclose(fileId);
+                    EXCEPTION1(InvalidDBTypeException,
+                               "Cannot be a Pixie file because it looks like a legacy VizSchema file.");
+                }
+                if (software >=0) H5Aclose(software);
+                if (version >=0) H5Aclose(version);
             }
-
-            hid_t vsVsVersion = H5Aopen_name(runInfo, "vsVsVersion");
-            if (vsVsVersion >= 0)
-            {
-                H5Aclose(vsVsVersion);
-                H5Gclose(runInfo);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                        "Cannot be a Pixie file because it looks like a VizSchema file.");
-            }
-
-            hid_t software = H5Aopen_name(runInfo, "software");
-            hid_t version = H5Aopen_name(runInfo, "version");
-            H5Gclose(runInfo);
-            if (software >=0 && version >=0)
-            {
-                H5Aclose(software);
-                H5Aclose(version);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                        "Cannot be a Pixie file because it looks like a legacy VizSchema file.");
-            }
-            if (software >=0) H5Aclose(software);
-            if (version >=0) H5Aclose(version);
         }
-#endif
+
         // Populate the scalar variable list
         int gid;
         if ((gid = H5Gopen(fileId, "/")) < 0)
