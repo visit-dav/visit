@@ -426,6 +426,9 @@ QvisPluginWindow::Update(Subject *s)
 //    Jeremy Meredith, Wed Dec 30 16:44:25 EST 2009
 //    Added ability to set preferred file format plugins.
 //
+//    Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
+//    Give visual cue when a disabled plugin is preferred.
+//
 // ****************************************************************************
 
 void
@@ -503,7 +506,10 @@ QvisPluginWindow::UpdateWindow(bool doAll)
         listPreferredDBs->clear();
         for (i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
         {
-            listPreferredDBs->addItem(fileOpenOptions->GetPreferredIDs()[i].c_str());
+            string id = fileOpenOptions->GetPreferredIDs()[i];
+            QListWidgetItem *item = new QListWidgetItem(id.c_str(),listPreferredDBs);
+            if (!fileOpenOptions->IsIDEnabled(id))
+                item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
         }
         dbPreferredRemoveButton->setEnabled(false);
         dbPreferredUpButton->setEnabled(false);
@@ -872,6 +878,10 @@ QvisPluginWindow::unSelectAllReadersButtonClicked()
 // Programmer:  Jeremy Meredith
 // Creation:    December 30, 2009
 //
+// Modifications:
+//   Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
+//   Give visual cue when a disabled plugin is preferred.
+//
 // ****************************************************************************
 
 void
@@ -886,7 +896,10 @@ QvisPluginWindow::dbAddToPreferedButtonClicked()
     {
         fileOpenOptions->GetPreferredIDs().push_back(id);
         fileOpenOptions->SelectPreferredIDs();
-        listPreferredDBs->addItem(id.c_str());
+        QListWidgetItem *item = new QListWidgetItem(id.c_str(),
+                                                    listPreferredDBs);
+        if (!fileOpenOptions->IsIDEnabled(id))
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
         UpdateWidgetSensitivites();
     }
 }
@@ -902,6 +915,10 @@ QvisPluginWindow::dbAddToPreferedButtonClicked()
 //
 // Programmer:  Jeremy Meredith
 // Creation:    December 30, 2009
+//
+// Modifications:
+//   Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
+//   Give visual cue when a disabled plugin is preferred.
 //
 // ****************************************************************************
 
@@ -919,7 +936,12 @@ QvisPluginWindow::dbPreferredUpButtonClicked()
 
     listPreferredDBs->clear();
     for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
-        listPreferredDBs->addItem(preferred[i].c_str());
+    {
+        QListWidgetItem *item = new QListWidgetItem(preferred[i].c_str(),
+                                                    listPreferredDBs);
+        if (!fileOpenOptions->IsIDEnabled(preferred[i]))
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+    }
     listPreferredDBs->setCurrentRow(index-1);
     UpdateWidgetSensitivites();
 }
@@ -935,6 +957,10 @@ QvisPluginWindow::dbPreferredUpButtonClicked()
 //
 // Programmer:  Jeremy Meredith
 // Creation:    December 30, 2009
+//
+// Modifications:
+//   Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
+//   Give visual cue when a disabled plugin is preferred.
 //
 // ****************************************************************************
 
@@ -952,7 +978,12 @@ QvisPluginWindow::dbPreferredDownButtonClicked()
 
     listPreferredDBs->clear();
     for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
-        listPreferredDBs->addItem(preferred[i].c_str());
+    {
+        QListWidgetItem *item = new QListWidgetItem(preferred[i].c_str(),
+                                                    listPreferredDBs);
+        if (!fileOpenOptions->IsIDEnabled(preferred[i]))
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+    }
     listPreferredDBs->setCurrentRow(index+1);
     UpdateWidgetSensitivites();
 }
@@ -968,6 +999,10 @@ QvisPluginWindow::dbPreferredDownButtonClicked()
 //
 // Programmer:  Jeremy Meredith
 // Creation:    December 30, 2009
+//
+// Modifications:
+//   Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
+//   Give visual cue when a disabled plugin is preferred.
 //
 // ****************************************************************************
 
@@ -985,7 +1020,12 @@ QvisPluginWindow::dbPreferredRemoveButtonClicked()
     
     listPreferredDBs->clear();
     for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
-        listPreferredDBs->addItem(preferred[i].c_str());
+    {
+        QListWidgetItem *item = new QListWidgetItem(preferred[i].c_str(),
+                                                    listPreferredDBs);
+        if (!fileOpenOptions->IsIDEnabled(preferred[i]))
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+    }
     UpdateWidgetSensitivites();
 }
 
