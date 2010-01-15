@@ -1643,7 +1643,7 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /brutus/ )
 
 #  We stripped off the "port" argument above, so put it back here. Put it
 #  at the beginning so that it ends after the -host argument, see below.
-if (remoteport_set)
+if ($remoteport_set)
 {
     unshift @visitargs, $remoteport;
     unshift @visitargs, "-port";
