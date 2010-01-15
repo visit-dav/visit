@@ -309,62 +309,9 @@ std::string H5_Index::getSortedFieldName() const {
         (void) memset(data, 0, 200);
         H5PartReadFileAttrib(h5partFile, "sortedKey", (void*)&data);
         result = std::string(data);
-
-        // Hack because H5part assumes strings to be a character array
-        // rather than the posibility of being a null terminated
-        // string.
-        if( result == std::string("") )
-        {
-          hid_t attr_id = H5Aopen_name(h5partFile->file, "sortedKey");
-
-          if (attr_id < 0) {
-            return "";
-          } else {
-
-            hid_t type_id = H5Aget_type( attr_id );
-            hid_t file_space_id = H5Aget_space( attr_id );
-
-            if( file_space_id < 0 ) {
-              H5Aclose( file_space_id );
-              H5Aclose( type_id );
-              H5Aclose( attr_id );
-              return "";
-            }
-
-            hid_t mem_type_id;
-
-            switch (H5Tget_class(type_id)) {
-            case H5T_STRING:
-              // String
-              if(H5Tis_variable_str(type_id)) {
-                mem_type_id = H5Tcopy(H5T_C_S1);
-                H5Tset_size(mem_type_id, H5T_VARIABLE);
-              } else {
-                mem_type_id = H5Tcopy(type_id);
-                H5Tset_cset(mem_type_id, H5T_CSET_ASCII);
-              }
-              break;
-            default:
-              H5Aclose( file_space_id );
-              H5Aclose( type_id );
-              H5Aclose( attr_id );
-              return "";
-            }
-
-            if( H5Aread(attr_id, mem_type_id, data) < 0 )
-              result = "";
-            else
-              result = std::string(data);
-            
-            H5Aclose( mem_type_id );
-            H5Aclose( file_space_id );
-            H5Aclose( type_id );
-            H5Aclose( attr_id );
-          }
-        }
     }
     else {
-        result = "";
+        result = "";    
     }
     return result;
 }
@@ -916,7 +863,7 @@ bool H5_Index::getPointData(const std::string& variablename,int64_t time,
     answer = dataset_id.open(file_id.getID(),path.c_str());
     if(answer == false) {
         LOGGER(ibis::gVerbose >= 0)
-          << "Dataset " << path.c_str() << " of file " << file_id.getID() << " could not be opened";
+            << "Dataset of file " << file_id.getID() << " could not be opened";
         return answer;
     }
     //first get the type information...
