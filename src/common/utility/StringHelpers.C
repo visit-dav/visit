@@ -1076,7 +1076,7 @@ StringHelpers::IsPureASCII(const char *const txt, int length)
 {
     for (int i=0; i<length; i++)
     {
-        const char &c = txt[i];
+        const unsigned char c = txt[i];
 
         if ((c>1 && c<7) || (c>13 && c<32) || c>127)
             return false;
