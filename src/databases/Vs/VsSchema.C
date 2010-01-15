@@ -33,10 +33,10 @@ std::string VsSchema::vsVarsKey = "vsVars";
 std::string VsSchema::zonalCenteringKey = "zonal"; // Default is nodal
 
 // Index ordering...
-std::string VsSchema::compMajorCKey = "compMajorC";     //currently not supported
-std::string VsSchema::compMinorCKey = "compMinorC";     //default ordering
-std::string VsSchema::compMajorFKey = "compMajorF";     //currently not supported
-std::string VsSchema::compMinorFKey = "compMinorF";     //supported
+std::string VsSchema::compMajorCKey = "compMajorC"; //currently not supported
+std::string VsSchema::compMinorCKey = "compMinorC"; //default ordering
+std::string VsSchema::compMajorFKey = "compMajorF"; //currently not supported
+std::string VsSchema::compMinorFKey = "compMinorF"; //supported
 
 // Meshes
 
@@ -50,10 +50,33 @@ std::string VsSchema::Uniform::comp2 = "vsNumCells";
 std::string VsSchema::Uniform::comp3 = "vsUpperBounds";
 
 std::string VsSchema::Unstructured::key = "unstructured";
+
 std::string VsSchema::Unstructured::defaultPolygonsName = "polygons";
+std::string VsSchema::Unstructured::defaultPolyhedraName = "polyhedra";
+
 std::string VsSchema::Unstructured::defaultPointsName = "points";
+std::string VsSchema::Unstructured::defaultLinesName = "lines";
+std::string VsSchema::Unstructured::defaultTrianglesName = "triangles";
+std::string VsSchema::Unstructured::defaultQuadrilateralsName = "quadrilaterals";
+
+std::string VsSchema::Unstructured::defaultTetrahedralsName = "tetrahedrals";
+std::string VsSchema::Unstructured::defaultPyramidsName = "pyramids";
+std::string VsSchema::Unstructured::defaultPrismsName = "prisms";
+std::string VsSchema::Unstructured::defaultHexahedralsName = "hexahedrals";
+
 std::string VsSchema::Unstructured::vsPolygons = "vsPolygons";
+std::string VsSchema::Unstructured::vsPolyhedra = "vsPolyhedra";
+
 std::string VsSchema::Unstructured::vsPoints = "vsPoints";
+std::string VsSchema::Unstructured::vsLines = "vsLines";
+std::string VsSchema::Unstructured::vsTriangles = "vsTriangles";
+std::string VsSchema::Unstructured::vsQuadrilaterals = "vsQuadrilaterals";
+
+std::string VsSchema::Unstructured::vsTetrahedrals = "vsTetrahedrals";
+std::string VsSchema::Unstructured::vsPyramids = "vsPyramids";
+std::string VsSchema::Unstructured::vsPrisms = "vsPrisms";
+std::string VsSchema::Unstructured::vsHexahedrals = "vsHexahedrals";
+
 std::string VsSchema::Unstructured::vsPoints0 = "vsPoints0";
 std::string VsSchema::Unstructured::vsPoints1 = "vsPoints1";
 std::string VsSchema::Unstructured::vsPoints2 = "vsPoints2";
