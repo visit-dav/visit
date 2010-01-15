@@ -50,6 +50,11 @@
 #   added logic to set CMAKE_REQUIRED_DEFINITIONS prior to checking size
 #   of off64_t. In theory, we might need to set CMAKE_REQUIRED_INCLUDES 
 #   too but that was not required on the systems I tested.
+#
+#   David M. Camp, Th Jan 14 11:50:00 PST 2010
+#   Added new function ADD_TARGET_DEFINITIONS to add defines to targets.
+#   This was needed for the plots to define ENGINE only for the engine build.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -1062,6 +1067,18 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
         ADD_SUBDIRECTORY(java)
     ENDIF(VISIT_JAVA)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+
+FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
+    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
+    IF(${currentDefs} MATCHES NOTFOUND)
+        SET(allDefs ${newDefs})
+    ELSE(${currentDefs} MATCHES NOTFOUND)
+        SET(allDefs ${currentDefs} ${newDefs})
+    ENDIF(${currentDefs} MATCHES NOTFOUND)
+    SET_TARGET_PROPERTIES(${target} PROPERTIES
+            COMPILE_DEFINITIONS ${allDefs}
+        )
+ENDFUNCTION(ADD_TARGET_DEFINITIONS)
 
 IF(NOT VISIT_DBIO_ONLY)
    ADD_SUBDIRECTORY(plots)
