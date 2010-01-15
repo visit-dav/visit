@@ -272,6 +272,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
 //   Close all open ids when returning an exception.  Added error detection.
 //
+//   Jeremy Meredith, Fri Jan 15 17:07:33 EST 2010
+//   Added detection of and failure for Silo-looking HDF5 files.
+//
 // ****************************************************************************
     
 void
@@ -299,6 +302,14 @@ avtPixieFileFormat::Initialize()
         // done when we don't want Pixie to read HDF5 files that happen
         // to have Tetrad stuff in them.
         //
+        hid_t siloDir = H5Gopen(fileId, ".silo");
+        if (siloDir >= 0)
+        {
+            H5Gclose(siloDir);
+            H5Fclose(fileId);
+            EXCEPTION1(InvalidDBTypeException,
+                       "Cannot be a Pixie file because it looks like a Silo file.");
+        }
         hid_t cell_array = H5Dopen(fileId, "CellArray");
         if (cell_array >= 0)
         {
