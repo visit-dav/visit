@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/Expressions/MeshQuality
+      ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
+    </CXXFLAGS>
     <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve

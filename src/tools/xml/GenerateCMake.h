@@ -64,6 +64,9 @@
 //    Brad Whitlock, Mon Nov 23 15:19:10 PST 2009
 //    I added server components and engine only builds.
 //
+//    David Camp, Thu Jan 14 17:56:29 PST 2010
+//    Added the ADD_TARGET_DEFINITIONS function to define ENGINE for plots.
+//    
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -396,11 +399,13 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ADD_LIBRARY(E"<<name<<"Plot_ser ${LIBE_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(E"<<name<<"Plot_ser visitcommon avtplotter_ser avtpipeline_ser "<< ToString(elibsSer) << ")" << endl;
         out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Plot_ser)" << endl;
+        out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Plot_ser ENGINE)" << endl;
         out << endl;
         out << "IF(VISIT_PARALLEL)" << endl;
         out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Plot_par ${LIBE_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Plot_par visitcommon avtplotter_par avtpipeline_par "<< ToString(elibsPar) << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Plot_par)" << endl;
+        out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Plot_par ENGINE)" << endl;
         out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
         out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
