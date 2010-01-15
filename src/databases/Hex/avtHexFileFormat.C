@@ -44,6 +44,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 20, 2002
 //
+//  Modifications:
+//   Jeremy Meredith, Fri Jan 15 18:02:32 EST 2010
+//   Added some simple error checking.
+//
 // ****************************************************************************
 
 
@@ -220,6 +224,8 @@ avtHexFileFormat::ReadFile(ifstream &ifile)
 
     // points
     ifile >> buff >> npoints;
+    if (!ifile)
+        EXCEPTION1(InvalidFilesException, GetFilename());
 
     points.resize(npoints*3);
     for (i = 0 ; i < npoints*3 ; i++)
@@ -229,6 +235,8 @@ avtHexFileFormat::ReadFile(ifstream &ifile)
 
     // connectivity
     ifile >> buff >> nhexes;
+    if (!ifile)
+        EXCEPTION1(InvalidFilesException, GetFilename());
 
     hexnodes.resize(nhexes*8);
     for (i = 0 ; i < nhexes*8 ; i++)
@@ -238,6 +246,8 @@ avtHexFileFormat::ReadFile(ifstream &ifile)
 
     // cell vars
     ifile >> buff >> ncellvars;
+    if (!ifile)
+        EXCEPTION1(InvalidFilesException, GetFilename());
 
     cellvars.resize(ncellvars);
     cellvarnames.resize(ncellvars);
@@ -254,6 +264,8 @@ avtHexFileFormat::ReadFile(ifstream &ifile)
 
     // point vars
     ifile >> buff >> npointvars;
+    if (!ifile)
+        EXCEPTION1(InvalidFilesException, GetFilename());
 
     pointvars.resize(npointvars);
     pointvarnames.resize(npointvars);
