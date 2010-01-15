@@ -179,7 +179,6 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int spatial_dimension = 3;
     int topological_dimension = 3;
     double *extents = NULL;
-    char str[512];
 
     char level[4];
 
