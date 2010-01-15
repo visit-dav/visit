@@ -5897,6 +5897,9 @@ visit_GetPreferredFileFormats(PyObject *self, PyObject *args)
 //  Creation:    January 14, 2010
 //
 //  Modifications:
+//    Jeremy Meredith, Fri Jan 15 16:33:24 EST 2010
+//    Did a lookup from name to type if possible, allowing users to
+//    set preferred plugins by name alone.
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -5915,6 +5918,22 @@ visit_SetPreferredFileFormats(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
     FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
+
+    // match names to ids if necessary
+    const stringVector &allnames = foo->GetTypeNames();
+    const stringVector &allids = foo->GetTypeIDs();
+    for (int i = 0 ; i < newIDs.size() ; i++)
+    {
+        for (int j = 0 ; j < allnames.size() ; j++)
+        {
+            if (newIDs[i] == allnames[j])
+            {
+                newIDs[i] = allids[j];
+                break;
+            }
+        }
+    }
+
     foo->SetPreferredIDs(newIDs);
     foo->Notify();
     GetViewerMethods()->SetDefaultFileOpenOptions();
