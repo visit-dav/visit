@@ -49,7 +49,7 @@
 
 #include <PersistentParticlesAttributes.h>
 
-#include <map.h>
+#include <map>
 #include <vtkUnstructuredGrid.h>
 
 class vtkDataSet;
