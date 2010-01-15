@@ -39,7 +39,7 @@
 #  else
 #    define HOOVER_EXPORT extern __declspec(dllimport)
 #  endif
-#define HOVER_EXPORT2 HOOVER_EXPORT
+#define HOOVER_EXPORT2 HOOVER_EXPORT
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(hoover_EXPORTS) || defined(teem_EXPORTS))
 #  define HOOVER_EXPORT __attribute__ ((visibility("default")))

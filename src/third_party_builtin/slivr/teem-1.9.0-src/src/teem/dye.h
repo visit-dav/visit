@@ -37,7 +37,7 @@
 #  else
 #    define DYE_EXPORT extern __declspec(dllimport)
 #  endif
-#define DYE_EXPORT2 DYE_EXPORT2
+#define DYE_EXPORT2 DYE_EXPORT
 #else /* TEEM_STATIC || UNIX */
 # if __GNUC__ >= 4 && (defined(dye_EXPORTS) || defined(teem_EXPORTS))
 #  define DYE_EXPORT __attribute__ ((visibility("default")))
