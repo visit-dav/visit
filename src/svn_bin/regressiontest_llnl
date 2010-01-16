@@ -112,6 +112,8 @@
 #    should really do an out of source build instead of updating a persistent
 #    directory.
 #
+#    Mark C. Miller, Fri Jan 15 22:44:32 PST 2010
+#    Temporarily set to run only serial tests.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -409,7 +411,8 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 theDay=`date +%A`
 
 # set mode to run in
-modes="nersc,serial nersc,parallel nersc,scalable,parallel"
+#modes="nersc,serial nersc,parallel nersc,scalable,parallel"
+modes="nersc,serial"
 
 # set list of tests/modes to skip
 skipList_dueTo_clientServer="\
