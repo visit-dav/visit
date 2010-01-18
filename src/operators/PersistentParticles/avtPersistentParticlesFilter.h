@@ -43,17 +43,15 @@
 #ifndef AVT_PersistentParticles_FILTER_H
 #define AVT_PersistentParticles_FILTER_H
 
+#include <map>
 
 #include <avtExecuteThenTimeLoopFilter.h>
 #include <avtPluginFilter.h>
 
 #include <PersistentParticlesAttributes.h>
 
-#include <map>
-#include <vtkUnstructuredGrid.h>
-
 class vtkDataSet;
-
+class vtkUnstructuredGrid;
 
 // ****************************************************************************
 //  Class: avtPersistentParticlesFilter
@@ -112,8 +110,4 @@ class avtPersistentParticlesFilter
     int activeTimeStep;
     bool haveData;
 };
-
-
 #endif
-
-
