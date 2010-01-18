@@ -4,6 +4,12 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/MeshQuality
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
     </CXXFLAGS>
+    <LIBS components="ESer">
+      avtexpressions_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtexpressions_par
+    </LIBS>
     <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve

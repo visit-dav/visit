@@ -107,13 +107,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EHistogramPlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EHistogramPlot_ser visitcommon avtplotter_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EHistogramPlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EHistogramPlot_ser)
 ADD_TARGET_DEFINITIONS(EHistogramPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EHistogramPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EHistogramPlot_par visitcommon avtplotter_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EHistogramPlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EHistogramPlot_par)
     ADD_TARGET_DEFINITIONS(EHistogramPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)
