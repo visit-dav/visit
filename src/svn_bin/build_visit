@@ -768,6 +768,15 @@
 #     Tom Fogal, Wed Jan  6 18:53:08 MST 2010
 #     Add -pthread to python link flags.
 #
+#     Tom Fogal, Tue Jan 12 20:32:14 MST 2010
+#     Don't build some Qt subsystems that we don't need.
+#
+#     Tom Fogal, Wed Jan 13 14:05:59 MST 2010
+#     Fix the above change; only changed what *printed* before!
+#
+#     Tom Fogal, Wed Jan 13 19:53:25 MST 2010
+#     Get rid of OpenSSL too; we're not using QtNetwork.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -2884,19 +2893,27 @@ function build_qt
     #
     # Call configure
     #
+    qt_flags=""
+    qt_flags="${qt_flags} -no-qt3support"
+    qt_flags="${qt_flags} -no-dbus"
+    qt_flags="${qt_flags} -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci"
+    qt_flags="${qt_flags} -no-sql-odbc -no-sql-psql -no-sql-sqlite"
+    qt_flags="${qt_flags} -no-sql-sqlite2 -no-sql-tds"
+    qt_flags="${qt_flags} -no-xmlpatterns"
+    #qt_flags="${qt_flags} -no-scripttools" # disable for now -- not in 4.4.3
+    qt_flags="${qt_flags} -no-webkit"
+    qt_flags="${qt_flags} -no-openssl"
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
-         "-no-qt3support -no-dbus" \
-         "-no-sql-{db2,ibase,mysql,oci,odbc,psql,sqlite,sqlite2,tds}" \
+         "${qt_flags}" \
          "${EXTRA_QT_FLAGS}"
     (if [[ $(echo $QT_VERSION | cut -c 3) > 4 ]]; then echo 'o'; fi; echo "yes" ) | \
-                 ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
-                             -platform ${QT_PLATFORM} \
-                             -make libs -make tools -fast -no-separate-debug-info \
-                             -no-qt3support -no-dbus \
-                             -no-sql-{db2,ibase,mysql,oci,odbc,psql,sqlite,sqlite2,tds} \
-                             ${EXTRA_QT_FLAGS} | tee qt.config.out
+        ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
+                    -platform ${QT_PLATFORM} \
+                    -make libs -make tools -fast -no-separate-debug-info \
+                    ${qt_flags} \
+                    ${EXTRA_QT_FLAGS} | tee qt.config.out
     
     if [[ $? != 0 ]] ; then
        warn "Qt4 configure failed. Giving up."
@@ -2940,7 +2957,7 @@ function build_qt
         for f in *.a; do ln -s $f ${f%\.*}.so; done
     elif [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" && $ABS_PATH == "no" ]]; then
         QtTopDir="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg QtXml"
+        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg"
         for QtFW in $QtFrameworks; do
             filename="$QtTopDir/lib/${QtFW}.framework/${QtFW}"
             debugFilename="${filename}_debug"
