@@ -1743,10 +1743,10 @@
         <Object name="ViewerSubject">
             <Object name="DatabaseCorrelationList">
                 <Object name="DatabaseCorrelation">
-                    <Field name="name" type="string">localhost:../data/wave*.silo database</Field>
+                    <Field name="name" type="string">localhost:../data/silo_hdf5_test_data/wave*.silo database</Field>
                     <Field name="numStates" type="int">71</Field>
                     <Field name="method" type="string">IndexForIndexCorrelation</Field>
-                    <Field name="databaseNames" type="stringVector">"localhost:../data/wave*.silo database" </Field>
+                    <Field name="databaseNames" type="stringVector">"localhost:../data/silo_hdf5_test_data/wave*.silo database" </Field>
                     <Field name="databaseNStates" type="intVector">71 </Field>
                     <Field name="databaseTimes" type="doubleVector">-2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </Field>
                     <Field name="databaseCycles" type="intVector">0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 230 240 250 260 270 280 290 300 310 320 330 340 350 360 370 380 390 400 410 420 430 440 450 460 470 480 490 500 510 520 530 540 550 560 570 580 590 600 610 620 630 640 650 660 670 680 690 700 </Field>
@@ -2020,13 +2020,13 @@
                         <Object name="ViewerPlotList">
                             <Object name="timeSliders">
                                 <Field name="Keyframe animation" type="int">0</Field>
-                                <Field name="localhost:../data/wave*.silo database" type="int">34</Field>
+                                <Field name="localhost:../data/silo_hdf5_test_data/wave*.silo database" type="int">34</Field>
                             </Object>
                             <Field name="activeTimeSlider" type="string">Keyframe animation</Field>
                             <Object name="plot00">
                                 <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/wave*.silo database</Field>
+                                <Field name="databaseName" type="string">../data/silo_hdf5_test_data/wave*.silo database</Field>
                                 <Field name="variableName" type="string">pressure</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -2106,7 +2106,7 @@
                             <Object name="plot01">
                                 <Field name="pluginID" type="string">Mesh_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/wave*.silo database</Field>
+                                <Field name="databaseName" type="string">../data/silo_hdf5_test_data/wave*.silo database</Field>
                                 <Field name="variableName" type="string">quadmesh</Field>
                                 <Field name="active" type="bool">true</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -2200,7 +2200,7 @@
                                 </Object>
                             </Object>
                             <Field name="hostName" type="string">localhost</Field>
-                            <Field name="databaseName" type="string">../data/wave*.silo database</Field>
+                            <Field name="databaseName" type="string">../data/silo_hdf5_test_data/wave*.silo database</Field>
                             <Field name="nPlots" type="int">2</Field>
                             <Field name="keyframeMode" type="bool">true</Field>
                             <Field name="nKeyframes" type="int">10</Field>
