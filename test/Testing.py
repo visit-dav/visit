@@ -1512,6 +1512,10 @@ def TurnOffAllAnnotations(givenAtts=0):
 #    Tom Fogal, Wed Jan  6 18:06:09 MST 2010
 #    Print out the import error so we have a chance of debugging it.
 #
+#    Jeremy Meredith, Tue Jan 19 11:43:41 EST 2010
+#    Set the preferred plugin list to be exclusively Silo.  This mimics
+#    the old behavior.
+#
 # ----------------------------------------------------------------------------
 
 import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
@@ -1657,6 +1661,7 @@ epids.close()
 # This is to prevent new tests getting committed that
 # are unnecessarily dependent on annotations.
 TurnOffAllAnnotations()
+SetPreferredFileFormats("Silo_1.0")
 
 # set up our html output
 html = open("html/%s_%s.html" % (category, pyfilebase), 'wt')
