@@ -72,6 +72,10 @@ typedef bool (AddWorkCallback)(Subject *, void *data);
 //   Brad Whitlock, Wed Feb  6 10:27:51 PST 2008
 //   Added support for callback data.
 //
+//   Hank Childs, Mon Jan 18 21:38:53 PST 2010
+//   Added method IsWorking on behalf of Tila Ochatta, Huy Vo, and Claudio
+//   Silva.  (For VisTrails.)
+//
 // ****************************************************************************
 
 class CallbackManager : public SimpleObserver
@@ -128,6 +132,8 @@ public:
 
     void WorkAllowed();
     void Work();
+    bool IsWorking();
+
 private:
     bool RegisterCallback(Subject *, PyObject *, PyObject *);
     void StartWork();
