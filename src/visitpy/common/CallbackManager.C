@@ -186,6 +186,25 @@ CallbackManager::WorkAllowed()
 }
 
 // ****************************************************************************
+//  Method: CallbackManager::IsWorking
+//
+//  Purpose:
+//     Method to describe whether the CLI is still working.  
+//     (Used for VisTrails)
+//
+//  Programmer: Tila Ochatta
+//  Creation:   May 26, 2009
+//
+// ****************************************************************************
+
+bool
+CallbackManager::IsWorking()
+{
+  return this->working;
+}
+
+
+// ****************************************************************************
 // Method: CallbackManager::SubjectRemoved
 //
 // Purpose: 
