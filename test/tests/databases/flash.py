@@ -13,6 +13,9 @@
 #    Hank Childs and Randy Hudson, Sun Mar  2 15:38:05 PST 2008
 #    Reflect new naming scheme.
 #
+#    Hank Childs, Tue Jan 19 13:29:29 PST 2010
+#    Go back to original naming scheme.
+#
 # ----------------------------------------------------------------------------
 import os, string
 
@@ -22,7 +25,7 @@ SetTryHarderCyclesTimes(1)
 #OpenDatabase("../data/FLASH_test_data/orbit_hdf5_chk_0* database", 0, "FLASH_1.0")
 OpenDatabase("../data/FLASH_test_data/orbit_hdf5_chk_0000", 0, "FLASH_1.0")
 
-AddPlot("Pseudocolor","mesh_blockandlevel/pden")
+AddPlot("Pseudocolor","pden")
 AddOperator("Clip")
 c = ClipAttributes()
 c.funcType = c.Plane
