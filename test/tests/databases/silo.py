@@ -58,8 +58,6 @@
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
-SetPreferredFileFormats("Silo_1.0")
-
 OpenDatabase("../data/silo_hdf5_test_data/multipart_multi_ucd3d.silo")
 
 #
