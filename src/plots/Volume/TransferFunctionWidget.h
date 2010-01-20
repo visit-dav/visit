@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TransferFunctionWidget
 //
@@ -67,13 +68,23 @@ public:
         Ellipsoid
     };
 
+    // These constructors are for objects of this class
     TransferFunctionWidget();
     TransferFunctionWidget(const TransferFunctionWidget &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TransferFunctionWidget(private_tmfs_t tmfs);
+    TransferFunctionWidget(const TransferFunctionWidget &obj, private_tmfs_t tmfs);
+public:
     virtual ~TransferFunctionWidget();
 
     virtual TransferFunctionWidget& operator = (const TransferFunctionWidget &obj);
     virtual bool operator == (const TransferFunctionWidget &obj) const;
     virtual bool operator != (const TransferFunctionWidget &obj) const;
+private:
+    void Init();
+    void Copy(const TransferFunctionWidget &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -120,7 +131,8 @@ public:
         ID_Type = 0,
         ID_Name,
         ID_BaseColor,
-        ID_Position
+        ID_Position,
+        ID__LAST
     };
 
 private:
@@ -131,6 +143,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TRANSFERFUNCTIONWIDGET_TMFS "isFF"
 
 #endif
