@@ -27,6 +27,7 @@ avtStreamlinePlot.C
 avtStreamlineRenderer.C
 avtMesaStreamlineRenderer.C
 avtOpenGLStreamlineRenderer.C
+avtGLSLProgram.C
 ${COMMON_SOURCES}
 )
 
@@ -36,6 +37,7 @@ avtStreamlinePlot.C
 avtStreamlineRenderer.C
 avtMesaStreamlineRenderer.C
 avtOpenGLStreamlineRenderer.C
+avtGLSLProgram.C
 ${COMMON_SOURCES}
 )
 

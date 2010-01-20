@@ -40,15 +40,8 @@
 //                           avtMesaStreamlineRenderer.C                       //
 // ************************************************************************* //
 
-#include <avtMesaStreamlineRenderer.h>
-
-// Mangle the GL calls to mgl.
-#include <GL/gl_mangle.h>
-
 #define avtOpenGLStreamlineRenderer avtMesaStreamlineRenderer
 #define avtOpenGLAtomTexturer avtMesaAtomTexturer
-
-#define VTK_IMPLEMENT_MESA_CXX
 
 #include "avtOpenGLStreamlineRenderer.C"
 

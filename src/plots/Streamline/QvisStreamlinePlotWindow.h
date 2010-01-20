@@ -107,6 +107,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add lots of appearance options to the streamlines plots.
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Add ramp opacity, show head geom.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -162,9 +165,13 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void maxDomainCacheChanged(int val);
     void workGroupSizeChanged(int val);
     void displayMethodChanged(int val);
+    void geomDisplayQualityChanged(int val);
     void showSeedsChanged(bool val);
-    void radiusProcessText();
+    void showHeadsChanged(bool val);
+    void tubeRadiusProcessText();
+    void ribbonWidthProcessText();
     void seedRadiusProcessText();
+    void headRadiusProcessText();
     void lineWidthChanged(int style);
     void coloringMethodChanged(int val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
@@ -191,7 +198,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void displayBeginToggled(bool);
     void displayEndToggled(bool);
     void tubeDisplayDensityChanged(int);
-    void seedDisplayDensityChanged(int);
+    void seedDisplayQualityChanged(int);
 
   private:
     int plotType;
@@ -230,10 +237,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *boxExtentsLabel[3];
     QSpinBox  *pointDensity;
     QComboBox *displayMethod;
-    QCheckBox *showSeeds;
-    QLabel    *seedRadiusLabel;
-    QLineEdit *seedRadius;
-    QLineEdit *radius;
+    QCheckBox *showSeeds, *showHeads;
+    QLabel    *seedRadiusLabel, *headRadiusLabel;
+    QLineEdit *seedRadius, *headRadius;
+    QLineEdit *tubeRadius, *ribbonWidth;
     QLabel    *radiusLabel;
     QvisLineWidthWidget *lineWidth;
     QLabel    *lineWidthLabel;
@@ -276,9 +283,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *opacityVarMin;
     QLineEdit *opacityVarMax;
     QLabel    *tubeDisplayDensityLabel;
-    QLabel    *seedDisplayDensityLabel;
     QSpinBox  *tubeDisplayDensity;
-    QSpinBox  *seedDisplayDensity;
+    QLabel    *geomDisplayQualityLabel;
+    QComboBox *geomDisplayQuality;
 
     StreamlineAttributes *streamAtts;
 };

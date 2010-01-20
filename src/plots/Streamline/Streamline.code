@@ -72,6 +72,18 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             retval = true;
         }
     }   
+    else if(atts->TypeName() == "CircleAttributes")
+    {
+        if(sourceType == SpecifiedCircle)
+        {
+            const PlaneAttributes *plane = (const PlaneAttributes *)atts;
+            SetPlaneOrigin(plane->GetOrigin());
+            SetPlaneNormal(plane->GetNormal());
+            SetPlaneUpAxis(plane->GetUpAxis());
+            SetPlaneRadius(plane->GetRadius());
+            retval = true;
+        }
+    }
     else if(atts->TypeName() == "BoxExtents")
     {
         if(sourceType == SpecifiedBox)
@@ -147,6 +159,16 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
         s->SetRadius(GetSphereRadius());
         retval = s;
     }
+    else if(tname == "CircleAttributes")
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
+        p->SetRadius(GetPlaneRadius());
+        p->SetHaveRadius(true);
+        retval = p;
+    }
     else if(tname == "BoxExtents")
     {
         BoxExtents *b = new BoxExtents;
@@ -186,6 +208,8 @@ Definition:
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Add support for circle source.
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -231,6 +255,14 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
                     sourcePointListDiffers = true;
     }
 
+    // If we're in circle source mode and the plane differs, sourcePlaneDiffers
+    // evaluates to true.
+    bool sourceCircleDiffers = ((sourceType == SpecifiedCircle) &&
+       (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+        POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+        POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+        planeRadius != obj.planeRadius));
+
     // If we're in box source mode and the box differs, boxDiffers
     // evaluates to true.
     bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
@@ -243,7 +275,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     // point density.
     bool densityMatters = (sourceType == SpecifiedLine ||
         sourceType == SpecifiedPlane || sourceType == SpecifiedSphere ||
-        sourceType == SpecifiedBox) &&
+        sourceType == SpecifiedBox || sourceType == SpecifiedCircle) &&
         (pointDensity != obj.pointDensity);
 
     //If opacity is turned on, or the variable changes...
@@ -255,7 +287,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     bool displayMatters = (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons);
 
     return (sourceType != obj.sourceType) ||
-           (StreamlineDirection != obj.StreamlineDirection) ||
+           (streamlineDirection != obj.streamlineDirection) ||
            displayMatters ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
@@ -271,6 +303,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
+           sourceCircleDiffers ||
            sourcePointListDiffers ||
            boxSourceDiffers ||
            densityMatters;

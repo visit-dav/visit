@@ -372,6 +372,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Removed radius and showStart from the filter.
+//
 // ****************************************************************************
 
 void
@@ -396,8 +399,6 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
     streamlineFilter->SetTermination(atts.GetTerminationType(), atts.GetTermination());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
-    streamlineFilter->SetShowStart(atts.GetShowStart());
-    streamlineFilter->SetRadius(atts.GetRadius());
     streamlineFilter->SetPointDensity(atts.GetPointDensity());
     streamlineFilter->SetStreamlineDirection(atts.GetStreamlineDirection());
 

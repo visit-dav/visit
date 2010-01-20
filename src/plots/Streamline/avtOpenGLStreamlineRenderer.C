@@ -63,33 +63,46 @@
 #include <ImproperUseException.h>
 #include <LineAttributes.h>
 #include <avtLookupTable.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#else
-  #include <GL/gl.h>
-#endif
-
+#include <avtGLEWInitializer.h>
+#include <avtGLSLProgram.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 static int sphereQualityLevels[5][2] = {
-    {6,3},
     {12,4},
     {24,12},
     {48,24},
     {96,48}
 };
 
+static const char *GLSL_illuminated_lines_vertex_program_source = 
+"varying vec3 L, T, V;"
+"void main(void)"
+"{"
+"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
+"    L = vec3(gl_LightSource[0].position) - vec3(gl_ModelViewMatrix * gl_Vertex);"
+"    T = normalize( gl_NormalMatrix * gl_Normal );"
+"    V = vec3(gl_ModelViewMatrix * gl_Vertex);"
+"    gl_FrontColor = gl_Color;"
+"}";
+
+static const char *GLSL_illuminated_lines_fragment_program_source = 
+"varying vec3 L, T, V;"
+"void main(void)"
+"{"
+"    float LT =  dot( normalize(L), normalize(T) );"
+"    float VT = -dot( normalize(V), normalize(T) );"
+""
+"    float kd = sqrt( 1. - LT*LT );"
+"    float ks = pow( max( 0., kd * sqrt(1. - VT*VT) ), gl_FrontMaterial.shininess );"
+""
+"    gl_FragColor = gl_FrontMaterial.ambient  * gl_LightSource[0].ambient +" 
+"                   gl_Color                  * gl_LightSource[0].diffuse * kd +" 
+"                   gl_FrontMaterial.specular * gl_LightSource[0].specular * ks;"
+"    gl_FragColor.a = gl_Color.a;"
+"}";
 
 // ****************************************************************************
 //  Constructor: avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer
@@ -101,6 +114,9 @@ static int sphereQualityLevels[5][2] = {
 //  Creation:    December 29, 2009
 //
 //  Modifications:
+//
+//   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
+//   Add illuminated lighting model for lines.
 //
 // ****************************************************************************
 
@@ -114,6 +130,13 @@ avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer()
 
     for (int i = 0; i < MAX_DETAIL_LEVELS; i++)
         spherePts[i] = NULL;
+        
+    shader = new avtGLSLProgram( "Illuminated Lines" );
+    
+    shader->AttachShaderFromString( GL_VERTEX_SHADER, 
+                                    GLSL_illuminated_lines_vertex_program_source );
+    shader->AttachShaderFromString( GL_FRAGMENT_SHADER, 
+                                    GLSL_illuminated_lines_fragment_program_source );                                  
 }
 
 
@@ -141,6 +164,8 @@ avtOpenGLStreamlineRenderer::~avtOpenGLStreamlineRenderer()
             delete [] spherePts[i];
             spherePts[i] = NULL;
         }
+        
+    delete shader;
 }
 
 
@@ -196,6 +221,10 @@ avtOpenGLStreamlineRenderer::SetLevelsLUT(avtLookupTable *lut)
 //  Creation:    December 29, 2009
 //
 //  Modifications:
+//    
+//    Christoph Garth, Tue Jan 20 10:17:39 PST 2010 
+//    Removed the display list generation since Mesa 7.5 does not support
+//    shader calls inside display lists.
 //
 // ****************************************************************************
 
@@ -209,6 +238,7 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
                                     float _spec_r, float _spec_g, float _spec_b,
                                     const int *winsize)
 {
+#if 0
     // If nothing changed, and we have display lists, just replay it.
     if (immediateModeRendering &&
         displaylistid != 0 &&
@@ -223,10 +253,12 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
         glCallList(displaylistid);
         return;
     }
+#endif
 
     //Otherwise, we need to regenerate.
     atts = a;
 
+#if 0
     //Make a new display list, if needed.
     if (immediateModeRendering)
     {
@@ -236,6 +268,7 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
         displaylistid = glGenLists(1);
         glNewList(displaylistid, GL_COMPILE);
     }
+#endif
 
     varMin = vMin;
     varMax = vMax;
@@ -292,11 +325,13 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
 
     glPopAttrib();
 
+#if 0
     if (immediateModeRendering)
     {
         glEndList();
         glCallList(displaylistid);
     }
+#endif
 }
 
 // ****************************************************************************
@@ -310,6 +345,9 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Add drawHead geom.
+//
 // ****************************************************************************
 
 void
@@ -322,8 +360,10 @@ avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
     else if (atts.GetDisplayMethod() == StreamlineAttributes::Ribbons)
         DrawAsRibbons(data);
 
-    if (atts.GetShowStart())
+    if (atts.GetShowSeeds())
         DrawSeedPoints(data);
+    if (atts.GetShowHeads())
+        DrawHeadGeom(data);
 }
 
 // ****************************************************************************
@@ -337,23 +377,32 @@ avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
 //
 //  Modifications:
 //
+//
+//   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
+//   Illuminated lighting model for lines..
+//
 // ****************************************************************************
 
 void
 avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 {
+    bool illuminated = atts.GetLightingFlag() && shader->Enable();
+
     //Turn off lighting for lines.
     glDisable(GL_LIGHTING);
-
     glLineWidth(Int2LineWidth(atts.GetLineWidth()));
     
     vtkPoints *points = data->GetPoints();
     vtkCellArray *lines = data->GetLines();
     vtkIdType *segments = lines->GetPointer();
     float *scalar = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::colorvarArrayName.c_str())->GetVoidPointer(0);
+    float *param = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::paramArrayName.c_str())->GetVoidPointer(0);
     float *opacity = NULL;
     if (data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str()))
         opacity = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str())->GetVoidPointer(0);
+    float *tangents = NULL;
+    if (illuminated && data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::tangentsArrayName.c_str()))
+        tangents = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::tangentsArrayName.c_str())->GetVoidPointer(0);
 
     int *segptr = segments;
     double pt[3];
@@ -370,7 +419,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 
         //cout<<"   Draw: "<<idx0<<" to "<<idx1<<" ["<<t0<<" "<<t1<<"]"<<endl;
 
-        float o = 1.0;
+        float o = 1.0, v[3];
         glBegin(GL_LINE_STRIP);
 
         //If we have an interpolated start point, calculate it.
@@ -389,14 +438,28 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             s0 = scalar[segptr[idx0-1]];
             s1 = scalar[segptr[idx0]];
             s = s0 + t0*(s1-s0);
-            if (opacity)
+            
+            if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
+                o = 0.0;
+            else if (opacity)
             {
                 s0 = scalar[segptr[idx0-1]];
                 s1 = scalar[segptr[idx0]];
                 o = s0 + t0*(s1-s0);
             }
-            o = s;
             SetColor(s, o);
+
+            if (tangents)
+            {
+                float* v0 = tangents + segptr[idx0-1];
+                float* v1 = tangents + segptr[idx0];
+
+                v[0] = v0[0] + t0*(v1[0]-v0[0]);
+                v[1] = v0[1] + t0*(v1[1]-v0[1]);
+                v[2] = v0[2] + t0*(v1[2]-v0[2]);
+
+                glNormal3fv( v );
+            }
 
             glVertex3fv(p);
         }
@@ -407,11 +470,17 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             float p[3] = {pt[0], pt[1], pt[2]};
             
             float s = scalar[segptr[j]];
-            if (opacity)
+            if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
+            {
+                o = ComputeRampOpacity(param[segptr[j]]);
+            }
+            else if (opacity)
             {
                 o = opacity[segptr[j]];
             }
             SetColor(s, o);
+            if (tangents)
+                glNormal3fv(tangents+3*segptr[j]);
             glVertex3fv(p);
         }
 
@@ -431,7 +500,10 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             s0 = scalar[segptr[idx1]];
             s1 = scalar[segptr[idx1+1]];
             s = s0 + t1*(s1-s0);
-            if (opacity)
+            
+            if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
+                o = 1.0;
+            else if (opacity)
             {
                 s0 = scalar[segptr[idx1]];
                 s1 = scalar[segptr[idx1+1]];
@@ -439,6 +511,18 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             }
             
             SetColor(s, o);
+            
+            if (tangents)
+            {
+                float* v0 = tangents + segptr[idx1];
+                float* v1 = tangents + segptr[idx1+1];
+            
+                v[0] = v0[0] + t1*(v1[0]-v0[0]);
+                v[1] = v0[1] + t1*(v1[1]-v0[1]);
+                v[2] = v0[2] + t1*(v1[2]-v0[2]);
+                
+                glNormal3fv( v );
+            }
             
             glVertex3fv(p);
         }
@@ -449,6 +533,9 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
     }
 
     glEnable(GL_LIGHTING);
+
+    if( illuminated )
+        shader->Disable();
 }
 
 // ****************************************************************************
@@ -463,21 +550,23 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Changed some attribute names.
+//
 // ****************************************************************************
 
 void
 avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 {
     vtkTubeFilter *tube = vtkTubeFilter::New();
-    tube->SetRadius(atts.GetRadius());
+    tube->SetRadius(atts.GetTubeRadius());
 
     tube->SetNumberOfSides(atts.GetTubeDisplayDensity());
-    tube->SetRadiusFactor(2.);
     tube->SetCapping(1);
     tube->ReleaseDataFlagOn();
 
     //Easy case, make tubes and we're done.
-    if (!atts.GetDisplayBegin() && !atts.GetDisplayEnd())
+    if (!atts.GetDisplayBeginFlag() && !atts.GetDisplayEndFlag())
         tube->SetInput(data);
     else
     {
@@ -521,6 +610,9 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 //  Creation:    December 29, 2009
 //
 //  Modifications:
+//
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Changed some attribute names.
 //
 // ****************************************************************************
 
@@ -600,7 +692,7 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
         lineNormalGenerator->Delete();
         
         vtkRibbonFilter *ribbons = vtkRibbonFilter::New();
-        ribbons->SetWidth(atts.GetRadius());
+        ribbons->SetWidth(atts.GetRibbonWidth());
         ribbons->SetInput(pd);
         ribbons->Update();
         
@@ -622,6 +714,9 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Changed some attribute names.
+//
 // ****************************************************************************
 
 void
@@ -629,7 +724,7 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 {
     CalculateSpherePts();
     double rad = atts.GetSeedDisplayRadius();
-    int quality = atts.GetSeedDisplayDensity()-1;
+    int quality = (int)(atts.GetGeomDisplayQuality());
 
     vtkPoints *points = data->GetPoints();
     vtkCellArray *lines = data->GetLines();
@@ -656,6 +751,77 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
         segptr += nPts;
     }
 }
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::DrawHeadGeom
+//
+//  Purpose:
+//    Draw each seed point as a sphere.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    January 20, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
+{
+    CalculateSpherePts();
+    double rad = atts.GetHeadDisplayRadius();
+    int quality = (int)(atts.GetGeomDisplayQuality());
+
+    vtkPoints *points = data->GetPoints();
+    vtkCellArray *lines = data->GetLines();
+    vtkIdType *segments = lines->GetPointer();
+    float *s = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::colorvarArrayName.c_str())->GetVoidPointer(0);
+    float *o = NULL;
+    if (data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str()))
+        o = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str())->GetVoidPointer(0);
+    
+    int *segptr = segments;
+    double endPt[3];
+    unsigned char rgba[4];
+    float scalar;
+
+    for (int i=0; i<data->GetNumberOfLines(); i++)
+    {
+        int nPts = *segptr;
+        segptr++; //Now segptr points at vtx0.
+
+        int idx0 = 0, idx1 = nPts;
+        double t0=0.0, t1=0.0;
+        GetEndPoints(data, segptr, nPts, idx0, idx1, t0, t1);
+        
+        
+        if (idx1 < nPts)
+        {
+            double next[3], pt[3];
+            points->GetPoint(segptr[idx1], pt);
+            points->GetPoint(segptr[idx1+1], next);
+            
+            endPt[0] = pt[0] + t1*(next[0]-pt[0]);
+            endPt[1] = pt[1] + t1*(next[1]-pt[1]);
+            endPt[2] = pt[2] + t1*(next[2]-pt[2]);
+            
+            float  s0, s1;
+            s0 = s[segptr[idx1]];
+            s1 = s[segptr[idx1+1]];
+            scalar = s0 + t1*(s1-s0);
+        }
+        else
+        {
+            points->GetPoint(segptr[nPts-1], endPt);
+            scalar = s[*(segptr+nPts-1)];
+        }
+        
+        glBegin(GL_QUADS);
+        SetColor(scalar, (o?o[*segptr]:1.0));
+        DrawSphereAsQuads(endPt[0],endPt[1], endPt[2], rad, quality);
+        glEnd();
+        segptr += nPts;
+    }
+}
 
 // ****************************************************************************
 //  Method:  avtOpenGLStreamlineRenderer::MakeNewPolyline
@@ -669,6 +835,9 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Copy over the param array.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -677,6 +846,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
 {
     vtkPoints *points = data->GetPoints();
     float *s = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::colorvarArrayName.c_str())->GetVoidPointer(0);
+    float *p = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::paramArrayName.c_str())->GetVoidPointer(0);
     float *t = NULL, *o = NULL;
     if (data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::thetaArrayName.c_str()))
         t = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::thetaArrayName.c_str())->GetVoidPointer(0);
@@ -689,6 +859,8 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     vtkCellArray *cells = vtkCellArray::New();
     vtkFloatArray *scalars = vtkFloatArray::New();
     scalars->SetName(avtStreamlinePolyDataFilter::colorvarArrayName.c_str());
+    vtkFloatArray *params = vtkFloatArray::New();
+    params->SetName(avtStreamlinePolyDataFilter::paramArrayName.c_str());
 
     vtkFloatArray *thetas = NULL;
     if (t)
@@ -719,6 +891,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
 
     pts->Allocate(nNewPts);
     scalars->Allocate(nNewPts);
+    params->Allocate(nNewPts);
     cells->InsertNextCell(nNewPts);
 
 
@@ -744,6 +917,11 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         v1 = s[segptr[idx0]];
         v = v0 + t0*(v1-v0);
         scalars->InsertTuple1(idx, v);
+
+        v0 = p[segptr[idx0-1]];
+        v1 = p[segptr[idx0]];
+        v = v0 + t0*(v1-v0);
+        params->InsertTuple1(idx, v);
 
         if (t)
         {
@@ -773,6 +951,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         cells->InsertCellPoint(idx);
         
         scalars->InsertTuple1(idx, s[segptr[i]]);
+        params->InsertTuple1(idx, p[segptr[i]]);
         if (t)
             thetas->InsertTuple1(idx, t[segptr[i]]);
         if (o)
@@ -801,6 +980,11 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         v = v0 + t1*(v1-v0);
         scalars->InsertTuple1(idx, v);
 
+        v0 = p[segptr[idx1]];
+        v1 = p[segptr[idx1+1]];
+        v = v0 + t1*(v1-v0);
+        params->InsertTuple1(idx, v);
+
         if (t)
         {
             v0 = t[segptr[idx1]];
@@ -825,6 +1009,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     pd->SetPoints(pts);
     pd->SetLines(cells);
     pd->GetPointData()->AddArray(scalars);
+    pd->GetPointData()->AddArray(params);
     if (thetas)
     {
         pd->GetPointData()->AddArray(thetas);
@@ -837,6 +1022,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     }
     pts->Delete();
     scalars->Delete();
+    params->Delete();
 
     return pd;
 }
@@ -853,6 +1039,9 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Ramp opacity.
+//
 // ****************************************************************************
 
 void
@@ -861,6 +1050,7 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
     float *p = (float *)poly->GetPoints()->GetVoidPointer(0);
     float *n = (float *)poly->GetPointData()->GetNormals()->GetVoidPointer(0);
     float *s = (float *)poly->GetPointData()->GetArray(avtStreamlinePolyDataFilter::colorvarArrayName.c_str())->GetVoidPointer(0);
+    float *param = (float *)poly->GetPointData()->GetArray(avtStreamlinePolyDataFilter::paramArrayName.c_str())->GetVoidPointer(0);
     float *o = NULL;
     if (poly->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str()))
         o = (float *)poly->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str())->GetVoidPointer(0);
@@ -868,6 +1058,7 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
     vtkCellArray *strips = poly->GetStrips();
     vtkIdType *ptIds = strips->GetPointer();
     vtkIdType *endPtIds = ptIds + strips->GetNumberOfConnectivityEntries();
+    float alpha = 1.0;
     
     while (ptIds < endPtIds)
     {
@@ -876,7 +1067,14 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
         glBegin(GL_TRIANGLE_STRIP);
         while (nPts > 0)
         {
-            SetColor(s[*ptIds], (o?o[*ptIds]:1.0));
+            if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
+            {
+                alpha = ComputeRampOpacity(param[*ptIds]);
+            }
+            else if (o)
+                alpha = o[*ptIds];
+            
+            SetColor(s[*ptIds], alpha);
             glNormal3fv(n + 3*(*ptIds));
             glVertex3fv(p + 3*(*ptIds));
             
@@ -898,6 +1096,9 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Ramp opacity.
+//
 // ****************************************************************************
 
 void
@@ -906,7 +1107,8 @@ avtOpenGLStreamlineRenderer::SetColor(const float &scalar,
 {
     // If solid and no variable opacity, coloring already set.
     if (atts.GetColoringMethod() == StreamlineAttributes::Solid &&
-        atts.GetOpacityType() != StreamlineAttributes::VariableRange)
+        atts.GetOpacityType() != StreamlineAttributes::VariableRange &&
+        atts.GetOpacityType() != StreamlineAttributes::Ramp)
     {
         return;
     }
@@ -928,7 +1130,12 @@ avtOpenGLStreamlineRenderer::SetColor(const float &scalar,
     }
     
     // Figure out opacity, if needed.
-    if (atts.GetOpacityType() != StreamlineAttributes::None)
+    if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
+    {
+        rgba[3] = (unsigned char)(opacity*atts.GetOpacity()*255.0f);
+    }
+    else if (atts.GetOpacityType() == StreamlineAttributes::Constant ||
+             atts.GetOpacityType() == StreamlineAttributes::VariableRange)
     {
         float alpha = atts.GetOpacity();
         
@@ -1070,6 +1277,64 @@ void avtOpenGLStreamlineRenderer::CalculateSpherePts()
     }
 }
 
+
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::CalculateSpherePts
+//
+//  Purpose:
+//    Precalculate points for sphere geometry.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    December 29, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLStreamlineRenderer::DrawSphereAsQuads(float x0,
+                                             float y0,
+                                             float z0,
+                                             float r,
+                                             int detail)
+{
+    CalculateSpherePts();
+
+    int qdetail = sphereQualityLevels[detail][0];
+    int hdetail = sphereQualityLevels[detail][1];
+
+    for (int a=0; a<qdetail; a++)
+    {
+        int a0 = a;
+        int a1 = a+1;
+        for (int b=0; b<hdetail; b++)
+        {
+            int b0 = b;
+            int b1 = b+1;
+
+            float *v00, *v01, *v10, *v11;
+
+            v00 = &(spherePts[detail][(a0 * (hdetail+1) + b0)*3]);
+            v01 = &(spherePts[detail][(a0 * (hdetail+1) + b1)*3]);
+            v10 = &(spherePts[detail][(a1 * (hdetail+1) + b0)*3]);
+            v11 = &(spherePts[detail][(a1 * (hdetail+1) + b1)*3]);
+
+            glNormal3fv(v00);
+            glVertex3f(x0 + r*v00[0], y0 + r*v00[1], z0 + r*v00[2]);
+
+            glNormal3fv(v01);
+            glVertex3f(x0 + r*v01[0], y0 + r*v01[1], z0 + r*v01[2]);
+
+            glNormal3fv(v11);
+            glVertex3f(x0 + r*v11[0], y0 + r*v11[1], z0 + r*v11[2]);
+
+            glNormal3fv(v10);
+            glVertex3f(x0 + r*v10[0], y0 + r*v10[1], z0 + r*v10[2]);
+        }
+    }
+}
+
+
 // ****************************************************************************
 //  Method:  avtOpenGLStreamlineRenderer::GetEndPoints
 //
@@ -1151,612 +1416,24 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
 }
 
 
-
-// ****************************************************************************
-//  Method:  SetColor3ubv
-//
-//  Purpose:
-//    Okay, so it's a little silly right now, but there was some
-//    debate about using glMaterialColor(...), so having things call
-//    this instead of the GL call directly made trying it easier.
-//    It's staying because I might still change my mind.
-//
-//  Arguments:
-//    c          the pointer to the uchar color
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 23, 2006
-//
-// ****************************************************************************
-static inline void
-SetColor3ubv(const unsigned char *c)
+float
+avtOpenGLStreamlineRenderer::ComputeRampOpacity(const float &p) const
 {
-    glColor3ubv(c);
+    float p0 = 0, p1 = atts.GetTermination();
+    if (atts.GetDisplayBeginFlag())
+        p0 = atts.GetDisplayBegin();
+    if (atts.GetDisplayEndFlag())
+        p1 = atts.GetDisplayEnd();
+    
+    float o = (p-p0) / (p1-p0);
+    //cout<<"p: "<<p<<" --> "<<o<<" ["<<p0<<" "<<p1<<"]"<<endl;
+    //if (o < 0.0 || o > 1.0)
+    //cout<<"         BARFFFFFFFF"<<endl;
+
+    if (o < 0.0)
+        o = 0.0;
+    if (o > 1.0)
+        o = 1.0;
+    
+    return o;
 }
-
-/*void
-avtOpenGLAnimStreamlineRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
-                                              const AnimStreamlineAttributes &atts)
-{
-    vtkPoints *points = data->GetPoints();
-
-    vtkDataArray *primary = data->GetPointData()->GetScalars();
-    if (!primary)
-    {
-        // Let's just assume we don't want to plot the spheres for
-        // a cell-centered variable
-        return;
-    }
-    if (primary && !primary->IsA("vtkFloatArray"))
-    {
-        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
-        return;
-    }
-    float *scalar = (float*)primary->GetVoidPointer(0);
-
-    glBegin(GL_QUADS);
-    for (int i=0; i<data->GetNumberOfPoints(); i++)
-    {
-        // Determine radius
-        float radius = 0.3;
-
-        // Determine color
-        {
-            float alpha;
-            if (varmax == varmin)
-                alpha = 0.5;
-            else
-                alpha = (scalar[i] - varmin) / (varmax - varmin);
-            
-            int color = int((float(numcolors)-.01) * alpha);
-            if (color < 0)
-                color = 0;
-            if (color > numcolors-1)
-                color = numcolors-1;
-            SetColor3ubv(&colors[4*color]);
-        }
-
-        {
-            // Plot spheres
-            double *pt = points->GetPoint(i);
-            DrawSphereAsQuads(pt[0],
-                              pt[1],
-                              pt[2],
-                              radius,
-                              1//atts.GetAtomSphereQuality()
-                              );
-        }
-    }
-    glEnd();
-}*/
-
-
-#if 0
-void
-avtOpenGLStreamlineRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
-                                                const StreamlineAttributes &atts)
-{
-    vtkPoints *points = data->GetPoints();
-
-    vtkCellArray *lines = data->GetLines();
-    vtkIdType *segments = lines->GetPointer();
-
-    vtkDataArray *primary = data->GetPointData()->GetScalars();
-    if (!primary)
-    {
-        // Let's just assume we don't want to plot the spheres for
-        // a cell-centered variable
-        return;
-    }
-    if (primary && !primary->IsA("vtkFloatArray"))
-    {
-        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
-        return;
-    }
-    float *scalar = (float*)primary->GetVoidPointer(0);
-
-#if 1
-    glBegin(GL_QUADS);
-    int *segptr = segments;
-    int segctr = 0;
-    int nframes = 10;
-    int nextball = positionIndex % nframes;
-    for (int j=0; j<data->GetNumberOfLines(); j++)
-    {
-        int nseg = *segptr;
-        int step = positionIndex % nseg;
-
-        while (nextball < segctr + nseg)
-        {
-            int index = *(segptr + 1 + nextball-segctr);
-
-            // Determine radius
-            float radius = 0.15;
-
-            // Determine color
-            {
-                float alpha;
-                if (varmax == varmin)
-                    alpha = 0.5;
-                else
-                    alpha = (scalar[index] - varmin) / (varmax - varmin);
-            
-                int color = int((float(numcolors)-.01) * alpha);
-                if (color < 0)
-                    color = 0;
-                if (color > numcolors-1)
-                    color = numcolors-1;
-                SetColor3ubv(&colors[4*color]);
-            }
-
-            {
-                // Plot spheres
-                double *pt = points->GetPoint(index);
-                DrawSphereAsQuads(pt[0],
-                                  pt[1],
-                                  pt[2],
-                                  radius,
-                                  1/*atts.GetAtomSphereQuality()*/);
-            }
-
-            nextball += nframes;
-        }
-
-        segctr += nseg;
-        segptr += (*segptr) + 1;
-    }
-    glEnd();
-#else
-    glBegin(GL_QUADS);
-    int *segptr = segments;
-    for (int j=0; j<data->GetNumberOfLines(); j++)
-    {
-        int nseg = *segptr;
-        int step = positionIndex % nseg;
-
-        int index = *(segptr + 1 + step);
-
-        // Determine radius
-        float radius = 0.3;
-
-        // Determine color
-        {
-            float alpha;
-            if (varmax == varmin)
-                alpha = 0.5;
-            else
-                alpha = (scalar[index] - varmin) / (varmax - varmin);
-            
-            int color = int((float(numcolors)-.01) * alpha);
-            if (color < 0)
-                color = 0;
-            if (color > numcolors-1)
-                color = numcolors-1;
-            SetColor3ubv(&colors[4*color]);
-        }
-
-        {
-            // Plot spheres
-            double *pt = points->GetPoint(index);
-            DrawSphereAsQuads(pt[0],
-                              pt[1],
-                              pt[2],
-                              radius,
-                              atts.GetSeedDisplayDensity());
-        }
-
-        segptr += (*segptr) + 1;
-    }
-    glEnd();
-#endif
-
-}
-#endif
-
-#if 0
-
-void
-avtOpenGLStreamlineRenderer::DrawBonds(vtkPolyData *data,
-                                       const StreamlineAttributes &atts)
-{
-    vtkPoints *points = data->GetPoints();
-    int numverts = data->GetNumberOfVerts();
-    vtkCellArray *lines = data->GetLines();
-    vtkIdType *segments = lines->GetPointer();
-
-    bool primary_is_cell_centered = false;
-    vtkDataArray *primary = data->GetPointData()->GetScalars();
-    if (!primary)
-    {
-        primary = data->GetCellData()->GetScalars();
-        primary_is_cell_centered = true;
-    }
-    if (!primary)
-    {
-        // eh? no variable at all?  that's a logic error....
-        EXCEPTION1(ImproperUseException, "Expected a variable of some sort.");
-    }
-    if (primary && !primary->IsA("vtkFloatArray"))
-    {
-        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
-        return;
-    }
-    float *scalar = (float*)primary->GetVoidPointer(0);
-
-    glBegin(GL_LINE_STRIP);
-
-    int *segptr = segments;
-    for (int i=0; i<data->GetNumberOfLines(); i++)
-    {
-        int nseg = *segptr;
-        for (int step=0; step<nseg-1; step++)
-        {
-            int v0 = *(segptr+step+1);
-            int v1 = *(segptr+step+2);
-
-            double pt_0[3];
-            double pt_1[3];
-            points->GetPoint(v0, pt_0);
-            points->GetPoint(v1, pt_1);
-
-            double pt_mid[3] = {(pt_0[0]+pt_1[0])/2.,
-                                (pt_0[1]+pt_1[1])/2.,
-                                (pt_0[2]+pt_1[2])/2.};
-
-
-            int atom  = v0;
-            double *pt_a = pt_0;
-            double *pt_b = pt_1;
-
-            float radius = 0.1;
-
-            float scalarval;
-            if (primary_is_cell_centered)
-                scalarval = scalar[i + numverts];
-            else
-                scalarval = scalar[atom];
-
-            {
-                float alpha;
-                if (varmax == varmin)
-                    alpha = 0.5;
-                else
-                    alpha = (scalarval - varmin) / (varmax - varmin);
-            
-                int color = int((float(numcolors)-.01) * alpha);
-                if (color < 0)
-                    color = 0;
-                if (color > numcolors-1)
-                    color = numcolors-1;
-
-                glEnable(GL_BLEND);
-                glEnable(GL_ALPHA_TEST);
-                glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-                glColor4f(1.0, 1.0, 1.0, 0.025);
-                //SetColor3ubv(&colors[4*color]);
-            }
-
-            DrawCylinderBetweenTwoPoints(pt_a, pt_b, radius,
-                                         1/*atts.GetBondCylinderQuality()*/);
-        }
-
-        segptr += (*segptr) + 1;
-    }
-    glEnd();
-}
-#endif
-
-
-
-// ****************************************************************************
-//  Method:  avtOpenGLStreamlineRenderer::Render
-//
-//  Purpose:
-//    Render one image
-//
-//  Arguments:
-//    ds      : the data set to render
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    February  3, 2006
-//
-//  Modifications:
-//    Brad Whitlock, Mon Mar 27 14:56:06 PST 2006
-//    I made sure that we use immediate mode when we need to when we use 
-//    imposter rendering,
-//
-// ****************************************************************************
-
-#if 0
-void
-avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
-                                    const StreamlineAttributes &atts,
-                                 bool immediateModeRendering,
-                                 float _varmin, float _varmax,
-                                 float _ambient_coeff,
-                                 float _spec_coeff, float _spec_power,
-                                 float _spec_r, float _spec_g, float _spec_b,
-                                 const int *winsize)
-{
-    if (!data->GetCellData()->GetScalars() &&
-        !data->GetPointData()->GetScalars())
-        return;
-
-    immediateModeRendering = true;
-    positionIndex++;
-
-    if (immediateModeRendering)
-    {
-        if (displaylistid != 0)
-        {
-            glDeleteLists(displaylistid, 1);
-            displaylistid = 0;
-        }
-    }
-    else
-    {
-        // Check to see if we need to regenerate lists
-        if (displaylistid != 0 &&
-            atts_for_displaylist != atts)
-        {
-            glDeleteLists(displaylistid, 1);
-            displaylistid = 0;
-        }
-
-        // If the list we have is valid, just call it
-        if (displaylistid != 0)
-        {
-            glCallList(displaylistid);
-            return;
-        }
-
-        atts_for_displaylist = atts;
-        displaylistid = glGenLists(1);
-        glNewList(displaylistid, GL_COMPILE);
-    }
-
-    varmin = _varmin;
-    varmax = _varmax;
-
-    immediatemode = immediateModeRendering;
-    ambient_coeff = _ambient_coeff;
-    spec_coeff    = _spec_coeff;
-    spec_power    = _spec_power;
-    spec_r        = _spec_r;
-    spec_g        = _spec_g;
-    spec_b        = _spec_b;
-
-    glPushAttrib(GL_COLOR_BUFFER_BIT |
-                 GL_DEPTH_BUFFER_BIT |
-                 GL_ENABLE_BIT);
-    glEnable(GL_LIGHTING);
-
-#if 0
-    glDisable(GL_COLOR_MATERIAL);
-#else
-    float diff[] = {1,1,1,1};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
-    ambient_coeff = 1.0;
-    if (ambient_coeff == 0)
-    {
-        float amb[] = {ambient_coeff, ambient_coeff, ambient_coeff, 1};
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-        glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-    }
-    else
-    {
-        float amb[] = {ambient_coeff, ambient_coeff, ambient_coeff, 1};
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    }
-    glEnable(GL_COLOR_MATERIAL);
-#endif
-    float spec[] = {spec_r * spec_coeff,
-                    spec_g * spec_coeff,
-                    spec_b * spec_coeff,
-                    1};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &spec_power);
-    glShadeModel(GL_SMOOTH);
-
-    TRY
-    {
-        //SetColors(data, atts);
-        DrawAtomsAsSpheres(data, atts);
-        DrawBonds(data, atts);
-    }
-    CATCH2(VisItException, e)
-    {
-        // Note: we should not need to intercept this here, except
-        // that it's otherwise uncaught, as of version 1.5.
-        // Also note: if we decide to let the exception reach up
-        // the call chain, we STILL need at least catch it here,
-        // make sure we've cleaned up OpenGL correctly
-        // (e.g. popattrib and endlist), and then re-throw.
-        avtCallback::IssueWarning(e.Message().c_str());
-    }
-    ENDTRY
-
-    glPopAttrib();
-
-
-    if (immediateModeRendering)
-    {
-    }
-    else
-    {
-        glEndList();
-        glCallList(displaylistid);
-    }
-}
-#endif
-
-
-// ****************************************************************************
-//  Method:  avtOpenGLStreamlineRenderer::CalculateCylPts
-//
-//  Purpose:
-//    Precalculate points for cylinder geometry.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    February 10, 2006
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-#if 0
-void avtOpenGLStreamlineRenderer::CalculateCylPts()
-{
-    if (cylinders_calculated)
-        return;
-
-    cylinders_calculated = true;
-
-    for (int detail=0; detail<MAX_DETAIL_LEVELS; detail++)
-    {
-        int cdetail = cylinder_quality_levels[detail];
-        cyl_pts[detail] = new float[(cdetail+1)*4];
-
-        for (int b=0; b<=cdetail; b++)
-        {
-            float theta = 2*M_PI * float(b) / float(cdetail);
-
-            float dx = cos(theta);
-            float dy = sin(theta);
-            float dz = 0;
-
-            cyl_pts[detail][b*4+0] = dx;
-            cyl_pts[detail][b*4+1] = dy;
-            cyl_pts[detail][b*4+2] = dz;
-            cyl_pts[detail][b*4+3] = 0;
-        }
-    }
-}
-#endif
-
-// ****************************************************************************
-//  Method:  avtOpenGLStreamlineRenderer::DrawSphereAsQuads
-//
-//  Purpose:
-//    Make the OpenGL calls to draw a sphere with the
-//    given center, radius, and detail level.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    February 10, 2006
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtOpenGLStreamlineRenderer::DrawSphereAsQuads(float x0,
-                                             float y0,
-                                             float z0,
-                                             float r,
-                                             int detail)
-{
-    CalculateSpherePts();
-
-    int qdetail = sphereQualityLevels[detail][0];
-    int hdetail = sphereQualityLevels[detail][1];
-
-    for (int a=0; a<qdetail; a++)
-    {
-        int a0 = a;
-        int a1 = a+1;
-        for (int b=0; b<hdetail; b++)
-        {
-            int b0 = b;
-            int b1 = b+1;
-
-            float *v00, *v01, *v10, *v11;
-
-            v00 = &(spherePts[detail][(a0 * (hdetail+1) + b0)*3]);
-            v01 = &(spherePts[detail][(a0 * (hdetail+1) + b1)*3]);
-            v10 = &(spherePts[detail][(a1 * (hdetail+1) + b0)*3]);
-            v11 = &(spherePts[detail][(a1 * (hdetail+1) + b1)*3]);
-
-            glNormal3fv(v00);
-            glVertex3f(x0 + r*v00[0], y0 + r*v00[1], z0 + r*v00[2]);
-
-            glNormal3fv(v01);
-            glVertex3f(x0 + r*v01[0], y0 + r*v01[1], z0 + r*v01[2]);
-
-            glNormal3fv(v11);
-            glVertex3f(x0 + r*v11[0], y0 + r*v11[1], z0 + r*v11[2]);
-
-            glNormal3fv(v10);
-            glVertex3f(x0 + r*v10[0], y0 + r*v10[1], z0 + r*v10[2]);
-        }
-    }
-}
-
-// ****************************************************************************
-//  Method:  avtOpenGLStreamlineRenderer::DrawCylinderBetweenTwoPoints
-//
-//  Purpose:
-//    Make the OpenGL calls to draw a cylinder with the given begin
-//    and end points, radius, and detail level.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    February 10, 2006
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Aug 28 18:25:02 EDT 2006
-//    Point locations are now doubles, not floats.
-//
-// ****************************************************************************
-
-#if 0
-void
-avtOpenGLStreamlineRenderer::DrawCylinderBetweenTwoPoints(double *p0,
-                                                        double *p1,
-                                                        float r,
-                                                        int detail)
-{
-    CalculateCylPts();
-
-    float vc[3] = {p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]};
-    float va[3];
-    float vb[3];
-
-    float vc_len = vtkMath::Normalize(vc);
-    if (vc_len == 0)
-        return;
-
-    vtkMath::Perpendiculars(vc, va,vb, 0);
-
-    float v0[4];
-    float v1[4];
-    int cdetail = cylinder_quality_levels[detail];
-    for (int b=0; b<cdetail; b++)
-    {
-        int b0 = b;
-        int b1 = b+1;
-
-        float *u0, *u1;
-        u0 = &(cyl_pts[detail][b0*4]);
-        u1 = &(cyl_pts[detail][b1*4]);
-
-        v0[0] = va[0]*u0[0] + vb[0]*u0[1];
-        v0[1] = va[1]*u0[0] + vb[1]*u0[1];
-        v0[2] = va[2]*u0[0] + vb[2]*u0[1];
-
-        v1[0] = va[0]*u1[0] + vb[0]*u1[1];
-        v1[1] = va[1]*u1[0] + vb[1]*u1[1];
-        v1[2] = va[2]*u1[0] + vb[2]*u1[1];
-
-        glNormal3fv(v0);
-        glVertex3f(p1[0] + r*v0[0], p1[1] + r*v0[1], p1[2] + r*v0[2]);
-
-        glNormal3fv(v0);
-        glVertex3f(p0[0] + r*v0[0], p0[1] + r*v0[1], p0[2] + r*v0[2]);
-
-        glNormal3fv(v1);
-        glVertex3f(p0[0] + r*v1[0], p0[1] + r*v1[1], p0[2] + r*v1[2]);
-
-        glNormal3fv(v1);
-        glVertex3f(p1[0] + r*v1[0], p1[1] + r*v1[1], p1[2] + r*v1[2]);
-    }
-}
-#endif
