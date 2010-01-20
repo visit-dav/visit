@@ -49,6 +49,8 @@
 
 #define MAX_DETAIL_LEVELS 5
 
+class avtGLSLProgram;
+
 // ****************************************************************************
 //  Class: avtOpenGLStreamlineRenderer
 //
@@ -59,6 +61,9 @@
 //  Creation:    December 29, 2009
 //
 //  Modifications:
+//
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Add drawGeomHead, ramp opacity and illuminated line lighting model.
 //
 // ****************************************************************************
 
@@ -111,6 +116,7 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     void DrawAsRibbons(vtkPolyData *data);
     
     void DrawSeedPoints(vtkPolyData *data);
+    void DrawHeadGeom(vtkPolyData *data);
 
     vtkPolyData *MakeNewPolyline(vtkPolyData *data,
                                  int *&segptr);
@@ -125,6 +131,9 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     
     inline void SetColor(const float &scalar, const float &opacity) const;
     void InitColors();
+    float ComputeRampOpacity(const float &p) const;
+    
+    avtGLSLProgram* shader;
 };
 
 

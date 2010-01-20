@@ -356,7 +356,6 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     intPlane->Delete();
     
     poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
-    poincareFilter->SetShowStart(false);
     poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
     poincareFilter->SetStreamlineDirection(0);
     poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);

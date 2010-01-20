@@ -51,21 +51,21 @@
 
 static const char *SourceType_strings[] = {
 "SpecifiedPoint", "SpecifiedLine", "SpecifiedPlane", 
-"SpecifiedSphere", "SpecifiedBox", "SpecifiedPointList"
-};
+"SpecifiedSphere", "SpecifiedBox", "SpecifiedCircle", 
+"SpecifiedPointList"};
 
 std::string
 StreamlineAttributes::SourceType_ToString(StreamlineAttributes::SourceType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 6) index = 0;
+    if(index < 0 || index >= 7) index = 0;
     return SourceType_strings[index];
 }
 
 std::string
 StreamlineAttributes::SourceType_ToString(int t)
 {
-    int index = (t < 0 || t >= 6) ? 0 : t;
+    int index = (t < 0 || t >= 7) ? 0 : t;
     return SourceType_strings[index];
 }
 
@@ -73,7 +73,7 @@ bool
 StreamlineAttributes::SourceType_FromString(const std::string &s, StreamlineAttributes::SourceType &val)
 {
     val = StreamlineAttributes::SpecifiedPoint;
-    for(int i = 0; i < 6; ++i)
+    for(int i = 0; i < 7; ++i)
     {
         if(s == SourceType_strings[i])
         {
@@ -317,21 +317,21 @@ StreamlineAttributes::IntegrationType_FromString(const std::string &s, Streamlin
 //
 
 static const char *OpacityType_strings[] = {
-"None", "Constant", "VariableRange"
-};
+"None", "Constant", "Ramp", 
+"VariableRange"};
 
 std::string
 StreamlineAttributes::OpacityType_ToString(StreamlineAttributes::OpacityType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return OpacityType_strings[index];
 }
 
 std::string
 StreamlineAttributes::OpacityType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return OpacityType_strings[index];
 }
 
@@ -339,11 +339,49 @@ bool
 StreamlineAttributes::OpacityType_FromString(const std::string &s, StreamlineAttributes::OpacityType &val)
 {
     val = StreamlineAttributes::None;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == OpacityType_strings[i])
         {
             val = (OpacityType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for StreamlineAttributes::DisplayQuality
+//
+
+static const char *DisplayQuality_strings[] = {
+"Low", "Medium", "High", 
+"Super"};
+
+std::string
+StreamlineAttributes::DisplayQuality_ToString(StreamlineAttributes::DisplayQuality t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return DisplayQuality_strings[index];
+}
+
+std::string
+StreamlineAttributes::DisplayQuality_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return DisplayQuality_strings[index];
+}
+
+bool
+StreamlineAttributes::DisplayQuality_FromString(const std::string &s, StreamlineAttributes::DisplayQuality &val)
+{
+    val = StreamlineAttributes::Low;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == DisplayQuality_strings[i])
+        {
+            val = (DisplayQuality)i;
             return true;
         }
     }
@@ -411,13 +449,15 @@ void StreamlineAttributes::Init()
     pointList.push_back(0);
     pointDensity = 2;
     displayMethod = Lines;
-    showStart = false;
-    radius = 0.125;
+    showSeeds = false;
+    showHeads = false;
+    tubeRadius = 0.125;
+    ribbonWidth = 0.125;
     lineWidth = 2;
     coloringMethod = ColorBySpeed;
     legendFlag = true;
     lightingFlag = true;
-    StreamlineDirection = Forward;
+    streamlineDirection = Forward;
     relTol = 0.0001;
     absTol = 1e-05;
     terminationType = Distance;
@@ -436,6 +476,7 @@ void StreamlineAttributes::Init()
     displayBeginFlag = false;
     displayEndFlag = false;
     seedDisplayRadius = 0.25;
+    headDisplayRadius = 0.25;
     opacityType = None;
     opacity = 1;
     opacityVarMin = 0;
@@ -443,7 +484,7 @@ void StreamlineAttributes::Init()
     opacityVarMinFlag = false;
     opacityVarMaxFlag = false;
     tubeDisplayDensity = 10;
-    seedDisplayDensity = 1;
+    geomDisplayQuality = Medium;
 
     StreamlineAttributes::SelectAll();
 }
@@ -506,15 +547,17 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     pointList = obj.pointList;
     pointDensity = obj.pointDensity;
     displayMethod = obj.displayMethod;
-    showStart = obj.showStart;
-    radius = obj.radius;
+    showSeeds = obj.showSeeds;
+    showHeads = obj.showHeads;
+    tubeRadius = obj.tubeRadius;
+    ribbonWidth = obj.ribbonWidth;
     lineWidth = obj.lineWidth;
     coloringMethod = obj.coloringMethod;
     colorTableName = obj.colorTableName;
     singleColor = obj.singleColor;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
-    StreamlineDirection = obj.StreamlineDirection;
+    streamlineDirection = obj.streamlineDirection;
     relTol = obj.relTol;
     absTol = obj.absTol;
     terminationType = obj.terminationType;
@@ -534,6 +577,7 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     displayBeginFlag = obj.displayBeginFlag;
     displayEndFlag = obj.displayEndFlag;
     seedDisplayRadius = obj.seedDisplayRadius;
+    headDisplayRadius = obj.headDisplayRadius;
     opacityType = obj.opacityType;
     opacityVariable = obj.opacityVariable;
     opacity = obj.opacity;
@@ -542,7 +586,7 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     opacityVarMinFlag = obj.opacityVarMinFlag;
     opacityVarMaxFlag = obj.opacityVarMaxFlag;
     tubeDisplayDensity = obj.tubeDisplayDensity;
-    seedDisplayDensity = obj.seedDisplayDensity;
+    geomDisplayQuality = obj.geomDisplayQuality;
 
     StreamlineAttributes::SelectAll();
 }
@@ -759,15 +803,17 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (pointList == obj.pointList) &&
             (pointDensity == obj.pointDensity) &&
             (displayMethod == obj.displayMethod) &&
-            (showStart == obj.showStart) &&
-            (radius == obj.radius) &&
+            (showSeeds == obj.showSeeds) &&
+            (showHeads == obj.showHeads) &&
+            (tubeRadius == obj.tubeRadius) &&
+            (ribbonWidth == obj.ribbonWidth) &&
             (lineWidth == obj.lineWidth) &&
             (coloringMethod == obj.coloringMethod) &&
             (colorTableName == obj.colorTableName) &&
             (singleColor == obj.singleColor) &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
-            (StreamlineDirection == obj.StreamlineDirection) &&
+            (streamlineDirection == obj.streamlineDirection) &&
             (relTol == obj.relTol) &&
             (absTol == obj.absTol) &&
             (terminationType == obj.terminationType) &&
@@ -787,6 +833,7 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (displayBeginFlag == obj.displayBeginFlag) &&
             (displayEndFlag == obj.displayEndFlag) &&
             (seedDisplayRadius == obj.seedDisplayRadius) &&
+            (headDisplayRadius == obj.headDisplayRadius) &&
             (opacityType == obj.opacityType) &&
             (opacityVariable == obj.opacityVariable) &&
             (opacity == obj.opacity) &&
@@ -795,7 +842,7 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (opacityVarMinFlag == obj.opacityVarMinFlag) &&
             (opacityVarMaxFlag == obj.opacityVarMaxFlag) &&
             (tubeDisplayDensity == obj.tubeDisplayDensity) &&
-            (seedDisplayDensity == obj.seedDisplayDensity));
+            (geomDisplayQuality == obj.geomDisplayQuality));
 }
 
 // ****************************************************************************
@@ -911,6 +958,18 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             retval = true;
         }
     }   
+    else if(atts->TypeName() == "CircleAttributes")
+    {
+        if(sourceType == SpecifiedCircle)
+        {
+            const PlaneAttributes *plane = (const PlaneAttributes *)atts;
+            SetPlaneOrigin(plane->GetOrigin());
+            SetPlaneNormal(plane->GetNormal());
+            SetPlaneUpAxis(plane->GetUpAxis());
+            SetPlaneRadius(plane->GetRadius());
+            retval = true;
+        }
+    }
     else if(atts->TypeName() == "BoxExtents")
     {
         if(sourceType == SpecifiedBox)
@@ -982,6 +1041,16 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
         s->SetOrigin(GetSphereOrigin());
         s->SetRadius(GetSphereRadius());
         retval = s;
+    }
+    else if(tname == "CircleAttributes")
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
+        p->SetRadius(GetPlaneRadius());
+        p->SetHaveRadius(true);
+        retval = p;
     }
     else if(tname == "BoxExtents")
     {
@@ -1055,15 +1124,17 @@ StreamlineAttributes::SelectAll()
     Select(ID_pointList,                 (void *)&pointList);
     Select(ID_pointDensity,              (void *)&pointDensity);
     Select(ID_displayMethod,             (void *)&displayMethod);
-    Select(ID_showStart,                 (void *)&showStart);
-    Select(ID_radius,                    (void *)&radius);
+    Select(ID_showSeeds,                 (void *)&showSeeds);
+    Select(ID_showHeads,                 (void *)&showHeads);
+    Select(ID_tubeRadius,                (void *)&tubeRadius);
+    Select(ID_ribbonWidth,               (void *)&ribbonWidth);
     Select(ID_lineWidth,                 (void *)&lineWidth);
     Select(ID_coloringMethod,            (void *)&coloringMethod);
     Select(ID_colorTableName,            (void *)&colorTableName);
     Select(ID_singleColor,               (void *)&singleColor);
     Select(ID_legendFlag,                (void *)&legendFlag);
     Select(ID_lightingFlag,              (void *)&lightingFlag);
-    Select(ID_StreamlineDirection,       (void *)&StreamlineDirection);
+    Select(ID_streamlineDirection,       (void *)&streamlineDirection);
     Select(ID_relTol,                    (void *)&relTol);
     Select(ID_absTol,                    (void *)&absTol);
     Select(ID_terminationType,           (void *)&terminationType);
@@ -1083,6 +1154,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_displayBeginFlag,          (void *)&displayBeginFlag);
     Select(ID_displayEndFlag,            (void *)&displayEndFlag);
     Select(ID_seedDisplayRadius,         (void *)&seedDisplayRadius);
+    Select(ID_headDisplayRadius,         (void *)&headDisplayRadius);
     Select(ID_opacityType,               (void *)&opacityType);
     Select(ID_opacityVariable,           (void *)&opacityVariable);
     Select(ID_opacity,                   (void *)&opacity);
@@ -1091,7 +1163,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_opacityVarMinFlag,         (void *)&opacityVarMinFlag);
     Select(ID_opacityVarMaxFlag,         (void *)&opacityVarMaxFlag);
     Select(ID_tubeDisplayDensity,        (void *)&tubeDisplayDensity);
-    Select(ID_seedDisplayDensity,        (void *)&seedDisplayDensity);
+    Select(ID_geomDisplayQuality,        (void *)&geomDisplayQuality);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1226,16 +1298,28 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("displayMethod", DisplayMethod_ToString(displayMethod)));
     }
 
-    if(completeSave || !FieldsEqual(ID_showStart, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showSeeds, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("showStart", showStart));
+        node->AddNode(new DataNode("showSeeds", showSeeds));
     }
 
-    if(completeSave || !FieldsEqual(ID_radius, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showHeads, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("radius", radius));
+        node->AddNode(new DataNode("showHeads", showHeads));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tubeRadius, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tubeRadius", tubeRadius));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ribbonWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ribbonWidth", ribbonWidth));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -1276,10 +1360,10 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("lightingFlag", lightingFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_StreamlineDirection, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_streamlineDirection, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("StreamlineDirection", IntegrationDirection_ToString(StreamlineDirection)));
+        node->AddNode(new DataNode("streamlineDirection", IntegrationDirection_ToString(streamlineDirection)));
     }
 
     if(completeSave || !FieldsEqual(ID_relTol, &defaultObject))
@@ -1396,6 +1480,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("seedDisplayRadius", seedDisplayRadius));
     }
 
+    if(completeSave || !FieldsEqual(ID_headDisplayRadius, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headDisplayRadius", headDisplayRadius));
+    }
+
     if(completeSave || !FieldsEqual(ID_opacityType, &defaultObject))
     {
         addToParent = true;
@@ -1444,10 +1534,10 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("tubeDisplayDensity", tubeDisplayDensity));
     }
 
-    if(completeSave || !FieldsEqual(ID_seedDisplayDensity, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_geomDisplayQuality, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("seedDisplayDensity", seedDisplayDensity));
+        node->AddNode(new DataNode("geomDisplayQuality", DisplayQuality_ToString(geomDisplayQuality)));
     }
 
 
@@ -1492,7 +1582,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 6)
+            if(ival >= 0 && ival < 7)
                 SetSourceType(SourceType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1548,10 +1638,14 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayMethod(value);
         }
     }
-    if((node = searchNode->GetNode("showStart")) != 0)
-        SetShowStart(node->AsBool());
-    if((node = searchNode->GetNode("radius")) != 0)
-        SetRadius(node->AsDouble());
+    if((node = searchNode->GetNode("showSeeds")) != 0)
+        SetShowSeeds(node->AsBool());
+    if((node = searchNode->GetNode("showHeads")) != 0)
+        SetShowHeads(node->AsBool());
+    if((node = searchNode->GetNode("tubeRadius")) != 0)
+        SetTubeRadius(node->AsDouble());
+    if((node = searchNode->GetNode("ribbonWidth")) != 0)
+        SetRibbonWidth(node->AsDouble());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("coloringMethod")) != 0)
@@ -1578,7 +1672,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
         SetLightingFlag(node->AsBool());
-    if((node = searchNode->GetNode("StreamlineDirection")) != 0)
+    if((node = searchNode->GetNode("streamlineDirection")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
@@ -1674,13 +1768,15 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetDisplayEndFlag(node->AsBool());
     if((node = searchNode->GetNode("seedDisplayRadius")) != 0)
         SetSeedDisplayRadius(node->AsDouble());
+    if((node = searchNode->GetNode("headDisplayRadius")) != 0)
+        SetHeadDisplayRadius(node->AsDouble());
     if((node = searchNode->GetNode("opacityType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetOpacityType(OpacityType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1704,8 +1800,22 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetOpacityVarMaxFlag(node->AsBool());
     if((node = searchNode->GetNode("tubeDisplayDensity")) != 0)
         SetTubeDisplayDensity(node->AsInt());
-    if((node = searchNode->GetNode("seedDisplayDensity")) != 0)
-        SetSeedDisplayDensity(node->AsInt());
+    if((node = searchNode->GetNode("geomDisplayQuality")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetGeomDisplayQuality(DisplayQuality(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            DisplayQuality value;
+            if(DisplayQuality_FromString(node->AsString(), value))
+                SetGeomDisplayQuality(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1847,17 +1957,31 @@ StreamlineAttributes::SetDisplayMethod(StreamlineAttributes::DisplayMethod displ
 }
 
 void
-StreamlineAttributes::SetShowStart(bool showStart_)
+StreamlineAttributes::SetShowSeeds(bool showSeeds_)
 {
-    showStart = showStart_;
-    Select(ID_showStart, (void *)&showStart);
+    showSeeds = showSeeds_;
+    Select(ID_showSeeds, (void *)&showSeeds);
 }
 
 void
-StreamlineAttributes::SetRadius(double radius_)
+StreamlineAttributes::SetShowHeads(bool showHeads_)
 {
-    radius = radius_;
-    Select(ID_radius, (void *)&radius);
+    showHeads = showHeads_;
+    Select(ID_showHeads, (void *)&showHeads);
+}
+
+void
+StreamlineAttributes::SetTubeRadius(double tubeRadius_)
+{
+    tubeRadius = tubeRadius_;
+    Select(ID_tubeRadius, (void *)&tubeRadius);
+}
+
+void
+StreamlineAttributes::SetRibbonWidth(double ribbonWidth_)
+{
+    ribbonWidth = ribbonWidth_;
+    Select(ID_ribbonWidth, (void *)&ribbonWidth);
 }
 
 void
@@ -1903,10 +2027,10 @@ StreamlineAttributes::SetLightingFlag(bool lightingFlag_)
 }
 
 void
-StreamlineAttributes::SetStreamlineDirection(StreamlineAttributes::IntegrationDirection StreamlineDirection_)
+StreamlineAttributes::SetStreamlineDirection(StreamlineAttributes::IntegrationDirection streamlineDirection_)
 {
-    StreamlineDirection = StreamlineDirection_;
-    Select(ID_StreamlineDirection, (void *)&StreamlineDirection);
+    streamlineDirection = streamlineDirection_;
+    Select(ID_streamlineDirection, (void *)&streamlineDirection);
 }
 
 void
@@ -2043,6 +2167,13 @@ StreamlineAttributes::SetSeedDisplayRadius(double seedDisplayRadius_)
 }
 
 void
+StreamlineAttributes::SetHeadDisplayRadius(double headDisplayRadius_)
+{
+    headDisplayRadius = headDisplayRadius_;
+    Select(ID_headDisplayRadius, (void *)&headDisplayRadius);
+}
+
+void
 StreamlineAttributes::SetOpacityType(StreamlineAttributes::OpacityType opacityType_)
 {
     opacityType = opacityType_;
@@ -2099,10 +2230,10 @@ StreamlineAttributes::SetTubeDisplayDensity(int tubeDisplayDensity_)
 }
 
 void
-StreamlineAttributes::SetSeedDisplayDensity(int seedDisplayDensity_)
+StreamlineAttributes::SetGeomDisplayQuality(StreamlineAttributes::DisplayQuality geomDisplayQuality_)
 {
-    seedDisplayDensity = seedDisplayDensity_;
-    Select(ID_seedDisplayDensity, (void *)&seedDisplayDensity);
+    geomDisplayQuality = geomDisplayQuality_;
+    Select(ID_geomDisplayQuality, (void *)&geomDisplayQuality);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2266,15 +2397,27 @@ StreamlineAttributes::GetDisplayMethod() const
 }
 
 bool
-StreamlineAttributes::GetShowStart() const
+StreamlineAttributes::GetShowSeeds() const
 {
-    return showStart;
+    return showSeeds;
+}
+
+bool
+StreamlineAttributes::GetShowHeads() const
+{
+    return showHeads;
 }
 
 double
-StreamlineAttributes::GetRadius() const
+StreamlineAttributes::GetTubeRadius() const
 {
-    return radius;
+    return tubeRadius;
+}
+
+double
+StreamlineAttributes::GetRibbonWidth() const
+{
+    return ribbonWidth;
 }
 
 int
@@ -2328,7 +2471,7 @@ StreamlineAttributes::GetLightingFlag() const
 StreamlineAttributes::IntegrationDirection
 StreamlineAttributes::GetStreamlineDirection() const
 {
-    return IntegrationDirection(StreamlineDirection);
+    return IntegrationDirection(streamlineDirection);
 }
 
 double
@@ -2451,6 +2594,12 @@ StreamlineAttributes::GetSeedDisplayRadius() const
     return seedDisplayRadius;
 }
 
+double
+StreamlineAttributes::GetHeadDisplayRadius() const
+{
+    return headDisplayRadius;
+}
+
 StreamlineAttributes::OpacityType
 StreamlineAttributes::GetOpacityType() const
 {
@@ -2505,10 +2654,10 @@ StreamlineAttributes::GetTubeDisplayDensity() const
     return tubeDisplayDensity;
 }
 
-int
-StreamlineAttributes::GetSeedDisplayDensity() const
+StreamlineAttributes::DisplayQuality
+StreamlineAttributes::GetGeomDisplayQuality() const
 {
-    return seedDisplayDensity;
+    return DisplayQuality(geomDisplayQuality);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2634,15 +2783,17 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_pointList:                 return "pointList";
     case ID_pointDensity:              return "pointDensity";
     case ID_displayMethod:             return "displayMethod";
-    case ID_showStart:                 return "showStart";
-    case ID_radius:                    return "radius";
+    case ID_showSeeds:                 return "showSeeds";
+    case ID_showHeads:                 return "showHeads";
+    case ID_tubeRadius:                return "tubeRadius";
+    case ID_ribbonWidth:               return "ribbonWidth";
     case ID_lineWidth:                 return "lineWidth";
     case ID_coloringMethod:            return "coloringMethod";
     case ID_colorTableName:            return "colorTableName";
     case ID_singleColor:               return "singleColor";
     case ID_legendFlag:                return "legendFlag";
     case ID_lightingFlag:              return "lightingFlag";
-    case ID_StreamlineDirection:       return "StreamlineDirection";
+    case ID_streamlineDirection:       return "streamlineDirection";
     case ID_relTol:                    return "relTol";
     case ID_absTol:                    return "absTol";
     case ID_terminationType:           return "terminationType";
@@ -2662,6 +2813,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_displayBeginFlag:          return "displayBeginFlag";
     case ID_displayEndFlag:            return "displayEndFlag";
     case ID_seedDisplayRadius:         return "seedDisplayRadius";
+    case ID_headDisplayRadius:         return "headDisplayRadius";
     case ID_opacityType:               return "opacityType";
     case ID_opacityVariable:           return "opacityVariable";
     case ID_opacity:                   return "opacity";
@@ -2670,7 +2822,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_opacityVarMinFlag:         return "opacityVarMinFlag";
     case ID_opacityVarMaxFlag:         return "opacityVarMaxFlag";
     case ID_tubeDisplayDensity:        return "tubeDisplayDensity";
-    case ID_seedDisplayDensity:        return "seedDisplayDensity";
+    case ID_geomDisplayQuality:        return "geomDisplayQuality";
     default:  return "invalid index";
     }
 }
@@ -2712,15 +2864,17 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_pointList:                 return FieldType_doubleVector;
     case ID_pointDensity:              return FieldType_int;
     case ID_displayMethod:             return FieldType_enum;
-    case ID_showStart:                 return FieldType_bool;
-    case ID_radius:                    return FieldType_double;
+    case ID_showSeeds:                 return FieldType_bool;
+    case ID_showHeads:                 return FieldType_bool;
+    case ID_tubeRadius:                return FieldType_double;
+    case ID_ribbonWidth:               return FieldType_double;
     case ID_lineWidth:                 return FieldType_linewidth;
     case ID_coloringMethod:            return FieldType_enum;
     case ID_colorTableName:            return FieldType_colortable;
     case ID_singleColor:               return FieldType_color;
     case ID_legendFlag:                return FieldType_bool;
     case ID_lightingFlag:              return FieldType_bool;
-    case ID_StreamlineDirection:       return FieldType_enum;
+    case ID_streamlineDirection:       return FieldType_enum;
     case ID_relTol:                    return FieldType_double;
     case ID_absTol:                    return FieldType_double;
     case ID_terminationType:           return FieldType_enum;
@@ -2740,6 +2894,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_displayBeginFlag:          return FieldType_bool;
     case ID_displayEndFlag:            return FieldType_bool;
     case ID_seedDisplayRadius:         return FieldType_double;
+    case ID_headDisplayRadius:         return FieldType_double;
     case ID_opacityType:               return FieldType_enum;
     case ID_opacityVariable:           return FieldType_string;
     case ID_opacity:                   return FieldType_double;
@@ -2748,7 +2903,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_opacityVarMinFlag:         return FieldType_bool;
     case ID_opacityVarMaxFlag:         return FieldType_bool;
     case ID_tubeDisplayDensity:        return FieldType_int;
-    case ID_seedDisplayDensity:        return FieldType_int;
+    case ID_geomDisplayQuality:        return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -2790,15 +2945,17 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_pointList:                 return "doubleVector";
     case ID_pointDensity:              return "int";
     case ID_displayMethod:             return "enum";
-    case ID_showStart:                 return "bool";
-    case ID_radius:                    return "double";
+    case ID_showSeeds:                 return "bool";
+    case ID_showHeads:                 return "bool";
+    case ID_tubeRadius:                return "double";
+    case ID_ribbonWidth:               return "double";
     case ID_lineWidth:                 return "linewidth";
     case ID_coloringMethod:            return "enum";
     case ID_colorTableName:            return "colortable";
     case ID_singleColor:               return "color";
     case ID_legendFlag:                return "bool";
     case ID_lightingFlag:              return "bool";
-    case ID_StreamlineDirection:       return "enum";
+    case ID_streamlineDirection:       return "enum";
     case ID_relTol:                    return "double";
     case ID_absTol:                    return "double";
     case ID_terminationType:           return "enum";
@@ -2818,6 +2975,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_displayBeginFlag:          return "bool";
     case ID_displayEndFlag:            return "bool";
     case ID_seedDisplayRadius:         return "double";
+    case ID_headDisplayRadius:         return "double";
     case ID_opacityType:               return "enum";
     case ID_opacityVariable:           return "string";
     case ID_opacity:                   return "double";
@@ -2826,7 +2984,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_opacityVarMinFlag:         return "bool";
     case ID_opacityVarMaxFlag:         return "bool";
     case ID_tubeDisplayDensity:        return "int";
-    case ID_seedDisplayDensity:        return "int";
+    case ID_geomDisplayQuality:        return "enum";
     default:  return "invalid index";
     }
 }
@@ -2978,14 +3136,24 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (displayMethod == obj.displayMethod);
         }
         break;
-    case ID_showStart:
+    case ID_showSeeds:
         {  // new scope
-        retval = (showStart == obj.showStart);
+        retval = (showSeeds == obj.showSeeds);
         }
         break;
-    case ID_radius:
+    case ID_showHeads:
         {  // new scope
-        retval = (radius == obj.radius);
+        retval = (showHeads == obj.showHeads);
+        }
+        break;
+    case ID_tubeRadius:
+        {  // new scope
+        retval = (tubeRadius == obj.tubeRadius);
+        }
+        break;
+    case ID_ribbonWidth:
+        {  // new scope
+        retval = (ribbonWidth == obj.ribbonWidth);
         }
         break;
     case ID_lineWidth:
@@ -3018,9 +3186,9 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (lightingFlag == obj.lightingFlag);
         }
         break;
-    case ID_StreamlineDirection:
+    case ID_streamlineDirection:
         {  // new scope
-        retval = (StreamlineDirection == obj.StreamlineDirection);
+        retval = (streamlineDirection == obj.streamlineDirection);
         }
         break;
     case ID_relTol:
@@ -3118,6 +3286,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (seedDisplayRadius == obj.seedDisplayRadius);
         }
         break;
+    case ID_headDisplayRadius:
+        {  // new scope
+        retval = (headDisplayRadius == obj.headDisplayRadius);
+        }
+        break;
     case ID_opacityType:
         {  // new scope
         retval = (opacityType == obj.opacityType);
@@ -3158,9 +3331,9 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (tubeDisplayDensity == obj.tubeDisplayDensity);
         }
         break;
-    case ID_seedDisplayDensity:
+    case ID_geomDisplayQuality:
         {  // new scope
-        retval = (seedDisplayDensity == obj.seedDisplayDensity);
+        retval = (geomDisplayQuality == obj.geomDisplayQuality);
         }
         break;
     default: retval = false;
@@ -3199,6 +3372,8 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Add support for circle source.
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -3244,6 +3419,14 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
                     sourcePointListDiffers = true;
     }
 
+    // If we're in circle source mode and the plane differs, sourcePlaneDiffers
+    // evaluates to true.
+    bool sourceCircleDiffers = ((sourceType == SpecifiedCircle) &&
+       (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+        POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+        POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+        planeRadius != obj.planeRadius));
+
     // If we're in box source mode and the box differs, boxDiffers
     // evaluates to true.
     bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
@@ -3256,7 +3439,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     // point density.
     bool densityMatters = (sourceType == SpecifiedLine ||
         sourceType == SpecifiedPlane || sourceType == SpecifiedSphere ||
-        sourceType == SpecifiedBox) &&
+        sourceType == SpecifiedBox || sourceType == SpecifiedCircle) &&
         (pointDensity != obj.pointDensity);
 
     //If opacity is turned on, or the variable changes...
@@ -3268,7 +3451,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     bool displayMatters = (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons);
 
     return (sourceType != obj.sourceType) ||
-           (StreamlineDirection != obj.StreamlineDirection) ||
+           (streamlineDirection != obj.streamlineDirection) ||
            displayMatters ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
@@ -3284,6 +3467,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
+           sourceCircleDiffers ||
            sourcePointListDiffers ||
            boxSourceDiffers ||
            densityMatters;

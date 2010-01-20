@@ -17,6 +17,7 @@
         SpecifiedPlane
         SpecifiedSphere
         SpecifiedBox
+        SpecifiedCircle
         SpecifiedPointList
       </Enum>
       <Enum name="ColoringMethod">
@@ -55,7 +56,14 @@
       <Enum name="OpacityType">
         None
         Constant
+        Ramp
         VariableRange
+      </Enum>
+      <Enum name="DisplayQuality">
+        Low
+        Medium
+        High
+        Super
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
@@ -135,10 +143,16 @@
       <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
         Lines
       </Field>
-      <Field name="showStart" label="Show tube start" type="bool">
+      <Field name="showSeeds" label="Show seed points" type="bool">
         false
       </Field>
-      <Field name="radius" label="Radius" type="double">
+      <Field name="showHeads" label="show heads" type="bool">
+        false
+      </Field>
+      <Field name="tubeRadius" label="Radius" type="double">
+        0.125000
+      </Field>
+      <Field name="ribbonWidth" label="ribbonWidth" type="double">
         0.125000
       </Field>
       <Field name="lineWidth" label="Line width" type="linewidth">
@@ -162,7 +176,7 @@
       <Field name="lightingFlag" label="Lighting" type="bool">
         true
       </Field>
-      <Field name="StreamlineDirection" label="Streamline Direction" type="enum" subtype="IntegrationDirection">
+      <Field name="streamlineDirection" label="streamlineDirection" type="enum" subtype="IntegrationDirection">
         Forward
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
@@ -221,6 +235,9 @@
       <Field name="seedDisplayRadius" label="displaySeedRadius" type="double">
         0.250000
       </Field>
+      <Field name="headDisplayRadius" label="headDisplayRadius" type="double">
+        0.250000
+      </Field>
       <Field name="opacityType" label="opacityType" type="enum" subtype="OpacityType">
         None
       </Field>
@@ -244,8 +261,8 @@
       <Field name="tubeDisplayDensity" label="tubeDisplayDensity" type="int">
         10
       </Field>
-      <Field name="seedDisplayDensity" label="seedDisplayDensity" type="int">
-        1
+      <Field name="geomDisplayQuality" label="geomDisplayQuality" type="enum" subtype="DisplayQuality">
+        Medium
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

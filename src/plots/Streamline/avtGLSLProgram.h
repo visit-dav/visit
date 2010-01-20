@@ -1,8 +1,8 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400124
+* LLNL-CODE-400142
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -36,29 +36,63 @@
 *
 *****************************************************************************/
 
-#ifndef PY_STREAMLINEATTRIBUTES_H
-#define PY_STREAMLINEATTRIBUTES_H
-#include <Python.h>
+// ************************************************************************* //
+//                            avtGLSLProgram.h                        //
+// ************************************************************************* //
+
+#ifndef AVT_GLSL_PROGRAM_H
+#define AVT_GLSL_PROGRAM_H
+
+#include <avtCustomRenderer.h>
 #include <StreamlineAttributes.h>
 
+class vtkDataArray;
+class avtLookupTable;
+class avtGLSLProgramImplementation;
+
+// ****************************************************************************
+//  Class: avtGLSLProgram
 //
-// Functions exposed to the VisIt module.
+//  Purpose:
 //
-#define STREAMLINEATTRIBUTES_NMETH 116
-void           PyStreamlineAttributes_StartUp(StreamlineAttributes *subj, void *data);
-void           PyStreamlineAttributes_CloseDown();
-PyMethodDef *  PyStreamlineAttributes_GetMethodTable(int *nMethods);
-bool           PyStreamlineAttributes_Check(PyObject *obj);
-StreamlineAttributes *  PyStreamlineAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyStreamlineAttributes_New();
-PyObject *     PyStreamlineAttributes_Wrap(const StreamlineAttributes *attr);
-void           PyStreamlineAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyStreamlineAttributes_SetDefaults(const StreamlineAttributes *atts);
-std::string    PyStreamlineAttributes_GetLogString();
-std::string    PyStreamlineAttributes_ToString(const StreamlineAttributes *, const char *);
-PyObject *     PyStreamlineAttributes_getattr(PyObject *self, char *name);
-int            PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH];
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 29, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+#include <avtGLEWInitializer.h>
+#include <vector>
+#include <string>
+
+class avtGLSLProgram
+{
+public:
+
+    avtGLSLProgram( const std::string& name );
+    virtual ~avtGLSLProgram();
+    
+    void AttachShaderFromString( GLenum type, const std::string& source );
+    
+    bool Enable();
+    void Disable();
+
+    bool Create();
+    void Destroy();
+
+    bool IsSupported();
+
+protected:
+
+    typedef std::pair<GLenum,std::string> Shader;
+    
+    std::string         name;
+    GLuint              program;
+    GLint               previous;
+    std::vector<Shader> shaders;
+    int                 supported;
+};
 
 #endif
-

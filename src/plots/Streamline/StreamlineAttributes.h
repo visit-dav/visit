@@ -68,6 +68,7 @@ public:
         SpecifiedPlane,
         SpecifiedSphere,
         SpecifiedBox,
+        SpecifiedCircle,
         SpecifiedPointList
     };
     enum ColoringMethod
@@ -113,7 +114,15 @@ public:
     {
         None,
         Constant,
+        Ramp,
         VariableRange
+    };
+    enum DisplayQuality
+    {
+        Low,
+        Medium,
+        High,
+        Super
     };
 
     // These constructors are for objects of this class
@@ -173,15 +182,17 @@ public:
     void SetPointList(const doubleVector &pointList_);
     void SetPointDensity(int pointDensity_);
     void SetDisplayMethod(DisplayMethod displayMethod_);
-    void SetShowStart(bool showStart_);
-    void SetRadius(double radius_);
+    void SetShowSeeds(bool showSeeds_);
+    void SetShowHeads(bool showHeads_);
+    void SetTubeRadius(double tubeRadius_);
+    void SetRibbonWidth(double ribbonWidth_);
     void SetLineWidth(int lineWidth_);
     void SetColoringMethod(ColoringMethod coloringMethod_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
-    void SetStreamlineDirection(IntegrationDirection StreamlineDirection_);
+    void SetStreamlineDirection(IntegrationDirection streamlineDirection_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
     void SetTerminationType(TerminationType terminationType_);
@@ -201,6 +212,7 @@ public:
     void SetDisplayBeginFlag(bool displayBeginFlag_);
     void SetDisplayEndFlag(bool displayEndFlag_);
     void SetSeedDisplayRadius(double seedDisplayRadius_);
+    void SetHeadDisplayRadius(double headDisplayRadius_);
     void SetOpacityType(OpacityType opacityType_);
     void SetOpacityVariable(const std::string &opacityVariable_);
     void SetOpacity(double opacity_);
@@ -209,7 +221,7 @@ public:
     void SetOpacityVarMinFlag(bool opacityVarMinFlag_);
     void SetOpacityVarMaxFlag(bool opacityVarMaxFlag_);
     void SetTubeDisplayDensity(int tubeDisplayDensity_);
-    void SetSeedDisplayDensity(int seedDisplayDensity_);
+    void SetGeomDisplayQuality(DisplayQuality geomDisplayQuality_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -238,8 +250,10 @@ public:
           doubleVector   &GetPointList();
     int                  GetPointDensity() const;
     DisplayMethod        GetDisplayMethod() const;
-    bool                 GetShowStart() const;
-    double               GetRadius() const;
+    bool                 GetShowSeeds() const;
+    bool                 GetShowHeads() const;
+    double               GetTubeRadius() const;
+    double               GetRibbonWidth() const;
     int                  GetLineWidth() const;
     ColoringMethod       GetColoringMethod() const;
     const std::string    &GetColorTableName() const;
@@ -269,6 +283,7 @@ public:
     bool                 GetDisplayBeginFlag() const;
     bool                 GetDisplayEndFlag() const;
     double               GetSeedDisplayRadius() const;
+    double               GetHeadDisplayRadius() const;
     OpacityType          GetOpacityType() const;
     const std::string    &GetOpacityVariable() const;
           std::string    &GetOpacityVariable();
@@ -278,7 +293,7 @@ public:
     bool                 GetOpacityVarMinFlag() const;
     bool                 GetOpacityVarMaxFlag() const;
     int                  GetTubeDisplayDensity() const;
-    int                  GetSeedDisplayDensity() const;
+    DisplayQuality       GetGeomDisplayQuality() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -325,6 +340,11 @@ public:
 protected:
     static std::string OpacityType_ToString(int);
 public:
+    static std::string DisplayQuality_ToString(DisplayQuality);
+    static bool DisplayQuality_FromString(const std::string &, DisplayQuality &);
+protected:
+    static std::string DisplayQuality_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -354,15 +374,17 @@ public:
         ID_pointList,
         ID_pointDensity,
         ID_displayMethod,
-        ID_showStart,
-        ID_radius,
+        ID_showSeeds,
+        ID_showHeads,
+        ID_tubeRadius,
+        ID_ribbonWidth,
         ID_lineWidth,
         ID_coloringMethod,
         ID_colorTableName,
         ID_singleColor,
         ID_legendFlag,
         ID_lightingFlag,
-        ID_StreamlineDirection,
+        ID_streamlineDirection,
         ID_relTol,
         ID_absTol,
         ID_terminationType,
@@ -382,6 +404,7 @@ public:
         ID_displayBeginFlag,
         ID_displayEndFlag,
         ID_seedDisplayRadius,
+        ID_headDisplayRadius,
         ID_opacityType,
         ID_opacityVariable,
         ID_opacity,
@@ -390,7 +413,7 @@ public:
         ID_opacityVarMinFlag,
         ID_opacityVarMaxFlag,
         ID_tubeDisplayDensity,
-        ID_seedDisplayDensity,
+        ID_geomDisplayQuality,
         ID__LAST
     };
 
@@ -412,15 +435,17 @@ private:
     doubleVector   pointList;
     int            pointDensity;
     int            displayMethod;
-    bool           showStart;
-    double         radius;
+    bool           showSeeds;
+    bool           showHeads;
+    double         tubeRadius;
+    double         ribbonWidth;
     int            lineWidth;
     int            coloringMethod;
     std::string    colorTableName;
     ColorAttribute singleColor;
     bool           legendFlag;
     bool           lightingFlag;
-    int            StreamlineDirection;
+    int            streamlineDirection;
     double         relTol;
     double         absTol;
     int            terminationType;
@@ -440,6 +465,7 @@ private:
     bool           displayBeginFlag;
     bool           displayEndFlag;
     double         seedDisplayRadius;
+    double         headDisplayRadius;
     int            opacityType;
     std::string    opacityVariable;
     double         opacity;
@@ -448,12 +474,12 @@ private:
     bool           opacityVarMinFlag;
     bool           opacityVarMaxFlag;
     int            tubeDisplayDensity;
-    int            seedDisplayDensity;
+    int            geomDisplayQuality;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibdiisabbiddiiiiiibsbbddddbbdisdddbbii"
+#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibbddiisabbiddiiiiiibsbbddddbbddisdddbbii"
 
 #endif
