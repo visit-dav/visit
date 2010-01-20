@@ -3473,3 +3473,55 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            densityMatters;
 }
 
+// ****************************************************************************
+// Method: StreamlineAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method creates modifies a DataNode representation of the object
+//   so it conforms to the newest representation of the object, which can
+//   can be read back in.
+//
+// Programmer: Dave Pugmire
+// Creation:   January 20 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+StreamlineAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+    DataNode *searchNode = parentNode->GetNode("StreamlineDirection");
+    if (searchNode)
+    {
+        int val = searchNode->AsInt();
+        parentNode->RemoveNode(searchNode);
+        
+        DataNode *newNode = new DataNode("streamlineDirection", val);
+        parentNode->AddNode(newNode);
+    }
+
+    searchNode = parentNode->GetNode("showStart");
+    if (searchNode)
+    {
+        bool val = searchNode->AsBool();
+        parentNode->RemoveNode(searchNode);
+        
+        DataNode *newNode = new DataNode("showSeeds", val);
+        parentNode->AddNode(newNode);
+    }
+
+    searchNode = parentNode->GetNode("radius");
+    if (searchNode)
+    {
+        double val = searchNode->AsDouble();
+        parentNode->RemoveNode(searchNode);
+        DataNode *newNode = new DataNode("tubeRadius", val);
+        parentNode->AddNode(newNode);
+        
+        newNode = new DataNode("ribbonWidth", val);
+        parentNode->AddNode(newNode);
+    }
+}
+
