@@ -158,6 +158,12 @@ void avtGLSLProgram::Disable()
 //  Programmer: Christoph Garth
 //  Creation:   Mon Jan 11 16:28:51 PST 2010 
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Jan 20 11:48:50 MST 2010
+//    Formatting, bail if program creation fails.
+//    Delete shader logs.
+//
 // ****************************************************************************
 
 bool avtGLSLProgram::Create()
@@ -170,18 +176,26 @@ bool avtGLSLProgram::Create()
         program = glCreateProgram();
 
     if( program == 0 )
-        debug1 << "avtGLSLProgram \"" << name << "\": GLSL program could not be created\n";
+    {
+        debug1 << "avtGLSLProgram \"" << name << "\": "
+                  "GLSL program could not be created\n";
+        return false;
+    }
 
     bool shadersOK = true;
 
     // Go through the list of shaders, and compile and attach each of them
 
-    for( std::vector<Shader>::const_iterator si=shaders.begin(); si!=shaders.end(); ++si )
+    for( std::vector<Shader>::const_iterator si=shaders.begin();
+         si!=shaders.end(); ++si )
     {
         GLuint shader = glCreateShader( si->first );
         
         if( !shader )
-            debug1 << "avtGLSLProgram \"" << name << "\": GLSL shader could not be created\n";
+        {
+            debug1 << "avtGLSLProgram \"" << name << "\": "
+                      "GLSL shader could not be created\n";
+        }
         
         const char* source = si->second.c_str();
         
@@ -196,8 +210,9 @@ bool avtGLSLProgram::Create()
             GLchar* log = new GLchar[length];
             glGetShaderInfoLog( shader, length, NULL, log );
             
-            debug1 << "avtGLSLProgram \"" << name << "\": GLSL shader compile log:\n"
-                    << log << '\n';
+            debug1 << "avtGLSLProgram \"" << name << "\": "
+                   << "GLSL shader compile log:\n" << log << '\n';
+            delete[] log;
         }
         
         GLint compiled;
@@ -205,7 +220,8 @@ bool avtGLSLProgram::Create()
         
         if( compiled != GL_TRUE )
         {
-            debug1 << "avtGLSLProgram \"" << name << "\": GLSL shader failed to compile\n";            
+            debug1 << "avtGLSLProgram \"" << name << "\": "
+                      "GLSL shader failed to compile\n";
             shadersOK = false;
         }
             
@@ -228,13 +244,15 @@ bool avtGLSLProgram::Create()
             
         debug1 << "avtGLSLProgram \"" << name << "\": GLSL program link log:\n"
                 << log << '\n';
+        delete[] log;
     }
         
     GLint linked;
     glGetProgramiv( program, GL_LINK_STATUS, &linked );
 
     if( linked != GL_TRUE )
-        debug1 << "avtGLSLProgram \""<< name << "\": GLSL program failed to link\n";
+        debug1 << "avtGLSLProgram \""<< name << "\": "
+                  "GLSL program failed to link\n";
 
     if( shadersOK && linked )
         return true;

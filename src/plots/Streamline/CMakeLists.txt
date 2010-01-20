@@ -27,7 +27,6 @@ avtStreamlinePlot.C
 avtStreamlineRenderer.C
 avtMesaStreamlineRenderer.C
 avtOpenGLStreamlineRenderer.C
-avtGLSLProgram.C
 ${COMMON_SOURCES}
 )
 
@@ -37,7 +36,6 @@ avtStreamlinePlot.C
 avtStreamlineRenderer.C
 avtMesaStreamlineRenderer.C
 avtOpenGLStreamlineRenderer.C
-avtGLSLProgram.C
 ${COMMON_SOURCES}
 )
 
@@ -84,7 +82,7 @@ ${QT_QTCORE_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS} 
 ${PYTHON_INCLUDE_PATH} 
-${VISIT_INCLUDE_DIR}/visitpy/visitpy 
+${VISIT_INCLUDE_DIR}/visitpy/visitpy ${GLEW_INCLUDE_DIR} 
 )
 
 SET(LIBRARY_OUTPUT_PATH ${VISIT_PLUGIN_DIR}/plots)
