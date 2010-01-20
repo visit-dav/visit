@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Streamline" type="plot" label="Streamline" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="vector" iconFile="Streamline.xpm">
+    <CXXFLAGS>
+      ${GLEW_INCLUDE_DIR}
+    </CXXFLAGS>
     <Files components="V">
       avtStreamlineRenderer.C
       avtMesaStreamlineRenderer.C
