@@ -49,6 +49,15 @@
 #
 # For a 'make install'ed version libOSMesa should be propertly installed
 # by our install targets.
+#
+# Modifications:
+#    Jeremy Meredith, Wed Jan 20 11:27:30 EST 2010
+#    I added a command to put a symlink to python in the lib directory.
+#    We need this to set python-related environment variables in
+#    internallauncher.  I don't know if this is a good solution, as I
+#    don't know the implication for an installed setup -- this is only
+#    intended to fix running inside a development build.
+#
 #----------------------------------------------------------------------------
 
 FOREACH(LIB ${MESA_LIB})
@@ -57,3 +66,6 @@ EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                         ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
 ENDFOREACH(LIB in ${MESA_LIB})
 
+EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                        ${VISIT_PYTHON_DIR}
+                        ${CMAKE_CURRENT_BINARY_DIR}/python)
