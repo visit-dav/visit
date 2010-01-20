@@ -13,7 +13,14 @@
 #  Modifications:
 #    Kathleen Bonnell, Thu Jul 14 10:28:41 PDT 2005
 #    Save tmp.ultra to 'current' directory.
+#
+#    Jeremy Meredith, Wed Jan 20 12:50:34 EST 2010
+#    Added src/lib to python path so we can find the visit writer module.
+#
 # ----------------------------------------------------------------------------
+
+import sys
+sys.path.append("../src/lib")
 
 import visit_writer
 
