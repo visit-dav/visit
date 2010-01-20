@@ -313,7 +313,7 @@ void VolumeAttributes::Init()
     sampling = Rasterization;
     rendererSamples = 3;
     transferFunctionDim = 1;
-    lowGradientLightingReduction = Off;
+    lowGradientLightingReduction = Lower;
     lowGradientLightingClampFlag = false;
     lowGradientLightingClampValue = 1;
 

@@ -206,7 +206,7 @@
         1
       </Field>
       <Field name="lowGradientLightingReduction" label="lowGradientLightingReduction" type="enum" subtype="LowGradientLightingReduction">
-        Off
+        Lower
       </Field>
       <Field name="lowGradientLightingClampFlag" label="lowGradientLightingClampFlag" type="bool">
         false
