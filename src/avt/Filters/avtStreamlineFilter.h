@@ -71,7 +71,8 @@ class avtSLAlgorithm;
 #define STREAMLINE_SOURCE_PLANE      2
 #define STREAMLINE_SOURCE_SPHERE     3
 #define STREAMLINE_SOURCE_BOX        4
-#define STREAMLINE_SOURCE_POINT_LIST 5
+#define STREAMLINE_SOURCE_CIRCLE     5
+#define STREAMLINE_SOURCE_POINT_LIST 6
 
 #define STREAMLINE_COLOR_SOLID       0
 #define STREAMLINE_COLOR_SPEED       1
@@ -206,6 +207,9 @@ class avtSLAlgorithm;
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Remove radius and showStart members, add circle seed source.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -242,8 +246,6 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      SetUseWholeBox(bool b) { useWholeBox = b; };
 
     void                      SetDisplayMethod(int d);
-    void                      SetShowStart(bool);
-    void                      SetRadius(double rad);
     void                      SetPointDensity(int den);
     void                      SetStreamlineDirection(int dir);
     void                      SetColoringMethod(int, const std::string &var="");
@@ -257,9 +259,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     avtIVPSolver::TerminateType terminationType;
     int integrationType;
     double termination;
-    double radius;
     int    displayMethod;
-    bool   showStart;
     int    pointDensity1, pointDensity2, pointDensity3;
     int    streamlineDirection;
     int    coloringMethod;
@@ -332,6 +332,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      GenerateSeedPointsFromPlane(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromSphere(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromBox(std::vector<avtVector> &pts);
+    void                      GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
 
     int                       GetNextStreamlineID(){ int id = MaxID; MaxID++; return id;}

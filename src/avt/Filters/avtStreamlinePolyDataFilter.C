@@ -58,6 +58,7 @@ std::string avtStreamlinePolyDataFilter::colorvarArrayName = "colorVar";
 std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
 std::string avtStreamlinePolyDataFilter::opacityArrayName = "opacity";
 std::string avtStreamlinePolyDataFilter::thetaArrayName = "theta";
+std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 
 
 // ****************************************************************************
@@ -164,6 +165,9 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Handle color by variable.
 //
+//   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
+//   Add tangents array.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -176,6 +180,7 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
     vtkCellArray *cells = vtkCellArray::New();
     vtkFloatArray *scalars = vtkFloatArray::New();
     vtkFloatArray *params = vtkFloatArray::New();
+    vtkFloatArray *tangents = vtkFloatArray::New();
     vtkFloatArray *thetas = NULL;
     vtkFloatArray *opacity = NULL;
 
@@ -194,6 +199,8 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
     cells->InsertNextCell(sl->size());
     scalars->Allocate(sl->size());
     params->Allocate(sl->size());
+    tangents->SetNumberOfComponents(3);
+    tangents->SetNumberOfTuples(sl->size());
     avtStreamline::iterator siter;
     
     unsigned int i = 0;
@@ -254,6 +261,12 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
         {
             opacity->InsertTuple1(i, step->scalarValues[opacityIdx]);
         }
+
+        if (tangents)
+        {        
+            tangents->InsertTuple3(i, (*siter)->velEnd[0], (*siter)->velEnd[1],
+                                      (dataSpatialDimension > 2 ? (*siter)->velEnd[2] : 0.0));
+        }
         
         scalars->InsertTuple1(i, val);
         params->InsertTuple1(i, param);
@@ -280,6 +293,13 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
         opacity->SetName(thetaArrayName.c_str());
         pd->GetPointData()->AddArray(opacity);
         opacity->Delete();
+    }
+
+    if (tangents)
+    {
+        tangents->SetName(tangentsArrayName.c_str());
+        pd->GetPointData()->AddArray(tangents);
+        tangents->Delete();
     }
 
     points->Delete();
