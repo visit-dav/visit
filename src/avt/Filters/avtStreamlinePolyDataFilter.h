@@ -67,6 +67,9 @@
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Add tangentsArrayName (for Christoph Garth).
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
@@ -78,6 +81,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     static                    std::string paramArrayName;
     static                    std::string opacityArrayName;
     static                    std::string thetaArrayName;
+    static                    std::string tangentsArrayName;
 
   protected:
     vtkPolyData*              GetVTKPolyData(avtStreamline *sl, int id);

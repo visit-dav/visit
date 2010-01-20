@@ -78,6 +78,9 @@
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Add [] operator and lerp method.
 //
+//    Dave Pugmire (for Chrisoph Garth), Wed Jan 20 09:28:59 EST 2010
+//    Remove the getText method.
+//
 // ****************************************************************************
 class MATH_API avtVector
 {
@@ -134,12 +137,6 @@ class MATH_API avtVector
 
     // friends
     MATH_API friend ostream& operator<<(ostream& ostr,const avtVector&) STUB_OSTR;
-
-    // input/output
-    const char *getAsText() STUB_STR;
-    void        setAsText(const char*) STUB_VOID;
-  private:
-    char text[256];
 };
 
 #undef STUB_VOID

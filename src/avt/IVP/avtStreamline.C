@@ -269,6 +269,10 @@ avtStreamline::Advance(const avtIVPField* field,
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Generalize the compute scalar variable.
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Don't distinguish between forward/bwd integration for steps. Always add
+//   add them to the back of the list.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -362,11 +366,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 step->ComputeSpeed(field);
             if (!scalars.empty())
                 step->ComputeScalarVariables(scalars, field);
-            
-            if (end < 0) //backwards
-                _steps.push_front( step );
-            else
-                _steps.push_back( step );
+
+            _steps.push_back(step);
             
             if (result == avtIVPSolver::TERMINATE)
                 break;

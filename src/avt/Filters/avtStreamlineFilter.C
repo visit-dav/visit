@@ -165,6 +165,9 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
 //   Add new termination criterion: Number of intersections with an object.
 //
+//   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
+//   Remove radius and showStart members.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -179,8 +182,6 @@ avtStreamlineFilter::avtStreamlineFilter()
     maxStepLength = 0.;
     terminationType = avtIVPSolver::TIME;
     termination = 100.;
-    showStart = true;
-    radius = 0.125;
     pointDensity1 = 1;
     pointDensity2 = 1;
     pointDensity3 = 1;
@@ -1034,6 +1035,9 @@ avtStreamlineFilter::SetPointListSource(const std::vector<double> &ptList)
 //   Hank Childs, Sun May  3 12:42:38 CDT 2009
 //   Add case for point lists.
 //
+//   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
+//   Add circle source.
+//
 // ****************************************************************************
 
 std::string
@@ -1062,6 +1066,11 @@ avtStreamlineFilter::SeedInfoString() const
                 boxExtents[2], boxExtents[3],
                 boxExtents[4], boxExtents[5],
                 pointDensity1, pointDensity2, pointDensity3);
+    else if (sourceType == STREAMLINE_SOURCE_CIRCLE)
+        sprintf(buff, "Cirlce O[%g %g %g] N[%g %g %g] R: %g D: %d %d",
+                planeOrigin[0], planeOrigin[1], planeOrigin[2],
+                planeNormal[0], planeNormal[1], planeNormal[2],
+                planeRadius, pointDensity1, pointDensity2);    
     else if (sourceType == STREAMLINE_SOURCE_POINT_LIST)
         strcpy(buff, "Point list [points not printed]");
     else
@@ -1071,58 +1080,6 @@ avtStreamlineFilter::SeedInfoString() const
     return str;
 }
 
-
-// ****************************************************************************
-// Method: avtStreamlineFilter::SetShowStart
-//
-// Purpose: 
-//   Indicates whether or not to show the stream starting points.
-//
-// Arguments:
-//   val : Indicates whether or not to show the stream starting points.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 13:02:04 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetShowStart(bool val)
-{
-    showStart = val;
-}
-
-
-// ****************************************************************************
-// Method: avtStreamlineFilter::SetRadius
-//
-// Purpose: 
-//   Sets the radius used for tubes and ribbons.
-//
-// Arguments:
-//   rad : The tube radius.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 13:02:45 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed Dec 22 14:28:35 PST 2004
-//   Renamed the method and made it set both the tube radius and the ribbon
-//   width.
-//
-//   Brad Whitlock, Tue Jan 4 09:11:38 PDT 2005
-//   Removed the code to set the tube and ribbon width since it now happens
-//   later in the ExecuteData method.
-//
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetRadius(double rad)
-{
-    radius = rad;
-}
 
 
 // ****************************************************************************
@@ -2362,6 +2319,9 @@ randMinus1_1()
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   Renamed this method.
 //
+//   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
+//   Add circle source.
+//
 // ****************************************************************************
 
 void
@@ -2380,6 +2340,8 @@ avtStreamlineFilter::GetStreamlinesFromInitialSeeds(std::vector<avtStreamlineWra
         GenerateSeedPointsFromSphere(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_BOX)
         GenerateSeedPointsFromBox(seedPts);
+    else if(sourceType == STREAMLINE_SOURCE_CIRCLE)
+        GenerateSeedPointsFromCircle(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_POINT_LIST)
         GenerateSeedPointsFromPointList(seedPts);
 
@@ -2586,6 +2548,40 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
         pts.push_back(p);
     }
     plane->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromCircle
+//
+//  Purpose:
+//      
+//
+//  Programmer: Christoph Garth
+//  Creation:   January 20, 2010
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::GenerateSeedPointsFromCircle(std::vector<avtVector> &pts)
+{
+    avtVector O(planeOrigin), U(planeUpAxis), N(planeNormal);
+    
+    U.normalize();
+    N.normalize();
+    if(dataSpatialDimension <= 2)
+        N = avtVector(0.,0.,1.);
+        
+    // Determine the right vector.
+    avtVector R(U % N);
+    R.normalize();
+
+    for (int i = 0; i<pointDensity1; i++)
+    {
+        double t = (6.28318531*i) / pointDensity1;
+
+        avtVector p = planeRadius * (cos(t) * U + sin(t) * R) + O;
+        pts.push_back(p);
+    }
 }
 
 // ****************************************************************************
