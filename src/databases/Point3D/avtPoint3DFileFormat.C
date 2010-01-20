@@ -302,6 +302,9 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Fri Jan  8 16:17:34 EST 2010
 //    Added extra error checking and forced more parsing in strict mode.
 //
+//    Jeremy Meredith, Wed Jan 20 10:29:11 EST 2010
+//    Check for eof after getline, but before we use the result.
+//
 // ****************************************************************************
 
 void
@@ -347,14 +350,13 @@ avtPoint3DFileFormat::ReadData(void)
     vector<float> var4;
 
     int linesToCheckForAscii = 100;
+
+    line[0] = '\0';
+    ifile.getline(line, 1024);
+    if (!StringHelpers::IsPureASCII(line, 1024))
+        EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
     while (!ifile.eof())
     {
-        line[0] = '\0';
-        ifile.getline(line, 1024);
-        if (--linesToCheckForAscii > 0 &&
-            !StringHelpers::IsPureASCII(line, 1024))
-            EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
-
         // Allow the user to specify "coordflag" in the file.
         if(line[0] == '#')
         {
@@ -388,6 +390,12 @@ avtPoint3DFileFormat::ReadData(void)
             var3.push_back(c);
             var4.push_back(d);
         }
+
+        line[0] = '\0';
+        ifile.getline(line, 1024);
+        if (--linesToCheckForAscii > 0 &&
+            !StringHelpers::IsPureASCII(line, 1024))
+            EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
     }
 
     int npts = var1.size();
