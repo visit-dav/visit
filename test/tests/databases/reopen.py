@@ -36,9 +36,13 @@
 #    Jeremy Meredith, Wed Sep  7 12:06:04 PDT 2005
 #    Allowed spaces in variable names.
 #
+#    Jeremy Meredith, Wed Jan 20 11:02:36 EST 2010
+#    Fixed some file path issues and checked for "from" file before
+#    assuming a symlink return error implied a different error message.
+#
 # ----------------------------------------------------------------------------
 
-import os, string, sys
+import os, string, sys, time
 
 def GetTruncatedWindowInformationString():
     # Get the window information and convert it to a string.
@@ -115,7 +119,7 @@ def FilesPresent(files):
 # Waits for all files in the list to be present in the current directory.
 #
 def WaitForFilesToBePresent(files):
-    while(FilesPresent(files) == 0): sleep(1)
+    while(FilesPresent(files) == 0): time.sleep(1)
 
 #
 # Removes all files ending in .silo or .visit from the current directory
@@ -151,9 +155,13 @@ def CreateMTFile(prefix, makeVisItFile, percent):
     if makeVisItFile == 0:
         # Virtual database
         for file in files:
+            fileFrom = "../data/silo_hdf5_test_data/%s" % file
+            fileTo   = "%s%s" % (prefix, file)
+            if not os.path.exists(fileFrom):
+                print >>sys.stderr, "Error: %s didn't exist" % fileFrom
             try:
                 # Copy a file from the data directory to the current directory.
-                os.link("../data/%s" % file, "%s%s" % (prefix, file))
+                os.link(fileFrom, fileTo)
             except OSError:
                 print >>sys.stderr, "Don't need to copy %s" % file
 
@@ -167,7 +175,7 @@ def CreateMTFile(prefix, makeVisItFile, percent):
         db = "reopen_wave.visit"
         f = open(db, "wt")
         for file in files:
-            f.write("../data/%s\n" % file)
+            f.write("../data/silo_hdf5_test_data/%s\n" % file)
         f.close()
     return (db, prefixfiles)
 
