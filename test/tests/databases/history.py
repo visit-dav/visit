@@ -10,6 +10,10 @@
 #  Programmer: Hank Childs
 #  Date:       January 9, 2004
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -19,7 +23,7 @@ a.legendInfoFlag = 1
 a.databaseInfoFlag =1
 SetAnnotationAttributes(a)
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 
 #
 # Test that we can detect that there is a problem and add 0's.

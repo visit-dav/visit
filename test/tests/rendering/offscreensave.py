@@ -19,10 +19,12 @@
 #    Mark C. Miller, Thu Jan  6 15:09:06 PST 2005
 #    Added a test that involves annotation objects
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -79,7 +81,7 @@ Test("offscreen_08")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
 # Test off screen save of a 2D window
 AddPlot("Mesh", "curvmesh2d")
@@ -101,7 +103,7 @@ Test("offscreen_10",swa)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()

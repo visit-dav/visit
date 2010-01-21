@@ -19,11 +19,13 @@
 #    the code so it uses the new time slider functions instead of the
 #    deprecated animation functions.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 # Open a database.
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
  
 # Enable keyframe mode.
 k = GetKeyframeAttributes()
@@ -235,7 +237,7 @@ k.enabled = 1
 SetKeyframeAttributes(k)
 
 # Open a database.
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
  
 # Set the number of frames to be 9.
 AnimationSetNFrames(9)
@@ -320,7 +322,7 @@ DeleteAllPlots()
 ResetView()
 
 # Open a database.
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
 
 # Set the number of frames to be 6.
 AnimationSetNFrames(6)

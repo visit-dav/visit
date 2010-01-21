@@ -13,22 +13,24 @@
 #    Changed number of vectors in vector plot to match the old behavior.
 #    (We now account for how many domains there are.)
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
 
 # Test general capability.
-DefineScalarExpression("cmfe", "pos_cmfe(<../data/silo_hdf5_test_data/ucd2d.silo:d>, curvmesh2d, -1.)")
+DefineScalarExpression("cmfe", "pos_cmfe(<../data/silo_%s_test_data/ucd2d.silo:d>, curvmesh2d, -1.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("pos_cmfe_01")
 
 # Zonal vars
-DefineScalarExpression("cmfeZ", "pos_cmfe(<../data/silo_hdf5_test_data/ucd2d.silo:p>, curvmesh2d, -1.)")
+DefineScalarExpression("cmfeZ", "pos_cmfe(<../data/silo_%s_test_data/ucd2d.silo:p>, curvmesh2d, -1.)"%SILO_MODE)
 DeleteAllPlots()
 AddPlot("Pseudocolor", "cmfeZ")
 DrawPlots()
@@ -73,20 +75,20 @@ DrawPlots()
 t = GetLastError()
 TestText("pos_cmfe_07", t)
 
-DefineScalarExpression("cmfe4", "pos_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>, curvmesh2d)")
+DefineScalarExpression("cmfe4", "pos_cmfe(<../data/silo_%s_test_data/wave0100.silo:pressure>, curvmesh2d)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe4")
 DrawPlots()
 t = GetLastError()
 TestText("pos_cmfe_08", t)
 
-DefineScalarExpression("cmfe5", "pos_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>)")
+DefineScalarExpression("cmfe5", "pos_cmfe(<../data/silo_%s_test_data/wave0100.silo:pressure>)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe5")
 DrawPlots()
 t = GetLastError()
 TestText("pos_cmfe_09", t)
 
 # Invalid variable in new database.
-DefineScalarExpression("cmfe6", "pos_cmfe(<../data/silo_hdf5_test_data/ucd2d.silo:xyz>, curvmesh2d, 0.)")
+DefineScalarExpression("cmfe6", "pos_cmfe(<../data/silo_%s_test_data/ucd2d.silo:xyz>, curvmesh2d, 0.)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe6")
 DrawPlots()
 t = GetLastError()
@@ -96,8 +98,8 @@ TestText("pos_cmfe_10", t)
 
 # 3D, multi-block to multi-block.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
-DefineScalarExpression("cmfe7", "pos_cmfe(<../data/silo_hdf5_test_data/multi_curv3d.silo:d>, mesh1, 0.)")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+DefineScalarExpression("cmfe7", "pos_cmfe(<../data/silo_%s_test_data/multi_curv3d.silo:d>, mesh1, 0.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe7")
 DrawPlots()
 Test("pos_cmfe_11")
@@ -106,24 +108,24 @@ DeleteAllPlots()
 
 # multi-block to single-block.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
-DefineScalarExpression("cmfe8", "pos_cmfe(<../data/silo_hdf5_test_data/multi_curv3d.silo:d>, curvmesh3d, 0.)")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+DefineScalarExpression("cmfe8", "pos_cmfe(<../data/silo_%s_test_data/multi_curv3d.silo:d>, curvmesh3d, 0.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe8")
 DrawPlots()
 Test("pos_cmfe_12")
 
 # single-block to multi-block.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/multi_curv3d.silo")
-DefineScalarExpression("cmfe9", "pos_cmfe(<../data/silo_hdf5_test_data/curv3d.silo:d>, mesh1, 0.)")
+OpenDatabase("../data/silo_%s_test_data/multi_curv3d.silo"%SILO_MODE)
+DefineScalarExpression("cmfe9", "pos_cmfe(<../data/silo_%s_test_data/curv3d.silo:d>, mesh1, 0.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe9")
 DrawPlots()
 Test("pos_cmfe_13")
 
 # single-block to multi-block -- vector
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
-DefineVectorExpression("cmfe10", "pos_cmfe(gradient(<../data/silo_hdf5_test_data/curv3d.silo:d>), mesh1, {0,0,0})")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+DefineVectorExpression("cmfe10", "pos_cmfe(gradient(<../data/silo_%s_test_data/curv3d.silo:d>), mesh1, {0,0,0})"%SILO_MODE)
 AddPlot("Vector", "cmfe10")
 vec = VectorAttributes()
 vec.nVectors = 400*36

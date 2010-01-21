@@ -1593,6 +1593,7 @@ leakcheck = 0
 silo = 0
 leakHistory=""
 modeStr=""
+SILO_MODE = "hdf5"
 for mode in modes:
    if modeStr == "":
       modeStr = mode
@@ -1610,6 +1611,8 @@ for mode in modes:
       leakcheck = 1
    if mode == "silo":
       silo = 1
+   if mode == "pdb":
+      SILO_MODE = "pdb"
 
 # find tif to rgb image convert utility
 if os.environ.has_key('VISIT_TEST_CONVERT'):

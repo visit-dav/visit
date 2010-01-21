@@ -55,10 +55,12 @@
 #    Tom Fogal, Wed Dec 16 13:11:19 MST 2009
 #    Fixed a path to a data file.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
-OpenDatabase("../data/silo_hdf5_test_data/multipart_multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
 
 #
 # Test simple read and display of a variable 
@@ -120,9 +122,9 @@ HideActivePlots()
 # 'virtual' database of multi-part silo files by
 # creating appropriately named links
 #
-os.system("rm -f ../data/silo_hdf5_test_data/gorfo*")
+os.system("rm -f ../data/silo_%s_test_data/gorfo*"%SILO_MODE)
 cwd = os.getcwd()
-os.chdir("../data/silo_hdf5_test_data/")
+os.chdir("../data/silo_%s_test_data/"%SILO_MODE)
 i = 1
 for filename in os.listdir("."):
     if filename == "multipart_multi_ucd3d.silo":
@@ -143,7 +145,7 @@ os.chdir(cwd)
 # Test opening a 'virtual' database of multi-part silo files
 # at something other than its first timestep
 #
-OpenDatabase("../data/silo_hdf5_test_data/gorfo_* database",1)
+OpenDatabase("../data/silo_%s_test_data/gorfo_* database"%SILO_MODE,1)
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh", "mesh1")
 DrawPlots()
@@ -156,11 +158,11 @@ Test("silo_06")
 #
 # remove all the gorfo files we created above
 #
-os.system("rm -f ../data/silo_hdf5_test_data/gorfo*")
+os.system("rm -f ../data/silo_%s_test_data/gorfo*"%SILO_MODE)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/ucd3d.silo"%SILO_MODE)
 AddPlot("Mesh", "exterior_faces")
 DrawPlots()
 Test("silo_07")
@@ -174,7 +176,7 @@ Test("silo_08")
 # all empty domains. So we go from 1 to end and
 # back around to 1 purposely avoiding 0
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/hist_ucd3d_* database",1)
+OpenDatabase("../data/silo_%s_test_data/hist_ucd3d_* database"%SILO_MODE,1)
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()
 
@@ -201,7 +203,7 @@ Test("silo_18")
 # Test defvar object
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor","sum")
 DrawPlots()
 Test("silo_20")
@@ -229,7 +231,7 @@ a=GetAnnotationAttributes()
 a.axes2D.visible = 1
 SetAnnotationAttributes(a)
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Curve","line")
 DrawPlots()
 Test("silo_23")
@@ -251,7 +253,7 @@ Test("silo_25")
 # data dir.
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 OpenDatabase("../data/largefile.silo")
 AddPlot("Curve","sincurve")
 AddPlot("Curve","coscurve")
@@ -263,7 +265,7 @@ Test("silo_26")
 #
 DeleteAllPlots()
 CloseDatabase("/usr/gapps/visit/data/largefile.silo")
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d_ti_* database",2)
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d_ti_* database"%SILO_MODE,2)
 AddPlot("Pseudocolor","d")
 DrawPlots()
 ResetView()
@@ -284,8 +286,8 @@ Test("silo_28")
 # invalidated by VisIt
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d_ti_* database")
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+CloseDatabase("../data/silo_%s_test_data/multi_ucd3d_ti_* database"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor","d_split")
 DrawPlots()
 t = GetLastError()
@@ -297,8 +299,8 @@ TestText("silo_29", t)
 # on
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
-OpenDatabase("../data/silo_hdf5_test_data/histne_ucd3d_* database", 2)
+CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/histne_ucd3d_* database"%SILO_MODE, 2)
 AddPlot("Pseudocolor", "d_dup")
 DrawPlots()
 Test("silo_30")
@@ -319,7 +321,7 @@ Test("silo_34")
 # Test a database with some odd multi-block structure
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/histne_ucd3d_* database")
+CloseDatabase("../data/silo_%s_test_data/histne_ucd3d_* database"%SILO_MODE)
 SetTreatAllDBsAsTimeVarying(0)
 OpenDatabase("../data/silo_pdb_test_data/odd_multi.silo")
 AddPlot("Pseudocolor","cyc_00000/den")
@@ -332,7 +334,7 @@ Test("silo_35")
 #
 DeleteAllPlots()
 CloseDatabase("../data/silo_pdb_test_data/odd_multi.silo")
-OpenDatabase("../data/silo_hdf5_test_data/wave_1file.visit")
+OpenDatabase("../data/silo_%s_test_data/wave_1file.visit"%SILO_MODE)
 AddPlot("Mesh","quadmesh")
 AddPlot("Pseudocolor","pressure")
 DrawPlots()
@@ -356,7 +358,7 @@ Test("silo_39")
 TestSection("Silo AMR w/Mrgtrees")
 LevelTwo = 77 # Set Id for Level 2 set for this mesh
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/wave_1file.visit")
+CloseDatabase("../data/silo_%s_test_data/wave_1file.visit"%SILO_MODE)
 OpenDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
 AddPlot("Mesh","amr_mesh_wmrgtree")
 DrawPlots()

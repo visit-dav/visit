@@ -16,12 +16,14 @@
 #    Hank Childs, Thu Jan 12 15:57:52 PST 2006
 #    Added additional tests ('3260, '3261).
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 # Test for topological dimension 2.
 TurnOnAllAnnotations()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -57,7 +59,7 @@ TestText("revolved_surface_area_03", text)
 
 # Test with 3D, isosurface, slice.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("Isosurface")
 SetOperatorOptions(iso_atts)

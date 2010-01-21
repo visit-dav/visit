@@ -15,12 +15,15 @@
 #  Modifications:
 #    Kathleen Bonnell, Wed Sep  3 17:21:44 PDT 2003
 #    Add tests 4-10, testing more options of the Surface plot. 
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
 #Test default surface plot (surface on, wireframe off)
 AddPlot("Surface", "u")
@@ -40,7 +43,7 @@ Test("surface_03")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/noise2d.silo")
+OpenDatabase("../data/silo_%s_test_data/noise2d.silo"%SILO_MODE)
 AddPlot("Surface", "shepardglobal")
 DrawPlots()
 

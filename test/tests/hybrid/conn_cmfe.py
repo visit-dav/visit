@@ -16,14 +16,16 @@
 #    Hank Childs, Fri Oct  7 17:14:07 PDT 2005
 #    Test error message for Eulerian material selection.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/wave0200.silo")
+OpenDatabase("../data/silo_%s_test_data/wave0200.silo"%SILO_MODE)
 
 
 # Test general capability.
-DefineScalarExpression("cmfe", "conn_cmfe(<../data/silo_hdf5_test_data/wave0020.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe", "conn_cmfe(<../data/silo_%s_test_data/wave0020.silo:pressure>, quadmesh)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("conn_cmfe_01")
@@ -68,40 +70,40 @@ DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_06", t)
 
-DefineScalarExpression("cmfe4", "conn_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>, quadmesh, pressure)")
+DefineScalarExpression("cmfe4", "conn_cmfe(<../data/silo_%s_test_data/wave0100.silo:pressure>, quadmesh, pressure)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe4")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_07", t)
 
-DefineScalarExpression("cmfe5", "conn_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>)")
+DefineScalarExpression("cmfe5", "conn_cmfe(<../data/silo_%s_test_data/wave0100.silo:pressure>)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe5")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_08", t)
 
 # And one more cool picture just for grins.
-DefineScalarExpression("cmfe6", "conn_cmfe(<../data/silo_hdf5_test_data/wave0570.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe6", "conn_cmfe(<../data/silo_%s_test_data/wave0570.silo:pressure>, quadmesh)"%SILO_MODE)
 DefineScalarExpression("max", "if(ge(pressure, cmfe6), pressure, cmfe6)")
 ChangeActivePlotsVar("max")
 DrawPlots()
 Test("conn_cmfe_09")
 
 # Invalid variable in new database.
-DefineScalarExpression("cmfe7", "conn_cmfe(<../data/silo_hdf5_test_data/globe.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe7", "conn_cmfe(<../data/silo_%s_test_data/globe.silo:pressure>, quadmesh)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe7")
 t = GetLastError()
 TestText("conn_cmfe_10", t)
 
 # Now a good variable, but connectivity doesn't match.
-DefineScalarExpression("cmfe8", "conn_cmfe(<../data/silo_hdf5_test_data/globe.silo:t>, quadmesh)")
+DefineScalarExpression("cmfe8", "conn_cmfe(<../data/silo_%s_test_data/globe.silo:t>, quadmesh)"%SILO_MODE)
 ChangeActivePlotsVar("cmfe8")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_11", t)
 
 # Test multiple CMFEs
-DefineScalarExpression("cmfe9", "conn_cmfe(<../data/silo_hdf5_test_data/wave0100.silo:pressure>, quadmesh)")
+DefineScalarExpression("cmfe9", "conn_cmfe(<../data/silo_%s_test_data/wave0100.silo:pressure>, quadmesh)"%SILO_MODE)
 DefineScalarExpression("max2", "if(ge(max, cmfe9), max, cmfe9)")
 ChangeActivePlotsVar("max2")
 DrawPlots()

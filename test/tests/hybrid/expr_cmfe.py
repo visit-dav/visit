@@ -15,27 +15,29 @@
 #    uniformly "1", but actually has some small variation.  This causes 
 #    issues with coloring between optimized and non-optimized modes.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
 
 
 # Test that database expressions can still be generated.
-DefineVectorExpression("cmfe", "conn_cmfe(<../data/silo_hdf5_test_data/wave.visit[30]i:direction>, quadmesh)")
+DefineVectorExpression("cmfe", "conn_cmfe(<../data/silo_%s_test_data/wave.visit[30]i:direction>, quadmesh)"%SILO_MODE)
 AddPlot("Vector", "cmfe")
 DrawPlots()
 Test("expr_cmfe_01")
 
 DeleteAllPlots()
-DefineScalarExpression("cmfe2", "conn_cmfe(coord(<../data/silo_hdf5_test_data/wave.visit[40]i:pressure>)[1], quadmesh)")
+DefineScalarExpression("cmfe2", "conn_cmfe(coord(<../data/silo_%s_test_data/wave.visit[40]i:pressure>)[1], quadmesh)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe2")
 DrawPlots()
 Test("expr_cmfe_02")
 
 DeleteAllPlots()
-DefineScalarExpression("cmfe3", "coord(quadmesh)[1] - conn_cmfe(coord(<../data/silo_hdf5_test_data/wave.visit[40]i:pressure>)[1], quadmesh)")
+DefineScalarExpression("cmfe3", "coord(quadmesh)[1] - conn_cmfe(coord(<../data/silo_%s_test_data/wave.visit[40]i:pressure>)[1], quadmesh)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe3")
 DrawPlots()
 Test("expr_cmfe_03")
@@ -47,7 +49,7 @@ DrawPlots()
 Test("expr_cmfe_04")
 
 DeleteAllPlots()
-DefineScalarExpression("cmfe5", "volume(quadmesh) / conn_cmfe(volume(<../data/silo_hdf5_test_data/wave.visit[40]i:quadmesh>), quadmesh)")
+DefineScalarExpression("cmfe5", "volume(quadmesh) / conn_cmfe(volume(<../data/silo_%s_test_data/wave.visit[40]i:quadmesh>), quadmesh)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe5")
 pc = PseudocolorAttributes()
 pc.min = 0.5

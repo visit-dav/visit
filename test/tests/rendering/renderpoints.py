@@ -14,6 +14,9 @@
 #  Modificatons:
 #    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
 #    Removed silly comment regarding global annotation object 'a'
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 #
@@ -198,7 +201,7 @@ def main():
     # Turn off all annotation
     TurnOffAllAnnotations()
 
-    OpenDatabase("../data/silo_hdf5_test_data/galaxy0000.silo")
+    OpenDatabase("../data/silo_%s_test_data/galaxy0000.silo"%SILO_MODE)
 
     test0()
     test1()

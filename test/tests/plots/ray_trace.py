@@ -23,6 +23,8 @@
 #    Hank Childs, Fri Mar  3 09:09:04 PST 2006
 #    Add testing for ray-tracing in multiple windows.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -41,7 +43,7 @@ SetAnnotationAttributes(a)
 # Start off by testing that we can bring up a normal volume plot and smooth
 # the data.  Also test that it can interact with the bounding box correctly.
 #
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Volume", "d")
 vol_atts = VolumeAttributes()
 vol_atts.rendererType = vol_atts.RayCasting
@@ -111,7 +113,7 @@ Test("ray_trace_04")
 # different sort of sampling.
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Volume", "d")
 vol_atts.rendererType = vol_atts.RayCasting
 vol_atts.smoothData = 0
@@ -161,7 +163,7 @@ AddWindow()
 SetActiveWindow(2)
 DeleteAllPlots()
 SetAnnotationAttributes(a)
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Volume", "d")
 vol_atts = VolumeAttributes()
 vol_atts.rendererType = vol_atts.RayCasting

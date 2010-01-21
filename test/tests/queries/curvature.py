@@ -9,10 +9,14 @@
 #  Programmer: Hank Childs
 #  Date:       May 16, 2006
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 DefineScalarExpression("curvature", "mean_curvature(quadmesh3d)") 
 AddPlot("Pseudocolor", "curvature")
 AddOperator("Isosurface")

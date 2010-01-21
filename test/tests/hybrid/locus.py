@@ -14,6 +14,9 @@
 #    Kathleen Bonnell, Thu Jul 14 10:28:41 PDT 2005
 #    Save tmp.ultra to 'current' directory.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
+#
 #    Jeremy Meredith, Wed Jan 20 12:50:34 EST 2010
 #    Added src/lib to python path so we can find the visit writer module.
 #
@@ -27,7 +30,7 @@ import visit_writer
 
 # BEGIN USER MODIFIABLE SECTION
 
-database = "../data/silo_hdf5_test_data/globe.silo"
+database = "../data/silo_%s_test_data/globe.silo"%SILO_MODE
 origin = (0,0,0)
 radius = 10 
 variable = "recenter(t) + 10*u"

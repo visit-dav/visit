@@ -14,12 +14,14 @@
 #
 #  Modifications:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 # Test 2D Case
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -48,7 +50,7 @@ Test("ops_dualmesh_mesh_plot_2d_02")
 DeleteAllPlots()
 
 # Test 3D Case
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 view = GetView3D()
 view.viewNormal = (-0.5, 0.5, 0.7172)

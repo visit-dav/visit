@@ -40,6 +40,8 @@
 #    Brad Whitlock, Thu Mar 15 11:31:26 PDT 2007
 #    Test that the bindings for 2D,3D views can still interpolate.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -51,7 +53,7 @@ v.viewNormal = (-0.5, 0.707107, 0.5)
 v.viewUp = (0.5, 0.707107, -0.5)
 SetView3D(v)
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -61,7 +63,7 @@ DeleteAllPlots()
 
 # Create a psuedocolor plot and test various degenerate 2d views.
 TestSection("Test degenerate 2D views")
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -125,7 +127,7 @@ DeleteAllPlots()
 # Create a pseudocolor and mesh plot and zoom in on a sharp edge to
 # verify that the mesh lines are not bleeding through the surface.
 TestSection("Test zoom in on mesh lines")
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "u")
 AddPlot("Mesh", "mesh1")
@@ -185,7 +187,7 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 AddOperator("Clip")
 DrawPlots()
@@ -194,7 +196,7 @@ Test("view_14")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "p")
 DrawPlots()
 Test("view_15")
@@ -204,7 +206,7 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
 scale = TransformAttributes()
@@ -277,7 +279,7 @@ DeleteAllPlots()
 # ability to interpolate the view.
 #
 TestSection("Test interpolation of View3DAttributes")
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "speed")
 DrawPlots()
 

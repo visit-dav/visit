@@ -15,11 +15,13 @@
 #    The name of the mesh quality variables for ucd3d changed, since there are
 #    now multiple meshes in that file.  Use the new names.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "mesh_quality/ucdmesh3d/volume")
 DrawPlots()
 
@@ -43,7 +45,7 @@ Test("mesh_quality_02")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/tire.silo")
+OpenDatabase("../data/silo_%s_test_data/tire.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "mesh_quality/aspect")
 DrawPlots()
 v = View3DAttributes()

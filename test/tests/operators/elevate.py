@@ -29,10 +29,12 @@
 #    Hank Childs, Wed Jan 16 17:26:03 PST 2008
 #    Add testing for the "zeroFlag".
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 
 #One zonal variable
 AddPlot("Pseudocolor", "u")
@@ -89,7 +91,7 @@ DrawPlots()
 Test("elevate08")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
 AddOperator("Elevate")
@@ -99,7 +101,7 @@ Test("elevate09")
 # Testing expressions.  Test that macro expressions work as secondary
 # variables ('6768).
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 DefineScalarExpression("vv", "hgslice+polar_radius(Mesh2D)")
 AddPlot("Pseudocolor", "hgslice")
 AddOperator("Elevate")
@@ -110,7 +112,7 @@ Test("elevate10")
 
 # Filled boundary with recentered expression
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 DefineScalarExpression("d2", "recenter(d)")
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Elevate")
@@ -121,7 +123,7 @@ Test("elevate11")
 
 # Boundary plots that are elevated by zero height (no variable). '8346.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
+OpenDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
 AddPlot("Boundary", "mat1")
 AddOperator("Elevate")
 e = ElevateAttributes()

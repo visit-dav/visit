@@ -37,12 +37,15 @@
 #
 #    Mark C. Miller, Wed Jan 21 10:00:10 PST 2009
 #    Removed silly comment regarding global annotation object 'a'
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 def TestCurve():
     TestSection("Mesh plot of a 3D curvilinear mesh")
-    OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
     AddPlot("Mesh", "curvmesh3d")
     DrawPlots()    
 
@@ -77,7 +80,7 @@ def TestCurve():
 
 def TestPointMesh():
     TestSection("Mesh plot of a point mesh")
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "PointVar")
     p = PseudocolorAttributes()
     p.pointType = p.Box
@@ -112,7 +115,7 @@ def TestPointMesh():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/noise2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise2d.silo"%SILO_MODE)
     AddPlot("Mesh", "PointMesh")
     ResetView()
     DrawPlots()
@@ -132,7 +135,7 @@ def TestPointMesh():
 
 def TestGlobe():
     TestSection("Mesh plot of a 3D unstructured mesh")
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Mesh", "mesh1")
     DrawPlots()
     
@@ -185,7 +188,7 @@ def TestGlobe():
 
 def TestRect3d():
     TestSection("Mesh plot of a 3D rectilinear mesh")
-    OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.opaqueMode = m.Auto
@@ -224,7 +227,7 @@ def TestAutoOpaqueFlag():
     TestSection("Testing Mesh plot's opaque flag")
 
     # Set up a mesh plot with the auto opaque flag.
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.opaqueMode = m.Auto

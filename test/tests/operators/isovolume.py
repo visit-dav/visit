@@ -21,10 +21,12 @@
 #    Added test for isovolumes of poly-data where the poly-data is totally
 #    within the data range. ['5640]
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()
@@ -68,7 +70,7 @@ DeleteAllPlots()
 # Contour lines by one variable, isovolumeing by another.  Multi-block,
 # curvilinear, 2D.
 #
-OpenDatabase("../data/silo_hdf5_test_data/multi_curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
 AddPlot("Contour", "u")
 DrawPlots()
 
@@ -103,7 +105,7 @@ DeleteAllPlots()
 # Mesh plot and PC plot, both isovolumeed by the same variable, criteria.
 # Multi-block, rectilinear, 3D.
 #
-OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
 
 isovol.lbound = 0.4
 isovol.ubound = 1.0
@@ -122,7 +124,7 @@ Test("ops_isovol05")
 # Test that we can slice poly-data correctly.
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 isovol.lbound = -1.0
 isovol.ubound = 1.0

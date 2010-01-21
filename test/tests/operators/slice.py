@@ -66,10 +66,12 @@
 #    Hank Childs, Sat Jan 27 12:45:03 PST 2007
 #    Added a test for slicing 1xJxK and Ix1xK meshes.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 # Test 1 -- a slice through a point
 AddPlot("Pseudocolor", "d")
@@ -194,7 +196,7 @@ Test("ops_Slice09")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/sid97.silo")
+OpenDatabase("../data/silo_%s_test_data/sid97.silo"%SILO_MODE)
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Slice")
 atts = SliceAttributes()
@@ -210,7 +212,7 @@ Test("ops_Slice10")
 DeleteAllPlots()
 
 
-OpenDatabase("../data/silo_hdf5_test_data/tire.silo")
+OpenDatabase("../data/silo_%s_test_data/tire.silo"%SILO_MODE)
 AddPlot("Subset", "domains")
 AddOperator("Slice")
 atts.originType = atts.Zone
@@ -239,7 +241,7 @@ Test("ops_Slice13")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
 atts.originType = atts.Zone
@@ -253,7 +255,7 @@ Test("ops_Slice14")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Slice")
 atts.originType = atts.Zone
@@ -292,7 +294,7 @@ DeleteAllPlots()
 # Test that we can slice point meshes.  The points must be exactly on the
 # plane (or at least within some tolerance).  To guarantee the point positions,
 # take a 2D plot and put it into 3D.  Then slice it.
-OpenDatabase("../data/silo_hdf5_test_data/noise2d.silo")
+OpenDatabase("../data/silo_%s_test_data/noise2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "PointVar")
 pc_atts = PseudocolorAttributes()
 pc_atts.pointType = pc_atts.Box
@@ -314,7 +316,7 @@ DrawPlots()
 Test("ops_Slice19")
 
 DeleteAllPlots()
-ActivateDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+ActivateDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 # Test 1 -- a slice through a point
 AddPlot("Pseudocolor", "d")
@@ -381,7 +383,7 @@ Test("ops_Slice27")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "PointVar")
 pc_atts.pointSize = 1.0
 SetPlotOptions(pc_atts)
@@ -400,7 +402,7 @@ Test("ops_Slice28")
 # First, test slice by a zone with a boundary plot where the zone is along
 # a material boundary.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Boundary", "mat1")
 AddOperator("Slice")
 slice = SliceAttributes()
@@ -421,7 +423,7 @@ DeleteAllPlots()
 
 # Test what happens when the up axis is not orthogonal to the normal.
 # Start off with the two being orthogonal, though.
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "hardyglobal")
 AddOperator("Slice")
 slice = SliceAttributes()
@@ -443,7 +445,7 @@ Test("ops_Slice32")
 # through a zone and then change the time state.
 DeleteAllPlots()
 ResetView()
-OpenDatabase("../data/wave*.silo database")
+OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
 
 AddPlot("Pseudocolor", "pressure")
 AddOperator("Slice")
@@ -462,7 +464,7 @@ Test("ops_Slice33")
 
 DeleteAllPlots()
 ResetView()
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d_dup")
 AddOperator("Slice")
 atts = SliceAttributes()
@@ -478,7 +480,7 @@ DrawPlots()
 Test("ops_Slice34")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("IndexSelect")
 iatts = IndexSelectAttributes()

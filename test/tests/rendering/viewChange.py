@@ -31,6 +31,8 @@
 #    Kathleen Bonnell, Tue Mar  3 13:20:57 PST 2009
 #    Added testing for log-scaling of curves and 2d plots.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -55,7 +57,7 @@ def InitAnnotation():
 
 def TestViewChangeSliceFlip():
     TestSection("Testing view changes with slice flip")
-    OpenDatabase("../data/silo_hdf5_test_data/wave0000.silo")
+    OpenDatabase("../data/silo_%s_test_data/wave0000.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     AddOperator("Slice")
     slice = SliceAttributes()
@@ -75,7 +77,7 @@ def TestViewChangeSliceFlip():
 
 def TestViewChangeFullFrame():
     TestSection("Testing view changes with fullframe")
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     # We want to capture the image after toggling full frame mode, 
@@ -117,7 +119,7 @@ def TestViewChangeFullFrame():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Histogram", "u")
     DrawPlots()
     ResetView()
@@ -136,7 +138,7 @@ def TestViewChangeFullFrame():
 
 def TestViewChangeFullFrameWithGlyphs():
     TestSection("Testing view changes with fullframe and glyphed plots")
-    OpenDatabase("../data/silo_hdf5_test_data/fullframe.silo")
+    OpenDatabase("../data/silo_%s_test_data/fullframe.silo"%SILO_MODE)
     AddPlot("Mesh", "fullframe")
     DrawPlots()
     ResetView()
@@ -189,7 +191,7 @@ def TestViewChangeFullFrameWithGlyphs():
 def TestViewChangeLogScaling2D():
     TestSection("Testing view changes with log scaling of 2D plots")
 
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     ResetView()

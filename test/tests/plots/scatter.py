@@ -18,6 +18,8 @@
 #    a cube and none of the cubes from the different domains will match,
 #    causing an incorrect picture.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Set up some annotation settings. Turn off tick marks but keep axes
@@ -45,7 +47,7 @@ TestSection("Test plot options")
 #
 # Set up a simple 2 variable scatter plot.
 #
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 AddPlot("Scatter", "hardyglobal")
 s = ScatterAttributes()
 s.var2 = "shepardglobal"
@@ -200,7 +202,7 @@ DeleteActivePlots()
 # Try a Scatter plot with multi-block data
 #
 TestSection("Multiblock and scale to cube")
-OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
 AddPlot("Scatter", "d")
 s = ScatterAttributes()
 s.var2 = "u"
@@ -286,7 +288,7 @@ DeleteActivePlots()
 # color and the extents are right.
 #
 TestSection("Set min and max values, make sure colors and extents are right")
-OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 AddPlot("Scatter", "d")
 s = ScatterAttributes()
 s.var2 = "p"
@@ -319,7 +321,7 @@ SetPlotOptions(s)
 Test("scatter_23")
 
 DeleteActivePlots()
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 AddPlot("Scatter", "hardyglobal")
 s = ScatterAttributes()
 s.var2 = "shepardglobal"

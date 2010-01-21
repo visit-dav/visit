@@ -14,6 +14,8 @@
 #    the new behavior is to separate plots into different files (as they
 #    typically have different variables and geometry types).
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 swa=SaveWindowAttributes()
 swa.family = 0
@@ -110,7 +112,7 @@ for f in CFormats:
 TestSection("Image Formats via Screen Capture")
 DeleteAllPlots()
 CloseDatabase("../data/curve_test_data/c062.curve")
-OpenDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE)
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -126,8 +128,8 @@ swa.screenCapture = 1
 
 TestSection("Geometry Formats")
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo")
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+CloseDatabase("../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "dx")
 DrawPlots()
 for f in GFormats:

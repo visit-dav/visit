@@ -28,10 +28,12 @@
 #    Kathleen Bonnell, Thu Sep  4 11:10:11 PDT 2003
 #    Change the way MeshPlot's opaque mode is set (now an enum, not a bool).
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "d")
 pc=PseudocolorAttributes()

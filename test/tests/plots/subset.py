@@ -16,10 +16,12 @@
 #    Hank Childs, Tue Nov 15 07:28:43 PST 2005
 #    Added test for subset plus macro expression.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
 
 AddPlot("Subset", "domains")
 DrawPlots()

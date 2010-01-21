@@ -16,10 +16,13 @@
 #  Modifications
 #    Mark C. Miller, Tue Oct 20 16:30:31 PDT 2009
 #    Added tests for fully arbitrary mesh
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/poly3d.silo")
+OpenDatabase("../data/silo_%s_test_data/poly3d.silo"%SILO_MODE)
 
 AddPlot("Mesh", "ucdmesh3d")
 DrawPlots()
@@ -53,7 +56,7 @@ DrawPlots()
 Test("arbpoly_03")
 
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/poly3d.silo")
+CloseDatabase("../data/silo_%s_test_data/poly3d.silo"%SILO_MODE)
 
 OpenDatabase("../data/overlink_test_data/ev_0_0_100/OvlTop.silo")
 AddPlot("Mesh","MMESH")

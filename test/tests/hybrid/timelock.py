@@ -23,6 +23,8 @@
 #    in the CleanSlate function to make sure that time locking is off. That
 #    was what caused the incorrect test case image.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 import os
@@ -171,16 +173,16 @@ def test1(testindex):
     SetCloneWindowOnFirstRef(1)
 
     # Copy wave.visit to this directory a few times.
-    f = open("../data/silo_hdf5_test_data/wave.visit", "rt")
+    f = open("../data/silo_%s_test_data/wave.visit"%SILO_MODE, "rt")
     lines = f.readlines()
     f.close()
     f0 = open("wave.visit","wt")
     f1 = open("wave1.visit","wt")
     f2 = open("wave2.visit","wt")
     for line in lines:
-        f0.write("../data/" + line)
-        f1.write("../data/" + line)
-        f2.write("../data/" + line)
+        f0.write("../data/silo_%s_test_data/"%SILO_MODE + line)
+        f1.write("../data/silo_%s_test_data/"%SILO_MODE + line)
+        f2.write("../data/silo_%s_test_data/"%SILO_MODE + line)
     f0.close()
     f1.close()
     f2.close()
@@ -307,7 +309,7 @@ def test3(testindex):
     # Turn on "CloneWindowOnFirstRef"
     SetCloneWindowOnFirstRef(1)
 
-    dbs = ("../data/silo_hdf5_test_data/wave.visit", "../data/silo_hdf5_test_data/wave_tv.visit")
+    dbs = ("../data/silo_%s_test_data/wave.visit"%SILO_MODE, "../data/silo_%s_test_data/wave_tv.visit"%SILO_MODE)
     OpenDatabase(dbs[0])
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()

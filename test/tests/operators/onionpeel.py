@@ -39,10 +39,12 @@
 #    Kathleen Bonnell, Thu Sep 22 11:59:42 PDT 2005 
 #    Added TestBoundary. 
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def TestBigSil():
-    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+    OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
 
     AddPlot("Subset", "domains")
     AddPlot("Subset", "blocks")
@@ -82,7 +84,7 @@ def TestBigSil():
 def TestUCD():
     # This is to test that onion peel will work (by default)
     # on the first "On" set -- in this case "domain4".
-    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "d")
     domains = ("domain4", "domain5", "domain6")
     TurnDomainsOff()
@@ -98,7 +100,7 @@ def TestUCD():
 def TestGlobalZoneId():
     # This is to test that onion peel will work when 
     # a global cell number is specified. 
-    OpenDatabase("../data/silo_hdf5_test_data/global_node.silo")
+    OpenDatabase("../data/silo_%s_test_data/global_node.silo"%SILO_MODE)
     TurnDomainsOn()
     AddPlot("Subset", "domains")
     s = SubsetAttributes()
@@ -130,7 +132,7 @@ def TestGlobalZoneId():
     DeleteAllPlots()
 
 def TestMatSelect():
-    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
     AddPlot("FilledBoundary", "mat1")
     AddOperator("OnionPeel")
     op = OnionPeelAttributes()
@@ -147,7 +149,7 @@ def TestMatSelect():
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     TurnMaterialsOff("4")
     AddOperator("OnionPeel")
@@ -160,7 +162,7 @@ def TestMatSelect():
     DeleteAllPlots()
 
 def TestNodeId():
-    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
     AddPlot("Mesh", "ucdmesh2d")
     AddPlot("Pseudocolor", "d")
     AddOperator("OnionPeel")
@@ -181,7 +183,7 @@ def TestNodeId():
     Test("ops_onionpeel_12")
 
     DeleteAllPlots()
-    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("Pseudocolor", "d")
     SetActivePlots((0, 1))
@@ -204,7 +206,7 @@ def TestNodeId():
 
 def TestFilledBoundary():
     # need to test index on high-side
-    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("FilledBoundary", "mat1")
     SetActivePlots((0,1))
@@ -225,7 +227,7 @@ def TestFilledBoundary():
     Test("ops_onionpeel_16")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Mesh", "mesh1")
     AddPlot("FilledBoundary", "mat1")
     SetActivePlots((0,1))
@@ -249,7 +251,7 @@ def TestFilledBoundary():
     Test("ops_onionpeel_19")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
     AddPlot("Mesh", "curvmesh3d")
     AddPlot("FilledBoundary", "mat1")
     SetActivePlots((0, 1))
@@ -281,7 +283,7 @@ def TestFilledBoundary():
 
 def TestBoundary():
     # need to test index on high-side
-    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("Boundary", "mat1")
     SetActivePlots((0,1))
@@ -302,7 +304,7 @@ def TestBoundary():
     Test("ops_onionpeel_22")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Mesh", "mesh1")
     AddPlot("Boundary", "mat1")
     SetActivePlots((0,1))
@@ -331,7 +333,7 @@ def TestBoundary():
     Test("ops_onionpeel_25")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
     AddPlot("Mesh", "curvmesh3d")
     AddPlot("Boundary", "mat1")
     SetActivePlots((0, 1))

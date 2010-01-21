@@ -52,13 +52,15 @@
 #    Kathleen Bonnell, Tue Oct 6 11:36:41 PDT 2009
 #    Added test for constant variable legend. 
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Test the Subset plot with some subsets turned off, and single-color on.
 # This test ensures that correct labels are applied to the legend.
 def TestLevelsLegend(a):
     TestSection("Test levels legend")
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
  
     AddPlot("Subset", "mat1")
     TurnMaterialsOff(("2", "4"))
@@ -95,7 +97,7 @@ def TestLevelsLegend(a):
 #
 def TestSizeAndPosition(a):
     TestSection("Test legend default sizing and positioning")
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
     AddPlot("Boundary", "mat1")
     bndAtts = BoundaryAttributes()
@@ -122,14 +124,14 @@ def TestSizeAndPosition(a):
     Test("legends_06")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
     AddPlot("Volume", "u")
     DrawPlots()
     Test("legends_07")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 
     AddPlot("Contour", "d")
     contourAtts = ContourAttributes()
@@ -202,7 +204,7 @@ def TestCurveLegend(a):
 #
 def TestLegendProperties(a):
     TestSection("Test setting legend properties")
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
     v0 = View3DAttributes()
@@ -295,7 +297,7 @@ def TestLegendProperties(a):
 #
 def TestLegendCopying(a):
     TestSection("Test legend copying")
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -360,7 +362,7 @@ def TestLegendCopying(a):
 
 def TestLegendTics():
     TestSection("Test setting legend tics")
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 

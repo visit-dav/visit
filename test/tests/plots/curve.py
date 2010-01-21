@@ -16,6 +16,8 @@
 #    Mark C. Miller, Thu Jun 21 11:05:58 PDT 2007
 #    Added tests for overlaying curves on 2D plots
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def InitAnnotations(): 
@@ -84,7 +86,7 @@ def TestOverlayCurves():
     TestSection("Overlay curves on 2D plots")
 
     # put up some 2D plots
-    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor","d")    # id=0
     AddPlot("Mesh","ucdmesh2d")   # id=1
     SetActivePlots((1))
@@ -141,7 +143,7 @@ def TestOverlayCurves():
     HideActivePlots()
 
     DeleteAllPlots()
-    CloseDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
+    CloseDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
     CloseDatabase("../data/curve_test_data/ol_curveA.curve")
     CloseDatabase("../data/curve_test_data/ol_curveB.curve")
     CloseDatabase("../data/curve_test_data/ol_curveC.curve")

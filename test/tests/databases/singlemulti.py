@@ -18,6 +18,8 @@
 #
 #  Modifications:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 import string
@@ -41,7 +43,7 @@ def TestWindowInformation(testname):
 TurnOnAllAnnotations()
 
 # Create a Pseudocolor plot of wave by opening it up at a late time state.
-OpenDatabase("../data/silo_hdf5_test_data/wave*.silo database", 20)
+OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE, 20)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 
@@ -66,7 +68,7 @@ Test("singlemulti00")
 TestWindowInformation("singlemulti01")
 
 # Create a Pseudocolor plot of curv3d, a single time state database.
-OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
 t = TransformAttributes()

@@ -11,6 +11,10 @@
 #  Programmer: Hank Childs
 #  Date:       July 22, 2003
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -29,7 +33,7 @@ SetView3D(view)
 # The volume plot does not need ghost zones, so this will create one
 # set of MIRs.
 #
-OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
 AddPlot("Volume", "dist")
 sil = SILRestriction()
 sets = sil.SetsInCategory("mat")

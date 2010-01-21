@@ -8,10 +8,14 @@
 #  Programmer: Hank Childs
 #  Date:       March 3, 2006
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "dist")
 # By default, we won't create ghost zones, because we don't need them
 # for this case.  Do something that makes us need them.
@@ -28,7 +32,7 @@ SetPlotSILRestriction(sil)
 Test("ops_inverse_ghost_zone02")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("InverseGhostZone")
 DrawPlots()

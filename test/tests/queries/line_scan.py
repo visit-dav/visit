@@ -17,6 +17,8 @@
 #    Dave Bremer, Fri Sep  8 11:44:22 PDT 2006
 #    Added testing for the line scan transform.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 import os
@@ -185,8 +187,8 @@ def TestOne(index, filename, varname, meshname, limit):
     DeleteAllPlots()
 
 
-TestOne(0, "../data/silo_hdf5_test_data/rect2d.silo", "d", "quadmesh2d", 0.5)
-TestOne(1, "../data/silo_hdf5_test_data/multi_rect2d.silo", "d", "mesh1", 0.5)
+TestOne(0, "../data/silo_%s_test_data/rect2d.silo"%SILO_MODE, "d", "quadmesh2d", 0.5)
+TestOne(1, "../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE, "d", "mesh1", 0.5)
 TestOne(2, "../data/KullLite_test_data/T.pdb", "mesh_quality/volume", "mesh", 0.2)
 TestOne(3, "../data/KullLite_test_data/tagtest_rz_3.pdb", "mesh_quality/mesh/area", "mesh", 4.0)
 

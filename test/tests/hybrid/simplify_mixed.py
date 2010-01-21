@@ -15,6 +15,8 @@
 #    Hank Childs, Fri Sep 28 12:48:54 PDT 2007
 #    Add testing for mixvars with simplify heavily mixed ['8082].
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -56,7 +58,7 @@ Test("simplify_mixed03")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
+OpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
 
 m.forceMIR = 1
 SetMaterialAttributes(m)
@@ -69,12 +71,12 @@ Test("simplify_mixed04")
 
 m.maxMaterialsPerZone = 2
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
+ReOpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
 Test("simplify_mixed05")
 
 m.maxMaterialsPerZone = 3
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
+ReOpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
 Test("simplify_mixed06")
 
 Exit()

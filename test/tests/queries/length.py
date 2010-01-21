@@ -14,6 +14,8 @@
 #    Hank Childs, Mon Nov 27 09:27:06 PST 2006
 #    Forgot to remove annotations.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 a = AnnotationAttributes()
@@ -22,7 +24,7 @@ a.axesFlag2D = 1
 SetAnnotationAttributes(a)
 
 # Test that we can do an l2norm of a degenerate ultra file.
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Contour", "u")
 DrawPlots()
 Query("Total Length")

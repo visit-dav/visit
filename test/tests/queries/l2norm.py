@@ -9,6 +9,10 @@
 #  Programmer: Hank Childs
 #  Date:       March 15, 2005
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
@@ -22,14 +26,14 @@ text = GetQueryOutputString()
 TestText("l2norm_01", text)
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 DefineScalarExpression("d_mod", "d+0.4*coord(quadmesh2d)[1]")
 AddWindow()
 SetActiveWindow(2)
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 DeleteAllPlots()
 AddPlot("Pseudocolor", "d_mod")
 DrawPlots()

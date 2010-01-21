@@ -16,6 +16,8 @@
 #
 #  Modifications:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 #
@@ -37,7 +39,7 @@ def GetCloseString(db):
 TurnOnAllAnnotations()
 
 # Open a database and create a plot
-db = "../data/silo_hdf5_test_data/wave*.silo database"
+db = "../data/silo_%s_test_data/wave*.silo database"%SILO_MODE
 OpenDatabase(db, 32)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
@@ -76,7 +78,7 @@ TestText("closedatabase06", testString)
 
 
 # Try adding some databases
-dbs = ("../data/silo_hdf5_test_data/wave.visit", "../data/silo_hdf5_test_data/globe.silo", "../data/silo_hdf5_test_data/curv3d.silo")
+dbs = ("../data/silo_%s_test_data/wave.visit"%SILO_MODE, "../data/silo_%s_test_data/globe.silo"%SILO_MODE, "../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 for db in dbs:
     OpenDatabase(db)
 

@@ -59,6 +59,8 @@
 #    I changed the call to GetOutputArray. It's no longer a built-in function
 #    in the CLI.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def GetOutputArray(plotID = -1, winID = -1):
@@ -100,7 +102,7 @@ def InitAnnotation():
     SetAnnotationAttributes(a)
 
 def TestLineout2D(time, suffix):
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -162,7 +164,7 @@ def TestLineout2D(time, suffix):
     ResetLineoutColor()
 
 def TestLineout3D(time, suffix):
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -206,7 +208,7 @@ def TestLineout3D(time, suffix):
     ResetLineoutColor()
 
 def TestMultiVarLineout2D(time, suffix):
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -338,7 +340,7 @@ def TestDynamicLineout(time, suffix):
     if (time == 1):
         return
     #window 1
-    OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
@@ -462,7 +464,7 @@ def TestDynamicLineout(time, suffix):
 def TestDynamic2():
     # VisIt00006006 -- ensure  that 'ClearRefLines' will 'disconnect' the lineout 
     # from its originating plot, and won't update when orig plot changes time.
-    OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()

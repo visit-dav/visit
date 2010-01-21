@@ -12,6 +12,10 @@
 #  Programmer: Hank Childs
 #  Date:       October 5, 2004
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -26,7 +30,7 @@ view.farPlane = 1.73205
 view.perspective = 1
 SetView3D(view)
 
-OpenDatabase("../data/silo_hdf5_test_data/global_node.silo")
+OpenDatabase("../data/silo_%s_test_data/global_node.silo"%SILO_MODE)
 AddPlot("Subset", "mat")
 DrawPlots()
 

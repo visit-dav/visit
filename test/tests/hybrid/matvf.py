@@ -29,11 +29,13 @@
 #    Cyrus Harrison, Wed Apr  9 11:17:22 PDT 2008
 #    Added new test for post ghost info.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 
 DefineScalarExpression("m1", 'matvf(mat1, ["1", "3"])')
@@ -70,7 +72,7 @@ Test("matvf_03")
 DeleteAllPlots()
 
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "m1")
 AddOperator("Threshold")
 DrawPlots()
@@ -97,7 +99,7 @@ Test("matvf_05")
 DeleteAllPlots()
 
 DefineScalarExpression("mbs", 'matvf(mat, 1)')
-OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "mbs")
 t = ThresholdAttributes()
 t.lowerBounds = (0.5)
@@ -138,7 +140,7 @@ Test("matvf_07")
 # Now test the materror expression.
 DeleteAllPlots()
 DefineScalarExpression("materror1", 'materror(mat1, 1)')
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "materror1")
 sil = SILRestriction()
 sil.TurnOnAll()
@@ -167,13 +169,13 @@ AddOperator("Threshold")
 Test("matvf_09")
 
 # Now test that it can calculate "volume fractions" using areas.
-ReplaceDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+ReplaceDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 RemoveLastOperator()
 Test("matvf_10")
 
 
-CloseDatabase("../data/silo_hdf5_test_data/rect2d.silo")
-OpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
+CloseDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
 
 # tests for matvf w/ ghost zones
 
@@ -213,8 +215,8 @@ SetPlotOptions(atts)
 DrawPlots()
 Test("matvf_post_ghost_3")
 
-CloseDatabase("../data/silo_hdf5_test_data/thinplane.silo")
-OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+CloseDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
 
 # test for gradient w/ matvf, to check if post ghosts were correctly 
 # requested. 

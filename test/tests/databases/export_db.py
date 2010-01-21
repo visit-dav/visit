@@ -25,11 +25,14 @@
 #
 #    Mark C. Miller Fri Aug  8 09:11:44 PDT 2008
 #    Fixed typo of missing '()' on call to DeleteAllPlots
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "t")
 DrawPlots()
 
@@ -57,8 +60,8 @@ DrawPlots()
 Test("export_db_02")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
-DefineScalarExpression("cmfe", "conn_cmfe(coord(<../data/silo_hdf5_test_data/wave0020.silo:quadmesh>)[1], quadmesh)")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+DefineScalarExpression("cmfe", "conn_cmfe(coord(<../data/silo_%s_test_data/wave0020.silo:quadmesh>)[1], quadmesh)"%SILO_MODE)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 e.variables = ("cmfe")

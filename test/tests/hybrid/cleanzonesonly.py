@@ -10,6 +10,10 @@
 #  Programmer: Jeremy Meredith
 #  Date:       July  6, 2004
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation but plot legends
@@ -22,7 +26,7 @@ SetAnnotationAttributes(a)
 #    multicolor mode -- normal plot, then CZO on, then CZO off
 # -----------------------------------------------------------------------------
 TestSection("Multicolor mode")
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 
 AddPlot("FilledBoundary", "mat1");
 DrawPlots()

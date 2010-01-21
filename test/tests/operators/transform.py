@@ -42,13 +42,15 @@
 #    Made transform04 test be explicit about the coord sys it chooses.
 #    Made transform05 use Cyl instead of Spher coords; it's a 2D problem!
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "u")
 clip = ClipAttributes()
@@ -84,7 +86,7 @@ DrawPlots()
 Test("ops_transform01")
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 AddPlot("Mesh", "quadmesh3d")
 m = MeshAttributes()
@@ -134,7 +136,7 @@ Test("ops_transform04")
 
 # '6699
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("Transform")
 trans.transformType = trans.Coordinate
@@ -176,7 +178,7 @@ Test("ops_transform08")
 
 # Test linear transform
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
 

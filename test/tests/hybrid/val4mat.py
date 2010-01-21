@@ -12,10 +12,14 @@
 #  Programmer: Cyrus Harrison
 #  Date:       Tuesday 12, 2008
 #
+#  Modifiations:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/thinplane.silo")
+OpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
 atts = PseudocolorAttributes()
 atts.minFlag = 1
 atts.min = 0.0
