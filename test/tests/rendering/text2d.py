@@ -14,6 +14,8 @@
 #
 #  Modifications:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Set up the annotation colors, etc.
@@ -25,7 +27,7 @@ a.backgroundMode = a.Solid
 SetAnnotationAttributes(a)
 
 # Open up the database and do a plot.
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 

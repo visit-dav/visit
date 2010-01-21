@@ -15,6 +15,8 @@
 #    Kathleen Bonnell, Thu Aug 28 14:34:57 PDT 2003
 #    Remove compound var name from subset plots.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -29,7 +31,7 @@ view.farPlane = 1.73205
 view.perspective = 1
 SetView3D(view)
 
-OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
 AddPlot("Subset", "mat")
 DrawPlots()
 

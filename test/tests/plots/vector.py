@@ -19,11 +19,13 @@
 #    Jeremy Meredith, Tue Jul  8 12:54:58 EDT 2008
 #    Added test for new limit to original cells/nodes only.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Vector", "vel")
 vector_atts = VectorAttributes()
 vector_atts.autoScale = 0
@@ -120,7 +122,7 @@ Test("vector_11")
 #
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 DefineVectorExpression("v1", "{ vel[0]*coord(quadmesh3d)[0], vel[1]*coord(quadmesh3d)[1], vel[2]*coord(quadmesh3d)[2] }")
 DefineScalarExpression("mag2", "magnitude(v1)")
@@ -189,7 +191,7 @@ Test("vector_15")
 # Test the "limit vectors to original node/cell" option
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 DefineVectorExpression("cvel","recenter(vel)")
 AddPlot("Vector", "vel", 1, 0)
 AddPlot("Boundary", "mat1", 1, 0)

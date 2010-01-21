@@ -30,6 +30,8 @@
 #    Added code to make sure that the dictionary keys in one of the tests
 #    are always sorted.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 #
@@ -168,7 +170,7 @@ DeleteAllPlots()
 OpenDatabase(dbs[0])
 SetTimeSliderState(0)
 TestWindowInformation("timesliders23")
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 ResetView()
@@ -194,14 +196,14 @@ TestWindowInformation("timesliders31")
 # Make sure that when we replace an MT database with an ST database, we get
 # the right time sliders.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/wave*.silo database", 30)
+OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE, 30)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 SetTheView()
 Test("timesliders32")
 TestWindowInformation("timesliders33")
 # Replace with an ST database
-ReplaceDatabase("../data/silo_hdf5_test_data/wave0000.silo")
+ReplaceDatabase("../data/silo_%s_test_data/wave0000.silo"%SILO_MODE)
 Test("timesliders34")
 TestWindowInformation("timesliders35")
 
@@ -212,9 +214,9 @@ DeleteAllPlots()
 for source in GetGlobalAttributes().sources:
     CloseDatabase(source)
 
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
 AddPlot("Pseudocolor", "pressure")
-OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "p")
 DrawPlots()
 

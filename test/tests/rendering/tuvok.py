@@ -10,6 +10,8 @@
 #
 # Modifications:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 from __future__ import with_statement
 
@@ -42,7 +44,7 @@ tuvok.rendererType = tex3d.Tuvok
 # We'll render twice: once via tex3d.  We're pretty particular about the OpenGL
 # state in Tuvok, and if we're not careful we'll set something that one of the
 # other plots isn't expecting.
-with Dataset("../data/silo_hdf5_test_data/rect3d.silo", "u") as r3d:
+with Dataset("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE, "u") as r3d:
   AddPlot("Volume", r3d.variable())
 
   SetPlotOptions(tex3d)
@@ -53,7 +55,7 @@ with Dataset("../data/silo_hdf5_test_data/rect3d.silo", "u") as r3d:
   DrawPlots()
   Test(tid.next())
 
-with Dataset("../data/silo_hdf5_test_data/noise.silo", "hardyglobal") as noise:
+with Dataset("../data/silo_%s_test_data/noise.silo"%SILO_MODE, "hardyglobal") as noise:
   AddPlot("Volume", noise.variable())
   SetPlotOptions(tex3d)
   DrawPlots()

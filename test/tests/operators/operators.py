@@ -31,10 +31,12 @@
 #    Kathleen Bonnell, Thu Apr 29 07:40:58 PDT 2004 
 #    Default slice atts have changed, update accordingly. 
 #    
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()

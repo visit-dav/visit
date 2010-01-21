@@ -13,12 +13,16 @@
 #  Programmer: Mark C. Miller 
 #  Date:       August 7, 2007 
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 #
 # Create a database of compressed VTK files in a .visit file
 #
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor","d")
 DrawPlots()
 e = ExportDBAttributes()
@@ -27,7 +31,7 @@ e.filename = "multi_ucd"
 e.dirname = "../data"
 ExportDatabase(e)
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 
 cwd = os.getcwd()
 

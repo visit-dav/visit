@@ -27,6 +27,8 @@
 #    Kathleen Bonnell, Mon Jan 23 21:02:56 PST 2006 
 #    Added tests '08-10, testing auto-opaque mesh and sr mode.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # sleep is needed to allow viewer to complete update of window information
@@ -47,7 +49,7 @@ CloseComputeEngine()
 # if it fails, the OpenDatabase will start a serial engine
 haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Mesh", "mesh1")
 silr=SILRestriction()
 silr.TurnOffAll()
@@ -232,7 +234,7 @@ ra.scalableActivationMode = ra.Auto
 ra.scalableAutoThreshold = 14000 
 SetRenderingAttributes(ra)
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 CheckSRMode(1)
@@ -269,7 +271,7 @@ TestText("multiWindow_SRModeHistory",srModeHistory)
 DeleteWindow()
 SetActiveWindow(1)
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 ra.scalableActivationMode = ra.Always
 SetRenderingAttributes(ra)
 AddPlot("Mesh","mesh1")
@@ -287,7 +289,7 @@ Test("scalable_07")
 DeleteAllPlots()
 
 TestSection("Testing Mesh plot's opaque flag in SR mode")
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 AddPlot("FilledBoundary", "mat1")
 AddPlot("Mesh", "curvmesh2d")
 m = MeshAttributes()
@@ -312,7 +314,7 @@ ra.scalableActivationMode = ra.Auto
 ra.scalableAutoThreshold = 30000 
 SetRenderingAttributes(ra)
 
-OpenDatabase("../data/silo_hdf5_test_data/galaxy0000.silo")
+OpenDatabase("../data/silo_%s_test_data/galaxy0000.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "vx")
 DrawPlots()
 CheckSRMode(1)
@@ -327,7 +329,7 @@ ra.stereoRendering = 1
 ra.stereoType = ra.RedBlue
 SetRenderingAttributes(ra)
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
 AddPlot("Mesh","mesh1")
 
 # make the eye separation as noticable as possible

@@ -24,6 +24,8 @@
 #    plot can do this for us, but the GUI Wizard knows to do this, and so
 #    setting visualAxisNames matches the GUI behavior more closely.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -32,7 +34,7 @@
 #
 TestSection("Test scalar collection sources")
 
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 
 # Set default plot variables
 p = ParallelCoordinatesAttributes()

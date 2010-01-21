@@ -14,11 +14,13 @@
 #    Hank Childs, Thu Sep 15 16:33:48 PDT 2005
 #    Added tests for centroids of surfaces.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
 TurnOnAllAnnotations()
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Mesh", "mesh1")
 DrawPlots()
 
@@ -67,7 +69,7 @@ TestText("centroid_06", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Mesh", "quadmesh2d")
 DrawPlots()
 
@@ -93,7 +95,7 @@ TestText("centroid_10", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 AddPlot("Mesh", "quadmesh3d")
 DrawPlots()
 
@@ -104,7 +106,7 @@ Query("Moment of Inertia")
 text = GetQueryOutputString()
 TestText("centroid_12", text)
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("Elevate")
 DrawPlots()

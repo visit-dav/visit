@@ -12,11 +12,15 @@
 #  Programmer: Hank Childs
 #  Date:       August 21, 2003
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 
 DefineScalarExpression("bigun", 'if(and(gt(nmats(mat1), 1.), gt(matvf(mat1, "4"), 0.)), d, 0.)')

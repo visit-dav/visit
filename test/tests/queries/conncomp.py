@@ -11,10 +11,12 @@
 #    Cyrus Harrison, Thu Aug 23 09:42:43 PDT 2007
 #    Turned off ghost neighbors optimization for exodus balls dataset.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo", 0)
+OpenDatabase("../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE, 0)
 DefineScalarExpression("_rand_test_2d", "rand(mesh1)")
 DefineScalarExpression("_ccl_test_2d", "conn_components(mesh1)")
 

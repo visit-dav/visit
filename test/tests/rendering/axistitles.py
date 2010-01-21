@@ -13,6 +13,8 @@
 #    Brad Whitlock, Wed Apr 2 16:44:26 PST 2008
 #    Modified the 3D test since setting the 3D font scale now actually works.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def SaveTestImage(name):
@@ -29,7 +31,7 @@ def SaveTestImage(name):
 #
 def Test2D():
     TestSection("Setting axis titles in 2D")
-    OpenDatabase("../data/silo_hdf5_test_data/noise2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -71,7 +73,7 @@ def Test2D():
 #
 def Test3D():
     TestSection("Setting axis titles in 3D")
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 

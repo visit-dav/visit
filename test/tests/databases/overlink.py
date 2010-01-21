@@ -12,6 +12,9 @@
 #
 #    Mark C. Miller, Thu Jun 18 21:43:45 PDT 2009
 #    Added TestSection() for annotation int nodelists.
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -59,7 +62,7 @@ CloseDatabase("../data/overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo")
 readOptions=GetDefaultFileOpenOptions("Silo")
 readOptions["Search For ANNOTATION_INT (!!Slow!!)"] = 1
 SetDefaultFileOpenOptions("Silo", readOptions)
-OpenDatabase("../data/silo_hdf5_test_data/multipart_multi_ucd3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor","d")
 DrawPlots()
 ResetView()
@@ -67,18 +70,18 @@ Test("overlink_05")
 
 # likewise on single domain, single file
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/multipart_multi_ucd3d.silo")
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+CloseDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor","dx")
 DrawPlots()
 ResetView()
 Test("overlink_06")
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/globe.silo")
+CloseDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
 # Ok, now lets do some real annot_int work
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/globe.silo")
+CloseDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 OpenDatabase("../data/overlink_test_data/annotInt/sweptCellTagTest.silo")
 AddPlot("Mesh","MMESH")
 DrawPlots()

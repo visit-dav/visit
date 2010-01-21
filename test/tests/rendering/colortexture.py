@@ -13,6 +13,8 @@
 #
 #  Modificatons:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def main():
@@ -22,14 +24,14 @@ def main():
     a.backgroundColor = (0, 0, 0, 255)
     SetAnnotationAttributes(a)
 
-    OpenDatabase("../data/silo_hdf5_test_data/ucd2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "d")
     AddPlot("Mesh", "ucdmesh2d")
     DrawPlots()
     Test("colortexture_00")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "speed")
     pc = PseudocolorAttributes()
     pc.colorTableName = "levels"

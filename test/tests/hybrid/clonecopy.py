@@ -17,6 +17,8 @@
 #    Brad Whitlock, Wed Mar 9 09:15:30 PDT 2005
 #    Removed deprecated functions.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Turn off annotation
@@ -45,7 +47,7 @@ a1.gradientColor2 = (0, 0, 0, 255)
 a1.backgroundMode = a1.Gradient
 
 # Set up the plots.
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
 AddPlot("Subset", "Material")
 DrawPlots()
 v = View3DAttributes()

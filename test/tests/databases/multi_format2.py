@@ -12,10 +12,14 @@
 #  engine is restarted implicitly.  This is currently skipped in parallel
 #  since an implicit engine restart does not pick up the same paralell args.
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-db = ("../data/silo_hdf5_test_data/rect2d.silo",
+db = ("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE,
       "../data/pdb_test_data/allinone00.pdb")
 
 # Create a Pseudocolor plot of Rect2d.

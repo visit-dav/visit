@@ -16,6 +16,8 @@
 #
 #  Modifications:
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def TestExpressionList(name):
@@ -37,7 +39,7 @@ DefineScalarExpression("user_defined2", "v + v")
 DefineVectorExpression("user_defined3", "{u, v, w}")
 
 # Open a database and make a plot.
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Vector", "vel")
 v = VectorAttributes()
 v.nVectors = 4000
@@ -56,7 +58,7 @@ TestExpressionList("expr2engine_01")
 
 # Open a different database. The expression list should only contain the 
 # database variables from the new database.
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 TestExpressionList("expr2engine_02")
 
 # Test that the plot from the old database, which was a plot of an expression

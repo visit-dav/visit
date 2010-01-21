@@ -14,10 +14,13 @@
 #
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Added tests for materials, variables and Matt's csg data
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/csg.silo")
+OpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
 
 mma=MeshManagementAttributes()
 mma.discretizationMode = mma.Uniform
@@ -130,7 +133,7 @@ DeleteAllPlots()
 # Now use Matt's Fusion data
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_hdf5_test_data/csg.silo")
+CloseDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
 mma.discretizationTolerance=(0.05, 0.25)
 mma.discretizationMode = mma.Adaptive
 SetMeshManagementAttributes(mma)

@@ -69,10 +69,12 @@
 #    Kathleen Bonnell, Wed Feb  8 11:08:01 PST 2006 
 #    Added QueryZR_RZ. 
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
-    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -120,7 +122,7 @@ def QueryRect2d():
     DeleteAllPlots()
 
 def QueryMultiUcd3d():
-    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -199,7 +201,7 @@ def QueryMultiUcd3d():
     DeleteAllPlots()
 
 def QueryContours():
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Contour", "hardyglobal")
     c = ContourAttributes()
     c.contourNLevels = 10
@@ -255,7 +257,7 @@ def QueryContours():
  
     DeleteAllPlots()  
 
-    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
     AddPlot("Contour", "d")
     c.contourNLevels = 10
     SetPlotOptions(c)
@@ -303,7 +305,7 @@ def QueryContours():
 
 def QueryCurv2d():
     # Testing database queries on curv2d.
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -346,7 +348,7 @@ def QueryCurv2d():
     DeleteAllPlots()
 
 def QueryCurv3d():
-    OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "p")
     DrawPlots()
 
@@ -374,7 +376,7 @@ def QueryCurv3d():
     DeleteAllPlots()
 
 def QueryGlobe():
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -467,7 +469,7 @@ def QueryGlobe():
     DeleteAllPlots()
 
 def QueryNoise():
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -539,7 +541,7 @@ def QueryNoise():
     DeleteAllPlots()
 
 def QuerySid97():
-    OpenDatabase("../data/silo_hdf5_test_data/sid97.silo")
+    OpenDatabase("../data/silo_%s_test_data/sid97.silo"%SILO_MODE)
     AddPlot("FilledBoundary", "mat1")
     DrawPlots()
 
@@ -561,7 +563,7 @@ def QuerySid97():
     DeleteAllPlots()
 
 def QueryBigSil():
-    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+    OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
 
@@ -652,7 +654,7 @@ def QuerySAMRAI():
 def QueryCurves():
     # in responses to VisIt00004449, Area between 2 curves query crashes
     # viewer if curves not from same database.
-    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -691,7 +693,7 @@ def QueryCurves():
     DeleteAllPlots()
 
 def QueryHistogram():
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     AddPlot("Histogram", "d")
     DrawPlots()
     
@@ -714,7 +716,7 @@ def QueryHistogram():
     DeleteAllPlots()   
 
 def QueryGlobalId():
-    OpenDatabase("../data/silo_hdf5_test_data/global_node.silo")
+    OpenDatabase("../data/silo_%s_test_data/global_node.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
 

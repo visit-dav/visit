@@ -11,10 +11,14 @@
 #  Programmer: Eric Brugger
 #  Date:       April 8, 2004
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
 # Test maintain data with the pseudocolor plot.
 ToggleMaintainDataMode()

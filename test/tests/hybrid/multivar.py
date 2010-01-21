@@ -27,11 +27,13 @@
 #    Hank Childs, Tue Mar 13 09:42:24 PDT 2007
 #    Add new test for mixed centering multiple variables and expressions.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
 
 # Set up the isosurface operators attributes
@@ -83,7 +85,7 @@ Test("multivar_03")
 DeleteAllPlots()
 
 # Test multiple variables with different centerings with expressions ('7843)
-OpenDatabase("../data/silo_hdf5_test_data/curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 DefineScalarExpression("x", "coord(curvmesh3d)[0]")
 DefineScalarExpression("y", "coord(curvmesh3d)[1]")
 DefineScalarExpression("z", "coord(curvmesh3d)[2]")

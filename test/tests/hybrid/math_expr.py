@@ -11,11 +11,15 @@
 #  Programmer: Hank Childs
 #  Date:       June 30, 2005
 #
+#  Modifications:
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
 
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 
 
 DefineScalarExpression("mod", "mod(t, 10)")

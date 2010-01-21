@@ -22,10 +22,12 @@
 #    Hank Childs, Fri Dec  9 08:01:46 PST 2005
 #    Uncomment specular_11.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "hardyglobal")
 
 AddOperator("Isosurface")
@@ -61,7 +63,7 @@ Test("specular_05")
 
 # Make sure that specular is not affecting 2D plots.
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 Test("specular_06")
@@ -70,7 +72,7 @@ Test("specular_06")
 DeleteAllPlots()
 r.specularFlag = 0
 SetRenderingAttributes(r)
-OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
 AddPlot("Surface", "hgslice")
 DrawPlots()
 

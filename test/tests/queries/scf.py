@@ -12,13 +12,16 @@
 #  Modifications:
 #    Mark C. Miller, Fri Nov 17 22:03:34 PST 2006
 #    Accounted for fact that threshold operator no longer has a default var
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 AddOperator("Isovolume")
 iso_atts = IsovolumeAttributes()
@@ -37,7 +40,7 @@ TestText("scf_02", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 qota = GetQueryOverTimeAttributes()
@@ -50,7 +53,7 @@ SetAnnotationAttributes(a)
 Test("scf_03")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 i = ThresholdAttributes()
 i.lowerBounds = (0.0)

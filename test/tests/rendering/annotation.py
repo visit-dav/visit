@@ -43,10 +43,12 @@
 #    Kathleen Bonnell, Mon Sep 14 15:01:25 PDT 2009
 #    Removed deprecated annotation settings.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 AddOperator("Slice")
 slice = SliceAttributes()
@@ -234,7 +236,7 @@ a.axes2D.tickAxes = a.axes2D.BottomLeft
 # length is correct in each direction.
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 ResetView()
@@ -298,7 +300,7 @@ Test("annot2d_25")
 ##
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Subset", "mat1")
 DrawPlots()
 v = View3DAttributes()

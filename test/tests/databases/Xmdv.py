@@ -17,6 +17,8 @@
 #    Hank Childs, Tue Mar 18 15:40:57 PDT 2008
 #    Reflect change in variable names.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -59,7 +61,7 @@ DeleteAllPlots()
 
 # Now test the writer.
 
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 DefineScalarExpression("uc", "recenter(u)")
 DefineScalarExpression("vc", "recenter(v)")
 AddPlot("Pseudocolor", "d")
@@ -79,7 +81,7 @@ DrawPlots()
 Test("Xmdv_04")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Vector", "vel")
 DrawPlots()
 e.variables = ()

@@ -36,6 +36,9 @@
 #    Jeremy Meredith, Wed Sep  7 12:06:04 PDT 2005
 #    Allowed spaces in variable names.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
+#
 #    Jeremy Meredith, Wed Jan 20 11:02:36 EST 2010
 #    Fixed some file path issues and checked for "from" file before
 #    assuming a symlink return error implied a different error message.
@@ -232,7 +235,7 @@ def test1(testIndex):
     # This will open at timestep 0.  The variable "transient" will not be
     # available then.
     #
-    db = "../data/silo_hdf5_test_data/wave.visit"
+    db = "../data/silo_%s_test_data/wave.visit"%SILO_MODE
     OpenDatabase(db)
 
     #
@@ -387,7 +390,7 @@ def test4(testIndex):
 
     # Copy curv2d to the current directory.
     db = "test4.silo"
-    os.link("../data/silo_hdf5_test_data/curv2d.silo", db)
+    os.link("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE, db)
 
     # Open up the file and create a plot.
     OpenDatabase(db)
@@ -397,7 +400,7 @@ def test4(testIndex):
 
     # Delete the file
     os.unlink(db)
-    os.link("../data/silo_hdf5_test_data/rect2d.silo", db)
+    os.link("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE, db)
     ReOpenDatabase(db)
     ResetView()
     Test("reopen_%02d" % (testIndex + 1))
@@ -414,7 +417,7 @@ def test4(testIndex):
 #
 def test5(testIndex):
     TestSection("Testing reopen/expressions with multiple windows")
-    db = "../data/silo_hdf5_test_data/curv3d.silo"
+    db = "../data/silo_%s_test_data/curv3d.silo"%SILO_MODE
     AddWindow()
     SetActiveWindow(1)
     OpenDatabase(db)
@@ -512,7 +515,7 @@ def test7(testIndex):
     TestSection("Testing reopen on a deleted file")
     # Link a file from the data directory to the current directory.
     db = "reopen_globe.silo"
-    os.link("../data/silo_hdf5_test_data/globe.silo", db)
+    os.link("../data/silo_%s_test_data/globe.silo"%SILO_MODE, db)
     WaitForFilesToBePresent(db)
 
     OpenDatabase(db)

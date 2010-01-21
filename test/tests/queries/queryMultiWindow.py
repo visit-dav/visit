@@ -17,10 +17,12 @@
 #    Kathleen Bonnell, Thu Apr  3 10:00:48 PDT 2008 
 #    Added tests from bug 8425. 
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def QueryMultiWindow():
-    OpenDatabase("../data/wave*.silo database")
+    OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     SetTimeSliderState(31)
     DrawPlots()
@@ -84,7 +86,7 @@ def QueryMultiWindow():
     DeleteAllPlots()
 
     #bug 8425 (multiple windows, same db, same timestate)
-    OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
     DefineScalarExpression("X", "coord(quadmesh3d)[0]")
     DefineScalarExpression("unnamed1", "X-1")
     DefineScalarExpression("unnamed2", "X-2")
@@ -117,7 +119,7 @@ def QueryMultiWindow():
     DeleteAllPlots()
 
     #bug 8425 (multiple plots, same window, same db, same root var)
-    OpenDatabase("../data/silo_hdf5_test_data/multi_rect2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE)
     DefineScalarExpression("p2", "p*p")
     DefineScalarExpression("p3", "p*p*p")
     AddPlot("Pseudocolor", "p")

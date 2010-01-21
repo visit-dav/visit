@@ -17,6 +17,8 @@
 #    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
 #    Added test of user-specified material colors
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def TestColorDefinitions(testname, colors):
@@ -67,7 +69,7 @@ def TestMultiColor(section, plotAtts, decreasingOpacity):
 def test1():
     TestSection("Testing setting of multiColor in Boundary plot")
     # Set up the plot
-    OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
     AddPlot("Boundary", "mat1")
     b = BoundaryAttributes()
     b.lineWidth = 4
@@ -82,7 +84,7 @@ def test1():
 def test2():
     TestSection("Testing setting of multiColor in Contour plot")
     # Set up the plot
-    OpenDatabase("../data/silo_hdf5_test_data/noise.silo")
+    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Contour", "hardyglobal")
     c = ContourAttributes()
     c.contourNLevels = 20
@@ -109,13 +111,13 @@ def test3():
     TestSection("Testing setting of multiColor in FilledBoundary plot")
     # Set up the plots. First we want globe so we can see something inside
     # of the Subset plot to make sure that setting alpha works.
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "w")
     p = PseudocolorAttributes()
     p.legendFlag = 0
     p.colorTableName = "xray"
     SetPlotOptions(p)
-    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+    OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
     AddPlot("FilledBoundary", "mat")
     f = FilledBoundaryAttributes()
     f.legendFlag = 0
@@ -153,13 +155,13 @@ def test4():
     TestSection("Testing setting of multiColor in Subset plot")
     # Set up the plots. First we want globe so we can see something inside
     # of the Subset plot to make sure that setting alpha works.
-    OpenDatabase("../data/silo_hdf5_test_data/globe.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "w")
     p = PseudocolorAttributes()
     p.legendFlag = 0
     p.colorTableName = "xray"
     SetPlotOptions(p)
-    OpenDatabase("../data/silo_hdf5_test_data/bigsil.silo")
+    OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
     AddPlot("Subset", "domains")
     s = SubsetAttributes()
     s.legendFlag = 0
@@ -197,7 +199,7 @@ def test5():
     TestSection("Testing user defined colors for FilledBoundary")
 
     ResetView()
-    OpenDatabase("../data/silo_hdf5_test_data/globe_matcolors.silo")
+    OpenDatabase("../data/silo_%s_test_data/globe_matcolors.silo"%SILO_MODE)
     AddPlot("FilledBoundary","mat1")
     AddOperator("Slice")
     DrawPlots()

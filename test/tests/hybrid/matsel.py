@@ -13,6 +13,8 @@
 #    Jeremy Meredith, Tue Jul 13 18:03:11 PDT 2004
 #    Added curvilinear case.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 
@@ -20,7 +22,7 @@
 #
 # Do a test of 2D nodal interpolation on material-selected rectilinear meshes
 #
-OpenDatabase("../data/silo_hdf5_test_data/rect2d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "u");
 
@@ -39,7 +41,7 @@ DeleteAllPlots();
 # Do a test of 3D nodal interpolation on material-selected rectilinear meshes
 # Ths is easiest to see when doing a contour plot of a matsel variable
 #
-OpenDatabase("../data/silo_hdf5_test_data/rect3d.silo")
+OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
 AddPlot("Contour", "u");
 
@@ -63,7 +65,7 @@ DeleteAllPlots();
 #
 # Do a test of 2D nodal interpolation on material-selected curvilinear meshes
 #
-OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "u");
 

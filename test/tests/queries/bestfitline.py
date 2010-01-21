@@ -16,6 +16,8 @@
 #    Mark C. Miller, Tue Mar 14 07:54:20 PST 2006
 #    Changed how full-frame is turned on
 #    
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 import math
@@ -76,7 +78,7 @@ def test1():
     filenames = data[0]
     coefficients = data[1]
 
-    OpenDatabase("../data/line*.curve database")
+    OpenDatabase("../data/curve_test_data/line*.curve database")
     AddPlot("Curve", "line")
     DrawPlots()
 
@@ -101,7 +103,7 @@ def test1():
 #
 def test2():
     # Do Scatter plot of d vs d since we know that it will make Y=X
-    OpenDatabase("../data/silo_hdf5_test_data/multi_curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
     AddPlot("Scatter", "d")
     s = ScatterAttributes()
     s.var2 = "d"
@@ -123,7 +125,7 @@ def test2():
 
     # Check the best fit with another known line eq.
     DeleteAllPlots()
-    OpenDatabase("../data/silo_hdf5_test_data/curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
     DefineScalarExpression("t", "zoneid(curvmesh2d)")
     DefineScalarExpression("line", "t * 0.33333 + 10.")
     AddPlot("Scatter", "t")
@@ -136,7 +138,7 @@ def test2():
 
     # Make the scatter plot be d vs. dpu
     DeleteAllPlots()
-    OpenDatabase("../data/silo_hdf5_test_data/multi_curv2d.silo")
+    OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
     AddPlot("Scatter", "d")
     DefineScalarExpression("dpu", "d + u / 3.")
     s.var2 = "dpu"

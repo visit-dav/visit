@@ -44,6 +44,8 @@
 #    Kathleen Bonnell, Thu Nov 10 08:21:54 PST 2005 
 #    Added TrajectoryByZone to TestMili.
 #
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -66,7 +68,7 @@ def InitAnnotation():
 
 
 def TestAllTimeQueries():
-    OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
 
@@ -124,7 +126,7 @@ def TestAllTimeQueries():
 
 def TestFilledBoundary():
     #  bug '4708
-    OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
     AddPlot("FilledBoundary", "Material")
     DrawPlots()
     TurnMaterialsOff(("1 barrier", "2 water"))
@@ -154,7 +156,7 @@ def TestFilledBoundary():
 
 def TestOperators():
     #  bug '4818
-    OpenDatabase("../data/wave*.silo database")
+    OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     AddOperator("Isovolume")
     iso = IsovolumeAttributes()
@@ -231,7 +233,7 @@ def TestExpressions():
     DeleteAllPlots()
 
     # test a scalar expression
-    OpenDatabase("../data/wave*.silo database")
+    OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
     DefineScalarExpression("p2", "pressure*pressure")
     AddPlot("Pseudocolor", "p2")
     DrawPlots()
@@ -272,7 +274,7 @@ def TestTransientVariable():
 
     # Do what is necessary to get access to the transient variable,
     # because QueryOverTime requires an active drawn plot.
-    db = "../data/wave_tv*.silo database"
+    db = "../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE
     OpenDatabase(db)
     SetTimeSliderState(17)
     ReOpenDatabase(db)
@@ -311,7 +313,7 @@ def TestTransientVariable():
 
 def TestSpecifyTimeQueryWindow():
     # bug '5163
-    OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure") 
     DrawPlots()
 
@@ -434,9 +436,9 @@ def TestTimeVaryingSIL():
 
 def TestQueryAfterQueryOverTime():
     # bug '5823
-    OpenDatabase("../data/silo_hdf5_test_data/wave_tv.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave_tv.visit"%SILO_MODE)
     SetTimeSliderState(17)
-    ReOpenDatabase("../data/silo_hdf5_test_data/wave_tv.visit")
+    ReOpenDatabase("../data/silo_%s_test_data/wave_tv.visit"%SILO_MODE)
     AddPlot("Pseudocolor", "transient")
     DrawPlots()
 
@@ -453,7 +455,7 @@ def TestQueryAfterQueryOverTime():
     DeleteAllPlots()
 
     # bug '6042
-    OpenDatabase("../data/silo_hdf5_test_data/wave.visit")
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     TurnMaterialsOn()
