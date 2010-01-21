@@ -3400,6 +3400,9 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Wed Jan 20 16:41:24 PST 2010
+//    Changed pids, ppids of ProcessAttributes to intVectors.
 // ****************************************************************************
 
 ProcessAttributes *
@@ -3409,8 +3412,8 @@ Engine::GetProcessAttributes()
     {
         procAtts = new ProcessAttributes;
 
-        doubleVector pids;
-        doubleVector ppids;
+        intVector pids;
+        intVector ppids;
         stringVector hosts;
 
 #if defined(_WIN32)

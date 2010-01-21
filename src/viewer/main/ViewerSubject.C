@@ -8917,6 +8917,8 @@ ViewerSubject::ResetInteractorAttributes()
 //   Brad Whitlock, Mon Feb 12 12:11:16 PDT 2007
 //   Made it use ViewerState.
 //
+//   Mark C. Miller, Wed Jan 20 16:41:24 PST 2010
+//   Changed pids, ppids of ProcessAttributes to intVectors.
 // ****************************************************************************
 
 void
@@ -8945,10 +8947,10 @@ ViewerSubject::GetProcessAttributes()
         char myHost[256];
         gethostname(myHost, sizeof(myHost));
 
-        std::vector<double> tmpPids;
+        std::vector<int> tmpPids;
         tmpPids.push_back(pid);
 
-        std::vector<double> tmpPpids;
+        std::vector<int> tmpPpids;
         tmpPpids.push_back(ppid);
 
         std::vector<string> tmpHosts;
