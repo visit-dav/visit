@@ -4477,6 +4477,12 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    of a directory.  Instead, just skip the test entirely and bail if
 //    there's an error.
 //
+//    Mark C. Miller, Wed Jan 20 16:33:56 PST 2010
+//    Replaced the 'break' when err is set with a 'return'. Otherwise, the
+//    succeeding code block does work with uninitialized/bad lneighbors.
+//    Also, it looked like the succeeding code block assumed that err was
+//    never set as in that case, ndomains would be set to -1 and the loop
+//    over domains in the succeeding block would be meaningless anyways.
 // ****************************************************************************
 
 
@@ -4546,7 +4552,7 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
             {
                 ndomains = -1;
                 numGroups = -1;
-                break;
+                return;
             }
         }
 
@@ -13674,6 +13680,9 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
 //    Mark C. Miller, Mon Nov  9 08:54:28 PST 2009
 //    Protected calls to DBForceSingle with check for whether plugin is
 //    actually forcing single precision.
+//
+//    Mark C. Miller, Wed Jan 20 16:35:37 PST 2010
+//    Made calls to ForceSingle on and off UNconditional.
 // ****************************************************************************
 
 #ifdef SILO_VERSION_GE 
@@ -13686,8 +13695,7 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle
 
     // We do this to prevent Silo for re-interpreting integer data in
     // groupel maps
-    if (dontForceSingle != 0)
-        DBForceSingle(0);
+    DBForceSingle(0);
 
     if (rootNode->num_children == 1 && rootNode->children[0]->narray == 0)
     {
@@ -13789,8 +13797,7 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle
         }
     }
 
-    if (dontForceSingle == 0)
-        DBForceSingle(1);
+    DBForceSingle(!dontForceSingle);
     return retval;
 }
 #endif
@@ -14022,6 +14029,9 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //    Mark C. Miller, Mon Nov  9 08:54:59 PST 2009
 //    Protecting calls to DBForceSingle with check to see if plugin is
 //    really forcing single.
+//
+//    Mark C. Miller, Wed Jan 20 16:35:37 PST 2010
+//    Made calls to ForceSingle on and off UNconditional.
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -14170,12 +14180,10 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     // Read the ratios variable (on the levels) and the parent/child
     // map.
     //
-    if (dontForceSingle != 0)
-        DBForceSingle(0);
+    DBForceSingle(0);
     DBmrgvar *ratvar = DBGetMrgvar(dbfile, ratioVarName.c_str());
     DBmrgvar *ijkvar = DBGetMrgvar(dbfile, ijkExtsVarName.c_str());
-    if (dontForceSingle == 0)
-        DBForceSingle(1);
+    DBForceSingle(!dontForceSingle);
 
     //
     // The number of patches can be inferred from the size of the child groupel map.
