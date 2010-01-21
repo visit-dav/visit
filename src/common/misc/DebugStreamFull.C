@@ -536,6 +536,12 @@ DebugStreamFull::~DebugStreamFull()
 //
 //    Mark C. Miller, Tue Apr 14 16:01:49 PDT 2009
 //    Added option to buffer the debug logs.
+//
+//    Kathleen Bonnell, Thu Jan 21 07:44:15 MST 2009 
+//    Changed naming on windows to NOT prepend a letter, due to fact that
+//    progname generally contains fully-qualified-filename, and the fact that
+//    we always use pids on windows, so renaming not necessary.
+//
 // ****************************************************************************
 
 
@@ -543,6 +549,13 @@ void
 DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
 {
     char filename[256];
+
+#ifdef WIN32
+    // On windows, we always use pids, so won't need to rename, and thus
+    // don't need to prepend a letter.
+    sprintf(filename, "%s.%d.vlog", progname, level);
+
+#else
     sprintf(filename, "A.%s.%d.vlog", progname, level);
 
     // only rename old vlogs if we don't have pids
@@ -564,6 +577,7 @@ DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
         sprintf(filenametmp1, "A.%s.%d.vlog", progname, level);
         rename(filenametmp1, filenametmp2); // A->B
     }
+#endif
 
     // ok, open the stream
     buf->open(filename, buffer_debug);
