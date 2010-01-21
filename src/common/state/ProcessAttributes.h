@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ProcessAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API ProcessAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ProcessAttributes();
     ProcessAttributes(const ProcessAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ProcessAttributes(private_tmfs_t tmfs);
+    ProcessAttributes(const ProcessAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ProcessAttributes();
 
     virtual ProcessAttributes& operator = (const ProcessAttributes &obj);
     virtual bool operator == (const ProcessAttributes &obj) const;
     virtual bool operator != (const ProcessAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ProcessAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -80,16 +91,16 @@ public:
     void SelectHosts();
 
     // Property setting methods
-    void SetPids(const doubleVector &pids_);
-    void SetPpids(const doubleVector &ppids_);
+    void SetPids(const intVector &pids_);
+    void SetPpids(const intVector &ppids_);
     void SetHosts(const stringVector &hosts_);
     void SetIsParallel(bool isParallel_);
 
     // Property getting methods
-    const doubleVector &GetPids() const;
-          doubleVector &GetPids();
-    const doubleVector &GetPpids() const;
-          doubleVector &GetPpids();
+    const intVector    &GetPids() const;
+          intVector    &GetPids();
+    const intVector    &GetPpids() const;
+          intVector    &GetPpids();
     const stringVector &GetHosts() const;
           stringVector &GetHosts();
     bool               GetIsParallel() const;
@@ -107,17 +118,20 @@ public:
         ID_pids = 0,
         ID_ppids,
         ID_hosts,
-        ID_isParallel
+        ID_isParallel,
+        ID__LAST
     };
 
 private:
-    doubleVector pids;
-    doubleVector ppids;
+    intVector    pids;
+    intVector    ppids;
     stringVector hosts;
     bool         isParallel;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PROCESSATTRIBUTES_TMFS "i*i*s*b"
 
 #endif

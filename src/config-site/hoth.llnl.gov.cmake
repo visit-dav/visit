@@ -14,6 +14,10 @@
 ## Reverted to HDF5 1.8.2 and pointed to new installation for Silo
 ## 4.7.2 using HDF5 1.8.2 as well as installed in the shared/static
 ## dirs.
+##
+## Mark C. Miller, Wed Jan 20 16:46:09 PST 2010
+## Added (commented out) logic to build just the ITAPS_C plugin itself
+## (not a copy) against MOAB.
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -122,6 +126,11 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## ITAPS
 ##
+## MOAB implementation as ITAPS_C using moniker 'C' (for development build)
+#ITAPS_INCLUDE_DIRECTORIES(C ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/include)
+#ITAPS_FILE_PATTERNS(C *.cub)
+#ITAPS_LINK_LIBRARIES(C iMesh MOAB hdf5 sz z netcdf_c++ netcdf vtkGraphics)
+#ITAPS_LINK_DIRECTORIES(C ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.2/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/3.6.3/${VISITARCH}/lib)
 ## MOAB implementation
 ITAPS_INCLUDE_DIRECTORIES(MOAB ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/include)
 ITAPS_FILE_PATTERNS(MOAB *.cub)

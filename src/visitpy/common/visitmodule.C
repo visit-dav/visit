@@ -12428,6 +12428,8 @@ visit_GetAnnotationObjectNames(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
 //   Change string literals to const char*'s.
 //
+//   Mark C. Miller, Wed Jan 20 16:41:24 PST 2010
+//   Changed pids, ppids of ProcessAttributes to intVectors.
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12467,7 +12469,7 @@ visit_GetProcessAttributes(PyObject *self, PyObject *args)
     }
     else
     {
-        doubleVector pids, ppids;
+        intVector pids, ppids;
         stringVector hosts;
 
 #if defined(_WIN32)

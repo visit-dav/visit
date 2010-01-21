@@ -58,6 +58,11 @@
 #    databases directory and compares contents to this prestine copies to
 #    identify cases where an ITAPS_XXX plugin source file has been
 #    changed.
+#
+#    Mark C. Miller, Wed Jan 20 16:40:04 PST 2010
+#    Added logic to handle 'special' case in which the ITAPS_C plugin
+#    itself is being built against a single iMesh implementation. This is
+#    to facilitate development (as opposed to installation) of ITAPS plugin.
 #****************************************************************************/
 
 FUNCTION(ITAPS_ADD_IMPLEMENTATION IMPL)
@@ -140,6 +145,21 @@ FUNCTION(CONFIGURE_ITAPS)
     # For each implementation, we must copy the source directory
     SET(ITAPS_DIRS CACHE INTERNAL "ITAPS source directories")
     MESSAGE(STATUS "Configuring ITAPS")
+
+    FOREACH(IMPL ${ITAPS_IMPLEMENTATIONS})
+        IF("${IMPL}" STREQUAL "C")
+            LIST(LENGTH ITAPS_IMPLEMENTATIONS NUM_IMPLS)
+            IF(NUM_IMPLS GREATER 1)
+                MESSAGE(FATAL_ERROR "To configure cmake for DEVELOPMENT of the ITAPS plugin "
+                    "you must specify ONLY the ONE ITAPS_C plugin.")
+            ELSE(NUM_IMPLS GREATER 1)
+                SET(ITAPS_DIRS "ITAPS_C" CACHE INTERNAL "ITAPS source directories")
+                MESSAGE(STATUS "  ITAPS_C (development)")
+                RETURN()
+            ENDIF(NUM_IMPLS GREATER 1)
+        ENDIF("${IMPL}" STREQUAL "C")
+    ENDFOREACH(IMPL ${ITAPS_IMPLEMENTATIONS})
+
     FOREACH(IMPL ${ITAPS_IMPLEMENTATIONS})
         MESSAGE(STATUS "  ${IMPL}")
         # Just print info for now
@@ -149,6 +169,7 @@ FUNCTION(CONFIGURE_ITAPS)
         #MESSAGE(STATUS "    libdirs   =${ITAPS_${IMPL}_LIBRARY_DIR}}")
 
         # Create the directories if they do not exist.
+        SET(ITAPS_DIRS ${ITAPS_DIRS} ITAPS_${IMPL} CACHE INTERNAL "ITAPS source directories")
         SET(IMPLDIR ${VISIT_SOURCE_DIR}/databases/ITAPS_${IMPL})
         SET(IMPLDIR_COPY ${VISIT_SOURCE_DIR}/databases/.ITAPS_${IMPL}_copy)
         IF(NOT EXISTS ${IMPLDIR})
@@ -157,7 +178,6 @@ FUNCTION(CONFIGURE_ITAPS)
         IF(NOT EXISTS ${IMPLDIR_COPY})
             FILE(MAKE_DIRECTORY ${IMPLDIR_COPY})
         ENDIF(NOT EXISTS ${IMPLDIR_COPY})
-        SET(ITAPS_DIRS ${ITAPS_DIRS} ITAPS_${IMPL} CACHE INTERNAL "ITAPS source directories")
 
         # Build a list of the ITAPS_C source files
         FILE(GLOB ITAPS_ABS_FILES ${VISIT_SOURCE_DIR}/databases/ITAPS_C/*.[Ch]

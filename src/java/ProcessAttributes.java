@@ -38,7 +38,7 @@
 
 package llnl.visit;
 
-import java.lang.Double;
+import java.lang.Integer;
 import java.util.Vector;
 
 // ****************************************************************************
@@ -86,20 +86,18 @@ public class ProcessAttributes extends AttributeSubject
 
         int i;
 
-        pids = new Vector(obj.pids.size());
+        pids = new Vector();
         for(i = 0; i < obj.pids.size(); ++i)
         {
-            Double dv = (Double)obj.pids.elementAt(i);
-            pids.addElement(new Double(dv.doubleValue()));
+            Integer iv = (Integer)obj.pids.elementAt(i);
+            pids.addElement(new Integer(iv.intValue()));
         }
-
-        ppids = new Vector(obj.ppids.size());
+        ppids = new Vector();
         for(i = 0; i < obj.ppids.size(); ++i)
         {
-            Double dv = (Double)obj.ppids.elementAt(i);
-            ppids.addElement(new Double(dv.doubleValue()));
+            Integer iv = (Integer)obj.ppids.elementAt(i);
+            ppids.addElement(new Integer(iv.intValue()));
         }
-
         hosts = new Vector(obj.hosts.size());
         for(i = 0; i < obj.hosts.size(); ++i)
             hosts.addElement(new String((String)obj.hosts.elementAt(i)));
@@ -127,18 +125,18 @@ public class ProcessAttributes extends AttributeSubject
         boolean pids_equal = (obj.pids.size() == pids.size());
         for(i = 0; (i < pids.size()) && pids_equal; ++i)
         {
-            // Make references to Double from Object.
-            Double pids1 = (Double)pids.elementAt(i);
-            Double pids2 = (Double)obj.pids.elementAt(i);
+            // Make references to Integer from Object.
+            Integer pids1 = (Integer)pids.elementAt(i);
+            Integer pids2 = (Integer)obj.pids.elementAt(i);
             pids_equal = pids1.equals(pids2);
         }
         // Compare the elements in the ppids vector.
         boolean ppids_equal = (obj.ppids.size() == ppids.size());
         for(i = 0; (i < ppids.size()) && ppids_equal; ++i)
         {
-            // Make references to Double from Object.
-            Double ppids1 = (Double)ppids.elementAt(i);
-            Double ppids2 = (Double)obj.ppids.elementAt(i);
+            // Make references to Integer from Object.
+            Integer ppids1 = (Integer)ppids.elementAt(i);
+            Integer ppids2 = (Integer)obj.ppids.elementAt(i);
             ppids_equal = ppids1.equals(ppids2);
         }
         // Compare the elements in the hosts vector.
@@ -192,9 +190,9 @@ public class ProcessAttributes extends AttributeSubject
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteDoubleVector(pids);
+            buf.WriteIntVector(pids);
         if(WriteSelect(1, buf))
-            buf.WriteDoubleVector(ppids);
+            buf.WriteIntVector(ppids);
         if(WriteSelect(2, buf))
             buf.WriteStringVector(hosts);
         if(WriteSelect(3, buf))
@@ -206,10 +204,10 @@ public class ProcessAttributes extends AttributeSubject
         switch(index)
         {
         case 0:
-            SetPids(buf.ReadDoubleVector());
+            SetPids(buf.ReadIntVector());
             break;
         case 1:
-            SetPpids(buf.ReadDoubleVector());
+            SetPpids(buf.ReadIntVector());
             break;
         case 2:
             SetHosts(buf.ReadStringVector());
@@ -223,8 +221,8 @@ public class ProcessAttributes extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
-        str = str + doubleVectorToString("pids", pids, indent) + "\n";
-        str = str + doubleVectorToString("ppids", ppids, indent) + "\n";
+        str = str + intVectorToString("pids", pids, indent) + "\n";
+        str = str + intVectorToString("ppids", ppids, indent) + "\n";
         str = str + stringVectorToString("hosts", hosts, indent) + "\n";
         str = str + boolToString("isParallel", isParallel, indent) + "\n";
         return str;
@@ -232,8 +230,8 @@ public class ProcessAttributes extends AttributeSubject
 
 
     // Attributes
-    private Vector  pids; // vector of Double objects
-    private Vector  ppids; // vector of Double objects
+    private Vector  pids; // vector of Integer objects
+    private Vector  ppids; // vector of Integer objects
     private Vector  hosts; // vector of String objects
     private boolean isParallel;
 }

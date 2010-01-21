@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
+<!-- 
+  Modifications:
+    Mark C. Miller, Wed Jan 20 16:41:24 PST 2010
+    Changed pids, ppids to intVectors.
+-->
   <Attribute name="ProcessAttributes" purpose="attributes to describe a running process" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="pids" label="pids" type="doubleVector"> </Field>
-    <Field name="ppids" label="pids" type="doubleVector"> </Field>
+    <Field name="pids" label="pids" type="intVector"> </Field>
+    <Field name="ppids" label="pids" type="intVector"> </Field>
     <Field name="hosts" label="hosts" type="stringVector"> </Field>
     <Field name="isParallel" label="isParallel" type="bool"> false </Field>
   </Attribute>
