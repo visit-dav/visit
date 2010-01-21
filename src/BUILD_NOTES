@@ -1222,10 +1222,10 @@ follows after that.
 #
 # Build and install it
 #
-gunzip visit1.12.1.tar.gz
-tar xf visit1.12.1.tar
-cp `hostname`.conf visit1.12.1/src/config-site
-cd visit1.12.1/src
+gunzip visit1.12.2.tar.gz
+tar xf visit1.12.2.tar
+cp `hostname`.conf visit1.12.2/src/config-site
+cd visit1.12.2/src
 cmake -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=/where/to/install/visit .
 make
 
