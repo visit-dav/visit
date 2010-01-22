@@ -793,6 +793,10 @@ avtThresholdFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Thu Oct  9 09:24:26 PDT 2008
 //    Issue a better error message for non-scalars.
 //
+//    Hank Childs, Thu Jan 21 19:50:58 PST 2010
+//    Don't issue an error message if the default vector is a vector, but it
+//    isn't actually used.
+//
 // *****************************************************************************
 
 void
@@ -816,13 +820,19 @@ avtThresholdFilter::PreExecute(void)
     }
     
     inputVarCount = inputVarNames.size();
-    
-    for (inputVarNum = 0; inputVarNum < inputVarCount; inputVarNum++)
+    bool allScalars = true;
+    stringVector curListedVarNames = atts.GetListedVarNames();
+    for (int i = 0 ; i < curListedVarNames.size() ; i++)
     {
-        if (inputVarNames[inputVarNum] == atts.GetDefaultVarName()) break;
+         bool foundMatch = false;
+         for (int j = 0 ; j < inputVarNames.size() ; j++)
+             if (inputVarNames[j] == curListedVarNames[i])
+                 foundMatch = true;
+         if (! foundMatch)
+             allScalars = false;
     }
     
-    if (inputVarNum >= inputVarCount)
+    if (! allScalars)
     {
         atts.SetDefaultVarIsScalar(false);
         static bool issuedWarning = false;
@@ -839,7 +849,6 @@ avtThresholdFilter::PreExecute(void)
         }
     }
 
-    stringVector curListedVarNames = atts.GetListedVarNames();
     intVector    curZonePortions   = atts.GetZonePortions();
     doubleVector curLowerBounds    = atts.GetLowerBounds();
     doubleVector curUpperBounds    = atts.GetUpperBounds();
