@@ -7,11 +7,13 @@
       avtStreamlineRenderer.C
       avtMesaStreamlineRenderer.C
       avtOpenGLStreamlineRenderer.C
+      avtGLSLProgram.C
     </Files>
     <Files components="E">
       avtStreamlineRenderer.C
       avtMesaStreamlineRenderer.C
       avtOpenGLStreamlineRenderer.C
+      avtGLSLProgram.C
     </Files>
     <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">
