@@ -327,6 +327,10 @@ avtVectorFilter::Equivalent(bool us, int red, bool orig)
 //    of domains.  It's not perfect, but it should hopefully get us
 //    close to the requested number.
 //
+//    Hank Childs, Thu Jan 21 20:18:42 PST 2010
+//    Fixed a bug where we got no glyphs when there were more domains than
+//    target glyphs.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -337,7 +341,12 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
     if (useStride)
         reduce->SetStride(stride);
     else
-        reduce->SetNumberOfElements(nVectors / approxDomains);
+    {
+        int nPerDomain = nVectors / approxDomains;
+        if (nPerDomain < 1)
+            nPerDomain = 1;
+        reduce->SetNumberOfElements(nPerDomain);
+    }
 
     if (inDS->GetPointData()->GetVectors() != NULL)
     {
