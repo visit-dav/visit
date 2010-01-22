@@ -234,6 +234,10 @@ avtRAWFileFormat::NewPD(int nCells)
 //   Make sure scanf succeeded in strict mode.
 //   Throw exception on a bad domain name in strict mode.
 //
+//   Mark C. Miller, Thu Jan 21 17:57:43 PST 2010
+//   Made it handle case of file with data but no domain name by tightening
+//   logic on exception for empty to domain name to trigger only when
+//   ifile.eof() is not true. 
 // ****************************************************************************
 
 void
@@ -362,7 +366,7 @@ avtRAWFileFormat::ReadFile(const char *name)
             else
             {
                 debug4 << mName << "Empty domain name" << endl;
-                if (GetStrictMode())
+                if (GetStrictMode() && !ifile.eof())
                 {
                     EXCEPTION2(InvalidFilesException, GetFilename(),
                                "Empty domain name.");
