@@ -34,7 +34,7 @@
 
 #include <vector>
 #include <utility>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 #include <slivr/CM2Widget.h>
 
 namespace SLIVR {

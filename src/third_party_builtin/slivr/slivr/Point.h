@@ -42,7 +42,7 @@
 #ifndef SLIVR_Point_h
 #define SLIVR_Point_h
 
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 #include <slivr/Utils.h>
 
 #include <string.h>

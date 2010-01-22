@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include "share.h"
+#include "slivr_share.h"
 
 namespace SLIVR {
 

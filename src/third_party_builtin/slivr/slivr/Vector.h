@@ -49,7 +49,7 @@
 #include <assert.h>
 
 #include <slivr/Utils.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 using std::string;

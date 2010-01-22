@@ -37,7 +37,7 @@
 
 namespace SLIVR {
 
-#include "share.h"
+#include "slivr_share.h"
 
 class SLIVRSHARE ShaderProgramARB
 {
