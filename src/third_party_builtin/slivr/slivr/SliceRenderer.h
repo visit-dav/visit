@@ -44,7 +44,7 @@
 #include <slivr/Color.h>
 #include <slivr/Texture.h>
 #include <slivr/TextureRenderer.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

@@ -40,7 +40,7 @@
 #include <vector>
 #include <teem/nrrd.h>
 
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

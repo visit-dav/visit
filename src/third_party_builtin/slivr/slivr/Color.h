@@ -42,7 +42,7 @@
 #if !defined(SLIVR_Color_h)
 #define SLIVR_Color_h
 
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

@@ -45,7 +45,7 @@
 #include <slivr/Color.h>
 #include <vector>
 #include <string>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

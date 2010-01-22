@@ -32,7 +32,7 @@
 #ifndef VideoCardInfo_h
 #define VideoCardInfo_h
 
-#include "share.h"
+#include "slivr_share.h"
 
 #ifdef __cplusplus
 extern "C" {

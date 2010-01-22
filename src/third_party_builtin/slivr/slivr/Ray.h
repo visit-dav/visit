@@ -44,7 +44,7 @@
 
 #include <slivr/Point.h>
 #include <slivr/Vector.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

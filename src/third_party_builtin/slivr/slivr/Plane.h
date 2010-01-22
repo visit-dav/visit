@@ -41,7 +41,7 @@
 #define SLIVR_Plane_h
 
 #include "Vector.h"
-#include "share.h"
+#include "slivr_share.h"
 
 namespace SLIVR {
 

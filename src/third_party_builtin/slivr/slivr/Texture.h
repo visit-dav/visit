@@ -37,7 +37,7 @@
 #include <slivr/Transform.h>
 #include <slivr/TextureBrick.h>
 #include <slivr/Utils.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

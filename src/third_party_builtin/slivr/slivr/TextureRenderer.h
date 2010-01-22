@@ -38,7 +38,7 @@
 #include <slivr/CM2Shader.h>
 #include <slivr/TextureBrick.h>
 #include <slivr/Texture.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 

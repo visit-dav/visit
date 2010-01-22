@@ -39,7 +39,7 @@
 #include <slivr/ColorMap.h>
 #include <slivr/BBox.h>
 #include <slivr/Plane.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 #include <utility>
 

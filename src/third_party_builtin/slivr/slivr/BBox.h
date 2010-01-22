@@ -43,7 +43,7 @@
 #define SLIVR_BBox_h
 
 #include <slivr/Point.h>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 #include <ostream>
 
 #ifdef _WIN32

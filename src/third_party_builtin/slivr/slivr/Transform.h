@@ -31,7 +31,7 @@
 #define SLIVR_Transform_h
 
 #include <string>
-#include <slivr/share.h>
+#include <slivr/slivr_share.h>
 
 namespace SLIVR {
 
