@@ -2441,6 +2441,9 @@ class MakeMovie:
     #   Hank Childs, Thu Jul  9 08:29:10 PDT 2009
     #   Incorporate fixes for new ffmpeg syntax from "Max"/iprmaster.
     #
+    #   Brad Whitlock, Fri Jan 22 15:50:39 PST 2010
+    #   Lower bitrate a little for ffmpeg.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
@@ -2484,6 +2487,9 @@ class MakeMovie:
 
             absMovieName = self.outputDir + self.slash + moviename
             if self.ffmpegForMPEG:
+                # MPEG1 bit rate is really capped at about 100M due to 1000x1000x30x3 limits.
+                if bitrate > 100000000:
+                    bitrate = 100000000
                 # Use the user's ffmpeg encoder program.
                 framePattern = self.tmpDir+self.slash+linkbase+"%04d"+formatExt
                 command = "ffmpeg -f image2 -i %s -mbd rd -flags +mv4+aic -trellis 1 -flags qprd -bf 2 -cmp 2 -g 25 -pass 1 -y -b %s %s\n" % (framePattern, bitrate, absMovieName)
