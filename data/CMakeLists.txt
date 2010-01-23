@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Mark C. Miller, Fri Jan 22 16:40:43 PST 2010
+#   Added function LINK_DATA_TARGETS and invokation to create sesame.pdb.lnk
+#   and largefile.silo.lnk.
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -115,6 +118,38 @@ FUNCTION(BUILD_DATA_TARGET target_name)
 
 ENDFUNCTION(BUILD_DATA_TARGET target_name)
 
+
+#-----------------------------------------------------------------------------
+# LINK_DATA_TARGET cmake function
+# Helper function that creates .lnk files whose contents indicate path of
+# desired data file that we do not maintain in the repo.  The file that is
+# created here is a simple ascii file with a trailing '.lnk' whose contents
+# are the path to the actual data file.
+#
+# Usage:
+#  LINK_DATA_TARGET(filename1 [filename2] [filename3] ...)
+#
+# This list of paths that is searched is hard-coded here for the two main
+# platforms we routinely test on as of 1/22/10. As we expand testing on a
+# wider variety of platforms, we can either expand this list or modify
+# the approach to make the list of paths base on platform.
+#-----------------------------------------------------------------------------
+FUNCTION(LINK_DATA_TARGET) 
+    FOREACH(ARG ${ARGN})
+        UNSET(TMP_TEST_DATA CACHE)
+        FIND_PATH(TMP_TEST_DATA ${ARG} 
+            PATHS /project/projectdirs/visit/data
+                  /usr/gapps/visit/data
+                  /home/visit/data
+            NO_DEFAULT_PATH)
+        IF(TMP_TEST_DATA)
+            FILE(WRITE ${ARG}.lnk "${TMP_TEST_DATA}")
+        ELSE(TMP_TEST_DATA)
+            FILE(WRITE ${ARG}.lnk "NOT FOUND")
+        ENDIF(TMP_TEST_DATA)
+    ENDFOREACH(ARG ${ARGN})
+    UNSET(TMP_TEST_DATA CACHE)
+ENDFUNCTION(LINK_DATA_TARGET)
 
 #-----------------------------------------------------------------------------
 # Data Generation Program Targets
@@ -378,6 +413,14 @@ FOREACH(DATASET_TARGET ${ARCHIVED_TARGETS})
                       )
     SET( DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
 ENDFOREACH(DATASET_TARGET IN ${ARCHIVED_DATASETS})
+
+#-----------------------------------------------------------------------------
+# Add '.lnk' files for data files we don't keep in repo
+#-----------------------------------------------------------------------------
+LINK_DATA_TARGET(
+sesame.pdb
+largefile.silo
+)
 
 #-----------------------------------------------------------------------------
 # Add custom targets: "data" & "test"
