@@ -57,6 +57,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Mark C. Miller, Fri Jan 22 17:30:29 PST 2010
+#    I replaced OpenDatabase with FindAnd... variant for largefile.silo
+#    to deal with data we don't keep in repo.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -254,17 +258,20 @@ Test("silo_25")
 #
 DeleteAllPlots()
 CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
-OpenDatabase("../data/largefile.silo")
+(err, dbname) = FindAndOpenDatabase("largefile.silo")
 AddPlot("Curve","sincurve")
 AddPlot("Curve","coscurve")
 DrawPlots()
+if (err != 1):
+    global skipCases
+    skipCases.append("silo_26")
 Test("silo_26")
+DeleteAllPlots()
+CloseDatabase(dbname)
 
 #
 # Test time invariant mesh
 #
-DeleteAllPlots()
-CloseDatabase("/usr/gapps/visit/data/largefile.silo")
 OpenDatabase("../data/silo_%s_test_data/multi_ucd3d_ti_* database"%SILO_MODE,2)
 AddPlot("Pseudocolor","d")
 DrawPlots()
