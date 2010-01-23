@@ -777,6 +777,12 @@
 #     Tom Fogal, Wed Jan 13 19:53:25 MST 2010
 #     Get rid of OpenSSL too; we're not using QtNetwork.
 #
+#     Tom Fogal, Wed Jan 20 22:58:41 MST 2010
+#     Re-add QtXml to the list of Mac frameworks.
+#
+#     Tom Fogal, Thu Jan 21 20:27:37 MST 2010
+#     Re-add OpenSSL, it's used directly (not through QtNetwork!).
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -2902,7 +2908,6 @@ function build_qt
     qt_flags="${qt_flags} -no-xmlpatterns"
     #qt_flags="${qt_flags} -no-scripttools" # disable for now -- not in 4.4.3
     qt_flags="${qt_flags} -no-webkit"
-    qt_flags="${qt_flags} -no-openssl"
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
@@ -2957,7 +2962,7 @@ function build_qt
         for f in *.a; do ln -s $f ${f%\.*}.so; done
     elif [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" && $ABS_PATH == "no" ]]; then
         QtTopDir="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg"
+        QtFrameworks="QtCore QtGui QtNetwork QtOpenGL QtScript QtSvg QtXml"
         for QtFW in $QtFrameworks; do
             filename="$QtTopDir/lib/${QtFW}.framework/${QtFW}"
             debugFilename="${filename}_debug"
