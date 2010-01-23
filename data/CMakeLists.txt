@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Eric Brugger, Fri Jan 22 16:51:39 PST 2010
+#   I added the data generator unic, which generates UNIC test data.
 #
 #   Mark C. Miller, Fri Jan 22 16:40:43 PST 2010
 #   Added function LINK_DATA_TARGETS and invokation to create sesame.pdb.lnk
@@ -174,7 +176,7 @@ SET(VTK_TARGETS degen_meshes)
 #-----------------------------------------------------------------------------
 # HDF5 Data Gen Programs
 #-----------------------------------------------------------------------------
-SET(HDF5_TARGETS xdmf)
+SET(HDF5_TARGETS unic xdmf)
 
 #-----------------------------------------------------------------------------
 # PDB Data Gen Programs
