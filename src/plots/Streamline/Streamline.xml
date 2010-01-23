@@ -3,6 +3,15 @@
     <CXXFLAGS>
       ${GLEW_INCLUDE_DIR}
     </CXXFLAGS>
+    <LIBS components="V">
+      ${GLEW_LIB}
+    </LIBS>
+    <LIBS components="ESer">
+      ${GLEW_LIB}
+    </LIBS>
+    <LIBS components="EPar">
+      ${GLEW_LIB}
+    </LIBS>
     <Files components="V">
       avtStreamlineRenderer.C
       avtMesaStreamlineRenderer.C
