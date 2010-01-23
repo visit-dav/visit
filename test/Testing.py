@@ -710,6 +710,8 @@ def Test(file, altSWA=0):
 
     diffState = 'Unknown'
     skipMe = file in skipCases
+    print "file =\"%s\"\n"%file
+    print "skipMe = ", skipMe
     tPixs = pPixs = dPixs = 0
     dpix = davg = 0.0
     if usePIL:
@@ -1349,7 +1351,7 @@ def TestSection(sectionName):
 #  Exit with the appropriate error code.  Must be called at end of test cases.
 # ----------------------------------------------------------------------------
 
-def Exit():
+def Exit(excode=0):
     global html
     global maxds
     global trackingMemoryUsage
@@ -1373,6 +1375,7 @@ def Exit():
 	leakHistory=""
     html.close()
     if (iactive == 0):
+        if (excode):             sys.exit(excode)
 	if (maxds == 0):         sys.exit(111)
         if (maxds == 1):         sys.exit(112)
         if (maxds == 2):         sys.exit(113)
@@ -1408,6 +1411,14 @@ def TurnOffAllAnnotations(givenAtts=0):
     a.legendInfoFlag = 0
     SetAnnotationAttributes(a)
 
+def FindAndOpenDatabase(dbname, extraPaths=()):
+    for p in externalDbPaths + extraPaths:
+        abs_dbname = "%s/%s"%(p,dbname)
+        if os.path.isfile(abs_dbname):
+            return OpenDatabase(abs_dbname), abs_dbname
+    print "Unable to OpenDatabase \"%s\" at any of the specified paths.\n"%dbname
+    return 0, ""
+    
 # ----------------------------------------------------------------------------
 #       Code to help in the VisIt test suite
 #
@@ -1541,6 +1552,9 @@ iactive = 0
 sampleIndex = 0
 checkSumMap = {}
 oszPageSize = 0
+externalDbPaths=("/project/projectdirs/visit/data",\
+    "/usr/gapps/visit/data",\
+    "/home/visit/data")
 
 # Process some command line arguments.
 for arg in sys.argv:
