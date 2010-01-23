@@ -333,6 +333,9 @@
 #   Cyrus Harrison, Tue Dec  8 09:11:58 PST 2009
 #   Reorged all data into tarballs. (old targets are still intact)
 #
+#   Eric Brugger, Fri Jan 22 16:34:47 PST 2010
+#   I added the program unic, which generates UNIC test data.
+#
 ##############################################################################
 
 ##
@@ -353,7 +356,7 @@ EZ_TARGET=$(EZSRC:.C=)
 PDBSRC=pdbdatabase.C correlationtest.C streak.C pdbdatabase_link.C
 PDB_TARGET=$(PDBSRC:.C=)
 
-HDF5SRC=xdmf.C
+HDF5SRC=unic.C xdmf.C
 HDF5_TARGET=$(HDF5SRC:.C=)
 
 SILOSRC=bigsil.C csg.C emptydomains.C fullframe.C galaxy.C ghost.C \
@@ -653,6 +656,9 @@ clean: bin_data_clean gen_data_clean src_clean
 ./lineout_test: lineout_test.o
 	$(CXX) -o $@ lineout_test.o $(LDFLAGS) $(LIBS)
 
+./unic: unic.o
+	$(CXX) -o $@ unic.o $(LDFLAGS) $(HDF5_LIB) $(ZLIB_LIB) @LIBS@
+
 ./xdmf: xdmf.o
 	$(CXX) -o $@ xdmf.o $(LDFLAGS) $(HDF5_LIB) $(ZLIB_LIB) @LIBS@
 
@@ -686,6 +692,8 @@ install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test .
 	$(INSTALL) ./lineout_test $(bindir)
 	$(INSTALL) ./multidir $(bindir)
 	$(INSTALL) ./mmadj_rect_2d $(bindir)
+	$(INSTALL) ./unic $(bindir)
+	$(INSTALL) ./xdmf $(bindir)
 
 #
 # Inference rules for compressed binary data files
