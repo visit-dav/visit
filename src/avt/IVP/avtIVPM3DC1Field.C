@@ -458,34 +458,56 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout)
     xout[0] = rrel*co + zrel*sn;  /* = xi */
     xout[1] = zrel*co - rrel*sn;  /* = eta */
     /* Determine whether point is inside element */
-    if ((flag0 = ((*tri + tri[1])*xout[1] < 0.0))) /* "Outside" side 0? */
+    /* "Outside" side 0? */
+    if ((flag0 = ((*tri + tri[1])*xout[1] < 0.0)))
+    {
       if ((next = neighbors[3*el]) >= 0) {
-        if (next == last) break;
-        last = el;
-        el = next;
-        continue;
+        if (next != last) // not on the boundary so continue;
+        {
+          last = el;
+          el = next;
+          continue;
+        }
+        else // on the boundary so reset the flag and check the other edges;
+          flag0 = 0;
       }
+    }
 
-    if ((flag1 = (*tri*xout[1] > tri[2]*(*tri - xout[0])))) /* "Outside" side 1? */
+    /* "Outside" side 1? */
+    if ((flag1 = (*tri*xout[1] > tri[2]*(*tri - xout[0]))))
+    {
       if ((next = neighbors[3*el + 1]) >= 0) {
-        if (next == last) break;
-        last = el;
-        el = next;
-        continue;
+        if (next != last) // not on the boundary so continue;
+        {
+          last = el;
+          el = next;
+          continue;
+        }
+        else // on the boundary so reset the flag and check the other edges;
+          flag1 = 0;
       }
+    }
 
-    if ((flag2 = (tri[2]*xout[0] < tri[1]*(xout[1] - tri[2])))) /* "Outside" side 2? */
+    /* "Outside" side 2? */
+    if ((flag2 = (tri[2]*xout[0] < tri[1]*(xout[1] - tri[2]))))
+    {
       if ((next = neighbors[3*el + 2]) >= 0) {
-        if (next == last) break;
-        last = el;
-        el = next;
-        continue;
+        if (next != last) // on the boundary so continue;
+        {
+          last = el;
+          el = next;
+          continue;
+        }
+        else // on the boundary so reset the flag and check the other edges;
+          flag2 = 0;
       }
+    }
 
     if (flag0 || flag1 || flag2)
       return -1;
     else
       break;
+
   } /* end loop count */
 
 // fprintf(stderr, "Searched %d elements.\n", count);
