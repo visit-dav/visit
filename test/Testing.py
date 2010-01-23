@@ -710,8 +710,6 @@ def Test(file, altSWA=0):
 
     diffState = 'Unknown'
     skipMe = file in skipCases
-    print "file =\"%s\"\n"%file
-    print "skipMe = ", skipMe
     tPixs = pPixs = dPixs = 0
     dpix = davg = 0.0
     if usePIL:
@@ -1527,6 +1525,9 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
 #    Set the preferred plugin list to be exclusively Silo.  This mimics
 #    the old behavior.
 #
+#    Mark C. Miller, Fri Jan 22 20:17:13 PST 2010
+#    Added this comment to explain a previous update in which I added
+#    externDbPaths variable and FindAndOpenDatabase() function.
 # ----------------------------------------------------------------------------
 
 import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
@@ -1552,8 +1553,14 @@ iactive = 0
 sampleIndex = 0
 checkSumMap = {}
 oszPageSize = 0
-externalDbPaths=("/project/projectdirs/visit/data",\
-    "/usr/gapps/visit/data",\
+
+# Places where we're likely to find data files that we do NOT
+# maintain in VisIt's repo. One needs to use the FindAndOpenDatabase()
+# method in place of the OpenDatabase() method to invoke the behavior
+# of searching in these dirs for the database file to open.
+externalDbPaths=("../data",
+    "/project/projectdirs/visit/data",
+    "/usr/gapps/visit/data",
     "/home/visit/data")
 
 # Process some command line arguments.
