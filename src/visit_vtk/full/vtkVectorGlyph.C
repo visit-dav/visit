@@ -96,6 +96,9 @@ vtkVectorGlyph::vtkVectorGlyph()
 //    width, to increase the number of polygons, and to cap the ends of
 //    the cone/cylinder.
 //
+//    Hank Childs, Sun Jan 24 10:26:07 PST 2010
+//    Fix problem where glyph heads don't show up in 2D.
+//
 // ****************************************************************************
 
 void vtkVectorGlyph::Execute(void)
@@ -145,7 +148,11 @@ void vtkVectorGlyph::Execute(void)
         float theta = 2*M_PI * float(i)/float(nSteps);
         float x = OriginOffset + endOfHead;
         float y = proportion * 0.5 * cos(theta);
-        float z = proportion * 0.5 * sin(theta); 
+        float z;
+        if (ConeHead)
+            z = proportion * 0.5 * sin(theta); 
+        else
+            z = 0;
         pts->SetPoint(3 + i, x, y, z);
     }
 
