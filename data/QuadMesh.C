@@ -463,6 +463,9 @@ protected:
 //   Brad Whitlock, Tue Mar 10 13:20:17 PST 2009
 //   Added ability to set the units to something other than Joules.
 //
+//    Mark C. Miller, Sat Jan 23 16:01:00 PST 2010
+//    Fixed adding extra leading slash for level>0 to do so only if there is
+//    not already a leading slash.
 // ****************************************************************************
 
 class QuadMesh::ScalarData
@@ -523,7 +526,7 @@ public:
          int nlevels = 0;
          std::string varName = BeginVar(db, name, nlevels);
          std::string mName(meshName);
-         if(nlevels > 0)
+         if(nlevels > 0 && mName[0] != '/')
             mName = std::string("/") + mName;
          int sdims = (zdim > 1) ? 3 : 2;
          if(nodal)
