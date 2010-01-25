@@ -238,6 +238,11 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006
 //
+//  Modifications:
+//
+//   Hank Childs, Sun Jan 24 19:43:21 PST 2010
+//   Issue a warning when operating on point meshes.
+//
 // ****************************************************************************
 
 void
@@ -245,6 +250,23 @@ avtGradientExpression::PreExecute(void)
 {
     avtSingleInputExpressionFilter::PreExecute();
     haveIssuedWarning = false;
+
+    static bool issuedWarningAboutPointMeshes = false;
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        if (! issuedWarningAboutPointMeshes)
+        {
+            avtCallback::IssueWarning("VisIt is unable to evaluate a "
+                           "gradient over a point mesh.  You have asked VisIt "
+                           "to do this explicitly (through expressions) or "
+                           "indirectly (for example by making a lit volume "
+                           "plot of a point mesh).  All 0's will be used for "
+                           "the gradient field.  In the case of volume "
+                           "rendering, no lighting will appear.  This message "
+                           "will only be issued once per VisIt session.");
+            issuedWarningAboutPointMeshes = true;
+        }
+    }
 }
 
 
@@ -302,6 +324,18 @@ avtGradientExpression::PreExecute(void)
 vtkDataArray *
 avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
 {
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        int nPoints = in_ds->GetNumberOfPoints();
+        vtkDataArray *results = vtkFloatArray::New();
+        results->SetNumberOfComponents(3);
+        results->SetNumberOfTuples(nPoints);        
+        float *ptr = (float *) results->GetVoidPointer(0);
+        for (int i = 0 ; i < 3*nPoints ; i++)
+            ptr[i] = 0.;
+        return results;
+    }
+
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         return RectilinearGradient((vtkRectilinearGrid *) in_ds);
