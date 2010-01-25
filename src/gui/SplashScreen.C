@@ -148,10 +148,14 @@
 //    Eric Brugger, Tue Mar 17 15:36:27 PDT 2009
 //    Changed the date on the splash screen.
 //
+//    Tom Fogal, Sun Jan 24 17:09:18 MST 2010
+//    Patch from Andreas Kloeckner to tell Qt we've got a splash screen window,
+//    instead of just a window without a frame.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) 
-: QFrame(0, Qt::FramelessWindowHint)
+: QFrame(0, Qt::SplashScreen)
 {
 #ifdef Q_WS_MACX
     setWindowModality(Qt::WindowModal);

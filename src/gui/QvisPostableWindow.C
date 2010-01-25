@@ -75,11 +75,18 @@ bool QvisPostableWindow::postEnabled = true;
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Tom Fogal, Sun Jan 24 17:08:09 MST 2010
+//   Patch from Andreas Kloeckner to set appropriate Qt window role.
+//
 // ****************************************************************************
 
 QvisPostableWindow::QvisPostableWindow(const QString &captionString,
-    const QString &shortName, QvisNotepadArea *n) : QvisWindowBase(captionString)
+                                       const QString &shortName,
+                                       QvisNotepadArea *n) :
+  QvisWindowBase(captionString, Qt::Dialog)
 {
+    setWindowRole("postable-window");
+
     if(!shortName.isEmpty())
         shortCaption = QString(shortName);
     else

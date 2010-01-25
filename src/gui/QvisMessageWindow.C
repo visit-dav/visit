@@ -82,12 +82,17 @@
 //   Brad Whitlock, Fri May 30 14:28:01 PDT 2008
 //   Qt 4.
 //
+//   Tom Fogal, Sun Jan 24 17:05:48 MST 2010
+//   Patch from Andreas Kloeckner to set Qt window role.
+//
 // *************************************************************************************
 
 QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
-    const QString &captionString) : QvisWindowBase(captionString),
+    const QString &captionString) : QvisWindowBase(captionString, Qt::Dialog),
     Observer(msgAttr)
 {
+    setWindowRole("message");
+
     preserveInformation = false;
 
     // Create the central widget and the top layout.
