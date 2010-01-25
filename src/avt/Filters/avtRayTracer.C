@@ -375,6 +375,9 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //    Hank Childs, Tue Jan 13 14:26:44 PST 2009
 //    Fix oversight where parallel volume rendering was not being jittered.
 //
+//    Hank Childs, Sun Jan 24 15:35:50 PST 2010
+//    Automatically use the kernel based resampling for point data.
+//
 // ****************************************************************************
 
 void
@@ -416,7 +419,11 @@ avtRayTracer::Execute(void)
     // Extract all of the samples from the dataset.
     //
     avtSamplePointExtractor extractor(screen[0], screen[1], samplesPerRay);
-    extractor.SetKernelBasedSampling(kernelBasedSampling);
+    bool doKernel = kernelBasedSampling;
+    if (trans.GetOutput()->GetInfo().GetAttributes().GetTopologicalDimension()
+        == 0)
+        doKernel = true;
+    extractor.SetKernelBasedSampling(doKernel);
     extractor.RegisterRayFunction(rayfoo);
     extractor.SetJittering(true);
     extractor.SetInput(trans.GetOutput());
