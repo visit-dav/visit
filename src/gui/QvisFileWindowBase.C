@@ -142,13 +142,19 @@ protected:
 // Creation:   Tue Jul 15 12:05:08 PDT 2008
 //
 // Modifications:
+//
+//   Tom Fogal, Sun Jan 24 16:54:13 MST 2010
+//   Apply patch from Andreas Kloeckner to set appropriate window role.
 //   
 // ****************************************************************************
 
 QvisFileWindowBase::QvisFileWindowBase(const QString &winCaption) :
-    QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList(),
+    QvisDelayedWindowSimpleObserver(winCaption, Qt::Dialog),
+    intermediateFileList(),
     currentVirtualDatabaseDefinitions(), invalidHosts()
 {
+    setWindowRole("file-window");
+
     fs = 0;
     profiles = 0;
 

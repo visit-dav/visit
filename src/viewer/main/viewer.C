@@ -121,6 +121,10 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 //    Skip connecting to the client if we're doing a -connectengine, which
 //    means the engine and not the client is launching the viewer.
 //
+//    Tom Fogal, Sun Jan 24 17:10:46 MST 2010
+//    Add two new Qt arguments, to tell Qt the application name.  Patch from
+//    Andreas Kloeckner, I modified it to use strdup().
+//
 // ****************************************************************************
 
 int
@@ -160,7 +164,7 @@ main(int argc, char *argv[])
         //
         // Create the QApplication. This sets the qApp pointer.
         //
-        char **argv2 = new char *[argc + 3];
+        char **argv2 = new char *[argc + 5];
         int real_argc = 0;
         for(int i = 0; i < argc; ++i)
         {
@@ -169,9 +173,13 @@ main(int argc, char *argv[])
             else
                 argv2[real_argc++] = argv[i];
         }
+
         argv2[real_argc] = (char*)"-font";
         argv2[real_argc+1] = (char*)viewer.State()->GetAppearanceAttributes()->GetFontName().c_str();
-        argv2[real_argc+2] = NULL;
+        argv2[real_argc+2] = (char*)"-name";
+        argv2[real_argc+3] = (char*)"visit-viewer";
+        argv2[real_argc+4] = NULL;
+
         debug1 << "Viewer using font: " << argv2[real_argc+1] << endl;
         qInstallMsgHandler(Viewer_LogQtMessages);
         int argc2 = real_argc + 2;

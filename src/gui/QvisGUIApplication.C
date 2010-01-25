@@ -590,6 +590,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Tom Fogal, Sun Jan 24 17:02:27 MST 2010
+//   Apply patch from Andreas Kloeckner to tell Qt the application name.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -703,9 +706,8 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // are setting the initial font through the command line because Qt
     // does not want to allow the font to change after qApp is created.
     //
-    // note: JSM 2/1/02 -- should these all be strdup'd ?
-    qt_argv = new char *[argc + 3];
-    qt_argc = argc + 2;
+    qt_argv = new char *[argc + 5];
+    qt_argc = argc + 4;
     for(int i = 0; i < argc; ++i)
     {
         qt_argv[i] = strdup(argv[i]);
@@ -714,7 +716,11 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     qt_argv[argc] = strdup("-font");
     qt_argv[argc+1] = strdup((char*)GetViewerState()->GetAppearanceAttributes()->
         GetFontName().c_str());
-    qt_argv[argc+2] = NULL;
+
+    qt_argv[argc+2] = strdup("-name");
+    qt_argv[argc+3] = strdup("visit-gui");
+    qt_argv[argc+4] = NULL;
+
     debug1 << "QvisApplication::QvisApplication: -font " << qt_argv[argc+1] << endl;
     qInstallMsgHandler(GUI_LogQtMessages);
     mainApp = new QvisApplication(qt_argc, qt_argv);

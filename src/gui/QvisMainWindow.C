@@ -327,11 +327,16 @@
 //    out without the Advanced file menu.  Changed default splitter
 //    sizes depending on if file panel starts hidden or not.
 //
+//    Tom Fogal, Sun Jan 24 17:04:34 MST 2010
+//    Patch from Andreas Kloeckner to set the Qt window role.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     : QvisWindowBase(captionString)
 {
+    setWindowRole("gui-main");
+
     setAttribute(Qt::WA_DeleteOnClose,true);
     int     id;
     QPixmap openIcon, saveIcon, computerIcon, printIcon, rainbowIcon;
