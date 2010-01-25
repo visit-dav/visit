@@ -903,10 +903,10 @@
         <Object name="ViewerSubject">
             <Object name="DatabaseCorrelationList">
                 <Object name="DatabaseCorrelation">
-                    <Field name="name" type="string">localhost:../data/dbA00.pdb</Field>
+                    <Field name="name" type="string">localhost:../data/pdb_test_data/dbA00.pdb</Field>
                     <Field name="numStates" type="int">10</Field>
                     <Field name="method" type="string">IndexForIndexCorrelation</Field>
-                    <Field name="databaseNames" type="stringVector">"localhost:../data/dbA00.pdb" </Field>
+                    <Field name="databaseNames" type="stringVector">"localhost:../data/pdb_test_data/dbA00.pdb" </Field>
                     <Field name="databaseNStates" type="intVector">10 </Field>
                     <Field name="databaseTimes" type="doubleVector">14 14.5 15 15.5 16 16.5 17 17.5 18 18.5 </Field>
                     <Field name="databaseCycles" type="intVector">0 1 2 3 4 5 6 7 8 9 </Field>
@@ -915,10 +915,10 @@
                     <Field name="condensedCycles" type="intVector"></Field>
                 </Object>
                 <Object name="DatabaseCorrelation">
-                    <Field name="name" type="string">localhost:../data/dbB00.pdb</Field>
+                    <Field name="name" type="string">localhost:../data/pdb_test_data/dbB00.pdb</Field>
                     <Field name="numStates" type="int">20</Field>
                     <Field name="method" type="string">IndexForIndexCorrelation</Field>
-                    <Field name="databaseNames" type="stringVector">"localhost:../data/dbB00.pdb" </Field>
+                    <Field name="databaseNames" type="stringVector">"localhost:../data/pdb_test_data/dbB00.pdb" </Field>
                     <Field name="databaseNStates" type="intVector">20 </Field>
                     <Field name="databaseTimes" type="doubleVector">16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 </Field>
                     <Field name="databaseCycles" type="intVector">10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </Field>
@@ -927,10 +927,10 @@
                     <Field name="condensedCycles" type="intVector"></Field>
                 </Object>
                 <Object name="DatabaseCorrelation">
-                    <Field name="name" type="string">localhost:../data/dbC00.pdb</Field>
+                    <Field name="name" type="string">localhost:../data/pdb_test_data/dbC00.pdb</Field>
                     <Field name="numStates" type="int">30</Field>
                     <Field name="method" type="string">IndexForIndexCorrelation</Field>
-                    <Field name="databaseNames" type="stringVector">"localhost:../data/dbC00.pdb" </Field>
+                    <Field name="databaseNames" type="stringVector">"localhost:../data/pdb_test_data/dbC00.pdb" </Field>
                     <Field name="databaseNStates" type="intVector">30 </Field>
                     <Field name="databaseTimes" type="doubleVector">0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </Field>
                     <Field name="databaseCycles" type="intVector">0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </Field>
@@ -942,7 +942,7 @@
                     <Field name="name" type="string">MyThreeDatabaseCorrelation</Field>
                     <Field name="numStates" type="int">30</Field>
                     <Field name="method" type="string">StretchedIndexCorrelation</Field>
-                    <Field name="databaseNames" type="stringVector">"localhost:../data/dbA00.pdb" "localhost:../data/dbB00.pdb" "localhost:../data/dbC00.pdb" </Field>
+                    <Field name="databaseNames" type="stringVector">"localhost:../data/pdb_test_data/dbA00.pdb" "localhost:../data/pdb_test_data/dbB00.pdb" "localhost:../data/pdb_test_data/dbC00.pdb" </Field>
                     <Field name="databaseNStates" type="intVector">10 20 30 </Field>
                     <Field name="databaseTimes" type="doubleVector">14 14.5 15 15.5 16 16.5 17 17.5 18 18.5 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </Field>
                     <Field name="databaseCycles" type="intVector">0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </Field>
@@ -973,7 +973,7 @@
                         <Field name="toolsLocked" type="bool">false</Field>
                         <Field name="interactionMode" type="string">NAVIGATE</Field>
                         <Object name="AnnotationAttributes">
-                            <Field name="axesFlag2D" type="bool">true</Field>
+                            <Field name="axesFlag2D" type="bool">false</Field>
                             <Field name="axesAutoSetTicks2D" type="bool">true</Field>
                             <Field name="labelAutoSetScaling2D" type="bool">true</Field>
                             <Field name="xAxisLabels2D" type="bool">true</Field>
@@ -999,7 +999,7 @@
                             <Field name="axesLineWidth2D" type="int">0</Field>
                             <Field name="axesTickLocation2D" type="string">Outside</Field>
                             <Field name="axesTicks2D" type="string">BottomLeft</Field>
-                            <Field name="axesFlag" type="bool">true</Field>
+                            <Field name="axesFlag" type="bool">false</Field>
                             <Field name="axesAutoSetTicks" type="bool">true</Field>
                             <Field name="labelAutoSetScaling" type="bool">true</Field>
                             <Field name="xAxisLabels" type="bool">true</Field>
@@ -1037,7 +1037,7 @@
                             <Field name="zLabelScaling" type="int">0</Field>
                             <Field name="axesTickLocation" type="string">Inside</Field>
                             <Field name="axesType" type="string">ClosestTriad</Field>
-                            <Field name="triadFlag" type="bool">true</Field>
+                            <Field name="triadFlag" type="bool">false</Field>
                             <Field name="bboxFlag" type="bool">true</Field>
                             <Object name="backgroundColor">
                                 <Object name="ColorAttribute">
@@ -1062,8 +1062,8 @@
                             </Object>
                             <Field name="backgroundMode" type="string">Gradient</Field>
                             <Field name="userInfoFlag" type="bool">false</Field>
-                            <Field name="databaseInfoFlag" type="bool">true</Field>
-                            <Field name="legendInfoFlag" type="bool">true</Field>
+                            <Field name="databaseInfoFlag" type="bool">false</Field>
+                            <Field name="legendInfoFlag" type="bool">false</Field>
                         </Object>
                         <Object name="LightList">
                             <Object name="light0">
@@ -1214,7 +1214,7 @@
                         </Object>
                         <Object name="ViewerPlotList">
                             <Field name="hostName" type="string">localhost</Field>
-                            <Field name="databaseName" type="string">../data/dbA00.pdb</Field>
+                            <Field name="databaseName" type="string">../data/pdb_test_data/dbA00.pdb</Field>
                             <Field name="nPlots" type="int">3</Field>
                             <Field name="keyframeMode" type="bool">false</Field>
                             <Field name="nKeyframes" type="int">1</Field>
@@ -1222,15 +1222,15 @@
                             <Field name="playbackMode" type="string">Looping</Field>
                             <Object name="timeSliders">
                                 <Field name="MyThreeDatabaseCorrelation" type="int">10</Field>
-                                <Field name="localhost:../data/dbA00.pdb" type="int">3</Field>
-                                <Field name="localhost:../data/dbB00.pdb" type="int">6</Field>
-                                <Field name="localhost:../data/dbC00.pdb" type="int">10</Field>
+                                <Field name="localhost:../data/pdb_test_data/dbA00.pdb" type="int">3</Field>
+                                <Field name="localhost:../data/pdb_test_data/dbB00.pdb" type="int">6</Field>
+                                <Field name="localhost:../data/pdb_test_data/dbC00.pdb" type="int">10</Field>
                             </Object>
                             <Field name="activeTimeSlider" type="string">MyThreeDatabaseCorrelation</Field>
                             <Object name="plot00">
                                 <Field name="pluginID" type="string">FilledBoundary_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/dbA00.pdb</Field>
+                                <Field name="databaseName" type="string">../data/pdb_test_data/dbA00.pdb</Field>
                                 <Field name="variableName" type="string">material(mesh)</Field>
                                 <Field name="active" type="bool">true</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -1348,7 +1348,7 @@
                             <Object name="plot01">
                                 <Field name="pluginID" type="string">FilledBoundary_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/dbB00.pdb</Field>
+                                <Field name="databaseName" type="string">../data/pdb_test_data/dbB00.pdb</Field>
                                 <Field name="variableName" type="string">material(mesh)</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -1466,7 +1466,7 @@
                             <Object name="plot02">
                                 <Field name="pluginID" type="string">FilledBoundary_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/dbC00.pdb</Field>
+                                <Field name="databaseName" type="string">../data/pdb_test_data/dbC00.pdb</Field>
                                 <Field name="variableName" type="string">material(mesh)</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="hidden" type="bool">false</Field>

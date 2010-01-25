@@ -1061,10 +1061,10 @@
         <Object name="ViewerSubject">
             <Object name="DatabaseCorrelationList">
                 <Object name="DatabaseCorrelation">
-                    <Field name="name" type="string">localhost:../data/wave.visit</Field>
+                    <Field name="name" type="string">localhost:../data/silo_hdf5_test_data/wave.visit</Field>
                     <Field name="numStates" type="int">71</Field>
                     <Field name="method" type="string">IndexForIndexCorrelation</Field>
-                    <Field name="databaseNames" type="stringVector">"localhost:../data/wave.visit" </Field>
+                    <Field name="databaseNames" type="stringVector">"localhost:../data/silo_hdf5_test_data/wave.visit" </Field>
                     <Field name="databaseNStates" type="intVector">71 </Field>
                     <Field name="databaseTimes" type="doubleVector">-2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </Field>
                     <Field name="databaseCycles" type="intVector">0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 230 240 250 260 270 280 290 300 310 320 330 340 350 360 370 380 390 400 410 420 430 440 450 460 470 480 490 500 510 520 530 540 550 560 570 580 590 600 610 620 630 640 650 660 670 680 690 700 </Field>
@@ -1098,7 +1098,7 @@
                         <Field name="toolsLocked" type="bool">false</Field>
                         <Field name="interactionMode" type="string">NAVIGATE</Field>
                         <Object name="AnnotationAttributes">
-                            <Field name="axesFlag2D" type="bool">true</Field>
+                            <Field name="axesFlag2D" type="bool">false</Field>
                             <Field name="axesAutoSetTicks2D" type="bool">true</Field>
                             <Field name="labelAutoSetScaling2D" type="bool">true</Field>
                             <Field name="xAxisLabels2D" type="bool">true</Field>
@@ -1124,7 +1124,7 @@
                             <Field name="axesLineWidth2D" type="int">0</Field>
                             <Field name="axesTickLocation2D" type="string">Outside</Field>
                             <Field name="axesTicks2D" type="string">BottomLeft</Field>
-                            <Field name="axesFlag" type="bool">true</Field>
+                            <Field name="axesFlag" type="bool">false</Field>
                             <Field name="axesAutoSetTicks" type="bool">true</Field>
                             <Field name="labelAutoSetScaling" type="bool">true</Field>
                             <Field name="xAxisLabels" type="bool">true</Field>
@@ -1162,7 +1162,7 @@
                             <Field name="zLabelScaling" type="int">0</Field>
                             <Field name="axesTickLocation" type="string">Inside</Field>
                             <Field name="axesType" type="string">ClosestTriad</Field>
-                            <Field name="triadFlag" type="bool">true</Field>
+                            <Field name="triadFlag" type="bool">false</Field>
                             <Field name="bboxFlag" type="bool">true</Field>
                             <Object name="backgroundColor">
                                 <Object name="ColorAttribute">
@@ -1188,7 +1188,7 @@
                             <Field name="backgroundMode" type="string">Solid</Field>
                             <Field name="userInfoFlag" type="bool">false</Field>
                             <Field name="databaseInfoFlag" type="bool">false</Field>
-                            <Field name="legendInfoFlag" type="bool">true</Field>
+                            <Field name="legendInfoFlag" type="bool">false</Field>
                         </Object>
                         <Object name="LightList">
                             <Object name="light0">
@@ -1345,13 +1345,13 @@
                         </Object>
                         <Object name="ViewerPlotList">
                             <Object name="timeSliders">
-                                <Field name="localhost:../data/wave.visit" type="int">0</Field>
+                                <Field name="localhost:../data/silo_hdf5_test_data/wave.visit" type="int">0</Field>
                             </Object>
-                            <Field name="activeTimeSlider" type="string">localhost:../data/wave.visit</Field>
+                            <Field name="activeTimeSlider" type="string">localhost:../data/silo_hdf5_test_data/wave.visit</Field>
                             <Object name="plot00">
                                 <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/globe.silo</Field>
+                                <Field name="databaseName" type="string">../data/silo_hdf5_test_data/globe.silo</Field>
                                 <Field name="variableName" type="string">uv</Field>
                                 <Field name="active" type="bool">true</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -1443,7 +1443,7 @@
                             <Object name="plot01">
                                 <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/wave.visit</Field>
+                                <Field name="databaseName" type="string">../data/silo_hdf5_test_data/wave.visit</Field>
                                 <Field name="variableName" type="string">p2</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -1519,7 +1519,7 @@
                                 </Object>
                             </Object>
                             <Field name="hostName" type="string">localhost</Field>
-                            <Field name="databaseName" type="string">../data/wave.visit</Field>
+                            <Field name="databaseName" type="string">../data/silo_hdf5_test_data/wave.visit</Field>
                             <Field name="nPlots" type="int">2</Field>
                             <Field name="keyframeMode" type="bool">false</Field>
                             <Field name="nKeyframes" type="int">1</Field>

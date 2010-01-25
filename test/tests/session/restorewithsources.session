@@ -1302,7 +1302,7 @@
         </Object>
         <Object name="ViewerSubject">
             <Object name="SourceMap">
-                <Field name="SOURCE00" type="string">localhost:../data/rect3d.silo</Field>
+                <Field name="SOURCE00" type="string">localhost:../data/silo_hdf5_test_data/rect3d.silo</Field>
             </Object>
             <Object name="DatabaseCorrelationList">
                 <Field name="needPermission" type="bool">true</Field>
@@ -1332,7 +1332,7 @@
                         <Field name="toolsLocked" type="bool">false</Field>
                         <Field name="interactionMode" type="string">NAVIGATE</Field>
                         <Object name="AnnotationAttributes">
-                            <Field name="axesFlag2D" type="bool">true</Field>
+                            <Field name="axesFlag2D" type="bool">false</Field>
                             <Field name="axesAutoSetTicks2D" type="bool">true</Field>
                             <Field name="labelAutoSetScaling2D" type="bool">true</Field>
                             <Field name="xAxisLabels2D" type="bool">true</Field>
@@ -1366,7 +1366,7 @@
                             <Field name="yAxisUserUnits2D" type="string"></Field>
                             <Field name="xAxisUserUnitsFlag2D" type="bool">false</Field>
                             <Field name="yAxisUserUnitsFlag2D" type="bool">false</Field>
-                            <Field name="axesFlag" type="bool">true</Field>
+                            <Field name="axesFlag" type="bool">false</Field>
                             <Field name="axesAutoSetTicks" type="bool">true</Field>
                             <Field name="labelAutoSetScaling" type="bool">true</Field>
                             <Field name="xAxisLabels" type="bool">true</Field>
@@ -1416,7 +1416,7 @@
                             <Field name="zAxisUserUnitsFlag" type="bool">false</Field>
                             <Field name="axesTickLocation" type="string">Inside</Field>
                             <Field name="axesType" type="string">ClosestTriad</Field>
-                            <Field name="triadFlag" type="bool">true</Field>
+                            <Field name="triadFlag" type="bool">false</Field>
                             <Field name="bboxFlag" type="bool">true</Field>
                             <Object name="backgroundColor">
                                 <Object name="ColorAttribute">
@@ -1441,8 +1441,8 @@
                             </Object>
                             <Field name="backgroundMode" type="string">Solid</Field>
                             <Field name="userInfoFlag" type="bool">false</Field>
-                            <Field name="databaseInfoFlag" type="bool">true</Field>
-                            <Field name="legendInfoFlag" type="bool">true</Field>
+                            <Field name="databaseInfoFlag" type="bool">false</Field>
+                            <Field name="legendInfoFlag" type="bool">false</Field>
                         </Object>
                         <Object name="LightList">
                             <Object name="light0">
