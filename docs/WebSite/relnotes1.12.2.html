@@ -410,65 +410,34 @@ function MM_initTimelines() { //v4.0
 
 <!-- InstanceBeginEditable name="body" -->
 
-<h1>VisIt's Licensing Agreement </h1>
+<h1>VisIt 1.12.2 Release Notes</h1>
 
-<p>VisIt is freely available  under the terms of the <a href="http://www.opensource.org/licenses/index.php" title="BSD license" target="_blank">BSD license</a> given below.</p><br>
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
 
+<p><b><font size="4">Enhancements in version 1.12.2</font></b></p>
 
+<ul>
+<li>Support for the SOLUTIONTIME keyword was added to the Tecplot reader. Values specified for this keyword will appear as the 'time' value for plots.</li>
+<li>The UNIC database reader was enhanced to support several new element types. The new element types consist of triangles, quadrilaterals, tetrahedra, pyramids, wedges and hexahedra ranging from linear to 20th order. The higher order elements are decomposed into linear elements when they are read in.</li>
+</ul>
 
-<H2>
+<p><b><font size="4">Bugs fixed in version 1.12.2</font></b></p>
 
-<CENTER>Copyright (c) 2000 - 2010.</CENTER>
-
-<CENTER>Lawrence Livermore National Security, LLC.</CENTER>
-
-<CENTER>Produced at the Lawrence Livermore National Laboratory.</CENTER>
-
-<CENTER>LLNL-CODE-400124</CENTER>
-
-<CENTER>All rights reserved.</CENTER>
-
-</B></H2>
-
-<BR>
-
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-
-<UL>
-
-<LI>Redistributions of source code must retain the above copyright notice, this list of conditions and the disclaimer below.</LI>
-
-<LI>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the disclaimer (as noted below) in the documentation and/or other materials provided with the distribution.</LI>
-
-<LI>Neither the name of the LLNS/LLNL nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.</LI>
-
-</UL>
-
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY, LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
-
-<p>Additional BSD Notice<BR>
-
-  <BR>
-
-1. This notice is required to be provided under our contract with the U.S. Department of Energy (DOE). This work was produced at Lawrence Livermore National Laboratory under Contract No. DE-AC52-07NA27344 with the DOE.
-
-<BR>
-
-<BR>
-
-2. Neither the United States Government nor Lawrence Livermore National Security, LLC nor any of their employees, makes any warranty, express or implied, or assumes any liability or responsibility for the accuracy, completeness, or usefulness of any information, apparatus, product, or process disclosed, or represents that its use would not infringe privately-owned rights.
-
-<BR>
-
-<BR>
-
-3. Also, reference herein to any specific commercial products, process, or services by trade name, trademark, manufacturer or otherwise does not necessarily constitute or imply its endorsement, recommendation, or favoring by the United States Government or Lawrence Livermore National Security, LLC. The views and opinions of authors expressed herein do not necessarily state or reflect those of the United States Government or Lawrence Livermore National Security, LLC, and shall not be used for advertising or product endorsement purposes.
-
-</p>
-
-<br>
-
-</p>
+<ul>
+<li>A bug was fixed with the Tube operator that could cause it to crash if the data had previously had an operation applied that removed some of the cells, such as the Subset or Threshold operators.</li>
+<li>A Pseudocolor plot with the PersistentParticles operator now has the correct data extents.</li>
+<li>A bug reading integer data from the Silo plugin, introduced in version 1.12.1, was fixed.</li>
+<li>The ParallelCoordinates plot now works well with FastBit-accelerated indices and expression data.</li>
+<li>The PersistentParticles operator now works with expression data.</li>
+<li>The PersistentParticles operator now works with vector data.</li>
+<li>The PersistentParticles operator no longer causes a parallel hang.</li>
+<li>The PersistentParticles operator now issues a warning if it is not the first operator in a pipeline.</li>
+<li>The VizSchema reader now supports external file links (allowing data spread across multiple h5 files).</li>
+<li>The VizSchema reader now supports polygons and polyhedra.</li>
+<li>A bug in the Silo plugin where block-structured decomposition and mrgtree objects did not play well together was fixed.</li>
+<li>A problem where HDF5-based plugins would wind up terminating the HDF5 library and/or freeing global HDF5 library state out from underneath currently opened files was addressed.</li>
+</ul>
 
 <!-- InstanceEndEditable -->
 
@@ -623,4 +592,3 @@ function MM_initTimelines() { //v4.0
 </BODY>
 
 <!-- InstanceEnd --></HTML>
-
