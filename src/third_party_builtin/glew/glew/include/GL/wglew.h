@@ -1090,6 +1090,8 @@ struct WGLEWContextStruct
 {
 #endif /* GLEW_MX */
 
+WGLEW_EXPORT PFNWGLSETSTEREOEMITTERSTATE3DLPROC __wglewSetStereoEmitterState3DL;
+
 WGLEW_EXPORT PFNWGLBLITCONTEXTFRAMEBUFFERAMDPROC __wglewBlitContextFramebufferAMD;
 WGLEW_EXPORT PFNWGLCREATEASSOCIATEDCONTEXTAMDPROC __wglewCreateAssociatedContextAMD;
 WGLEW_EXPORT PFNWGLCREATEASSOCIATEDCONTEXTATTRIBSAMDPROC __wglewCreateAssociatedContextAttribsAMD;
@@ -1309,6 +1311,8 @@ GLEWAPI GLboolean wglewContextIsSupported (WGLEWContext* ctx, const char* name);
 GLEWAPI GLboolean wglewIsSupported (const char* name);
 
 #endif /* GLEW_MX */
+
+GLEWAPI GLboolean wglewGetExtension (const char* name);
 
 #define ChoosePixelFormat wglChoosePixelFormat
 

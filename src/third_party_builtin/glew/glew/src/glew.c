@@ -9099,7 +9099,6 @@ PFNWGLSWAPBUFFERSMSCOMLPROC __wglewSwapBuffersMscOML = NULL;
 PFNWGLSWAPLAYERBUFFERSMSCOMLPROC __wglewSwapLayerBuffersMscOML = NULL;
 PFNWGLWAITFORMSCOMLPROC __wglewWaitForMscOML = NULL;
 PFNWGLWAITFORSBCOMLPROC __wglewWaitForSbcOML = NULL;
-GLboolean __WGLEW_core_api = GL_FALSE;
 GLboolean __WGLEW_3DFX_multisample = GL_FALSE;
 GLboolean __WGLEW_3DL_stereo_control = GL_FALSE;
 GLboolean __WGLEW_AMD_gpu_association = GL_FALSE;
@@ -9116,6 +9115,7 @@ GLboolean __WGLEW_ARB_pixel_format_float = GL_FALSE;
 GLboolean __WGLEW_ARB_render_texture = GL_FALSE;
 GLboolean __WGLEW_ATI_pixel_format_float = GL_FALSE;
 GLboolean __WGLEW_ATI_render_texture_rectangle = GL_FALSE;
+GLboolean __WGLEW_core_api = GL_FALSE;
 GLboolean __WGLEW_EXT_depth_float = GL_FALSE;
 GLboolean __WGLEW_EXT_display_color_table = GL_FALSE;
 GLboolean __WGLEW_EXT_extensions_string = GL_FALSE;
@@ -11024,10 +11024,10 @@ const GLubyte* glewGetString (GLenum name)
   static const GLubyte* _glewString[] =
   {
     (const GLubyte*)NULL,
-    (const GLubyte*)"1.5.1",
+    (const GLubyte*)"1.5.2",
     (const GLubyte*)"1",
     (const GLubyte*)"5",
-    (const GLubyte*)"1"
+    (const GLubyte*)"2"
   };
   const int max_string = sizeof(_glewString)/sizeof(*_glewString) - 1;
   return _glewString[(int)name > max_string ? 0 : (int)name];
