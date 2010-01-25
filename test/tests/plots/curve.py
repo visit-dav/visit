@@ -20,13 +20,6 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-def InitAnnotations(): 
-    a = AnnotationAttributes()
-    TurnOffAllAnnotations(a)
-    a.axesFlag2D = 1
-    SetAnnotationAttributes(a)
-
-
 def Test1():
     OpenDatabase("../data/curve_test_data/distribution.ultra")
     DefineCurveExpression("logED", "log10(<Exponential Distribution>)")
@@ -149,7 +142,6 @@ def TestOverlayCurves():
     CloseDatabase("../data/curve_test_data/ol_curveC.curve")
 
 def Main():
-    InitAnnotations()
     Test1()
     TestOverlayCurves()
 

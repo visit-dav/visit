@@ -259,6 +259,8 @@ def TestAutoOpaqueFlag():
     # Restore a session file that has a keyfram animation where the mesh
     # plot exists over all frames but the Pseudocolor plot does not.
     RestoreSession("tests/plots/mesh_opaque.session", 0)
+    # Turn off all annotations but preserve the background colors.
+    TurnOffAllAnnotations(GetAnnotationAttributes())
     Test("mesh_opaque_06")
     SetTimeSliderState(4)
     Test("mesh_opaque_07")

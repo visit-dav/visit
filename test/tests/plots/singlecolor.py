@@ -41,15 +41,6 @@ def InitializeView():
     v.eyeAngle = 2
     SetView3D(v)
 
-# Turn the annotations that we don't want.
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.axes3D.triadFlag = 1
-a.databaseInfoFlag = 1
-a.legendInfoFlag = 1
-SetAnnotationAttributes(a)
-
-
 # Open the database.
 OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
 
