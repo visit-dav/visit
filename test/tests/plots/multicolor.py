@@ -209,13 +209,6 @@ def test5():
     DeleteAllPlots()
 
 def main():
-    # Turn off 3D axes
-    TurnOnAllAnnotations()
-    a = GetAnnotationAttributes()
-    a.axes3D.visible = 0
-    a.userInfoFlag = 0
-    SetAnnotationAttributes(a)
-
     test1()
     test2()
     test3()

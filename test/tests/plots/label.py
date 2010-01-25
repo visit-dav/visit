@@ -766,12 +766,6 @@ def TestSlicedVectors():
     v.fullFrameActivationMode = v.Off  # On, Off, Auto
     v.fullFrameAutoThreshold = 100
     SetView2D(v)
-    a = GetAnnotationAttributes()
-    a.xAxisLabels2D = 0
-    a.yAxisLabels2D = 0
-    a.xAxisTitle2D = 0
-    a.yAxisTitle2D = 0
-    SetAnnotationAttributes(a)
     SaveTestImage("label_9_00")
 
     AddPlot("Vector", "grad")
@@ -833,11 +827,6 @@ def TestSlicedVectors():
 def TestRectilinearLogicalDisplay():
     TestSection("Test 3D zooming and logical mesh display")
     DeleteAllPlots()
-
-    aa = GetAnnotationAttributes()
-    aa.bboxFlag = 0
-    aa.axesFlag = 0
-    SetAnnotationAttributes(aa)
 
     OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
     AddPlot("Pseudocolor", "hardyglobal")
@@ -931,7 +920,6 @@ def TestRectilinearLogicalDisplay():
 
 
 def main():
-    TurnOnAllAnnotations()
     TestGeneralFeatures()
     TestCurvilinear2D()
     TestRectilinear2D()

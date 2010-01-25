@@ -22,25 +22,11 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-# Set up some annotation settings. Turn off tick marks but keep axes
-# and legends
+# Set up some annotation settings.
 a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.axes2D.visible = 1
-a.axes2D.tickAxes = a.Off
-a.axes2D.xAxis.label.visible = 0
-a.axes2D.yAxis.label.visible = 0
-a.axes2D.xAxis.tickMarks.visible = 0
-a.axes2D.yAxis.tickMarks.visible = 0
-a.axes2D.xAxis.title.visible = 1
-a.axes2D.yAxis.title.visible = 1
-a.databaseInfoFlag = 0
-a.legendInfoFlag = 1
-a.axes3D.bboxFlag = 1
-a.axes3D.triadFlag = 1
 a.backgroundColor = (0,0,0,255)
 a.foregroundColor = (255,255,255,255)
-SetAnnotationAttributes(a)
+TurnOffAllAnnotations(a)
 
 TestSection("Test plot options")
 
