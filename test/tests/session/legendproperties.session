@@ -586,21 +586,21 @@
             <Object name="View2DAttributes">
                 <Field name="windowCoords" type="doubleArray" length="4">0 1 0 1 </Field>
                 <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
-                <Field name="fullFrameActivationMode" type="string">Off</Field>
+                <Field name="fullFrameActivationMode" type="string">Auto</Field>
                 <Field name="fullFrameAutoThreshold" type="double">100</Field>
                 <Field name="xScale" type="int">0</Field>
                 <Field name="yScale" type="int">0</Field>
             </Object>
             <Object name="View3DAttributes">
-                <Field name="viewNormal" type="doubleArray" length="3">0.550787 0.515786 -0.6562 </Field>
+                <Field name="viewNormal" type="doubleArray" length="3">0.730598 0.464905 -0.500089 </Field>
                 <Field name="focus" type="doubleArray" length="3">0.5 0.5 0.5 </Field>
-                <Field name="viewUp" type="doubleArray" length="3">-0.360839 0.856083 0.370024 </Field>
+                <Field name="viewUp" type="doubleArray" length="3">-0.367253 0.884995 0.286197 </Field>
                 <Field name="viewAngle" type="double">30</Field>
                 <Field name="parallelScale" type="double">0.866025</Field>
                 <Field name="nearPlane" type="double">-1.73205</Field>
                 <Field name="farPlane" type="double">1.73205</Field>
-                <Field name="imagePan" type="doubleArray" length="2">0.0575097 0.00677953 </Field>
-                <Field name="imageZoom" type="double">0.943454</Field>
+                <Field name="imagePan" type="doubleArray" length="2">0 0 </Field>
+                <Field name="imageZoom" type="double">1</Field>
                 <Field name="perspective" type="bool">true</Field>
                 <Field name="eyeAngle" type="double">2</Field>
                 <Field name="centerOfRotationSet" type="bool">false</Field>
@@ -829,6 +829,7 @@
                 <Field name="simplifyHeavilyMixedZones" type="bool">false</Field>
                 <Field name="maxMaterialsPerZone" type="int">3</Field>
                 <Field name="isoVolumeFraction" type="float">0.5</Field>
+                <Field name="annealingTime" type="int">10</Field>
             </Object>
             <Object name="MeshManagementAttributes">
                 <Field name="discretizationTolerance" type="doubleVector">0.01 0.025 0.05 </Field>
@@ -895,8 +896,8 @@
                 <Field name="endIndex" type="int">1000000000</Field>
             </Object>
             <Object name="FileOpenOptions">
-                <Field name="typeNames" type="stringVector">"ANALYZE" "ANSYS" "AUXFile" "AugDecomp" "BOV" "BOW" "Boxlib2D" "Boxlib3D" "CCM" "CEAucd" "CGNS" "CMAT" "CTRL" "Cale" "Chombo" "Claw" "Cosmos" "CosmosPP" "Curve2D" "DDCMD" "Dyna3D" "EnSight" "Enzo" "Exodus" "ExtrudedVol" "FITS" "FLASH" "Fluent" "GDAL" "GGCM" "GTC" "Gadget" "H5Nimrod" "H5Part" "Image" "KullLite" "LAMMPS" "Lines" "M3D" "MFIX" "MM5" "MatrixMarket" "Mili" "Miranda" "NASTRAN" "NETCDF" "Nek5000" "OVERFLOW" "OpenFOAM" "PATRAN" "PDB" "PFLOTRAN" "PLOT2D" "PLOT3D" "Pixie" "PlainText" "PlasmaState" "Point3D" "ProteinDataBank" "RAW" "S3D" "SAMI" "SAMRAI" "SAR" "SAS" "STL" "Shapefile" "Silo" "SimV1" "SimV1Writer" "SimV2" "Spheral" "TFT" "TSurf" "Tecplot" "Tetrad" "TimeVaryingExodus" "UNIC" "VASP" "VTK" "Vis5D" "Vista" "WavefrontOBJ" "XDMF" "XYZ" "Xmdv" "ZeusMP" "ZipWrapper" "paraDIS" "paraDIS_tecplot" </Field>
-                <Field name="typeIDs" type="stringVector">"ANALYZE_1.0" "ANSYS_1.0" "AUXFile_1.0" "AugDecomp_1.0" "BOV_1.0" "BOW_1.0" "Boxlib2D_1.0" "Boxlib3D_1.0" "CCM_1.0" "CEAucd_1.0" "CGNS_1.0" "CMAT_1.0" "CTRL_1.0" "Cale_1.0" "Chombo_1.0" "Claw_1.0" "Cosmos_1.0" "CosmosPP_1.0" "Curve2D_1.0" "DDCMD_1.0" "Dyna3D_1.0" "EnSight_1.0" "Enzo_1.0" "Exodus_1.0" "ExtrudedVol_1.0" "FITS_1.0" "FLASH_1.0" "Fluent_1.0" "GDAL_1.0" "GGCM_1.0" "GTC_1.0" "Gadget_2.0a" "H5Nimrod_1.0" "H5Part_1.0" "Image_1.0" "KullLite_1.0" "LAMMPS_1.0" "Lines_1.0" "M3D_1.0" "MFIX_1.0" "MM5_1.0" "MatrixMarket_1.0" "Mili_1.0" "Miranda_1.0" "NASTRAN_1.0" "NETCDF_1.0" "Nek5000_1.0" "OVERFLOW_1.0" "OpenFOAM_1.0" "PATRAN_1.0" "PDB_1.1" "PFLOTRAN_1.0" "PLOT2D_1.0" "PLOT3D_1.0" "Pixie_1.0" "PlainText_1.0" "PlasmaState_1.0" "Point3D_1.0" "ProteinDataBank_1.0" "RAW_1.0" "S3D_1.0" "SAMI_1.0" "SAMRAI_1.0" "SAR_1.0" "SAS_1.0" "STL_1.0" "Shapefile_1.0" "Silo_1.0" "SimV1_1.0" "SimV1Writer_1.0" "SimV2_1.0" "Spheral_1.0" "TFT_1.0" "TSurf_1.0" "Tecplot_1.0" "Tetrad_1.0" "TimeVaryingExodus_1.0" "UNIC_1.0" "VASP_1.0" "VTK_1.0" "Vis5D_1.0" "Vista_1.0" "WavefrontOBJ_1.0" "XDMF_1.0" "XYZ_1.0" "Xmdv_1.0" "ZeusMP_1.0" "ZipWrapper_1.0" "paraDIS_1.0a1" "paraDIS_tecplot_1.0a1" </Field>
+                <Field name="typeNames" type="stringVector">"ANALYZE" "ANSYS" "AUXFile" "AugDecomp" "BOV" "BOW" "Boxlib2D" "Boxlib3D" "CCM" "CEAucd" "CGNS" "CMAT" "CTRL" "Cale" "Chombo" "Claw" "Cosmos" "CosmosPP" "Curve2D" "DDCMD" "Dyna3D" "EnSight" "Enzo" "Exodus" "ExtrudedVol" "FITS" "FLASH" "Fluent" "GDAL" "GGCM" "GTC" "Gadget" "H5Nimrod" "H5Part" "Image" "KullLite" "LAMMPS" "Lines" "M3D" "MFIX" "MM5" "MatrixMarket" "Mili" "Miranda" "NASTRAN" "NETCDF" "Nek5000" "OVERFLOW" "OpenFOAM" "PATRAN" "PDB" "PFLOTRAN" "PLOT2D" "PLOT3D" "Pixie" "PlainText" "PlasmaState" "Point3D" "ProteinDataBank" "RAW" "S3D" "SAMI" "SAMRAI" "SAR" "SAS" "STL" "Shapefile" "Silo" "SimV1" "SimV1Writer" "SimV2" "Spheral" "TFT" "TSurf" "Tecplot" "Tetrad" "TimeVaryingExodus" "UNIC" "VASP" "VTK" "Vis5D" "Vista" "WavefrontOBJ" "XDMF" "XYZ" "Xmdv" "ZeusMP" "ZipWrapper" "paraDIS" "paraDIS_tecplot" "HDF_UC" "ITAPS_FMDB" "ITAPS_GRUMMP" "ITAPS_MOAB" "M3DC1" "ViSUS" </Field>
+                <Field name="typeIDs" type="stringVector">"ANALYZE_1.0" "ANSYS_1.0" "AUXFile_1.0" "AugDecomp_1.0" "BOV_1.0" "BOW_1.0" "Boxlib2D_1.0" "Boxlib3D_1.0" "CCM_1.0" "CEAucd_1.0" "CGNS_1.0" "CMAT_1.0" "CTRL_1.0" "Cale_1.0" "Chombo_1.0" "Claw_1.0" "Cosmos_1.0" "CosmosPP_1.0" "Curve2D_1.0" "DDCMD_1.0" "Dyna3D_1.0" "EnSight_1.0" "Enzo_1.0" "Exodus_1.0" "ExtrudedVol_1.0" "FITS_1.0" "FLASH_1.0" "Fluent_1.0" "GDAL_1.0" "GGCM_1.0" "GTC_1.0" "Gadget_2.0a" "H5Nimrod_1.0" "H5Part_1.0" "Image_1.0" "KullLite_1.0" "LAMMPS_1.0" "Lines_1.0" "M3D_1.0" "MFIX_1.0" "MM5_1.0" "MatrixMarket_1.0" "Mili_1.0" "Miranda_1.0" "NASTRAN_1.0" "NETCDF_1.0" "Nek5000_1.0" "OVERFLOW_1.0" "OpenFOAM_1.0" "PATRAN_1.0" "PDB_1.1" "PFLOTRAN_1.0" "PLOT2D_1.0" "PLOT3D_1.0" "Pixie_1.0" "PlainText_1.0" "PlasmaState_1.0" "Point3D_1.0" "ProteinDataBank_1.0" "RAW_1.0" "S3D_1.0" "SAMI_1.0" "SAMRAI_1.0" "SAR_1.0" "SAS_1.0" "STL_1.0" "Shapefile_1.0" "Silo_1.0" "SimV1_1.0" "SimV1Writer_1.0" "SimV2_1.0" "Spheral_1.0" "TFT_1.0" "TSurf_1.0" "Tecplot_1.0" "Tetrad_1.0" "TimeVaryingExodus_1.0" "UNIC_1.0" "VASP_1.0" "VTK_1.0" "Vis5D_1.0" "Vista_1.0" "WavefrontOBJ_1.0" "XDMF_1.0" "XYZ_1.0" "Xmdv_1.0" "ZeusMP_1.0" "ZipWrapper_1.0" "paraDIS_1.0a1" "paraDIS_tecplot_1.0a1" "HDF_UC_1.0" "ITAPS_FMDB_1.0" "ITAPS_GRUMMP_1.0" "ITAPS_MOAB_1.0" "M3DC1_1.0" "ViSUS_1.0" </Field>
                 <Object name="DBOptionsAttributes">
                     <Field name="types" type="intVector"></Field>
                     <Field name="names" type="stringVector"></Field>
@@ -1236,9 +1237,9 @@
                     <Field name="obsoleteNames" type="stringVector"></Field>
                 </Object>
                 <Object name="DBOptionsAttributes">
-                    <Field name="types" type="intVector"></Field>
-                    <Field name="names" type="stringVector"></Field>
-                    <Field name="optBools" type="intVector"></Field>
+                    <Field name="types" type="intVector">0 </Field>
+                    <Field name="names" type="stringVector">"Show generating processor instead of refinement level" </Field>
+                    <Field name="optBools" type="intVector">0 </Field>
                     <Field name="optFloats" type="doubleVector"></Field>
                     <Field name="optDoubles" type="doubleVector"></Field>
                     <Field name="optInts" type="intVector"></Field>
@@ -2067,7 +2068,86 @@
                     <Field name="enumStringsSizes" type="intVector"></Field>
                     <Field name="obsoleteNames" type="stringVector"></Field>
                 </Object>
-                <Field name="Enabled" type="intVector">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 </Field>
+                <Object name="DBOptionsAttributes">
+                    <Field name="types" type="intVector">0 </Field>
+                    <Field name="names" type="stringVector">"Use FastBit" </Field>
+                    <Field name="optBools" type="intVector">1 </Field>
+                    <Field name="optFloats" type="doubleVector"></Field>
+                    <Field name="optDoubles" type="doubleVector"></Field>
+                    <Field name="optInts" type="intVector"></Field>
+                    <Field name="optStrings" type="stringVector"></Field>
+                    <Field name="optEnums" type="intVector"></Field>
+                    <Field name="enumStrings" type="stringVector"></Field>
+                    <Field name="enumStringsSizes" type="intVector"></Field>
+                    <Field name="obsoleteNames" type="stringVector"></Field>
+                </Object>
+                <Object name="DBOptionsAttributes">
+                    <Field name="types" type="intVector"></Field>
+                    <Field name="names" type="stringVector"></Field>
+                    <Field name="optBools" type="intVector"></Field>
+                    <Field name="optFloats" type="doubleVector"></Field>
+                    <Field name="optDoubles" type="doubleVector"></Field>
+                    <Field name="optInts" type="intVector"></Field>
+                    <Field name="optStrings" type="stringVector"></Field>
+                    <Field name="optEnums" type="intVector"></Field>
+                    <Field name="enumStrings" type="stringVector"></Field>
+                    <Field name="enumStringsSizes" type="intVector"></Field>
+                    <Field name="obsoleteNames" type="stringVector"></Field>
+                </Object>
+                <Object name="DBOptionsAttributes">
+                    <Field name="types" type="intVector"></Field>
+                    <Field name="names" type="stringVector"></Field>
+                    <Field name="optBools" type="intVector"></Field>
+                    <Field name="optFloats" type="doubleVector"></Field>
+                    <Field name="optDoubles" type="doubleVector"></Field>
+                    <Field name="optInts" type="intVector"></Field>
+                    <Field name="optStrings" type="stringVector"></Field>
+                    <Field name="optEnums" type="intVector"></Field>
+                    <Field name="enumStrings" type="stringVector"></Field>
+                    <Field name="enumStringsSizes" type="intVector"></Field>
+                    <Field name="obsoleteNames" type="stringVector"></Field>
+                </Object>
+                <Object name="DBOptionsAttributes">
+                    <Field name="types" type="intVector"></Field>
+                    <Field name="names" type="stringVector"></Field>
+                    <Field name="optBools" type="intVector"></Field>
+                    <Field name="optFloats" type="doubleVector"></Field>
+                    <Field name="optDoubles" type="doubleVector"></Field>
+                    <Field name="optInts" type="intVector"></Field>
+                    <Field name="optStrings" type="stringVector"></Field>
+                    <Field name="optEnums" type="intVector"></Field>
+                    <Field name="enumStrings" type="stringVector"></Field>
+                    <Field name="enumStringsSizes" type="intVector"></Field>
+                    <Field name="obsoleteNames" type="stringVector"></Field>
+                </Object>
+                <Object name="DBOptionsAttributes">
+                    <Field name="types" type="intVector">1 1 5 3 </Field>
+                    <Field name="names" type="stringVector">"Number of poloidal planes" "Levels of mesh refinement 0-5" "Linear Mesh Data Location" "Perturbation scaling" </Field>
+                    <Field name="optBools" type="intVector"></Field>
+                    <Field name="optFloats" type="doubleVector"></Field>
+                    <Field name="optDoubles" type="doubleVector">1 </Field>
+                    <Field name="optInts" type="intVector">1 0 </Field>
+                    <Field name="optStrings" type="stringVector"></Field>
+                    <Field name="optEnums" type="intVector">0 </Field>
+                    <Field name="enumStrings" type="stringVector">"Node" "Element" </Field>
+                    <Field name="enumStringsSizes" type="intVector">2 </Field>
+                    <Field name="obsoleteNames" type="stringVector"></Field>
+                </Object>
+                <Object name="DBOptionsAttributes">
+                    <Field name="types" type="intVector"></Field>
+                    <Field name="names" type="stringVector"></Field>
+                    <Field name="optBools" type="intVector"></Field>
+                    <Field name="optFloats" type="doubleVector"></Field>
+                    <Field name="optDoubles" type="doubleVector"></Field>
+                    <Field name="optInts" type="intVector"></Field>
+                    <Field name="optStrings" type="stringVector"></Field>
+                    <Field name="optEnums" type="intVector"></Field>
+                    <Field name="enumStrings" type="stringVector"></Field>
+                    <Field name="enumStringsSizes" type="intVector"></Field>
+                    <Field name="obsoleteNames" type="stringVector"></Field>
+                </Object>
+                <Field name="Enabled" type="intVector">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 </Field>
+                <Field name="preferredIDs" type="stringVector"></Field>
             </Object>
             <Object name="BoundaryAttributes">
                 <Field name="colorType" type="string">ColorByMultipleColors</Field>
@@ -2432,6 +2512,44 @@
                 <Field name="focusGamma" type="float">4</Field>
                 <Field name="drawFocusAs" type="string">BinsOfConstantColor</Field>
             </Object>
+            <Object name="PoincareAttributes">
+                <Field name="minPunctures" type="double">10</Field>
+                <Field name="maxPunctures" type="double">100</Field>
+                <Field name="sourceType" type="string">SpecifiedPoint</Field>
+                <Field name="pointSource" type="doubleArray" length="3">0 0 0 </Field>
+                <Field name="lineStart" type="doubleArray" length="3">0 0 0 </Field>
+                <Field name="lineEnd" type="doubleArray" length="3">1 0 0 </Field>
+                <Field name="pointDensity" type="int">1</Field>
+                <Field name="integrationType" type="string">AdamsBashforth</Field>
+                <Field name="maxStepLength" type="double">0.1</Field>
+                <Field name="relTol" type="double">0.0001</Field>
+                <Field name="absTol" type="double">1e-05</Field>
+                <Field name="maxToroidalWinding" type="int">30</Field>
+                <Field name="overrideToroidalWinding" type="int">0</Field>
+                <Field name="hitRate" type="double">0.9</Field>
+                <Field name="adjustPlane" type="int">-1</Field>
+                <Field name="overlaps" type="string">Remove</Field>
+                <Field name="showCurves" type="string">Curves</Field>
+                <Field name="numberPlanes" type="int">1</Field>
+                <Field name="min" type="double">0</Field>
+                <Field name="max" type="double">0</Field>
+                <Field name="minFlag" type="bool">false</Field>
+                <Field name="maxFlag" type="bool">false</Field>
+                <Field name="colorType" type="string">ColorBySingleColor</Field>
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Field name="colorTableName" type="string">Default</Field>
+                <Field name="colorBy" type="string">SafetyFactor</Field>
+                <Field name="showIslands" type="bool">false</Field>
+                <Field name="showLines" type="bool">true</Field>
+                <Field name="showPoints" type="bool">false</Field>
+                <Field name="verboseFlag" type="bool">true</Field>
+                <Field name="legendFlag" type="bool">true</Field>
+                <Field name="lightingFlag" type="bool">true</Field>
+            </Object>
             <Object name="PseudocolorAttributes">
                 <Field name="legendFlag" type="bool">true</Field>
                 <Field name="lightingFlag" type="bool">true</Field>
@@ -2535,8 +2653,10 @@
                 <Field name="pointList" type="doubleVector">0 0 0 1 0 0 0 1 0 </Field>
                 <Field name="pointDensity" type="int">2</Field>
                 <Field name="displayMethod" type="string">Lines</Field>
-                <Field name="showStart" type="bool">true</Field>
-                <Field name="radius" type="double">0.125</Field>
+                <Field name="showSeeds" type="bool">false</Field>
+                <Field name="showHeads" type="bool">false</Field>
+                <Field name="tubeRadius" type="double">0.125</Field>
+                <Field name="ribbonWidth" type="double">0.125</Field>
                 <Field name="lineWidth" type="int">2</Field>
                 <Field name="coloringMethod" type="string">ColorBySpeed</Field>
                 <Field name="colorTableName" type="string">Default</Field>
@@ -2547,7 +2667,7 @@
                 </Object>
                 <Field name="legendFlag" type="bool">true</Field>
                 <Field name="lightingFlag" type="bool">true</Field>
-                <Field name="StreamlineDirection" type="string">Forward</Field>
+                <Field name="streamlineDirection" type="string">Forward</Field>
                 <Field name="relTol" type="double">0.0001</Field>
                 <Field name="absTol" type="double">1e-05</Field>
                 <Field name="terminationType" type="string">Distance</Field>
@@ -2558,6 +2678,25 @@
                 <Field name="workGroupSize" type="int">32</Field>
                 <Field name="pathlines" type="bool">false</Field>
                 <Field name="coloringVariable" type="string"></Field>
+                <Field name="legendMinFlag" type="bool">false</Field>
+                <Field name="legendMaxFlag" type="bool">false</Field>
+                <Field name="legendMin" type="double">0</Field>
+                <Field name="legendMax" type="double">1</Field>
+                <Field name="displayBegin" type="double">0</Field>
+                <Field name="displayEnd" type="double">1</Field>
+                <Field name="displayBeginFlag" type="bool">false</Field>
+                <Field name="displayEndFlag" type="bool">false</Field>
+                <Field name="seedDisplayRadius" type="double">0.25</Field>
+                <Field name="headDisplayRadius" type="double">0.25</Field>
+                <Field name="opacityType" type="string">None</Field>
+                <Field name="opacityVariable" type="string"></Field>
+                <Field name="opacity" type="double">1</Field>
+                <Field name="opacityVarMin" type="double">0</Field>
+                <Field name="opacityVarMax" type="double">1</Field>
+                <Field name="opacityVarMinFlag" type="bool">false</Field>
+                <Field name="opacityVarMaxFlag" type="bool">false</Field>
+                <Field name="tubeDisplayDensity" type="int">10</Field>
+                <Field name="geomDisplayQuality" type="string">Medium</Field>
             </Object>
             <Object name="SubsetAttributes">
                 <Field name="colorType" type="string">ColorByMultipleColors</Field>
@@ -2722,6 +2861,9 @@
                 <Field name="sampling" type="string">Rasterization</Field>
                 <Field name="rendererSamples" type="float">3</Field>
                 <Field name="transferFunctionDim" type="int">1</Field>
+                <Field name="lowGradientLightingReduction" type="string">Lower</Field>
+                <Field name="lowGradientLightingClampFlag" type="bool">false</Field>
+                <Field name="lowGradientLightingClampValue" type="double">1</Field>
             </Object>
             <Object name="BoundaryOpAttributes">
                 <Field name="smoothingLevel" type="int">0</Field>
@@ -2855,8 +2997,11 @@
                 <Field name="stopIndex" type="int">1</Field>
                 <Field name="stopIndexRelative" type="bool">false</Field>
                 <Field name="stride" type="int">1</Field>
-                <Field name="indexVariable" type="string">default</Field>
+                <Field name="traceVariableX" type="string">default</Field>
+                <Field name="traceVariableY" type="string">default</Field>
+                <Field name="traceVariableZ" type="string">default</Field>
                 <Field name="connectParticles" type="bool">false</Field>
+                <Field name="indexVariable" type="string">default</Field>
             </Object>
             <Object name="ProjectAttributes">
                 <Field name="projectionType" type="string">XYCartesian</Field>
@@ -2885,7 +3030,7 @@
                 <Field name="newPeriodicOrigin" type="doubleArray" length="3">0 0 0 </Field>
             </Object>
             <Object name="ResampleAttributes">
-                <Field name="useExtents" type="bool">true</Field>
+                <Field name="useExtents" type="bool">false</Field>
                 <Field name="startX" type="double">0</Field>
                 <Field name="endX" type="double">1</Field>
                 <Field name="samplesX" type="int">10</Field>
@@ -3006,7 +3151,7 @@
         </Object>
         <Object name="ViewerSubject">
             <Object name="SourceMap">
-                <Field name="SOURCE00" type="string">localhost:../data/bigsil.silo</Field>
+                <Field name="SOURCE00" type="string">localhost:../data/silo_hdf5_test_data/bigsil.silo</Field>
             </Object>
             <Object name="DatabaseCorrelationList">
                 <Field name="needPermission" type="bool">true</Field>
@@ -3023,10 +3168,10 @@
                 <Field name="viewExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
                 <Object name="Windows">
                     <Object name="ViewerWindow">
-                        <Field name="windowSize" type="intArray" length="2">551 551 </Field>
-                        <Field name="windowImageSize" type="intArray" length="2">551 481 </Field>
-                        <Field name="windowLocation" type="intArray" length="2">412 0 </Field>
-                        <Field name="boundingBoxMode" type="bool">false</Field>
+                        <Field name="windowSize" type="intArray" length="2">1156 1156 </Field>
+                        <Field name="windowImageSize" type="intArray" length="2">1156 1094 </Field>
+                        <Field name="windowLocation" type="intArray" length="2">400 44 </Field>
+                        <Field name="boundingBoxMode" type="bool">true</Field>
                         <Field name="cameraView" type="bool">false</Field>
                         <Field name="maintainView" type="bool">false</Field>
                         <Field name="maintainData" type="bool">false</Field>
@@ -3358,7 +3503,7 @@
                                     <Field name="italic" type="bool">false</Field>
                                 </Object>
                             </Object>
-                            <Field name="databaseInfoFlag" type="bool">true</Field>
+                            <Field name="databaseInfoFlag" type="bool">false</Field>
                             <Object name="databaseInfoFont">
                                 <Object name="FontAttributes">
                                     <Field name="font" type="string">Arial</Field>
@@ -3584,7 +3729,7 @@
                             </Object>
                         </Object>
                         <Field name="scalableAutoThreshold" type="int">2000000</Field>
-                        <Field name="scalableActivationMode" type="int">0</Field>
+                        <Field name="scalableActivationMode" type="int">2</Field>
                         <Field name="notifyForEachRender" type="bool">false</Field>
                         <Field name="surfaceRepresentation" type="int">0</Field>
                         <Field name="displayListMode" type="int">2</Field>
@@ -3615,21 +3760,21 @@
                         <Object name="View2DAttributes">
                             <Field name="windowCoords" type="doubleArray" length="4">0 1 0 1 </Field>
                             <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
-                            <Field name="fullFrameActivationMode" type="string">Off</Field>
+                            <Field name="fullFrameActivationMode" type="string">Auto</Field>
                             <Field name="fullFrameAutoThreshold" type="double">100</Field>
                             <Field name="xScale" type="int">0</Field>
                             <Field name="yScale" type="int">0</Field>
                         </Object>
                         <Object name="View3DAttributes">
-                            <Field name="viewNormal" type="doubleArray" length="3">0.550787 0.515786 -0.6562 </Field>
+                            <Field name="viewNormal" type="doubleArray" length="3">0.730598 0.464905 -0.500089 </Field>
                             <Field name="focus" type="doubleArray" length="3">0.5 0.5 0.5 </Field>
-                            <Field name="viewUp" type="doubleArray" length="3">-0.360839 0.856083 0.370024 </Field>
+                            <Field name="viewUp" type="doubleArray" length="3">-0.367253 0.884995 0.286197 </Field>
                             <Field name="viewAngle" type="double">30</Field>
                             <Field name="parallelScale" type="double">0.866025</Field>
                             <Field name="nearPlane" type="double">-1.73205</Field>
                             <Field name="farPlane" type="double">1.73205</Field>
-                            <Field name="imagePan" type="doubleArray" length="2">0.0575097 0.00677953 </Field>
-                            <Field name="imageZoom" type="double">0.943454</Field>
+                            <Field name="imagePan" type="doubleArray" length="2">0 0 </Field>
+                            <Field name="imageZoom" type="double">1</Field>
                             <Field name="perspective" type="bool">true</Field>
                             <Field name="eyeAngle" type="double">2</Field>
                             <Field name="centerOfRotationSet" type="bool">false</Field>
@@ -3647,7 +3792,7 @@
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">false</Field>
                                 <Field name="position" type="doubleArray" length="3">0.05 0.9 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">1.7 1.7 1.41937e-268 </Field>
+                                <Field name="position2" type="doubleArray" length="3">1.5 1.5 0.05 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">255 0 255 255 </Field>
@@ -3656,7 +3801,7 @@
                                 <Field name="useForegroundForTextColor" type="bool">false</Field>
                                 <Object name="color1">
                                     <Object name="ColorAttribute">
-                                        <Field name="color" type="unsignedCharArray" length="4">192 192 192 166 </Field>
+                                        <Field name="color" type="unsignedCharArray" length="4">255 255 255 50 </Field>
                                     </Object>
                                 </Object>
                                 <Object name="color2">
@@ -3665,23 +3810,25 @@
                                     </Object>
                                 </Object>
                                 <Field name="text" type="stringVector">"%# -9.4g" </Field>
-                                <Field name="fontFamily" type="string">Courier</Field>
+                                <Field name="fontFamily" type="string">Arial</Field>
                                 <Field name="fontBold" type="bool">false</Field>
-                                <Field name="fontItalic" type="bool">true</Field>
+                                <Field name="fontItalic" type="bool">false</Field>
                                 <Field name="fontShadow" type="bool">false</Field>
                                 <Field name="doubleAttribute1" type="double">0.015</Field>
                                 <Field name="intAttribute1" type="int">995</Field>
                                 <Field name="intAttribute2" type="int">5</Field>
-                                <Field name="doubleVector1" type="doubleVector"></Field>
-                                <Field name="stringVector1" type="stringVector"></Field>
+                                <Field name="intAttribute3" type="int">1</Field>
+                                <Field name="doubleVector1" type="doubleVector">1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 20 22 23 24 25 26 28 29 32 36 </Field>
+                                <Field name="stringVector1" type="stringVector">"" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" </Field>
+                                <Field name="stringVector2" type="stringVector">"1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "20" "22" "23" "24" "25" "26" "28" "29" "32" "36" </Field>
                             </Object>
                             <Object name="AnnotationObject">
                                 <Field name="objectName" type="string">Plot0001</Field>
                                 <Field name="objectType" type="string">LegendAttributes</Field>
                                 <Field name="visible" type="bool">true</Field>
                                 <Field name="active" type="bool">true</Field>
-                                <Field name="position" type="doubleArray" length="3">0.77 0.9 0 </Field>
-                                <Field name="position2" type="doubleArray" length="3">2 2 1.15097e-268 </Field>
+                                <Field name="position" type="doubleArray" length="3">0.75 0.89 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">2 2 0.05 </Field>
                                 <Object name="textColor">
                                     <Object name="ColorAttribute">
                                         <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
@@ -3690,7 +3837,7 @@
                                 <Field name="useForegroundForTextColor" type="bool">true</Field>
                                 <Object name="color1">
                                     <Object name="ColorAttribute">
-                                        <Field name="color" type="unsignedCharArray" length="4">0 0 128 151 </Field>
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 102 </Field>
                                     </Object>
                                 </Object>
                                 <Object name="color2">
@@ -3698,16 +3845,18 @@
                                         <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
                                     </Object>
                                 </Object>
-                                <Field name="text" type="stringVector">"%1.2e" </Field>
+                                <Field name="text" type="stringVector">"%# -9.4g" </Field>
                                 <Field name="fontFamily" type="string">Arial</Field>
-                                <Field name="fontBold" type="bool">true</Field>
+                                <Field name="fontBold" type="bool">false</Field>
                                 <Field name="fontItalic" type="bool">false</Field>
                                 <Field name="fontShadow" type="bool">false</Field>
                                 <Field name="doubleAttribute1" type="double">0.015</Field>
                                 <Field name="intAttribute1" type="int">994</Field>
                                 <Field name="intAttribute2" type="int">5</Field>
-                                <Field name="doubleVector1" type="doubleVector"></Field>
-                                <Field name="stringVector1" type="stringVector"></Field>
+                                <Field name="intAttribute3" type="int">0</Field>
+                                <Field name="doubleVector1" type="doubleVector">0.170034 0.344032 0.51803 0.692028 0.866025 </Field>
+                                <Field name="stringVector1" type="stringVector">"" "" "" "" "" </Field>
+                                <Field name="stringVector2" type="stringVector"></Field>
                             </Object>
                         </Object>
                         <Object name="InteractorAttributes">
@@ -3727,6 +3876,7 @@
                                 <Field name="hidden" type="bool">false</Field>
                                 <Field name="realized" type="bool">true</Field>
                                 <Object name="ViewerPlot">
+                                    <Field name="plotDescription" type="string"></Field>
                                     <Field name="cacheIndex" type="int">0</Field>
                                     <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
                                     <Field name="bgColor" type="doubleArray" length="3">0.298039 0.4 0.74902 </Field>
@@ -4058,7 +4208,7 @@
                                         </Object>
                                     </Object>
                                     <Object name="CompactSILRestrictionAttributes">
-                                        <Field name="useSet" type="unsignedCharVector">1 0 0 0 0 0 0 0 0 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 </Field>
+                                        <Field name="useSet" type="unsignedCharVector">1 0 2 2 0 0 0 0 0 0 0 0 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 </Field>
                                         <Field name="topSet" type="string">mesh</Field>
                                     </Object>
                                     <Field name="namedSelection" type="string"></Field>
@@ -4073,6 +4223,7 @@
                                 <Field name="hidden" type="bool">false</Field>
                                 <Field name="realized" type="bool">true</Field>
                                 <Object name="ViewerPlot">
+                                    <Field name="plotDescription" type="string"></Field>
                                     <Field name="cacheIndex" type="int">0</Field>
                                     <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
                                     <Field name="bgColor" type="doubleArray" length="3">0.298039 0.4 0.74902 </Field>
@@ -4142,7 +4293,7 @@
                                         </Object>
                                     </Object>
                                     <Object name="CompactSILRestrictionAttributes">
-                                        <Field name="useSet" type="unsignedCharVector">1 2 2 2 2 2 2 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </Field>
+                                        <Field name="useSet" type="unsignedCharVector">1 2 0 0 2 2 2 2 2 2 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 </Field>
                                         <Field name="topSet" type="string">mesh</Field>
                                     </Object>
                                     <Field name="namedSelection" type="string"></Field>
@@ -4181,6 +4332,7 @@
                     <Field name="simplifyHeavilyMixedZones" type="bool">false</Field>
                     <Field name="maxMaterialsPerZone" type="int">3</Field>
                     <Field name="isoVolumeFraction" type="float">0.5</Field>
+                    <Field name="annealingTime" type="int">10</Field>
                 </Object>
                 <Object name="MeshManagementAttributes">
                     <Field name="discretizationTolerance" type="doubleVector">0.01 0.025 0.05 </Field>
@@ -4194,8 +4346,8 @@
                 <Object name="RunningEngines">
                     <Object name="HostProfile">
                         <Field name="profileName" type="string">notset</Field>
-                        <Field name="host" type="string">thembisa.llnl.gov</Field>
-                        <Field name="userName" type="string">bonnell2</Field>
+                        <Field name="host" type="string">davinci.nersc.gov</Field>
+                        <Field name="userName" type="string">whitlocb</Field>
                         <Field name="timeout" type="int">480</Field>
                         <Field name="numProcessors" type="int">1</Field>
                         <Field name="numNodesSet" type="bool">false</Field>

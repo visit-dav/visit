@@ -1165,7 +1165,7 @@
                             <Object name="plot00">
                                 <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/globe.silo</Field>
+                                <Field name="databaseName" type="string">../data/silo_hdf5_test_data/globe.silo</Field>
                                 <Field name="variableName" type="string">u</Field>
                                 <Field name="active" type="bool">true</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -1238,7 +1238,7 @@
                                 </Object>
                             </Object>
                             <Field name="hostName" type="string">localhost</Field>
-                            <Field name="databaseName" type="string">../data/globe.silo</Field>
+                            <Field name="databaseName" type="string">../data/silo_hdf5_test_data/globe.silo</Field>
                             <Field name="nPlots" type="int">1</Field>
                             <Field name="keyframeMode" type="bool">false</Field>
                             <Field name="nKeyframes" type="int">1</Field>

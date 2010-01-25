@@ -174,7 +174,7 @@
                 <Field name="backgroundMode" type="string">Solid</Field>
                 <Field name="userInfoFlag" type="bool">true</Field>
                 <Field name="databaseInfoFlag" type="bool">true</Field>
-                <Field name="legendInfoFlag" type="bool">true</Field>
+                <Field name="legendInfoFlag" type="bool">false</Field>
             </Object>
             <Object name="ViewCurveAttributes">
                 <Field name="domainCoords" type="doubleArray" length="2">0 1 </Field>
@@ -437,7 +437,7 @@
                 <Field name="colorType" type="string">ColorByMultipleColors</Field>
                 <Field name="colorTableName" type="string">Default</Field>
                 <Field name="filledFlag" type="bool">true</Field>
-                <Field name="legendFlag" type="bool">true</Field>
+                <Field name="legendFlag" type="bool">false</Field>
                 <Field name="lineStyle" type="int">0</Field>
                 <Field name="lineWidth" type="int">0</Field>
                 <Object name="singleColor">
@@ -1135,7 +1135,7 @@
                             <Field name="backgroundMode" type="string">Solid</Field>
                             <Field name="userInfoFlag" type="bool">false</Field>
                             <Field name="databaseInfoFlag" type="bool">false</Field>
-                            <Field name="legendInfoFlag" type="bool">true</Field>
+                            <Field name="legendInfoFlag" type="bool">false</Field>
                         </Object>
                         <Object name="LightList">
                             <Object name="light0">
@@ -1294,7 +1294,7 @@
                             <Object name="plot00">
                                 <Field name="pluginID" type="string">Contour_1.0</Field>
                                 <Field name="hostName" type="string">localhost</Field>
-                                <Field name="databaseName" type="string">../data/rect3d.silo</Field>
+                                <Field name="databaseName" type="string">../data/silo_hdf5_test_data/rect3d.silo</Field>
                                 <Field name="variableName" type="string">d</Field>
                                 <Field name="active" type="bool">true</Field>
                                 <Field name="hidden" type="bool">false</Field>
@@ -1393,7 +1393,7 @@
                                 </Object>
                             </Object>
                             <Field name="hostName" type="string">localhost</Field>
-                            <Field name="databaseName" type="string">../data/rect3d.silo</Field>
+                            <Field name="databaseName" type="string">../data/silo_hdf5_test_data/rect3d.silo</Field>
                             <Field name="nPlots" type="int">1</Field>
                             <Field name="keyframeMode" type="bool">false</Field>
                             <Field name="nKeyframes" type="int">1</Field>

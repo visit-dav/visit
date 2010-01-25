@@ -1704,7 +1704,7 @@
         </Object>
         <Object name="ViewerSubject">
             <Object name="SourceMap">
-                <Field name="SOURCE00" type="string">localhost:../data/allinone00.pdb</Field>
+                <Field name="SOURCE00" type="string">localhost:../data/pdb_test_data/allinone00.pdb</Field>
             </Object>
             <Object name="DatabaseCorrelationList">
                 <Field name="needPermission" type="bool">true</Field>
