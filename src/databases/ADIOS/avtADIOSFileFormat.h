@@ -37,17 +37,17 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtAdiosFileFormat.h                           //
+//                            avtADIOSFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_Adios_FILE_FORMAT_H
-#define AVT_Adios_FILE_FORMAT_H
+#ifndef AVT_ADIOS_FILE_FORMAT_H
+#define AVT_ADIOS_FILE_FORMAT_H
 
 #ifdef PARALLEL
+#include <mpi.h>
 #else
-#define NOMPI
+#define _NOMPI
 #endif
-
 
 #include <avtMTMDFileFormat.h>
 
@@ -62,23 +62,40 @@ extern "C"
 #include <adios_read.h>
 }
 
+template <class T> static inline void
+SwapIndices(int dim, T *arr)
+{
+    if (dim <= 1) return;
+    else if (dim == 2)
+    {
+        T i0 = arr[0], i1 = arr[1];
+        arr[0] = i1; arr[1] = i0;
+    }
+    else if (dim == 3)
+    {
+        T i0 = arr[0], i2 = arr[2];
+        arr[0] = i2; arr[2] = i0;
+    }               
+}
+
+
 
 // ****************************************************************************
-//  Class: avtAdiosFileFormat
+//  Class: avtADIOSFileFormat
 //
 //  Purpose:
-//      Reads in Adios files as a plugin to VisIt.
+//      Reads in ADIOS files as a plugin to VisIt.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Thu Sep 17 11:23:05 EDT 2009
 //
 // ****************************************************************************
 
-class avtAdiosFileFormat : public avtMTMDFileFormat
+class avtADIOSFileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtAdiosFileFormat(const char *);
-    virtual            ~avtAdiosFileFormat();
+                       avtADIOSFileFormat(const char *);
+    virtual            ~avtADIOSFileFormat();
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -99,7 +116,7 @@ class avtAdiosFileFormat : public avtMTMDFileFormat
 
     virtual int            GetNTimesteps(void);
 
-    virtual const char    *GetType(void)   { return "Adios"; };
+    virtual const char    *GetType(void)   { return "ADIOS"; };
     virtual void           FreeUpResources(void); 
 
     virtual vtkDataSet    *GetMesh(int, int, const char *);
@@ -114,6 +131,7 @@ class avtAdiosFileFormat : public avtMTMDFileFormat
 
     std::string            filename;
     bool                   fileOpened;
+    char                   errmsg[1024];
     
     class meshInfo
     {
@@ -127,19 +145,26 @@ class avtAdiosFileFormat : public avtMTMDFileFormat
         }
         ~meshInfo() {}
 
-        int dim, start[3], count[3], global[3];
+        int dim;
+        int start[3], count[3], global[3];
         std::string name;
+
+        void SwapIndices()
+        {
+            ::SwapIndices(dim, start);
+            ::SwapIndices(dim, count);
+            ::SwapIndices(dim, global);
+        }
     };
 
     class varInfo : public meshInfo
     {
       public:
-        varInfo() : meshInfo() {type=0; groupIdx=0, timeVarying=false;}
+        varInfo() : meshInfo() {type=-1; groupIdx=-1, varid=-1, timedim=-1;}
         ~varInfo() {}
         
         std::string meshName;
-        int groupIdx, type;
-        bool timeVarying;
+        int groupIdx, type, varid, timedim;
     };
 
     std::map<std::string, meshInfo> meshes;
@@ -150,11 +175,9 @@ class avtAdiosFileFormat : public avtMTMDFileFormat
     
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     // Global variables for one opened file
-    int64_t         fh;            // file handle
     int             numTimeSteps;  // number of timesteps
-    BP_FILE_INFO    finfo;         // file information structure
-    BP_GROUP_INFO   *ginfos;       // group information structure
-    int64_t         *ghs;          // group handlers
+    ADIOS_FILE      *fp;           // file information structure
+    ADIOS_GROUP     **gps;         // group information structures (>= 1!)
 };
 
 

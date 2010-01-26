@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ****************************************************************************
-//                               AdiosPluginInfo.h
+//                               ADIOSPluginInfo.h
 // ****************************************************************************
 
 #ifndef ADIOS_PLUGIN_INFO_H
@@ -49,10 +49,10 @@ class avtDatabase;
 class avtDatabaseWriter;
 
 // ****************************************************************************
-//  Class: AdiosDatabasePluginInfo
+//  Class: ADIOSDatabasePluginInfo
 //
 //  Purpose:
-//    Classes that provide all the information about the Adios plugin.
+//    Classes that provide all the information about the ADIOS plugin.
 //    Portions are separated into pieces relevant to the appropriate
 //    components of VisIt.
 //
@@ -63,7 +63,7 @@ class avtDatabaseWriter;
 //
 // ****************************************************************************
 
-class AdiosGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
+class ADIOSGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
     virtual const char *GetName() const;
@@ -76,7 +76,7 @@ class AdiosGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual bool  OpensWholeDirectory() const;
 };
 
-class AdiosCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual AdiosGeneralPluginInfo
+class ADIOSCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual ADIOSGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
@@ -84,14 +84,14 @@ class AdiosCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vi
                                                     int nList, int nBlock);
 };
 
-class AdiosMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual AdiosCommonPluginInfo
+class ADIOSMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ADIOSCommonPluginInfo
 {
   public:
     // this makes compilers happy... remove if we ever have functions here
     virtual void dummy();
 };
 
-class AdiosEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual AdiosCommonPluginInfo
+class ADIOSEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual ADIOSCommonPluginInfo
 {
   public:
     virtual avtDatabaseWriter        *GetWriter(void);
