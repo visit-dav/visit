@@ -39,8 +39,12 @@ def Test2D():
     v.viewportCoords = (0.35, 0.95, 0.15, 0.95)
     SetView2D(v)
 
-    a = AnnotationAttributes()
-    a.userInfoFlag = 0
+    a = GetAnnotationAttributes()
+    a.axes2D.visible = 1
+    a.axes2D.xAxis.label.visible = 0
+    a.axes2D.yAxis.label.visible = 0
+    a.axes2D.xAxis.title.visible = 1
+    a.axes2D.yAxis.title.visible = 1
     a.xTitleFontHeight2D = 0.04
     a.yTitleFontHeight2D = 0.04
     SetAnnotationAttributes(a)
@@ -93,8 +97,11 @@ def Test3D():
     v.centerOfRotation = (0, 0, 0)
     SetView3D(v)
 
-    a = AnnotationAttributes()
-    a.userInfoFlag = 0
+    a = GetAnnotationAttributes()
+    a.axes3D.visible = 1
+    a.axes3D.xAxis.title.visible = 1
+    a.axes3D.yAxis.title.visible = 1
+    a.axes3D.zAxis.title.visible = 1
     a.xTitleFontHeight = 0.04 # 2x scale
     a.yTitleFontHeight = 0.04
     a.zTitleFontHeight = 0.04

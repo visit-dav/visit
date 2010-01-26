@@ -37,10 +37,10 @@
 
 def InitAnnotation():
     # Turn off most annotation
-    a = AnnotationAttributes()
+    a = GetAnnotationAttributes()
     a.axes2D.visible = 1
-    a.axes2D.xAxis.label.visible = 1
-    a.axes2D.yAxis.label.visible = 1
+    a.axes2D.xAxis.label.visible = 0
+    a.axes2D.yAxis.label.visible = 0
     a.axes2D.xAxis.title.visible = 0
     a.axes2D.yAxis.title.visible = 0
     a.axes3D.visible = 0

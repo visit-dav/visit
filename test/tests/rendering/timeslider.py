@@ -21,10 +21,9 @@
 # ----------------------------------------------------------------------------
 
 # Set up the annotation colors, etc.
-a = AnnotationAttributes()
+a = GetAnnotationAttributes()
 a.backgroundColor = (0, 0, 0, 255)
 a.foregroundColor = (255, 255, 255, 255)
-a.userInfoFlag = 0
 a.backgroundMode = a.Solid
 SetAnnotationAttributes(a)
 
