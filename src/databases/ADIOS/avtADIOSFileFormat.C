@@ -37,13 +37,12 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtAdiosFileFormat.C                           //
+//                            avtADIOSFileFormat.C                           //
 // ************************************************************************* //
 
-#include <avtAdiosFileFormat.h>
+#include <avtParallel.h>
+#include <avtADIOSFileFormat.h>
 
-#include <string>
-#include <vector>
 #include <vtkCharArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkShortArray.h>
@@ -78,43 +77,44 @@ extern "C"
 using     std::string;
 
 static std::string
-IntToString(int value)
+Int64ToString(int64_t value)
 {
     std::stringstream out;
     out << value;
     return out.str();
 }
 
+#define MIN(x,y) (x < y ? x : y)
+
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat constructor
+//  Method: avtADIOSFileFormat constructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Thu Sep 17 11:23:05 EDT 2009
 //
 // ****************************************************************************
 
-avtAdiosFileFormat::avtAdiosFileFormat(const char *nm)
+avtADIOSFileFormat::avtADIOSFileFormat(const char *nm)
     : avtMTMDFileFormat(nm)
 {
     filename = nm;
     fileOpened = false;
 
-    fh = -1;
+    fp = NULL;
     numTimeSteps = 0;
-    ginfos = NULL;
-    ghs = NULL;
+    gps = NULL;
 }
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat destructor
+//  Method: avtADIOSFileFormat destructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Thu Sep 17 11:23:05 EDT 2009
 //
 // ****************************************************************************
 
-avtAdiosFileFormat::~avtAdiosFileFormat()
+avtADIOSFileFormat::~avtADIOSFileFormat()
 {
     CloseFile();
 }
@@ -132,24 +132,24 @@ avtAdiosFileFormat::~avtAdiosFileFormat()
 // ****************************************************************************
 
 int
-avtAdiosFileFormat::GetNTimesteps(void)
+avtADIOSFileFormat::GetNTimesteps(void)
 {
     OpenFile();
     return numTimeSteps;
 }
 
 void
-avtAdiosFileFormat::GetCycles(std::vector<int> &cycles)
+avtADIOSFileFormat::GetCycles(std::vector<int> &cycles)
 {
     OpenFile();
     
-    for(int i = finfo.tidx_start; i <= finfo.tidx_stop; ++i)
-        cycles.push_back(i);
+    for(int i = 0; i < numTimeSteps; ++i)
+        cycles.push_back(fp->tidx_start + i);
 }
 
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::FreeUpResources
+//  Method: avtADIOSFileFormat::FreeUpResources
 //
 //  Purpose:
 //      When VisIt is done focusing on a particular timestep, it asks that
@@ -163,13 +163,13 @@ avtAdiosFileFormat::GetCycles(std::vector<int> &cycles)
 // ****************************************************************************
 
 void
-avtAdiosFileFormat::FreeUpResources(void)
+avtADIOSFileFormat::FreeUpResources(void)
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::PopulateDatabaseMetaData
+//  Method: avtADIOSFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      This database meta-data object is like a table of contents for the
@@ -182,15 +182,15 @@ avtAdiosFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 void
-avtAdiosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtADIOSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-    debug1 << "avtAdiosFileFormat::PopulateMetadata:  begin:" << endl;
+    debug1 << "avtADIOSFileFormat::PopulateMetadata:  begin:" << endl;
     OpenFile();
 
     md->SetFormatCanDoDomainDecomposition(true);
 
     // Add 2D/3D mesh metadata
-    map<string,meshInfo>::const_iterator m;
+    std::map<std::string,meshInfo>::const_iterator m;
     for (m = meshes.begin(); m != meshes.end(); m++)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
@@ -209,7 +209,7 @@ avtAdiosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSt
     }
 
     // Add variables' metadata
-    map<string,varInfo>::const_iterator v;
+    std::map<std::string,varInfo>::const_iterator v;
     for (v = variables.begin(); v != variables.end(); v++)
     {
         if (v->second.dim == 1) 
@@ -232,7 +232,7 @@ avtAdiosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSt
 
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::GetMesh
+//  Method: avtADIOSFileFormat::GetMesh
 //
 //  Purpose:
 //      Gets the mesh associated with this file.  The mesh is returned as a
@@ -251,13 +251,13 @@ avtAdiosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSt
 // ****************************************************************************
 
 vtkDataSet *
-avtAdiosFileFormat::GetMesh(int timestate, int domain, const char *meshname)
+avtADIOSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-    debug1 << "avtAdiosFileFormat::GetMesh " << meshname << endl;
+    debug1 << "avtADIOSFileFormat::GetMesh " << meshname << endl;
     OpenFile();
 
     // Look it up in the mesh table.
-    map<string,meshInfo>::const_iterator m = meshes.find(meshname);
+    std::map<std::string,meshInfo>::const_iterator m = meshes.find(meshname);
     if (m != meshes.end())
     {
         vtkRectilinearGrid *grid = NULL;
@@ -268,7 +268,7 @@ avtAdiosFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     }
 
     //It might be a curve.
-    map<string,varInfo>::const_iterator v = variables.find(meshname);
+    std::map<std::string,varInfo>::const_iterator v = variables.find(meshname);
     if (v != variables.end() && v->second.dim == 1)
     {
         vtkRectilinearGrid *grid = NULL;
@@ -288,7 +288,7 @@ avtAdiosFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::GetVar
+//  Method: avtADIOSFileFormat::GetVar
 //
 //  Purpose:
 //      Gets a scalar variable associated with this file.  Although VTK has
@@ -306,9 +306,9 @@ avtAdiosFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 // ****************************************************************************
 
 vtkDataArray *
-avtAdiosFileFormat::GetVar(int timestate, int domain, const char *varname)
+avtADIOSFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    debug1 << "avtAdiosFileFormat::GetVar " << varname << endl;
+    debug1 << "avtADIOSFileFormat::GetVar " << varname << endl;
     OpenFile();
 
     vtkDataArray *vtkarray = GetADIOSVar(timestate, varname);
@@ -317,7 +317,7 @@ avtAdiosFileFormat::GetVar(int timestate, int domain, const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::GetVectorVar
+//  Method: avtADIOSFileFormat::GetVectorVar
 //
 //  Purpose:
 //      Gets a vector variable associated with this file.  Although VTK has
@@ -336,7 +336,7 @@ avtAdiosFileFormat::GetVar(int timestate, int domain, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtAdiosFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
+avtADIOSFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
     OpenFile();
     return NULL;
@@ -355,97 +355,154 @@ avtAdiosFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 // ****************************************************************************
 
 void
-avtAdiosFileFormat::OpenFile()
+avtADIOSFileFormat::OpenFile()
 {
     if (fileOpened)
         return;
 
     // INITIALIZE DATA MEMBERS
     int     gr, vr, i, j;             // loop vars
-    int     status;
-    int     vartype, ndims, dims[16]; // info about one variable 
-    int     hastimesteps;             // variable is spread among timesteps in the file
-    int mpiComm = 0;
+    ADIOS_VARINFO *avi;
 #ifdef PARALLEL
-    mpiComm = VISIT_MPI_COMM;
+    fp = adios_fopen(filename.c_str(), VISIT_MPI_COMM);
+#else
+    fp = adios_fopen(filename.c_str(), 0);
 #endif
 
     // open the BP file
-    status = adios_fopen (&fh, filename.c_str(), mpiComm);
-    if (status != 0)
-        EXCEPTION1(InvalidDBTypeException, "The file could not be opened");
-    
     // get number of groups, variables, timesteps, and attributes 
-    // all parameters are integers, 
-    // besides the last parameter, which is an array of strings for holding the list of group names
-    adios_init_fileinfo( &finfo, 1);
-    adios_inq_file(fh, &finfo);
+    // Internally, only rank=0 reads in anything and distributes index to other processes
 
-    numTimeSteps = finfo.tidx_stop - finfo.tidx_start + 1;
+    if (fp == NULL) {
+        sprintf(errmsg, "Error opening bp file %s:\n%s", filename.c_str(), adios_errmsg());
+        EXCEPTION1(InvalidDBTypeException, errmsg);
+    }
+    
+    numTimeSteps = fp->ntimesteps;
     
     debug5 << "ADIOS BP file: " << filename << endl;
-    debug5 << "# of groups: " << finfo.groups_count << endl;
-    debug5 << "# of variables: " << finfo.vars_count << endl;
-    debug5 << "# of attributes:" << finfo.attrs_count << endl;
-    debug5 << "time steps: " << finfo.tidx_start << "-" << finfo.tidx_stop << endl;
+    debug5 << "# of groups: " << fp->groups_count << endl;
+    debug5 << "# of variables: " << fp->vars_count << endl;
+    debug5 << "# of attributes:" << fp->attrs_count << endl;
+    debug5 << "time steps: " << fp->ntimesteps << " from " << fp->tidx_start << endl;
 
 
     meshes.clear();
     variables.clear();
-    ginfos = (BP_GROUP_INFO *) malloc(finfo.groups_count * sizeof(BP_GROUP_INFO));
-    if (ginfos == NULL)
-        EXCEPTION1(InvalidDBTypeException, "The file could not be opened");
+    gps = (ADIOS_GROUP **) malloc(fp->groups_count * sizeof(ADIOS_GROUP *));
+    if (gps == NULL)
+        EXCEPTION1(InvalidDBTypeException, "The file could not be opened. Not enough memory");
     
-    ghs = (int64_t *) malloc (finfo.groups_count * sizeof(int64_t));
-    if (ginfos == NULL)
-        EXCEPTION1(InvalidDBTypeException, "The file could not be opened");
-
-    for (int gr=0; gr<finfo.groups_count; gr++)
+    for (int gr=0; gr<fp->groups_count; gr++)
     {
-        debug5 <<  "  group " << finfo.group_namelist[gr] << ":" << endl;
-        adios_gopen(fh, &(ghs[gr]), finfo.group_namelist[gr]);
-        adios_init_groupinfo( &(ginfos[gr]), 1);
-        // get variable info from group
-        adios_inq_group (ghs[gr], &(ginfos[gr]));
+        debug5 <<  "  group " << fp->group_namelist[gr] << ":" << endl;
+        gps[gr] = adios_gopen_byid(fp, gr);
+        if (gps[gr] == NULL) {
+            sprintf(errmsg, "Error opening group %s in bp file %s:\n%s", fp->group_namelist[gr], filename.c_str(), adios_errmsg());
+            EXCEPTION1(InvalidDBTypeException, errmsg);
+        }
         
-        for (int vr=0; vr<ginfos[gr].vars_count; vr++)
+        for (int vr=0; vr<gps[gr]->vars_count; vr++)
         {
-            adios_inq_var(ghs[gr], ginfos[gr].var_namelist[vr], &vartype, &ndims, &hastimesteps, dims);
-            if (ndims == 0 || ndims > 3)
+            avi = adios_inq_var_byid (gps[gr], vr);
+            if (avi == NULL) {
+                sprintf(errmsg, "Error opening inquiring variable %s in group %s of bp file %s:\n%s", 
+                    gps[gr]->var_namelist[vr], fp->group_namelist[gr], filename.c_str(), adios_errmsg());
+                EXCEPTION1(InvalidDBTypeException, errmsg);
+            }
+
+            // Skip scalars, or variables with > 3 real dimensions (besides time)
+            if ( avi->ndim == 0 ||                        // scalar value in file
+                (avi->ndim == 1 && avi->timedim >= 0) ||  // scalar with time
+                (avi->ndim > 3 && avi->timedim == -1) ||  // >3D array with no time
+                (avi->ndim > 4 && avi->timedim >= 0))     // >3D array with time
             {
-                debug5<<"Skipping variable"<<ginfos[gr].var_namelist[vr]<<" of dimension: "<<ndims<<endl;
+                debug5<<"Skipping variable"<<gps[gr]->var_namelist[vr]<<" of dimension: "<<avi->ndim<<endl;
                 continue;
             }
             
-            // add variable to map, map id = variable path without the '/' in the beginning
-            varInfo vi;
-            vi.name = ginfos[gr].var_namelist[vr]+1;
-            vi.dim = ndims;
-            
-            for (int i=0; i<3; i++)
+            // Skip arrays whose type is not supported in VisIt            
+            if (avi->type == adios_long_double ||
+                avi->type == adios_complex || 
+                avi->type == adios_double_complex) 
             {
-                vi.start[i] = 0;
-                vi.count[i] = 1;
-                vi.global[i] = 1;
-                
-                if (i<ndims)
-                    vi.count[i] = vi.global[i] = dims[i];
+                debug5<<"Skipping variable"<<gps[gr]->var_namelist[vr]<<" of unsupported type: "<<adios_type_to_string(avi->type)<<endl;
+                continue;
             }
 
-            vi.type = vartype;
-            vi.timeVarying = hastimesteps;
+            // add variable to map, map id = variable path without the '/' in the beginning
+            varInfo vi;
+            if (gps[gr]->var_namelist[vr][0] == '/')
+            {
+                vi.name = gps[gr]->var_namelist[vr]+1;
+            }
+            else
+            {
+                vi.name = gps[gr]->var_namelist[vr];
+            }
+
+            vi.type = avi->type;
+            vi.timedim = avi->timedim;
             vi.groupIdx = gr;
+            vi.varid = avi->varid;
+            
+            // VisIt variable is max 3D and has no time dimension
+            // ADIOS variable's dimensions include the time dimension 
+            //  (which is the first dim in C/C++, i.e. avi->timedim == 0 or -1 if it has no time)
+            if (avi->timedim == -1)
+                vi.dim = avi->ndim;
+            else
+                vi.dim = avi->ndim - 1;
+                    
+            i = 0; // avi's index
+            j = 0; // vi's index
+            // 1. process dimensions before the time dimension
+            // Note that this is empty loop with current ADIOS/C++ (timedim = 0 or -1)
+            for (; i < MIN(avi->timedim,3); i++)
+            {
+                vi.start[j] = 0;
+                vi.count[j] = 1;
+                vi.global[j] = 1;
+                if (i<avi->ndim)
+                    vi.count[j] = vi.global[j] = (int) avi->dims[i];
+                j++;
+            }
+            // 2. skip time dimension if it has one
+            if (avi->timedim >= 0)
+                i++; 
+            // 3. process dimensions after the time dimension
+            for (; i < (avi->timedim == -1 ? 3 : 4); i++)
+            {
+                vi.start[j] = 0;
+                vi.count[j] = 1;
+                vi.global[j] = 1;
+                if (i<avi->ndim)
+                    vi.count[j] = vi.global[j] = (int) avi->dims[i];
+                j++;
+            }
+
+            vi.SwapIndices();
 
             // Define a mesh for this variable's dimensions
             // name is like mesh_23x59, mesh_100x200x300
+
+            //Build this list backwards (adios uses ZYX indexing).
             string meshname = "mesh_";
-            for (int i=0; i<ndims; i++)
+            vector<int64_t> dimT, dims;
+            for (int i=0; i<avi->ndim; i++)
             {
-                meshname += IntToString(dims[i]);
-                if (i<ndims-1)
+                if (i != avi->timedim)
+                    dims.insert(dims.begin(), avi->dims[i]);
+            }
+
+            for (int i=0; i <dims.size(); i++)
+            {
+                meshname += Int64ToString(dims[i]);
+                if (i<dims.size()-1)
                     meshname += "x";
             }
             vi.meshName = meshname;
+            debug5<<"MESH: "<<meshname<<endl;
 
             //Add mesh, if not found...
             if (meshes.find(meshname) == meshes.end())
@@ -461,12 +518,15 @@ avtAdiosFileFormat::OpenFile()
                 mi.name = meshname;
                 meshes[meshname] = mi;
                 
-                debug5 << "  added mesh " << meshname << endl;
+                debug5<<"Add mesh "<<meshname<<" ["<<mi.count[0]<<" "<<mi.count[1]<<" "<<mi.count[2]<<"]"<<endl;
             }
 
             // add variable to map
             variables[vi.name] = vi;
             debug5 << "  added variable " << vi.name<<" with mesh "<<vi.meshName<<endl;
+
+            // Note: avi has gmin and gmax / or value that we did not use here
+            adios_free_varinfo(avi);
             
         } // end var
     } // end group
@@ -477,7 +537,7 @@ avtAdiosFileFormat::OpenFile()
 }
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::CloseFile
+//  Method: avtADIOSFileFormat::CloseFile
 //
 //  Purpose:
 //      Open the file.
@@ -488,16 +548,17 @@ avtAdiosFileFormat::OpenFile()
 // ****************************************************************************
 
 void
-avtAdiosFileFormat::CloseFile()
+avtADIOSFileFormat::CloseFile()
 {
     if (!fileOpened)
         return;
     
-    if (ginfos)
-        free(ginfos);
-    if (ghs)
-        free(ghs);
-    adios_fclose(fh);
+    if (gps) {
+        for (int gr=0; gr<fp->groups_count; gr++)
+            adios_gclose(gps[gr]);
+        free(gps);
+    }
+    adios_fclose(fp);
     meshes.clear();
     variables.clear();
 
@@ -505,7 +566,7 @@ avtAdiosFileFormat::CloseFile()
 }
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::DoDomainDecomposition
+//  Method: avtADIOSFileFormat::DoDomainDecomposition
 //
 //  Purpose:
 //      Decompose across processor set.
@@ -516,9 +577,9 @@ avtAdiosFileFormat::CloseFile()
 // ****************************************************************************
 
 void
-avtAdiosFileFormat::DoDomainDecomposition()
+avtADIOSFileFormat::DoDomainDecomposition()
 {
-    map<string,meshInfo>::iterator m;
+    std::map<std::string,meshInfo>::iterator m;
     for (m = meshes.begin(); m != meshes.end(); m++)
     {
 #ifdef PARALLEL
@@ -565,7 +626,7 @@ avtAdiosFileFormat::DoDomainDecomposition()
 }
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::GetADIOSVar
+//  Method: avtADIOSFileFormat::GetADIOSVar
 //
 //  Purpose:
 //      Read in a variable from the file and return as vtkDataArray.
@@ -583,15 +644,15 @@ avtAdiosFileFormat::DoDomainDecomposition()
 // ****************************************************************************
 
 vtkDataArray *
-avtAdiosFileFormat::GetADIOSVar(int timestate, const char *varname)
+avtADIOSFileFormat::GetADIOSVar(int timestate, const char *varname)
 {
-    debug5<<"avtAdiosFileFormat::GetADIOSVar "<<varname<<endl;
+    debug5<<"avtADIOSFileFormat::GetADIOSVar "<<varname<<endl;
     
-    map<string,varInfo>::const_iterator v = variables.find(varname);
+    std::map<std::string,varInfo>::const_iterator v = variables.find(varname);
     if (v == variables.end())
         EXCEPTION1(InvalidVariableException, varname);
     
-    map<string,meshInfo>::const_iterator m = meshes.find(v->second.meshName);
+    std::map<std::string,meshInfo>::const_iterator m = meshes.find(v->second.meshName);
     if (m == meshes.end())
         EXCEPTION1(InvalidVariableException, varname);
 
@@ -658,49 +719,60 @@ avtAdiosFileFormat::GetADIOSVar(int timestate, const char *varname)
           break;
     }
 
-    //Get the offsets....
+    //Get the offsets.... Max 4D can be here as max 3D vars are allowed plus time
     int ntuples = 1;
-    int start[3] = {0,0,0}, count[3] = {1,1,1};
+    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
+    int i=0;  // VisIt var dimension index
+    int j=0;  // adios var dimension index
 
-    for (int i=0; i<3; i++)
+    // timedim=-1 for non-timed variables, 0..n for others
+    // 1. up to time index, or max 3
+    // This loop is empty with current ADIOS/C++ (timedim = -1 or 0)
+    for (; i<MIN(v->second.timedim,3); i++)
     {
         ntuples *= (m->second.count[i]);
-        start[i] = m->second.start[i];
-        count[i] = m->second.count[i];
+        start[j] = (uint64_t) m->second.start[i];
+        count[j] = (uint64_t) m->second.count[i];
+        j++;
+    }
+    // 2. handle time index if the variable has time
+    if (v->second.timedim >= 0) 
+    {
+        start[j] = timestate;
+        count[j] = 1;
+        j++;
+    }
+    // 3. the rest of indices (all if no time dimension)
+    for (; i<3; i++)
+    {
+        ntuples *= (m->second.count[i]);
+        start[j] = (uint64_t) m->second.start[i];
+        count[j] = (uint64_t) m->second.count[i];
+        j++;
     }
     
     adiosArr->SetNumberOfTuples(ntuples);
     void *data = adiosArr->GetVoidPointer(0);
 
-    if (adios_get_var(ghs[v->second.groupIdx], (char*)varname, data, start, count, finfo.tidx_start+timestate) < 0)
-        EXCEPTION1(InvalidVariableException, varname);
+    SwapIndices(m->second.dim, start);
+    SwapIndices(m->second.dim, count);
     
-    debug5<<"adios_get_var ["<<start[0]<<"+"<<count[0]<<", "<<start[1]<<"+"<<count[1]<<", "<<start[2]<<"+"<<count[2]<<"] nt= "<<ntuples<<endl;
-
-    //We need to transpose the array.
-    vtkDataArray *arr = adiosArr->NewInstance();
-    arr->SetNumberOfComponents(adiosArr->GetNumberOfComponents());
-    arr->SetNumberOfTuples(adiosArr->GetNumberOfTuples());
-    arr->SetName(adiosArr->GetName());
-
-    int destIdx = 0;
-    for(int k = 0; k < count[2]; k++)
-        for(int j = 0; j < count[1]; j++)
-            for(int i = 0; i < count[0]; i++)
-            {
-                int srcIdx = k + count[2] * (j + count[1] * i);
-                arr->SetTuple(destIdx, adiosArr->GetTuple(srcIdx));
-                destIdx++;
-            }
+    debug5<<"s "<<start[0]<<" "<<start[1]<<" "<<start[2]<<" "<<start[3]<<endl;
+    debug5<<"c "<<count[0]<<" "<<count[1]<<" "<<count[2]<<" "<<count[3]<<endl;
+    debug5<<"adios_read_var ["<<start[0]<<"+"<<count[0]<<", "<<start[1]<<"+"<<count[1]<<", "<<start[2]<<"+"<<count[2]<<"] nt= "<<ntuples<<endl;
+    for(int i = 0; i < ntuples; i++) ((float *)data)[i] = 0.0;
     
-    adiosArr->Delete();
+    if (adios_read_var_byid(gps[v->second.groupIdx], v->second.varid, start, count, data) < 0) {
+        sprintf(errmsg, "Error when reading variable %s:\n%s", v->second.name.c_str(), adios_errmsg());
+        EXCEPTION1(InvalidVariableException, errmsg);
+    }
 
-    return arr;
+    return adiosArr;
 }
 
 
 // ****************************************************************************
-//  Method: avtAdiosFileFormat::CreateUniformGrid
+//  Method: avtADIOSFileFormat::CreateUniformGrid
 //
 //  Purpose: 
 //      Make a 0..x-1,0..y-1,0..z-1 uniform grid with stepping 1
@@ -713,7 +785,7 @@ avtAdiosFileFormat::GetADIOSVar(int timestate, const char *varname)
 // ****************************************************************************
 
 vtkRectilinearGrid *
-avtAdiosFileFormat::CreateUniformGrid(const meshInfo &mi)
+avtADIOSFileFormat::CreateUniformGrid(const meshInfo &mi)
 {
     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
     vtkFloatArray *coords[3] = {NULL,NULL,NULL};
@@ -721,16 +793,21 @@ avtAdiosFileFormat::CreateUniformGrid(const meshInfo &mi)
     int dims[3] = {1,1,1};
     for (int i = 0; i<3; i++)
     {
-        dims[i] = mi.count[i];
+        dims[i] = (int)mi.count[i];
 
         coords[i] = vtkFloatArray::New();
         coords[i]->SetNumberOfTuples(dims[i]);
         float *data = (float *)coords[i]->GetVoidPointer(0);
 
-        int x = mi.start[i];
+        int x = (int)mi.start[i];
 
+        debug5<<"I= "<<i<<endl;
         for (int j = 0; j < mi.count[i]; j++, x++)
+        {
             data[j] = (float)x;
+            debug5<<"  "<<x;
+        }
+        debug5<<endl;
     }
     grid->SetDimensions(dims);
     grid->SetXCoordinates(coords[0]);

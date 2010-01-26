@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Adios" type="database" label="Adios" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false">
+  <Plugin name="ADIOS" type="database" label="ADIOS" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       $(ADIOS_INCLUDE_DIR)
     </CXXFLAGS>
