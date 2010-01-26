@@ -16,6 +16,8 @@
  *    Jeremy Meredith, Fri Feb 13 10:23:34 EST 2009
  *    Copied from old silo vob, updated, and renamed into visit source.
  *
+ *    Mark C. Miller, Mon Jan 25 12:11:28 PST 2010
+ *    Change default for driver to DB_PDB.
  *-----------------------------------------------------------------------*/
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +78,7 @@ int     dims[3];
 /*--------------------*/
 int main(int argc, char **argv) {
     DBfile *db;
-    int            i, driver = DB_HDF5;
+    int            i, driver = DB_PDB;
     char          *filename = "mat_3x3x3_3across.silo";
     char  *coordnames[3];
     float *coord[3];

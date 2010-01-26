@@ -45,9 +45,13 @@
 //
 // Modifications:
 //
+//   Mark C. Miller, Mon Jan 25 16:44:01 PST 2010
+//   Made it work with either silo driver.
+
 #include <silo.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define NX 12
 #define NY 4
@@ -55,8 +59,34 @@
 #define NPTS (NX*NY*NZ)
 #define NZONES ((NX-1)*(NY-1)*(NZ-1))
 
-int main()
+int main(int argc, char **argv)
 {
+    int driver = DB_PDB;
+    int i = 1;
+    while (i < argc)
+    {
+        if (strcmp(argv[i], "-driver") == 0)
+        {
+            i++;
+
+            if (strcmp(argv[i], "DB_HDF5") == 0)
+            {
+                driver = DB_HDF5;
+            }
+            else if (strcmp(argv[i], "DB_PDB") == 0)
+            {
+                driver = DB_PDB;
+            }
+            else
+            {
+               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
+                   argv[i]);
+               exit(-1);
+            }
+        }
+        i++;
+    }
+
     char *meshnames[2] = { "EMPTY", "domain1/mesh" };
     int meshtypes[2] = { DB_QUADMESH, DB_QUADMESH };
 
@@ -77,7 +107,6 @@ int main()
     DBfile *db;
     int dims[3], zdims[3];
     int ndims;
-    int i;
     DBoptlist *opt;
 
     x = new float[NX];
@@ -117,7 +146,7 @@ int main()
     zdims[2] = NZ-1;
     ndims = 3;
 
-    db = DBCreate("emptydomains.silo", DB_CLOBBER, DB_LOCAL, "test empty domains", DB_PDB);
+    db = DBCreate("emptydomains.silo", DB_CLOBBER, DB_LOCAL, "test empty domains", driver);
 
     DBMkDir(db, "domain1");
     DBSetDir(db, "domain1");
