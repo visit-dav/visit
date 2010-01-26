@@ -54,6 +54,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Brad Whitlock, Mon Jan 25 15:34:23 PST 2010
+#    I fixed a bug that made small baselines. I also increased the legend size
+#    in some tests so it's more prominent.
+#
 # ----------------------------------------------------------------------------
 
 # Test the Subset plot with some subsets turned off, and single-color on.
@@ -197,6 +202,10 @@ def TestCurveLegend(a):
     DrawPlots()
     Test("legends_13")
     DeleteAllPlots()
+    
+    # Remove DatabaseInfo
+    a.databaseInfoFlag = 0
+    SetAnnotationAttributes(a)
 
 #
 # Test setting legend properties. Note that we currently just test the
@@ -334,7 +343,7 @@ def TestLegendCopying(a):
 
     # Test it clone on first reference again via SetActiveWindow
     DeleteWindow()
-    SetWindowLayout(2)
+    AddWindow()
     SetActiveWindow(2)
     DrawPlots()
     Test("legends_34")
@@ -359,7 +368,6 @@ def TestLegendCopying(a):
     GetAnnotationObject("text_obj").Delete()
     DeleteAllPlots()
 
-
 def TestLegendTics():
     TestSection("Test setting legend tics")
     OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
@@ -367,7 +375,9 @@ def TestLegendTics():
     DrawPlots()
 
     legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
- 
+    legend.xScale = 3.
+    legend.yScale = 3.
+    
     # change number of ticks
     legend.numTicks = 3
     Test("legends_38")
@@ -428,7 +438,9 @@ def TestLegendTics():
     AddPlot("FilledBoundary", "mat1")
     DrawPlots()
     legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
-
+    legend.xScale = 3.
+    legend.yScale = 3.
+    
     legend.controlTicks = 0
     Test("legends_53")
     legend.drawLabels = legend.Both
@@ -445,6 +457,8 @@ def TestLegendTics():
     DrawPlots()
 
     legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    legend.xScale = 3.
+    legend.yScale = 3.
     Test("legends_56")
     nf = legend.numberFormat
     legend.numberFormat = "%# -0.2e"     
@@ -463,6 +477,9 @@ def TestLegendTics():
     DefineScalarExpression("one", "cell_constant(<curvmesh2d>, 1)")
     AddPlot("Pseudocolor", "one")
     DrawPlots()
+    legend = GetAnnotationObject(GetPlotList().GetPlots(0).plotName)
+    legend.xScale = 3.
+    legend.yScale = 3.
     Test("legends_60")
   
     #clean up
@@ -470,7 +487,7 @@ def TestLegendTics():
     
 def main():
     # Turn off all annotation except the legend.
-    a = AnnotationAttributes()
+    a = GetAnnotationAttributes()
     TurnOffAllAnnotations(a)
     a.legendInfoFlag = 1
     SetAnnotationAttributes(a)
