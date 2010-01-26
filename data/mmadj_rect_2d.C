@@ -40,6 +40,9 @@
 // This example creates a simple 8x8 multimesh split across 4 domains
 // and provides connectivity info via Silo's Mulitmeshadj Object.
 //
+// Modifications
+//   Mark C. Miller, Mon Jan 25 16:44:01 PST 2010
+//   Made it work with either silo driver.
 
 #include <cstdlib>
 #include <iostream>
@@ -51,27 +54,27 @@
 using namespace std;
 
 // function prototypes
-void write_root();
+void write_root(int driver);
 void write_mmadj(DBfile *db);
-void write_domain(int id);
+void write_domain(int id, int driver);
 
 //---------------------------------------------------------------------------//
 void
-write_example()
+write_example(int driver)
 {
     // create the root file & directory to store our domains.
-    write_root();
+    write_root(driver);
     // save each domain
     for(int i=0; i < 4; i++)
-        write_domain(i);
+        write_domain(i,driver);
 }
 
 //---------------------------------------------------------------------------//
-void write_root()
+void write_root(int driver)
 {
     // create the root file
     DBfile *db = DBCreate("mmadj_rect_2d_root.silo", DB_CLOBBER, DB_LOCAL,
-                          "Multimeshadj Object 2d Rect Example", DB_HDF5);
+                          "Multimeshadj Object 2d Rect Example", driver);
     
     // create the directory to hold the silo files for our domains.
     struct stat buf;
@@ -205,7 +208,7 @@ void write_mmadj(DBfile *db)
 }
 
 //---------------------------------------------------------------------------//
-void write_domain(int id)
+void write_domain(int id, int driver)
 {
     // generate destination domain name.
     ostringstream oss;
@@ -242,7 +245,7 @@ void write_domain(int id)
     
     // create a silo file for the domain.
     DBfile *db =DBCreate(oss.str().c_str(), DB_CLOBBER, DB_LOCAL, 
-                         "Rect Domain",DB_HDF5);
+                         "Rect Domain", driver);
     
     // write the mesh
     DBPutQuadmesh(db, "quadmesh", NULL, coords, dims, 2,
@@ -269,7 +272,33 @@ void write_domain(int id)
 int 
 main(int argc, char **argv)
 {
+    int driver = DB_PDB;
+    int i = 1;
+    while (i < argc)
+    {
+        if (strcmp(argv[i], "-driver") == 0)
+        {
+            i++;
+
+            if (strcmp(argv[i], "DB_HDF5") == 0)
+            {
+                driver = DB_HDF5;
+            }
+            else if (strcmp(argv[i], "DB_PDB") == 0)
+            {
+                driver = DB_PDB;
+            }
+            else
+            {
+               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
+                   argv[i]);
+               exit(-1);
+            }
+        }
+        i++;
+    }
+
     // call the driver routine
-    write_example();
+    write_example(driver);
 }
 
