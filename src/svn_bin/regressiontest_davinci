@@ -186,6 +186,9 @@
 #    out of source build that gets checked out every night, built, tested,
 #    and then clobbered.
 #
+#    Mark C. Miller, Tue Jan 26 12:28:42 PST 2010
+#    Eliminated cating of stdout/stderr of mkdir command that makes 'post'
+#    directory in /project/projectdirs/visit/www to see why its failing.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -601,7 +604,7 @@ for m in $modes; do
         done
 
         # 'post' the results by copying to public directory
-        mkdir /project/projectdirs/visit/www/${dateTag} 1>/dev/null 2>&1
+        mkdir /project/projectdirs/visit/www/${dateTag}
         chgrp visit /project/projectdirs/visit/www/${dateTag}
         chmod g+rwX,o+rX /project/projectdirs/visit/www/${dateTag}
 
