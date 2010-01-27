@@ -387,6 +387,12 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
 //    Hank Childs, Tue May 27 17:15:43 PDT 2008
 //    Fixed memory issue that was causing crash.
 //
+//    Jeremy Meredith, Wed Jan 27 10:34:26 EST 2010
+//    Disabled special nodesAreCritical code.  This was intended for
+//    molecular data, because half-a-bond wasn't meaningful.  However,
+//    we now have a way to show dangling bonds (periodic cases is
+//    another example) correctly, so we want to clip normally now.
+//
 // ****************************************************************************
 
 int
@@ -394,7 +400,10 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
                                    ClipAttributes &atts, int domain, std::string label)
 {
     // Gather global plane clipping information.
-    bool nodesAreCritical = GetInput()->GetInfo().GetAttributes().NodesAreCritical();
+    //bool nodesAreCritical = GetInput()->GetInfo().GetAttributes().NodesAreCritical();
+    // TODO: For now, set nodesAreCritical to false.  We can now handle
+    // partially-clipped bonds correctly in the molecule plot renderer.
+    bool nodesAreCritical = false;
     int nDataSets = 0;
 
     if (atts.GetFuncType() == ClipAttributes::Plane)
@@ -564,6 +573,12 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
 //    Hank Childs, Tue May 27 17:15:43 PDT 2008
 //    Fixed memory issue that was causing crash.
 //
+//    Jeremy Meredith, Wed Jan 27 10:34:26 EST 2010
+//    Disabled special nodesAreCritical code.  This was intended for
+//    molecular data, because half-a-bond wasn't meaningful.  However,
+//    we now have a way to show dangling bonds (periodic cases is
+//    another example) correctly, so we want to clip normally now.
+//
 // ****************************************************************************
 
 int
@@ -588,8 +603,11 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
         return 1;
     }
 
-    bool nodesAreCritical =
-        GetInput()->GetInfo().GetAttributes().NodesAreCritical();
+    //bool nodesAreCritical =
+    //    GetInput()->GetInfo().GetAttributes().NodesAreCritical();
+    // TODO: For now, set nodesAreCritical to false.  We can now handle
+    // partially-clipped bonds correctly in the molecule plot renderer.
+    bool nodesAreCritical = false;
 
     //
     // Set up and apply the clipping filters

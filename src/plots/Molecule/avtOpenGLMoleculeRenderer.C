@@ -265,6 +265,10 @@ SetColor3ubv(const unsigned char *c)
 //    which means "unknown", and hydrogen now starts at 1.  This 
 //    also means we don't have to correct for 1-origin atomic numbers.
 //
+//    Jeremy Meredith, Wed Jan 27 10:41:02 EST 2010
+//    Only draw atoms where there is a Vertex cell type.  Don't assume
+//    all points are atoms (since we now support dangling bonds).
+//
 // ****************************************************************************
 
 void
@@ -272,6 +276,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
                                               const MoleculeAttributes &atts)
 {
     vtkPoints *points = data->GetPoints();
+    int numverts = data->GetNumberOfVerts();
 
     vtkDataArray *primary = data->GetPointData()->GetScalars();
     if (!primary)
@@ -383,11 +388,17 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
     }
 
     glBegin(GL_QUADS);
-    for (int i=0; i<data->GetNumberOfPoints(); i++)
+    vtkIdType *vertptr = data->GetVerts()->GetPointer();
+    for (int ix=0; ix<numverts; ix++, vertptr += (1+*vertptr))
     {
+        if (*vertptr != 1)
+            continue;
+
+        int atom = *(vertptr+1);
+
         int element_number = 0;
         if (element)
-            element_number = int(elementnos[i]);
+            element_number = int(elementnos[atom]);
 
         if (element_number < 0 || element_number > MAX_ELEMENT_NUMBER)
             element_number = 0;
@@ -399,7 +410,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         else if (element && sbcr)
             radius = covalent_radius[element_number] * radiusscale;
         else if (radiusvar && sbv)
-            radius = radiusvar[i] * radiusscale;
+            radius = radiusvar[atom] * radiusscale;
 
         // Determine color
         if (color_by_element)
@@ -409,7 +420,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         }
         else if (color_by_levels)
         {
-            int level = int(scalar[i]) - (primary_is_resseq ? 1 : 0);
+            int level = int(scalar[atom]) - (primary_is_resseq ? 1 : 0);
             if(levelsLUT != 0)
             {
                 const unsigned char *rgb = 
@@ -428,7 +439,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             if (varmax == varmin)
                 alpha = 0.5;
             else
-                alpha = (scalar[i] - varmin) / (varmax - varmin);
+                alpha = (scalar[atom] - varmin) / (varmax - varmin);
             
             int color = int((float(numcolors)-.01) * alpha);
             if (color < 0)
@@ -445,7 +456,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             glNormal3f(radius, radius, radius);
             for(int j = 0; j < 4; ++j)
             {
-                glVertex3dv(points->GetPoint(i));
+                glVertex3dv(points->GetPoint(atom));
                 glTexCoord2fv(texCoords[j]);
             }
         }
@@ -454,7 +465,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             // Plot squares
             for(int j = 0; j < 4; ++j)
             {
-                double *pt = points->GetPoint(i);
+                double *pt = points->GetPoint(atom);
                 float vert[3];
                 vert[0] = pt[0] + ptOffsets[j][0] * radius;
                 vert[1] = pt[1] + ptOffsets[j][1] * radius;
@@ -466,7 +477,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         else
         {
             // Plot spheres
-            double *pt = points->GetPoint(i);
+            double *pt = points->GetPoint(atom);
             DrawSphereAsQuads(pt[0],
                               pt[1],
                               pt[2],
@@ -526,6 +537,11 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    which means "unknown", and hydrogen now starts at 1.  This 
 //    also means we don't have to correct for 1-origin atomic numbers.
 //
+//    Jeremy Meredith, Wed Jan 27 10:41:02 EST 2010
+//    Draw a dangling, capped cylinder (or dangling line) for bonds
+//    where one half has no vertex cell.  Also, don't draw any 
+//    bond if neither adjacent point has a vertex cell.
+//
 // ****************************************************************************
 
 void
@@ -533,6 +549,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                                      const MoleculeAttributes &atts)
 {
     vtkPoints *points = data->GetPoints();
+    int numpoints = data->GetNumberOfPoints();
     int numverts = data->GetNumberOfVerts();
     vtkCellArray *lines = data->GetLines();
     vtkIdType *segments = lines->GetPointer();
@@ -646,6 +663,15 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
         glBegin(GL_LINES);
     }
 
+    // We only want to draw a bond-half if its adjacent atom is a "real" atom.
+    vector<bool> hasVertex(numpoints,false);
+    vtkIdType *vertptr = data->GetVerts()->GetPointer();
+    for (int i=0; i<data->GetNumberOfVerts(); i++, vertptr += (1+*vertptr))
+    {
+        int atom = *(vertptr+1);
+        hasVertex[atom] = true;
+    }
+
     int *segptr = segments;
     for (int i=0; i<data->GetNumberOfLines(); i++)
     {
@@ -671,9 +697,13 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 
             for (int half=0; half<=1; half++)
             {
-                int atom  = (half==0) ? v0 : v1;
+                int atom     = (half==0) ? v0 : v1;
+                int otherAtom= (half==0) ? v1 : v0;
                 double *pt_a = (half==0) ? pt_0 : pt_mid;
                 double *pt_b = (half==0) ? pt_mid : pt_1;
+
+                if (!hasVertex[atom])
+                    continue;
 
                 int element_number = 0;
                 if (element)
@@ -773,6 +803,12 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                 {
                     DrawCylinderBetweenTwoPoints(pt_a, pt_b, radius,
                                                  atts.GetBondCylinderQuality());
+                    if (!hasVertex[otherAtom])
+                    {
+                        DrawCylinderCap(pt_a, pt_b, half,
+                                        radius,
+                                        atts.GetBondCylinderQuality());
+                    }
                 }
                 else // == MoleculeAttributes::Wireframe
                 {
@@ -1322,4 +1358,80 @@ avtOpenGLMoleculeRenderer::DrawCylinderBetweenTwoPoints(double *p0,
     }
 }
 
+
+// ****************************************************************************
+//  Method:  avtOpenGLMoleculeRenderer::DrawCylinderCap
+//
+//  Purpose:
+//    Make the OpenGL calls to draw a cylinder cap with the given begin
+//    and end points, radius, and detail level.  The cap is drawn at the
+//    second point; the first point is used for orientation.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 25, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtOpenGLMoleculeRenderer::DrawCylinderCap(double *p0,
+                                           double *p1,
+                                           int half,
+                                           float r,
+                                           int detail)
+{
+    glEnd();
+    glBegin(GL_TRIANGLE_FAN);
+
+    CalculateCylPts();
+
+    float vc[3] = {p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]};
+    float va[3];
+    float vb[3];
+
+    float vc_len = vtkMath::Normalize(vc);
+    if (vc_len == 0)
+        return;
+
+    vtkMath::Perpendiculars(vc, va,vb, 0);
+
+    float v0[4];
+
+    if (half==0)
+    {
+        glNormal3fv(vc);
+        glVertex3dv(p1);
+    }
+    else
+    {
+        //glNormal3f(-vc[0],-vc[1],-vc[2]);
+        glNormal3fv(vc);
+        glVertex3dv(p0);
+    }
+
+    int cdetail = cylinder_quality_levels[detail];
+    for (int b=0; b<=cdetail; b++)
+    {
+        int b0 = b;
+
+        float *u0;
+        u0 = &(cyl_pts[detail][b0*4]);
+
+        v0[0] = va[0]*u0[0] + vb[0]*u0[1];
+        v0[1] = va[1]*u0[0] + vb[1]*u0[1];
+        v0[2] = va[2]*u0[0] + vb[2]*u0[1];
+
+        if (half==0)
+        {
+            glVertex3f(p1[0] + r*v0[0], p1[1] + r*v0[1], p1[2] + r*v0[2]);
+        }
+        else
+        {
+            glVertex3f(p0[0] + r*v0[0], p0[1] + r*v0[1], p0[2] + r*v0[2]);
+        }
+    }
+
+    glEnd();
+    glBegin(GL_QUADS);
+}
 

@@ -65,6 +65,9 @@
 //    Jeremy Meredith, Tue Aug 29 11:28:15 EDT 2006
 //    Changed point locations to doubles.
 //
+//    Jeremy Meredith, Tue Jan 26 17:25:38 EST 2010
+//    Added ability to draw a cap on a bond (used for dangling bonds).
+//
 // ****************************************************************************
 
 class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
@@ -112,6 +115,7 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
     bool cylinders_calculated;
     void CalculateCylPts();
     void DrawCylinderBetweenTwoPoints(double *, double *, float r, int);
+    void DrawCylinderCap(double *, double *, int half, float r, int);
 
     int            numcolors;
     unsigned char *colors;
