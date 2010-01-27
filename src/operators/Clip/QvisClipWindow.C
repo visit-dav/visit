@@ -489,6 +489,12 @@ QvisClipWindow::CreateWindowContents()
 //   Cyrus Harrison, Thu Aug 21 09:48:43 PDT 2008
 //   Qt4 Port.
 //
+//   Jeremy Meredith, Wed Jan 27 10:00:24 EST 2010
+//   Fix bug.  Signals were not blocked properly when setting values
+//   when clip function type was changed.  But we don't need to set
+//   those values when the function type is changed, since we're just
+//   hiding or showing existing widgets, so I stopeed that.
+//
 // ****************************************************************************
 
 void
@@ -514,27 +520,11 @@ QvisClipWindow::UpdateWindow(bool doAll)
             typeGroup->button(atts->GetFuncType())->setChecked(true);
             if (atts->GetFuncType() == ClipAttributes::Plane)
             {
-                plane1Group->setChecked(atts->GetPlane1Status());
-                plane1Group->setChecked(atts->GetPlane2Status());
-                plane1Group->setChecked(atts->GetPlane3Status());
-                
-                plane1Group->SetOrigin(atts->GetPlane1Origin());
-                plane2Group->SetOrigin(atts->GetPlane2Origin());
-                plane3Group->SetOrigin(atts->GetPlane3Origin());
-                
-                plane1Group->SetNormal(atts->GetPlane1Normal());
-                plane2Group->SetNormal(atts->GetPlane2Normal());
-                plane3Group->SetNormal(atts->GetPlane3Normal());
-
-                planeInverse->setChecked(atts->GetPlaneInverse());
                 sphereWidgets->hide();
                 planeWidgets->show();
             }
             else if (atts->GetFuncType() == ClipAttributes::Sphere)
             {
-                centerLineEdit->setText(DoublesToQString(atts->GetCenter(),3));
-                radiusLineEdit->setText(DoubleToQString(atts->GetRadius()));
-                sphereInverse->setChecked(atts->GetSphereInverse());
                 planeWidgets->hide();
                 sphereWidgets->show();
             }
