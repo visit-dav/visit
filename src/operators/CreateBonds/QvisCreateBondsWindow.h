@@ -62,6 +62,8 @@ class QComboBox;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QvisElementButton;
+class QCheckBox;
+class QGroupBox;
 
 // ****************************************************************************
 // Class: QvisCreateBondsWindow
@@ -81,6 +83,9 @@ class QvisElementButton;
 //   
 //    Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
 //    Qt4 Port.
+//
+//    Jeremy Meredith, Wed Jan 27 10:39:48 EST 2010
+//    Added periodic bond matching support.
 //
 // ****************************************************************************
 
@@ -113,6 +118,14 @@ class QvisCreateBondsWindow : public QvisOperatorWindow
     void maxBondsReturnPressed();
     void firstElementChanged(int);
     void secondElementChanged(int);
+    void addPeriodicBondsToggled(bool);
+    void useUnitCellVectorsChanged(bool);
+    void xPeriodicToggled(bool);
+    void yPeriodicToggled(bool);
+    void zPeriodicToggled(bool);
+    void xVectorProcessText();
+    void yVectorProcessText();
+    void zVectorProcessText();
   private:
     QvisVariableButton    *elementVariable;
     QLabel                *elementVariableLabel;
@@ -133,6 +146,18 @@ class QvisCreateBondsWindow : public QvisOperatorWindow
     QvisElementButton     *secondElement;
     QLineEdit             *minDist;
     QLineEdit             *maxDist;
+
+    QGroupBox *addPeriodicBonds;
+    QCheckBox *useUnitCellVectors;
+    QCheckBox *xPeriodic;
+    QCheckBox *yPeriodic;
+    QCheckBox *zPeriodic;
+    QLineEdit *xVector;
+    QLineEdit *yVector;
+    QLineEdit *zVector;
+    QLabel *xVectorLabel;
+    QLabel *yVectorLabel;
+    QLabel *zVectorLabel;
 };
 
 

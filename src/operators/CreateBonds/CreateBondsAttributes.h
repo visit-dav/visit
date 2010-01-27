@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: CreateBondsAttributes
 //
@@ -59,13 +60,23 @@
 class CreateBondsAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     CreateBondsAttributes();
     CreateBondsAttributes(const CreateBondsAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    CreateBondsAttributes(private_tmfs_t tmfs);
+    CreateBondsAttributes(const CreateBondsAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~CreateBondsAttributes();
 
     virtual CreateBondsAttributes& operator = (const CreateBondsAttributes &obj);
     virtual bool operator == (const CreateBondsAttributes &obj) const;
     virtual bool operator != (const CreateBondsAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const CreateBondsAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -79,6 +90,9 @@ public:
     void SelectAtomicNumber2();
     void SelectMinDist();
     void SelectMaxDist();
+    void SelectXVector();
+    void SelectYVector();
+    void SelectZVector();
 
     // Property setting methods
     void SetElementVariable(const std::string &elementVariable_);
@@ -87,6 +101,14 @@ public:
     void SetMinDist(const doubleVector &minDist_);
     void SetMaxDist(const doubleVector &maxDist_);
     void SetMaxBondsClamp(int maxBondsClamp_);
+    void SetAddPeriodicBonds(bool addPeriodicBonds_);
+    void SetUseUnitCellVectors(bool useUnitCellVectors_);
+    void SetPeriodicInX(bool periodicInX_);
+    void SetPeriodicInY(bool periodicInY_);
+    void SetPeriodicInZ(bool periodicInZ_);
+    void SetXVector(const double *xVector_);
+    void SetYVector(const double *yVector_);
+    void SetZVector(const double *zVector_);
 
     // Property getting methods
     const std::string  &GetElementVariable() const;
@@ -100,6 +122,17 @@ public:
     const doubleVector &GetMaxDist() const;
           doubleVector &GetMaxDist();
     int                GetMaxBondsClamp() const;
+    bool               GetAddPeriodicBonds() const;
+    bool               GetUseUnitCellVectors() const;
+    bool               GetPeriodicInX() const;
+    bool               GetPeriodicInY() const;
+    bool               GetPeriodicInZ() const;
+    const double       *GetXVector() const;
+          double       *GetXVector();
+    const double       *GetYVector() const;
+          double       *GetYVector();
+    const double       *GetZVector() const;
+          double       *GetZVector();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -120,7 +153,16 @@ public:
         ID_atomicNumber2,
         ID_minDist,
         ID_maxDist,
-        ID_maxBondsClamp
+        ID_maxBondsClamp,
+        ID_addPeriodicBonds,
+        ID_useUnitCellVectors,
+        ID_periodicInX,
+        ID_periodicInY,
+        ID_periodicInZ,
+        ID_xVector,
+        ID_yVector,
+        ID_zVector,
+        ID__LAST
     };
 
 private:
@@ -130,9 +172,19 @@ private:
     doubleVector minDist;
     doubleVector maxDist;
     int          maxBondsClamp;
+    bool         addPeriodicBonds;
+    bool         useUnitCellVectors;
+    bool         periodicInX;
+    bool         periodicInY;
+    bool         periodicInZ;
+    double       xVector[3];
+    double       yVector[3];
+    double       zVector[3];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CREATEBONDSATTRIBUTES_TMFS "si*i*d*d*ibbbbbDDD"
 
 #endif

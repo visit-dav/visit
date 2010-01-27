@@ -62,7 +62,7 @@ import java.lang.Double;
 
 public class CreateBondsAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 6;
+    private static int numAdditionalAttributes = 14;
 
     public CreateBondsAttributes()
     {
@@ -82,6 +82,23 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         maxDist.addElement(new Double(1.2));
         maxDist.addElement(new Double(1.9));
         maxBondsClamp = 10;
+        addPeriodicBonds = false;
+        useUnitCellVectors = true;
+        periodicInX = true;
+        periodicInY = true;
+        periodicInZ = true;
+        xVector = new double[3];
+        xVector[0] = 1;
+        xVector[1] = 0;
+        xVector[2] = 0;
+        yVector = new double[3];
+        yVector[0] = 0;
+        yVector[1] = 1;
+        yVector[2] = 0;
+        zVector = new double[3];
+        zVector[0] = 0;
+        zVector[1] = 0;
+        zVector[2] = 1;
     }
 
     public CreateBondsAttributes(int nMoreFields)
@@ -102,6 +119,23 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         maxDist.addElement(new Double(1.2));
         maxDist.addElement(new Double(1.9));
         maxBondsClamp = 10;
+        addPeriodicBonds = false;
+        useUnitCellVectors = true;
+        periodicInX = true;
+        periodicInY = true;
+        periodicInZ = true;
+        xVector = new double[3];
+        xVector[0] = 1;
+        xVector[1] = 0;
+        xVector[2] = 0;
+        yVector = new double[3];
+        yVector[0] = 0;
+        yVector[1] = 1;
+        yVector[2] = 0;
+        zVector = new double[3];
+        zVector[0] = 0;
+        zVector[1] = 0;
+        zVector[2] = 1;
     }
 
     public CreateBondsAttributes(CreateBondsAttributes obj)
@@ -138,6 +172,26 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         }
 
         maxBondsClamp = obj.maxBondsClamp;
+        addPeriodicBonds = obj.addPeriodicBonds;
+        useUnitCellVectors = obj.useUnitCellVectors;
+        periodicInX = obj.periodicInX;
+        periodicInY = obj.periodicInY;
+        periodicInZ = obj.periodicInZ;
+        xVector = new double[3];
+        xVector[0] = obj.xVector[0];
+        xVector[1] = obj.xVector[1];
+        xVector[2] = obj.xVector[2];
+
+        yVector = new double[3];
+        yVector[0] = obj.yVector[0];
+        yVector[1] = obj.yVector[1];
+        yVector[2] = obj.yVector[2];
+
+        zVector = new double[3];
+        zVector[0] = obj.zVector[0];
+        zVector[1] = obj.zVector[1];
+        zVector[2] = obj.zVector[2];
+
 
         SelectAll();
     }
@@ -192,13 +246,36 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
             Double maxDist2 = (Double)obj.maxDist.elementAt(i);
             maxDist_equal = maxDist1.equals(maxDist2);
         }
+        // Compare the xVector arrays.
+        boolean xVector_equal = true;
+        for(i = 0; i < 3 && xVector_equal; ++i)
+            xVector_equal = (xVector[i] == obj.xVector[i]);
+
+        // Compare the yVector arrays.
+        boolean yVector_equal = true;
+        for(i = 0; i < 3 && yVector_equal; ++i)
+            yVector_equal = (yVector[i] == obj.yVector[i]);
+
+        // Compare the zVector arrays.
+        boolean zVector_equal = true;
+        for(i = 0; i < 3 && zVector_equal; ++i)
+            zVector_equal = (zVector[i] == obj.zVector[i]);
+
         // Create the return value
         return ((elementVariable.equals(obj.elementVariable)) &&
                 atomicNumber1_equal &&
                 atomicNumber2_equal &&
                 minDist_equal &&
                 maxDist_equal &&
-                (maxBondsClamp == obj.maxBondsClamp));
+                (maxBondsClamp == obj.maxBondsClamp) &&
+                (addPeriodicBonds == obj.addPeriodicBonds) &&
+                (useUnitCellVectors == obj.useUnitCellVectors) &&
+                (periodicInX == obj.periodicInX) &&
+                (periodicInY == obj.periodicInY) &&
+                (periodicInZ == obj.periodicInZ) &&
+                xVector_equal &&
+                yVector_equal &&
+                zVector_equal);
     }
 
     public String GetName() { return "CreateBonds"; }
@@ -241,13 +318,99 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         Select(5);
     }
 
+    public void SetAddPeriodicBonds(boolean addPeriodicBonds_)
+    {
+        addPeriodicBonds = addPeriodicBonds_;
+        Select(6);
+    }
+
+    public void SetUseUnitCellVectors(boolean useUnitCellVectors_)
+    {
+        useUnitCellVectors = useUnitCellVectors_;
+        Select(7);
+    }
+
+    public void SetPeriodicInX(boolean periodicInX_)
+    {
+        periodicInX = periodicInX_;
+        Select(8);
+    }
+
+    public void SetPeriodicInY(boolean periodicInY_)
+    {
+        periodicInY = periodicInY_;
+        Select(9);
+    }
+
+    public void SetPeriodicInZ(boolean periodicInZ_)
+    {
+        periodicInZ = periodicInZ_;
+        Select(10);
+    }
+
+    public void SetXVector(double[] xVector_)
+    {
+        xVector[0] = xVector_[0];
+        xVector[1] = xVector_[1];
+        xVector[2] = xVector_[2];
+        Select(11);
+    }
+
+    public void SetXVector(double e0, double e1, double e2)
+    {
+        xVector[0] = e0;
+        xVector[1] = e1;
+        xVector[2] = e2;
+        Select(11);
+    }
+
+    public void SetYVector(double[] yVector_)
+    {
+        yVector[0] = yVector_[0];
+        yVector[1] = yVector_[1];
+        yVector[2] = yVector_[2];
+        Select(12);
+    }
+
+    public void SetYVector(double e0, double e1, double e2)
+    {
+        yVector[0] = e0;
+        yVector[1] = e1;
+        yVector[2] = e2;
+        Select(12);
+    }
+
+    public void SetZVector(double[] zVector_)
+    {
+        zVector[0] = zVector_[0];
+        zVector[1] = zVector_[1];
+        zVector[2] = zVector_[2];
+        Select(13);
+    }
+
+    public void SetZVector(double e0, double e1, double e2)
+    {
+        zVector[0] = e0;
+        zVector[1] = e1;
+        zVector[2] = e2;
+        Select(13);
+    }
+
     // Property getting methods
-    public String GetElementVariable() { return elementVariable; }
-    public Vector GetAtomicNumber1() { return atomicNumber1; }
-    public Vector GetAtomicNumber2() { return atomicNumber2; }
-    public Vector GetMinDist() { return minDist; }
-    public Vector GetMaxDist() { return maxDist; }
-    public int    GetMaxBondsClamp() { return maxBondsClamp; }
+    public String   GetElementVariable() { return elementVariable; }
+    public Vector   GetAtomicNumber1() { return atomicNumber1; }
+    public Vector   GetAtomicNumber2() { return atomicNumber2; }
+    public Vector   GetMinDist() { return minDist; }
+    public Vector   GetMaxDist() { return maxDist; }
+    public int      GetMaxBondsClamp() { return maxBondsClamp; }
+    public boolean  GetAddPeriodicBonds() { return addPeriodicBonds; }
+    public boolean  GetUseUnitCellVectors() { return useUnitCellVectors; }
+    public boolean  GetPeriodicInX() { return periodicInX; }
+    public boolean  GetPeriodicInY() { return periodicInY; }
+    public boolean  GetPeriodicInZ() { return periodicInZ; }
+    public double[] GetXVector() { return xVector; }
+    public double[] GetYVector() { return yVector; }
+    public double[] GetZVector() { return zVector; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -264,6 +427,22 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
             buf.WriteDoubleVector(maxDist);
         if(WriteSelect(5, buf))
             buf.WriteInt(maxBondsClamp);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(addPeriodicBonds);
+        if(WriteSelect(7, buf))
+            buf.WriteBool(useUnitCellVectors);
+        if(WriteSelect(8, buf))
+            buf.WriteBool(periodicInX);
+        if(WriteSelect(9, buf))
+            buf.WriteBool(periodicInY);
+        if(WriteSelect(10, buf))
+            buf.WriteBool(periodicInZ);
+        if(WriteSelect(11, buf))
+            buf.WriteDoubleArray(xVector);
+        if(WriteSelect(12, buf))
+            buf.WriteDoubleArray(yVector);
+        if(WriteSelect(13, buf))
+            buf.WriteDoubleArray(zVector);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -288,6 +467,30 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         case 5:
             SetMaxBondsClamp(buf.ReadInt());
             break;
+        case 6:
+            SetAddPeriodicBonds(buf.ReadBool());
+            break;
+        case 7:
+            SetUseUnitCellVectors(buf.ReadBool());
+            break;
+        case 8:
+            SetPeriodicInX(buf.ReadBool());
+            break;
+        case 9:
+            SetPeriodicInY(buf.ReadBool());
+            break;
+        case 10:
+            SetPeriodicInZ(buf.ReadBool());
+            break;
+        case 11:
+            SetXVector(buf.ReadDoubleArray());
+            break;
+        case 12:
+            SetYVector(buf.ReadDoubleArray());
+            break;
+        case 13:
+            SetZVector(buf.ReadDoubleArray());
+            break;
         }
     }
 
@@ -300,16 +503,32 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
         str = str + doubleVectorToString("minDist", minDist, indent) + "\n";
         str = str + doubleVectorToString("maxDist", maxDist, indent) + "\n";
         str = str + intToString("maxBondsClamp", maxBondsClamp, indent) + "\n";
+        str = str + boolToString("addPeriodicBonds", addPeriodicBonds, indent) + "\n";
+        str = str + boolToString("useUnitCellVectors", useUnitCellVectors, indent) + "\n";
+        str = str + boolToString("periodicInX", periodicInX, indent) + "\n";
+        str = str + boolToString("periodicInY", periodicInY, indent) + "\n";
+        str = str + boolToString("periodicInZ", periodicInZ, indent) + "\n";
+        str = str + doubleArrayToString("xVector", xVector, indent) + "\n";
+        str = str + doubleArrayToString("yVector", yVector, indent) + "\n";
+        str = str + doubleArrayToString("zVector", zVector, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private String elementVariable;
-    private Vector atomicNumber1; // vector of Integer objects
-    private Vector atomicNumber2; // vector of Integer objects
-    private Vector minDist; // vector of Double objects
-    private Vector maxDist; // vector of Double objects
-    private int    maxBondsClamp;
+    private String   elementVariable;
+    private Vector   atomicNumber1; // vector of Integer objects
+    private Vector   atomicNumber2; // vector of Integer objects
+    private Vector   minDist; // vector of Double objects
+    private Vector   maxDist; // vector of Double objects
+    private int      maxBondsClamp;
+    private boolean  addPeriodicBonds;
+    private boolean  useUnitCellVectors;
+    private boolean  periodicInX;
+    private boolean  periodicInY;
+    private boolean  periodicInZ;
+    private double[] xVector;
+    private double[] yVector;
+    private double[] zVector;
 }
 

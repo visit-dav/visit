@@ -66,6 +66,11 @@ class vtkDataSet;
 //    for a "simple" mode.  (The default for the manual mode is actually
 //    exactly what the simple mode was going to be anyway.)
 //
+//    Jeremy Meredith, Tue Jan 26 16:30:40 EST 2010
+//    Separated bond distance check to a more manual version.  This allows
+//    for some optimizations, particularly in the new "periodic bond check"
+//    feature.
+//
 // ****************************************************************************
 
 class avtCreateBondsFilter : public avtPluginDataTreeIterator
@@ -90,9 +95,7 @@ class avtCreateBondsFilter : public avtPluginDataTreeIterator
     virtual avtContract_p
                           ModifyContract(avtContract_p spec);
 
-    bool AtomsShouldBeBondedManual(float *atomicnumbers,
-                                   vtkPoints *pts,
-                                   int a1, int a2);
+    bool AtomBondDistances(int eA, int eB, double &dmin, double &dmax);
 };
 
 
