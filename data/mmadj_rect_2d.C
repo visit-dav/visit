@@ -41,10 +41,15 @@
 // and provides connectivity info via Silo's Mulitmeshadj Object.
 //
 // Modifications
-//   Mark C. Miller, Mon Jan 25 16:44:01 PST 2010
-//   Made it work with either silo driver.
+//    Mark C. Miller, Mon Jan 25 16:44:01 PST 2010
+//    Made it work with either silo driver.
+//
+//    Mark C. Miller, Wed Jan 27 07:03:51 PST 2010
+//    Added missing include for cstring (Jed Brown patch)
+//
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
