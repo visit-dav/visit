@@ -49,7 +49,7 @@
 
 class vtkPoints;
 class vtkDataSet;
-
+class vtkPolyData;
 
 // ****************************************************************************
 //  Class: avtCreateBondsFilter
@@ -70,6 +70,12 @@ class vtkDataSet;
 //    Separated bond distance check to a more manual version.  This allows
 //    for some optimizations, particularly in the new "periodic bond check"
 //    feature.
+//
+//    Jeremy Meredith, Wed Jan 27 16:47:10 EST 2010
+//    Added a new, fast bond creation routine.  Kept the old one around
+//    as a fallback in case bonding distance paramemters make the fast
+//    routine a poor choice, or in case we need to add some feature which
+//    be too hard to add in the more complex fast routine.
 //
 // ****************************************************************************
 
@@ -92,6 +98,9 @@ class avtCreateBondsFilter : public avtPluginDataTreeIterator
     CreateBondsAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    vtkDataSet           *ExecuteData_Fast(vtkPolyData*, float maxBondDist,
+                                          float,float,float,float,float,float);
+    vtkDataSet           *ExecuteData_Slow(vtkPolyData*);
     virtual avtContract_p
                           ModifyContract(avtContract_p spec);
 
