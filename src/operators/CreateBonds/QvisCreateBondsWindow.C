@@ -57,6 +57,8 @@
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QComboBox>
+#include <QTabWidget>
+#include <QGroupBox>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -133,36 +135,22 @@ QvisCreateBondsWindow::~QvisCreateBondsWindow()
 //   Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
 //   Qt4 Port.
 //
+//   Jeremy Meredith, Wed Jan 27 10:39:48 EST 2010
+//   Added periodic bond matching support.
+//
 // ****************************************************************************
 
 void
 QvisCreateBondsWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout();
-    topLayout->addLayout(mainLayout);
-
-    elementVariableLabel = new QLabel(tr("Variable for atomic number"),
-                                      central);
-    mainLayout->addWidget(elementVariableLabel,0,0);
-    int elementVariableMask = QvisVariableButton::Scalars;
-    elementVariable = new QvisVariableButton(true, true, true, 
-                                             elementVariableMask, central);
-    connect(elementVariable, SIGNAL(activated(const QString&)),
-            this, SLOT(elementVariableChanged(const QString&)));
-    mainLayout->addWidget(elementVariable, 0,1);
-
-    maxBondsLabel = new QLabel(tr("Maximum bonds per atom"), central);
-    mainLayout->addWidget(maxBondsLabel,1,0);
-    maxBonds = new QLineEdit(central);
-    mainLayout->addWidget(maxBonds,1,1);
-    connect(maxBonds, SIGNAL(returnPressed()),
-            this, SLOT(maxBondsReturnPressed()));
+    QTabWidget *tabWidget = new QTabWidget(central);
+    topLayout->addWidget(tabWidget);
 
     // ------------------------------------------------------------------------
 
-    QGroupBox *bondsTreeGroup = new QGroupBox(tr("Bonds"), central);
-    mainLayout->addWidget(bondsTreeGroup, 2,0, 1,2);
-    mainLayout->setRowStretch(2, 1000);
+    QGroupBox *bondsTreeGroup = new QGroupBox(central);
+    bondsTreeGroup->setFlat(true);
+    tabWidget->addTab(bondsTreeGroup,tr("Bonding parameters"));
 
     QVBoxLayout *listLayout = new QVBoxLayout(bondsTreeGroup);
 
@@ -265,7 +253,87 @@ QvisCreateBondsWindow::CreateWindowContents()
 
     // ------------------------------------------------------------------------
 
+    QGroupBox *advTab = new QGroupBox(tabWidget);
+    advTab->setFlat(true);
+    tabWidget->addTab(advTab, tr("Advanced settings"));
+
+    QGridLayout *advLayout = new QGridLayout(advTab);
+
     
+    elementVariableLabel = new QLabel(tr("Variable for atomic number"),
+                                      advTab);
+    advLayout->addWidget(elementVariableLabel,0,0);
+    int elementVariableMask = QvisVariableButton::Scalars;
+    elementVariable = new QvisVariableButton(true, true, true, 
+                                             elementVariableMask, advTab);
+    connect(elementVariable, SIGNAL(activated(const QString&)),
+            this, SLOT(elementVariableChanged(const QString&)));
+    advLayout->addWidget(elementVariable, 0,1);
+
+    maxBondsLabel = new QLabel(tr("Maximum bonds per atom"), advTab);
+    advLayout->addWidget(maxBondsLabel,1,0);
+    maxBonds = new QLineEdit(advTab);
+    advLayout->addWidget(maxBonds,1,1);
+    connect(maxBonds, SIGNAL(returnPressed()),
+            this, SLOT(maxBondsReturnPressed()));
+
+    addPeriodicBonds = new QGroupBox(tr("Add periodic bonds"),advTab);
+    addPeriodicBonds->setCheckable(true);
+    connect(addPeriodicBonds, SIGNAL(toggled(bool)),
+            this, SLOT(addPeriodicBondsToggled(bool)));
+    advLayout->addWidget(addPeriodicBonds, 2,0, 1,2);
+
+    int row;
+    row = 0;
+    QGridLayout *vecLayout = new QGridLayout(addPeriodicBonds);
+
+    QLabel *periodicLabel = new QLabel(tr("Periodic in"), addPeriodicBonds);
+    vecLayout->addWidget(periodicLabel, row,0);
+    xPeriodic = new QCheckBox(tr("X"), addPeriodicBonds);
+    yPeriodic = new QCheckBox(tr("Y"), addPeriodicBonds);
+    zPeriodic = new QCheckBox(tr("Z"), addPeriodicBonds);
+    vecLayout->addWidget(xPeriodic, row,1);
+    vecLayout->addWidget(yPeriodic, row,2);
+    vecLayout->addWidget(zPeriodic, row,3);
+    connect(xPeriodic, SIGNAL(toggled(bool)),
+            this, SLOT(xPeriodicToggled(bool)));
+    connect(yPeriodic, SIGNAL(toggled(bool)),
+            this, SLOT(yPeriodicToggled(bool)));
+    connect(zPeriodic, SIGNAL(toggled(bool)),
+            this, SLOT(zPeriodicToggled(bool)));
+    row++;
+
+    useUnitCellVectors = new QCheckBox(tr("Use provided unit cell vectors"),
+                                       addPeriodicBonds);
+    connect(useUnitCellVectors, SIGNAL(toggled(bool)),
+            this, SLOT(useUnitCellVectorsChanged(bool)));
+    vecLayout->addWidget(useUnitCellVectors, row,0, 1,4);
+    row++;
+
+    xVectorLabel = new QLabel(tr("Vector for X"), addPeriodicBonds);
+    vecLayout->addWidget(xVectorLabel,row,0);
+    xVector = new QLineEdit(addPeriodicBonds);
+    connect(xVector, SIGNAL(returnPressed()),
+            this, SLOT(xVectorProcessText()));
+    vecLayout->addWidget(xVector, row,1, 1,3);
+    row++;
+
+    yVectorLabel = new QLabel(tr("Vector for Y"), addPeriodicBonds);
+    vecLayout->addWidget(yVectorLabel,row,0);
+    yVector = new QLineEdit(addPeriodicBonds);
+    connect(yVector, SIGNAL(returnPressed()),
+            this, SLOT(yVectorProcessText()));
+    vecLayout->addWidget(yVector, row,1, 1,3);
+    row++;
+
+    zVectorLabel = new QLabel(tr("Vector for Z"), addPeriodicBonds);
+    vecLayout->addWidget(zVectorLabel,row,0);
+    zVector = new QLineEdit(addPeriodicBonds);
+    connect(zVector, SIGNAL(returnPressed()),
+            this, SLOT(zVectorProcessText()));
+    vecLayout->addWidget(zVector, row,1, 1,3);
+    row++;
+
 }
 
 
@@ -285,6 +353,9 @@ QvisCreateBondsWindow::CreateWindowContents()
 //   
 //    Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
 //    Qt4 Port.
+//
+//    Jeremy Meredith, Wed Jan 27 10:39:48 EST 2010
+//    Added periodic bond matching support.
 //
 // ****************************************************************************
 
@@ -315,6 +386,58 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
             break;
           case CreateBondsAttributes::ID_maxBondsClamp:
             maxBonds->setText(QString().sprintf("%d",atts->GetMaxBondsClamp()));
+            break;
+          case CreateBondsAttributes::ID_addPeriodicBonds:
+            addPeriodicBonds->blockSignals(true);
+            addPeriodicBonds->setChecked(atts->GetAddPeriodicBonds());
+            addPeriodicBonds->blockSignals(false);
+            break;
+          case CreateBondsAttributes::ID_periodicInX:
+            xPeriodic->blockSignals(true);
+            xPeriodic->setChecked(atts->GetPeriodicInX());
+            xPeriodic->blockSignals(false);
+            break;
+          case CreateBondsAttributes::ID_periodicInY:
+            yPeriodic->blockSignals(true);
+            yPeriodic->setChecked(atts->GetPeriodicInY());
+            yPeriodic->blockSignals(false);
+            break;
+          case CreateBondsAttributes::ID_periodicInZ:
+            zPeriodic->blockSignals(true);
+            zPeriodic->setChecked(atts->GetPeriodicInZ());
+            zPeriodic->blockSignals(false);
+            break;
+          case CreateBondsAttributes::ID_useUnitCellVectors:
+            useUnitCellVectors->blockSignals(true);
+            useUnitCellVectors->setChecked(atts->GetUseUnitCellVectors());
+            useUnitCellVectors->blockSignals(false);
+            if (atts->GetUseUnitCellVectors() == false)
+            {
+                xVector->setEnabled(true);
+                xVectorLabel->setEnabled(true);
+                yVector->setEnabled(true);
+                yVectorLabel->setEnabled(true);
+                zVector->setEnabled(true);
+                zVectorLabel->setEnabled(true);
+            }
+            else
+            {
+                xVector->setEnabled(false);
+                xVectorLabel->setEnabled(false);
+                yVector->setEnabled(false);
+                yVectorLabel->setEnabled(false);
+                zVector->setEnabled(false);
+                zVectorLabel->setEnabled(false);
+            }
+            break;
+          case CreateBondsAttributes::ID_xVector:
+            xVector->setText(DoublesToQString(atts->GetXVector(), 3));
+            break;
+          case CreateBondsAttributes::ID_yVector:
+            yVector->setText(DoublesToQString(atts->GetYVector(), 3));
+            break;
+          case CreateBondsAttributes::ID_zVector:
+            zVector->setText(DoublesToQString(atts->GetZVector(), 3));
             break;
         default:
             break;
@@ -372,6 +495,9 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison, Wed Aug 20 08:27:03 PDT 2008
 //   Qt4 Port.
 //
+//   Jeremy Meredith, Wed Jan 27 10:39:48 EST 2010
+//   Added periodic bond matching support.
+//
 // ****************************************************************************
 
 void
@@ -392,6 +518,48 @@ QvisCreateBondsWindow::GetCurrentValues(int which_widget)
         else
         {
             atts->SetMaxBondsClamp(newval);
+        }
+    }
+
+    // Do xVector
+    if(which_widget == CreateBondsAttributes::ID_xVector || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(xVector, val, 3))
+            atts->SetXVector(val);
+        else
+        {
+            ResettingError(tr("Vector for X"),
+                DoublesToQString(atts->GetXVector(),3));
+            atts->SetXVector(atts->GetXVector());
+        }
+    }
+
+    // Do yVector
+    if(which_widget == CreateBondsAttributes::ID_yVector || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(yVector, val, 3))
+            atts->SetYVector(val);
+        else
+        {
+            ResettingError(tr("Vector for Y"),
+                DoublesToQString(atts->GetYVector(),3));
+            atts->SetYVector(atts->GetYVector());
+        }
+    }
+
+    // Do zVector
+    if(which_widget == CreateBondsAttributes::ID_zVector || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(zVector, val, 3))
+            atts->SetZVector(val);
+        else
+        {
+            ResettingError(tr("Vector for Z"),
+                DoublesToQString(atts->GetZVector(),3));
+            atts->SetZVector(atts->GetZVector());
         }
     }
 
@@ -549,6 +717,70 @@ void QvisCreateBondsWindow::maxDistTextChanged(const QString &txt)
     item->setText(3, QString().sprintf("%.4f",atts->GetMaxDist()[index]));
     atts->SelectMaxDist();
 }
+
+
+
+void
+QvisCreateBondsWindow::addPeriodicBondsToggled(bool val)
+{
+    atts->SetAddPeriodicBonds(val);
+    Apply();
+}
+
+
+void
+QvisCreateBondsWindow::useUnitCellVectorsChanged(bool val)
+{
+    atts->SetUseUnitCellVectors(val);
+    Apply();
+}
+
+
+void
+QvisCreateBondsWindow::xPeriodicToggled(bool val)
+{
+    atts->SetPeriodicInX(val);
+    Apply();
+}
+
+void
+QvisCreateBondsWindow::yPeriodicToggled(bool val)
+{
+    atts->SetPeriodicInY(val);
+    Apply();
+}
+
+void
+QvisCreateBondsWindow::zPeriodicToggled(bool val)
+{
+    atts->SetPeriodicInZ(val);
+    Apply();
+}
+
+
+void
+QvisCreateBondsWindow::xVectorProcessText()
+{
+    GetCurrentValues(CreateBondsAttributes::ID_xVector);
+    Apply();
+}
+
+
+void
+QvisCreateBondsWindow::yVectorProcessText()
+{
+    GetCurrentValues(CreateBondsAttributes::ID_yVector);
+    Apply();
+}
+
+
+void
+QvisCreateBondsWindow::zVectorProcessText()
+{
+    GetCurrentValues(CreateBondsAttributes::ID_zVector);
+    Apply();
+}
+
 
 // ****************************************************************************
 //  Method:  QvisCreateBondsWindow::firstElementChanged

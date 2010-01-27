@@ -19,5 +19,35 @@
       <Field name="maxBondsClamp" label="maxBondsClamp" type="int">
         10
       </Field>
+      <Field name="addPeriodicBonds" label="Add bonds for atoms crossing periodic unit cell boundaries" type="bool">
+        false
+      </Field>
+      <Field name="useUnitCellVectors" label="Use provided unit cell vectors" type="bool">
+        true
+      </Field>
+      <Field name="periodicInX" label="Periodic in X" type="bool">
+        true
+      </Field>
+      <Field name="periodicInY" label="Periodic in Z" type="bool">
+        true
+      </Field>
+      <Field name="periodicInZ" label="Periodic in Y" type="bool">
+        true
+      </Field>
+      <Field name="xVector" label="Vector for X" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="yVector" label="Vector for Y" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="zVector" label="Vector for Z" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
     </Attribute>
   </Plugin>

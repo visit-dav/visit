@@ -50,6 +50,11 @@
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
+
+#include <map>
+using std::pair;
+using std::map;
 
 // ****************************************************************************
 //  Method: avtCreateBondsFilter constructor
@@ -138,13 +143,11 @@ avtCreateBondsFilter::Equivalent(const AttributeGroup *a)
 //  Method:  avtCreateBondsFilter::AtomsShouldBeBondedManual
 //
 //  Purpose:
-//    Checks if atoms should be bonded based on an explicit
-//    manual selection of bonding species and min/max bond lengths.
+//    Finds min/max bond lengths for a pair of species.
 //
 //  Arguments:
-//    atomicnumbers   the array of atomic numbers
-//    pts             the vtkPoints of the data set, to get their locations
-//    a1,a2           the indexes of the atoms to check
+//    elementA/B        the atomic numbers of the atom pair
+//    dmin,dmax         the min/max allowed bonding distance (output)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
@@ -160,20 +163,16 @@ avtCreateBondsFilter::Equivalent(const AttributeGroup *a)
 //    which means "unknown", and hydrogen now starts at 1.  This
 //    also means we don't have to correct for 1-origin atomic numbers.
 //
+//    Jeremy Meredith, Tue Jan 26 16:35:41 EST 2010
+//    Split into two functions to allow better optimizations.
+//
 // ****************************************************************************
 bool
-avtCreateBondsFilter::AtomsShouldBeBondedManual(float *atomicnumbers,
-                                                vtkPoints *pts,
-                                                int a1, int a2)
+avtCreateBondsFilter::AtomBondDistances(int elementA, int elementB,
+                                        double &dmin, double &dmax)
 {
-    double p1[3];
-    double p2[3];
-    pts->GetPoint(a1,p1);
-    pts->GetPoint(a2,p2);
-    float dx = p1[0] - p2[0];
-    float dy = p1[1] - p2[1];
-    float dz = p1[2] - p2[2];
-    float dist2 = dx*dx + dy*dy + dz*dz;
+    dmin = 0.;
+    dmax = 0.;
 
     vector<double> &minDist = atts.GetMinDist();
     vector<double> &maxDist = atts.GetMaxDist();
@@ -196,27 +195,55 @@ avtCreateBondsFilter::AtomsShouldBeBondedManual(float *atomicnumbers,
         // a -1 in the element list means "any"
         int e1 = element1[i];
         int e2 = element2[i];
-        bool match11 = (e1 <= 0) || (atomicnumbers[a1] == e1);
-        bool match12 = (e1 <= 0) || (atomicnumbers[a2] == e1);
-        bool match21 = (e2 <= 0) || (atomicnumbers[a1] == e2);
-        bool match22 = (e2 <= 0) || (atomicnumbers[a2] == e2);
+        bool match11 = (e1 < 0) || (elementA == e1);
+        bool match12 = (e1 < 0) || (elementB == e1);
+        bool match21 = (e2 < 0) || (elementA == e2);
+        bool match22 = (e2 < 0) || (elementB == e2);
         if ((match11 && match22) || (match12 && match21))
         {
-            double dmin = minDist[i];
-            double dmax = maxDist[i];
-            if (dist2 > dmin*dmin && dist2 < dmax*dmax)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            dmin = minDist[i];
+            dmax = maxDist[i];
+            return true;
         }
     }
 
     return false;
 }
+
+// ****************************************************************************
+// Method:  ShouldAtomsBeBonded
+//
+// Purpose:
+//   Check if two atoms are within the allowable distances.
+//
+// Arguments:
+//   dmin,dmax     the min/max bonding distances
+//   pA,pB         the atom locations
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January 26, 2010
+//
+// ****************************************************************************
+inline bool
+ShouldAtomsBeBonded(double dmin, double dmax,
+                    double *pA, double *pB)
+{
+    // Check for errors, of in case of no match for this pair
+    if (dmax <= 0 || dmax < dmin)
+        return false;
+
+    // Okay, now see if the atom pair matches the right distance
+    float dx = pA[0] - pB[0];
+    float dy = pA[1] - pB[1];
+    float dz = pA[2] - pB[2];
+    float dist2 = dx*dx + dy*dy + dz*dz;
+
+    if (dist2 > dmin*dmin && dist2 < dmax*dmax)
+        return true;
+    else
+        return false;
+}
+
 
 // ****************************************************************************
 //  Method: avtCreateBondsFilter::ExecuteData
@@ -240,18 +267,31 @@ avtCreateBondsFilter::AtomsShouldBeBondedManual(float *atomicnumbers,
 //    for a "simple" mode.  (The default for the manual mode is actually
 //    exactly what the simple mode was going to be anyway.)
 //
+//    Jeremy Meredith, Wed Jan 27 10:37:03 EST 2010
+//    Added periodic atom matching support.  This is a bit slow for the moment,
+//    about a 10x penalty compared to the non-periodic matching, so we should
+//    add a faster version at some point....
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
+    //
+    // Extract some input data
+    //
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
         EXCEPTION1(ImproperUseException,
                    "Expected a vtkPolyData in the avtCreateBondsFilter.");
     }
-    vtkPolyData *in_pd = (vtkPolyData*)in_ds;
-    vtkPoints   *in_pts = in_pd->GetPoints();
+    vtkPolyData  *in = (vtkPolyData*)in_ds;
+    vtkPoints    *inPts = in->GetPoints();
+    vtkCellArray *inVerts = in->GetVerts();
+    vtkPointData *inPD  = in->GetPointData();
+    vtkCellData  *inCD  = in->GetCellData();
+    int nPts   = in->GetNumberOfPoints();
+    int nVerts = in->GetNumberOfVerts();
 
     vtkDataArray *element = in_ds->GetPointData()->GetArray("element");
     if (!element)
@@ -266,17 +306,84 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
 
-    vtkPolyData *out_pd = in_pd->NewInstance();
-    out_pd->ShallowCopy(in_pd);
+    //
+    // Set up the output stuff
+    //
+    vtkPolyData  *out      = in->NewInstance();
+    vtkPointData *outPD    = out->GetPointData();
+    vtkCellData  *outCD    = out->GetCellData();
+    vtkPoints    *outPts   = vtkPoints::New();
+    vtkCellArray *outVerts = vtkCellArray::New();
+    vtkCellArray *outLines = vtkCellArray::New();
+    out->GetFieldData()->ShallowCopy(in->GetFieldData());
+    out->SetPoints(outPts);
+    out->SetLines(outLines);
+    out->SetVerts(outVerts);
+    outPts->Delete();
+    outLines->Delete();
+    outVerts->Delete();
+
+    //outPts->SetNumberOfPoints(nPts * 1.1);
+    outPD->CopyAllocate(inPD,nPts);
+    outCD->CopyAllocate(inCD,nVerts*1.2);
+
+    //
+    // Copy the input points and verts over.
+    //
+    for (int p=0; p<nPts; p++)
+    {
+        double pt[4] = {0,0,0,1};
+        in->GetPoint(p, pt);
+        int outpt = outPts->InsertNextPoint(pt);
+        outPD->CopyData(inPD, p, outpt);
+    }
+    vtkIdType *vertPtr = inVerts->GetPointer();
+    for (int v=0; v<nVerts; v++)
+    {
+        if (*vertPtr == 1)
+        {
+            vtkIdType id = *(vertPtr+1);
+            int outcell = outVerts->InsertNextCell(1);
+            outVerts->InsertCellPoint(id);
+            outCD->CopyData(inCD, v, outcell);
+        }
+        vertPtr += (*vertPtr+1);
+    }
 
     int natoms = in_ds->GetNumberOfPoints();
 
-    vtkCellArray *lines = vtkCellArray::New();
-    out_pd->SetLines(lines);
-    lines->Delete();
 
+    //
+    // Extract unit cell vectors in case we want to add bonds
+    // for periodic atom images
+    //
+    bool addPeriodicBonds = atts.GetAddPeriodicBonds();
+    double xv[3], yv[3], zv[3];
+    for (int j=0; j<3; j++)
+    {
+        if (atts.GetUseUnitCellVectors())
+        {
+            const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+            const float *unitCell = datts.GetUnitCellVectors();
+            xv[j] = unitCell[3*0+j];
+            yv[j] = unitCell[3*1+j];
+            zv[j] = unitCell[3*2+j];
+        }
+        else
+        {
+            xv[j] = atts.GetXVector()[j];
+            yv[j] = atts.GetYVector()[j];
+            zv[j] = atts.GetZVector()[j];
+        }
+    }
+
+    map<pair<int, int>, int> imageMap;
+
+    //
+    // Loop over the (n^2)/2 atom pairs
+    //
     int max_per_atom = atts.GetMaxBondsClamp();
-    //CreateBonds_Slow(ptr, elementnos);
+    int timerMain = visitTimer->StartTimer();
     for (int i=0; i<natoms; i++)
     {
         int ctr = 0;
@@ -285,22 +392,161 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             if (i==j)
                 continue;
 
-            bool shouldBeBonded;
-            shouldBeBonded = AtomsShouldBeBondedManual(elementnos,in_pts,i,j);
+            double p1[3];
+            double p2[3];
+            inPts->GetPoint(i,p1);
+            inPts->GetPoint(j,p2);
 
-            if (shouldBeBonded)
+            int e1 = elementnos[i];
+            int e2 = elementnos[j];
+
+            double dmin, dmax;
+            bool possible = AtomBondDistances(e1,e2, dmin,dmax);
+            if (possible && ShouldAtomsBeBonded(dmin,dmax, p1,p2))
             {
-                lines->InsertNextCell(2);
-                lines->InsertCellPoint(i);
-                lines->InsertCellPoint(j);
+                outLines->InsertNextCell(2);
+                outLines->InsertCellPoint(i);
+                outLines->InsertCellPoint(j);
                 ctr++;
             }
         }
     }
+    visitTimer->StopTimer(timerMain, "CreateBonds: Main n^2 loop");
 
-    ManageMemory(out_pd);
-    out_pd->Delete();
-    return out_pd;
+    //
+    // If we're adding periodic bonds, loop over all n^2 atoms again.
+    // This time, look for ones where one of the two atoms is not
+    // in the native image (but the other one is).  Note that we're
+    // not keeping any earlier bond-per-atom counters, so when this
+    // is added, we might get 2*max total bonds.  Since this is
+    // typically non-physical and is only a limit for sanity, no big
+    // harm done.
+    //
+    int minX = 0, maxX = 0;
+    int minY = 0, maxY = 0;
+    int minZ = 0, maxZ = 0;
+    if (addPeriodicBonds && atts.GetPeriodicInX())
+    {
+        minX = -1; maxX = +1;
+    }
+    if (addPeriodicBonds && atts.GetPeriodicInY())
+    {
+        minY = -1; maxY = +1;
+    }
+    if (addPeriodicBonds && atts.GetPeriodicInZ())
+    {
+        minZ = -1; maxZ = +1;
+    }
+
+    int timerPer = visitTimer->StartTimer();
+    for (int j=0; j<natoms && addPeriodicBonds; j++)
+    {
+        int e2 = elementnos[j];
+        double p2[3];
+        inPts->GetPoint(j,p2);
+
+        int    newJ[27];
+        double newX[27];
+        double newY[27];
+        double newZ[27];
+        int image = 0;
+        for (int px=minX; px<=maxX; px++)
+        {
+            for (int py=minY; py<=maxY; py++)
+            {
+                for (int pz=minZ; pz<=maxZ; pz++)
+                {
+                    double pj[3] = {p2[0],p2[1],p2[2]};
+                    for (int c=0; c<3; c++)
+                    {
+                        pj[c] += xv[c] * double(px);
+                        pj[c] += yv[c] * double(py);
+                        pj[c] += zv[c] * double(pz);
+                    }
+                    newJ[image] = -1;
+                    newX[image] = pj[0];
+                    newY[image] = pj[1];
+                    newZ[image] = pj[2];
+                    image++;
+                }
+            }
+        }
+
+        int ctr = 0;
+        for (int i=0; i<natoms && addPeriodicBonds && ctr<max_per_atom; i++)
+        {
+            if (i==j)
+                continue;
+
+            int e1 = elementnos[i];
+            double p1[3];
+            inPts->GetPoint(i,p1);
+
+            double dmin, dmax;
+            bool possible = AtomBondDistances(e1,e2, dmin,dmax);
+            if (!possible)
+                continue;
+
+            int image = 0;
+            for (int px=minX; px<=maxX; px++)
+            {
+                for (int py=minY; py<=maxY; py++)
+                {
+                    for (int pz=minZ; pz<=maxZ; pz++, image++)
+                    {
+                        bool nativeImage = (px==0 && py==0 && pz==0);
+                        if (nativeImage)
+                            continue;
+
+                        double *pi = p1;
+                        double pj[3] = {newX[image],newY[image],newZ[image]};
+
+                        if (ShouldAtomsBeBonded(dmin,dmax,pi,pj))
+                        {
+                            if (newJ[image] == -1)
+                            {
+                                pair<int,int> jthImage(image,j);
+                                if (imageMap.count(jthImage)!=0)
+                                {
+                                    newJ[image] = imageMap[jthImage];
+                                }
+                                else
+                                {
+                                    newJ[image] = outPts->InsertNextPoint(pj);
+                                    imageMap[jthImage] = newJ[image];
+                                    outPD->CopyData(inPD, j, newJ[image]);
+                                        
+                                    // We're not adding a vertex cell here;
+                                    // these are not real atoms, and the
+                                    // molecule plot will now avoid drawing
+                                    // them if no Vert is associated w/ it.
+                                    //int outcell = outVerts->InsertNextCell(1);
+                                    //outVerts->InsertCellPoint(newJ[image]);
+                                    //outCD->CopyData(inCD, j, outcell);
+                                }
+                            }
+                            outLines->InsertNextCell(2);
+                            outLines->InsertCellPoint(i);
+                            outLines->InsertCellPoint(newJ[image]);
+                            ctr++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    visitTimer->StopTimer(timerPer, "CreateBonds: periodic n^2 * 27images loop");
+
+    vtkDataArray *origCellNums = outPD->GetArray("avtOriginalNodeNumbers");
+    if (origCellNums)
+    {
+        for (int i=nPts; i<out->GetNumberOfPoints(); i++)
+            origCellNums->SetTuple1(i,-1);
+    }
+
+    ManageMemory(out);
+    out->Delete();
+    return out;
 }
 
 // ****************************************************************************
