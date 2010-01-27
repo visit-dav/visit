@@ -242,6 +242,10 @@ typedef struct _GroupInfo
 //
 //    Mark C. Miller, Tue Jan 12 17:48:39 PST 2010
 //    Made HandleGlobalZoneIds work for different versions of Silo.
+//
+//    Mark C. Miller, Wed Jan 27 13:13:20 PST 2010
+//    Added an extra level of indirection to the arbMeshXXXRemap maps to
+//    make sure they work for multi-block case.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -315,8 +319,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     GroupInfo                       groupInfo;
 
-    map<string, vector<int>* >      arbMeshCellReMap;
-    map<string, vector<int>* >      arbMeshNodeReMap;
+    map<string, map<int, vector<int>* > >      arbMeshCellReMap;
+    map<string, map<int, vector<int>* > >      arbMeshNodeReMap;
 
     vector<avtDataSelection_p>      selList;
     vector<bool>                   *selsApplied;

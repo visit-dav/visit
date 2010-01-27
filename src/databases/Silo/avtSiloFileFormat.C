@@ -898,6 +898,10 @@ avtSiloFileFormat::CloseFile(int f)
 //    Mark C. Miller, Wed Oct 28 20:41:02 PDT 2009
 //    Removed arbMeshZoneRangesToSkip. Intoduced better handling of arb.
 //    polyhedral meshes.
+//
+//    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
+//    Added extra level of indirection to arbMeshXXXRemap objects to handle
+//    multi-block case.
 // ****************************************************************************
 
 void
@@ -940,12 +944,21 @@ avtSiloFileFormat::FreeUpResources(void)
     nlBlockToWindowsMap.clear();
     pascalsTriangleMap.clear();
 
-    map<string, vector<int>* >::iterator it;
-    for (it = arbMeshCellReMap.begin(); it != arbMeshCellReMap.end(); it++)
-        delete it->second;
+    map<string, map<int, vector<int>* > >::iterator it1;
+    map<int, vector<int>* >::iterator it2;
+    for (it1 = arbMeshCellReMap.begin(); it1 != arbMeshCellReMap.end(); it1++)
+    {
+        for (it2 = it1->second.begin(); it2 != it1->second.end(); it2++)
+            delete it2->second;
+        it1->second.clear();
+    }
     arbMeshCellReMap.clear();
-    for (it = arbMeshNodeReMap.begin(); it != arbMeshNodeReMap.end(); it++)
-        delete it->second;
+    for (it1 = arbMeshNodeReMap.begin(); it1 != arbMeshNodeReMap.end(); it1++)
+    {
+        for (it2 = it1->second.begin(); it2 != it1->second.end(); it2++)
+            delete it2->second;
+        it1->second.clear();
+    }
     arbMeshNodeReMap.clear();
 }
 
@@ -6586,6 +6599,10 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
 //    Replaced arb. polyhederal zone skipping logic with real remapping
 //    as now Silo plugin will read and decompose arb. polyhedral mesh.
 //    Replaced CopyUcdVectorVar a vector-enhanced version of CopyUcdVar.
+//
+//    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
+//    Added extra level of indirection to arbMeshXXXRemap objects to handle
+//    multi-block case.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6610,15 +6627,18 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
     string meshName = metadata->MeshForVar(tvn);
     vector<int> noremap;
     vector<int>* remap = &noremap;
+    map<string, map<int, vector<int>* > >::iterator domit;
     if (uv->centering == DB_ZONECENT &&
-        arbMeshCellReMap.find(meshName) != arbMeshCellReMap.end())
+        (domit = arbMeshCellReMap.find(meshName)) != arbMeshCellReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
     {
-        remap = arbMeshCellReMap[meshName];
+        remap = domit->second[domain];
     }
     else if (uv->centering == DB_NODECENT &&
-        arbMeshNodeReMap.find(meshName) != arbMeshNodeReMap.end())
+        (domit = arbMeshNodeReMap.find(meshName)) != arbMeshNodeReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
     {
-        remap = arbMeshNodeReMap[meshName];
+        remap = domit->second[domain];
     }
 
     vtkDataArray *vectors = 0;
@@ -7380,15 +7400,18 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
     string meshName = metadata->MeshForVar(tvn);
     vector<int> noremap;
     vector<int>* remap = &noremap;
+    map<string, map<int, vector<int>* > >::iterator domit;
     if (uv->centering == DB_ZONECENT &&
-        arbMeshCellReMap.find(meshName) != arbMeshCellReMap.end())
+        (domit = arbMeshCellReMap.find(meshName)) != arbMeshCellReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
     {
-        remap = arbMeshCellReMap[meshName];
+        remap = domit->second[domain];
     }
     else if (uv->centering == DB_NODECENT &&
-        arbMeshNodeReMap.find(meshName) != arbMeshNodeReMap.end())
+        (domit = arbMeshNodeReMap.find(meshName)) != arbMeshNodeReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
     {
-        remap = arbMeshNodeReMap[meshName];
+        remap = domit->second[domain];
     }
 
     vtkDataArray *scalars = 0;
@@ -7765,6 +7788,10 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //    Mark C. Miller, Tue Jan 12 17:52:15 PST 2010
 //    Handle different version of Silo interface. Added support for all of
 //    Silo's integral types and not just DB_INT.
+//
+//    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
+//    Added extra level of indirection to arbMeshXXXRemap objects to handle
+//    multi-block case.
 // ****************************************************************************
 
 #ifdef SILO_VERSION_GE
@@ -7788,8 +7815,10 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     //
     vector<int> noremap;
     vector<int> *remap = &noremap;
-    if (arbMeshCellReMap.find(meshname) != arbMeshCellReMap.end())
-        remap = arbMeshCellReMap[meshname];
+    map<string, map<int, vector<int>* > >::iterator domit;
+    if ((domit = arbMeshCellReMap.find(meshname)) != arbMeshCellReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
+        remap = domit->second[domain];
 
     //
     // Create a vtkInt array whose contents are the actual gzoneno data
@@ -8208,6 +8237,10 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 //    Fixed off by one indexing problem for last+1...numCells loop to create
 //    ghost values. Fixed missing call to set VTK array name for ghost data.
 //    Fixed missing delete for gvals.
+//
+//    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
+//    Added extra level of indirection to arbMeshXXXRemap objects to handle
+//    multi-block case.
 // ****************************************************************************
 
 void
@@ -8490,8 +8523,8 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         //
         cellReMap = new vector<int>;
         vector<int> *nodeReMap = new vector<int>;
-        arbMeshCellReMap[meshname] = cellReMap;
-        arbMeshNodeReMap[meshname] = nodeReMap;
+        arbMeshCellReMap[meshname][domain] = cellReMap;
+        arbMeshNodeReMap[meshname][domain] = nodeReMap;
 
         //
         // Go ahead and add an empty avtOriginalCellNumbers array now.
@@ -9027,6 +9060,10 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
 //    Mark C. Miller, Sun Nov  1 17:51:05 PST 2009
 //    Fixed off by one indexing problem for hi_off+1...numCells loop to create
 //    ghost values. Fixed missing delete for gvals.
+//
+//    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
+//    Added extra level of indirection to arbMeshXXXRemap objects to handle
+//    multi-block case.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
@@ -9063,14 +9100,17 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     // only for those 'extra' nodes.
     //
     vector<int> *nodeReMap = new vector<int>;
-    if (arbMeshNodeReMap.find(meshname) != arbMeshNodeReMap.end())
-        delete arbMeshNodeReMap[meshname];
-    arbMeshNodeReMap[meshname] = nodeReMap;
+    map<string, map<int, vector<int>* > >::iterator domit;
+    if ((domit = arbMeshNodeReMap.find(meshname)) != arbMeshNodeReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
+        delete domit->second[domain];
+    arbMeshNodeReMap[meshname][domain] = nodeReMap;
 
     vector<int> *cellReMap = new vector<int>;
-    if (arbMeshCellReMap.find(meshname) != arbMeshCellReMap.end())
-        delete arbMeshCellReMap[meshname];
-    arbMeshCellReMap[meshname] = cellReMap;
+    if ((domit = arbMeshCellReMap.find(meshname)) != arbMeshCellReMap.end() &&
+         domit->second.find(domain) != domit->second.end())
+        delete domit->second[domain];
+    arbMeshCellReMap[meshname][domain] = cellReMap;
 
     // build up random access offset indices into nodelist and facelist lists
     vector<int> nloffs;
@@ -9302,8 +9342,8 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     if (ugrid->GetNumberOfPoints() <= um->nnodes)
     {
         ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
-        arbMeshCellReMap.erase(meshname);
-        arbMeshNodeReMap.erase(meshname);
+        arbMeshNodeReMap.find(meshname)->second.erase(domain);
+        arbMeshNodeReMap.find(meshname)->second.erase(domain);
         delete cellReMap;
         delete nodeReMap;
     }
@@ -11826,6 +11866,10 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //
 //    Mark C. Miller, Fri Oct 30 14:03:13 PDT 2009
 //    Handle Silo's DB_DTPTR configuration option.
+//
+//    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
+//    Added extra level of indirection to arbMeshXXXRemap objects to handle
+//    multi-block case.
 // ****************************************************************************
 
 avtMaterial *
@@ -11912,9 +11956,11 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     //
     vtkDataArray *matListArr = 0;
     string meshName = metadata->MeshForVar(tmn);
-    if (arbMeshCellReMap.find(meshName) != arbMeshCellReMap.end())
+    map<string, map<int, vector<int>* > >::iterator domit;
+    if ((domit = arbMeshCellReMap.find(meshName)) != arbMeshCellReMap.end() &&
+         domit->second.find(dom) != domit->second.end())
     {
-        vector<int> *remap = arbMeshCellReMap[meshName];
+        vector<int> *remap = domit->second[dom];
 
         int nzones = 1;
         for (int i = 0; i < silomat->ndims; i++)
