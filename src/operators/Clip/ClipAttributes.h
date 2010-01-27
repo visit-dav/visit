@@ -40,6 +40,7 @@
 #define CLIPATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <PlaneAttributes.h>
 #include <avtVector.h>
 
@@ -79,13 +80,23 @@ public:
         Accurate
     };
 
+    // These constructors are for objects of this class
     ClipAttributes();
     ClipAttributes(const ClipAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ClipAttributes(private_tmfs_t tmfs);
+    ClipAttributes(const ClipAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ClipAttributes();
 
     virtual ClipAttributes& operator = (const ClipAttributes &obj);
     virtual bool operator == (const ClipAttributes &obj) const;
     virtual bool operator != (const ClipAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ClipAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -192,7 +203,8 @@ public:
         ID_planeToolControlledClipPlane,
         ID_center,
         ID_radius,
-        ID_sphereInverse
+        ID_sphereInverse,
+        ID__LAST
     };
 
 private:
@@ -215,6 +227,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CLIPATTRIBUTES_TMFS "iibbbDDDDDDbiDdb"
 
 #endif
