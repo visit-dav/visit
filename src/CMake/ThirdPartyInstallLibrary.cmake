@@ -65,8 +65,11 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 SET(allNAMES "${curNAME}${LIBEXT}")
                 FOREACH(X ${extList})
                     SET(curNAME "${curNAME}.${X}")
-                    SET(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")
+                    SET(allNAMES ${allNAMES} "${curNAME}")           # Linux way
+                    SET(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")  # Mac way
                 ENDFOREACH(X)
+                LIST(REMOVE_DUPLICATES allNAMES)
+
                 # Add the names that exist to the install.
                 FOREACH(curNAMEWithExt ${allNAMES})
                     IF(EXISTS ${curNAMEWithExt})
