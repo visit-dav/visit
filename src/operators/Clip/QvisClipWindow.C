@@ -495,6 +495,9 @@ QvisClipWindow::CreateWindowContents()
 //   those values when the function type is changed, since we're just
 //   hiding or showing existing widgets, so I stopeed that.
 //
+//   Jeremy Meredith, Wed Jan 27 12:34:08 EST 2010
+//   Add extra, potentially necessary signal block.
+//
 // ****************************************************************************
 
 void
@@ -517,7 +520,9 @@ QvisClipWindow::UpdateWindow(bool doAll)
         switch(i)
         {
         case ClipAttributes::ID_funcType:
+            typeGroup->blockSignals(true);
             typeGroup->button(atts->GetFuncType())->setChecked(true);
+            typeGroup->blockSignals(false);
             if (atts->GetFuncType() == ClipAttributes::Plane)
             {
                 sphereWidgets->hide();
