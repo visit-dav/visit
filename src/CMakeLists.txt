@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -1149,5 +1149,6 @@ ELSE(WIN32)
     SET(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
 
     SET(CPACK_GENERATOR "TGZ")
+    SET(CPACK_STRIP_FILES TRUE)
 ENDIF(WIN32)
 INCLUDE(CPack)
