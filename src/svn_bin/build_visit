@@ -774,8 +774,8 @@
 #     Tom Fogal, Wed Jan 13 14:05:59 MST 2010
 #     Fix the above change; only changed what *printed* before!
 #
-#     Tom Fogal, Wed Jan 13 19:53:25 MST 2010
-#     Get rid of OpenSSL too; we're not using QtNetwork.
+#     Brad Whitlock, Thu Jan 28 10:16:29 PST 2010
+#     Added some small changes for MacOS X 10.4
 #
 #     Tom Fogal, Wed Jan 20 22:58:41 MST 2010
 #     Re-add QtXml to the list of Mac frameworks.
@@ -2752,6 +2752,13 @@ function build_mesa
     DISABLE_GLU="--disable-glu"
     if [[ "$OPSYS" == "Darwin" ]]; then
         DISABLE_GLU=""
+        # If we're on 10.4 or earlier, change the GLU exports file
+        VER=$(uname -r)
+        if [[ ${VER%%.*} -le 9 ]]; then
+            rm src/glu/sgi/glu.exports.darwin.edit
+            sed "s/_\*/_m/g" src/glu/sgi/glu.exports.darwin > src/glu/sgi/glu.exports.darwin.edit
+            cp src/glu/sgi/glu.exports.darwin.edit src/glu/sgi/glu.exports.darwin
+        fi
     fi
 
     ./configure \
@@ -3557,7 +3564,8 @@ function build_vtk
             -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
             -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
             .
-    else
+    elif [[ ${VER%%.*} -ge 9 ]] ; then
+        echo "10.5 detected. Enable Python filters"
         ${CMAKE_BIN} \
             -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
             -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
@@ -3582,6 +3590,28 @@ function build_vtk
             -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
             -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
             -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
+            .
+    else
+        echo "10.4 detected. Disable Python filters"
+        ${CMAKE_BIN} \
+            -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
+            -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
+            -DBUILD_TESTING:BOOL=OFF\
+            -DUSE_ANSI_STD_LIB:BOOL=ON\
+            -DVTK_USE_MANGLED_MESA:BOOL=ON\
+            -DVTK_USE_HYBRID:BOOL=ON\
+            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+            -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+            -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+            -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
+            -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+            -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
+            -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+            -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
+            -DVTK_USE_TK:BOOL=OFF\
+            -DTK_INCLUDE_PATH:FILEPATH=""\
+            -DTK_LIBRARY:FILEPATH=""\
             .
     fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
@@ -7813,6 +7843,16 @@ function build_hostconf
         >> $HOSTCONF
     fi
 
+    if [[ "$DO_CCMIO" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## CCMIO" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR \${VISITHOME}/ccmio/$CCMIO_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+    fi
+
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7822,6 +7862,7 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR \${VISITHOME}/cfitsio/$CFITSIO_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
+
     if [[ "$DO_CGNS" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7841,6 +7882,7 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
+
     if [[ "$DO_GDAL" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7851,15 +7893,6 @@ function build_hostconf
         >> $HOSTCONF
     fi
 
-    if [[ "$DO_H5PART" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## H5Part" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/$H5PART_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
-    fi
     if [[ "$DO_FASTBIT" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7905,6 +7938,20 @@ function build_hostconf
         fi
     fi
 
+    if [[ "$DO_H5PART" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## H5Part" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/$H5PART_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+        >> $HOSTCONF
+
+    fi
+
     if [[ "$DO_MILI" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7932,15 +7979,6 @@ function build_hostconf
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
-    fi
-    if [[ "$DO_CCMIO" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## CCMIO" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR \${VISITHOME}/ccmio/$CCMIO_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
 
