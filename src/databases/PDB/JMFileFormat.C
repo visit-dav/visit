@@ -87,13 +87,17 @@
 // Creation:   Thu Apr 30 16:03:43 PDT 2009
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//   MTSD now accepts grouping multiple files into longer sequences, so
+//   its interface has changed.  The old "nlist" really meant "nblocks".
 //
 // ****************************************************************************
 
 avtFileFormatInterface *
 JMFileFormat::CreateInterface(PDBFileObject *pdb,
-    const char *const *list, int nList)
+    const char *const *list, int nBlock)
 {
+    const int nTimestepGroups = 1;
     avtFileFormatInterface *inter = 0;
 
     // Create a JMFileFormat that uses the pdb file but does not own it.
@@ -103,16 +107,17 @@ JMFileFormat::CreateInterface(PDBFileObject *pdb,
     if(ff->Identify())
     {
         ff->OwnsPDB();
-        avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
-        for (int i = 0 ; i < nList ; i++)
+        avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+        ffl[0] = new avtMTSDFileFormat*[nBlock];
+        for (int i = 0 ; i < nBlock ; i++)
         {
             if(i == 0)
-                ffl[0] = ff;
+                ffl[0][0] = ff;
             else 
-                ffl[i] = new JMFileFormat(&list[i]);
+                ffl[0][i] = new JMFileFormat(&list[i]);
         }
 
-        inter = new avtMTSDFileFormatInterface(ffl, nList);
+        inter = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     }
     else
         delete ff;

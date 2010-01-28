@@ -560,15 +560,25 @@ avtLAMMPSStructureFileFormat::FileContentsIdentify(const std::string &filename)
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  9, 2009
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//    MTSD now accepts grouping multiple files into longer sequences, so
+//    its interface has changed to accept both a number of timestep groups
+//    and a number of blocks.
 // ****************************************************************************
 avtFileFormatInterface *
 avtLAMMPSStructureFileFormat::CreateInterface(const char *const *list,
-                                     int nList, int)
+                                              int nList, int nBlock)
 {
-    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        ffl[i] = new avtLAMMPSStructureFileFormat(list[i]);
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
+        {
+            ffl[i][j] = new avtLAMMPSStructureFileFormat(list[i*nBlock+j]);
+        }
     }
-    return new avtMTSDFileFormatInterface(ffl, nList);
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }

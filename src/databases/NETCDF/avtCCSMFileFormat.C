@@ -103,24 +103,30 @@ avtCCSM_MTSD_FileFormat::Identify(NETCDFFileObject *fileObject)
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Jul 11 18:26:32 PST 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//    MTSD now accepts grouping multiple files into longer sequences, so
+//    its interface has changed to accept both a number of timestep groups
+//    and a number of blocks.
 // ****************************************************************************
 
 avtFileFormatInterface *
 avtCCSM_MTSD_FileFormat::CreateInterface(NETCDFFileObject *f,
     const char *const *list, int nList, int nBlock)
 {
-    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        if(f != 0)
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
         {
-            ffl[i] = new avtCCSM_MTSD_FileFormat(list[i], f);
-            f = 0;
+            ffl[i][j] = new avtCCSM_MTSD_FileFormat(list[i*nBlock+j],
+                                                    (i==0) ? f : NULL);
         }
-        else
-            ffl[i] = new avtCCSM_MTSD_FileFormat(list[i]);
     }
-    return new avtMTSDFileFormatInterface(ffl, nList);
+
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
 
 avtCCSM_MTSD_FileFormat::avtCCSM_MTSD_FileFormat(const char *filename) : 
