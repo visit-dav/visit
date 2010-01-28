@@ -75,12 +75,17 @@ class avtIOInformation;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added method SetCycleTimeInDatabaseMetaData
+//
+//    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
+//    MTMD files can now be grouped into longer sequences.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
 {
   public:
-                    avtMTMDFileFormatInterface(avtMTMDFileFormat *);
+                    avtMTMDFileFormatInterface(avtMTMDFileFormat **,
+                                               int ntsgroups);
     virtual        ~avtMTMDFileFormatInterface();
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
@@ -103,11 +108,18 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
     virtual void            PopulateIOInformation(int ts, avtIOInformation& ioInfo);
 
   protected:
-    avtMTMDFileFormat      *format;
+    int                     nTimestepGroups;
+    std::vector<int>        tsPerGroup;
+    int                     nTotalTimesteps;
+    avtMTMDFileFormat     **chunks;
 
     virtual int             GetNumberOfFileFormats(void)
-                              { return 1; };
-    virtual avtFileFormat  *GetFormat(int n) const { return format; };
+                              { return nTimestepGroups; };
+    virtual avtFileFormat  *GetFormat(int n) const { return chunks[n]; };
+
+    void                    GenerateTimestepCounts();
+    int                     GetTimestepGroupForTimestep(int ts);
+    int                     GetTimestepWithinGroup(int ts);
 };
 
 

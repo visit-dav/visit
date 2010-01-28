@@ -201,6 +201,10 @@
 //   more than one block, but also into a longer sequence of MT files,
 //   each chunk with one or more timesteps.
 //
+//   Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
+//   MTMD files can now be grouped into longer sequences.  Similar to the
+//   previous change.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -1033,12 +1037,19 @@ class InfoGeneratorPlugin : public Plugin
                 }
                 else if (dbtype == "MTMD")
                 {
-                    c << "    return new avtGenericDatabase(" << endl;
-                    c << "               new avtMTMDFileFormatInterface(" << endl;
+                    c << "    // ignore any nBlocks past 1" << endl;
+                    c << "    int nTimestepGroups = nList / nBlock;" << endl;
+                    c << "    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];" << endl;
+                    c << "    for (int i = 0 ; i < nTimestepGroups ; i++)" << endl;
+                    c << "    {" << endl;
                     if (hasoptions)
-                        c << "                   new avt"<<name<<"FileFormat(list[0], readOptions)));" << endl;
+                        c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i*nBlock], readOptions);" << endl;
                     else
-                        c << "                   new avt"<<name<<"FileFormat(list[0])));" << endl;
+                        c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i*nBlock]);" << endl;
+                    c << "    }" << endl;
+                    c << "    avtMTMDFileFormatInterface *inter " << endl;
+                    c << "           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);" << endl;
+                    c << "    return new avtGenericDatabase(inter);" << endl;
                 }
                 else
                 {

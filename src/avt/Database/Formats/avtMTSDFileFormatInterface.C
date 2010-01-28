@@ -354,7 +354,7 @@ avtMTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 //      Gets the name of the file we are using.
 //
 //  Arguments:
-//      <unused>   The timestep (does not really apply to this interface).
+//      ts       The timestep
 //
 //  Programmer: Hank Childs
 //  Creation:   March 12, 2002

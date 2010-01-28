@@ -79,9 +79,16 @@ avtDatabase *
 MFIXCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    return new avtGenericDatabase(
-               new avtMTMDFileFormatInterface(
-                   new avtMFIXFileFormat(list[0], readOptions)));
+    // ignore any nBlocks past 1
+    int nTimestepGroups = nList / nBlock;
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+    {
+        ffl[i] = new avtMFIXFileFormat(list[i*nBlock], readOptions);
+    }
+    avtMTMDFileFormatInterface *inter 
+           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+    return new avtGenericDatabase(inter);
 }
 
 // ****************************************************************************
