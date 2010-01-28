@@ -78,12 +78,17 @@ avtDatabase *
 MM5CommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        ffl[i] = new avtMM5FileFormat(list[i]);
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
+        {
+            ffl[i][j] = new avtMM5FileFormat(list[i*nBlock + j]);
+        }
     }
     avtMTSDFileFormatInterface *inter 
-           = new avtMTSDFileFormatInterface(ffl, nList);
+           = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }

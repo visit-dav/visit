@@ -81,6 +81,11 @@ ExodusCommonPluginInfo::GetDatabaseType()
 //    Hank Childs, Thu Jul 22 11:29:31 PDT 2004
 //    Register the file list 
 //
+//    Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//    MTSD now accepts grouping multiple files into longer sequences, so
+//    its interface has changed to accept both a number of timestep groups
+//    and a number of blocks.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -137,16 +142,21 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
     }
 
-    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        avtExodusFileFormat *exo = new avtExodusFileFormat(list[i]);
-        if (!containsManyFiles)
-            exo->SetFileList(fileListId);
-        ffl[i] = exo; 
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
+        {
+            avtExodusFileFormat *exo = new avtExodusFileFormat(list[i*nBlock+j]);
+            if (!containsManyFiles)
+                exo->SetFileList(fileListId);
+            ffl[i][j] = exo; 
+        }
     }
     avtMTSDFileFormatInterface *inter 
-           = new avtMTSDFileFormatInterface(ffl, nList);
+        = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
 

@@ -60,15 +60,19 @@
 // Creation:   Wed Sep 1 23:28:26 PST 2004
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//   MTSD now accepts grouping multiple files into longer sequences, so
+//   its interface has changed.  The old "nlist" really meant "nblocks".
+//   We still assume there's one total chunk here, though.
 //   
 // ****************************************************************************
 
 class PP_Z_MTSD_FileFormatInterface : public avtMTSDFileFormatInterface
 {
 public:
-    PP_Z_MTSD_FileFormatInterface(avtMTSDFileFormat **fileFormats,
-        int nFileFormats) :
-        avtMTSDFileFormatInterface(fileFormats, nFileFormats)
+    PP_Z_MTSD_FileFormatInterface(avtMTSDFileFormat ***fileFormats,
+                                  int nTimestepGroups, int nBlocks) :
+        avtMTSDFileFormatInterface(fileFormats, nTimestepGroups, nBlocks)
     {
     }
 
@@ -82,7 +86,7 @@ public:
         // is a PP_Z_MTSD_FileFormat, which manages its own set of files so
         // we need to pass the time state on to it and let it free up
         // resources on the time state according to its own rules.
-        PP_Z_MTSD_FileFormat *fmt = (PP_Z_MTSD_FileFormat *)domains[0];
+        PP_Z_MTSD_FileFormat *fmt = (PP_Z_MTSD_FileFormat *)chunks[0][0];
         fmt->FreeUpResourcesForTimeStep(ts);
     }
 };
@@ -109,6 +113,11 @@ public:
 //   Brad Whitlock, Wed Sep 1 23:29:39 PST 2004
 //   I made it use the PP_Z_MTSD_FileFormatInterface.
 //
+//   Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//   MTSD now accepts grouping multiple files into longer sequences, so
+//   its interface has changed.  The old "nlist" really meant "nblocks".
+//   We still assume there's one total chunk here, though.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -129,9 +138,10 @@ PP_Z_MTSD_FileFormat::CreateInterface(PDBFileObject *pdb,
             // Try to create a file format interface compatible with the 
             // PPZ MTSD file format.
             //
-            avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[1];
-            ffl[0] = ff;
-            inter = new PP_Z_MTSD_FileFormatInterface(ffl, 1);
+            avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[1];
+            ffl[0] = new avtMTSDFileFormat*[1];
+            ffl[0][0] = ff;
+            inter = new PP_Z_MTSD_FileFormatInterface(ffl, 1, 1);
         }
         CATCH(VisItException)
         {

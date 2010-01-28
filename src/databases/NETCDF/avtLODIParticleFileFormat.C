@@ -110,34 +110,56 @@ avtLODIParticleFileFormat::Identify(NETCDFFileObject *fileObject)
 // Creation:   Mon Aug 15 18:05:07 PST 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//    MTSD now accepts grouping multiple files into longer sequences, so
+//    its interface has changed to accept both a number of timestep groups
+//    and a number of blocks.
 //   
 // ****************************************************************************
 
 avtFileFormatInterface *
 avtLODIParticleFileFormat::CreateInterface(NETCDFFileObject *f,
-    const char *const *list, int nList, int)
+    const char *const *list, int nList, int nBlock)
 {
-    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
-        ffl[i] = 0;
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+    {
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
+        {
+            ffl[i][j] = NULL;
+        }
+    }
 
     TRY
     {
-        ffl[0] = new avtLODIParticleFileFormat(list[0], f);
-        for (int i = 1 ; i < nList ; i++)   
-            ffl[i] = new avtLODIParticleFileFormat(list[i]);
+        for (int i = 0 ; i < nTimestepGroups ; i++)
+        {
+            for (int j = 0 ; j < nBlock ; j++)
+            {
+                ffl[i][j] = new avtLODIParticleFileFormat(list[i*nBlock+j],
+                                                          (i==0) ? f : NULL);
+            }
+        }
     }
     CATCH(VisItException)
     {
-        for (int i = 0 ; i < nList ; i++)
-            delete ffl[i];
+        for (int i = 0 ; i < nTimestepGroups ; i++)
+        {
+            for (int j = 0 ; j < nBlock ; j++)
+            {
+                if(ffl[i][j] != 0)
+                    delete ffl[i][j];
+            }
+            delete [] ffl[i];
+        }
         delete [] ffl;
-
         RETHROW;
     }
     ENDTRY
 
-    return new avtMTSDFileFormatInterface(ffl, nList);
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
 
 // ****************************************************************************

@@ -74,19 +74,26 @@ using std::vector;
 //    Hank Childs, Mon Aug 16 16:22:56 PDT 2004
 //    Tell each file format what its domain is.
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
+//
 // ****************************************************************************
 
-avtMTSDFileFormatInterface::avtMTSDFileFormatInterface(avtMTSDFileFormat **lst,
-                                                       int nLst)
+avtMTSDFileFormatInterface::avtMTSDFileFormatInterface(avtMTSDFileFormat ***lst,
+                                                       int ntsgroups,
+                                                       int nblocks)
 {
-    domains  = lst;
-    nDomains = nLst;
+    chunks = lst;
+    nTimestepGroups = ntsgroups;
+    nBlocks = nblocks;
 
-    for (int i = 0 ; i < nDomains ; i++)
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        if (lst[i] != NULL)
+        for (int j = 0 ; j < nBlocks ; j++)
         {
-            lst[i]->SetDomain(i);
+            chunks[i][j]->SetDomain(j);
         }
     }
 }
@@ -98,23 +105,37 @@ avtMTSDFileFormatInterface::avtMTSDFileFormatInterface(avtMTSDFileFormat **lst,
 //  Programmer: Hank Childs
 //  Creation:   October 8, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 avtMTSDFileFormatInterface::~avtMTSDFileFormatInterface()
 {
-    if (domains != NULL)
+    if (chunks != NULL)
     {
-        for (int i = 0 ; i < nDomains ; i++)
+        for (int i = 0 ; i < nTimestepGroups ; i++)
         {
-            if (domains[i] != NULL)
+            if (chunks[i] != NULL)
             {
-                delete domains[i];
-                domains[i] = NULL;
+                for (int j = 0 ; j < nBlocks ; j++)
+                {
+                    if (chunks[i][j] != NULL)
+                    {
+                        delete chunks[i][j];
+                        chunks[i][j] = NULL;
+                    }
+                }
+                delete[] chunks[i];
+                chunks[i] = NULL;
             }
         }
-        delete [] domains;
-        domains = NULL;
+        delete[] chunks;
+        chunks = NULL;
     }
+    tsPerGroup.clear();
 }
 
 
@@ -139,21 +160,27 @@ avtMTSDFileFormatInterface::~avtMTSDFileFormatInterface()
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 vtkDataSet *
 avtMTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 {
-    if (dom < 0 || dom >= nDomains)
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    int localTS = GetTimestepWithinGroup(ts);
+    if (dom < 0 || dom >= nBlocks)
     {
         if (dom == PAR_Rank())
             // Format is doing its own domain decomposition.
             dom = 0;
         else
-            EXCEPTION2(BadIndexException, dom, nDomains);
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
-    return domains[dom]->GetMesh(ts, mesh);
+    return chunks[tsGroup][dom]->GetMesh(localTS, mesh);
 }
 
 
@@ -181,21 +208,27 @@ avtMTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 vtkDataArray *
 avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 {
-    if (dom < 0 || dom >= nDomains)
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    int localTS = GetTimestepWithinGroup(ts);
+    if (dom < 0 || dom >= nBlocks)
     {
         if (dom == PAR_Rank())
             // Format is doing its own domain decomposition.
             dom = 0;
         else
-            EXCEPTION2(BadIndexException, dom, nDomains);
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
-    return domains[dom]->GetVar(ts, var);
+    return chunks[tsGroup][dom]->GetVar(localTS, var);
 }
 
 
@@ -223,21 +256,27 @@ avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //    Hank Childs, Mon Jan 26 09:13:53 PST 2009
 //    Add support for readers that do their own domain decomposition.
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 vtkDataArray *
 avtMTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
-    if (dom < 0 || dom >= nDomains)
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    int localTS = GetTimestepWithinGroup(ts);
+    if (dom < 0 || dom >= nBlocks)
     {
         if (dom == PAR_Rank())
             // Format is doing its own domain decomposition.
             dom = 0;
         else
-            EXCEPTION2(BadIndexException, dom, nDomains);
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
-    return domains[dom]->GetVectorVar(ts, var);
+    return chunks[tsGroup][dom]->GetVectorVar(localTS, var);
 }
 
 
@@ -268,36 +307,43 @@ avtMTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 //    Hank Childs, Tue Jan 27 11:08:46 PST 2009
 //    Change behavior with requesting meta data for all domains.
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 void *
 avtMTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
                           const char *type, void *args, DestructorFunction &df)
 {
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    int localTS = GetTimestepWithinGroup(ts);
     if (dom == -1)
     {
         debug5 << "Auxiliary data was requested of multiple timestep, "
                << "single domain file format.  Since the data was requested "
                << "for all domains, requesting it of the first domain" << endl;
-        if (domains[0] != NULL)
-            return domains[0]->GetAuxiliaryData(var, ts, type, args, df);
+        if (chunks[tsGroup][0] != NULL)
+            return chunks[tsGroup][0]->GetAuxiliaryData(var, localTS,
+                                                        type, args, df);
         else
         {
-            debug5 << "REVERSAL: domains[0] is NULL!  Returning NULL" << endl;
+            debug5 << "REVERSAL: chunks[...][0] is NULL!  Returning NULL" << endl;
             return NULL;
         }
     }
 
-    if (dom < 0 || dom >= nDomains)
+    if (dom < 0 || dom >= nBlocks)
     {
         if (dom == PAR_Rank())
             // Format is doing its own domain decomposition.
             dom = 0;
         else
-            EXCEPTION2(BadIndexException, dom, nDomains);
+            EXCEPTION2(BadIndexException, dom, nBlocks);
     }
 
-    return domains[dom]->GetAuxiliaryData(var, ts, type, args, df);
+    return chunks[tsGroup][dom]->GetAuxiliaryData(var, localTS, type, args, df);
 }
 
 
@@ -313,12 +359,17 @@ avtMTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Programmer: Hank Childs
 //  Creation:   March 12, 2002
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 const char *
-avtMTSDFileFormatInterface::GetFilename(int)
+avtMTSDFileFormatInterface::GetFilename(int ts)
 {
-    return domains[0]->GetFilename();
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    return chunks[tsGroup][0]->GetFilename();
 }
 
 
@@ -360,6 +411,10 @@ avtMTSDFileFormatInterface::GetFilename(int)
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Replaced -INT_MAX & -DBL_MAX with INVALID_CYCLE and INVALID_TIME
 //
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 void
@@ -368,19 +423,20 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 {
     int i, j;
 
+    GenerateTimestepCounts();
+
     //
     // Throw an exception if an invalid time state was requested.
     //
-    int nTimesteps = domains[0]->GetNTimesteps();
-    if (timeState < 0 || timeState >= nTimesteps)
+    if (timeState < 0 || timeState >= nTotalTimesteps)
     {
-        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+        EXCEPTION2(BadIndexException, timeState, nTotalTimesteps);
     }
 
     //
     // We know for sure that the number of states is the number of timesteps.
     //
-    md->SetNumStates(nTimesteps);
+    md->SetNumStates(nTotalTimesteps);
 
     //
     // Have a _domain timestep populate what variables, meshes, materials, etc
@@ -389,17 +445,24 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     // know what to do with a variable that is in some domains and not others
     // anyways. This may wind up setting cycles/times, too.
     //
-    domains[0]->SetDatabaseMetaData(md, timeState);
+    int tsGroup = GetTimestepGroupForTimestep(timeState);
+    int localTS = GetTimestepWithinGroup(timeState);
+    chunks[tsGroup][0]->SetDatabaseMetaData(md, localTS);
 
     //
     // Note: In an MTXX format, a single file has multiple time steps in it
     // So, we don't have the same kinds of semantics we do with STXX databases
     // in, for example, trying to guess cycle numbers from file names
     //
-    if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true)
+    if (md->AreAllCyclesAccurateAndValid(nTotalTimesteps) != true)
     {
         vector<int> cycles;
-        domains[0]->FormatGetCycles(cycles);
+        for (i=0; i<nTimestepGroups; i++)
+        {
+            vector<int> tmp;
+            chunks[i][0]->FormatGetCycles(tmp);
+            cycles.insert(cycles.end(),tmp.begin(),tmp.end());
+        }
         bool cyclesLookGood = true;
         for (i = 0; i < cycles.size(); i++)
         {
@@ -409,14 +472,16 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 break;
             }
         }
-        if (cycles.size() != nTimesteps)
+        if (cycles.size() != nTotalTimesteps)
             cyclesLookGood = false;
         if (cyclesLookGood == false)
         {
             cycles.clear();
-            for (i = 0; i < nTimesteps; i++)
+            for (i = 0; i < nTotalTimesteps; i++)
             {
-                int c = domains[0]->FormatGetCycle(i);
+                int tsg = GetTimestepGroupForTimestep(i);
+                int lts = GetTimestepWithinGroup(i);
+                int c = chunks[tsg][0]->FormatGetCycle(lts);
 
                 cycles.push_back(c);
 
@@ -440,7 +505,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         else
         {
             cycles.clear();
-            for (j = 0 ; j < nTimesteps ; j++)
+            for (j = 0 ; j < nTotalTimesteps ; j++)
             {
                 cycles.push_back(j);
             }
@@ -449,11 +514,16 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         }
     }
 
-    if (md->AreAllTimesAccurateAndValid(nTimesteps) != true)
+    if (md->AreAllTimesAccurateAndValid(nTotalTimesteps) != true)
     {
         // Set the times in the metadata.
         vector<double> times;
-        domains[0]->FormatGetTimes(times);
+        for (i=0; i<nTimestepGroups; i++)
+        {
+            vector<double> tmp;
+            chunks[i][0]->FormatGetTimes(tmp);
+            times.insert(times.end(),tmp.begin(),tmp.end());
+        }
         bool timesLookGood = true;
         for (i = 0; i < times.size(); i++)
         {
@@ -463,14 +533,16 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 break;
             }
         }
-        if (times.size() != nTimesteps)
+        if (times.size() != nTotalTimesteps)
             timesLookGood = false;
         if (timesLookGood == false)
         {
             times.clear();
-            for (i = 0; i < nTimesteps; i++)
+            for (i = 0; i < nTotalTimesteps; i++)
             {
-                double t = domains[0]->FormatGetTime(i);
+                int tsg = GetTimestepGroupForTimestep(i);
+                int lts = GetTimestepWithinGroup(i);
+                double t = chunks[tsg][0]->FormatGetTime(lts);
 
                 times.push_back(t);
 
@@ -495,7 +567,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         else
         {
             times.clear();
-            for (j = 0 ; j < nTimesteps ; j++)
+            for (j = 0 ; j < nTotalTimesteps ; j++)
             {
                 times.push_back((double)j);
             }
@@ -511,10 +583,10 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     int nm = md->GetNumMeshes();
     for (j = 0 ; j < nm ; j++)
     {
-        md->SetBlocksForMesh(j, nDomains);
+        md->SetBlocksForMesh(j, nBlocks);
     }
 
-    if (nDomains > 1)
+    if (nBlocks > 1)
     {
         md->UnsetExtents();
     }
@@ -529,27 +601,36 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 //  Programmer: Mark C. Miller 
 //  Creation:   May 31, 2005 
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 void
 avtMTSDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
     avtDatabaseMetaData *md, int timeState)
 {
-    int i;
+    GenerateTimestepCounts();
 
     //
     // Throw an exception if an invalid time state was requested.
     //
-    int nTimesteps = domains[0]->GetNTimesteps();
-    if (timeState < 0 || timeState >= nTimesteps)
+    if (timeState < 0 || timeState >= nTotalTimesteps)
     {
-        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+        EXCEPTION2(BadIndexException, timeState, nTotalTimesteps);
     }
 
     vector<int> cycles;
-    domains[0]->FormatGetCycles(cycles);
+    for (int i=0; i<nTimestepGroups; i++)
+    {
+        vector<int> tmp;
+        chunks[i][0]->FormatGetCycles(tmp);
+        cycles.insert(cycles.end(),tmp.begin(),tmp.end());
+    }
     bool cyclesLookGood = true;
-    for (i = 0; i < cycles.size(); i++)
+    for (int i = 0; i < cycles.size(); i++)
     {
         if ((i != 0) && (cycles[i] <= cycles[i-1]))
         {
@@ -557,11 +638,13 @@ avtMTSDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
             break;
         }
     }
-    if (cycles.size() != nTimesteps)
+    if (cycles.size() != nTotalTimesteps)
         cyclesLookGood = false;
     if (cyclesLookGood == false)
     {
-        int c = domains[0]->FormatGetCycle(timeState);
+        int tsg = GetTimestepGroupForTimestep(timeState);
+        int lts = GetTimestepWithinGroup(timeState);
+        int c = chunks[tsg][0]->FormatGetCycle(lts);
         if (c != avtFileFormat::INVALID_CYCLE)
         {
             md->SetCycle(timeState, c);
@@ -575,9 +658,14 @@ avtMTSDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
     }
 
     vector<double> times;
-    domains[0]->FormatGetTimes(times);
+    for (int i=0; i<nTimestepGroups; i++)
+    {
+        vector<double> tmp;
+        chunks[i][0]->FormatGetTimes(tmp);
+        times.insert(times.end(),tmp.begin(),tmp.end());
+    }
     bool timesLookGood = true;
-    for (i = 0; i < times.size(); i++)
+    for (int i = 0; i < times.size(); i++)
     {
         if ((i != 0) && (times[i] <= times[i-1]))
         {
@@ -585,11 +673,13 @@ avtMTSDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
             break;
         }
     }
-    if (times.size() != nTimesteps)
+    if (times.size() != nTotalTimesteps)
         timesLookGood = false;
     if (timesLookGood == false)
     {
-        double t = domains[0]->FormatGetTime(timeState);
+        int tsg = GetTimestepGroupForTimestep(timeState);
+        int lts = GetTimestepWithinGroup(timeState);
+        double t = chunks[tsg][0]->FormatGetTime(lts);
         if (t != avtFileFormat::INVALID_TIME)
         {
             md->SetTime(timeState, t);
@@ -613,6 +703,11 @@ avtMTSDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
 //  Programmer: Hank Childs
 //  Creation:   October 8, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 void
@@ -620,9 +715,12 @@ avtMTSDFileFormatInterface::FreeUpResources(int ts, int)
 {
     if (ts == -1)
     {
-        for (int i = 0 ; i < nDomains ; i++)
+        for (int i = 0 ; i < nTimestepGroups ; i++)
         {
-            domains[i]->FreeUpResources();
+            for (int j = 0 ; j < nBlocks ; j++)
+            {
+                chunks[i][j]->FreeUpResources();
+            }
         }
     }
 }
@@ -637,13 +735,23 @@ avtMTSDFileFormatInterface::FreeUpResources(int ts, int)
 //  Programmer: Mark C. Miller 
 //  Creation:   February 23, 2004 
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
+//
 // ****************************************************************************
 void
 avtMTSDFileFormatInterface::ActivateTimestep(int ts)
 {
-    for (int i = 0 ; i < nDomains ; i++)
+    GenerateTimestepCounts();
+
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    int localTS = GetTimestepWithinGroup(ts);
+    for (int i = 0 ; i < nBlocks ; i++)
     {
-        domains[i]->ActivateTimestep(ts);
+        chunks[tsGroup][i]->ActivateTimestep(localTS);
     }
 }
 
@@ -655,12 +763,103 @@ avtMTSDFileFormatInterface::ActivateTimestep(int ts)
 //  Programmer: Mark C. Miller 
 //  Creation:   March 16, 2004 
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 void
 avtMTSDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation &ioInfo)
 {
-    for (int i = 0 ; i < nDomains ; i++)
+    int tsGroup = GetTimestepGroupForTimestep(ts);
+    int localTS = GetTimestepWithinGroup(ts);
+    for (int i = 0 ; i < nBlocks ; i++)
     {
-        domains[i]->PopulateIOInformation(ts, ioInfo);
+        chunks[tsGroup][i]->PopulateIOInformation(localTS, ioInfo);
+    }
+}
+
+
+// ****************************************************************************
+// Method:  avtMTSDFileFormatInterface::GetTimestepGroupForTimestep
+//
+// Purpose:
+//   Find the timestep group containing the given timestep.
+//
+// Arguments:
+//   ts         the timestep
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January 28, 2010
+//
+// ****************************************************************************
+int
+avtMTSDFileFormatInterface::GetTimestepGroupForTimestep(int ts)
+{
+    int group = 0;
+    while (group < tsPerGroup.size() &&
+           tsPerGroup[group] <= ts)
+    {
+        ts -= tsPerGroup[group];
+        ++group;
+    }
+    if (group >= tsPerGroup.size())
+    {
+        EXCEPTION2(BadIndexException, group, tsPerGroup.size());
+    }
+    return group;
+}
+
+// ****************************************************************************
+// Method:  avtMTSDFileFormatInterface::GetTimestepWithinGroup
+//
+// Purpose:
+//   Find the "local timestep", i.e. the index within the timestep-group
+//   containing the given timestep.
+//
+// Arguments:
+//   ts         the timestep
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January 28, 2010
+//
+// ****************************************************************************
+int
+avtMTSDFileFormatInterface::GetTimestepWithinGroup(int ts)
+{
+    int group = GetTimestepGroupForTimestep(ts);
+    int base = 0;
+    for (int i=0; i<group; i++)
+        base += tsPerGroup[i];
+    return ts - base;
+}
+
+// ****************************************************************************
+// Method:  avtMTSDFileFormatInterface::GenerateTimestepCounts
+//
+// Purpose:
+//   Generate the local information used to map local<->global time steps.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January 28, 2010
+//
+// ****************************************************************************
+void
+avtMTSDFileFormatInterface::GenerateTimestepCounts()
+{
+    //
+    // Count up the time steps from each timestep group
+    //
+    tsPerGroup.clear();
+    nTotalTimesteps = 0;
+    for (int i=0; i<nTimestepGroups; i++)
+    {
+        int n = chunks[i][0]->GetNTimesteps();
+        tsPerGroup.push_back(n);
+        nTotalTimesteps += n;
     }
 }

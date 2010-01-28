@@ -47,6 +47,7 @@
 
 #include <avtFileFormatInterface.h>
 #include <avtMTSDFileFormat.h>
+#include <vector>
 
 class avtIOInformation;
 
@@ -81,12 +82,18 @@ class avtIOInformation;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added method SetCycleTimeInDatabaseMetaData
+//
+//    Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//    MTSD files can now be grouped not just into a faux MD format by having
+//    more than one block, but also into a longer sequence of MT files,
+//    each chunk with one or more timesteps.
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
 {
   public:
-                    avtMTSDFileFormatInterface(avtMTSDFileFormat **, int);
+                    avtMTSDFileFormatInterface(avtMTSDFileFormat ***,
+                                               int ntsgroups, int nblocks);
     virtual        ~avtMTSDFileFormatInterface();
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
@@ -109,12 +116,21 @@ class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
     virtual void            PopulateIOInformation(int ts, avtIOInformation& ioInfo);
 
   protected:
-    avtMTSDFileFormat     **domains;
-    int                     nDomains;
+    avtMTSDFileFormat    ***chunks;
+    int                     nTimestepGroups;
+    int                     nBlocks;
+    std::vector<int>        tsPerGroup;
+    int                     nTotalTimesteps;
 
     virtual int             GetNumberOfFileFormats(void)
-                              { return nDomains; };
-    virtual avtFileFormat  *GetFormat(int n) const { return domains[n]; };
+                              { return nTimestepGroups*nBlocks; };
+    virtual avtFileFormat  *GetFormat(int n) const
+                              { int block = n % nBlocks;
+                                int tsg   = n / nBlocks;
+                                return chunks[tsg][block]; };
+    void                    GenerateTimestepCounts();
+    int                     GetTimestepGroupForTimestep(int ts);
+    int                     GetTimestepWithinGroup(int ts);
 };
 
 

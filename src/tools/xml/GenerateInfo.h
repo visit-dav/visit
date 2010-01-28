@@ -196,6 +196,11 @@
 //   Replaced "Extensions" and "Filenames" with "FilePatterns".  Added
 //   filePatternsStrict and opensWholeDirectory. 
 //
+//   Jeremy Meredith, Thu Jan 28 13:11:07 EST 2010
+//   MTSD files can now be grouped not just into a faux MD format by having
+//   more than one block, but also into a longer sequence of MT files,
+//   each chunk with one or more timesteps.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -987,7 +992,7 @@ class InfoGeneratorPlugin : public Plugin
                         c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j], readOptions);" << endl;
                     else
                         c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j]);" << endl;
-                        c << "        }" << endl;
+                    c << "        }" << endl;
                     c << "    }" << endl;
                     c << "    avtSTSDFileFormatInterface *inter " << endl;
                     c << "           = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);" << endl;
@@ -1009,16 +1014,21 @@ class InfoGeneratorPlugin : public Plugin
                 }
                 else if (dbtype == "MTSD")
                 {
-                    c << "    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];" << endl;
-                    c << "    for (int i = 0 ; i < nList ; i++)" << endl;
+                    c << "    int nTimestepGroups = nList / nBlock;" << endl;
+                    c << "    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];" << endl;
+                    c << "    for (int i = 0 ; i < nTimestepGroups ; i++)" << endl;
                     c << "    {" << endl;
+                    c << "        ffl[i] = new avtMTSDFileFormat*[nBlock];" << endl;
+                    c << "        for (int j = 0 ; j < nBlock ; j++)" << endl;
+                    c << "        {" << endl;
                     if (hasoptions)
-                        c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i], readOptions);" << endl;
+                        c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j], readOptions);" << endl;
                     else
-                        c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << endl;
+                        c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j]);" << endl;
+                    c << "        }" << endl;
                     c << "    }" << endl;
                     c << "    avtMTSDFileFormatInterface *inter " << endl;
-                    c << "           = new avtMTSDFileFormatInterface(ffl, nList);" << endl;
+                    c << "           = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);" << endl;
                     c << "    return new avtGenericDatabase(inter);" << endl;
                 }
                 else if (dbtype == "MTMD")
