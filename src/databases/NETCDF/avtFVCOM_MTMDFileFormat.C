@@ -121,6 +121,8 @@ avtFVCOM_MTMDFileFormat::Identify(NETCDFFileObject *fileObject)
 // Creation:   Thu May 4 16:18:57 PST 2006
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
+//   MTMD files can now be grouped into longer sequences.
 //
 // ****************************************************************************
 
@@ -129,8 +131,14 @@ avtFileFormatInterface *
 avtFVCOM_MTMDFileFormat::CreateInterface(NETCDFFileObject *f,
     const char *const *list, int nList, int nBlock)
 {
-  
-    return new avtMTMDFileFormatInterface(new avtFVCOM_MTMDFileFormat(list[0],f));
+    // ignore any nBlocks past 1
+    int nTimestepGroups = nList / nBlock;
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+    {
+        ffl[i] = new avtFVCOM_MTMDFileFormat(list[i*nBlock], (i==0)?f:NULL);
+    }
+    return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
 
 
