@@ -774,6 +774,9 @@
 #     Tom Fogal, Wed Jan 13 14:05:59 MST 2010
 #     Fix the above change; only changed what *printed* before!
 #
+#     Tom Fogal, Wed Jan 13 19:53:25 MST 2010
+#     Get rid of OpenSSL too; we're not using QtNetwork.
+#
 #     Brad Whitlock, Thu Jan 28 10:16:29 PST 2010
 #     Added some small changes for MacOS X 10.4
 #
@@ -786,6 +789,12 @@
 #     Jeremy Meredith, Thu Jan 28 10:23:10 EST 2010
 #     Changed VISIT_EXODUS_DIR in .cmake generation to EXODUSII, to
 #     match what the build system expects.
+#
+#     Jeremy Meredith, Thu Jan 28 17:47:24 EST 2010
+#     Couple changes for OS X 10.4: don't pass rpath to python since the
+#     linker doesn't understand it (python filters are disabled for 10.4),
+#     and don't pass the compatibility/current version flags to libtool
+#     since VTK/CMake seems to be setting them appropriately on its own.
 #
 # *****************************************************************************
 #                                                                             #
@@ -3604,7 +3613,7 @@ function build_vtk
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
             -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
+            -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
             -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
             -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -3937,7 +3946,9 @@ function build_python
             return 1
             fi
 
-            PYTHON_LDFLAGS="-Wl,-rpath,${PYTHON_PREFIX_DIR}/lib/ -pthread"
+            if [[ "$OPSYS" != "Darwin" || ${VER%%.*} -ge 9 ]]; then
+                PYTHON_LDFLAGS="-Wl,-rpath,${PYTHON_PREFIX_DIR}/lib/ -pthread"
+            fi
         fi
     fi
     if [[ "$OPSYS" == "AIX" ]]; then
