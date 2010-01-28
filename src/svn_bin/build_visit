@@ -783,6 +783,10 @@
 #     Tom Fogal, Thu Jan 21 20:27:37 MST 2010
 #     Re-add OpenSSL, it's used directly (not through QtNetwork!).
 #
+#     Jeremy Meredith, Thu Jan 28 10:23:10 EST 2010
+#     Changed VISIT_EXODUS_DIR in .cmake generation to EXODUSII, to
+#     match what the build system expects.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7834,7 +7838,7 @@ function build_hostconf
         echo "## Exodus" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EXODUS_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
     if [[ "$DO_GDAL" == "yes" ]] ; then
