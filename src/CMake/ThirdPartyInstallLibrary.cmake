@@ -80,7 +80,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                                CONFIGURATIONS Debug;Release
+                                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                             )
 
                             # On Apple, we need to make the framework be executable relative
@@ -97,7 +97,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                             INSTALL(FILES ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                                CONFIGURATIONS Debug;Release
+                                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                             )
                             # On Windows, we also need to copy the file to the 
                             # binary dir so our out of source builds can run.
@@ -129,7 +129,8 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    CONFIGURATIONS Debug;Release
+                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
                 )
 
                 # On Apple, we need to make the framework be executable relative
@@ -147,7 +148,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 INSTALL(FILES ${tmpLIBFILE}
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    CONFIGURATIONS Debug;Release
+                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                 )
 
                 # On Windows, we also need to copy the file to the binary dir so
@@ -181,7 +182,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             INSTALL(FILES ${tmpLIBFILE}
                 DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-                CONFIGURATIONS Debug;Release
+                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
             )
 
             # TODO: We could install windows import libraries here...
@@ -203,7 +204,7 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/${lcpkg}
                 DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS Debug;Release
+                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                 FILES_MATCHING 
                 PATTERN "*.h"
                 PATTERN "*.H"
