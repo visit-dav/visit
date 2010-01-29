@@ -79,7 +79,7 @@ class Token;
 //    entries alphabetically causing problems when parsing apply_ddf.
 //
 // ****************************************************************************
-class EXPR_API ExprParseTreeNode : public ParseTreeNode
+class EXPR_API2 ExprParseTreeNode : public ParseTreeNode
 {
   public:
     ExprParseTreeNode(const Pos &p) : ParseTreeNode(p) { }
