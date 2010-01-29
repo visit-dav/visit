@@ -63,6 +63,12 @@
 #    will add the depencies of this dummy library, i.e., the MPI libraries, to
 #    the end of the link line.
 #
+#    Gunther H. Weber, Fri Jan 29 10:42:11 PST 2010
+#    Added a new option that supports setting the rpath relative to the
+#    executable location. The purpose of this is to make VisIt not depend on
+#    a properly set LD_LIBRARY_PATH as some MPI variants do not pass
+#    environment variables.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -189,6 +195,7 @@ OPTION(VISIT_USE_NOSPIN_BCAST "Use VisIt's no-spin Bcast in parallel" ON)
 OPTION(VISIT_INSTALL_THIRD_PARTY "Install VisIt's 3rd party I/O libs and includes to permit plugin development" OFF)
 OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel shared libraries; just with executables" OFF)
 OPTION(VISIT_CREATE_SOCKET_RELAY "Create a seprate executable that forwards VisIt's socket connection between engine and component launcher" OFF)
+OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 
 MACRO(VISIT_3RDPARTY_OPTION vvar comment libvar)
     # Create an option 
@@ -268,6 +275,11 @@ ELSE(WIN32)
     SET(VISIT_INSTALLED_VERSION_HELP ${VISIT_INSTALLED_VERSION}/help CACHE PATH "VisIt help install directory")
     SET(VISIT_INSTALLED_VERSION_PLUGINS ${VISIT_INSTALLED_VERSION}/plugins CACHE PATH "VisIt plugins install directory")
     SET(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/archives CACHE PATH "3rd party I/O archives install directory")
+
+    IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+        SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+        SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
     INSTALL(CODE "
       MESSAGE(STATUS \"Symlinking current to \${VISIT_VERSION}\")
       EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
@@ -350,6 +362,9 @@ ENDMACRO(VISIT_INSTALL_TARGETS)
 
 MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
     IF(NOT VISIT_STATIC)
+        IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+            SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
+        ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
         INSTALL(TARGETS ${ARGN}
             LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/databases
             RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/databases
@@ -372,6 +387,9 @@ ENDMACRO(VISIT_INSTALL_DATABASE_PLUGINS)
 
 MACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
     IF(NOT VISIT_STATIC)
+        IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+            SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
+        ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
         INSTALL(TARGETS ${ARGN}
             LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/operators
             RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/operators
@@ -394,6 +412,9 @@ ENDMACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
 
 MACRO(VISIT_INSTALL_PLOT_PLUGINS)
     IF(NOT VISIT_STATIC)
+        IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+            SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
+        ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
         INSTALL(TARGETS ${ARGN}
             LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/plots
             RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/plots

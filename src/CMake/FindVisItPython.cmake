@@ -46,6 +46,9 @@
 #   Kathleen Bonnell, Thu Dec 10 17:50:01 MT 2009
 #   Removed MSVC_VERSION from searchpath in favor of 'libs' for windows.
 #
+#    Gunther H. Weber, Fri Jan 29 12:00:39 PST 2010
+#    Only install Python if we are not using the system Python.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -279,28 +282,31 @@ IF(PYTHONLIBS_FOUND)
         # Install libpython
         THIRD_PARTY_INSTALL_LIBRARY(${PYTHON_LIBRARIES})
 
-        # Install the python modules
-	# Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
-        # Exclude visit module files.
-        IF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
-            INSTALL(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
-                FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                PATTERN "*.pyc" EXCLUDE
-                PATTERN "*.pyo" EXCLUDE
-	        PATTERN "lib-tk" EXCLUDE
-                PATTERN "visit*" EXCLUDE
-                PATTERN "Python-2.5-py2.5.egg-info" EXCLUDE
+        # Only install Python support files if we are not using the system Python
+        IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
+            # Install the python modules
+	    # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
+            # Exclude visit module files.
+            IF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
+                INSTALL(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    PATTERN "*.pyc" EXCLUDE
+                    PATTERN "*.pyo" EXCLUDE
+	            PATTERN "lib-tk" EXCLUDE
+                    PATTERN "visit*" EXCLUDE
+                    PATTERN "Python-2.5-py2.5.egg-info" EXCLUDE
+                )
+            ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
+    
+            # Install the Python headers
+            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             )
-        ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
-
-        # Install the Python headers
-        INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
-            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
-            FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
-            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        )
+        ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr")) 
     ENDIF(Python_FRAMEWORKS)
 ENDIF(PYTHONLIBS_FOUND)
 
