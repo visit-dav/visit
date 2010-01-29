@@ -186,7 +186,6 @@ def test3(s):
 
 
 def main():
-    TurnOnAllAnnotations()
     test1()
     s = test2()
     test3(s)

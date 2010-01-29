@@ -48,7 +48,6 @@ def TestBigSil():
 
     AddPlot("Subset", "domains")
     AddPlot("Subset", "blocks")
-    DrawPlots()
     s = SubsetAttributes()
     s.legendFlag = 0
     s.wireframe = 1
@@ -64,7 +63,8 @@ def TestBigSil():
     op.adjacencyType = op.Face
     op.requestedLayer = 3
     SetOperatorOptions(op)
-
+    DrawPlots()
+    
     Test("ops_onionpeel_01")
 
     op.subsetName = "block1"
@@ -364,10 +364,6 @@ def TestBoundary():
 
 
 def Main():
-    a = AnnotationAttributes()
-    TurnOffAllAnnotations(a)
-    a.legendInfoFlag = 1
-    SetAnnotationAttributes(a)
     TestBigSil()
     TestUCD()
     TestGlobalZoneId()
