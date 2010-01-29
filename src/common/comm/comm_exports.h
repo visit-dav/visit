@@ -42,9 +42,11 @@
 #if defined(_WIN32)
 # define DESCRIPTOR unsigned int
 # if defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS)
-#   define COMM_API __declspec(dllexport)
+#   define COMM_API  __declspec(dllexport)
+#   define COMM_API2 __declspec(dllexport)
 # else
-#   define COMM_API __declspec(dllimport)
+#   define COMM_API  __declspec(dllimport)
+#   define COMM_API2 __declspec(dllimport)
 # endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
@@ -56,10 +58,16 @@
 # endif
 #else
 # define DESCRIPTOR int
-# if __GNUC__ >= 4  && (defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS))
-#   define COMM_API __attribute__ ((visibility("default")))
+# if __GNUC__ >= 4
+#   if (defined(COMM_EXPORTS) || defined(visitcommon_EXPORTS))
+#     define COMM_API __attribute__ ((visibility("default")))
+#   else
+#     define COMM_API /* hidden by default */
+#   endif
+#   define COMM_API2 __attribute__ ((visibility("default"))) /* Always visible */
 # else
-#   define COMM_API /* hidden by default */
+#   define COMM_API  /* hidden by default */
+#   define COMM_API2 /* hidden by default */
 # endif
 #endif
 

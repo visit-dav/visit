@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-class VISWINDOW_API VisWindowException : public VisItException
+class VISWINDOW_API2 VisWindowException : public VisItException
 {
   public:
                           ~VisWindowException() VISIT_THROW_NOTHING {;};

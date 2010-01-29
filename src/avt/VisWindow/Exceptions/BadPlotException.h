@@ -58,7 +58,7 @@
 //
 // ****************************************************************************
 
-class VISWINDOW_API BadPlotException : public VisWindowException
+class VISWINDOW_API2 BadPlotException : public VisWindowException
 {
   public:
                     BadPlotException();

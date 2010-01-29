@@ -41,9 +41,11 @@
 
 #if defined(_WIN32)
 # if defined(MISC_EXPORTS) || defined(visitcommon_EXPORTS)
-#   define MISC_API __declspec(dllexport)
+#   define MISC_API  __declspec(dllexport)
+#   define MISC_API2 __declspec(dllexport)
 # else
-#   define MISC_API __declspec(dllimport)
+#   define MISC_API  __declspec(dllimport)
+#   define MISC_API2 __declspec(dllimport)
 # endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
@@ -54,10 +56,16 @@
 #   pragma warning(disable:4786)
 # endif
 #else
-# if __GNUC__ >= 4 && (defined(MISC_EXPORTS) || defined(visitcommon_EXPORTS))
-#   define MISC_API __attribute__ ((visibility("default")))
+# if __GNUC__ >= 4
+#    if (defined(MISC_EXPORTS) || defined(visitcommon_EXPORTS))
+#      define MISC_API __attribute__ ((visibility("default")))
+#    else
+#      define MISC_API /* hidden by default */
+#    endif
+#    define MISC_API2 __attribute__ ((visibility("default"))) /* Always visible */
 # else
-#   define MISC_API /* hidden by default */
+#   define MISC_API  /* hidden by default */
+#   define MISC_API2 /* hidden by default */
 # endif
 #endif
 

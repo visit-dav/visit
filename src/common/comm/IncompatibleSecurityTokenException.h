@@ -57,7 +57,7 @@
 //   
 // ****************************************************************************
 
-class COMM_API IncompatibleSecurityTokenException : public VisItException
+class COMM_API2 IncompatibleSecurityTokenException : public VisItException
 {
 public:
     IncompatibleSecurityTokenException() {;};

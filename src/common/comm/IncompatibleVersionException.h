@@ -57,7 +57,7 @@
 //   
 // ****************************************************************************
 
-class COMM_API IncompatibleVersionException : public VisItException
+class COMM_API2 IncompatibleVersionException : public VisItException
 {
 public:
     IncompatibleVersionException() {;};

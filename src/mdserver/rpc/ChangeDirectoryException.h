@@ -57,7 +57,7 @@
 //   
 // *******************************************************************
 
-class MDSERVER_RPC_API ChangeDirectoryException : public VisItException
+class MDSERVER_RPC_API2 ChangeDirectoryException : public VisItException
 {
 public:
     ChangeDirectoryException(const std::string &dir);

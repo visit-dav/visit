@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-class VISWINDOW_API PlotDimensionalityException : public VisWindowException
+class VISWINDOW_API2 PlotDimensionalityException : public VisWindowException
 {
   public:
                     PlotDimensionalityException(WINDOW_MODE, WINDOW_MODE, int);

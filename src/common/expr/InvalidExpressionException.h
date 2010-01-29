@@ -62,7 +62,7 @@
 //
 // **************************************************************************** 
 
-class EXPR_API InvalidExpressionException : public VisItException
+class EXPR_API2 InvalidExpressionException : public VisItException
 {
   public:
                           InvalidExpressionException(std::string);

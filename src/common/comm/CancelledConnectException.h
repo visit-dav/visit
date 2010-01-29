@@ -55,7 +55,7 @@
 //   
 // ****************************************************************************
 
-class COMM_API CancelledConnectException : public VisItException
+class COMM_API2 CancelledConnectException : public VisItException
 {
 public:
     CancelledConnectException() {;};

@@ -56,7 +56,7 @@
 //   
 // ****************************************************************************
 
-class COMM_API LostConnectionException : public VisItException
+class COMM_API2 LostConnectionException : public VisItException
 {
 public:
     LostConnectionException() {;};

@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class VISWINDOW_API BadInteractorException : public VisWindowException
+class VISWINDOW_API2 BadInteractorException : public VisWindowException
 {
   public:
                     BadInteractorException(INTERACTION_MODE);

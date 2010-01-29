@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class VISWINDOW_API BadWindowModeException : public VisWindowException
+class VISWINDOW_API2 BadWindowModeException : public VisWindowException
 {
   public:
                     BadWindowModeException(WINDOW_MODE);

@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class PLUGIN_API InvalidPluginException : public VisItException
+class PLUGIN_API2 InvalidPluginException : public VisItException
 {
   public:
                           InvalidPluginException(const char *message,

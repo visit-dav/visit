@@ -54,7 +54,7 @@
 //   
 // ****************************************************************************
 
-class COMM_API CouldNotConnectException : public VisItException
+class COMM_API2 CouldNotConnectException : public VisItException
 {
 public:
     CouldNotConnectException() {;};

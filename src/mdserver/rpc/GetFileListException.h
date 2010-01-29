@@ -58,7 +58,7 @@
 //   
 // *******************************************************************
 
-class MDSERVER_RPC_API GetFileListException : public VisItException
+class MDSERVER_RPC_API2 GetFileListException : public VisItException
 {
 public:
     GetFileListException();
