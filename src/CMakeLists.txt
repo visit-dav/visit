@@ -55,6 +55,14 @@
 #   Added new function ADD_TARGET_DEFINITIONS to add defines to targets.
 #   This was needed for the plots to define ENGINE only for the engine build.
 #
+#    Gunther H. Weber, Thu Jan 28 14:33:36 PST 2010
+#    Added hack/workaround that ensures that the static MPI libraries get added
+#    to the end of the link line. In essence, we add a dummy/empty library
+#    that has the MPI libraries as dependencies. This libary is added to the
+#    end of the link line of parallel executables. Doing so ensures that cmake
+#    will add the depencies of this dummy library, i.e., the MPI libraries, to
+#    the end of the link line.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -702,9 +710,22 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target sources)
                 LINK_FLAGS ${PAR_LINK_FLAGS}
             )
         ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-        TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+        # If we're on doing this "nolink mpi" option, we rely on the
+        # PARALLEL_TARGET_LINK_LIBRARIES function to actually link the
+        # target with MPI.
+        IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES) # This is a new if test
+            TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+        ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
     ENDIF(VISIT_PARALLEL_CXXFLAGS)
 ENDFUNCTION(ADD_PARALLEL_EXECUTABLE)
+
+FUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
+    IF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        TARGET_LINK_LIBRARIES(${target} ${ARGN} link_mpi_libs)
+    ELSE(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        TARGET_LINK_LIBRARIES(${target} ${ARGN})
+    ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+ENDFUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES)
 
 FUNCTION(ADD_PARALLEL_LIBRARY target sources)
     SET(allsources ${sources})

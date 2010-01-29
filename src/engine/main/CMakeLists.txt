@@ -36,6 +36,14 @@
 #
 # Modifications:
 #
+#    Gunther H. Weber, Thu Jan 28 14:33:36 PST 2010
+#    Added hack/workaround that ensures that the static MPI libraries get added
+#    to the end of the link line. In essence, we add a dummy/empty library
+#    that has the MPI libraries as dependencies. This libary is added to the
+#    end of the link line of parallel executables. Doing so ensures that cmake
+#    will add the depencies of this dummy library, i.e., the MPI libraries, to
+#    the end of the link line.
+#
 #****************************************************************************/
 
 SET(LIBENGINE_SOURCES
@@ -211,10 +219,13 @@ IF(VISIT_PARALLEL)
         cognomen
     )
 
+    ADD_LIBRARY(link_mpi_libs STATIC empty.c)
+    TARGET_LINK_LIBRARIES(link_mpi_libs ${VISIT_PARALLEL_LIBS})
+
     ADD_PARALLEL_EXECUTABLE(engine_par_exe main.C ${ENGINE_STATIC_SOURCES})
     SET_TARGET_PROPERTIES(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
 
-    TARGET_LINK_LIBRARIES(engine_par_exe
+    PARALLEL_EXECUTABLE_LINK_LIBRARIES(engine_par_exe
         ${engine_par_exe_IDatabase_par}
         ${engine_par_exe_EDatabase_par}
         ${engine_par_exe_IOperator_par}

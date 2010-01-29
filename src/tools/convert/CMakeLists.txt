@@ -39,6 +39,14 @@
 #   Hank Childs, Wed Jan 13 11:23:39 CST 2010
 #   Rename convert to visitconvert, to avoid name conflicts with other tools.
 #
+#   Gunther H. Weber, Thu Jan 28 14:33:36 PST 2010
+#   Added hack/workaround that ensures that the static MPI libraries get added
+#   to the end of the link line. In essence, we add a dummy/empty library
+#   that has the MPI libraries as dependencies. This libary is added to the
+#   end of the link line of parallel executables. Doing so ensures that cmake
+#   will add the depencies of this dummy library, i.e., the MPI libraries, to
+#   the end of the link line.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -169,7 +177,7 @@ IF(VISIT_PARALLEL)
 
     IF(VISIT_DBIO_ONLY)
         SET_TARGET_PROPERTIES(visitconvert_par PROPERTIES OUTPUT_NAME visitconvert_par_lite)
-        TARGET_LINK_LIBRARIES(visitconvert_par 
+        PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par 
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
@@ -187,7 +195,7 @@ IF(VISIT_PARALLEL)
             ${ZLIB_LIB} 
         )
     ELSE(VISIT_DBIO_ONLY)
-        TARGET_LINK_LIBRARIES(visitconvert_par 
+        PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par 
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
