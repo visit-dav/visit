@@ -308,7 +308,7 @@ void PoincareAttributes::Init()
     hitRate = 0.9;
     adjustPlane = -1;
     overlaps = Remove;
-    showCurves = Curves;
+    meshType = Curves;
     numberPlanes = 1;
     min = 0;
     max = 0;
@@ -368,7 +368,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     hitRate = obj.hitRate;
     adjustPlane = obj.adjustPlane;
     overlaps = obj.overlaps;
-    showCurves = obj.showCurves;
+    meshType = obj.meshType;
     numberPlanes = obj.numberPlanes;
     min = obj.min;
     max = obj.max;
@@ -574,7 +574,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (hitRate == obj.hitRate) &&
             (adjustPlane == obj.adjustPlane) &&
             (overlaps == obj.overlaps) &&
-            (showCurves == obj.showCurves) &&
+            (meshType == obj.meshType) &&
             (numberPlanes == obj.numberPlanes) &&
             (min == obj.min) &&
             (max == obj.max) &&
@@ -774,7 +774,7 @@ PoincareAttributes::SelectAll()
     Select(ID_hitRate,                 (void *)&hitRate);
     Select(ID_adjustPlane,             (void *)&adjustPlane);
     Select(ID_overlaps,                (void *)&overlaps);
-    Select(ID_showCurves,              (void *)&showCurves);
+    Select(ID_meshType,                (void *)&meshType);
     Select(ID_numberPlanes,            (void *)&numberPlanes);
     Select(ID_min,                     (void *)&min);
     Select(ID_max,                     (void *)&max);
@@ -918,10 +918,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("overlaps", OverlapType_ToString(overlaps)));
     }
 
-    if(completeSave || !FieldsEqual(ID_showCurves, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_meshType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("showCurves", ShowMeshType_ToString(showCurves)));
+        node->AddNode(new DataNode("meshType", ShowMeshType_ToString(meshType)));
     }
 
     if(completeSave || !FieldsEqual(ID_numberPlanes, &defaultObject))
@@ -1126,20 +1126,20 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
                 SetOverlaps(value);
         }
     }
-    if((node = searchNode->GetNode("showCurves")) != 0)
+    if((node = searchNode->GetNode("meshType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetShowCurves(ShowMeshType(ival));
+                SetMeshType(ShowMeshType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
             ShowMeshType value;
             if(ShowMeshType_FromString(node->AsString(), value))
-                SetShowCurves(value);
+                SetMeshType(value);
         }
     }
     if((node = searchNode->GetNode("numberPlanes")) != 0)
@@ -1325,10 +1325,10 @@ PoincareAttributes::SetOverlaps(PoincareAttributes::OverlapType overlaps_)
 }
 
 void
-PoincareAttributes::SetShowCurves(PoincareAttributes::ShowMeshType showCurves_)
+PoincareAttributes::SetMeshType(PoincareAttributes::ShowMeshType meshType_)
 {
-    showCurves = showCurves_;
-    Select(ID_showCurves, (void *)&showCurves);
+    meshType = meshType_;
+    Select(ID_meshType, (void *)&meshType);
 }
 
 void
@@ -1555,9 +1555,9 @@ PoincareAttributes::GetOverlaps() const
 }
 
 PoincareAttributes::ShowMeshType
-PoincareAttributes::GetShowCurves() const
+PoincareAttributes::GetMeshType() const
 {
-    return ShowMeshType(showCurves);
+    return ShowMeshType(meshType);
 }
 
 int
@@ -1736,7 +1736,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_hitRate:                 return "hitRate";
     case ID_adjustPlane:             return "adjustPlane";
     case ID_overlaps:                return "overlaps";
-    case ID_showCurves:              return "showCurves";
+    case ID_meshType:                return "meshType";
     case ID_numberPlanes:            return "numberPlanes";
     case ID_min:                     return "min";
     case ID_max:                     return "max";
@@ -1792,7 +1792,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_hitRate:                 return FieldType_double;
     case ID_adjustPlane:             return FieldType_int;
     case ID_overlaps:                return FieldType_enum;
-    case ID_showCurves:              return FieldType_enum;
+    case ID_meshType:                return FieldType_enum;
     case ID_numberPlanes:            return FieldType_int;
     case ID_min:                     return FieldType_double;
     case ID_max:                     return FieldType_double;
@@ -1848,7 +1848,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_hitRate:                 return "double";
     case ID_adjustPlane:             return "int";
     case ID_overlaps:                return "enum";
-    case ID_showCurves:              return "enum";
+    case ID_meshType:                return "enum";
     case ID_numberPlanes:            return "int";
     case ID_min:                     return "double";
     case ID_max:                     return "double";
@@ -1985,9 +1985,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (overlaps == obj.overlaps);
         }
         break;
-    case ID_showCurves:
+    case ID_meshType:
         {  // new scope
-        retval = (showCurves == obj.showCurves);
+        retval = (meshType == obj.meshType);
         }
         break;
     case ID_numberPlanes:
@@ -2165,7 +2165,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            adjustPlane != obj.adjustPlane ||
            overlaps != obj.overlaps ||
 
-           showCurves != obj.showCurves ||
+           meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
 
            colorBy != obj.colorBy ||

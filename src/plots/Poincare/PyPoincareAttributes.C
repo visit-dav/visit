@@ -202,15 +202,15 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
     }
 
-    const char *showCurves_names = "Curves, Surfaces";
-    switch (atts->GetShowCurves())
+    const char *meshType_names = "Curves, Surfaces";
+    switch (atts->GetMeshType())
     {
       case PoincareAttributes::Curves:
-          SNPRINTF(tmpStr, 1000, "%sshowCurves = %sCurves  # %s\n", prefix, prefix, showCurves_names);
+          SNPRINTF(tmpStr, 1000, "%smeshType = %sCurves  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Surfaces:
-          SNPRINTF(tmpStr, 1000, "%sshowCurves = %sSurfaces  # %s\n", prefix, prefix, showCurves_names);
+          SNPRINTF(tmpStr, 1000, "%smeshType = %sSurfaces  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       default:
@@ -850,7 +850,7 @@ PoincareAttributes_GetOverlaps(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetShowCurves(PyObject *self, PyObject *args)
+PoincareAttributes_SetMeshType(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -858,12 +858,12 @@ PoincareAttributes_SetShowCurves(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the showCurves in the object.
+    // Set the meshType in the object.
     if(ival >= 0 && ival < 2)
-        obj->data->SetShowCurves(PoincareAttributes::ShowMeshType(ival));
+        obj->data->SetMeshType(PoincareAttributes::ShowMeshType(ival));
     else
     {
-        fprintf(stderr, "An invalid showCurves value was given. "
+        fprintf(stderr, "An invalid meshType value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Curves, Surfaces.");
@@ -875,10 +875,10 @@ PoincareAttributes_SetShowCurves(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetShowCurves(PyObject *self, PyObject *args)
+PoincareAttributes_GetMeshType(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetShowCurves()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshType()));
     return retval;
 }
 
@@ -1351,8 +1351,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetAdjustPlane", PoincareAttributes_GetAdjustPlane, METH_VARARGS},
     {"SetOverlaps", PoincareAttributes_SetOverlaps, METH_VARARGS},
     {"GetOverlaps", PoincareAttributes_GetOverlaps, METH_VARARGS},
-    {"SetShowCurves", PoincareAttributes_SetShowCurves, METH_VARARGS},
-    {"GetShowCurves", PoincareAttributes_GetShowCurves, METH_VARARGS},
+    {"SetMeshType", PoincareAttributes_SetMeshType, METH_VARARGS},
+    {"GetMeshType", PoincareAttributes_GetMeshType, METH_VARARGS},
     {"SetNumberPlanes", PoincareAttributes_SetNumberPlanes, METH_VARARGS},
     {"GetNumberPlanes", PoincareAttributes_GetNumberPlanes, METH_VARARGS},
     {"SetMin", PoincareAttributes_SetMin, METH_VARARGS},
@@ -1464,8 +1464,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Smooth") == 0)
         return PyInt_FromLong(long(PoincareAttributes::Smooth));
 
-    if(strcmp(name, "showCurves") == 0)
-        return PoincareAttributes_GetShowCurves(self, NULL);
+    if(strcmp(name, "meshType") == 0)
+        return PoincareAttributes_GetMeshType(self, NULL);
     if(strcmp(name, "Curves") == 0)
         return PyInt_FromLong(long(PoincareAttributes::Curves));
     if(strcmp(name, "Surfaces") == 0)
@@ -1575,8 +1575,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetAdjustPlane(self, tuple);
     else if(strcmp(name, "overlaps") == 0)
         obj = PoincareAttributes_SetOverlaps(self, tuple);
-    else if(strcmp(name, "showCurves") == 0)
-        obj = PoincareAttributes_SetShowCurves(self, tuple);
+    else if(strcmp(name, "meshType") == 0)
+        obj = PoincareAttributes_SetMeshType(self, tuple);
     else if(strcmp(name, "numberPlanes") == 0)
         obj = PoincareAttributes_SetNumberPlanes(self, tuple);
     else if(strcmp(name, "min") == 0)

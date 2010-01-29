@@ -182,7 +182,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            adjustPlane != obj.adjustPlane ||
            overlaps != obj.overlaps ||
 
-           showCurves != obj.showCurves ||
+           meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
 
            colorBy != obj.colorBy ||

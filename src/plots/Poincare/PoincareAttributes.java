@@ -123,7 +123,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         hitRate = 0.9;
         adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
-        showCurves = SHOWMESHTYPE_CURVES;
+        meshType = SHOWMESHTYPE_CURVES;
         numberPlanes = 1;
         min = 0;
         max = 0;
@@ -170,7 +170,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         hitRate = 0.9;
         adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
-        showCurves = SHOWMESHTYPE_CURVES;
+        meshType = SHOWMESHTYPE_CURVES;
         numberPlanes = 1;
         min = 0;
         max = 0;
@@ -222,7 +222,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         hitRate = obj.hitRate;
         adjustPlane = obj.adjustPlane;
         overlaps = obj.overlaps;
-        showCurves = obj.showCurves;
+        meshType = obj.meshType;
         numberPlanes = obj.numberPlanes;
         min = obj.min;
         max = obj.max;
@@ -288,7 +288,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (hitRate == obj.hitRate) &&
                 (adjustPlane == obj.adjustPlane) &&
                 (overlaps == obj.overlaps) &&
-                (showCurves == obj.showCurves) &&
+                (meshType == obj.meshType) &&
                 (numberPlanes == obj.numberPlanes) &&
                 (min == obj.min) &&
                 (max == obj.max) &&
@@ -436,9 +436,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(15);
     }
 
-    public void SetShowCurves(int showCurves_)
+    public void SetMeshType(int meshType_)
     {
-        showCurves = showCurves_;
+        meshType = meshType_;
         Select(16);
     }
 
@@ -549,7 +549,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public double         GetHitRate() { return hitRate; }
     public int            GetAdjustPlane() { return adjustPlane; }
     public int            GetOverlaps() { return overlaps; }
-    public int            GetShowCurves() { return showCurves; }
+    public int            GetMeshType() { return meshType; }
     public int            GetNumberPlanes() { return numberPlanes; }
     public double         GetMin() { return min; }
     public double         GetMax() { return max; }
@@ -602,7 +602,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(15, buf))
             buf.WriteInt(overlaps);
         if(WriteSelect(16, buf))
-            buf.WriteInt(showCurves);
+            buf.WriteInt(meshType);
         if(WriteSelect(17, buf))
             buf.WriteInt(numberPlanes);
         if(WriteSelect(18, buf))
@@ -688,7 +688,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetOverlaps(buf.ReadInt());
             break;
         case 16:
-            SetShowCurves(buf.ReadInt());
+            SetMeshType(buf.ReadInt());
             break;
         case 17:
             SetNumberPlanes(buf.ReadInt());
@@ -779,10 +779,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(overlaps == OVERLAPTYPE_SMOOTH)
             str = str + "OVERLAPTYPE_SMOOTH";
         str = str + "\n";
-        str = str + indent + "showCurves = ";
-        if(showCurves == SHOWMESHTYPE_CURVES)
+        str = str + indent + "meshType = ";
+        if(meshType == SHOWMESHTYPE_CURVES)
             str = str + "SHOWMESHTYPE_CURVES";
-        if(showCurves == SHOWMESHTYPE_SURFACES)
+        if(meshType == SHOWMESHTYPE_SURFACES)
             str = str + "SHOWMESHTYPE_SURFACES";
         str = str + "\n";
         str = str + intToString("numberPlanes", numberPlanes, indent) + "\n";
@@ -849,7 +849,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private double         hitRate;
     private int            adjustPlane;
     private int            overlaps;
-    private int            showCurves;
+    private int            meshType;
     private int            numberPlanes;
     private double         min;
     private double         max;

@@ -43,12 +43,15 @@
 #include <AttributeSubject.h>
 
 class PoincareAttributes;
+class QTabWidget;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
 class QSpinBox;
 class QVBox;
 class QButtonGroup;
+class QComboBox;
+class QGroupBox;
 class QvisColorTableButton;
 class QvisOpacitySlider;
 class QvisColorButton;
@@ -107,7 +110,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void hitRateProcessText();
     void adjustPlaneProcessText();
     void overlapsChanged(int val);
-    void showCurvesChanged(int val);
+    void meshTypeChanged(int val);
     void numberPlanesProcessText();
     void minProcessText();
     void maxProcessText();
@@ -124,17 +127,19 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void legendFlagChanged(bool val);
     void lightingFlagChanged(bool val);
   private:
+    QTabWidget      *propertyTabs;
+
     int plotType;
     QLineEdit *minPunctures;
     QLineEdit *maxPunctures;
     QWidget      *sourceType;
-    QButtonGroup *sourceTypeButtonGroup;
+    QComboBox *sourceTypeCombo;
     QLineEdit *pointSource;
     QLineEdit *lineStart;
     QLineEdit *lineEnd;
     QLineEdit *pointDensity;
     QWidget      *integrationType;
-    QButtonGroup *integrationTypeButtonGroup;
+    QComboBox *integrationTypeCombo;
     QLineEdit *maxStepLength;
     QLineEdit *relTol;
     QLineEdit *absTol;
@@ -144,8 +149,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *adjustPlane;
     QWidget      *overlaps;
     QButtonGroup *overlapsButtonGroup;
-    QWidget      *showCurves;
-    QButtonGroup *showCurvesButtonGroup;
+    QWidget      *meshType;
+    QComboBox *meshTypeCombo;
     QLineEdit *numberPlanes;
     QLineEdit *min;
     QLineEdit *max;
@@ -156,7 +161,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QvisColorButton *singleColor;
     QvisColorTableButton *colorTableName;
     QWidget      *colorBy;
-    QButtonGroup *colorByButtonGroup;
+    QComboBox *colorByCombo;
     QCheckBox *showIslands;
     QCheckBox *showLines;
     QCheckBox *showPoints;
@@ -179,7 +184,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *hitRateLabel;
     QLabel *adjustPlaneLabel;
     QLabel *overlapsLabel;
-    QLabel *showCurvesLabel;
+    QLabel *meshTypeLabel;
     QLabel *numberPlanesLabel;
     QLabel *minLabel;
     QLabel *maxLabel;
@@ -187,6 +192,11 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *singleColorLabel;
     QLabel *colorTableNameLabel;
     QLabel *colorByLabel;
+
+    QWidget *firstTab;
+    QWidget *secondTab;
+    QWidget *thirdTab;
+    QGroupBox *sourceGroup;
 
     PoincareAttributes *atts;
 };

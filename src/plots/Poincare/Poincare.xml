@@ -93,23 +93,23 @@
         0.000010
       </Field>
 
-      <Field name="maxToroidalWinding" label="maxToroidalWinding" type="int">
+      <Field name="maxToroidalWinding" label="Max Toroidal Winding" type="int">
         30
       </Field>
-      <Field name="overrideToroidalWinding" label="overrideToroidalWinding" type="int">
+      <Field name="overrideToroidalWinding" label="Override Toroidal Winding" type="int">
         0
       </Field>
-      <Field name="hitRate" label="hitRate" type="double">
+      <Field name="hitRate" label="Hit Rate" type="double">
         0.900000
       </Field>
-      <Field name="adjustPlane" label="adjustPlane" type="int">
+      <Field name="adjustPlane" label="Adjust plane" type="int">
         -1
       </Field>
-      <Field name="overlaps" label="overlaps" type="enum" subtype="OverlapType">
+      <Field name="overlaps" label="Overlaps" type="enum" subtype="OverlapType">
         Remove
       </Field>
 
-      <Field name="showCurves" label="showCurves" type="enum" subtype="ShowMeshType">
+      <Field name="meshType" label="Mesh Type" type="enum" subtype="ShowMeshType">
         Curves
       </Field>
       <Field name="numberPlanes" label="numberPlanes" type="int">
@@ -146,7 +146,7 @@
         SafetyFactor
       </Field>
 
-      <Field name="showIslands" label="showIslands" type="bool">
+      <Field name="showIslands" label="Show Islands" type="bool">
         false
       </Field>
       <Field name="showLines" label="Show Lines" type="bool">
@@ -155,7 +155,7 @@
       <Field name="showPoints" label="Show Points" type="bool">
         false
       </Field>
-      <Field name="verboseFlag" label="verbose" type="bool">
+      <Field name="verboseFlag" label="Verbose" type="bool">
         true
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">

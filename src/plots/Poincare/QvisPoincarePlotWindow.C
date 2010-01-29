@@ -41,12 +41,15 @@
 #include <PoincareAttributes.h>
 #include <ViewerProxy.h>
 
+#include <QTabWidget>
 #include <QCheckBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QButtonGroup>
+#include <QComboBox>
+#include <QGroupBox>
 #include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
@@ -125,139 +128,171 @@ QvisPoincarePlotWindow::~QvisPoincarePlotWindow()
 void
 QvisPoincarePlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(0);
-    topLayout->addLayout(mainLayout);
+    propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
 
-    minPuncturesLabel = new QLabel(tr("Minimum number of Punctures"), central);
-    mainLayout->addWidget(minPuncturesLabel,0,0);
+    // ----------------------------------------------------------------------
+    // First tab
+    // ----------------------------------------------------------------------
+    firstTab = new QWidget(central);
+    propertyTabs->addTab(firstTab, tr("Streamlines"));
+    
+    QGridLayout *mainLayout = new QGridLayout(firstTab);
+
+    // Create the punctures group box.
+    QGroupBox *puncturesGroup = new QGroupBox(central);
+    puncturesGroup->setTitle(tr("Punctures"));
+    mainLayout->addWidget(puncturesGroup, 0, 0, 1, 2);
+//    mainLayout->setStretchFactor(puncturesGroup, 100);
+    QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
+    puncturesLayout->setSpacing(10);
+
+    minPuncturesLabel = new QLabel(tr("Minimum"), central);
+    puncturesLayout->addWidget(minPuncturesLabel,0,0);
     minPunctures = new QLineEdit(central);
     connect(minPunctures, SIGNAL(returnPressed()),
             this, SLOT(minPuncturesProcessText()));
-    mainLayout->addWidget(minPunctures, 0,1);
+    puncturesLayout->addWidget(minPunctures, 0, 1);
 
-    maxPuncturesLabel = new QLabel(tr("Maximum number of Punctures"), central);
-    mainLayout->addWidget(maxPuncturesLabel,1,0);
+    maxPuncturesLabel = new QLabel(tr("Maximum"), central);
+    puncturesLayout->addWidget(maxPuncturesLabel,1,0);
     maxPunctures = new QLineEdit(central);
     connect(maxPunctures, SIGNAL(returnPressed()),
             this, SLOT(maxPuncturesProcessText()));
-    mainLayout->addWidget(maxPunctures, 1,1);
+    puncturesLayout->addWidget(maxPunctures, 1, 1);
+
+   // Create the source group box.
+    QGroupBox *sourceGroup = new QGroupBox(central);
+    sourceGroup->setTitle(tr("Source"));
+    mainLayout->addWidget(sourceGroup, 1, 0, 1, 2);
+//    mainLayout->setStretchFactor(sourceGroup, 100);
+    QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
+    sourceLayout->setSpacing(10);
 
     sourceTypeLabel = new QLabel(tr("Streamline Source"), central);
-    mainLayout->addWidget(sourceTypeLabel,2,0);
-    sourceType = new QWidget(central);
-    sourceTypeButtonGroup= new QButtonGroup(sourceType);
-    QHBoxLayout *sourceTypeLayout = new QHBoxLayout(sourceType);
-    sourceTypeLayout->setMargin(0);
-    sourceTypeLayout->setSpacing(10);
-    QRadioButton *sourceTypeSourceTypeSpecifiedPoint = new QRadioButton(tr("SpecifiedPoint"), sourceType);
-    sourceTypeButtonGroup->addButton(sourceTypeSourceTypeSpecifiedPoint,0);
-    sourceTypeLayout->addWidget(sourceTypeSourceTypeSpecifiedPoint);
-    QRadioButton *sourceTypeSourceTypeSpecifiedLine = new QRadioButton(tr("SpecifiedLine"), sourceType);
-    sourceTypeButtonGroup->addButton(sourceTypeSourceTypeSpecifiedLine,1);
-    sourceTypeLayout->addWidget(sourceTypeSourceTypeSpecifiedLine);
-    connect(sourceTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(sourceTypeChanged(int)));
-    mainLayout->addWidget(sourceType, 2,1);
+    sourceLayout->addWidget(sourceTypeLabel, 0, 0);
 
-    pointSourceLabel = new QLabel(tr("Point Source"), central);
-    mainLayout->addWidget(pointSourceLabel,3,0);
+    sourceTypeCombo = new QComboBox(firstTab);
+    sourceTypeCombo->addItem(tr("Point"));
+    sourceTypeCombo->addItem(tr("Line"));
+    connect(sourceTypeCombo, SIGNAL(activated(int)),
+           this, SLOT(sourceTypeChanged(int)));
+    sourceLayout->addWidget(sourceTypeCombo, 0, 1);
+
+
+
+    pointSourceLabel = new QLabel(tr("Location"), central);
+    sourceLayout->addWidget(pointSourceLabel, 1, 0);
     pointSource = new QLineEdit(central);
     connect(pointSource, SIGNAL(returnPressed()),
             this, SLOT(pointSourceProcessText()));
-    mainLayout->addWidget(pointSource, 3,1);
+    sourceLayout->addWidget(pointSource, 1, 1, 1, 2);
 
-    lineStartLabel = new QLabel(tr("Line Point Start"), central);
-    mainLayout->addWidget(lineStartLabel,4,0);
+
+
+    lineStartLabel = new QLabel(tr("Start Point"), central);
+    sourceLayout->addWidget(lineStartLabel, 1, 0);
     lineStart = new QLineEdit(central);
     connect(lineStart, SIGNAL(returnPressed()),
             this, SLOT(lineStartProcessText()));
-    mainLayout->addWidget(lineStart, 4,1);
+    sourceLayout->addWidget(lineStart, 1, 1, 1, 2);
 
-    lineEndLabel = new QLabel(tr("Line Point End"), central);
-    mainLayout->addWidget(lineEndLabel,5,0);
+    lineEndLabel = new QLabel(tr("End Point"), central);
+    sourceLayout->addWidget(lineEndLabel, 2, 0);
     lineEnd = new QLineEdit(central);
     connect(lineEnd, SIGNAL(returnPressed()),
             this, SLOT(lineEndProcessText()));
-    mainLayout->addWidget(lineEnd, 5,1);
+    sourceLayout->addWidget(lineEnd, 2, 1, 1, 2);
 
     pointDensityLabel = new QLabel(tr("Point density"), central);
-    mainLayout->addWidget(pointDensityLabel,6,0);
+    sourceLayout->addWidget(pointDensityLabel, 3, 0);
     pointDensity = new QLineEdit(central);
     connect(pointDensity, SIGNAL(returnPressed()),
             this, SLOT(pointDensityProcessText()));
-    mainLayout->addWidget(pointDensity, 6,1);
+    sourceLayout->addWidget(pointDensity, 3, 1, 1, 2);
 
-    integrationTypeLabel = new QLabel(tr("Integrator"), central);
-    mainLayout->addWidget(integrationTypeLabel,7,0);
-    integrationType = new QWidget(central);
-    integrationTypeButtonGroup= new QButtonGroup(integrationType);
-    QHBoxLayout *integrationTypeLayout = new QHBoxLayout(integrationType);
-    integrationTypeLayout->setMargin(0);
-    integrationTypeLayout->setSpacing(10);
-    QRadioButton *integrationTypeIntegrationTypeDormandPrince = new QRadioButton(tr("DormandPrince"), integrationType);
-    integrationTypeButtonGroup->addButton(integrationTypeIntegrationTypeDormandPrince,0);
-    integrationTypeLayout->addWidget(integrationTypeIntegrationTypeDormandPrince);
-    QRadioButton *integrationTypeIntegrationTypeAdamsBashforth = new QRadioButton(tr("AdamsBashforth"), integrationType);
-    integrationTypeButtonGroup->addButton(integrationTypeIntegrationTypeAdamsBashforth,1);
-    integrationTypeLayout->addWidget(integrationTypeIntegrationTypeAdamsBashforth);
-    QRadioButton *integrationTypeIntegrationTypeM3DC1Integrator = new QRadioButton(tr("M3DC1Integrator"), integrationType);
-    integrationTypeButtonGroup->addButton(integrationTypeIntegrationTypeM3DC1Integrator,2);
-    integrationTypeLayout->addWidget(integrationTypeIntegrationTypeM3DC1Integrator);
-    connect(integrationTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(integrationTypeChanged(int)));
-    mainLayout->addWidget(integrationType, 7,1);
+
+
+
+
+   // Create the integration group box.
+    QGroupBox *integrationGroup = new QGroupBox(central);
+    integrationGroup->setTitle(tr("Integration"));
+    mainLayout->addWidget(integrationGroup, 2, 0, 1, 2);
+//    mainLayout->setStretchFactor(integrationGroup, 100);
+    QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
+    integrationLayout->setSpacing(10);
+
+    integrationTypeLabel = new QLabel(tr("Integrator:"), central);
+    integrationLayout->addWidget(integrationTypeLabel,0,0);
+
+    integrationTypeCombo = new QComboBox(firstTab);
+    integrationTypeCombo->addItem(tr("DormandPrince"));
+    integrationTypeCombo->addItem(tr("AdamsBashforth"));
+    integrationTypeCombo->addItem(tr("M3DC1Integrator"));
+    connect(integrationTypeCombo, SIGNAL(activated(int)),
+           this, SLOT(integrationTypeChanged(int)));
+    integrationLayout->addWidget(integrationTypeCombo, 0, 1);
 
     maxStepLengthLabel = new QLabel(tr("maximum step length"), central);
-    mainLayout->addWidget(maxStepLengthLabel,8,0);
+    integrationLayout->addWidget(maxStepLengthLabel,1,0);
     maxStepLength = new QLineEdit(central);
     connect(maxStepLength, SIGNAL(returnPressed()),
             this, SLOT(maxStepLengthProcessText()));
-    mainLayout->addWidget(maxStepLength, 8,1);
+    integrationLayout->addWidget(maxStepLength, 1,1);
 
     relTolLabel = new QLabel(tr("rel. tolerance"), central);
-    mainLayout->addWidget(relTolLabel,9,0);
+    integrationLayout->addWidget(relTolLabel,2,0);
     relTol = new QLineEdit(central);
     connect(relTol, SIGNAL(returnPressed()),
             this, SLOT(relTolProcessText()));
-    mainLayout->addWidget(relTol, 9,1);
+    integrationLayout->addWidget(relTol, 2,1);
 
     absTolLabel = new QLabel(tr("abs. tolerance"), central);
-    mainLayout->addWidget(absTolLabel,10,0);
+    integrationLayout->addWidget(absTolLabel,3,0);
     absTol = new QLineEdit(central);
     connect(absTol, SIGNAL(returnPressed()),
             this, SLOT(absTolProcessText()));
-    mainLayout->addWidget(absTol, 10,1);
+    integrationLayout->addWidget(absTol, 3,1);
 
-    maxToroidalWindingLabel = new QLabel(tr("maxToroidalWinding"), central);
-    mainLayout->addWidget(maxToroidalWindingLabel,11,0);
+    // ----------------------------------------------------------------------
+    // Second tab
+    // ----------------------------------------------------------------------
+    secondTab = new QWidget(central);
+    propertyTabs->addTab(secondTab, tr("Analysis"));
+    
+    mainLayout = new QGridLayout(secondTab);
+
+    maxToroidalWindingLabel = new QLabel(tr("Max Toroidal Winding"), central);
+    mainLayout->addWidget(maxToroidalWindingLabel,0,0);
     maxToroidalWinding = new QLineEdit(central);
     connect(maxToroidalWinding, SIGNAL(returnPressed()),
             this, SLOT(maxToroidalWindingProcessText()));
-    mainLayout->addWidget(maxToroidalWinding, 11,1);
+    mainLayout->addWidget(maxToroidalWinding, 0,1);
 
-    overrideToroidalWindingLabel = new QLabel(tr("overrideToroidalWinding"), central);
-    mainLayout->addWidget(overrideToroidalWindingLabel,12,0);
+    overrideToroidalWindingLabel = new QLabel(tr("Override Toroidal Winding"), central);
+    mainLayout->addWidget(overrideToroidalWindingLabel,1,0);
     overrideToroidalWinding = new QLineEdit(central);
     connect(overrideToroidalWinding, SIGNAL(returnPressed()),
             this, SLOT(overrideToroidalWindingProcessText()));
-    mainLayout->addWidget(overrideToroidalWinding, 12,1);
+    mainLayout->addWidget(overrideToroidalWinding, 1,1);
 
-    hitRateLabel = new QLabel(tr("hitRate"), central);
-    mainLayout->addWidget(hitRateLabel,13,0);
+    hitRateLabel = new QLabel(tr("Hit Rate"), central);
+    mainLayout->addWidget(hitRateLabel,2,0);
     hitRate = new QLineEdit(central);
     connect(hitRate, SIGNAL(returnPressed()),
             this, SLOT(hitRateProcessText()));
-    mainLayout->addWidget(hitRate, 13,1);
+    mainLayout->addWidget(hitRate, 2,1);
 
-    adjustPlaneLabel = new QLabel(tr("adjustPlane"), central);
-    mainLayout->addWidget(adjustPlaneLabel,14,0);
+    adjustPlaneLabel = new QLabel(tr("Adjust Plane"), central);
+    mainLayout->addWidget(adjustPlaneLabel,3,0);
     adjustPlane = new QLineEdit(central);
     connect(adjustPlane, SIGNAL(returnPressed()),
             this, SLOT(adjustPlaneProcessText()));
-    mainLayout->addWidget(adjustPlane, 14,1);
+    mainLayout->addWidget(adjustPlane, 3,1);
 
-    overlapsLabel = new QLabel(tr("overlaps"), central);
-    mainLayout->addWidget(overlapsLabel,15,0);
+    overlapsLabel = new QLabel(tr("Overlaps"), central);
+    mainLayout->addWidget(overlapsLabel,4,0, Qt::AlignTop);
     overlaps = new QWidget(central);
     overlapsButtonGroup= new QButtonGroup(overlaps);
     QHBoxLayout *overlapsLayout = new QHBoxLayout(overlaps);
@@ -277,161 +312,164 @@ QvisPoincarePlotWindow::CreateWindowContents()
     overlapsLayout->addWidget(overlapsOverlapTypeSmooth);
     connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(overlapsChanged(int)));
-    mainLayout->addWidget(overlaps, 15,1);
+    mainLayout->addWidget(overlaps, 4,1, Qt::AlignTop);
 
-    showCurvesLabel = new QLabel(tr("showCurves"), central);
-    mainLayout->addWidget(showCurvesLabel,16,0);
-    showCurves = new QWidget(central);
-    showCurvesButtonGroup= new QButtonGroup(showCurves);
-    QHBoxLayout *showCurvesLayout = new QHBoxLayout(showCurves);
-    showCurvesLayout->setMargin(0);
-    showCurvesLayout->setSpacing(10);
-    QRadioButton *showCurvesShowMeshTypeCurves = new QRadioButton(tr("Curves"), showCurves);
-    showCurvesButtonGroup->addButton(showCurvesShowMeshTypeCurves,0);
-    showCurvesLayout->addWidget(showCurvesShowMeshTypeCurves);
-    QRadioButton *showCurvesShowMeshTypeSurfaces = new QRadioButton(tr("Surfaces"), showCurves);
-    showCurvesButtonGroup->addButton(showCurvesShowMeshTypeSurfaces,1);
-    showCurvesLayout->addWidget(showCurvesShowMeshTypeSurfaces);
-    connect(showCurvesButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(showCurvesChanged(int)));
-    mainLayout->addWidget(showCurves, 16,1);
+    // ----------------------------------------------------------------------
+    // Third tab
+    // ----------------------------------------------------------------------
+    thirdTab = new QWidget(central);
+    propertyTabs->addTab(thirdTab, tr("Display"));
+    
+    mainLayout = new QGridLayout(thirdTab);
 
-    numberPlanesLabel = new QLabel(tr("numberPlanes"), central);
-    mainLayout->addWidget(numberPlanesLabel,17,0);
+    // Create the display group box.
+    QGroupBox *displayGroup = new QGroupBox(central);
+    displayGroup->setTitle(tr("Display"));
+    mainLayout->addWidget(displayGroup, 0, 0);
+//    mainLayout->setStretchFactor(displayGroup, 100);
+    QGridLayout *displayLayout = new QGridLayout(displayGroup);
+    displayLayout->setSpacing(10);
+
+    meshTypeLabel = new QLabel(tr("Mesh:"), central);
+    displayLayout->addWidget(meshTypeLabel,0,0);
+
+    meshTypeCombo = new QComboBox(thirdTab);
+    meshTypeCombo->addItem(tr("Curves"));
+    meshTypeCombo->addItem(tr("Surfaces"));
+    connect(meshTypeCombo, SIGNAL(activated(int)),
+           this, SLOT(meshTypeChanged(int)));
+    displayLayout->addWidget(meshTypeCombo, 0, 1);
+
+    numberPlanesLabel = new QLabel(tr("Number of planes"), central);
+    displayLayout->addWidget(numberPlanesLabel,1,0);
     numberPlanes = new QLineEdit(central);
     connect(numberPlanes, SIGNAL(returnPressed()),
             this, SLOT(numberPlanesProcessText()));
-    mainLayout->addWidget(numberPlanes, 17,1);
+    displayLayout->addWidget(numberPlanes, 1,1);
 
-    minLabel = new QLabel(tr("min"), central);
-    mainLayout->addWidget(minLabel,18,0);
+   // Create the limits group box.
+    QGroupBox *limitsGroup = new QGroupBox(central);
+    limitsGroup->setTitle(tr("Limits"));
+    mainLayout->addWidget(limitsGroup, 1, 0);
+//    mainLayout->setStretchFactor(limitsGroup, 100);
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setSpacing(10);
+
+
+    minFlag = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minFlag, 0, 0);
+    connect(minFlag, SIGNAL(toggled(bool)),
+            this, SLOT(minFlagChanged(bool)));
     min = new QLineEdit(central);
     connect(min, SIGNAL(returnPressed()),
             this, SLOT(minProcessText()));
-    mainLayout->addWidget(min, 18,1);
+    limitsLayout->addWidget(min, 0, 1);
 
-    maxLabel = new QLabel(tr("max"), central);
-    mainLayout->addWidget(maxLabel,19,0);
+    maxFlag = new QCheckBox(tr("Maximum"), central);
+    connect(maxFlag, SIGNAL(toggled(bool)),
+            this, SLOT(maxFlagChanged(bool)));
+    limitsLayout->addWidget(maxFlag, 0, 2);
+
     max = new QLineEdit(central);
     connect(max, SIGNAL(returnPressed()),
             this, SLOT(maxProcessText()));
-    mainLayout->addWidget(max, 19,1);
+    limitsLayout->addWidget(max, 0, 3);
 
-    minFlag = new QCheckBox(tr("minFlag"), central);
-    connect(minFlag, SIGNAL(toggled(bool)),
-            this, SLOT(minFlagChanged(bool)));
-    mainLayout->addWidget(minFlag, 20,0);
 
-    maxFlag = new QCheckBox(tr("maxFlag"), central);
-    connect(maxFlag, SIGNAL(toggled(bool)),
-            this, SLOT(maxFlagChanged(bool)));
-    mainLayout->addWidget(maxFlag, 21,0);
+   // Create the color group box.
+    QGroupBox *colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    mainLayout->addWidget(colorGroup, 2, 0);
+//    mainLayout->setStretchFactor(colorGroup, 100);
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setSpacing(10);
 
-    colorTypeLabel = new QLabel(tr("Color type"), central);
-    mainLayout->addWidget(colorTypeLabel,22,0);
+
+//     colorTypeLabel = new QLabel(tr("Color type"), central);
+//     colorLayout->addWidget(colorTypeLabel,6,0);
     colorType = new QWidget(central);
     colorTypeButtonGroup= new QButtonGroup(colorType);
-    QHBoxLayout *colorTypeLayout = new QHBoxLayout(colorType);
+    QVBoxLayout *colorTypeLayout = new QVBoxLayout(colorType);
     colorTypeLayout->setMargin(0);
     colorTypeLayout->setSpacing(10);
-    QRadioButton *colorTypeColoringMethodColorBySingleColor = new QRadioButton(tr("ColorBySingleColor"), colorType);
-    colorTypeButtonGroup->addButton(colorTypeColoringMethodColorBySingleColor,0);
-    colorTypeLayout->addWidget(colorTypeColoringMethodColorBySingleColor);
-    QRadioButton *colorTypeColoringMethodColorByColorTable = new QRadioButton(tr("ColorByColorTable"), colorType);
-    colorTypeButtonGroup->addButton(colorTypeColoringMethodColorByColorTable,1);
-    colorTypeLayout->addWidget(colorTypeColoringMethodColorByColorTable);
+    QRadioButton *colorTypeSingleColor = new QRadioButton(tr("Single"), colorType);
+    colorTypeButtonGroup->addButton(colorTypeSingleColor,0);
+    colorTypeLayout->addWidget(colorTypeSingleColor);
+    QRadioButton *colorTypeColorTable = new QRadioButton(tr("Color Table"), colorType);
+    colorTypeButtonGroup->addButton(colorTypeColorTable,1);
+    colorTypeLayout->addWidget(colorTypeColorTable);
     connect(colorTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorTypeChanged(int)));
-    mainLayout->addWidget(colorType, 22,1);
+    colorLayout->addWidget(colorType, 6, 0, 2, 1);
 
-    singleColorLabel = new QLabel(tr("Single color"), central);
-    mainLayout->addWidget(singleColorLabel,23,0);
     singleColor = new QvisColorButton(central);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
-    mainLayout->addWidget(singleColor, 23,1);
+    colorLayout->addWidget(singleColor, 6, 1, Qt::AlignLeft);
 
-    colorTableNameLabel = new QLabel(tr("Color table"), central);
-    mainLayout->addWidget(colorTableNameLabel,24,0);
     colorTableName = new QvisColorTableButton(central);
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
-    mainLayout->addWidget(colorTableName, 24,1);
+    colorLayout->addWidget(colorTableName, 7, 1, Qt::AlignLeft);
 
-    colorByLabel = new QLabel(tr("colorBy"), central);
-    mainLayout->addWidget(colorByLabel,25,0);
-    colorBy = new QWidget(central);
-    colorByButtonGroup= new QButtonGroup(colorBy);
-    QHBoxLayout *colorByLayout = new QHBoxLayout(colorBy);
-    colorByLayout->setMargin(0);
-    colorByLayout->setSpacing(10);
-    QRadioButton *colorByColorByOriginalValue = new QRadioButton(tr("OriginalValue"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByOriginalValue,0);
-    colorByLayout->addWidget(colorByColorByOriginalValue);
-    QRadioButton *colorByColorByInputOrder = new QRadioButton(tr("InputOrder"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByInputOrder,1);
-    colorByLayout->addWidget(colorByColorByInputOrder);
-    QRadioButton *colorByColorByPointIndex = new QRadioButton(tr("PointIndex"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByPointIndex,2);
-    colorByLayout->addWidget(colorByColorByPointIndex);
-    QRadioButton *colorByColorByPlane = new QRadioButton(tr("Plane"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByPlane,3);
-    colorByLayout->addWidget(colorByColorByPlane);
-    QRadioButton *colorByColorByWindingOrder = new QRadioButton(tr("WindingOrder"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByWindingOrder,4);
-    colorByLayout->addWidget(colorByColorByWindingOrder);
-    QRadioButton *colorByColorByWindingPointOrder = new QRadioButton(tr("WindingPointOrder"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByWindingPointOrder,5);
-    colorByLayout->addWidget(colorByColorByWindingPointOrder);
-    QRadioButton *colorByColorByToroidalWindings = new QRadioButton(tr("ToroidalWindings"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByToroidalWindings,6);
-    colorByLayout->addWidget(colorByColorByToroidalWindings);
-    QRadioButton *colorByColorByPoloidalWindings = new QRadioButton(tr("PoloidalWindings"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByPoloidalWindings,7);
-    colorByLayout->addWidget(colorByColorByPoloidalWindings);
-    QRadioButton *colorByColorBySafetyFactor = new QRadioButton(tr("SafetyFactor"), colorBy);
-    colorByButtonGroup->addButton(colorByColorBySafetyFactor,8);
-    colorByLayout->addWidget(colorByColorBySafetyFactor);
-    QRadioButton *colorByColorByConfidence = new QRadioButton(tr("Confidence"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByConfidence,9);
-    colorByLayout->addWidget(colorByColorByConfidence);
-    QRadioButton *colorByColorByRidgelineVariance = new QRadioButton(tr("RidgelineVariance"), colorBy);
-    colorByButtonGroup->addButton(colorByColorByRidgelineVariance,10);
-    colorByLayout->addWidget(colorByColorByRidgelineVariance);
-    connect(colorByButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorByChanged(int)));
-    mainLayout->addWidget(colorBy, 25,1);
 
-    showIslands = new QCheckBox(tr("showIslands"), central);
+    colorByLabel = new QLabel(tr("Color by:"), central);
+    colorLayout->addWidget(colorByLabel,8,0);
+
+    colorByCombo = new QComboBox(thirdTab);
+    colorByCombo->addItem(tr("OriginalValue"));
+    colorByCombo->addItem(tr("InputOrder"));
+    colorByCombo->addItem(tr("PointIndex"));
+    colorByCombo->addItem(tr("Plane"));
+    colorByCombo->addItem(tr("WindingOrder"));
+    colorByCombo->addItem(tr("WindingPointOrder"));
+    colorByCombo->addItem(tr("ToroidalWindings"));
+    colorByCombo->addItem(tr("PoloidalWindings"));
+    colorByCombo->addItem(tr("SafetyFactor"));
+    colorByCombo->addItem(tr("Confidence"));
+    colorByCombo->addItem(tr("RidgelineVariance"));
+    connect(integrationTypeCombo, SIGNAL(activated(int)),
+           this, SLOT(colorByChanged(int)));
+    colorLayout->addWidget(colorByCombo, 8, 1);
+
+
+   // Create the options group box.
+    QGroupBox *optionsGroup = new QGroupBox(central);
+    optionsGroup->setTitle(tr("Options"));
+    mainLayout->addWidget(optionsGroup, 3, 0);
+//    mainLayout->setStretchFactor(optionsGroup, 100);
+    QGridLayout *optionsLayout = new QGridLayout(optionsGroup);
+    optionsLayout->setSpacing(10);
+
+    showIslands = new QCheckBox(tr("Show Islands"), central);
     connect(showIslands, SIGNAL(toggled(bool)),
             this, SLOT(showIslandsChanged(bool)));
-    mainLayout->addWidget(showIslands, 26,0);
+    optionsLayout->addWidget(showIslands, 0, 0);
 
     showLines = new QCheckBox(tr("Show Lines"), central);
     connect(showLines, SIGNAL(toggled(bool)),
             this, SLOT(showLinesChanged(bool)));
-    mainLayout->addWidget(showLines, 27,0);
+    optionsLayout->addWidget(showLines, 0, 1);
 
     showPoints = new QCheckBox(tr("Show Points"), central);
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
-    mainLayout->addWidget(showPoints, 28,0);
+    optionsLayout->addWidget(showPoints, 0, 2);
 
     verboseFlag = new QCheckBox(tr("verbose"), central);
     connect(verboseFlag, SIGNAL(toggled(bool)),
             this, SLOT(verboseFlagChanged(bool)));
-    mainLayout->addWidget(verboseFlag, 29,0);
+    optionsLayout->addWidget(verboseFlag, 0, 3);
 
     legendFlag = new QCheckBox(tr("Legend"), central);
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 30,0);
+    optionsLayout->addWidget(legendFlag, 0, 4);
 
     lightingFlag = new QCheckBox(tr("Lighting"), central);
     connect(lightingFlag, SIGNAL(toggled(bool)),
             this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 31,0);
-
+    optionsLayout->addWidget(lightingFlag, 0, 5);
 }
 
 
@@ -476,55 +514,63 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             if (atts->GetSourceType() == PoincareAttributes::SpecifiedPoint)
             {
                 pointSource->setEnabled(true);
-                if(pointSourceLabel)
-                    pointSourceLabel->setEnabled(true);
+                pointSourceLabel->setEnabled(true);
+
+                pointSource->show();
+                pointSourceLabel->show();
             }
             else
             {
                 pointSource->setEnabled(false);
-                if(pointSourceLabel)
-                    pointSourceLabel->setEnabled(false);
+                pointSourceLabel->setEnabled(false);
+
+                pointSource->hide();
+                pointSourceLabel->hide();
             }
             if (atts->GetSourceType() == PoincareAttributes::SpecifiedLine)
             {
                 lineStart->setEnabled(true);
-                if(lineStartLabel)
-                    lineStartLabel->setEnabled(true);
+                lineStartLabel->setEnabled(true);
+
+                lineStartLabel->show();
+                lineStart->show();
+
+                lineEnd->setEnabled(true);
+                lineEndLabel->setEnabled(true);
+
+                lineEndLabel->show();
+                lineEnd->show();
+
+                pointDensity->setEnabled(true);
+                pointDensityLabel->setEnabled(true);
+
+                pointDensityLabel->show();
+                pointDensity->show();
             }
             else
             {
                 lineStart->setEnabled(false);
-                if(lineStartLabel)
-                    lineStartLabel->setEnabled(false);
-            }
-            if (atts->GetSourceType() == PoincareAttributes::SpecifiedLine)
-            {
-                lineEnd->setEnabled(true);
-                if(lineEndLabel)
-                    lineEndLabel->setEnabled(true);
-            }
-            else
-            {
+                lineStartLabel->setEnabled(false);
+
+                lineStartLabel->hide();
+                lineStart->hide();
+
                 lineEnd->setEnabled(false);
-                if(lineEndLabel)
-                    lineEndLabel->setEnabled(false);
-            }
-            if (atts->GetSourceType() == PoincareAttributes::SpecifiedLine)
-            {
-                pointDensity->setEnabled(true);
-                if(pointDensityLabel)
-                    pointDensityLabel->setEnabled(true);
-            }
-            else
-            {
+                lineEndLabel->setEnabled(false);
+
+                lineEndLabel->hide();
+                lineEnd->hide();
+
+                pointDensityLabel->setEnabled(false);
                 pointDensity->setEnabled(false);
-                if(pointDensityLabel)
-                    pointDensityLabel->setEnabled(false);
+
+                pointDensityLabel->hide();
+                pointDensity->hide();
             }
-            sourceTypeButtonGroup->blockSignals(true);
-            if(sourceTypeButtonGroup->button((int)atts->GetSourceType()) != 0)
-                sourceTypeButtonGroup->button((int)atts->GetSourceType())->setChecked(true);
-            sourceTypeButtonGroup->blockSignals(false);
+
+            sourceTypeCombo->blockSignals(true);
+            sourceTypeCombo->setCurrentIndex((int)atts->GetSourceType());
+            sourceTypeCombo->blockSignals(false);
             break;
           case PoincareAttributes::ID_pointSource:
             pointSource->setText(DoublesToQString(atts->GetPointSource(), 3));
@@ -539,10 +585,9 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             pointDensity->setText(IntToQString(atts->GetPointDensity()));
             break;
           case PoincareAttributes::ID_integrationType:
-            integrationTypeButtonGroup->blockSignals(true);
-            if(integrationTypeButtonGroup->button((int)atts->GetIntegrationType()) != 0)
-                integrationTypeButtonGroup->button((int)atts->GetIntegrationType())->setChecked(true);
-            integrationTypeButtonGroup->blockSignals(false);
+            integrationTypeCombo->blockSignals(true);
+            integrationTypeCombo->setCurrentIndex((int)atts->GetIntegrationType());
+            integrationTypeCombo->blockSignals(false);
             break;
           case PoincareAttributes::ID_maxStepLength:
             maxStepLength->setText(DoubleToQString(atts->GetMaxStepLength()));
@@ -571,11 +616,10 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
                 overlapsButtonGroup->button((int)atts->GetOverlaps())->setChecked(true);
             overlapsButtonGroup->blockSignals(false);
             break;
-          case PoincareAttributes::ID_showCurves:
-            showCurvesButtonGroup->blockSignals(true);
-            if(showCurvesButtonGroup->button((int)atts->GetShowCurves()) != 0)
-                showCurvesButtonGroup->button((int)atts->GetShowCurves())->setChecked(true);
-            showCurvesButtonGroup->blockSignals(false);
+          case PoincareAttributes::ID_meshType:
+            meshTypeCombo->blockSignals(true);
+            meshTypeCombo->setCurrentIndex((int)atts->GetMeshType());
+            meshTypeCombo->blockSignals(false);
             break;
           case PoincareAttributes::ID_numberPlanes:
             numberPlanes->setText(IntToQString(atts->GetNumberPlanes()));
@@ -587,19 +631,44 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             max->setText(DoubleToQString(atts->GetMax()));
             break;
           case PoincareAttributes::ID_minFlag:
-            minFlag->blockSignals(true);
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(minFlag, SIGNAL(toggled(bool)),
+                       this, SLOT(minFlagChanged(bool)));
             minFlag->setChecked(atts->GetMinFlag());
-            minFlag->blockSignals(false);
+            min->setEnabled(atts->GetMinFlag());
+            connect(minFlag, SIGNAL(toggled(bool)),
+                    this, SLOT(minFlagChanged(bool)));
             break;
           case PoincareAttributes::ID_maxFlag:
-            maxFlag->blockSignals(true);
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(maxFlag, SIGNAL(toggled(bool)),
+                       this, SLOT(maxFlagChanged(bool)));
             maxFlag->setChecked(atts->GetMaxFlag());
-            maxFlag->blockSignals(false);
+            max->setEnabled(atts->GetMaxFlag());
+            connect(maxFlag, SIGNAL(toggled(bool)),
+                    this, SLOT(maxFlagChanged(bool)));
             break;
           case PoincareAttributes::ID_colorType:
             colorTypeButtonGroup->blockSignals(true);
             if(colorTypeButtonGroup->button((int)atts->GetColorType()) != 0)
                 colorTypeButtonGroup->button((int)atts->GetColorType())->setChecked(true);
+
+            if (atts->GetColorType() == PoincareAttributes::ColorBySingleColor)
+            {
+                singleColor->setEnabled(true);
+                colorTableName->setEnabled(false);
+                colorByCombo->setEnabled(false);
+                colorByLabel->setEnabled(false);
+            }
+            else
+            {
+                singleColor->setEnabled(false);
+                colorTableName->setEnabled(true);
+                colorByCombo->setEnabled(true);
+                colorByLabel->setEnabled(true);
+            }
             colorTypeButtonGroup->blockSignals(false);
             break;
           case PoincareAttributes::ID_singleColor:
@@ -618,10 +687,9 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             colorTableName->blockSignals(false);
             break;
           case PoincareAttributes::ID_colorBy:
-            colorByButtonGroup->blockSignals(true);
-            if(colorByButtonGroup->button((int)atts->GetColorBy()) != 0)
-                colorByButtonGroup->button((int)atts->GetColorBy())->setChecked(true);
-            colorByButtonGroup->blockSignals(false);
+            colorByCombo->blockSignals(true);
+            colorByCombo->setCurrentIndex((int)atts->GetColorBy());
+            colorByCombo->blockSignals(false);
             break;
           case PoincareAttributes::ID_showIslands:
             showIslands->blockSignals(true);
@@ -1148,11 +1216,11 @@ QvisPoincarePlotWindow::overlapsChanged(int val)
 
 
 void
-QvisPoincarePlotWindow::showCurvesChanged(int val)
+QvisPoincarePlotWindow::meshTypeChanged(int val)
 {
-    if(val != atts->GetShowCurves())
+    if(val != atts->GetMeshType())
     {
-        atts->SetShowCurves(PoincareAttributes::ShowMeshType(val));
+        atts->SetMeshType(PoincareAttributes::ShowMeshType(val));
         SetUpdate(false);
         Apply();
     }
@@ -1187,7 +1255,6 @@ void
 QvisPoincarePlotWindow::minFlagChanged(bool val)
 {
     atts->SetMinFlag(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1196,7 +1263,6 @@ void
 QvisPoincarePlotWindow::maxFlagChanged(bool val)
 {
     atts->SetMaxFlag(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1207,7 +1273,6 @@ QvisPoincarePlotWindow::colorTypeChanged(int val)
     if(val != atts->GetColorType())
     {
         atts->SetColorType(PoincareAttributes::ColoringMethod(val));
-        SetUpdate(false);
         Apply();
     }
 }
