@@ -110,7 +110,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtmir_ser ${AVTMIR_SOURCES})

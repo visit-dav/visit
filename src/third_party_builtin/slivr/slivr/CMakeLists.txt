@@ -171,10 +171,10 @@ IF(NOT SCIRUN_SLIVR_BUILD)
     )
   
   
-  SET(LIBRARY_OUTPUT_PATH ${SLIVR_BINARY_DIR}/lib 
+  SET(LIBRARY_OUTPUT_DIRECTORY ${SLIVR_BINARY_DIR}/lib 
     CACHE INTERNAL "Single output directory for building all libraries.")
   
-  SET (EXECUTABLE_OUTPUT_PATH ${SLIVR_BINARY_DIR}/bin 
+  SET (EXECUTABLE_OUTPUT_DIRECTORY ${SLIVR_BINARY_DIR}/bin 
     CACHE INTERNAL "Single output directory for building all executables.")
   
   LINK_DIRECTORIES(${GLEW_LIBRARY} ${TEEM_LIBRARY_DIRS})

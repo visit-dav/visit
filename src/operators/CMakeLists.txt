@@ -37,6 +37,11 @@
 # Modifications:
 #
 #****************************************************************************/
+IF(NOT WIN32)
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
+ELSE(NOT WIN32)
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
+ENDIF(NOT WIN32)
 
 SET(REQUIRED_OPERATOR_PLUGINS
 BoundaryOp
