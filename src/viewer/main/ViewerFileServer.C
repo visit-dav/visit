@@ -642,6 +642,10 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Added knowledge of what plugin was used to open a file.  Use it to
 //   set a forced file type if one is not already set.
 //
+//   Jeremy Meredith, Fri Jan 29 11:35:14 EST 2010
+//   If opening the plugin fails, we want to make sure we don't continue
+//   to force its usage.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -675,8 +679,15 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 std::string key(ComposeDatabaseName(host, db));
                 std::string forcedFileType(forcedFileType_);
 
+                // If we aren't told which type to use, override it
+                // with any save plugin name.
                 if (forcedFileType == "" && filePlugins.count(key) > 0)
                     forcedFileType = filePlugins[key];
+
+                // Now forget which plugin was used to open it.
+                // If it was somehow wrong, we want to let them pick another.
+                // And if it was correct, it will get re-set momentarily....
+                filePlugins.erase(key);
 
                 int t0 = visitTimer->StartTimer();
                 const avtDatabaseMetaData *md =
@@ -2799,12 +2810,25 @@ ViewerFileServer::GetOpenDatabases() const
 //   ids instead of databases when their information is saved. We will fill
 //   in the blanks for the correlation when we read it back in.
 //
+//   Jeremy Meredith, Fri Jan 29 11:34:09 EST 2010
+//   Save the database plugin map to the node.
+//
 // ****************************************************************************
 
 void
 ViewerFileServer::CreateNode(DataNode *parentNode, 
     const std::map<std::string, std::string> &dbToSource, bool detailed)
 {
+    // Create a map of source ids to plugin ids and also store
+    // that information into the session.
+    DataNode *sourcePluginMapNode = new DataNode("SourcePlugins");
+    for(StringStringMap::iterator i=filePlugins.begin() ; 
+        i != filePlugins.end(); i++)
+    {
+        sourcePluginMapNode->AddNode(new DataNode(i->first, i->second));
+    }
+    parentNode->AddNode(sourcePluginMapNode);
+
     // Create a copy of the database correlation list.
     DatabaseCorrelationList dbcl(*databaseCorrelationList);
     dbcl.ClearCorrelations();
@@ -2882,6 +2906,9 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Fri Jan 29 10:27:29 EST 2010
 //   Added knowledge of what plugin was used to open a file.  Clear it here.
 //
+//   Jeremy Meredith, Fri Jan 29 11:33:45 EST 2010
+//   Load the database->plugin map from the node.
+//
 // ****************************************************************************
 
 void
@@ -2908,6 +2935,21 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
     fileSIL.clear();
     databaseCorrelationList->ClearCorrelations();
 
+    // Load the file-to-plugin map
+    DataNode *pluginMapNode = parentNode->GetNode("SourcePlugins");
+    if (pluginMapNode != 0)
+    {
+        int n = pluginMapNode->GetNumChildren();
+        DataNode **pluginMapValues = pluginMapNode->GetChildren();
+        for (int i=0; i<n; i++)
+        {
+            std::string db(pluginMapValues[i]->GetKey());
+            std::string plugin(pluginMapValues[i]->AsString());
+            filePlugins[db] = plugin;
+        }
+    }
+
+    // Load the correlations
     DataNode *cLNode = parentNode->GetNode("DatabaseCorrelationList");
     if(cLNode != 0)
     {

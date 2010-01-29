@@ -43,6 +43,7 @@
 #include <map>
 
 typedef std::map<std::string, int>          StringIntMap;
+typedef std::map<std::string, std::string>  StringStringMap;
 typedef StringIntMap                        LevelColorMap;
 typedef std::map<std::string, stringVector> StringStringVectorMap;
 typedef std::map<double, int>               DoubleIntMap;
