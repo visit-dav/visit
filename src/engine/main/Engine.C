@@ -105,6 +105,7 @@
 #include <vtkDataSetWriter.h>
 #include <avtDataObjectToDatasetFilter.h>
 #include <avtVariableCache.h>
+#include <Environment.h>
 
 #include <string>
 using std::string;
@@ -1753,6 +1754,10 @@ Engine::ProcessInput()
 //    Tom Fogal, Fri Jan  8 17:10:25 MST 2010
 //    Add "-no-icet" flag.
 //
+//    Gunther H. Weber, Fri Jan 29 10:44:51 PST 2010
+//    Added "-visithome" and "-visitarchhome" options that set up the
+//    corresponding environment variables.
+//
 // ****************************************************************************
 
 void
@@ -1945,6 +1950,14 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             pluginDir = argv[i+1];
             ++i;
+        } 
+        else if (strcmp(argv[i], "-visithome") == 0 && (i+1) <argc )
+        {
+            Environment::set("VISITHOME", argv[i+1]);
+        }
+        else if (strcmp(argv[i], "-visitarchhome") == 0 && (i+1) <argc )
+        {
+            Environment::set("VISITARCHHOME", argv[i+1]);
         }
         else if (strcmp(argv[i], "-icet") == 0)
         {

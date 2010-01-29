@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc] [-g group] [-gw] [-l] [-dmg]
+#    visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc] [-g group] [-gw] [-l] [-dmg]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
@@ -177,6 +177,9 @@
 #    I changed it to install output from "make package", which is in a
 #    slightly different format than before.
 #
+#    Gunther H. Weber, Fri Jan 29 10:36:46 PST 2010
+#    Added support for ANAG configuration option
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -244,7 +247,7 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-c anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc] [-g group] [-b bank] [-gw] [-l] [-dmg]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc] [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
    echo "                     This will install all of its files and subdirectories"
@@ -353,13 +356,14 @@ while ($config == prompt)
    echo "remote computers."
    echo ""
    echo "   1) No system configuration"
-   echo "   2) ANL network"
-   echo "   3) LLNL open network"
-   echo "   4) LLNL closed network"
-   echo "   5) NERSC network"
-   echo "   6) ORNL network"
-   echo "   7) Princeton network"
-   echo "   8) TACC network"
+   echo "   2) Configuration for ANAG/APDEC collaborators."
+   echo "   3) ANL network"
+   echo "   4) LLNL open network"
+   echo "   5) LLNL closed network"
+   echo "   6) NERSC network"
+   echo "   7) ORNL network"
+   echo "   8) Princeton network"
+   echo "   9) TACC network"
    echo ""
    echo "(1,2,3,4,5,6,7,8):"
 
@@ -369,24 +373,27 @@ while ($config == prompt)
          set config = none
          breaksw
       case 2:
-         set config = anl
+         set config = anag
          breaksw
       case 3:
-         set config = llnl_open
+         set config = anl
          breaksw
       case 4:
-         set config = llnl_closed
+         set config = llnl_open
          breaksw
       case 5:
-         set config = nersc
+         set config = llnl_closed
          breaksw
       case 6:
-         set config = ornl
+         set config = nersc
          breaksw
       case 7:
-         set config = princeton
+         set config = ornl
          breaksw
       case 8:
+         set config = princeton
+         breaksw
+      case 9:
          set config = tacc
          breaksw
       default:
@@ -395,7 +402,7 @@ while ($config == prompt)
    endsw
 end
 
-if ($config != none && $config != llnl_open && $config != llnl_closed && $config != nersc && $config != ornl && $config != anl && $config != princeton && $config != tacc) then
+if ($config != none && $config != llnl_open && $config != llnl_closed && $config != nersc && $config != ornl && $config != anl && $config != princeton && $config != tacc && $config != anag) then
    echo "Illegal configuration option, choices are none, open, closed, ornl, nersc, anl, princeton, and tacc."
    exit (1)
 endif
@@ -542,6 +549,10 @@ else if ($config == princeton) then
    ln -s visit-config-princeton "$dir"/$version+/.visit/config_template
 else if ($config == tacc) then
    ln -s visit-config-tacc "$dir"/$version+/.visit/config_template
+else if ($config == anag) then
+   ln -s visit-config-anag "$dir"/$version+/.visit/config
+   ln -s visit-guiconfig-anag "$dir"/$version+/.visit/guiconfig
+   ln -s visit-visitrc-anag "$dir"/$version+/.visit/visitrc
 endif
 if (-e "$dir"/$version+/.visit/config_template) then
     sed -e "s/bdivp/$bank/" "$dir"/$version+/.visit/config_template > "$dir"/$version+/.visit/config

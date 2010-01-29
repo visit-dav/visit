@@ -566,6 +566,13 @@ $0 = shift @ARGV;
 #    order in which it is passed to the executables. The "-port xxx" option
 #    will now immediately follow the "-host xxxx" option. 
 #
+#    Gunther H. Weber, Fri Jan 29 10:38:45 PST 2010
+#    Pass VISITHOME and VISITARCHHOME by newly added command line options to
+#    engine when running via mpirun since the MPI variant prefered by LBNL
+#    ANAG/APDEC does not pass environment variables. (Furthermore, command
+#    line arguments are not available before MPI_Init() which prevents the
+#    use of the "-setupenv" option for this purpose).
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2284,6 +2291,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @visitcmd;
         push @parcmd, "-plugindir";
         push @parcmd, "$ENV{VISITPLUGINDIR}";
+        push @parcmd, "-visithome";
+        push @parcmd, "$ENV{VISITHOME}";
+        push @parcmd, "-visitarchhome";
+        push @parcmd, "$ENV{VISITARCHHOME}";
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
