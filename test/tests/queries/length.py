@@ -18,11 +18,6 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.axesFlag2D = 1
-SetAnnotationAttributes(a)
-
 # Test that we can do an l2norm of a degenerate ultra file.
 OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 AddPlot("Contour", "u")
@@ -45,7 +40,7 @@ q.timeType = q.Timestep
 SetQueryOverTimeAttributes(q)
 QueryOverTime("Total Length")
 SetActiveWindow(2)
-SetAnnotationAttributes(a)
+TurnOffAllAnnotations()
 Test("length_03")
 
 Exit()
