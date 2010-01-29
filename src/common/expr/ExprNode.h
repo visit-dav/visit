@@ -115,7 +115,7 @@ class Pos;
 //    Added helpers for processing numeric & string lists.
 //
 // ****************************************************************************
-class EXPR_API ExprNode : public ExprParseTreeNode
+class EXPR_API2 ExprNode : public ExprParseTreeNode
 {
   public:
     ExprNode(const Pos &p)
@@ -126,7 +126,7 @@ class EXPR_API ExprNode : public ExprParseTreeNode
     virtual const std::string GetTypeName() = 0;
 };
 
-class EXPR_API ConstExpr : public virtual ExprNode
+class EXPR_API2 ConstExpr : public virtual ExprNode
 {
   public:
     enum ConstType { Integer, Float, String, Boolean };
@@ -141,7 +141,7 @@ class EXPR_API ConstExpr : public virtual ExprNode
     ConstType constType;
 };
 
-class EXPR_API IntegerConstExpr : public ConstExpr
+class EXPR_API2 IntegerConstExpr : public ConstExpr
 {
   public:
     IntegerConstExpr(const Pos &p, int v)
@@ -154,7 +154,7 @@ class EXPR_API IntegerConstExpr : public ConstExpr
     int value;
 };
 
-class EXPR_API FloatConstExpr : public ConstExpr
+class EXPR_API2 FloatConstExpr : public ConstExpr
 {
   public:
     FloatConstExpr(const Pos &p, float v)
@@ -167,7 +167,7 @@ class EXPR_API FloatConstExpr : public ConstExpr
     float value;
 };
 
-class EXPR_API StringConstExpr : public ConstExpr
+class EXPR_API2 StringConstExpr : public ConstExpr
 {
   public:
     StringConstExpr(const Pos &p, std::string v)
@@ -180,7 +180,7 @@ class EXPR_API StringConstExpr : public ConstExpr
     std::string value;
 };
 
-class EXPR_API BooleanConstExpr : public ConstExpr
+class EXPR_API2 BooleanConstExpr : public ConstExpr
 {
   public:
     BooleanConstExpr(const Pos &p, bool v)
@@ -193,7 +193,7 @@ class EXPR_API BooleanConstExpr : public ConstExpr
     bool value;
 };
 
-class EXPR_API MathExpr : public virtual ExprNode
+class EXPR_API2 MathExpr : public virtual ExprNode
 {
   public:
     MathExpr(const Pos &p, char o)
@@ -205,7 +205,7 @@ class EXPR_API MathExpr : public virtual ExprNode
     char op;
 };
 
-class EXPR_API UnaryExpr : public MathExpr
+class EXPR_API2 UnaryExpr : public MathExpr
 {
   public:
     UnaryExpr(const Pos &p, char o, ExprNode *e)
@@ -222,7 +222,7 @@ class EXPR_API UnaryExpr : public MathExpr
     ExprNode *expr;
 };
 
-class EXPR_API BinaryExpr : public MathExpr
+class EXPR_API2 BinaryExpr : public MathExpr
 {
   public:
     BinaryExpr(const Pos &p, char o, ExprNode *l, ExprNode *r)
@@ -237,7 +237,7 @@ class EXPR_API BinaryExpr : public MathExpr
     ExprNode *right;
 };
 
-class EXPR_API IndexExpr : public virtual ExprNode
+class EXPR_API2 IndexExpr : public virtual ExprNode
 {
   public:
     IndexExpr(const Pos &p, ExprNode *e, int i)
@@ -254,7 +254,7 @@ class EXPR_API IndexExpr : public virtual ExprNode
     int ind;
 };
 
-class EXPR_API VectorExpr : public virtual ExprNode
+class EXPR_API2 VectorExpr : public virtual ExprNode
 {
   public:
     VectorExpr(const Pos &p, ExprNode *xi, ExprNode *yi, ExprNode *zi=NULL)
@@ -271,7 +271,7 @@ class EXPR_API VectorExpr : public virtual ExprNode
     ExprNode *x, *y, *z;
 };
 
-class EXPR_API ListElemExpr : public ExprParseTreeNode
+class EXPR_API2 ListElemExpr : public ExprParseTreeNode
 {
   public:
     ListElemExpr(const Pos &p, ExprNode *b, ExprNode *e=NULL, ExprNode *s=NULL)
@@ -289,7 +289,7 @@ class EXPR_API ListElemExpr : public ExprParseTreeNode
     ExprNode *skip;
 };
 
-class EXPR_API ListExpr : public ExprParseTreeNode
+class EXPR_API2 ListExpr : public ExprParseTreeNode
 {
   public:
     ListExpr(const Pos &p, ListElemExpr *e);
@@ -308,7 +308,7 @@ class EXPR_API ListExpr : public ExprParseTreeNode
     std::vector<ListElemExpr*> *elems;
 };
 
-class EXPR_API ArgExpr : public ExprParseTreeNode
+class EXPR_API2 ArgExpr : public ExprParseTreeNode
 {
   public:
     ArgExpr(const Pos &p, ExprParseTreeNode *e, const std::string &t)
@@ -327,7 +327,7 @@ class EXPR_API ArgExpr : public ExprParseTreeNode
     std::string text;
 };
 
-class EXPR_API ArgsExpr : public ExprParseTreeNode
+class EXPR_API2 ArgsExpr : public ExprParseTreeNode
 {
   public:
     ArgsExpr(const Pos &p, ArgExpr *e);
@@ -340,7 +340,7 @@ class EXPR_API ArgsExpr : public ExprParseTreeNode
     std::vector<ArgExpr*> *args;
 };
 
-class EXPR_API FunctionExpr : public virtual ExprNode
+class EXPR_API2 FunctionExpr : public virtual ExprNode
 {
   public:
     FunctionExpr(const Pos &p, std::string n, ArgsExpr *e=NULL)
@@ -357,7 +357,7 @@ class EXPR_API FunctionExpr : public virtual ExprNode
     ArgsExpr   *args;
 };
 
-class EXPR_API PathExpr : public ExprParseTreeNode
+class EXPR_API2 PathExpr : public ExprParseTreeNode
 {
   public:
     PathExpr(const Pos &p, const std::string &s)
@@ -375,7 +375,7 @@ class EXPR_API PathExpr : public ExprParseTreeNode
     std::string fullpath;
 };
 
-class EXPR_API MachExpr : public ExprParseTreeNode
+class EXPR_API2 MachExpr : public ExprParseTreeNode
 {
   public:
     MachExpr(const Pos &p, std::string h)
@@ -387,7 +387,7 @@ class EXPR_API MachExpr : public ExprParseTreeNode
     std::string host;
 };
 
-class EXPR_API TimeExpr : public ExprParseTreeNode
+class EXPR_API2 TimeExpr : public ExprParseTreeNode
 {
   public:
     enum Type { Cycle, Time, Index, Unknown };
@@ -406,7 +406,7 @@ class EXPR_API TimeExpr : public ExprParseTreeNode
     ListExpr *list;
 };
 
-class EXPR_API DBExpr : public ExprParseTreeNode
+class EXPR_API2 DBExpr : public ExprParseTreeNode
 {
   public:
     DBExpr(const Pos &p, PathExpr *f, MachExpr *m, TimeExpr *t)
@@ -422,7 +422,7 @@ class EXPR_API DBExpr : public ExprParseTreeNode
     TimeExpr *time;
 };
 
-class EXPR_API VarExpr : public virtual ExprNode
+class EXPR_API2 VarExpr : public virtual ExprNode
 {
   public:
     VarExpr(const Pos &p, DBExpr *d, PathExpr *v, bool exp)

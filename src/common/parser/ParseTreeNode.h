@@ -60,7 +60,7 @@ class Identifier;
 //  Modifications:
 //
 // ****************************************************************************
-class PARSER_API ParseTreeNode
+class PARSER_API2 ParseTreeNode
 {
   public:
     ParseTreeNode() { }
