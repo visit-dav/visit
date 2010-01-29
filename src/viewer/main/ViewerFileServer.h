@@ -42,6 +42,7 @@
 #include <map>
 #include <string>
 #include <vectortypes.h>
+#include <maptypes.h>
 #include <avtTypes.h>
 
 class MDServerProxy;
@@ -363,7 +364,7 @@ private:
 
     ServerMap                 servers;
     FileMetaDataMap           fileMetaData;
-    std::map<std::string,std::string> filePlugins;
+    StringStringMap           filePlugins;
     FileSILMap                fileSIL;
     DatabaseCorrelationList  *databaseCorrelationList;
     DBPluginInfoAttributes   *dbPluginInfoAtts;
