@@ -116,7 +116,7 @@ ${VTK_INCLUDE_DIRS}
 
 # Add link directories
 LINK_DIRECTORIES(
-${LIBRARY_OUTPUT_PATH}
+${LIBRARY_OUTPUT_DIRECTORY}
 ${MESA_LIBRARY_DIR}
 ${GLEW_LIBRARY_DIR} 
 ${VTK_LIBRARY_DIRS} 
@@ -126,6 +126,9 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(engine_ser ${LIBENGINE_SOURCES})
+IF (WIN32)
+    SET_TARGET_PROPERTIES(engine_ser PROPERTIES OUTPUT_NAME enginelib_ser)
+ENDIF (WIN32)
 TARGET_LINK_LIBRARIES(engine_ser
 visitcommon
 enginerpc
@@ -193,6 +196,9 @@ IF(VISIT_PARALLEL)
     ENDIF(ICET_FOUND)
 
     ADD_PARALLEL_LIBRARY(engine_par ${LIBENGINE_SOURCES} ${ENGINE_PAR_SOURCES} ${ICET_SOURCES})
+    IF (WIN32)
+        SET_TARGET_PROPERTIES(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
+    ENDIF (WIN32)
 
     # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
     IF(ICET_FOUND)

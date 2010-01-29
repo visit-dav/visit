@@ -39,6 +39,12 @@
 #    Added Rect and Hex back to the optional plugins.
 #
 #****************************************************************************/
+IF(NOT WIN32)
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
+ELSE(NOT WIN32)
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
+ENDIF(NOT WIN32)
+
 SET(THIRDPARTY_DEPENDENT_PLUGINS)
 
 MACRO(THIRDPARTY_DEPENDENT_PLUGINS libname targets)

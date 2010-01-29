@@ -63,7 +63,6 @@ TransferFunctionWidget.C
 ${COMMON_SOURCES}
 )
 
-# windows opengl include dirs are part of compiler paths, no need to set separately
 IF (NOT WIN32)
     SET_SOURCE_FILES_PROPERTIES(avtOpenGL3DTextureVolumeRenderer.C avtOpenGLSLIVRVolumeRenderer.C avtOpenGLSplattingVolumeRenderer.C avtOpenGLTuvokVolumeRenderer.C 
         PROPERTIES
@@ -82,6 +81,7 @@ IF(VISIT_SLIVR)
     ADD_DEFINITIONS(-DHAVE_LIBSLIVR -DslivrG_EXPORTS -DslivrV_EXPORTS)
 ENDIF(VISIT_SLIVR)
 # END Custom code
+
 SET_SOURCE_FILES_PROPERTIES(avtMesa3DTextureVolumeRenderer.C avtMesaSplattingVolumeRenderer.C 
     PROPERTIES
     COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR}"
@@ -123,14 +123,13 @@ ${VTK_INCLUDE_DIRS}
 ${PYTHON_INCLUDE_PATH} 
 ${VISIT_INCLUDE_DIR}/visitpy/visitpy ${QT_QTOPENGL_INCLUDE_DIR} ${SLIVR_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} 
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok 
+${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
 ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
 )
 
-SET(LIBRARY_OUTPUT_PATH ${VISIT_PLUGIN_DIR}/plots)
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
 
@@ -168,11 +167,16 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${TUVOK_LIB} ${SLIVR_LIB} ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
+ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par ${TUVOK_LIB} ${SLIVR_LIB} ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
+    ADD_TARGET_DEFINITIONS(EVolumePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
+
+VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
+

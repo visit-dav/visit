@@ -64,9 +64,9 @@ ${QT_QTGUI_INCLUDE_DIR}
 ${QT_QTCORE_INCLUDE_DIR}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${QT_LIBRARY_DIR})
-
+LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
 ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES})
+ADD_DEPENDENCIES(qtssh remotecommand visitcommon viewer) 
 
 # TARGET_LINK_LIBRARIES is the normal command we would use, but cmake pulls in 
 # all of viewer's dependencies as well and adds them to the linker input in the
@@ -74,7 +74,7 @@ ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES})
 # LINK_FLAGS.  No paths are needed as they have already been specified in the 
 # LINK_DIRECTORIES command above. 
 
-SET(QTSSH_DEP "remotecommand.lib visitcommon.lib viewer.lib QtCore4.lib QtGui4.lib")
+SET(QTSSH_DEP "remotecommand.lib visitcommon.lib viewerlib.lib QtCore4.lib QtGui4.lib")
 SET_TARGET_PROPERTIES(qtssh PROPERTIES LINK_FLAGS ${QTSSH_DEP})
 
 VISIT_INSTALL_TARGETS(qtssh)

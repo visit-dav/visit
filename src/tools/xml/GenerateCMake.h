@@ -67,6 +67,10 @@
 //    David Camp, Thu Jan 14 17:56:29 PST 2010
 //    Added the ADD_TARGET_DEFINITIONS function to define ENGINE for plots.
 //    
+//    Kathleen Bonnell, Tue Jan 26 20:32:55 MST 2010
+//    Remove setting of LIBRARY_OUTPUT_PATH, (set by parent instead). Add
+//    call to VISIT_PLUGIN_TARGET_PREFIX macro.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -304,15 +308,17 @@ class CMakeGeneratorPlugin : public Plugin
         GetFilesWith("Mesa", customefiles ? efiles : defaultefiles, mesaFiles);
         if(openglFiles.size() > 0)
         {
-            out << "SET_SOURCE_FILES_PROPERTIES(";
+            out << "IF (NOT WIN32)" << endl;
+            out << "    SET_SOURCE_FILES_PROPERTIES(";
             for(std::set<QString>::iterator it = openglFiles.begin();
                 it != openglFiles.end(); ++it)
             {
                  out << *it << " ";
             }
-            out << "\n    PROPERTIES" << endl;
-            out << "    COMPILE_FLAGS \"-I ${OPENGL_INCLUDE_DIR}\"" << endl;
-            out << ")" << endl;
+            out << "\n        PROPERTIES" << endl;
+            out << "        COMPILE_FLAGS \"-I ${OPENGL_INCLUDE_DIR}\"" << endl;
+            out << "    )" << endl;
+            out << "ENDIF (NOT WIN32)" << endl;
         }
         if(mesaFiles.size() > 0)
         {
@@ -344,7 +350,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "SET(LIBRARY_OUTPUT_PATH " << visitplugdirpri << ")" << endl;
         else
 #endif
-            out << "SET(LIBRARY_OUTPUT_PATH ${VISIT_PLUGIN_DIR}/plots)" << endl;
 
         out << endl;
         out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
@@ -409,6 +414,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
         out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
         out << endl;
     }
 
@@ -500,7 +506,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "SET(LIBRARY_OUTPUT_PATH " << visitplugdirpri << ")" << endl;
         else
 #endif
-            out << "SET(LIBRARY_OUTPUT_PATH ${VISIT_PLUGIN_DIR}/operators)" << endl;
 
         out << endl;
         out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
@@ -563,6 +568,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
         out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
         out << endl;
     }
 
@@ -721,8 +727,6 @@ class CMakeGeneratorPlugin : public Plugin
         }
 
         out << endl;
-        out << "SET(LIBRARY_OUTPUT_PATH ${VISIT_PLUGIN_DIR}/databases)" << endl;
-        out << endl;
         // Extract extra link directories from LDFLAGS if they have ${} or $()
         vector<QString> linkDirs;
         for (size_t i=0; i<ldflags.size(); i++)
@@ -778,30 +782,36 @@ class CMakeGeneratorPlugin : public Plugin
             out << endl;
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
     }
 
     void WriteCMake(QTextStream &out)
     {
         const char *visithome = getenv("VISITARCHHOME");
-        if (!visithome)
+        if (!visithome && !using_dev)
             throw QString().sprintf("Please set the VISITARCHHOME environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
+#if 0
         const char *visitplugdir = getenv("VISITPLUGININST");
         if (!visitplugdir)
             throw QString().sprintf("Please set the VISITPLUGININST environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
+#endif
         const char *visitplugdirpub = getenv("VISITPLUGININSTPUB");
-        if (!visitplugdirpub)
+        if (!visitplugdirpub && installpublic)
             throw QString().sprintf("Please set the VISITPLUGININSTPUB environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
         const char *visitplugdirpri = getenv("VISITPLUGININSTPRI");
         if (!visitplugdirpri)
+        {
+           if ((using_dev && installprivate) || !using_dev)
             throw QString().sprintf("Please set the VISITPLUGININSTPRI environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
+        }
 
         out << "# DO NOT EDIT THIS FILE! THIS FILE IS AUTOMATICALLY GENERATED BY xml2cmake" << endl;
 

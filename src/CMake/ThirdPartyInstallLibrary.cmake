@@ -44,9 +44,9 @@
 
 FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
     IF(WIN32)
-        IF(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
-            FILE(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
-        ENDIF(NOT EXISTS ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+        IF(NOT EXISTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+            FILE(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        ENDIF(NOT EXISTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
     ENDIF(WIN32)
     SET(tmpLIBFILE ${LIBFILE})
     GET_FILENAME_COMPONENT(LIBEXT ${tmpLIBFILE} EXT)
@@ -104,7 +104,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                             IF(WIN32)
                                 EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                                         ${curPATH}/${curNAMEWE}.dll
-                                        ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
                             ENDIF(WIN32)
 
                             # On Apple, we need to make the library be executable relative.
@@ -159,7 +159,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     GET_FILENAME_COMPONENT(curPATH ${tmpLIBFILE} PATH)
                     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                             ${curPATH}/${curNAMEWE}.dll
-                            ${EXECUTABLE_OUTPUT_PATH}/ThirdParty)
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
                 ENDIF(WIN32)
 
                 # On Apple, we need to make the library be executable relative.

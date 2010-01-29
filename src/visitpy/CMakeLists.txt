@@ -162,7 +162,7 @@ IF (NOT WIN32)
     ADD_DEFINITIONS(-DVISITPY_EXPORTS)
 ENDIF (NOT WIN32)
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 # Add the visitpy library, which contains all of the Py extension classes.
 ADD_LIBRARY(visitpy

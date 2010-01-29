@@ -136,27 +136,29 @@ ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 IF (WIN32)
   MESSAGE(STATUS "Trying to include config-site/windows.cmake")
   INCLUDE(config-site/windows.cmake)
+  SET(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
 ENDIF (WIN32)
 
 #-----------------------------------------------------------------------------
 # Output directories.
 #-----------------------------------------------------------------------------
 
-IF(NOT LIBRARY_OUTPUT_PATH)
-  SET(LIBRARY_OUTPUT_PATH ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
-ENDIF(NOT LIBRARY_OUTPUT_PATH)
+IF(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
+ENDIF(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
-IF(NOT EXECUTABLE_OUTPUT_PATH)
-  SET(EXECUTABLE_OUTPUT_PATH ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
-ENDIF(NOT EXECUTABLE_OUTPUT_PATH)
+IF(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
+ENDIF(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
-IF (WIN32 AND NOT RUNTIME_OUTPUT_PATH)
-      SET(RUNTIME_OUTPUT_PATH ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
-ENDIF(WIN32 AND NOT RUNTIME_OUTPUT_PATH)
+IF (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+      SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
+ENDIF(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
-SET(VISIT_LIBRARY_DIR ${LIBRARY_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
-SET(VISIT_EXECUTABLE_DIR ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
-SET(CXX_TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+
+SET(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+SET(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #-----------------------------------------------------------------------------
 # configure options
@@ -423,6 +425,12 @@ INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin vi
     PATTERN "CMakeFiles" EXCLUDE
 )
 
+MACRO(VISIT_PLUGIN_TARGET_PREFIX) 
+    IF(WIN32)
+        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES PREFIX "../lib")
+    ENDIF(WIN32)
+ENDMACRO(VISIT_PLUGIN_TARGET_PREFIX)
+
 #-----------------------------------------------------------------------------
 # Detect packages here. We could probably write macros that we can include from
 # elsewhere for this. 
@@ -628,6 +636,9 @@ ELSE(CMAKE_HOST_UNIX)
   IF(WIN32)
       SET(ZLIB_LIBRARY_DIR ${VISIT_WINDOWS_DIR}/ThirdParty/zlib/lib/${VISIT_MSVC_VERSION})
       SET(ZLIB_LIB ${ZLIB_LIBRARY_DIR}/zlib1.lib)
+      EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
+                      ${ZLIB_LIBRARY_DIR}/zlib1.dll
+                      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
   ELSE(WIN32)
       SET(ZLIB_LIB vtkzlib)
   ENDIF(WIN32)
@@ -1019,7 +1030,11 @@ CONFIGURE_FILE(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
 # version of VisIt
 SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 SET(VISIT_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib CACHE INTENAL "Path to VisIt's libraries")
-SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
+IF(NOT WIN32)
+    SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
+ELSE(NOT WIN32)
+    SET(VISIT_PLUGIN_DIR  ${VISIT_EXECUTABLE_DIR} CACHE INTERNAL "Path to VisIt's plugins")
+ENDIF(NOT WIN32)
 
 # Store some configure information into a C file (like version, SVN version
 # and platform things that change).

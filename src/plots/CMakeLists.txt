@@ -37,6 +37,11 @@
 # Modifications:
 #
 #****************************************************************************/
+IF(NOT WIN32)
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/plots)
+ELSE(NOT WIN32)
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/plots)
+ENDIF(NOT WIN32)
 
 SET(REQUIRED_PLOT_PLUGINS
 Boundary
