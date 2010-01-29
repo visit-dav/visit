@@ -43,7 +43,12 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(GDAL lib/${VISIT_MSVC_VERSION} include gdal_i)
+  SET_UP_THIRD_PARTY(GDAL lib/${VISIT_MSVC_VERSION} include gdal_i libjpeg libpng13)
+  # normally handled in InstallThirdParty.cmake, but gdal has a weird
+  # naming convention on windows
+  EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+      ${GDAL_LIBRARY_DIR}/gdal13.dll
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(GDAL lib include gdal)
 ENDIF (WIN32)
