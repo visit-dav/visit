@@ -29,8 +29,6 @@ def TestExpressionList(name):
         index = index + 1
     TestText(name, s)
 
-TurnOnAllAnnotations()
-
 #
 # Create some expressions.
 #
