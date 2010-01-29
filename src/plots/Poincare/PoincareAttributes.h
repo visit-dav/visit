@@ -152,7 +152,7 @@ public:
     void SetHitRate(double hitRate_);
     void SetAdjustPlane(int adjustPlane_);
     void SetOverlaps(OverlapType overlaps_);
-    void SetShowCurves(ShowMeshType showCurves_);
+    void SetMeshType(ShowMeshType meshType_);
     void SetNumberPlanes(int numberPlanes_);
     void SetMin(double min_);
     void SetMax(double max_);
@@ -189,7 +189,7 @@ public:
     double               GetHitRate() const;
     int                  GetAdjustPlane() const;
     OverlapType          GetOverlaps() const;
-    ShowMeshType         GetShowCurves() const;
+    ShowMeshType         GetMeshType() const;
     int                  GetNumberPlanes() const;
     double               GetMin() const;
     double               GetMax() const;
@@ -273,7 +273,7 @@ public:
         ID_hitRate,
         ID_adjustPlane,
         ID_overlaps,
-        ID_showCurves,
+        ID_meshType,
         ID_numberPlanes,
         ID_min,
         ID_max,
@@ -309,7 +309,7 @@ private:
     double         hitRate;
     int            adjustPlane;
     int            overlaps;
-    int            showCurves;
+    int            meshType;
     int            numberPlanes;
     double         min;
     double         max;

@@ -383,7 +383,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetHitRate( atts.GetHitRate() );
     poincareFilter->SetOverlaps( atts.GetOverlaps() );
-    poincareFilter->SetShowCurves( atts.GetShowCurves() == 0 );
+    poincareFilter->SetShowCurves( atts.GetMeshType() == 0 );
     poincareFilter->SetAdjustPlane( atts.GetAdjustPlane() );
 
     vector < double > planes;
