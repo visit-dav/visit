@@ -58,7 +58,7 @@
 //   
 // ****************************************************************************
 
-class COMM_API ChangeUsernameException : public VisItException
+class COMM_API2 ChangeUsernameException : public VisItException
 {
 public:
     ChangeUsernameException() {;};

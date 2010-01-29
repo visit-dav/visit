@@ -41,9 +41,11 @@
 
 #if defined(_WIN32)
 #if defined(MDSERVER_RPC_EXPORTS) || defined(mdserverrpc_EXPORTS)
-#define MDSERVER_RPC_API __declspec(dllexport)
+#define MDSERVER_RPC_API  __declspec(dllexport)
+#define MDSERVER_RPC_API2 __declspec(dllexport)
 #else
-#define MDSERVER_RPC_API __declspec(dllimport)
+#define MDSERVER_RPC_API  __declspec(dllimport)
+#define MDSERVER_RPC_API2 __declspec(dllimport)
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
@@ -54,10 +56,16 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && (defined(MDSERVER_RPC_EXPORTS) || defined(mdserverrpc_EXPORTS))
-#   define MDSERVER_RPC_API __attribute__ ((visibility("default")))
+# if __GNUC__ >= 4
+#   if (defined(MDSERVER_RPC_EXPORTS) || defined(mdserverrpc_EXPORTS))
+#     define MDSERVER_RPC_API __attribute__ ((visibility("default")))
+#   else
+#     define MDSERVER_RPC_API  /* hidden by default */
+#   endif
+#   define MDSERVER_RPC_API2 __attribute__ ((visibility("default"))) /* Always visible */
 # else
-#   define MDSERVER_RPC_API /* hidden by default */
+#   define MDSERVER_RPC_API  /* hidden by default */
+#   define MDSERVER_RPC_API2 /* hidden by default */
 # endif
 #endif
 

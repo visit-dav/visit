@@ -60,7 +60,7 @@
 //
 // *******************************************************************
 
-class MDSERVER_RPC_API GetMetaDataException : public VisItException
+class MDSERVER_RPC_API2 GetMetaDataException : public VisItException
 {
 public:
     GetMetaDataException();

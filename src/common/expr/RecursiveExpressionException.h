@@ -62,7 +62,7 @@
 //
 // **************************************************************************** 
 
-class EXPR_API RecursiveExpressionException : public VisItException
+class EXPR_API2 RecursiveExpressionException : public VisItException
 {
   public:
                           RecursiveExpressionException(std::string);

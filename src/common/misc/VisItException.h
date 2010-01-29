@@ -109,7 +109,7 @@
 //
 // ****************************************************************************
 
-class MISC_API VisItException
+class MISC_API2 VisItException
 {
   public:
                        VisItException();

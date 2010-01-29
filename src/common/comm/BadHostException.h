@@ -57,7 +57,7 @@
 //   
 // *******************************************************************
 
-class COMM_API BadHostException : public VisItException
+class COMM_API2 BadHostException : public VisItException
 {
 public:
     BadHostException(const std::string &host);

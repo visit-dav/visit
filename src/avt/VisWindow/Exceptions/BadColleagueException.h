@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class VISWINDOW_API BadColleagueException : public VisWindowException
+class VISWINDOW_API2 BadColleagueException : public VisWindowException
 {
   public:
                     BadColleagueException();

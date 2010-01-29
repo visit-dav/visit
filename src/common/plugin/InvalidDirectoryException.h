@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class PLUGIN_API InvalidDirectoryException : public VisItException
+class PLUGIN_API2 InvalidDirectoryException : public VisItException
 {
   public:
                           InvalidDirectoryException(const char *);

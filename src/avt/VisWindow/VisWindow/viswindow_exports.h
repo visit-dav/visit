@@ -41,9 +41,11 @@
 
 #if defined(_WIN32)
 #if defined(VISWINDOW_EXPORTS) || defined(avtviswindow_ser_EXPORTS) || defined(avtviswindow_par_EXPORTS)
-#define VISWINDOW_API __declspec(dllexport)
+#define VISWINDOW_API  __declspec(dllexport)
+#define VISWINDOW_API2 __declspec(dllexport)
 #else
-#define VISWINDOW_API __declspec(dllimport)
+#define VISWINDOW_API  __declspec(dllimport)
+#define VISWINDOW_API2 __declspec(dllimport)
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
@@ -54,10 +56,16 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && (defined(VISWINDOW_EXPORTS) || defined(avtviswindow_ser_EXPORTS) || defined(avtviswindow_par_EXPORTS))
-#   define VISWINDOW_API __attribute__ ((visibility("default")))
+# if __GNUC__ >= 4
+#   if (defined(VISWINDOW_EXPORTS) || defined(avtviswindow_ser_EXPORTS) || defined(avtviswindow_par_EXPORTS))
+#     define VISWINDOW_API __attribute__ ((visibility("default")))
+#   else
+#     define VISWINDOW_API  /* hidden by default */
+#   endif
+#   define VISWINDOW_API2 __attribute__ ((visibility("default"))) /* Always visible */
 # else
-#   define VISWINDOW_API /* hidden by default */
+#   define VISWINDOW_API  /* hidden by default */
+#   define VISWINDOW_API2 /* hidden by default */
 # endif
 #endif
 
