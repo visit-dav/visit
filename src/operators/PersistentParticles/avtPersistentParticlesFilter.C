@@ -208,82 +208,49 @@ avtPersistentParticlesFilter::Execute(void)
     }
 
     int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates(); 
-    int lastState = numStates-1;
     int myStart = atts.GetStartIndex();
     int myStop  = atts.GetStopIndex();
 
-    if( atts.GetStartIndexRelative() == atts.GetStopIndexRelative() )
+    if( atts.GetStartIndex() < 0 )
     {
-         if( atts.GetStartIndex() > atts.GetStopIndex() ){
-              std::string msg(GetType());
-              msg = msg +  " end time must always be larger than the start time. " + 
-                           " Please correct start and end times and try again.";
-              EXCEPTION1(ImproperUseException, msg);
-         }
+      std::string msg(GetType());
+      msg = msg + ": Start index/Number of slices must be positive.";
+      EXCEPTION1(ImproperUseException, msg);
     }
 
-    //If the start index should be relative to the current time slider state
-    if( atts.GetStartIndexRelative() )
+    if( atts.GetStopIndex() < 0 )
     {
-         int startOffset = atts.GetStartIndex();
-         myStart = activeTimeStep+startOffset;
-         SetStartFrame(myStart);
+      std::string msg(GetType());
+      msg = msg + ": Stop index/Number of slices must be positive.";
+      EXCEPTION1(ImproperUseException, msg);
     }
 
-    //If the start index should be relative to the current time slider state
-    if( atts.GetStopIndexRelative() )
+    // If the path type is absolute.
+    if( atts.GetStartPathType() == PersistentParticlesAttributes::Absolute )
     {
-         int stopOffset = atts.GetStopIndex();
-         myStop = activeTimeStep+stopOffset;
+        myStart = atts.GetStartIndex();
     }
 
-    //if start or stop time are manupulated here then check if the times are 
-    //valid and correct if needed
-    if( atts.GetStartIndexRelative() || atts.GetStopIndexRelative() )
+    // If the path type is relative to the current time slider state
+    else //if( atts.GetStartPathType() == PersistentParticlesAttributes::Relative )
     {
-         if (myStart < 0){
-               myStart = 0;
-               std::string msg(GetType());
-               msg += ":  Setting start time to 0.";
-               avtCallback::IssueWarning(msg.c_str());
-         }
-         if( myStart >= numStates ){
-               myStart = lastState;
-               std::string msg(GetType());
-               msg += ":  Clamping start time.";
-               avtCallback::IssueWarning(msg.c_str());
-         }
-         if (myStop >= numStates){
-               myStop = lastState;
-               std::string msg(GetType());
-               msg += ":  Clamping stop time.";
-               avtCallback::IssueWarning(msg.c_str());
-         }
-         if( myStop < 0 ){
-               myStop = 0;
-               std::string msg(GetType());
-               msg += ":  Setting stop time to 0.";
-               avtCallback::IssueWarning(msg.c_str());
-         }
-
-         if( myStart == myStop ){
-               std::string msg(GetType());
-               msg = msg + ":  Start and stop time are the same. The start time " +
-                      "must be smaller than the stop time.";
-               avtCallback::IssueWarning(msg.c_str());
-         }
-
-         if( myStart > myStop ){
-             std::string msg(GetType());
-             msg = msg + ": Start index is larger than stop index. The start time "+
-                    "must be smaller than the stop time.";
-             avtCallback::IssueWarning(msg.c_str());
-         }
-
-         //Update the start and end frame 
-         SetStartFrame(myStart);
-         SetEndFrame(myStop);
+        int startOffset = atts.GetStartIndex();
+        myStart = activeTimeStep - startOffset;
     }
+
+    // If the path type is absolute.
+    if( atts.GetStopPathType() == PersistentParticlesAttributes::Absolute )
+    {
+         myStop  = atts.GetStopIndex();
+    }
+
+    // If the path type is relative to the current time slider state
+    else //if( atts.GetStopPathType()  == PersistentParticlesAttributes::Relative )
+    {
+        int stopOffset = atts.GetStopIndex();
+        myStop = activeTimeStep + stopOffset;
+    }
+
     // Check if the times are valid and correct if needed
     if (myStart < 0)
       myStart = 0;
@@ -304,6 +271,10 @@ avtPersistentParticlesFilter::Execute(void)
 //         "must be smaller than the stop time.";
 //       avtCallback::IssueWarning(msg.c_str());
 //     }
+
+    //Update the start and end frame 
+    SetStartFrame(myStart);
+    SetEndFrame(myStop);
 
     //Iterate over the time series
     avtExecuteThenTimeLoopFilter::Execute();

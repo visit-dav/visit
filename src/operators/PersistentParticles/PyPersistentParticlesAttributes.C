@@ -78,17 +78,11 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
 
     SNPRINTF(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
     str += tmpStr;
-    if(atts->GetStartIndexRelative())
-        SNPRINTF(tmpStr, 1000, "%sstartIndexRelative = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sstartIndexRelative = 0\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%sstartPathType = %d\n", prefix, atts->GetStartPathType());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
     str += tmpStr;
-    if(atts->GetStopIndexRelative())
-        SNPRINTF(tmpStr, 1000, "%sstopIndexRelative = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sstopIndexRelative = 0\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%sstopPathType = %d\n", prefix, atts->GetStopPathType());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
@@ -142,7 +136,7 @@ PersistentParticlesAttributes_GetStartIndex(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PersistentParticlesAttributes_SetStartIndexRelative(PyObject *self, PyObject *args)
+PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
@@ -150,18 +144,18 @@ PersistentParticlesAttributes_SetStartIndexRelative(PyObject *self, PyObject *ar
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the startIndexRelative in the object.
-    obj->data->SetStartIndexRelative(ival != 0);
+    // Set the startPathType in the object.
+    obj->data->SetStartPathType((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PersistentParticlesAttributes_GetStartIndexRelative(PyObject *self, PyObject *args)
+PersistentParticlesAttributes_GetStartPathType(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetStartIndexRelative()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetStartPathType()));
     return retval;
 }
 
@@ -190,7 +184,7 @@ PersistentParticlesAttributes_GetStopIndex(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PersistentParticlesAttributes_SetStopIndexRelative(PyObject *self, PyObject *args)
+PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
@@ -198,18 +192,18 @@ PersistentParticlesAttributes_SetStopIndexRelative(PyObject *self, PyObject *arg
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the stopIndexRelative in the object.
-    obj->data->SetStopIndexRelative(ival != 0);
+    // Set the stopPathType in the object.
+    obj->data->SetStopPathType((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PersistentParticlesAttributes_GetStopIndexRelative(PyObject *self, PyObject *args)
+PersistentParticlesAttributes_GetStopPathType(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetStopIndexRelative()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetStopPathType()));
     return retval;
 }
 
@@ -363,12 +357,12 @@ PyMethodDef PyPersistentParticlesAttributes_methods[PERSISTENTPARTICLESATTRIBUTE
     {"Notify", PersistentParticlesAttributes_Notify, METH_VARARGS},
     {"SetStartIndex", PersistentParticlesAttributes_SetStartIndex, METH_VARARGS},
     {"GetStartIndex", PersistentParticlesAttributes_GetStartIndex, METH_VARARGS},
-    {"SetStartIndexRelative", PersistentParticlesAttributes_SetStartIndexRelative, METH_VARARGS},
-    {"GetStartIndexRelative", PersistentParticlesAttributes_GetStartIndexRelative, METH_VARARGS},
+    {"SetStartPathType", PersistentParticlesAttributes_SetStartPathType, METH_VARARGS},
+    {"GetStartPathType", PersistentParticlesAttributes_GetStartPathType, METH_VARARGS},
     {"SetStopIndex", PersistentParticlesAttributes_SetStopIndex, METH_VARARGS},
     {"GetStopIndex", PersistentParticlesAttributes_GetStopIndex, METH_VARARGS},
-    {"SetStopIndexRelative", PersistentParticlesAttributes_SetStopIndexRelative, METH_VARARGS},
-    {"GetStopIndexRelative", PersistentParticlesAttributes_GetStopIndexRelative, METH_VARARGS},
+    {"SetStopPathType", PersistentParticlesAttributes_SetStopPathType, METH_VARARGS},
+    {"GetStopPathType", PersistentParticlesAttributes_GetStopPathType, METH_VARARGS},
     {"SetStride", PersistentParticlesAttributes_SetStride, METH_VARARGS},
     {"GetStride", PersistentParticlesAttributes_GetStride, METH_VARARGS},
     {"SetTraceVariableX", PersistentParticlesAttributes_SetTraceVariableX, METH_VARARGS},
@@ -411,12 +405,12 @@ PyPersistentParticlesAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "startIndex") == 0)
         return PersistentParticlesAttributes_GetStartIndex(self, NULL);
-    if(strcmp(name, "startIndexRelative") == 0)
-        return PersistentParticlesAttributes_GetStartIndexRelative(self, NULL);
+    if(strcmp(name, "startPathType") == 0)
+        return PersistentParticlesAttributes_GetStartPathType(self, NULL);
     if(strcmp(name, "stopIndex") == 0)
         return PersistentParticlesAttributes_GetStopIndex(self, NULL);
-    if(strcmp(name, "stopIndexRelative") == 0)
-        return PersistentParticlesAttributes_GetStopIndexRelative(self, NULL);
+    if(strcmp(name, "stopPathType") == 0)
+        return PersistentParticlesAttributes_GetStopPathType(self, NULL);
     if(strcmp(name, "stride") == 0)
         return PersistentParticlesAttributes_GetStride(self, NULL);
     if(strcmp(name, "traceVariableX") == 0)
@@ -445,12 +439,12 @@ PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *ar
 
     if(strcmp(name, "startIndex") == 0)
         obj = PersistentParticlesAttributes_SetStartIndex(self, tuple);
-    else if(strcmp(name, "startIndexRelative") == 0)
-        obj = PersistentParticlesAttributes_SetStartIndexRelative(self, tuple);
+    else if(strcmp(name, "startPathType") == 0)
+        obj = PersistentParticlesAttributes_SetStartPathType(self, tuple);
     else if(strcmp(name, "stopIndex") == 0)
         obj = PersistentParticlesAttributes_SetStopIndex(self, tuple);
-    else if(strcmp(name, "stopIndexRelative") == 0)
-        obj = PersistentParticlesAttributes_SetStopIndexRelative(self, tuple);
+    else if(strcmp(name, "stopPathType") == 0)
+        obj = PersistentParticlesAttributes_SetStopPathType(self, tuple);
     else if(strcmp(name, "stride") == 0)
         obj = PersistentParticlesAttributes_SetStride(self, tuple);
     else if(strcmp(name, "traceVariableX") == 0)

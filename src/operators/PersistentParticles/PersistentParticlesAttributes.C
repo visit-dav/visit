@@ -39,6 +39,43 @@
 #include <PersistentParticlesAttributes.h>
 #include <DataNode.h>
 
+//
+// Enum conversion methods for PersistentParticlesAttributes::PathTypeEnum
+//
+
+static const char *PathTypeEnum_strings[] = {
+"Absolute", "Relative"};
+
+std::string
+PersistentParticlesAttributes::PathTypeEnum_ToString(PersistentParticlesAttributes::PathTypeEnum t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return PathTypeEnum_strings[index];
+}
+
+std::string
+PersistentParticlesAttributes::PathTypeEnum_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return PathTypeEnum_strings[index];
+}
+
+bool
+PersistentParticlesAttributes::PathTypeEnum_FromString(const std::string &s, PersistentParticlesAttributes::PathTypeEnum &val)
+{
+    val = PersistentParticlesAttributes::Absolute;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == PathTypeEnum_strings[i])
+        {
+            val = (PathTypeEnum)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: PersistentParticlesAttributes::PersistentParticlesAttributes
 //
@@ -57,9 +94,9 @@
 void PersistentParticlesAttributes::Init()
 {
     startIndex = 0;
-    startIndexRelative = false;
+    startPathType = 0;
     stopIndex = 1;
-    stopIndexRelative = false;
+    stopPathType = 0;
     stride = 1;
 
     PersistentParticlesAttributes::SelectAll();
@@ -83,9 +120,9 @@ void PersistentParticlesAttributes::Init()
 void PersistentParticlesAttributes::Copy(const PersistentParticlesAttributes &obj)
 {
     startIndex = obj.startIndex;
-    startIndexRelative = obj.startIndexRelative;
+    startPathType = obj.startPathType;
     stopIndex = obj.stopIndex;
-    stopIndexRelative = obj.stopIndexRelative;
+    stopPathType = obj.stopPathType;
     stride = obj.stride;
     traceVariableX = obj.traceVariableX;
     traceVariableY = obj.traceVariableY;
@@ -254,9 +291,9 @@ PersistentParticlesAttributes::operator == (const PersistentParticlesAttributes 
 {
     // Create the return value
     return ((startIndex == obj.startIndex) &&
-            (startIndexRelative == obj.startIndexRelative) &&
+            (startPathType == obj.startPathType) &&
             (stopIndex == obj.stopIndex) &&
-            (stopIndexRelative == obj.stopIndexRelative) &&
+            (stopPathType == obj.stopPathType) &&
             (stride == obj.stride) &&
             (traceVariableX == obj.traceVariableX) &&
             (traceVariableY == obj.traceVariableY) &&
@@ -406,16 +443,16 @@ PersistentParticlesAttributes::NewInstance(bool copy) const
 void
 PersistentParticlesAttributes::SelectAll()
 {
-    Select(ID_startIndex,         (void *)&startIndex);
-    Select(ID_startIndexRelative, (void *)&startIndexRelative);
-    Select(ID_stopIndex,          (void *)&stopIndex);
-    Select(ID_stopIndexRelative,  (void *)&stopIndexRelative);
-    Select(ID_stride,             (void *)&stride);
-    Select(ID_traceVariableX,     (void *)&traceVariableX);
-    Select(ID_traceVariableY,     (void *)&traceVariableY);
-    Select(ID_traceVariableZ,     (void *)&traceVariableZ);
-    Select(ID_connectParticles,   (void *)&connectParticles);
-    Select(ID_indexVariable,      (void *)&indexVariable);
+    Select(ID_startIndex,       (void *)&startIndex);
+    Select(ID_startPathType,    (void *)&startPathType);
+    Select(ID_stopIndex,        (void *)&stopIndex);
+    Select(ID_stopPathType,     (void *)&stopPathType);
+    Select(ID_stride,           (void *)&stride);
+    Select(ID_traceVariableX,   (void *)&traceVariableX);
+    Select(ID_traceVariableY,   (void *)&traceVariableY);
+    Select(ID_traceVariableZ,   (void *)&traceVariableZ);
+    Select(ID_connectParticles, (void *)&connectParticles);
+    Select(ID_indexVariable,    (void *)&indexVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -454,10 +491,10 @@ PersistentParticlesAttributes::CreateNode(DataNode *parentNode, bool completeSav
         node->AddNode(new DataNode("startIndex", startIndex));
     }
 
-    if(completeSave || !FieldsEqual(ID_startIndexRelative, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_startPathType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("startIndexRelative", startIndexRelative));
+        node->AddNode(new DataNode("startPathType", startPathType));
     }
 
     if(completeSave || !FieldsEqual(ID_stopIndex, &defaultObject))
@@ -466,10 +503,10 @@ PersistentParticlesAttributes::CreateNode(DataNode *parentNode, bool completeSav
         node->AddNode(new DataNode("stopIndex", stopIndex));
     }
 
-    if(completeSave || !FieldsEqual(ID_stopIndexRelative, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_stopPathType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("stopIndexRelative", stopIndexRelative));
+        node->AddNode(new DataNode("stopPathType", stopPathType));
     }
 
     if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
@@ -546,12 +583,12 @@ PersistentParticlesAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("startIndex")) != 0)
         SetStartIndex(node->AsInt());
-    if((node = searchNode->GetNode("startIndexRelative")) != 0)
-        SetStartIndexRelative(node->AsBool());
+    if((node = searchNode->GetNode("startPathType")) != 0)
+        SetStartPathType(node->AsInt());
     if((node = searchNode->GetNode("stopIndex")) != 0)
         SetStopIndex(node->AsInt());
-    if((node = searchNode->GetNode("stopIndexRelative")) != 0)
-        SetStopIndexRelative(node->AsBool());
+    if((node = searchNode->GetNode("stopPathType")) != 0)
+        SetStopPathType(node->AsInt());
     if((node = searchNode->GetNode("stride")) != 0)
         SetStride(node->AsInt());
     if((node = searchNode->GetNode("traceVariableX")) != 0)
@@ -578,10 +615,10 @@ PersistentParticlesAttributes::SetStartIndex(int startIndex_)
 }
 
 void
-PersistentParticlesAttributes::SetStartIndexRelative(bool startIndexRelative_)
+PersistentParticlesAttributes::SetStartPathType(int startPathType_)
 {
-    startIndexRelative = startIndexRelative_;
-    Select(ID_startIndexRelative, (void *)&startIndexRelative);
+    startPathType = startPathType_;
+    Select(ID_startPathType, (void *)&startPathType);
 }
 
 void
@@ -592,10 +629,10 @@ PersistentParticlesAttributes::SetStopIndex(int stopIndex_)
 }
 
 void
-PersistentParticlesAttributes::SetStopIndexRelative(bool stopIndexRelative_)
+PersistentParticlesAttributes::SetStopPathType(int stopPathType_)
 {
-    stopIndexRelative = stopIndexRelative_;
-    Select(ID_stopIndexRelative, (void *)&stopIndexRelative);
+    stopPathType = stopPathType_;
+    Select(ID_stopPathType, (void *)&stopPathType);
 }
 
 void
@@ -650,10 +687,10 @@ PersistentParticlesAttributes::GetStartIndex() const
     return startIndex;
 }
 
-bool
-PersistentParticlesAttributes::GetStartIndexRelative() const
+int
+PersistentParticlesAttributes::GetStartPathType() const
 {
-    return startIndexRelative;
+    return startPathType;
 }
 
 int
@@ -662,10 +699,10 @@ PersistentParticlesAttributes::GetStopIndex() const
     return stopIndex;
 }
 
-bool
-PersistentParticlesAttributes::GetStopIndexRelative() const
+int
+PersistentParticlesAttributes::GetStopPathType() const
 {
-    return stopIndexRelative;
+    return stopPathType;
 }
 
 int
@@ -780,16 +817,16 @@ PersistentParticlesAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_startIndex:         return "startIndex";
-    case ID_startIndexRelative: return "startIndexRelative";
-    case ID_stopIndex:          return "stopIndex";
-    case ID_stopIndexRelative:  return "stopIndexRelative";
-    case ID_stride:             return "stride";
-    case ID_traceVariableX:     return "traceVariableX";
-    case ID_traceVariableY:     return "traceVariableY";
-    case ID_traceVariableZ:     return "traceVariableZ";
-    case ID_connectParticles:   return "connectParticles";
-    case ID_indexVariable:      return "indexVariable";
+    case ID_startIndex:       return "startIndex";
+    case ID_startPathType:    return "startPathType";
+    case ID_stopIndex:        return "stopIndex";
+    case ID_stopPathType:     return "stopPathType";
+    case ID_stride:           return "stride";
+    case ID_traceVariableX:   return "traceVariableX";
+    case ID_traceVariableY:   return "traceVariableY";
+    case ID_traceVariableZ:   return "traceVariableZ";
+    case ID_connectParticles: return "connectParticles";
+    case ID_indexVariable:    return "indexVariable";
     default:  return "invalid index";
     }
 }
@@ -814,16 +851,16 @@ PersistentParticlesAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_startIndex:         return FieldType_int;
-    case ID_startIndexRelative: return FieldType_bool;
-    case ID_stopIndex:          return FieldType_int;
-    case ID_stopIndexRelative:  return FieldType_bool;
-    case ID_stride:             return FieldType_int;
-    case ID_traceVariableX:     return FieldType_variablename;
-    case ID_traceVariableY:     return FieldType_variablename;
-    case ID_traceVariableZ:     return FieldType_variablename;
-    case ID_connectParticles:   return FieldType_bool;
-    case ID_indexVariable:      return FieldType_variablename;
+    case ID_startIndex:       return FieldType_int;
+    case ID_startPathType:    return FieldType_int;
+    case ID_stopIndex:        return FieldType_int;
+    case ID_stopPathType:     return FieldType_int;
+    case ID_stride:           return FieldType_int;
+    case ID_traceVariableX:   return FieldType_variablename;
+    case ID_traceVariableY:   return FieldType_variablename;
+    case ID_traceVariableZ:   return FieldType_variablename;
+    case ID_connectParticles: return FieldType_bool;
+    case ID_indexVariable:    return FieldType_variablename;
     default:  return FieldType_unknown;
     }
 }
@@ -848,16 +885,16 @@ PersistentParticlesAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_startIndex:         return "int";
-    case ID_startIndexRelative: return "bool";
-    case ID_stopIndex:          return "int";
-    case ID_stopIndexRelative:  return "bool";
-    case ID_stride:             return "int";
-    case ID_traceVariableX:     return "variablename";
-    case ID_traceVariableY:     return "variablename";
-    case ID_traceVariableZ:     return "variablename";
-    case ID_connectParticles:   return "bool";
-    case ID_indexVariable:      return "variablename";
+    case ID_startIndex:       return "int";
+    case ID_startPathType:    return "int";
+    case ID_stopIndex:        return "int";
+    case ID_stopPathType:     return "int";
+    case ID_stride:           return "int";
+    case ID_traceVariableX:   return "variablename";
+    case ID_traceVariableY:   return "variablename";
+    case ID_traceVariableZ:   return "variablename";
+    case ID_connectParticles: return "bool";
+    case ID_indexVariable:    return "variablename";
     default:  return "invalid index";
     }
 }
@@ -889,9 +926,9 @@ PersistentParticlesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
         retval = (startIndex == obj.startIndex);
         }
         break;
-    case ID_startIndexRelative:
+    case ID_startPathType:
         {  // new scope
-        retval = (startIndexRelative == obj.startIndexRelative);
+        retval = (startPathType == obj.startPathType);
         }
         break;
     case ID_stopIndex:
@@ -899,9 +936,9 @@ PersistentParticlesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
         retval = (stopIndex == obj.stopIndex);
         }
         break;
-    case ID_stopIndexRelative:
+    case ID_stopPathType:
         {  // new scope
-        retval = (stopIndexRelative == obj.stopIndexRelative);
+        retval = (stopPathType == obj.stopPathType);
         }
         break;
     case ID_stride:

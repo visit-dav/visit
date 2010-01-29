@@ -87,9 +87,11 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void startIndexProcessText();
-    void startIndexRelativeChanged(bool val);
+    void startPathTypeChanged(int val);
     void stopIndexProcessText();
-    void stopIndexRelativeChanged(bool val);
+    void stopPathTypeChanged(int val);
+    void updateStopIndexText();
+    void updateStartIndexText();
     void strideProcessText();
     void traceVariableXChanged(const QString &varName);
     void traceVariableYChanged(const QString &varName);
@@ -98,9 +100,11 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
     void indexVariableChanged(const QString &varName);
   private:
     QLineEdit *startIndex;
-    QCheckBox *startIndexRelative;
+    QWidget *startPathType;
+    QButtonGroup *startPathTypeButtonGroup;
     QLineEdit *stopIndex;
-    QCheckBox *stopIndexRelative;
+    QWidget *stopPathType;
+    QButtonGroup *stopPathTypeButtonGroup;
     QLineEdit *stride;
     QvisVariableButton *traceVariableX;
     QvisVariableButton *traceVariableY;
@@ -108,7 +112,9 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
     QCheckBox *connectParticles;
     QvisVariableButton *indexVariable;
     QLabel *startIndexLabel;
+    QLabel *startPathTypeLabel;
     QLabel *stopIndexLabel;
+    QLabel *stopPathTypeLabel;
     QLabel *strideLabel;
     QLabel *traceVariableXLabel;
     QLabel *traceVariableYLabel;
@@ -116,6 +122,12 @@ class QvisPersistentParticlesWindow : public QvisOperatorWindow
     QLabel *indexVariableLabel;
 
     PersistentParticlesAttributes *atts;
+
+    QCheckBox *startIndexRelative;
+    QCheckBox *stopIndexRelative;
+
+    void stopIndexRelativeChanged(bool val);
+    void startIndexRelativeChanged(bool val);
 };
 
 

@@ -60,6 +60,12 @@
 class PersistentParticlesAttributes : public AttributeSubject
 {
 public:
+    enum PathTypeEnum
+    {
+        Absolute,
+        Relative
+    };
+
     // These constructors are for objects of this class
     PersistentParticlesAttributes();
     PersistentParticlesAttributes(const PersistentParticlesAttributes &obj);
@@ -92,9 +98,9 @@ public:
 
     // Property setting methods
     void SetStartIndex(int startIndex_);
-    void SetStartIndexRelative(bool startIndexRelative_);
+    void SetStartPathType(int startPathType_);
     void SetStopIndex(int stopIndex_);
-    void SetStopIndexRelative(bool stopIndexRelative_);
+    void SetStopPathType(int stopPathType_);
     void SetStride(int stride_);
     void SetTraceVariableX(const std::string &traceVariableX_);
     void SetTraceVariableY(const std::string &traceVariableY_);
@@ -104,9 +110,9 @@ public:
 
     // Property getting methods
     int               GetStartIndex() const;
-    bool              GetStartIndexRelative() const;
+    int               GetStartPathType() const;
     int               GetStopIndex() const;
-    bool              GetStopIndexRelative() const;
+    int               GetStopPathType() const;
     int               GetStride() const;
     const std::string &GetTraceVariableX() const;
           std::string &GetTraceVariableX();
@@ -122,6 +128,12 @@ public:
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string PathTypeEnum_ToString(PathTypeEnum);
+    static bool PathTypeEnum_FromString(const std::string &, PathTypeEnum &);
+protected:
+    static std::string PathTypeEnum_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -133,9 +145,9 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_startIndex = 0,
-        ID_startIndexRelative,
+        ID_startPathType,
         ID_stopIndex,
-        ID_stopIndexRelative,
+        ID_stopPathType,
         ID_stride,
         ID_traceVariableX,
         ID_traceVariableY,
@@ -147,9 +159,9 @@ public:
 
 private:
     int         startIndex;
-    bool        startIndexRelative;
+    int         startPathType;
     int         stopIndex;
-    bool        stopIndexRelative;
+    int         stopPathType;
     int         stride;
     std::string traceVariableX;
     std::string traceVariableY;
@@ -161,6 +173,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PERSISTENTPARTICLESATTRIBUTES_TMFS "ibibisssbs"
+#define PERSISTENTPARTICLESATTRIBUTES_TMFS "iiiiisssbs"
 
 #endif

@@ -61,14 +61,19 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
 {
     private static int numAdditionalAttributes = 10;
 
+    // Enum values
+    public final static int PATHTYPEENUM_ABSOLUTE = 0;
+    public final static int PATHTYPEENUM_RELATIVE = 1;
+
+
     public PersistentParticlesAttributes()
     {
         super(numAdditionalAttributes);
 
         startIndex = 0;
-        startIndexRelative = false;
+        startPathType = 0;
         stopIndex = 1;
-        stopIndexRelative = false;
+        stopPathType = 0;
         stride = 1;
         traceVariableX = new String("");
         traceVariableY = new String("");
@@ -82,9 +87,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         super(numAdditionalAttributes + nMoreFields);
 
         startIndex = 0;
-        startIndexRelative = false;
+        startPathType = 0;
         stopIndex = 1;
-        stopIndexRelative = false;
+        stopPathType = 0;
         stride = 1;
         traceVariableX = new String("");
         traceVariableY = new String("");
@@ -98,9 +103,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         super(numAdditionalAttributes);
 
         startIndex = obj.startIndex;
-        startIndexRelative = obj.startIndexRelative;
+        startPathType = obj.startPathType;
         stopIndex = obj.stopIndex;
-        stopIndexRelative = obj.stopIndexRelative;
+        stopPathType = obj.stopPathType;
         stride = obj.stride;
         traceVariableX = new String(obj.traceVariableX);
         traceVariableY = new String(obj.traceVariableY);
@@ -125,9 +130,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
     {
         // Create the return value
         return ((startIndex == obj.startIndex) &&
-                (startIndexRelative == obj.startIndexRelative) &&
+                (startPathType == obj.startPathType) &&
                 (stopIndex == obj.stopIndex) &&
-                (stopIndexRelative == obj.stopIndexRelative) &&
+                (stopPathType == obj.stopPathType) &&
                 (stride == obj.stride) &&
                 (traceVariableX.equals(obj.traceVariableX)) &&
                 (traceVariableY.equals(obj.traceVariableY)) &&
@@ -146,9 +151,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         Select(0);
     }
 
-    public void SetStartIndexRelative(boolean startIndexRelative_)
+    public void SetStartPathType(int startPathType_)
     {
-        startIndexRelative = startIndexRelative_;
+        startPathType = startPathType_;
         Select(1);
     }
 
@@ -158,9 +163,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         Select(2);
     }
 
-    public void SetStopIndexRelative(boolean stopIndexRelative_)
+    public void SetStopPathType(int stopPathType_)
     {
-        stopIndexRelative = stopIndexRelative_;
+        stopPathType = stopPathType_;
         Select(3);
     }
 
@@ -202,9 +207,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
 
     // Property getting methods
     public int     GetStartIndex() { return startIndex; }
-    public boolean GetStartIndexRelative() { return startIndexRelative; }
+    public int     GetStartPathType() { return startPathType; }
     public int     GetStopIndex() { return stopIndex; }
-    public boolean GetStopIndexRelative() { return stopIndexRelative; }
+    public int     GetStopPathType() { return stopPathType; }
     public int     GetStride() { return stride; }
     public String  GetTraceVariableX() { return traceVariableX; }
     public String  GetTraceVariableY() { return traceVariableY; }
@@ -218,11 +223,11 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
         if(WriteSelect(0, buf))
             buf.WriteInt(startIndex);
         if(WriteSelect(1, buf))
-            buf.WriteBool(startIndexRelative);
+            buf.WriteInt(startPathType);
         if(WriteSelect(2, buf))
             buf.WriteInt(stopIndex);
         if(WriteSelect(3, buf))
-            buf.WriteBool(stopIndexRelative);
+            buf.WriteInt(stopPathType);
         if(WriteSelect(4, buf))
             buf.WriteInt(stride);
         if(WriteSelect(5, buf))
@@ -245,13 +250,13 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
             SetStartIndex(buf.ReadInt());
             break;
         case 1:
-            SetStartIndexRelative(buf.ReadBool());
+            SetStartPathType(buf.ReadInt());
             break;
         case 2:
             SetStopIndex(buf.ReadInt());
             break;
         case 3:
-            SetStopIndexRelative(buf.ReadBool());
+            SetStopPathType(buf.ReadInt());
             break;
         case 4:
             SetStride(buf.ReadInt());
@@ -278,9 +283,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
     {
         String str = new String();
         str = str + intToString("startIndex", startIndex, indent) + "\n";
-        str = str + boolToString("startIndexRelative", startIndexRelative, indent) + "\n";
+        str = str + intToString("startPathType", startPathType, indent) + "\n";
         str = str + intToString("stopIndex", stopIndex, indent) + "\n";
-        str = str + boolToString("stopIndexRelative", stopIndexRelative, indent) + "\n";
+        str = str + intToString("stopPathType", stopPathType, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
         str = str + stringToString("traceVariableX", traceVariableX, indent) + "\n";
         str = str + stringToString("traceVariableY", traceVariableY, indent) + "\n";
@@ -293,9 +298,9 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
 
     // Attributes
     private int     startIndex;
-    private boolean startIndexRelative;
+    private int     startPathType;
     private int     stopIndex;
-    private boolean stopIndexRelative;
+    private int     stopPathType;
     private int     stride;
     private String  traceVariableX;
     private String  traceVariableY;
