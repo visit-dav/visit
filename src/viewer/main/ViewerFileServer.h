@@ -184,6 +184,11 @@ class SILAttributes;
 //    Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
 //    Added SendFileOpenOptions.
 //
+//    Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
+//    Added saved knowledge of what plugin was used to open a file.
+//    Added extra flag to tell ClearFile whether or not we want to 
+//    forget which plugin was used to open it.  In this case, we do not.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -286,7 +291,8 @@ public:
                                              const stringVector &args);
     void                       SendKeepAlives();
 
-    void                       ClearFile(const std::string &fullName);
+    void                       ClearFile(const std::string &fullName,
+                                         bool forgetPlugin);
     void                       CloseFile(const std::string &host);
     void                       CloseFile(const std::string &host,
                                          const std::string &database);
@@ -357,6 +363,7 @@ private:
 
     ServerMap                 servers;
     FileMetaDataMap           fileMetaData;
+    std::map<std::string,std::string> filePlugins;
     FileSILMap                fileSIL;
     DatabaseCorrelationList  *databaseCorrelationList;
     DBPluginInfoAttributes   *dbPluginInfoAtts;

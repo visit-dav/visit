@@ -4435,9 +4435,13 @@ ViewerSubject::CheckForNewStates()
 //   Made it use the generic integer argument for forceClose so as to not be
 //   misleading.
 //
-//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
-//    Changed the interface to ReplaceDatabase to support option for only 
-//    replacing active plots.
+//   Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//   Changed the interface to ReplaceDatabase to support option for only 
+//   replacing active plots.
+//
+//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
+//   Added extra flag to tell ClearFile whether or not we want to 
+//   forget which plugin was used to open it.  In this case, we do not.
 //
 // ****************************************************************************
 
@@ -4532,7 +4536,7 @@ ViewerSubject::ReOpenDatabase()
     // we open the database again, regardless of if we clear the cached one.
     //
     if (!isSim)
-        fileServer->ClearFile(hostDatabase);
+        fileServer->ClearFile(hostDatabase, false);
 
     //
     // Tell the compute engine to clear any cached information about the
@@ -4826,6 +4830,11 @@ ViewerSubject::CloseDatabase()
 //   
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
+//
+//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
+//   Added extra flag to tell ClearFile whether or not we want to 
+//   forget which plugin was used to open it.  In this case, we do not.
+//
 // ****************************************************************************
 
 void
@@ -4860,7 +4869,8 @@ ViewerSubject::HandleRequestMetaData()
         // time-invariant and we don't know which it will be so we
         // need to clear the metadata for the database so we will read
         // it again at the right time state.
-        fs->ClearFile(hdb);
+        // Don't forget which plugin you used, though.
+        fs->ClearFile(hdb, false);
 
         debug4 << mName << "Calling fs->GetMetaDataForState(" << host
                << ", " << db << ", " << ts << ", \"\")" << endl;
