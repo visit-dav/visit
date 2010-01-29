@@ -6654,6 +6654,10 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 //    Brad Whitlock, Wed Apr 30 10:10:43 PDT 2008
 //    Support for internationalization.
 //
+//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
+//   Added extra flag to tell ClearFile whether or not we want to 
+//   forget which plugin was used to open it.  In this case, we DO.
+//
 // ****************************************************************************
 
 void
@@ -6685,7 +6689,8 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
         // the database that we're closing. This also deletes the database
         // correlation.
         //
-        fs->ClearFile(expandedDB);
+        // We want to forget which plugin was used here.
+        fs->ClearFile(expandedDB, true);
 
         //
         // Tell the mdserver to close its database so the next time we ask
@@ -6815,6 +6820,10 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
 //   Fixed call to CloseFile so it passes the name of the database to close
 //   on the mdserver so the database gets re-read.
 //
+//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
+//   Added extra flag to tell ClearFile whether or not we want to 
+//   forget which plugin was used to open it.  In this case, we do not.
+//
 // ****************************************************************************
 
 void
@@ -6887,7 +6896,8 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
 
             // Clear all knowledge of the file from the cache
             fs->CloseFile(host, db);
-            fs->ClearFile(hDB);
+            // Don't forget which plugin you used, though.
+            fs->ClearFile(hDB, false);
 
             // Get the file's metadata again.
             debug4 << mName << "Reopening " << hDB.c_str()

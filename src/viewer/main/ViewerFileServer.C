@@ -253,6 +253,10 @@ ViewerFileServer::~ViewerFileServer()
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Jeremy Meredith, Fri Jan 29 10:27:29 EST 2010
+//   Added knowledge of what plugin was used to open a file.  Clear it here.
+//
 // ****************************************************************************
 
 void
@@ -292,6 +296,7 @@ ViewerFileServer::CloseServers()
         delete fpos->second;
     }
     fileMetaData.clear();
+    filePlugins.clear();
     FileSILMap::iterator fpos2;
     for (fpos2 = fileSIL.begin() ; fpos2 != fileSIL.end() ; fpos2++)
     {
@@ -632,12 +637,17 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //
 //   Mark C. Miller, Mon Jun 22 15:16:05 PDT 2009
 //   Replaced typo of '%`' with '%1' in in an arg to QObject::tr().
+//
+//   Jeremy Meredith, Fri Jan 29 10:27:29 EST 2010
+//   Added knowledge of what plugin was used to open a file.  Use it to
+//   set a forced file type if one is not already set.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaDataHelper(const std::string &host, 
     const std::string &db, int timeState, bool forceReadAllCyclesAndTimes,
-    const std::string &forcedFileType)
+    const std::string &forcedFileType_)
 {
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
@@ -662,6 +672,12 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
 
             TRY
             {
+                std::string key(ComposeDatabaseName(host, db));
+                std::string forcedFileType(forcedFileType_);
+
+                if (forcedFileType == "" && filePlugins.count(key) > 0)
+                    forcedFileType = filePlugins[key];
+
                 int t0 = visitTimer->StartTimer();
                 const avtDatabaseMetaData *md =
                     servers[host]->proxy->GetMetaData(db, timeState,
@@ -675,7 +691,9 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
 
                 if(md != NULL)
                 {
-                    avtDatabaseMetaData *mdCopy = new avtDatabaseMetaData(*md);
+                    // Cache the format we used for this file.
+                    // (Don't add time state information to its name yet.)
+                    filePlugins[key] = md->GetFileFormat();
 
                     //
                     // If the meta-data changes for each state, then cache
@@ -683,10 +701,9 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                     // encoding the state into the name. Don't encode the state
                     // into the name though if we got it using ANY_STATEs
                     //
-                    std::string key(ComposeDatabaseName(host, db));
-                    if ((mdCopy->GetMustRepopulateOnStateChange() ||
-                                 GetTreatAllDBsAsTimeVarying()) &&
-                       timeState != ANY_STATE)
+                    if ((md->GetMustRepopulateOnStateChange() ||
+                         GetTreatAllDBsAsTimeVarying()) &&
+                        timeState != ANY_STATE)
                     {
                         char timeStateString[20];
                         SNPRINTF(timeStateString, 20, ":%d", timeState);
@@ -696,6 +713,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                     //
                     // Add the metadata copy to the cache.
                     //
+                    avtDatabaseMetaData *mdCopy = new avtDatabaseMetaData(*md);
                     fileMetaData[key] = mdCopy;
 
                     retval = mdCopy;
@@ -2031,10 +2049,14 @@ ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
 //   time-varying metadata. I also added code to delete the default database
 //   correlation for the database, if one exists.
 //
+//   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
+//   Added extra flag to tell ClearFile whether or not we want to 
+//   forget which plugin was used to open it.
+//
 // ****************************************************************************
 
 void
-ViewerFileServer::ClearFile(const std::string &fullName)
+ViewerFileServer::ClearFile(const std::string &fullName, bool forgetPlugin)
 {
     debug4 << "ViewerFileServer::Clearfile" << endl;
 
@@ -2056,6 +2078,12 @@ ViewerFileServer::ClearFile(const std::string &fullName)
         }
         else
             ++mpos;
+    }
+
+    // Clear the plugin used for this file, if needed
+    if (forgetPlugin)
+    {
+        filePlugins.erase(fullName);
     }
 
     // Clear the SIL.
@@ -2851,6 +2879,9 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Fri Oct 23 16:11:33 PDT 2009
 //   I added code to remove all metadata, SILs, and database correlations.
 //
+//   Jeremy Meredith, Fri Jan 29 10:27:29 EST 2010
+//   Added knowledge of what plugin was used to open a file.  Clear it here.
+//
 // ****************************************************************************
 
 void
@@ -2867,6 +2898,7 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
         delete fpos->second;
     }
     fileMetaData.clear();
+    filePlugins.clear();
     FileSILMap::iterator fpos2;
     for (fpos2 = fileSIL.begin() ; fpos2 != fileSIL.end() ; fpos2++)
     {
