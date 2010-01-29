@@ -223,6 +223,9 @@ void  TestForConfigFiles(const char *component);
  *   Kathleen Bonnell, Frid Sep 11 10:43:57 MST 2009
  *   Changed mpeg2encode executable to the correct name.
  *
+ *   Kathleen Bonnell, Fri Jan 29 9:01:15 MST 2009
+ *   Changed engine executable name to engine_ser.
+ *
  *****************************************************************************/
 
 int
@@ -284,7 +287,7 @@ main(int argc, char *argv[])
         }
         else if(ARG("-engine"))
         {
-            strcpy(component, "engine");
+            strcpy(component, "engine_ser");
             addVISITARGS = 0;
         }
         else if(ARG("-vcl"))
