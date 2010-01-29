@@ -1573,6 +1573,10 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   Hank Childs, Thu Nov 12 11:28:10 PST 2009
 //   Add support for static "plugins".
 //   
+//   Kathleen Bonnell, Fri Jan 29 9:03:37 MST 2010 
+//   Changed "/" to VISIT_SLASH_CHAR so code will work correctly on windows.
+//   Also changed symbol to symbolName in call to GetProcAddress.
+//   
 // ****************************************************************************
 
 void *
@@ -1594,7 +1598,7 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
     if(pluginVersion || symbol.substr(0,3) == "Get")
     {
         string ext(VISIT_PLUGIN_EXTENSION);
-        int slashPos = openPlugin.rfind("/");
+        int slashPos = openPlugin.rfind(VISIT_SLASH_CHAR);
         int suffixLen = (openPlugin.find("_ser") != -1 ||
                          openPlugin.find("_par") != -1) ? 4 : 0;
         int len = openPlugin.size() - slashPos - suffixLen - 5 -
@@ -1616,7 +1620,7 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
 #else 
 // Dynamic
 #if defined(_WIN32)
-    retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
+    retval = (void *)GetProcAddress((HMODULE)handle, symbolName.c_str());
 #else
     retval = dlsym(handle, symbolName.c_str());
 #endif
