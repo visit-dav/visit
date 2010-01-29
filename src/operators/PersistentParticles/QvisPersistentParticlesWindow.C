@@ -134,10 +134,22 @@ QvisPersistentParticlesWindow::CreateWindowContents()
             this, SLOT(startIndexProcessText()));
     mainLayout->addWidget(startIndex, 0,1);
 
-    startIndexRelative = new QCheckBox(tr("Index of first time slice relative to current time"), central);
-    connect(startIndexRelative, SIGNAL(toggled(bool)),
-            this, SLOT(startIndexRelativeChanged(bool)));
-    mainLayout->addWidget(startIndexRelative, 1,0);
+    startPathTypeLabel = new QLabel(tr("Type of path"), central);
+    mainLayout->addWidget(startPathTypeLabel,1,0);
+    startPathType = new QWidget(central);
+    startPathTypeButtonGroup= new QButtonGroup(startPathType);
+    QHBoxLayout *startPathTypeLayout = new QHBoxLayout(startPathType);
+    startPathTypeLayout->setMargin(0);
+    startPathTypeLayout->setSpacing(10);
+    QRadioButton *startPathTypePathTypeEnumAbsolute = new QRadioButton(tr("Absolute"), startPathType);
+    startPathTypeButtonGroup->addButton(startPathTypePathTypeEnumAbsolute, 0);
+    startPathTypeLayout->addWidget(startPathTypePathTypeEnumAbsolute);
+    QRadioButton *startPathTypePathTypeEnumRelative = new QRadioButton(tr("Relative"), startPathType);
+    startPathTypeButtonGroup->addButton(startPathTypePathTypeEnumRelative, 1);
+    startPathTypeLayout->addWidget(startPathTypePathTypeEnumRelative);
+    connect(startPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(startPathTypeChanged(int)));
+    mainLayout->addWidget(startPathType, 1,1);
 
     stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
     mainLayout->addWidget(stopIndexLabel,2,0);
@@ -146,10 +158,22 @@ QvisPersistentParticlesWindow::CreateWindowContents()
             this, SLOT(stopIndexProcessText()));
     mainLayout->addWidget(stopIndex, 2,1);
 
-    stopIndexRelative = new QCheckBox(tr("Index of last time slice relative to current time"), central);
-    connect(stopIndexRelative, SIGNAL(toggled(bool)),
-            this, SLOT(stopIndexRelativeChanged(bool)));
-    mainLayout->addWidget(stopIndexRelative, 3,0);
+    stopPathTypeLabel = new QLabel(tr("Type of path"), central);
+    mainLayout->addWidget(stopPathTypeLabel,1,0);
+    stopPathType = new QWidget(central);
+    stopPathTypeButtonGroup= new QButtonGroup(stopPathType);
+    QHBoxLayout *stopPathTypeLayout = new QHBoxLayout(stopPathType);
+    stopPathTypeLayout->setMargin(0);
+    stopPathTypeLayout->setSpacing(10);
+    QRadioButton *stopPathTypePathTypeEnumAbsolute = new QRadioButton(tr("Absolute"), stopPathType);
+    stopPathTypeButtonGroup->addButton(stopPathTypePathTypeEnumAbsolute, 0);
+    stopPathTypeLayout->addWidget(stopPathTypePathTypeEnumAbsolute);
+    QRadioButton *stopPathTypePathTypeEnumRelative = new QRadioButton(tr("Relative"), stopPathType);
+    stopPathTypeButtonGroup->addButton(stopPathTypePathTypeEnumRelative, 1);
+    stopPathTypeLayout->addWidget(stopPathTypePathTypeEnumRelative);
+    connect(stopPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(stopPathTypeChanged(int)));
+    mainLayout->addWidget(stopPathType, 3,1);
 
     strideLabel = new QLabel(tr("Skip rate between time slices"), central);
     mainLayout->addWidget(strideLabel,4,0);
@@ -216,6 +240,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
 void
 QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
 {
+    QString temp;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -230,20 +255,30 @@ QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case PersistentParticlesAttributes::ID_startIndex:
-            startIndex->setText(IntToQString(atts->GetStartIndex()));
+            startIndex->blockSignals(true);
+            temp.sprintf("%d", atts->GetStartIndex());
+            startIndex->setText(temp);
+            startIndex->blockSignals(false);
             break;
-          case PersistentParticlesAttributes::ID_startIndexRelative:
-            startIndexRelative->blockSignals(true);
-            startIndexRelative->setChecked(atts->GetStartIndexRelative());
-            startIndexRelative->blockSignals(false);
+          case PersistentParticlesAttributes::ID_startPathType:
+            startPathTypeButtonGroup->blockSignals(true);
+            if(startPathTypeButtonGroup->button((int)atts->GetStartPathType()) != 0)
+                startPathTypeButtonGroup->button((int)atts->GetStartPathType())->setChecked(true);
+            updateStartIndexText();
+            startPathTypeButtonGroup->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_stopIndex:
-            stopIndex->setText(IntToQString(atts->GetStopIndex()));
+            stopIndex->blockSignals(true);
+            temp.sprintf("%d", atts->GetStopIndex());
+            stopIndex->setText(temp);
+            stopIndex->blockSignals(false);
             break;
-          case PersistentParticlesAttributes::ID_stopIndexRelative:
-            stopIndexRelative->blockSignals(true);
-            stopIndexRelative->setChecked(atts->GetStopIndexRelative());
-            stopIndexRelative->blockSignals(false);
+          case PersistentParticlesAttributes::ID_stopPathType:
+            stopPathType->blockSignals(true);
+            if(stopPathTypeButtonGroup->button((int)atts->GetStopPathType()) != 0)
+                stopPathTypeButtonGroup->button((int)atts->GetStopPathType())->setChecked(true);
+            updateStopIndexText();
+            stopPathType->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_stride:
             stride->setText(IntToQString(atts->GetStride()));
@@ -369,11 +404,15 @@ QvisPersistentParticlesWindow::startIndexProcessText()
 
 
 void
-QvisPersistentParticlesWindow::startIndexRelativeChanged(bool val)
+QvisPersistentParticlesWindow::startPathTypeChanged(int val)
 {
-    atts->SetStartIndexRelative(val);
-    SetUpdate(false);
-    Apply();
+    if(val != atts->GetStartPathType())
+    {
+        atts->SetStartPathType(PersistentParticlesAttributes::PathTypeEnum(val));
+        SetUpdate(false);
+        Apply();
+    }
+    updateStartIndexText();
 }
 
 
@@ -386,13 +425,42 @@ QvisPersistentParticlesWindow::stopIndexProcessText()
 
 
 void
-QvisPersistentParticlesWindow::stopIndexRelativeChanged(bool val)
+QvisPersistentParticlesWindow::stopPathTypeChanged(int val)
 {
-    atts->SetStopIndexRelative(val);
-    SetUpdate(false);
-    Apply();
+    if(val != atts->GetStopPathType())
+    {
+        atts->SetStopPathType(PersistentParticlesAttributes::PathTypeEnum(val));
+        SetUpdate(false);
+        Apply();
+    }
+    updateStopIndexText();
 }
 
+void
+QvisPersistentParticlesWindow::updateStopIndexText()
+{
+    if( atts->GetStopPathType() == 0 )
+    {
+        stopIndexLabel->setText(tr("Index of the last time slice"));
+    }
+    else
+    {
+        stopIndexLabel->setText(tr("Number of slices forward in time"));
+    }
+}
+
+void
+QvisPersistentParticlesWindow::updateStartIndexText()
+{
+    if( atts->GetStartPathType() == 0 )
+    {
+        startIndexLabel->setText(tr("Index of the first time slice"));
+    }
+    else
+    {
+        startIndexLabel->setText(tr("Number of slices backwards in time"));
+    }
+}
 
 void
 QvisPersistentParticlesWindow::strideProcessText()
