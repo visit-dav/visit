@@ -105,6 +105,9 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Hank Childs, Fri Sep 14 09:54:13 PDT 2007
 //    Add support for treating vectors as 2D.
 //
+//    Hank Childs, Fri Jan 29 16:25:29 PST 2010
+//    Add support for treating vectors as 2D ... for data that is 10^15.
+//
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
 {
@@ -529,6 +532,13 @@ void vtkVisItGlyph3D::Execute()
     
     // Now begin copying/transforming glyph
     trans->Identity();
+
+    // Make 100% sure this is putting the glyphs at Z=0 for 2D.  Floating
+    // point error can creep in with 10^15 extents.
+    if (this->TreatVectorsAs2D == 1)
+    {
+        trans->Scale(1,1,0);
+    }
    
     double *inNode = NULL; 
     double *inCell = NULL; 
@@ -674,6 +684,7 @@ void vtkVisItGlyph3D::Execute()
                        1. / this->FullFrameScaling[1],
                        1. / this->FullFrameScaling[2]);
         }
+
 
     // multiply points and normals by resulting matrix
     trans->TransformPoints(sourcePts,newPts);
