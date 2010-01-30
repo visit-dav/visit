@@ -2291,6 +2291,9 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Recalculate more often with a HW renderer mode so we can recalculate
 //    the histogram.
 //
+//    Hank Childs, Fri Jan 29 14:23:45 MST 2010
+//    Re-execute the pipeline if we need lighting.
+//
 // ****************************************************************************
 
 bool
@@ -2313,6 +2316,8 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         if (scaling != obj.scaling)
             return true;
         if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
+            return true;
+        if (lightingFlag != obj.lightingFlag)
             return true;
     }
     else
