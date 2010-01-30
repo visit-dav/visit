@@ -33,7 +33,7 @@ def test0():
     AddPlot("Pseudocolor", "DEPTH_M")
     p = PseudocolorAttributes()
     p.pointType = p.Point # hack -- remove this someday
-    p.pointSizePixels = 1
+    p.pointSizePixels = 5
     SetPlotOptions(p)
     DrawPlots()
     Test("shapefile_0_01")
@@ -172,31 +172,20 @@ def test3():
     SetPlotOptions(m)
     DrawPlots()
 
-    t = CreateAnnotationObject("Text2D")
-    t.text = "Alameda County"
-    t.position = (0.39, 0.95)
-    t.width = 0.4
     Test("shapefile_3_00")
 
     # Zoom in some
     v = View2DAttributes()
     v.windowCoords = (-121.845, -121.681, 37.608, 37.775)
     SetView2D(v)
-    t.text = "Livermore"
     Test("shapefile_3_01")
 
     # Zoom in even more
     v.windowCoords = (-121.763, -121.718, 37.6533, 37.6983)
     SetView2D(v)
-    llnl = CreateAnnotationObject("Text2D")
-    llnl.width = 0.25
-    llnl.position = (0.65, 0.5)
-    llnl.text = "LLNL!"
     Test("shapefile_3_02")
 
     # Clean up
-    t.Delete()
-    llnl.Delete()
     DeleteAllPlots()
     for db in dbs:
         CloseDatabase(db)
@@ -210,10 +199,6 @@ def test4():
     OpenDatabase(db)
     AddPlot("Subset", "blocks")
     DrawPlots()
-    t = CreateAnnotationObject("Text2D")
-    t.text = "Bay area roads"
-    t.position = (0.39, 0.7)
-    t.width = 0.4
     ResetView()
     Test("shapefile_4_00")
 
@@ -221,7 +206,6 @@ def test4():
     v = View2DAttributes()
     v.windowCoords = (-122.614, -121.92, 37.3495, 37.9982)
     SetView2D(v)
-    t.position = (0.39, 0.9)
     Test("shapefile_4_01")
     
     # Zoom in more
@@ -232,16 +216,7 @@ def test4():
     # Zoom in more still
     v.windowCoords = (-122.488, -122.445, 37.7816, 37.825)
     SetView2D(v)
-    t.position = (0.39, 0.95)
-    gg = CreateAnnotationObject("Text2D")
-    gg.text = "Golden Gate Bridge"
-    gg.position = (0.22, 0.76)
-    gg.width = 0.4
     Test("shapefile_4_03")
-
-    # Delete the text annotations
-    gg.Delete()
-    t.Delete()
 
     DeleteActivePlots()
     CloseDatabase(db)
@@ -249,7 +224,6 @@ def test4():
 #
 # Run the tests.
 #
-TurnOnAllAnnotations()
 test0()
 test1()
 test2()

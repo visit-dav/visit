@@ -83,9 +83,6 @@ def PrintDict(dict):
     s = s + "}"
     return s
         
-
-TurnOnAllAnnotations()
-
 # The plotted databases.
 dbs = ("../data/pdb_test_data/dbA00.pdb", "../data/pdb_test_data/dbB00.pdb", "../data/pdb_test_data/dbC00.pdb")
 
