@@ -88,11 +88,7 @@ def TestExpressions(name):
 #
 # Create test cases for the time varying metadata files.
 #
-def TestTimeVarying(title, testIndex):
-    # Set the title with the time state.
-    timeSliders = GetTimeSliders()
-    tsState = timeSliders[GetActiveTimeSlider()]
-    title.text = "TimeVarying state=%d" % tsState
+def TestTimeVarying(testIndex):
     # Test what the first time step looks like.
     Test("reopen_%02d" % testIndex)
     TestLength("reopen_%02d" % (testIndex + 1))
@@ -328,11 +324,6 @@ def test2(testIndex):
 def test3(testIndex):
     TestSection("Reopening .visit file of time-varying data")
 
-    # Create a title text object
-    title = CreateAnnotationObject("Text2D")
-    title.position = (0.15, 0.93)
-    title.width = 0.7
-
     for percent in (30,60,100):
         db = CreateTimeVaryingMTFile(percent)
         if(percent == 30):
@@ -356,7 +347,7 @@ def test3(testIndex):
             SetView3D(v0)
 
             # Save a test
-            testIndex = TestTimeVarying(title, testIndex)
+            testIndex = TestTimeVarying(testIndex)
         else:
             # Reopen the database to add the new time states.
             ReOpenDatabase(db)
@@ -365,7 +356,7 @@ def test3(testIndex):
         SetTimeSliderState(TimeSliderGetNStates() - 1)
 
         # Save a test
-        testIndex = TestTimeVarying(title, testIndex)
+        testIndex = TestTimeVarying(testIndex)
 
     # Clean up the time varying .visit file.
     DeleteAllPlots()
@@ -379,14 +370,6 @@ def test3(testIndex):
 #
 def test4(testIndex):
     TestSection("Reopening overwritten file to test engine")
-
-    # Delete all of the annotation objects
-    try:
-        while(1):
-            GetAnnotationObject(0).Delete()
-    except VisItException:
-        # Done deleting annotation objects.
-        pass
 
     # Copy curv2d to the current directory.
     db = "test4.silo"
@@ -547,13 +530,6 @@ try:
     # Remove all .silo and .visit files that could be left over from
     # previous failed runs.
     RemoveAllSiloAndVisItFiles()
-
-    # Turn off some annotations
-    a = AnnotationAttributes()
-    TurnOffAllAnnotations(a)
-    a.databaseInfoFlag = 1
-    a.legendInfoFlag = 1
-    SetAnnotationAttributes(a)
 
     # Run the tests
     testIndex = test1(0)

@@ -99,13 +99,6 @@ def test1(datapath):
         DeleteAllPlots()
 
 def main():
-    a = AnnotationAttributes()
-    a.databaseInfoFlag = 0
-    a.userInfoFlag = 0
-    a.axes3D.visible = 0
-    a.axes3D.bboxFlag = 0
-    SetAnnotationAttributes(a)
-
     # Draw antialiased lines
     r = GetRenderingAttributes()
     r.antialiasing = 1

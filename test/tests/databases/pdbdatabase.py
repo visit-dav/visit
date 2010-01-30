@@ -27,18 +27,6 @@
 #    Added tests for array variables
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.databaseInfoFlag = 1
-SetAnnotationAttributes(a)
-
-##
-## Set global attributes such that visit trys harder
-## to get cycle/time information
-##
-#SetTryHarderCyclesTimes(1)
-
 ##
 ## This creates a name for a test.
 ##
