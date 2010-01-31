@@ -444,6 +444,13 @@ avtThresholdFilter::ProcessOneChunk(
 //    Hank Childs, Sat Jan 27 12:53:20 PST 2007
 //    Only add points that are actually incident to cells.
 //
+//    Hank Childs, Sun Jan 31 11:33:26 PST 2010
+//    No longer have check for default variable.  It figures itself out when
+//    iterating over all variables.  Also, the logic I'm removing with this
+//    change was faulty ... if you had a Pseudocolor plot of an expression and
+//    you were thresholding by that expression, then the default var is the
+//    mesh and that was causing the exception to fire.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -456,16 +463,6 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     vtkDataArray *dataArray;
     float *valueArray;
     
-    if (atts.GetDefaultVarIsScalar())
-    {
-        if (inPointData->GetArray(atts.GetDefaultVarName().c_str()) == NULL)
-        {
-            EXCEPTION1(VisItException,
-                "Default scalar variable must be a nodal quantity "
-                "when point mesh output is requested.");
-        }
-    }
-
     std::vector<float *> valueArrays;
 
     for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
