@@ -44,6 +44,10 @@
 #
 #   Mark C. Miller, Fri Jan 22 17:27:47 PST 2010
 #   Removed preceding change to satisfy purists ;)
+#
+#   Cyrus Harrison, Mon Feb  1 12:46:56 PST 2010
+#   Added missing visit includes to basic targets.
+#
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -209,7 +213,11 @@ SET(multidir_SOURCES multidir.C QuadMesh.C)
 # Build all Basic Targets
 #-----------------------------------------------------------------------------
 FOREACH(BASIC_TARGET ${BASIC_TARGETS})
-    BUILD_DATA_TARGET(${BASIC_TARGET})
+   BUILD_DATA_TARGET(${BASIC_TARGET}
+                     INCLUDE_DIRS
+                     ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${VISIT_BINARY_DIR}/include
+                     ${VISIT_SOURCE_DIR}/include)
 ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS})
 
 #-----------------------------------------------------------------------------
