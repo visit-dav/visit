@@ -2635,7 +2635,7 @@
         </Object>
         <Object name="ViewerSubject">
             <Object name="SourceMap">
-                <Field name="SOURCE00" type="string">localhost:../data/curv3d.silo</Field>
+                <Field name="SOURCE00" type="string">localhost:../data/silo_hdf5_test_data/curv3d.silo</Field>
             </Object>
             <Object name="DatabaseCorrelationList">
                 <Field name="needPermission" type="bool">true</Field>
