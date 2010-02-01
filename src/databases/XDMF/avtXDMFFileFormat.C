@@ -1592,6 +1592,10 @@ avtXDMFFileFormat::ParseTime(string &time)
 //
 //    Mark C. Miller, Thu Jul 30 11:12:17 PDT 2009
 //    Added parsing of <Time Value="xxx" /> element.
+//
+//    Eric Brugger, Mon Feb  1 15:12:29 PST 2010
+//    Allowed the geometry type TYPE_X_Y_Z to have only 2 arrays.
+//
 // ****************************************************************************
 
 void
@@ -1783,7 +1787,8 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
             meshInfo->topologicalDimension = 2;
             meshInfo->spatialDimension = 2;
         }
-        else if (meshInfo->geometryType == MeshInfo::TYPE_VXVYVZ)
+        else if (meshInfo->geometryType == MeshInfo::TYPE_VXVYVZ ||
+                 meshInfo->geometryType == MeshInfo::TYPE_X_Y_Z)
         {
             meshInfo->topologicalDimension = nMeshData;
             meshInfo->spatialDimension = nMeshData;
@@ -2653,7 +2658,11 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 //
 //  Modifications:
 //    Brad Whitlock, Fri May 16 09:50:56 PDT 2008
-//    Fixed pointer arithmetic bug in TYPE_VXVYVZ code.
+//    Fixed pointer arithmetic bug in TYPE_X_Y_Z code.
+//
+//    Eric Brugger, Mon Feb  1 15:12:29 PST 2010
+//    Swapped the logic for the geometry type TYPE_X_Y_Z for TYPE_VXVYVZ
+//    since they were handled backwards.
 //
 // ****************************************************************************
 
@@ -2695,7 +2704,7 @@ avtXDMFFileFormat::GetPoints(MeshInfo *meshInfo, int nnodes)
         }
         break;
 
-      case MeshInfo::TYPE_VXVYVZ:
+      case MeshInfo::TYPE_X_Y_Z:
         {
             float *xcoords = new float[nnodes];
             float *ycoords = new float[nnodes];
@@ -2782,6 +2791,10 @@ avtXDMFFileFormat::GetPoints(MeshInfo *meshInfo, int nnodes)
 //    I added code to add base index information to the data set if it is
 //    present.
 //
+//    Eric Brugger, Mon Feb  1 15:12:29 PST 2010
+//    Swapped the logic for the geometry type TYPE_VXVYVZ for TYPE_X_Y_Z
+//    since they were handled backwards.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2822,7 +2835,7 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 
     switch (meshInfo->geometryType)
     {
-      case MeshInfo::TYPE_X_Y_Z:
+      case MeshInfo::TYPE_VXVYVZ:
         if (!ReadDataItem(meshInfo->meshData[0], xpts, meshInfo->dimensions[0],
             VTK_FLOAT))
         {
@@ -2910,7 +2923,7 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 //  Modifications:
 //    Eric Brugger, Thu Mar 20 10:10:15 PDT 2008
 //    Corrected the coding for the case where the geomtery type was
-//    TYPE_VXVYVZ and there were only 2 coordinate arrays.
+//    TYPE_X_Y_Z and there were only 2 coordinate arrays.
 //
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I replaced ReadHDFDataItem with ReadDataItem.
