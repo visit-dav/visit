@@ -18,11 +18,6 @@
 #
 # ----------------------------------------------------------------------------
 
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.axesFlag2D = 1
-SetAnnotationAttributes(a)
-
 OpenDatabase("../data/KullLite_test_data/tagtest_xy_3.pdb")
 AddPlot("Mesh", "mesh")
 DrawPlots()
@@ -34,10 +29,6 @@ AddPlot("FilledBoundary", "Material(mesh)")
 AddPlot("Mesh", "mesh_tags/edges_mesh")
 DrawPlots()
 Test("kulllite_02")
-
-# Now turn off 2D axes too.
-a.axesFlag2D = 0
-SetAnnotationAttributes(a)
 
 DeleteActivePlots()
 AddPlot("Mesh", "mesh")

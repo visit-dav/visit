@@ -83,9 +83,6 @@ def TestLengthAndCorrelationList(testname):
         s = s + str(c) + "\n"
     TestText(testname, s)
 
-
-TurnOnAllAnnotations()
-
 #
 # The databases that we'll use for most tests.
 #
@@ -117,12 +114,8 @@ correlationTitles = ("Padded index correlation", "Stretched correlation",\
 #
 sectionIndex = 0
 testIndex = 0
-title = CreateAnnotationObject("Text2D")
-title.position = (0.15, 0.93)
-title.width = 0.7
 for i in range(len(correlationTypes)):
     TestSection(correlationTitles[i])
-    title.text = correlationTitles[i]
     CreateDatabaseCorrelation(correlationNames[i], dbs, correlationTypes[i])
     testIndex = TestCorrelation(correlationNames[i], sectionIndex, 0)
     states = ComputeStates(TimeSliderGetNStates(), 5)
@@ -137,7 +130,6 @@ for i in range(len(correlationTypes)):
 TestSection("Creating new window")
 sectionIndex = 4
 testIndex = 0
-title.text = "Creating new window"
 alteredCorrelation = correlationNames[0]
 SetActiveTimeSlider(alteredCorrelation)
 SetTimeSliderState(15)
@@ -157,13 +149,11 @@ SetActiveWindow(1)
 TestSection("Altering correlation")
 sectionIndex = 5
 testIndex = 0
-title.text = "Altering correlation"
 testIndex = TestCorrelation(alteredCorrelation, sectionIndex, testIndex)
 AlterDatabaseCorrelation(alteredCorrelation, (dbs[0], dbs[1]), StretchedIndexCorrelation)
 testIndex = TestCorrelation(alteredCorrelation, sectionIndex, testIndex)
 testIndex = TestTimeSlider(sectionIndex, testIndex)
 SetActiveWindow(2)
-title.text = "Altering correlation"
 testIndex = TestTimeSlider(sectionIndex, testIndex)
 SetActiveWindow(1)
 SetTimeSliderState(19)
@@ -192,7 +182,6 @@ TestSection("Automatic correlations")
 sectionIndex = 7
 SetActiveWindow(1)
 DeleteAllPlots()
-title.text = "Automatic correlation"
 TestLengthAndCorrelationList(GetTestName(sectionIndex, 0))
 testIndex = 1
 SetDatabaseCorrelationOptions(StretchedIndexCorrelation, 0)
