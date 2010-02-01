@@ -247,6 +247,11 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    warning when we fall back to a preferred format, because I expect this
 //    to happen quite often now.
 //
+//    Jeremy Meredith, Mon Feb  1 09:52:40 EST 2010
+//    Added try/catch block for when using a specific, forced format.
+//    Don't know if it's necessary, but all the other SetupDatabase calls
+//    were wrapped with try/catches, so it seemed the logical thing.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -328,9 +333,17 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         if (opts && info)
             info->SetReadOptions(new DBOptionsAttributes(*opts));
         plugins.push_back(info ? info->GetName(): "");
-        rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                           nBlocks, forceReadAllCyclesAndTimes,
-                           treatAllDBsAsTimeVarying, false);
+        TRY
+        {
+            rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
+                               nBlocks, forceReadAllCyclesAndTimes,
+                               treatAllDBsAsTimeVarying, false);
+        }
+        CATCHALL
+        {
+            rv = NULL;
+        }
+        ENDTRY
 
         if (rv == NULL)
         {
