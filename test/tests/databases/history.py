@@ -16,13 +16,6 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.legendInfoFlag = 1
-a.databaseInfoFlag =1
-SetAnnotationAttributes(a)
-
 OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
 
 #

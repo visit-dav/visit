@@ -182,11 +182,6 @@ def TestBOVType(bovtype, prefixes):
 
 
 def main():
-    a = AnnotationAttributes()
-    TurnOffAllAnnotations(a)
-    a.axes2D.visible = 1
-    SetAnnotationAttributes(a)
-
     # Define some expressions
     DefineScalarExpression("x", "coord(mesh)[0]")
     DefineScalarExpression("y", "coord(mesh)[1]")

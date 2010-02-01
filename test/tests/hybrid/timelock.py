@@ -251,15 +251,6 @@ def test2(testindex):
 
     a = GetAnnotationAttributes()
     b = GetAnnotationAttributes()
-    b.axesFlag2D = 0
-    b.xAxisLabels2D = 0
-    b.yAxisLabels2D = 0
-    b.xAxisTitle2D = 0
-    b.yAxisTitle2D = 0
-    b.xLabelScaling2D = 0
-    b.yLabelScaling2D = 0
-    b.databaseInfoFlag = 0
-    b.legendInfoFlag = 0
     SetAnnotationAttributes(b)
 
     SetCloneWindowOnFirstRef(0)
@@ -363,7 +354,6 @@ def test3(testindex):
 # Run the tests
 #
 try:
-    TurnOnAllAnnotations()
     testindex = 0
     testindex = test1(testindex)
     testindex = test2(testindex)
