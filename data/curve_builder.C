@@ -40,9 +40,14 @@
 //                                 curve_builder.C                           //
 // ************************************************************************* //
 
-#include <visitstream.h>
 #include <stdio.h>
 #include <math.h>
+
+// Cyrus Harrison, Mon Feb  1 13:50:34 PST 2010
+// changed to use fstream directry instead of of visitstream.h
+
+#include <fstream>
+using namespace std;
 
 // ****************************************************************************
 //  Function: main
