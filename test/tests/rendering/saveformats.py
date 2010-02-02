@@ -16,6 +16,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Tue Feb  2 10:55:43 PST 2010
+#    Fixed problem w/ setting active window that allowed errors to propagate
+#    between test cases.
+#
 # ----------------------------------------------------------------------------
 swa=SaveWindowAttributes()
 swa.family = 0
@@ -25,9 +30,7 @@ SetActiveWindow(1)
 
 # I=Image, G=Geometry, C=Curve formats
 CFormats=[swa.CURVE, swa.POSTSCRIPT, swa.ULTRA]
-# PNG not yet working, re-enable it when it is fixed
 IFormats=[swa.BMP, swa.JPEG, swa.PNG, swa.PPM, swa.RGB, swa.TIFF]
-#IFormats=[swa.BMP, swa.JPEG, swa.PPM, swa.RGB, swa.TIFF]
 GFormats=[swa.STL, swa.OBJ, swa.VTK]
 
 a = AnnotationAttributes()
@@ -37,6 +40,7 @@ a.legendInfoFlag = 0
 SetAnnotationAttributes(a)
 
 def TestSaveFormat(fmt):
+    SetActiveWindow(1)
     mode = ""
     result = "Failed\n"
     (ext, isC, isI, isG) = SaveFileInfo(fmt)
@@ -55,52 +59,50 @@ def TestSaveFormat(fmt):
     # say this format's save actually worked
     if isC:
         if FileExists(swatmp.fileName+"."+ext, 1, 0):
-	    if ext == "ps":
-	        result = "Passed\n" # can only test existence for ps
+            if ext == "ps":
+                result = "Passed\n" # can only test existence for ps
             else:
-	        SetActiveWindow(2)
-	        if OpenDatabase(swatmp.fileName+"."+ext):
- 		    AddPlot("Curve","curve")
-		    if DrawPlots():
-		        result = "Passed\n"
+                SetActiveWindow(2)
+                if OpenDatabase(swatmp.fileName+"."+ext):
+                    AddPlot("Curve","curve")
+                    if DrawPlots():
+                        result = "Passed\n"
                     DeleteAllPlots()
-	            CloseDatabase(swatmp.fileName+"."+ext)
-                    SetActiveWindow(1)
+                    CloseDatabase(swatmp.fileName+"."+ext)
     elif isI:
         if swatmp.screenCapture == 0:
-	    mode = "offscreen_"
+            mode = "offscreen_"
         tiffFileName = "current/saveformat_tmp.tif"
         tiffFileExists = 0
         imageFileExists = FileExists(swatmp.fileName, 1, 0)
         if imageFileExists:
             os.system("%s %s -compress none %s"%(imgConverter, swatmp.fileName, tiffFileName))
-	    tiffFileExists = FileExists(tiffFileName, 1, 0)
+            tiffFileExists = FileExists(tiffFileName, 1, 0)
         if tiffFileExists:
             SetActiveWindow(2)
-	    if OpenDatabase(tiffFileName):
-	        AddPlot("Pseudocolor","red")
-	        if DrawPlots():
-	            result = "Passed\n"
+            if OpenDatabase(tiffFileName):
+                AddPlot("Pseudocolor","red")
+                if DrawPlots():
+                    result = "Passed\n"
                 DeleteAllPlots()
-	        CloseDatabase(tiffFileName)
-                SetActiveWindow(1)
+                CloseDatabase(tiffFileName)
     elif isG:
         if FileExists(swatmp.fileName+"."+ext, 1, 0):
-	    if ext == "stl":
-	        meshName = "STL_mesh"
+            if ext == "stl":
+                meshName = "STL_mesh"
             elif ext == "obj":
-	        meshName = "OBJMesh"
+                meshName = "OBJMesh"
             elif ext == "vtk":
-	        meshName = "mesh"
-	    SetActiveWindow(2)
-	    if OpenDatabase(swatmp.fileName+"."+ext):
- 	        AddPlot("Mesh",meshName)
-	        if DrawPlots():
-	            result = "Passed\n"
+                meshName = "mesh"
+            SetActiveWindow(2)
+            if OpenDatabase(swatmp.fileName+"."+ext):
+                AddPlot("Mesh",meshName)
+                if DrawPlots():
+                    result = "Passed\n"
                 DeleteAllPlots()
-	        CloseDatabase(swatmp.fileName+"."+ext)
-                SetActiveWindow(1)
+                CloseDatabase(swatmp.fileName+"."+ext)
     TestText("saveformat_%s%s"%(mode,ext), result)
+    SetActiveWindow(1)
 
 TestSection("Curve Formats")
 OpenDatabase("../data/curve_test_data/c062.curve")
