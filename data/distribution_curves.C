@@ -40,9 +40,15 @@
 //                            distribution_curves.C                          //
 // ************************************************************************* //
 
-#include <visitstream.h>
 #include <stdio.h>
 #include <math.h>
+
+// Cyrus Harrison, Tue Feb  2 09:21:03 PST 2010
+// changed to use fstream directry instead of of visitstream.h
+
+#include <fstream>
+using namespace std;
+
 
 // ****************************************************************************
 //  Function: main
