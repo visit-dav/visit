@@ -783,6 +783,7 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-java       make the Java client interface
   --enable-parallel       make the parallel version
   --enable-slivr           build with the SLIVR volume rendering library
   --enable-tuvok           build with the Tuvok volume rendering library
@@ -1370,6 +1371,30 @@ fi
 
 
 #
+# Handle --enable-java
+#
+echo "$as_me:$LINENO: checking if a Java client interface will be built" >&5
+echo $ECHO_N "checking if a Java client interface will be built... $ECHO_C" >&6
+# Check whether --enable-java or --disable-java was given.
+if test "${enable_java+set}" = set; then
+  enableval="$enable_java"
+  EnableJava=$enableval
+else
+  EnableJava=no
+fi;
+
+if test "$EnableJava" = "yes"; then
+    echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+    VCONF_JAVA="-DVISIT_JAVA:BOOL=ON"
+else
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    VCONF_JAVA="-DVISIT_JAVA:BOOL=OFF"
+fi
+
+
+#
 # Handle --enable-parallel.
 #
 echo "$as_me:$LINENO: checking if a parallel version of VisIt will be built" >&5
@@ -1391,7 +1416,6 @@ else
 echo "${ECHO_T}no" >&6
     VCONF_PARALLEL="-DVISIT_PARALLEL:BOOL=OFF"
 fi
-
 
 
 #
@@ -1562,6 +1586,7 @@ fi
 echo "$as_me:$LINENO: result: -- INVOKING CMAKE --" >&5
 echo "${ECHO_T}-- INVOKING CMAKE --" >&6
 echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
+         $VCONF_JAVA \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
          $VCONF_TUVOK \
@@ -1570,6 +1595,7 @@ echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
          $VCONF_BUILDALL
 
 $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
+         $VCONF_JAVA \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
          $VCONF_TUVOK \

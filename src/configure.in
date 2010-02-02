@@ -40,6 +40,9 @@ dnl    Cyrus Harrison, Thu Dec  3 12:04:23 PST 2009
 dnl    Gutted old script for transition to cmake.
 dnl    'configure' now calls cmake and handles only a handful of options.
 dnl
+dnl    Brad Whitlock, Tue Feb 2 10:32:34 PDT 2009
+dnl    I added --enable-java for compatibility with build_visit.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl --------------------------------------------------------------------------
@@ -53,6 +56,7 @@ dnl
 dnl Supported command line options:
 dnl  --with-cmake=[/path/to/cmake]
 dnl  --prefix=[/abs/path/]
+dnl  --enable-java
 dnl  --enable-parallel
 dnl  --enable-slivr
 dnl  --enable-tuvok
@@ -153,6 +157,23 @@ fi
 
 
 #
+# Handle --enable-java
+#
+AC_MSG_CHECKING(if a Java client interface will be built)
+AC_ARG_ENABLE(java,
+   [  --enable-java       make the Java client interface],
+   EnableJava=$enableval, EnableJava=no)
+
+if test "$EnableJava" = "yes"; then
+    AC_MSG_RESULT(yes)
+    VCONF_JAVA="-DVISIT_JAVA:BOOL=ON"
+else
+    AC_MSG_RESULT(no)
+    VCONF_JAVA="-DVISIT_JAVA:BOOL=OFF"
+fi
+
+
+#
 # Handle --enable-parallel.
 #
 AC_MSG_CHECKING(if a parallel version of VisIt will be built)
@@ -167,7 +188,6 @@ else
     AC_MSG_RESULT(no)
     VCONF_PARALLEL="-DVISIT_PARALLEL:BOOL=OFF"
 fi
-
 
 
 #
@@ -293,6 +313,7 @@ fi
 
 AC_MSG_RESULT(-- INVOKING CMAKE --)
 echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
+         $VCONF_JAVA \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
          $VCONF_TUVOK \
@@ -301,6 +322,7 @@ echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
          $VCONF_BUILDALL 
 
 $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
+         $VCONF_JAVA \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
          $VCONF_TUVOK \
