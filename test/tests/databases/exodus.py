@@ -26,9 +26,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations()
-
 OpenDatabase("../data/exodus_test_data/balls.exodus")
 AddPlot("Pseudocolor", "EQPS")
 DrawPlots()
@@ -87,11 +84,6 @@ Test("exodus_06")
 
 TestSection("Testing support element block names")
 DeleteAllPlots()
-
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
-a.legendInfoFlag = 1
-SetAnnotationAttributes(a)
 
 OpenDatabase("../data/exodus_test_data/test.exo")
 AddPlot("FilledBoundary", "ElementBlock")
