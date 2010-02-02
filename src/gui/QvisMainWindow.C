@@ -330,6 +330,10 @@
 //    Tom Fogal, Sun Jan 24 17:04:34 MST 2010
 //    Patch from Andreas Kloeckner to set the Qt window role.
 //
+//    Jeremy Meredith, Tue Feb  2 17:31:07 EST 2010
+//    Spell out bbox.  I'm not sure most people know what that stands for.
+//    Added "mode" to full frame and spin settings to balance the extra width.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -683,12 +687,12 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     
 
     // Other options.
-    fullFrameModeAct = winPopup->addAction(tr("Full frame"),
+    fullFrameModeAct = winPopup->addAction(tr("Full frame mode"),
                                           this, SLOT(toggleFullFrameMode()));
-    navigateModeAct = winPopup->addAction(tr("Navigate bbox"),
-                                         this, SLOT(toggleNavigateMode()));
-    spinModeAct = winPopup->addAction(tr("Spin"),
+    spinModeAct = winPopup->addAction(tr("Spin mode"),
                                      this, SLOT(toggleSpinMode()));
+    navigateModeAct = winPopup->addAction(tr("Bounding box navigation"),
+                                         this, SLOT(toggleNavigateMode()));
     
 
  #ifndef Q_WS_MACX
