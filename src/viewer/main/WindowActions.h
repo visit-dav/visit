@@ -414,4 +414,35 @@ public:
     virtual bool MenuTopLevel() const { return true; }
 };
 
+// ****************************************************************************
+// Class: EnableToolAction
+//
+// Purpose:
+//   Handles the enable tool action.
+//
+// Notes:      
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class VIEWER_API SetToolUpdateModeAction : public ViewerMultipleAction
+{
+public:
+    SetToolUpdateModeAction(ViewerWindow *win);
+    virtual ~SetToolUpdateModeAction() { }
+
+    virtual void Setup();
+    virtual void Execute(int val);
+    virtual bool Enabled() const;
+    virtual bool ChoiceEnabled(int i) const;
+    virtual bool ChoiceChecked(int i) const;
+
+    virtual bool MenuTopLevel() const { return true; }
+    virtual bool AllowInToolbar() const { return false; }
+};
+
 #endif

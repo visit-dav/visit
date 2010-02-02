@@ -371,6 +371,9 @@ VisitPlaneTool::Stop3DMode()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
 //   Use vtkTextProperty to set actor color instead of vtkProperty.
 //
+//   Jeremy Meredith, Tue Feb  2 13:33:30 EST 2010
+//   Set the radius text color, too.
+//
 // ****************************************************************************
 
 void
@@ -421,6 +424,7 @@ VisitPlaneTool::SetForegroundColor(double r, double g, double b)
     originTextActor->GetTextProperty()->SetColor(color);
     normalTextActor->GetTextProperty()->SetColor(color);
     upAxisTextActor->GetTextProperty()->SetColor(color);
+    radiusTextActor->GetTextProperty()->SetColor(color);
 }
 
 // ****************************************************************************
@@ -1684,6 +1688,11 @@ VisitPlaneTool::FinalActorSetup()
 //  Programmer:  Jeremy Meredith, Brad Whitlock
 //  Creation:    October  9, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
 // ****************************************************************************
 
 void
@@ -1723,11 +1732,15 @@ VisitPlaneTool::Translate(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -1749,6 +1762,9 @@ VisitPlaneTool::Translate(CB_ENUM e, int, int, int x, int y)
 // Creation:   Wed Oct 10 16:44:06 PST 2001
 //
 // Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
 //   
 // ****************************************************************************
 
@@ -1792,11 +1808,15 @@ VisitPlaneTool::TranslateNormal(CB_ENUM e, int, int, int, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -1817,6 +1837,11 @@ VisitPlaneTool::TranslateNormal(CB_ENUM e, int, int, int, int y)
 //
 //  Programmer:  Jeremy Meredith, Brad Whitlock
 //  Creation:    October  9, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
 //
 // ****************************************************************************
 void
@@ -1849,11 +1874,15 @@ VisitPlaneTool::RotateX(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -1875,6 +1904,11 @@ VisitPlaneTool::RotateX(CB_ENUM e, int, int, int x, int y)
 //
 //  Programmer:  Jeremy Meredith, Brad Whitlock
 //  Creation:    October  9, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
 //
 // ****************************************************************************
 void
@@ -1907,11 +1941,15 @@ VisitPlaneTool::RotateY(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -1932,6 +1970,11 @@ VisitPlaneTool::RotateY(CB_ENUM e, int, int, int x, int y)
 //
 //  Programmer:  Jeremy Meredith, Brad Whitlock
 //  Creation:    October  9, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
 //
 // ****************************************************************************
 void
@@ -1964,11 +2007,15 @@ VisitPlaneTool::FreeRotate(CB_ENUM e, int, int, int x , int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -1994,6 +2041,11 @@ VisitPlaneTool::FreeRotate(CB_ENUM e, int, int, int x , int y)
 //    Brad Whitlock, Mon Oct 21 11:55:08 PDT 2002
 //    I added code to added and remove the radius text.
 //
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//    Also, fixed inconsistencies in the way actors/bboxmode were set up.
+//
 // ****************************************************************************
 
 void
@@ -2014,13 +2066,7 @@ VisitPlaneTool::Resize(CB_ENUM e, int, int, int x, int y)
         dY = originScreen.y - resizeScreen.y;
         originalDistance = sqrt(dX * dX + dY * dY);
 
-        // Start bounding box mode.
-        if(proxy.HasPlots())
-        {
-            addedBbox = true;
-            proxy.StartBoundingBox();
-        }
-
+        InitialActorSetup();
         RemoveText();
         AddRadiusText();
     }
@@ -2045,19 +2091,21 @@ VisitPlaneTool::Resize(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         RemoveRadiusText();
         AddText();
 
-        // End bounding box mode.
-        if(addedBbox)
-            proxy.EndBoundingBox();
-        addedBbox = false;
+        // Remove the right actors.
+        FinalActorSetup();
     }
 }
 

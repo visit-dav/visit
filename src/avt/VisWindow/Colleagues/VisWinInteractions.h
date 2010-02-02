@@ -90,6 +90,9 @@ class VisitHotPointInteractor;
 //     Eric Brugger, Tue Dec  9 14:17:09 PST 2008
 //     Added the AxisParallel window mode.
 //
+//     Jeremy Meredith, Tue Feb  2 13:43:43 EST 2010
+//     Added a new setting for when tools should update.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -107,6 +110,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     bool                     GetSpinMode() const;
     void                     SetSpinModeSuspended(bool);
     bool                     GetSpinModeSuspended() const;
+    void                     SetToolUpdateMode(TOOLUPDATE_MODE);
+    TOOLUPDATE_MODE          GetToolUpdateMode() const;
 
     virtual void             Start2DMode();
     virtual void             Stop2DMode();
@@ -124,6 +129,7 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
 
   protected:
     INTERACTION_MODE         mode;
+    TOOLUPDATE_MODE          toolUpdateMode;
     bool                     bboxMode;
     bool                     spinMode;
     bool                     spinModeSuspended;

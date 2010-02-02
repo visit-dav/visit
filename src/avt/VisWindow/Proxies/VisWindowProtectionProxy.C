@@ -1137,3 +1137,23 @@ VisWindowProtectionProxy::ProxiedGetBackgroundMode() const
 {
     return viswin->GetBackgroundMode();
 }
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedGetToolUpdateMode
+//
+//  Purpose:
+//      Gets the VisWindow's tool update mode through its friend access.
+//
+//  Returns:    The VisWindow's tool update mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  2, 2010
+//
+// ****************************************************************************
+
+TOOLUPDATE_MODE
+VisWindowProtectionProxy::ProxiedGetToolUpdateMode() const
+{
+    return viswin->GetToolUpdateMode();
+}

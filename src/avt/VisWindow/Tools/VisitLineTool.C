@@ -1043,6 +1043,10 @@ VisitLineTool::FinalActorSetup()
 //    Brad Whitlock, Wed Oct 30 09:37:57 PDT 2002
 //    Moved some code into the base class.
 //
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
 // ****************************************************************************
 
 void
@@ -1145,11 +1149,15 @@ VisitLineTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y,
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();

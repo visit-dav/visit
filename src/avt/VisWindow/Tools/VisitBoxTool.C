@@ -1172,7 +1172,10 @@ VisitBoxTool::FinalActorSetup()
 //  Creation:    Wed Oct 30 12:22:33 PDT 2002
 //
 //  Modifications:
-// 
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
 // ****************************************************************************
 
 void
@@ -1223,11 +1226,15 @@ VisitBoxTool::Translate(CB_ENUM e, int, int shift, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -1254,6 +1261,10 @@ VisitBoxTool::Translate(CB_ENUM e, int, int shift, int x, int y)
 //  Modifications:
 //    Brad Whitlock, Tue Jul 13 14:48:14 PST 2004
 //    I updated the code so it handles more hotpoints.
+//
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
 //
 // ****************************************************************************
 
@@ -1396,11 +1407,15 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();

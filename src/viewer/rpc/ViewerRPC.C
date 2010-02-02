@@ -76,53 +76,53 @@ static const char *ViewerRPCType_strings[] = {
 "ToggleSpinModeRPC", "ToggleLockTimeRPC", "ToggleLockToolsRPC", 
 "ToggleLockViewModeRPC", "ToggleFullFrameRPC", "UndoViewRPC", 
 "RedoViewRPC", "InvertBackgroundRPC", "ClearPickPointsRPC", 
-"SetWindowModeRPC", "EnableToolRPC", "CopyViewToWindowRPC", 
-"CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", 
-"ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", 
-"ClearRefLinesRPC", "SetRenderingAttributesRPC", "DatabaseQueryRPC", 
-"PointQueryRPC", "LineQueryRPC", "CloneWindowRPC", 
-"SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", "ResetMaterialAttributesRPC", 
-"SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", "MovePlotDatabaseKeyframeRPC", 
-"ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", "MoveViewKeyframeRPC", 
-"SetViewKeyframeRPC", "OpenMDServerRPC", "EnableToolbarRPC", 
-"HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", "ShowToolbarsRPC", 
-"ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", "SaveViewRPC", 
-"SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", "ExportColorTableRPC", 
-"ExportEntireStateRPC", "ImportEntireStateRPC", "ImportEntireStateWithDifferentSourcesRPC", 
-"ResetPickAttributesRPC", "AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", 
-"DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", 
-"SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", 
-"ResetPickLetterRPC", "SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", 
-"SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", "SetDefaultQueryOverTimeAttributesRPC", 
-"ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", "SetInteractorAttributesRPC", 
-"SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", "GetProcInfoRPC", 
-"SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", "ExportDBRPC", 
-"SetTryHarderCyclesTimesRPC", "OpenClientRPC", "OpenGUIClientRPC", 
-"OpenCLIClientRPC", "SuppressQueryOutputRPC", "SetQueryFloatFormatRPC", 
-"SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", 
-"ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
-"SetStateLoggingRPC", "ConstructDDFRPC", "RequestMetaDataRPC", 
-"SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", "SetCreateTimeDerivativeExpressionsRPC", 
-"SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC", 
-"TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 
-"ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC", 
-"LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "MenuQuitRPC", 
-"SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC", 
-"SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "MaxRPC"
-};
+"SetWindowModeRPC", "EnableToolRPC", "SetToolUpdateModeRPC", 
+"CopyViewToWindowRPC", "CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", 
+"CopyPlotsToWindowRPC", "ClearCacheRPC", "ClearCacheForAllEnginesRPC", 
+"SetViewExtentsTypeRPC", "ClearRefLinesRPC", "SetRenderingAttributesRPC", 
+"DatabaseQueryRPC", "PointQueryRPC", "LineQueryRPC", 
+"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", 
+"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", 
+"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", 
+"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC", 
+"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", 
+"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", 
+"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", 
+"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC", 
+"ImportEntireStateWithDifferentSourcesRPC", "ResetPickAttributesRPC", "AddAnnotationObjectRPC", 
+"HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", 
+"LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", 
+"ResetAnnotationObjectListRPC", "ResetPickLetterRPC", "SetDefaultPickAttributesRPC", 
+"ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", 
+"SetDefaultQueryOverTimeAttributesRPC", "ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", 
+"SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", 
+"GetProcInfoRPC", "SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", 
+"ExportDBRPC", "SetTryHarderCyclesTimesRPC", "OpenClientRPC", 
+"OpenGUIClientRPC", "OpenCLIClientRPC", "SuppressQueryOutputRPC", 
+"SetQueryFloatFormatRPC", "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", 
+"ResetMeshManagementAttributesRPC", "ResizeWindowRPC", "MoveWindowRPC", 
+"MoveAndResizeWindowRPC", "SetStateLoggingRPC", "ConstructDDFRPC", 
+"RequestMetaDataRPC", "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", 
+"SetCreateTimeDerivativeExpressionsRPC", "SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", 
+"SetPlotFollowsTimeRPC", "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", 
+"SetSuppressMessagesRPC", "ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", 
+"DeleteNamedSelectionRPC", "LoadNamedSelectionRPC", "SaveNamedSelectionRPC", 
+"MenuQuitRPC", "SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", 
+"MovePlotOrderTowardLastRPC", "SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", 
+"MaxRPC"};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 192) index = 0;
+    if(index < 0 || index >= 193) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 192) ? 0 : t;
+    int index = (t < 0 || t >= 193) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -130,7 +130,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 192; ++i)
+    for(int i = 0; i < 193; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {
@@ -141,14 +141,11 @@ ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCTy
     return false;
 }
 
-// Type map format string
-const char *ViewerRPC::TypeMapFormatString = "iiiisssss*iiIiiisi*i*i*ssDDs*ibiiissd*d*";
-
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
 // Purpose: 
-//   Constructor for the ViewerRPC class.
+//   Init utility for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
 //
@@ -159,8 +156,7 @@ const char *ViewerRPC::TypeMapFormatString = "iiiisssss*iiIiiisi*i*i*ssDDs*ibiii
 //   
 // ****************************************************************************
 
-ViewerRPC::ViewerRPC() : 
-    AttributeSubject(ViewerRPC::TypeMapFormatString)
+void ViewerRPC::Init()
 {
     RPCType = CloseRPC;
     windowLayout = 1;
@@ -186,13 +182,16 @@ ViewerRPC::ViewerRPC() :
     intArg3 = 0;
     doubleArg1.push_back(0);
     doubleArg2.push_back(0);
+    toolUpdateMode = 1;
+
+    ViewerRPC::SelectAll();
 }
 
 // ****************************************************************************
 // Method: ViewerRPC::ViewerRPC
 //
 // Purpose: 
-//   Copy constructor for the ViewerRPC class.
+//   Copy utility for the ViewerRPC class.
 //
 // Note:       Autogenerated by xml2atts.
 //
@@ -203,8 +202,7 @@ ViewerRPC::ViewerRPC() :
 //   
 // ****************************************************************************
 
-ViewerRPC::ViewerRPC(const ViewerRPC &obj) : 
-    AttributeSubject(ViewerRPC::TypeMapFormatString)
+void ViewerRPC::Copy(const ViewerRPC &obj)
 {
     RPCType = obj.RPCType;
     windowLayout = obj.windowLayout;
@@ -247,8 +245,98 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj) :
     stringArg2 = obj.stringArg2;
     doubleArg1 = obj.doubleArg1;
     doubleArg2 = obj.doubleArg2;
+    toolUpdateMode = obj.toolUpdateMode;
 
-    SelectAll();
+    ViewerRPC::SelectAll();
+}
+
+// Type map format string
+const char *ViewerRPC::TypeMapFormatString = VIEWERRPC_TMFS;
+const AttributeGroup::private_tmfs_t ViewerRPC::TmfsStruct = {VIEWERRPC_TMFS};
+
+
+// ****************************************************************************
+// Method: ViewerRPC::ViewerRPC
+//
+// Purpose: 
+//   Default constructor for the ViewerRPC class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerRPC::ViewerRPC() : 
+    AttributeSubject(ViewerRPC::TypeMapFormatString)
+{
+    ViewerRPC::Init();
+}
+
+// ****************************************************************************
+// Method: ViewerRPC::ViewerRPC
+//
+// Purpose: 
+//   Constructor for the derived classes of ViewerRPC class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerRPC::ViewerRPC(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    ViewerRPC::Init();
+}
+
+// ****************************************************************************
+// Method: ViewerRPC::ViewerRPC
+//
+// Purpose: 
+//   Copy constructor for the ViewerRPC class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerRPC::ViewerRPC(const ViewerRPC &obj) : 
+    AttributeSubject(ViewerRPC::TypeMapFormatString)
+{
+    ViewerRPC::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: ViewerRPC::ViewerRPC
+//
+// Purpose: 
+//   Copy constructor for derived classes of the ViewerRPC class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerRPC::ViewerRPC(const ViewerRPC &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    ViewerRPC::Copy(obj);
 }
 
 // ****************************************************************************
@@ -290,49 +378,9 @@ ViewerRPC&
 ViewerRPC::operator = (const ViewerRPC &obj)
 {
     if (this == &obj) return *this;
-    RPCType = obj.RPCType;
-    windowLayout = obj.windowLayout;
-    windowId = obj.windowId;
-    windowMode = obj.windowMode;
-    windowArea = obj.windowArea;
-    database = obj.database;
-    programHost = obj.programHost;
-    programSim = obj.programSim;
-    programOptions = obj.programOptions;
-    nFrames = obj.nFrames;
-    stateNumber = obj.stateNumber;
-    frameRange[0] = obj.frameRange[0];
-    frameRange[1] = obj.frameRange[1];
 
-    frame = obj.frame;
-    plotType = obj.plotType;
-    operatorType = obj.operatorType;
-    variable = obj.variable;
-    activePlotIds = obj.activePlotIds;
-    activeOperatorIds = obj.activeOperatorIds;
-    expandedPlotIds = obj.expandedPlotIds;
-    colorTableName = obj.colorTableName;
-    queryName = obj.queryName;
-    queryPoint1[0] = obj.queryPoint1[0];
-    queryPoint1[1] = obj.queryPoint1[1];
-    queryPoint1[2] = obj.queryPoint1[2];
+    ViewerRPC::Copy(obj);
 
-    queryPoint2[0] = obj.queryPoint2[0];
-    queryPoint2[1] = obj.queryPoint2[1];
-    queryPoint2[2] = obj.queryPoint2[2];
-
-    queryVariables = obj.queryVariables;
-    toolId = obj.toolId;
-    boolFlag = obj.boolFlag;
-    intArg1 = obj.intArg1;
-    intArg2 = obj.intArg2;
-    intArg3 = obj.intArg3;
-    stringArg1 = obj.stringArg1;
-    stringArg2 = obj.stringArg2;
-    doubleArg1 = obj.doubleArg1;
-    doubleArg2 = obj.doubleArg2;
-
-    SelectAll();
     return *this;
 }
 
@@ -402,7 +450,8 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
             (stringArg1 == obj.stringArg1) &&
             (stringArg2 == obj.stringArg2) &&
             (doubleArg1 == obj.doubleArg1) &&
-            (doubleArg2 == obj.doubleArg2));
+            (doubleArg2 == obj.doubleArg2) &&
+            (toolUpdateMode == obj.toolUpdateMode));
 }
 
 // ****************************************************************************
@@ -579,6 +628,7 @@ ViewerRPC::SelectAll()
     Select(ID_stringArg2,        (void *)&stringArg2);
     Select(ID_doubleArg1,        (void *)&doubleArg1);
     Select(ID_doubleArg2,        (void *)&doubleArg2);
+    Select(ID_toolUpdateMode,    (void *)&toolUpdateMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -819,6 +869,13 @@ ViewerRPC::SetDoubleArg2(const doubleVector &doubleArg2_)
 {
     doubleArg2 = doubleArg2_;
     Select(ID_doubleArg2, (void *)&doubleArg2);
+}
+
+void
+ViewerRPC::SetToolUpdateMode(int toolUpdateMode_)
+{
+    toolUpdateMode = toolUpdateMode_;
+    Select(ID_toolUpdateMode, (void *)&toolUpdateMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1137,6 +1194,12 @@ ViewerRPC::GetDoubleArg2()
     return doubleArg2;
 }
 
+int
+ViewerRPC::GetToolUpdateMode() const
+{
+    return toolUpdateMode;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1312,6 +1375,7 @@ ViewerRPC::GetFieldName(int index) const
     case ID_stringArg2:        return "stringArg2";
     case ID_doubleArg1:        return "doubleArg1";
     case ID_doubleArg2:        return "doubleArg2";
+    case ID_toolUpdateMode:    return "toolUpdateMode";
     default:  return "invalid index";
     }
 }
@@ -1369,6 +1433,7 @@ ViewerRPC::GetFieldType(int index) const
     case ID_stringArg2:        return FieldType_string;
     case ID_doubleArg1:        return FieldType_doubleVector;
     case ID_doubleArg2:        return FieldType_doubleVector;
+    case ID_toolUpdateMode:    return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -1426,6 +1491,7 @@ ViewerRPC::GetFieldTypeName(int index) const
     case ID_stringArg2:        return "string";
     case ID_doubleArg1:        return "doubleVector";
     case ID_doubleArg2:        return "doubleVector";
+    case ID_toolUpdateMode:    return "int";
     default:  return "invalid index";
     }
 }
@@ -1630,6 +1696,11 @@ ViewerRPC::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_doubleArg2:
         {  // new scope
         retval = (doubleArg2 == obj.doubleArg2);
+        }
+        break;
+    case ID_toolUpdateMode:
+        {  // new scope
+        retval = (toolUpdateMode == obj.toolUpdateMode);
         }
         break;
     default: retval = false;

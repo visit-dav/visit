@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ViewerRPC
 //
@@ -157,6 +158,7 @@ public:
         ClearPickPointsRPC,
         SetWindowModeRPC,
         EnableToolRPC,
+        SetToolUpdateModeRPC,
         CopyViewToWindowRPC,
         CopyLightingToWindowRPC,
         CopyAnnotationsToWindowRPC,
@@ -256,13 +258,23 @@ public:
         MaxRPC
     };
 
+    // These constructors are for objects of this class
     ViewerRPC();
     ViewerRPC(const ViewerRPC &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ViewerRPC(private_tmfs_t tmfs);
+    ViewerRPC(const ViewerRPC &obj, private_tmfs_t tmfs);
+public:
     virtual ~ViewerRPC();
 
     virtual ViewerRPC& operator = (const ViewerRPC &obj);
     virtual bool operator == (const ViewerRPC &obj) const;
     virtual bool operator != (const ViewerRPC &obj) const;
+private:
+    void Init();
+    void Copy(const ViewerRPC &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -325,6 +337,7 @@ public:
     void SetStringArg2(const std::string &stringArg2_);
     void SetDoubleArg1(const doubleVector &doubleArg1_);
     void SetDoubleArg2(const doubleVector &doubleArg2_);
+    void SetToolUpdateMode(int toolUpdateMode_);
 
     // Property getting methods
     ViewerRPCType      GetRPCType() const;
@@ -379,6 +392,7 @@ public:
           doubleVector &GetDoubleArg1();
     const doubleVector &GetDoubleArg2() const;
           doubleVector &GetDoubleArg2();
+    int                GetToolUpdateMode() const;
 
     // Enum conversion functions
     static std::string ViewerRPCType_ToString(ViewerRPCType);
@@ -430,7 +444,9 @@ public:
         ID_stringArg1,
         ID_stringArg2,
         ID_doubleArg1,
-        ID_doubleArg2
+        ID_doubleArg2,
+        ID_toolUpdateMode,
+        ID__LAST
     };
 
 private:
@@ -467,9 +483,12 @@ private:
     std::string  stringArg2;
     doubleVector doubleArg1;
     doubleVector doubleArg2;
+    int          toolUpdateMode;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDDs*ibiiissd*d*i"
 
 #endif

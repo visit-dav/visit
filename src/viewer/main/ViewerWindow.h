@@ -444,6 +444,9 @@ class ViewerToolbar;
 //    Brad Whitlock, Tue Apr 14 11:37:34 PDT 2009
 //    I made it use ViewerProperties.
 //
+//    Jeremy Meredith, Tue Feb  2 11:16:01 EST 2010
+//    Added tool update modes.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -477,6 +480,8 @@ public:
 
     void SetInteractionMode(const INTERACTION_MODE mode);
     INTERACTION_MODE GetInteractionMode() const;
+    void SetToolUpdateMode(TOOLUPDATE_MODE m);
+    TOOLUPDATE_MODE GetToolUpdateMode() const;
     void SetToolEnabled(int toolId, bool enabled);
     void DisableAllTools();
     void ClearViewKeyframes();
@@ -537,6 +542,7 @@ public:
     void SendUpdateFrameMessage() const;
     void SendActivateToolMessage(const int toolId) const;
     void SendInteractionModeMessage(const INTERACTION_MODE m) const;
+    void SendToolUpdateModeMessage(const TOOLUPDATE_MODE m) const;
     void SendScalableRenderingModeChangeMessage(bool newMode);
     bool ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const;
 

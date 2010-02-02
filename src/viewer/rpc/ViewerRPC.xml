@@ -96,6 +96,7 @@
       ClearPickPointsRPC
       SetWindowModeRPC
       EnableToolRPC
+      SetToolUpdateModeRPC
       CopyViewToWindowRPC
       CopyLightingToWindowRPC
       CopyAnnotationsToWindowRPC
@@ -283,6 +284,9 @@
     </Field>
     <Field name="doubleArg2" label="doubleArg2" type="doubleVector">
       0.000000
+    </Field>
+    <Field name="toolUpdateMode" label="toolUpdateMode" type="int">
+      1
     </Field>
     <Function name="SetWindowArea" user="true" member="true">
     </Function>

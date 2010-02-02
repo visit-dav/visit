@@ -80,6 +80,9 @@
 //   Brad Whitlock, Fri Apr  3 10:54:57 PDT 2009
 //   I added GetBoundingBoxMode.
 //
+//   Jeremy Meredith, Tue Feb  2 11:12:10 EST 2010
+//   Added GetToolUpdateMode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
@@ -143,6 +146,8 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
 
     bool                TransparenciesExist()
                                   { return ProxiedTransparenciesExist(); };
+
+    TOOLUPDATE_MODE     GetToolUpdateMode() const { return ProxiedGetToolUpdateMode(); }
 };
 
 

@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class WindowInformation extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 25;
+    private static int numAdditionalAttributes = 26;
 
     public WindowInformation()
     {
@@ -70,6 +70,7 @@ public class WindowInformation extends AttributeSubject
         timeSliderCurrentStates = new Vector();
         animationMode = 2;
         interactionMode = 0;
+        toolUpdateMode = 1;
         boundingBoxNavigate = true;
         spin = false;
         fullFrame = false;
@@ -109,6 +110,7 @@ public class WindowInformation extends AttributeSubject
         timeSliderCurrentStates = new Vector();
         animationMode = 2;
         interactionMode = 0;
+        toolUpdateMode = 1;
         boundingBoxNavigate = true;
         spin = false;
         fullFrame = false;
@@ -158,6 +160,7 @@ public class WindowInformation extends AttributeSubject
         }
         animationMode = obj.animationMode;
         interactionMode = obj.interactionMode;
+        toolUpdateMode = obj.toolUpdateMode;
         boundingBoxNavigate = obj.boundingBoxNavigate;
         spin = obj.spin;
         fullFrame = obj.fullFrame;
@@ -250,6 +253,7 @@ public class WindowInformation extends AttributeSubject
                 timeSliderCurrentStates_equal &&
                 (animationMode == obj.animationMode) &&
                 (interactionMode == obj.interactionMode) &&
+                (toolUpdateMode == obj.toolUpdateMode) &&
                 (boundingBoxNavigate == obj.boundingBoxNavigate) &&
                 (spin == obj.spin) &&
                 (fullFrame == obj.fullFrame) &&
@@ -308,127 +312,133 @@ public class WindowInformation extends AttributeSubject
         Select(5);
     }
 
+    public void SetToolUpdateMode(int toolUpdateMode_)
+    {
+        toolUpdateMode = toolUpdateMode_;
+        Select(6);
+    }
+
     public void SetBoundingBoxNavigate(boolean boundingBoxNavigate_)
     {
         boundingBoxNavigate = boundingBoxNavigate_;
-        Select(6);
+        Select(7);
     }
 
     public void SetSpin(boolean spin_)
     {
         spin = spin_;
-        Select(7);
+        Select(8);
     }
 
     public void SetFullFrame(boolean fullFrame_)
     {
         fullFrame = fullFrame_;
-        Select(8);
+        Select(9);
     }
 
     public void SetPerspective(boolean perspective_)
     {
         perspective = perspective_;
-        Select(9);
+        Select(10);
     }
 
     public void SetLockView(boolean lockView_)
     {
         lockView = lockView_;
-        Select(10);
+        Select(11);
     }
 
     public void SetLockTools(boolean lockTools_)
     {
         lockTools = lockTools_;
-        Select(11);
+        Select(12);
     }
 
     public void SetLockTime(boolean lockTime_)
     {
         lockTime = lockTime_;
-        Select(12);
+        Select(13);
     }
 
     public void SetViewExtentsType(int viewExtentsType_)
     {
         viewExtentsType = viewExtentsType_;
-        Select(13);
+        Select(14);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
-        Select(14);
+        Select(15);
     }
 
     public void SetViewKeyframes(Vector viewKeyframes_)
     {
         viewKeyframes = viewKeyframes_;
-        Select(15);
+        Select(16);
     }
 
     public void SetCameraViewMode(boolean cameraViewMode_)
     {
         cameraViewMode = cameraViewMode_;
-        Select(16);
+        Select(17);
     }
 
     public void SetUsingScalableRendering(boolean usingScalableRendering_)
     {
         usingScalableRendering = usingScalableRendering_;
-        Select(17);
+        Select(18);
     }
 
     public void SetLastRenderMin(float lastRenderMin_)
     {
         lastRenderMin = lastRenderMin_;
-        Select(18);
+        Select(19);
     }
 
     public void SetLastRenderAvg(float lastRenderAvg_)
     {
         lastRenderAvg = lastRenderAvg_;
-        Select(19);
+        Select(20);
     }
 
     public void SetLastRenderMax(float lastRenderMax_)
     {
         lastRenderMax = lastRenderMax_;
-        Select(20);
+        Select(21);
     }
 
     public void SetNumPrimitives(int numPrimitives_)
     {
         numPrimitives = numPrimitives_;
-        Select(21);
+        Select(22);
     }
 
     public void SetExtents(double[] extents_)
     {
         for(int i = 0; i < 6; ++i)
              extents[i] = extents_[i];
-        Select(22);
+        Select(23);
     }
 
     public void SetWindowSize(int[] windowSize_)
     {
         windowSize[0] = windowSize_[0];
         windowSize[1] = windowSize_[1];
-        Select(23);
+        Select(24);
     }
 
     public void SetWindowSize(int e0, int e1)
     {
         windowSize[0] = e0;
         windowSize[1] = e1;
-        Select(23);
+        Select(24);
     }
 
     public void SetWinMode(int winMode_)
     {
         winMode = winMode_;
-        Select(24);
+        Select(25);
     }
 
     // Property getting methods
@@ -438,6 +448,7 @@ public class WindowInformation extends AttributeSubject
     public Vector   GetTimeSliderCurrentStates() { return timeSliderCurrentStates; }
     public int      GetAnimationMode() { return animationMode; }
     public int      GetInteractionMode() { return interactionMode; }
+    public int      GetToolUpdateMode() { return toolUpdateMode; }
     public boolean  GetBoundingBoxNavigate() { return boundingBoxNavigate; }
     public boolean  GetSpin() { return spin; }
     public boolean  GetFullFrame() { return fullFrame; }
@@ -474,42 +485,44 @@ public class WindowInformation extends AttributeSubject
         if(WriteSelect(5, buf))
             buf.WriteInt(interactionMode);
         if(WriteSelect(6, buf))
-            buf.WriteBool(boundingBoxNavigate);
+            buf.WriteInt(toolUpdateMode);
         if(WriteSelect(7, buf))
-            buf.WriteBool(spin);
+            buf.WriteBool(boundingBoxNavigate);
         if(WriteSelect(8, buf))
-            buf.WriteBool(fullFrame);
+            buf.WriteBool(spin);
         if(WriteSelect(9, buf))
-            buf.WriteBool(perspective);
+            buf.WriteBool(fullFrame);
         if(WriteSelect(10, buf))
-            buf.WriteBool(lockView);
+            buf.WriteBool(perspective);
         if(WriteSelect(11, buf))
-            buf.WriteBool(lockTools);
+            buf.WriteBool(lockView);
         if(WriteSelect(12, buf))
-            buf.WriteBool(lockTime);
+            buf.WriteBool(lockTools);
         if(WriteSelect(13, buf))
-            buf.WriteInt(viewExtentsType);
+            buf.WriteBool(lockTime);
         if(WriteSelect(14, buf))
-            buf.WriteInt(viewDimension);
+            buf.WriteInt(viewExtentsType);
         if(WriteSelect(15, buf))
-            buf.WriteIntVector(viewKeyframes);
+            buf.WriteInt(viewDimension);
         if(WriteSelect(16, buf))
-            buf.WriteBool(cameraViewMode);
+            buf.WriteIntVector(viewKeyframes);
         if(WriteSelect(17, buf))
-            buf.WriteBool(usingScalableRendering);
+            buf.WriteBool(cameraViewMode);
         if(WriteSelect(18, buf))
-            buf.WriteFloat(lastRenderMin);
+            buf.WriteBool(usingScalableRendering);
         if(WriteSelect(19, buf))
-            buf.WriteFloat(lastRenderAvg);
+            buf.WriteFloat(lastRenderMin);
         if(WriteSelect(20, buf))
-            buf.WriteFloat(lastRenderMax);
+            buf.WriteFloat(lastRenderAvg);
         if(WriteSelect(21, buf))
-            buf.WriteInt(numPrimitives);
+            buf.WriteFloat(lastRenderMax);
         if(WriteSelect(22, buf))
-            buf.WriteDoubleArray(extents);
+            buf.WriteInt(numPrimitives);
         if(WriteSelect(23, buf))
-            buf.WriteIntArray(windowSize);
+            buf.WriteDoubleArray(extents);
         if(WriteSelect(24, buf))
+            buf.WriteIntArray(windowSize);
+        if(WriteSelect(25, buf))
             buf.WriteInt(winMode);
     }
 
@@ -536,60 +549,63 @@ public class WindowInformation extends AttributeSubject
             SetInteractionMode(buf.ReadInt());
             break;
         case 6:
-            SetBoundingBoxNavigate(buf.ReadBool());
+            SetToolUpdateMode(buf.ReadInt());
             break;
         case 7:
-            SetSpin(buf.ReadBool());
+            SetBoundingBoxNavigate(buf.ReadBool());
             break;
         case 8:
-            SetFullFrame(buf.ReadBool());
+            SetSpin(buf.ReadBool());
             break;
         case 9:
-            SetPerspective(buf.ReadBool());
+            SetFullFrame(buf.ReadBool());
             break;
         case 10:
-            SetLockView(buf.ReadBool());
+            SetPerspective(buf.ReadBool());
             break;
         case 11:
-            SetLockTools(buf.ReadBool());
+            SetLockView(buf.ReadBool());
             break;
         case 12:
-            SetLockTime(buf.ReadBool());
+            SetLockTools(buf.ReadBool());
             break;
         case 13:
-            SetViewExtentsType(buf.ReadInt());
+            SetLockTime(buf.ReadBool());
             break;
         case 14:
-            SetViewDimension(buf.ReadInt());
+            SetViewExtentsType(buf.ReadInt());
             break;
         case 15:
-            SetViewKeyframes(buf.ReadIntVector());
+            SetViewDimension(buf.ReadInt());
             break;
         case 16:
-            SetCameraViewMode(buf.ReadBool());
+            SetViewKeyframes(buf.ReadIntVector());
             break;
         case 17:
-            SetUsingScalableRendering(buf.ReadBool());
+            SetCameraViewMode(buf.ReadBool());
             break;
         case 18:
-            SetLastRenderMin(buf.ReadFloat());
+            SetUsingScalableRendering(buf.ReadBool());
             break;
         case 19:
-            SetLastRenderAvg(buf.ReadFloat());
+            SetLastRenderMin(buf.ReadFloat());
             break;
         case 20:
-            SetLastRenderMax(buf.ReadFloat());
+            SetLastRenderAvg(buf.ReadFloat());
             break;
         case 21:
-            SetNumPrimitives(buf.ReadInt());
+            SetLastRenderMax(buf.ReadFloat());
             break;
         case 22:
-            SetExtents(buf.ReadDoubleArray());
+            SetNumPrimitives(buf.ReadInt());
             break;
         case 23:
-            SetWindowSize(buf.ReadIntArray());
+            SetExtents(buf.ReadDoubleArray());
             break;
         case 24:
+            SetWindowSize(buf.ReadIntArray());
+            break;
+        case 25:
             SetWinMode(buf.ReadInt());
             break;
         }
@@ -604,6 +620,7 @@ public class WindowInformation extends AttributeSubject
         str = str + intVectorToString("timeSliderCurrentStates", timeSliderCurrentStates, indent) + "\n";
         str = str + intToString("animationMode", animationMode, indent) + "\n";
         str = str + intToString("interactionMode", interactionMode, indent) + "\n";
+        str = str + intToString("toolUpdateMode", toolUpdateMode, indent) + "\n";
         str = str + boolToString("boundingBoxNavigate", boundingBoxNavigate, indent) + "\n";
         str = str + boolToString("spin", spin, indent) + "\n";
         str = str + boolToString("fullFrame", fullFrame, indent) + "\n";
@@ -634,6 +651,7 @@ public class WindowInformation extends AttributeSubject
     private Vector   timeSliderCurrentStates; // vector of Integer objects
     private int      animationMode;
     private int      interactionMode;
+    private int      toolUpdateMode;
     private boolean  boundingBoxNavigate;
     private boolean  spin;
     private boolean  fullFrame;

@@ -698,6 +698,11 @@ VisitSphereTool::DoTransformations()
 //  Programmer:  Brad Whitlock
 //  Creation:    Fri May 3 10:56:19 PDT 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
 // ****************************************************************************
 
 void
@@ -736,11 +741,15 @@ VisitSphereTool::Translate(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
         // Remove the right actors.
         FinalActorSetup();
@@ -767,6 +776,11 @@ VisitSphereTool::Translate(CB_ENUM e, int, int, int x, int y)
 //    Hank Childs, Tue Aug 28 17:00:44 PDT 2007
 //    Fix divide by zero.
 //
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//    Also, fixed inconsistencies in the way actors/bboxmode were set up.
+//
 // ****************************************************************************
 
 void
@@ -787,12 +801,8 @@ VisitSphereTool::Resize(CB_ENUM e, int, int, int x, int y)
         dY = originScreen.y - resizeScreen.y;
         originalDistance = sqrt(dX * dX + dY * dY);
 
-        // Start bounding box mode.
-        if(proxy.HasPlots())
-        {
-            addedBbox = true;
-            proxy.StartBoundingBox();
-        }
+        // Make the right actors active.
+        InitialActorSetup();
     }
     else if(e == CB_MIDDLE)
     {
@@ -815,16 +825,17 @@ VisitSphereTool::Resize(CB_ENUM e, int, int, int x, int y)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
 
-        // End bounding box mode.
-        if(addedBbox)
-            proxy.EndBoundingBox();
-        addedBbox = false;
+        FinalActorSetup();
     }
 }
 

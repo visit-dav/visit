@@ -782,6 +782,38 @@ ViewerWindow::GetInteractionMode() const
 }
 
 // ****************************************************************************
+//  Method: ViewerWindow::SetToolUpdateMode
+//
+//  Purpose: 
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  2, 2010
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetToolUpdateMode(TOOLUPDATE_MODE m)
+{
+    visWindow->SetToolUpdateMode(m);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::GetToolUpdateMode
+//
+//  Purpose: 
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  1, 2010 
+//
+// ****************************************************************************
+
+TOOLUPDATE_MODE
+ViewerWindow::GetToolUpdateMode() const 
+{
+    return visWindow->GetToolUpdateMode();
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::SetToolEnabled
 //
 // Purpose: 
@@ -801,6 +833,11 @@ ViewerWindow::GetInteractionMode() const
 //   Brad Whitlock, Fri Jul 18 12:28:17 PDT 2003
 //   Added code to protect us from a bad toolId.
 //
+//   Jeremy Meredith, Tue Feb  2 13:00:43 EST 2010
+//   Disable the tool before notifying the query manager.  This is because
+//   of the new "update tools when they close" setting; you must have
+//   the tool update its settings before you pass them to the query mgr.
+//
 // ****************************************************************************
 
 void
@@ -812,6 +849,8 @@ ViewerWindow::SetToolEnabled(int toolId, bool enabled)
     //
     if(toolId >= 0 && toolId < GetNumTools())
     {
+        visWindow->SetToolEnabled(toolId, enabled);
+
         if(enabled)
         {
             GetPlotList()->InitializeTool(visWindow->GetToolInterface(toolId));
@@ -823,8 +862,6 @@ ViewerWindow::SetToolEnabled(int toolId, bool enabled)
             ViewerQueryManager::Instance()->
                 DisableTool(this, visWindow->GetToolInterface(toolId));
         }
-
-        visWindow->SetToolEnabled(toolId, enabled);
     }
 }
 
@@ -7865,6 +7902,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //   Added new axis array window mode.
 //
+//   Jeremy Meredith, Tue Feb  2 15:36:30 EST 2010
+//   Added tool update mode.
+//
 // ****************************************************************************
 
 void
@@ -7908,6 +7948,12 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         //
         windowNode->AddNode(new DataNode("interactionMode",
             INTERACTION_MODE_ToString(GetInteractionMode())));
+
+        //
+        // Tool update mode.
+        //
+        windowNode->AddNode(new DataNode("toolUpdateMode",
+            TOOLUPDATE_MODE_ToString(GetToolUpdateMode())));
 
         //
         // Active tools.
@@ -8122,6 +8168,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Mon Oct 26 15:43:23 PDT 2009
 //   I replaced the code to delete the active plots with a new,more direct
 //   way that does not cause metadata read side-effects.
+//
+//   Jeremy Meredith, Tue Feb  2 15:36:30 EST 2010
+//   Added tool update mode.
 //
 // ****************************************************************************
 
@@ -8444,6 +8493,16 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     }
 
     //
+    // Read in and set the tool update mode.
+    //
+    if((node = windowNode->GetNode("toolUpdateMode")) != 0)
+    {
+        TOOLUPDATE_MODE m;
+        if(TOOLUPDATE_MODE_FromString(node->AsString(), m))
+            SendToolUpdateModeMessage(m);
+    }
+
+    //
     // Read in the list of active tools and send a message to the
     // viewer's message buffer so that the tool will be activated later
     // when control returns to the event loop.
@@ -8542,6 +8601,32 @@ ViewerWindow::SendInteractionModeMessage(const INTERACTION_MODE m) const
     char msg[256];
 
     SNPRINTF(msg, 256, "setInteractionMode 0x%p %d;", this, int(m));
+    viewerSubject->MessageRendererThread(msg);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SendToolupdateModeMessage
+//
+// Purpose: 
+//   Sends a message to the viewer's event loop that tells it to set the
+//   window's toolupdate mode.
+//
+// Arguments:
+//   m : The toolupdate mode to set.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SendToolUpdateModeMessage(const TOOLUPDATE_MODE m) const
+{
+    char msg[256];
+
+    SNPRINTF(msg, 256, "setToolUpdateMode 0x%p %d;", this, int(m));
     viewerSubject->MessageRendererThread(msg);
 }
 

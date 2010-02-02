@@ -85,6 +85,11 @@ typedef std::vector<HotPoint> HotPointVector;
 //   Jeremy Meredith, Fri Feb  1 18:10:41 EST 2008
 //   Added virtual UpdatePlotList.
 //
+//   Jeremy Meredith, Tue Feb  2 13:16:55 EST 2010
+//   Pulled CallCallback up from individual tools into a pure virtual function
+//   here.  It already existed in every tool, and it is now required to
+//   be visible to get the "OnToolClose" tool update mode to work correctly.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractiveTool
@@ -128,6 +133,8 @@ class VISWINDOW_API VisitInteractiveTool
 
     virtual void          FullFrameOn(const double, const int)  {; }; 
     virtual void          FullFrameOff() {; }; 
+
+    virtual void          CallCallback() = 0;
 
   protected:
     void                  ComputeDisplayToWorld(double x, double y, double z,
