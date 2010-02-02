@@ -409,6 +409,9 @@ typedef struct {
 //    Changed the interface to ReplaceDatabase, adding option to replace
 //    only active plots.
 //
+//    Jeremy Meredith, Tue Feb  2 13:48:28 EST 2010
+//    Added new tool update mode setting.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -476,6 +479,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void UpdateKeyframeAttributes();
 
     void SetInteractionMode(INTERACTION_MODE m, int windowIndex = -1);
+    void SetToolUpdateMode(TOOLUPDATE_MODE m, int windowIndex = -1);
     void SetLightListFromClient();
     void SetLightListFromDefault();
     void SetViewCurveFromClient();

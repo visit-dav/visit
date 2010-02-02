@@ -63,6 +63,10 @@
 //
 //    Mark C. Miller, Wed Mar  4 17:59:51 PST 2009
 //    Adjusted for dbio-only build.
+//
+//    Jeremy Meredith, Tue Feb  2 13:46:25 EST 2010
+//    Added new tool update mode.
+//
 // ************************************************************************* //
 
 
@@ -100,6 +104,14 @@ typedef enum {
     CB_MIDDLE,      /* 1 */
     CB_END          /* 2 */
 }  CB_ENUM;
+
+typedef enum
+{
+    UPDATE_CONTINUOUS  = 0,
+    UPDATE_ONRELEASE, /* 1 */
+    UPDATE_ONCLOSE    /* 2 */
+}  TOOLUPDATE_MODE;
+
 
 // Forward declaration.
 class VisitInteractiveTool;
@@ -163,6 +175,12 @@ VISWINDOW_API std::string INTERACTION_MODE_ToString(INTERACTION_MODE);
 VISWINDOW_API std::string INTERACTION_MODE_ToString(int);
 VISWINDOW_API bool        INTERACTION_MODE_FromString(const std::string &,
                                                       INTERACTION_MODE &);
+
+// Functions to convert TOOLUPDATE_MODE to/from string.
+VISWINDOW_API std::string TOOLUPDATE_MODE_ToString(TOOLUPDATE_MODE);
+VISWINDOW_API std::string TOOLUPDATE_MODE_ToString(int);
+VISWINDOW_API bool        TOOLUPDATE_MODE_FromString(const std::string &,
+                                                     TOOLUPDATE_MODE &);
 
 // ****************************************************************************
 //  Function: ValidMode

@@ -3048,6 +3048,45 @@ VisWindow::GetInteractionMode() const
 }
 
 // ****************************************************************************
+//  Method: VisWindow::SetToolUpdateMode
+//
+//  Purpose:
+//      Sets the tool update mode of the VisWindow.
+//
+//  Arguments:
+//      m           The new tool update mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  2, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetToolUpdateMode(TOOLUPDATE_MODE m)
+{
+    interactions->SetToolUpdateMode(m);
+}
+
+// ****************************************************************************
+//  Method: VisWindow::GetToolUpdateMode
+//
+//  Purpose:
+//      Returns the VisWindow's current tool update mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  2, 2010
+//
+// ****************************************************************************
+
+TOOLUPDATE_MODE
+VisWindow::GetToolUpdateMode() const
+{
+    return interactions->GetToolUpdateMode();
+}
+
+// ****************************************************************************
 //  Method: VisWindow::SetInteractor
 //
 //  Purpose:

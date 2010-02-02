@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: WindowInformation
 //
@@ -60,13 +61,23 @@
 class STATE_API WindowInformation : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     WindowInformation();
     WindowInformation(const WindowInformation &obj);
+protected:
+    // These constructors are for objects derived from this class
+    WindowInformation(private_tmfs_t tmfs);
+    WindowInformation(const WindowInformation &obj, private_tmfs_t tmfs);
+public:
     virtual ~WindowInformation();
 
     virtual WindowInformation& operator = (const WindowInformation &obj);
     virtual bool operator == (const WindowInformation &obj) const;
     virtual bool operator != (const WindowInformation &obj) const;
+private:
+    void Init();
+    void Copy(const WindowInformation &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -89,6 +100,7 @@ public:
     void SetTimeSliderCurrentStates(const intVector &timeSliderCurrentStates_);
     void SetAnimationMode(int animationMode_);
     void SetInteractionMode(int interactionMode_);
+    void SetToolUpdateMode(int toolUpdateMode_);
     void SetBoundingBoxNavigate(bool boundingBoxNavigate_);
     void SetSpin(bool spin_);
     void SetFullFrame(bool fullFrame_);
@@ -119,6 +131,7 @@ public:
           intVector    &GetTimeSliderCurrentStates();
     int                GetAnimationMode() const;
     int                GetInteractionMode() const;
+    int                GetToolUpdateMode() const;
     bool               GetBoundingBoxNavigate() const;
     bool               GetSpin() const;
     bool               GetFullFrame() const;
@@ -162,6 +175,7 @@ public:
         ID_timeSliderCurrentStates,
         ID_animationMode,
         ID_interactionMode,
+        ID_toolUpdateMode,
         ID_boundingBoxNavigate,
         ID_spin,
         ID_fullFrame,
@@ -180,7 +194,8 @@ public:
         ID_numPrimitives,
         ID_extents,
         ID_windowSize,
-        ID_winMode
+        ID_winMode,
+        ID__LAST
     };
 
 private:
@@ -190,6 +205,7 @@ private:
     intVector    timeSliderCurrentStates;
     int          animationMode;
     int          interactionMode;
+    int          toolUpdateMode;
     bool         boundingBoxNavigate;
     bool         spin;
     bool         fullFrame;
@@ -212,6 +228,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define WINDOWINFORMATION_TMFS "sis*i*iiibbbbbbbiii*bbfffiDIi"
 
 #endif

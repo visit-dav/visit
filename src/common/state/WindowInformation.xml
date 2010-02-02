@@ -15,6 +15,9 @@
     <Field name="interactionMode" label="interactionMode" type="int">
       0
     </Field>
+    <Field name="toolUpdateMode" label="toolUpdateMode" type="int">
+      1
+    </Field>
     <Field name="boundingBoxNavigate" label="boundingBoxNavigate" type="bool">
       true
     </Field>

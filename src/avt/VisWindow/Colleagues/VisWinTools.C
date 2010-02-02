@@ -553,6 +553,10 @@ VisWinTools::GetNumTools() const
 //   Add a call to recalculate the rendering order.  This is because if this
 //   tool is added after a transparent plot, it will not show up.
 //
+//   Jeremy Meredith, Tue Feb  2 13:35:53 EST 2010
+//   If we're using the new update-tools-when-you-close-them mode,
+//   tell the tool to update its targets before disabling it.
+//
 // ****************************************************************************
 
 void
@@ -564,7 +568,11 @@ VisWinTools::SetToolEnabled(int i, bool val)
     if(val)
         tools[i]->Enable();
     else
+    {
+        if (toolProxy.GetToolUpdateMode() == UPDATE_ONCLOSE)
+            tools[i]->CallCallback();
         tools[i]->Disable();
+    }
 
     UpdateHighlight();
     toolProxy.RecalculateRenderOrder();

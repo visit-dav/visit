@@ -409,6 +409,9 @@ class VisitInteractor;
 //    Tom Fogal, Mon May 25 18:21:24 MDT 2009
 //    Added GetTransparencyActor, so clients may invalidate the cache.
 //
+//    Jeremy Meredith, Tue Feb  2 13:45:20 EST 2010
+//    Added new tool update mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -474,6 +477,9 @@ public:
 
     void                 SetInteractionMode(INTERACTION_MODE m);
     INTERACTION_MODE     GetInteractionMode() const;
+
+    void                 SetToolUpdateMode(TOOLUPDATE_MODE);
+    TOOLUPDATE_MODE      GetToolUpdateMode() const;
 
     void                 SetBackgroundColor(double, double, double);
     const double *       GetBackgroundColor() const;

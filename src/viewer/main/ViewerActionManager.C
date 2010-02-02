@@ -554,6 +554,9 @@ public:
 //   Brad Whitlock, Tue Oct 20 14:53:42 PDT 2009
 //   I added actions to manipulate the plot list order.
 //
+//   Jeremy Meredith, Tue Feb  2 13:51:37 EST 2010
+//   Added actions for setting the new tool update mode.
+//
 // ****************************************************************************
 
 
@@ -595,6 +598,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
 
     AddAction(new SetWindowModeAction(win), ViewerRPC::SetWindowModeRPC);
     AddAction(new EnableToolAction(win), ViewerRPC::EnableToolRPC);
+    AddAction(new SetToolUpdateModeAction(win), ViewerRPC::SetToolUpdateModeRPC);
 
     AddAction(new ToggleSpinModeAction(win), ViewerRPC::ToggleSpinModeRPC);
     AddAction(new TogglePerspectiveViewAction(win), ViewerRPC::TogglePerspectiveViewRPC);

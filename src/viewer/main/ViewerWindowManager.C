@@ -2424,6 +2424,39 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 }
 
 // ****************************************************************************
+//  Method: ViewerWindowManager::SetToolUpdateMode
+//
+//  Purpose: 
+//    This method sets the tool updte mode for the specified window.
+//
+//  Arguments:
+//    m            The tool update mode.
+//    windowIndex  This is a zero-origin integer that specifies the index
+//                 of the window we want to change. If the value is -1, use
+//                 use the active window.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  1, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetToolUpdateMode(TOOLUPDATE_MODE m, int windowIndex)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if(windows[index] != 0)
+    {
+        windows[index]->SetToolUpdateMode(m);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerWindowManager::SetViewCurveFromClient
 //
 //  Purpose: 
@@ -7382,6 +7415,9 @@ ViewerWindowManager::GetWindowInformation()
 //   Brad Whitlock, Wed Dec 10 16:23:16 PST 2008
 //   Update the AnimationAttributes.
 //
+//   Jeremy Meredith, Tue Feb  2 13:52:37 EST 2010
+//   Update the tool update mode settings.
+//
 // ****************************************************************************
 
 void
@@ -7451,6 +7487,7 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
         if((flags & WINDOWINFO_WINDOWFLAGS) != 0)
         {
             windowInfo->SetInteractionMode(int(win->GetInteractionMode()));
+            windowInfo->SetToolUpdateMode(int(win->GetToolUpdateMode()));
             windowInfo->SetBoundingBoxNavigate(win->GetBoundingBoxMode());
             windowInfo->SetSpin(win->GetSpinMode());
             windowInfo->SetLockView(win->GetViewIsLocked());

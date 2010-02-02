@@ -1047,6 +1047,10 @@ VisitPointTool::ComputeTranslationDistance(int direction)
 //   Brad Whitlock, Fri Apr  3 14:40:14 PDT 2009
 //   Update the sphere.
 //
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
 // ****************************************************************************
 
 void
@@ -1117,14 +1121,18 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
+        // Call the tool's callback.
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
+
         // Remove the right actors.
         FinalActorSetup();
-
-        // Call the tool's callback.
-        CallCallback();
 
         axisTranslate = none;
     }

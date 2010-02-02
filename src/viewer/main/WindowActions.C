@@ -1371,3 +1371,153 @@ EnableToolAction::ChoiceChecked(int i) const
 {
     return window->GetToolEnabled(i);
 }
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetToolUpdateModeAction::SetToolUpdateModeAction
+//
+// Purpose: 
+//   Constructor for the SetToolUpdateModeAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+SetToolUpdateModeAction::SetToolUpdateModeAction(ViewerWindow *win) :
+    ViewerMultipleAction(win)
+{
+    SetAllText(tr("Tool Updates"));
+    SetToolTip(tr("Set tool update frequency"));
+    SetExclusive(true);
+
+    // We're not adding this to the toolbar, just the
+    // pop-up menu, so don't bother with pixmaps or long/short names.
+    AddChoice(tr("Continuously"));
+    AddChoice(tr("On Mouse Release"));
+    AddChoice(tr("On Tool Close"));
+}
+
+
+// ****************************************************************************
+// Method: SetToolUpdateModeAction::Setup
+//
+// Purpose: 
+//   This method is called when the toolbar or popup menu are used. It stores
+//   values into the args object so it is ready for the Execute method.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetToolUpdateModeAction::Setup()
+{
+    args.SetToolUpdateMode(activeAction);
+}
+
+
+// ****************************************************************************
+// Method: SetToolUpdateModeAction::Execute
+//
+// Purpose: 
+//   Does the work for SetToolUpdateModeAction.
+//
+// Arguments:
+//   val : The choice that the user made.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetToolUpdateModeAction::Execute(int)
+{
+    TOOLUPDATE_MODE mode = (TOOLUPDATE_MODE)args.GetToolUpdateMode();
+    windowMgr->SetToolUpdateMode(mode, window->GetWindowId());
+}
+
+// ****************************************************************************
+// Method: SetToolUpdateModeAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SetToolUpdateModeAction::Enabled() const
+{
+    return (ViewerMultipleAction::Enabled() &&
+            window->GetPlotList()->GetNumPlots() > 0);
+}
+
+// ****************************************************************************
+// Method: SetToolUpdateModeAction::ChoiceChecked
+//
+// Purpose: 
+//   Returns when the i'th choice is toggled.
+//
+// Arguments:
+//   i : The choice to consider.
+//
+// Returns:    true if the choice is toggled; false otherwise.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetToolUpdateModeAction::ChoiceChecked(int i) const
+{
+    bool val = (window->GetToolUpdateMode() == (TOOLUPDATE_MODE)i);
+    return val;
+}
+
+// ****************************************************************************
+// Method: SetToolUpdateModeAction::ChoiceChecked
+//
+// Purpose: 
+//   Returns when the i'th choice is toggled.
+//
+// Arguments:
+//   i : The choice to consider.
+//
+// Returns:    true if the choice is toggled; false otherwise.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetToolUpdateModeAction::ChoiceEnabled(int i) const
+{
+    if (window->GetBoundingBoxMode() == true &&
+        (TOOLUPDATE_MODE)i == UPDATE_CONTINUOUS)
+        return false;
+
+    return true;
+}
+

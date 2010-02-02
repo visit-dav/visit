@@ -584,6 +584,11 @@ VisitAxisRestrictionTool::DoClampAndTransformations()
 //  Programmer: Jeremy Meredith
 //  Creation:   February  1, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
 // ****************************************************************************
 
 void
@@ -633,13 +638,17 @@ VisitAxisRestrictionTool::Move(CB_ENUM e, int, int, int x, int y, int index)
 
         // Render the window
         proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
     }
     else
     {
-        RemoveText();
-
         // Call the tool's callback.
-        CallCallback();
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
+
+        RemoveText();
 
         // Remove the right actors.
         FinalActorSetup();

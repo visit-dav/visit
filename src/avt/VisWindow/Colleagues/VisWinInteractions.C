@@ -65,6 +65,9 @@
 //    Brad Whitlock, Wed Sep 10 15:28:12 PST 2003
 //    Initialized spinModeSuspended.
 //
+//    Jeremy Meredith, Tue Feb  2 13:43:07 EST 2010
+//    Initialize new toolUpdateMode.
+//
 // ****************************************************************************
 
 VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
@@ -77,6 +80,7 @@ VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
     spinModeSuspended = false;
     hotPointInteractor = new VisitHotPointInteractor(i);
     mediator.SetInteractor(hotPointInteractor);
+    toolUpdateMode = UPDATE_ONRELEASE;
 }
 
 
@@ -454,12 +458,23 @@ VisWinInteractions::StopAxisParallelMode(void)
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Nov 9 15:52:59 PST 2000
 //
+//  Modifications:
+//   Jeremy Meredith, Tue Feb  2 13:44:21 EST 2010
+//   Turn off continuous tool update mode if we're turning on bbox mode.
+//
 // ****************************************************************************
 
 void
 VisWinInteractions::SetBoundingBoxMode(bool val)
 {
     bboxMode = val;
+    if (bboxMode)
+    {
+        // The continuous tool update mode does not
+        // work when bounding box mode is on.
+        if (toolUpdateMode == UPDATE_CONTINUOUS)
+            toolUpdateMode = UPDATE_ONRELEASE;
+    }
 }
 
 
@@ -621,6 +636,42 @@ VisWinInteractions::HasPlots(void)
     {
         SetInteractionMode(NAVIGATE);
     }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinInteractions::SetToolUpdateMode
+//
+//  Purpose:
+//      Sets tool update mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  2, 2010
+//
+// ****************************************************************************
+
+void
+VisWinInteractions::SetToolUpdateMode(TOOLUPDATE_MODE m)
+{
+    toolUpdateMode = m;
+}
+
+
+// ****************************************************************************
+//  Method: VisWinInteractions::GetToolUpdateMode
+//
+//  Purpose:
+//      Returns the tool update mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  2, 2010
+//
+// ****************************************************************************
+
+TOOLUPDATE_MODE
+VisWinInteractions::GetToolUpdateMode() const
+{
+    return toolUpdateMode;
 }
 
 

@@ -160,6 +160,9 @@ class     VisitInteractor;
 //    Brad Whitlock, Wed Jan  7 14:49:10 PST 2009
 //    I removed plot info attributes.
 //
+//    Jeremy Meredith, Tue Feb  2 13:45:02 EST 2010
+//    Added tool update mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -186,6 +189,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedGetForegroundColor(double [3]);
     bool                ProxiedGetHotPoint(int, int, HotPoint &) const;
     WINDOW_MODE         ProxiedGetMode();
+    TOOLUPDATE_MODE     ProxiedGetToolUpdateMode() const;
     int                 ProxiedGetBackgroundMode() const;
     void                ProxiedGetViewport(double vport[4]);
     void                ProxiedGetSize(int &width, int &height) const;

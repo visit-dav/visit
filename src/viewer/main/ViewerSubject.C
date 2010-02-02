@@ -7241,6 +7241,9 @@ ViewerSubject::EnableSocketSignals()
 //    Brad Whitlock, Mon Nov  9 11:47:17 PST 2009
 //    Don't process commands during an engine launch.
 //
+//    Jeremy Meredith, Tue Feb  2 15:37:02 EST 2010
+//    Added tool update mode.
+//
 // ****************************************************************************
 
 void
@@ -7335,6 +7338,17 @@ ViewerSubject::ProcessRendererMessage()
 
                 // Tell the window to set its interaction mode.
                 window->SetInteractionMode(INTERACTION_MODE(windowMode));
+                ViewerWindowManager::Instance()->UpdateActions();
+            }
+            else if (strncmp(msg, "setToolUpdateMode", 17) == 0)
+            {
+                ViewerWindow *window = 0;
+                int windowMode = 0;
+                int offset = 20;  // = strlen("setToolUpdateMode 0x");
+                sscanf (&msg[offset], "%p %d", &window, &windowMode);
+
+                // Tell the window to set its toolupdate mode.
+                window->SetToolUpdateMode(TOOLUPDATE_MODE(windowMode));
                 ViewerWindowManager::Instance()->UpdateActions();
             }
             else if (strncmp(msg, "updateFrame", 11) == 0)

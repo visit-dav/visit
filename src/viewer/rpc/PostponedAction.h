@@ -40,6 +40,7 @@
 #define POSTPONEDACTION_H
 #include <viewerrpc_exports.h>
 #include <AttributeSubject.h>
+
 #include <ViewerRPC.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class VIEWER_RPC_API PostponedAction : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PostponedAction();
     PostponedAction(const PostponedAction &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PostponedAction(private_tmfs_t tmfs);
+    PostponedAction(const PostponedAction &obj, private_tmfs_t tmfs);
+public:
     virtual ~PostponedAction();
 
     virtual PostponedAction& operator = (const PostponedAction &obj);
     virtual bool operator == (const PostponedAction &obj) const;
     virtual bool operator != (const PostponedAction &obj) const;
+private:
+    void Init();
+    void Copy(const PostponedAction &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -97,7 +108,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_RPC = 0,
-        ID_window
+        ID_window,
+        ID__LAST
     };
 
 private:
@@ -106,6 +118,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define POSTPONEDACTION_TMFS "ai"
 
 #endif

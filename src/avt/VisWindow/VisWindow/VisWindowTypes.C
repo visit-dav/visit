@@ -104,6 +104,71 @@ INTERACTION_MODE_FromString(const std::string &s, INTERACTION_MODE &m)
     return false;
 }
 
+static const char *TOOLUPDATE_MODE_strings[] = {"CONTINUOUS",
+                                                "ONRELEASE",
+                                                "ONCLOSE"};
+
+// ****************************************************************************
+// Function: TOOLUPDATE_MODE_ToString
+//
+// Purpose: 
+//   Returns a string version of TOOLUPDATE_MODE.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+TOOLUPDATE_MODE_ToString(TOOLUPDATE_MODE m)
+{
+    int index = int(m);
+    if (m < UPDATE_CONTINUOUS || m > UPDATE_ONCLOSE)
+        index = UPDATE_ONRELEASE;
+    return TOOLUPDATE_MODE_strings[index];
+}
+
+std::string
+TOOLUPDATE_MODE_ToString(int m)
+{
+    int index = m;
+    if (index < 0 || index > 2)
+        index = (int)UPDATE_ONRELEASE;
+    return TOOLUPDATE_MODE_strings[index];
+}
+
+// ****************************************************************************
+// Function: TOOLUPDATE_MODE_FromString
+//
+// Purpose: 
+//   Returns an TOOLUPDATE_MODE associated with a string value.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  2, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+TOOLUPDATE_MODE_FromString(const std::string &s, TOOLUPDATE_MODE &m)
+{
+    m = UPDATE_ONRELEASE;
+
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == TOOLUPDATE_MODE_strings[i])
+        {
+            m = TOOLUPDATE_MODE(i);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // ****************************************************************************
 // Class: VisWinTextAttributes
 //
