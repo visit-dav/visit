@@ -691,13 +691,15 @@ ToggleSpinModeAction::Checked() const
 // Creation:   Fri Apr 4 15:40:56 PST 2003
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Feb  2 17:31:07 EST 2010
+//   Spell out bbox.  I'm not sure most people know what that stands for.
+//
 // ****************************************************************************
 
 ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction(ViewerWindow *win) :
     ViewerToggleAction(win)
 {
-    SetAllText(tr("Navigate bbox"));
+    SetAllText(tr("Bounding box navigation"));
     SetToolTip(tr("Toggle bounding box navigation"));
     if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(navigatebboxon_xpm), QPixmap(navigatebboxoff_xpm));
