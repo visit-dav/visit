@@ -31,6 +31,10 @@ Definition:
 //    its interface has changed to accept both a number of timestep groups
 //    and a number of blocks.
 //
+//    Brad Whitlock, Tue Feb 2 10:06:34 PDT 2010
+//    I changed the code so when nBlocks==-1 it will treat the list of files
+//    as domains so multiblock files work again.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -87,7 +91,15 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
     }
 
-    int nTimestepGroups = nList / nBlock;
+    int nTimestepGroups = 1;
+    if(nBlock == -1)
+    {
+        // If nBlock == -1 then we're in here recursively and we're dealing
+        // with a list of domains.
+        nBlock = nList;
+    }
+    nTimestepGroups = nList / nBlock;
+
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
     {
