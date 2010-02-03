@@ -69,6 +69,11 @@
 #    a properly set LD_LIBRARY_PATH as some MPI variants do not pass
 #    environment variables.
 #
+#    Kathleen Bonnell, Wed Feb  3 11:28:41 PST 2010
+#    Encapsulated VISIT_INSTALL_x_PLUGINS into one Macro that accepts a 
+#    type parameter.  Changed VISIT_THIRDPARTY_OPTION into two macros that
+#    set a PATH var (for VISIT_x_DIR) or STRING var (for VISIT_x_LIBDEP).
+#    
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -197,49 +202,61 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY "Create a seprate executable that forwards VisIt's socket connection between engine and component launcher" OFF)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 
-MACRO(VISIT_3RDPARTY_OPTION vvar comment libvar)
-    # Create an option 
-    OPTION(${vvar} "${comment}" OFF)
-    # If the option is not set to OFF (this means that the user passed it on 
+MACRO(VISIT_3RDPARTY_VAR vvar comment libvar)
+    # Create a path variable 
+    SET(${vvar} "${vvar}-NOTFOUND" CACHE PATH "${comment}")
+    # If the variable is not set to NOTFOUND (this means that the user passed 
+    # it on the cmake command line or defined it in a config-site) then we 
+    # define libvar so our find routines can later use it.
+    IF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTFOUND")
+        SET(${libvar} ${${vvar}})
+    ENDIF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTFOUND")
+ENDMACRO(VISIT_3RDPARTY_VAR vvar comment libvar)
+
+MACRO(VISIT_3RDPARTY_DEP vvar comment libvar)
+    # Create a string variable 
+    SET(${vvar} "${vvar}-NOTSET" CACHE STRING "${comment}")
+    # If the var is not set to NOTSET (this means that the user passed it on 
     # the cmake command line or defined it in a config-site) then we define 
     # libvar so our find routines can later use it.
-    IF(NOT "${${vvar}}" MATCHES "OFF")
+    IF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTSET")
         SET(${libvar} ${${vvar}})
-    ENDIF(NOT "${${vvar}}" MATCHES "OFF")
-ENDMACRO(VISIT_3RDPARTY_OPTION vvar comment libvar)
+    ENDIF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTSET")
+ENDMACRO(VISIT_3RDPARTY_DEP vvar comment libvar)
 
-# Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python and so on.
-VISIT_3RDPARTY_OPTION(VISIT_VTK_DIR    "Path containing the VTK library's bin and lib" VTK_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_QT_BIN     "Path to the Qt library's bin (path containing qmake)" QT_BIN)
-VISIT_3RDPARTY_OPTION(VISIT_PYTHON_DIR "Path containing the Python library's include and lib" PYTHON_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_MESA_DIR   "Path containing the Mesa library's include and lib" MESA_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_ICET_DIR   "Path containing the Ice-T library's include and lib" ICET_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib" TCMALLOC_DIR)
+# Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python 
+# and so on.
+VISIT_3RDPARTY_VAR(VISIT_VTK_DIR    "Path containing the VTK library's bin and lib" VTK_DIR)
+VISIT_3RDPARTY_VAR(VISIT_QT_BIN     "Path to the Qt library's bin (path containing qmake)" QT_BIN)
+VISIT_3RDPARTY_VAR(VISIT_PYTHON_DIR "Path containing the Python library's include and lib" PYTHON_DIR)
+VISIT_3RDPARTY_VAR(VISIT_MESA_DIR   "Path containing the Mesa library's include and lib" MESA_DIR)
+VISIT_3RDPARTY_VAR(VISIT_ICET_DIR   "Path containing the Ice-T library's include and lib" ICET_DIR)
+VISIT_3RDPARTY_VAR(VISIT_TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib" TCMALLOC_DIR)
 
-# Define the options that let us pick I/O library installation locations. When the
-# library option is defined then we also define the variable name passed as the
-# 3rd argument. That variable is what is used in our various Find routines.
-VISIT_3RDPARTY_OPTION(VISIT_ADIOS_DIR     "Path containing the ADIOS library's include and lib" ADIOS_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_ADVIO_DIR     "Path containing the AdvIO library's include and lib" ADVIO_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_BOXLIB2D_DIR  "Path containing the Boxlib 2D library's include and lib" BOXLIB2D_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_BOXLIB3D_DIR  "Path containing the Boxlib 3D library's include and lib" BOXLIB3D_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_CCMIO_DIR     "Path containing the CCMIO library's include and lib" CCMIO_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_CFITSIO_DIR   "Path containing the CFITSIO library's include and lib" CFITSIO_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_CGNS_DIR      "Path containing the CGNS library's include and lib" CGNS_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_EXODUSII_DIR  "Path containing the ExodusII library's include and lib" EXODUSII_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_FASTBIT_DIR   "Path containing the Fastbit library's include and lib" FASTBIT_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_GDAL_DIR      "Path containing the GDAL library's include and lib" GDAL_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_HDF4_DIR      "Path containing the HDF4 library's include and lib" HDF4_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_HDF4_LIBDEP   "HDF4 library dependencies" HDF4_LIBDEP)
-VISIT_3RDPARTY_OPTION(VISIT_HDF5_DIR      "Path containing the HDF5 library's include and lib" HDF5_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_HDF5_LIBDEP   "HDF5 library dependencies" HDF5_LIBDEP)
-VISIT_3RDPARTY_OPTION(VISIT_H5PART_DIR    "Path containing the H5Part library's include and lib" H5PART_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_H5PART_LIBDEP "H5Part library dependencies" H5PART_LIBDEP)
-VISIT_3RDPARTY_OPTION(VISIT_MILI_DIR      "Path containing the Mili library's include and lib" MILI_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_NETCDF_DIR    "Path containing the NETCDF library's include and lib" NETCDF_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_SILO_DIR      "Path containing the Silo library's include and lib" SILO_DIR)
-VISIT_3RDPARTY_OPTION(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
-VISIT_3RDPARTY_OPTION(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
+# Define the options that let us pick I/O library installation locations. When 
+# the library option is defined then we also define the variable name passed as
+# the 3rd argument. That variable is what is used in our various Find routines.
+VISIT_3RDPARTY_VAR(VISIT_ADIOS_DIR     "Path containing the ADIOS library's include and lib" ADIOS_DIR)
+VISIT_3RDPARTY_VAR(VISIT_ADVIO_DIR     "Path containing the AdvIO library's include and lib" ADVIO_DIR)
+VISIT_3RDPARTY_VAR(VISIT_BOXLIB2D_DIR  "Path containing the Boxlib 2D library's include and lib" BOXLIB2D_DIR)
+VISIT_3RDPARTY_VAR(VISIT_BOXLIB3D_DIR  "Path containing the Boxlib 3D library's include and lib" BOXLIB3D_DIR)
+VISIT_3RDPARTY_VAR(VISIT_CCMIO_DIR     "Path containing the CCMIO library's include and lib" CCMIO_DIR)
+VISIT_3RDPARTY_VAR(VISIT_CFITSIO_DIR   "Path containing the CFITSIO library's include and lib" CFITSIO_DIR)
+VISIT_3RDPARTY_VAR(VISIT_CGNS_DIR      "Path containing the CGNS library's include and lib" CGNS_DIR)
+VISIT_3RDPARTY_VAR(VISIT_EXODUSII_DIR  "Path containing the ExodusII library's include and lib" EXODUSII_DIR)
+VISIT_3RDPARTY_VAR(VISIT_FASTBIT_DIR   "Path containing the Fastbit library's include and lib" FASTBIT_DIR)
+VISIT_3RDPARTY_VAR(VISIT_GDAL_DIR      "Path containing the GDAL library's include and lib" GDAL_DIR)
+VISIT_3RDPARTY_VAR(VISIT_HDF4_DIR      "Path containing the HDF4 library's include and lib" HDF4_DIR)
+VISIT_3RDPARTY_DEP(VISIT_HDF4_LIBDEP   "HDF4 library dependencies" HDF4_LIBDEP)
+VISIT_3RDPARTY_VAR(VISIT_HDF5_DIR      "Path containing the HDF5 library's include and lib" HDF5_DIR)
+VISIT_3RDPARTY_DEP(VISIT_HDF5_LIBDEP   "HDF5 library dependencies" HDF5_LIBDEP)
+VISIT_3RDPARTY_VAR(VISIT_H5PART_DIR    "Path containing the H5Part library's include and lib" H5PART_DIR)
+VISIT_3RDPARTY_DEP(VISIT_H5PART_LIBDEP "H5Part library dependencies" H5PART_LIBDEP)
+VISIT_3RDPARTY_VAR(VISIT_MILI_DIR      "Path containing the Mili library's include and lib" MILI_DIR)
+VISIT_3RDPARTY_VAR(VISIT_NETCDF_DIR    "Path containing the NETCDF library's include and lib" NETCDF_DIR)
+VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's include and lib" SILO_DIR)
+VISIT_3RDPARTY_DEP(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
+VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -360,79 +377,58 @@ MACRO(VISIT_INSTALL_TARGETS)
     ENDIF(VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
-MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
+MACRO(VISIT_INSTALL_PLUGINS type)
     IF(NOT VISIT_STATIC)
         IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
             SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
         ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+        IF(NOT WIN32)
         INSTALL(TARGETS ${ARGN}
-            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/databases
-            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/databases
+            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
+            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
         )
+        ELSE(NOT WIN32)
+            # ${BUILD_TYPE} refers to the configuration option chosen (Release,
+            # Debug, etc). It is a var that will be given a value during compile
+            # not configure, so the dollar sign must be escaped in the string
+            # below.  Then during install, ${BUILD_TYPE} will be expanded.
+            FOREACH(target ${ARGN})
+                SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
+                INSTALL(FILES ${filename}
+            DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
+            COMPONENT RUNTIME
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        )
+            
+            ENDFOREACH(target)
+        ENDIF(NOT WIN32)
         IF(APPLE)
             FOREACH(target ${ARGN})
                 SET(filename lib${target}.dylib)
                 INSTALL(CODE 
                     "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                         COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/databases/${filename}
+                         COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/${type}/${filename}
                          OUTPUT_VARIABLE OSXOUT)
                      MESSAGE(STATUS \"\${OSXOUT}\")
                     ")
             ENDFOREACH(target)
         ENDIF(APPLE)
     ENDIF(NOT VISIT_STATIC)
+ENDMACRO(VISIT_INSTALL_PLUGINS)
+
+MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
+    VISIT_INSTALL_PLUGINS(databases ${ARGN})
 ENDMACRO(VISIT_INSTALL_DATABASE_PLUGINS)
 
 MACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
-    IF(NOT VISIT_STATIC)
-        IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-            SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
-        ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-        INSTALL(TARGETS ${ARGN}
-            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/operators
-            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/operators
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-        )
-        IF(APPLE)
-            FOREACH(target ${ARGN})
-                SET(filename lib${target}.dylib)
-                INSTALL(CODE 
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                         COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/operators/${filename}
-                         OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-            ENDFOREACH(target)
-        ENDIF(APPLE)
-    ENDIF(NOT VISIT_STATIC)
+    VISIT_INSTALL_PLUGINS(operators ${ARGN})
 ENDMACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
 
 MACRO(VISIT_INSTALL_PLOT_PLUGINS)
-    IF(NOT VISIT_STATIC)
-        IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-            SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
-        ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-        INSTALL(TARGETS ${ARGN}
-            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/plots
-            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/plots
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-        )
-        IF(APPLE)
-            FOREACH(target ${ARGN})
-                SET(filename lib${target}.dylib)
-                INSTALL(CODE 
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                         COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/plots/${filename}
-                         OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-            ENDFOREACH(target)
-        ENDIF(APPLE)
-    ENDIF(NOT VISIT_STATIC)
+    VISIT_INSTALL_PLUGINS(plots ${ARGN})
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
 
 # Install the headers for directories that we need in order to build plugins
