@@ -62,11 +62,11 @@
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
 #           H5part   1.4.2    H5Part-1.4.2.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
-#           HDF5     1.8.2    hdf5-1.8.2.tar.gz      -5
+#           HDF5     1.8.4    hdf5-1.8.4.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           AdvIO    1.2.0    AdvIO-1.2.tar.gz
-#           Silo     4.7      silo-4.7.tar.gz
+#           Silo     4.7.2    silo-4.7.2.tar.gz
 #           szip     2.1      szip-2.1.tar.gz
 #
 #         Experimental (internal)
@@ -796,6 +796,10 @@
 #     and don't pass the compatibility/current version flags to libtool
 #     since VTK/CMake seems to be setting them appropriately on its own.
 #
+#     Mark C. Miller, Tue Feb  2 11:20:33 PST 2010
+#     Updated Silo to 4.7.2 and HDF5 to 1.8.4. Also fixed a problem where the
+#     hostconf file was specifying a relative path for the first line for
+#     cmake. Configure didn't like that.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1129,7 +1133,7 @@ export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
 export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
 export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
 
-export HDF5_VERSION=${HDF5_VERSION:-"1.8.2"}
+export HDF5_VERSION=${HDF5_VERSION:-"1.8.4"}
 export HDF5_FILE=${HDF5_FILE:-"hdf5-${HDF5_VERSION}.tar.gz"}
 export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
 export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
@@ -1197,9 +1201,9 @@ export CCMIO_VERSION=${CCMIO_VERSION:-"2.6.1"}
 export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION:-"2.0"}
 export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR:-"libccmio-2.6.1"}
 
-export SILO_VERSION=${SILO_VERSION:-"4.7"}
+export SILO_VERSION=${SILO_VERSION:-"4.7.2"}
 export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.7"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.7.2"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
 
@@ -7758,7 +7762,7 @@ function build_hostconf
     # First line of config-site file provides a hit to the location
     # of cmake.
 
-    echo "#$THIRD_PARTY_PATH/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" > $HOSTCONF
+    echo "#$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake" > $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## $0 generated host.cmake" >> $HOSTCONF
     echo "## created: $(date)" >> $HOSTCONF
