@@ -39,6 +39,7 @@
 #ifndef VIEWERWINDOWMANAGERATTRIBUTES_H
 #define VIEWERWINDOWMANAGERATTRIBUTES_H
 #include <AttributeSubject.h>
+
 class ActionGroupDescription;
 #include "ViewerRPC.h"
 
@@ -60,13 +61,23 @@ class ActionGroupDescription;
 class ViewerWindowManagerAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ViewerWindowManagerAttributes();
     ViewerWindowManagerAttributes(const ViewerWindowManagerAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ViewerWindowManagerAttributes(private_tmfs_t tmfs);
+    ViewerWindowManagerAttributes(const ViewerWindowManagerAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ViewerWindowManagerAttributes();
 
     virtual ViewerWindowManagerAttributes& operator = (const ViewerWindowManagerAttributes &obj);
     virtual bool operator == (const ViewerWindowManagerAttributes &obj) const;
     virtual bool operator != (const ViewerWindowManagerAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ViewerWindowManagerAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -121,7 +132,8 @@ public:
     enum {
         ID_actionConfigurations = 0,
         ID_toolbarsVisible,
-        ID_largeIcons
+        ID_largeIcons,
+        ID__LAST
     };
 
 protected:
@@ -133,6 +145,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEWERWINDOWMANAGERATTRIBUTES_TMFS "a*bb"
 
 #endif

@@ -64,6 +64,7 @@ void WindowInformation::Init()
     spin = false;
     fullFrame = false;
     perspective = true;
+    maintainView = false;
     lockView = false;
     lockTools = false;
     lockTime = false;
@@ -117,6 +118,7 @@ void WindowInformation::Copy(const WindowInformation &obj)
     spin = obj.spin;
     fullFrame = obj.fullFrame;
     perspective = obj.perspective;
+    maintainView = obj.maintainView;
     lockView = obj.lockView;
     lockTools = obj.lockTools;
     lockTime = obj.lockTime;
@@ -314,6 +316,7 @@ WindowInformation::operator == (const WindowInformation &obj) const
             (spin == obj.spin) &&
             (fullFrame == obj.fullFrame) &&
             (perspective == obj.perspective) &&
+            (maintainView == obj.maintainView) &&
             (lockView == obj.lockView) &&
             (lockTools == obj.lockTools) &&
             (lockTime == obj.lockTime) &&
@@ -483,6 +486,7 @@ WindowInformation::SelectAll()
     Select(ID_spin,                    (void *)&spin);
     Select(ID_fullFrame,               (void *)&fullFrame);
     Select(ID_perspective,             (void *)&perspective);
+    Select(ID_maintainView,            (void *)&maintainView);
     Select(ID_lockView,                (void *)&lockView);
     Select(ID_lockTools,               (void *)&lockTools);
     Select(ID_lockTime,                (void *)&lockTime);
@@ -727,6 +731,13 @@ WindowInformation::SetPerspective(bool perspective_)
 }
 
 void
+WindowInformation::SetMaintainView(bool maintainView_)
+{
+    maintainView = maintainView_;
+    Select(ID_maintainView, (void *)&maintainView);
+}
+
+void
 WindowInformation::SetLockView(bool lockView_)
 {
     lockView = lockView_;
@@ -922,6 +933,12 @@ WindowInformation::GetPerspective() const
 }
 
 bool
+WindowInformation::GetMaintainView() const
+{
+    return maintainView;
+}
+
+bool
 WindowInformation::GetLockView() const
 {
     return lockView;
@@ -1104,6 +1121,7 @@ WindowInformation::GetFieldName(int index) const
     case ID_spin:                    return "spin";
     case ID_fullFrame:               return "fullFrame";
     case ID_perspective:             return "perspective";
+    case ID_maintainView:            return "maintainView";
     case ID_lockView:                return "lockView";
     case ID_lockTools:               return "lockTools";
     case ID_lockTime:                return "lockTime";
@@ -1154,6 +1172,7 @@ WindowInformation::GetFieldType(int index) const
     case ID_spin:                    return FieldType_bool;
     case ID_fullFrame:               return FieldType_bool;
     case ID_perspective:             return FieldType_bool;
+    case ID_maintainView:            return FieldType_bool;
     case ID_lockView:                return FieldType_bool;
     case ID_lockTools:               return FieldType_bool;
     case ID_lockTime:                return FieldType_bool;
@@ -1204,6 +1223,7 @@ WindowInformation::GetFieldTypeName(int index) const
     case ID_spin:                    return "bool";
     case ID_fullFrame:               return "bool";
     case ID_perspective:             return "bool";
+    case ID_maintainView:            return "bool";
     case ID_lockView:                return "bool";
     case ID_lockTools:               return "bool";
     case ID_lockTime:                return "bool";
@@ -1298,6 +1318,11 @@ WindowInformation::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_perspective:
         {  // new scope
         retval = (perspective == obj.perspective);
+        }
+        break;
+    case ID_maintainView:
+        {  // new scope
+        retval = (maintainView == obj.maintainView);
         }
         break;
     case ID_lockView:

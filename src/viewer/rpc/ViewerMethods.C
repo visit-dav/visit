@@ -4013,27 +4013,6 @@ ViewerMethods::ToggleMaintainViewMode()
 
 
 // ****************************************************************************
-// Method: ViewerMethods::ToggleMaintainDataMode
-//
-// Purpose: 
-//   Tells the viewer to toggle the maintain data mode.
-//
-// Programmer: Eric Brugger
-// Creation:   March 29, 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerMethods::ToggleMaintainDataMode()
-{
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::ToggleMaintainDataModeRPC);
-    state->GetViewerRPC()->Notify();
-}
-
-
-// ****************************************************************************
 // Method: ViewerMethods::ToggleFullFrameMode
 //
 // Purpose: 

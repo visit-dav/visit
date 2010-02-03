@@ -143,7 +143,6 @@ public:
         ResetViewRPC,
         RecenterViewRPC,
         ToggleMaintainViewModeRPC,
-        ToggleMaintainDataModeRPC,
         ToggleBoundingBoxModeRPC,
         ToggleCameraViewModeRPC,
         TogglePerspectiveViewRPC,

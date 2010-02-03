@@ -211,6 +211,10 @@ class WindowInformation;
 //   Sean Ahern, Wed Dec 31 11:30:16 EST 2008
 //   Moved the help menu creation to a separate method.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -335,8 +339,6 @@ private slots:
 
     void emitActivateOutputWindow();
 
-    void maintainViewToggled(bool);
-    void maintainDataToggled(bool);
     void replacePlotsToggled(bool);
     void autoUpdateToggled(bool);
 
@@ -374,8 +376,6 @@ private:
     QPixmap                   *outputBlue;
 
     QComboBox                 *activeWindowComboBox;
-    QCheckBox                 *maintainViewCheckBox;
-    QCheckBox                 *maintainDataCheckBox;
     QCheckBox                 *replacePlotsCheckBox;
     QCheckBox                 *autoUpdateCheckBox;
 

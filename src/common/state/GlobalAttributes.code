@@ -78,6 +78,9 @@ Definition:
 //   Gunther H. Weber, Mon Feb  4 15:13:11 PST 2008
 //   Made it save applySelection.
 //
+//   Jeremy Meredith, Wed Feb  3 14:54:47 EST 2010
+//   Removed maintainData, moved maintainView to view settings, not global.
+//
 // ****************************************************************************
 
 bool
@@ -127,18 +130,6 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         addToParent = true;
         node->AddNode(new DataNode("cloneWindowOnFirstRef",
                                     cloneWindowOnFirstRef));
-    }
-
-    if(completeSave || !FieldsEqual(ID_maintainView, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("maintainView", maintainView));
-    }
-
-    if(completeSave || !FieldsEqual(ID_maintainData, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("maintainData", maintainData));
     }
 
     if(completeSave || !FieldsEqual(ID_automaticallyAddOperator, &defaultObject))
@@ -286,6 +277,9 @@ Definition:
 //   Gunther H. Weber, Mon Feb  4 15:14:51 PST 2008
 //   Made it read applySelection.
 //
+//   Jeremy Meredith, Wed Feb  3 14:54:47 EST 2010
+//   Removed maintainData, moved maintainView to view settings, not global.
+//
 // ****************************************************************************
 
 void
@@ -311,10 +305,6 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetMakeDefaultConfirm(node->AsBool());
     if((node = searchNode->GetNode("cloneWindowOnFirstRef")) != 0)
         SetCloneWindowOnFirstRef(node->AsBool());
-    if((node = searchNode->GetNode("maintainView")) != 0)
-        SetMaintainView(node->AsBool());
-    if((node = searchNode->GetNode("maintainData")) != 0)
-        SetMaintainData(node->AsBool());
     if((node = searchNode->GetNode("automaticallyAddOperator")) != 0)
         SetAutomaticallyAddOperator(node->AsBool());
     if((node = searchNode->GetNode("tryHarderCyclesTimes")) != 0)

@@ -30,6 +30,9 @@
     <Field name="perspective" label="perspective" type="bool">
       true
     </Field>
+    <Field name="maintainView" label="maintainView" type="bool">
+      false
+    </Field>
     <Field name="lockView" label="lockView" type="bool">
       false
     </Field>

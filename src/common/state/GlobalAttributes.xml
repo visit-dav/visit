@@ -31,12 +31,6 @@
     <Field name="cloneWindowOnFirstRef" label="cloneWindowOnFirstRef" type="bool">
       false
     </Field>
-    <Field name="maintainView" label="maintainView" type="bool">
-      false
-    </Field>
-    <Field name="maintainData" label="maintainData" type="bool">
-      false
-    </Field>
     <Field name="automaticallyAddOperator" label="automaticallyAddOperator" type="bool">
       false
     </Field>

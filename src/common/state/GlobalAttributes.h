@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: GlobalAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API GlobalAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     GlobalAttributes();
     GlobalAttributes(const GlobalAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    GlobalAttributes(private_tmfs_t tmfs);
+    GlobalAttributes(const GlobalAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~GlobalAttributes();
 
     virtual GlobalAttributes& operator = (const GlobalAttributes &obj);
     virtual bool operator == (const GlobalAttributes &obj) const;
     virtual bool operator != (const GlobalAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const GlobalAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -90,8 +101,6 @@ public:
     void SetWindowLayout(int windowLayout_);
     void SetMakeDefaultConfirm(bool makeDefaultConfirm_);
     void SetCloneWindowOnFirstRef(bool cloneWindowOnFirstRef_);
-    void SetMaintainView(bool maintainView_);
-    void SetMaintainData(bool maintainData_);
     void SetAutomaticallyAddOperator(bool automaticallyAddOperator_);
     void SetTryHarderCyclesTimes(bool tryHarderCyclesTimes_);
     void SetTreatAllDBsAsTimeVarying(bool treatAllDBsAsTimeVarying_);
@@ -118,8 +127,6 @@ public:
     int                GetWindowLayout() const;
     bool               GetMakeDefaultConfirm() const;
     bool               GetCloneWindowOnFirstRef() const;
-    bool               GetMaintainView() const;
-    bool               GetMaintainData() const;
     bool               GetAutomaticallyAddOperator() const;
     bool               GetTryHarderCyclesTimes() const;
     bool               GetTreatAllDBsAsTimeVarying() const;
@@ -157,8 +164,6 @@ public:
         ID_windowLayout,
         ID_makeDefaultConfirm,
         ID_cloneWindowOnFirstRef,
-        ID_maintainView,
-        ID_maintainData,
         ID_automaticallyAddOperator,
         ID_tryHarderCyclesTimes,
         ID_treatAllDBsAsTimeVarying,
@@ -169,7 +174,8 @@ public:
         ID_userDirForSessionFiles,
         ID_saveCrashRecoveryFile,
         ID_applySelection,
-        ID_ignoreExtentsFromDbs
+        ID_ignoreExtentsFromDbs,
+        ID__LAST
     };
 
 private:
@@ -184,8 +190,6 @@ private:
     int          windowLayout;
     bool         makeDefaultConfirm;
     bool         cloneWindowOnFirstRef;
-    bool         maintainView;
-    bool         maintainData;
     bool         automaticallyAddOperator;
     bool         tryHarderCyclesTimes;
     bool         treatAllDBsAsTimeVarying;
@@ -200,6 +204,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbibbbbbbbbbbbbb"
 
 #endif

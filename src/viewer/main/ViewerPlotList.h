@@ -311,6 +311,10 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Mon Oct 26 15:44:55 PDT 2009
 //    I added DeleteAllPlots and I added a default argument to DeleteActivePlots.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 
@@ -455,7 +459,6 @@ public:
 
     void GetPlotLimits(int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);
-    bool GetMaintainDataMode() const;
 
     bool SetBackgroundColor(const double *);
     bool SetForegroundColor(const double *);
