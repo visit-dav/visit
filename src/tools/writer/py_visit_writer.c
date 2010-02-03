@@ -750,12 +750,17 @@ static PyMethodDef visItWriterMethods[] = {
 /*
 ****************************************************************
 */
-DL_EXPORT( void ) initvisit_writer( void ) {
+
+#if __GNUC__ >= 4
+/* Ensure this function is visible even if -fvisibility=hidden was passed */
+DL_EXPORT( void ) __attribute__ ((visibility("default"))) initvisit_writer( void )
+#else
+DL_EXPORT( void ) initvisit_writer( void )
+#endif
+{
 
     PyObject *m, *member;
-
-
-ErrorExc = PyExc_ValueError;
+    ErrorExc = PyExc_ValueError;
 
     m = Py_InitModule3( "visit_writer", visItWriterMethods, visItWriterInitDoc );
 
