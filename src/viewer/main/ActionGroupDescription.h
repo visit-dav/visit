@@ -40,6 +40,7 @@
 #define ACTIONGROUPDESCRIPTION_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ViewerRPC.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class ActionGroupDescription : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ActionGroupDescription();
     ActionGroupDescription(const ActionGroupDescription &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ActionGroupDescription(private_tmfs_t tmfs);
+    ActionGroupDescription(const ActionGroupDescription &obj, private_tmfs_t tmfs);
+public:
     virtual ~ActionGroupDescription();
 
     virtual ActionGroupDescription& operator = (const ActionGroupDescription &obj);
     virtual bool operator == (const ActionGroupDescription &obj) const;
     virtual bool operator != (const ActionGroupDescription &obj) const;
+private:
+    void Init();
+    void Copy(const ActionGroupDescription &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -110,7 +121,8 @@ public:
     enum {
         ID_name = 0,
         ID_actions,
-        ID_visible
+        ID_visible,
+        ID__LAST
     };
 
 private:
@@ -120,6 +132,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ACTIONGROUPDESCRIPTION_TMFS "ss*b"
 
 #endif

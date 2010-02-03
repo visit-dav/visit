@@ -10102,32 +10102,6 @@ visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_ToggleMaintainDataMode
-//
-// Purpose: 
-//   Tells the viewer whether or not it should maintain the data limits.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Apr  5 12:14:06 PDT 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-STATIC PyObject *
-visit_ToggleMaintainDataMode(PyObject *self, PyObject *args)
-{
-    ENSURE_VIEWER_EXISTS();
-    NO_ARGUMENTS();
-
-    MUTEX_LOCK();
-        GetViewerMethods()->ToggleMaintainDataMode();
-    MUTEX_UNLOCK();
-
-    return IntReturnValue(Synchronize());
-}
-
-// ****************************************************************************
 // Function: visit_ToggleLockTime
 //
 // Purpose: 
@@ -14143,6 +14117,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Added method UserActionFinished, on behalf of Tila Ochatta, Huy Vo,
 //   and Claudio Silva.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 static void
@@ -14514,8 +14492,6 @@ AddDefaultMethods()
     AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode,
                                                          visit_ToggleMode_doc);
     AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode,
-                                                         visit_ToggleMode_doc);
-    AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode,
                                                          visit_ToggleMode_doc);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleMode_doc);
     AddMethod("UndoView",  visit_UndoView, visit_UndoView_doc);

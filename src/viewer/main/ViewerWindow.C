@@ -261,6 +261,10 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Brad Whitlock, Tue Apr 14 11:39:39 PDT 2009
 //    Use ViewerProperties.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
@@ -288,7 +292,6 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     // Set some default values.
     cameraView = false;
     maintainView = false;
-    maintainData = false;
     viewIsLocked = false;
     windowMode = WINMODE_NONE;
     boundingBoxValidCurve = false;
@@ -1729,59 +1732,6 @@ ViewerWindow::GetMaintainViewMode() const
 
 
 // ****************************************************************************
-//  Method: ViewerWindow::SetMaintainDataMode
-//
-//  Purpose: 
-//    Set the window's maintain data mode.
-//
-//  Arguments:
-//    mode      The maintain data mode.
-//
-//  Programmer: Eric Brugger
-//  Creation:   March 29, 2004
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetMaintainDataMode(const bool mode)
-{
-    //
-    // If maintain data is toggled to false regenerate the actors.
-    //
-    if (maintainData == true && mode == false)
-    {
-        maintainData = mode;
-        plotList->ClearActors();
-        plotList->UpdateFrame();
-    }
-    else
-    {
-        maintainData = mode;
-    }
-}
-
-
-// ****************************************************************************
-//  Method: ViewerWindow::GetMaintainDataMode
-//
-//  Purpose: 
-//    Return the window's maintain data mode.
-//
-//  Returns:    The maintain data mode.
-//
-//  Programmer: Eric Brugger
-//  Creation:   March 29, 2004
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetMaintainDataMode() const
-{
-    return maintainData;
-}
-
-
-// ****************************************************************************
 //  Method: ViewerWindow::SetFullFrameMode
 //
 //  Purpose: 
@@ -2299,8 +2249,12 @@ ViewerWindow::InvertBackgroundColor()
 //   Brad Whitlock, Mon Sep 18 10:56:09 PDT 2006
 //   Added color texturing.
 //
-//    Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
-//    Added copying of depth cueing properties.
+//   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//   Added copying of depth cueing properties.
+//
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
 //
 // ****************************************************************************
 
@@ -2334,7 +2288,6 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetSpinMode(source->GetSpinMode());
     SetCameraViewMode(source->GetCameraViewMode());
     SetMaintainViewMode(source->GetMaintainViewMode());
-    SetMaintainDataMode(source->GetMaintainDataMode());
     SetViewIsLocked(source->GetViewIsLocked());
     SetTimeLock(source->GetTimeLock());
     SetToolLock(source->GetToolLock());
@@ -7905,6 +7858,10 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Jeremy Meredith, Tue Feb  2 15:36:30 EST 2010
 //   Added tool update mode.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -7937,7 +7894,6 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("boundingBoxMode", GetBoundingBoxMode()));
         windowNode->AddNode(new DataNode("cameraView", cameraView));
         windowNode->AddNode(new DataNode("maintainView", maintainView));
-        windowNode->AddNode(new DataNode("maintainData", maintainData));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
         windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
         windowNode->AddNode(new DataNode("timeLocked", timeLocked));
@@ -8172,6 +8128,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Tue Feb  2 15:36:30 EST 2010
 //   Added tool update mode.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -8266,8 +8226,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetCameraViewMode(node->AsBool());
     if((node = windowNode->GetNode("maintainView")) != 0)
         SetMaintainViewMode(node->AsBool());
-    if((node = windowNode->GetNode("maintainData")) != 0)
-        SetMaintainDataMode(node->AsBool());
     if((node = windowNode->GetNode("viewExtentsType")) != 0)
     {
         // Allow enums to be int or string in the config file

@@ -2913,6 +2913,10 @@ ViewerPlot::GetReader() const
 //    Kathleen Bonnell, Tue Mar  3 10:18:50 PST 2009
 //    CanDo*ViewScaling now retrieved from viewerPluginInfo, not plot.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -3061,11 +3065,6 @@ ViewerPlot::CreateActor(bool createNew,
     // extents must be set before the attributes.
     plotList[cacheIndex] = viewerPluginInfo->AllocAvtPlot();
     plotAtts->GetAtts(cacheIndex, curPlotAtts);
-
-    if (viewerPlotList->GetMaintainDataMode())
-    {
-        plotList[cacheIndex]->SetDataExtents(dataExtents);
-    }
 
     if (!invariantMetaData)
     {
@@ -3639,6 +3638,10 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Hank Childs, Tue Jul 14 14:28:36 PDT 2009
 //    Add support for named selections.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 bool
@@ -3664,18 +3667,9 @@ ViewerPlot::ExecuteEngineRPC()
     }
 
     bool successful;
-    if (viewerPlotList->GetMaintainDataMode())
-    {
-        successful = engineMgr->MakePlot(engineKey, GetPlotName(),
-            GetPluginID(), curPlotAtts, dataExtents, 
-            GetWindowId(), &networkID);
-    }
-    else
-    {
-        successful = engineMgr->MakePlot(engineKey, GetPlotName(),
+    successful = engineMgr->MakePlot(engineKey, GetPlotName(),
             GetPluginID(), curPlotAtts, nullDataExtents, 
             GetWindowId(), &networkID);
-    }
 
     if(!successful)
     {

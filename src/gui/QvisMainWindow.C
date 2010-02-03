@@ -968,6 +968,10 @@ QvisMainWindow::CreateMainContents(QWidget *parent, QSplitter *s, QVBoxLayout *L
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -991,19 +995,6 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
     
     globalLayout->addWidget(activeWindowLabel, 0, 0, 1, 2, Qt::AlignCenter);
     globalLayout->addWidget(activeWindowComboBox, 1, 0, 1, 2);
-
-    QLabel *maintainLabel = new QLabel(tr("Maintain limits"));
-    globalLayout->addWidget(maintainLabel, 0, 3, 1, 2, Qt::AlignCenter);
-
-    maintainViewCheckBox = new QCheckBox(tr("view"), par);
-    connect(maintainViewCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(maintainViewToggled(bool)));
-    globalLayout->addWidget(maintainViewCheckBox, 1, 3);
-
-    maintainDataCheckBox = new QCheckBox(tr("data"), par);
-    connect(maintainDataCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(maintainDataToggled(bool)));
-    globalLayout->addWidget(maintainDataCheckBox, 1, 4);
 
     replacePlotsCheckBox = new QCheckBox(tr("Replace plots"), par);
     connect(replacePlotsCheckBox, SIGNAL(toggled(bool)),
@@ -1279,6 +1270,10 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -1344,16 +1339,6 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             makeDefaultConfirm = globalAtts->GetMakeDefaultConfirm();
             break;
         case GlobalAttributes::ID_cloneWindowOnFirstRef:
-            break;
-        case GlobalAttributes::ID_maintainView:
-            maintainViewCheckBox->blockSignals(true);
-            maintainViewCheckBox->setChecked(globalAtts->GetMaintainView());
-            maintainViewCheckBox->blockSignals(false);
-            break;
-        case GlobalAttributes::ID_maintainData:
-            maintainDataCheckBox->blockSignals(true);
-            maintainDataCheckBox->setChecked(globalAtts->GetMaintainData());
-            maintainDataCheckBox->blockSignals(false);
             break;
         case GlobalAttributes::ID_automaticallyAddOperator:
             break;
@@ -2656,52 +2641,6 @@ QvisMainWindow::UpdateCrashRecoveryTimer()
         debug1 << "Stopping crash recovery file timer." << endl;
         recoveryFileTimer->stop();
     }
-}
-
-// ****************************************************************************
-// Method: QvisMainWindow::maintainViewToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the maintain view limits
-//   checkbox is toggled.
-//
-// Arguments:
-//   val : The new toggle value.
-//
-// Programmer: Eric Brugger
-// Creation:   Fri Apr 18 09:10:03 PDT 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisMainWindow::maintainViewToggled(bool)
-{
-    GetViewerMethods()->ToggleMaintainViewMode();
-}
-
-// ****************************************************************************
-// Method: QvisMainWindow::maintainDataToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the maintain data limits
-//   checkbox is toggled.
-//
-// Arguments:
-//   val : The new toggle value.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Mar 29 13:07:58 PST 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisMainWindow::maintainDataToggled(bool)
-{
-    GetViewerMethods()->ToggleMaintainDataMode();
 }
 
 // ****************************************************************************

@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ViewerProperties
 //
@@ -60,13 +61,23 @@
 class VIEWER_API ViewerProperties : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ViewerProperties();
     ViewerProperties(const ViewerProperties &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ViewerProperties(private_tmfs_t tmfs);
+    ViewerProperties(const ViewerProperties &obj, private_tmfs_t tmfs);
+public:
     virtual ~ViewerProperties();
 
     virtual ViewerProperties& operator = (const ViewerProperties &obj);
     virtual bool operator == (const ViewerProperties &obj) const;
     virtual bool operator != (const ViewerProperties &obj) const;
+private:
+    void Init();
+    void Copy(const ViewerProperties &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -139,7 +150,8 @@ public:
         ID_applicationLocale,
         ID_launchedByClient,
         ID_suppressMessages,
-        ID_numEngineRestarts
+        ID_numEngineRestarts,
+        ID__LAST
     };
 
 private:
@@ -161,6 +173,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEWERPROPERTIES_TMFS "bssssibbbbssbbi"
 
 #endif

@@ -476,6 +476,10 @@ class avtDefaultPlotMetaData;
 //    I moved a bunch of members to the base class' ViewerProperties so we 
 //    can access their values throughout the viewer.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -711,7 +715,6 @@ private slots:
     void ConnectWindow(ViewerWindow *win);
 
     void ToggleMaintainViewMode(int windowIndex = -1);
-    void ToggleMaintainDataMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);
 

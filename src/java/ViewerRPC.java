@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class ViewerRPC extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 33;
+    private static int numAdditionalAttributes = 34;
 
     // Enum values
     public final static int VIEWERRPCTYPE_CLOSERPC = 0;
@@ -142,21 +142,21 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_RESETVIEWRPC = 77;
     public final static int VIEWERRPCTYPE_RECENTERVIEWRPC = 78;
     public final static int VIEWERRPCTYPE_TOGGLEMAINTAINVIEWMODERPC = 79;
-    public final static int VIEWERRPCTYPE_TOGGLEMAINTAINDATAMODERPC = 80;
-    public final static int VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC = 81;
-    public final static int VIEWERRPCTYPE_TOGGLECAMERAVIEWMODERPC = 82;
-    public final static int VIEWERRPCTYPE_TOGGLEPERSPECTIVEVIEWRPC = 83;
-    public final static int VIEWERRPCTYPE_TOGGLESPINMODERPC = 84;
-    public final static int VIEWERRPCTYPE_TOGGLELOCKTIMERPC = 85;
-    public final static int VIEWERRPCTYPE_TOGGLELOCKTOOLSRPC = 86;
-    public final static int VIEWERRPCTYPE_TOGGLELOCKVIEWMODERPC = 87;
-    public final static int VIEWERRPCTYPE_TOGGLEFULLFRAMERPC = 88;
-    public final static int VIEWERRPCTYPE_UNDOVIEWRPC = 89;
-    public final static int VIEWERRPCTYPE_REDOVIEWRPC = 90;
-    public final static int VIEWERRPCTYPE_INVERTBACKGROUNDRPC = 91;
-    public final static int VIEWERRPCTYPE_CLEARPICKPOINTSRPC = 92;
-    public final static int VIEWERRPCTYPE_SETWINDOWMODERPC = 93;
-    public final static int VIEWERRPCTYPE_ENABLETOOLRPC = 94;
+    public final static int VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC = 80;
+    public final static int VIEWERRPCTYPE_TOGGLECAMERAVIEWMODERPC = 81;
+    public final static int VIEWERRPCTYPE_TOGGLEPERSPECTIVEVIEWRPC = 82;
+    public final static int VIEWERRPCTYPE_TOGGLESPINMODERPC = 83;
+    public final static int VIEWERRPCTYPE_TOGGLELOCKTIMERPC = 84;
+    public final static int VIEWERRPCTYPE_TOGGLELOCKTOOLSRPC = 85;
+    public final static int VIEWERRPCTYPE_TOGGLELOCKVIEWMODERPC = 86;
+    public final static int VIEWERRPCTYPE_TOGGLEFULLFRAMERPC = 87;
+    public final static int VIEWERRPCTYPE_UNDOVIEWRPC = 88;
+    public final static int VIEWERRPCTYPE_REDOVIEWRPC = 89;
+    public final static int VIEWERRPCTYPE_INVERTBACKGROUNDRPC = 90;
+    public final static int VIEWERRPCTYPE_CLEARPICKPOINTSRPC = 91;
+    public final static int VIEWERRPCTYPE_SETWINDOWMODERPC = 92;
+    public final static int VIEWERRPCTYPE_ENABLETOOLRPC = 93;
+    public final static int VIEWERRPCTYPE_SETTOOLUPDATEMODERPC = 94;
     public final static int VIEWERRPCTYPE_COPYVIEWTOWINDOWRPC = 95;
     public final static int VIEWERRPCTYPE_COPYLIGHTINGTOWINDOWRPC = 96;
     public final static int VIEWERRPCTYPE_COPYANNOTATIONSTOWINDOWRPC = 97;
@@ -303,6 +303,7 @@ public class ViewerRPC extends AttributeSubject
         doubleArg1.addElement(new Double(0));
         doubleArg2 = new Vector();
         doubleArg2.addElement(new Double(0));
+        toolUpdateMode = 1;
     }
 
     public ViewerRPC(int nMoreFields)
@@ -352,6 +353,7 @@ public class ViewerRPC extends AttributeSubject
         doubleArg1.addElement(new Double(0));
         doubleArg2 = new Vector();
         doubleArg2.addElement(new Double(0));
+        toolUpdateMode = 1;
     }
 
     public ViewerRPC(ViewerRPC obj)
@@ -437,6 +439,7 @@ public class ViewerRPC extends AttributeSubject
             doubleArg2.addElement(new Double(dv.doubleValue()));
         }
 
+        toolUpdateMode = obj.toolUpdateMode;
 
         SelectAll();
     }
@@ -566,7 +569,8 @@ public class ViewerRPC extends AttributeSubject
                 (stringArg1.equals(obj.stringArg1)) &&
                 (stringArg2.equals(obj.stringArg2)) &&
                 doubleArg1_equal &&
-                doubleArg2_equal);
+                doubleArg2_equal &&
+                (toolUpdateMode == obj.toolUpdateMode));
     }
 
     // Property setting methods
@@ -796,6 +800,12 @@ public class ViewerRPC extends AttributeSubject
         Select(32);
     }
 
+    public void SetToolUpdateMode(int toolUpdateMode_)
+    {
+        toolUpdateMode = toolUpdateMode_;
+        Select(33);
+    }
+
     // Property getting methods
     public int      GetRPCType() { return RPCType; }
     public int      GetWindowLayout() { return windowLayout; }
@@ -830,6 +840,7 @@ public class ViewerRPC extends AttributeSubject
     public String   GetStringArg2() { return stringArg2; }
     public Vector   GetDoubleArg1() { return doubleArg1; }
     public Vector   GetDoubleArg2() { return doubleArg2; }
+    public int      GetToolUpdateMode() { return toolUpdateMode; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -900,6 +911,8 @@ public class ViewerRPC extends AttributeSubject
             buf.WriteDoubleVector(doubleArg1);
         if(WriteSelect(32, buf))
             buf.WriteDoubleVector(doubleArg2);
+        if(WriteSelect(33, buf))
+            buf.WriteInt(toolUpdateMode);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1004,6 +1017,9 @@ public class ViewerRPC extends AttributeSubject
             break;
         case 32:
             SetDoubleArg2(buf.ReadDoubleVector());
+            break;
+        case 33:
+            SetToolUpdateMode(buf.ReadInt());
             break;
         }
     }
@@ -1172,8 +1188,6 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_RECENTERVIEWRPC";
         if(RPCType == VIEWERRPCTYPE_TOGGLEMAINTAINVIEWMODERPC)
             str = str + "VIEWERRPCTYPE_TOGGLEMAINTAINVIEWMODERPC";
-        if(RPCType == VIEWERRPCTYPE_TOGGLEMAINTAINDATAMODERPC)
-            str = str + "VIEWERRPCTYPE_TOGGLEMAINTAINDATAMODERPC";
         if(RPCType == VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC)
             str = str + "VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC";
         if(RPCType == VIEWERRPCTYPE_TOGGLECAMERAVIEWMODERPC)
@@ -1202,6 +1216,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_SETWINDOWMODERPC";
         if(RPCType == VIEWERRPCTYPE_ENABLETOOLRPC)
             str = str + "VIEWERRPCTYPE_ENABLETOOLRPC";
+        if(RPCType == VIEWERRPCTYPE_SETTOOLUPDATEMODERPC)
+            str = str + "VIEWERRPCTYPE_SETTOOLUPDATEMODERPC";
         if(RPCType == VIEWERRPCTYPE_COPYVIEWTOWINDOWRPC)
             str = str + "VIEWERRPCTYPE_COPYVIEWTOWINDOWRPC";
         if(RPCType == VIEWERRPCTYPE_COPYLIGHTINGTOWINDOWRPC)
@@ -1429,6 +1445,7 @@ public class ViewerRPC extends AttributeSubject
         str = str + stringToString("stringArg2", stringArg2, indent) + "\n";
         str = str + doubleVectorToString("doubleArg1", doubleArg1, indent) + "\n";
         str = str + doubleVectorToString("doubleArg2", doubleArg2, indent) + "\n";
+        str = str + intToString("toolUpdateMode", toolUpdateMode, indent) + "\n";
         return str;
     }
 
@@ -1467,5 +1484,6 @@ public class ViewerRPC extends AttributeSubject
     private String   stringArg2;
     private Vector   doubleArg1; // vector of Double objects
     private Vector   doubleArg2; // vector of Double objects
+    private int      toolUpdateMode;
 }
 

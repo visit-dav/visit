@@ -105,6 +105,7 @@ public:
     void SetSpin(bool spin_);
     void SetFullFrame(bool fullFrame_);
     void SetPerspective(bool perspective_);
+    void SetMaintainView(bool maintainView_);
     void SetLockView(bool lockView_);
     void SetLockTools(bool lockTools_);
     void SetLockTime(bool lockTime_);
@@ -136,6 +137,7 @@ public:
     bool               GetSpin() const;
     bool               GetFullFrame() const;
     bool               GetPerspective() const;
+    bool               GetMaintainView() const;
     bool               GetLockView() const;
     bool               GetLockTools() const;
     bool               GetLockTime() const;
@@ -180,6 +182,7 @@ public:
         ID_spin,
         ID_fullFrame,
         ID_perspective,
+        ID_maintainView,
         ID_lockView,
         ID_lockTools,
         ID_lockTime,
@@ -210,6 +213,7 @@ private:
     bool         spin;
     bool         fullFrame;
     bool         perspective;
+    bool         maintainView;
     bool         lockView;
     bool         lockTools;
     bool         lockTime;
@@ -230,6 +234,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define WINDOWINFORMATION_TMFS "sis*i*iiibbbbbbbiii*bbfffiDIi"
+#define WINDOWINFORMATION_TMFS "sis*i*iiibbbbbbbbiii*bbfffiDIi"
 
 #endif

@@ -476,7 +476,6 @@ static PyObject *args_PrintWindowRPC(ViewerRPC *) { return ViewerRPC_no_args(); 
 static PyObject *args_ResetViewRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_RecenterViewRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_ToggleMaintainViewModeRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
-static PyObject *args_ToggleMaintainDataModeRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_ToggleBoundingBoxModeRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_ToggleCameraViewModeRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 static PyObject *args_TogglePerspectiveViewRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
@@ -859,6 +858,10 @@ static PyObject *args_SetDefaultFileOpenOptionsRPC(ViewerRPC *) { return ViewerR
 //    Hank Childs, Wed Jan 28 07:21:05 PST 2009
 //    Add new RPCs for named selections.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 PyObject *
@@ -1105,9 +1108,6 @@ args_ViewerRPC(ViewerRPC *rpc)
         break;
     case ViewerRPC::ToggleMaintainViewModeRPC:
         args = args_ToggleMaintainViewModeRPC(rpc);
-        break;
-    case ViewerRPC::ToggleMaintainDataModeRPC:
-        args = args_ToggleMaintainDataModeRPC(rpc);
         break;
     case ViewerRPC::ToggleBoundingBoxModeRPC:
         args = args_ToggleBoundingBoxModeRPC(rpc);

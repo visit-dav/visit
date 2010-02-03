@@ -6704,28 +6704,6 @@ ViewerSubject::ToggleMaintainViewMode(int windowIndex)
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ToggleMaintainDataMode
-//
-//  Purpose: 
-//    A Qt slot function that toggles the maintain view mode for the specified
-//    window.
-//
-//  Arguments:
-//    windowIndex  The index of the window whose maintain data mode will be
-//                 toggled.
-//
-//  Programmer: Eric Brugger
-//  Creation:   March 29, 2004
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ToggleMaintainDataMode(int windowIndex)
-{
-    ViewerWindowManager::Instance()->ToggleMaintainDataMode(windowIndex);
-}
-
-// ****************************************************************************
 //  Method: ViewerSubject::SetViewExtentsType
 //
 //  Purpose:
@@ -7796,6 +7774,10 @@ ViewerSubject::HandleViewerRPC()
 //    Hank Childs, Wed Jan 28 14:51:03 PST 2009
 //    Added support for named selections.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -7975,9 +7957,6 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::ToggleMaintainViewModeRPC:
         ToggleMaintainViewMode();
-        break;
-    case ViewerRPC::ToggleMaintainDataModeRPC:
-        ToggleMaintainDataMode();
         break;
     case ViewerRPC::ToggleCameraViewModeRPC:
         ToggleCameraViewMode();

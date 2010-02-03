@@ -3994,6 +3994,10 @@ ViewerWindowManager::ToggleFullFrameMode(int windowIndex)
 //  Programmer: Eric Brugger
 //  Creation:   April 18, 2003
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -4007,38 +4011,7 @@ ViewerWindowManager::ToggleMaintainViewMode(int windowIndex)
     {
         bool maintainView = windows[index]->GetMaintainViewMode();
         windows[index]->SetMaintainViewMode(!maintainView);
-        UpdateGlobalAtts();
-    }
-}
-
-// ****************************************************************************
-//  Method: ViewerWindowManager::ToggleMaintainDataMode
-//
-//  Purpose:
-//    This method toggles the maintain data mode for the specified window.
-//
-//  Arguments:
-//    windowIndex  This is a zero-origin integer that specifies the index
-//                 of the window we want to change. If the value is -1, use
-//                 the active window.
-//
-//  Programmer: Eric Brugger
-//  Creation:   March 29, 2004
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::ToggleMaintainDataMode(int windowIndex)
-{
-    if(windowIndex < -1 || windowIndex >= maxWindows)
-        return;
-
-    int index = (windowIndex == -1) ? activeWindow : windowIndex;
-    if(windows[index] != 0)
-    {
-        bool maintainData = windows[index]->GetMaintainDataMode();
-        windows[index]->SetMaintainDataMode(!maintainData);
-        UpdateGlobalAtts();
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -4517,6 +4490,10 @@ ViewerWindowManager::GetActiveWindow() const
 //    Eric Brugger, Mon Mar 29 15:21:11 PST 2004
 //    I added maintain data mode.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -4559,12 +4536,6 @@ ViewerWindowManager::UpdateGlobalAtts() const
     clientAtts->SetWindows(v);
     clientAtts->SetActiveWindow(activeWindowIndex);
     clientAtts->SetWindowLayout(layout);
-
-    //
-    // Update the maintain view and data modes.
-    //
-    clientAtts->SetMaintainView(windows[activeWindow]->GetMaintainViewMode());
-    clientAtts->SetMaintainData(windows[activeWindow]->GetMaintainDataMode());
 
     clientAtts->Notify();
 }
@@ -7418,6 +7389,10 @@ ViewerWindowManager::GetWindowInformation()
 //   Jeremy Meredith, Tue Feb  2 13:52:37 EST 2010
 //   Update the tool update mode settings.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -7498,6 +7473,7 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
             windowInfo->SetLockTime(win->GetTimeLock());
             windowInfo->SetCameraViewMode(win->GetCameraViewMode());
             windowInfo->SetFullFrame(win->GetFullFrameMode());
+            windowInfo->SetMaintainView(win->GetMaintainViewMode());
 
             // indicate if we're in scalable rendering mode
             windowInfo->SetUsingScalableRendering(win->GetScalableRendering());
@@ -9209,6 +9185,10 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   Brad Whitlock, Thu Nov 9 16:43:00 PST 2006
 //   Added dbToSource argument.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -9235,10 +9215,6 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
     // The following attributes are actually per window, but are being
     // treated as global so that they are saved when saving settings.
     //
-    mgrNode->AddNode(new DataNode("maintainView",
-       windows[activeWindow]->GetMaintainViewMode()));
-    mgrNode->AddNode(new DataNode("maintainData",
-       windows[activeWindow]->GetMaintainDataMode()));
     mgrNode->AddNode(new DataNode("cameraView",
        windows[activeWindow]->GetCameraViewMode()));
     mgrNode->AddNode(new DataNode("viewExtentsType",
@@ -9313,6 +9289,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Tue Apr 14 11:29:57 PDT 2009
 //   Use ViewerProperties.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -9335,10 +9315,6 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
     DataNode *node = 0;
     if((node = searchNode->GetNode("cameraView")) != 0)
         windows[activeWindow]->SetCameraViewMode(node->AsBool());
-    if((node = searchNode->GetNode("maintainView")) != 0)
-        windows[activeWindow]->SetMaintainViewMode(node->AsBool());
-    if((node = searchNode->GetNode("maintainData")) != 0)
-        windows[activeWindow]->SetMaintainDataMode(node->AsBool());
     if((node = searchNode->GetNode("viewExtentsType")) != 0)
     {
         // Allow enums to be int or string in the config file

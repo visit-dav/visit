@@ -220,6 +220,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Changed the signal used and the argument for tabSelected slot to 
 //   an integer for Qt4.
 //
+//   Jeremy Meredith, Wed Feb  3 15:29:17 EST 2010
+//   Added maintain view here.  (moved from main window)
+//
 // ****************************************************************************
 
 void
@@ -563,6 +566,11 @@ QvisViewWindow::CreateWindowContents()
     connect(lockedViewToggle, SIGNAL(toggled(bool)),
             this, SLOT(lockedViewChecked(bool)));
     advLayout->addWidget(lockedViewToggle, 1, 0);
+
+    maintainViewToggle = new QCheckBox(tr("Maintain view limits"), pageAdvanced);
+    connect(maintainViewToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maintainViewChecked(bool)));
+    advLayout->addWidget(maintainViewToggle, 1,1, 1,2);
 
     QPushButton *resetViewButton = new QPushButton(tr("Reset view"), pageAdvanced);
     connect(resetViewButton, SIGNAL(clicked()),
@@ -1070,6 +1078,10 @@ QvisViewWindow::Update3D(bool doAll)
 //   Brad Whitlock, Wed Jun 18 14:12:23 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -1120,6 +1132,11 @@ QvisViewWindow::UpdateGlobal(bool doAll)
                 tabs->setCurrentIndex(activeTab);
                 tabs->blockSignals(false);
             }
+            break;
+        case WindowInformation::ID_maintainView:
+            maintainViewToggle->blockSignals(true);
+            maintainViewToggle->setChecked(windowInfo->GetMaintainView());
+            maintainViewToggle->blockSignals(false);
             break;
         default: break;
         }
@@ -2560,6 +2577,26 @@ void
 QvisViewWindow::lockedViewChecked(bool)
 {
     GetViewerMethods()->ToggleLockViewMode();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::maintainViewToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the maintain view limits
+//   checkbox is toggled.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  3, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisViewWindow::maintainViewChecked(bool)
+{
+    GetViewerMethods()->ToggleMaintainViewMode();
 }
 
 // ****************************************************************************

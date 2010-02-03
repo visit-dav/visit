@@ -7691,25 +7691,6 @@ ViewerPlotList::SetSpatialExtentsType(avtExtentType setype)
 }
 
 // ****************************************************************************
-//  Method: ViewerPlotList::GetMaintainDataMode
-//
-//  Purpose: 
-//    Return the plotlist's maintain data mode.
-//
-//  Returns:    The maintain data mode.
-//
-//  Programmer: Eric Brugger
-//  Creation:   March 30, 2004
-//
-// ****************************************************************************
-
-bool
-ViewerPlotList::GetMaintainDataMode() const
-{
-    return window->GetMaintainDataMode();
-}
-
-// ****************************************************************************
 //  Method: ViewerPlotList::HandleTool
 //
 //  Purpose: 

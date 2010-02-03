@@ -412,6 +412,10 @@ typedef struct {
 //    Jeremy Meredith, Tue Feb  2 13:48:28 EST 2010
 //    Added new tool update mode setting.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -498,7 +502,6 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void ToggleBoundingBoxMode(int windowIndex = -1);
     void TogglePerspective(int windowIndex = -1);
     void ToggleMaintainViewMode(int windowIndex = -1);
-    void ToggleMaintainDataMode(int windowIndex = -1);
     void ToggleSpinMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
     void ToggleFullFrameMode(int windowIndex = -1);

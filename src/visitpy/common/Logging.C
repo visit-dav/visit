@@ -218,6 +218,10 @@ LogFile_Write(const char *str)
 //   Brad Whitlock, Wed Mar 8 17:05:11 PST 2006
 //   Added RedoView.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 #define MSG_NOT_IMPLEMENTED 0
@@ -1116,11 +1120,6 @@ static std::string log_ToggleMaintainViewModeRPC(ViewerRPC *rpc)
     return std::string("ToggleMaintainViewMode()\n");
 }
 
-static std::string log_ToggleMaintainDataModeRPC(ViewerRPC *rpc)
-{
-    return std::string("ToggleMaintainDataMode()\n");
-}
-
 static std::string log_ToggleBoundingBoxModeRPC(ViewerRPC *rpc)
 {
     return std::string("ToggleBoundingBoxMode()\n");
@@ -1882,6 +1881,10 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   I made it use strings more instead of a fixed sized buffer so we would
 //   be less likely to cut off longer strings such as plot attributes.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 void
@@ -2134,9 +2137,6 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::ToggleMaintainViewModeRPC:
         str = log_ToggleMaintainViewModeRPC(rpc);
-        break;
-    case ViewerRPC::ToggleMaintainDataModeRPC:
-        str = log_ToggleMaintainDataModeRPC(rpc);
         break;
     case ViewerRPC::ToggleBoundingBoxModeRPC:
         str = log_ToggleBoundingBoxModeRPC(rpc);

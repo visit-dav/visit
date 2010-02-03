@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 24;
+    private static int numAdditionalAttributes = 22;
 
     public GlobalAttributes()
     {
@@ -75,8 +75,6 @@ public class GlobalAttributes extends AttributeSubject
         windowLayout = 1;
         makeDefaultConfirm = true;
         cloneWindowOnFirstRef = false;
-        maintainView = false;
-        maintainData = false;
         automaticallyAddOperator = false;
         tryHarderCyclesTimes = false;
         treatAllDBsAsTimeVarying = false;
@@ -105,8 +103,6 @@ public class GlobalAttributes extends AttributeSubject
         windowLayout = 1;
         makeDefaultConfirm = true;
         cloneWindowOnFirstRef = false;
-        maintainView = false;
-        maintainData = false;
         automaticallyAddOperator = false;
         tryHarderCyclesTimes = false;
         treatAllDBsAsTimeVarying = false;
@@ -145,8 +141,6 @@ public class GlobalAttributes extends AttributeSubject
         windowLayout = obj.windowLayout;
         makeDefaultConfirm = obj.makeDefaultConfirm;
         cloneWindowOnFirstRef = obj.cloneWindowOnFirstRef;
-        maintainView = obj.maintainView;
-        maintainData = obj.maintainData;
         automaticallyAddOperator = obj.automaticallyAddOperator;
         tryHarderCyclesTimes = obj.tryHarderCyclesTimes;
         treatAllDBsAsTimeVarying = obj.treatAllDBsAsTimeVarying;
@@ -206,8 +200,6 @@ public class GlobalAttributes extends AttributeSubject
                 (windowLayout == obj.windowLayout) &&
                 (makeDefaultConfirm == obj.makeDefaultConfirm) &&
                 (cloneWindowOnFirstRef == obj.cloneWindowOnFirstRef) &&
-                (maintainView == obj.maintainView) &&
-                (maintainData == obj.maintainData) &&
                 (automaticallyAddOperator == obj.automaticallyAddOperator) &&
                 (tryHarderCyclesTimes == obj.tryHarderCyclesTimes) &&
                 (treatAllDBsAsTimeVarying == obj.treatAllDBsAsTimeVarying) &&
@@ -288,82 +280,70 @@ public class GlobalAttributes extends AttributeSubject
         Select(10);
     }
 
-    public void SetMaintainView(boolean maintainView_)
-    {
-        maintainView = maintainView_;
-        Select(11);
-    }
-
-    public void SetMaintainData(boolean maintainData_)
-    {
-        maintainData = maintainData_;
-        Select(12);
-    }
-
     public void SetAutomaticallyAddOperator(boolean automaticallyAddOperator_)
     {
         automaticallyAddOperator = automaticallyAddOperator_;
-        Select(13);
+        Select(11);
     }
 
     public void SetTryHarderCyclesTimes(boolean tryHarderCyclesTimes_)
     {
         tryHarderCyclesTimes = tryHarderCyclesTimes_;
-        Select(14);
+        Select(12);
     }
 
     public void SetTreatAllDBsAsTimeVarying(boolean treatAllDBsAsTimeVarying_)
     {
         treatAllDBsAsTimeVarying = treatAllDBsAsTimeVarying_;
-        Select(15);
+        Select(13);
     }
 
     public void SetCreateMeshQualityExpressions(boolean createMeshQualityExpressions_)
     {
         createMeshQualityExpressions = createMeshQualityExpressions_;
-        Select(16);
+        Select(14);
     }
 
     public void SetCreateTimeDerivativeExpressions(boolean createTimeDerivativeExpressions_)
     {
         createTimeDerivativeExpressions = createTimeDerivativeExpressions_;
-        Select(17);
+        Select(15);
     }
 
     public void SetCreateVectorMagnitudeExpressions(boolean createVectorMagnitudeExpressions_)
     {
         createVectorMagnitudeExpressions = createVectorMagnitudeExpressions_;
-        Select(18);
+        Select(16);
     }
 
     public void SetNewPlotsInheritSILRestriction(boolean newPlotsInheritSILRestriction_)
     {
         newPlotsInheritSILRestriction = newPlotsInheritSILRestriction_;
-        Select(19);
+        Select(17);
     }
 
     public void SetUserDirForSessionFiles(boolean userDirForSessionFiles_)
     {
         userDirForSessionFiles = userDirForSessionFiles_;
-        Select(20);
+        Select(18);
     }
 
     public void SetSaveCrashRecoveryFile(boolean saveCrashRecoveryFile_)
     {
         saveCrashRecoveryFile = saveCrashRecoveryFile_;
-        Select(21);
+        Select(19);
     }
 
     public void SetApplySelection(boolean applySelection_)
     {
         applySelection = applySelection_;
-        Select(22);
+        Select(20);
     }
 
     public void SetIgnoreExtentsFromDbs(boolean ignoreExtentsFromDbs_)
     {
         ignoreExtentsFromDbs = ignoreExtentsFromDbs_;
-        Select(23);
+        Select(21);
     }
 
     // Property getting methods
@@ -378,8 +358,6 @@ public class GlobalAttributes extends AttributeSubject
     public int     GetWindowLayout() { return windowLayout; }
     public boolean GetMakeDefaultConfirm() { return makeDefaultConfirm; }
     public boolean GetCloneWindowOnFirstRef() { return cloneWindowOnFirstRef; }
-    public boolean GetMaintainView() { return maintainView; }
-    public boolean GetMaintainData() { return maintainData; }
     public boolean GetAutomaticallyAddOperator() { return automaticallyAddOperator; }
     public boolean GetTryHarderCyclesTimes() { return tryHarderCyclesTimes; }
     public boolean GetTreatAllDBsAsTimeVarying() { return treatAllDBsAsTimeVarying; }
@@ -418,30 +396,26 @@ public class GlobalAttributes extends AttributeSubject
         if(WriteSelect(10, buf))
             buf.WriteBool(cloneWindowOnFirstRef);
         if(WriteSelect(11, buf))
-            buf.WriteBool(maintainView);
-        if(WriteSelect(12, buf))
-            buf.WriteBool(maintainData);
-        if(WriteSelect(13, buf))
             buf.WriteBool(automaticallyAddOperator);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(12, buf))
             buf.WriteBool(tryHarderCyclesTimes);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(13, buf))
             buf.WriteBool(treatAllDBsAsTimeVarying);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(14, buf))
             buf.WriteBool(createMeshQualityExpressions);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(15, buf))
             buf.WriteBool(createTimeDerivativeExpressions);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(createVectorMagnitudeExpressions);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(17, buf))
             buf.WriteBool(newPlotsInheritSILRestriction);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(18, buf))
             buf.WriteBool(userDirForSessionFiles);
-        if(WriteSelect(21, buf))
+        if(WriteSelect(19, buf))
             buf.WriteBool(saveCrashRecoveryFile);
-        if(WriteSelect(22, buf))
+        if(WriteSelect(20, buf))
             buf.WriteBool(applySelection);
-        if(WriteSelect(23, buf))
+        if(WriteSelect(21, buf))
             buf.WriteBool(ignoreExtentsFromDbs);
     }
 
@@ -483,42 +457,36 @@ public class GlobalAttributes extends AttributeSubject
             SetCloneWindowOnFirstRef(buf.ReadBool());
             break;
         case 11:
-            SetMaintainView(buf.ReadBool());
-            break;
-        case 12:
-            SetMaintainData(buf.ReadBool());
-            break;
-        case 13:
             SetAutomaticallyAddOperator(buf.ReadBool());
             break;
-        case 14:
+        case 12:
             SetTryHarderCyclesTimes(buf.ReadBool());
             break;
-        case 15:
+        case 13:
             SetTreatAllDBsAsTimeVarying(buf.ReadBool());
             break;
-        case 16:
+        case 14:
             SetCreateMeshQualityExpressions(buf.ReadBool());
             break;
-        case 17:
+        case 15:
             SetCreateTimeDerivativeExpressions(buf.ReadBool());
             break;
-        case 18:
+        case 16:
             SetCreateVectorMagnitudeExpressions(buf.ReadBool());
             break;
-        case 19:
+        case 17:
             SetNewPlotsInheritSILRestriction(buf.ReadBool());
             break;
-        case 20:
+        case 18:
             SetUserDirForSessionFiles(buf.ReadBool());
             break;
-        case 21:
+        case 19:
             SetSaveCrashRecoveryFile(buf.ReadBool());
             break;
-        case 22:
+        case 20:
             SetApplySelection(buf.ReadBool());
             break;
-        case 23:
+        case 21:
             SetIgnoreExtentsFromDbs(buf.ReadBool());
             break;
         }
@@ -538,8 +506,6 @@ public class GlobalAttributes extends AttributeSubject
         str = str + intToString("windowLayout", windowLayout, indent) + "\n";
         str = str + boolToString("makeDefaultConfirm", makeDefaultConfirm, indent) + "\n";
         str = str + boolToString("cloneWindowOnFirstRef", cloneWindowOnFirstRef, indent) + "\n";
-        str = str + boolToString("maintainView", maintainView, indent) + "\n";
-        str = str + boolToString("maintainData", maintainData, indent) + "\n";
         str = str + boolToString("automaticallyAddOperator", automaticallyAddOperator, indent) + "\n";
         str = str + boolToString("tryHarderCyclesTimes", tryHarderCyclesTimes, indent) + "\n";
         str = str + boolToString("treatAllDBsAsTimeVarying", treatAllDBsAsTimeVarying, indent) + "\n";
@@ -567,8 +533,6 @@ public class GlobalAttributes extends AttributeSubject
     private int     windowLayout;
     private boolean makeDefaultConfirm;
     private boolean cloneWindowOnFirstRef;
-    private boolean maintainView;
-    private boolean maintainData;
     private boolean automaticallyAddOperator;
     private boolean tryHarderCyclesTimes;
     private boolean treatAllDBsAsTimeVarying;

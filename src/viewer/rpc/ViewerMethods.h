@@ -123,6 +123,10 @@ class ViewerState;
 //   Brad Whitlock, Tue Oct 20 10:25:15 PDT 2009
 //   I added methods to set a plot description and to adjust plot order.
 //
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -265,7 +269,6 @@ public:
     void RecenterView();
     void SetViewExtentsType(int t);
     void ToggleMaintainViewMode();
-    void ToggleMaintainDataMode();
     void UndoView();
     void RedoView();
     void ToggleLockViewMode();

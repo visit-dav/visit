@@ -127,6 +127,9 @@ class QPushButton;
 //   Cyrus Harrison, Thu Dec 18 09:36:57 PST 2008
 //   Changed argument for tabSelected slot to an integer for Qt4.
 //
+//   Jeremy Meredith, Wed Feb  3 15:29:17 EST 2010
+//   Added maintain view here.  (moved from main window)
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -204,6 +207,7 @@ private slots:
     void processCenterText();
 
     void lockedViewChecked(bool);
+    void maintainViewChecked(bool);
     void extentTypeChanged(int);
     void resetView();
     void recenterView();
@@ -285,6 +289,7 @@ private:
     QLineEdit   *commandLineEdit;
     QComboBox   *extentComboBox;
     QCheckBox   *lockedViewToggle;
+    QCheckBox   *maintainViewToggle;
     QCheckBox   *copyViewFromCameraToggle;
     QPushButton *makeViewKeyframeButton;
     QWidget     *pageAdvanced;

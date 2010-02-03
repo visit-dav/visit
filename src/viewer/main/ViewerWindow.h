@@ -447,6 +447,10 @@ class ViewerToolbar;
 //    Jeremy Meredith, Tue Feb  2 11:16:01 EST 2010
 //    Added tool update modes.
 //
+//    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//    Removed maintain data; moved maintain view from Global settings
+//    (Main window) to per-window Window Information (View window).
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -505,8 +509,6 @@ public:
     bool GetCameraViewMode() const;
     void SetMaintainViewMode(const bool mode);
     bool GetMaintainViewMode() const;
-    void SetMaintainDataMode(const bool mode);
-    bool GetMaintainDataMode() const;
     void SetViewIsLocked(const bool);
     bool GetViewIsLocked() const;
     void SetTimeLock(const bool);
@@ -766,7 +768,6 @@ private:
 
     bool            cameraView;
     bool            maintainView;
-    bool            maintainData;
     bool            viewIsLocked;
     WINDOW_MODE     windowMode;
     avtExtentType   plotExtentsType;

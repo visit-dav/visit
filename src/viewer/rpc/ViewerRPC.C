@@ -71,58 +71,58 @@ static const char *ViewerRPCType_strings[] = {
 "SetAppearanceRPC", "ProcessExpressionsRPC", "SetLightListRPC", 
 "SetDefaultLightListRPC", "ResetLightListRPC", "SetAnimationAttributesRPC", 
 "SetWindowAreaRPC", "PrintWindowRPC", "ResetViewRPC", 
-"RecenterViewRPC", "ToggleMaintainViewModeRPC", "ToggleMaintainDataModeRPC", 
-"ToggleBoundingBoxModeRPC", "ToggleCameraViewModeRPC", "TogglePerspectiveViewRPC", 
-"ToggleSpinModeRPC", "ToggleLockTimeRPC", "ToggleLockToolsRPC", 
-"ToggleLockViewModeRPC", "ToggleFullFrameRPC", "UndoViewRPC", 
-"RedoViewRPC", "InvertBackgroundRPC", "ClearPickPointsRPC", 
-"SetWindowModeRPC", "EnableToolRPC", "SetToolUpdateModeRPC", 
-"CopyViewToWindowRPC", "CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", 
-"CopyPlotsToWindowRPC", "ClearCacheRPC", "ClearCacheForAllEnginesRPC", 
-"SetViewExtentsTypeRPC", "ClearRefLinesRPC", "SetRenderingAttributesRPC", 
-"DatabaseQueryRPC", "PointQueryRPC", "LineQueryRPC", 
-"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", 
-"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", 
-"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", 
-"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC", 
-"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", 
-"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", 
-"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", 
-"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC", 
-"ImportEntireStateWithDifferentSourcesRPC", "ResetPickAttributesRPC", "AddAnnotationObjectRPC", 
-"HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", 
-"LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", 
-"ResetAnnotationObjectListRPC", "ResetPickLetterRPC", "SetDefaultPickAttributesRPC", 
-"ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", 
-"SetDefaultQueryOverTimeAttributesRPC", "ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", 
-"SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", 
-"GetProcInfoRPC", "SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", 
-"ExportDBRPC", "SetTryHarderCyclesTimesRPC", "OpenClientRPC", 
-"OpenGUIClientRPC", "OpenCLIClientRPC", "SuppressQueryOutputRPC", 
-"SetQueryFloatFormatRPC", "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", 
-"ResetMeshManagementAttributesRPC", "ResizeWindowRPC", "MoveWindowRPC", 
-"MoveAndResizeWindowRPC", "SetStateLoggingRPC", "ConstructDDFRPC", 
-"RequestMetaDataRPC", "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", 
-"SetCreateTimeDerivativeExpressionsRPC", "SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", 
-"SetPlotFollowsTimeRPC", "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", 
-"SetSuppressMessagesRPC", "ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", 
-"DeleteNamedSelectionRPC", "LoadNamedSelectionRPC", "SaveNamedSelectionRPC", 
-"MenuQuitRPC", "SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", 
-"MovePlotOrderTowardLastRPC", "SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", 
-"MaxRPC"};
+"RecenterViewRPC", "ToggleMaintainViewModeRPC", "ToggleBoundingBoxModeRPC", 
+"ToggleCameraViewModeRPC", "TogglePerspectiveViewRPC", "ToggleSpinModeRPC", 
+"ToggleLockTimeRPC", "ToggleLockToolsRPC", "ToggleLockViewModeRPC", 
+"ToggleFullFrameRPC", "UndoViewRPC", "RedoViewRPC", 
+"InvertBackgroundRPC", "ClearPickPointsRPC", "SetWindowModeRPC", 
+"EnableToolRPC", "SetToolUpdateModeRPC", "CopyViewToWindowRPC", 
+"CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", 
+"ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", 
+"ClearRefLinesRPC", "SetRenderingAttributesRPC", "DatabaseQueryRPC", 
+"PointQueryRPC", "LineQueryRPC", "CloneWindowRPC", 
+"SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", "ResetMaterialAttributesRPC", 
+"SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", "MovePlotDatabaseKeyframeRPC", 
+"ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", "MoveViewKeyframeRPC", 
+"SetViewKeyframeRPC", "OpenMDServerRPC", "EnableToolbarRPC", 
+"HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", "ShowToolbarsRPC", 
+"ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", "SaveViewRPC", 
+"SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", "ExportColorTableRPC", 
+"ExportEntireStateRPC", "ImportEntireStateRPC", "ImportEntireStateWithDifferentSourcesRPC", 
+"ResetPickAttributesRPC", "AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", 
+"DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", 
+"SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", 
+"ResetPickLetterRPC", "SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", 
+"SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", "SetDefaultQueryOverTimeAttributesRPC", 
+"ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", "SetInteractorAttributesRPC", 
+"SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", "GetProcInfoRPC", 
+"SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", "ExportDBRPC", 
+"SetTryHarderCyclesTimesRPC", "OpenClientRPC", "OpenGUIClientRPC", 
+"OpenCLIClientRPC", "SuppressQueryOutputRPC", "SetQueryFloatFormatRPC", 
+"SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", 
+"ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
+"SetStateLoggingRPC", "ConstructDDFRPC", "RequestMetaDataRPC", 
+"SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", "SetCreateTimeDerivativeExpressionsRPC", 
+"SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC", 
+"TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 
+"ApplyNamedSelectionRPC", "CreateNamedSelectionRPC", "DeleteNamedSelectionRPC", 
+"LoadNamedSelectionRPC", "SaveNamedSelectionRPC", "MenuQuitRPC", 
+"SetPlotDescriptionRPC", "MovePlotOrderTowardFirstRPC", "MovePlotOrderTowardLastRPC", 
+"SetPlotOrderToFirstRPC", "SetPlotOrderToLastRPC", "MaxRPC"
+};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 193) index = 0;
+    if(index < 0 || index >= 192) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 193) ? 0 : t;
+    int index = (t < 0 || t >= 192) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -130,7 +130,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 193; ++i)
+    for(int i = 0; i < 192; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {
