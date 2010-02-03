@@ -97,6 +97,9 @@ exec perl -x $0 ${1+"$@"};
 #    was launching was visit.  This is the only program that needs it and
 #    other programs do not accept it, such as mpeg2encode.
 #
+#    Jeremy Meredith, Wed Feb  3 16:00:24 EST 2010
+#    Stop supporting legacy versions (pre-1.4.1).
+#
 ###############################################################################
 
 
@@ -169,7 +172,6 @@ $beta         = 0;
 $using_dev    = 0;
 
 # Parse the arguments 
-@legacyvisitargs = @ARGV;
 @visitargs = ();
 while (scalar(@ARGV) > 0) {
     $arg = shift @ARGV;
@@ -410,30 +412,8 @@ else
     # didn't have a version-specific launcher script.
     if (! grep /^${ver}$/, @exeversions)
     {
-        if (! -d "$visitdir/$ver")
-        {
-            print STDERR "There is no version '$ver' of VisIt.\n";
-            exit 1;
-        }
-
-        # Fall back to legacy here; we set a version and didn't have a
-        # version-specific launcher script.
-
-        # Legacy tools were launched using the visit script with
-        # an argumnet specifying which tool to run.  Fake it here.
-        if ($progname ne "visit" and
-            grep(m|^\-${progname}|, @legacyvisitargs) == 0)
-        {
-            push @legacyvisitargs, "-${progname}";
-        }
-
-        @legacycmd = ("$visitdir/bin/legacylauncher", @legacyvisitargs);
-        exec @legacycmd or die "Can't execute visit legacy script: $!\n";
-
-        # If we ever stop supporting versions before 1.4.1, we can
-        # change to the "right" behavior here.
-        #print STDERR "Version $ver of does not exist.\n";
-        #exit 1;
+        print STDERR "Version $ver of does not exist.\n";
+        exit 1;
     }
 
     # Warn if we mixed public and private development versions.
