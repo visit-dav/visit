@@ -130,6 +130,9 @@ avtWavefrontOBJFileFormat::~avtWavefrontOBJFileFormat()
 //    The VTK reader will parse just about anything, but at least it returns
 //    an empty dataset for some erroneous cases.  Error on an empty dataset.
 //
+//    Brad Whitlock, Web Feb 3 15:51:34 PST 2010
+//    I moved the empty check until after the data has been read.
+//
 // ****************************************************************************
 
 void
@@ -153,9 +156,6 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     vtkVisItOBJReader *reader = vtkVisItOBJReader::New();
     reader->SetFileName(filename);
     dataset = reader->GetOutput();
-    if (dataset->GetNumberOfPoints() == 0 && dataset->GetNumberOfCells() == 0)
-        EXCEPTION2(InvalidFilesException, filename, "No OBJ data in the file.");
-        
     dataset->Register(NULL);
 
     //
@@ -163,8 +163,13 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     // eat up too many file descriptors.
     //
     dataset->Update();
+
     //dataset->SetSource(NULL);
     reader->Delete();
+
+    // Now that the dataset has been read, check to see if it is empty.
+    if (dataset->GetNumberOfPoints() == 0 && dataset->GetNumberOfCells() == 0)
+        EXCEPTION2(InvalidFilesException, filename, "No OBJ data in the file.");
 
     vtkDataArray *tcoords = dataset->GetPointData()->GetTCoords();
     if (tcoords != NULL)
