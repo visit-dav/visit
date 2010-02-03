@@ -1434,6 +1434,8 @@ function uncompress_untar
 #   Cyrus Harrison, Thu Apr  9 19:21:13 PDT 2009                              #
 #   Applied patch from Rick Wagner to fix curl downloads on OSX.              #
 #                                                                             #
+#   Mark C. Miller, Wed Feb  3 09:47:52 PST 2010                              #
+#   Made it fall back to anon svn checkout                                    #
 # *************************************************************************** #
 
 function download_file
@@ -1454,8 +1456,24 @@ function download_file
         if [[ $? == 0 && -e $dfile ]] ; then
             info "SVN download succeeded: $SVN_ROOT_PATH/trunk/third_party/$dfile"
             return 0
+        else
+            warn "Normal svn failed. Trying anonymous svn." 
+            svn cat $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile > $dfile
+            if [[ $? == 0 && -e $dfile ]] ; then
+                info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+                return 0
+            fi
         fi
         warn "SVN download attempt failed: $SVN_ROOT_PATH/trunk/third_party/$dfile"
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+        rm -f $dfile
+    elif [[ "$DO_SVN_ANON" == "yes" ]] ; then
+        svn cat $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile > $dfile
+        if [[ $? == 0 && -e $dfile ]] ; then
+            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
+            return 0
+        fi
+        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
         rm -f $dfile
     fi
     
@@ -1471,6 +1489,7 @@ function download_file
             return 0
         fi
     fi
+
     # Ok, if any of above had succeeded, they would have returned early.
     # So, now try various places listed.
     # try all sites listed incl. falling back to visit's 3rd_party
