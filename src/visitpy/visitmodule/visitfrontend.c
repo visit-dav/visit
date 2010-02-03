@@ -626,10 +626,16 @@ static PyMethodDef visit_methods[] = {
  * Creation:   Wed Dec 13 10:45:58 PDT 2006
  *
  * Modifications:
- *   
+ *   Brad Whitlock, Web Feb 3 10:21:23 PDT 2010
+ *   Always make the initvisit function visible.
+ *
  * ***************************************************************************/
 
-void
+void 
+#if __GNUC__ >= 4
+/* Ensure this function is visible even if -fvisibility=hidden was passed */
+__attribute__ ((visibility("default")))
+#endif 
 initvisit(void)
 {
     if(moduleState == NULL)
