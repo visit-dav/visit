@@ -252,6 +252,10 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Don't know if it's necessary, but all the other SetupDatabase calls
 //    were wrapped with try/catches, so it seemed the logical thing.
 //
+//    Brad Whitlock, Tue Feb 2 14:37:34 PDT 2010
+//    Delete a database pointer in the event that a 2nd reader could open
+//    the data file too.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -406,6 +410,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     succeeded.push_back(info->GetName());
                     if (rv==NULL)
                         rv = dbtmp;
+                    else
+                        delete dbtmp;
                 }
             }
             CATCHALL
