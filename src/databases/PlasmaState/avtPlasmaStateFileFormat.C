@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtPlasmaStateFileFormat.C                           //
+//                            avtPlasmaStateFileFormat.C                     //
 // ************************************************************************* //
 
 #include <avtPlasmaStateFileFormat.h>
@@ -74,6 +74,9 @@ using namespace std;
 //  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
 //  Replace dimensions with axes.
 //
+//  Brad Whitlock, Tue Feb 2 14:37:34 PDT 2010
+//  Guard against a == NULL.
+//
 // ****************************************************************************
 
 avtPlasmaStateFileFormat::avtPlasmaStateFileFormat(const char *filename)
@@ -96,7 +99,7 @@ avtPlasmaStateFileFormat::avtPlasmaStateFileFormat(const char *filename)
     for (int i = 0; i < natts; i++)
     {
         NcAtt *a = file.get_att(i);
-        if (!strcmp(a->name(), "monitor_comp_version"))
+        if (a != NULL && strcmp(a->name(), "monitor_comp_version") == 0)
             fileType = MONITOR;
     }
 
@@ -146,10 +149,10 @@ avtPlasmaStateFileFormat::GetTimes(vector<double> &times)
     else
     {
         NcVar *t = file.get_var("time");
-        if (!t)
+        if (t == NULL)
             EXCEPTION1(InvalidVariableException, "time");
         NcValues *vals = t->values();
-        if (!vals)
+        if (vals == NULL)
             EXCEPTION1(InvalidVariableException, "time");
         if (nTimeSteps != vals->num())
             EXCEPTION1(InvalidVariableException, "time");
@@ -214,6 +217,11 @@ avtPlasmaStateFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
 //  Programmer: Dave Pugmire
 //  Creation:   Fri Jun 12, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Tue Feb 2 14:37:34 PDT 2010
+//    Iterate over attributes instead of calling get_att since that can cause
+//    a crash on davinci when opening non-PlasmaState files.
+//
 // ****************************************************************************
 
 void
@@ -224,11 +232,11 @@ avtPlasmaStateFileFormat::GetAxes()
     for (int i=0; i<nvars; i++)
     {
         NcVar *v = file.get_var(i);
-        if (!v || !v->is_valid() || v->num_dims() != 1)
+        if (v == NULL || !v->is_valid() || v->num_dims() != 1)
             continue;
 
         NcDim *d = v->get_dim(0);
-        if (!d || !d->is_valid())
+        if (d == NULL || !d->is_valid())
             continue;
 
         // Get the time axis, other wise skip it!
@@ -250,8 +258,15 @@ avtPlasmaStateFileFormat::GetAxes()
         info.units = "";
         if (v->num_atts() > 0)
         {
-            NcAtt *units = v->get_att("units");
-            if (units && units->is_valid())
+            NcAtt *units = NULL;
+            for(int j = 0; j < v->num_atts() && units == NULL; ++j)
+            {
+                NcAtt *att = v->get_att(j);
+                if(att != NULL && strcmp("units", att->name()) == 0)
+                    units = att;
+            }
+
+            if (units != NULL && units->is_valid())
             {
                 string s = units->as_string(0);
                 if (s != "" && s != "-")
@@ -277,6 +292,10 @@ avtPlasmaStateFileFormat::GetAxes()
 //  Dave Pugmire Fri Jun 12 13:05:05 EDT 2009
 //  Move axis variables into the axes memberdata.
 //
+//  Brad Whitlock, Tue Feb 2 14:37:34 PDT 2010
+//  Loop over variable attributes since NcVar::get_attr is exiting on davinci
+//  when given a name that does not apply.
+//
 // ****************************************************************************
 
 void
@@ -288,7 +307,7 @@ avtPlasmaStateFileFormat::GetVariables()
     for (int i=0; i<nvars; i++)
     {
         NcVar *v = file.get_var(i);
-        if (!v || !v->is_valid() || v->num_dims() <= 1)
+        if (v == NULL || !v->is_valid() || v->num_dims() <= 1)
             continue;
 
         varInfo info;
@@ -300,7 +319,7 @@ avtPlasmaStateFileFormat::GetVariables()
         for (int j = 0; j < v->num_dims(); j++)
         {
             NcDim *d = v->get_dim(j);
-            if (!d || !d->is_valid())
+            if (d == NULL || !d->is_valid())
                 continue;
             
             if (string(d->name()) == string("timeDim"))
@@ -323,8 +342,15 @@ avtPlasmaStateFileFormat::GetVariables()
         
         //Units, if any.
         info.units = "";
-        NcAtt *units = v->get_att("units");
-        if (units && units->is_valid())
+        NcAtt *units = NULL;
+        for(int j = 0; j < v->num_atts() && units == NULL; ++j)
+        {
+            NcAtt *att = v->get_att(j);
+            if(att != NULL && strcmp("units", att->name()) == 0)
+                units = att;
+        }
+
+        if (units != NULL && units->is_valid())
         {
             string s = units->as_string(0);
             if (s != "" && s != "-")
