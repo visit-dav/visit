@@ -801,6 +801,9 @@
 #     hostconf file was specifying a relative path for the first line for
 #     cmake. Configure didn't like that.
 #
+#     Mark C. Miller, Wed Feb  3 10:36:05 PST 2010
+#     Added -no-libtiff to qt build.
+#
 #     Brad Whitlock Wed Feb 3 10:00:36 PDT 2010
 #     I added Jean Favre's VISIT_STATIC patch.
 #
@@ -2953,6 +2956,7 @@ function build_qt
     qt_flags="${qt_flags} -no-sql-odbc -no-sql-psql -no-sql-sqlite"
     qt_flags="${qt_flags} -no-sql-sqlite2 -no-sql-tds"
     qt_flags="${qt_flags} -no-xmlpatterns"
+    qt_flags="${qt_flags} -no-libtiff"
     #qt_flags="${qt_flags} -no-scripttools" # disable for now -- not in 4.4.3
     qt_flags="${qt_flags} -no-webkit"
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
