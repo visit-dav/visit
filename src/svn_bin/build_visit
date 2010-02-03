@@ -807,6 +807,10 @@
 #     Brad Whitlock Wed Feb 3 10:00:36 PDT 2010
 #     I added Jean Favre's VISIT_STATIC patch.
 #
+#     Mark C. Miller, Wed Feb  3 11:00:11 PST 2010
+#     Averted breaking --thirdparty-path by changing logic that includes
+#     cmake path in hostconf file to compute absolute path from
+#     $THIRD_PARTY_PATH
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7786,10 +7790,11 @@ function build_hostconf
     export HOSTCONF="$(hostname).cmake"
     info "Creating $HOSTCONF"
 
-    # First line of config-site file provides a hit to the location
+    # First line of config-site file provides a hint to the location
     # of cmake.
 
-    echo "#$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake" > $HOSTCONF
+    THIRD_PARTY_ABS_PATH=$(pushd $THIRD_PARTY_PATH 1,2>/dev/null; pwd; popd 1,2>/dev/null)
+    echo "#$THIRD_PARTY_ABS_PATH/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" > $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## $0 generated host.cmake" >> $HOSTCONF
     echo "## created: $(date)" >> $HOSTCONF
