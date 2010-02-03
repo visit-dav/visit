@@ -800,6 +800,10 @@
 #     Updated Silo to 4.7.2 and HDF5 to 1.8.4. Also fixed a problem where the
 #     hostconf file was specifying a relative path for the first line for
 #     cmake. Configure didn't like that.
+#
+#     Brad Whitlock Wed Feb 3 10:00:36 PDT 2010
+#     I added Jean Favre's VISIT_STATIC patch.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7845,6 +7849,16 @@ function build_hostconf
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS        $PAR_LIBRARY_NAMES)" >> $HOSTCONF
         fi
     fi
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        echo >> $HOSTCONF
+	echo "##" >> $HOSTCONF
+	echo "## Static build" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_STATIC ON)" >> $HOSTCONF
+    fi
+
     echo >> $HOSTCONF
     echo \
 "##############################################################" >> $HOSTCONF
