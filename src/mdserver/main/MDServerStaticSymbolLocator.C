@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <iostream.h>
+#include <iostream>
 #include <vector>
 
 #include <DebugStream.h>
