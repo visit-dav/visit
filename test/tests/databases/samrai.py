@@ -45,10 +45,25 @@
 #    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
 #    Changed number of vectors in vector plot to match the old behavior.
 #    (We now account for how many domains there are.)
+#
+#    Brad Whitlock, Thu Feb 4 10:18:23 PDT 2010
+#    Turn off sets by name instead of index since that can change.
+#
 # ----------------------------------------------------------------------------
 
 LevelZero = 4 # set id for level 0
 
+# Turn off sets by name
+def TurnOffSetsByName(silr, cat, names):
+    sets = silr.SetsInCategory(cat)
+    for s in sets:
+        setname = silr.SetName(s)
+        try:
+            if setname in names:
+                silr.TurnOffSet(s)
+        except:
+            if setname == names:
+                silr.TurnOffSet(s)
 
 OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
 
@@ -190,10 +205,7 @@ Test("samrai_13")
 # test material plot with some patches off
 #
 silr=SILRestriction()
-silr.TurnOffSet(1)
-silr.TurnOffSet(2)
-silr.TurnOffSet(3)
-silr.TurnOffSet(4)
+TurnOffSetsByName(silr, "patches", ("level0,patch0", "level0,patch1","level0,patch2","level0,patch3"))
 SetPlotSILRestriction(silr)
 Test("samrai_14")
 
@@ -201,7 +213,7 @@ Test("samrai_14")
 # now, turn off a material, too
 #
 silr.TurnOnAll()
-silr.TurnOffSet(20)
+TurnOffSetsByName(silr, "materials", "Copper")
 SetPlotSILRestriction(silr)
 Test("samrai_15")
 
