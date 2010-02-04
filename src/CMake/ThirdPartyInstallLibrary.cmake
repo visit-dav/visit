@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Kathleen Bonnell, Wed Feb  3 17:25:42 PST 2010
+#   Add simplifed version for windows.
+#
 #****************************************************************************/
 
 #
@@ -43,11 +46,42 @@
 #
 
 FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
-    IF(WIN32)
+  IF(WIN32)
         IF(NOT EXISTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
             FILE(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
         ENDIF(NOT EXISTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    ENDIF(WIN32)
+
+        SET(tmpLIBFILE ${LIBFILE})
+        GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
+        GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
+        GET_FILENAME_COMPONENT(curNAMEWE ${LIBREALPATH} NAME_WE)
+        SET(curNAME "${curPATH}/${curNAMEWE}")
+        SET(dllNAME "${curNAME}.dll")
+        SET(libNAME "${curNAME}.lib")
+        IF(EXISTS ${dllNAME})
+            INSTALL(FILES ${dllNAME} 
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                )
+            # On Windows, we also need to copy the file to the 
+            # binary dir so our out of source builds can run.
+            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+                            ${dllNAME}
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        ENDIF(EXISTS ${dllNAME})
+
+        IF(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${libNAME})
+            # also install the import libraries
+            INSTALL(FILES ${libNAME}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                )
+        ENDIF(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${libNAME})
+
+  ELSE(WIN32)
+
     SET(tmpLIBFILE ${LIBFILE})
     GET_FILENAME_COMPONENT(LIBEXT ${tmpLIBFILE} EXT)
     IF(NOT ${LIBEXT} STREQUAL ".a")
@@ -68,6 +102,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     SET(allNAMES ${allNAMES} "${curNAME}")           # Linux way
                     SET(allNAMES ${allNAMES} "${curNAME}${LIBEXT}")  # Mac way
                 ENDFOREACH(X)
+
                 LIST(REMOVE_DUPLICATES allNAMES)
 
                 # Add the names that exist to the install.
@@ -99,13 +134,6 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                                 CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                             )
-                            # On Windows, we also need to copy the file to the 
-                            # binary dir so our out of source builds can run.
-                            IF(WIN32)
-                                EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-                                        ${curPATH}/${curNAMEWE}.dll
-                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-                            ENDIF(WIN32)
 
                             # On Apple, we need to make the library be executable relative.
                             IF(APPLE)
@@ -151,17 +179,6 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                 )
 
-                # On Windows, we also need to copy the file to the binary dir so
-                # our out of source builds can run.
-                IF(WIN32)
-                    # determine the corresponding dll to the lib
-                    GET_FILENAME_COMPONENT(curNAMEWE ${tmpLIBFILE} NAME_WE)
-                    GET_FILENAME_COMPONENT(curPATH ${tmpLIBFILE} PATH)
-                    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-                            ${curPATH}/${curNAMEWE}.dll
-                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-                ENDIF(WIN32)
-
                 # On Apple, we need to make the library be executable relative.
                 IF(APPLE)
                     GET_FILENAME_COMPONENT(libName ${tmpLIBFILE} NAME)
@@ -179,6 +196,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
         # We have a .a that we need to install to archives.
         IF(VISIT_INSTALL_THIRD_PARTY)
 #            MESSAGE("***INSTALL ${LIBFILE} to ${VISIT_INSTALLED_VERSION_ARCHIVES}")
+MESSAGE("INSTALL files Path 6")
             INSTALL(FILES ${tmpLIBFILE}
                 DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
@@ -189,6 +207,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
         ENDIF(VISIT_INSTALL_THIRD_PARTY)
     ENDIF(NOT ${LIBEXT} STREQUAL ".a")
+  ENDIF(WIN32)
 ENDFUNCTION(THIRD_PARTY_INSTALL_LIBRARY)
 
 #
@@ -196,7 +215,6 @@ ENDFUNCTION(THIRD_PARTY_INSTALL_LIBRARY)
 #
 
 FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
-    IF(NOT WIN32)
         IF(VISIT_INSTALL_THIRD_PARTY)
             STRING(TOLOWER ${pkg} lcpkg)
 #            MESSAGE("***INSTALL ${incdir} -> ${VISIT_INSTALLED_VERSION_INCLUDE}/${lcpkg}")
@@ -212,7 +230,7 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 PATTERN "*.HPP"
                 PATTERN "*.inc"
                 PATTERN "libccmio" EXCLUDE
+                PATTERN ".svn" EXCLUDE
             )
         ENDIF(VISIT_INSTALL_THIRD_PARTY)
-    ENDIF(NOT WIN32)
 ENDFUNCTION(THIRD_PARTY_INSTALL_INCLUDE)
