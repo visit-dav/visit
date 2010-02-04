@@ -150,6 +150,9 @@ avtDatasetOnDemandFilter::~avtDatasetOnDemandFilter()
 //    Remove some Delete calls, as they are now handled by the 
 //    DomainCacheEntry struct directly.
 //
+//    Hank Childs, Mon Feb  1 14:23:46 PST 2010
+//    Fix encoding of two 32 bit ints into one 64 bit int.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -202,8 +205,8 @@ avtDatasetOnDemandFilter::GetDomain(int domainId,
     
     //Update the domainLoadCount.
     //Turn two ints into a long. Put timeStep in upper, domain in lower.
-    unsigned long A =  (((unsigned long)timeStep)<<32);
-    unsigned long B =  ((unsigned long)domainId);
+    unsigned long long A =  (((unsigned long long)timeStep)<<32);
+    unsigned long long B =  ((unsigned long long)domainId);
     unsigned long long idx = A | B;
 
     if (domainLoadCount.find(idx) == domainLoadCount.end())
