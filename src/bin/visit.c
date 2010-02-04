@@ -772,6 +772,9 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Wed Apr 22 17:47:34 PDT 2009
  *   Added VISITULTRAHOME env var.
  *
+ *   Kathleen Bonnell, Wed Feb  3 13:59:42 PST 2010
+ *   Removed use of VISITDEVDIR env var.
+ *
  *****************************************************************************/
 
 char *
@@ -781,7 +784,6 @@ AddEnvironment(int useShortFileName)
     char *visitdevdir = 0;
     char tmpdir[512];
     int haveVISITHOME = 0;
-    int haveVISITDEVDIR=0;
 
     tmp = (char *)malloc(10000);
 
@@ -799,68 +801,35 @@ AddEnvironment(int useShortFileName)
         char *tempvisitdev = 0;
         int freetempvisitdev = 1;
         free(visitpath);
-        haveVISITDEVDIR = 0;
-        haveVISITDEVDIR = ReadKey("VISITDEVDIR", &tempvisitdev);
 
-        if (!haveVISITDEVDIR)
+
+        char tmpdir[MAX_PATH];
+        if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
         {
-            free(tempvisitdev);
-            freetempvisitdev = 0;
-            if((tempvisitdev = getenv("VISITDEVDIR")) != NULL)
+            int pos = 0;
+            int len = strlen(tmpdir);
+            for (pos = len; tmpdir[pos] != '\\' && pos >=0; pos--)
             {
-                haveVISITDEVDIR = 1;
+                continue;
             }
-        }
+            if (pos <= 0)
+                pos = len;
 
-        if(haveVISITDEVDIR)
-        {
-            char configDir[512];
-            char thirdPartyDir[512];
-#if defined(_DEBUG)
-            sprintf(configDir, "\\windowsbuild\\bin\\%s\\Debug", _VISIT_MSVC);
-#else
-            sprintf(configDir, "\\windowsbuild\\bin\\%s\\Release", 
-                    _VISIT_MSVC);
-#endif
-            sprintf(thirdPartyDir, "\\windowsbuild\\bin\\%s\\ThirdParty", 
-                    _VISIT_MSVC);
-            visitpath = (char *)malloc(strlen(tempvisitdev) + 
-                        strlen(configDir) + 1);
-            visitdevdir = (char *)malloc(strlen(tempvisitdev) + 
-                          strlen(thirdPartyDir) + 1);
-            sprintf(visitpath, "%s%s", tempvisitdev, configDir);
-            sprintf(visitdevdir, "%s%s", tempvisitdev, thirdPartyDir);
-        }
-        else
-        {
-            char tmpdir[MAX_PATH];
-            if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
+            visitpath = (char*)malloc(pos +1);
+            strncpy(visitpath, tmpdir, pos);
+            visitpath[pos] = '\0';
+            len = strlen(visitpath);
+            for (pos = len; visitpath[pos] != '\\' && pos >=0; pos--)
             {
-                int pos = 0;
-                int len = strlen(tmpdir);
-                for (pos = len; tmpdir[pos] != '\\' && pos >=0; pos--)
-                {
-                    continue;
-                }
-                if (pos <= 0)
-                    pos = len;
-
-                visitpath = (char*)malloc(pos +1);
-                strncpy(visitpath, tmpdir, pos);
-                visitpath[pos] = '\0';
-                len = strlen(visitpath);
-                for (pos = len; visitpath[pos] != '\\' && pos >=0; pos--)
-                {
-                    continue;
-                }
-                if (pos <= 0)
-                    pos = len;
-
-                visitdevdir = (char*)malloc(pos +12);
-                strncpy(visitdevdir, visitpath, pos);
-                visitdevdir[pos] = '\0';
-                sprintf(visitdevdir,"%s\\ThirdParty", visitdevdir);
+                continue;
             }
+            if (pos <= 0)
+                pos = len;
+
+            visitdevdir = (char*)malloc(pos +12);
+            strncpy(visitdevdir, visitpath, pos);
+            visitdevdir[pos] = '\0';
+            sprintf(visitdevdir,"%s\\ThirdParty", visitdevdir);
         }
         if (tempvisitdev != 0 && freetempvisitdev)
             free(tempvisitdev);

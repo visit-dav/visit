@@ -39,6 +39,9 @@
 #  Hank Childs, Tue Jan  5 07:13:58 PST 2010
 #  Remove xml2makefile and xml2projectfile.
 #
+#  Kathleen Bonnell, Wed Feb  3 17:22:12 PST 2010
+#  Add install for visit_exe.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -101,6 +104,7 @@ IF(WIN32)
     SET_TARGET_PROPERTIES(visit_exe PROPERTIES OUTPUT_NAME visit)
     SET_SOURCE_FILES_PROPERTIES(visit.c PROPERTIES LANGUAGE CXX)
     TARGET_LINK_LIBRARIES(visit_exe shlwapi)
+    VISIT_INSTALL_TARGETS(visit_exe)
 ENDIF(WIN32)
 
 
