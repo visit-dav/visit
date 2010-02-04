@@ -491,6 +491,11 @@ def SyncTimeRight():
 #
 #   Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
 #   Added logic to set noWinMode
+#
+#   Brad Whitlock, Wed Feb 3 17:08:34 PST 2010
+#   I added an -diff_format argument to compensate for the recent loss 
+#   of --assume_format elsewhere in VisIt.
+#
 ###############################################################################
 def ProcessCLArgs():
     global dbl
@@ -511,6 +516,9 @@ def ProcessCLArgs():
                 diffSummaryOnly = 1
             if sys.argv[i] == "-nowin":
                 noWinMode = 1
+            if sys.argv[i] == "-diff_format":
+                SetPreferredFileFormats(sys.argv[i+1])
+                i = i + 1
             i = i + 1
     except:
         print "The -vdiff flag takes 2 database names.", dbl, dbr
@@ -519,7 +527,7 @@ def ProcessCLArgs():
     if dbl == "notset" or dbr == "notset":
         print "The -vdiff argument was not given."
         sys.exit(2)
-
+    
 ###############################################################################
 # Function: UpdateThisExpression 
 #
@@ -809,6 +817,10 @@ def UpdateExpressions(mdl, mdr):
 #
 #   Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
 #   Added logic to return early when in nowin mode; for testing
+#
+#   Brad Whitlock, Wed Feb 3 17:124:23 PST 2010
+#   Don't use SetWindowLayout because it causes small test baseline images.
+#
 ###############################################################################
 def Initialize():
     global winDbMap 
@@ -834,7 +846,10 @@ def Initialize():
     SetCloneWindowOnFirstRef(1)
     ToggleLockTime()
     ToggleLockViewMode()
-    SetWindowLayout(4)
+    for i in (0,1,2):
+        SetActiveWindow(1)
+        CloneWindow()
+    SetActiveWindow(1)
     SyncTimeStates(0)
 
     # If we were able to create any expressions, let's set up some plots based on the
