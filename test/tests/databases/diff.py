@@ -3,7 +3,7 @@
 #
 #  Special args to launch VisIt for this test...
 #
-#  CLARGS: -cli -s ../src/bin/visitdiff.py -vdiff ../data/visitdiff_test_data/a/ubl_005.visit ../data/visitdiff_test_data/b/ubl_005.visit
+#  CLARGS: -cli -s ../src/bin/visitdiff.py -diff_format Silo_1.0 -vdiff ../data/visitdiff_test_data/a/ubl_005.visit ../data/visitdiff_test_data/b/ubl_005.visit
 #
 #  Test Case:  diff.py 
 #
@@ -11,6 +11,10 @@
 #
 #  Programmer: Mark C. Miller 
 #  Date:       August 26, 2007 
+#
+#  Modifications:
+#    Brad Whitlock, Wed Feb 3 17:08:34 PST 2010
+#    I added an -diff_format argument in the launch arguments.
 #
 # ----------------------------------------------------------------------------
 
@@ -20,18 +24,11 @@ def TestWindows(base, num):
     for win in (1,3,4):
         SetActiveWindow(win)
 	DrawPlots()
+        TurnOffAllAnnotations()
 	if num < 0:
             Test("diff_%s_%s"%(base,winToStrMap[win]))
         else:
             Test("diff_%s_%d_%s"%(base,num,winToStrMap[win]))
-
-# Turn off the user/database annotations
-a = AnnotationAttributes()
-for win in (1,3,4):
-    SetActiveWindow(win)
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    SetAnnotationAttributes(a)
 
 # Set up a good view
 v=GetView3D()
