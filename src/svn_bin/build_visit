@@ -811,6 +811,10 @@
 #     Averted breaking --thirdparty-path by changing logic that includes
 #     cmake path in hostconf file to compute absolute path from
 #     $THIRD_PARTY_PATH
+#
+#     Hank Childs, Thu Feb  4 08:21:27 PST 2010
+#     Add argument --svn-revision.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -8522,12 +8526,14 @@ usage () {
   printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
   printf "%-11s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
   printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
-  printf "%s <%s> %s\n" "--svn" "revision" \
-    "Obtain <revision> of VisIt source code from the SVN server"
+  printf "%s <%s> %s\n" "--svn" \
+    "Obtain VisIt source code and third party libraries from the SVN server"
   printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/trunk/src]"
-  printf "%s <%s> %s\n" "--svn-anonymous" "revision" \
-    "Obtain <revision> of VisIt source code using the anonymous SVN mirror."
+  printf "%s <%s> %s\n" "--svn-anonymous" \
+    "Obtain VisIt source code and third party libraries using the anonymous SVN mirror."
   printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/trunk/src]"
+  printf "%s <%s> %s\n" "--svn-revision" "revision" \
+    "Specify the SVN revision of the VisIt source code and third party libraries to download.  Used in conjunction with --svn or --svn-anonymous."
   printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
   printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
     "             Specify the root directory name under which the 3rd party
@@ -8734,9 +8740,10 @@ for arg in "${arguments[@]}" ; do
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --static) DO_STATIC_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;
-        --svn) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
-        --svn-anon) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
-        --svn-anonymous) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
+        --svn) DO_SVN="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
+        --svn-anon) DO_SVN="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
+        --svn-anonymous) DO_SVN="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
+        --svn-revision) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
         --tarball) next_arg="tarball"
                    USE_VISIT_FILE="yes"
                    ON_USE_VISIT_FILE="on";;
