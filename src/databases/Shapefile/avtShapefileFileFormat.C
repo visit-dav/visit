@@ -94,8 +94,8 @@ avtShapefileFileFormat::avtShapefileFileFormat(const char *filename,
     {
         if (rdopts->GetName(i) == "Polygons as lines")
             polygonsAsLines = rdopts->GetBool("Polygons as lines");
-        else if (rdopts->GetName(i) == "No tesselation")
-            tessellatePolygons = rdopts->GetBool("No tesselation");
+        else if (rdopts->GetName(i) == "Tessellate polygons")
+            tessellatePolygons = rdopts->GetBool("Tessellate polygons");
         else if (rdopts->GetName(i) == "ESRI Logging")
             esriLogging = rdopts->GetBool("ESRI Logging");
         else if (rdopts->GetName(i) == "DBF Logging")
