@@ -301,6 +301,9 @@ QvisPlotListBoxItem::textX() const
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Thu Feb  4 17:13:20 EST 2010
+//   No need for a "-" separator in expanded mode; we have a ":" one still.
+//
 // ****************************************************************************
 
 void QvisPlotListBoxItem::paint(QPainter *painter)
@@ -437,7 +440,6 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         int expandY = y2 + 2;
 
         // Draw the database name and the variable.
-        dbName += QString(" - ");
         dbName += QString(plot.GetPlotVar().c_str());
         if(plot.GetDescription().size() > 0)
            dbName = QString("%1 [%2]").arg(plot.GetDescription().c_str()).arg(dbName);

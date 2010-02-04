@@ -704,6 +704,10 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 //   Brad Whitlock, Tue Sep  9 10:40:33 PDT 2008
 //   Removed metaData and pluginAtts since they were not used.
 //
+//   Jeremy Meredith, Thu Feb  4 17:20:04 EST 2010
+//   The plot list sometimes changes its appearance based on the open files,
+//   so update the plot list when the sources are updated.
+//
 // ****************************************************************************
 
 void
@@ -795,9 +799,12 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
     }
     else if(TheChangedSubject == globalAtts)
     {
-        // Update the source list.
+        // Update the source list and plot list
         if(globalAtts->IsSelected(GlobalAttributes::ID_sources))
+        {
             UpdateSourceList(false);
+            UpdatePlotList();
+        }
 
         // Set the "Apply operator toggle."
         applyOperatorToggle->blockSignals(true);
@@ -895,6 +902,10 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Tue Sep 30 15:00:28 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Thu Feb  4 17:14:17 EST 2010
+//   If we're not showing selected files, then either show no source name
+//   (since it's implicit), or the full source name, never a number.
+//
 // ****************************************************************************
 
 void
@@ -916,7 +927,9 @@ QvisPlotManagerWidget::UpdatePlotList()
         char prefix[200];
         QualifiedFilename qualifiedFile(current.GetDatabaseName());
         int index = fileServer->GetFileIndex(qualifiedFile);
-        if(index < 0)
+        if (globalAtts->GetSources().size() <= 1 && sourceVisible == true)
+            SNPRINTF(prefix, 200, "");
+        else if (index < 0 || sourceVisible == true)
             SNPRINTF(prefix, 200, "%s:", qualifiedFile.filename.c_str());
         else
             SNPRINTF(prefix, 200, "%d:", index); 
