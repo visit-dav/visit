@@ -2445,6 +2445,9 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Brad Whitlock, Mon Apr  6 15:41:07 PDT 2009
 //   I fixed bugs with the Qt4 port.
 //
+//   Jeremy Meredith, Thu Feb  4 17:08:03 EST 2010
+//   Redraw the plot list when this changes.
+//
 // ****************************************************************************
 
 void
@@ -2488,6 +2491,9 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
             //
             UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
             UpdateFileMenuPopup(closePopup, closePopupAct);
+
+            // Show the selected file index if possible
+            plotManager->UpdatePlotList();
         }
     }
     else
@@ -2519,6 +2525,9 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
             //
             UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
             UpdateFileMenuPopup(closePopup, closePopupAct);
+
+            // Use the file name instead of the selected file index
+            plotManager->UpdatePlotList();
         }
     }
 }

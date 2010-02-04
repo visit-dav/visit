@@ -204,6 +204,10 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Tue Sep  9 10:40:33 PDT 2008
 //   Removed metaData and pluginAtts since they were not used.
 //
+//   Jeremy Meredith, Thu Feb  4 17:05:30 EST 2010
+//   Made UpdatePlotList public, since it needs to be triggered externally;
+//   this is used e.g. when you disable selected files to show full filenames.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -230,6 +234,7 @@ public:
     void EnablePluginMenus();
 
     void SetSourceVisible(bool);
+    void UpdatePlotList();
 public slots:
     void hideThisPlot();
     void deleteThisPlot();
@@ -255,7 +260,6 @@ private:
     void CreatePlotMenuItem(int index);
     void DestroyVariableMenu();
     void CreateVariableMenu();
-    void UpdatePlotList();
     bool PopulateVariableLists(VariableMenuPopulator &,
                                const QualifiedFilename &filename);
     void UpdatePlotVariableMenu();
