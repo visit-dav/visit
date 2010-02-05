@@ -40,6 +40,9 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
+# For now until Silo/HDF5 is fixed. Remove this line once Silo is fixed.
+SILO_MODE="pdb"
+
 # Create label attributes with somewhat larger text.
 def CreateLabelAttributes():
     L = LabelAttributes()
