@@ -90,6 +90,7 @@ class TruecolorGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtual 
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
+    virtual const char **XPMIconData() const;
 };
 
 class TruecolorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual TruecolorCommonPluginInfo
@@ -104,6 +105,7 @@ class TruecolorViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vi
 
     virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual QString *GetMenuName() const;
+    virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
 
     static void InitializeGlobalObjects();
