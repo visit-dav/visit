@@ -64,6 +64,18 @@
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
+# Turn off sets by name
+def TurnOffSetsByName(silr, cat, names):
+    sets = silr.SetsInCategory(cat)
+    for s in sets:
+        setname = silr.SetName(s)
+        try:
+            if setname in names:
+                silr.TurnOffSet(s)
+        except:
+            if setname == names:
+                silr.TurnOffSet(s)
+
 OpenDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
 
 #
@@ -363,7 +375,7 @@ Test("silo_39")
 
 
 TestSection("Silo AMR w/Mrgtrees")
-LevelTwo = 77 # Set Id for Level 2 set for this mesh
+TurnOffAllAnnotations()
 DeleteAllPlots()
 CloseDatabase("../data/silo_%s_test_data/wave_1file.visit"%SILO_MODE)
 OpenDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
@@ -378,12 +390,10 @@ AddPlot("Pseudocolor","Density_wmrgtree")
 DrawPlots()
 Test("silo_41")
 silr=SILRestriction()
-silr.TurnOffSet(LevelTwo)
+TurnOffSetsByName(silr, "levels", "level2")
 SetPlotSILRestriction(silr)
 Test("silo_42")
 
-LevelTwo = 13
-LevelOne = 12
 DeleteAllPlots()
 CloseDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
 OpenDatabase("../data/silo_amr_test_data/amr3d_wmrgtree.silo")
@@ -400,10 +410,10 @@ v.imageZoom = 6.03355
 SetView3D(v)
 Test("silo_43")
 silr=SILRestriction()
-silr.TurnOffSet(LevelTwo)
+TurnOffSetsByName(silr, "levels", "level2")
 SetPlotSILRestriction(silr)
 Test("silo_44")
-silr.TurnOffSet(LevelOne)
+TurnOffSetsByName(silr, "levels", "level1")
 SetPlotSILRestriction(silr)
 Test("silo_45")
 
