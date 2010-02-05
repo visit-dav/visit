@@ -46,6 +46,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Fri Feb  5 09:27:37 PST 2010
+#    Turn off color cycling to avoid possible propagation of error from
+#    one failed test to several.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -65,6 +70,21 @@ def InitAnnotation():
     a.foregroundColor = (0, 0, 0, 255)
     a.backgroundColor = (255, 255, 255, 255)
     SetAnnotationAttributes(a)
+
+def SetCurvePlotDefaults():
+    # Disable Color Cycling, default to a blue curve.
+    catts = CurveAttributes()
+    catts.lineStyle = catts.SOLID  
+    catts.lineWidth = 0
+    catts.color = (0, 0, 255, 255)
+    catts.showLabels = 1
+    catts.designator = ""
+    catts.showPoints = 0
+    catts.showLegend = 1
+    catts.cycleColors = 0
+    catts.renderMode = catts.RenderAsLines
+    SetDefaultPlotOptions(catts)
+
 
 
 def TestAllTimeQueries():
@@ -537,8 +557,9 @@ def TimeQueryMain():
     TestMili()
 
 # main
-InitAnnotation()    
-TimeQueryMain()    
+InitAnnotation()
+SetCurvePlotDefaults()
+TimeQueryMain()
 Exit()
 
 
