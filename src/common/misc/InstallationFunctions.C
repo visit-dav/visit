@@ -609,6 +609,9 @@ GetVisItInstallationDirectory(const char *version)
 //   Tom Fogal, Mon Jan 11 22:09:23 MST 2010
 //   Give a warning when relying on the compile-time default.
 //
+//   Tom Fogal, Fri Feb 5 MST 2010
+//   Pickup dev/release build when assembling win32 arch string.
+//
 // ****************************************************************************
 
 std::string
@@ -637,7 +640,11 @@ GetVisItArchitectureDirectory(const char *version)
             visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
             visitdev = std::string(devdir);
+#ifndef NDEBUG
+        archDir = visitdev + "\\bin";
+#else
         archDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
+#endif
     }
     if (visitHome != 0)
         free(visitHome);
