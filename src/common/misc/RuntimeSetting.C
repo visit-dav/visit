@@ -85,10 +85,10 @@ struct s
   static const char lib_gl[] = "opengl32.dll";
 #elif defined(_AIX)
   static const char lib_osmesa[] = "./lib/libOSMesa.so";
-  static const char lib_gl[] = "libGL.a(shr_64.o):libGL.a(shr.o)";
+  static const char lib_gl[] = "libGL.a(shr_64.o);libGL.a(shr.o)";
 #else
   static const char lib_osmesa[] = "./lib/libOSMesa.so";
-  static const char lib_gl[] = "libGL.so.1:libGL.so";
+  static const char lib_gl[] = "libGL.so.1;libGL.so";
 #endif
 
 // Keep this ordered by key (first field per entry).

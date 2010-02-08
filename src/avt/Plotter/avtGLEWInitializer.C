@@ -74,6 +74,9 @@ static bool initialized = false;
 //    Allow colon-separated list of libraries, trying them in sequence until
 //    one works.
 //
+//    Tom Fogal, Mon Feb  8 12:52:06 MST 2010
+//    Change separator to ";" to be more windows-friendly.
+//
 // ****************************************************************************
 bool initialize(bool force)
 {
@@ -101,7 +104,7 @@ bool initialize(bool force)
     }
 
     typedef std::vector<std::string> stringvec;
-    stringvec gl_libs = StringHelpers::split(gl_lib, ':');
+    stringvec gl_libs = StringHelpers::split(gl_lib, ';');
     stringvec gl_errors;
     for(stringvec::const_iterator lib = gl_libs.begin(); lib != gl_libs.end();
         ++lib)
