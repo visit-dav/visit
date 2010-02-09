@@ -508,6 +508,10 @@ GetIsDevelopmentVersion()
 //   Tom Fogal, Sun Apr 19 12:47:22 MST 2009
 //   Use `Environment' to simplify and fix a compilation error.
 //
+//   Kathleen Bonnell, Tue Feb  9 10:13:15 MST 2010
+//   On Windows, no longer use VISITDEVDIR environment variable when VISITHOME 
+//   is not defined.  Rather determine the path from the module's location.
+//
 // ****************************************************************************
 
 std::string
@@ -515,14 +519,6 @@ GetVisItInstallationDirectory()
 {
     return GetVisItInstallationDirectory(VISIT_VERSION);
 }
-
-#if _MSC_VER <= 1310
-#define _VISIT_MSVC_VER "MSVC7.Net"
-#elif _MSC_VER <= 1400
-#define _VISIT_MSVC_VER "MSVC8.Net"
-#else
-#define _VISIT_MSVC_VER ""
-#endif
 
 std::string
 GetVisItInstallationDirectory(const char *version)
@@ -537,14 +533,16 @@ GetVisItInstallationDirectory(const char *version)
     }
     else
     {
-        // Use the VISITDEVDIR environment var.
-        std::string visitdev;
-        char *devdir = getenv("VISITDEVDIR");
-        if(devdir == 0)
-            visitdev = std::string("C:\\VisItDev") + std::string(version);
-        else
-            visitdev = std::string(devdir);
-        installDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
+        char tmpdir[MAX_PATH];
+        if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
+        {
+            std::string visitpath(tmpdir);
+            int lastSlash = visitpath.rfind("\\");
+            if(lastSlash != -1)
+                installDir = visitpath.substr(0, lastSlash);
+            else
+                installDir = visitpath;
+        }
     }
     if (visitHome != 0)
         free(visitHome);
@@ -612,6 +610,10 @@ GetVisItInstallationDirectory(const char *version)
 //   Tom Fogal, Fri Feb 5 MST 2010
 //   Pickup dev/release build when assembling win32 arch string.
 //
+//   Kathleen Bonnell, Tue Feb 9 10:16:27 MST 2010
+//   Architecture dir is same as installation dir on windows, so reduce code
+//   duplication by calling that method instead.
+//
 // ****************************************************************************
 
 std::string
@@ -624,31 +626,7 @@ std::string
 GetVisItArchitectureDirectory(const char *version)
 {
 #if defined(_WIN32)
-    // Get the installation dir for the specified from the registry.
-    char *visitHome = 0;
-    std::string archDir("C:\\");
-    if(ReadKey(version, "VISITHOME", &visitHome) == 1)
-    {
-        archDir = visitHome;
-    }
-    else
-    {
-        // Use the VISITDEVDIR environment var.
-        std::string visitdev;
-        char *devdir = getenv("VISITDEVDIR");
-        if(devdir == 0)
-            visitdev = std::string("C:\\VisItDev") + std::string(version);
-        else
-            visitdev = std::string(devdir);
-#ifndef NDEBUG
-        archDir = visitdev + "\\bin";
-#else
-        archDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
-#endif
-    }
-    if (visitHome != 0)
-        free(visitHome);
-    return archDir;
+    return GetVisItInstallationDirectory(version);
 #else
     // Get the installation dir for the version that's running. They all use
     // the same "visit" script so it's okay to do this.

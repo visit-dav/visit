@@ -81,7 +81,7 @@ struct s
   static const char lib_gl[] =
     "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
 #elif defined(_WIN32)
-  static const char lib_osmesa[] = "./lib/libOSMesa.dll";
+  static const char lib_osmesa[] = "osmesa32.dll";
   static const char lib_gl[] = "opengl32.dll";
 #elif defined(_AIX)
   static const char lib_osmesa[] = "./lib/libOSMesa.so";
