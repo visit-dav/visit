@@ -84,6 +84,7 @@
                     <Field name="hostNickname" type="string">eureka</Field>
                     <Field name="machinefileSet" type="bool">true</Field>
                     <Field name="machinefile" type="string">$COBALT_NODEFILE</Field>
+                    <Field name="visitSetsUpEnv" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/soft/apps/visit" </Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
@@ -116,6 +117,7 @@
                     <Field name="hostAliases" type="string">login1.gadzooks.alcf.anl.gov vs##-mgmt.alcf.anl.gov vs##-mgmt vs##</Field>
                     <Field name="machinefileSet" type="bool">true</Field>
                     <Field name="machinefile" type="string">$COBALT_NODEFILE</Field>
+                    <Field name="visitSetsUpEnv" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/soft/apps/visit" </Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
