@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="OnionPeel.xpm">
+  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="OnionPeel.xpm" category="Selection">
     <Attribute name="OnionPeelAttributes" purpose="Attributes for the onion peel operator" persistent="true" codefile="OnionPeel.code">
       <Enum name="NodeFace">
         Node

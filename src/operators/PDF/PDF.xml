@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="PDF" type="operator" label="Probability Density Function" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+  <Plugin name="PDF" type="operator" label="Probability Density Function" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
     <Attribute name="PDFAttributes" purpose="Attributes for the PDF operator" persistent="true">
       <Enum name="Scaling">
         Linear

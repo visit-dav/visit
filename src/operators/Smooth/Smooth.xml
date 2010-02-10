@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Smooth" type="operator" label="Smooth" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+  <Plugin name="Smooth" type="operator" label="Smooth" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" category="Geometry">
     <Attribute name="SmoothOperatorAttributes" purpose="Attributes for the Smooth Operator" persistent="true" exportAPI="" exportInclude="">
       <Field name="numIterations" label="Maximum Number of Iterations" type="int">
         20

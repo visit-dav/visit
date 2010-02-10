@@ -116,6 +116,9 @@
 //    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
 //    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
+//    Brad Whitlock, Thu Feb  4 16:11:01 PST 2010
+//    I added support for category.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -194,6 +197,8 @@ class Plugin : public PluginBase
         {
             if(iconFile.length() > 0)
                 WriteTagAttr(out, "iconFile", iconFile);
+            if(category.length() > 0)
+                WriteTagAttr(out, "category", category);
         }
         else if (type == "database")
         {

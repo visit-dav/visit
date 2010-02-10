@@ -180,6 +180,9 @@ using std::vector;
 //   File panel selected files list now starts out hidden, and the
 //   source thus starts out shown.
 //
+//   Brad Whitlock, Mon Feb  8 13:33:11 PST 2010
+//   I added pluginAtts.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent) 
@@ -190,6 +193,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     globalAtts = 0;
     windowInfo = 0;
     exprList = 0;
+    pluginAtts = 0;
 
     pluginsLoaded = false;
     updatePlotVariableMenuEnabledState = false;
@@ -348,6 +352,9 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 //   Hank Childs, Thu Dec  4 10:19:11 PST 2008
 //   Commit fix for memory leak contributed by David Camp of UC Davis.
 //
+//   Brad Whitlock, Mon Feb  8 13:35:02 PST 2010
+//   I added pluginAtts.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::~QvisPlotManagerWidget()
@@ -369,6 +376,9 @@ QvisPlotManagerWidget::~QvisPlotManagerWidget()
 
     if(windowInfo)
         windowInfo->Detach(this);
+
+    if(pluginAtts)
+        pluginAtts->Detach(this);
 }
 
 // ****************************************************************************
@@ -708,6 +718,9 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 //   The plot list sometimes changes its appearance based on the open files,
 //   so update the plot list when the sources are updated.
 //
+//   Brad Whitlock, Mon Feb  8 13:36:26 PST 2010
+//   I added code to update the operator menu's grouping.
+//
 // ****************************************************************************
 
 void
@@ -855,6 +868,12 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
                 UpdatePlotVariableMenu();
             }
         }
+    }
+    else if(TheChangedSubject == pluginAtts)
+    {
+        // Update the operator menu's grouping.
+        UpdateOperatorCategories();
+        this->updateOperatorMenuEnabledState = true;
     }
 
     // Update the enabled state for the menu bar.
@@ -1155,19 +1174,24 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Feb  8 12:07:17 PST 2010
+//   I added id and menuAction.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::AddPlotType(const QString &plotName, const int varTypes,
-    const char **iconData)
+QvisPlotManagerWidget::AddPlotType(const QString &id,
+    const QString &plotName, const int varTypes, const char **iconData)
 {
     PluginEntry entry;
+    entry.id = id;
     entry.pluginName = plotName;
     entry.menuName = plotName + QString(" . . .");
     entry.varMenu = 0;
     entry.varTypes = varTypes;
     entry.varMask = 1;
     entry.action = 0;
+    entry.menuAction = 0;
 
     if(iconData)
     {
@@ -1176,13 +1200,12 @@ QvisPlotManagerWidget::AddPlotType(const QString &plotName, const int varTypes,
         entry.icon = QIcon(iconPixmap);
 
         // Add the plot type to the plot attributes list.
-        plotAttsMenu->addAction(entry.icon, entry.menuName);
+        entry.menuAction = plotAttsMenu->addAction(entry.icon, entry.menuName);
     }
     else
     {
         // Add the plot type to the plot attributes list.
-        //plotAttsMenu->insertItem(entry.menuName, plotAttsMenu->count());
-        plotAttsMenu->addAction(entry.menuName);
+        entry.menuAction = plotAttsMenu->addAction(entry.menuName);
     }
 
     // Add the plot plugin information to the plugin list.
@@ -1299,10 +1322,14 @@ QvisPlotManagerWidget::CreatePlotMenuItem(int index)
 //   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Fri Feb  5 16:38:16 PST 2010
+//   I added category so we can group operators.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::AddOperatorType(const QString &operatorName,
+QvisPlotManagerWidget::AddOperatorType(const QString &id, 
+    const QString &operatorName,
     const int varTypes, const int varMask, bool userSelectable,
     const char **iconData)
 {
@@ -1310,6 +1337,7 @@ QvisPlotManagerWidget::AddOperatorType(const QString &operatorName,
 
     // Add the operator plugin information to the operator plugin list.
     PluginEntry entry;
+    entry.id = id;
     entry.pluginName = operatorName;
     entry.menuName = operatorName + QString(" . . .");
     entry.varMenu = 0;
@@ -1327,7 +1355,7 @@ QvisPlotManagerWidget::AddOperatorType(const QString &operatorName,
         entry.action = operatorMenu->addAction(icon, entry.pluginName);
 
         // Add the operator type to the operator attributes list.
-        operatorAttsMenu->addAction(icon, entry.menuName);
+        entry.menuAction = operatorAttsMenu->addAction(icon, entry.menuName);
     }
     else
     {
@@ -1335,7 +1363,7 @@ QvisPlotManagerWidget::AddOperatorType(const QString &operatorName,
         entry.action = operatorMenu->addAction(entry.pluginName);
 
         // Add the operator type to the operator attributes list.
-        operatorAttsMenu->addAction(entry.menuName);
+        entry.menuAction = operatorAttsMenu->addAction(entry.menuName);
     }
 
     operatorPlugins.push_back(entry);
@@ -1373,6 +1401,99 @@ QvisPlotManagerWidget::FinishAddingOperators()
         operatorRemoveLastAct = operatorMenu->addAction(QIcon(removeLast), tr("Remove last"));
         operatorRemoveAllAct  = operatorMenu->addAction(QIcon(removeAll), tr("Remove all"));
     }
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::UpdateOperatorCategories
+//
+// Purpose: 
+//   This method removes the operator menu items from their menus and reorders
+//   them according to the categories in the plugin manager attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb  8 12:11:19 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::UpdateOperatorCategories()
+{
+    // Provide the option to at least translate the default operator categories.
+    QMap<std::string, QString> defaultCategories;
+    defaultCategories.insert(std::string("Analysis"),   tr("Analysis"));
+    defaultCategories.insert(std::string("Debugging"),  tr("Debugging"));
+    defaultCategories.insert(std::string("Geometry"),   tr("Geometry"));
+    defaultCategories.insert(std::string("Molecular"),  tr("Molecular"));
+    defaultCategories.insert(std::string("Selection"),  tr("Selection"));
+    defaultCategories.insert(std::string("Slicing"),    tr("Slicing"));
+    defaultCategories.insert(std::string("Transforms"), tr("Transforms"));
+
+    // Remove the plugin operator actions from all menus.
+    for(size_t i = 0; i < operatorPlugins.size(); ++i)
+    {
+        QList<QWidget *> w(operatorPlugins[i].action->associatedWidgets());
+        for(int j = 0; j < w.size(); ++j)
+            w[j]->removeAction(operatorPlugins[i].action);
+
+        w = operatorPlugins[i].menuAction->associatedWidgets();
+        for(int j = 0; j < w.size(); ++j)
+            w[j]->removeAction(operatorPlugins[i].menuAction);
+    }
+
+    // Clear out the operatorMenu and operatorAttsMenu.
+    operatorRemoveLastAct = 0; operatorRemoveAllAct = 0;
+    operatorMenu->clear();
+    operatorAttsMenu->clear();
+
+    // Create plugin category menus.
+    stringVector categories;
+    GetViewerState()->GetPluginManagerAttributes()->UniqueCategories("operator", categories);
+    QMap<std::string, QMenu *> categoryToMenu, categoryToAttsMenu;
+    for(size_t i = 0; i < categories.size(); ++i)
+    {
+        if(categories[i].size() > 0 &&
+           categoryToMenu.find(categories[i]) == categoryToMenu.end())
+        {
+            // Get the translated menu title.
+            QString title(categories[i].c_str());
+            QMap<std::string,QString>::const_iterator pos = defaultCategories.find(categories[i]);
+            if(pos != defaultCategories.end())
+                title = pos.value();
+
+            QMenu *m1 = new QMenu(title, operatorMenu);
+            operatorMenu->addMenu(m1);
+            categoryToMenu.insert(categories[i], m1);
+
+            QMenu *m2 = new QMenu(title, operatorAttsMenu);
+            operatorAttsMenu->addMenu(m2);
+            categoryToAttsMenu.insert(categories[i], m2);
+        }
+    }
+
+    // Now, iterate over our existing operator actions and add them into the 
+    // right menus
+    for(size_t i = 0; i < operatorPlugins.size(); ++i)
+    {
+        std::string id(operatorPlugins[i].id.toStdString());
+        std::string category(GetViewerState()->GetPluginManagerAttributes()->
+            GetPluginCategoryName(id));
+
+        QMenu *m = operatorMenu;
+        QMap<std::string, QMenu *>::const_iterator pos = categoryToMenu.find(category);
+        if(pos != categoryToMenu.end())
+             m = pos.value();
+        m->addAction(operatorPlugins[i].action);
+
+        m = operatorAttsMenu;
+        pos = categoryToAttsMenu.find(category);
+        if(pos != categoryToAttsMenu.end())
+             m = pos.value();
+        m->addAction(operatorPlugins[i].menuAction);
+    }
+
+    FinishAddingOperators();
 }
 
 // ****************************************************************************
@@ -1652,6 +1773,9 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
 //   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Tue Feb  9 15:54:29 PST 2010
+//   Fixing operator menu enabled state.
+//
 // ****************************************************************************
 
 void
@@ -1678,9 +1802,8 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
             somePlotMenusEnabled |= (plotPlugins[i].varMenu->count() > 0);
         
         bool someOperatorMenusEnabled = false;
-        
-        foreach(QAction *action,operatorMenu->actions())
-            someOperatorMenusEnabled |= action->isEnabled();        
+        for(i = 0; i < operatorPlugins.size(); ++i)
+            someOperatorMenusEnabled |= operatorPlugins[i].action->isEnabled();
         
         bool haveAvailablePlots = plotAttsMenu->actions().count() > 0;
         bool haveAvailableOperators = operatorAttsMenu->actions().count() > 0;
@@ -1891,6 +2014,9 @@ QvisPlotManagerWidget::UpdateVariableMenu()
 //   Brad Whitlock, Fri Jan 30 00:36:54 PDT 2004
 //   Added windowInfo.
 //
+//   Brad Whitlock, Mon Feb  8 13:32:49 PST 2010
+//   I added pluginAtts.
+//
 // ****************************************************************************
 
 void
@@ -1904,6 +2030,8 @@ QvisPlotManagerWidget::SubjectRemoved(Subject *TheRemovedSubject)
         exprList = 0;
     else if(TheRemovedSubject == windowInfo)
         windowInfo = 0;
+    else if(TheRemovedSubject == pluginAtts)
+        pluginAtts = 0;
 }
 
 //
@@ -1942,6 +2070,16 @@ QvisPlotManagerWidget::ConnectWindowInformation(WindowInformation *wi)
 {
     windowInfo = wi;
     windowInfo->Attach(this);
+}
+
+void
+QvisPlotManagerWidget::ConnectPluginManagerAttributes(PluginManagerAttributes *pa)
+{
+    if(pluginAtts == 0)
+    {
+        pluginAtts = pa;
+        pa->Attach(this);
+    }
 }
 
 // ****************************************************************************
@@ -2277,15 +2415,23 @@ QvisPlotManagerWidget::activatePlotWindow(QAction *action)
 // Creation:   Tue Jul  8 13:38:08 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb  8 15:11:40 PST 2010
+//   I changed how we calculate the operator index so we support grouped menus.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::activateOperatorWindow(QAction *action)
 {
-    emit activateOperatorWindow(operatorAttsMenu->actions().indexOf(action));
+    for(size_t i = 0; i < operatorPlugins.size(); ++i)
+    {
+        if(operatorPlugins[i].menuAction == action)
+        {
+            emit activateOperatorWindow(i);
+            return;
+        }
+    } 
 }
-
 
 // ****************************************************************************
 // Method: QvisPlotManagerWidget::changeVariable
@@ -2377,6 +2523,9 @@ QvisPlotManagerWidget::addPlotHelper(int plotType, const QString &varName)
 //   Cyrus Harrison, Tue Jul  8 13:26:04 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Feb  8 15:09:42 PST 2010
+//   I changed how operator index is calculated.
+//
 // ****************************************************************************
 
 void
@@ -2388,7 +2537,16 @@ QvisPlotManagerWidget::operatorAction(QAction *action)
         GetViewerMethods()->RemoveAllOperators();
     else
     {
-        emit addOperator(operatorMenu->actions().indexOf(action));
+        // Get the operator index. We do it like this because the operator
+        // in the menu may be grouped under various submenus.
+        for(size_t i = 0; i < operatorPlugins.size(); ++i)
+        {
+            if(operatorPlugins[i].action == action)
+            {
+                emit addOperator(i);
+                return;
+            }
+        }
     }
 }
 

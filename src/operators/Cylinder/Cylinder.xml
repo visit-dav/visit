@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Cylinder" type="operator" label="Cylinder" version="1.0" enabled="true" iconFile="Cylinder.xpm">
+  <Plugin name="Cylinder" type="operator" label="Cylinder" version="1.0" enabled="true" iconFile="Cylinder.xpm" category="Selection">
     <Attribute name="CylinderAttributes" purpose="Contain the attributes for a cylinder" persistent="true" exportAPI="" exportInclude="" codefile="CylinderAttributes.code">
       <Field name="point1" label="Endpoint 1" type="doubleArray" length="3">
         0.000000

@@ -59,10 +59,13 @@ using std::vector;
 //  Creation:   August 20, 2002
 //
 //  Modifications:
+//    Brad Whitlock, Fri Feb  5 14:46:00 PST 2010
+//    I added operatorCategory.
 //
 // ****************************************************************************
 
-OperatorPluginManager::OperatorPluginManager() : PluginManager("operator")
+OperatorPluginManager::OperatorPluginManager() : PluginManager("operator"), 
+    operatorCategory()
 {
 }
 
@@ -121,8 +124,36 @@ OperatorPluginManager::Initialize(const PluginCategory pluginCategory,
 {
     category = pluginCategory;
     parallel = par;
+    operatorCategory.clear();
     SetPluginDir(pluginDir);
     ObtainPluginInfo(readInfo, broadcaster);
+}
+
+// ****************************************************************************
+// Method: OperatorPluginManager::GetOperatorCategoryName
+//
+// Purpose: 
+//   Return the category name of any operator plugin. This is the name of the
+//   group in which it wants to be grouped.
+//
+// Arguments:
+//   id : The all index id. This method provides data for plugins that were
+//        loaded as libI.
+//
+// Returns:    The category.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb  5 14:43:23 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+OperatorPluginManager::GetOperatorCategoryName(const std::string &id) const
+{
+    std::map<std::string, int>::const_iterator it = allindexmap.find(id);
+    return (it != allindexmap.end()) ? operatorCategory[it->second] : std::string("");
 }
 
 // ****************************************************************************
@@ -249,6 +280,30 @@ OperatorPluginManager::GetScriptingPluginInfo(const string &id)
 }
 
 // ****************************************************************************
+// Method: OperatorPluginManager::BroadcastGeneralInfo
+//
+// Purpose: 
+//   This method broadcasts the general libI information to other processors
+//   using a PluginBroadcaster object.
+//
+// Arguments:
+//   broadcaster : The broadcaster to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb  5 14:40:39 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+OperatorPluginManager::BroadcastGeneralInfo(PluginBroadcaster *broadcaster)
+{
+    PluginManager::BroadcastGeneralInfo(broadcaster);
+    broadcaster->BroadcastStringVector(operatorCategory);
+}
+
+// ****************************************************************************
 // Method: OperatorPluginManager::LoadGeneralPluginInfo
 //
 // Purpose: 
@@ -267,6 +322,9 @@ OperatorPluginManager::GetScriptingPluginInfo(const string &id)
 //
 //    Hank Childs, Tue Mar 22 16:06:15 PST 2005
 //    Fix memory leak.
+//
+//    Brad Whitlock, Fri Feb  5 14:41:14 PST 2010
+//    Added category.
 //
 // ****************************************************************************
 
@@ -303,6 +361,7 @@ OperatorPluginManager::LoadGeneralPluginInfo()
     names   .push_back(info->GetName());
     versions.push_back(info->GetVersion());
     enabled .push_back(info->EnabledByDefault());
+    operatorCategory.push_back(info->GetCategoryName());
     delete info;
     return true;
 }
@@ -551,12 +610,16 @@ OperatorPluginManager::FreeScriptingPluginInfo()
 //    Jeremy Meredith, Fri Feb 28 12:25:37 PST 2003
 //    Made it use LoadPluginsNow or LoadPluginsOnDemand as appropriate.
 //
+//    Brad Whitlock, Fri Feb  5 15:04:46 PST 2010
+//    I added operatorCategories.
+//
 // ****************************************************************************
 
 void
 OperatorPluginManager::ReloadPlugins()
 {
     vector<void*>                        new_handles;
+    vector<string>                       new_operatorCategory;
     vector<CommonOperatorPluginInfo*>    new_commonPluginInfo;
     vector<GUIOperatorPluginInfo*>       new_guiPluginInfo;
     vector<ViewerOperatorPluginInfo*>    new_viewerPluginInfo;
@@ -579,6 +642,7 @@ OperatorPluginManager::ReloadPlugins()
             if (category == Scripting)
                 new_scriptingPluginInfo.push_back(scriptingPluginInfo[i]);
 
+            new_operatorCategory.push_back(operatorCategory[i]);
             new_handles.push_back(loadedhandles[i]);
         }
         else
@@ -597,6 +661,7 @@ OperatorPluginManager::ReloadPlugins()
             PluginClose();
         }
     }
+    operatorCategory    = new_operatorCategory;
     commonPluginInfo    = new_commonPluginInfo;
     guiPluginInfo       = new_guiPluginInfo;
     viewerPluginInfo    = new_viewerPluginInfo;

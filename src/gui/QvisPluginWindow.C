@@ -50,6 +50,7 @@
 #include <QTreeWidget>
 #include <QHeaderView>
 #include <QListWidget>
+#include <QTreeView>
 
 #include <PluginManagerAttributes.h>
 #include <FileOpenOptions.h>
@@ -58,6 +59,7 @@
 #include <ViewerProxy.h>
 
 #include <QvisDBOptionsDialog.h>
+#include <QvisPluginManagerAttributesDataModel.h>
 
 // ****************************************************************************
 //  Method: QvisPluginWindow::QvisPluginWindow
@@ -82,6 +84,9 @@
 //    Brad Whitlock, Wed Apr  9 11:04:01 PDT 2008
 //    QString for caption, shortName.
 //
+//    Brad Whitlock, Tue Feb  9 13:46:15 PST 2010
+//    Initialize data model pointers.
+//
 // ****************************************************************************
 
 QvisPluginWindow::QvisPluginWindow(const QString &caption, const QString &shortName,
@@ -91,6 +96,8 @@ QvisPluginWindow::QvisPluginWindow(const QString &caption, const QString &shortN
 {
     pluginAtts = NULL;
     fileOpenOptions = NULL;
+    plotDataModel = NULL;
+    operatorDataModel = NULL;
     activeTab = 0;
     pluginsInitialized = false;
 }
@@ -132,18 +139,26 @@ QvisPluginWindow::~QvisPluginWindow()
 // Creation:   January 23, 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb  9 11:47:38 PST 2010
+//   I added the data model objects.
+//
 // ****************************************************************************
 
 void
-QvisPluginWindow::ConnectSubjects(PluginManagerAttributes *p,
-                                       FileOpenOptions *f)
+QvisPluginWindow::ConnectSubjects(PluginManagerAttributes *p, FileOpenOptions *f)
 {
     pluginAtts = p;
     pluginAtts->Attach(this);
 
     fileOpenOptions = f;
     fileOpenOptions->Attach(this);
+
+    // Create data models that will present data from the plugin atts to the
+    // views that show it in this window.
+    plotDataModel = new QvisPluginManagerAttributesDataModel(pluginAtts,
+        QvisPluginManagerAttributesDataModel::PlotPlugin, this);
+    operatorDataModel = new QvisPluginManagerAttributesDataModel(pluginAtts,
+        QvisPluginManagerAttributesDataModel::OperatorPlugin, this);
 }
 
 // ****************************************************************************
@@ -204,6 +219,9 @@ QvisPluginWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Jeremy Meredith, Wed Dec 30 16:44:25 EST 2009
 //    Added ability to set preferred file format plugins.
 //
+//    Brad Whitlock, Mon Feb  8 15:17:25 PST 2010
+//    I added operator categories.
+//
 // ****************************************************************************
 
 void
@@ -220,43 +238,37 @@ QvisPluginWindow::CreateWindowContents()
     //
     // Create the plot page
     //
-    
     pagePlots = new QWidget(central);
     QVBoxLayout *plots_layout= new QVBoxLayout(pagePlots);
     tabs->addTab(pagePlots, tr("Plots"));
 
-    listPlots = new QTreeWidget(pagePlots);
-    listPlots->setRootIsDecorated(false);
-    // add header item
-    QStringList plotHeaders;
-    plotHeaders << tr("Enabled") << tr("Version") << tr("Name");
-    listPlots->setHeaderLabels(plotHeaders);
-    listPlots->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
-    listPlots->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
-    listPlots->header()->setResizeMode(0,QHeaderView::ResizeToContents);
-    listPlots->header()->setResizeMode(1,QHeaderView::ResizeToContents);
-    plots_layout->addWidget(listPlots);
-    
-    
+    plotView = new QTreeView(pagePlots);
+    plotView->setModel(plotDataModel);
+    plotView->header()->setResizeMode(0,QHeaderView::ResizeToContents);
+    plotView->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    plots_layout->addWidget(plotView);
+
     //
     // Create the operator page
     //
     pageOperators = new QWidget(central);
-    QVBoxLayout *ops_layout= new QVBoxLayout(pageOperators);
+    QVBoxLayout *ops_layout = new QVBoxLayout(pageOperators);
     tabs->addTab(pageOperators, tr("Operators"));
+    operatorView = new QTreeView(pageOperators);
+    operatorView->setModel(operatorDataModel);
+    operatorView->header()->setResizeMode(0,QHeaderView::ResizeToContents);
+    operatorView->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    ops_layout->addWidget(operatorView);
 
-    listOperators = new QTreeWidget(pageOperators);
-    listOperators->setRootIsDecorated(false);
+    QHBoxLayout *opsBLayout = new QHBoxLayout();
+    ops_layout->addLayout(opsBLayout);
+    opsBLayout->addStretch(5);
+    clearOperatorCategoryButton = new QPushButton(
+        tr("Clear category for all operators"), pageOperators);
+    opsBLayout->addWidget(clearOperatorCategoryButton);
+    connect(clearOperatorCategoryButton, SIGNAL(clicked()),
+            this, SLOT(clearOperatorCategories()));
 
-    QStringList operatorHeaders;
-    operatorHeaders << tr("Enabled") << tr("Version") << tr("Name");
-    listOperators->setHeaderLabels(operatorHeaders);
-    listOperators->headerItem()->setTextAlignment(1, Qt::AlignHCenter);
-    listOperators->headerItem()->setTextAlignment(2, Qt::AlignHCenter);
-    listOperators->header()->setResizeMode(0,QHeaderView::ResizeToContents);
-    listOperators->header()->setResizeMode(1,QHeaderView::ResizeToContents);
-    ops_layout->addWidget(listOperators);
-    
     //
     // Create the database page
     //
@@ -272,12 +284,12 @@ QvisPluginWindow::CreateWindowContents()
     listDatabases->setRootIsDecorated(false);
 
     QStringList dbHeaders;
-    dbHeaders << tr("Enabled") << tr("Has\nOpts") << tr("Name");
+    dbHeaders << tr("Enabled") << tr("Name") << tr("Options") ;
     listDatabases->setHeaderLabels(dbHeaders);
     listDatabases->headerItem()->setTextAlignment(1, Qt::AlignCenter);
     listDatabases->headerItem()->setTextAlignment(2, Qt::AlignCenter);
     listDatabases->header()->setResizeMode(0,QHeaderView::ResizeToContents);
-    listDatabases->header()->setResizeMode(1,QHeaderView::ResizeToContents);
+    listDatabases->header()->setResizeMode(2,QHeaderView::ResizeToContents);
     db_llayout->addWidget(listDatabases);
 
     QFrame *grpBox = new QFrame(pageDatabases);
@@ -352,7 +364,7 @@ QvisPluginWindow::CreateWindowContents()
     // Show the appropriate page based on the activeTab setting.
     tabs->blockSignals(true);
     tabs->setCurrentIndex(activeTab);
-    tabs->blockSignals(false);    
+    tabs->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -436,73 +448,47 @@ QvisPluginWindow::Update(Subject *s)
 //    Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
 //    Give visual cue when a disabled plugin is preferred.
 //
+//    Brad Whitlock, Thu Feb  4 16:54:47 PST 2010
+//    I rewrote the code for plots and operators so it uses a data model.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::UpdateWindow(bool doAll)
 {
-    int i;
     if (doAll || selectedSubject == pluginAtts)
     {
-        listPlots->clear();
-        listPlots->setSortingEnabled(true);
-        listPlots->sortByColumn(2,Qt::AscendingOrder);
-        plotIDs.clear();
-        plotItems.clear();
-        
-        for (i=0; i<pluginAtts->GetName().size(); i++)
-        {
-            if (pluginAtts->GetType()[i] == "plot")
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(listPlots);
-                item->setCheckState(0,pluginAtts->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
-                item->setText(1,pluginAtts->GetVersion()[i].c_str());
-                item->setText(2,pluginAtts->GetName()[i].c_str());
-                
-                plotItems.push_back(item);
-                plotIDs.push_back(pluginAtts->GetId()[i]);
-            }
-        }
+        // Save off the current list of enabled plot & operator plugins.
+        enabledPlugins = pluginAtts->GetEnabled();
 
-        listOperators->clear();
-        listOperators->setSortingEnabled(true);
-        listOperators->sortByColumn(2,Qt::AscendingOrder);
-        operatorIDs.clear();
-        operatorItems.clear();
-        for (i=0; i<pluginAtts->GetName().size(); i++)
+        int opCount = 0;
+        for(size_t i = 0; i < pluginAtts->GetType().size(); ++i)
         {
-            if (pluginAtts->GetType()[i] == "operator")
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(listOperators);
-                item->setCheckState(0,pluginAtts->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
-                item->setText(1,pluginAtts->GetVersion()[i].c_str());
-                item->setText(2,pluginAtts->GetName()[i].c_str());
-                
-                operatorItems.push_back(item);
-                operatorIDs.push_back(pluginAtts->GetId()[i]);
-            }
+            if(pluginAtts->GetType()[i] == "operator")
+                opCount++;
         }
+        clearOperatorCategoryButton->setEnabled(opCount > 0);
     }
     
     if (doAll || selectedSubject == fileOpenOptions)
     {
         listDatabases->clear();
         listDatabases->setSortingEnabled(true);
-        listDatabases->sortByColumn(2,Qt::AscendingOrder);
+        listDatabases->sortByColumn(1, Qt::AscendingOrder);
 
         databaseItems.clear();
         databaseIndexes.clear();
-        for (i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
+        for (int i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
         {            
             QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
             item->setCheckState(0,fileOpenOptions->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
 
-            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
-                item->setText(1, "  " );
-            else
-                item->setText(1, "  X " );
+            item->setText(1,fileOpenOptions->GetTypeNames()[i].c_str());
 
-            item->setText(2,fileOpenOptions->GetTypeNames()[i].c_str());
+            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
+                item->setText(2, "  ");
+            else
+                item->setText(2, tr("yes"));
 
             databaseItems.push_back(item);
             databaseIndexes.push_back(i);
@@ -511,7 +497,7 @@ QvisPluginWindow::UpdateWindow(bool doAll)
         dbAddToPreferedButton->setEnabled(false);
 
         listPreferredDBs->clear();
-        for (i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
+        for (int i=0; i<fileOpenOptions->GetPreferredIDs().size(); i++)
         {
             string id = fileOpenOptions->GetPreferredIDs()[i];
             QListWidgetItem *item = new QListWidgetItem(id.c_str(),listPreferredDBs);
@@ -558,33 +544,19 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Brad Whitlock, Tue Feb  9 13:50:28 PST 2010
+//    I rewrote the plot and operator portion.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::Apply(bool dontIgnore)
 {
-    bool dirty = false;
-    int i;
-    for (i=0; i<plotItems.size(); i++)
-    {
-        bool newvalue = plotItems[i]->checkState(0);
-        int  &value =
-            pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(plotIDs[i])];
-        if (bool(value) != newvalue)
-            dirty = true;
-        value = newvalue;
-    }
-    for (i=0; i<operatorItems.size(); i++)
-    {
-        bool newvalue = operatorItems[i]->checkState(0);
-        int  &value =
-            pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(operatorIDs[i])];
-        if (bool(value) != newvalue)
-            dirty = true;
-        value = newvalue;
-    }
+    // See if the plot and operator enabled states changed.
+    bool dirty = pluginAtts->GetEnabled() != enabledPlugins;
 
-    for (i=0; i<databaseItems.size(); i++)
+    // See if the database plugin enabled states changed.
+    for (int i=0; i<databaseItems.size(); i++)
     {
         bool newvalue = databaseItems[i]->checkState(0);
         int &value = fileOpenOptions->GetEnabled()[i];
@@ -730,6 +702,33 @@ QvisPluginWindow::tabSelected(int tab)
     activeTab = tab;
 }
 
+// ****************************************************************************
+// Method: QvisPluginWindow::clearOperatorCategories
+//
+// Purpose: 
+//   This method clears all of the operator categories.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb  9 13:57:33 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPluginWindow::clearOperatorCategories()
+{
+    stringVector newCat;
+    for(size_t j = 0; j < pluginAtts->GetType().size(); ++j)
+    {
+        if(pluginAtts->GetType()[j] == "operator")
+            newCat.push_back("");
+        else
+            newCat.push_back(pluginAtts->GetCategory()[j]);
+    }
+    pluginAtts->SetCategory(newCat);
+    Apply();
+}
 
 // ****************************************************************************
 //  Method:  QvisPluginWindow::databaseOptionsSetButtonClicked

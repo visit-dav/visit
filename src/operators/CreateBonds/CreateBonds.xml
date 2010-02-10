@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="CreateBonds" type="operator" label="CreateBonds" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CreateBonds.xpm">
+  <Plugin name="CreateBonds" type="operator" label="CreateBonds" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CreateBonds.xpm" category="Molecular">
     <Attribute name="CreateBondsAttributes" purpose="Attributes for the CreateBondsOperator" persistent="true" exportAPI="" exportInclude="">
       <Field name="elementVariable" label="Variable for atomic number" type="variablename" vartypes="01000000000">
         element

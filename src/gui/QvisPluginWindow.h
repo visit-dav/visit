@@ -59,6 +59,8 @@ class QCheckListItem;
 class QPushButton;
 class QListWidget;
 class QListWidgetItem;
+class QTreeView;
+class QvisPluginManagerAttributesDataModel;
 
 // ****************************************************************************
 // Class: QvisPluginWindow
@@ -89,6 +91,10 @@ class QListWidgetItem;
 //
 //    Jeremy Meredith, Wed Dec 30 16:44:25 EST 2009
 //    Added ability to set preferred file format plugins.
+//
+//    Brad Whitlock, Tue Feb  9 13:37:47 PST 2010
+//    I changed the window so it uses a data model to view the plugin manager
+//    attributes. This enables more direct editing of the categories.
 //
 // ****************************************************************************
 
@@ -122,6 +128,7 @@ protected:
 private slots:
     virtual void apply();
     void tabSelected(int);
+    void clearOperatorCategories();
     void databaseOptionsSetButtonClicked();
     void databaseSelectedItemChanged(QTreeWidgetItem*,QTreeWidgetItem*);
     void selectAllReadersButtonClicked();
@@ -136,10 +143,16 @@ private:
     FileOpenOptions         *fileOpenOptions;
 
     QTabWidget      *tabs;
-    QWidget         *pagePlots;
-    QTreeWidget     *listPlots;
-    QWidget         *pageOperators;
-    QTreeWidget     *listOperators;
+
+    QWidget                              *pagePlots;
+    QvisPluginManagerAttributesDataModel *plotDataModel;
+    QTreeView                            *plotView;
+
+    QWidget                              *pageOperators;
+    QvisPluginManagerAttributesDataModel *operatorDataModel;
+    QTreeView                            *operatorView;
+    QPushButton                          *clearOperatorCategoryButton;
+
     QWidget         *pageDatabases;
     QTreeWidget     *listDatabases;
     QPushButton     *selectAllReadersButton;
@@ -151,10 +164,7 @@ private:
     QPushButton     *dbPreferredDownButton;
     QPushButton     *dbPreferredRemoveButton;
 
-    std::vector<QTreeWidgetItem*>  plotItems;
-    std::vector<std::string>       plotIDs;
-    std::vector<QTreeWidgetItem*>  operatorItems;
-    std::vector<std::string>       operatorIDs;
+    intVector                      enabledPlugins;
     std::vector<QTreeWidgetItem*>  databaseItems;
     std::vector<int>               databaseIndexes;
 

@@ -91,6 +91,7 @@
 #include <QueryAttributes.h>
 #include <PlotList.h>
 #include <Plot.h>
+#include <PluginManagerAttributes.h>
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
 #include <SILRestrictionAttributes.h>
@@ -3659,6 +3660,9 @@ QvisGUIApplication::LoadPlugins()
 //   Brad Whitlock, Tue Jun 24 11:44:57 PDT 2008
 //   Get the plugin managers from the viewer proxy.
 //
+//   Brad Whitlock, Fri Feb  5 16:36:12 PST 2010
+//   Pass plugin ids to the plot manager.
+//
 // ****************************************************************************
 
 void
@@ -3673,8 +3677,8 @@ QvisGUIApplication::CreatePluginWindows()
     for(i = 0; i < plotPluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the GUI portion of the plot plugin information.
-        GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
-            plotPluginManager->GetEnabledID(i));
+        std::string id(plotPluginManager->GetEnabledID(i));
+        GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(id);
    
         // Add a NULL window to the list of plot windows. We'll create the
         // plugin window later when we need it.
@@ -3688,7 +3692,7 @@ QvisGUIApplication::CreatePluginWindows()
 
         // Add an option to the main window's plot manager widget's plot list.
         QString *menuName = GUIInfo->GetMenuName();       
-        mainWin->GetPlotManager()->AddPlotType(*menuName,
+        mainWin->GetPlotManager()->AddPlotType(QString(id.c_str()), *menuName,
                                                GUIInfo->GetVariableTypes(),
                                                GUIInfo->XPMIconData());
         delete menuName;
@@ -3701,8 +3705,8 @@ QvisGUIApplication::CreatePluginWindows()
     for(i = 0; i < operatorPluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the GUI portion of the operator plugin information.
-        GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
-                                       operatorPluginManager->GetEnabledID(i));
+        std::string id(operatorPluginManager->GetEnabledID(i));
+        GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(id);
 
         // Add a NULL window to the list of operator windows. We'll create the
         // plugin window later when we need it.
@@ -3711,12 +3715,38 @@ QvisGUIApplication::CreatePluginWindows()
         // Add an option to the main window's operator manager widget's
         // operator list.
         QString *menuName = GUIInfo->GetMenuName();
-        mainWin->GetPlotManager()->AddOperatorType(*menuName,
+        mainWin->GetPlotManager()->AddOperatorType(QString(id.c_str()),
+            *menuName,
             GUIInfo->GetVariableTypes(), GUIInfo->GetVariableMask(),
             GUIInfo->GetUserSelectable(), GUIInfo->XPMIconData());
         delete menuName;
     }
     mainWin->GetPlotManager()->FinishAddingOperators();
+    QTimer::singleShot(10, this, SLOT(EnableOperatorMenuGrouping()));
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::EnableOperatorMenuGrouping
+//
+// Purpose: 
+//   This method must be called from the main event loop and not from an
+//   update of the plugin manager attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb  8 14:38:02 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::EnableOperatorMenuGrouping()
+{
+    // Make subsequent changes to the plugin manager attributes cause the
+    // plot manager's operator menus to update.
+    mainWin->GetPlotManager()->ConnectPluginManagerAttributes(GetViewerState()->
+        GetPluginManagerAttributes());
+    mainWin->GetPlotManager()->UpdateOperatorCategories();
 }
 
 // ****************************************************************************

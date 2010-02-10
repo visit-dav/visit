@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Cone" type="operator" label="Cone" version="1.0" iconFile="Cone.xpm">
+  <Plugin name="Cone" type="operator" label="Cone" version="1.0" iconFile="Cone.xpm" category="Slicing">
     <Attribute name="ConeAttributes" purpose="This class contains attributes for the cone operator." persistent="true">
       <Enum name="Representation">
         ThreeD

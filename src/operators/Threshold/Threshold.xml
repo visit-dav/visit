@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" iconFile="Threshold.xpm">
+  <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" iconFile="Threshold.xpm" category="Selection">
     <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true" exportAPI="" exportInclude="" codefile="Threshold.code">
       <Enum name="OutputMeshType">
         InputZones

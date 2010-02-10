@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="CracksClipper" type="operator" label="CracksClipper" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false">
+  <Plugin name="CracksClipper" type="operator" label="CracksClipper" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" category="Analysis">
     <Files components="V">
       avtCracksClipperFilter.C
       avtRemoveCracksFilter.C

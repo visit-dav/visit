@@ -336,6 +336,7 @@ class XMLParser : public QXmlDefaultHandler
             QString noengine  = atts.value("noengine");
             QString filePatternsStrict = atts.value("filePatternsStrict");
             QString opensWholeDirectory = atts.value("opensWholeDirectory");
+            QString category  = atts.value("category");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
@@ -361,6 +362,10 @@ class XMLParser : public QXmlDefaultHandler
             if (!opensWholeDirectory.isNull())
             {
                 currentPlugin->opensWholeDirectory = Text2Bool(opensWholeDirectory);
+            }
+            if (!category.isNull())
+            {
+                currentPlugin->category = category;
             }
         }
         else if (tag == "Attribute")

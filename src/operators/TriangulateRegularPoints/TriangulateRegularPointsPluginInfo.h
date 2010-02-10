@@ -67,6 +67,7 @@ class TriangulateRegularPointsGeneralPluginInfo : public virtual GeneralOperator
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class TriangulateRegularPointsCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual TriangulateRegularPointsGeneralPluginInfo

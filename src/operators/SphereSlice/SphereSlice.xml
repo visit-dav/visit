@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="SphereSlice" type="operator" label="Spherical Slice" version="1.0" iconFile="SphereSlice.xpm">
+  <Plugin name="SphereSlice" type="operator" label="Spherical Slice" version="1.0" iconFile="SphereSlice.xpm" category="Slicing">
     <Attribute name="SphereSliceAttributes" purpose="This class contains attributes for the spherical slice." persistent="true" codefile="SphereSliceAttributes.code">
       <Field name="origin" label="Origin" type="doubleArray" length="3">
         0.000000

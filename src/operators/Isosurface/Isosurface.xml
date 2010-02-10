@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Isosurface" type="operator" label="Isosurface" version="1.0" iconFile="Isosurface.xpm">
+  <Plugin name="Isosurface" type="operator" label="Isosurface" version="1.0" iconFile="Isosurface.xpm" category="Slicing">
     <Attribute name="IsosurfaceAttributes" purpose="Attributes for the isosurface operator" persistent="true">
       <Enum name="Select_by">
         Level

@@ -67,6 +67,7 @@ class TraceHistoryGeneralPluginInfo : public virtual GeneralOperatorPluginInfo
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class TraceHistoryCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual TraceHistoryGeneralPluginInfo
