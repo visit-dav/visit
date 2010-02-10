@@ -83,21 +83,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.0</font></b></p>
 <ul>
-  <li>VisIt's PDB reader now supports "streak plots". A streak plot is a 1D
-      slice through an array that is stacked vertically and shown over time
-      along the X axis. Streak plots reveal time-varying behavior present in
-      the 1D slice as a 2D dataset. Streak plots are mainly for the investigation
-      of "history data", which are various arrays stored to the PDB file by
-      a simulation's user. Since history data are arbitrary and may not even
-      be mesh data, VisIt does not know how to handle them in general. The PDB
-      reader allows the user to provide a simple "schema" file that contains
-      "streakplot" commands that inform the PDB reader how to slice and assemble
-      various history data arrays into streak plot datasets that VisIt can
-      visualize. For more information on the streak scheme file, see...(later).
-  </li>
   <li>VisIt's Nek reader now serves up per-domain data ranges, which optimizes 
       operations like contouring and thresholding.</li>
-  <li></li>
+  <li>VisIt now includes a Velodyne file format reader contributed by Corvid 
+      Technologies.</li>
   <li></li>
   <li></li>
   <li></li>

@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -37,6 +37,9 @@
 # Modifications:
 #    Jeremy Meredith, Thu Jan 14 12:32:46 EST 2010
 #    Added Rect and Hex back to the optional plugins.
+#
+#    Brad Whitlock, Wed Feb 10 10:02:53 PST 2010
+#    I added the contributed Velodyne plugin to the build.
 #
 #****************************************************************************/
 IF(NOT WIN32)
@@ -105,6 +108,7 @@ Pixie
 SAMRAI
 Tetrad
 UNIC
+Velodyne
 XDMF
 )
 THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)
