@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="DeferExpression" type="operator" label="DeferExpression" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+  <Plugin name="DeferExpression" type="operator" label="DeferExpression" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
     <Attribute name="DeferExpressionAttributes" purpose="Attributes for the DeferExpression operator" persistent="true" exportAPI="" exportInclude="">
       <Field name="exprs" label="Expressions to defer evaluation of" type="stringVector">
       </Field>

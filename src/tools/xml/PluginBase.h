@@ -84,6 +84,9 @@
 //    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
 //    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
+//    Brad Whitlock, Thu Feb  4 16:09:24 PST 2010
+//    I added category.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -96,6 +99,7 @@ public:
     QString vartype;
     QString dbtype;
     QString iconFile;
+    QString category;
 
     bool    haswriter;
     bool    hasoptions;
@@ -149,6 +153,7 @@ public:
                bool hw, bool ho, bool onlyengine, bool noengine)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
           iconFile(ifile),
+          category(),
           haswriter(hw),
           hasoptions(ho),
           enabledByDefault(true),

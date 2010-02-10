@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="MetricThreshold" label="Metric Threshold" type="operator" version="1.0">
+  <Plugin name="MetricThreshold" label="Metric Threshold" type="operator" version="1.0" category="Selection">
     <Attribute name="MetricThresholdAttributes" purpose="This class contains attributes for the MetricThreshold operator.">
       <Enum name="Preset">
 	None

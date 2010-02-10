@@ -116,6 +116,9 @@ class ExpressionList;
 //    internationalize plot names. Added const to strings returned from
 //    GeneralOperatorPluginInfo.
 //
+//    Brad Whitlock, Thu Feb  4 16:04:19 PST 2010
+//    I added a GetCategoryName method.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -126,6 +129,7 @@ class PLUGIN_API GeneralOperatorPluginInfo
     virtual const char *GetVersion() const = 0;
     virtual const char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
+    virtual const char *GetCategoryName() const { return ""; }
 };
 
 class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPluginInfo

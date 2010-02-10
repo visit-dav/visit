@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Box" type="operator" label="Box" version="1.0" iconFile="Box.xpm">
+  <Plugin name="Box" type="operator" label="Box" version="1.0" iconFile="Box.xpm" category="Selection">
     <Attribute name="BoxAttributes" purpose="This class contains attributes for the box operator." persistent="true" codefile="BoxAttributes.code">
       <Enum name="Amount">
         Some

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Transform" type="operator" label="Transform" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Transform.xpm">
+  <Plugin name="Transform" type="operator" label="Transform" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Transform.xpm" category="Transforms">
     <Attribute name="TransformAttributes" purpose="This class contains attributes for the transform operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="TransformAttributes.code">
       <Enum name="AngleType">
         Deg

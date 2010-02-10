@@ -1,5 +1,13 @@
-Function:  GetIndexByID
-Declaration: int GetIndexByID(const std::string &s);
+Code: SetFromNode
+Prefix:
+Postfix:
+    // Ensure that the category vector will be at least as long as the id vector.
+    // This is import for supporting legacy config files.
+    while(category.size() < id.size())
+        category.push_back("?");
+
+Function: GetIndexByID
+Declaration: int GetIndexByID(const std::string &s) const;
 Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::GetIndexByID
@@ -13,7 +21,7 @@ Definition:
 // ****************************************************************************
 
 int
-PluginManagerAttributes::GetIndexByID(const std::string &s)
+PluginManagerAttributes::GetIndexByID(const std::string &s) const
 {
     for (size_t i=0; i<id.size(); i++)
     {
@@ -24,8 +32,7 @@ PluginManagerAttributes::GetIndexByID(const std::string &s)
     return -1;
 }
 
-
-Function:  AddPlugin
+Function: AddPlugin
 Declaration: void AddPlugin(const std::string &n,const std::string &t,const std::string &v,const std::string &i,bool e);
 Definition:
 // ****************************************************************************
@@ -41,6 +48,9 @@ Definition:
 //    Jeremy Meredith, Wed Nov  5 12:51:11 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Brad Whitlock, Thu Feb  4 15:26:46 PST 2010
+//    I added a category field.
+//
 // ****************************************************************************
 
 void 
@@ -54,22 +64,26 @@ PluginManagerAttributes::AddPlugin(const std::string &n,
     type.push_back(t);
     version.push_back(v);
     id.push_back(i);
+    category.push_back("?");
     enabled.push_back(e);
     SelectAll();
 }
 
-
-Function:  RemovePlugin
+Function: RemovePlugin
 Declaration: void RemovePlugin(const std::string &s);
 Definition:
 // ****************************************************************************
-// Method: PluginManagerAttributes::AddPlugin
+// Method: PluginManagerAttributes::RemovePlugin
 //
 // Purpose: 
 //   Add a new plugin.
 //
 // Programmer: Jeremy Meredith
 // Creation:   September 27, 2001
+//
+// Modifications:
+//   Brad Whitlock, Thu Feb  4 15:27:03 PST 2010
+//   I added a category.
 //
 // ****************************************************************************
 
@@ -80,10 +94,121 @@ PluginManagerAttributes::RemovePlugin(const std::string &s)
     if (index<0)
         return;
 
-    name   .erase(name   .begin() + index);
-    type   .erase(type   .begin() + index);
-    version.erase(version.begin() + index);
-    id     .erase(id     .begin() + index);
-    enabled.erase(enabled.begin() + index);
+    name   .erase(name     .begin() + index);
+    type   .erase(type     .begin() + index);
+    version.erase(version  .begin() + index);
+    id     .erase(id       .begin() + index);
+    category.erase(category.begin() + index);
+    enabled.erase(enabled  .begin() + index);
     SelectAll();
+}
+
+Function: UniqueCategories
+Declaration: void UniqueCategories(const std::string &t, stringVector &c) const;
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::UniqueCategories
+//
+// Purpose: 
+//   Get the list of unique category names for a given plugin type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb  4 15:31:40 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <algorithm>
+void 
+PluginManagerAttributes::UniqueCategories(const std::string &t, stringVector &c) const
+{
+    c.clear();
+    for(size_t i = 0; i < type.size(); ++i)
+    {
+        if(type[i] == t)
+        {
+            if(i < category.size() &&
+               category[i] != "?" &&
+               std::find(c.begin(), c.end(), category[i]) == c.end())
+                c.push_back(category[i]);
+        }
+    }
+    std::sort(c.begin(), c.end());
+}
+
+Function: GetPluginCategoryName
+Declaration: std::string GetPluginCategoryName(const std::string &s) const;
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::GetPluginCategoryName
+//
+// Purpose: 
+//   Get the category name for the specified plugin.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb  4 15:31:40 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+PluginManagerAttributes::GetPluginCategoryName(const std::string &s) const
+{
+    std::string c("?");
+    int index = GetIndexByID(s);
+    if(index >= 0 && index < category.size())
+    {
+        c = category[index];
+    }
+    return c;
+}
+
+Function: SetPluginCategoryName
+Declaration: void SetPluginCategoryName(const std::string &s, const std::string &c);
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::SetPluginCategoryName
+//
+// Purpose: 
+//   Sets the category name for the specified plugin.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb  4 15:31:40 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PluginManagerAttributes::SetPluginCategoryName(const std::string &s, const std::string &c)
+{
+    int index = GetIndexByID(s);
+    if(index >= 0 && index < category.size())
+    {
+        category[index] = c;
+        SelectCategory();
+    }
+}
+
+Function: PluginCategoryNameNotSet
+Declaration: bool PluginCategoryNameNotSet(const std::string &s) const;
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::PluginCategoryNameNotSet
+//
+// Purpose: 
+//   Returns whether the category name has been set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb  4 15:31:40 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+PluginManagerAttributes::PluginCategoryNameNotSet(const std::string &s) const
+{
+    return GetPluginCategoryName(s) == "?";
 }

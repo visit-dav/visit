@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Tube" type="operator" label="Tube" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Tube.xpm">
+  <Plugin name="Tube" type="operator" label="Tube" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Tube.xpm" category="Geometry">
     <Attribute name="TubeAttributes" purpose="This class contains attributes for the tube operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Field name="scaleByVarFlag" label="Scale width by variable?  (Nodal)" type="bool">
         false

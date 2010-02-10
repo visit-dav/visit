@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Reflect" type="operator" label="Reflect" version="1.0" iconFile="Reflect.xpm">
+  <Plugin name="Reflect" type="operator" label="Reflect" version="1.0" iconFile="Reflect.xpm" category="Transforms">
     <Files components="G">
       QvisReflectWidget.C
     </Files>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="InverseGhostZone" type="operator" label="Inverse Ghost Zone" version="1.0" enabled="true" iconFile="InverseGhostZone.xpm">
+  <Plugin name="InverseGhostZone" type="operator" label="Inverse Ghost Zone" version="1.0" enabled="true" iconFile="InverseGhostZone.xpm" category="Debugging">
     <Attribute name="InverseGhostZoneAttributes" purpose="This class contains attributes for the inverse ghost zone operator." persistent="true">
       <Enum name="ShowType">
         GhostZonesOnly

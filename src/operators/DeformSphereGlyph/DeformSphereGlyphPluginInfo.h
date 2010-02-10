@@ -67,6 +67,7 @@ class DeformSphereGlyphGeneralPluginInfo : public virtual GeneralOperatorPluginI
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class DeformSphereGlyphCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual DeformSphereGlyphGeneralPluginInfo

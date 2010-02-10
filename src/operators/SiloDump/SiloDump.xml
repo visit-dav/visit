@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="SiloDump" type="operator" label="Silo Dump" version="1.0">
+  <Plugin name="SiloDump" type="operator" label="Silo Dump" version="1.0" category="Debugging">
     <CXXFLAGS>
       $(SILO_INCLUDE)
     </CXXFLAGS>

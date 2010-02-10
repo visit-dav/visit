@@ -129,6 +129,7 @@ QvisPickWindow.C
 QvisPlotListBox.C
 QvisPlotListBoxItem.C
 QvisPlotManagerWidget.C
+QvisPluginManagerAttributesDataModel.C
 QvisPluginWindow.C
 QvisPointControl.C
 QvisPostableMainWindow.C
@@ -242,6 +243,7 @@ QvisOutputWindow.h
 QvisPeriodicTableWidget.h
 QvisPickWindow.h
 QvisPlotListBox.h
+QvisPluginManagerAttributesDataModel.h
 QvisPointControl.h
 QvisPlotManagerWidget.h
 QvisPluginWindow.h

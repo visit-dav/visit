@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Project" type="operator" label="Project" version="1.0" enabled="true" iconFile="Project.xpm">
+  <Plugin name="Project" type="operator" label="Project" version="1.0" enabled="true" iconFile="Project.xpm" category="Transforms">
     <Attribute name="ProjectAttributes" purpose="Project data from three to two dimensions" persistent="true" exportAPI="" exportInclude="">
       <Enum name="ProjectionType">
         XYCartesian

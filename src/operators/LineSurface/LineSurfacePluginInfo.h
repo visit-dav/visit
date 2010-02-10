@@ -67,6 +67,7 @@ class LineSurfaceGeneralPluginInfo : public virtual GeneralOperatorPluginInfo
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class LineSurfaceCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual LineSurfaceGeneralPluginInfo

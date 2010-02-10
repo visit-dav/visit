@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="CoordSwap" type="operator" label="CoordSwap" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CoordSwap.xpm">
+  <Plugin name="CoordSwap" type="operator" label="CoordSwap" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CoordSwap.xpm" category="Geometry">
     <Attribute name="CoordSwapAttributes" purpose="This class contains attributes for the coord swap operator." persistent="true">
       <Enum name="Coord">
         Coord1

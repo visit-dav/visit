@@ -120,6 +120,9 @@ public:
 
     virtual void setEditorData(QWidget *editor, const QModelIndex &index) const
     {
+        if(!index.isValid())
+            return;
+
         QLineEdit *lineEdit = (QLineEdit *)editor;
         lineEdit->setText(index.data().toString());
         lineEdit->selectAll();
@@ -127,6 +130,9 @@ public:
 
     virtual void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
     {
+        if(!index.isValid())
+            return;
+
         qulonglong addr = index.data(Qt::UserRole).toULongLong();
         QvisPlotListBoxItem *currentItem = (QvisPlotListBoxItem*)addr;
         if(currentItem != 0)
@@ -142,6 +148,9 @@ public:
 
     virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
     {
+        if(!index.isValid())
+            return;
+
         qulonglong addr = index.data(Qt::UserRole).toULongLong();
         QvisPlotListBoxItem *currentItem = (QvisPlotListBoxItem*)addr;
         if(currentItem != 0)

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Merge" type="operator" label="Merge" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+  <Plugin name="Merge" type="operator" label="Merge" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" category="Geometry">
     <Attribute name="MergeOperatorAttributes" purpose="Attributes for Merge operaetor" persistent="true" exportAPI="" exportInclude="">
       <Field name="parallelMerge" label="Merge across all processors?" type="bool">
         false

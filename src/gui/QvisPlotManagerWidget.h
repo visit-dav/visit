@@ -43,6 +43,7 @@
 #include <string>
 
 #include <QAction>
+#include <QMap>
 #include <QMenu>
 #include <QStringList>
 #include <QWidget>
@@ -57,6 +58,7 @@ class  PlotList;
 class  ExpressionList;
 class  FileServerList;
 class  GlobalAttributes;
+class  PluginManagerAttributes;
 class  WindowInformation;
 
 class  QComboBox;
@@ -74,6 +76,7 @@ class  QvisVariablePopupMenu;
 // Some typedefs used for plugin management.
 typedef struct
 {
+    QString                id;
     QString                pluginName;
     QString                menuName;
     QIcon                  icon;
@@ -81,6 +84,7 @@ typedef struct
     int                    varTypes;
     int                    varMask;
     QAction               *action;
+    QAction               *menuAction;
 } PluginEntry;
 
 typedef std::vector<PluginEntry> PluginEntryVector;
@@ -208,6 +212,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Made UpdatePlotList public, since it needs to be triggered externally;
 //   this is used e.g. when you disable selected files to show full filenames.
 //
+//   Brad Whitlock, Fri Feb  5 16:37:10 PST 2010
+//   I added support for grouping operators.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -224,14 +231,16 @@ public:
     void ConnectGlobalAttributes(GlobalAttributes *);
     void ConnectExpressionList(ExpressionList *);
     void ConnectWindowInformation(WindowInformation *);
+    void ConnectPluginManagerAttributes(PluginManagerAttributes *);
 
-    void AddPlotType(const QString &plotName, const int varTypes,
+    void AddPlotType(const QString &id, const QString &plotName, const int varTypes,
                      const char **iconData = 0);
-    void AddOperatorType(const QString &operatorName, const int varTypes,
-                         const int varMask, bool userSelectable,
+    void AddOperatorType(const QString &is, const QString &operatorName,
+                         const int varTypes, const int varMask, bool userSelectable,
                          const char **iconData = 0);
     void FinishAddingOperators();
     void EnablePluginMenus();
+    void UpdateOperatorCategories();
 
     void SetSourceVisible(bool);
     void UpdatePlotList();
@@ -345,7 +354,7 @@ private:
     GlobalAttributes        *globalAtts;
     ExpressionList          *exprList;
     WindowInformation       *windowInfo;
-    
+    PluginManagerAttributes *pluginAtts;
 };
 
 #endif

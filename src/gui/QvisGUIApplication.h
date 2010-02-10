@@ -422,6 +422,7 @@ private slots:
     void AboutVisIt();
     void CustomizeAppearance(bool notify);
     void LoadPlugins();
+    void EnableOperatorMenuGrouping();
     void FinalInitialization();
     void SendInterface();
     void InterpreterSync();

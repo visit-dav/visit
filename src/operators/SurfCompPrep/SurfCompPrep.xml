@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="SurfCompPrep" type="operator" label="SurfCompPrep" version="1.0">
+  <Plugin name="SurfCompPrep" type="operator" label="SurfCompPrep" version="1.0" category="Analysis">
     <Attribute name="SurfCompPrepAttributes" purpose="Attributes for the SurfCompPrep operator." persistent="true" exportAPI="" exportInclude="">
       <Enum name="CoordinateSystem">
         Cartesian

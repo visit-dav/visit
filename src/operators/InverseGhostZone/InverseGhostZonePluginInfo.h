@@ -67,6 +67,7 @@ class InverseGhostZoneGeneralPluginInfo : public virtual GeneralOperatorPluginIn
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class InverseGhostZoneCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual InverseGhostZoneGeneralPluginInfo

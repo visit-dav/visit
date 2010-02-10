@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class PluginManagerAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 5;
+    private static int numAdditionalAttributes = 6;
 
     public PluginManagerAttributes()
     {
@@ -68,6 +68,7 @@ public class PluginManagerAttributes extends AttributeSubject
         type = new Vector();
         version = new Vector();
         id = new Vector();
+        category = new Vector();
         enabled = new Vector();
     }
 
@@ -79,6 +80,7 @@ public class PluginManagerAttributes extends AttributeSubject
         type = new Vector();
         version = new Vector();
         id = new Vector();
+        category = new Vector();
         enabled = new Vector();
     }
 
@@ -103,6 +105,10 @@ public class PluginManagerAttributes extends AttributeSubject
         id = new Vector(obj.id.size());
         for(i = 0; i < obj.id.size(); ++i)
             id.addElement(new String((String)obj.id.elementAt(i)));
+
+        category = new Vector(obj.category.size());
+        for(i = 0; i < obj.category.size(); ++i)
+            category.addElement(new String((String)obj.category.elementAt(i)));
 
         enabled = new Vector();
         for(i = 0; i < obj.enabled.size(); ++i)
@@ -164,6 +170,15 @@ public class PluginManagerAttributes extends AttributeSubject
             String id2 = (String)obj.id.elementAt(i);
             id_equal = id1.equals(id2);
         }
+        // Compare the elements in the category vector.
+        boolean category_equal = (obj.category.size() == category.size());
+        for(i = 0; (i < category.size()) && category_equal; ++i)
+        {
+            // Make references to String from Object.
+            String category1 = (String)category.elementAt(i);
+            String category2 = (String)obj.category.elementAt(i);
+            category_equal = category1.equals(category2);
+        }
         // Compare the elements in the enabled vector.
         boolean enabled_equal = (obj.enabled.size() == enabled.size());
         for(i = 0; (i < enabled.size()) && enabled_equal; ++i)
@@ -178,6 +193,7 @@ public class PluginManagerAttributes extends AttributeSubject
                 type_equal &&
                 version_equal &&
                 id_equal &&
+                category_equal &&
                 enabled_equal);
     }
 
@@ -206,10 +222,16 @@ public class PluginManagerAttributes extends AttributeSubject
         Select(3);
     }
 
+    public void SetCategory(Vector category_)
+    {
+        category = category_;
+        Select(4);
+    }
+
     public void SetEnabled(Vector enabled_)
     {
         enabled = enabled_;
-        Select(4);
+        Select(5);
     }
 
     // Property getting methods
@@ -217,6 +239,7 @@ public class PluginManagerAttributes extends AttributeSubject
     public Vector GetType() { return type; }
     public Vector GetVersion() { return version; }
     public Vector GetId() { return id; }
+    public Vector GetCategory() { return category; }
     public Vector GetEnabled() { return enabled; }
 
     // Write and read methods.
@@ -231,6 +254,8 @@ public class PluginManagerAttributes extends AttributeSubject
         if(WriteSelect(3, buf))
             buf.WriteStringVector(id);
         if(WriteSelect(4, buf))
+            buf.WriteStringVector(category);
+        if(WriteSelect(5, buf))
             buf.WriteIntVector(enabled);
     }
 
@@ -251,6 +276,9 @@ public class PluginManagerAttributes extends AttributeSubject
             SetId(buf.ReadStringVector());
             break;
         case 4:
+            SetCategory(buf.ReadStringVector());
+            break;
+        case 5:
             SetEnabled(buf.ReadIntVector());
             break;
         }
@@ -263,6 +291,7 @@ public class PluginManagerAttributes extends AttributeSubject
         str = str + stringVectorToString("type", type, indent) + "\n";
         str = str + stringVectorToString("version", version, indent) + "\n";
         str = str + stringVectorToString("id", id, indent) + "\n";
+        str = str + stringVectorToString("category", category, indent) + "\n";
         str = str + intVectorToString("enabled", enabled, indent) + "\n";
         return str;
     }
@@ -273,6 +302,7 @@ public class PluginManagerAttributes extends AttributeSubject
     private Vector type; // vector of String objects
     private Vector version; // vector of String objects
     private Vector id; // vector of String objects
+    private Vector category; // vector of String objects
     private Vector enabled; // vector of Integer objects
 }
 

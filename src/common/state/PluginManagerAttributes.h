@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PluginManagerAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API PluginManagerAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PluginManagerAttributes();
     PluginManagerAttributes(const PluginManagerAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PluginManagerAttributes(private_tmfs_t tmfs);
+    PluginManagerAttributes(const PluginManagerAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PluginManagerAttributes();
 
     virtual PluginManagerAttributes& operator = (const PluginManagerAttributes &obj);
     virtual bool operator == (const PluginManagerAttributes &obj) const;
     virtual bool operator != (const PluginManagerAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PluginManagerAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -79,6 +90,7 @@ public:
     void SelectType();
     void SelectVersion();
     void SelectId();
+    void SelectCategory();
     void SelectEnabled();
 
     // Property setting methods
@@ -86,6 +98,7 @@ public:
     void SetType(const stringVector &type_);
     void SetVersion(const stringVector &version_);
     void SetId(const stringVector &id_);
+    void SetCategory(const stringVector &category_);
     void SetEnabled(const intVector &enabled_);
 
     // Property getting methods
@@ -97,6 +110,8 @@ public:
           stringVector &GetVersion();
     const stringVector &GetId() const;
           stringVector &GetId();
+    const stringVector &GetCategory() const;
+          stringVector &GetCategory();
     const intVector    &GetEnabled() const;
           intVector    &GetEnabled();
 
@@ -112,9 +127,13 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    int GetIndexByID(const std::string &s);
+    int GetIndexByID(const std::string &s) const;
     void AddPlugin(const std::string &n,const std::string &t,const std::string &v,const std::string &i,bool e);
     void RemovePlugin(const std::string &s);
+    void UniqueCategories(const std::string &t, stringVector &c) const;
+    std::string GetPluginCategoryName(const std::string &s) const;
+    void SetPluginCategoryName(const std::string &s, const std::string &c);
+    bool PluginCategoryNameNotSet(const std::string &s) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -122,7 +141,9 @@ public:
         ID_type,
         ID_version,
         ID_id,
-        ID_enabled
+        ID_category,
+        ID_enabled,
+        ID__LAST
     };
 
 private:
@@ -130,10 +151,13 @@ private:
     stringVector type;
     stringVector version;
     stringVector id;
+    stringVector category;
     intVector    enabled;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PLUGINMANAGERATTRIBUTES_TMFS "s*s*s*s*s*i*"
 
 #endif

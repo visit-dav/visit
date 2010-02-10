@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="ThreeSlice" type="operator" label="ThreeSlice" version="1.0" iconFile="ThreeSlice.xpm">
+  <Plugin name="ThreeSlice" type="operator" label="ThreeSlice" version="1.0" iconFile="ThreeSlice.xpm" category="Slicing">
     <Attribute name="ThreeSliceAttributes" purpose="This class contains attributes for the threeslice operator." persistent="true" codefile="ThreeSliceAttributes.code">
       <Field name="x" label="x" type="float">
         0.000000

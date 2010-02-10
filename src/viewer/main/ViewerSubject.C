@@ -83,6 +83,7 @@
 #include <MeshManagementAttributes.h>
 #include <MessageAttributes.h>
 #include <MovieAttributes.h>
+#include <OperatorPluginInfo.h>
 #include <PickAttributes.h>
 #include <PlotInfoAttributes.h>
 #include <PlotList.h>
@@ -1467,6 +1468,10 @@ ViewerSubject::LoadPlotPlugins()
 //   Brad Whitlock, Mon Feb 12 12:04:49 PDT 2007
 //   Changed how operators are registered with ViewerState.
 //
+//   Brad Whitlock, Fri Feb  5 15:28:13 PST 2010
+//   I added code to override an operator's operatorCategory in the plugin
+//   manager attributes if it's not set to anything worth keeping.
+//
 // ****************************************************************************
 
 void
@@ -1509,6 +1514,23 @@ ViewerSubject::LoadOperatorPlugins()
 
         if(defaultAttr)
             configMgr->Add(defaultAttr);
+    }
+
+    // Set the operator's category name.
+    for (int i = 0; i < GetOperatorPluginManager()->GetNAllPlugins(); i++)
+    {
+        std::string id(GetOperatorPluginManager()->GetAllID(i));
+        // Get the operator's category and set it in the plugin manager 
+        // attributes if its plugin category is empty.
+        std::string category(GetOperatorPluginManager()->
+                             GetOperatorCategoryName(id));
+
+        if(GetViewerState()->GetPluginManagerAttributes()->
+            PluginCategoryNameNotSet(id))
+        {
+            GetViewerState()->GetPluginManagerAttributes()->
+                SetPluginCategoryName(id, category);
+        }
     }
 
     // Set the query manager's operator factory pointer.

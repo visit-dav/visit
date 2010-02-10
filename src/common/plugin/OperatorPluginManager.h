@@ -105,6 +105,10 @@ class ScriptingOperatorPluginInfo;
 //    Brad Whitlock, Wed Jun 17 10:24:46 PDT 2009
 //    I added arguments to Initialize.
 //
+//    Brad Whitlock, Fri Feb  5 14:44:32 PST 2010
+//    I added stuff to enable categories to be accessed for any plugin whose
+//    libI was loaded.
+//
 // ****************************************************************************
 
 class PLUGIN_API OperatorPluginManager : public PluginManager
@@ -121,6 +125,10 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
 
     virtual void                    ReloadPlugins();
 
+    // Methods that return info about all plugins
+    std::string                     GetOperatorCategoryName(const std::string &allid) const;
+
+    // Methods that return info about loaded plugins
     CommonOperatorPluginInfo       *GetCommonPluginInfo(const std::string&);
     GUIOperatorPluginInfo          *GetGUIPluginInfo(const std::string&);
     ViewerOperatorPluginInfo       *GetViewerPluginInfo(const std::string&);
@@ -128,6 +136,8 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
     ScriptingOperatorPluginInfo    *GetScriptingPluginInfo(const std::string&);
 
   private:
+    virtual void                    BroadcastGeneralInfo(PluginBroadcaster *);
+
     virtual bool                    LoadGeneralPluginInfo();
     virtual void                    LoadGUIPluginInfo();
     virtual void                    LoadViewerPluginInfo();
@@ -139,6 +149,9 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
     virtual void                    FreeViewerPluginInfo();
     virtual void                    FreeEnginePluginInfo();
     virtual void                    FreeScriptingPluginInfo();
+
+    // arrays containing all plugins
+    std::vector<std::string>                    operatorCategory;
 
     // arrays containing enabled plugins
     std::vector<CommonOperatorPluginInfo*>      commonPluginInfo;
