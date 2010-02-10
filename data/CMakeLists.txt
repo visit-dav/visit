@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -47,6 +47,9 @@
 #
 #   Cyrus Harrison, Mon Feb  1 12:46:56 PST 2010
 #   Added missing visit includes to basic targets.
+#
+#   Brad Whitlock, Wed Feb 10 14:44:23 PST 2010
+#   I added Velodyne test data.
 #
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
@@ -337,6 +340,7 @@ PATRAN_test_data
 ProteinDataBank_test_data
 RAW_test_data
 Rect_test_data
+Velodyne_test_data
 Vista_test_data
 bov_test_data
 boxlib_test_data
