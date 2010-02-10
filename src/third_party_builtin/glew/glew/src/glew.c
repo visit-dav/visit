@@ -222,7 +222,7 @@ static int _glewInitFunctionLoader()
       return GLEW_ERROR_DLOPEN;
     }
   }
-  GetLastError();
+  SetLastError(ERROR_SUCCESS);
 #else
   const char *dl_error;
   const char glx_gpa[] = "mglXGetProcAddressARB";
