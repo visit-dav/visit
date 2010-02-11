@@ -47,6 +47,11 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
 
+##
+## Ice-T
+##
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/0.5.4/${VISITARCH})
+
 ##############################################################
 ##
 ## Database reader plugin support libraries
