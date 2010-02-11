@@ -59,32 +59,21 @@ SET(INSTALLTARGETS IProteinDataBankDatabase)
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MProteinDataBankDatabase ${LIBM_SOURCES}    )
     TARGET_LINK_LIBRARIES(MProteinDataBankDatabase visitcommon avtdbatts avtdatabase_ser )
-    SET_TARGET_PROPERTIES(MProteinDataBankDatabase
-        PROPERTIES
-        COMPILE_FLAGS "-DMDSERVER"
-    )
+    ADD_TARGET_DEFINITIONS(MProteinDataBankDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MProteinDataBankDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EProteinDataBankDatabase_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EProteinDataBankDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
-SET_TARGET_PROPERTIES(EProteinDataBankDatabase_ser
-    PROPERTIES
-    COMPILE_FLAGS "-DENGINE"
-)
+ADD_TARGET_DEFINITIONS(EProteinDataBankDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EProteinDataBankDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EProteinDataBankDatabase_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EProteinDataBankDatabase_par visitcommon avtdatabase_par avtpipeline_par )
-    SET_TARGET_PROPERTIES(EProteinDataBankDatabase_par
-        PROPERTIES
-        COMPILE_FLAGS "-DENGINE"
-    )
+    ADD_TARGET_DEFINITIONS(EProteinDataBankDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EProteinDataBankDatabase_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
-

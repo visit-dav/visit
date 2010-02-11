@@ -71,6 +71,9 @@
 //    Remove setting of LIBRARY_OUTPUT_PATH, (set by parent instead). Add
 //    call to VISIT_PLUGIN_TARGET_PREFIX macro.
 //
+//    Brad Whitlock, Wed Feb 10 16:36:00 PST 2010
+//    I made all of the database plugins use the ADD_TARGET_DEFINITIONS function.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -749,10 +752,7 @@ class CMakeGeneratorPlugin : public Plugin
                 out << "     ${LIBM_WIN32_SOURCES}";
             out << "    )" << endl;
             out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser "<< ToString(libs) << ToString(mlibs) << ")" << endl;
-            out << "    SET_TARGET_PROPERTIES(M"<<name<<"Database" << endl;
-            out << "        PROPERTIES" << endl;
-            out << "        COMPILE_FLAGS \"-DMDSERVER\"" << endl;
-            out << "    )" << endl;
+            out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;
             out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << endl;
             out << "ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
             out << endl;
@@ -764,19 +764,13 @@ class CMakeGeneratorPlugin : public Plugin
                 out << " ${LIBE_WIN32_SOURCES}";
             out << ")" << endl;
             out << "TARGET_LINK_LIBRARIES(E"<<name<<"Database_ser visitcommon avtdatabase_ser avtpipeline_ser "<< ToString(libs) << ToString(elibsSer) << ")" << endl;
-            out << "SET_TARGET_PROPERTIES(E"<<name<<"Database_ser" << endl;
-            out << "    PROPERTIES" << endl;
-            out << "    COMPILE_FLAGS \"-DENGINE\"" << endl;
-            out << ")" << endl;
+            out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Database_ser ENGINE)" << endl;
             out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_ser)" << endl;
             out << endl;
             out << "IF(VISIT_PARALLEL)" << endl;
             out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Database_par ${LIBE_SOURCES})" << endl;
             out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Database_par visitcommon avtdatabase_par avtpipeline_par "<< ToString(libs) << ToString(elibsPar) << ")" << endl;
-            out << "    SET_TARGET_PROPERTIES(E"<<name<<"Database_par" << endl;
-            out << "        PROPERTIES" << endl;
-            out << "        COMPILE_FLAGS \"-DENGINE\"" << endl;
-            out << "    )" << endl;
+            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Database_par ENGINE)" << endl;
             out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_par)" << endl;
             out << "ENDIF(VISIT_PARALLEL)" << endl;
             out << endl;

@@ -60,32 +60,21 @@ SET(INSTALLTARGETS IExtrudedVolDatabase)
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MExtrudedVolDatabase ${LIBM_SOURCES}    )
     TARGET_LINK_LIBRARIES(MExtrudedVolDatabase visitcommon avtdbatts avtdatabase_ser )
-    SET_TARGET_PROPERTIES(MExtrudedVolDatabase
-        PROPERTIES
-        COMPILE_FLAGS "-DMDSERVER"
-    )
+    ADD_TARGET_DEFINITIONS(MExtrudedVolDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MExtrudedVolDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EExtrudedVolDatabase_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EExtrudedVolDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
-SET_TARGET_PROPERTIES(EExtrudedVolDatabase_ser
-    PROPERTIES
-    COMPILE_FLAGS "-DENGINE"
-)
+ADD_TARGET_DEFINITIONS(EExtrudedVolDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EExtrudedVolDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EExtrudedVolDatabase_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EExtrudedVolDatabase_par visitcommon avtdatabase_par avtpipeline_par )
-    SET_TARGET_PROPERTIES(EExtrudedVolDatabase_par
-        PROPERTIES
-        COMPILE_FLAGS "-DENGINE"
-    )
+    ADD_TARGET_DEFINITIONS(EExtrudedVolDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EExtrudedVolDatabase_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
-
