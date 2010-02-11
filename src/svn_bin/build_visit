@@ -815,6 +815,10 @@
 #     Hank Childs, Thu Feb  4 08:21:27 PST 2010
 #     Add argument --svn-revision.
 #
+#     Brad Whitlock, Wed Feb 10 23:35:34 PST 2010
+#     Added a patch for Boxlib and upgraded GDAL to get them working on
+#     Ubuntu 9.10.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1180,10 +1184,10 @@ export CGNS_VERSION=${CGNS_VERSION:-"2.4"}
 export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"2.4"}
 export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-${CGNS_FILE%-3.tar*}}
 
-export GDAL_FILE=${GDAL_FILE:-"gdal-1.3.2.tar.gz"}
-export GDAL_VERSION=${GDAL_VERSION:-"1.3.2"}
-export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.3"}
-export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.3.2"}
+export GDAL_FILE=${GDAL_FILE:-"gdal-1.7.1.tar.gz"}
+export GDAL_VERSION=${GDAL_VERSION:-"1.7.1"}
+export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.7"}
+export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.7.1"}
 
 export EXODUS_FILE=${EXODUS_FILE:-"exodusii-4.46.tar.gz"}
 export EXODUS_VERSION=${EXODUS_VERSION:-"4.46"}
@@ -6573,6 +6577,32 @@ function apply_boxlib_25_ppc_patch
 EOF
 }
 
+# Modifies the VisMF.cpp to use more const.
+function apply_boxlib_25_const_patch
+{
+    patch -u -p0 << \EOF
+--- CCSEApps/BoxLib/VisMF.cpp	2010-02-10 22:49:11.728859467 -0800
++++ CCSEApps/BoxLib/VisMF.cpp.const	2010-02-10 22:48:52.828860805 -0800
+@@ -343,7 +343,7 @@
+ {
+     BL_ASSERT(filename[filename.length() - 1] != '/');
+ 
+-    if (char* slash = strrchr(filename.c_str(), '/'))
++    if (const char* slash = strrchr(filename.c_str(), '/'))
+     {
+         //
+         // Got at least one slash -- give'm the following tail.
+@@ -368,7 +368,7 @@
+ 
+     const char* str = filename.c_str();    
+ 
+-    if (char* slash = strrchr(str, '/'))
++    if (const char* slash = strrchr(str, '/'))
+     {
+         //
+         // Got at least one slash -- give'm the dirname including last slash.
+EOF
+}
 
 function apply_boxlib_25_patch
 {
@@ -6594,6 +6624,9 @@ function apply_boxlib_25_patch
            apply_boxlib_25_gfortran_patch
        fi
    fi
+
+   # Fix some const
+   apply_boxlib_25_const_patch
 
    # Now make the OPSYS specific changes
    if [[ "$OPSYS" == "Darwin" ]]; then
