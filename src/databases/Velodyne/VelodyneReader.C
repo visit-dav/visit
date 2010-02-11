@@ -4,6 +4,7 @@
 //
 
 #include <string.h>
+#include <cstdlib>
 
 #ifndef DEBUG_TEST
 #include <DebugStream.h>
