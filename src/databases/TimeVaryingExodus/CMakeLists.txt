@@ -60,32 +60,21 @@ SET(INSTALLTARGETS ITimeVaryingExodusDatabase)
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MTimeVaryingExodusDatabase ${LIBM_SOURCES}    )
     TARGET_LINK_LIBRARIES(MTimeVaryingExodusDatabase visitcommon avtdbatts avtdatabase_ser ${EXODUSII_LIB} )
-    SET_TARGET_PROPERTIES(MTimeVaryingExodusDatabase
-        PROPERTIES
-        COMPILE_FLAGS "-DMDSERVER"
-    )
+    ADD_TARGET_DEFINITIONS(MTimeVaryingExodusDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MTimeVaryingExodusDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ETimeVaryingExodusDatabase_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(ETimeVaryingExodusDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${EXODUSII_LIB} )
-SET_TARGET_PROPERTIES(ETimeVaryingExodusDatabase_ser
-    PROPERTIES
-    COMPILE_FLAGS "-DENGINE"
-)
+ADD_TARGET_DEFINITIONS(ETimeVaryingExodusDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ETimeVaryingExodusDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ETimeVaryingExodusDatabase_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(ETimeVaryingExodusDatabase_par visitcommon avtdatabase_par avtpipeline_par ${EXODUSII_LIB} )
-    SET_TARGET_PROPERTIES(ETimeVaryingExodusDatabase_par
-        PROPERTIES
-        COMPILE_FLAGS "-DENGINE"
-    )
+    ADD_TARGET_DEFINITIONS(ETimeVaryingExodusDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ETimeVaryingExodusDatabase_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
-

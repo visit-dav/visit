@@ -64,32 +64,21 @@ SET(INSTALLTARGETS IAdventureDatabase)
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MAdventureDatabase ${LIBM_SOURCES}    )
     TARGET_LINK_LIBRARIES(MAdventureDatabase visitcommon avtdbatts avtdatabase_ser ${ADVIO_LIB} visit_verdict )
-    SET_TARGET_PROPERTIES(MAdventureDatabase
-        PROPERTIES
-        COMPILE_FLAGS "-DMDSERVER"
-    )
+    ADD_TARGET_DEFINITIONS(MAdventureDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MAdventureDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EAdventureDatabase_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EAdventureDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${ADVIO_LIB} visit_verdict )
-SET_TARGET_PROPERTIES(EAdventureDatabase_ser
-    PROPERTIES
-    COMPILE_FLAGS "-DENGINE"
-)
+ADD_TARGET_DEFINITIONS(EAdventureDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EAdventureDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EAdventureDatabase_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EAdventureDatabase_par visitcommon avtdatabase_par avtpipeline_par ${ADVIO_LIB} visit_verdict )
-    SET_TARGET_PROPERTIES(EAdventureDatabase_par
-        PROPERTIES
-        COMPILE_FLAGS "-DENGINE"
-    )
+    ADD_TARGET_DEFINITIONS(EAdventureDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EAdventureDatabase_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
-

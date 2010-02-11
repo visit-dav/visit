@@ -59,32 +59,21 @@ SET(INSTALLTARGETS IZipWrapperDatabase)
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MZipWrapperDatabase ${LIBM_SOURCES}    )
     TARGET_LINK_LIBRARIES(MZipWrapperDatabase visitcommon avtdbatts avtdatabase_ser )
-    SET_TARGET_PROPERTIES(MZipWrapperDatabase
-        PROPERTIES
-        COMPILE_FLAGS "-DMDSERVER"
-    )
+    ADD_TARGET_DEFINITIONS(MZipWrapperDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MZipWrapperDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EZipWrapperDatabase_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EZipWrapperDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
-SET_TARGET_PROPERTIES(EZipWrapperDatabase_ser
-    PROPERTIES
-    COMPILE_FLAGS "-DENGINE"
-)
+ADD_TARGET_DEFINITIONS(EZipWrapperDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EZipWrapperDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EZipWrapperDatabase_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EZipWrapperDatabase_par visitcommon avtdatabase_par avtpipeline_par )
-    SET_TARGET_PROPERTIES(EZipWrapperDatabase_par
-        PROPERTIES
-        COMPILE_FLAGS "-DENGINE"
-    )
+    ADD_TARGET_DEFINITIONS(EZipWrapperDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EZipWrapperDatabase_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
-
