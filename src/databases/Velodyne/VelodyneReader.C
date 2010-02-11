@@ -17,17 +17,6 @@ using std::cout;
 
 #include <VelodyneReader.h>
 
-
-const int VelodyneReader::node_type;
-const int VelodyneReader::solid_type;
-const int VelodyneReader::shell_type;
-const int VelodyneReader::surface_type;
-const int VelodyneReader::particle_type;
-const int VelodyneReader::tiednode_type;
-const int VelodyneReader::sph_type;
-
-
-
 int VelodyneReader::
 open( const char* filename ) 
 {

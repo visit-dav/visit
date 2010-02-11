@@ -15,6 +15,22 @@ using std::set;
 using std::string;
 #include <hdf5.h>
 
+// ****************************************************************************
+// Class: VelodyneReader
+//
+// Purpose:
+//   Reader for Velodyne files.
+//
+// Notes:      
+//
+// Programmer: Corvid Technologies
+// Creation:   Thu Feb 11 09:22:10 PST 2010
+//
+// Modifications:
+//   Brad Whitlock, Thu Feb 11 09:22:22 PST 2010
+//   Portability fixes.
+//
+// ****************************************************************************
 
 class VelodyneReader
 {
@@ -107,14 +123,17 @@ class VelodyneReader
 
   int nhhv,nshv,nsphhv;
 
- public:
-  static const int node_type    =0;
-  static const int solid_type   =1;
-  static const int shell_type   =2;
-  static const int particle_type=3;
-  static const int surface_type =4;
-  static const int tiednode_type=5;
-  static const int sph_type=6;
+public:
+    enum
+    {
+        node_type     = 0,
+        solid_type    = 1,
+        shell_type    = 2,
+        particle_type = 3,
+        surface_type  = 4,
+        tiednode_type = 5,
+        sph_type      = 6
+    };
 
 }; // class VelodyneReader
 
