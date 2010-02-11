@@ -38,16 +38,17 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/0.5.4/${VISITARCH})
 ##
 ## Add parallel arguments.
 ##
-SET(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich-gnu/include)
-SET(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich-gnu/include)
-SET(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/shared -L/usr/local/tools/mvapich-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich-gnu/lib/shared")
-SET(VISIT_MPI_LIBS     mpich)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich-gnu/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich-gnu/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/shared -L/usr/local/tools/mvapich-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich-gnu/lib/shared")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
 
 ##
 ## Turn off warnings for deprecated features on g++
 ##
-SET(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC")
-SET(VISIT_C_FLAGS "-Wno-deprecated -fPIC")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-Wno-deprecated -fPIC")
 
 ##
 ## Database reader plugin support libraries
