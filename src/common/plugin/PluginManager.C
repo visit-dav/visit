@@ -624,6 +624,10 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    Eric Brugger, Wed Sep  2 08:06:13 PDT 2009
 //    I corrected a typo in a debug log message.
 //
+//    Brad Whitlock, Fri Feb 12 14:50:55 PST 2010
+//    I added code to catch InvalidPluginException so an invalid libI cannot
+//    take down a program. Now, we just skip those plugins.
+//
 // ****************************************************************************
 
 void
@@ -697,25 +701,33 @@ PluginManager::ReadPluginInfo()
 
         // We're okay, now try to open the plugin info.
         string pluginFile(dirname + VISIT_SLASH_STRING + filename);
-        PluginOpen(pluginFile);
-        const char **VisItPluginVersion =
-                              (const char**)PluginSymbol("VisItPluginVersion");
-        bool success;
-        if (!VisItPluginVersion)
+        bool success = true;
+        TRY
         {
-            pluginsWithNoVersion.push_back(pluginFile);
-            success = false; 
+            PluginOpen(pluginFile);
+            const char **VisItPluginVersion =
+                                 (const char**)PluginSymbol("VisItPluginVersion");
+            if (!VisItPluginVersion)
+            {
+                pluginsWithNoVersion.push_back(pluginFile);
+                success = false; 
+            }
+            else if (!VisItVersionsCompatible(*VisItPluginVersion, VISIT_VERSION))
+            {
+                pluginsWithWrongVersion.push_back(pluginFile);
+                success = false; 
+            }
+            else
+            {
+                success = LoadGeneralPluginInfo();
+            }
+            PluginClose();
         }
-        else if (!VisItVersionsCompatible(*VisItPluginVersion, VISIT_VERSION))
+        CATCH(InvalidPluginException)
         {
-            pluginsWithWrongVersion.push_back(pluginFile);
-            success = false; 
+            success = false;
         }
-        else
-        {
-            success = LoadGeneralPluginInfo();
-        }
-        PluginClose();
+        ENDTRY
 
         if (success)
         {
