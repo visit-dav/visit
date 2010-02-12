@@ -103,6 +103,7 @@ avtIVPDopri5::avtIVPDopri5()
      d = 0.0;
      
      h_max = 0.0;
+     nonsti = 0;
 }
 
 
@@ -131,6 +132,7 @@ avtIVPDopri5::avtIVPDopri5( const double& t_start, const avtVector& y_start )
     h_max = 0.0;
 
     Reset(t_start, y_start);
+    nonsti = 0;
 }
 
 
