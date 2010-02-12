@@ -76,16 +76,36 @@ ADIOSCommonPluginInfo::GetDatabaseType()
 // ****************************************************************************
 avtDatabase *
 ADIOSCommonPluginInfo::SetupDatabase(const char *const *list,
-                                   int nList, int nBlock)
+                                     int nList,
+                                     int nBlock)
 {
-    // ignore any nBlocks past 1
-    int nTimestepGroups = nList / nBlock;
-    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    avtDatabase *db = 0;
+
+    //
+    // Create a file format interface.
+    //
+    avtFileFormatInterface *ffi = ADIOS_CreateFileFormatInterface(list,
+                                                                  nList,
+                                                                  nBlock);
+
+    //
+    // If we created a file format interface, try creating a database.
+    //
+    if (ffi)
     {
-        ffl[i] = new avtADIOSFileFormat(list[i*nBlock]);
+        // Try and create the database using the interface that was created.
+        TRY
+        {
+            db = new avtGenericDatabase(ffi);
+        }
+        CATCH(VisItException)
+        {
+            delete ffi;
+            delete db;
+            RETHROW;
+        }
+        ENDTRY
     }
-    avtMTMDFileFormatInterface *inter 
-           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
-    return new avtGenericDatabase(inter);
+
+    return db;
 }

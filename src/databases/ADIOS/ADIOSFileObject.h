@@ -36,76 +36,115 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                            avtADIOSFileFormat.C                           //
-// ************************************************************************* //
+#ifndef ADIOS_FILE_OBJECT_H
+#define ADIOS_FILE_OBJECT_H
+#include <string>
+#include <vector>
+#include <map>
+#include <visitstream.h>
 
-#include <avtFileFormatInterface.h>
-#include <DebugStream.h>
-#include <VisItException.h>
-#include <ADIOSFileObject.h>
+//NOTE: #include <mpi.h> *MUST* become before the adios includes.
+#ifdef PARALLEL
+#include <mpi.h>
+#else
+#define _NOMPI
+#endif
 
-#include <avtADIOSBasicFileFormat.h>
-
-// ****************************************************************************
-// Method: ADIOS_CreateFileFormatInterface
-//
-// Purpose:
-//   Opens the first ADIOS file in the list and attempts to use the various
-//   file formats to create a file format interface.
-//
-// Arguments:
-//   list   : The list of filenames.
-//   nList  : The number of filenames in the list.
-//   nBlock : The number of files in a timestep.
-//
-// Returns:    A file format interface or 0 if no file format interface
-//             was created.
-//
-// Programmer: Dave Pugmire
-// Creation:   Wed Feb  3 13:10:35 EST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-
-avtFileFormatInterface *
-ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
+extern "C"
 {
-    avtFileFormatInterface *ffi = NULL;
-
-    if(list != NULL || nList > 0)
-    {
-        // Determine the type of reader that we want to use.
-        ADIOSFileObject *f = NULL;
-        int flavor = -1;
-        TRY
-        {
-            f = new ADIOSFileObject(list[0]);
-            if (avtADIOSBasicFileFormat::Identify(f))
-            {
-                debug5<<"Database is avtADIOSBasicFileFormat"<<endl;
-                flavor = 0;
-            }
-        }
-        CATCH(VisItException)
-        {
-            delete f;
-            RETHROW;
-        }
-        ENDTRY
-
-        switch(flavor)
-        {
-          case 0:
-            ffi = avtADIOSBasicFileFormat::CreateInterface(f, list, nList, nBlock);
-            break;
-            
-          default:
-            delete f;
-            return NULL;
-        }
-    }
-
-    return ffi;
+#include <adios_read.h>
 }
+
+template <class T> static inline void
+SwapIndices(int dim, T *arr)
+{
+    if (dim <= 1) return;
+    else if (dim == 2)
+    {
+        T i0 = arr[0], i1 = arr[1];
+        arr[0] = i1; arr[1] = i0;
+    }
+    else if (dim == 3)
+    {
+        T i0 = arr[0], i2 = arr[2];
+        arr[0] = i2; arr[2] = i0;
+    }               
+}
+
+class ADIOSVar;
+class vtkDataArray;
+
+// ****************************************************************************
+//  Class: ADIOSFileObject
+//
+//  Purpose:
+//      Wrapper around an ADIOS file.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Feb 10 16:15:32 EST 2010
+//
+// ****************************************************************************
+
+class ADIOSFileObject
+{
+  public:
+    ADIOSFileObject(const char *fname);
+    virtual ~ADIOSFileObject();
+
+    bool Open();
+    void Close();
+    bool IsOpen() const {return fp != NULL;}
+    int NumTimeSteps();
+    void GetCycles(std::vector<int> &cycles);
+
+    bool ReadVariable(const char *varname,
+                      int ts,
+                      vtkDataArray **array);
+    
+    std::map<std::string, ADIOSVar> variables;
+
+  protected:
+    std::string fileName;
+
+    ADIOS_FILE *fp;
+    ADIOS_GROUP **gps;
+};
+
+
+// ****************************************************************************
+//  Class: ADIOSVar
+//
+//  Purpose:
+//      Wrapper around ADIOS variable.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Feb 10 16:15:32 EST 2010
+//
+// ****************************************************************************
+
+class ADIOSVar
+{
+  public:
+    ADIOSVar()
+    {
+        start[0] = start[1] = start[2] = 0;
+        count[0] = count[1] = count[2] = 0;
+        global[0] = global[1] = global[2] = 0;
+        dim = 0;
+        type=-1; groupIdx=-1, varid=-1, timedim=-1;
+    }
+    ~ADIOSVar() {}
+        
+    int dim, groupIdx, type, varid, timedim;
+    int start[3], count[3], global[3];
+    std::string name;
+        
+    void SwapIndices()
+    {
+        ::SwapIndices(dim, start);
+        ::SwapIndices(dim, count);
+        ::SwapIndices(dim, global);
+    }
+};
+
+#endif

@@ -9,9 +9,19 @@
     <FilePatterns>
       *.bp
     </FilePatterns>
+    <Files components="M">
+      avtADIOSFileFormat.C
+      avtADIOSBasicFileFormat.C
+      ADIOSFileObject.C
+    </Files>
     <LIBS components="M">
       -ladiosread_nompi
     </LIBS>
+    <Files components="E">
+      avtADIOSFileFormat.C
+      avtADIOSBasicFileFormat.C
+      ADIOSFileObject.C
+    </Files>
     <LIBS components="ESer">
       -ladiosread_nompi
     </LIBS>
