@@ -65,7 +65,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef PARALLEL
 #include <mpi.h>
+#endif
 
 /* Is the simulation in run mode (not waiting for VisIt input) */
 static int    runFlag = 0;

@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -35,54 +35,12 @@
 # DAMAGE.
 #
 # Modifications:
-#
+#   
 #****************************************************************************/
 
-IF(VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(convert)
-ELSE(VISIT_DBIO_ONLY)
-    # We always want these to be built
-    ADD_SUBDIRECTORY(annotations)
-    ADD_SUBDIRECTORY(convert)
-    ADD_SUBDIRECTORY(embedviewer)
-    ADD_SUBDIRECTORY(imagetools)
-    IF(${MILI_FOUND})
-        ADD_SUBDIRECTORY(makemili)
-    ENDIF(${MILI_FOUND})
-    IF(NOT WIN32)
-        ADD_SUBDIRECTORY(mcurvit)
-    ENDIF(NOT WIN32)
-    ADD_SUBDIRECTORY(mpeg2encode)
-    ADD_SUBDIRECTORY(protocol)
-    IF(WIN32)
-       ADD_SUBDIRECTORY(qtssh)
-    ENDIF(WIN32)
-    IF(VISIT_PYTHON_SCRIPTING)
-        ADD_SUBDIRECTORY(writer)
-    ENDIF(VISIT_PYTHON_SCRIPTING)
-    ADD_SUBDIRECTORY(xml)
-    ADD_SUBDIRECTORY(xmledit)
-
-    ADD_SUBDIRECTORY(DataManualExamples)
-ENDIF(VISIT_DBIO_ONLY)
-
-# Maybe create a separate build system for all of these...
-# ADD_SUBDIRECTORY(DataManualExamples)
-
-# These do not need to be built:
-# antialiased_shadows
-# avt_do_add
-# avtprep
-# clidriver
-# clipeditor
-# curv3dprep
-# doxygenate
-# escan
-# surfcomp
-# vtk_debug_parser
-
-# These should be removed because they are obsolete:
-# windowmaker
-# mpeg_encode
-
-
+# Just Apple until I can test Linux
+IF(APPLE)
+    ADD_SUBDIRECTORY(CreatingCompatible)
+    ADD_SUBDIRECTORY(CreatingCompatibleAdvanced)
+    ADD_SUBDIRECTORY(Simulations)
+ENDIF(APPLE)

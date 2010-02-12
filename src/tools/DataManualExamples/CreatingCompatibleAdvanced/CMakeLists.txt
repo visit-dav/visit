@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -35,54 +35,64 @@
 # DAMAGE.
 #
 # Modifications:
-#
+#   
 #****************************************************************************/
 
-IF(VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(convert)
-ELSE(VISIT_DBIO_ONLY)
-    # We always want these to be built
-    ADD_SUBDIRECTORY(annotations)
-    ADD_SUBDIRECTORY(convert)
-    ADD_SUBDIRECTORY(embedviewer)
-    ADD_SUBDIRECTORY(imagetools)
-    IF(${MILI_FOUND})
-        ADD_SUBDIRECTORY(makemili)
-    ENDIF(${MILI_FOUND})
-    IF(NOT WIN32)
-        ADD_SUBDIRECTORY(mcurvit)
-    ENDIF(NOT WIN32)
-    ADD_SUBDIRECTORY(mpeg2encode)
-    ADD_SUBDIRECTORY(protocol)
-    IF(WIN32)
-       ADD_SUBDIRECTORY(qtssh)
-    ENDIF(WIN32)
-    IF(VISIT_PYTHON_SCRIPTING)
-        ADD_SUBDIRECTORY(writer)
-    ENDIF(VISIT_PYTHON_SCRIPTING)
-    ADD_SUBDIRECTORY(xml)
-    ADD_SUBDIRECTORY(xmledit)
+INCLUDE_DIRECTORIES(
+${CMAKE_CURRENT_SOURCE_DIR}
+)
 
-    ADD_SUBDIRECTORY(DataManualExamples)
-ENDIF(VISIT_DBIO_ONLY)
+# This target depends on all the examples so we make this target if we want
+# to build all the examples.
+IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
+    ADD_CUSTOM_TARGET(all_adv_examples)
+ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 
-# Maybe create a separate build system for all of these...
-# ADD_SUBDIRECTORY(DataManualExamples)
+FUNCTION(ADD_SILO_EXAMPLE target)
+    IF(SILO_FOUND)
+        ADD_EXECUTABLE(adv_example_${target} ${ARGN})
+        TARGET_LINK_LIBRARIES(adv_example_${target} ${SILO_LIB})
 
-# These do not need to be built:
-# antialiased_shadows
-# avt_do_add
-# avtprep
-# clidriver
-# clipeditor
-# curv3dprep
-# doxygenate
-# escan
-# surfcomp
-# vtk_debug_parser
+        FOREACH(libdir ${SILO_LIBRARY_DIR})
+            SET(siloL ${siloL} -L${libdir})
+        ENDFOREACH(libdir)
+        ADD_TARGET_LINK_FLAGS(adv_example_${target} ${siloL})
 
-# These should be removed because they are obsolete:
-# windowmaker
-# mpeg_encode
+        FOREACH(inc ${SILO_INCLUDE_DIR})
+            SET(siloinc ${siloinc} -I${inc})
+        ENDFOREACH(inc)
+        ADD_TARGET_COMPILE_FLAGS(adv_example_${target} ${siloinc})
 
+        SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES
+            OUTPUT_NAME ${target}
+            RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced
+        )
+        IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
+            SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES
+                EXCLUDE_FROM_ALL TRUE
+            )
+            ADD_DEPENDENCIES(all_adv_examples adv_example_${target})
+        ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
+    ENDIF(SILO_FOUND)
+ENDFUNCTION(ADD_SILO_EXAMPLE)
 
+##
+## Silo examples
+##
+ADD_SILO_EXAMPLE(dataextents dataextents.c)
+ADD_SILO_EXAMPLE(ghostzonesinfile ghostzonesinfile.c)
+ADD_SILO_EXAMPLE(mixedmaterials mixedmaterials.c)
+ADD_SILO_EXAMPLE(spatialextents spatialextents.c)
+ADD_SILO_EXAMPLE(vectorvar vectorvar.c)
+
+##
+## Silo fortran examples
+##
+IF(VISIT_FORTRAN)
+    ADD_SILO_EXAMPLE(fdataextents fdataextents.f)
+    ADD_SILO_EXAMPLE(fghostzonesinfile fghostzonesinfile.f)
+    ADD_SILO_EXAMPLE(fmixedmaterials fmixedmaterials.f)
+    ADD_SILO_EXAMPLE(fmultimat fmultimat.f)
+    ADD_SILO_EXAMPLE(fspatialextents fspatialextents.f)
+    ADD_SILO_EXAMPLE(fvectorvar fvectorvar.f)
+ENDIF(VISIT_FORTRAN)
