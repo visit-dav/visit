@@ -42,6 +42,7 @@
 class avtLookupTable;
 class vtkPolyData;
 class vtkDataArray;
+class vtkCamera;
 class StreamlineAttributes;
 struct avtViewInfo;
 
@@ -56,6 +57,11 @@ struct avtViewInfo;
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  3, 2006
+//
+//  Modifications:
+//
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
 //
 // ****************************************************************************
 class avtStreamlineRendererImplementation
@@ -72,6 +78,7 @@ class avtStreamlineRendererImplementation
     virtual void   Render(vtkPolyData *data, const StreamlineAttributes&,
                           bool immediateModeRendering,
                           double vMin, double vMax,
+                          vtkCamera *camera,
                           float ambient_coeff,
                           float spec_coeff, float spec_power,
                           float spec_r, float spec_g, float spec_b, 
