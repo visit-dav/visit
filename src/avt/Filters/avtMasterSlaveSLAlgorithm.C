@@ -492,6 +492,9 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Better initial SL distribution.
 //
+//   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
+//   Wrong initial sizes for status and prevStatus.
+//
 // ****************************************************************************
 
 void
@@ -537,8 +540,8 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
     done = false;
     slaveUpdate = false;
     masterUpdate = false;
-    status.resize(NUM_DOMAINS,0);
-    prevStatus.resize(NUM_DOMAINS,0);
+    status.resize(NUM_DOMAINS+1,0);
+    prevStatus.resize(NUM_DOMAINS+1,0);
 }
 
 // ****************************************************************************
@@ -1534,6 +1537,9 @@ avtMasterSLAlgorithm::Case1(int &counter)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
+//   Fix memory leak of domCnts.
+//
 // ****************************************************************************
 
 static bool domCntCompare( const int *a, const int *b) { return a[1] > b[1]; }
@@ -1621,7 +1627,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
         }
             
         for (int i = 0; i < domCnts.size(); i++)
-            delete domCnts[i];
+            delete [] domCnts[i];
 
         if (cnt > 0)
         {
@@ -1850,6 +1856,9 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Limit the number of case5 messages that are sent.
 //
+//   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
+//   Fix memory leak of overWorkedCnt.
+//
 // ****************************************************************************
 
 void
@@ -1871,7 +1880,10 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
         return;
     sort(overWorkedCnt.begin(), overWorkedCnt.end(), domCntCompare);
     for (int i = 0; i < overWorkedCnt.size(); i++)
+    {
         overWorked.push_back(overWorkedCnt[i][0]);
+        delete [] overWorkedCnt[i];
+    }
 
     //Get slackers with no work and no unloaded domains.
     for (int i = 0; i < slaveInfo.size(); i++)
