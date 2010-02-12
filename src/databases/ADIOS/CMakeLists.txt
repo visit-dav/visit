@@ -14,12 +14,16 @@ SET(LIBM_SOURCES
 ADIOSMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtADIOSFileFormat.C
+avtADIOSBasicFileFormat.C
+ADIOSFileObject.C
 )
 
 SET(LIBE_SOURCES
 ADIOSEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtADIOSFileFormat.C
+avtADIOSBasicFileFormat.C
+ADIOSFileObject.C
 )
 
 INCLUDE_DIRECTORIES(
