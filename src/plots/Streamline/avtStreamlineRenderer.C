@@ -156,6 +156,9 @@ avtStreamlineRenderer::New()
 //
 //  Modifications:
 //
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Pass in camera to do transparency sorting.
+//
 // ****************************************************************************
 
 void
@@ -187,7 +190,6 @@ avtStreamlineRenderer::Render(vtkDataSet *ds)
     }
     vtkPolyData *polydata = (vtkPolyData*)ds;
 
-
     int winsize[2];
     winsize[0] = VTKRen->GetVTKWindow()->GetSize()[0];
     winsize[1] = VTKRen->GetVTKWindow()->GetSize()[1];
@@ -196,6 +198,7 @@ avtStreamlineRenderer::Render(vtkDataSet *ds)
                                    atts,
                                    immediateModeRendering,
                                    varmin, varmax,
+                                   VTKRen->GetActiveCamera(),
                                    ambient_coeff,
                                    spec_coeff, spec_power,
                                    spec_r, spec_g, spec_b, winsize);

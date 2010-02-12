@@ -47,9 +47,11 @@
 #include <StreamlineAttributes.h>
 #include <string>
 
-#define MAX_DETAIL_LEVELS 5
+#define MAX_DETAIL_LEVELS 4
 
 class avtGLSLProgram;
+class vtkCamera;
+class vtkAppendPolyData;
 
 // ****************************************************************************
 //  Class: avtOpenGLStreamlineRenderer
@@ -65,6 +67,9 @@ class avtGLSLProgram;
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add drawGeomHead, ramp opacity and illuminated line lighting model.
 //
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
+//
 // ****************************************************************************
 
 class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
@@ -78,13 +83,13 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
                                    const StreamlineAttributes&,
                                    bool immediateModeRendering,
                                    double vMin, double vMax,
+                                   vtkCamera *camera,
                                    float ambient_coeff,
                                    float spec_coeff, float spec_power,
                                    float spec_r, float spec_g, float spec_b,
                                    const int *);
 
     virtual void   InvalidateColors();
-
     virtual void   SetLevelsLUT(avtLookupTable *);
 
     unsigned int displaylistid;
@@ -99,12 +104,15 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     float spec_g;
     float spec_b;
     avtLookupTable *levelsLUT;
+    vtkCamera *camera;
+    vtkAppendPolyData *appendForTranspPolys;
 
     float *spherePts[MAX_DETAIL_LEVELS];
 
     bool spheres_calculated;
     void CalculateSpherePts();
     void DrawSphereAsQuads(float, float, float, float r, int);
+    vtkPolyData * GenerateSpherePolys(float, float, float, float r, int, float, float, float);
 
     std::string  colorTableName;
     std::vector<unsigned char> colorTable;

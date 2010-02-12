@@ -57,6 +57,7 @@
 #include <vtkPolyData.h>
 #include <vtkTubeFilter.h>
 #include <vtkRibbonFilter.h>
+#include <vtkDepthSortPolyData.h>
 #include <vtkPolyLine.h>
 #include <vtkFloatArray.h>
 #include <vtkAppendPolyData.h>
@@ -65,6 +66,8 @@
 #include <avtLookupTable.h>
 #include <avtGLEWInitializer.h>
 #include <avtGLSLProgram.h>
+#include <vtkCamera.h>
+#include <vtkStripper.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -104,6 +107,7 @@ static const char *GLSL_illuminated_lines_fragment_program_source =
 "    gl_FragColor.a = gl_Color.a;"
 "}";
 
+
 // ****************************************************************************
 //  Constructor: avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer
 //
@@ -127,16 +131,16 @@ avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer()
     colorTableName = "";
     colorTable.resize(0);
     levelsLUT = NULL;
-
+    appendForTranspPolys = NULL;
+    
     for (int i = 0; i < MAX_DETAIL_LEVELS; i++)
         spherePts[i] = NULL;
         
-    shader = new avtGLSLProgram( "Illuminated Lines" );
-    
-    shader->AttachShaderFromString( GL_VERTEX_SHADER, 
-                                    GLSL_illuminated_lines_vertex_program_source );
-    shader->AttachShaderFromString( GL_FRAGMENT_SHADER, 
-                                    GLSL_illuminated_lines_fragment_program_source );                                  
+    shader = new avtGLSLProgram("Illuminated Lines");
+    shader->AttachShaderFromString(GL_VERTEX_SHADER,
+                                   GLSL_illuminated_lines_vertex_program_source);
+    shader->AttachShaderFromString(GL_FRAGMENT_SHADER,
+                                   GLSL_illuminated_lines_fragment_program_source);
 }
 
 
@@ -226,6 +230,9 @@ avtOpenGLStreamlineRenderer::SetLevelsLUT(avtLookupTable *lut)
 //    Removed the display list generation since Mesa 7.5 does not support
 //    shader calls inside display lists.
 //
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Pass in camera to do transparency sorting.
+//
 // ****************************************************************************
 
 void
@@ -233,11 +240,13 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
                                     const StreamlineAttributes &a,
                                     bool immediateModeRendering,
                                     double vMin, double vMax,
+                                    vtkCamera *cam,
                                     float _ambient_coeff,
                                     float _spec_coeff, float _spec_power,
                                     float _spec_r, float _spec_g, float _spec_b,
                                     const int *winsize)
 {
+    camera = cam;
 #if 0
     // If nothing changed, and we have display lists, just replay it.
     if (immediateModeRendering &&
@@ -348,11 +357,21 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add drawHead geom.
 //
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
+//
 // ****************************************************************************
 
 void
 avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
 {
+    if (atts.GetOpacityType() != StreamlineAttributes::None)
+        appendForTranspPolys = vtkAppendPolyData::New();
+    
+    if (atts.GetShowSeeds())
+        DrawSeedPoints(data);
+    if (atts.GetShowHeads())
+        DrawHeadGeom(data);
     if (atts.GetDisplayMethod() == StreamlineAttributes::Lines)
         DrawAsLines(data);
     else if (atts.GetDisplayMethod() == StreamlineAttributes::Tubes)
@@ -360,10 +379,13 @@ avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
     else if (atts.GetDisplayMethod() == StreamlineAttributes::Ribbons)
         DrawAsRibbons(data);
 
-    if (atts.GetShowSeeds())
-        DrawSeedPoints(data);
-    if (atts.GetShowHeads())
-        DrawHeadGeom(data);
+    if (appendForTranspPolys)
+    {
+        appendForTranspPolys->Update();
+        DrawPolyData(appendForTranspPolys->GetOutput());
+        appendForTranspPolys->Delete();
+        appendForTranspPolys = NULL;
+    }
 }
 
 // ****************************************************************************
@@ -458,7 +480,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
                 v[1] = v0[1] + t0*(v1[1]-v0[1]);
                 v[2] = v0[2] + t0*(v1[2]-v0[2]);
 
-                glNormal3fv( v );
+                glNormal3fv(v);
             }
 
             glVertex3fv(p);
@@ -521,7 +543,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
                 v[1] = v0[1] + t1*(v1[1]-v0[1]);
                 v[2] = v0[2] + t1*(v1[2]-v0[2]);
                 
-                glNormal3fv( v );
+                glNormal3fv(v);
             }
             
             glVertex3fv(p);
@@ -534,7 +556,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 
     glEnable(GL_LIGHTING);
 
-    if( illuminated )
+    if (illuminated)
         shader->Disable();
 }
 
@@ -552,6 +574,9 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 //
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Changed some attribute names.
+//
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
 //
 // ****************************************************************************
 
@@ -595,7 +620,12 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
     
     //Create the tube polydata, and draw.
     tube->Update();
-    DrawPolyData(tube->GetOutput());
+
+    if (appendForTranspPolys)
+        appendForTranspPolys->AddInput(tube->GetOutput());
+    else
+        DrawPolyData(tube->GetOutput());
+    
     tube->Delete();
 }
 
@@ -613,6 +643,9 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 //
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Changed some attribute names.
+//
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
 //
 // ****************************************************************************
 
@@ -696,7 +729,11 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
         ribbons->SetInput(pd);
         ribbons->Update();
         
-        DrawPolyData(ribbons->GetOutput());
+        if (appendForTranspPolys)
+            appendForTranspPolys->AddInput(ribbons->GetOutput());
+        else
+            DrawPolyData(ribbons->GetOutput());
+        
         pd->Delete();
         ribbons->Delete();
     }
@@ -716,6 +753,9 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
 //
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Changed some attribute names.
+//
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
 //
 // ****************************************************************************
 
@@ -743,11 +783,21 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
         segptr++; //Now segptr points at vtx0.
 
         points->GetPoint(segptr[0], pt);
-        
-        glBegin(GL_QUADS);
-        SetColor(s[*segptr], (o?o[*segptr]:1.0));
-        DrawSphereAsQuads(pt[0],pt[1], pt[2], rad, quality);
-        glEnd();
+
+        if (appendForTranspPolys)
+        {
+            vtkPolyData *pd = GenerateSpherePolys(pt[0], pt[1], pt[2], rad, quality,
+                                                  s[*segptr], (o?o[*segptr]:1.0), 0.0);
+            appendForTranspPolys->AddInput(pd);
+            pd->Delete();
+        }
+        else
+        {
+            glBegin(GL_QUADS);
+            SetColor(s[*segptr], (o?o[*segptr]:1.0));
+            DrawSphereAsQuads(pt[0],pt[1], pt[2], rad, quality);
+            glEnd();
+        }
         segptr += nPts;
     }
 }
@@ -761,6 +811,9 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //  Creation:    January 20, 2010
 //
 //  Modifications:
+//
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
 //
 // ****************************************************************************
 
@@ -815,10 +868,23 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             scalar = s[*(segptr+nPts-1)];
         }
         
-        glBegin(GL_QUADS);
-        SetColor(scalar, (o?o[*segptr]:1.0));
-        DrawSphereAsQuads(endPt[0],endPt[1], endPt[2], rad, quality);
-        glEnd();
+        if (appendForTranspPolys)
+        {
+            float param = atts.GetTermination();
+            if (atts.GetDisplayEndFlag())
+                param = atts.GetDisplayEnd();
+            vtkPolyData *pd = GenerateSpherePolys(endPt[0], endPt[1], endPt[2], rad, quality,
+                                                  scalar, (o?o[*segptr]:1.0), param);
+            appendForTranspPolys->AddInput(pd);
+            pd->Delete();
+        }
+        else
+        {
+            glBegin(GL_QUADS);
+            SetColor(scalar, (o?o[*segptr]:1.0));
+            DrawSphereAsQuads(endPt[0],endPt[1], endPt[2], rad, quality);
+            glEnd();
+        }
         segptr += nPts;
     }
 }
@@ -1042,11 +1108,35 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Ramp opacity.
 //
+//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//  Support for transparency sorting.
+//
 // ****************************************************************************
 
 void
-avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
+avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *input)
 {
+    if (input->GetPoints() == NULL)
+        return;
+
+    input->Update();
+    vtkPolyData *poly = input;
+    vtkDepthSortPolyData *sorter = NULL;
+
+    if (appendForTranspPolys)
+    {
+        sorter = vtkDepthSortPolyData::New();
+        sorter->SetCamera(camera);
+        sorter->SortScalarsOn();
+        sorter->SetDirectionToFrontToBack();
+        sorter->SetDepthSortModeToBoundsCenter();
+        
+        sorter->SetInput(input);
+        sorter->Update();
+        poly = sorter->GetOutput();
+    }
+
+
     float *p = (float *)poly->GetPoints()->GetVoidPointer(0);
     float *n = (float *)poly->GetPointData()->GetNormals()->GetVoidPointer(0);
     float *s = (float *)poly->GetPointData()->GetArray(avtStreamlinePolyDataFilter::colorvarArrayName.c_str())->GetVoidPointer(0);
@@ -1059,7 +1149,7 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
     vtkIdType *ptIds = strips->GetPointer();
     vtkIdType *endPtIds = ptIds + strips->GetNumberOfConnectivityEntries();
     float alpha = 1.0;
-    
+
     while (ptIds < endPtIds)
     {
         int nPts = *ptIds;
@@ -1083,6 +1173,9 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *poly)
         }
         glEnd();
     }
+
+    if (sorter)
+        sorter->Delete();
 }
 
 // ****************************************************************************
@@ -1293,10 +1386,10 @@ void avtOpenGLStreamlineRenderer::CalculateSpherePts()
 
 void
 avtOpenGLStreamlineRenderer::DrawSphereAsQuads(float x0,
-                                             float y0,
-                                             float z0,
-                                             float r,
-                                             int detail)
+                                               float y0,
+                                               float z0,
+                                               float r,
+                                               int detail)
 {
     CalculateSpherePts();
 
@@ -1332,6 +1425,127 @@ avtOpenGLStreamlineRenderer::DrawSphereAsQuads(float x0,
             glVertex3f(x0 + r*v10[0], y0 + r*v10[1], z0 + r*v10[2]);
         }
     }
+}
+
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::GenerateSpherePolys
+//
+//  Purpose:
+//    
+//  Programmer:  Dave Pugmire
+//  Creation:    February 12, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtOpenGLStreamlineRenderer::GenerateSpherePolys(float x0,
+                                                 float y0,
+                                                 float z0,
+                                                 float r,
+                                                 int detail,
+                                                 float scalar,
+                                                 float opacity,
+                                                 float param)
+{
+    CalculateSpherePts();
+
+    int qdetail = sphereQualityLevels[detail][0];
+    int hdetail = sphereQualityLevels[detail][1];
+
+    vtkPoints *pts = vtkPoints::New();
+    pts->Allocate(5000,10000);
+    vtkCellArray *polys = vtkCellArray::New();
+    vtkFloatArray *norms = vtkFloatArray::New();
+    vtkFloatArray *scalars = vtkFloatArray::New();
+    scalars->SetName(avtStreamlinePolyDataFilter::colorvarArrayName.c_str());
+    vtkFloatArray *params = vtkFloatArray::New();
+    params->SetName(avtStreamlinePolyDataFilter::paramArrayName.c_str());
+    
+    norms->SetNumberOfComponents(3);
+    norms->SetName("Normals");
+    polys->Allocate(10000,20000);
+    vtkIdType tri[3], ids[4];
+
+    for (int a=0; a<qdetail; a++)
+    {
+        int a0 = a;
+        int a1 = a+1;
+        for (int b=0; b<hdetail; b++)
+        {
+            int b0 = b;
+            int b1 = b+1;
+
+            float *v00, *v01, *v10, *v11;
+
+            v00 = &(spherePts[detail][(a0 * (hdetail+1) + b0)*3]);
+            v01 = &(spherePts[detail][(a0 * (hdetail+1) + b1)*3]);
+            v10 = &(spherePts[detail][(a1 * (hdetail+1) + b0)*3]);
+            v11 = &(spherePts[detail][(a1 * (hdetail+1) + b1)*3]);
+
+            float pt[3];
+            pt[0] = x0 + r*v00[0]; pt[1] = y0 + r*v00[1]; pt[2] = z0 + r*v00[2];
+            ids[0] = pts->InsertNextPoint(pt);
+
+            pt[0] = x0 + r*v01[0]; pt[1] = y0 + r*v01[1]; pt[2] = z0 + r*v01[2];
+            ids[1] = pts->InsertNextPoint(pt);
+            
+            pt[0] = x0 + r*v11[0]; pt[1] = y0 + r*v11[1]; pt[2] = z0 + r*v11[2];
+            ids[2] = pts->InsertNextPoint(pt);
+
+            pt[0] = x0 + r*v10[0]; pt[1] = y0 + r*v10[1]; pt[2] = z0 + r*v10[2];
+            ids[3] = pts->InsertNextPoint(pt);
+
+            norms->InsertNextTuple(v00);
+            norms->InsertNextTuple(v01);
+            norms->InsertNextTuple(v11);
+            norms->InsertNextTuple(v10);
+
+            for (int i = 0; i < 4; i++)
+            {
+                scalars->InsertNextTuple1(scalar);
+                params->InsertNextTuple1(param);
+            }
+            
+            tri[0] = ids[1];
+            tri[1] = ids[2];
+            tri[2] = ids[0];
+            polys->InsertNextCell(3, tri);
+            
+            tri[0] = ids[2];
+            tri[1] = ids[3];
+            tri[2] = ids[0];
+            polys->InsertNextCell(3, tri);
+        }
+    }
+    
+    vtkPolyData *pd = vtkPolyData::New();
+    polys->Squeeze();
+
+    pd->SetPoints(pts);
+    pd->SetPolys(polys);
+    pd->GetPointData()->SetNormals(norms);
+    pd->GetPointData()->AddArray(scalars);
+    pd->GetPointData()->AddArray(params);
+
+    pts->Delete();
+    polys->Delete();
+    scalars->Delete();
+    params->Delete();
+    norms->Delete();
+
+    //tri strip them.
+    vtkStripper *stripper = vtkStripper::New();
+    stripper->SetInput(pd);
+    stripper->Update();
+    
+    pd->Delete();
+    vtkPolyData *output = stripper->GetOutput();
+    output->Register(NULL);
+    stripper->Delete();
+    
+    return output;
 }
 
 
@@ -1415,6 +1629,17 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
     return modifiedStartEnd;
 }
 
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::ComputueRampOpacity
+//
+//  Purpose:
+//    
+//  Programmer:  Dave Pugmire
+//  Creation:    February 12, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
 
 float
 avtOpenGLStreamlineRenderer::ComputeRampOpacity(const float &p) const
@@ -1428,7 +1653,6 @@ avtOpenGLStreamlineRenderer::ComputeRampOpacity(const float &p) const
     float o = (p-p0) / (p1-p0);
     //cout<<"p: "<<p<<" --> "<<o<<" ["<<p0<<" "<<p1<<"]"<<endl;
     //if (o < 0.0 || o > 1.0)
-    //cout<<"         BARFFFFFFFF"<<endl;
 
     if (o < 0.0)
         o = 0.0;
