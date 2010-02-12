@@ -92,7 +92,9 @@ ENDFUNCTION(ADD_SILO_EXAMPLE)
 ## BOV examples
 ##
 ADD_EXAMPLE(bov bov.c)
-ADD_EXAMPLE(fbov fbov.f)
+IF(VISIT_FORTRAN)
+    ADD_EXAMPLE(fbov fbov.f)
+ENDIF(VISIT_FORTRAN)
 
 ##
 ## Silo examples
