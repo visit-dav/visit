@@ -748,10 +748,10 @@ IF(VISIT_PARALLEL)
             ELSE(VISIT_MPI_LD_FLAGS)
                 SET(VISIT_PARALLEL_LINKER_FLAGS "" CACHE STRING "Parallel LDFLAGS")
             ENDIF(VISIT_MPI_LD_FLAGS)
-        ELSE(VISIT_MPI_LIBS)
+        ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
             MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS.
                     You may also define VISIT_MPI_LD_FLAGS, VISIT_MPI_CXX_FLAGS." )
-        ENDIF(VISIT_MPI_LIBS)
+        ENDIF(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
     ENDIF(VISIT_MPI_COMPILER)
 
     MESSAGE(STATUS "Parallel version of VisIt")
