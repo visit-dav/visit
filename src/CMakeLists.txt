@@ -117,6 +117,7 @@ ENDIF (NOT WIN32)
 #-----------------------------------------------------------------------------
 SET(CMAKE_C_COMPILER ${VISIT_C_COMPILER})
 SET(CMAKE_CXX_COMPILER ${VISIT_CXX_COMPILER})
+SET(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
 
 #-----------------------------------------------------------------------------
 # VisIt project. Declare the project after including the input because
@@ -671,37 +672,51 @@ IF(VISIT_FORTRAN)
     ENABLE_LANGUAGE(Fortran)
 ENDIF(VISIT_FORTRAN)
 
+FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags)
+    # Unset any variables that may have been set before by FindMPI
+    UNSET(MPI_FOUND CACHE)
+    UNSET(MPI_INCLUDE_PATH CACHE)
+    UNSET(MPI_LIB CACHE)
+    UNSET(MPI_COMPILE_FLAGS CACHE)
+    UNSET(MPI_LIBRARIES CACHE)
+    UNSET(MPI_LIBRARY CACHE)
+    UNSET(MPI_EXTRA_LIBRARY CACHE)
+    UNSET(MPI_LINK_FLAGS CACHE)
+    UNSET(MPI_COMPILER CACHE)
+
+    # Set the compiler and call FindMPI
+    SET(MPI_COMPILER ${COMP})
+    INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
+
+    # Return the values
+    IF(NOT MPI_FOUND)
+        MESSAGE(FATAL_ERROR  "Failed to setup MPI using compiler wrapper: ${COMP}")
+    ELSE(NOT MPI_FOUND)
+        SET(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
+        SET(${mflags}  "-DPARALLEL -I${MPI_INCLUDE_PATH} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
+        SET(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
+    ENDIF(NOT MPI_FOUND)
+ENDFUNCTION(DETECT_MPI_SETTINGS)
+
 IF(VISIT_PARALLEL)
     IF(VISIT_MPI_COMPILER)
         MESSAGE(STATUS "Setting up MPI using compiler wrapper")
-        SET(MPI_COMPILER ${VISIT_MPI_COMPILER})
-         # Invoke cmake's built in module for locating & setting up MPI options.
-        INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-        IF(NOT MPI_FOUND)
-            MESSAGE(FATAL_ERROR  "Failed to setup MPI using compiler wrapper: ${VISIT_MPI_COMPILER}")
-        ELSE(NOT MPI_FOUND)
-            SET(VISIT_PARALLEL_LIBS          ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-            SET(VISIT_PARALLEL_CFLAGS        "-DPARALLEL -I${MPI_INCLUDE_PATH} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel CFLAGS")
-            SET(VISIT_PARALLEL_CXXFLAGS      "-DPARALLEL -I${MPI_INCLUDE_PATH} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel CXXFLAGS")
-            SET(VISIT_PARALLEL_LINKER_FLAGS  "${MPI_LINK_FLAGS}" CACHE STRING "Parallel LDFLAGS")
-        ENDIF(NOT MPI_FOUND)
 
-        # If we're enabling parallel Fortran pieces then detect Fortran MPI settings
+        # Detect the MPI settings that C++ wants
+        DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER} 
+            VISIT_PARALLEL_LIBS
+            VISIT_PARALLEL_CFLAGS
+            VISIT_PARALLEL_LINKER_FLAGS
+        )
+        SET(VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CFLAGS} CACHE STRING "Parallel CXXFLAGS")
+
+        # Detect the MPI settings that Fortran wants
         IF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
-            UNSET(MPI_FOUND CACHE)
-            UNSET(MPI_INCLUDE_PATH CACHE)
-            UNSET(MPI_COMPILE_FLAGS CACHE)
-            UNSET(MPI_LIBRARIES CACHE)
-            UNSET(MPI_LIBRARY CACHE)
-            SET(MPI_COMPILER ${VISIT_MPI_FORTRAN_COMPILER} CACHE STRING "")
-            INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-            IF(NOT MPI_FOUND)
-                MESSAGE(FATAL_ERROR  "Failed to setup MPI using compiler wrapper: ${VISIT_MPI_FORTRAN_COMPILER}")
-            ELSE(NOT MPI_FOUND)
-                SET(VISIT_PARALLEL_FORTRAN_LIBS          ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-                SET(VISIT_PARALLEL_FORTRAN_FLAGS      "-DPARALLEL -I${MPI_INCLUDE_PATH} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel CXXFLAGS")
-                SET(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS  "${MPI_LINK_FLAGS}" CACHE STRING "Parallel LDFLAGS")
-            ENDIF(NOT MPI_FOUND)
+            DETECT_MPI_SETTINGS(${VISIT_MPI_FORTRAN_COMPILER} 
+                VISIT_PARALLEL_FORTRAN_LIBS
+                VISIT_PARALLEL_FORTRAN_FLAGS
+                VISIT_PARALLEL_FORTRAN_LINKER_FLAGS
+            )
         ENDIF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
 
     ELSE(VISIT_MPI_COMPILER)

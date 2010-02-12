@@ -41,6 +41,11 @@
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_BINARY_DIR}/include
+${SILO_INCLUDE_DIR}
+)
+
+LINK_DIRECTORIES(
+${SILO_LIBRARY_DIR}
 )
 
 # This target depends on all the examples so we make this target if we want
@@ -51,6 +56,7 @@ ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 
 FUNCTION(ADD_EXAMPLE target)
     ADD_EXECUTABLE(example_${target} ${ARGN})
+    TARGET_LINK_LIBRARIES(example_${target} m)
     SET_TARGET_PROPERTIES(example_${target} PROPERTIES
         OUTPUT_NAME ${target}
         RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible
@@ -63,20 +69,12 @@ FUNCTION(ADD_EXAMPLE target)
     ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 ENDFUNCTION(ADD_EXAMPLE)
 
+# We add stdc++ because Silo contains C++. We can't use a C++ linker because
+# we might be linking Fortran so it's easiest to just link with the C++ lib.
 FUNCTION(ADD_SILO_EXAMPLE target)
     IF(SILO_FOUND)
         ADD_EXECUTABLE(example_${target} ${ARGN})
-        TARGET_LINK_LIBRARIES(example_${target} ${SILO_LIB})
-        FOREACH(libdir ${SILO_LIBRARY_DIR})
-            SET(siloL ${siloL} -L${libdir})
-        ENDFOREACH(libdir)
-        ADD_TARGET_LINK_FLAGS(example_${target} ${siloL})
-
-        FOREACH(inc ${SILO_INCLUDE_DIR})
-            SET(siloinc ${siloinc} -I${inc})
-        ENDFOREACH(inc)
-        ADD_TARGET_COMPILE_FLAGS(example_${target} ${siloinc})
-
+        TARGET_LINK_LIBRARIES(example_${target} ${SILO_LIB} stdc++)
         SET_TARGET_PROPERTIES(example_${target} PROPERTIES
             OUTPUT_NAME ${target}
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible

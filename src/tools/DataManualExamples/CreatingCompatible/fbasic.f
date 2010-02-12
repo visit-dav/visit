@@ -36,7 +36,7 @@ c DAMAGE.
 c
 c-----------------------------------------------------------------------------
 
-      progam main
+      program main
       implicit none
       include "silo.inc"
       integer dbfile, ierr
@@ -46,7 +46,7 @@ c The 11 and 22 arguments represent the lengths of strings
      . "Comment about the data", 22, DB_HDF5, dbfile)
 
       if(dbfile.eq.-1) then
-          write (6,*) `Could not create Silo file!\n'
+          write (6,*) 'Could not create Silo file!\n'
           goto 10000
       endif
 

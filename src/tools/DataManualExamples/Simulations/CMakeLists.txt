@@ -67,12 +67,15 @@ ENDFUNCTION(SET_SIMULATION_PROPERTIES)
 # Add the --export-dynamic flag for Linux gcc so SimV1 simulations will expose 
 # their callback functions.
 FUNCTION(ADD_EXPORT_DYNAMIC_LINK_FLAGS target)
-    # We need a linker test for --export-dynamic support.
-    IF(CMAKE_COMPILER_IS_GNUCXX AND NOT APPLE)
-        MESSAGE("CMAKE_COMPILER_IS_GNUCXX = ${CMAKE_COMPILER_IS_GNUCXX}")
-        ADD_TARGET_LINK_FLAGS(${target} -Wl,--export-dynamic)
-    ENDIF(CMAKE_COMPILER_IS_GNUCXX AND NOT APPLE)
+    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
+        ENABLE_EXPORTS ON
+    )
 ENDFUNCTION(ADD_EXPORT_DYNAMIC_LINK_FLAGS)
+
+# We need more libraries on Linux
+IF(NOT APPLE)
+    SET(EXTRA_SIM_LIBS dl m)
+ENDIF(NOT APPLE)
 
 ##
 ## SimV1 functions
@@ -81,48 +84,49 @@ ENDFUNCTION(ADD_EXPORT_DYNAMIC_LINK_FLAGS)
 FUNCTION(ADD_SIMV1_SIMULATION target)
     ADD_EXECUTABLE(sim_${target} ${ARGN})
     SET_SIMULATION_PROPERTIES(${target})
-    TARGET_LINK_LIBRARIES(sim_${target} sim)
+    TARGET_LINK_LIBRARIES(sim_${target} sim ${EXTRA_SIM_LIBS})
     ADD_TARGET_COMPILE_FLAGS(sim_${target}
         -I${VISIT_SOURCE_DIR}/sim/V1/lib
         -I${VISIT_SOURCE_DIR}/databases/SimV1
     )
-    ADD_EXPORT_DYNAMIC_LINK_FLAGS(sim_${target})
+    ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
 ENDFUNCTION(ADD_SIMV1_SIMULATION)
 
 FUNCTION(ADD_FORTRAN_SIMV1_SIMULATION target)
     IF(VISIT_FORTRAN)
         ADD_EXECUTABLE(sim_${target} ${ARGN})
         SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simf sim)
+        TARGET_LINK_LIBRARIES(sim_${target} simf sim ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}
             -I${VISIT_SOURCE_DIR}/sim/V1/lib
             -I${VISIT_SOURCE_DIR}/databases/SimV1
         )
-        ADD_EXPORT_DYNAMIC_LINK_FLAGS(sim_${target})
+        ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
     ENDIF(VISIT_FORTRAN)
 ENDFUNCTION(ADD_FORTRAN_SIMV1_SIMULATION)
 
 FUNCTION(ADD_PARALLEL_SIMV1_SIMULATION target)
     ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
     SET_SIMULATION_PROPERTIES(${target})
-    TARGET_LINK_LIBRARIES(sim_${target} sim)
+    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
+    TARGET_LINK_LIBRARIES(sim_${target} sim ${EXTRA_SIM_LIBS})
     ADD_TARGET_COMPILE_FLAGS(sim_${target}
         -I${VISIT_SOURCE_DIR}/sim/V1/lib
         -I${VISIT_SOURCE_DIR}/databases/SimV1
     )
-    ADD_EXPORT_DYNAMIC_LINK_FLAGS(sim_${target})
+    ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
 ENDFUNCTION(ADD_PARALLEL_SIMV1_SIMULATION)
 
 FUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION target)
     IF(VISIT_FORTRAN)
         ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN})
         SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simf sim)
+        TARGET_LINK_LIBRARIES(sim_${target} simf sim ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}
             -I${VISIT_SOURCE_DIR}/sim/V1/lib
             -I${VISIT_SOURCE_DIR}/databases/SimV1
         )
-        ADD_EXPORT_DYNAMIC_LINK_FLAGS(sim_${target})
+        ADD_EXPORT_DYNAMIC_LINK_FLAGS(${target})
     ENDIF(VISIT_FORTRAN)
 ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION)
 
@@ -133,7 +137,7 @@ ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION)
 FUNCTION(ADD_SIMV2_SIMULATION target)
     ADD_EXECUTABLE(sim_${target} ${ARGN})
     SET_SIMULATION_PROPERTIES(${target})
-    TARGET_LINK_LIBRARIES(sim_${target} simV2)
+    TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
     ADD_TARGET_COMPILE_FLAGS(sim_${target}
         -I${VISIT_SOURCE_DIR}/sim/V2/lib
     )
@@ -143,7 +147,7 @@ FUNCTION(ADD_FORTRAN_SIMV2_SIMULATION target)
     IF(VISIT_FORTRAN)
         ADD_EXECUTABLE(sim_${target} ${ARGN})
         SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2)
+        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}
             -I${VISIT_SOURCE_DIR}/sim/V2/lib
         )
@@ -153,7 +157,8 @@ ENDFUNCTION(ADD_FORTRAN_SIMV2_SIMULATION)
 FUNCTION(ADD_PARALLEL_SIMV2_SIMULATION target)
     ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
     SET_SIMULATION_PROPERTIES(${target})
-    TARGET_LINK_LIBRARIES(sim_${target} simV2)
+    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
+    TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
     ADD_TARGET_COMPILE_FLAGS(sim_${target}
         -I${VISIT_SOURCE_DIR}/sim/V2/lib
     )

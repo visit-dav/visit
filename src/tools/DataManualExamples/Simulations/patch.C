@@ -1,5 +1,6 @@
 #include <map>
 #include "patch.h"
+#include <cstring>
 
 // ****************************************************************************
 // Functions: Functions related to the patch object
