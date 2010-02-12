@@ -38,9 +38,8 @@
 #   
 #****************************************************************************/
 
-# Just Apple until I can test Linux
-IF(APPLE)
+IF(NOT WIN32)
     ADD_SUBDIRECTORY(CreatingCompatible)
     ADD_SUBDIRECTORY(CreatingCompatibleAdvanced)
     ADD_SUBDIRECTORY(Simulations)
-ENDIF(APPLE)
+ENDIF(NOT WIN32)

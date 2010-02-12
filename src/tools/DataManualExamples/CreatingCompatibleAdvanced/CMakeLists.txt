@@ -40,6 +40,11 @@
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${SILO_INCLUDE_DIR}
+)
+
+LINK_DIRECTORIES(
+${SILO_LIBRARY_DIR}
 )
 
 # This target depends on all the examples so we make this target if we want
@@ -51,18 +56,7 @@ ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 FUNCTION(ADD_SILO_EXAMPLE target)
     IF(SILO_FOUND)
         ADD_EXECUTABLE(adv_example_${target} ${ARGN})
-        TARGET_LINK_LIBRARIES(adv_example_${target} ${SILO_LIB})
-
-        FOREACH(libdir ${SILO_LIBRARY_DIR})
-            SET(siloL ${siloL} -L${libdir})
-        ENDFOREACH(libdir)
-        ADD_TARGET_LINK_FLAGS(adv_example_${target} ${siloL})
-
-        FOREACH(inc ${SILO_INCLUDE_DIR})
-            SET(siloinc ${siloinc} -I${inc})
-        ENDFOREACH(inc)
-        ADD_TARGET_COMPILE_FLAGS(adv_example_${target} ${siloinc})
-
+        TARGET_LINK_LIBRARIES(adv_example_${target} ${SILO_LIB} stdc++)
         SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES
             OUTPUT_NAME ${target}
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced
@@ -92,7 +86,7 @@ IF(VISIT_FORTRAN)
     ADD_SILO_EXAMPLE(fdataextents fdataextents.f)
     ADD_SILO_EXAMPLE(fghostzonesinfile fghostzonesinfile.f)
     ADD_SILO_EXAMPLE(fmixedmaterials fmixedmaterials.f)
-    ADD_SILO_EXAMPLE(fmultimat fmultimat.f)
+    #ADD_SILO_EXAMPLE(fmultimat fmultimat.f)
     ADD_SILO_EXAMPLE(fspatialextents fspatialextents.f)
     ADD_SILO_EXAMPLE(fvectorvar fvectorvar.f)
 ENDIF(VISIT_FORTRAN)

@@ -62,13 +62,15 @@ c Close the Silo file.
       include "silo.inc"
       integer err, ierr, dims(2), ndims, optlistid
       real x(4), y(5)
+      integer cycle
+      double precision dtime
       data x/0., 1., 2.5, 5./
       data y/0., 2., 2.25, 2.55,  5./
       ndims = 2
       data dims/4, 5/
 c Create an option list for saving cycle and time values.
-      integer cycle /100/
-      double precision dtime /1.23456789/
+      data cycle /100/
+      data dtime /1.23456789/
       err = dbmkoptlist(2, optlistid)
       err = dbaddiopt(optlistid, DBOPT_CYCLE, cycle)
       err = dbadddopt(optlistid, DBOPT_DTIME, dtime)
@@ -105,10 +107,10 @@ c Free the option list.
      . 3, 4, 5,
      . 6, 7, 8,
      . 9, 10, 11/
-      data var4/0,1,2,
-     . 3, 4, 5,
-     . 6, 7, 8,
-     . 9, 10, 11/
+      data var4/'a','b','c',
+     . 'd', 'e', 'f',
+     . 'g', 'h', 'i',
+     . 'j', 'k', 'l'/
       data dims/ZX, ZY/
       ndims = 2
       err = dbputqv1(dbfile, "var1", 4, "quadmesh", 8, var1, dims, 
