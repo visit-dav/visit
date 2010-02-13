@@ -28,6 +28,14 @@ Prefix:
     SetUseExtents(false);
 Postfix:
 
+Code: SetFromNode
+Prefix:
+Postfix:
+    // The SetStartX, etc calls trample useExtents.
+    // Set to the correct value at the end.
+    if((node = searchNode->GetNode("useExtents")) != 0)
+        SetUseExtents(node->AsBool());
+
 Function: SetValue1
 Declaration: virtual bool SetValue(const std::string &name, const double &value);
 Definition:
@@ -75,3 +83,4 @@ ResampleEnginePluginInfo::AllocAvtPluginFilter()
 {
     return new avtResamplePluginFilter;
 }
+

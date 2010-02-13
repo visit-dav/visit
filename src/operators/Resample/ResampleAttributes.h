@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ResampleAttributes
 //
@@ -66,13 +67,23 @@ public:
         smallest
     };
 
+    // These constructors are for objects of this class
     ResampleAttributes();
     ResampleAttributes(const ResampleAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ResampleAttributes(private_tmfs_t tmfs);
+    ResampleAttributes(const ResampleAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ResampleAttributes();
 
     virtual ResampleAttributes& operator = (const ResampleAttributes &obj);
     virtual bool operator == (const ResampleAttributes &obj) const;
     virtual bool operator != (const ResampleAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ResampleAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -154,7 +165,8 @@ public:
         ID_tieResolver,
         ID_tieResolverVariable,
         ID_defaultValue,
-        ID_distributedResample
+        ID_distributedResample,
+        ID__LAST
     };
 
 private:
@@ -176,6 +188,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define RESAMPLEATTRIBUTES_TMFS "bddiddibddiisdb"
 
 #endif
