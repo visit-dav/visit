@@ -5732,3 +5732,21 @@ ViewerPlot::AdaptsToAnyWindowMode(void)
 }
 
 
+// ****************************************************************************
+// Method: ViewerPlot::SetNumPlotsCreated
+//
+// Purpose: 
+//   Set the number of plots created.
+//
+// Programmer: Eric Brugger
+// Creation:   February 12, 2010
+//
+// Modifications:
+//  
+// ****************************************************************************
+
+void
+ViewerPlot::SetNumPlotsCreated(int n)
+{
+    numPlotsCreated = n;
+}
