@@ -131,6 +131,11 @@ static int            plotThreadAttrInit=0;
 #endif
 
 //
+// Class static variables.
+//
+int ViewerPlotList::maxPlotNumber=-1;
+
+//
 // Local prototypes.
 //
 static void *CreatePlot(void *info);
@@ -8481,6 +8486,11 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
 //   I made it use GetMetaDataForState so we can open up databases at later
 //   timestates and get transient variables.
 //
+//   Eric Brugger, Fri Feb 12 15:47:38 PST 2010
+//   I added logic to determine the maximum number associated with the plot
+//   names and then use that number to tell the ViewerPlot the number to
+//   use to start numbering new plots.
+//
 // ****************************************************************************
 
 bool
@@ -8788,6 +8798,9 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
         {
             plotNameStr = node->AsString();
             plotName = plotNameStr.c_str();
+            if (strncmp(plotName, "Plot", 4) == 0)
+                maxPlotNumber = atoi(&plotName[4]) > maxPlotNumber ?
+                    atoi(&plotName[4]) : maxPlotNumber;
         }
 
         bool createdPlot = false;
@@ -8912,6 +8925,12 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                    << endl;
         }
     } // end for
+
+    // Tell the ViewerPlot the number it should use to start numbering
+    // plots from.
+    maxPlotNumber = maxPlotNumber > expectedPlots ?
+        maxPlotNumber : expectedPlots;
+    ViewerPlot::SetNumPlotsCreated(maxPlotNumber + 1);
 
     // Now that all of the plots are added, set the selected flag on each plot.
     // We can't do it as the plots are added because SimpleAddPlot contains

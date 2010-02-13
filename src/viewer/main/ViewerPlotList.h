@@ -315,6 +315,10 @@ typedef std::map<std::string, int> StringIntMap;
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Eric Brugger, Fri Feb 12 15:34:07 PST 2010
+//    I added maxPlotNumber, which is used to tell the ViewerPlot what
+//    number to use to start numbering plots from.
+//
 // ****************************************************************************
 
 
@@ -551,6 +555,8 @@ public:
     double                 bgColor[3];
     double                 fgColor[3];
     avtExtentType          spatialExtentsType;
+
+    static int             maxPlotNumber;
 
     void                   CanMeshPlotBeOpaque();
     void                   GetMeshVarNameForActivePlots(
