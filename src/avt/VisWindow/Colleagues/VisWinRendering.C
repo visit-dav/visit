@@ -1152,6 +1152,9 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
 //    back.  (Note: timing shows that this read back routine is fairly quick
 //    even when not fast tracked, so this isn't a huge result.)
 //
+//    Hank Childs, Sun Feb 14 16:21:03 CST 2010
+//    Put in explicit timing for Z-buffer readback.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1169,7 +1172,9 @@ VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
     if (doCanvasZBufferToo)
     {
         // get zbuffer data for the canvas
+        int t5 = visitTimer->StartTimer();
         zb = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1);
+        visitTimer->StopTimer(t5, "Reading back zbuffer");
 
         // temporarily disable external render requests
         extRequestMode = mediator.DisableExternalRenderRequests();
