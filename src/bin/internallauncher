@@ -573,6 +573,9 @@ $0 = shift @ARGV;
 #    line arguments are not available before MPI_Init() which prevents the
 #    use of the "-setupenv" option for this purpose).
 #
+#    Hank Childs, Sun Feb 14 13:34:39 CST 2010
+#    Add support for longhorn.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1504,11 +1507,13 @@ if ( ($parallel) and $exe_name eq "engine" and ($host eq "saguaro1.local" or $ho
 # ----
 $IsRunningOnRanger_TACC = 0;
 $IsRunningOnSpur_TACC = 0;
+$IsRunningOnLonghorn_TACC = 0;
 # Hostnames are of the form spur.tacc.utexas.edu, (vis*|login#).ranger.tacc.utexas.edu
-if ( ($parallel) and $exe_name eq "engine" and (($host =~ /spur.tacc/) or ($host =~ /ranger.tacc/)))
+if ( ($parallel) and $exe_name eq "engine" and (($host =~ /spur.tacc/) or ($host =~ /ranger.tacc/) or ($host =~ /longhorn/)))
 {
     $IsRunningOnRanger_TACC = 1;
     $IsRunningOnSpur_TACC = 1 if $part =~ /vis/ ;  # determine machine by queue, since all jobs submit from spur
+    $IsRunningOnLonghorn_TACC = 1 if $host =~ /longhorn/ ;  # determine machine by queue, since all jobs submit from spur
     print STDERR "\n\nAttempting to launch parallel engine at TACC\n";
     print STDERR "For more information about TACC resources and configurations, see:\n";
     print STDERR "\thttp://services.tacc.utexas.edu/index.php/ranger-user-guide\n";
@@ -1625,7 +1630,12 @@ if ($host =~ /^graph\d+$/)
 # HACK for Eureka @ Argonne
 # ----
 $IsRunningOnEureka_ANL = 0;
-if ( ($parallel) and $exe_name eq "engine" and $host =~ /login1/ )
+$matchesLonghorn = 0;
+if ($host =~ /login1.longhorn/)
+{
+   $matchesLonghorn = 1;
+}
+if ( ($parallel) and $exe_name eq "engine" and (($host =~ /login1/) and ($matchesLonghorn eq 0))  )
 {
     $IsRunningOnEureka_ANL = 1;
     chomp($domain   = `hostname -d`);
@@ -2722,7 +2732,14 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
             if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
-            push @parcmd, "-A",  $bank  if $bank_set;
+            if ($IsRunningOnLonghorn_TACC)
+            {
+                push @parcmd, "-P",  $bank  if $bank_set;
+            }
+            else
+            {
+                push @parcmd, "-A",  $bank  if $bank_set;
+            }
       
             @printcmd = @parcmd;
             push @parcmd, $tfilename;
@@ -2750,6 +2767,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
                push @parcmd, $time;
                push @parcmd, $tfilename;
             }
+        }
+        else
+        {
+            print STDERR "To use qsub, launcher must create a temporary file.  Launch failed because launcher could not open file $tfilename\n";
         }
     }
     else
