@@ -1758,6 +1758,9 @@ Engine::ProcessInput()
 //    Added "-visithome" and "-visitarchhome" options that set up the
 //    corresponding environment variables.
 //
+//    Hank Childs, Sun Feb 14 16:19:20 CST 2010
+//    Set up nDisplays automatically if n-gpus-per-node is not set.
+//
 // ****************************************************************************
 
 void
@@ -1773,7 +1776,11 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-stereo") == 0)
             NetworkManager::SetStereoEnabled();
         else if (strcmp(argv[i], "-hw-accel") == 0)
-            haveHWAccel = true;
+        {
+             haveHWAccel = true;
+            if (this->nDisplays == 0)
+                this->nDisplays = 1;
+        }
         else if (strcmp(argv[i], "-x-args") == 0 && i+1 < argc)
         {
             this->X_Args = std::string(argv[i+1]);
