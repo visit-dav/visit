@@ -45,6 +45,10 @@
 #   Kathleen Bonnell, Tue Jan  5 14:13:43 PST 2009
 #   Use cmake 2.6.4 (rather than 2.8) compatible version of copying files.
 #
+#   Kathleen Bonnell, Tue Feb 16 14:00:02 MST 2010
+#   Removed conditional check for OSMESA SIZE LIMIT, in case something wasn't
+#   set up correctly during first configure pass (eg Mesa lib).
+#
 #****************************************************************************/
 
 # Use the VTK_DIR hint from the config-site .cmake file 
@@ -73,64 +77,63 @@ IF(NOT MESA_FOUND)
     MESSAGE(FATAL_ERROR "MESA is required to build VisIt")
 ENDIF(NOT MESA_FOUND)
 
-IF ("HAVE_OSMESA_SIZE" MATCHES "^HAVE_OSMESA_SIZE$")
-    SET(MSG "Check for osmesa size limit")
-    MESSAGE(STATUS ${MSG})
-    # Need to have the mesa libs.
-    SET(MY_LIBS ${MESA_LIB})
-    # Unix needs X_LIBS and THREAD_LIBS.
-    IF (NOT WIN32)
-      IF (CMAKE_X_LIBS)
-        SET(MY_LIBS ${MY_LIBS} ${CMAKE_X_LIBS})
-      ENDIF (CMAKE_X_LIBS)
-    ENDIF (NOT WIN32)
-    IF (CMAKE_THREAD_LIBS)
-        SET(MY_LIBS ${MY_LIBS} ${CMAKE_THREAD_LIBS})
-    ENDIF (CMAKE_THREAD_LIBS)
+SET(MSG "Check for osmesa size limit")
+MESSAGE(STATUS ${MSG})
+# Need to have the mesa libs.
+SET(MY_LIBS ${MESA_LIB})
+# Unix needs X_LIBS and THREAD_LIBS.
+IF (NOT WIN32)
+  IF (CMAKE_X_LIBS)
+    SET(MY_LIBS ${MY_LIBS} ${CMAKE_X_LIBS})
+  ENDIF (CMAKE_X_LIBS)
+ENDIF (NOT WIN32)
+IF (CMAKE_THREAD_LIBS)
+    SET(MY_LIBS ${MY_LIBS} ${CMAKE_THREAD_LIBS})
+ENDIF (CMAKE_THREAD_LIBS)
 
-    SET(TRY_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CMakeTmp)
+SET(TRY_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CMakeTmp)
    
-    IF (WIN32) 
-        # Need these dlls to run the program
-        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/MesaGL32.dll ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/MesaGL32.dll)
-        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/osmesa32.dll  ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/osmesa32.dll)
-    ENDIF (WIN32) 
+IF (WIN32) 
+    # Need these dlls to run the program
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/MesaGL32.dll ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/MesaGL32.dll)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/osmesa32.dll  ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/osmesa32.dll)
+ENDIF (WIN32) 
 
-    TRY_RUN(TRY_RUN_RESULT HAVE_OSMESA_SIZE
-        ${TRY_RUN_DIR}
-        ${VISIT_SOURCE_DIR}/CMake/FindOSMesaSize.C
-        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MESA_INCLUDE_DIR}"
-                    "-DLINK_DIRECTORIES:STRING=${MESA_LIBRARY_DIR}"
-                    "-DLINK_LIBRARIES:STRING=${MY_LIBS}"
-        OUTPUT_VARIABLE OUTPUT
-    )
-    IF (HAVE_OSMESA_SIZE)
-        IF ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-            MESSAGE(STATUS "${MSG} - failed to run, defaulting to 4096")
-            SET(OSMESA_SIZE_LIMIT 4096)
-        ELSE ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-            IF (WIN32)
-                SET(OSMESA_SIZE_LIMIT ${TRY_RUN_RESULT})
+TRY_RUN(TRY_RUN_RESULT HAVE_OSMESA_SIZE
+    ${TRY_RUN_DIR}
+    ${VISIT_SOURCE_DIR}/CMake/FindOSMesaSize.C
+    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MESA_INCLUDE_DIR}"
+                "-DLINK_DIRECTORIES:STRING=${MESA_LIBRARY_DIR}"
+                "-DLINK_LIBRARIES:STRING=${MY_LIBS}"
+    OUTPUT_VARIABLE OUTPUT
+)
+
+IF (HAVE_OSMESA_SIZE)
+    IF ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
+        MESSAGE(STATUS "${MSG} - failed to run, defaulting to 4096")
+        SET(OSMESA_SIZE_LIMIT 4096)
+    ELSE ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
+        IF (WIN32)
+            SET(OSMESA_SIZE_LIMIT ${TRY_RUN_RESULT})
+            MESSAGE(STATUS "${MSG} - found (${OSMESA_SIZE_LIMIT})")
+            SET(HAVE_OSMESA_SIZE 1 CACHE INTERNAL "support for osmesa_size")
+        ELSE (WIN32)
+            IF (EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
+                FILE(STRINGS "${CMAKE_BINARY_DIR}/junk.txt" OSMESA_SIZE_LIMIT)
+                FILE(REMOVE "${CMAKE_BINARY_DIR}/junk.txt")
                 MESSAGE(STATUS "${MSG} - found (${OSMESA_SIZE_LIMIT})")
                 SET(HAVE_OSMESA_SIZE 1 CACHE INTERNAL "support for osmesa_size")
-            ELSE (WIN32)
-                IF (EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
-                    FILE(STRINGS "${CMAKE_BINARY_DIR}/junk.txt" OSMESA_SIZE_LIMIT)
-                    FILE(REMOVE "${CMAKE_BINARY_DIR}/junk.txt")
-                    MESSAGE(STATUS "${MSG} - found (${OSMESA_SIZE_LIMIT})")
-                    SET(HAVE_OSMESA_SIZE 1 CACHE INTERNAL "support for osmesa_size")
-                ELSE (EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
-                    MESSAGE(STATUS "${MSG} - could not find junk.txt")
-                ENDIF (EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
-            ENDIF (WIN32)
-        ENDIF ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-    ELSE(HAVE_OSMESA_SIZE)
-        MESSAGE(STATUS "${MSG} - OUTPUT_VARIABLE: ${OUTPUT}")
-        MESSAGE(STATUS "${MSG} - not found, defaulting to 4096")
-        SET(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
-        SET(OSMESA_SIZE_LIMIT 4096)
-    ENDIF (HAVE_OSMESA_SIZE)
-ENDIF ("HAVE_OSMESA_SIZE" MATCHES "^HAVE_OSMESA_SIZE$")
+            ELSE (EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
+                MESSAGE(STATUS "${MSG} - could not find junk.txt")
+            ENDIF (EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
+        ENDIF (WIN32)
+    ENDIF ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
+ELSE(HAVE_OSMESA_SIZE)
+    MESSAGE(STATUS "${MSG} - OUTPUT_VARIABLE: ${OUTPUT}")
+    MESSAGE(STATUS "${MSG} - not found, defaulting to 4096")
+    SET(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
+    SET(OSMESA_SIZE_LIMIT 4096)
+ENDIF (HAVE_OSMESA_SIZE)
 
 
 
