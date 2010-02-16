@@ -205,6 +205,9 @@ void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
 //    Tom Fogal, Sat Jul 25 20:40:06 MDT 2009
 //    Make sure GLEW is initialized.
 //
+//    Kathleen Bonnell, Tue Feb 16 15:49:17 MST 2010
+//    Remove initialization of GLEW, it is handled elsewhere.
+//
 // ****************************************************************************
  
 void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
@@ -216,7 +219,6 @@ void vtkVisItOpenGLPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
   int i, numClipPlanes;
   double planeEquation[4];
 
-  avt::glew::initialize();
 
   //
   // make sure that we've been properly initialized
@@ -4499,6 +4501,9 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
 //    Tom Fogal, Sat Jul 25 20:33:02 MDT 2009
 //    Use GLEW initializer.  Simplify.
 //
+//    Kathleen Bonnell, Tue Feb 16 15:49:17 MST 2010
+//    Remove initialization of GLEW, it is handled elsewhere.
+//
 // ****************************************************************************
 
 void
@@ -4507,7 +4512,6 @@ vtkVisItOpenGLPolyDataMapper::BeginColorTexturing()
     if(!this->ColorTexturingAllowed)
         return;
 
-    avt::glew::initialize();
 
     if(!this->ColorTextureLoaded)
     {

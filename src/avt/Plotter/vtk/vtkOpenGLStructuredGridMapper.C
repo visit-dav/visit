@@ -170,6 +170,13 @@ void vtkOpenGLStructuredGridMapper::ReleaseGraphicsResources(vtkWindow *win)
     }
 }
 
+// ***************************************************************************
+//
+//   Kathleen Bonnell, Tue Feb 16 15:49:17 MST 2010
+//   Remove initialization of GLEW, it is handled elsewhere.
+//
+// ***************************************************************************
+
 void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 {
   vtkIdType numPts;
@@ -215,9 +222,6 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 // make sure our window is current
   ren->GetRenderWindow()->MakeCurrent();
 
-#ifdef HAVE_LIBGLEW
-  avt::glew::initialize();
-#endif
 
   clipPlanes = this->ClippingPlanes;
 

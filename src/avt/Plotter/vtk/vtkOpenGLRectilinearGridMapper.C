@@ -162,11 +162,17 @@ void vtkOpenGLRectilinearGridMapper::ReleaseGraphicsResources(vtkWindow *win)
     }
 }
 
+// ***************************************************************************
+//
 // Modifications:
 //
 //   Tom Fogal, Fri Aug  7 12:15:21 MDT 2009
 //   Initialize GLEW after the RW gets made current.
-
+//
+//   Kathleen Bonnell, Tue Feb 16 15:49:17 MST 2010
+//   Remove initialization of GLEW, it is handled elsewhere.
+//
+// ***************************************************************************
 
 void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 {
@@ -213,7 +219,6 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 // make sure our window is current
   ren->GetRenderWindow()->MakeCurrent();
 
-  avt::glew::initialize();
 
   clipPlanes = this->ClippingPlanes;
 
@@ -421,6 +426,9 @@ void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 //    Tom Fogal, Thu Aug  6 16:45:28 MDT 2009
 //    Make sure GLEW is initialized.
 //
+//    Kathleen Bonnell, Tue Feb 16 15:49:17 MST 2010
+//    Remove initialization of GLEW, it is handled elsewhere.
+//
 // ****************************************************************************
 
 int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
@@ -433,7 +441,6 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
    if (input->GetFieldData()->GetArray("RectilinearGridTransform"))
        transform = true;
 
-   avt::glew::initialize();
 
    int dims[3];
    input->GetDimensions(dims);
