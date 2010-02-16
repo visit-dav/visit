@@ -73,6 +73,10 @@
 #    Encapsulated VISIT_INSTALL_x_PLUGINS into one Macro that accepts a 
 #    type parameter.  Changed VISIT_THIRDPARTY_OPTION into two macros that
 #    set a PATH var (for VISIT_x_DIR) or STRING var (for VISIT_x_LIBDEP).
+#
+#    Kathleen Bonnell, Tue Feb 16 14:04:16 MST 2010
+#    Removed conditional setting of VISIT_RENDERING_SIZE_LIMIT, in case 
+#    initial configure pass was missing something. Install our zlib on windows.
 #    
 #****************************************************************************/
 
@@ -658,6 +662,12 @@ ELSE(CMAKE_HOST_UNIX)
       EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
                       ${ZLIB_LIBRARY_DIR}/zlib1.dll
                       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+      INSTALL(FILES ${ZLIB_LIBRARY_DIR}/zlib1.dll
+          DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+          )
+
   ELSE(WIN32)
       SET(ZLIB_LIB vtkzlib)
   ENDIF(WIN32)
@@ -1093,10 +1103,8 @@ IF(NOT VISIT_DISABLE_SELECT)
     CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
 ENDIF(NOT VISIT_DISABLE_SELECT)
 
-IF ("VISIT_RENDERING_SIZE_LIMIT" MATCHES "^VISIT_RENDERING_SIZE_LIMIT$")
-    MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
-    SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
-ENDIF ("VISIT_RENDERING_SIZE_LIMIT" MATCHES "^VISIT_RENDERING_SIZE_LIMIT$")
+MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
+SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
 
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-config.h @ONLY IMMEDIATE)
