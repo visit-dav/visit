@@ -388,6 +388,43 @@ StreamlineAttributes::DisplayQuality_FromString(const std::string &s, Streamline
     return false;
 }
 
+//
+// Enum conversion methods for StreamlineAttributes::GeomDisplayType
+//
+
+static const char *GeomDisplayType_strings[] = {
+"Sphere", "Cone"};
+
+std::string
+StreamlineAttributes::GeomDisplayType_ToString(StreamlineAttributes::GeomDisplayType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return GeomDisplayType_strings[index];
+}
+
+std::string
+StreamlineAttributes::GeomDisplayType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return GeomDisplayType_strings[index];
+}
+
+bool
+StreamlineAttributes::GeomDisplayType_FromString(const std::string &s, StreamlineAttributes::GeomDisplayType &val)
+{
+    val = StreamlineAttributes::Sphere;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == GeomDisplayType_strings[i])
+        {
+            val = (GeomDisplayType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
 //
@@ -476,7 +513,9 @@ void StreamlineAttributes::Init()
     displayBeginFlag = false;
     displayEndFlag = false;
     seedDisplayRadius = 0.25;
+    headDisplayType = Sphere;
     headDisplayRadius = 0.25;
+    headDisplayHeight = 0.5;
     opacityType = None;
     opacity = 1;
     opacityVarMin = 0;
@@ -577,7 +616,9 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     displayBeginFlag = obj.displayBeginFlag;
     displayEndFlag = obj.displayEndFlag;
     seedDisplayRadius = obj.seedDisplayRadius;
+    headDisplayType = obj.headDisplayType;
     headDisplayRadius = obj.headDisplayRadius;
+    headDisplayHeight = obj.headDisplayHeight;
     opacityType = obj.opacityType;
     opacityVariable = obj.opacityVariable;
     opacity = obj.opacity;
@@ -833,7 +874,9 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (displayBeginFlag == obj.displayBeginFlag) &&
             (displayEndFlag == obj.displayEndFlag) &&
             (seedDisplayRadius == obj.seedDisplayRadius) &&
+            (headDisplayType == obj.headDisplayType) &&
             (headDisplayRadius == obj.headDisplayRadius) &&
+            (headDisplayHeight == obj.headDisplayHeight) &&
             (opacityType == obj.opacityType) &&
             (opacityVariable == obj.opacityVariable) &&
             (opacity == obj.opacity) &&
@@ -1154,7 +1197,9 @@ StreamlineAttributes::SelectAll()
     Select(ID_displayBeginFlag,          (void *)&displayBeginFlag);
     Select(ID_displayEndFlag,            (void *)&displayEndFlag);
     Select(ID_seedDisplayRadius,         (void *)&seedDisplayRadius);
+    Select(ID_headDisplayType,           (void *)&headDisplayType);
     Select(ID_headDisplayRadius,         (void *)&headDisplayRadius);
+    Select(ID_headDisplayHeight,         (void *)&headDisplayHeight);
     Select(ID_opacityType,               (void *)&opacityType);
     Select(ID_opacityVariable,           (void *)&opacityVariable);
     Select(ID_opacity,                   (void *)&opacity);
@@ -1480,10 +1525,22 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("seedDisplayRadius", seedDisplayRadius));
     }
 
+    if(completeSave || !FieldsEqual(ID_headDisplayType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headDisplayType", GeomDisplayType_ToString(headDisplayType)));
+    }
+
     if(completeSave || !FieldsEqual(ID_headDisplayRadius, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("headDisplayRadius", headDisplayRadius));
+    }
+
+    if(completeSave || !FieldsEqual(ID_headDisplayHeight, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headDisplayHeight", headDisplayHeight));
     }
 
     if(completeSave || !FieldsEqual(ID_opacityType, &defaultObject))
@@ -1768,8 +1825,26 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetDisplayEndFlag(node->AsBool());
     if((node = searchNode->GetNode("seedDisplayRadius")) != 0)
         SetSeedDisplayRadius(node->AsDouble());
+    if((node = searchNode->GetNode("headDisplayType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetHeadDisplayType(GeomDisplayType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            GeomDisplayType value;
+            if(GeomDisplayType_FromString(node->AsString(), value))
+                SetHeadDisplayType(value);
+        }
+    }
     if((node = searchNode->GetNode("headDisplayRadius")) != 0)
         SetHeadDisplayRadius(node->AsDouble());
+    if((node = searchNode->GetNode("headDisplayHeight")) != 0)
+        SetHeadDisplayHeight(node->AsDouble());
     if((node = searchNode->GetNode("opacityType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2167,10 +2242,24 @@ StreamlineAttributes::SetSeedDisplayRadius(double seedDisplayRadius_)
 }
 
 void
+StreamlineAttributes::SetHeadDisplayType(StreamlineAttributes::GeomDisplayType headDisplayType_)
+{
+    headDisplayType = headDisplayType_;
+    Select(ID_headDisplayType, (void *)&headDisplayType);
+}
+
+void
 StreamlineAttributes::SetHeadDisplayRadius(double headDisplayRadius_)
 {
     headDisplayRadius = headDisplayRadius_;
     Select(ID_headDisplayRadius, (void *)&headDisplayRadius);
+}
+
+void
+StreamlineAttributes::SetHeadDisplayHeight(double headDisplayHeight_)
+{
+    headDisplayHeight = headDisplayHeight_;
+    Select(ID_headDisplayHeight, (void *)&headDisplayHeight);
 }
 
 void
@@ -2594,10 +2683,22 @@ StreamlineAttributes::GetSeedDisplayRadius() const
     return seedDisplayRadius;
 }
 
+StreamlineAttributes::GeomDisplayType
+StreamlineAttributes::GetHeadDisplayType() const
+{
+    return GeomDisplayType(headDisplayType);
+}
+
 double
 StreamlineAttributes::GetHeadDisplayRadius() const
 {
     return headDisplayRadius;
+}
+
+double
+StreamlineAttributes::GetHeadDisplayHeight() const
+{
+    return headDisplayHeight;
 }
 
 StreamlineAttributes::OpacityType
@@ -2813,7 +2914,9 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_displayBeginFlag:          return "displayBeginFlag";
     case ID_displayEndFlag:            return "displayEndFlag";
     case ID_seedDisplayRadius:         return "seedDisplayRadius";
+    case ID_headDisplayType:           return "headDisplayType";
     case ID_headDisplayRadius:         return "headDisplayRadius";
+    case ID_headDisplayHeight:         return "headDisplayHeight";
     case ID_opacityType:               return "opacityType";
     case ID_opacityVariable:           return "opacityVariable";
     case ID_opacity:                   return "opacity";
@@ -2894,7 +2997,9 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_displayBeginFlag:          return FieldType_bool;
     case ID_displayEndFlag:            return FieldType_bool;
     case ID_seedDisplayRadius:         return FieldType_double;
+    case ID_headDisplayType:           return FieldType_enum;
     case ID_headDisplayRadius:         return FieldType_double;
+    case ID_headDisplayHeight:         return FieldType_double;
     case ID_opacityType:               return FieldType_enum;
     case ID_opacityVariable:           return FieldType_string;
     case ID_opacity:                   return FieldType_double;
@@ -2975,7 +3080,9 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_displayBeginFlag:          return "bool";
     case ID_displayEndFlag:            return "bool";
     case ID_seedDisplayRadius:         return "double";
+    case ID_headDisplayType:           return "enum";
     case ID_headDisplayRadius:         return "double";
+    case ID_headDisplayHeight:         return "double";
     case ID_opacityType:               return "enum";
     case ID_opacityVariable:           return "string";
     case ID_opacity:                   return "double";
@@ -3286,9 +3393,19 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (seedDisplayRadius == obj.seedDisplayRadius);
         }
         break;
+    case ID_headDisplayType:
+        {  // new scope
+        retval = (headDisplayType == obj.headDisplayType);
+        }
+        break;
     case ID_headDisplayRadius:
         {  // new scope
         retval = (headDisplayRadius == obj.headDisplayRadius);
+        }
+        break;
+    case ID_headDisplayHeight:
+        {  // new scope
+        retval = (headDisplayHeight == obj.headDisplayHeight);
         }
         break;
     case ID_opacityType:

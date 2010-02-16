@@ -124,6 +124,11 @@ public:
         High,
         Super
     };
+    enum GeomDisplayType
+    {
+        Sphere,
+        Cone
+    };
 
     // These constructors are for objects of this class
     StreamlineAttributes();
@@ -212,7 +217,9 @@ public:
     void SetDisplayBeginFlag(bool displayBeginFlag_);
     void SetDisplayEndFlag(bool displayEndFlag_);
     void SetSeedDisplayRadius(double seedDisplayRadius_);
+    void SetHeadDisplayType(GeomDisplayType headDisplayType_);
     void SetHeadDisplayRadius(double headDisplayRadius_);
+    void SetHeadDisplayHeight(double headDisplayHeight_);
     void SetOpacityType(OpacityType opacityType_);
     void SetOpacityVariable(const std::string &opacityVariable_);
     void SetOpacity(double opacity_);
@@ -283,7 +290,9 @@ public:
     bool                 GetDisplayBeginFlag() const;
     bool                 GetDisplayEndFlag() const;
     double               GetSeedDisplayRadius() const;
+    GeomDisplayType      GetHeadDisplayType() const;
     double               GetHeadDisplayRadius() const;
+    double               GetHeadDisplayHeight() const;
     OpacityType          GetOpacityType() const;
     const std::string    &GetOpacityVariable() const;
           std::string    &GetOpacityVariable();
@@ -345,6 +354,11 @@ public:
 protected:
     static std::string DisplayQuality_ToString(int);
 public:
+    static std::string GeomDisplayType_ToString(GeomDisplayType);
+    static bool GeomDisplayType_FromString(const std::string &, GeomDisplayType &);
+protected:
+    static std::string GeomDisplayType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -405,7 +419,9 @@ public:
         ID_displayBeginFlag,
         ID_displayEndFlag,
         ID_seedDisplayRadius,
+        ID_headDisplayType,
         ID_headDisplayRadius,
+        ID_headDisplayHeight,
         ID_opacityType,
         ID_opacityVariable,
         ID_opacity,
@@ -466,7 +482,9 @@ private:
     bool           displayBeginFlag;
     bool           displayEndFlag;
     double         seedDisplayRadius;
+    int            headDisplayType;
     double         headDisplayRadius;
+    double         headDisplayHeight;
     int            opacityType;
     std::string    opacityVariable;
     double         opacity;
@@ -481,6 +499,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibbddiisabbiddiiiiiibsbbddddbbddisdddbbii"
+#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibbddiisabbiddiiiiiibsbbddddbbdiddisdddbbii"
 
 #endif

@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 57;
+    private static int numAdditionalAttributes = 59;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -109,6 +109,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int DISPLAYQUALITY_MEDIUM = 1;
     public final static int DISPLAYQUALITY_HIGH = 2;
     public final static int DISPLAYQUALITY_SUPER = 3;
+
+    public final static int GEOMDISPLAYTYPE_SPHERE = 0;
+    public final static int GEOMDISPLAYTYPE_CONE = 1;
 
 
     public StreamlineAttributes()
@@ -198,7 +201,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         displayBeginFlag = false;
         displayEndFlag = false;
         seedDisplayRadius = 0.25;
+        headDisplayType = GEOMDISPLAYTYPE_SPHERE;
         headDisplayRadius = 0.25;
+        headDisplayHeight = 0.5;
         opacityType = OPACITYTYPE_NONE;
         opacityVariable = new String("");
         opacity = 1;
@@ -297,7 +302,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         displayBeginFlag = false;
         displayEndFlag = false;
         seedDisplayRadius = 0.25;
+        headDisplayType = GEOMDISPLAYTYPE_SPHERE;
         headDisplayRadius = 0.25;
+        headDisplayHeight = 0.5;
         opacityType = OPACITYTYPE_NONE;
         opacityVariable = new String("");
         opacity = 1;
@@ -399,7 +406,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         displayBeginFlag = obj.displayBeginFlag;
         displayEndFlag = obj.displayEndFlag;
         seedDisplayRadius = obj.seedDisplayRadius;
+        headDisplayType = obj.headDisplayType;
         headDisplayRadius = obj.headDisplayRadius;
+        headDisplayHeight = obj.headDisplayHeight;
         opacityType = obj.opacityType;
         opacityVariable = new String(obj.opacityVariable);
         opacity = obj.opacity;
@@ -524,7 +533,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (displayBeginFlag == obj.displayBeginFlag) &&
                 (displayEndFlag == obj.displayEndFlag) &&
                 (seedDisplayRadius == obj.seedDisplayRadius) &&
+                (headDisplayType == obj.headDisplayType) &&
                 (headDisplayRadius == obj.headDisplayRadius) &&
+                (headDisplayHeight == obj.headDisplayHeight) &&
                 (opacityType == obj.opacityType) &&
                 (opacityVariable.equals(obj.opacityVariable)) &&
                 (opacity == obj.opacity) &&
@@ -893,64 +904,76 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(46);
     }
 
+    public void SetHeadDisplayType(int headDisplayType_)
+    {
+        headDisplayType = headDisplayType_;
+        Select(47);
+    }
+
     public void SetHeadDisplayRadius(double headDisplayRadius_)
     {
         headDisplayRadius = headDisplayRadius_;
-        Select(47);
+        Select(48);
+    }
+
+    public void SetHeadDisplayHeight(double headDisplayHeight_)
+    {
+        headDisplayHeight = headDisplayHeight_;
+        Select(49);
     }
 
     public void SetOpacityType(int opacityType_)
     {
         opacityType = opacityType_;
-        Select(48);
+        Select(50);
     }
 
     public void SetOpacityVariable(String opacityVariable_)
     {
         opacityVariable = opacityVariable_;
-        Select(49);
+        Select(51);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(50);
+        Select(52);
     }
 
     public void SetOpacityVarMin(double opacityVarMin_)
     {
         opacityVarMin = opacityVarMin_;
-        Select(51);
+        Select(53);
     }
 
     public void SetOpacityVarMax(double opacityVarMax_)
     {
         opacityVarMax = opacityVarMax_;
-        Select(52);
+        Select(54);
     }
 
     public void SetOpacityVarMinFlag(boolean opacityVarMinFlag_)
     {
         opacityVarMinFlag = opacityVarMinFlag_;
-        Select(53);
+        Select(55);
     }
 
     public void SetOpacityVarMaxFlag(boolean opacityVarMaxFlag_)
     {
         opacityVarMaxFlag = opacityVarMaxFlag_;
-        Select(54);
+        Select(56);
     }
 
     public void SetTubeDisplayDensity(int tubeDisplayDensity_)
     {
         tubeDisplayDensity = tubeDisplayDensity_;
-        Select(55);
+        Select(57);
     }
 
     public void SetGeomDisplayQuality(int geomDisplayQuality_)
     {
         geomDisplayQuality = geomDisplayQuality_;
-        Select(56);
+        Select(58);
     }
 
     // Property getting methods
@@ -1001,7 +1024,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetDisplayBeginFlag() { return displayBeginFlag; }
     public boolean        GetDisplayEndFlag() { return displayEndFlag; }
     public double         GetSeedDisplayRadius() { return seedDisplayRadius; }
+    public int            GetHeadDisplayType() { return headDisplayType; }
     public double         GetHeadDisplayRadius() { return headDisplayRadius; }
+    public double         GetHeadDisplayHeight() { return headDisplayHeight; }
     public int            GetOpacityType() { return opacityType; }
     public String         GetOpacityVariable() { return opacityVariable; }
     public double         GetOpacity() { return opacity; }
@@ -1110,24 +1135,28 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(46, buf))
             buf.WriteDouble(seedDisplayRadius);
         if(WriteSelect(47, buf))
-            buf.WriteDouble(headDisplayRadius);
+            buf.WriteInt(headDisplayType);
         if(WriteSelect(48, buf))
-            buf.WriteInt(opacityType);
+            buf.WriteDouble(headDisplayRadius);
         if(WriteSelect(49, buf))
-            buf.WriteString(opacityVariable);
+            buf.WriteDouble(headDisplayHeight);
         if(WriteSelect(50, buf))
-            buf.WriteDouble(opacity);
+            buf.WriteInt(opacityType);
         if(WriteSelect(51, buf))
-            buf.WriteDouble(opacityVarMin);
+            buf.WriteString(opacityVariable);
         if(WriteSelect(52, buf))
-            buf.WriteDouble(opacityVarMax);
+            buf.WriteDouble(opacity);
         if(WriteSelect(53, buf))
-            buf.WriteBool(opacityVarMinFlag);
+            buf.WriteDouble(opacityVarMin);
         if(WriteSelect(54, buf))
-            buf.WriteBool(opacityVarMaxFlag);
+            buf.WriteDouble(opacityVarMax);
         if(WriteSelect(55, buf))
-            buf.WriteInt(tubeDisplayDensity);
+            buf.WriteBool(opacityVarMinFlag);
         if(WriteSelect(56, buf))
+            buf.WriteBool(opacityVarMaxFlag);
+        if(WriteSelect(57, buf))
+            buf.WriteInt(tubeDisplayDensity);
+        if(WriteSelect(58, buf))
             buf.WriteInt(geomDisplayQuality);
     }
 
@@ -1278,33 +1307,39 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             SetSeedDisplayRadius(buf.ReadDouble());
             break;
         case 47:
-            SetHeadDisplayRadius(buf.ReadDouble());
+            SetHeadDisplayType(buf.ReadInt());
             break;
         case 48:
-            SetOpacityType(buf.ReadInt());
+            SetHeadDisplayRadius(buf.ReadDouble());
             break;
         case 49:
-            SetOpacityVariable(buf.ReadString());
+            SetHeadDisplayHeight(buf.ReadDouble());
             break;
         case 50:
-            SetOpacity(buf.ReadDouble());
+            SetOpacityType(buf.ReadInt());
             break;
         case 51:
-            SetOpacityVarMin(buf.ReadDouble());
+            SetOpacityVariable(buf.ReadString());
             break;
         case 52:
-            SetOpacityVarMax(buf.ReadDouble());
+            SetOpacity(buf.ReadDouble());
             break;
         case 53:
-            SetOpacityVarMinFlag(buf.ReadBool());
+            SetOpacityVarMin(buf.ReadDouble());
             break;
         case 54:
-            SetOpacityVarMaxFlag(buf.ReadBool());
+            SetOpacityVarMax(buf.ReadDouble());
             break;
         case 55:
-            SetTubeDisplayDensity(buf.ReadInt());
+            SetOpacityVarMinFlag(buf.ReadBool());
             break;
         case 56:
+            SetOpacityVarMaxFlag(buf.ReadBool());
+            break;
+        case 57:
+            SetTubeDisplayDensity(buf.ReadInt());
+            break;
+        case 58:
             SetGeomDisplayQuality(buf.ReadInt());
             break;
         }
@@ -1423,7 +1458,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("displayBeginFlag", displayBeginFlag, indent) + "\n";
         str = str + boolToString("displayEndFlag", displayEndFlag, indent) + "\n";
         str = str + doubleToString("seedDisplayRadius", seedDisplayRadius, indent) + "\n";
+        str = str + indent + "headDisplayType = ";
+        if(headDisplayType == GEOMDISPLAYTYPE_SPHERE)
+            str = str + "GEOMDISPLAYTYPE_SPHERE";
+        if(headDisplayType == GEOMDISPLAYTYPE_CONE)
+            str = str + "GEOMDISPLAYTYPE_CONE";
+        str = str + "\n";
         str = str + doubleToString("headDisplayRadius", headDisplayRadius, indent) + "\n";
+        str = str + doubleToString("headDisplayHeight", headDisplayHeight, indent) + "\n";
         str = str + indent + "opacityType = ";
         if(opacityType == OPACITYTYPE_NONE)
             str = str + "OPACITYTYPE_NONE";
@@ -1503,7 +1545,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        displayBeginFlag;
     private boolean        displayEndFlag;
     private double         seedDisplayRadius;
+    private int            headDisplayType;
     private double         headDisplayRadius;
+    private double         headDisplayHeight;
     private int            opacityType;
     private String         opacityVariable;
     private double         opacity;

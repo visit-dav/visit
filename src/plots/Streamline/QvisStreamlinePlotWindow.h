@@ -110,6 +110,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add ramp opacity, show head geom.
 //
+//   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
+//   Add display head geom as cone.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -172,6 +175,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void ribbonWidthProcessText();
     void seedRadiusProcessText();
     void headRadiusProcessText();
+    void headHeightProcessText();
     void lineWidthChanged(int style);
     void coloringMethodChanged(int val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
@@ -199,6 +203,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void displayEndToggled(bool);
     void tubeDisplayDensityChanged(int);
     void seedDisplayQualityChanged(int);
+    void headDisplayTypeChanged(int);
 
   private:
     int plotType;
@@ -238,8 +243,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QSpinBox  *pointDensity;
     QComboBox *displayMethod;
     QCheckBox *showSeeds, *showHeads;
-    QLabel    *seedRadiusLabel, *headRadiusLabel;
-    QLineEdit *seedRadius, *headRadius;
+    QLabel    *seedRadiusLabel, *headRadiusLabel, *headHeightLabel;
+    QComboBox *headDisplayType;
+    QLabel    *headDisplayTypeLabel;
+    QLineEdit *seedRadius, *headRadius, *headHeight;
     QLineEdit *tubeRadius, *ribbonWidth;
     QLabel    *radiusLabel;
     QvisLineWidthWidget *lineWidth;

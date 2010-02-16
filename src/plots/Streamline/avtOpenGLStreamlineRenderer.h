@@ -70,6 +70,9 @@ class vtkAppendPolyData;
 //  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
 //  Support for transparency sorting.
 //
+//   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
+//   Add display head geom as cone.
+//
 // ****************************************************************************
 
 class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
@@ -108,11 +111,14 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     vtkAppendPolyData *appendForTranspPolys;
 
     float *spherePts[MAX_DETAIL_LEVELS];
+    float *cylPts[MAX_DETAIL_LEVELS];
 
-    bool spheres_calculated;
     void CalculateSpherePts();
-    void DrawSphereAsQuads(float, float, float, float r, int);
-    vtkPolyData * GenerateSpherePolys(float, float, float, float r, int, float, float, float);
+    void CalculateConePts();
+    void DrawSphere(float, float, float, float r, int);
+    void DrawCone(float,float,float, float,float,float, float,float, int);
+    vtkPolyData * GenerateConePolys(float,float,float, float,float,float, float, float, int, float, float);
+    vtkPolyData * GenerateSpherePolys(float, float, float, float r, int, float, float);
 
     std::string  colorTableName;
     std::vector<unsigned char> colorTable;

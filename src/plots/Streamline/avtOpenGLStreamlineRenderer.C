@@ -68,17 +68,26 @@
 #include <avtGLSLProgram.h>
 #include <vtkCamera.h>
 #include <vtkStripper.h>
+#include <avtVector.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-static int sphereQualityLevels[5][2] = {
-    {12,4},
+static int sphereQualityLevels[4][2] = {
+    {12,6},
     {24,12},
     {48,24},
     {96,48}
 };
+
+static int cylinder_quality_levels[4] = {
+    17,
+    35,
+    71,
+    143
+};
+
 
 static const char *GLSL_illuminated_lines_vertex_program_source = 
 "varying vec3 L, T, V;"
@@ -122,6 +131,9 @@ static const char *GLSL_illuminated_lines_fragment_program_source =
 //   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
 //   Add illuminated lighting model for lines.
 //
+//   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
+//   Add display head geom as cone.
+//
 // ****************************************************************************
 
 avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer()
@@ -134,7 +146,10 @@ avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer()
     appendForTranspPolys = NULL;
     
     for (int i = 0; i < MAX_DETAIL_LEVELS; i++)
+    {
         spherePts[i] = NULL;
+        cylPts[i] = NULL;
+    }
         
     shader = new avtGLSLProgram("Illuminated Lines");
     shader->AttachShaderFromString(GL_VERTEX_SHADER,
@@ -152,6 +167,9 @@ avtOpenGLStreamlineRenderer::avtOpenGLStreamlineRenderer()
 //
 //  Modifications:
 //
+//   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
+//   Add display head geom as cone.
+//
 // ****************************************************************************
 
 avtOpenGLStreamlineRenderer::~avtOpenGLStreamlineRenderer()
@@ -163,11 +181,18 @@ avtOpenGLStreamlineRenderer::~avtOpenGLStreamlineRenderer()
     }
 
     for (int i = 0; i < MAX_DETAIL_LEVELS; i++)
+    {
         if (spherePts[i])
         {
             delete [] spherePts[i];
             spherePts[i] = NULL;
         }
+        if (cylPts[i])
+        {
+            delete [] cylPts[i];
+            cylPts[i] = NULL;
+        }
+    }
         
     delete shader;
 }
@@ -787,7 +812,7 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
         if (appendForTranspPolys)
         {
             vtkPolyData *pd = GenerateSpherePolys(pt[0], pt[1], pt[2], rad, quality,
-                                                  s[*segptr], (o?o[*segptr]:1.0), 0.0);
+                                                  s[*segptr], 0.0);
             appendForTranspPolys->AddInput(pd);
             pd->Delete();
         }
@@ -795,7 +820,7 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
         {
             glBegin(GL_QUADS);
             SetColor(s[*segptr], (o?o[*segptr]:1.0));
-            DrawSphereAsQuads(pt[0],pt[1], pt[2], rad, quality);
+            DrawSphere(pt[0],pt[1], pt[2], rad, quality);
             glEnd();
         }
         segptr += nPts;
@@ -815,6 +840,9 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
 //  Support for transparency sorting.
 //
+//   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
+//   Add display head geom as cone.
+//
 // ****************************************************************************
 
 void
@@ -822,6 +850,7 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
 {
     CalculateSpherePts();
     double rad = atts.GetHeadDisplayRadius();
+    double height = atts.GetHeadDisplayHeight();
     int quality = (int)(atts.GetGeomDisplayQuality());
 
     vtkPoints *points = data->GetPoints();
@@ -833,9 +862,9 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
         o = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str())->GetVoidPointer(0);
     
     int *segptr = segments;
-    double endPt[3];
+    double endPt[3], endPtPrev[3];
     unsigned char rgba[4];
-    float scalar;
+    float scalar, opacity=1.0;
 
     for (int i=0; i<data->GetNumberOfLines(); i++)
     {
@@ -856,16 +885,28 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             endPt[0] = pt[0] + t1*(next[0]-pt[0]);
             endPt[1] = pt[1] + t1*(next[1]-pt[1]);
             endPt[2] = pt[2] + t1*(next[2]-pt[2]);
+            endPtPrev[0] = pt[0];
+            endPtPrev[1] = pt[1];
+            endPtPrev[2] = pt[2];
             
             float  s0, s1;
             s0 = s[segptr[idx1]];
             s1 = s[segptr[idx1+1]];
             scalar = s0 + t1*(s1-s0);
+            if (o)
+            {
+                s0 = o[segptr[idx1]];
+                s1 = o[segptr[idx1+1]];
+                opacity = s0 + t1*(s1-s0);
+            }
         }
         else
         {
             points->GetPoint(segptr[nPts-1], endPt);
+            points->GetPoint(segptr[nPts-2], endPtPrev);
             scalar = s[*(segptr+nPts-1)];
+            if (o)
+                opacity = o[*(segptr+nPts-1)];
         }
         
         if (appendForTranspPolys)
@@ -873,17 +914,35 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             float param = atts.GetTermination();
             if (atts.GetDisplayEndFlag())
                 param = atts.GetDisplayEnd();
-            vtkPolyData *pd = GenerateSpherePolys(endPt[0], endPt[1], endPt[2], rad, quality,
-                                                  scalar, (o?o[*segptr]:1.0), param);
-            appendForTranspPolys->AddInput(pd);
-            pd->Delete();
+            vtkPolyData *pd = NULL;
+            if (atts.GetHeadDisplayType() == StreamlineAttributes::Sphere)
+                pd = GenerateSpherePolys(endPt[0], endPt[1], endPt[2], rad, quality,
+                                         scalar, param);
+            else if (atts.GetHeadDisplayType() == StreamlineAttributes::Cone)
+            {
+                float dir[3] = {endPt[0]-endPtPrev[0], endPt[1]-endPtPrev[1], endPt[2]-endPtPrev[2]};
+                pd = GenerateConePolys(endPt[0], endPt[1], endPt[2],
+                                                    dir[0], dir[1], dir[2],
+                                                    rad, height, quality,
+                                                    scalar, param);
+            }
+            
+            if (pd)
+            {
+                appendForTranspPolys->AddInput(pd);
+                pd->Delete();
+            }
         }
         else
         {
-            glBegin(GL_QUADS);
             SetColor(scalar, (o?o[*segptr]:1.0));
-            DrawSphereAsQuads(endPt[0],endPt[1], endPt[2], rad, quality);
-            glEnd();
+            if (atts.GetHeadDisplayType() == StreamlineAttributes::Sphere)
+                DrawSphere(endPt[0],endPt[1], endPt[2], rad, quality);
+            else if (atts.GetHeadDisplayType() == StreamlineAttributes::Cone)
+            {
+                float dir[3] = {endPt[0]-endPtPrev[0], endPt[1]-endPtPrev[1], endPt[2]-endPtPrev[2]};
+                DrawCone(endPt[0],endPt[1],endPt[2], dir[0],dir[1],dir[2], rad, height, quality);
+            }
         }
         segptr += nPts;
     }
@@ -1340,7 +1399,8 @@ avtOpenGLStreamlineRenderer::InitColors()
 //
 // ****************************************************************************
 
-void avtOpenGLStreamlineRenderer::CalculateSpherePts()
+void
+avtOpenGLStreamlineRenderer::CalculateSpherePts()
 {
     if (spherePts[0] != NULL)
         return;
@@ -1370,9 +1430,49 @@ void avtOpenGLStreamlineRenderer::CalculateSpherePts()
     }
 }
 
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::DrawCone
+//
+//  Purpose:
+//    Precalculate points for sphere geometry.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    February 16, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLStreamlineRenderer::CalculateConePts()
+{
+    if (cylPts[0] != NULL)
+        return;
+    
+    for (int detail=0; detail<MAX_DETAIL_LEVELS; detail++)
+    {
+        int cdetail = cylinder_quality_levels[detail];
+        cylPts[detail] = new float[(cdetail+1)*4];
+        
+        for (int b=0; b<=cdetail; b++)
+        {
+            float theta = 2*M_PI * float(b) / float(cdetail);
+            
+            float dx = cos(theta);
+            float dy = sin(theta);
+            float dz = 0;
+
+            cylPts[detail][b*4+0] = dx;
+            cylPts[detail][b*4+1] = dy;
+            cylPts[detail][b*4+2] = dz;
+            cylPts[detail][b*4+3] = 0;
+        }
+    }
+}
+
 
 // ****************************************************************************
-//  Method:  avtOpenGLStreamlineRenderer::CalculateSpherePts
+//  Method:  avtOpenGLStreamlineRenderer::DrawSphere
 //
 //  Purpose:
 //    Precalculate points for sphere geometry.
@@ -1385,17 +1485,18 @@ void avtOpenGLStreamlineRenderer::CalculateSpherePts()
 // ****************************************************************************
 
 void
-avtOpenGLStreamlineRenderer::DrawSphereAsQuads(float x0,
-                                               float y0,
-                                               float z0,
-                                               float r,
-                                               int detail)
+avtOpenGLStreamlineRenderer::DrawSphere(float x0,
+                                        float y0,
+                                        float z0,
+                                        float r,
+                                        int detail)
 {
     CalculateSpherePts();
 
     int qdetail = sphereQualityLevels[detail][0];
     int hdetail = sphereQualityLevels[detail][1];
 
+    glBegin(GL_QUADS);
     for (int a=0; a<qdetail; a++)
     {
         int a0 = a;
@@ -1425,7 +1526,278 @@ avtOpenGLStreamlineRenderer::DrawSphereAsQuads(float x0,
             glVertex3f(x0 + r*v10[0], y0 + r*v10[1], z0 + r*v10[2]);
         }
     }
+    glEnd();
 }
+
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::DrawCone
+//
+//  Purpose:
+//    Precalculate points for sphere geometry.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    February 16, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLStreamlineRenderer::DrawCone(float x0,
+                                      float y0,
+                                      float z0,
+                                      float dirx,
+                                      float diry,
+                                      float dirz,
+                                      float r,
+                                      float h,
+                                      int detail)
+{
+    CalculateConePts();
+
+    avtVector p0(x0,y0,z0), vc(dirx,diry,dirz), va, vb;
+    vc.normalize();
+    
+    avtVector::perpendiculars(vc, va,vb, 0);
+
+    float v0[4];
+    float v1[4];
+    int cdetail = cylinder_quality_levels[detail];
+    
+    avtVector p1 = p0 + (vc*h);
+
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(vc[0], vc[1], vc[2]);
+    glVertex3f(p1[0],p1[1],p1[2]);
+    for (int b=0; b<cdetail; b++)
+    {
+        int b0 = b;
+        int b1 = b+1;
+
+        float *u0, *u1;
+        u0 = &(cylPts[detail][b0*4]);
+        u1 = &(cylPts[detail][b1*4]);
+
+        v0[0] = va[0]*u0[0] + vb[0]*u0[1];
+        v0[1] = va[1]*u0[0] + vb[1]*u0[1];
+        v0[2] = va[2]*u0[0] + vb[2]*u0[1];
+
+        v1[0] = va[0]*u1[0] + vb[0]*u1[1];
+        v1[1] = va[1]*u1[0] + vb[1]*u1[1];
+        v1[2] = va[2]*u1[0] + vb[2]*u1[1];
+
+
+        glNormal3fv(v0);
+        glVertex3f(p0[0] + r*v0[0], p0[1] + r*v0[1], p0[2] + r*v0[2]);
+
+        glNormal3fv(v1);
+        glVertex3f(p0[0] + r*v1[0], p0[1] + r*v1[1], p0[2] + r*v1[2]);
+    }
+    glEnd();
+
+    //Draw cone bottom.
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(vc[0],vc[1],vc[2]);
+    glVertex3f(p0[0],p0[1],p0[2]);
+    for (int b=0; b<cdetail; b++)
+    {
+        int b0 = b;
+        int b1 = b+1;
+
+        float *u0, *u1;
+        u0 = &(cylPts[detail][b0*4]);
+        u1 = &(cylPts[detail][b1*4]);
+
+        v0[0] = va[0]*u0[0] + vb[0]*u0[1];
+        v0[1] = va[1]*u0[0] + vb[1]*u0[1];
+        v0[2] = va[2]*u0[0] + vb[2]*u0[1];
+
+        v1[0] = va[0]*u1[0] + vb[0]*u1[1];
+        v1[1] = va[1]*u1[0] + vb[1]*u1[1];
+        v1[2] = va[2]*u1[0] + vb[2]*u1[1];
+
+
+        glNormal3f(vc[0],vc[1],vc[2]);
+        glVertex3f(p0[0] + r*v0[0], p0[1] + r*v0[1], p0[2] + r*v0[2]);
+
+        glNormal3f(vc[0],vc[1],vc[2]);
+        glVertex3f(p0[0] + r*v1[0], p0[1] + r*v1[1], p0[2] + r*v1[2]);
+    }
+    glEnd();
+}
+
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::GenerateConePolys
+//
+//  Purpose:
+//    
+//  Programmer:  Dave Pugmire
+//  Creation:    February 16, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtOpenGLStreamlineRenderer::GenerateConePolys(float x0,
+                                               float y0,
+                                               float z0,
+                                               float dirx,
+                                               float diry,
+                                               float dirz,
+                                               float r,
+                                               float h,
+                                               int detail,
+                                               float scalar,
+                                               float param)
+{
+    CalculateConePts();
+    avtVector p0(x0,y0,z0), vc(dirx,diry,dirz), va, vb;
+    vc.normalize();
+    
+    avtVector::perpendiculars(vc, va,vb, 0);
+
+    float v0[4];
+    float v1[4];
+    int cdetail = cylinder_quality_levels[detail];
+    
+    avtVector p1 = p0 + (vc*h);
+
+    vtkPoints *pts = vtkPoints::New();
+    pts->Allocate(5000,10000);
+    vtkCellArray *polys = vtkCellArray::New();
+    vtkFloatArray *norms = vtkFloatArray::New();
+    vtkFloatArray *scalars = vtkFloatArray::New();
+    scalars->SetName(avtStreamlinePolyDataFilter::colorvarArrayName.c_str());
+    vtkFloatArray *params = vtkFloatArray::New();
+    params->SetName(avtStreamlinePolyDataFilter::paramArrayName.c_str());
+    
+    norms->SetNumberOfComponents(3);
+    norms->SetName("Normals");
+    polys->Allocate(10000,20000);
+    vtkIdType tri[3];
+    
+    float pt[3] = {p1[0], p1[1], p1[2]};
+    tri[0] = pts->InsertNextPoint(pt);
+    float norm[3] = {vc[0], vc[1], vc[2]};
+    norms->InsertNextTuple(norm);
+    params->InsertNextTuple1(param);
+    scalars->InsertNextTuple1(scalar);
+    
+    for (int b=0; b<cdetail; b++)
+    {
+        int b0 = b;
+        int b1 = b+1;
+
+        float *u0, *u1;
+        u0 = &(cylPts[detail][b0*4]);
+        u1 = &(cylPts[detail][b1*4]);
+
+        v0[0] = va[0]*u0[0] + vb[0]*u0[1];
+        v0[1] = va[1]*u0[0] + vb[1]*u0[1];
+        v0[2] = va[2]*u0[0] + vb[2]*u0[1];
+
+        v1[0] = va[0]*u1[0] + vb[0]*u1[1];
+        v1[1] = va[1]*u1[0] + vb[1]*u1[1];
+        v1[2] = va[2]*u1[0] + vb[2]*u1[1];
+
+
+        pt[0] = p0[0] + r*v0[0];
+        pt[1] = p0[1] + r*v0[1];
+        pt[2] = p0[2] + r*v0[2];
+        tri[1] = pts->InsertNextPoint(pt);
+        norms->InsertNextTuple(v0);
+        params->InsertNextTuple1(param);
+        scalars->InsertNextTuple1(scalar);
+        
+        pt[0] = p0[0] + r*v1[0];
+        pt[1] = p0[1] + r*v1[1];
+        pt[2] = p0[2] + r*v1[2];
+        tri[2] = pts->InsertNextPoint(pt);
+        norms->InsertNextTuple(v1);
+        params->InsertNextTuple1(param);
+        scalars->InsertNextTuple1(scalar);
+
+        polys->InsertNextCell(3, tri);
+    }
+
+    //Make the bottom.
+    pt[0] = p0[0];
+    pt[1] = p0[1];
+    pt[2] = p0[2];
+    tri[0] = pts->InsertNextPoint(pt);
+    norm[0] = vc[0];
+    norm[1] = vc[1];
+    norm[2] = vc[2];
+    norms->InsertNextTuple(norm);
+    params->InsertNextTuple1(param);
+    scalars->InsertNextTuple1(scalar);
+    
+    for (int b=0; b<cdetail; b++)
+    {
+        int b0 = b;
+        int b1 = b+1;
+
+        float *u0, *u1;
+        u0 = &(cylPts[detail][b0*4]);
+        u1 = &(cylPts[detail][b1*4]);
+
+        v0[0] = va[0]*u0[0] + vb[0]*u0[1];
+        v0[1] = va[1]*u0[0] + vb[1]*u0[1];
+        v0[2] = va[2]*u0[0] + vb[2]*u0[1];
+
+        v1[0] = va[0]*u1[0] + vb[0]*u1[1];
+        v1[1] = va[1]*u1[0] + vb[1]*u1[1];
+        v1[2] = va[2]*u1[0] + vb[2]*u1[1];
+
+
+        pt[0] = p0[0] + r*v0[0];
+        pt[1] = p0[1] + r*v0[1];
+        pt[2] = p0[2] + r*v0[2];
+        tri[1] = pts->InsertNextPoint(pt);
+        norms->InsertNextTuple(norm);
+        params->InsertNextTuple1(param);
+        scalars->InsertNextTuple1(scalar);
+        
+        pt[0] = p0[0] + r*v1[0];
+        pt[1] = p0[1] + r*v1[1];
+        pt[2] = p0[2] + r*v1[2];
+        tri[2] = pts->InsertNextPoint(pt);
+        norms->InsertNextTuple(norm);
+        params->InsertNextTuple1(param);
+        scalars->InsertNextTuple1(scalar);
+
+        polys->InsertNextCell(3, tri);
+    }
+    
+    vtkPolyData *pd = vtkPolyData::New();
+    polys->Squeeze();
+
+    pd->SetPoints(pts);
+    pd->SetPolys(polys);
+    pd->GetPointData()->SetNormals(norms);
+    pd->GetPointData()->AddArray(scalars);
+    pd->GetPointData()->AddArray(params);
+
+    pts->Delete();
+    polys->Delete();
+    scalars->Delete();
+    params->Delete();
+    norms->Delete();
+
+    //tri strip them.
+    vtkStripper *stripper = vtkStripper::New();
+    stripper->SetInput(pd);
+    stripper->Update();
+    
+    pd->Delete();
+    vtkPolyData *output = stripper->GetOutput();
+    output->Register(NULL);
+    stripper->Delete();
+    
+    return output;
+}
+
 
 // ****************************************************************************
 //  Method:  avtOpenGLStreamlineRenderer::GenerateSpherePolys
@@ -1446,7 +1818,6 @@ avtOpenGLStreamlineRenderer::GenerateSpherePolys(float x0,
                                                  float r,
                                                  int detail,
                                                  float scalar,
-                                                 float opacity,
                                                  float param)
 {
     CalculateSpherePts();

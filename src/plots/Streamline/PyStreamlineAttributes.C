@@ -477,7 +477,24 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sseedDisplayRadius = %g\n", prefix, atts->GetSeedDisplayRadius());
     str += tmpStr;
+    const char *headDisplayType_names = "Sphere, Cone";
+    switch (atts->GetHeadDisplayType())
+    {
+      case StreamlineAttributes::Sphere:
+          SNPRINTF(tmpStr, 1000, "%sheadDisplayType = %sSphere  # %s\n", prefix, prefix, headDisplayType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Cone:
+          SNPRINTF(tmpStr, 1000, "%sheadDisplayType = %sCone  # %s\n", prefix, prefix, headDisplayType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%sheadDisplayRadius = %g\n", prefix, atts->GetHeadDisplayRadius());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sheadDisplayHeight = %g\n", prefix, atts->GetHeadDisplayHeight());
     str += tmpStr;
     const char *opacityType_names = "None, Constant, Ramp, VariableRange";
     switch (atts->GetOpacityType())
@@ -2083,6 +2100,39 @@ StreamlineAttributes_GetSeedDisplayRadius(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+StreamlineAttributes_SetHeadDisplayType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the headDisplayType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetHeadDisplayType(StreamlineAttributes::GeomDisplayType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid headDisplayType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Sphere, Cone.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetHeadDisplayType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHeadDisplayType()));
+    return retval;
+}
+
+/*static*/ PyObject *
 StreamlineAttributes_SetHeadDisplayRadius(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
@@ -2103,6 +2153,30 @@ StreamlineAttributes_GetHeadDisplayRadius(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadDisplayRadius());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetHeadDisplayHeight(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the headDisplayHeight in the object.
+    obj->data->SetHeadDisplayHeight(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetHeadDisplayHeight(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadDisplayHeight());
     return retval;
 }
 
@@ -2438,8 +2512,12 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetDisplayEndFlag", StreamlineAttributes_GetDisplayEndFlag, METH_VARARGS},
     {"SetSeedDisplayRadius", StreamlineAttributes_SetSeedDisplayRadius, METH_VARARGS},
     {"GetSeedDisplayRadius", StreamlineAttributes_GetSeedDisplayRadius, METH_VARARGS},
+    {"SetHeadDisplayType", StreamlineAttributes_SetHeadDisplayType, METH_VARARGS},
+    {"GetHeadDisplayType", StreamlineAttributes_GetHeadDisplayType, METH_VARARGS},
     {"SetHeadDisplayRadius", StreamlineAttributes_SetHeadDisplayRadius, METH_VARARGS},
     {"GetHeadDisplayRadius", StreamlineAttributes_GetHeadDisplayRadius, METH_VARARGS},
+    {"SetHeadDisplayHeight", StreamlineAttributes_SetHeadDisplayHeight, METH_VARARGS},
+    {"GetHeadDisplayHeight", StreamlineAttributes_GetHeadDisplayHeight, METH_VARARGS},
     {"SetOpacityType", StreamlineAttributes_SetOpacityType, METH_VARARGS},
     {"GetOpacityType", StreamlineAttributes_GetOpacityType, METH_VARARGS},
     {"SetOpacityVariable", StreamlineAttributes_SetOpacityVariable, METH_VARARGS},
@@ -2643,8 +2721,17 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetDisplayEndFlag(self, NULL);
     if(strcmp(name, "seedDisplayRadius") == 0)
         return StreamlineAttributes_GetSeedDisplayRadius(self, NULL);
+    if(strcmp(name, "headDisplayType") == 0)
+        return StreamlineAttributes_GetHeadDisplayType(self, NULL);
+    if(strcmp(name, "Sphere") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Sphere));
+    if(strcmp(name, "Cone") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Cone));
+
     if(strcmp(name, "headDisplayRadius") == 0)
         return StreamlineAttributes_GetHeadDisplayRadius(self, NULL);
+    if(strcmp(name, "headDisplayHeight") == 0)
+        return StreamlineAttributes_GetHeadDisplayHeight(self, NULL);
     if(strcmp(name, "opacityType") == 0)
         return StreamlineAttributes_GetOpacityType(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -2789,8 +2876,12 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetDisplayEndFlag(self, tuple);
     else if(strcmp(name, "seedDisplayRadius") == 0)
         obj = StreamlineAttributes_SetSeedDisplayRadius(self, tuple);
+    else if(strcmp(name, "headDisplayType") == 0)
+        obj = StreamlineAttributes_SetHeadDisplayType(self, tuple);
     else if(strcmp(name, "headDisplayRadius") == 0)
         obj = StreamlineAttributes_SetHeadDisplayRadius(self, tuple);
+    else if(strcmp(name, "headDisplayHeight") == 0)
+        obj = StreamlineAttributes_SetHeadDisplayHeight(self, tuple);
     else if(strcmp(name, "opacityType") == 0)
         obj = StreamlineAttributes_SetOpacityType(self, tuple);
     else if(strcmp(name, "opacityVariable") == 0)

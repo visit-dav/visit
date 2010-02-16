@@ -3,27 +3,27 @@
     <CXXFLAGS>
       ${GLEW_INCLUDE_DIR}
     </CXXFLAGS>
-    <LIBS components="V">
-      ${GLEW_LIB}
-    </LIBS>
-    <LIBS components="ESer">
-      ${GLEW_LIB}
-    </LIBS>
-    <LIBS components="EPar">
-      ${GLEW_LIB}
-    </LIBS>
     <Files components="V">
       avtStreamlineRenderer.C
       avtMesaStreamlineRenderer.C
       avtOpenGLStreamlineRenderer.C
       avtGLSLProgram.C
     </Files>
+    <LIBS components="V">
+      ${GLEW_LIB}
+    </LIBS>
     <Files components="E">
       avtStreamlineRenderer.C
       avtMesaStreamlineRenderer.C
       avtOpenGLStreamlineRenderer.C
       avtGLSLProgram.C
     </Files>
+    <LIBS components="ESer">
+      ${GLEW_LIB}
+    </LIBS>
+    <LIBS components="EPar">
+      ${GLEW_LIB}
+    </LIBS>
     <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">
         SpecifiedPoint
@@ -78,6 +78,10 @@
         Medium
         High
         Super
+      </Enum>
+      <Enum name="GeomDisplayType">
+        Sphere
+        Cone
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
@@ -249,8 +253,14 @@
       <Field name="seedDisplayRadius" label="displaySeedRadius" type="double">
         0.250000
       </Field>
+      <Field name="headDisplayType" label="headDisplayType" type="enum" subtype="GeomDisplayType">
+        Sphere
+      </Field>
       <Field name="headDisplayRadius" label="headDisplayRadius" type="double">
         0.250000
+      </Field>
+      <Field name="headDisplayHeight" label="headDisplayHeight" type="double">
+        0.500000
       </Field>
       <Field name="opacityType" label="opacityType" type="enum" subtype="OpacityType">
         None
