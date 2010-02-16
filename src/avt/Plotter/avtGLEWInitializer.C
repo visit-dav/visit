@@ -77,6 +77,9 @@ static bool initialized = false;
 //    Tom Fogal, Mon Feb  8 12:52:06 MST 2010
 //    Change separator to ";" to be more windows-friendly.
 //
+//    Kathleen Bonnell, Tue Feb 16 13:37:52 MST 2010
+//    Don't use mesa on windows.
+//
 // ****************************************************************************
 bool initialize(bool force)
 {
@@ -88,7 +91,11 @@ bool initialize(bool force)
     std::string gl_lib;
     enum GL_Name_Convention convention;
     enum GL_Library_Type libtype;
+#ifndef WIN32
     const bool use_mesa = avtCallback::GetSoftwareRendering();
+#else
+    const bool use_mesa = false;
+#endif
 
     if(use_mesa)
     {
