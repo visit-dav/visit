@@ -408,6 +408,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add ramp opacity and draw geom head.
 //
+//   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
+//   Add display head geom as cone.
+//
 // ****************************************************************************
 
 void
@@ -496,15 +499,30 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     showHeads = new QCheckBox(tr("Show heads"), displayGrp);
     connect(showHeads, SIGNAL(toggled(bool)),this, SLOT(showHeadsChanged(bool)));
     dLayout->addWidget(showHeads, dRow,0);
+    
+    headDisplayTypeLabel = new QLabel(tr("Display as"), displayGrp);
+    headDisplayType = new QComboBox(displayGrp);
+    headDisplayType->addItem(tr("Sphere"), 0);
+    headDisplayType->addItem(tr("Cone"), 1);
+    connect(headDisplayType, SIGNAL(activated(int)), this, SLOT(headDisplayTypeChanged(int)));
+    dLayout->addWidget(headDisplayTypeLabel, dRow,1);
+    dLayout->addWidget(headDisplayType, dRow,2);
+    dRow++;
 
     headRadius = new QLineEdit(displayGrp);
     connect(headRadius, SIGNAL(returnPressed()), this, SLOT(headRadiusProcessText()));
     headRadiusLabel = new QLabel(tr("Radius"), displayGrp);
     headRadiusLabel->setBuddy(headRadius);
     headRadiusLabel->setToolTip(tr("Radius for head point display."));
-    headRadiusLabel->setBuddy(headRadius);
+    headHeight = new QLineEdit(displayGrp);
+    connect(headHeight, SIGNAL(returnPressed()), this, SLOT(headHeightProcessText()));
+    headHeightLabel = new QLabel(tr("Height"), displayGrp);
+    headHeightLabel->setBuddy(headHeight);
+    headHeightLabel->setToolTip(tr("Height for head point display."));
     dLayout->addWidget(headRadiusLabel,dRow,1);
     dLayout->addWidget(headRadius, dRow,2);
+    dLayout->addWidget(headHeightLabel,dRow,3);
+    dLayout->addWidget(headHeight, dRow,4);
     dRow++;
 
     geomDisplayQuality = new QComboBox(displayGrp);
@@ -514,8 +532,8 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     geomDisplayQuality->addItem(tr("Super"), 3);
     geomDisplayQualityLabel = new QLabel(tr("Display quality"), displayGrp);
     connect(geomDisplayQuality, SIGNAL(activated(int)), this, SLOT(geomDisplayQualityChanged(int)));
-    dLayout->addWidget(geomDisplayQualityLabel, dRow,1);
-    dLayout->addWidget(geomDisplayQuality, dRow,2);
+    dLayout->addWidget(geomDisplayQualityLabel, dRow,0);
+    dLayout->addWidget(geomDisplayQuality, dRow,1);
     dRow++;
 
     splitter = new QFrame(displayGrp);
@@ -960,6 +978,27 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             tubeDisplayDensity->blockSignals(false);
             break;
 
+          case StreamlineAttributes::ID_headDisplayType:
+            headDisplayType->blockSignals(true);
+            headDisplayType->setCurrentIndex(streamAtts->GetHeadDisplayType());
+            headDisplayType->blockSignals(false);
+
+            if (streamAtts->GetShowHeads() && streamAtts->GetHeadDisplayType() == StreamlineAttributes::Cone)
+            {
+                headHeight->setEnabled(true);
+                headHeightLabel->setEnabled(true);
+                headHeight->show();
+                headHeightLabel->show();
+            }
+            else
+            {
+                headHeight->setEnabled(false);
+                headHeightLabel->setEnabled(false);
+                headHeight->hide();
+                headHeightLabel->hide();
+            }
+            break;
+
           case StreamlineAttributes::ID_geomDisplayQuality:
             geomDisplayQuality->blockSignals(true);
             geomDisplayQuality->setCurrentIndex(streamAtts->GetGeomDisplayQuality());
@@ -1026,6 +1065,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_showHeads:
             headRadius->setEnabled(streamAtts->GetShowHeads());
             headRadiusLabel->setEnabled(streamAtts->GetShowHeads());
+            headDisplayType->setEnabled(streamAtts->GetShowHeads());
+            headHeight->setEnabled(streamAtts->GetShowHeads() && streamAtts->GetHeadDisplayType() == StreamlineAttributes::Cone);
+            headHeightLabel->setEnabled(streamAtts->GetShowHeads() && streamAtts->GetHeadDisplayType() == StreamlineAttributes::Cone);
             geomDisplayQuality->setEnabled(streamAtts->GetShowSeeds()||streamAtts->GetShowHeads());
             geomDisplayQualityLabel->setEnabled(streamAtts->GetShowSeeds()||streamAtts->GetShowHeads());
 
@@ -1041,6 +1083,10 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_headDisplayRadius:
             temp.setNum(streamAtts->GetHeadDisplayRadius());
             headRadius->setText(temp);
+            break;
+        case StreamlineAttributes::ID_headDisplayHeight:
+            temp.setNum(streamAtts->GetHeadDisplayHeight());
+            headHeight->setText(temp);
             break;
 
         case StreamlineAttributes::ID_tubeRadius:
@@ -2041,6 +2087,20 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetHeadDisplayRadius(streamAtts->GetHeadDisplayRadius());
         }
     }
+    // headHeight
+    if(which_widget == StreamlineAttributes::ID_headDisplayHeight || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(headHeight, val))
+            streamAtts->SetHeadDisplayHeight(val);
+        else
+        {
+            cout<<"val= "<<val<<endl;
+            ResettingError(tr("Head height"),
+                DoubleToQString(streamAtts->GetHeadDisplayHeight()));
+            streamAtts->SetHeadDisplayHeight(streamAtts->GetHeadDisplayHeight());
+        }
+    }
     
     // opacityMin
     if(which_widget == StreamlineAttributes::ID_opacityVarMin || doAll)
@@ -2406,6 +2466,13 @@ QvisStreamlinePlotWindow::headRadiusProcessText()
 }
 
 void
+QvisStreamlinePlotWindow::headHeightProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_headDisplayHeight);
+    Apply();
+}
+
+void
 QvisStreamlinePlotWindow::useWholeBoxChanged(bool val)
 {
     streamAtts->SetUseWholeBox(val);
@@ -2585,6 +2652,13 @@ void
 QvisStreamlinePlotWindow::seedDisplayQualityChanged(int val)
 {
     streamAtts->SetGeomDisplayQuality(StreamlineAttributes::DisplayQuality(val));
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::headDisplayTypeChanged(int val)
+{
+    streamAtts->SetHeadDisplayType(StreamlineAttributes::GeomDisplayType(val));
     Apply();
 }
 

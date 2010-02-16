@@ -81,6 +81,9 @@
 //    Dave Pugmire (for Chrisoph Garth), Wed Jan 20 09:28:59 EST 2010
 //    Remove the getText method.
 //
+//    Dave Pugmire, Mon Feb 15 14:05:19 EST 2010
+//    Add perpendiculars method and unary - operator.
+//
 // ****************************************************************************
 class MATH_API avtVector
 {
@@ -102,6 +105,7 @@ class MATH_API avtVector
     void       operator+=(const avtVector&);
     avtVector  operator-(const avtVector&) const;
     void       operator-=(const avtVector&);
+    avtVector  operator-() const;
 
     // scalar multiplication/division
     avtVector  operator*(const double&) const;
@@ -134,6 +138,8 @@ class MATH_API avtVector
     // length.
     double length2() const;
     double length() const;
+
+    static void perpendiculars(const avtVector &x, avtVector &y, avtVector &z, double theta);
 
     // friends
     MATH_API friend ostream& operator<<(ostream& ostr,const avtVector&) STUB_OSTR;
@@ -209,6 +215,12 @@ inline avtVector
 avtVector::operator-(const avtVector &r) const
 {
     return avtVector(x-r.x, y-r.y, z-r.z);
+}
+
+inline avtVector
+avtVector::operator-() const
+{
+    return avtVector(-x, -y, -z);
 }
 
 inline void
