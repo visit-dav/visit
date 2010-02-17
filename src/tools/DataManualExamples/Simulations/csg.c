@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "SimulationExample.h"
+
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
@@ -343,6 +345,7 @@ int main(int argc, char **argv)
     VisItOpenTraceFile("csg_trace.txt");
 
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
     /* Write out .sim2 file that VisIt uses to connect. */

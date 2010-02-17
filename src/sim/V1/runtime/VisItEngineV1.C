@@ -88,6 +88,10 @@
 //
 //    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL
+//
+//    Brad Whitlock, Tue Feb 16 15:29:39 PST 2010
+//    Enable Simulation plugins.
+//
 // ****************************************************************************
 
 void *get_engine()
@@ -97,6 +101,7 @@ void *get_engine()
     if ( visitTimer == NULL)
         TimingsManager::Initialize( "Simulation");
     Engine *engine = Engine::Instance();
+    engine->EnableSimulationPlugins();
     return (void*)engine;
 }
 

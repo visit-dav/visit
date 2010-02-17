@@ -1139,6 +1139,9 @@ visit_get_runtime_function(const char *name)
 *   Brad Whitlock, Fri Feb 13 09:54:47 PST 2009
 *   I added code to get data callback setting functions from the library.
 *
+*   Brad Whitlock, Tue Feb 16 15:09:52 PST 2010
+*   Try a list of libraries in the library path.
+*
 *******************************************************************************/
 static int LoadVisItLibrary(void)
 {
@@ -1181,23 +1184,41 @@ static int LoadVisItLibrary(void)
     if (dl_handle == NULL)
     {
         LIBSIM_MESSAGE1("Failed to open the VisIt library: %s\n", dlerror())
+        LIBSIM_MESSAGE1("Calling getenv(%s)", LD_LIBRARY_PATH);
 
-        if(getenv(LD_LIBRARY_PATH))
+        if(getenv(LD_LIBRARY_PATH) != NULL)
         {
-            char *libpath = strdup(getenv(LD_LIBRARY_PATH));
-            char *ptr = strstr(libpath, ":");
-            if (ptr)
-            {
-                *ptr = 0;
+            char *libpath = NULL, *start = NULL, *ptr = NULL;
+            libpath = start = strdup(getenv(LD_LIBRARY_PATH));
+            LIBSIM_MESSAGE1("getenv returned: %s", getenv(LD_LIBRARY_PATH));
 
+            /* Iterate over all paths in the LD_LIBRARY_PATH and try each one
+             * until we get a library to open.
+             */
+            do
+            {
+                /* If there is a separator then null it out*/
+                ptr = strstr(libpath, ":");
+                if (ptr)
+                    *ptr = '\0';
+
+                /* Try to use the current libpath to open the library */
                 if (isParallel) 
                     sprintf(lib, "%s/libsimV2runtime_par.%s", libpath, extension);
                 else
                     sprintf(lib, "%s/libsimV2runtime_ser.%s", libpath, extension);
-
                 LIBSIM_MESSAGE1("Calling dlopen(%s)", lib);
                 dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
-            }
+                if(dl_handle == NULL)
+                {
+                     LIBSIM_MESSAGE1("dlopen error: %s", dlerror());
+                }
+                if(ptr != NULL)
+                    libpath = ptr + 1;
+                else
+                    libpath += strlen(libpath);
+            } while(dl_handle == NULL && *libpath != '\0');
+            free(start);
         }
    }
    if (!dl_handle)

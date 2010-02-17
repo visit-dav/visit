@@ -3,43 +3,20 @@
     <FilePatterns>
       *.sim2
     </FilePatterns>
+    <CXXFLAGS>
+      ${VISIT_SOURCE_DIR}/sim/V2/lib
+      ${VISIT_SOURCE_DIR}/sim/V2/runtime
+    </CXXFLAGS>
     <Files components="E">
       avtSimV2FileFormat.C
       avtSimV2Writer.C
       SimV2GetMesh.C
     </Files>
     <LIBS components="ESer">
-      -lsimV2runtime_ser
-      -lengine_ser
-      -lenginerpc
-      -lpipeline_ser
-      -lavtfilters_ser
-      -lavtwriter_ser
-      -lavtivp_ser
-      -lavtshapelets_ser
-      -lviswindow_ser
-      -lplotter_ser
-      -lexpressions_ser
-      -lquery_ser
-      -lavtview
-      -lavtddf_ser
+      simV2runtime_ser
     </LIBS>
     <LIBS components="EPar">
-      -lsimV2runtime_par
-      -lengine_par
-      -lenginerpc
-      -lpipeline_par
-      -lavtfilters_par
-      -lavtwriter_par
-      -lavtivp_par
-      -lavtshapelets_par
-      -lviswindow_par
-      -lplotter_par
-      -lexpressions_par
-      -lquery_par
-      -lavtview
-      -lavtddf_par
-      -lcognomen
+      simV2runtime_par
     </LIBS>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

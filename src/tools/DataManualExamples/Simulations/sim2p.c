@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <mpi.h>
 
+#include "SimulationExample.h"
+
 static int par_rank = 0;
 static int par_size = 1;
 
@@ -79,6 +81,7 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
 /* CHANGE 2 */

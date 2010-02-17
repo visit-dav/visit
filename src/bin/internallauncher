@@ -576,6 +576,11 @@ $0 = shift @ARGV;
 #    Hank Childs, Sun Feb 14 13:34:39 CST 2010
 #    Add support for longhorn.
 #
+#    Brad Whitlock, Tue Feb 16 15:45:21 PST 2010
+#    I added a Mac-specific case for "visit -env" so the DYLD_LIBRARY_PATH
+#    will get printed. I also added code to print VISITARCHHOME so the we'll
+#    later know where to find Mesa. This was needed for simulations.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2247,7 +2252,7 @@ if ($logging and $exe_name eq "mdserver")
 
 if ($envonly)
 {
-    PrintEnvironment();
+    PrintEnvironment($os);
     exit(0);
 }
 
@@ -3106,13 +3111,15 @@ sub RunComponent {
 sub PrintEnvironment {
     if ($envonly)
     {
+        my $os = shift;
+        if($os eq "darwin")
+        {
+        # We use DYLD_LIBRARY_PATH on the Mac for libsim.
         print STDOUT <<"EOF"
-LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
-LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}
-LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}
-LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}
+DYLD_LIBRARY_PATH=$ENV{DYLD_FALLBACK_LIBRARY_PATH}
 LIBPATH=$ENV{LIBPATH}
 VISITHOME=$ENV{VISITHOME}
+VISITARCHHOME=$ENV{VISITARCHHOME}
 VISITHELPHOME=$ENV{VISITHELPHOME}
 VISITULTRAHOME=$ENV{VISITULTRAHOME}
 VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
@@ -3120,6 +3127,25 @@ PYTHONHOME=$ENV{PYTHONHOME}
 TRAP_FPE=$ENV{TRAP_FPE}
 MESA_GLX_FX=$ENV{MESA_GLX_FX}
 EOF
+        }
+        else
+        {
+        print STDOUT <<"EOF"
+LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
+LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}
+LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}
+LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}
+LIBPATH=$ENV{LIBPATH}
+VISITHOME=$ENV{VISITHOME}
+VISITARCHHOME=$ENV{VISITARCHHOME}
+VISITHELPHOME=$ENV{VISITHELPHOME}
+VISITULTRAHOME=$ENV{VISITULTRAHOME}
+VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
+PYTHONHOME=$ENV{PYTHONHOME}
+TRAP_FPE=$ENV{TRAP_FPE}
+MESA_GLX_FX=$ENV{MESA_GLX_FX}
+EOF
+       }
     }
     elsif (grep(/csh/, "$ENV{SHELL}"))
     {
