@@ -11066,7 +11066,10 @@ GLenum glewInit ()
 
   r = glewContextInit();
 #if defined(_WIN32)
-  return wglewContextInit();
+  if(gl_lib_type != GLEW_LIB_TYPE_OSMESA) {
+    return wglewContextInit();
+  }
+  return GLEW_OK;
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX) /* _UNIX */
   /* We'll need GLX to setup contexts / etc. if we're not using OSMesa. */
   if(gl_lib_type != GLEW_LIB_TYPE_OSMESA) {
