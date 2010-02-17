@@ -33,7 +33,7 @@
       indexfile.C
       timestep.C
       hdf5_fastquery.C
-      histogramCache.C
+      HistogramCache.C
     </Files>
     <Files components="E">
       avtH5PartFileFormat.C
@@ -48,7 +48,7 @@
       indexfile.C
       timestep.C
       hdf5_fastquery.C
-      histogramCache.C
+      HistogramCache.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
