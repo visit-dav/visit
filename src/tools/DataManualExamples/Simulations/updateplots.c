@@ -48,6 +48,8 @@
 #include <mpi.h>
 #endif
 
+#include "SimulationExample.h"
+
 #define VISIT_COMMAND_PROCESS 0
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
@@ -366,7 +368,7 @@ void mainloop(simulation_data *sim)
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                sim->runMode = SIM_RUNNING;
+                /*sim->runMode = SIM_RUNNING;*/
             }
             break;
         case 3:
@@ -407,6 +409,7 @@ void mainloop(simulation_data *sim)
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
     simulation_data sim;

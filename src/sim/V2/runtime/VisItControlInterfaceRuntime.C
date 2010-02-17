@@ -63,8 +63,6 @@ extern void DataCallbacksCleanup(void);
 //
 //  Modifications:
 //
-//   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
-//   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
 
 void *visit_get_engine()
@@ -74,6 +72,7 @@ void *visit_get_engine()
     if ( visitTimer == NULL)
         TimingsManager::Initialize( "Simulation");
     Engine *engine = Engine::Instance();
+    engine->EnableSimulationPlugins();
     return (void*)engine;
 }
 

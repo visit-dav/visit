@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <stubs.c>
 
+#include "SimulationExample.h"
+
 /******************************************************************************
  *
  * Purpose: This is the main function for the program.
@@ -61,6 +63,7 @@
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
     /* Write out .sim file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim2",

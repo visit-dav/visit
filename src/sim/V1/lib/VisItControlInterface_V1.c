@@ -656,6 +656,9 @@ static function_pointer dlsym_function(void *h, const char *n)
 *   Jeremy Meredith, Fri Nov  2 18:06:42 EDT 2007
 *   Use dylib as the extension for OSX.
 *
+*   Brad Whitlock, Tue Feb 16 15:09:52 PST 2010
+*   Try a list of libraries in the library path.
+*
 *******************************************************************************/
 static int LoadVisItLibrary(void)
 {
@@ -673,8 +676,10 @@ static int LoadVisItLibrary(void)
    /* load library */
 #ifdef __APPLE__
    const char *extension = "dylib";
+   const char *LD_LIBRARY_PATH = "DYLD_LIBRARY_PATH";
 #else
    const char *extension = "so";
+   const char *LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
 #endif
 
    if (isParallel)
@@ -688,23 +693,35 @@ static int LoadVisItLibrary(void)
 
    dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
 
-   if (!dl_handle && getenv("LD_LIBRARY_PATH"))
+   if (!dl_handle && getenv(LD_LIBRARY_PATH))
    {
-      char *libpath = strdup(getenv("LD_LIBRARY_PATH"));
-      char *ptr = strstr(libpath, ":");
-      if (ptr)
-      {
-         *ptr = 0;
+        char *libpath = NULL, *start = NULL, *ptr = NULL;
+        libpath = start = strdup(getenv(LD_LIBRARY_PATH));
 
-         if (isParallel) 
-             sprintf(lib, "%s/libvisitenginev1_par.%s", libpath, extension);
-         else
-             sprintf(lib, "%s/libvisitenginev1_ser.%s", libpath, extension);
+        /* Iterate over all paths in the LD_LIBRARY_PATH and try each one
+         * until we get a library to open.
+         */
+        do
+        {
+            /* If there is a separator then null it out*/
+            ptr = strstr(libpath, ":");
+            if (ptr)
+                *ptr = '\0';
 
-         dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
-      }
+            /* Try to use the current libpath to open the library */
+            if (isParallel) 
+                sprintf(lib, "%s/libvisitenginev1_par.%s", libpath, extension);
+            else
+                sprintf(lib, "%s/libvisitenginev1_ser.%s", libpath, extension);
+
+            dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
+            if(ptr != NULL)
+                libpath = ptr + 1;
+            else
+                libpath += strlen(libpath);
+        } while(dl_handle == NULL && *libpath != '\0');
+        free(start);
    }
-
    if (!dl_handle)
    {
       sprintf(lastError, "Failed to open the VisIt library: %s\n", dlerror());

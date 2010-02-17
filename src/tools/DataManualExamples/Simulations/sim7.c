@@ -42,6 +42,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "SimulationExample.h"
+
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
 int  simulation_done(void)   { return 0; }
@@ -126,6 +128,7 @@ void mainloop(void)
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
     /* Write out .sim file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim7",

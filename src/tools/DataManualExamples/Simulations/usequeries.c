@@ -46,6 +46,8 @@
 #include <mpi.h>
 #endif
 
+#include "SimulationExample.h"
+
 #define VISIT_COMMAND_PROCESS 0
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
@@ -317,6 +319,7 @@ void mainloop(void)
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
 #ifdef PARALLEL

@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <mpi.h>
 
+#include "SimulationExample.h"
+
 static int par_rank = 0;
 static int par_size = 1;
 
@@ -99,6 +101,7 @@ void mainloop(void)
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
 /* CHANGE 2 */

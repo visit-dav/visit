@@ -40,6 +40,8 @@
 #include <VisItControlInterface_V1.h>
 #include <stdio.h>
 
+#include "SimulationExample.h"
+
 #include <stubs.c>
 
 /******************************************************************************
@@ -82,6 +84,7 @@ void mainloop(void)
 int main(int argc, char **argv)
 {
     /* Initialize envuronment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
     /* Write out .sim file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim3",
