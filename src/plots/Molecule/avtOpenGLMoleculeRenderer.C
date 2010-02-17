@@ -269,6 +269,9 @@ SetColor3ubv(const unsigned char *c)
 //    Only draw atoms where there is a Vertex cell type.  Don't assume
 //    all points are atoms (since we now support dangling bonds).
 //
+//    John Schreiner, Fri Feb 12 19:15:11 MST 2010
+//    Fixed glTexCoord being called before glVertex for imposter rendering.
+//
 // ****************************************************************************
 
 void
@@ -456,8 +459,8 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             glNormal3f(radius, radius, radius);
             for(int j = 0; j < 4; ++j)
             {
-                glVertex3dv(points->GetPoint(atom));
                 glTexCoord2fv(texCoords[j]);
+                glVertex3dv(points->GetPoint(atom));
             }
         }
         else if(vmode == 1)
@@ -470,8 +473,8 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
                 vert[0] = pt[0] + ptOffsets[j][0] * radius;
                 vert[1] = pt[1] + ptOffsets[j][1] * radius;
                 vert[2] = pt[2] + ptOffsets[j][2] * radius;
-                glVertex3fv(vert);
                 glTexCoord2fv(texCoords[j]);
+                glVertex3fv(vert);
             }
         }
         else
@@ -842,6 +845,10 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 //    I made sure that we use immediate mode when we need to when we use 
 //    imposter rendering,
 //
+//    John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//    Removed width/height hints for atom imposters that aren't required
+//    anymore.  Also don't use depth hint when drawing bonds (always use depth).
+//
 // ****************************************************************************
 
 void
@@ -851,8 +858,7 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
                                  float _varmin, float _varmax,
                                  float _ambient_coeff,
                                  float _spec_coeff, float _spec_power,
-                                 float _spec_r, float _spec_g, float _spec_b,
-                                 const int *winsize)
+                                 float _spec_r, float _spec_g, float _spec_b)
 {
     if (!data->GetCellData()->GetScalars() &&
         !data->GetPointData()->GetScalars())
@@ -955,14 +961,6 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
         }
         else if(atts.GetDrawAtomsAs() == MoleculeAttributes::ImposterAtoms)
         {
-            // Set some hints in the imposter atom texturer.
-            ((avtOpenGLAtomTexturer *)tex)->SetHint(
-                 avtOpenGLAtomTexturer::HINT_SET_DEPTH, doBonds ? 0 : 1);
-            ((avtOpenGLAtomTexturer *)tex)->SetHint(
-                 avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH, winsize[0]);
-            ((avtOpenGLAtomTexturer *)tex)->SetHint(
-                 avtOpenGLAtomTexturer::HINT_SET_SCREEN_HEIGHT, winsize[1]);
-
             DrawAtomsAsSpheres(data,atts);
         }
 

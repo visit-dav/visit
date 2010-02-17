@@ -68,6 +68,9 @@
 //    Jeremy Meredith, Tue Jan 26 17:25:38 EST 2010
 //    Added ability to draw a cap on a bond (used for dangling bonds).
 //
+//    John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//    Removed window size parameter from Render().
+//
 // ****************************************************************************
 
 class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
@@ -83,8 +86,7 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
                                    float varmin, float varmax,
                                    float ambient_coeff,
                                    float spec_coeff, float spec_power,
-                                   float spec_r, float spec_g, float spec_b,
-                                   const int *);
+                                   float spec_r, float spec_g, float spec_b);
 
     virtual void   InvalidateColors();
 
