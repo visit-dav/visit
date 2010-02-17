@@ -50,6 +50,9 @@
 /* Define to 1 if you have the `z' library (-lz). */
 #cmakedefine HAVE_LIBZ 1
 
+/* Define if you have the FastBit library. */
+#cmakedefine HAVE_LIBFASTBIT 
+
 /*******************************************************************************
  * Header file checks
  ******************************************************************************/
