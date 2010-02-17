@@ -25,7 +25,7 @@ indexfileC.C
 indexfile.C
 timestep.C
 hdf5_fastquery.C
-histogramCache.C
+HistogramCache.C
 )
 
 SET(LIBE_SOURCES
@@ -43,7 +43,7 @@ indexfileC.C
 indexfile.C
 timestep.C
 hdf5_fastquery.C
-histogramCache.C
+HistogramCache.C
 )
 
 INCLUDE_DIRECTORIES(
