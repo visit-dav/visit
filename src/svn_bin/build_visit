@@ -60,7 +60,7 @@
 #           ExodusII 4.46     exodusii-4.46.tar.gz   -e
 #           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  -r
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
-#           H5part   1.4.2    H5Part-1.4.2.tar.gz    -r
+#           H5part   1.4.2    H5Part-1.6.0.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
 #           HDF5     1.8.4    hdf5-1.8.4.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
@@ -819,6 +819,9 @@
 #     Added a patch for Boxlib and upgraded GDAL to get them working on
 #     Ubuntu 9.10.
 #
+#     Gunther H. Weber, Tue Feb 16 11:07:08 PST 2010
+#     Adapted to new H5Part
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1204,9 +1207,9 @@ export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
 export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
 
-export H5PART_VERSION=${H5PART_VERSION:-"1.4.2"}
+export H5PART_VERSION=${H5PART_VERSION:-"1.6.0"}
 export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
-export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.4"}
+export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
 export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
 
 export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.0.9"}
@@ -7014,9 +7017,8 @@ $DYLD_LIBRARY_PATH
 $LD_LIBRARY_PATH
     fi
     info "Invoking command to configure H5Part"
-    ./configure ${WITHHDF5ARG} ${OPTIONAL} \
-       CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS -DH5_USE_16_API" CXXFLAGS="$CXX_OPT_FLAGS" \
+    ./configure ${WITHHDF5ARG} ${OPTIONAL} CXX="$CXX_COMPILER" \
+       CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        warn "H5Part configure failed.  Giving up"

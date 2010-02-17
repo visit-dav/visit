@@ -38,7 +38,7 @@
 
 #include <H5PartPluginInfo.h>
 #include <avtH5PartFileFormat.h>
-#include <avtMTMDFileFormatInterface.h>
+#include <avtMTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <avtH5PartOptions.h>
 
@@ -55,7 +55,7 @@
 DatabaseType
 H5PartCommonPluginInfo::GetDatabaseType()
 {
-    return DB_TYPE_MTMD;
+    return DB_TYPE_MTSD;
 }
 
 // ****************************************************************************
@@ -79,15 +79,18 @@ avtDatabase *
 H5PartCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;
-    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        ffl[i] = new avtH5PartFileFormat(list[i*nBlock], readOptions);
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
+        {
+            ffl[i][j] = new avtH5PartFileFormat(list[i*nBlock + j], readOptions);
+        }
     }
-    avtMTMDFileFormatInterface *inter 
-           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+    avtMTSDFileFormatInterface *inter 
+           = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
 
