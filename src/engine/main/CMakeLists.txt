@@ -225,8 +225,10 @@ IF(VISIT_PARALLEL)
         cognomen
     )
 
-    ADD_LIBRARY(link_mpi_libs STATIC empty.c)
-    TARGET_LINK_LIBRARIES(link_mpi_libs ${VISIT_PARALLEL_LIBS})
+    IF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        ADD_LIBRARY(link_mpi_libs STATIC empty.c)
+        TARGET_LINK_LIBRARIES(link_mpi_libs ${VISIT_PARALLEL_LIBS})
+    ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
     ADD_PARALLEL_EXECUTABLE(engine_par_exe main.C ${ENGINE_STATIC_SOURCES})
     SET_TARGET_PROPERTIES(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
