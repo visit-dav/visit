@@ -41,6 +41,7 @@
 #include <QLayout>
 #include <QGroupBox>
 #include <QPushButton>
+#include <QvisNotepadArea.h>
 
 #include <Utility.h>
 #include <DataNode.h>
@@ -179,6 +180,10 @@ QvisMacroWindow::invokeMacro(int index)
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Gunther H. Weber, Wed Feb 17 14:34:03 PST 2010
+//   Work around issue that layout does not work when macro buttons are
+//   added while the macro window is posted.
+//
 // ****************************************************************************
 
 void
@@ -201,8 +206,26 @@ QvisMacroWindow::addMacro(const QString &s)
     newMacro->show();
 
     // Update the layout so the button gets added to the window.
-    updateGeometry();
-    update();
+    if (isPosted)
+    {
+        // <HACK> This should not be necessary since Qt should respect the
+        // minimum size hint. However, otherwise the buttons will overlap if
+        // the window is posted.
+        central->setMinimumWidth(central->minimumSizeHint().width());
+        central->setMinimumHeight(central->minimumSizeHint().height());
+        // </HACK>
+
+        // If the window is posted, the main widget is not visible. Thus,
+        // we need to update the central area.
+        central->updateGeometry();
+        central->update();
+    }
+    else
+    {
+        // Window is visible, update the layout of the window
+        updateGeometry();
+        update();
+    }
 }
 
 // ****************************************************************************

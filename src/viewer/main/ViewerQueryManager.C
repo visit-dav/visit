@@ -3863,6 +3863,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Memory Usage", dq, misc_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Sample Statistics", dq, vr, ad, 1, 0, qo);
     queryTypes->AddQuery("Population Statistics", dq, vr, ad, 1, 0, qo);
+
+    queryTypes->AddQuery("Contour Spectrum", dq, vr, basic, 1, QUERY_SCALAR_VAR, qo);
     queryTypes->SelectAll();
 }
 

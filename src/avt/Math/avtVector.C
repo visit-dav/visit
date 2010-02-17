@@ -57,7 +57,7 @@ void
 avtVector::perpendiculars(const avtVector &x, avtVector &y, avtVector &z, double theta)
 {
     double X[3] = {x.x, x.y, x.z}, Y[3], Z[3];
-    vtkMath::Perpendiculars(X, Y, Z, theta);
+    //vtkMath::Perpendiculars(X, Y, Z, theta);
 
     y.x = Y[0];
     y.y = Y[1];
