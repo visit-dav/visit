@@ -100,7 +100,7 @@
 #include <avtWatertightQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtZoneCenterQuery.h>
-#include <avtContourSpectrumQuery.h>
+
 
 #include <QueryAttributes.h>
 #include <string>
@@ -641,10 +641,6 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Population Statistics")
     {
         query = new avtSampleStatisticsQuery(true);
-    }
-    else if (qname == "Contour Spectrum")
-    {
-        query = new avtContourSpectrumQuery();
     }
     
     if (query == NULL && !foundAQuery)
