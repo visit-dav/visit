@@ -31,9 +31,9 @@ print "********* running: xml2info     $xmlfile *********\n";
 print `xml2info      @ARGV -noprint $xmlfile`;
 die "\nError running xml2info... aborting!\n\n" if ($?);
 
-print "********* running: xml2makefile $xmlfile *********\n";
-print `xml2makefile  @ARGV -noprint $xmlfile`;
-die "\nError running xml2makefile... aborting!\n\n" if ($?);
+print "********* running: xml2cmake $xmlfile *********\n";
+print `xml2cmake  @ARGV -noprint $xmlfile`;
+die "\nError running xml2cmake... aborting!\n\n" if ($?);
 
 print "********* running: xml2avt      $xmlfile *********\n";
 print `xml2avt       @ARGV -noprint $xmlfile`;
