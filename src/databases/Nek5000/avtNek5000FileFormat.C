@@ -721,6 +721,11 @@ avtNek5000FileFormat::ParseNekFileHeader()
 //  Programmer: David Bremer
 //  Creation:   Mon Aug 11 13:53:18 PDT 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb  8 23:16:20 CST 2010
+//    Improve support for passive scalars for legacy format.
+//
 // ****************************************************************************
 
 void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
@@ -738,20 +743,12 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
             bHasPressure = true;
         else if (c == 'T')
             bHasTemperature = true;
-        else if (c == '1')
+        else if (c >= '1' && c <= '9')
         {
-            while (f.tellg() < iHeaderSize)
-            {
-                while (f.peek() == ' ')
-                    f.get();
-                if ((f.peek()-'0') == (iNumSFields+1))
-                {
-                    iNumSFields++;
-                    f.get();
-                }
-                else
-                    break;
-            }
+            // If we have S##, then it will be caught in the 'S'
+            // logic below.  So this means that we have the legacy
+            // representation and there is between 1 and 9 scalars.
+            iNumSFields = c-'0';
         }
         else if (c == 'S')
         {
