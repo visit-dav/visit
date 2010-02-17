@@ -1,7 +1,8 @@
 #include "indexfile.h"
-#include "ibis.h"
 
 #ifdef HAVE_LIBFASTBIT
+
+#include "ibis.h"
 
 H5_Index::H5_Index(const bool useH5PartFile) {
     useH5Part = useH5PartFile;
