@@ -15,6 +15,17 @@ H5PartMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtH5PartFileFormat.C
 avtH5PartOptions.C
+hdf5_a.C
+hdf5_d.C
+hdf5_f.C
+hdf5_g.C
+hdf5_s.C
+fqindex.C
+indexfileC.C
+indexfile.C
+timestep.C
+hdf5_fastquery.C
+histogramCache.C
 )
 
 SET(LIBE_SOURCES
@@ -22,6 +33,17 @@ H5PartEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtH5PartFileFormat.C
 avtH5PartOptions.C
+hdf5_a.C
+hdf5_d.C
+hdf5_f.C
+hdf5_g.C
+hdf5_s.C
+fqindex.C
+indexfileC.C
+indexfile.C
+timestep.C
+hdf5_fastquery.C
+histogramCache.C
 )
 
 INCLUDE_DIRECTORIES(
@@ -47,14 +69,14 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
-${HDF5_INCLUDE_DIR} ${H5PART_INCLUDE_DIR} 
+${HDF5_INCLUDE_DIR} ${FASTBIT_INCLUDE_DIR} ${H5PART_INCLUDE_DIR} 
 )
 
 IF(WIN32)
   ADD_DEFINITIONS(-D_HDF5USEDLL_)
 ENDIF(WIN32)
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${HDF5_LIBRARY_DIR} ${H5PART_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${HDF5_LIBRARY_DIR} ${FASTBIT_LIBRARY_DIR} ${H5PART_LIBRARY_DIR} )
 
 ADD_LIBRARY(IH5PartDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IH5PartDatabase visitcommon)
@@ -62,19 +84,19 @@ SET(INSTALLTARGETS IH5PartDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MH5PartDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MH5PartDatabase visitcommon avtdbatts avtdatabase_ser ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
+    TARGET_LINK_LIBRARIES(MH5PartDatabase visitcommon avtdbatts avtdatabase_ser ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
     ADD_TARGET_DEFINITIONS(MH5PartDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MH5PartDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EH5PartDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EH5PartDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
+TARGET_LINK_LIBRARIES(EH5PartDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
 ADD_TARGET_DEFINITIONS(EH5PartDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EH5PartDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EH5PartDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EH5PartDatabase_par visitcommon avtdatabase_par avtpipeline_par ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
+    TARGET_LINK_LIBRARIES(EH5PartDatabase_par visitcommon avtdatabase_par avtpipeline_par ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
     ADD_TARGET_DEFINITIONS(EH5PartDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EH5PartDatabase_par)
 ENDIF(VISIT_PARALLEL)
