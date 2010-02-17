@@ -169,6 +169,9 @@ avtMoleculeRenderer::New(void)
 //    Brad Whitlock, Wed Jun 10 14:08:34 PST 2009
 //    I made Mesa support be conditional.
 //
+//    John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//    Removed window size parameter to Render().
+//
 // ****************************************************************************
 
 void
@@ -204,18 +207,13 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
     }
     vtkPolyData *polydata = (vtkPolyData*)ds;
 
-
-    int winsize[2];
-    winsize[0] = VTKRen->GetVTKWindow()->GetSize()[0];
-    winsize[1] = VTKRen->GetVTKWindow()->GetSize()[1];
-
     rendererImplementation->Render(polydata,
                                    atts,
                                    immediateModeRendering,
                                    varmin, varmax,
                                    ambient_coeff,
                                    spec_coeff, spec_power,
-                                   spec_r, spec_g, spec_b, winsize);
+                                   spec_r, spec_g, spec_b);
 }
 
 

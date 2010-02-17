@@ -54,6 +54,9 @@
 //   Brad Whitlock, Fri Apr 7 11:26:48 PDT 2006
 //   Added SetHint method.
 //
+//   John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//   Removed width/height hints that aren't required anymore.
+//
 // ****************************************************************************
 
 class avtOpenGLAtomTexturer
@@ -66,8 +69,6 @@ public:
     void EndSphereTexturing();
 
     static const int HINT_SET_DEPTH;
-    static const int HINT_SET_SCREEN_WIDTH;
-    static const int HINT_SET_SCREEN_HEIGHT;
 
     void SetHint(int hint, int value);
 

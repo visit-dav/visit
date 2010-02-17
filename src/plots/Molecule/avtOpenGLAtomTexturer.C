@@ -391,13 +391,13 @@ TextureModeData::MakeTextures()
 // Purpose:
 //   Shades imposter quads so they look like spheres.
 //
-// Notes:      The shaders used by this class do not currently set a fragment's
-//             depth. We need to fix that.
-//
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 27 17:21:38 PST 2006
 //
 // Modifications:
+//   John Schreiner, Fri Feb 12 19:15:11 MST 2010
+//   Updated shaders that set depth to set the correct value,
+//   removed screen dimensions that are no longer required.
 //   
 // ****************************************************************************
 
@@ -424,7 +424,6 @@ private:
     bool GLSL_set_depth;
     bool GLSL_init;
     bool GLSL_shaders_setup;
-    int  GLSL_screen_w, GLSL_screen_h;
     GLhandleARB f, v, p;
 };
 
@@ -479,41 +478,34 @@ const char *ShaderModeData::GLSL_sphere_fragment_program_source =
 // These programs try setting the depth of the fragment as well as 
 // the color. 
 //
-// Note: They currently do not create the same depth values as would
-//       be produced by the fixed functionality pipeline. I don't know why.
-//
 
 const char *ShaderModeData::GLSL_spheredepth_vertex_program_source = 
 "varying vec4 C;"
 "varying float tx, ty;"
 "varying float R;"
+"varying vec4 sphere_center_mv;"
 "void main()"
 "{"
 "    C = gl_Color;"
 "    tx = gl_MultiTexCoord0.x;"
 "    ty = gl_MultiTexCoord0.y;"
 "    R = gl_Normal[0];"
-
-"    vec4 z0pt = gl_ModelViewProjectionMatrix * gl_Vertex;"
-
-"    vec4 pt = vec4(-R, R, 0., 1.);"
+"    sphere_center_mv = gl_ModelViewMatrix * gl_Vertex;"
+"    vec4 pt = vec4(-R, R, 0., 0.);"
 "    if(tx == 0. && ty == 0.)"
-"       pt = vec4(-R, -R, 0., 1.);"
+"       pt = vec4(-R, -R, 0., 0.);"
 "    else if(tx == 1. && ty == 0.)"
-"       pt = vec4(R, -R, 0., 1.);"
+"       pt = vec4(R, -R, 0., 0.);"
 "    else if(tx == 1. && ty == 1.)"
-"       pt = vec4(R, R, 0., 1.);"
-"    vec4 pt2 = gl_ModelViewMatrixInverse * pt + gl_Vertex;"
-"    vec4 pt3 = gl_ModelViewProjectionMatrix * pt2;"
-"    pt3[2] = z0pt[2];"
-"    gl_Position = pt3;"
+"       pt = vec4(R, R, 0., 0.);"
+"    gl_Position = gl_ProjectionMatrix * (sphere_center_mv + pt);"
 "}";
 
 const char *ShaderModeData::GLSL_spheredepth_fragment_program_source = 
-"uniform vec2 two_over_screen;"
 "varying vec4 C;"
 "varying float tx, ty;"
 "varying float R;"
+"varying vec4 sphere_center_mv;"
 "void main()"
 "{"
 "    float x = tx * 2. - 1;"
@@ -526,15 +518,9 @@ const char *ShaderModeData::GLSL_spheredepth_fragment_program_source =
 "    vec4 mc = C * z;"
 "    mc.a = 1.;"
 "    gl_FragColor = mc;"
-
-"    float px = gl_FragCoord.x * two_over_screen[0] - 1.;"
-"    float py = gl_FragCoord.y * two_over_screen[1] - 1.;"
-"    float pz = gl_FragCoord.z * 2. - 1;"
-"    vec4 world = gl_ModelViewProjectionMatrixInverse * vec4(px,py,pz,1.);"
-"    world /= world.w;"
-"    world.z += z * R;"
-"    vec4 proj = gl_ModelViewProjectionMatrix * world;"
-"    gl_FragDepth = (proj.z / proj.w) / 2. + 0.5;"
+"    vec4 mv = sphere_center_mv + vec4(0,0,z*R, 0);"
+"    vec4 proj = gl_ProjectionMatrix * mv;"
+"    gl_FragDepth = (proj.z/proj.w + 1.0) * 0.5;"
 "}";
 
 
@@ -556,7 +542,6 @@ ShaderModeData::ShaderModeData()
     GLSL_shaders_setup = false;
     GLSL_init = false;
     GLSL_set_depth = true;
-    GLSL_screen_w = GLSL_screen_h = 1;
 }
 
 // ****************************************************************************
@@ -619,6 +604,8 @@ ShaderModeData::FreeResources()
 // Creation:   Fri Apr 7 10:52:47 PDT 2006
 //
 // Modifications:
+//   John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//   Removed width/height hints that aren't required anymore.
 //   
 // ****************************************************************************
 
@@ -635,13 +622,6 @@ ShaderModeData::SetHint(int hint, int val)
         if(GLSL_set_depth != d)
             FreeResources();
         GLSL_set_depth = d;
-    }
-    else if(GLSL_set_depth)
-    {
-        if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH)
-            GLSL_screen_w = val;
-        else if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_HEIGHT)
-            GLSL_screen_h = val;
     }
 }
 
@@ -771,17 +751,6 @@ ShaderModeData::BeginSphereTexturing()
         }
     }
 
-    if(GLSL_set_depth)
-    {
-        // Pass the 2./screen_size to the fragment program via uniform
-        // vec2.
-        float two_over_screen[2];
-        two_over_screen[0] = 2. / float(GLSL_screen_w);
-        two_over_screen[1] = 2. / float(GLSL_screen_h);
-        GLint u = glGetUniformLocationARB(p, "two_over_screen");
-        glUniform1fvARB(u, 2, two_over_screen);
-    }
-
     // Start using the shader.
     glUseProgramObjectARB(p);
 
@@ -832,8 +801,6 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 const int avtOpenGLAtomTexturer::HINT_SET_DEPTH = 0;
-const int avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH = 1;
-const int avtOpenGLAtomTexturer::HINT_SET_SCREEN_HEIGHT = 2;
 
 avtOpenGLAtomTexturer::avtOpenGLAtomTexturer()
 {

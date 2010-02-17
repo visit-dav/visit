@@ -57,6 +57,10 @@ struct avtViewInfo;
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  3, 2006
 //
+//  Modifications:
+//    John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//    Removed window size parameter to Render().
+//
 // ****************************************************************************
 class avtMoleculeRendererImplementation
 {
@@ -68,8 +72,7 @@ class avtMoleculeRendererImplementation
                           float varmin, float varmax,
                           float ambient_coeff,
                           float spec_coeff, float spec_power,
-                          float spec_r, float spec_g, float spec_b, 
-                          const int *) = 0;
+                          float spec_r, float spec_g, float spec_b) = 0;
     virtual void   InvalidateColors() { };
     virtual void   SetLevelsLUT(avtLookupTable *) = 0;
 private:
