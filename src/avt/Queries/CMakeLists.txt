@@ -134,6 +134,8 @@ Queries/avtWatertightQuery.C
 Queries/avtWeightedVariableSummationQuery.C
 Queries/avtZoneCenterQuery.C
 Queries/MinMaxInfo.C
+Queries/avtContourSpectrumQuery.C
+Queries/ContourSpectrum.C
 )
 
 SET(AVTQUERY_SOURCES
