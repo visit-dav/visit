@@ -1301,6 +1301,11 @@ avtStreamlineFilter::Execute(void)
 //
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
+//   
+//   Hank Childs, Thu Feb 18 13:01:31 PST 2010
+//   Only set seedTime0 to the simulation time for pathlines and not 
+//   streamlines.
+//
 // ****************************************************************************
 
 void
@@ -1491,7 +1496,10 @@ avtStreamlineFilter::Initialize()
         if (*dbp == NULL)
             EXCEPTION1(InvalidFilesException, db.c_str());
         avtDatabaseMetaData *md = dbp->GetMetaData(0);
-        seedTime0 = md->GetTimes()[activeTimeStep];
+        if (doPathlines)
+            seedTime0 = md->GetTimes()[activeTimeStep];
+        else
+            seedTime0 = 0.;
         seedTimeStep0 = activeTimeStep;
     }
 }

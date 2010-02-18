@@ -527,6 +527,9 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Hank Childs, Thu Feb 18 11:29:22 PST 2010
+//   Set up a reasonable range if there are no streamlines.
+//
 // ****************************************************************************
 
 void
@@ -540,6 +543,13 @@ avtStreamlinePlot::UpdateMapperAndLegend()
         min = atts.GetLegendMin();
     if (atts.GetLegendMaxFlag())
         max = atts.GetLegendMax();
+
+    if (max < -1e+30 && min > 1e+30)
+    {
+        min = 0;
+        max = 1;
+    }
+
     renderer->SetRange(min, max);
     
     // Set the range for the legend's text and colors.
