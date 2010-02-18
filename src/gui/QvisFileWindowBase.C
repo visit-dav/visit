@@ -61,7 +61,6 @@
 #include <DebugStream.h>
 #include <GetFileListException.h>
 #include <HostProfileList.h>
-#include <HostProfile.h>
 #include <ViewerProxy.h>
 
 #include <visit-config.h>
@@ -650,6 +649,9 @@ QvisFileWindowBase::UpdateWindowFromFiles(bool doAll)
 //    Hank Childs, Thu May  7 19:59:13 PDT 2009
 //    Add support for nicknames.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -662,10 +664,10 @@ QvisFileWindowBase::UpdateHostComboBox()
     // Add all of the hosts from the host profiles that are not already
     // in the hosts list.
     //
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumMachines(); ++i)
     {
         // Create a constant reference to the i'th profile.
-        const HostProfile &p = profiles->operator[](i);
+        const MachineProfile &p = profiles->operator[](i);
 
         stringVector hostNames;
         if (p.GetHostNickname() != "")
@@ -1140,6 +1142,9 @@ QvisFileWindowBase::GetCurrentValues(bool allowPathChange)
 //    Hank Childs, Thu May  7 20:08:04 PDT 2009
 //    Added support for nicknames.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool
@@ -1153,10 +1158,10 @@ QvisFileWindowBase::ChangeHosts()
         // Take the string from the text field and strip whitespace.
         std::string host(hostComboBox->currentText().trimmed().toStdString());
         std::string currentHost(fileServer->GetHost());
-        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+        for(int i = 0; i < profiles->GetNumMachines(); ++i)
         {
             // Create a constant reference to the i'th profile.
-            const HostProfile &p = profiles->operator[](i);
+            const MachineProfile &p = profiles->operator[](i);
             if (p.GetHostNickname() == host)
                 host = p.GetHost();
         }

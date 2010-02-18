@@ -1,29 +1,109 @@
 # Install the visit config files
 IF(WIN32)
     INSTALL(FILES 
-        visit-config-anl.ini
         visit-config-llnl_closed.ini
         visit-config-llnl_open.ini
-        visit-config-nersc.ini
-        visit-config-ornl.ini
         visit-config-princeton.ini
-        visit-config-tacc.ini
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    )
+    INSTALL(FILES 
+        host_anl_cosmea.xml
+        host_anl_eureka.xml
+        host_anl_gadzooks.xml
+        host_anl_teragrid.xml
+        host_llnl_alastor.xml
+        host_llnl_atlas.xml
+        host_llnl_closed_eos.xml
+        host_llnl_closed_gauss.xml
+        host_llnl_closed_graph.xml
+        host_llnl_closed_hopi.xml
+        host_llnl_closed_juno.xml
+        host_llnl_closed_minos.xml
+        host_llnl_closed_purple.xml
+        host_llnl_closed_rhea.xml
+        host_llnl_closed_tempest.xml
+        host_llnl_closed_um.xml
+        host_llnl_ellipse.xml
+        host_llnl_hera.xml
+        host_llnl_ilx.xml
+        host_llnl_prism.xml
+        host_llnl_tempest.xml
+        host_llnl_up.xml
+        host_llnl_xchem.xml
+        host_llnl_yana.xml
+        host_llnl_zeus.xml
+        host_nersc_davinci.xml
+        host_nersc_franklin.xml
+        host_ornl_ewok.xml
+        host_ornl_jaguarpf.xml
+        host_ornl_jaguar.xml
+        host_ornl_lens.xml
+        host_ornl_photon.xml
+        host_princeton_artemis.xml
+        host_princeton_hecate.xml
+        host_princeton_tigressdata.xml
+        host_slac_red.xml
+        host_snl_closed_redrose.xml
+        host_tacc_ranger_vnc.xml
+        host_tacc_ranger.xml
+        host_tacc_spur.xml
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/allhosts
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     )
 ELSE(WIN32)
     INSTALL(FILES 
-        visit-config-anag
-        visit-config-anl
-        visit-config-llnl_closed
-        visit-config-llnl_open
-        visit-config-nersc
-        visit-config-ornl
-        visit-config-princeton
-        visit-config-tacc
-        visit-guiconfig-anag
-        visit-visitrc-anag
+        visit-config-anag.ini
+        visit-config-llnl_closed.ini
+        visit-config-llnl_open.ini
+        visit-config-princeton.ini
+        visit-guiconfig-anag.ini
+        visit-visitrc-anag.ini
         DESTINATION ${VISIT_VERSION}/.visit
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    )
+    INSTALL(FILES 
+        host_anl_cosmea.xml
+        host_anl_eureka.xml
+        host_anl_gadzooks.xml
+        host_anl_teragrid.xml
+        host_llnl_alastor.xml
+        host_llnl_atlas.xml
+        host_llnl_closed_eos.xml
+        host_llnl_closed_gauss.xml
+        host_llnl_closed_graph.xml
+        host_llnl_closed_hopi.xml
+        host_llnl_closed_juno.xml
+        host_llnl_closed_minos.xml
+        host_llnl_closed_purple.xml
+        host_llnl_closed_rhea.xml
+        host_llnl_closed_tempest.xml
+        host_llnl_closed_um.xml
+        host_llnl_ellipse.xml
+        host_llnl_hera.xml
+        host_llnl_ilx.xml
+        host_llnl_prism.xml
+        host_llnl_tempest.xml
+        host_llnl_up.xml
+        host_llnl_xchem.xml
+        host_llnl_yana.xml
+        host_llnl_zeus.xml
+        host_nersc_davinci.xml
+        host_nersc_franklin.xml
+        host_ornl_ewok.xml
+        host_ornl_jaguarpf.xml
+        host_ornl_jaguar.xml
+        host_ornl_lens.xml
+        host_ornl_photon.xml
+        host_princeton_artemis.xml
+        host_princeton_hecate.xml
+        host_princeton_tigressdata.xml
+        host_slac_red.xml
+        host_snl_closed_redrose.xml
+        host_tacc_ranger_vnc.xml
+        host_tacc_ranger.xml
+        host_tacc_spur.xml
+        DESTINATION ${VISIT_VERSION}/.visit/allhosts
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     )
 ENDIF(WIN32)

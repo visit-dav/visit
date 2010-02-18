@@ -346,6 +346,60 @@ GetSystemVisItRCFile()
     return retVal;
 }
 
+// ****************************************************************************
+// Method:  GetAndMakeUserVisItHostsDirectory
+//
+// Purpose:
+//   Returns the path to the user's .visit directory's
+//   host subdirectory.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+std::string
+GetAndMakeUserVisItHostsDirectory()
+{
+    std::string retval = GetUserVisItDirectory() + "hosts";
+#if defined(_WIN32)
+    mkdir(retval.c_str());
+#else
+    mkdir(retval.c_str(), 0777);
+#endif
+    return retval;
+}
+
+// ****************************************************************************
+// Method:  GetAndMakeUserVisItHostsDirectory
+//
+// Purpose:
+//   Returns the path to the visit installation directory's
+//   host subdirectory.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+std::string
+GetAndMakeSystemVisItHostsDirectory()
+{
+    const char *defConfig = GetDefaultConfigFile("hosts", "VISITHOME");
+    std::string retVal(defConfig);
+    delete [] defConfig;
+#if defined(_WIN32)
+    mkdir(retVal.c_str());
+#else
+    mkdir(retVal.c_str(), 0777);
+#endif
+    return retVal;
+}
+
 #if defined(_WIN32)
 // ***************************************************************************
 //

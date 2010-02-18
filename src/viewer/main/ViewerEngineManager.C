@@ -47,7 +47,7 @@
 #include <EngineList.h>
 #include <EngineProxy.h>
 #include <HostProfileList.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <LostConnectionException.h>
 #include <NoEngineException.h>
 #include <IncompatibleVersionException.h>
@@ -414,6 +414,9 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    types of events from executing elsewhere via the engine chooser's
 //    event loop.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool
@@ -463,7 +466,8 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     if(!reverseLaunch)
     {
         bool addParallelArgs = !newEngine.profile.GetShareOneBatchJob();
-        newEngine.proxy->AddProfileArguments(newEngine.profile, addParallelArgs);
+        newEngine.proxy->AddProfileArguments(newEngine.profile,
+                                             addParallelArgs);
     }
 
     //
@@ -472,10 +476,13 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     AddArguments(newEngine.proxy, args);
     chooser->AddRestartArgsToCachedProfile(ek.HostName(),  args);
-    stringVector eArgs(newEngine.profile.GetArguments());
+    stringVector eArgs;
+    if (newEngine.profile.GetActiveLaunchProfile()) 
+        eArgs = newEngine.profile.GetActiveLaunchProfile()->GetArguments();
     for(int s = 0; s < args.size(); ++s)
         eArgs.push_back(args[s]);
-    newEngine.profile.SetArguments(eArgs);
+    if (newEngine.profile.GetActiveLaunchProfile()) 
+        newEngine.profile.GetActiveLaunchProfile()->SetArguments(eArgs);
 
     //
     // Set up the connection progress window.
@@ -494,7 +501,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     TRY
     {
         // Get the client machine name options
-        HostProfile::ClientHostDetermination chd;
+        MachineProfile::ClientHostDetermination chd;
         string clientHostName;
         GetClientMachineNameOptions(ek.HostName(), chd, clientHostName);
 
@@ -696,6 +703,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Brad Whitlock, Tue Apr 28 09:32:04 PDT 2009
 //    Pass the SSH tunneling option to the launcher callback.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool
@@ -744,7 +754,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     TRY
     {
         // Get the client machine name options
-        HostProfile::ClientHostDetermination chd;
+        MachineProfile::ClientHostDetermination chd;
         string clientHostName;
         GetClientMachineNameOptions(ek.HostName(), chd, clientHostName);
 
@@ -3449,6 +3459,9 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
 //   Cyrus Harrison, Thu Mar 15 11:26:58 PDT 2007
 //   Added save of material attributes and mesh management attributes
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -3475,10 +3488,10 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
         {
             if(!it->first.IsSimulation())
             {
-                HostProfile temp(it->second.profile);
+                MachineProfile temp(it->second.profile);
                 temp.SetHost(it->first.HostName());
-                temp.SetNumProcessors(it->second.proxy->NumProcessors());
-                temp.SetNumNodes(it->second.proxy->NumNodes());
+                temp.GetActiveLaunchProfile()->SetNumProcessors(it->second.proxy->NumProcessors());
+                temp.GetActiveLaunchProfile()->SetNumNodes(it->second.proxy->NumNodes());
                 temp.CreateNode(runningEnginesNode, true, true);
             }
         }

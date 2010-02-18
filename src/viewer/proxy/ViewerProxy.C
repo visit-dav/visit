@@ -418,6 +418,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Jeremy Meredith, Thu May 24 10:16:39 EDT 2007
 //    Added SSH tunneling argument to RemoteProcess::Open, set it to false.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -470,7 +473,7 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
         // Open the viewer.
         //
         viewer->Open("localhost",
-                     HostProfile::MachineName, "", 
+                     MachineProfile::MachineName, "", 
                      false, 0, false,
                      1, 1);
 

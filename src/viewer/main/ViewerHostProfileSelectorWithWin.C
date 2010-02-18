@@ -39,6 +39,7 @@
 #include <ViewerHostProfileSelectorWithWin.h>
 
 #include <HostProfileList.h>
+#include <MachineProfile.h>
 #include <ViewerSubject.h>
 
 #include <stdio.h>
@@ -224,6 +225,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Brad Whitlock, Fri May 23 11:54:42 PDT 2008
 //    Qt 4.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool 
@@ -234,7 +238,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
     QString title = tr("Select options for '%1'").arg(hostName.c_str());
     setWindowTitle(title);
 
-    profile = HostProfile();
+    profile = MachineProfile();
 
     if (skipChooser)
     {
@@ -261,31 +265,28 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
         // more than one exists, let the user choose the profile and
         // some options.
         //
-        matchingProfiles = 
-                    hostProfileList->FindAllMatchingProfileForHost(hostName);
+        MachineProfile *mp = hostProfileList->GetMachineProfileForHost(hostName);
 
-        if (matchingProfiles.size() > 0)
+        if (mp)
         {
-            profile = *matchingProfiles[0];
+            profile = *mp;
         }
         
-        if (matchingProfiles.size() > 1 ||
-            (matchingProfiles.size() == 1 &&
-             matchingProfiles[0]->GetParallel()))
+        if (profile.GetNumLaunchProfiles() > 1 ||
+            (profile.GetNumLaunchProfiles() == 1 &&
+             profile.GetLaunchProfiles(0).GetParallel()))
         {
             profiles->clear();
-            for (i=0; i<matchingProfiles.size(); i++)
+            for (i=0; i<profile.GetNumLaunchProfiles(); i++)
             {
-                profiles->addItem(matchingProfiles[i]->GetProfileName().c_str());
+                profiles->addItem(profile.GetLaunchProfiles(i).GetProfileName().c_str());
             }
             profiles->setCurrentRow(0);
-            for (i=0; i<matchingProfiles.size(); i++)
+            if (profile.GetActiveProfile()>=0 &&
+                profile.GetActiveProfile()<profile.GetNumLaunchProfiles())
             {
-                if (matchingProfiles[i]->GetActive())
-                {
-                    // this signals the callback to set the default profile
-                    profiles->setCurrentRow(i);
-                }
+                // this signals the callback to set the default profile
+                profiles->setCurrentRow(profile.GetActiveProfile());
             }
 
             viewerSubject->BlockSocketSignals(true);
@@ -299,11 +300,11 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
                 return false;
             }
 
-            profile.SetNumProcessors(numProcs->value());
-            profile.SetNumNodes(numNodes->value());
-            profile.SetBank(bankName->text().toStdString());
-            profile.SetTimeLimit(timeLimit->text().toStdString());
-            profile.SetMachinefile(machinefile->text().toStdString());
+            profile.GetActiveLaunchProfile()->SetNumProcessors(numProcs->value());
+            profile.GetActiveLaunchProfile()->SetNumNodes(numNodes->value());
+            profile.GetActiveLaunchProfile()->SetBank(bankName->text().toStdString());
+            profile.GetActiveLaunchProfile()->SetTimeLimit(timeLimit->text().toStdString());
+            profile.GetActiveLaunchProfile()->SetMachinefile(machinefile->text().toStdString());
         }
 
         // Save it for use later
@@ -337,8 +338,11 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 //    Made it grey out the other parallel options if the profile wasn't
 //    parallel.
 //
-//   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
-//   Added machinefile for some mpich implementations.
+//    Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
+//    Added machinefile for some mpich implementations.
+//
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
 //
 // ****************************************************************************
 
@@ -346,31 +350,31 @@ void
 ViewerHostProfileSelectorWithWin::newProfileSelected()
 {
     int index = profiles->currentRow();
-    if (index == -1)
+    if (index < 0 || index >= profile.GetNumLaunchProfiles())
         return;
 
-    profile = *matchingProfiles[index];
-    bool parallel = profile.GetParallel();
+    LaunchProfile &lp = profile.GetLaunchProfiles(index);
+    bool parallel = lp.GetParallel();
 
     numProcsLabel->setEnabled(parallel);
     numProcs->setEnabled(parallel);
-    numProcs->setValue(profile.GetNumProcessors());
+    numProcs->setValue(lp.GetNumProcessors());
 
-    numNodesLabel->setEnabled(parallel && profile.GetNumNodesSet());
-    numNodes->setEnabled(parallel && profile.GetNumNodesSet());
-    numNodes->setValue(profile.GetNumNodes());
+    numNodesLabel->setEnabled(parallel && lp.GetNumNodesSet());
+    numNodes->setEnabled(parallel && lp.GetNumNodesSet());
+    numNodes->setValue(lp.GetNumNodes());
 
-    bankNameLabel->setEnabled(parallel && profile.GetBankSet());
-    bankName->setEnabled(parallel && profile.GetBankSet());
-    bankName->setText(profile.GetBank().c_str());
+    bankNameLabel->setEnabled(parallel && lp.GetBankSet());
+    bankName->setEnabled(parallel && lp.GetBankSet());
+    bankName->setText(lp.GetBank().c_str());
 
-    timeLimitLabel->setEnabled(parallel && profile.GetTimeLimitSet());
-    timeLimit->setEnabled(parallel && profile.GetTimeLimitSet());
-    timeLimit->setText(profile.GetTimeLimit().c_str());
+    timeLimitLabel->setEnabled(parallel && lp.GetTimeLimitSet());
+    timeLimit->setEnabled(parallel && lp.GetTimeLimitSet());
+    timeLimit->setText(lp.GetTimeLimit().c_str());
 
-    machinefileLabel->setEnabled(parallel && profile.GetMachinefileSet());
-    machinefile->setEnabled(parallel && profile.GetMachinefileSet());
-    machinefile->setText(profile.GetMachinefile().c_str());
+    machinefileLabel->setEnabled(parallel && lp.GetMachinefileSet());
+    machinefile->setEnabled(parallel && lp.GetMachinefileSet());
+    machinefile->setText(lp.GetMachinefile().c_str());
 }
 
 

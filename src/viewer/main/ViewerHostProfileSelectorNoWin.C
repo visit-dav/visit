@@ -39,6 +39,7 @@
 #include <ViewerHostProfileSelectorNoWin.h>
 
 #include <HostProfileList.h>
+#include <MachineProfile.h>
 
 #include <stdio.h>
 
@@ -100,13 +101,17 @@ ViewerHostProfileSelectorNoWin::~ViewerHostProfileSelectorNoWin()
 //    with a cached profile, but this needed to work even if we skipped the
 //    chooser.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//    Simplified this function a bit.
+//
 // ****************************************************************************
 
 bool
 ViewerHostProfileSelectorNoWin::SelectProfile(
     HostProfileList *hostProfileList, const string &hostName, bool skipChooser)
 {
-    profile = HostProfile();
+    profile = MachineProfile();
 
     if (skipChooser)
     {
@@ -120,28 +125,11 @@ ViewerHostProfileSelectorNoWin::SelectProfile(
     }
     else
     {
-        matchingProfiles = 
-                    hostProfileList->FindAllMatchingProfileForHost(hostName);
+        MachineProfile *mp = hostProfileList->GetMachineProfileForHost(hostName);
 
-        if (matchingProfiles.size() > 0)
+        if (mp)
         {
-            profile = *matchingProfiles[0];
-        }
-        
-        if (matchingProfiles.size() > 1 ||
-            (matchingProfiles.size() == 1 &&
-             matchingProfiles[0]->GetParallel()))
-        {
-            for (size_t i = 0; i < matchingProfiles.size(); i++)
-            {
-                if (matchingProfiles[i]->GetActive())
-                {
-                    profile.SetNumProcessors(matchingProfiles[i]->GetNumProcessors());
-                    profile.SetNumNodes(matchingProfiles[i]->GetNumNodes());
-                    profile.SetBank(matchingProfiles[i]->GetBank());
-                    profile.SetTimeLimit(matchingProfiles[i]->GetTimeLimit());
-                }
-            }
+            profile = *mp;
         }
 
         // Save it for use later

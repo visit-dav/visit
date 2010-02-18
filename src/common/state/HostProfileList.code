@@ -1,35 +1,12 @@
-Function: MarkHostProfiles
-Declaration: void MarkHostProfiles();
-Definition:
-//
-// Marking functions. They select a particular attribute without
-// having to set it. These types of functions are sometimes useful.
-//
-
-void
-HostProfileList::MarkHostProfiles()
-{
-    Select(0, (void *)&profiles);
-}
-
-Function: MarkActiveProfile
-Declaration: void MarkActiveProfile();
-Definition:
-void
-HostProfileList::MarkActiveProfile()
-{
-    Select(1, (void *)&activeProfile);
-}
-
-Function: FindMatchingProfileForHost
-Declaration: const HostProfile *FindMatchingProfileForHost(const std::string &hostName) const;
+Function: GetActiveLaunchProfileForHost
+Declaration: LaunchProfile *GetActiveLaunchProfileForHost(const std::string &hostName) const;
 Definition:
 // ****************************************************************************
-//  Method: HostProfileList::FindMatchingProfileForHost
+//  Method: HostProfileList::GetActiveLaunchProfileForHost
 //
 //  Purpose: 
-//    Looks for a host profile with a host name pattern
-//    matching the specified host name.
+//    Returns the active launch profile for the machine with a host name
+//    pattern matching the specified host name.
 //
 //  Arguments:
 //    hostName    the host name to match with the profile hostname patterns
@@ -38,52 +15,36 @@ Definition:
 //    A pointer to the host profile, or NULL.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   February 13, 2002
+//  Creation:   February 18, 2010
 //
 //  Modifications:
-//    Jeremy Meredith, Sun Mar  3 21:41:32 PST 2002
-//    Added code to look up the fully qualified host name before attempting
-//    to find a match.
-//
-//    Jeremy Meredith, Wed Mar  6 15:27:13 PST 2002
-//    Added code to look up the unqualified host name if it didn't find a
-//    match for the qualified one.
-//
-//    Jeremy Meredith, Wed Aug 14 13:03:21 PDT 2002
-//    Pulled most logic out to FindAllMatchingProfileForHost.
 //
 // ****************************************************************************
-const HostProfile *
-HostProfileList::FindMatchingProfileForHost(const std::string &hostName) const
-{
-    std::vector<const HostProfile*> profiles =
-                                      FindAllMatchingProfileForHost(hostName);
-
-    for (size_t i=0; i<profiles.size(); i++)
-        if (profiles[i]->GetActive())
-            return profiles[i];
-
-    return NULL;
+LaunchProfile *
+HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) const
+{   
+    MachineProfile *machine = GetMachineProfileForHost(hostName);
+    return machine->GetActiveLaunchProfile();
 }
 
-Function: FindAllMatchingProfileForHost
-Declaration: std::vector<const HostProfile*> FindAllMatchingProfileForHost(const std::string &hostName) const;
+Function: GetMachineProfileForHost
+Declaration: MachineProfile *GetMachineProfileForHost(const std::string &hostName) const;
 Definition:
 // ****************************************************************************
-//  Method: HostProfileList::FindAllMatchingProfileForHost
+//  Method: HostProfileList::GetMachineProfileForHost
 //
 //  Purpose: 
-//    Looks for all host profiles with a host name pattern
+//    Gets the machine profile with a host name pattern
 //    matching the specified host name.
 //
 //  Arguments:
 //    hostName    the host name to match with the profile hostname patterns
 //   
 //  Returns:    
-//    A list of pointers to the host profiles.
+//    A pointer to the machine profile, or NULL.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   August 14, 2002
+//  Creation:   February 18, 2010
 //
 //  Modifications:
 //    Brad Whitlock, Tue May 20 11:53:37 PDT 2003
@@ -97,541 +58,22 @@ Definition:
 #include <netdb.h>
 #endif
 
-std::vector<const HostProfile*>
-HostProfileList::FindAllMatchingProfileForHost(const std::string &hostName) const
+MachineProfile *
+HostProfileList::GetMachineProfileForHost(const std::string &hostName) const
 {
-    std::vector<const HostProfile*> matches;
-    
-    // Look up the fully qualified host name
     std::string fqhostName(hostName);
     struct hostent *hostEnt = gethostbyname(fqhostName.c_str());
     if (hostEnt)
         fqhostName = std::string(hostEnt->h_name);
 
-    for(size_t i = 0; i < profiles.size(); i++)
+    for(size_t i = 0; i < machines.size(); i++)
     {
-        const HostProfile *p = (const HostProfile *)(profiles[i]);
+        MachineProfile *m = (MachineProfile *)(machines[i]);
 
-        if (p->ProfileMatchesHost(fqhostName))
-            matches.push_back(p);
+        if (m->ProfileMatchesHost(fqhostName))
+            return m;
     }
 
-    if (matches.size() == 0)
-    {
-        for(size_t i = 0; i < profiles.size(); i++)
-        {
-            const HostProfile *p = (const HostProfile *)(profiles[i]);
-
-            if (p->ProfileMatchesHost(hostName))
-                matches.push_back(p);
-        }
-    }
-
-    return matches;
+    return NULL;
 }
 
-Function: GetProfileForHost
-Declaration: const HostProfile *GetProfileForHost(const std::string &hostName) const;
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::GetProfileForHost
-//
-// Purpose: 
-//   Looks for a host profile having the specified host name.
-//
-// Arguments:
-//   
-// Returns:    
-//   A pointer to the host profile, or 0.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 18:38:53 PST 2000
-//
-// Modifications:
-//   Brad Whitlock, Tue Oct 17 11:23:47 PDT 2000
-//   I changed the method so it returns the default profile for the
-//   specified host.
-//
-//    Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//    Reworded "default profile" to be "active profile".
-//
-// ****************************************************************************
-const HostProfile *
-HostProfileList::GetProfileForHost(const std::string &hostName) const
-{
-    const HostProfile *retval = 0;
-    bool notfound = true;
-
-    for(size_t i = 0; (i < profiles.size()) && notfound; ++i)
-    {
-        retval = ((const HostProfile *)(profiles[i]));
-        notfound = (retval->GetHost() != hostName ||
-                    !retval->GetActive());
-    }
-
-    return notfound ? 0 : retval;
-}
-
-Function: GetNumProfilesForHost
-Declaration: int GetNumProfilesForHost(const std::string &hostName) const;
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::GetNumProfilesForHost
-//
-// Purpose: 
-//   Returns the number of host profiles for a given host.
-//
-// Arguments:
-//   hostName : The host whose profiles we're counting.
-//
-// Returns:    
-//   The number of host profiles for the specified host.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 17 11:19:07 PDT 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-HostProfileList::GetNumProfilesForHost(const std::string &hostName) const
-{
-    int nHosts = 0;
-
-    for(size_t i = 0; i < profiles.size(); ++i)
-    {
-        const HostProfile *current = (const HostProfile *)(profiles[i]);
-        if(current->GetHost() == hostName)
-            ++nHosts;
-    }
-
-    return nHosts;
-}
-
-
-Function: SetAsActiveProfile
-Declaration: void SetAsActiveProfile(int index);
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::SetAsActiveProfile
-//
-// Purpose: 
-//   Sets the specified profile as the active profile for its host.
-//
-// Arguments:
-//   index : The index of the profile to make active for its host.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 17 11:32:41 PDT 2000
-//
-// Modifications:
-//    Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//    Reworded "default profile" to be "active profile".
-//
-//    Kathleen Bonnell, Wed Aug 20 10:57:00 PDT 2003 
-//    Ensure index is within correct range. 
-//
-// ****************************************************************************
-
-void
-HostProfileList::SetAsActiveProfile(int index)
-{
-    if(index < 0 || index >= profiles.size())
-        return;
-
-    // Set the specified profile as the active for its host.
-    HostProfile &defProfile = this->operator[](index);
-    defProfile.SetActive(true);
-
-    // Make sure that all other profiles having the same host
-    // are NOT the active profile.
-    for(size_t i = 0; i < profiles.size(); ++i)
-    {
-        if(i == index)
-            continue;
-
-        HostProfile &current = this->operator[](i);
-        if(current.GetHost() == defProfile.GetHost())
-            current.SetActive(false);
-    }
-}
-
-Function: RemoveActiveProfile
-Declaration: void RemoveActiveProfile();
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::RemoveActiveProfile
-//
-// Purpose: 
-//   This method removes the active profile. If possible, another
-//   profile for the same host will be made active.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 18 09:47:39 PDT 2000
-//
-// Modifications:
-//    Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//    Reworded "default profile" to be "active profile".
-//
-//    Brad Whitlock, Tue Mar 13 10:53:44 PDT 2007
-//    Updated due to code generation.
-//
-// ****************************************************************************
-
-void
-HostProfileList::RemoveActiveProfile()
-{
-    if(GetNumProfiles() < 1)
-        return;
-
-    int i;
-    const HostProfile &p = this->operator[](GetActiveProfile());
-    std::string oldHost(p.GetHost());
-
-    // Remove the active profile.
-    RemoveProfiles(GetActiveProfile());
-
-    // Go through the list and look for the first profile that has the
-    // same host as the one that was deleted. We'll make that the
-    // new active profile.
-    bool keepGoing = true;
-    for(i = 0; i < GetNumProfiles() && keepGoing; ++i)
-    {
-        const HostProfile &current = this->operator[](i);
-        if(current.GetHost() == oldHost)
-        {
-            keepGoing = false;
-            SetActiveProfile(i);
-        }
-    }
-
-    if(!keepGoing)
-    {
-        // We found a profile having the same host. Now make sure
-        // that host profile group has a active profile.
-        if(GetProfileForHost(oldHost) == 0)
-        {
-            SetAsActiveProfile(i - 1);
-            MarkHostProfiles();
-        }
-    }
-    else
-    {
-        // We didn't find another profile having the same host.
-        SetActiveProfile((GetNumProfiles() > 0) ? 0 : -1);
-    }
-}
-
-Function: ChangeHostForActiveProfile
-Declaration: void ChangeHostForActiveProfile(const std::string &newHost);
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::ChangeHostForActiveProfile
-//
-// Purpose: 
-//   Changes the active profile's host to a new hostname and updates
-//   the active profile settings for the involved profiles.
-//
-// Arguments:
-//   newHost : The new hostname.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 18 10:24:44 PDT 2000
-//
-// Modifications:
-//    Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//    Reworded "default profile" to be "active profile".
-//
-//    Jeremy Meredith, Wed Feb 27 11:03:55 PST 2002
-//    Added a check to make sure the host was changing before doing
-//    some logic to reset to the old active profile for the new host.
-//
-//    Brad Whitlock, Tue Mar 13 10:55:56 PDT 2007
-//    Updated due to code generation.
-//
-// ****************************************************************************
-
-void
-HostProfileList::ChangeHostForActiveProfile(const std::string &newHost)
-{
-    if(GetActiveProfile() == -1)
-        return;
-
-    // Set the host for the active profile.
-    HostProfile &p = operator[](GetActiveProfile());
-    std::string oldHost(p.GetHost());
-
-    // Don't do anything if the host isn't actually changing
-    if (newHost == oldHost)
-        return;
-
-    // Keep the old active profile for the new host active
-    if (p.GetActive() && GetProfileForHost(newHost))
-    {
-        p.SetActive(false);
-        MarkActiveProfile();
-    }
-    p.SetHost(newHost);
-
-
-    // The host name changed; we need to mark the profile list
-    // so the profile is put with the right host the next time
-    // Notify is called.
-    MarkHostProfiles();
-
-    if(GetNumProfilesForHost(oldHost) > 0)
-    {
-        if(GetProfileForHost(oldHost) == 0)
-        {
-            // Look through the list and make the first profile
-            // for oldHost, the active profile for that host.
-            bool notDone = true;
-            for(int i = 0; i < GetNumProfiles() &&
-                notDone; ++i)
-            {
-                HostProfile &profile = this->operator[](i);
-                if(oldHost == profile.GetHost())
-                {
-                    profile.SetActive(true);
-                    notDone = false;
-                }
-            }
-        }
-    }
-
-    // If there is no active profile for newHost, make the first
-    // profile whose host is newHost the active profile.
-    if(GetProfileForHost(newHost) == 0)
-    {
-        bool notDone = true;
-        for(int i = 0; i < GetNumProfiles() && notDone; ++i)
-        {
-            HostProfile &profile = this->operator[](i);
-            if(newHost == profile.GetHost())
-            {
-                profile.SetActive(true);
-                notDone = false;
-            }
-        }
-        if(!notDone)
-            MarkActiveProfile();
-    }
-}
-
-
-Function: SetFromNode
-Declaration: virtual void SetFromNode(DataNode *node);
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::SetFromNode
-//
-// Purpose: 
-//   This method sets attributes in this object from values in a DataNode representation of the object.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   Thu Feb 14 09:43:17 PDT 2002
-//
-// Modifications:
-//   Brad Whitlock, Tue Feb 19 14:15:58 PST 2002
-//   Modified so that it does not clear the list and it does not permit
-//   duplicates.
-//
-//   Brad Whitlock, Fri Feb 28 10:05:47 PDT 2003
-//   I fixed the method so that it allows profiles that already exist in the
-//   host profile list to be read in again to overwrite values that are
-//   in the existing profile.
-//
-//   Brad Whitlock, Fri Apr 25 08:08:53 PDT 2003
-//   I added code to prevent the host profile from being inserted into the
-//   list if the host contains wildcard characters.
-//
-//   Kathleen Bonnell, Wed Aug 20 10:51:24 PDT 2003 
-//   Ensure that activeProfile is in the correct range.
-//   
-//   Brad Whitlock, Fri Sep 5 15:30:55 PST 2003
-//   Prevented more than one profile from being the default profile for a host.
-//
-// ****************************************************************************
-
-void
-HostProfileList::SetFromNode(DataNode *parentNode)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("HostProfileList");
-    if(searchNode == 0)
-        return;
-
-    DataNode *node;
-    DataNode **children;
-
-    // Go through all of the children and construct a new
-    // HostProfile for each one of them.
-    children = searchNode->GetChildren();
-    for(int i = 0; i < searchNode->GetNumChildren(); ++i)
-    {
-        if(children[i]->GetKey() == std::string("HostProfile"))
-        {
-            // Read the data node into a temporary host profile.
-            HostProfile temp;
-            temp.SetFromNode(children[i]);
-
-            // Continue if the host contains wildcards.
-            if(temp.GetHost().find_first_of("*?") != std::string::npos)
-                continue;
-
-            // Search for the host profile name in the list. If it is
-            // found, then read over it so that values can be replaced.
-            AttributeGroupVector::iterator pos;
-            bool notFound = true;
-            int profileIndex = 0;
-            for(size_t j = 0; j < profiles.size(); ++j)
-            {
-                HostProfile *p = (HostProfile *)profiles[j];
-                if((temp.GetProfileName() == p->GetProfileName()) &&
-                   (temp.GetHost() == p->GetHost()))
-                {
-                    // Read the data node into the current host profile.
-                    notFound = false;
-                    p->SetFromNode(children[i]);
-                    SelectProfiles();
-                    profileIndex = j;
-                    break;
-                }
-            }
-
-            // If the host profile was not found, read it into a temporary
-            // host profile and add it to the list.
-            if(notFound)
-            {
-                AddProfiles(temp);
-                profileIndex = profiles.size() - 1;
-            }
-
-            // If it is the active profile for the host then make
-            // sure that the other profiles for the host are not
-            // also active.
-            if(temp.GetActive())
-                SetActiveProfile(profileIndex);
-        }
-    }
-
-    if((node = searchNode->GetNode("activeProfile")) != 0)
-    {
-        if (profiles.size() > 0)
-        {
-            if (node->AsInt() < profiles.size())
-                SetActiveProfile(node->AsInt());
-            else 
-                SetActiveProfile(0);
-        }
-        else
-        {
-            SetActiveProfile(-1);
-        }
-    }
-}
-
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
-Definition:
-// ****************************************************************************
-// Method: HostProfileList::ProcessOldVersions
-//
-// Purpose:
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
-//
-// Programmer: Eric Brugger
-// Creation:   March 16, 2007
-//
-// Modifications:
-//   Eric Brugger, Thu Mar 29 10:50:18 PDT 2007
-//   I modified the routine to remove old host profiles for several old
-//   LLNL machines that no longer exist.
-//
-//   Eric Brugger, Thu Apr  5 10:38:02 PDT 2007
-//   I modified the routine to set the profile arguments for um, uv, up, and
-//   purple to "-dir /usr/gapps/visit" if the profile name was serial and
-//   "-dir /usr/gapps/visit -objectmode 64" otherwise.
-//
-//   Eric Brugger, Mon Apr 16 12:58:52 PDT 2007
-//   I modified the routine to set the profile arguments for gauss to
-//   "-dir /usr/gapps/visit -switch ib" and to set the number of nodes for
-//   the parallel gauss profiles.
-//
-//   Eric Brugger, Wed Aug 13 09:59:20 PDT 2008
-//   I modified the routine to no longer set the profile arguments for gauss
-//   to "-dir /usr/gapps/visit -switch ib".
-//
-//   Eric Brugger, Wed Mar 25 13:53:18 PDT 2009
-//   I removed the code to modify the host profiles for um, uv, up, and
-//   purple.  There should not be any old profiles around anymore and the
-//   logic made it impossible to set some of the options in the GUI. I
-//   updated the list of old profiles to delete.
-//
-// ****************************************************************************
-void
-HostProfileList::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("HostProfileList");
-    if(searchNode == 0)
-        return;
-
-    int nChildren = searchNode->GetNumChildren();
-    DataNode **children = searchNode->GetChildren();
-
-    //
-    // Loop over the list in reverse order, since the list is the same
-    // as the internal data structure in searchNode.  So deleting a node
-    // from it actually reduces the size of the array we are looping over.
-    //
-    for (int i = nChildren - 1; i >= 0; --i)
-    {
-        DataNode *hostNode = children[i]->GetNode("host");
-        if (hostNode != 0)
-        {
-            //
-            // Remove old profiles.
-            //
-            if (hostNode->AsString() == "uv.llnl.gov")
-            {
-                searchNode->RemoveNode(children[i]);
-            }
-            else if (hostNode->AsString() == "gauss.llnl.gov")
-            {
-                DataNode *nameNode     = children[i]->GetNode("profileName");
-                DataNode *nProcNode    = children[i]->GetNode("numProcessors");
-                DataNode *nNodeSetNode = children[i]->GetNode("numNodesSet");
-                DataNode *nNodeNode    = children[i]->GetNode("numNodes");
-                if (nameNode != 0 && nProcNode != 0 &&
-                    nNodeSetNode != 0 && nNodeNode != 0)
-                {
-                    if (nameNode->AsString() == "parallel pbatch")
-                    {
-                        nNodeSetNode->SetString("true");
-                        nNodeNode->SetInt(nProcNode->AsInt() / 2);
-                    }
-                    else if (nameNode->AsString() == "parallel pbatch hardware-accelerated")
-                    {
-                        nNodeSetNode->SetString("true");
-                        nNodeNode->SetInt(nProcNode->AsInt());
-                    }
-                }
-            }
-        }
-    }
-}

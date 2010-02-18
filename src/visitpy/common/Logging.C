@@ -52,10 +52,11 @@
 #include <PyConstructDDFAttributes.h>
 #include <PyExportDBAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
-#include <PyHostProfile.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
+#include <PyLaunchProfile.h>
 #include <PyLightAttributes.h>
+#include <PyMachineProfile.h>
 #include <PyMaterialAttributes.h>
 #include <PyMeshManagementAttributes.h>
 #include <PyPickAttributes.h>

@@ -104,6 +104,10 @@ ViewerHostProfileSelector::ClearCache(const std::string &hostName)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  2, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 void
 ViewerHostProfileSelector::AddRestartArgsToCachedProfile(
@@ -112,7 +116,11 @@ ViewerHostProfileSelector::AddRestartArgsToCachedProfile(
 {
     if (cachedProfile.count(hostName))
     {
-        std::vector<std::string> &a = cachedProfile[hostName].GetArguments();
-        a.insert(a.end(), args.begin(), args.end());
+        if (cachedProfile[hostName].GetActiveLaunchProfile())
+        {
+            std::vector<std::string> &a =
+             cachedProfile[hostName].GetActiveLaunchProfile()->GetArguments();
+            a.insert(a.end(), args.begin(), args.end());
+        }
     }
 }

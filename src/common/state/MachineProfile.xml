@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+  <Attribute name="MachineProfile" purpose="This class contains information about a host for a remote VisIt engine." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="MachineProfile.code">
+    <Enum name="ClientHostDetermination">
+      MachineName
+      ManuallySpecified
+      ParsedFromSSHCLIENT
+    </Enum>
+    <Field name="host" label="host" type="string">
+      localhost
+    </Field>
+    <Field name="userName" label="userName" type="string" init="true">
+      notset
+    </Field>
+    <Field name="hostAliases" label="hostAliases" type="string">
+    </Field>
+    <Field name="hostNickname" label="hostNickname" type="string">
+    </Field>
+    <Field name="directory" label="directory" type="string">
+    </Field>
+    <Field name="shareOneBatchJob" label="shareOneBatchJob" type="bool">
+      false
+    </Field>
+    <Field name="sshPortSpecified" label="SSH port specified" type="bool">
+      false
+    </Field>
+    <Field name="sshPort" label="SSH port" type="int">
+      22
+    </Field>
+    <Field name="clientHostDetermination" label="Client host determination" type="enum" subtype="ClientHostDetermination">
+      MachineName
+    </Field>
+    <Field name="manualClientHostName" label="Client host name" type="string">
+    </Field>
+    <Field name="tunnelSSH" label="Tunnel data connections through SSH" type="bool">
+      false
+    </Field>
+    <Field name="launchProfiles" type="attVector" subtype="LaunchProfile"></Field>
+    <Field name="activeProfile" label="activeProfile" type="int">
+      -1
+    </Field>
+    <Function name="defaultUserName" user="true" member="true">
+    </Function>
+    <Function name="SplitHostPattern" user="true" member="true">
+    </Function>
+    <Function name="ProfileMatchesHost" user="true" member="true">
+    </Function>
+    <Function name="GetShortHostname" user="true" member="true">
+    </Function>
+    <Function name="GetShortHostname_static" user="true" member="true">
+    </Function>
+    <Function name="GetDefaultUserName_static" user="true" member="true">
+    </Function>
+    <Function name="SetDefaultUserName_static" user="true" member="true">
+    </Function>
+    <Function name="GetActiveLaunchProfile" user="true">
+    </Function>
+    <Include file="source" quoted="false">
+      Utility.h
+    </Include>
+  </Attribute>

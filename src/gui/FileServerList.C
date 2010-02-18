@@ -832,6 +832,10 @@ FileServerList::SetHost(const string &host)
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -848,7 +852,7 @@ FileServerList::StartServer(const string &host)
         info->server->SetProgressCallback(progressCallback,
             progressCallbackData);
         info->server->Create(host,
-                             HostProfile::MachineName, "", false, 0, false,
+                             MachineProfile::MachineName, "", false, 0, false,
                              connectCallback, connectCallbackData);
         connectingServer = false;
 

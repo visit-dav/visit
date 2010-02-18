@@ -63,6 +63,9 @@ MISC_API char *      GetSystemConfigFile(const char *filename = 0);
 std::string MISC_API GetUserVisItRCFile();
 std::string MISC_API GetSystemVisItRCFile();
 
+std::string MISC_API GetAndMakeUserVisItHostsDirectory();
+std::string MISC_API GetAndMakeSystemVisItHostsDirectory();
+
 int         MISC_API ConfigStateGetRunCount(ConfigStateEnum &code);
 void        MISC_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 

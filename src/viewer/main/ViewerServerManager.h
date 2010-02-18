@@ -45,7 +45,7 @@
 #include <map>
 #include <QSocketNotifier>
 
-#include <HostProfile.h>
+#include <MachineProfile.h>
 
 class Connection;
 class HostProfileList;
@@ -95,6 +95,10 @@ class ViewerConnectionProgressDialog;
 //
 //    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
 //    Added bool to SetDebugLevel to control buffering of debug logs. 
+//
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager : public ViewerBase
@@ -128,7 +132,7 @@ protected:
                       const std::string &host);
 
     static void GetClientMachineNameOptions(const std::string &host,
-                                     HostProfile::ClientHostDetermination &chd,
+                                     MachineProfile::ClientHostDetermination &chd,
                                      std::string &clientHostName);
     static void GetSSHPortOptions(const std::string &host,
                                   bool &manualSSHPort, int &sshPort);

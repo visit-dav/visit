@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">lens.ccs.ornl.gov</Field>
+    <Field name="hostNickname" type="string">ORNL Lens</Field>
+    <Field name="directory" type="string">/sw/analysis-x64/visit</Field>
+    <Field name="hostAliases" type="string">lens#.ccs.ornl.gov lens</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">serial on login node</Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">Parallel GPUs</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">analysis</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">STF006</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">24:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="arguments" type="stringVector"> "-n-gpus-per-node" "2" "-x-args" "'-layout" "Layout%l'" </Field>
+        <Field name="canDoHWAccel" type="bool">true</Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">analysis</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">STF006</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">24:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">2</Field>
+</Object>

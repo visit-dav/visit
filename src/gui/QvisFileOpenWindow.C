@@ -56,7 +56,7 @@
 #include <FileServerList.h>
 #include <DebugStream.h>
 #include <HostProfileList.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <ViewerProxy.h>
 #include <DBPluginInfoAttributes.h>
 #include <DBOptionsAttributes.h>

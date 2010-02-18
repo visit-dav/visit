@@ -199,7 +199,8 @@ state/GaussianControlPoint.C
 state/GaussianControlPointList.C
 state/GlobalAttributes.C
 state/GlobalLineoutAttributes.C
-state/HostProfile.C
+state/LaunchProfile.C
+state/MachineProfile.C
 state/HostProfileList.C
 state/InteractorAttributes.C
 state/InternalResampleAttributes.C

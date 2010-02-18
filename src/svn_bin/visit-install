@@ -180,6 +180,10 @@
 #    Gunther H. Weber, Fri Jan 29 10:36:46 PST 2010
 #    Added support for ANAG configuration option
 #
+#    Jeremy Meredith, Thu Feb 18 17:07:08 EST 2010
+#    Unified windows and unix host profiles.
+#    Split host profiles from rest of config files.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -535,24 +539,59 @@ echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 # Use the appropriate configuration file, setting the bank to the right value.
 #
 rm -f "$dir"/$version+/.visit/config
+mkdir "$dir"/$version+/.visit/hosts
 if ($config == anl) then
-   ln -s visit-config-anl "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_anl_cosmea.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_anl_eureka.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_anl_gadzooks.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_anl_teragrid.xml "$dir"/$version+/.visit/hosts/
 else if ($config == llnl_closed) then
-   ln -s visit-config-llnl_closed "$dir"/$version+/.visit/config_template
+   ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_llnl_closed_eos.xml     "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_gauss.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_graph.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_hopi.xml    "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_juno.xml    "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_minos.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_purple.xml  "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_rhea.xml    "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_tempest.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_closed_um.xml      "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_snl_closed_redrose.xml  "$dir"/$version+/.visit/hosts/
 else if ($config == llnl_open) then
-   ln -s visit-config-llnl_open  "$dir"/$version+/.visit/config_template
+   ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_llnl_alastor.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_ellipse.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_ilx.xml     "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_up.xml      "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_xchem.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_yana.xml    "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_llnl_zeus.xml    "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 else if ($config == nersc) then
-   ln -s visit-config-nersc "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_nersc_davinci.xml  "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
 else if ($config == ornl) then
-   ln -s visit-config-ornl "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_ornl_ewok.xml     "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_ornl_jaguarpf.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_ornl_jaguar.xml   "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_ornl_lens.xml     "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_ornl_photon.xml   "$dir"/$version+/.visit/hosts/
 else if ($config == princeton) then
-   ln -s visit-config-princeton "$dir"/$version+/.visit/config_template
+   ln -s visit-config-princeton.ini "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_princeton_artemis.xml     "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_princeton_hecate.xml      "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_princeton_tigressdata.xml "$dir"/$version+/.visit/hosts/
 else if ($config == tacc) then
-   ln -s visit-config-tacc "$dir"/$version+/.visit/config_template
+   ln -s ../allhosts/host_tacc_ranger.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_tacc_spur.xml   "$dir"/$version+/.visit/hosts/
 else if ($config == anag) then
-   ln -s visit-config-anag "$dir"/$version+/.visit/config
-   ln -s visit-guiconfig-anag "$dir"/$version+/.visit/guiconfig
-   ln -s visit-visitrc-anag "$dir"/$version+/.visit/visitrc
+   ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
+   ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig
+   ln -s visit-visitrc-anag.ini   "$dir"/$version+/.visit/visitrc
 endif
 if (-e "$dir"/$version+/.visit/config_template) then
     sed -e "s/bdivp/$bank/" "$dir"/$version+/.visit/config_template > "$dir"/$version+/.visit/config

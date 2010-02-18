@@ -81,7 +81,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <InteractorAttributes.h>
@@ -1201,6 +1201,9 @@ QvisGUIApplication::HeavyInitialization()
 //   I passed qt_argc, qt_argv into ViewerProxy::Launch so we can support
 //   reverse launching without the GUI really knowing about it.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -1215,7 +1218,7 @@ QvisGUIApplication::LaunchViewer()
         viewerIsAlive = true;
 
         // Set the default user name in the host profiles.
-        HostProfile::SetDefaultUserName(GetViewerProxy()->GetLocalUserName());
+        MachineProfile::SetDefaultUserName(GetViewerProxy()->GetLocalUserName());
     }
     CATCH(IncompatibleVersionException)
     {

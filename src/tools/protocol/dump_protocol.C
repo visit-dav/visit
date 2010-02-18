@@ -33,15 +33,16 @@
 #include <GaussianControlPointList.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
-#include <HostProfile.h>
 #include <HostProfileList.h>
 #include <InteractorAttributes.h>
 #include <InternalResampleAttributes.h>
 #include <KeepAliveRPC.h>
 #include <KeyframeAttributes.h>
+#include <LaunchProfile.h>
 #include <LightAttributes.h>
 #include <LightList.h>
 #include <Line.h>
+#include <MachineProfile.h>
 #include <MaterialAttributes.h>
 #include <MeshManagementAttributes.h>
 #include <MessageAttributes.h>
@@ -142,6 +143,9 @@ typedef std::map<std::string, AttributeSubject *> StateObjectMap;
 //    Hank Childs, Wed Dec 31 13:51:24 PST 2008
 //    Rename ResampleAtts as InternalResampleAtts.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -178,15 +182,16 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(GaussianControlPointList);
     MAKE_OBJECT(GlobalAttributes);
     MAKE_OBJECT(GlobalLineoutAttributes);
-    MAKE_OBJECT(HostProfile);
     MAKE_OBJECT(HostProfileList);
     MAKE_OBJECT(InteractorAttributes);
     MAKE_OBJECT(InternalResampleAttributes);
     MAKE_OBJECT(KeepAliveRPC);
     MAKE_OBJECT(KeyframeAttributes);
+    MAKE_OBJECT(LaunchProfile);
     MAKE_OBJECT(LightAttributes);
     MAKE_OBJECT(LightList);
     MAKE_OBJECT(Line);
+    MAKE_OBJECT(MachineProfile);
     MAKE_OBJECT(MaterialAttributes);
     MAKE_OBJECT(MeshManagementAttributes);
     MAKE_OBJECT(MessageAttributes);

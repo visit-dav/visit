@@ -117,11 +117,14 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   Jeremy Meredith, Thu May 24 11:10:15 EDT 2007
 //   Added SSH tunneling argument; pass it along to CreateCommandLine.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool
 ExistingRemoteProcess::Open(const std::string &rHost,
-                            HostProfile::ClientHostDetermination chd,
+                            MachineProfile::ClientHostDetermination chd,
                             const std::string &clientHostName,
                             bool manualSSHPort,
                             int sshPort, bool useTunneling,

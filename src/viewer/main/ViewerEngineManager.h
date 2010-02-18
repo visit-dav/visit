@@ -48,6 +48,7 @@
 #include <avtDataObjectReader.h>
 #include <vectortypes.h>
 #include <EngineKey.h>
+#include <MachineProfile.h>
 #include <map>
 
 #include <ExternalRenderRequestInfo.h>
@@ -288,6 +289,9 @@ class FileOpenOptions;
 //    Brad Whitlock, Thu Apr  9 15:18:44 PDT 2009
 //    I added another argument to CreateEngine that permits reverse launches.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -296,7 +300,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     struct EngineInformation
     {
         EngineProxy *proxy;
-        HostProfile  profile;
+        MachineProfile  profile;
     };
   public:
     virtual ~ViewerEngineManager();

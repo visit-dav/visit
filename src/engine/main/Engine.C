@@ -1180,6 +1180,8 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 // Creation:   Thu Apr  9 11:59:57 PDT 2009
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
 //   
 // ****************************************************************************
 
@@ -1201,7 +1203,7 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
             for(size_t j = 0; j < viewerArgs.size(); ++j)
                 viewer->AddArgument(viewerArgs[j]);
             viewer->Open("localhost",              // host
-                         HostProfile::MachineName, // client host determination
+                         MachineProfile::MachineName, // client host determination
                          "",                       // client host name
                          false,                    // manual SSH port
                          0,                        // ssh port

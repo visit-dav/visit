@@ -39,7 +39,8 @@
 #ifndef VIEWER_HOSTPROFILESELECTOR_H
 #define VIEWER_HOSTPROFILESELECTOR_H
 #include <viewer_exports.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
+#include <LaunchProfile.h>
 
 #include <string>
 #include <vector>
@@ -65,6 +66,9 @@ class HostProfileList;
 //    the arguments than what the ViewerEngineManager was doing for
 //    normal engine launches.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 class VIEWER_API ViewerHostProfileSelector 
 {
@@ -77,14 +81,13 @@ class VIEWER_API ViewerHostProfileSelector
     void AddRestartArgsToCachedProfile(const std::string&,
                                        const std::vector<std::string>&);
     void ClearCache(const std::string&);
-    const HostProfile &GetHostProfile(void) { return profile; };
+    const MachineProfile &GetMachineProfile(void) { return profile; };
 
   protected:
 
-    std::vector<const HostProfile*> matchingProfiles;
-    HostProfile                     profile;
+    MachineProfile                  profile;
 
-    std::map<std::string, HostProfile> cachedProfile;
+    std::map<std::string, MachineProfile> cachedProfile;
 
 };
 

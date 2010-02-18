@@ -38,7 +38,7 @@
 
 #include "ViewerRemoteProcessChooser.h"
 
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <HostProfileList.h>
 #include <ViewerHostProfileSelectorNoWin.h>
 #include <ViewerHostProfileSelectorWithWin.h>
@@ -115,18 +115,21 @@ ViewerRemoteProcessChooser::~ViewerRemoteProcessChooser()
 //    Brad Whitlock, Thu Aug 5 09:25:20 PDT 2004
 //    I made it return the profile.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool
 ViewerRemoteProcessChooser::SelectProfile(HostProfileList *hostProfileList,
-    const string &hostName, bool skipChooser, HostProfile &profile)
+    const string &hostName, bool skipChooser, MachineProfile &profile)
 {
     // sets profile
     bool retval = selector->SelectProfile(hostProfileList, hostName, skipChooser);
 
     // If a profile was selected, return it here.
     if(retval)
-        profile = selector->GetHostProfile();
+        profile = selector->GetMachineProfile();
 
     return retval;
 }

@@ -55,13 +55,15 @@
 
 #include <snprintf.h>
 
-#include <HostProfile.h>
+#include <MachineProfile.h>
+#include <LaunchProfile.h>
 #include <HostProfileList.h>
+#include <StringHelpers.h>
 #include <ViewerProxy.h>
 
 #include <cstdlib>
 
-#define HOST_PROFILE_SPACING 6
+#define HOST_PROFILE_SPACING 2
 
 // ****************************************************************************
 // Method: QvisHostProfileWindow::QvisHostProfileWindow
@@ -93,15 +95,19 @@
 //   Brad Whitlock, Wed Apr  9 10:57:35 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
+//
 // ****************************************************************************
 
 QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
     const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(profiles, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton),
-    hostTabMap()
+                               QvisPostableWindowObserver::ApplyButton)
 {
     profileCounter = 0;
+    currentMachine = NULL;
+    currentLaunch = NULL;
 }
 
 // ****************************************************************************
@@ -110,15 +116,10 @@ QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
 // Purpose: 
 //   This is the destructor for the QvisHostProfileWindow class.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:20:11 PST 2000
+// Programmer: 
+// Creation:   
 //
 // Modifications:
-//   Brad Whitlock, Fri Feb 15 15:11:40 PST 2002
-//   Deleted parentless widgets.
-//
-//   Brad Whitlock, Wed Jun 6 09:35:57 PDT 2007
-//   Removed a button group.
 //
 // ****************************************************************************
 
@@ -133,358 +134,332 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   This method creates the window's widgets and hooks up the slot
 //   methods.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:18:32 PST 2000
+// Programmer: Jeremy Meredith, Thu Feb 18 15:56:00 EST 2010
+// Creation:   February 18, 2010
 //
 // Modifications:
-//   Jeremy Meredith, Tue Jul 17 17:42:07 PDT 2001
-//   Added numNodes, launchMethod, and partitionName, as well as checkboxes
-//   for each.  Also reworded "default profile" to be "active profile".
-//
-//   Jeremy Meredith, Thu Sep 13 17:33:17 PDT 2001
-//   Changed the blank launch option to read "default" instead.
-//
-//   Jeremy Meredith, Fri Sep 21 14:29:59 PDT 2001
-//   Added buttons for forcing static and dynamic load balancing.
-//
-//   Brad Whitlock, Mon Sep 24 11:07:58 PDT 2001
-//   Changed the way some signals/slots are connected. Made the minimum
-//   height of the hostTabs depend on the font size.
-//
-//   Jeremy Meredith, Thu Feb 14 15:25:21 PST 2002
-//   Change hostName to a combo box.  Change the type of callback for the
-//   tabwidget page turn.  Add "Pool" to partition label.
-//
-//   Sean Ahern, Thu Feb 21 15:54:40 PST 2002
-//   Added timeout support.  Added the "row" variable to make adding new
-//   widgets easier.
-//
-//   Jeremy Meredith, Wed Mar  6 15:35:18 PST 2002
-//   Renamed "Host" to say "Full host name" so it is more obvious what
-//   we are looking for.
-//
-//   Brad Whitlock, Fri May 3 16:42:34 PST 2002
-//   Removed the word "Engine" from the last line edit label.
-//
-//   Jeremy Meredith, Wed Aug 14 10:49:25 PDT 2002
-//   Added a couple parallel options and restructured the window.
-//
-//   Jeremy Meredith, Thu Nov 21 11:28:39 PST 2002
-//   Connected profileName signal textChanged() to a new function.
-//
-//   Jeremy Meredith, Fri Jan 24 14:43:28 PST 2003
-//   Added optional arguments to the parallel launcher.
-//
-//   Jeremy Meredith, Sat Apr 12 13:42:30 PDT 2003
-//   Added a couple variants on psub for new systems.
-//
-//   Jeremy Meredith, Mon Apr 14 17:20:25 PDT 2003
-//   Changed the psub variants to be more "shell-friendly", i.e. no spaces
-//   and no parentheses.  Added hostAliases.
-//
-//   Jeremy Meredith, Fri May  9 12:39:50 PDT 2003
-//   Added bsub as a launcher option.  This is in preparation for the
-//   Q machine.
-//
-//   Jeremy Meredith, Mon May 19 12:48:38 PDT 2003
-//   Added toggle button for sharing mdserver / engines in a single job.
-//
-//   Jeremy Meredith, Thu Jun 26 10:37:09 PDT 2003
-//   Enabled the share-batch-job toggle.
-//
-//   Jeremy Meredith, Mon Aug 18 13:38:40 PDT 2003
-//   Changed username field to update on any text change, not just
-//   a return press.
-//
-//   Jeremy Meredith, Thu Oct  9 15:47:00 PDT 2003
-//   Added ability to manually specify a client host name or to have it
-//   parsed from the SSH_CLIENT (or related) environment variables.  Added
-//   ability to specify an SSH port.  Moved "shareMDServer" to a new
-//   advanced tab, on which these other options were also placed.
-//
-//   Jeremy Meredith, Thu Nov 13 16:02:47 PST 2003
-//   Added "srun" launcher.
-//
-//   Jeremy Meredith, Thu Nov 20 16:29:54 PST 2003
-//   Adding psub/srun option.
-//
-//   Kathleen Bonnell, Tue Jan 11 16:14:14 PST 2005 
-//   Set minimum for numNodes spinbox to 1. 
-//
-//   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
-//   Added machinefile and useVisItScriptForEnv.
-//
-//   Kathleen Bonnell, Thu Nov 10 16:58:34 PST 2005 
-//   Added "qsub" launcher.
-//
-//   Hank Childs, Fri Dec  2 10:59:47 PST 2005
-//   Added new tab for hardware acceleration.
-//
-//   Hank Childs, Fri Dec  9 07:13:44 PST 2005
-//   Change the word 'window' to 'tab' in disclaimer for hardware acceleration.
-//
-//   Eric Brugger, Tue Nov 28 13:48:04 PST 2006
-//   Added a psub/mpirun launch option.
-//
-//   Eric Brugger, Thu Feb 15 12:14:34 PST 2007
-//   Added support for additional sublauncher arguments.  Replaced the qsub
-//   launch option with qsub/mpiexec and qsub/srun.
-//
-//   Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
-//   Added support for SSH port tunneling.
-//
-//   Brad Whitlock, Tue Jun 5 15:53:20 PST 2007
-//   Moved individual tabs into their own creation functions.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//   Initial Qt4 Port.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::CreateWindowContents()
 {
-    
-    QLabel *hostProfileLabel = new QLabel(tr("Host profiles"), central);
-    topLayout->addWidget(hostProfileLabel);
+    QGridLayout *mainLayout = new QGridLayout(NULL);
+    topLayout->addLayout(mainLayout);
+    topLayout->setStretchFactor(mainLayout, 100);
 
-    hostTabs = new QTabWidget(central);
-    hostTabs->setMinimumHeight(hostTabs->fontMetrics().height() * 6);
-    connect(hostTabs, SIGNAL(currentChanged(int)),
-            this, SLOT(pageTurned(int)));
-    topLayout->addWidget(hostTabs,10);
-    emptyListBox = 0;
+    mainLayout->addWidget(new QLabel(tr("Hosts")), 0,0, 1,3);
+    hostList = new QListWidget(central);
+    hostList->setSortingEnabled(true);
+    mainLayout->addWidget(hostList, 1,0, 1,3);
+    connect(hostList, SIGNAL(itemSelectionChanged()),
+            this, SLOT(currentHostChanged()));
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    topLayout->addLayout(buttonLayout);
-    
-    newButton = new QPushButton(tr("New profile"));
-    connect(newButton, SIGNAL(clicked()), this, SLOT(newProfile()));
-    buttonLayout->addWidget(newButton);
+    addHost = new QPushButton(tr("New"), central);
+    mainLayout->addWidget(addHost, 2,0);
+    connect(addHost, SIGNAL(clicked()), this, SLOT(addMachineProfile()));
 
-    deleteButton = new QPushButton(tr("Delete profile"));
-    connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteProfile()));
-    buttonLayout->addWidget(deleteButton);
-    buttonLayout->addStretch(10);
+    delHost = new QPushButton(tr("Del"), central);
+    mainLayout->addWidget(delHost, 2,1);
+    connect(delHost, SIGNAL(clicked()), this, SLOT(delMachineProfile()));
 
-    optionsTabs = new QTabWidget(central);
-    topLayout->addWidget(optionsTabs);
+    copyHost = new QPushButton(tr("Copy"), central);
+    mainLayout->addWidget(copyHost, 2,2);
+    connect(copyHost, SIGNAL(clicked()), this, SLOT(copyMachineProfile()));
 
-    //
-    // Create a tab for the general options
-    //
-    activeProfileGroup = CreateSelectedTab(central);
-    optionsTabs->addTab(activeProfileGroup,tr("Selected profile"));
+    machineTabs = new QTabWidget(central);
+    mainLayout->addWidget(machineTabs, 0,3, 3,1);
 
-    //
-    // Create a tab for Parallel options.
-    //
-    parGroup = CreateParallelTab(central);
-    optionsTabs->addTab(parGroup, tr("Parallel options"));
+    CreateLaunchProfilesGroup();
+    machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
 
-    //
-    // Create a tab for Advanced options
-    //
-    advancedGroup = CreateAdvancedTab(central);
-    optionsTabs->addTab(advancedGroup, tr("Advanced options"));
+    CreateMachineSettingsGroup();
+    machineTabs->addTab(machineSettingsGroup, tr("Host Settings"));
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::CreateSelectedTab
+// Method:  QvisHostProfileWindow::CreateMachineSettingsGroup
 //
-// Purpose: 
-//   Creates the widgets for the "Selected profile" tab.
+// Purpose:
+//   Creates the main settings (not launch profiles) for a machine profile.
 //
 // Arguments:
-//   parent : The parent widget for the tab.
+//   none
 //
-// Returns:    The widget that contains all controls for the tab.
-//
-// Note:       
-//
-// Programmer: VisIt team
-// Creation:   Wed Jun 6 10:14:17 PDT 2007
-//
-// Modifications:
-//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
-//   I moved the code to create the tab to this function so I could focus on
-//   less code. I also improved the layout.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-//   Hank Childs, Thu May  7 19:05:36 PDT 2009
-//   Added support for host nicknames.
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
 //
 // ****************************************************************************
-
-QWidget *
-QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
+void
+QvisHostProfileWindow::CreateMachineSettingsGroup()
 {
-    activeProfileGroup = new QWidget(parent);
-
-    QVBoxLayout *innerLayout = new QVBoxLayout(activeProfileGroup);
-    QGridLayout *profileLayout = new QGridLayout();
-    innerLayout->addLayout(profileLayout);
-    profileLayout->setSpacing(HOST_PROFILE_SPACING);
-    innerLayout->addStretch(5);
-
-    QLabel *disclaimer = new QLabel(
-        QString("<i>* ") + 
-        tr("Applies to all profiles for a given host") + 
-        QString("</i>"),
-        activeProfileGroup);
-    innerLayout->addWidget(disclaimer);
+    machineSettingsGroup = new QWidget();
+    QWidget *currentGroup = machineSettingsGroup;
 
     int row = 0;
+    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    QGridLayout *layout = new QGridLayout();
+    tmpLayout->addLayout(layout);
+    layout->setSpacing(6);
+    tmpLayout->addStretch(5);
+    
+    layout->setColumnMinimumWidth(0,15);
+    layout->setColumnStretch(0,0);
+    layout->setColumnStretch(1,0);
+    layout->setColumnStretch(2,0);
+    layout->setColumnStretch(3,100);
 
-    profileName = new QLineEdit(activeProfileGroup);
-    connect(profileName, SIGNAL(textChanged(const QString&)),
-            this, SLOT(processProfileNameText(const QString&)));
-    profileNameLabel = new QLabel(tr("Profile name"),activeProfileGroup);
-    profileLayout->addWidget(profileNameLabel, row, 0);
-    profileLayout->addWidget(profileName, row, 1);
-    row++;
-
-    activeProfileCheckBox = new QCheckBox(tr("Default profile for host"),activeProfileGroup);
-    connect(activeProfileCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(makeActiveProfile(bool)));
-    profileLayout->addWidget(activeProfileCheckBox, row, 1);
-    row++;
-
-    hostName = new QComboBox(activeProfileGroup);
-    hostName->setDuplicatesEnabled(false);
-    hostName->setEditable(true);
-    connect(hostName, SIGNAL(activated(const QString &)),
+    hostName = new QLineEdit(currentGroup);
+    connect(hostName, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostNameChanged(const QString &)));
-    hostNameLabel = new QLabel(tr("Remote host name"), activeProfileGroup);
-    profileLayout->addWidget(hostNameLabel, row, 0);
-    profileLayout->addWidget(hostName, row, 1);
+    hostNameLabel = new QLabel(tr("Remote host name"), currentGroup);
+    layout->addWidget(hostNameLabel, row, 0, 1,2);
+    layout->addWidget(hostName, row, 2, 1,2);
     row++;
 
-    hostAliases = new QLineEdit(activeProfileGroup);
+    hostAliases = new QLineEdit(currentGroup);
     connect(hostAliases, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostAliasesChanged(const QString &)));
-    hostAliasesLabel = new QLabel(QString("*") + tr("Host name aliases"), activeProfileGroup);
-    profileLayout->addWidget(hostAliasesLabel, row, 0);
-    profileLayout->addWidget(hostAliases, row, 1);
+    hostAliasesLabel = new QLabel(tr("Host name aliases"), currentGroup);
+    layout->addWidget(hostAliasesLabel, row, 0, 1,2);
+    layout->addWidget(hostAliases, row, 2, 1,2);
     row++;
 
-    hostNickname = new QLineEdit(activeProfileGroup);
+    hostNickname = new QLineEdit(currentGroup);
     connect(hostNickname, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostNicknameChanged(const QString &)));
-    hostNicknameLabel = new QLabel(QString("*") + tr("Host nickname"), activeProfileGroup);
-    profileLayout->addWidget(hostNicknameLabel, row, 0);
-    profileLayout->addWidget(hostNickname, row, 1);
+    hostNicknameLabel = new QLabel(tr("Host nickname"), currentGroup);
+    layout->addWidget(hostNicknameLabel, row, 0, 1,2);
+    layout->addWidget(hostNickname, row, 2, 1,2);
     row++;
 
-    userName = new QLineEdit(activeProfileGroup);
+    userName = new QLineEdit(currentGroup);
     connect(userName, SIGNAL(textChanged(const QString &)),
             this, SLOT(userNameChanged(const QString &)));
-    userNameLabel = new QLabel(QString("*") + tr("Username"), activeProfileGroup);
-    profileLayout->addWidget(userNameLabel, row, 0);
-    profileLayout->addWidget(userName, row, 1);
+    userNameLabel = new QLabel(tr("Username"), currentGroup);
+    layout->addWidget(userNameLabel, row, 0, 1,2);
+    layout->addWidget(userName, row, 2, 1,2);
     row++;
 
-    timeout = new QSpinBox(activeProfileGroup);
-    timeout->setRange(1, 1440);
-    timeout->setSingleStep(1);
+    shareMDServerCheckBox = new QCheckBox(tr("Share batch job with Metadata Server"),
+                                          currentGroup);
+    layout->addWidget(shareMDServerCheckBox, row,0, 1,4);
+    connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleShareMDServer(bool)));
+    row++;
+
+    tunnelSSH = new QCheckBox(tr("Tunnel data connections through SSH"), currentGroup);
+    layout->addWidget(tunnelSSH, row,0, 1,4);
+    connect(tunnelSSH, SIGNAL(toggled(bool)),
+            this, SLOT(toggleTunnelSSH(bool)));
+    row++;
+
+    clientHostNameMethod = new QButtonGroup(currentGroup);
+    connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
+            this, SLOT(clientHostNameMethodChanged(int)));
+    chnMachineName = new QRadioButton(tr("Use local machine name"), currentGroup);
+    chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
+                                             currentGroup);
+    chnSpecifyManually = new QRadioButton(tr("Specify manually:"),
+                                          currentGroup);
+    chnMachineName->setChecked(true);
+    clientHostNameMethod->addButton(chnMachineName,0);
+
+    clientHostNameMethod->addButton(chnParseFromSSHClient,1);
+    clientHostNameMethod->addButton(chnSpecifyManually,2);
+    clientHostNameMethodLabel =
+        new QLabel(tr("Method used to determine local host name when not tunneling:"),
+                   currentGroup);
+    layout->addWidget(clientHostNameMethodLabel,
+                                  row, 0, 1, 4);
+    row++;
+    layout->addWidget(chnMachineName, row, 1, 1, 3);
+    row++;
+    layout->addWidget(chnParseFromSSHClient, row, 1, 1, 3);
+    row++;
+    layout->addWidget(chnSpecifyManually, row, 1, 1, 1);
     
-    
-    connect(timeout, SIGNAL(valueChanged(int)),
-            this, SLOT(timeoutChanged(int)));
-    timeoutLabel = new QLabel(tr("Timeout (minutes)"), activeProfileGroup);
-    profileLayout->addWidget(timeoutLabel, row, 0);
-    profileLayout->addWidget(timeout, row, 1);
+    clientHostName = new QLineEdit(currentGroup);
+    connect(clientHostName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(clientHostNameChanged(const QString &)));
+    layout->addWidget(clientHostName, row, 2, 1,2);
     row++;
 
-    engineArguments = new QLineEdit(activeProfileGroup);
-    connect(engineArguments, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processEngineArgumentsText(const QString &)));
-    engineArgumentsLabel = new QLabel(tr("Additional options"), activeProfileGroup);
-    profileLayout->addWidget(engineArgumentsLabel, row, 0);
-    profileLayout->addWidget(engineArguments, row, 1);
+    sshPort = new QLineEdit(currentGroup);
+    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), currentGroup);
+    connect(sshPort, SIGNAL(textChanged(const QString &)),
+            this, SLOT(sshPortChanged(const QString &)));
+    connect(sshPortCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSSHPort(bool)));
+    layout->addWidget(sshPortCheckBox, row, 0, 1, 2);
+    layout->addWidget(sshPort, row, 2, 1, 2);
     row++;
 
-    parallelCheckBox = new QCheckBox(tr("Parallel computation engine"), activeProfileGroup);
-    connect(parallelCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleParallel(bool)));
-    profileLayout->addWidget(parallelCheckBox, row, 0, 1, 2);
+    directory = new QLineEdit(currentGroup);
+    connect(directory, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processDirectoryText(const QString &)));
+    directoryLabel = new QLabel(tr("Path to VisIt installation"),
+                                      currentGroup);
+    layout->addWidget(directoryLabel, row, 0, 1,2);
+    layout->addWidget(directory, row, 2, 1,2);
     row++;
 
-    return activeProfileGroup;
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::CreateParallelTab
+// Method:  QvisHostProfileWindow::CreateLaunchProfilesGroup
 //
-// Purpose: 
-//   Creates the widgets for the "Parallel options" tab.
+// Purpose:
+//   Creates the launch profiles tab to list profiles for a machine.
 //
 // Arguments:
-//   parent : The parent widget for the tab.
+//   none
 //
-// Returns:    The widget that contains all controls for the tab.
-//
-// Note:       
-//
-// Programmer: VisIt team
-// Creation:   Wed Jun 6 10:14:17 PDT 2007
-//
-// Modifications:
-//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
-//   I moved the code to create the tab to this function so I could focus on
-//   less code. I also improved the layout.
-//
-//   Jeremy Meredith, Thu Jun 28 13:17:50 EDT 2007
-//   Allowed "1" for the minimum number of processors. This is how we specify
-//   serial jobs on batch nodes.
-//
-//   Eric Brugger, Wed Jul 18 13:22:20 PDT 2007
-//   Removed support for psub/prun.  Added support for msub/srun and
-//   qsub/mpirun.  Alphabetized the list of options.
-//   
-//   Dave Pugmire, Tue Nov 27 14:59:56 EST 2007
-//   Added qsub/aprun to list of options.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
-//   Added fields for commands to run pre and post the mpi command.
-//
-//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//   Initial Qt4 Port.
-//
-//   Eric Brugger, Mon Aug 18 10:39:11 PDT 2008
-//   Added support for just "msub" as a parallel launch method.
-//
-//   Hank Childs, Sat Apr 25 13:51:17 PDT 2009
-//   Added support for ibrun & qsub/ibrun.
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
 //
 // ****************************************************************************
-
-QWidget *
-QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
+void
+QvisHostProfileWindow::CreateLaunchProfilesGroup()
 {
-    parGroup = new QWidget(parent);
+    launchProfilesGroup = new QWidget();
+    QWidget *currentGroup = launchProfilesGroup;
 
-    QVBoxLayout *innerParLayout = new QVBoxLayout(parGroup);
+    int row = 0;
+    QGridLayout *layout = new QGridLayout(launchProfilesGroup);
 
-    QGridLayout *parLayout = new QGridLayout();
-    innerParLayout->addLayout(parLayout);
-    parLayout->setSpacing(HOST_PROFILE_SPACING);
-    innerParLayout->addStretch(5);
+    profileHeaderLabel = new QLabel("", launchProfilesGroup);
+    layout->addWidget(profileHeaderLabel, row,0, 1,4);
+    row++;
+
+    profileList = new QListWidget(launchProfilesGroup);
+    layout->addWidget(profileList, row,0, 1,4);
+    connect(profileList, SIGNAL(itemSelectionChanged()),
+            this, SLOT(currentLaunchChanged()));
+    row++;
+
+    addProfile = new QPushButton(tr("New"), launchProfilesGroup);
+    layout->addWidget(addProfile, row,0);
+    connect(addProfile, SIGNAL(clicked()), this, SLOT(addLaunchProfile()));
+    delProfile = new QPushButton(tr("Del"), launchProfilesGroup);
+    connect(delProfile, SIGNAL(clicked()), this, SLOT(delLaunchProfile()));
+    layout->addWidget(delProfile, row,1);
+    copyProfile = new QPushButton(tr("Copy"), launchProfilesGroup);
+    connect(copyProfile, SIGNAL(clicked()), this, SLOT(copyLaunchProfile()));
+    layout->addWidget(copyProfile, row,2);
+    makeDefaultProfile = new QPushButton(tr("Make Default"),
+                                         launchProfilesGroup);
+    connect(makeDefaultProfile, SIGNAL(clicked()), this, SLOT(makeDefaultLaunchProfile()));
+    layout->addWidget(makeDefaultProfile, row,3);
+    row++;
+
+    profileTabs = new QTabWidget(central);
+    layout->addWidget(profileTabs, row,0, 1,4);
+    row++;
+
+    CreateBasicSettingsGroup();
+    profileTabs->addTab(basicSettingsGroup, tr("Settings"));
+
+    CreateLaunchSettingsGroup();
+    profileTabs->addTab(launchSettingsGroup, tr("Parallel"));
+
+    CreateAdvancedSettingsGroup();
+    profileTabs->addTab(advancedSettingsGroup, tr("Advanced"));
+
+    CreateHWAccelSettingsGroup();
+    profileTabs->addTab(hwAccelSettingsGroup, tr("GPU Accel"));
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::CreateBasicSettingsGroup
+//
+// Purpose:
+//   Creates the basic settings tab for a launch profile.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::CreateBasicSettingsGroup()
+{
+    basicSettingsGroup = new QWidget();
+    QWidget *currentGroup = basicSettingsGroup;
+
+    int row = 0;
+    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    QGridLayout *layout = new QGridLayout();
+    tmpLayout->addLayout(layout);
+    layout->setSpacing(7);
+    tmpLayout->addStretch(5);
     
-    int prow = 0;
+    profileName = new QLineEdit(currentGroup);
+    connect(profileName, SIGNAL(textChanged(const QString&)),
+            this, SLOT(processProfileNameText(const QString&)));
+    profileNameLabel = new QLabel(tr("Profile name"),currentGroup);
+    layout->addWidget(profileNameLabel, row, 0);
+    layout->addWidget(profileName, row, 1, 1,3);
+    row++;
 
-    launchMethod = new QComboBox(parGroup);
+    timeout = new QSpinBox(currentGroup);
+    timeout->setRange(1, 1440);
+    timeout->setSingleStep(1);
+    connect(timeout, SIGNAL(valueChanged(int)),
+            this, SLOT(timeoutChanged(int)));
+    timeoutLabel = new QLabel(tr("Timeout (minutes)"), currentGroup);
+    layout->addWidget(timeoutLabel, row, 0, 1,1);
+    layout->addWidget(timeout, row, 1, 1,3);
+    row++;
+
+    engineArguments = new QLineEdit(currentGroup);
+    connect(engineArguments, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processEngineArgumentsText(const QString &)));
+    engineArgumentsLabel = new QLabel(tr("Additional arguments"),
+                                      currentGroup);
+    layout->addWidget(engineArgumentsLabel, row, 0, 1,1);
+    layout->addWidget(engineArguments, row, 1, 1,3);
+    row++;
+
+    parallelCheckBox = new QCheckBox(
+                     tr("Launch (parallel) engine using job control system"),
+                                     currentGroup);
+    connect(parallelCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleParallel(bool)));
+    layout->addWidget(parallelCheckBox, row, 0, 1,4);
+    row++;
+    
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::CreateLaunchSettingsGroup
+//
+// Purpose:
+//   Creates the main job control tab for a launch profile.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::CreateLaunchSettingsGroup()
+{
+    launchSettingsGroup = new QWidget();
+    QWidget *currentGroup = launchSettingsGroup;
+
+    int row = 0;
+    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    QGridLayout *layout = new QGridLayout();
+    tmpLayout->addLayout(layout);
+    layout->setSpacing(HOST_PROFILE_SPACING);
+    tmpLayout->addStretch(5);
+    
+    launchMethod = new QComboBox(currentGroup);
     launchMethod->addItem(tr("(default)"));
     launchMethod->addItem("bsub");
     launchMethod->addItem("dmpirun");
@@ -507,64 +482,105 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
     launchMethod->addItem("qsub/srun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
-    launchCheckBox = new QCheckBox(tr("Parallel launch method"), parGroup);
+    launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
     connect(launchCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleLaunch(bool)));
-    parLayout->addWidget(launchCheckBox, prow, 0);
-    parLayout->addWidget(launchMethod, prow, 1);
-    prow++;
+    layout->addWidget(launchCheckBox, row, 0);
+    layout->addWidget(launchMethod, row, 1);
+    row++;
 
-    launchArgs = new QLineEdit(parGroup);
-    connect(launchArgs, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processLaunchArgsText(const QString &)));
-    launchArgsCheckBox = new QCheckBox(tr("Launcher arguments"),parGroup);
-    connect(launchArgsCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleLaunchArgs(bool)));
-    parLayout->addWidget(launchArgsCheckBox, prow, 0);
-    parLayout->addWidget(launchArgs, prow, 1);
-    prow++;
-
-    sublaunchArgs = new QLineEdit(parGroup);
-    connect(sublaunchArgs, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSublaunchArgsText(const QString &)));
-    sublaunchArgsCheckBox = new QCheckBox(tr("Sublauncher arguments"),parGroup);
-    connect(sublaunchArgsCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleSublaunchArgs(bool)));
-    parLayout->addWidget(sublaunchArgsCheckBox, prow, 0);
-    parLayout->addWidget(sublaunchArgs, prow, 1);
-    prow++;
-
-    sublaunchPreCmd = new QLineEdit(parGroup);
-    connect(sublaunchPreCmd, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSublaunchPreCmdText(const QString &)));
-    sublaunchPreCmdCheckBox = new QCheckBox(tr("Sublauncher pre-mpi command"), parGroup);
-    connect(sublaunchPreCmdCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleSublaunchPreCmd(bool)));
-    parLayout->addWidget(sublaunchPreCmdCheckBox, prow, 0);
-    parLayout->addWidget(sublaunchPreCmd, prow, 1);
-    prow++;
-
-    sublaunchPostCmd = new QLineEdit(parGroup);
-    connect(sublaunchPostCmd, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSublaunchPostCmdText(const QString &)));
-    sublaunchPostCmdCheckBox = new QCheckBox(tr("Sublauncher post-mpi command"), parGroup);
-    connect(sublaunchPostCmdCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleSublaunchPostCmd(bool)));
-    parLayout->addWidget(sublaunchPostCmdCheckBox, prow, 0);
-    parLayout->addWidget(sublaunchPostCmd, prow, 1);
-    prow++;
-
-    partitionName = new QLineEdit(parGroup);
+    partitionName = new QLineEdit(currentGroup);
     connect(partitionName, SIGNAL(textChanged(const QString &)),
             this, SLOT(processPartitionNameText(const QString &)));
-    partitionCheckBox = new QCheckBox(tr("Partition / Pool"),parGroup);
+    partitionCheckBox = new QCheckBox(tr("Partition / Pool / Queue"),currentGroup);
     connect(partitionCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePartitionName(bool)));
-    parLayout->addWidget(partitionCheckBox, prow, 0);
-    parLayout->addWidget(partitionName, prow, 1);
-    prow++;
+    layout->addWidget(partitionCheckBox, row, 0);
+    layout->addWidget(partitionName, row, 1);
+    row++;
 
-    loadBalancing = new QComboBox(parGroup);
+    numProcessors = new QSpinBox(currentGroup);
+    numProcessors->setRange(1,99999);
+    numProcessors->setSingleStep(1);
+    connect(numProcessors, SIGNAL(valueChanged(int)),
+            this, SLOT(numProcessorsChanged(int)));
+    numProcLabel = new QLabel(tr("Default number of processors"), currentGroup);
+    layout->addWidget(numProcLabel, row, 0);
+    layout->addWidget(numProcessors, row, 1);
+    row++;
+
+    numNodes = new QSpinBox(currentGroup);
+    numNodes->setRange(1,99999);
+    numNodes->setSingleStep(1);
+    
+    connect(numNodes, SIGNAL(valueChanged(int)),
+            this, SLOT(numNodesChanged(int)));
+    numNodesCheckBox = new QCheckBox(tr("Default number of nodes"), currentGroup);
+    connect(numNodesCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleNumNodes(bool)));
+    layout->addWidget(numNodesCheckBox, row, 0);
+    layout->addWidget(numNodes, row, 1);
+    row++;
+
+    bankName = new QLineEdit(currentGroup);
+    connect(bankName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processBankNameText(const QString &)));
+    bankCheckBox = new QCheckBox(tr("Default Bank / Account"),currentGroup);
+    connect(bankCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleBankName(bool)));
+    layout->addWidget(bankCheckBox, row, 0);
+    layout->addWidget(bankName, row, 1);
+    row++;
+
+    timeLimit = new QLineEdit(currentGroup);
+    connect(timeLimit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processTimeLimitText(const QString &)));
+    timeLimitCheckBox = new QCheckBox(tr("Default Time Limit"), currentGroup);
+    connect(timeLimitCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleTimeLimit(bool)));
+    layout->addWidget(timeLimitCheckBox, row, 0);
+    layout->addWidget(timeLimit, row, 1);
+    row++;
+
+    machinefile = new QLineEdit(currentGroup);
+    connect(machinefile, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processMachinefileText(const QString &)));
+    machinefileCheckBox = new QCheckBox(tr("Default Machine File"), currentGroup);
+    connect(machinefileCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleMachinefile(bool)));
+    layout->addWidget(machinefileCheckBox, row, 0);
+    layout->addWidget(machinefile, row, 1);
+    row++;
+}
+
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::CreateAdvancedSettingsGroup
+//
+// Purpose:
+//   Creates the advanced job control settings tab for a launch profile.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::CreateAdvancedSettingsGroup()
+{
+    advancedSettingsGroup = new QWidget();
+    QWidget *currentGroup = advancedSettingsGroup;
+
+    int row = 0;
+    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    QGridLayout *layout = new QGridLayout();
+    tmpLayout->addLayout(layout);
+    layout->setSpacing(HOST_PROFILE_SPACING);
+    tmpLayout->addStretch(5);
+
+    loadBalancing = new QComboBox(currentGroup);
     loadBalancing->addItem(tr("Auto"));
     loadBalancing->addItem(tr("Static"));
     loadBalancing->addItem(tr("Dynamic"));
@@ -572,283 +588,84 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
             this, SLOT(loadBalancingChanged(int)));
 
     loadBalancingLabel = new QLabel(tr("Load balancing"));
-    parLayout->addWidget(loadBalancingLabel, prow, 0);
-    parLayout->addWidget(loadBalancing, prow, 1);
-    prow++;
-
-    numProcessors = new QSpinBox(parGroup);
-    numProcessors->setRange(1,99999);
-    numProcessors->setSingleStep(1);
-    connect(numProcessors, SIGNAL(valueChanged(int)),
-            this, SLOT(numProcessorsChanged(int)));
-    numProcLabel = new QLabel(tr("Default number of processors"), parGroup);
-    parLayout->addWidget(numProcLabel, prow, 0);
-    parLayout->addWidget(numProcessors, prow, 1);
-    prow++;
-
-    numNodes = new QSpinBox(parGroup);
-    numNodes->setRange(1,99999);
-    numNodes->setSingleStep(1);
-    
-    connect(numNodes, SIGNAL(valueChanged(int)),
-            this, SLOT(numNodesChanged(int)));
-    numNodesCheckBox = new QCheckBox(tr("Default number of nodes"), parGroup);
-    connect(numNodesCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleNumNodes(bool)));
-    parLayout->addWidget(numNodesCheckBox, prow, 0);
-    parLayout->addWidget(numNodes, prow, 1);
-    prow++;
-
-    bankName = new QLineEdit(parGroup);
-    connect(bankName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processBankNameText(const QString &)));
-    bankCheckBox = new QCheckBox(tr("Default Bank"),parGroup);
-    connect(bankCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleBankName(bool)));
-    parLayout->addWidget(bankCheckBox, prow, 0);
-    parLayout->addWidget(bankName, prow, 1);
-    prow++;
-
-    timeLimit = new QLineEdit(parGroup);
-    connect(timeLimit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processTimeLimitText(const QString &)));
-    timeLimitCheckBox = new QCheckBox(tr("Default Time Limit"), parGroup);
-    connect(timeLimitCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleTimeLimit(bool)));
-    parLayout->addWidget(timeLimitCheckBox, prow, 0);
-    parLayout->addWidget(timeLimit, prow, 1);
-    prow++;
-
-    machinefile = new QLineEdit(parGroup);
-    connect(machinefile, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processMachinefileText(const QString &)));
-    machinefileCheckBox = new QCheckBox(tr("Default Machine File"), parGroup);
-    connect(machinefileCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleMachinefile(bool)));
-    parLayout->addWidget(machinefileCheckBox, prow, 0);
-    parLayout->addWidget(machinefile, prow, 1);
-    prow++;
-
-    return parGroup;
-}
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::CreateAdvancedTab
-//
-// Purpose: 
-//   Creates the widgets for the "Advanced options" tab.
-//
-// Arguments:
-//   parent : The parent widget for the tab.
-//
-// Returns:    The widget that contains all controls for the tab.
-//
-// Note:       
-//
-// Programmer: VisIt team
-// Creation:   Wed Jun 6 10:14:17 PDT 2007
-//
-// Modifications:
-//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
-//   I moved the code to create the tab to this function so I could focus on
-//   less code.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-QWidget *
-QvisHostProfileWindow::CreateAdvancedTab(QWidget *parent)
-{
-    advancedGroup = new QWidget(parent);
-
-    QVBoxLayout *innerAdvLayout = new QVBoxLayout(advancedGroup);
-
-    QVBoxLayout *advLayout = new QVBoxLayout();
-    innerAdvLayout->addLayout(advLayout);
-    advLayout->setSpacing(HOST_PROFILE_SPACING);
-
-    shareMDServerCheckBox = new QCheckBox(tr("Share batch job with Metadata Server"),
-                                          advancedGroup);
-    advLayout->addWidget(shareMDServerCheckBox);
-    connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleShareMDServer(bool)));
+    layout->addWidget(loadBalancingLabel, row, 0);
+    layout->addWidget(loadBalancing, row, 1);
+    row++;
 
     useVisItScriptForEnvCheckBox = new QCheckBox(
                              tr("Use VisIt script to set up parallel environment"),
-                             advancedGroup);
-    advLayout->addWidget(useVisItScriptForEnvCheckBox);
+                             currentGroup);
+    layout->addWidget(useVisItScriptForEnvCheckBox, row,0, 1,3);
     connect(useVisItScriptForEnvCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseVisItScriptForEnv(bool)));
+    row++;
 
-    QTabWidget *advancedOptionsTabs = new QTabWidget(advancedGroup);
-    advLayout->addWidget(advancedOptionsTabs);
+    launchArgs = new QLineEdit(currentGroup);
+    connect(launchArgs, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processLaunchArgsText(const QString &)));
+    launchArgsCheckBox = new QCheckBox(tr("Launcher arguments"),currentGroup);
+    connect(launchArgsCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleLaunchArgs(bool)));
+    layout->addWidget(launchArgsCheckBox, row, 0);
+    layout->addWidget(launchArgs, row, 1);
+    row++;
 
-    //
-    // Create a tab for Networking
-    //
-    networkingGroup = CreateNetworkingTab(advancedGroup);
-    advancedOptionsTabs->addTab(networkingGroup, tr("Networking"));
+    sublaunchArgs = new QLineEdit(currentGroup);
+    connect(sublaunchArgs, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSublaunchArgsText(const QString &)));
+    sublaunchArgsCheckBox = new QCheckBox(tr("Sublauncher arguments"),currentGroup);
+    connect(sublaunchArgsCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSublaunchArgs(bool)));
+    layout->addWidget(sublaunchArgsCheckBox, row, 0);
+    layout->addWidget(sublaunchArgs, row, 1);
+    row++;
 
-    //
-    // Create a tab for Hardware acceleration
-    //
-    hwGroup = CreateHardwareAccelerationTab(advancedGroup);
-    advancedOptionsTabs->addTab(hwGroup, tr("Hardware acceleration"));
-    
-    return advancedGroup;
+    sublaunchPreCmd = new QLineEdit(currentGroup);
+    connect(sublaunchPreCmd, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSublaunchPreCmdText(const QString &)));
+    sublaunchPreCmdCheckBox = new QCheckBox(tr("Sublauncher pre-mpi command"), currentGroup);
+    connect(sublaunchPreCmdCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSublaunchPreCmd(bool)));
+    layout->addWidget(sublaunchPreCmdCheckBox, row, 0);
+    layout->addWidget(sublaunchPreCmd, row, 1);
+    row++;
+
+    sublaunchPostCmd = new QLineEdit(currentGroup);
+    connect(sublaunchPostCmd, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSublaunchPostCmdText(const QString &)));
+    sublaunchPostCmdCheckBox = new QCheckBox(tr("Sublauncher post-mpi command"), currentGroup);
+    connect(sublaunchPostCmdCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSublaunchPostCmd(bool)));
+    layout->addWidget(sublaunchPostCmdCheckBox, row, 0);
+    layout->addWidget(sublaunchPostCmd, row, 1);
+    row++;
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::CreateNetworkingTab
+// Method:  QvisHostProfileWindow::CreateHWAccelSettingsGroup
 //
-// Purpose: 
-//   Creates the widgets for the "Networking" tab.
-//
-// Arguments:
-//   parent : The parent widget for the tab.
-//
-// Returns:    The widget that contains all controls for the tab.
-//
-// Note:       
-//
-// Programmer: Jeremy Meredith
-// Creation:   Wed Jun 6 10:14:17 PDT 2007
-//
-// Modifications:
-//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
-//   I moved the code to create the tab to this function so I could focus on
-//   less code. I also improved the layout.
-//
-//   Jeremy Meredith, Thu Jun 28 13:18:36 EDT 2007
-//   Rearranged to put SSH tunneling above client host name method, as SSH
-//   tunneling overrides it.  Changed host name method text to clarify this.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-QWidget *
-QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
-{
-    int nrow = 0;
-
-    networkingGroup = new QWidget(parent);
-
-    QVBoxLayout *innerNetLayout = new QVBoxLayout(networkingGroup);
-
-    QGridLayout *netLayout = new QGridLayout();
-    innerNetLayout->addLayout(netLayout);
-    
-    netLayout->setSpacing(HOST_PROFILE_SPACING);
-    innerNetLayout->addStretch(5);
-
-    QLabel *disclaimer = new QLabel(
-        QString("<i>") +
-        tr("Networking options apply to all profiles for a given host.") +
-        QString("</i>"), 
-        networkingGroup);
-    netLayout->addWidget(disclaimer, nrow, 0, 1, 4);
-    nrow++;
-
-    tunnelSSH = new QCheckBox(tr("Tunnel data connections through SSH"), networkingGroup);
-    netLayout->addWidget(tunnelSSH, nrow,0, 1,4);
-    connect(tunnelSSH, SIGNAL(toggled(bool)),
-            this, SLOT(toggleTunnelSSH(bool)));
-    nrow++;
-
-    clientHostNameMethod = new QButtonGroup(networkingGroup);
-    connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
-            this, SLOT(clientHostNameMethodChanged(int)));
-    chnMachineName = new QRadioButton(tr("Use local machine name"), networkingGroup);
-    chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
-                                             networkingGroup);
-    chnSpecifyManually = new QRadioButton(tr("Specify manually:"),
-                                          networkingGroup);
-    chnMachineName->setChecked(true);
-    clientHostNameMethod->addButton(chnMachineName,0);
-
-    clientHostNameMethod->addButton(chnParseFromSSHClient,1);
-    clientHostNameMethod->addButton(chnSpecifyManually,2);
-    clientHostNameMethodLabel =
-        new QLabel(tr("Method used to determine local host name when not tunneling:"),
-                   networkingGroup);
-    netLayout->addWidget(clientHostNameMethodLabel,
-                                  nrow, 0, 1, 4);
-    nrow++;
-    netLayout->addWidget(chnMachineName, nrow, 1, 1, 3);
-    nrow++;
-    netLayout->addWidget(chnParseFromSSHClient, nrow, 1, 1, 3);
-    nrow++;
-    netLayout->addWidget(chnSpecifyManually, nrow, 1, 1, 2);
-    
-    clientHostName = new QLineEdit(networkingGroup);
-    connect(clientHostName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(clientHostNameChanged(const QString &)));
-    netLayout->addWidget(clientHostName, nrow, 3, 1,1);
-    nrow++;
-
-    sshPort = new QLineEdit(networkingGroup);
-    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), networkingGroup);
-    connect(sshPort, SIGNAL(textChanged(const QString &)),
-            this, SLOT(sshPortChanged(const QString &)));
-    connect(sshPortCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleSSHPort(bool)));
-    netLayout->addWidget(sshPortCheckBox, nrow, 0, 1, 2);
-    netLayout->addWidget(sshPort, nrow, 2, 1, 2);
-    nrow++;
-
-    return networkingGroup;
-}
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::CreateHardwareAccelerationTab
-//
-// Purpose: 
-//   Creates the widgets for the "Hardware acceleration" tab.
+// Purpose:
+//   Creates the hardware acceleration settings tab for a launch profile.
 //
 // Arguments:
-//   parent : The parent widget for the tab.
+//   none
 //
-// Returns:    The widget that contains all controls for the tab.
-//
-// Note:       
-//
-// Programmer: Hank Childs
-// Creation:   Wed Jun 6 10:14:17 PDT 2007
-//
-// Modifications:
-//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
-//   I moved the code to create the tab to this function so I could focus on
-//   less code. I also improved the layout.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
 //
 // ****************************************************************************
-
-QWidget *
-QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
+void
+QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 {
-    hwGroup = new QWidget(parent);
+    hwAccelSettingsGroup = new QWidget();
+    QWidget *currentGroup = hwAccelSettingsGroup;
 
-    QVBoxLayout *innerHwLayout = new QVBoxLayout(hwGroup);
-
-    QGridLayout *hwLayout = new QGridLayout();
-    innerHwLayout->addLayout(hwLayout);
-    hwLayout->setSpacing(HOST_PROFILE_SPACING);
-    innerHwLayout->addStretch(5);
+    int row = 0;
+    QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
+    QGridLayout *layout = new QGridLayout();
+    tmpLayout->addLayout(layout);
+    layout->setSpacing(HOST_PROFILE_SPACING);
+    tmpLayout->addStretch(5);
 
     QString str1(
        QString("<i>") + 
@@ -858,42 +675,39 @@ QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
           "parallel clusters that have graphics cards.") +
        QString("</i>"));
 
-    QLabel *disclaimer = new QLabel(str1, hwGroup);
-    disclaimer->setWordWrap(true);
-    
-    int hrow = 0;
-    hwLayout->addWidget(disclaimer, hrow, 0, 1, 2);
-    hrow++;
+    hwdisclaimer = new QLabel(str1, currentGroup);
+    hwdisclaimer->setWordWrap(true);
+    layout->addWidget(hwdisclaimer, row, 0, 1, 2);
+    row++;
 
-    canDoHW = new QCheckBox(tr("Use cluster's graphics cards"), hwGroup);
+    canDoHW = new QCheckBox(tr("Use cluster's graphics cards"), currentGroup);
     connect(canDoHW, SIGNAL(toggled(bool)),
             this, SLOT(toggleCanDoHW(bool)));
-    hwLayout->addWidget(canDoHW, hrow, 0, 1, 2);
-    hrow++;
+    layout->addWidget(canDoHW, row, 0, 1, 2);
+    row++;
 
-    preCommand = new QLineEdit(hwGroup);
-    preCommandCheckBox = new QCheckBox(tr("Pre-command"), hwGroup);
+    preCommand = new QLineEdit(currentGroup);
+    preCommandCheckBox = new QCheckBox(tr("Pre-command"), currentGroup);
     connect(preCommand, SIGNAL(textChanged(const QString &)),
             this, SLOT(preCommandChanged(const QString &)));
     connect(preCommandCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePreCommand(bool)));
-    hwLayout->addWidget(preCommandCheckBox, hrow, 0, 1, 1);
-    hwLayout->addWidget(preCommand, hrow, 1, 1, 1);
-    hrow++;
+    layout->addWidget(preCommandCheckBox, row, 0, 1, 1);
+    layout->addWidget(preCommand, row, 1, 1, 1);
+    row++;
 
-    postCommand = new QLineEdit(hwGroup);
-    postCommandCheckBox = new QCheckBox(tr("Post-command"), hwGroup);
+    postCommand = new QLineEdit(currentGroup);
+    postCommandCheckBox = new QCheckBox(tr("Post-command"), currentGroup);
     connect(postCommand, SIGNAL(textChanged(const QString &)),
             this, SLOT(postCommandChanged(const QString &)));
     connect(postCommandCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePostCommand(bool)));
-    hwLayout->addWidget(postCommandCheckBox, hrow, 0, 1, 1);
-    hwLayout->addWidget(postCommand, hrow, 1, 1, 1);
-    hrow++;
-    
-    
-    
-    return hwGroup;
+    layout->addWidget(postCommandCheckBox, row, 0, 1, 1);
+    layout->addWidget(postCommand, row, 1, 1, 1);
+    row++;
+
+
+
 }
 
 // ****************************************************************************
@@ -903,328 +717,192 @@ QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
 //   This method updates the window so it reflects the current state
 //   of the HostProfileList object.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:13:03 PST 2000
+// Programmer: Jeremy Meredith
+// Creation:   February 18, 2010
 //
 // Modifications:
-//   Brad Whitlock, Fri Dec 14 17:23:44 PST 2007
-//   Made it use ids.
-//   
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::UpdateWindow(bool doAll)
 {
-    // Cast the subject into something useful.
     HostProfileList *profiles = (HostProfileList *)subject;
-
-    // Replace any localhost machine names.
-    ReplaceLocalHost();
-
-    // Update the profile name list.
-    if(profiles->IsSelected(HostProfileList::ID_profiles) || doAll)
-        UpdateProfileList();
-    // Update the active profile area.
-    if(profiles->IsSelected(HostProfileList::ID_activeProfile) || doAll)
-        UpdateActiveProfile();
-}
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::UpdateProfileList
-//
-// Purpose: 
-//   This method updates the window's profile list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:13:58 PST 2000
-//
-// Modifications:
-//   Brad Whitlock, Wed Oct 18 11:17:05 PDT 2000
-//   I completely rewrote the method to support a tabwidget containing
-//   list boxes instead of just a single listview.
-//
-//   Brad Whitlock, Mon Sep 24 15:57:47 PST 2001
-//   I moved the code to create the empty listbox to this method.
-//
-//   Jeremy Meredith, Thu Feb 14 15:27:39 PST 2002
-//   Try to get a good short host name to stick in the tab widget.
-//   Fixed a bug where tabs were removed but later referenced anyway.
-//   Added code to populate the hostName combo box.
-//
-//   Jeremy Meredith, Wed Feb 27 11:14:57 PST 2002
-//   Made it pull the old host name from the widget before
-//   clearing the text.
-//
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
-//
-//    Cyrus Harrison, Tue Dec  9 14:36:08 PST 2008
-//    Fixed Qt4 porting bugs.
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::UpdateProfileList()
-{
-    HostProfileList *profiles = (HostProfileList *)subject;
-
-    QMapIterator<QString,QListWidget*> itr(hostTabMap);
-    // If there are host profiles, add the empty tab. Otherwise remove it.
-    hostTabs->blockSignals(true);
-    if(profiles->GetNumProfiles() < 1)
-    {
-        // Clear the tab map.
-        int idx = 0;
-        while(itr.hasNext())
-        {
-            itr.next();
-            QListWidget *list = itr.value();
-            hostTabs->removeTab(idx);
-            delete list;
-            idx++;
-        }
-        
-        hostTabMap.clear();
-        
-        if(emptyListBox == 0)
-            emptyListBox = new QListWidget(hostTabs);
-        
-        hostTabs->addTab(emptyListBox, "    ");
-        hostTabs->blockSignals(false);
+    if (!doAll && !profiles->IsSelected(HostProfileList::ID_machines))
         return;
-    }
-    else if(emptyListBox != 0)
-        hostTabs->removeTab(hostTabs->indexOf(emptyListBox));
 
-    
-    // Find a list of hosts that no longer need a tab.
-    QMap<QString,QListWidget*> removal;
-    
-    // reset the itr
-    itr = QMapIterator<QString,QListWidget*>(hostTabMap);
-    
-    while(itr.hasNext())
+    int nMachines = profiles->GetNumMachines();
+    MachineProfile *oldMachine = currentMachine;
+    hostList->blockSignals(true);
+    hostList->clear();
+    currentMachine = false;
+    hostList->blockSignals(false);
+    for (int i=0; i<nMachines; i++)
     {
-        itr.next();
-        if(profiles->GetNumProfilesForHost(itr.key().toStdString()) == 0)
-            removal.insert(itr.key(),itr.value());
-    }
-    
-    // Find a list of hosts that need a tab and do not have one.
-    QStringList additional;
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        QString host(profiles->operator[](i).GetHost().c_str());
-        
-        // make sure the host is not in our current hostTabMap
-        // and not already in our additional list
-        if(!hostTabMap.contains(host) && !additional.contains(host))
-            additional.append(host);
-    }
-        
-    // If there are any tabs to be added, try and use tabs already in
-    // the widget. If none are available, create new tabs.
-    QStringListIterator add_itr(additional);
-    
-    while(add_itr.hasNext())
-    {
-        QString add_name = add_itr.next();
-        QListWidget *newListBox;
-        QString shortHostName(HostProfile::GetShortHostname(add_name.toStdString()).c_str());
-        
-        if(removal.count() > 0)
-        {
-            // Reuse the tab
-            newListBox = removal.begin().value();
-            int tab_idx = hostTabs->indexOf(newListBox);
-            hostTabs->setTabText(tab_idx, shortHostName);
-            hostTabMap.remove(removal.begin().key());
-            removal.remove(removal.begin().key());
-        }
+        MachineProfile *mp = (MachineProfile*)profiles->GetMachines()[i];
+        if (mp->GetHostNickname() != "")
+            hostList->addItem(mp->GetHostNickname().c_str());
         else
+            hostList->addItem(mp->GetHost().c_str());
+        if (oldMachine == mp)
         {
-            newListBox = new QListWidget(hostTabs);
-            
-            connect(newListBox, SIGNAL(currentItemChanged(QListWidgetItem *,QListWidgetItem *)),
-                this, SLOT(activateProfile(QListWidgetItem *)));
-            
-            hostTabs->addTab(newListBox, shortHostName);
-        }
-
-        // Associate the host with the list box.
-        hostTabMap.insert(add_name, newListBox);
-    }
-    
-    // If the remove map is not empty, remove the tabs associated with
-    // the hosts in the removal map.
-    
-    // set the itr to use the removal map
-    itr = QMapIterator<QString,QListWidget*>(removal); 
-    while(itr.hasNext())
-    {
-        itr.next();
-        hostTabMap.remove(itr.key());
-        QListWidget *list = itr.value();
-        delete list;
-    }
-    
-    hostTabs->blockSignals(false);
-
-    // Clear all of the listboxes in the hostTabMap so there are no
-    // duplicates when we add the entire list of profiles to the
-    // various listboxes.
-    
-    itr = QMapIterator<QString,QListWidget*>(hostTabMap);
-    while(itr.hasNext())
-    {
-        itr.next();
-        itr.value()->clear();
-    }
-
-    // Now that the tabs are settled, go through and add all of the 
-    // profiles to the appropriate tab.
-    hostTabs->blockSignals(true);
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        const HostProfile &current = profiles->operator[](i);
-
-        QString profileString(current.GetProfileName().c_str());
-        QString hostName(current.GetHost().c_str());
-        
-        if(hostTabMap.contains(hostName))
-        {
-            QListWidget *list = hostTabMap[hostName];
-            
-            int new_index= list->count();
-            
-            list->blockSignals(true);
-            QListWidgetItem *item = new QListWidgetItem(profileString,list);
-            
-            if( i == profiles->GetActiveProfile())
-            {
-                hostTabs->setCurrentWidget(list);
-                item->setSelected(true);
-                list->setCurrentItem(item);
-            }
-            list->blockSignals(false);
+            hostList->blockSignals(true);
+            hostList->item(i)->setSelected(true);
+            hostList->blockSignals(false);
+            currentMachine = oldMachine;
         }
     }
-    
-    hostTabs->blockSignals(false);
-    
+
+    UpdateMachineProfile();
+    UpdateWindowSensitivity();
+}
+
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::UpdateMachineProfile
+//
+// Purpose:
+//   Updates the machine profile areas of the window.
+//   Tries to keep the old machine profile selected if possible.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::UpdateMachineProfile()
+{
     hostName->blockSignals(true);
-    QString oldHostName = hostName->currentText();
-    hostName->clear();
-    
-    itr = QMapIterator<QString,QListWidget*>(hostTabMap);
-    while(itr.hasNext())
-    {
-        itr.next();
-        hostName->addItem(itr.key());
-    }
-          
-    hostName->setEditText(oldHostName);
-    hostName->blockSignals(false);
+    hostAliases->blockSignals(true);
+    hostNickname->blockSignals(true);
+    userName->blockSignals(true);
+    clientHostNameMethod->blockSignals(true);
+    clientHostName->blockSignals(true);
+    sshPortCheckBox->blockSignals(true);
+    sshPort->blockSignals(true);
+    tunnelSSH->blockSignals(true);
+    directory->blockSignals(true);
+    shareMDServerCheckBox->blockSignals(true);
 
+    if (currentMachine == NULL)
+    {
+        machineTabs->setEnabled(false);
+        hostName->setText("");
+        hostName->setText(GetViewerProxy()->GetLocalHostName().c_str());
+        hostAliases->setText("");
+        hostNickname->setText("");
+        userName->setText("");
+        userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
+        clientHostNameMethod->button(0)->setChecked(true);
+        clientHostName->setText("");
+        sshPortCheckBox->setChecked(false);
+        sshPort->setText("");
+        tunnelSSH->setChecked(false);
+        shareMDServerCheckBox->setChecked(false);
+
+        currentLaunch = NULL;
+    }
+    else
+    {
+        const MachineProfile &mp = *currentMachine;
+
+        // Replace any localhost machine names.
+        ReplaceLocalHost();
+    
+        machineTabs->setEnabled(true);
+
+        // Update the contents of the machine settings tab
+
+        hostName->setText(mp.GetHost().c_str());
+        hostAliases->setText(mp.GetHostAliases().c_str());
+        hostNickname->setText(mp.GetHostNickname().c_str());
+        if(mp.GetUserName() == "notset")
+            userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
+        else
+            userName->setText(mp.GetUserName().c_str());
+        switch (mp.GetClientHostDetermination())
+        {
+          case MachineProfile::MachineName:
+            clientHostNameMethod->button(0)->setChecked(true);
+            break;
+          case MachineProfile::ParsedFromSSHCLIENT:
+            clientHostNameMethod->button(1)->setChecked(true);
+            break;
+          case MachineProfile::ManuallySpecified:
+            clientHostNameMethod->button(2)->setChecked(true);
+            break;
+        }
+        clientHostName->setText(mp.GetManualClientHostName().c_str());
+        sshPortCheckBox->setChecked(mp.GetSshPortSpecified());
+        char portStr[256];
+        SNPRINTF(portStr, 256, "%d", mp.GetSshPort());
+        sshPort->setText(portStr);
+        tunnelSSH->setChecked(mp.GetTunnelSSH());
+        shareMDServerCheckBox->setChecked(mp.GetShareOneBatchJob());
+        directory->setText(mp.GetDirectory().c_str());
+
+        // Update the contents of the launch profiles tab
+        // Keep track of the old selection if it's still there.
+        int nProfiles = mp.GetNumLaunchProfiles();
+        LaunchProfile *oldLaunch = currentLaunch;
+        profileList->clear();
+        for (int i=0; i<nProfiles; i++)
+        {
+            LaunchProfile *lp = (LaunchProfile*)mp.GetLaunchProfiles()[i];
+            profileList->addItem(lp->GetProfileName().c_str());
+            if (currentMachine->GetActiveProfile() == i)
+                profileList->item(i)->setCheckState(Qt::Checked);
+            else
+                profileList->item(i)->setCheckState(Qt::Unchecked);
+            profileList->item(i)->setFlags(Qt::ItemIsSelectable |
+                                           Qt::ItemIsEnabled);
+            if (oldLaunch == lp)
+            {
+                profileList->item(i)->setSelected(true);
+                currentLaunch = oldLaunch;
+            }
+        }
+    }
+
+    hostName->blockSignals(false);
+    hostAliases->blockSignals(false);
+    hostNickname->blockSignals(false);
+    userName->blockSignals(false);
+    clientHostNameMethod->blockSignals(false);
+    clientHostName->blockSignals(false);
+    sshPortCheckBox->blockSignals(false);
+    sshPort->blockSignals(false);
+    tunnelSSH->blockSignals(false);
+    directory->blockSignals(false);
+    shareMDServerCheckBox->blockSignals(false);
+
+
+    UpdateLaunchProfile();
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::UpdateActiveProfile
+// Method:  QvisHostProfileWindow::UpdateLaunchProfile
 //
-// Purpose: 
-//   This window updates the window's active profile area.
+// Purpose:
+//   Updates the launch profile areas of the window.
+//   Tries to keep the old launch profile selected if possible.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:14:29 PST 2000
+// Arguments:
+//   none
 //
-// Modifications:
-//   Jeremy Meredith, Tue Jul 17 17:58:51 PDT 2001
-//   Added numNodes, launchMethod, and partitionName, as well as checkboxes
-//   for each.
-//
-//   Jeremy Meredith, Thu Sep 13 17:33:48 PDT 2001
-//   Added calls to block signals for and to set the launch check box.
-//
-//   Jeremy Meredith, Fri Sep 21 14:29:59 PDT 2001
-//   Added buttons for forcing static and dynamic load balancing.
-//
-//   Brad Whitlock, Mon Sep 24 11:36:09 PDT 2001
-//   Changed code so it replaces localhost with a real machine name.
-//
-//   Jeremy Meredith, Thu Feb 14 15:29:16 PST 2002
-//   Changed hostName to a combo box.
-//
-//   Brad Whitlock, Thu Feb 21 10:18:04 PDT 2002
-//   Replaced defaultUserName string with a method call to the viewer.
-//
-//   Sean Ahern, Thu Feb 21 16:37:28 PST 2002
-//   Added timeout support.
-//
-//   Brad Whitlock, Thu Apr 11 15:34:51 PST 2002
-//   Added support for default user names.
-//
-//   Jeremy Meredith, Wed Jul 10 13:00:02 PDT 2002
-//   Made it set the right load balancing checkbox no matter if
-//   parallel is enabled or not.
-//
-//   Jeremy Meredith, Wed Aug 14 10:50:12 PDT 2002
-//   Changed the way many widgets are displayed.
-//
-//   Jeremy Meredith, Fri Jan 24 14:43:28 PST 2003
-//   Added optional arguments to the parallel launcher.
-//
-//   Jeremy Meredith, Mon Apr 14 17:21:25 PDT 2003
-//   Added hostAliases.
-//
-//   Jeremy Meredith, Thu Jun 26 10:37:38 PDT 2003
-//   Update the share-batch-job toggle.
-//
-//   Jeremy Meredith, Thu Oct  9 15:47:00 PDT 2003
-//   Added ability to manually specify a client host name or to have it
-//   parsed from the SSH_CLIENT (or related) environment variables.  Added
-//   ability to specify an SSH port.
-//
-//   Jeremy Meredith, Thu Sep 15 16:39:13 PDT 2005
-//   Added machinefile and useVisItScriptForEnv.
-//
-//   Jeremy Meredith, Tue Sep 27 14:10:02 PDT 2005
-//   Forgot to set a couple checkbox values to false if not a parallel profile.
-//
-//   Hank Childs, Sat Dec  3 20:55:49 PST 2005
-//   Added support for new hardware acceleration options.
-//
-//   Eric Brugger, Thu Feb 15 12:14:34 PST 2007
-//   Added support for additional sublauncher arguments.
-//
-//   Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
-//   Added support for SSH port tunneling.
-//
-//   Brad Whitlock, Wed Jun 6 09:37:06 PDT 2007
-//   Changed a widget to be a QComboBox.
-//
-//   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
-//   Added fields for commands to run pre and post the mpi command.
-//
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
-//
-//    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
-//    Finished Qt4 Port todo.
-//
-//   Hank Childs, Fri May  8 05:52:11 PDT 2009
-//   Add support for host nicknames.
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
 //
 // ****************************************************************************
-
 void
-QvisHostProfileWindow::UpdateActiveProfile()
+QvisHostProfileWindow::UpdateLaunchProfile()
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    int i = profiles->GetActiveProfile();
-
     // Block signals for certain widgets.
+    profileName->blockSignals(true);
     numProcessors->blockSignals(true);
-    timeout->blockSignals(true);
     numNodes->blockSignals(true);
     numNodesCheckBox->blockSignals(true);
     parallelCheckBox->blockSignals(true);
@@ -1246,35 +924,18 @@ QvisHostProfileWindow::UpdateActiveProfile()
     sublaunchPostCmd->blockSignals(true);
     launchCheckBox->blockSignals(true);
     launchMethod->blockSignals(true);
-    activeProfileCheckBox->blockSignals(true);
-    hostName->blockSignals(true);
-    hostAliases->blockSignals(true);
-    hostNickname->blockSignals(true);
-    userName->blockSignals(true);
     loadBalancing->blockSignals(true);
-    engineArguments->blockSignals(true);
-    profileName->blockSignals(true);
-    clientHostNameMethod->blockSignals(true);
-    clientHostName->blockSignals(true);
-    sshPortCheckBox->blockSignals(true);
-    sshPort->blockSignals(true);
     canDoHW->blockSignals(true);
     preCommand->blockSignals(true);
     preCommandCheckBox->blockSignals(true);
     postCommand->blockSignals(true);
     postCommandCheckBox->blockSignals(true);
-    tunnelSSH->blockSignals(true);
+    timeout->blockSignals(true);
+    engineArguments->blockSignals(true);
 
-    // If there is no active profile, set some "default" values.
-    if(i < 0)
+    if (currentLaunch == NULL)
     {
         profileName->setText("");
-        hostName->setEditText("");
-        hostName->setEditText(GetViewerProxy()->GetLocalHostName().c_str());
-        hostAliases->setText("");
-        hostNickname->setText("");
-        userName->setText("");
-        userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         numProcessors->setValue(1);
         timeout->setValue(60*4);   // 4 hour default
         
@@ -1300,54 +961,34 @@ QvisHostProfileWindow::UpdateActiveProfile()
         sublaunchPostCmdCheckBox->setChecked(false);
         sublaunchPostCmd->setText("");
         loadBalancing->setCurrentIndex(0);
-        engineArguments->setText("");
-        activeProfileCheckBox->setChecked(false);
-        clientHostNameMethod->button(0)->setChecked(true);
-        clientHostName->setText("");
-        sshPortCheckBox->setChecked(false);
-        sshPort->setText("");
-        tunnelSSH->setChecked(false);
-        shareMDServerCheckBox->setChecked(false);
         useVisItScriptForEnvCheckBox->setChecked(false);
+        timeout->setValue(60*4);   // 4 hour default
+        engineArguments->setText("");
     }
     else
     {
-        const HostProfile &current = profiles->operator[](i);
-
-        profileName->setText(current.GetProfileName().c_str());
+        profileName->setText(currentLaunch->GetProfileName().c_str());
         // Replace the "localhost" machine name.
-        hostName->setEditText(current.GetHost().c_str());
-        hostAliases->setText(current.GetHostAliases().c_str());
-        hostNickname->setText(current.GetHostNickname().c_str());
         // If there is no user name then give it a valid user name.
-        if(current.GetUserName() == "notset")
-        {
-            userName->setText("username");
-            userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
-        }
-        else
-            userName->setText(current.GetUserName().c_str());
 
-        timeout->setValue(current.GetTimeout());
-        parallelCheckBox->setChecked(current.GetParallel());
-        bool parEnabled = current.GetParallel();
+        timeout->setValue(currentLaunch->GetTimeout());
+        parallelCheckBox->setChecked(currentLaunch->GetParallel());
+        bool parEnabled = currentLaunch->GetParallel();
         if (parEnabled)
         {
-            shareMDServerCheckBox->setChecked(current.GetShareOneBatchJob());
-            useVisItScriptForEnvCheckBox->setChecked(current.GetVisitSetsUpEnv());
+            useVisItScriptForEnvCheckBox->setChecked(currentLaunch->GetVisitSetsUpEnv());
         }
         else
         {
-            shareMDServerCheckBox->setChecked(false);
             useVisItScriptForEnvCheckBox->setChecked(false);
         }
-        launchCheckBox->setChecked(parEnabled && current.GetLaunchMethodSet());
-        if (parEnabled && current.GetLaunchMethodSet())
+        launchCheckBox->setChecked(parEnabled && currentLaunch->GetLaunchMethodSet());
+        if (parEnabled && currentLaunch->GetLaunchMethodSet())
         {
             int index = 0;
             for (int j=0; j < launchMethod->count() ; j++)
             {
-                if (launchMethod->itemText(j) == current.GetLaunchMethod().c_str())
+                if (launchMethod->itemText(j) == currentLaunch->GetLaunchMethod().c_str())
                     index = j;
             }
             launchMethod->setCurrentIndex(index);
@@ -1356,106 +997,83 @@ QvisHostProfileWindow::UpdateActiveProfile()
         {
             launchMethod->setCurrentIndex(0);
         }
-        launchArgsCheckBox->setChecked(parEnabled && current.GetLaunchArgsSet());
-        if (parEnabled && current.GetLaunchArgsSet())
-            launchArgs->setText(current.GetLaunchArgs().c_str());
+        launchArgsCheckBox->setChecked(parEnabled && currentLaunch->GetLaunchArgsSet());
+        if (parEnabled && currentLaunch->GetLaunchArgsSet())
+            launchArgs->setText(currentLaunch->GetLaunchArgs().c_str());
         else
             launchArgs->setText("");
-        sublaunchArgsCheckBox->setChecked(parEnabled && current.GetSublaunchArgsSet());
-        if (parEnabled && current.GetSublaunchArgsSet())
-            sublaunchArgs->setText(current.GetSublaunchArgs().c_str());
+        sublaunchArgsCheckBox->setChecked(parEnabled && currentLaunch->GetSublaunchArgsSet());
+        if (parEnabled && currentLaunch->GetSublaunchArgsSet())
+            sublaunchArgs->setText(currentLaunch->GetSublaunchArgs().c_str());
         else
             sublaunchArgs->setText("");
-        sublaunchPreCmdCheckBox->setChecked(parEnabled && current.GetSublaunchPreCmdSet());
-        if (parEnabled && current.GetSublaunchPreCmdSet())
-            sublaunchPreCmd->setText(current.GetSublaunchPreCmd().c_str());
+        sublaunchPreCmdCheckBox->setChecked(parEnabled && currentLaunch->GetSublaunchPreCmdSet());
+        if (parEnabled && currentLaunch->GetSublaunchPreCmdSet())
+            sublaunchPreCmd->setText(currentLaunch->GetSublaunchPreCmd().c_str());
         else
             sublaunchPreCmd->setText("");
-        sublaunchPostCmdCheckBox->setChecked(parEnabled && current.GetSublaunchPostCmdSet());
-        if (parEnabled && current.GetSublaunchPostCmdSet())
-            sublaunchPostCmd->setText(current.GetSublaunchPostCmd().c_str());
+        sublaunchPostCmdCheckBox->setChecked(parEnabled && currentLaunch->GetSublaunchPostCmdSet());
+        if (parEnabled && currentLaunch->GetSublaunchPostCmdSet())
+            sublaunchPostCmd->setText(currentLaunch->GetSublaunchPostCmd().c_str());
         else
             sublaunchPostCmd->setText("");
         if (parEnabled)
-            numProcessors->setValue(current.GetNumProcessors());
+            numProcessors->setValue(currentLaunch->GetNumProcessors());
         else
             numProcessors->setValue(1);
-        numNodesCheckBox->setChecked(parEnabled && current.GetNumNodesSet());
-        if (parEnabled && current.GetNumNodesSet())
-            numNodes->setValue(current.GetNumNodes());
+        numNodesCheckBox->setChecked(parEnabled && currentLaunch->GetNumNodesSet());
+        if (parEnabled && currentLaunch->GetNumNodesSet())
+            numNodes->setValue(currentLaunch->GetNumNodes());
         else
             numNodes->setValue(0);
-        partitionCheckBox->setChecked(parEnabled && current.GetPartitionSet());
-        if (parEnabled && current.GetPartitionSet())
-            partitionName->setText(current.GetPartition().c_str());
+        partitionCheckBox->setChecked(parEnabled && currentLaunch->GetPartitionSet());
+        if (parEnabled && currentLaunch->GetPartitionSet())
+            partitionName->setText(currentLaunch->GetPartition().c_str());
         else
             partitionName->setText("");
-        bankCheckBox->setChecked(parEnabled && current.GetBankSet());
-        if (parEnabled && current.GetBankSet())
-            bankName->setText(current.GetBank().c_str());
+        bankCheckBox->setChecked(parEnabled && currentLaunch->GetBankSet());
+        if (parEnabled && currentLaunch->GetBankSet())
+            bankName->setText(currentLaunch->GetBank().c_str());
         else
             bankName->setText("");
-        timeLimitCheckBox->setChecked(parEnabled && current.GetTimeLimitSet());
-        if (parEnabled && current.GetTimeLimitSet())
-            timeLimit->setText(current.GetTimeLimit().c_str());
+        timeLimitCheckBox->setChecked(parEnabled && currentLaunch->GetTimeLimitSet());
+        if (parEnabled && currentLaunch->GetTimeLimitSet())
+            timeLimit->setText(currentLaunch->GetTimeLimit().c_str());
         else
             timeLimit->setText("");
-        machinefileCheckBox->setChecked(parEnabled && current.GetMachinefileSet());
-        if (parEnabled && current.GetMachinefileSet())
-            machinefile->setText(current.GetMachinefile().c_str());
+        machinefileCheckBox->setChecked(parEnabled && currentLaunch->GetMachinefileSet());
+        if (parEnabled && currentLaunch->GetMachinefileSet())
+            machinefile->setText(currentLaunch->GetMachinefile().c_str());
         else
             machinefile->setText("");
-        activeProfileCheckBox->setChecked(current.GetActive());
         int lb = 0;
-        if (current.GetForceStatic())
+        if (currentLaunch->GetForceStatic())
             lb = 1;
-        if (current.GetForceDynamic())
+        if (currentLaunch->GetForceDynamic())
             lb = 2;
         loadBalancing->setCurrentIndex(lb);
-        // Turn the string list into a single QString.
+        canDoHW->setChecked(currentLaunch->GetCanDoHWAccel());
+        preCommandCheckBox->setChecked(currentLaunch->GetHavePreCommand());
+        preCommand->setText(currentLaunch->GetHwAccelPreCommand().c_str());
+        postCommandCheckBox->setChecked(currentLaunch->GetHavePostCommand());
+        postCommand->setText(currentLaunch->GetHwAccelPostCommand().c_str());
+        timeout->setValue(currentLaunch->GetTimeout());
+
         QString temp;
         stringVector::const_iterator pos;
-        for(pos = current.GetArguments().begin();
-            pos != current.GetArguments().end(); ++pos)
+        for(pos = currentLaunch->GetArguments().begin();
+            pos != currentLaunch->GetArguments().end(); ++pos)
         {
             temp += QString(pos->c_str());
             temp += " ";
         }
-
         engineArguments->setText(temp);
 
-        canDoHW->setChecked(current.GetCanDoHWAccel());
-        preCommandCheckBox->setChecked(current.GetHavePreCommand());
-        preCommand->setText(current.GetHwAccelPreCommand().c_str());
-        postCommandCheckBox->setChecked(current.GetHavePostCommand());
-        postCommand->setText(current.GetHwAccelPostCommand().c_str());
-
-        switch (current.GetClientHostDetermination())
-        {
-          case HostProfile::MachineName:
-            clientHostNameMethod->button(0)->setChecked(true);
-            break;
-          case HostProfile::ParsedFromSSHCLIENT:
-            clientHostNameMethod->button(1)->setChecked(true);
-            break;
-          case HostProfile::ManuallySpecified:
-            clientHostNameMethod->button(2)->setChecked(true);
-            break;
-        }
-        clientHostName->setText(current.GetManualClientHostName().c_str());
-        sshPortCheckBox->setChecked(current.GetSshPortSpecified());
-        char portStr[256];
-        SNPRINTF(portStr, 256, "%d", current.GetSshPort());
-        sshPort->setText(portStr);
-        tunnelSSH->setChecked(current.GetTunnelSSH());
     }
 
-    // Set the widgets' sensitivity
-    UpdateWindowSensitivity();
-
     // Restore signals.
+    profileName->blockSignals(false);
     numProcessors->blockSignals(false);
-    timeout->blockSignals(false);
     parallelCheckBox->blockSignals(false);
     numNodes->blockSignals(false);
     numNodesCheckBox->blockSignals(false);
@@ -1477,25 +1095,16 @@ QvisHostProfileWindow::UpdateActiveProfile()
     sublaunchPostCmd->blockSignals(false);
     launchCheckBox->blockSignals(false);
     launchMethod->blockSignals(false);
-    activeProfileCheckBox->blockSignals(false);
-    hostName->blockSignals(false);
-    hostAliases->blockSignals(false);
-    hostNickname->blockSignals(false);
-    userName->blockSignals(false);
     loadBalancing->blockSignals(false);
-    engineArguments->blockSignals(false);
-    profileName->blockSignals(false);
-    clientHostNameMethod->blockSignals(false);
-    clientHostName->blockSignals(false);
-    sshPortCheckBox->blockSignals(false);
-    sshPort->blockSignals(false);
     canDoHW->blockSignals(false);
     preCommand->blockSignals(false);
     preCommandCheckBox->blockSignals(false);
     postCommand->blockSignals(false);
     postCommandCheckBox->blockSignals(false);
-    tunnelSSH->blockSignals(false);
+    timeout->blockSignals(false);
+    engineArguments->blockSignals(false);
 }
+
 
 // ****************************************************************************
 // Method: QvisHostProfileWindow::ReplaceLocalHost
@@ -1514,19 +1123,20 @@ QvisHostProfileWindow::UpdateActiveProfile()
 //    Cyrus Harrison, Tue Dec  9 14:55:00 PST 2008
 //    Finished Qt4 port todo.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::ReplaceLocalHost()
 {
     HostProfileList *profiles = (HostProfileList *)subject;
-    std::string      lh("localhost");
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumMachines(); ++i)
     {
-        HostProfile &current = profiles->operator[](i);
-        if(current.GetHost() == lh)
+        MachineProfile &current = profiles->operator[](i);
+        if(current.GetHost() == "localhost")
         {
-            current.SetHost("localhost");
             current.SetHost(GetViewerProxy()->GetLocalHostName()); 
         }
     }
@@ -1587,56 +1197,83 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::UpdateWindowSensitivity()
 {
     HostProfileList *profiles = (HostProfileList *)subject;
-    int i = profiles->GetActiveProfile();
-    bool enabled = (i >= 0);
-    const HostProfile *current = NULL;
-    if (enabled)
-        current = &profiles->operator[](i);
-    bool parEnabled = enabled ? (current->GetParallel()) : false;
+    bool hostEnabled = (currentMachine != NULL);
+    bool launchEnabled = (currentLaunch != NULL);
+    bool parEnabled = launchEnabled ? (currentLaunch->GetParallel()) : false;
 
     // Set the widget sensitivity.
-    activeProfileGroup->setEnabled(enabled);
-    profileNameLabel->setEnabled(enabled);
-    profileName->setEnabled(enabled);
-    hostNameLabel->setEnabled(enabled);
-    hostName->setEnabled(enabled);
-    hostAliasesLabel->setEnabled(enabled);
-    hostAliases->setEnabled(enabled);
-    hostNicknameLabel->setEnabled(enabled);
-    hostNickname->setEnabled(enabled);
-    userNameLabel->setEnabled(enabled);
-    userName->setEnabled(enabled);
-    timeout->setEnabled(enabled);
-    parGroup->setEnabled(parEnabled);
-    optionsTabs->setTabEnabled(1, parEnabled);
+    delHost->setEnabled(hostEnabled);
+    copyHost->setEnabled(hostEnabled);
+
+    addProfile->setEnabled(hostEnabled);
+    delProfile->setEnabled(launchEnabled);
+    copyProfile->setEnabled(launchEnabled);
+    makeDefaultProfile->setEnabled(launchEnabled && hostEnabled &&
+               currentMachine->GetActiveLaunchProfile() != currentLaunch);
+
+    machineTabs->setEnabled(hostEnabled);
+    hostNameLabel->setEnabled(hostEnabled);
+    hostName->setEnabled(hostEnabled);
+    hostAliasesLabel->setEnabled(hostEnabled);
+    hostAliases->setEnabled(hostEnabled);
+    hostNicknameLabel->setEnabled(hostEnabled);
+    hostNickname->setEnabled(hostEnabled);
+    userNameLabel->setEnabled(hostEnabled);
+    userName->setEnabled(hostEnabled);
+    chnMachineName->setEnabled(hostEnabled && currentMachine->GetTunnelSSH() == false);
+    chnParseFromSSHClient->setEnabled(hostEnabled && currentMachine->GetTunnelSSH() == false);
+    chnSpecifyManually->setEnabled(hostEnabled && currentMachine->GetTunnelSSH() == false);
+    clientHostNameMethodLabel->setEnabled(hostEnabled && currentMachine->GetTunnelSSH() == false);
+    clientHostName->setEnabled(hostEnabled &&
+                               currentMachine->GetTunnelSSH() == false &&
+                               currentMachine->GetClientHostDetermination() ==
+                                              MachineProfile::ManuallySpecified);
+    sshPort->setEnabled(hostEnabled && currentMachine->GetSshPortSpecified());
+    tunnelSSH->setEnabled(hostEnabled);
+    shareMDServerCheckBox->setEnabled(hostEnabled);
+    
+
+    profileNameLabel->setEnabled(launchEnabled);
+    profileName->setEnabled(launchEnabled);
+    timeout->setEnabled(launchEnabled);
+    timeoutLabel->setEnabled(launchEnabled);
+    parallelCheckBox->setEnabled(launchEnabled);
+    engineArgumentsLabel->setEnabled(launchEnabled);
+    engineArguments->setEnabled(launchEnabled);
+
+    profileTabs->setEnabled(launchEnabled);
+
     launchCheckBox->setEnabled(parEnabled);
-    launchMethod->setEnabled(parEnabled && current->GetLaunchMethodSet());
+    launchMethod->setEnabled(parEnabled && currentLaunch->GetLaunchMethodSet());
     launchArgsCheckBox->setEnabled(parEnabled);
-    launchArgs->setEnabled(parEnabled && current->GetLaunchArgsSet());
+    launchArgs->setEnabled(parEnabled && currentLaunch->GetLaunchArgsSet());
     sublaunchArgsCheckBox->setEnabled(parEnabled);
-    sublaunchArgs->setEnabled(parEnabled && current->GetSublaunchArgsSet());
+    sublaunchArgs->setEnabled(parEnabled && currentLaunch->GetSublaunchArgsSet());
     sublaunchPreCmdCheckBox->setEnabled(parEnabled);
-    sublaunchPreCmd->setEnabled(parEnabled && current->GetSublaunchPreCmdSet());
+    sublaunchPreCmd->setEnabled(parEnabled && currentLaunch->GetSublaunchPreCmdSet());
     sublaunchPostCmdCheckBox->setEnabled(parEnabled);
-    sublaunchPostCmd->setEnabled(parEnabled && current->GetSublaunchPostCmdSet());
+    sublaunchPostCmd->setEnabled(parEnabled && currentLaunch->GetSublaunchPostCmdSet());
     numProcLabel->setEnabled(parEnabled);
     numProcessors->setEnabled(parEnabled);
     numNodesCheckBox->setEnabled(parEnabled);
-    numNodes->setEnabled(parEnabled && current->GetNumNodesSet());
+    numNodes->setEnabled(parEnabled && currentLaunch->GetNumNodesSet());
     partitionCheckBox->setEnabled(parEnabled);
-    partitionName->setEnabled(parEnabled && current->GetPartitionSet());
+    partitionName->setEnabled(parEnabled && currentLaunch->GetPartitionSet());
     bankCheckBox->setEnabled(parEnabled);
-    bankName->setEnabled(parEnabled && current->GetBankSet());
+    bankName->setEnabled(parEnabled && currentLaunch->GetBankSet());
     timeLimitCheckBox->setEnabled(parEnabled);
-    timeLimit->setEnabled(parEnabled && current->GetTimeLimitSet());
+    timeLimit->setEnabled(parEnabled && currentLaunch->GetTimeLimitSet());
     machinefileCheckBox->setEnabled(parEnabled);
-    machinefile->setEnabled(parEnabled && current->GetMachinefileSet());
+    machinefile->setEnabled(parEnabled && currentLaunch->GetMachinefileSet());
 #if 0 // disabling dynamic load balancing for now
     loadBalancingLabel->setEnabled(parEnabled);
     loadBalancing->setEnabled(parEnabled);
@@ -1644,29 +1281,15 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     loadBalancingLabel->setEnabled(false);
     loadBalancing->setEnabled(false);
 #endif
-    optionsTabs->setTabEnabled(2, enabled);
-    advancedGroup->setEnabled(enabled);
 
-    canDoHW->setEnabled(enabled);
-    preCommandCheckBox->setEnabled(enabled && current->GetCanDoHWAccel());
-    postCommandCheckBox->setEnabled(enabled && current->GetCanDoHWAccel());
-    preCommand->setEnabled(enabled && current->GetHavePreCommand() && current->GetCanDoHWAccel());
-    postCommand->setEnabled(enabled && current->GetHavePostCommand() && current->GetCanDoHWAccel());
-    engineArgumentsLabel->setEnabled(enabled);
-    engineArguments->setEnabled(enabled);
-    deleteButton->setEnabled(enabled);
-    chnMachineName->setEnabled(enabled && current->GetTunnelSSH() == false);
-    chnParseFromSSHClient->setEnabled(enabled && current->GetTunnelSSH() == false);
-    chnSpecifyManually->setEnabled(enabled && current->GetTunnelSSH() == false);
-    clientHostNameMethodLabel->setEnabled(enabled && current->GetTunnelSSH() == false);
-    clientHostName->setEnabled(enabled &&
-                               current->GetTunnelSSH() == false &&
-                               current->GetClientHostDetermination() ==
-                                              HostProfile::ManuallySpecified);
-    sshPort->setEnabled(enabled && current->GetSshPortSpecified());
-    tunnelSSH->setEnabled(enabled);
+    hwdisclaimer->setEnabled(launchEnabled);
+    canDoHW->setEnabled(launchEnabled);
+    preCommandCheckBox->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
+    postCommandCheckBox->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
+    preCommand->setEnabled(launchEnabled && currentLaunch->GetHavePreCommand() && currentLaunch->GetCanDoHWAccel());
+    postCommand->setEnabled(launchEnabled && currentLaunch->GetHavePostCommand() && currentLaunch->GetCanDoHWAccel());
 
-    shareMDServerCheckBox->setEnabled(parEnabled);
+
     useVisItScriptForEnvCheckBox->setEnabled(parEnabled);
 }
 
@@ -1745,52 +1368,43 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Hank Childs, Fri May  8 05:52:11 PDT 2009
 //   Add support for host nicknames.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 bool
-QvisHostProfileWindow::GetCurrentValues(int which_widget)
+QvisHostProfileWindow::GetCurrentValues()
 {
     HostProfileList *profiles = (HostProfileList *)subject;
-    bool doAll = (which_widget == -1);
     bool needNotify = false;
-    int widget = 0;
 
-    // If there are no profiles, get out.
-    if((profiles->GetNumProfiles() < 1) ||
-       (profiles->GetActiveProfile() < 0))
+    if (currentLaunch == NULL && currentMachine == NULL)
         return needNotify;
 
-    // Create a reference to the active profile.
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());    
     QString msg, temp;
 
     // Do the profile name
-    if(which_widget == widget || doAll)
+    if (currentLaunch)
     {
         temp = profileName->displayText();
         if(!temp.isEmpty())
         {
-            current.SetProfileName(std::string(temp.toStdString()));
-
-            // The profile name changed; we need to mark the profile list
-            // so the new name appears in the list the next time update
-            // is called.
-            profiles->MarkHostProfiles();
+            currentLaunch->SetProfileName(std::string(temp.toStdString()));
         }
         else
         {
             needNotify = true;
             msg = tr("Profile name cannot be empty, reverting to \"%1\".").
-                  arg(current.GetProfileName().c_str());
+                  arg(currentLaunch->GetProfileName().c_str());
             Message(msg);
         }
     }
-    widget++;
 
     // Do the host name
-    if(which_widget == widget || doAll)
+    if (currentMachine)
     {
-        temp = hostName->currentText();
+        temp = hostName->text();
         temp = temp.trimmed();
         if(!temp.isEmpty())
         {
@@ -1798,54 +1412,52 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             if(newHost == "localhost")
             {
                 newHost = GetViewerProxy()->GetLocalHostName(); 
-                hostName->setEditText(newHost.c_str());
+                hostName->setText(newHost.c_str());
             }
-            if (newHost != current.GetHost())
+            if (newHost != currentMachine->GetHost())
                 needNotify = true;
-            profiles->ChangeHostForActiveProfile(newHost);
+            currentMachine->SetHost(newHost);
         }
         else
         {
             needNotify = true;
             msg = tr("Host name cannot be empty, reverting to \"%1\".").
-                  arg(current.GetHost().c_str());
+                  arg(currentMachine->GetHost().c_str());
             Message(msg);
         }
     }
-    widget++;
 
     // Do the user name
-    if(which_widget == widget || doAll)
+    if (currentMachine)
     {
         temp = userName->displayText();
         temp = temp.trimmed();
         if(!temp.isEmpty())
         {
-            current.SetUserName(std::string(temp.toStdString()));
+            currentMachine->SetUserName(std::string(temp.toStdString()));
         }
         else
         {
             needNotify = true;
             msg = tr("Username cannot be empty, reverting to \"%1\".").
-                  arg(current.GetUserName().c_str());
+                  arg(currentMachine->GetUserName().c_str());
             Message(msg);
         }
     }
-    widget++;
 
     // Do the launch method
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch)
     {
         temp = launchMethod->currentText();
         temp = temp.trimmed();
         if (temp == tr("(default)"))
             temp = "";
-        current.SetLaunchMethod(std::string(temp.toStdString()));
+        currentLaunch->SetLaunchMethod(std::string(temp.toStdString()));
     }
-    widget++;
+
 
     // Do the number of processors
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         bool okay = false;
         temp = numProcessors->text();
@@ -1855,9 +1467,9 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             int nProc = temp.toInt(&okay);
             if(okay)
             {
-                if (nProc != current.GetNumProcessors())
+                if (nProc != currentLaunch->GetNumProcessors())
                     needNotify = true;
-                current.SetNumProcessors(nProc);
+                currentLaunch->SetNumProcessors(nProc);
             }
         }
  
@@ -1866,14 +1478,13 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             needNotify = true;
             msg = tr("An invalid number of processors was specified,"
                      " reverting to %1 processors.").
-                  arg(current.GetNumProcessors());
+                  arg(currentLaunch->GetNumProcessors());
             Message(msg);
         }
     }
-    widget++;
 
     // Do the number of nodes
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         bool okay = false;
         temp = numNodes->text();
@@ -1883,7 +1494,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             int nNodes = temp.toInt(&okay);
             if(okay)
             {
-                current.SetNumNodes(nNodes);
+                currentLaunch->SetNumNodes(nNodes);
             }
         }
  
@@ -1892,41 +1503,37 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             needNotify = true;
             msg = tr("An invalid number of nodes was specified,"
                      " reverting to %1 nodes.").
-                  arg(current.GetNumNodes());
+                  arg(currentLaunch->GetNumNodes());
             Message(msg);
         }
     }
-    widget++;
 
     // Do the partition name
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = partitionName->displayText();
         temp = temp.trimmed();
-        current.SetPartition(std::string(temp.toStdString()));
+        currentLaunch->SetPartition(std::string(temp.toStdString()));
     }
-    widget++;
 
     // Do the bank name
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = bankName->displayText();
         temp = temp.trimmed();
-        current.SetBank(std::string(temp.toStdString()));
+        currentLaunch->SetBank(std::string(temp.toStdString()));
     }
-    widget++;
 
     // Do the time limit
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = timeLimit->displayText();
         temp = temp.trimmed();
-        current.SetTimeLimit(std::string(temp.toStdString()));
+        currentLaunch->SetTimeLimit(std::string(temp.toStdString()));
     }
-    widget++;
 
     // Do the engine command line arguments.
-    if(which_widget == widget || doAll)
+    if (currentLaunch)
     {
         stringVector arguments;
         QString temp(engineArguments->displayText());
@@ -1943,21 +1550,27 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             }
         }
         // Set the arguments.
-        current.SetArguments(arguments);
+        currentLaunch->SetArguments(arguments);
     }
-    widget++;
 
     // Do the launcher args
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = launchArgs->displayText();
         temp = temp.trimmed();
-        current.SetLaunchArgs(std::string(temp.toStdString()));
+        currentLaunch->SetLaunchArgs(std::string(temp.toStdString()));
     }
-    widget++;
+
+    // Do the directory
+    if (currentMachine)
+    {
+        temp = directory->displayText();
+        temp = temp.trimmed();
+        currentMachine->SetDirectory(temp.toStdString());
+    }
 
     // Do the timeout
-    if(which_widget == widget || doAll)
+    if (currentLaunch)
     {
         bool okay = false;
         temp = timeout->text();
@@ -1967,9 +1580,9 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             int tOut = temp.toInt(&okay);
             if(okay)
             {
-                if (tOut != current.GetTimeout())
+                if (tOut != currentLaunch->GetTimeout())
                     needNotify = true;
-                current.SetTimeout(tOut);
+                currentLaunch->SetTimeout(tOut);
             }
         }
  
@@ -1977,136 +1590,114 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         {
             needNotify = true;
             msg = tr("An invalid timeout was specified, reverting to %1 minutes.").
-                  arg(current.GetTimeout());
+                  arg(currentLaunch->GetTimeout());
             Message(msg);
         }
     }
-    widget++;
 
     // Do the host aliases
-    if(which_widget == widget || doAll)
+    if (currentMachine)
     {
         temp = hostAliases->text();
         temp = temp.trimmed();
 
         std::string newAliases(temp.toStdString());
-        if (newAliases != current.GetHostAliases())
+        if (newAliases != currentMachine->GetHostAliases())
             needNotify = true;
 
-        // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-        {
-            HostProfile &prof = profiles->operator[](i);
-
-            if (prof.GetHost() == current.GetHost())
-                prof.SetHostAliases(newAliases);
-        }
+        currentMachine->SetHostAliases(newAliases);
     }
-    widget++;
 
     // Do the host nickname
-    if(which_widget == widget || doAll)
+    if (currentMachine)
     {
+        temp = hostNickname->displayText();
+        temp = temp.trimmed();
+        if(!temp.isEmpty())
+        {
+            currentMachine->SetHostNickname(std::string(temp.toStdString()));
+        }
+        else
+        {
+            needNotify = true;
+            msg = tr("Username cannot be empty, reverting to \"%1\".").
+                  arg(currentMachine->GetHostNickname().c_str());
+            Message(msg);
+        }
+
         temp = hostNickname->text();
         temp = temp.trimmed();
 
         std::string newNickname(temp.toStdString());
-        if (newNickname != current.GetHostNickname())
+        if (newNickname != currentMachine->GetHostNickname())
             needNotify = true;
 
-        // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-        {
-            HostProfile &prof = profiles->operator[](i);
-
-            if (prof.GetHost() == current.GetHost())
-                prof.SetHostNickname(newNickname);
-        }
+        currentMachine->SetHostNickname(newNickname);
     }
-    widget++;
+
     // Do the manual client host name
-    if(which_widget == widget || doAll)
+    if (currentMachine)
     {
         temp = clientHostName->text();
         temp = temp.trimmed();
 
         std::string newClientHostName(temp.toStdString());
-        if (newClientHostName != current.GetManualClientHostName())
+        if (newClientHostName != currentMachine->GetManualClientHostName())
             needNotify = true;
 
-        // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-        {
-            HostProfile &prof = profiles->operator[](i);
-
-            if (prof.GetHost() == current.GetHost())
-                prof.SetManualClientHostName(newClientHostName);
-        }
+        currentMachine->SetManualClientHostName(newClientHostName);
     }
-    widget++;
 
     // Do the ssh port
-    if(which_widget == widget || doAll)
+    if (currentMachine)
     {
         temp = sshPort->text();
 
         int newPort = temp.toInt();
-        if (current.GetSshPort() != newPort)
+        if (currentMachine->GetSshPort() != newPort)
             needNotify = true;
 
-        // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-        {
-            HostProfile &prof = profiles->operator[](i);
-
-            if (prof.GetHost() == current.GetHost())
-                prof.SetSshPort(newPort);
-        }
+        currentMachine->SetSshPort(newPort);
     }
-    widget++;
 
     // Do the machine file
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = machinefile->displayText();
         temp = temp.trimmed();
-        current.SetMachinefile(std::string(temp.toStdString()));
+        currentLaunch->SetMachinefile(std::string(temp.toStdString()));
     }
-    widget++;
 
     // Do the sublauncher args
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = sublaunchArgs->displayText();
         temp = temp.trimmed();
-        current.SetSublaunchArgs(std::string(temp.toStdString()));
+        currentLaunch->SetSublaunchArgs(std::string(temp.toStdString()));
     }
-    widget++;
 
     // Do the sublauncher pre cmd
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = sublaunchPreCmd->displayText();
         temp = temp.trimmed();
-        current.SetSublaunchPreCmd(std::string(temp.toStdString()));
+        currentLaunch->SetSublaunchPreCmd(std::string(temp.toStdString()));
     }
-    widget++;
 
     // Do the sublauncher post cmd
-    if(current.GetParallel() && (which_widget == widget || doAll))
+    if (currentLaunch && currentLaunch->GetParallel())
     {
         temp = sublaunchPostCmd->displayText();
         temp = temp.trimmed();
-        current.SetSublaunchPostCmd(std::string(temp.toStdString()));
+        currentLaunch->SetSublaunchPostCmd(std::string(temp.toStdString()));
     }
-    widget++;
 
     // There was an error with some of the input.
     if(needNotify)
     {
         // Mark the active profile so it will force the active profile
         // area to be updated.
-        profiles->MarkActiveProfile();
+        profiles->SelectMachines();
     }
 
     return needNotify;
@@ -2126,6 +1717,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
 // Creation:   Mon Sep 24 09:20:47 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //   
 // ****************************************************************************
 
@@ -2135,7 +1728,7 @@ QvisHostProfileWindow::Apply(bool ignore)
     if(AutoUpdate() || ignore)
     {
         // Update all of the values and call Notify.
-        GetCurrentValues(-1);
+        GetCurrentValues();
         subject->Notify();
     }
     else
@@ -2171,132 +1764,6 @@ QvisHostProfileWindow::apply()
     Apply(true);
 }
 
-// ****************************************************************************
-// Method: QvisHostProfileWindow::newProfile
-//
-// Purpose: 
-//   This is a Qt slot function that creates a new host profile, adds
-//   it to the profile list and makes it the active profile.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:54:11 PST 2000
-//
-// Modifications:
-//   Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//   Reworded "default profile" to be "active profile".
-//
-//   Brad Whitlock, Mon Sep 24 11:51:57 PDT 2001
-//   Added code to set the default hostname to the localhost name if there
-//   are no host profiles.
-//
-//   Brad Whitlock, Thu Feb 21 10:18:45 PDT 2002
-//   I replaced defaultUserName with a method call to the viewer proxy.
-//
-//   Jeremy Meredith, Wed Jul 10 13:30:11 PDT 2002
-//   Made the first created profile active.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
-//
-//
-//    Cyrus Harrison, Tue Dec  9 14:55:27 PST 2008
-//    Finished Qt4 Port todo.
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::newProfile()
-{
-    HostProfileList *profiles = (HostProfileList *)subject;
-    ++profileCounter;
-
-    HostProfile temp;
-    // If there is a profile from which to copy, copy from it.
-    if(profiles->GetNumProfiles() > 0)
-    {
-        const HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        temp = current;
-        temp.SetActive(false);
-    }
-    else
-    {
-        // Set the default user name.
-        temp.SetUserName("username");
-        temp.SetUserName(GetViewerProxy()->GetLocalUserName()); 
-        // Set the default host name.
-        temp.SetHost("localhost");
-        temp.SetHost(GetViewerProxy()->GetLocalHostName());
-        // Make the first created profile active.
-        temp.SetActive(true);
-    }
-
-    QString profileName(tr("New profile"));
-    QString num; num.sprintf(" #%d", profileCounter);
-    profileName += num;
-    temp.SetProfileName(std::string(profileName.toStdString()));
-
-    // Add the new profile to the list and make it the active profile.
-    profiles->AddProfiles(temp);
-    profiles->SetActiveProfile(profiles->GetNumProfiles() - 1);
-    profiles->Notify();
-}
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::deleteProfile
-//
-// Purpose: 
-//   This is a Qt slot function that deletes the active profile and
-//   makes the first profile the new active one.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:53:04 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::deleteProfile()
-{
-    HostProfileList *profiles = (HostProfileList *)subject;
-
-    if(profiles->GetActiveProfile() != -1)
-    {
-        profiles->RemoveActiveProfile();
-        profiles->Notify();
-    }
-}
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::makeActiveProfile
-//
-// Purpose: 
-//   This is a Qt slot function that makes the selected profile the 
-//   active profile for its host.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 18 12:37:28 PDT 2000
-//
-// Modifications:
-//   Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//   Reworded "default profile" to be "active profile".
-//
-//   Brad Whitlock, Mon Sep 24 09:25:48 PDT 2001
-//   Added code to prevent the window from updating.
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::makeActiveProfile(bool)
-{
-    HostProfileList *profiles = (HostProfileList *)subject;
-    profiles->SetAsActiveProfile(profiles->GetActiveProfile());
-    SetUpdate(false);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisHostProfileWindow::userNameChanged
@@ -2319,28 +1786,48 @@ QvisHostProfileWindow::makeActiveProfile(bool)
 //    Jeremy Meredith, Thu Oct  9 15:48:43 PDT 2003
 //    Made it apply to all profiles with the same host.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::userNameChanged(const QString &u)
 {
+    if (currentMachine == NULL)
+        return;
+
     if (u.isEmpty())
         return;
 
-    // Update the user name.
+    currentMachine->SetUserName(u.toStdString());
+    SetUpdate(false);
+    Apply();
+}
 
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if (profiles->GetActiveProfile() < 0)
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::processDirectoryText
+//
+// Purpose:
+//   Callback when directory text changes.
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::processDirectoryText(const QString &d)
+{
+    if (currentMachine == NULL)
         return;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        HostProfile &prof = profiles->operator[](i);
+    if (d.isEmpty())
+        return;
 
-        if (prof.GetHost() == current.GetHost())
-            prof.SetUserName(u.toStdString());
-    }
+    currentMachine->SetDirectory(d.toStdString());
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -2356,22 +1843,21 @@ QvisHostProfileWindow::userNameChanged(const QString &u)
 //   Brad Whitlock, Mon Sep 24 09:26:59 PDT 2001
 //   Changed Notify() to Apply().
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleLaunch(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
+    if (currentLaunch == NULL)
+        return;
 
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetLaunchMethodSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    currentLaunch->SetLaunchMethodSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2389,24 +1875,24 @@ QvisHostProfileWindow::toggleLaunch(bool state)
 //   Changed the code so we can update the window sensitivity without having
 //   to update the entire window.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::launchMethodChanged(const QString &method)
 {
-    // Update the launch method.
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        QString temp(method.trimmed());
-        if(temp == tr("(default)"))
-            temp = "";
-        current.SetLaunchMethod(std::string(temp.toStdString()));
-        profiles->MarkActiveProfile();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    QString tmp(method.trimmed());
+    if (tmp == tr("(default"))
+        currentLaunch->SetLaunchMethod("");
+    else
+        currentLaunch->SetLaunchMethod(tmp.toStdString());
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -2424,22 +1910,20 @@ QvisHostProfileWindow::launchMethodChanged(const QString &method)
 //   Changed the code so we can update the window sensitivity without having
 //   to update the entire window.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::numProcessorsChanged(int value)
 {
-    // Update the number of processors.
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetNumProcessors(value);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetNumProcessors(value);
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -2453,22 +1937,19 @@ QvisHostProfileWindow::numProcessorsChanged(int value)
 // Creation:   Thu Feb 21 15:55:44 PST 2002
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 void
 QvisHostProfileWindow::timeoutChanged(int value)
 {
-    // Update the timeout
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetTimeout(value);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetTimeout(value);
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -2484,21 +1965,21 @@ QvisHostProfileWindow::timeoutChanged(int value)
 //   Brad Whitlock, Mon Sep 24 09:28:33 PDT 2001
 //   Prevented the window from updating.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleNumNodes(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetNumNodesSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetNumNodesSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2515,14 +1996,19 @@ QvisHostProfileWindow::toggleNumNodes(bool state)
 //   Brad Whitlock, Mon Sep 24 09:29:00 PDT 2001
 //   Prevented the window from updating.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::numNodesChanged(int)
+QvisHostProfileWindow::numNodesChanged(int n)
 {
-    // Update the number of nodes.
-    if(!GetCurrentValues(5))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetNumNodes(n);
+    SetUpdate(false);
     Apply();
 }
 
@@ -2539,21 +2025,21 @@ QvisHostProfileWindow::numNodesChanged(int)
 //   Brad Whitlock, Mon Sep 24 09:29:16 PDT 2001
 //   Prevented the window from updating.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::togglePartitionName(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetPartitionSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetPartitionSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2570,14 +2056,19 @@ QvisHostProfileWindow::togglePartitionName(bool state)
 //   Brad Whitlock, Mon Sep 24 09:29:16 PDT 2001
 //   Prevented the window from updating.
 //   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processPartitionNameText(const QString &)
+QvisHostProfileWindow::processPartitionNameText(const QString &tmp)
 {
-    // Update the partition name.
-    if(!GetCurrentValues(6))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetPartition(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2591,22 +2082,21 @@ QvisHostProfileWindow::processPartitionNameText(const QString &)
 // Creation:   July 22, 2002
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleBankName(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetBankSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetBankSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2620,15 +2110,19 @@ QvisHostProfileWindow::toggleBankName(bool state)
 // Creation:   July 22, 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processBankNameText(const QString &)
+QvisHostProfileWindow::processBankNameText(const QString &tmp)
 {
-    // Update the bank name.
-    if(!GetCurrentValues(7))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetBank(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2642,50 +2136,21 @@ QvisHostProfileWindow::processBankNameText(const QString &)
 // Creation:   July 22, 2002
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleTimeLimit(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetTimeLimitSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
-}
+    if (currentLaunch == NULL)
+        return;
 
-// ****************************************************************************
-// Method: QvisHostProfileWindow::toggleMachinefile
-//
-// Purpose: 
-//   This is a Qt slot function that enables the Machinefile widget.
-//
-// Programmer: Jeremy Meredith
-// Creation:   September 15, 2005
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::toggleMachinefile(bool state)
-{
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetMachinefileSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    currentLaunch->SetTimeLimitSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2699,16 +2164,47 @@ QvisHostProfileWindow::toggleMachinefile(bool state)
 // Creation:   July 22, 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processTimeLimitText(const QString &)
+QvisHostProfileWindow::processTimeLimitText(const QString &tmp)
 {
-    // Update the timeLimit name.
-    if(!GetCurrentValues(8))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetTimeLimit(tmp.toStdString());
+    SetUpdate(false);
     Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleMachinefile
+//
+// Purpose: 
+//   This is a Qt slot function that enables the Machinefile widget.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 15, 2005
+//
+// Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleMachinefile(bool state)
+{
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetMachinefileSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2722,15 +2218,19 @@ QvisHostProfileWindow::processTimeLimitText(const QString &)
 // Creation:   September 15, 2005
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processMachinefileText(const QString &)
+QvisHostProfileWindow::processMachinefileText(const QString &tmp)
 {
-    // Update the machinefile name.
-    if(!GetCurrentValues(15))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetMachinefile(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2744,22 +2244,21 @@ QvisHostProfileWindow::processMachinefileText(const QString &)
 // Creation:   January 24, 2003
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleLaunchArgs(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetLaunchArgsSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetLaunchArgsSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2773,15 +2272,19 @@ QvisHostProfileWindow::toggleLaunchArgs(bool state)
 // Creation:   January 24, 2003
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processLaunchArgsText(const QString &)
+QvisHostProfileWindow::processLaunchArgsText(const QString &tmp)
 {
-    // Update the launch args text.
-    if(!GetCurrentValues(10))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetLaunchArgs(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2795,22 +2298,21 @@ QvisHostProfileWindow::processLaunchArgsText(const QString &)
 // Creation:   February 15, 2007
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleSublaunchArgs(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetSublaunchArgsSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetSublaunchArgsSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2824,15 +2326,19 @@ QvisHostProfileWindow::toggleSublaunchArgs(bool state)
 // Creation:   February 15, 2007
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchArgsText(const QString &)
+QvisHostProfileWindow::processSublaunchArgsText(const QString &tmp)
 {
-    // Update the sublaunch args text.
-    if(!GetCurrentValues(16))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetSublaunchArgs(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2846,22 +2352,21 @@ QvisHostProfileWindow::processSublaunchArgsText(const QString &)
 // Creation:   April 16, 2008
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleSublaunchPreCmd(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetSublaunchPreCmdSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetSublaunchPreCmdSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2875,15 +2380,19 @@ QvisHostProfileWindow::toggleSublaunchPreCmd(bool state)
 // Creation:   April 16, 2008
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchPreCmdText(const QString &)
+QvisHostProfileWindow::processSublaunchPreCmdText(const QString &tmp)
 {
-    // Update the sublaunch args text.
-    if(!GetCurrentValues(17))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetSublaunchPreCmd(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2897,22 +2406,21 @@ QvisHostProfileWindow::processSublaunchPreCmdText(const QString &)
 // Creation:   April 16, 2008
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleSublaunchPostCmd(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetSublaunchPostCmdSet(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetSublaunchPostCmdSet(state);
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2926,15 +2434,19 @@ QvisHostProfileWindow::toggleSublaunchPostCmd(bool state)
 // Creation:   April 16, 2008
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //   
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchPostCmdText(const QString &)
+QvisHostProfileWindow::processSublaunchPostCmdText(const QString &tmp)
 {
-    // Update the sublaunch args text.
-    if(!GetCurrentValues(18))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetSublaunchPostCmd(tmp.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -2952,23 +2464,22 @@ QvisHostProfileWindow::processSublaunchPostCmdText(const QString &)
 //    Added code to set the current values before doing the toggle; toggling
 //    the button is liable to cause updates that overwrite some old values.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleParallel(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        GetCurrentValues(-1);
-        Apply();
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetParallel(state);
-        profiles->MarkActiveProfile();
-        UpdateActiveProfile();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetParallel(state);
+    SetUpdate(false);
+    Apply();
+    UpdateLaunchProfile();
+    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************
@@ -2987,36 +2498,35 @@ QvisHostProfileWindow::toggleParallel(bool state)
 //   Brad Whitlock, Mon Sep 24 09:29:16 PDT 2001
 //   Prevented the window from updating.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void 
 QvisHostProfileWindow::loadBalancingChanged(int val)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
+    if (currentLaunch == NULL)
+        return;
+
+    switch (val)
     {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-
-        switch (val)
-        {
-          case 0:
-            current.SetForceStatic(false);
-            current.SetForceDynamic(false);
-            break;
-          case 1:
-            current.SetForceStatic(true);
-            current.SetForceDynamic(false);
-            break;
-          case 2:
-            current.SetForceStatic(false);
-            current.SetForceDynamic(true);
-            break;
-        }
-
-        profiles->MarkActiveProfile();
-        SetUpdate(false);
-        Apply();
+      case 0:
+        currentLaunch->SetForceStatic(false);
+        currentLaunch->SetForceDynamic(false);
+        break;
+      case 1:
+        currentLaunch->SetForceStatic(true);
+        currentLaunch->SetForceDynamic(false);
+        break;
+      case 2:
+        currentLaunch->SetForceStatic(false);
+        currentLaunch->SetForceDynamic(true);
+        break;
     }
+
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -3029,15 +2539,31 @@ QvisHostProfileWindow::loadBalancingChanged(int val)
 // Creation:   February 13, 2002
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::hostNameChanged(const QString &n)
 {
-    // Update the host name.
-    if(!GetCurrentValues(1))
-        SetUpdate(false);
-    Apply();
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetHost(n.toStdString());
+
+    HostProfileList *profiles = (HostProfileList *)subject;
+    for (int i=0; i<profiles->GetNumMachines(); i++)
+    {
+        if ((MachineProfile*)profiles->GetMachines()[i] == currentMachine)
+        {
+            if (profiles->GetMachines(i).GetHostNickname() != "")
+                hostList->item(i)->setText(currentMachine->GetHostNickname().c_str());
+            else
+                hostList->item(i)->setText(currentMachine->GetHost().c_str());
+            break;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -3051,21 +2577,18 @@ QvisHostProfileWindow::hostNameChanged(const QString &n)
 // Creation:   April 14, 2003
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+    if (currentMachine == NULL)
+        return;
 
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        HostProfile &prof = profiles->operator[](i);
-
-        if (prof.GetHost() == current.GetHost())
-            prof.SetHostAliases(aliases.toStdString());
-    }
+    currentMachine->SetHostAliases(aliases.toStdString());
 }
 
 // ****************************************************************************
@@ -3078,20 +2601,31 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 // Programmer: Hank Childs
 // Creation:   May 7, 2009
 //
+// Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
 {
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetHostNickname(nickname.toStdString());
+
     HostProfileList *profiles = (HostProfileList *)subject;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    for (int i=0; i<profiles->GetNumMachines(); i++)
     {
-        HostProfile &prof = profiles->operator[](i);
-
-        if (prof.GetHost() == current.GetHost())
-            prof.SetHostNickname(nickname.toStdString());
+        if ((MachineProfile*)profiles->GetMachines()[i] == currentMachine)
+        {
+            if (profiles->GetMachines(i).GetHostNickname() != "")
+                hostList->item(i)->setText(currentMachine->GetHostNickname().c_str());
+            else
+                hostList->item(i)->setText(currentMachine->GetHost().c_str());
+            break;
+        }
     }
 }
 
@@ -3109,15 +2643,20 @@ QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
 //   Brad Whitlock, Mon Sep 24 09:12:12 PDT 2001
 //   I changed how the state is read.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processEngineArgumentsText(const QString &)
+QvisHostProfileWindow::processEngineArgumentsText(const QString &tmp)
 {
-    // Update the engine arguments.
-    if(!GetCurrentValues(9))
-        SetUpdate(false);
+    if (currentLaunch == NULL)
+        return;
 
+    currentLaunch->SetArguments(
+        StringHelpers::split(tmp.simplified().toStdString(),' '));
+    SetUpdate(false);
     Apply();
 }
 
@@ -3133,21 +2672,20 @@ QvisHostProfileWindow::processEngineArgumentsText(const QString &)
 // Creation:   May 16, 2003
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleShareMDServer(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetShareOneBatchJob(state);
-        profiles->MarkActiveProfile();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetShareOneBatchJob(state);
+    SetUpdate(false);
+    Apply();
 }
 
 
@@ -3162,200 +2700,22 @@ QvisHostProfileWindow::toggleShareMDServer(bool state)
 // Creation:   September 15, 2005
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleUseVisItScriptForEnv(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetVisitSetsUpEnv(state);
-        profiles->MarkActiveProfile();
-        SetUpdate(false);
-        Apply();
-    }
-}
-
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::activateProfile
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the active profile
-//   changes. This translates the widget action into a state object
-//   change.
-//
-// Arguments:
-//   item : A pointer to the listviewitem that was selected.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep 20 15:50:57 PST 2000
-//
-// Modifications:
-//    Jeremy Meredith, Fri Dec 20 10:57:11 PST 2002
-//    Added code to get the current values in case they were changed
-//    before changing profiles.
-//   
-//    Jeremy Meredith, Mon Apr 14 18:28:04 PDT 2003
-//    Removed last change.  It caused stability problems.
-//
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::activateProfile(QListWidgetItem *item)
-{
-    if(item == 0)
+    if (currentLaunch == NULL)
         return;
 
-    // Cast the subject pointer to something useful.
-    HostProfileList *profiles = (HostProfileList *)subject;
-
-    // Get the host asociated with the item.
-    std::string hostName;
-    //HostTabMap::Iterator pos;
-    bool keepSearching = true;
-    
-    QMapIterator<QString,QListWidget*> itr(hostTabMap);
-    
-    while(itr.hasNext() && keepSearching)
-    {
-        itr.next();
-        if(itr.value() == item->listWidget())
-        {
-            hostName = itr.key().toStdString();
-            keepSearching = false;
-        }
-        
-    }
-    
-    // Get the index of the selected profile in the profile list.
-    keepSearching = true;
-    int index = 0;
-    for(int i = 0; i < profiles->GetNumProfiles() && keepSearching; ++i)
-    {
-        const HostProfile &current = profiles->operator[](i);
-        if(current.GetHost() == hostName &&
-           current.GetProfileName() == std::string(item->text().toStdString()))
-        {
-            index = i;
-            keepSearching = false;
-        }
-    }
-
-    // We now have the index. If it is good, and is not equal to the
-    // current active profile's index, change the active profile.
-    if((index < profiles->GetNumProfiles()) &&
-       (index != profiles->GetActiveProfile()))
-    {
-        profiles->SetActiveProfile(index);
-        profiles->Notify();
-    }
+    currentLaunch->SetVisitSetsUpEnv(state);
+    SetUpdate(false);
+    Apply();
 }
 
-// ****************************************************************************
-// Method: QvisHostProfileWindow::pageTurned
-//
-// Purpose: 
-//   This is a Qt slot function that selects the default profile in
-//   the host's profile list when the pages of the host tab are
-//   turned.
-//
-// Arguments:
-//   hostName : The host name of the tab that was made visible.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 17 16:51:11 PST 2000
-//
-// Modifications:
-//   Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
-//   Reworded "default profile" to be "active profile".
-//
-//   Brad Whitlock, Mon Sep 24 12:25:09 PDT 2001
-//   Added code to get the current values before changing the tab that
-//   we're displaying.
-//
-//   Jeremy Meredith, Thu Feb 14 15:30:18 PST 2002
-//   Changed to a different style callback since the hostname in the
-//   tab is only a shortened version of the ones in the profiles.
-//
-//   Jeremy Meredith, Thu Jun 24 10:09:40 PDT 2004
-//   Forced an update of the profile list to fix a bug.  ('5083)
-//
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::pageTurned(int tab_index)
-{
-    QWidget *tab = hostTabs->widget(tab_index);
-    QString host = "";
-    
-    QMapIterator<QString,QListWidget*> itr(hostTabMap);
-    
-    while(itr.hasNext())
-    {
-        itr.next();
-        if(itr.value() == tab)
-        {
-            host = itr.key();
-            break;
-        }
-    }
-
-    if(itr.hasNext())
-    {
-        // Get the current attributes in case they were changed.
-        GetCurrentValues(-1);
-
-        // If the user has changed the host name but never hit apply
-        // or return, then a dismiss/show of this window causes a
-        // pageTurned event but can leave the tab names out of date;
-        // force an update here.
-        UpdateProfileList();
-
-        // Cast the subject pointer to something useful.
-        HostProfileList *profiles = (HostProfileList *)subject;
-
-        // Get a pointer to the active profile for this host.
-        HostProfile *activeProfile = (HostProfile *)profiles->GetProfileForHost(
-            std::string(host.toStdString()));
-        if(activeProfile == 0)
-        {
-            return;
-        }
-
-        // Get the index of the active profile and activate it.
-        int index = 0;
-        bool keepGoing = true;
-        for(int i = 0; i < profiles->GetNumProfiles() && keepGoing; ++i)
-        {
-            HostProfile &current = profiles->operator[](i);
-            if(current == *activeProfile)
-            {
-                index = i;
-                keepGoing = false;
-            }
-        }
-
-        // We now have the index. If it is good, and is not equal to the
-        // current active profile's index, change the active profile.
-        if(index < profiles->GetNumProfiles())
-        {
-            profiles->MarkHostProfiles();
-            profiles->SetActiveProfile(index);
-            profiles->Notify();
-        }
-    }
-    
-}
 
 // ****************************************************************************
 //  Method:  QvisHostProfileWindow::processProfileNameText
@@ -3380,21 +2740,29 @@ QvisHostProfileWindow::pageTurned(int tab_index)
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::processProfileNameText(const QString &name)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());    
-    QString temp = profileName->displayText();
+    if (currentMachine == NULL || currentLaunch == NULL)
+        return;
 
+    QString temp = profileName->displayText();
     if (!temp.isEmpty())
     {
-        current.SetProfileName(temp.toStdString());
-        QString cname(current.GetHost().c_str());
-        
-        QListWidget *list = hostTabMap[cname];
-        list->currentItem()->setText(temp);
+        currentLaunch->SetProfileName(temp.toStdString());
+        for (int i=0; i<currentMachine->GetNumLaunchProfiles(); i++)
+        {
+            if ((LaunchProfile*)currentMachine->GetLaunchProfiles()[i] ==
+                                                                currentLaunch)
+            {
+                profileList->item(i)->setText(temp);
+                break;
+            }
+        }
     }
 }
 
@@ -3411,24 +2779,18 @@ QvisHostProfileWindow::processProfileNameText(const QString &name)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  9, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::toggleSSHPort(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if (profiles->GetActiveProfile() < 0)
+    if (currentMachine == NULL)
         return;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        HostProfile &prof = profiles->operator[](i);
-
-        if (prof.GetHost() == current.GetHost())
-            prof.SetSshPortSpecified(state);
-    }
-
-    profiles->MarkActiveProfile();
+    currentMachine->SetSshPortSpecified(state);
     UpdateWindowSensitivity();
     SetUpdate(false);
     Apply();
@@ -3451,27 +2813,22 @@ QvisHostProfileWindow::toggleSSHPort(bool state)
 //    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
 //    Initial Qt4 Port.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::sshPortChanged(const QString &portStr)
 {
+    if (currentMachine == NULL)
+        return;
+
     if (portStr.isEmpty())
         return;
 
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if (profiles->GetActiveProfile() < 0)
-        return;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+    int port = atoi(portStr.toStdString().c_str());
 
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        HostProfile &prof = profiles->operator[](i);
-
-        int port = atoi(portStr.toStdString().c_str());
-
-        if (prof.GetHost() == current.GetHost())
-            prof.SetSshPort(port);
-    }
+    currentMachine->SetSshPort(port);
 }
 
 // ****************************************************************************
@@ -3487,37 +2844,29 @@ QvisHostProfileWindow::sshPortChanged(const QString &portStr)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  9, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::clientHostNameMethodChanged(int m)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if (profiles->GetActiveProfile() < 0)
+    if (currentMachine == NULL)
         return;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    switch (m)
     {
-        HostProfile &prof = profiles->operator[](i);
-
-        if (prof.GetHost() == current.GetHost())
-        {
-            switch (m)
-            {
-              case 0:
-                prof.SetClientHostDetermination(HostProfile::MachineName);
-                break;
-              case 1:
-                prof.SetClientHostDetermination(HostProfile::ParsedFromSSHCLIENT);
-                break;
-              case 2:
-                prof.SetClientHostDetermination(HostProfile::ManuallySpecified);
-                break;
-            }
-        }
+      case 0:
+        currentMachine->SetClientHostDetermination(MachineProfile::MachineName);
+        break;
+      case 1:
+        currentMachine->SetClientHostDetermination(MachineProfile::ParsedFromSSHCLIENT);
+        break;
+      case 2:
+        currentMachine->SetClientHostDetermination(MachineProfile::ManuallySpecified);
+        break;
     }
-
-    profiles->MarkActiveProfile();
     UpdateWindowSensitivity();
     SetUpdate(false);
     Apply();
@@ -3536,25 +2885,21 @@ QvisHostProfileWindow::clientHostNameMethodChanged(int m)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  9, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 {
+    if (currentMachine == NULL)
+        return;
+
     if (h.isEmpty())
         return;
 
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if (profiles->GetActiveProfile() < 0)
-        return;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
-    {
-        HostProfile &prof = profiles->operator[](i);
-
-        if (prof.GetHost() == current.GetHost())
-            prof.SetManualClientHostName(h.toStdString());
-    }
+    currentMachine->SetManualClientHostName(h.toStdString());
 }
 
 // ****************************************************************************
@@ -3575,41 +2920,35 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 //   Force host name determination method to default values when tunneling
 //   is enabled.  The two are incompatible.
 //
-//    Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Wed Jun 25 11:01:46 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if (profiles->GetActiveProfile() < 0)
+    if (currentMachine == NULL)
         return;
-    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    currentMachine->SetTunnelSSH(tunnel);
+    if (tunnel)
     {
-        HostProfile &prof = profiles->operator[](i);
-
-        if (prof.GetHost() == current.GetHost())
-        {
-            prof.SetTunnelSSH(tunnel);
-            if (tunnel)
-            {
-                prof.SetClientHostDetermination(HostProfile::MachineName);
-                prof.SetManualClientHostName("");
-                clientHostNameMethod->blockSignals(true);
-                clientHostName->blockSignals(true);
-                clientHostNameMethod->button(0)->setChecked(true);
-                clientHostName->setText("");
-                clientHostNameMethod->blockSignals(false);
-                clientHostName->blockSignals(false);
-            }
-        }
+        // Tunneling is incomaptible with some options.  Set them now
+        // to make it clear to the user.
+        currentMachine->SetClientHostDetermination(MachineProfile::MachineName);
+        currentMachine->SetManualClientHostName("");
+        clientHostNameMethod->blockSignals(true);
+        clientHostName->blockSignals(true);
+        clientHostNameMethod->button(0)->setChecked(true);
+        clientHostName->setText("");
+        clientHostNameMethod->blockSignals(false);
+        clientHostName->blockSignals(false);
     }
 
-    profiles->MarkActiveProfile();
     UpdateWindowSensitivity();
     SetUpdate(false);
     Apply();
@@ -3627,20 +2966,21 @@ QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
 //  Programmer:  Hank Childs
 //  Creation:    December 2, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::toggleCanDoHW(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetCanDoHWAccel(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetCanDoHWAccel(state);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -3655,20 +2995,21 @@ QvisHostProfileWindow::toggleCanDoHW(bool state)
 //  Programmer:  Hank Childs
 //  Creation:    December 2, 2005
 //
+//  Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::togglePreCommand(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetHavePreCommand(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetHavePreCommand(state);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -3683,20 +3024,21 @@ QvisHostProfileWindow::togglePreCommand(bool state)
 //  Programmer:  Hank Childs
 //  Creation:    December 2, 2005
 //
+//  Modifications:
+//   Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::togglePostCommand(bool state)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetHavePostCommand(state);
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
+    if (currentLaunch == NULL)
+        return;
+
+    currentLaunch->SetHavePostCommand(state);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -3718,31 +3060,32 @@ QvisHostProfileWindow::togglePostCommand(bool state)
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
+//    Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::preCommandChanged(const QString &portStr)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
+    if (currentLaunch == NULL)
+        return;
+
+    QString temp, msg;
+    temp = preCommand->displayText();
+    if(!temp.isEmpty())
     {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        QString temp, msg;
-        temp = preCommand->displayText();
-        if(!temp.isEmpty())
-        {
-            current.SetHwAccelPreCommand(std::string(temp.toStdString()));
-        }
-        else
-        {
-            msg = tr("Pre-command cannot be empty, turning off pre-command.");
-            current.SetHavePreCommand(false);
-        }
-        profiles->MarkActiveProfile();
-        UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
+        currentLaunch->SetHwAccelPreCommand(std::string(temp.toStdString()));
+        preCommandCheckBox->setChecked(false);
     }
+    else
+    {
+        msg = tr("Pre-command cannot be empty, turning off pre-command.");
+        currentLaunch->SetHavePreCommand(false);
+    }
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************
@@ -3761,28 +3104,337 @@ QvisHostProfileWindow::preCommandChanged(const QString &portStr)
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
+//    Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::postCommandChanged(const QString &portStr)
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
+    if (currentLaunch == NULL)
+        return;
+
+    QString temp, msg;
+    temp = postCommand->displayText();
+    if(!temp.isEmpty())
     {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        QString temp, msg;
-        temp = postCommand->displayText();
-        if(!temp.isEmpty())
+        currentLaunch->SetHwAccelPostCommand(std::string(temp.toStdString()));
+        postCommandCheckBox->setChecked(false);
+    }
+    else
+    {
+        msg = tr("Post-command cannot be empty, turning off post-command.");
+        currentLaunch->SetHavePostCommand(false);
+    }
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::currentHostChanged
+//
+// Purpose:
+//   Callback when user selects a different host in the list widget.
+//   Find the selected profile, save it off, and update the window if needed.
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::currentHostChanged()
+{
+    MachineProfile *oldMachine = currentMachine;
+    currentMachine = NULL;
+    HostProfileList *profiles = (HostProfileList *)subject;
+    int nMachines = profiles->GetNumMachines();
+
+    QList<QListWidgetItem*> sel = hostList->selectedItems();
+    int machine = -1;
+    for (int i=0; i<sel.size() && machine<0; i++)
+    {
+        for (int j=0; j<nMachines && machine<0; j++)
         {
-            current.SetHwAccelPostCommand(std::string(temp.toStdString()));
+            if (sel[i] == hostList->item(j))
+                machine = j;
         }
-        else
-        {
-            msg = tr("Post-command cannot be empty, turning off post-command.");
-            current.SetHavePostCommand(false);
-        }
-        profiles->MarkActiveProfile();
+    }
+
+    if (machine>=0 && machine<nMachines)
+        currentMachine = (MachineProfile*)profiles->GetMachines()[machine];
+
+    if (currentMachine != oldMachine)
+    {
+        UpdateMachineProfile();
         UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
     }
 }
+
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::currentHostChanged
+//
+// Purpose:
+//   Callback when user selects a different launch profile in the list widget.
+//   Find the selected profile, save it off, and update the window if needed.
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::currentLaunchChanged()
+{
+    LaunchProfile *oldLaunch = currentLaunch;
+    currentLaunch = NULL;
+    if (currentMachine == NULL)
+    {
+        UpdateLaunchProfile();
+        UpdateWindowSensitivity();
+        return;
+    }
+    int nProfiles = currentMachine->GetNumLaunchProfiles();
+
+    QList<QListWidgetItem*> sel = profileList->selectedItems();
+    int launch = -1;
+    for (int i=0; i<sel.size() && launch<0; i++)
+    {
+        for (int j=0; j<nProfiles && launch<0; j++)
+        {
+            if (sel[i] == profileList->item(j))
+                launch = j;
+        }
+    }
+
+    if (launch>=0 && launch<nProfiles)
+        currentLaunch = (LaunchProfile*)currentMachine->GetLaunchProfiles()[launch];
+
+    if (currentLaunch != oldLaunch)
+    {
+        UpdateLaunchProfile();
+        UpdateWindowSensitivity();
+    }
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::addMachineProfile
+//
+// Purpose:
+//   callback for "new" machine profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::addMachineProfile()
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    MachineProfile mp = MachineProfile();
+    mp.SetHostNickname(string("unknown host"));
+    profiles->AddMachines(mp);
+    ReplaceLocalHost();
+    Apply();
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::delMachineProfile
+//
+// Purpose:
+//   callback for "delete" machine profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::delMachineProfile()
+{
+    if (currentMachine == NULL)
+        return;
+
+    HostProfileList *profiles = (HostProfileList *)subject;
+    for (int i=0; i<profiles->GetNumMachines(); i++)
+    {
+        if ((MachineProfile*)profiles->GetMachines()[i] == currentMachine)
+        {
+            profiles->RemoveMachines(i);
+        }
+    }
+    Apply();
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::copyMachineProfile
+//
+// Purpose:
+//   callback for "copy" machine profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::copyMachineProfile()
+{
+    if (currentMachine == NULL)
+        return;
+
+    HostProfileList *profiles = (HostProfileList *)subject;
+    MachineProfile mp = *currentMachine;
+    mp.SetHostNickname(string("Copy of ")+mp.GetHostNickname());
+    profiles->AddMachines(mp);
+    ReplaceLocalHost();
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::addLaunchProfile
+//
+// Purpose:
+//   callback for "new" launch profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::addLaunchProfile()
+{
+    if (currentMachine == NULL)
+        return;
+
+    LaunchProfile lp;
+    QString profileName(tr("New profile"));
+    QString num; num.sprintf(" #%d", profileCounter++);
+    profileName += num;
+    lp.SetProfileName(profileName.toStdString());
+
+    currentMachine->AddLaunchProfiles(lp);
+    if (currentMachine->GetActiveProfile() <  0 ||
+        currentMachine->GetActiveProfile() >=
+                                       currentMachine->GetNumLaunchProfiles())
+    {
+        currentMachine->SetActiveProfile(0);
+    }
+    Apply();
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::delLaunchProfile
+//
+// Purpose:
+//   callback for "delete" launch profile button
+//
+// Arguments:
+//    none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::delLaunchProfile()
+{
+    if (currentMachine == NULL || currentLaunch == NULL)
+        return;
+
+    int index = -1;
+    for (int i=0; i<currentMachine->GetNumLaunchProfiles(); i++)
+    {
+        if ((LaunchProfile*)currentMachine->GetLaunchProfiles()[i] == currentLaunch)
+        {
+            index = i;
+        }
+    }
+
+    if (index < 0)
+        return;
+
+    for (int i=index; i<currentMachine->GetNumLaunchProfiles()-1; i++)
+    {
+        currentMachine->GetLaunchProfiles(i)=currentMachine->GetLaunchProfiles(i+1);
+    }
+    if (currentMachine->GetActiveProfile() >= index)
+        currentMachine->SetActiveProfile(currentMachine->GetActiveProfile()-1);
+    currentMachine->GetLaunchProfiles().resize(currentMachine->GetNumLaunchProfiles()-1);
+    currentMachine->SelectLaunchProfiles();
+    Apply();
+}
+    
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::copyLaunchProfile
+//
+// Purpose:
+//   callback for "copy" launch profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::copyLaunchProfile()
+{
+    if (currentMachine == NULL || currentLaunch == NULL)
+        return;
+    LaunchProfile lp(*currentLaunch);
+    lp.SetProfileName(std::string("Copy of ")+lp.GetProfileName());
+    currentMachine->AddLaunchProfiles(lp);
+    Apply();
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::makeDefaultLaunchProfile
+//
+// Purpose:
+//   callback for "make default" launch profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::makeDefaultLaunchProfile()
+{
+    if (currentMachine == NULL || currentLaunch == NULL)
+        return;
+
+    int index = -1;
+    for (int i=0; i<currentMachine->GetNumLaunchProfiles(); i++)
+    {
+        if ((LaunchProfile*)currentMachine->GetLaunchProfiles()[i] == currentLaunch)
+        {
+            index = i;
+        }
+    }
+
+    if (index < 0)
+        return;
+
+    for (int i=0; i<currentMachine->GetNumLaunchProfiles(); i++)
+        profileList->item(i)->setCheckState(i==index ? Qt::Checked : Qt::Unchecked);
+    currentMachine->SetActiveProfile(index);
+    makeDefaultProfile->setEnabled(false);
+}
+

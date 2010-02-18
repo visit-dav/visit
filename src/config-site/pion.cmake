@@ -12,6 +12,7 @@ SET(VISITHOME /apps/visit)
 SET(VISITARCH linux-x86_64_gcc-4.2)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 SET(CMAKE_BUILD_TYPE Debug CACHE  STRING "Build type")
+SET(CMAKE_INSTALL_PREFIX /apps/visit)
 
 ##
 ## Specify the location of the mesa.

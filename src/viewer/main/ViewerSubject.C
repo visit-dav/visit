@@ -42,6 +42,7 @@
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <snprintf.h>
 #include <ViewerSubject.h>
 
@@ -68,9 +69,10 @@
 #include <EngineList.h>
 #include <ExportDBAttributes.h>
 #include <FileOpenOptions.h>
+#include <FileFunctions.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <HostProfileList.h>
 #include <VisItInit.h>
 #include <InitVTKRendering.h>
@@ -98,8 +100,10 @@
 #include <SaveWindowAttributes.h>
 #include <SILRestrictionAttributes.h>
 #include <SimulationCommand.h>
+#include <SingleAttributeConfigManager.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
+#include <StringHelpers.h>
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <Utility.h>
@@ -164,6 +168,8 @@ static int nConfigArgs = 1;
 
 static std::string getToken(std::string buff, bool reset);
 static int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType);
+static void ReadHostProfileCallback(void *, const std::string&,bool,bool,long);
+static void CleanHostProfileCallback(void *, const std::string&,bool,bool,long);
 
 struct DeferredCommandFromSimulation
 {
@@ -693,6 +699,9 @@ ViewerSubject::ConnectXfer()
 //   Brad Whitlock, Fri May  9 14:51:37 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -795,7 +804,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
         //
         // Set the default user name.
         //
-        HostProfile::SetDefaultUserName(parent->GetTheUserName());
+        MachineProfile::SetDefaultUserName(parent->GetTheUserName());
     }
 }
 
@@ -836,6 +845,10 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //    Jeremy Meredith, Wed Jan 23 16:30:24 EST 2008
 //    Added file open options.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Host profiles are now handled separately from the main config file.
+//    Don't hand it to the config manager.
+//
 // ****************************************************************************
 
 void
@@ -849,7 +862,6 @@ ViewerSubject::ConnectConfigManager()
     // default attributes if they are available.
     //
     configMgr->Add(GetViewerState()->GetGlobalAttributes());
-    configMgr->Add(GetViewerState()->GetHostProfileList());
     configMgr->Add(GetViewerState()->GetSaveWindowAttributes());
     configMgr->Add(GetViewerState()->GetColorTableAttributes());
     configMgr->Add(GetViewerState()->GetExpressionList());
@@ -1572,6 +1584,9 @@ ViewerSubject::LoadOperatorPlugins()
 //   Brad Whitlock, Tue Apr 14 12:02:10 PDT 2009
 //   Use ViewerProperties.
 //
+//   Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
+//   Host profiles are now handles outside the config manager.
+//
 // ****************************************************************************
 
 void
@@ -1591,6 +1606,10 @@ ViewerSubject::ProcessConfigFileSettings()
 
     // Send the user's config settings to the client.
     configMgr->Notify();
+
+    // Notify the host profile list manually, since it's
+    // populated outside the config manager now
+    GetViewerState()->GetHostProfileList()->Notify();
 
     delete systemSettings; systemSettings = 0;
 
@@ -2264,6 +2283,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Brad Whitlock, Tue Apr 14 12:14:12 PDT 2009
 //    Use ViewerProperties.
 //
+//    Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
+//    Host profiles are now handles outside the config manager.
+//
 // ****************************************************************************
 
 void
@@ -2341,6 +2363,12 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     configMgr->ProcessConfigSettings(systemSettings);
     configMgr->ProcessConfigSettings(localSettings);
     configMgr->ClearSubjects();
+    ReadAndProcessDirectory(GetAndMakeSystemVisItHostsDirectory(),
+                            &ReadHostProfileCallback,
+                            GetViewerState()->GetHostProfileList());
+    ReadAndProcessDirectory(GetAndMakeUserVisItHostsDirectory(),
+                            &ReadHostProfileCallback,
+                            GetViewerState()->GetHostProfileList());
     visitTimer->StopTimer(timeid, "Reading config files.");
 }
 
@@ -5859,6 +5887,9 @@ ViewerSubject::ExportColorTable()
 //    Brad Whitlock, Tue Apr 14 13:42:31 PDT 2009
 //    Use ViewerProperties.
 //
+//    Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
+//    Host profiles are now handles outside the config manager.
+//
 // ****************************************************************************
 
 void
@@ -5888,6 +5919,32 @@ ViewerSubject::WriteConfigFile()
     // Delete the memory for the config file name.
     //
     delete [] defaultConfigFile;
+
+    //
+    // Clean old user host profiles from the file system
+    //
+    string userdir = GetAndMakeUserVisItHostsDirectory();
+    HostProfileList *hpl = GetViewerState()->GetHostProfileList();
+    ReadAndProcessDirectory(userdir, &CleanHostProfileCallback, hpl);
+    // Write the new ones
+    for (int i=0; i<hpl->GetNumMachines(); i++)
+    {
+        MachineProfile &pl = hpl->GetMachines(i);
+        // Make a filename-safe version of the nickname
+        string fn = pl.GetHostNickname();
+        for (int j=0; j<fn.length(); j++)
+        {
+            if (fn[j]>='A' && fn[j]<='Z')
+                fn[j] += int('a')-int('A');
+            if ((fn[j]<'a'||fn[j]>'z') && (fn[j]<'0'||fn[j]>'9'))
+                fn[j] = '_';
+        }
+        // Save it out
+        string filename = userdir + VISIT_SLASH_STRING + "host_"+fn+".xml";
+        SingleAttributeConfigManager mgr(&pl);
+        cerr << "writing to "<<filename<<endl;
+        mgr.Export(filename);
+    }
 }
 
 // ****************************************************************************
@@ -10158,3 +10215,89 @@ ViewerSubject::SetNowinMode(bool value)
     avtCallback::SetSoftwareRendering(value);
     avtCallback::SetNowinMode(value);
 }
+
+
+// ****************************************************************************
+// Method:  CleanHostProfileCallback
+//
+// Purpose:
+//   Callback for directory processing.  Unlinks old host profiles.
+//
+// Arguments:
+//   hpl        the host profile list to load into
+//   file       the current filename
+//   isdir      true if it's a directory
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+static void
+CleanHostProfileCallback(void *hpl,
+                         const string &file,
+                         bool isdir,
+                         bool canaccess,
+                         long size)
+{
+    HostProfileList *profileList = (HostProfileList*)hpl;
+    if (isdir)
+        return;
+    string base = StringHelpers::Basename(file.c_str());
+    if (base.length()<=5 ||
+        (base.substr(0,5) != "host_" &&
+         base.substr(0,5) != "HOST_"))
+        return;
+    if (base.length()<=4 ||
+        (base.substr(base.length()-4) != ".xml" &&
+         base.substr(base.length()-4) != ".XML"))
+        return;
+#ifdef WIN32
+    _unlink(file.c_str());
+#else
+    unlink(file.c_str());
+#endif
+}
+
+// ****************************************************************************
+// Method:  ReadostProfileCallback
+//
+// Purpose:
+//   Callback for directory processing.  Reads old host profiles.
+//
+// Arguments:
+//   hpl        the host profile list to load into
+//   file       the current filename
+//   isdir      true if it's a directory
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 18, 2010
+//
+// ****************************************************************************
+static void
+ReadHostProfileCallback(void *hpl,
+                        const string &file,
+                        bool isdir,
+                        bool canaccess,
+                        long size)
+{
+    HostProfileList *profileList = (HostProfileList*)hpl;
+    if (isdir)
+        return;
+    string base = StringHelpers::Basename(file.c_str());
+    if (base.length()<=5 ||
+        (base.substr(0,5) != "host_" &&
+         base.substr(0,5) != "HOST_"))
+        return;
+    if (base.length()<=4 ||
+        (base.substr(base.length()-4) != ".xml" &&
+         base.substr(base.length()-4) != ".XML"))
+        return;
+    MachineProfile mp;
+    SingleAttributeConfigManager mgr(&mp);
+    mgr.Import(file);
+    mp.SelectAll();
+    profileList->AddMachines(mp);
+    profileList->SelectMachines();
+}
+                             
+
