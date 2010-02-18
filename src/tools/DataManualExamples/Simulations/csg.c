@@ -289,7 +289,7 @@ void mainloop(void)
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
-            if(VisItAttemptToCompleteConnection())
+            if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
                 runFlag = 0;
                 fprintf(stderr, "VisIt connected\n");
@@ -304,7 +304,7 @@ void mainloop(void)
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            if(!VisItProcessEngineCommand())
+            if(VisItProcessEngineCommand() == VISIT_ERROR)
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();

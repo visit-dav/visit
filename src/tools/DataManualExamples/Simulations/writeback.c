@@ -914,7 +914,11 @@ parsim_GetDomainList()
  * visitCallbacks structure lets SimV1 know how to access your 
  * application's data access functions.
  */
-VisIt_SimulationCallback visitCallbacks =
+VisIt_SimulationCallback 
+#if __GNUC__ >= 4
+__attribute__ ((visibility("default"))) 
+#endif
+visitCallbacks =
 {
     parsim_GetMetaData,  /* GetMetaData */
     parsim_GetMesh,      /* GetMesh */

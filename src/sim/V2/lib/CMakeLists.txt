@@ -40,6 +40,7 @@
 
 SET(LIBSIM_SOURCES
 VisItControlInterface_V2.c 
+VisItDataInterface_V2.c
 SimV2Tracing.c 
 VisIt_DomainBoundaries.c 
 VisIt_DomainNesting.c

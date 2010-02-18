@@ -2,6 +2,8 @@
 #include <VisItDataInterfaceRuntimeP.h>
 #include <avtStructuredDomainBoundaries.h>
 
+#include <simv2_DomainBoundaries.h>
+
 typedef struct
 {
     VISIT_OBJECT_HEAD
@@ -33,7 +35,7 @@ GetObject(visit_handle h)
  * Public functions, available to C 
  ******************************************************************************/
 int
-visit_DomainBoundaries_alloc(visit_handle *h)
+simv2_DomainBoundaries_alloc(visit_handle *h)
 {
     VisIt_DomainBoundaries *obj = VISIT_OBJECT_ALLOCATE(VisIt_DomainBoundaries);
     VISIT_OBJECT_INITIALIZE(obj, VISIT_DOMAIN_BOUNDARIES);
@@ -42,7 +44,7 @@ visit_DomainBoundaries_alloc(visit_handle *h)
 }
 
 int
-visit_DomainBoundaries_free(visit_handle h)
+simv2_DomainBoundaries_free(visit_handle h)
 {
     VisIt_DomainBoundaries *obj = GetObject(h);
     if(obj != NULL)
@@ -56,7 +58,7 @@ visit_DomainBoundaries_free(visit_handle h)
 }
 
 int
-visit_DomainBoundaries_set_type(visit_handle h, int type)
+simv2_DomainBoundaries_set_type(visit_handle h, int type)
 {
     int retval = VISIT_ERROR;
     VisIt_DomainBoundaries *obj = GetObject(h);
@@ -74,7 +76,7 @@ visit_DomainBoundaries_set_type(visit_handle h, int type)
 }
 
 int
-visit_DomainBoundaries_set_numDomains(visit_handle h, int numDomains)
+simv2_DomainBoundaries_set_numDomains(visit_handle h, int numDomains)
 {
     int retval = VISIT_ERROR;
     VisIt_DomainBoundaries *obj = GetObject(h);
@@ -87,7 +89,7 @@ visit_DomainBoundaries_set_numDomains(visit_handle h, int numDomains)
 }
 
 int
-visit_DomainBoundaries_set_amrIndices(visit_handle h, int patch, int level, int extents[6])
+simv2_DomainBoundaries_set_amrIndices(visit_handle h, int patch, int level, int extents[6])
 {
     int retval = VISIT_ERROR;
     VisIt_DomainBoundaries *obj = GetObject(h);
@@ -100,7 +102,7 @@ visit_DomainBoundaries_set_amrIndices(visit_handle h, int patch, int level, int 
 }
 
 int
-visit_DomainBoundaries_set_rectIndices(visit_handle h, int dom, int extents[6])
+simv2_DomainBoundaries_set_rectIndices(visit_handle h, int dom, int extents[6])
 {
     int retval = VISIT_ERROR;
     VisIt_DomainBoundaries *obj = GetObject(h);
@@ -114,7 +116,7 @@ visit_DomainBoundaries_set_rectIndices(visit_handle h, int dom, int extents[6])
 
 // C++ code that exists in the runtime that we can use in the SimV2 reader
 void *
-visit_DomainBoundaries_avt(visit_handle h)
+simv2_DomainBoundaries_avt(visit_handle h)
 {
     void *retval = NULL;
     VisIt_DomainBoundaries *obj = GetObject(h);

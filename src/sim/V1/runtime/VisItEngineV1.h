@@ -39,6 +39,32 @@
 #ifndef VISIT_ENGINE_H
 #define VISIT_ENGINE_H
 
+#if defined(_WIN32)
+# if defined(visitenginev1_ser_EXPORTS) || defined(visitenginev1_par_EXPORTS)
+#   define SIMV1_API  __declspec(dllexport)
+# else
+#   define SIMV1_API  __declspec(dllimport)
+# endif
+# if defined(_MSC_VER)
+/* Turn off warning about lack of DLL interface */
+#   pragma warning(disable:4251)
+/* Turn off warning non-dll class is base for dll-interface class. */
+#   pragma warning(disable:4275)
+/* Turn off warning about identifier truncation */
+#   pragma warning(disable:4786)
+# endif
+#else
+# if __GNUC__ >= 4
+#    if defined(visitenginev1_ser_EXPORTS) || defined(visitenginev1_par_EXPORTS)
+#      define SIMV1_API __attribute__ ((visibility("default")))
+#    else
+#      define SIMV1_API /* hidden by default */
+#    endif
+# else
+#   define SIMV1_API  /* hidden by default */
+# endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -64,17 +90,17 @@ extern "C" {
 //
 // ****************************************************************************
 
-void   *get_engine();
-int     get_descriptor(void*);
-int     initialize(void*, int argc, char *argv[]);
-int     connect_to_viewer(void*, int argc, char *argv[]);
-int     process_input(void*);
-void    time_step_changed(void*);
-void    update_plots(void *);
-void    execute_command(void *, const char *);
-void    disconnect();
-void    set_slave_process_callback(void(*)());
-void    set_command_callback(void*,void(*)(const char*,int,float,const char*));
+SIMV1_API void   *get_engine();
+SIMV1_API int     get_descriptor(void*);
+SIMV1_API int     initialize(void*, int argc, char *argv[]);
+SIMV1_API int     connect_to_viewer(void*, int argc, char *argv[]);
+SIMV1_API int     process_input(void*);
+SIMV1_API void    time_step_changed(void*);
+SIMV1_API void    update_plots(void *);
+SIMV1_API void    execute_command(void *, const char *);
+SIMV1_API void    disconnect();
+SIMV1_API void    set_slave_process_callback(void(*)());
+SIMV1_API void    set_command_callback(void*,void(*)(const char*,int,float,const char*));
 
 #ifdef __cplusplus
 }

@@ -36,20 +36,20 @@ SimulationArguments(int argc, char **argv)
         if(strcmp(argv[i], "-dir") == 0 &&
            (i+1) < argc)
         {
-            VisItSetDirectory(argv[i]);
+            VisItSetDirectory(argv[i+1]);
             ++i;
         }
         else if(strcmp(argv[i], "-options") == 0 &&
            (i+1) < argc)
         {
-            VisItSetOptions(argv[i]);
+            VisItSetOptions(argv[i+1]);
             ++i;
         }
 #ifdef VISIT_CONTROL_INTERFACE_V2_H
         else if(strcmp(argv[i], "-trace") == 0 &&
            (i+1) < argc)
         {
-            VisItOpenTraceFile(argv[i]);
+            VisItOpenTraceFile(argv[i+1]);
             ++i;
         }
 #endif

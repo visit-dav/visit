@@ -50,6 +50,7 @@ c-----------------------------------------------------------------
       include "visitfortransiminterface.inc"
 ccc   local variables
       integer err
+      call simulationarguments()
       err = visitsetupenv()
       err = visitinitializesim("fupdateplots", 12,
      . "Demonstrates visitupdateplots function", 39,
@@ -94,6 +95,7 @@ c     main loop
           elseif (visitstate.eq.0) then
               call simulate_one_timestep()
           elseif (visitstate.eq.1) then
+              runflag = 0
               result = visitattemptconnection()
               if (result.eq.1) then
                   write (6,*) 'VisIt connected!'

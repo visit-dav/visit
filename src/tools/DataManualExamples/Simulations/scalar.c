@@ -152,8 +152,6 @@ void mainloop(void)
  *   argv : The command line arguments.
  *
  * Modifications:
- *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
- *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 
@@ -475,7 +473,11 @@ VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
     return scalar;
 }
 
-VisIt_SimulationCallback visitCallbacks =
+VisIt_SimulationCallback 
+#if __GNUC__ >= 4
+__attribute__ ((visibility("default"))) 
+#endif
+visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,

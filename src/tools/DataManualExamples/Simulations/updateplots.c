@@ -204,7 +204,7 @@ int ProcessVisItCommand(simulation_data *sim)
     {  
         int success = VisItProcessEngineCommand();
 
-        if (success)
+        if (success == VISIT_OKAY)
         {
             command = VISIT_COMMAND_SUCCESS;
             BroadcastSlaveCommand(&command);
@@ -341,7 +341,7 @@ void mainloop(simulation_data *sim)
             break;
         case 1:
             /* VisIt is trying to connect to sim. */
-            if(VisItAttemptToCompleteConnection())
+            if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback, (void*)sim);

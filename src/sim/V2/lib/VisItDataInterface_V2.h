@@ -396,38 +396,36 @@ static VisIt_DataArray VisIt_CreateDataArrayFromDouble(int o, double *d)
 /****************************************************************************/
 
 /* Some functions that operate on the declared data types... here is where
- * we'd have the long list of various accessor functions for the opaque types
- * that we're manipulating
- */
-#ifdef VISIT_RUNTIME_IMPLEMENTATION
-#define VISIT_P(N) impl_##N
-#else
-#define VISIT_P(N) N
-#endif
+   we'd have the long list of various accessor functions for the opaque types
+   that we're manipulating
 
-void VisIt_DataArray_free(VisIt_DataArray *obj);
-void VisIt_NameList_free(VisIt_NameList *obj);
-void VisIt_SimulationControlCommand_free(VisIt_SimulationControlCommand *obj);
-void VisIt_MeshMetaData_free(VisIt_MeshMetaData *obj);
-void VisIt_VariableMetaData_free(VisIt_VariableMetaData *obj);
-void VisIt_MaterialMetaData_free(VisIt_MaterialMetaData *obj);
-void VisIt_CurveMetaData_free(VisIt_CurveMetaData *obj);
-void VisIt_ExpressionMetaData_free(VisIt_ExpressionMetaData *obj);
-void VisIt_SpeciesMetaData_free(VisIt_SpeciesMetaData *obj);
-void VisIt_SimulationMetaData_free(VisIt_SimulationMetaData *obj);
+   Eventually split these functions into different headers since there will
+   be multiple functions that operate on each type. For example, there will
+   be alloc and accessor functions.
+*/
+int VisIt_DataArray_free(VisIt_DataArray *obj);
+int VisIt_NameList_free(VisIt_NameList *obj);
+int VisIt_SimulationControlCommand_free(VisIt_SimulationControlCommand *obj);
+int VisIt_MeshMetaData_free(VisIt_MeshMetaData *obj);
+int VisIt_VariableMetaData_free(VisIt_VariableMetaData *obj);
+int VisIt_MaterialMetaData_free(VisIt_MaterialMetaData *obj);
+int VisIt_CurveMetaData_free(VisIt_CurveMetaData *obj);
+int VisIt_ExpressionMetaData_free(VisIt_ExpressionMetaData *obj);
+int VisIt_SpeciesMetaData_free(VisIt_SpeciesMetaData *obj);
+int VisIt_SimulationMetaData_free(VisIt_SimulationMetaData *obj);
 
-void VISIT_P(VisIt_CurvilinearMesh_free)(VisIt_CurvilinearMesh *obj);
-void VISIT_P(VisIt_RectilinearMesh_free)(VisIt_RectilinearMesh *obj);
-void VISIT_P(VisIt_UnstructuredMesh_free)(VisIt_UnstructuredMesh *obj);
-void VISIT_P(VisIt_PointMesh_free)(VisIt_PointMesh *obj);
-void VISIT_P(VisIt_CSGMesh_free)(VisIt_CSGMesh *obj);
-void VISIT_P(VisIt_MeshData_free)(VisIt_MeshData *obj);
-void VISIT_P(VisIt_CurveData_free)(VisIt_CurveData *obj);
-void VISIT_P(VisIt_VariableData_free)(VisIt_VariableData *obj);
-void VISIT_P(VisIt_MixedVariableData_free)(VisIt_MixedVariableData *obj);
-void VISIT_P(VisIt_MaterialData_free)(VisIt_MaterialData *obj);
-void VISIT_P(VisIt_SpeciesData_free)(VisIt_SpeciesData *obj);
-void VISIT_P(VisIt_DomainList_free)(VisIt_DomainList *obj);
+int VisIt_CurvilinearMesh_free(VisIt_CurvilinearMesh *obj);
+int VisIt_RectilinearMesh_free(VisIt_RectilinearMesh *obj);
+int VisIt_UnstructuredMesh_free(VisIt_UnstructuredMesh *obj);
+int VisIt_PointMesh_free(VisIt_PointMesh *obj);
+int VisIt_CSGMesh_free(VisIt_CSGMesh *obj);
+int VisIt_MeshData_free(VisIt_MeshData *obj);
+int VisIt_CurveData_free(VisIt_CurveData *obj);
+int VisIt_VariableData_free(VisIt_VariableData *obj);
+int VisIt_MixedVariableData_free(VisIt_MixedVariableData *obj);
+int VisIt_MaterialData_free(VisIt_MaterialData *obj);
+int VisIt_SpeciesData_free(VisIt_SpeciesData *obj);
+int VisIt_DomainList_free(VisIt_DomainList *obj);
 
 /****************************************************************************/
 

@@ -38,6 +38,7 @@
 
 #ifndef VISIT_CONTROL_INTERFACE_RUNTIME_H
 #define VISIT_CONTROL_INTERFACE_RUNTIME_H
+#include <VisItSimV2Exports.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,18 +57,18 @@ extern "C" {
 //
 // ****************************************************************************
 
-void   *visit_get_engine();
-int     visit_get_descriptor(void*);
-int     visit_initialize(void*, int argc, char *argv[]);
-int     visit_connect_viewer(void*, int argc, char *argv[]);
-int     visit_process_input(void*);
-void    visit_time_step_changed(void*);
-void    visit_execute_command(void *, const char *);
-void    visit_disconnect();
-void    visit_set_slave_process_callback(void(*)());
-void    visit_set_command_callback(void*,void(*)(const char*,const char*,void*),void*);
-int     visit_save_window(void*, const char *, int, int, int);
-void    visit_debug_logs(int level, const char *msg);
+SIMV2_API void   *simv2_get_engine();
+SIMV2_API int     simv2_get_descriptor(void*);
+SIMV2_API int     simv2_initialize(void*, int argc, char *argv[]);
+SIMV2_API int     simv2_connect_viewer(void*, int argc, char *argv[]);
+SIMV2_API int     simv2_process_input(void*);
+SIMV2_API void    simv2_time_step_changed(void*);
+SIMV2_API void    simv2_execute_command(void *, const char *);
+SIMV2_API void    simv2_disconnect();
+SIMV2_API void    simv2_set_slave_process_callback(void(*)());
+SIMV2_API void    simv2_set_command_callback(void*,void(*)(const char*,const char*,void*),void*);
+SIMV2_API int     simv2_save_window(void*, const char *, int, int, int);
+SIMV2_API void    simv2_debug_logs(int level, const char *msg);
 
 #ifdef __cplusplus
 }

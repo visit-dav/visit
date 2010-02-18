@@ -118,9 +118,15 @@ static char *fcdtocp_data = NULL;
 
 char *visit_fstring_copy_string(char *src, int len)
 {
-    char *newstr = (char *)malloc(len+1);
+    char *cptr = NULL, *newstr = (char *)malloc(len+1);
     memcpy(newstr, src, len);
     newstr[len] = '\0';
+
+    /* Fortran can add spaces to the end of long strings so remove the spaces */
+    cptr = newstr + len - 1;
+    while(cptr >= newstr && *cptr == ' ')
+        *cptr-- = '\0';
+
     return newstr;
 }
 

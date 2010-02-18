@@ -94,7 +94,7 @@ ENDFUNCTION(ADD_SIMV1_SIMULATION)
 
 FUNCTION(ADD_FORTRAN_SIMV1_SIMULATION target)
     IF(VISIT_FORTRAN)
-        ADD_EXECUTABLE(sim_${target} ${ARGN})
+        ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexample.f)
         SET_SIMULATION_PROPERTIES(${target})
         TARGET_LINK_LIBRARIES(sim_${target} simf sim ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}
@@ -119,7 +119,7 @@ ENDFUNCTION(ADD_PARALLEL_SIMV1_SIMULATION)
 
 FUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION target)
     IF(VISIT_FORTRAN)
-        ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN})
+        ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN} simulationexample.f)
         SET_SIMULATION_PROPERTIES(${target})
         TARGET_LINK_LIBRARIES(sim_${target} simf sim ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}
@@ -145,7 +145,7 @@ ENDFUNCTION(ADD_SIMV2_SIMULATION)
 
 FUNCTION(ADD_FORTRAN_SIMV2_SIMULATION target)
     IF(VISIT_FORTRAN)
-        ADD_EXECUTABLE(sim_${target} ${ARGN})
+        ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexample.f)
         SET_SIMULATION_PROPERTIES(${target})
         TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}

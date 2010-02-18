@@ -88,6 +88,10 @@ using std::vector;
 #include <VisItControlInterfaceRuntime.h>
 #include <VisItDataInterfaceRuntime.h>
 
+#include <VisItDataInterface_V2P.h>
+#include <simv2_DomainBoundaries.h>
+#include <simv2_DomainNesting.h>
+
 #ifndef MDSERVER
 vtkDataSet *SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *);
 vtkDataSet *SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *);
@@ -241,7 +245,7 @@ void
 avtSimV2FileFormat::ActivateTimestep()
 {
 #ifndef MDSERVER
-    visit_invoke_ActivateTimestep();
+    simv2_invoke_ActivateTimestep();
 #endif
 }
 
@@ -306,7 +310,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 #else
     const char *mName = "avtSimV2FileFormat::PopulateDatabaseMetaData: ";
 
-    VisIt_SimulationMetaData *vsmd = visit_invoke_GetMetaData();
+    VisIt_SimulationMetaData *vsmd = simv2_invoke_GetMetaData();
     if(vsmd == NULL)
         return;
 
@@ -353,7 +357,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mesh->meshType = AVT_AMR_MESH;
             break;
           default:
-            VisIt_SimulationMetaData_free(vsmd);
+            simv2_SimulationMetaData_free(vsmd);
             EXCEPTION1(ImproperUseException,
                        "Invalid mesh type in VisIt_MeshMetaData.");
             break;
@@ -485,7 +489,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 arr->centering = AVT_ZONECENT;
                 break;
               default:
-                VisIt_SimulationMetaData_free(vsmd);
+                simv2_SimulationMetaData_free(vsmd);
                 EXCEPTION1(ImproperUseException,
                            "Invalid centering type in VisIt_VariableMetaData.");
             }
@@ -522,7 +526,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             t = avtSimulationCommandSpecification::CmdArgString;
             break;
           default:
-            VisIt_SimulationMetaData_free(vsmd);
+            simv2_SimulationMetaData_free(vsmd);
             EXCEPTION1(ImproperUseException,
                        "Invalid command argument type in "
                        "VisIt_SimulationControlCommand.");
@@ -659,12 +663,12 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if(mmd->numBlocks > 1)
             {
                 debug4 << mName << "Getting domain boundaries for mesh: " << mmd->name << endl;
-                visit_handle boundaries = visit_invoke_GetDomainBoundaries(mmd->name);
+                visit_handle boundaries = simv2_invoke_GetDomainBoundaries(mmd->name);
                 if(boundaries != VISIT_INVALID_HANDLE)
                 {
                     // Cache the domain boundary information
                     avtStructuredDomainBoundaries *sdb = (avtStructuredDomainBoundaries *)
-                        visit_DomainBoundaries_avt(boundaries);
+                        simv2_DomainBoundaries_avt(boundaries);
                     if(sdb != NULL)
                     {
                         sdb->CalculateBoundaries();
@@ -681,7 +685,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                            "simulation object."
                                << endl;
                     }
-                    visit_DomainBoundaries_free(boundaries);
+                    simv2_DomainBoundaries_free(boundaries);
                 }
                 else
                 {
@@ -709,11 +713,11 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if(mmd->meshType == VISIT_MESHTYPE_AMR)
             {
                 debug4 << mName << "Getting domain nesting for mesh: " << mmd->name << endl;
-                visit_handle nesting = visit_invoke_GetDomainNesting(mmd->name);
+                visit_handle nesting = simv2_invoke_GetDomainNesting(mmd->name);
                 if(nesting != VISIT_INVALID_HANDLE)
                 {
                     avtStructuredDomainNesting *sdn = (avtStructuredDomainNesting *)
-                        visit_DomainNesting_avt(nesting);
+                        simv2_DomainNesting_avt(nesting);
                     if(sdn != NULL)
                     {
                         void_ref_ptr vr = void_ref_ptr(sdn, avtStructuredDomainNesting::Destruct);
@@ -729,7 +733,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                            "simulation object."
                                << endl;
                     }
-                    visit_DomainNesting_free(nesting);
+                    simv2_DomainNesting_free(nesting);
                 }
                 else
                 {
@@ -742,7 +746,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     //md->Print(cout);
-    VisIt_SimulationMetaData_free(vsmd);
+    simv2_SimulationMetaData_free(vsmd);
 #endif
 }
 
@@ -779,7 +783,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
         return GetCurve(meshname);
     }
 
-    VisIt_MeshData *vmesh = visit_invoke_GetMesh(domain, meshname);
+    VisIt_MeshData *vmesh = simv2_invoke_GetMesh(domain, meshname);
 
     // If the mesh could not be created then throw an exception.
     if(vmesh == NULL)
@@ -815,12 +819,12 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
     }
     CATCH2(VisItException, e)
     {
-        VisIt_MeshData_free(vmesh);
+        simv2_MeshData_free(vmesh);
         RETHROW;
     }
     ENDTRY
 
-    VisIt_MeshData_free(vmesh);
+    simv2_MeshData_free(vmesh);
 
     return ds;
 #endif
@@ -919,7 +923,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
     return NULL;
 #else
 
-    VisIt_VariableData *sd = visit_invoke_GetVariable(domain,varname);
+    VisIt_VariableData *sd = simv2_invoke_GetVariable(domain,varname);
     if (sd == NULL || sd->nTuples<=0)
         return NULL;
 
@@ -945,11 +949,11 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
         CopyVariableData(array, sd->data.cArray, sd->nComponents, sd->nTuples);
     }
 
-    VisIt_VariableData_free(sd);
+    simv2_VariableData_free(sd);
 
     // Try and read mixed scalar data.
     VisIt_MixedVariableData *mixed_sd = 
-        visit_invoke_GetMixedVariable(domain,varname);
+        simv2_invoke_GetMixedVariable(domain,varname);
     if (mixed_sd != NULL)
     {
         if(mixed_sd->nTuples > 0 &&
@@ -984,7 +988,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
             delete [] mixvar;
         }
 
-        VisIt_MixedVariableData_free(mixed_sd);
+        simv2_MixedVariableData_free(mixed_sd);
     }
 
     return array;
@@ -1097,33 +1101,33 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
 #else
     const char *mName = "avtSimV2FileFormat::GetMaterial: ";
 
-    VisIt_MaterialData *md = visit_invoke_GetMaterial(domain,varname);
+    VisIt_MaterialData *md = simv2_invoke_GetMaterial(domain,varname);
     if (!md)
         return NULL;
 
     if (md->matlist.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_MaterialData_free(md);
+        simv2_MaterialData_free(md);
         EXCEPTION1(ImproperUseException, "matlist array must be integers");
     }
     if (md->mix_mat.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_MaterialData_free(md);
+        simv2_MaterialData_free(md);
         EXCEPTION1(ImproperUseException, "mix_mat array must be integers");
     }
     if (md->mix_zone.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_MaterialData_free(md);
+        simv2_MaterialData_free(md);
         EXCEPTION1(ImproperUseException, "mix_zone array must be integers");
     }
     if (md->mix_next.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_MaterialData_free(md);
+        simv2_MaterialData_free(md);
         EXCEPTION1(ImproperUseException, "mix_next array must be integers");
     }
     if (md->mix_vf.dataType != VISIT_DATATYPE_FLOAT)
     {
-        VisIt_MaterialData_free(md);
+        simv2_MaterialData_free(md);
         EXCEPTION1(ImproperUseException, "mix_vf array must be floats");
     }
 
@@ -1204,7 +1208,7 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
                               md->mix_vf.fArray);
     }
 
-    VisIt_MaterialData_free(md);
+    simv2_MaterialData_free(md);
 
     return mat;
 #endif
@@ -1244,7 +1248,7 @@ avtSimV2FileFormat::GetCurve(const char *name)
 #ifdef MDSERVER
     return NULL;
 #else
-    VisIt_CurveData *cd = visit_invoke_GetCurve(name);
+    VisIt_CurveData *cd = simv2_invoke_GetCurve(name);
     if (!cd)
         return NULL;
 
@@ -1269,7 +1273,7 @@ avtSimV2FileFormat::GetCurve(const char *name)
     }
     else
     {
-        VisIt_CurveData_free(cd);
+        simv2_CurveData_free(cd);
         rg->Delete();
         EXCEPTION1(ImproperUseException, "Curve coordinate arrays "
                    "must be float, double, or int in X.\n");
@@ -1298,13 +1302,13 @@ avtSimV2FileFormat::GetCurve(const char *name)
     }
     else
     {
-        VisIt_CurveData_free(cd);
+        simv2_CurveData_free(cd);
         rg->Delete();
         EXCEPTION1(ImproperUseException,
                    "Curve coordinate arrays must be float or double in Y.\n");
     }
 
-    VisIt_CurveData_free(cd);
+    simv2_CurveData_free(cd);
 
     return rg;
 #endif
@@ -1337,31 +1341,31 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 #ifdef MDSERVER
     return NULL;
 #else
-    VisIt_SpeciesData *spec = visit_invoke_GetSpecies(domain, varname);
+    VisIt_SpeciesData *spec = simv2_invoke_GetSpecies(domain, varname);
     if (!spec)
         return NULL;
 
     if (spec->mixedSpecies.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_SpeciesData_free(spec);
+        simv2_SpeciesData_free(spec);
         EXCEPTION1(ImproperUseException,
                    "Species mixedSpecies array must contain int data.\n");
     }
     if (spec->species.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_SpeciesData_free(spec);
+        simv2_SpeciesData_free(spec);
         EXCEPTION1(ImproperUseException,
                    "Species species array must contain int data.\n");
     }
     if (spec->speciesMF.dataType != VISIT_DATATYPE_FLOAT)
     {
-        VisIt_SpeciesData_free(spec);
+        simv2_SpeciesData_free(spec);
         EXCEPTION1(ImproperUseException,
                    "Species speciesMF array must contain float data.\n");
     }
     if (spec->materialSpecies.dataType != VISIT_DATATYPE_INT)
     {
-        VisIt_SpeciesData_free(spec);
+        simv2_SpeciesData_free(spec);
         EXCEPTION1(ImproperUseException,
                    "Species materialSpecies array must contain int data.\n");
     }
@@ -1407,7 +1411,7 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
                                  spec->speciesMF.fArray);
     }
 
-    VisIt_SpeciesData_free(spec);
+    simv2_SpeciesData_free(spec);
 
     return species;
 #endif
@@ -1435,7 +1439,7 @@ void
 avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
 {
 #ifndef MDSERVER
-    VisIt_DomainList *dl = visit_invoke_GetDomainList();
+    VisIt_DomainList *dl = simv2_invoke_GetDomainList();
     if (!dl)
         return;
 
@@ -1457,6 +1461,6 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
 
     ioInfo.SetNDomains(dl->nTotalDomains);
 
-    VisIt_DomainList_free(dl);
+    simv2_DomainList_free(dl);
 #endif
 }

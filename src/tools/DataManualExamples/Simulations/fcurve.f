@@ -43,8 +43,6 @@ c Programmer: Brad Whitlock
 c Date:       Fri Jan 12 14:12:55 PST 2007
 c
 c Modifications:
-c    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
-c    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
 c
 c-----------------------------------------------------------------
       program main
@@ -53,6 +51,7 @@ c-----------------------------------------------------------------
 ccc   local variables
       integer err
 
+      call simulationarguments()
       err = visitsetupenv()
       err = visitinitializesim("fcurve", 6,
      . "Demonstrates curve data access function", 40,

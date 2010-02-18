@@ -44,6 +44,7 @@
 #include <string.h>
 
 #include "patch.h"
+#include "SimulationExample.h"
 
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
@@ -465,7 +466,7 @@ void mainloop(void)
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
-            if(VisItAttemptToCompleteConnection())
+            if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
                 sim.runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
@@ -482,7 +483,7 @@ void mainloop(void)
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            if(!VisItProcessEngineCommand())
+            if(VisItProcessEngineCommand() == VISIT_ERROR)
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
@@ -526,6 +527,7 @@ int main(int argc, char **argv)
     VisItOpenTraceFile("amr_trace.txt");
 
     /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
     /* Write out .sim2 file that VisIt uses to connect. */
