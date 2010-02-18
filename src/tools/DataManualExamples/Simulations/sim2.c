@@ -55,8 +55,6 @@
  *   argv : The command line arguments.
  *
  * Modifications:
- *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
- *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 

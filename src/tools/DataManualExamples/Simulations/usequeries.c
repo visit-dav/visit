@@ -726,7 +726,11 @@ VisIt_DomainList *VisItGetDomainList(void)
     return dl;
 }
 
-VisIt_SimulationCallback visitCallbacks =
+VisIt_SimulationCallback 
+#if __GNUC__ >= 4
+__attribute__ ((visibility("default"))) 
+#endif
+visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,

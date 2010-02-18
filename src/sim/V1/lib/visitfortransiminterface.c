@@ -111,9 +111,15 @@ static char *fcdtocp_data = NULL;
 
 char *visit_fstring_copy_string(char *src, int len)
 {
-    char *newstr = (char *)malloc(len+1);
+    char *cptr = NULL, *newstr = (char *)malloc(len+1);
     memcpy(newstr, src, len);
     newstr[len] = '\0';
+
+    /* Fortran can add spaces to the end of long strings so remove the spaces */
+    cptr = newstr + len - 1;
+    while(cptr >= newstr && *cptr == ' ')
+        *cptr-- = '\0';
+
     return newstr;
 }
 
@@ -1075,7 +1081,11 @@ VisIt_DomainList *VisItGetDomainList()
  * The SimV1 database plugin looks for this structure in the executable in order
  * to have access to the simulation's functions to return data.
  */
-VisIt_SimulationCallback visitCallbacks =
+VisIt_SimulationCallback 
+#if __GNUC__ >= 4
+__attribute__ ((visibility("default"))) 
+#endif
+visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,

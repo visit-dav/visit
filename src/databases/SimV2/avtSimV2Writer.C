@@ -53,6 +53,8 @@
 
 #include <DebugStream.h>
 
+#include <VisItDataInterface_V2P.h>
+
 // ****************************************************************************
 // Method: avtSimV2Writer::avtSimV2Writer
 //
@@ -124,7 +126,7 @@ avtSimV2Writer::OpenFile(const std::string &objName, int nb)
         objectName = "mesh";
 
     debug1 << "avtSimV2Writer::OpenFile(\"" << objName.c_str() << "\")\n";
-    visit_invoke_WriteBegin(objName.c_str());
+    simv2_invoke_WriteBegin(objName.c_str());
 }
 
 // ****************************************************************************
@@ -245,7 +247,7 @@ avtSimV2Writer::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     // Free the mesh metadata.
-    VisIt_MeshMetaData_free(vmmd);
+    simv2_MeshMetaData_free(vmmd);
     free(vmmd);
 }
 
@@ -268,7 +270,7 @@ void
 avtSimV2Writer::CloseFile(void)
 {
     debug1 << "avtSimV2Writer::CloseFile()\n";
-    visit_invoke_WriteEnd(objectName.c_str());
+    simv2_invoke_WriteEnd(objectName.c_str());
 }
 
 // ****************************************************************************
@@ -363,14 +365,14 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
     mesh->cmesh = cmesh;
 
     // Call into the simulation to write the data back.
-    int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteMesh callback returned " << ret
                << " instead of VISIT_OKAY." << endl;
     }
 
-    VisIt_MeshData_free(mesh);
+    simv2_MeshData_free(mesh);
  
     // Write the data arrays into the simulation.
     WriteDataArrays(ds, chunk);   
@@ -455,14 +457,14 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
     mesh->rmesh = rmesh;
 
     // Call into the simulation to write the data back.
-    int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteRectilinearMesh callback returned " << ret
                << " instead of VISIT_OKAY." << endl;
     }
 
-    VisIt_MeshData_free(mesh);
+    simv2_MeshData_free(mesh);
 
     // Write the data arrays into the simulation.
     WriteDataArrays(ds, chunk);
@@ -573,14 +575,14 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         mesh->pmesh = pmesh;
 
         // Call into the simulation to write the data back.
-        int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WritePointMesh callback returned " << ret
                    << " instead of VISIT_OKAY." << endl;
         }
 
-        VisIt_MeshData_free(mesh);
+        simv2_MeshData_free(mesh);
 
         // Write the data arrays into the simulation.
         WriteDataArrays(ds, chunk);
@@ -673,14 +675,14 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
             mesh->umesh = umesh;
 
             // Call into the simulation to write the data back.
-            int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+            int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
             if(ret != VISIT_OKAY)
             {
                 debug1 << "WriteUnstructuredMesh callback returned " << ret
                        << " instead of VISIT_OKAY." << endl;
             }
 
-            VisIt_MeshData_free(mesh);
+            simv2_MeshData_free(mesh);
 
             // Write the data arrays into the simulation.
             if(cellCount == ds->GetNumberOfCells())
@@ -766,14 +768,14 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
         mesh->pmesh = pmesh;
 
         // Call into the simulation to write the data back.
-        int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WritePointMesh callback returned " << ret
                    << " instead of VISIT_OKAY." << endl;
         }
 
-        VisIt_MeshData_free(mesh);
+        simv2_MeshData_free(mesh);
 
         // Write the data arrays into the simulation.
         WriteDataArrays(ds, chunk);
@@ -892,7 +894,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
         mesh->umesh = umesh;
 
         // Call into the simulation to write the data back.
-        int ret = visit_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WriteUnstructuredMesh callback returned " << ret
@@ -904,7 +906,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
             WriteDataArrays(ds, chunk);
         } 
 
-        VisIt_MeshData_free(mesh);
+        simv2_MeshData_free(mesh);
     }
 }
 
@@ -958,7 +960,7 @@ avtSimV2Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectNa
     smd->centering = cent;
     smd->treatAsASCII = atts.GetTreatAsASCII(arr->GetName());
 
-    int ret = visit_invoke_WriteVariable(objectName.c_str(), arr->GetName(), chunk, t,
+    int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), chunk, t,
         arr->GetVoidPointer(0), arr->GetNumberOfTuples(),
         arr->GetNumberOfComponents(), smd);
     if(ret != VISIT_OKAY)
@@ -968,7 +970,7 @@ avtSimV2Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectNa
     }
 
     // Free the variable metadata.
-    VisIt_VariableMetaData_free(smd);
+    simv2_VariableMetaData_free(smd);
     free(smd);
 }
 
@@ -1083,7 +1085,7 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
     smd->centering = VISIT_VARCENTERING_ZONE;
     smd->treatAsASCII = atts.GetTreatAsASCII(arr->GetName());
 
-    int ret = visit_invoke_WriteVariable(objectName.c_str(), arr->GetName(), 
+    int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), 
          chunk, t, S, sum, arr->GetNumberOfComponents(), smd);
 
     if(ret != VISIT_OKAY)
@@ -1096,7 +1098,7 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
     free(S);
 
     // Free the variable metadata.
-    VisIt_VariableMetaData_free(smd);
+    simv2_VariableMetaData_free(smd);
     free(smd);
 }
 

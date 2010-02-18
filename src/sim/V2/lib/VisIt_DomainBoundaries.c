@@ -4,7 +4,7 @@
 int
 VisIt_DomainBoundaries_alloc(visit_handle *obj)
 {
-    VISIT_DYNAMIC_EXECUTE(DomainBoundaries_alloc,
+    VISIT_DYNAMIC_EXECUTE(simv2_DomainBoundaries_alloc,
                     int (*)(visit_handle*),
                     int (*cb)(visit_handle*),
                     (*cb)(obj))
@@ -13,7 +13,7 @@ VisIt_DomainBoundaries_alloc(visit_handle *obj)
 int
 VisIt_DomainBoundaries_free(visit_handle obj)
 {
-    VISIT_DYNAMIC_EXECUTE(DomainBoundaries_free,
+    VISIT_DYNAMIC_EXECUTE(simv2_DomainBoundaries_free,
                     int (*)(visit_handle), 
                     int (*cb)(visit_handle), 
                     (*cb)(obj));
@@ -22,7 +22,7 @@ VisIt_DomainBoundaries_free(visit_handle obj)
 int
 VisIt_DomainBoundaries_set_type(visit_handle obj, int type)
 {
-    VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_type,
+    VISIT_DYNAMIC_EXECUTE(simv2_DomainBoundaries_set_type,
                     int (*)(visit_handle,int), 
                     int (*cb)(visit_handle,int), 
                     (*cb)(obj, type));
@@ -31,7 +31,7 @@ VisIt_DomainBoundaries_set_type(visit_handle obj, int type)
 int
 VisIt_DomainBoundaries_set_numDomains(visit_handle obj, int numDomains)
 {
-    VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_numDomains,
+    VISIT_DYNAMIC_EXECUTE(simv2_DomainBoundaries_set_numDomains,
                     int (*)(visit_handle,int), 
                     int (*cb)(visit_handle,int), 
                     (*cb)(obj, numDomains));
@@ -40,7 +40,7 @@ VisIt_DomainBoundaries_set_numDomains(visit_handle obj, int numDomains)
 int
 VisIt_DomainBoundaries_set_amrIndices(visit_handle obj, int patch, int level, const int extents[6])
 {
-    VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_amrIndices,
+    VISIT_DYNAMIC_EXECUTE(simv2_DomainBoundaries_set_amrIndices,
                     int (*)(visit_handle,int,int,const int[6]), 
                     int (*cb)(visit_handle,int,int,const int[6]), 
                     (*cb)(obj, patch, level, extents));
@@ -49,7 +49,7 @@ VisIt_DomainBoundaries_set_amrIndices(visit_handle obj, int patch, int level, co
 int
 VisIt_DomainBoundaries_set_rectIndices(visit_handle obj, int dom, const int extents[6])
 {
-    VISIT_DYNAMIC_EXECUTE(DomainBoundaries_set_rectIndices,
+    VISIT_DYNAMIC_EXECUTE(simv2_DomainBoundaries_set_rectIndices,
                     int (*)(visit_handle,int,const int[6]), 
                     int (*cb)(visit_handle,int,const int[6]), 
                     (*cb)(obj, dom, extents));

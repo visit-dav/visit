@@ -1240,8 +1240,8 @@ static int LoadVisItLibrary(void)
 #define NO_DECORATE(A) A
 #define SET_DECORATE(A) void (*)(A,void*)
 #define QUOTED(A) #A
-#define CONTROL_DLSYM(F,T) SAFE_DLSYM(control,F,T,QUOTED(visit_##F),NO_DECORATE)
-#define DATA_DLSYM(F,T)    SAFE_DLSYM(data,set_##F,T,QUOTED(visit_set_##F),SET_DECORATE)
+#define CONTROL_DLSYM(F,T) SAFE_DLSYM(control,F,T,QUOTED(simv2_##F),NO_DECORATE)
+#define DATA_DLSYM(F,T)    SAFE_DLSYM(data,set_##F,T,QUOTED(simv2_set_##F),SET_DECORATE)
 
    /* Get the control functions fom the library. */
    CONTROL_DLSYM(get_engine,                 void *(*)(void));
@@ -1795,8 +1795,8 @@ int VisItAttemptToCompleteConnection(void)
         if (socket < 0)
         {
             LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, 
-                              "socket<0, return %d", FALSE);
-            return FALSE;
+                              "socket<0, return %d", VISIT_ERROR);
+            return VISIT_ERROR;
         }
     }
 
@@ -1804,32 +1804,32 @@ int VisItAttemptToCompleteConnection(void)
     if (!VerifySecurityKeys(socket))
     {
         LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, 
-                          "VerifySecurityKeys failed. return %d", FALSE);
-        return FALSE;
+                          "VerifySecurityKeys failed. return %d", VISIT_ERROR);
+        return VISIT_ERROR;
     }
 
     /* get the connection parameters */
     if (!GetConnectionParameters(socket))
     {
         LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, 
-                          "GetConnectionParameters failed. return %d", FALSE);
-        return FALSE;
+                          "GetConnectionParameters failed. return %d", VISIT_ERROR);
+        return VISIT_ERROR;
     }
 
     /* load the library */
     if (LoadVisItLibrary() == 0)
     {
         LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, 
-                          "LoadVisItLibrary failed. return %d", FALSE);
-        return FALSE;
+                          "LoadVisItLibrary failed. return %d", VISIT_ERROR);
+        return VISIT_ERROR;
     }
 
     /* connect to the viewer */
     if (CreateEngineAndConnectToViewer() == 0)
     {
         LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, 
-                          "CreateEngineAndConnectToViewer failed. return %d", FALSE);
-        return FALSE;
+                          "CreateEngineAndConnectToViewer failed. return %d", VISIT_ERROR);
+        return VISIT_ERROR;
     }
 
     /* get the socket for listening from the viewer */
@@ -1847,8 +1847,8 @@ int VisItAttemptToCompleteConnection(void)
     if(callbacks->control.set_command_callback != NULL)
         (*callbacks->control.set_command_callback)(engine, visit_handle_command_callback, NULL);
 
-    LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, "return %d", TRUE);
-    return TRUE;
+    LIBSIM_API_LEAVE1(VisItAttemptToCompleteConnection, "return %d", VISIT_OKAY);
+    return VISIT_OKAY;
 }
 
 /*******************************************************************************
@@ -1914,17 +1914,17 @@ void VisItSetCommandCallback(void (*scc)(const char*,const char*,void*),
 *******************************************************************************/
 int VisItProcessEngineCommand(void)
 {
-    int retval;
+    int retval = VISIT_ERROR;
     LIBSIM_API_ENTER(VisItProcessEngineCommand);
     if (!engine)
     {
         LIBSIM_MESSAGE("engine == NULL");
-        retval = FALSE;
     }
     else
     {
         LIBSIM_MESSAGE("Calling visit_processinput");
-        retval = (*callbacks->control.process_input)(engine);
+        retval = ((*callbacks->control.process_input)(engine) == 1) ?
+            VISIT_OKAY : VISIT_ERROR;
     }
     LIBSIM_API_LEAVE1(VisItProcessEngineCommand, "return %d", retval);
     return retval;

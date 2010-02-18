@@ -2,6 +2,8 @@
 #include <VisItDataInterfaceRuntimeP.h>
 #include <avtStructuredDomainNesting.h>
 
+#include <simv2_DomainNesting.h>
+
 typedef struct
 {
     VISIT_OBJECT_HEAD
@@ -33,7 +35,7 @@ GetObject(visit_handle h)
  * Public functions, available to C 
  ******************************************************************************/
 int
-visit_DomainNesting_alloc(visit_handle *h)
+simv2_DomainNesting_alloc(visit_handle *h)
 {
     *h = VISIT_INVALID_HANDLE;
     VisIt_DomainNesting *obj = VISIT_OBJECT_ALLOCATE(VisIt_DomainNesting);
@@ -46,7 +48,7 @@ visit_DomainNesting_alloc(visit_handle *h)
 }
 
 int
-visit_DomainNesting_free(visit_handle h)
+simv2_DomainNesting_free(visit_handle h)
 {
     VisIt_DomainNesting *obj = GetObject(h);
     if(obj != NULL)
@@ -60,7 +62,7 @@ visit_DomainNesting_free(visit_handle h)
 }
 
 int
-visit_DomainNesting_set_dimensions(visit_handle h, int nPatches, int nLevels, int nDimensions)
+simv2_DomainNesting_set_dimensions(visit_handle h, int nPatches, int nLevels, int nDimensions)
 {
     int retval = VISIT_ERROR;
     VisIt_DomainNesting *obj = GetObject(h);
@@ -79,7 +81,7 @@ visit_DomainNesting_set_dimensions(visit_handle h, int nPatches, int nLevels, in
 }
 
 int
-visit_DomainNesting_set_levelRefinement(visit_handle h, int level, int ratios[3])
+simv2_DomainNesting_set_levelRefinement(visit_handle h, int level, int ratios[3])
 {
     int retval = VISIT_ERROR;
     VisIt_DomainNesting *obj = GetObject(h);
@@ -96,7 +98,7 @@ visit_DomainNesting_set_levelRefinement(visit_handle h, int level, int ratios[3]
 }
 
 int
-visit_DomainNesting_set_nestingForPatch(visit_handle h, int patch, int level, 
+simv2_DomainNesting_set_nestingForPatch(visit_handle h, int patch, int level, 
     const int *childPatches, int nChildPatches, int extents[6])
 {
     int retval = VISIT_ERROR;
@@ -124,7 +126,7 @@ visit_DomainNesting_set_nestingForPatch(visit_handle h, int patch, int level,
 
 // C++ code that exists in the runtime that we can use in the SimV2 reader
 void *
-visit_DomainNesting_avt(visit_handle h)
+simv2_DomainNesting_avt(visit_handle h)
 {
     void *retval = NULL;
     VisIt_DomainNesting *obj = GetObject(h);

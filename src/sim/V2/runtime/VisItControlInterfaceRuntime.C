@@ -65,7 +65,7 @@ extern void DataCallbacksCleanup(void);
 //
 // ****************************************************************************
 
-void *visit_get_engine()
+void *simv2_get_engine()
 {
     // Make sure the timer is initialized. In visit this is normally
     // done in the main function but for the simulation it's done here.
@@ -76,14 +76,14 @@ void *visit_get_engine()
     return (void*)engine;
 }
 
-int visit_initialize(void *e, int argc, char *argv[])
+int simv2_initialize(void *e, int argc, char *argv[])
 {
     Engine *engine = (Engine*)(e);
     engine->Initialize(&argc, &argv, false);
     return 1;
 }
 
-int visit_connect_viewer(void *e, int argc, char *argv[])
+int simv2_connect_viewer(void *e, int argc, char *argv[])
 {
     Engine *engine = (Engine*)(e);
     bool success = engine->ConnectViewer(&argc, &argv);
@@ -99,7 +99,7 @@ int visit_connect_viewer(void *e, int argc, char *argv[])
     }
 }
 
-int visit_get_descriptor(void *e)
+int simv2_get_descriptor(void *e)
 {
     Engine *engine = (Engine*)(e);
     return engine->GetInputSocket();
@@ -107,7 +107,7 @@ int visit_get_descriptor(void *e)
 
 #include <DebugStream.h>
 
-int visit_process_input(void *e)
+int simv2_process_input(void *e)
 {
     Engine *engine = (Engine*)(e);
 
@@ -137,13 +137,13 @@ int visit_process_input(void *e)
     return 1;
 }
 
-void visit_time_step_changed(void *e)
+void simv2_time_step_changed(void *e)
 {
     Engine *engine = (Engine*)(e);
     engine->SimulationTimeStepChanged();
 }
 
-void visit_execute_command(void *e, const char *command)
+void simv2_execute_command(void *e, const char *command)
 {
     if(command != NULL)
     {
@@ -152,21 +152,21 @@ void visit_execute_command(void *e, const char *command)
     }
 }
 
-void visit_disconnect()
+void simv2_disconnect()
 {
     Engine::DisconnectSimulation();
 
     DataCallbacksCleanup();
 }
 
-void visit_set_slave_process_callback(void(*spic)())
+void simv2_set_slave_process_callback(void(*spic)())
 {
 #ifdef PARALLEL
     MPIXfer::SetSlaveProcessInstructionCallback(spic);
 #endif
 }
 
-void visit_set_command_callback(void *e,void(*sc)(const char*,const char*,void*),
+void simv2_set_command_callback(void *e,void(*sc)(const char*,const char*,void*),
     void *scdata)
 {
     Engine *engine = (Engine*)(e);
@@ -174,7 +174,7 @@ void visit_set_command_callback(void *e,void(*sc)(const char*,const char*,void*)
 }
 
 int
-visit_save_window(void *e, const char *filename, int w, int h, int format)
+simv2_save_window(void *e, const char *filename, int w, int h, int format)
 {
     Engine *engine = (Engine*)(e);
 
@@ -199,7 +199,7 @@ visit_save_window(void *e, const char *filename, int w, int h, int format)
 }
 
 void
-visit_debug_logs(int level, const char *msg)
+simv2_debug_logs(int level, const char *msg)
 {
     if(level == 1)
         debug1 << msg;
