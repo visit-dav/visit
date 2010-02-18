@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">ewok.ccs.ornl.gov</Field>
+    <Field name="hostNickname" type="string">ORNL Ewok</Field>
+    <Field name="directory" type="string">/sw/ewok/visit</Field>
+    <Field name="hostAliases" type="string">ewok*.ccs.ornl.gov</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">ewok</Field>
+        <Field name="numProcessors" type="int">2</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

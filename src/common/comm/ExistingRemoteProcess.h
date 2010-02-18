@@ -68,6 +68,9 @@
 //   Jeremy Meredith, Thu May 24 11:10:15 EDT 2007
 //   Added SSH tunneling argument to Open.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class COMM_API ExistingRemoteProcess : public RemoteProcess
@@ -76,7 +79,7 @@ public:
     ExistingRemoteProcess(const std::string &rProgram);
     virtual ~ExistingRemoteProcess();
     virtual bool Open(const std::string &rHost,
-                      HostProfile::ClientHostDetermination chd,
+                      MachineProfile::ClientHostDetermination chd,
                       const std::string &clientHostName,
                       bool manualSSHPort,
                       int sshPort, bool useTunneling,

@@ -54,7 +54,7 @@
 #include <GetMetaDataException.h>
 #include <GlobalAttributes.h>
 #include <HostProfileList.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <LostConnectionException.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
@@ -1389,6 +1389,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Hank Childs, Thu Nov  5 18:42:45 PST 2009
 //    Beef up error message when you cannot connect.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -1411,7 +1414,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         AddArguments(newServer, args);
 
         // Get the client machine name options
-        HostProfile::ClientHostDetermination chd;
+        MachineProfile::ClientHostDetermination chd;
         std::string clientHostName;
         GetClientMachineNameOptions(host, chd, clientHostName);
 

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">hecate.princeton.edu</Field>
+    <Field name="hostNickname" type="string">Princeton Hecate</Field>
+    <Field name="directory" type="string">/opt/visit</Field>
+    <Field name="hostAliases" type="string">hecate</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel</Field>
+        <Field name="numProcessors" type="int">4</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">4:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

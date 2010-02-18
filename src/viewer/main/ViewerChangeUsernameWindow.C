@@ -47,7 +47,7 @@
 #include <QLabel>
 #include <QTimer>
 
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <HostProfileList.h>
 
 #include <ViewerServerManager.h>
@@ -165,6 +165,10 @@ ViewerChangeUsernameWindow::getUsername()
 //   Brad Whitlock, Fri May 23 11:03:20 PDT 2008
 //   Use std::string, Qt 4.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//   Can just update one machine profile now.
+//
 // ****************************************************************************
 
 bool
@@ -209,23 +213,8 @@ ViewerChangeUsernameWindow::changeUsername(const std::string &host)
         if (new_username.size() == 0)
             return false;
        
-        // Let this convenience function do things like looking up the fully
-        // qualified host name.  It returns a const, which is a pain, but just
-        // work around that later.
-        std::vector<const HostProfile *> hp = 
-                                 profiles->FindAllMatchingProfileForHost(host);
-        
-        for (size_t i = 0 ; i < hp.size() ; i++)
-        {
-            for (int j = 0 ; j < profiles->GetNumProfiles() ; j++)
-            {
-                // hack to get around const ... we have the const ptr, find non-const
-                if (hp[i] == &(profiles->GetProfiles(j))) 
-                {
-                    profiles->GetProfiles(j).SetUserName(new_username);
-                }
-            }
-        }
+        MachineProfile *mp = profiles->GetMachineProfileForHost(host);
+        mp->SetUserName(new_username);
 
         profiles->SelectAll();
         profiles->Notify();

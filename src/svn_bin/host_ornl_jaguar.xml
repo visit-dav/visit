@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">jaguar.ccs.ornl.gov</Field>
+    <Field name="hostNickname" type="string">ORNL Jaguar</Field>
+    <Field name="directory" type="string">/lustre/scr144/sw/visit</Field>
+    <Field name="hostAliases" type="string">jaguar</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">jaguar</Field>
+        <Field name="numProcessors" type="int">4</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/aprun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

@@ -1,16 +1,12 @@
 <?xml version="1.0"?>
-  <Attribute name="HostProfileList" codefile="HostProfileList.code" purpose="This class contains a list of host profiles." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="profiles" type="attVector" subtype="HostProfile"></Field>
-    <Field name="activeProfile" type="int">-1</Field>
-    <Function name="SetFromNode"                   user="false"></Function>
-    <Function name="MarkHostProfiles"              user="true"></Function>
-    <Function name="MarkActiveProfile"             user="true"></Function>
-    <Function name="GetProfileForHost"             user="true"></Function>
-    <Function name="FindMatchingProfileForHost"    user="true"></Function>
-    <Function name="FindAllMatchingProfileForHost" user="true"></Function>
-    <Function name="GetNumProfilesForHost"         user="true"></Function>
-    <Function name="SetAsActiveProfile"            user="true"></Function>
-    <Function name="RemoveActiveProfile"           user="true"></Function>
-    <Function name="ChangeHostForActiveProfile"    user="true"></Function>
-    <Function name="ProcessOldVersions" user="true" member="true"></Function>
+  <Attribute name="HostProfileList" purpose="This class contains a list of host profiles." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfileList.code">
+    <Field name="machines" label="machines" type="attVector" subtype="MachineProfile">
+    </Field>
+    <Function name="GetActiveLaunchProfileForHost" user="true" member="true">
+    </Function>
+    <Function name="GetMachineProfileForHost" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      LaunchProfile.h
+    </Include>
   </Attribute>

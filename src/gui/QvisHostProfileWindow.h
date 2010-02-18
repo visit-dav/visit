@@ -44,6 +44,8 @@
 
 // Forward declrations
 class HostProfileList;
+class MachineProfile;
+class LaunchProfile;
 class QPushButton;
 class QLabel;
 class QLineEdit;
@@ -148,6 +150,10 @@ class QRadioButton;
 //    Hank Childs, Thu May  7 19:05:36 PDT 2009
 //    Added field for host nickname.
 //
+//    Jeremy Meredith, Thu Feb 18 15:54:11 EST 2010
+//    Overhauled window entirely.  Split HostProfile into
+//    MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -163,20 +169,29 @@ public:
     virtual void CreateWindowContents();
 private:
     void UpdateWindow(bool doAll);
-    void UpdateProfileList();
-    void UpdateActiveProfile();
+    void UpdateMachineProfile();
+    void UpdateLaunchProfile();
     void UpdateWindowSensitivity();
-    bool GetCurrentValues(int);
+    bool GetCurrentValues();
     void Apply(bool val = false);
     void ReplaceLocalHost();
 private slots:
-    void newProfile();
-    void deleteProfile();
     void apply();
 
-    void activateProfile(QListWidgetItem *item);
-    void pageTurned(int);
-    void processProfileNameText(const QString &name);
+    void currentHostChanged();
+    void currentLaunchChanged();
+
+    void addMachineProfile();
+    void delMachineProfile();
+    void copyMachineProfile();
+
+    void addLaunchProfile();
+    void delLaunchProfile();
+    void copyLaunchProfile();
+    void makeDefaultLaunchProfile();
+
+    void processProfileNameText(const QString &);
+    void processDirectoryText(const QString &);
     void processEngineArgumentsText(const QString &);
     void processPartitionNameText(const QString &);
     void processBankNameText(const QString &);
@@ -190,7 +205,6 @@ private slots:
     void timeoutChanged(int value);
     void launchMethodChanged(const QString &method);
     void numNodesChanged(int value);
-    void makeActiveProfile(bool);
     void toggleLaunch(bool);
     void toggleNumNodes(bool);
     void togglePartitionName(bool);
@@ -220,54 +234,60 @@ private slots:
     void togglePostCommand(bool);
     void toggleTunnelSSH(bool);
 private:
-    QWidget *CreateSelectedTab(QWidget *parent);
-    QWidget *CreateParallelTab(QWidget *parent);
-    QWidget *CreateAdvancedTab(QWidget *parent);
-    QWidget *CreateHardwareAccelerationTab(QWidget *parent);
-    QWidget *CreateNetworkingTab(QWidget *parent);
-    
-    QMap<QString, QListWidget*>   hostTabMap;
-    
-    QTabWidget   *hostTabs;
-    QListWidget  *emptyListBox;
+    // Main Window
+    QListWidget *hostList;
+    QPushButton *addHost;
+    QPushButton *delHost;
+    QPushButton *copyHost;
 
-    QTabWidget   *optionsTabs;
-    QPushButton  *newButton;
-    QPushButton  *deleteButton;
-    QWidget      *activeProfileGroup;
+    QTabWidget *machineTabs;
+    QWidget    *machineSettingsGroup;
+    QWidget    *launchProfilesGroup;
+    void CreateMachineSettingsGroup();
+    void CreateLaunchProfilesGroup();
+
+    // Launch Profiles
+    QLabel      *profileHeaderLabel;
+    QListWidget *profileList;
+    QPushButton *addProfile;
+    QPushButton *delProfile;
+    QPushButton *copyProfile;
+    QPushButton *makeDefaultProfile;
+
     QLabel       *profileNameLabel;
     QLineEdit    *profileName;
-    QCheckBox    *activeProfileCheckBox;
-    QLabel       *hostNameLabel;
-    QComboBox    *hostName;
-    QLabel       *hostAliasesLabel;
-    QLineEdit    *hostAliases;
-    QLabel       *hostNicknameLabel;
-    QLineEdit    *hostNickname;
-    QLabel       *userNameLabel;
-    QLineEdit    *userName;
-    QLabel       *numProcLabel;
-    QLabel       *timeoutLabel;
-    QSpinBox     *numProcessors;
-    QSpinBox     *timeout;
+    QCheckBox    *parallelCheckBox;
+
+    QTabWidget *profileTabs;
+    QWidget    *basicSettingsGroup;
+    QWidget    *launchSettingsGroup;
+    QWidget    *advancedSettingsGroup;
+    QWidget    *hwAccelSettingsGroup;
+    void CreateBasicSettingsGroup();
+    void CreateLaunchSettingsGroup();
+    void CreateAdvancedSettingsGroup();
+    void CreateHWAccelSettingsGroup();
+
+    // Launch Basic Settings
     QCheckBox    *launchCheckBox;
     QComboBox    *launchMethod;
-    QCheckBox    *numNodesCheckBox;
-    QSpinBox     *numNodes;
     QCheckBox    *partitionCheckBox;
     QLineEdit    *partitionName;
+    QLabel       *numProcLabel;
+    QSpinBox     *numProcessors;
+    QCheckBox    *numNodesCheckBox;
+    QSpinBox     *numNodes;
     QCheckBox    *bankCheckBox;
     QLineEdit    *bankName;
     QCheckBox    *timeLimitCheckBox;
     QLineEdit    *timeLimit;
     QCheckBox    *machinefileCheckBox;
     QLineEdit    *machinefile;
+
+    // Launch Advanced Settings
+    QCheckBox    *useVisItScriptForEnvCheckBox;
     QLabel       *loadBalancingLabel;
     QComboBox    *loadBalancing;
-    QLabel       *engineArgumentsLabel;
-    QLineEdit    *engineArguments;
-    QCheckBox    *parallelCheckBox;
-    QWidget      *parGroup;
     QCheckBox    *launchArgsCheckBox;
     QLineEdit    *launchArgs;
     QCheckBox    *sublaunchArgsCheckBox;
@@ -276,9 +296,28 @@ private:
     QLineEdit    *sublaunchPreCmd;
     QCheckBox    *sublaunchPostCmdCheckBox;
     QLineEdit    *sublaunchPostCmd;
-    QWidget      *advancedGroup;
+    QLabel       *timeoutLabel;
+    QSpinBox     *timeout;
+
+    // Launch HW Accel Settings
+    QLabel       *hwdisclaimer;
+    QCheckBox    *canDoHW;
+    QLineEdit    *preCommand;
+    QCheckBox    *preCommandCheckBox;
+    QLineEdit    *postCommand;
+    QCheckBox    *postCommandCheckBox;
+
+    // Machine Settings
+    QLabel       *hostNameLabel;
+    QLineEdit    *hostName;
+    QLabel       *hostAliasesLabel;
+    QLineEdit    *hostAliases;
+    QLabel       *hostNicknameLabel;
+    QLineEdit    *hostNickname;
+    QLabel       *userNameLabel;
+    QLineEdit    *userName;
     QCheckBox    *shareMDServerCheckBox;
-    QCheckBox    *useVisItScriptForEnvCheckBox;
+    QCheckBox    *tunnelSSH;
     QButtonGroup *clientHostNameMethod;
     QRadioButton *chnMachineName;
     QRadioButton *chnParseFromSSHClient;
@@ -287,15 +326,15 @@ private:
     QLabel       *clientHostNameMethodLabel;
     QCheckBox    *sshPortCheckBox;
     QLineEdit    *sshPort;
-    QWidget      *hwGroup;
-    QCheckBox    *canDoHW;
-    QLineEdit    *preCommand;
-    QCheckBox    *preCommandCheckBox;
-    QLineEdit    *postCommand;
-    QCheckBox    *postCommandCheckBox;
-    QCheckBox    *tunnelSSH;
-    QWidget      *networkingGroup;
+    QLabel       *engineArgumentsLabel;
+    QLineEdit    *engineArguments;
+    QLabel       *directoryLabel;
+    QLineEdit    *directory;
+
+    // other stuff
     int          profileCounter;
+    MachineProfile *currentMachine;
+    LaunchProfile  *currentLaunch;
 };
 
 #endif

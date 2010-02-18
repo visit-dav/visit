@@ -40,7 +40,9 @@
 #define HOSTPROFILELIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
-class HostProfile;
+
+class MachineProfile;
+#include <LaunchProfile.h>
 
 // ****************************************************************************
 // Class: HostProfileList
@@ -60,13 +62,23 @@ class HostProfile;
 class STATE_API HostProfileList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     HostProfileList();
     HostProfileList(const HostProfileList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    HostProfileList(private_tmfs_t tmfs);
+    HostProfileList(const HostProfileList &obj, private_tmfs_t tmfs);
+public:
     virtual ~HostProfileList();
 
     virtual HostProfileList& operator = (const HostProfileList &obj);
     virtual bool operator == (const HostProfileList &obj) const;
     virtual bool operator != (const HostProfileList &obj) const;
+private:
+    void Init();
+    void Copy(const HostProfileList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -75,15 +87,13 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectProfiles();
+    void SelectMachines();
 
     // Property setting methods
-    void SetActiveProfile(int activeProfile_);
 
     // Property getting methods
-    const AttributeGroupVector &GetProfiles() const;
-          AttributeGroupVector &GetProfiles();
-    int GetActiveProfile() const;
+    const AttributeGroupVector &GetMachines() const;
+          AttributeGroupVector &GetMachines();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -91,15 +101,15 @@ public:
 
 
     // Attributegroup convenience methods
-    void AddProfiles(const HostProfile &);
-    void ClearProfiles();
-    void RemoveProfiles(int i);
-    int  GetNumProfiles() const;
-    HostProfile &GetProfiles(int i);
-    const HostProfile &GetProfiles(int i) const;
+    void AddMachines(const MachineProfile &);
+    void ClearMachines();
+    void RemoveMachines(int i);
+    int  GetNumMachines() const;
+    MachineProfile &GetMachines(int i);
+    const MachineProfile &GetMachines(int i) const;
 
-    HostProfile &operator [] (int i);
-    const HostProfile &operator [] (int i) const;
+    MachineProfile &operator [] (int i);
+    const MachineProfile &operator [] (int i) const;
 
 
     // Keyframing methods
@@ -109,31 +119,24 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void MarkHostProfiles();
-    void MarkActiveProfile();
-    const HostProfile *GetProfileForHost(const std::string &hostName) const;
-    const HostProfile *FindMatchingProfileForHost(const std::string &hostName) const;
-    std::vector<const HostProfile*> FindAllMatchingProfileForHost(const std::string &hostName) const;
-    int GetNumProfilesForHost(const std::string &hostName) const;
-    void SetAsActiveProfile(int index);
-    void RemoveActiveProfile();
-    void ChangeHostForActiveProfile(const std::string &newHost);
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+    LaunchProfile *GetActiveLaunchProfileForHost(const std::string &hostName) const;
+    MachineProfile *GetMachineProfileForHost(const std::string &hostName) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_profiles = 0,
-        ID_activeProfile
+        ID_machines = 0,
+        ID__LAST
     };
 
 protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
-    AttributeGroupVector profiles;
-    int                  activeProfile;
+    AttributeGroupVector machines;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define HOSTPROFILELIST_TMFS "a*"
 
 #endif

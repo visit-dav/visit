@@ -44,7 +44,7 @@
 #include <ViewerServerManager.h>
 #include <Connection.h>
 #include <HostProfileList.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <LauncherProxy.h>
 #include <RemoteProxyBase.h>
 #include <LostConnectionException.h>
@@ -281,6 +281,9 @@ ViewerServerManager::RealHostName(const char *hostName) const
 //   Brad Whitlock, Thu Aug 5 10:28:33 PDT 2004
 //   I made it call RemoteProxyBase::AddProfileArguments.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -291,8 +294,8 @@ ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
     // Check for a host profile for the hostName. If one exists, add
     // any arguments to the command line for the engine proxy.
     //
-    const HostProfile *profile =
-         clientAtts->FindMatchingProfileForHost(host.c_str());
+    const MachineProfile *profile =
+         clientAtts->GetMachineProfileForHost(host);
     if(profile != 0)
         component->AddProfileArguments(*profile, false);
 }
@@ -313,20 +316,22 @@ ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
 // Creation:   October  9, 2003
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
 //   
 // ****************************************************************************
 
 void
 ViewerServerManager::GetClientMachineNameOptions(const std::string &host,
-                                     HostProfile::ClientHostDetermination &chd,
-                                     std::string &clientHostName)
+                                 MachineProfile::ClientHostDetermination &chd,
+                                 std::string &clientHostName)
 {
     //
     // Check for a host profile for the hostName. If one exists, 
     // return the client host name options.
     //
-    const HostProfile *profile =
-         clientAtts->FindMatchingProfileForHost(host.c_str());
+    const MachineProfile *profile =
+         clientAtts->GetMachineProfileForHost(host);
     if(profile != 0)
     {
         chd = profile->GetClientHostDetermination();
@@ -334,7 +339,7 @@ ViewerServerManager::GetClientMachineNameOptions(const std::string &host,
     }
     else
     {
-        chd = HostProfile::MachineName;
+        chd = MachineProfile::MachineName;
         clientHostName = "";
     }
 }
@@ -355,6 +360,8 @@ ViewerServerManager::GetClientMachineNameOptions(const std::string &host,
 // Creation:   October  9, 2003
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
 //   
 // ****************************************************************************
 
@@ -367,8 +374,8 @@ ViewerServerManager::GetSSHPortOptions(const std::string &host,
     // Check for a host profile for the hostName. If one exists, 
     // return the ssh port options.
     //
-    const HostProfile *profile =
-         clientAtts->FindMatchingProfileForHost(host.c_str());
+    const MachineProfile *profile =
+         clientAtts->GetMachineProfileForHost(host);
     if(profile != 0)
     {
         manualSSHPort = profile->GetSshPortSpecified();
@@ -402,6 +409,9 @@ ViewerServerManager::GetSSHPortOptions(const std::string &host,
 //    Jeremy Meredith, Wed Dec  3 16:48:35 EST 2008
 //    Allowed commandline override forcing-on of SSH tunneling.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -422,8 +432,8 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
     }
     else
     {
-        const HostProfile *profile =
-            clientAtts->FindMatchingProfileForHost(host.c_str());
+        const MachineProfile *profile =
+            clientAtts->GetMachineProfileForHost(host);
         if(profile != 0)
         {
             tunnelSSH = profile->GetTunnelSSH();
@@ -451,6 +461,8 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
 //  Creation:   June 17, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
 //   
 // ****************************************************************************
 
@@ -460,7 +472,8 @@ ViewerServerManager::ShouldShareBatchJob(const std::string &host)
     //
     // Check for a host profile for the hostName. If one exists, check it.
     //
-    const HostProfile *profile = clientAtts->FindMatchingProfileForHost(host);
+    const MachineProfile *profile =
+         clientAtts->GetMachineProfileForHost(host);
     if (profile != 0)
     {
         return profile->GetShareOneBatchJob();
@@ -694,6 +707,9 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
 //   Brad Whitlock, Wed Nov 21 14:39:37 PST 2007
 //   Added support for reading console output from VCL's children.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -702,13 +718,13 @@ ViewerServerManager::StartLauncher(const std::string &host,
 {
     if(launchers.find(host) == launchers.end())
     {
-        HostProfile profile;
-        const HostProfile *hptr = clientAtts->FindMatchingProfileForHost(host);
+        MachineProfile profile;
+        const MachineProfile *mp = clientAtts->GetMachineProfileForHost(host);
         bool shouldShareBatchJob = false;
-        if(hptr!= 0)
+        if (mp != 0)
         {
-            shouldShareBatchJob = hptr->GetShareOneBatchJob();
-            profile = *hptr;
+            shouldShareBatchJob = mp->GetShareOneBatchJob();
+            profile = *mp;
         }
 
         if (shouldShareBatchJob)
@@ -747,7 +763,7 @@ ViewerServerManager::StartLauncher(const std::string &host,
             }
 
             // Get the client machine name options
-            HostProfile::ClientHostDetermination chd;
+            MachineProfile::ClientHostDetermination chd;
             std::string clientHostName;
             GetClientMachineNameOptions(host, chd, clientHostName);
 

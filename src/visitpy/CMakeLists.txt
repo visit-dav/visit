@@ -109,10 +109,11 @@ visitpy/PyGaussianControlPoint.C
 visitpy/PyGaussianControlPointList.C 
 visitpy/PyGlobalAttributes.C 
 visitpy/PyGlobalLineoutAttributes.C 
-visitpy/PyHostProfile.C 
 visitpy/PyInteractorAttributes.C 
 visitpy/PyKeyframeAttributes.C 
+visitpy/PyLaunchProfile.C 
 visitpy/PyLightAttributes.C 
+visitpy/PyMachineProfile.C 
 visitpy/PyMaterialAttributes.C 
 visitpy/PyMeshManagementAttributes.C 
 visitpy/PyNameschemeAttributes.C 

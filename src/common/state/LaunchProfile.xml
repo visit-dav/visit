@@ -1,17 +1,6 @@
 <?xml version="1.0"?>
-  <Attribute name="HostProfile" purpose="This class contains information needed to launch a remote,VisIt engine." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfile.code">
-    <Enum name="ClientHostDetermination">
-      MachineName
-      ManuallySpecified
-      ParsedFromSSHCLIENT
-    </Enum>
+  <Attribute name="LaunchProfile" purpose="This class contains information needed to launch a VisIt engine." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="profileName" label="profileName" type="string">
-      notset
-    </Field>
-    <Field name="host" label="host" type="string">
-      localhost
-    </Field>
-    <Field name="userName" label="userName" type="string" init="true">
       notset
     </Field>
     <Field name="timeout" label="timeout" type="int">
@@ -80,24 +69,6 @@
     </Field>
     <Field name="sublaunchPostCmd" label="sublaunchPostCmd" type="string">
     </Field>
-    <Field name="hostAliases" label="hostAliases" type="string">
-    </Field>
-    <Field name="hostNickname" label="hostNickname" type="string">
-    </Field>
-    <Field name="shareOneBatchJob" label="shareOneBatchJob" type="bool">
-      false
-    </Field>
-    <Field name="sshPortSpecified" label="SSH port specified" type="bool">
-      false
-    </Field>
-    <Field name="sshPort" label="SSH port" type="int">
-      22
-    </Field>
-    <Field name="clientHostDetermination" label="Client host determination" type="enum" subtype="ClientHostDetermination">
-      MachineName
-    </Field>
-    <Field name="manualClientHostName" label="Client host name" type="string">
-    </Field>
     <Field name="machinefileSet" label="machinefileSet" type="bool">
       false
     </Field>
@@ -119,24 +90,4 @@
     </Field>
     <Field name="hwAccelPostCommand" label="Post-command for hardware acceleration" type="string" enabler="havePostCommand:true">
     </Field>
-    <Field name="tunnelSSH" label="Tunnel data connections through SSH" type="bool">
-      false
-    </Field>
-    <Function name="defaultUserName" user="true" member="true">
-    </Function>
-    <Function name="SplitHostPattern" user="true" member="true">
-    </Function>
-    <Function name="ProfileMatchesHost" user="true" member="true">
-    </Function>
-    <Function name="GetShortHostname" user="true" member="true">
-    </Function>
-    <Function name="GetShortHostname_static" user="true" member="true">
-    </Function>
-    <Function name="GetDefaultUserName_static" user="true" member="true">
-    </Function>
-    <Function name="SetDefaultUserName_static" user="true" member="true">
-    </Function>
-    <Include file="source" quoted="false">
-      Utility.h
-    </Include>
   </Attribute>

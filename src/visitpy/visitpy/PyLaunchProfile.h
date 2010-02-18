@@ -36,26 +36,30 @@
 *
 *****************************************************************************/
 
-#ifndef PY_HOSTPROFILE_H
-#define PY_HOSTPROFILE_H
+#ifndef PY_LAUNCHPROFILE_H
+#define PY_LAUNCHPROFILE_H
 #include <Python.h>
-#include <HostProfile.h>
+#include <LaunchProfile.h>
 #include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyHostProfile_StartUp(HostProfile *subj, void *data);
-void VISITPY_API           PyHostProfile_CloseDown();
-VISITPY_API PyMethodDef *   PyHostProfile_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyHostProfile_Check(PyObject *obj);
-VISITPY_API HostProfile *  PyHostProfile_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyHostProfile_New();
-VISITPY_API PyObject *      PyHostProfile_Wrap(const HostProfile *attr);
-void VISITPY_API           PyHostProfile_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyHostProfile_SetDefaults(const HostProfile *atts);
-std::string VISITPY_API    PyHostProfile_GetLogString();
-std::string VISITPY_API    PyHostProfile_ToString(const HostProfile *, const char *);
+#define LAUNCHPROFILE_NMETH 70
+void VISITPY_API           PyLaunchProfile_StartUp(LaunchProfile *subj, void *data);
+void VISITPY_API           PyLaunchProfile_CloseDown();
+VISITPY_API PyMethodDef *  PyLaunchProfile_GetMethodTable(int *nMethods);
+bool VISITPY_API           PyLaunchProfile_Check(PyObject *obj);
+VISITPY_API LaunchProfile *  PyLaunchProfile_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *     PyLaunchProfile_New();
+VISITPY_API PyObject *     PyLaunchProfile_Wrap(const LaunchProfile *attr);
+void VISITPY_API           PyLaunchProfile_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyLaunchProfile_SetDefaults(const LaunchProfile *atts);
+std::string VISITPY_API    PyLaunchProfile_GetLogString();
+std::string VISITPY_API    PyLaunchProfile_ToString(const LaunchProfile *, const char *);
+VISITPY_API PyObject *     PyLaunchProfile_getattr(PyObject *self, char *name);
+int VISITPY_API            PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH];
 
 #endif
 

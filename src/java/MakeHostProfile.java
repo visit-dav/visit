@@ -37,7 +37,8 @@
 // ****************************************************************************
 
 import llnl.visit.ViewerProxy;
-import llnl.visit.HostProfile;
+import llnl.visit.MachineProfile;
+import llnl.visit.LaunchProfile;
 import llnl.visit.HostProfileList;
 import java.util.Vector;
 
@@ -54,6 +55,9 @@ import java.util.Vector;
 // Creation:   Mon Aug 10 13:40:40 PDT 2009
 //
 // Modifications:
+//   Jeremy Meredith, Thu Feb 18 17:14:38 EST 2010
+//   Split host profile into machine profile and launch profile.
+//   Also, added directory argument.
 //
 // ****************************************************************************
 
@@ -72,23 +76,18 @@ public class MakeHostProfile extends RunViewer
         String remotevisitPath = new String("/usr/gapps/visit");
 
         // Create a new host profile object and set it up for serial
-        HostProfile profile = new HostProfile();
+        MachineProfile profile = new MachineProfile();
         profile.SetProfileName("example");
         profile.SetHost(host);
         profile.SetUserName(user);
         profile.SetClientHostDetermination(HostProfile.CLIENTHOSTDETERMINATION_PARSEDFROMSSHCLIENT);
         profile.SetTunnelSSH(true);
-        Vector profileArgs = new Vector();
-        profileArgs.add(new String("-dir"));
-        profileArgs.add(remotevisitPath);
-        profile.SetArguments(profileArgs);
-        profile.SetActive(true);
+        profile.SetDirectory(remotevisitPath);
 
         // Replace the list of host profiles and tell the viewer about the changes. We could
         // have added to the list instead of clearing the list.
         viewer.GetViewerState().GetHostProfileList().ClearProfiles();
         viewer.GetViewerState().GetHostProfileList().AddProfiles(profile);
-        viewer.GetViewerState().GetHostProfileList().SetActiveProfile(0);
         viewer.GetViewerState().GetHostProfileList().Notify();
         System.out.println("HostProfileList = \n" + 
             viewer.GetViewerState().GetHostProfileList().toString(""));

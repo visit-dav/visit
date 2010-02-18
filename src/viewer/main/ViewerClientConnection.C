@@ -214,6 +214,9 @@ ViewerClientConnection::~ViewerClientConnection()
 //   Brad Whitlock, Fri May 23 11:08:53 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
@@ -267,7 +270,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
 
     // Try opening the client.
     debug1 << mName << "Opening client connection." << endl;
-    remoteProcess->Open("localhost", HostProfile::MachineName, "",
+    remoteProcess->Open("localhost", MachineProfile::MachineName, "",
                         false, 0, false, 1, 1);
 
     debug1 << mName << "Successfully opened client connection." << endl;

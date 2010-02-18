@@ -149,13 +149,14 @@
 #include <PyGaussianControlPointList.h>
 #include <PyGlobalAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
-#include <PyHostProfile.h>
 #include <PyImageObject.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
 #include <PyLegendAttributesObject.h>
+#include <PyLaunchProfile.h>
 #include <PyLineObject.h>
 #include <PyLightAttributes.h>
+#include <PyMachineProfile.h>
 #include <PyMaterialAttributes.h>
 #include <PyMeshManagementAttributes.h>
 #include <PyPickAttributes.h>
@@ -14630,6 +14631,9 @@ AddDefaultMethods()
 //   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
 //   Added ViewAxisArrayAttributes.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 static void
@@ -14649,8 +14653,9 @@ AddExtensions()
     ADD_EXTENSION(PyGaussianControlPoint_GetMethodTable);
     ADD_EXTENSION(PyGaussianControlPointList_GetMethodTable);
     ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
-    ADD_EXTENSION(PyHostProfile_GetMethodTable);
+    ADD_EXTENSION(PyLaunchProfile_GetMethodTable);
     ADD_EXTENSION(PyMeshManagementAttributes_GetMethodTable);
+    ADD_EXTENSION(PyMachineProfile_GetMethodTable);
     ADD_EXTENSION(PyMaterialAttributes_GetMethodTable);
     ADD_EXTENSION(PyPrinterAttributes_GetMethodTable);
     ADD_EXTENSION(PyProcessAttributes_GetMethodTable);
@@ -14727,6 +14732,9 @@ AddExtensions()
 //   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
 //   Added ViewAxisArrayAttributes.
 //
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 static void
@@ -14737,7 +14745,8 @@ InitializeExtensions()
     PyConstructDDFAttributes_StartUp(GetViewerState()->GetConstructDDFAttributes(), 0);
     PyExportDBAttributes_StartUp(GetViewerState()->GetExportDBAttributes(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
-    PyHostProfile_StartUp(0, 0);
+    PyLaunchProfile_StartUp(0, 0);
+    PyMachineProfile_StartUp(0, 0);
     PyMaterialAttributes_StartUp(GetViewerState()->GetMaterialAttributes(), 0);
     PyMeshManagementAttributes_StartUp(GetViewerState()->GetMeshManagementAttributes(), 0);
     PyPickAttributes_StartUp(GetViewerState()->GetPickAttributes(), 0);

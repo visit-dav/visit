@@ -4,7 +4,7 @@ Initialization: userName
 Function: defaultUserName
 Declaration: static std::string defaultUserName;
 Definition:
-std::string HostProfile::defaultUserName("notset");
+std::string MachineProfile::defaultUserName("notset");
 
 Function: SplitHostPattern
 Declaration: static std::vector<std::string> SplitHostPattern(const std::string &host);
@@ -20,7 +20,7 @@ Definition:
 //
 // ****************************************************************************
 std::vector<std::string>
-HostProfile::SplitHostPattern(const std::string &host)
+MachineProfile::SplitHostPattern(const std::string &host)
 {
     std::vector<std::string> vec;
     std::string              name = "";
@@ -71,7 +71,7 @@ Definition:
 //
 // ****************************************************************************
 bool
-HostProfile::ProfileMatchesHost(const std::string &h) const
+MachineProfile::ProfileMatchesHost(const std::string &h) const
 {
     std::vector<std::string> patterns = SplitHostPattern(host);
     bool match = false;
@@ -107,7 +107,7 @@ Definition:
 //
 // ****************************************************************************
 std::string
-HostProfile::GetShortHostname() const
+MachineProfile::GetShortHostname() const
 {
     return GetShortHostname(host);
 }
@@ -133,7 +133,7 @@ Definition:
 //
 // ****************************************************************************
 std::string
-HostProfile::GetShortHostname(const std::string &host)
+MachineProfile::GetShortHostname(const std::string &host)
 {
     std::vector<std::string> patterns = SplitHostPattern(host);
     std::string              prefix = "";
@@ -205,7 +205,7 @@ Definition:
 // ****************************************************************************
 
 const std::string &
-HostProfile::GetDefaultUserName()
+MachineProfile::GetDefaultUserName()
 {
     return defaultUserName;
 }
@@ -225,8 +225,19 @@ Definition:
 // ****************************************************************************
 
 void
-HostProfile::SetDefaultUserName(const std::string &n)
+MachineProfile::SetDefaultUserName(const std::string &n)
 {
     defaultUserName = n;
 }
 
+Function: GetActiveLaunchProfile
+Declaration: LaunchProfile *GetActiveLaunchProfile() const;
+Definition:
+LaunchProfile *
+MachineProfile::GetActiveLaunchProfile() const
+{
+    if (activeProfile<0 || activeProfile>=launchProfiles.size())
+        return NULL;
+
+    return (LaunchProfile*)launchProfiles[activeProfile];
+}

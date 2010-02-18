@@ -55,7 +55,6 @@
 #include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
-#include <HostProfile.h>
 #include <HostProfileList.h>
 #include <VisItInit.h>
 #include <InteractorAttributes.h>

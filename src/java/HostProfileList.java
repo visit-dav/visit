@@ -57,22 +57,20 @@ import java.util.Vector;
 
 public class HostProfileList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 2;
+    private static int numAdditionalAttributes = 1;
 
     public HostProfileList()
     {
         super(numAdditionalAttributes);
 
-        profiles = new Vector();
-        activeProfile = -1;
+        machines = new Vector();
     }
 
     public HostProfileList(int nMoreFields)
     {
         super(numAdditionalAttributes + nMoreFields);
 
-        profiles = new Vector();
-        activeProfile = -1;
+        machines = new Vector();
     }
 
     public HostProfileList(HostProfileList obj)
@@ -81,15 +79,14 @@ public class HostProfileList extends AttributeSubject
 
         int i;
 
-        // *** Copy the profiles field ***
-        profiles = new Vector(obj.profiles.size());
-        for(i = 0; i < obj.profiles.size(); ++i)
+        // *** Copy the machines field ***
+        machines = new Vector(obj.machines.size());
+        for(i = 0; i < obj.machines.size(); ++i)
         {
-            HostProfile newObj = (HostProfile)profiles.elementAt(i);
-            profiles.addElement(new HostProfile(newObj));
+            MachineProfile newObj = (MachineProfile)machines.elementAt(i);
+            machines.addElement(new MachineProfile(newObj));
         }
 
-        activeProfile = obj.activeProfile;
 
         SelectAll();
     }
@@ -108,123 +105,103 @@ public class HostProfileList extends AttributeSubject
     {
         int i;
 
-        // Compare the elements in the profiles vector.
-        boolean profiles_equal = (obj.profiles.size() == profiles.size());
-        for(i = 0; (i < profiles.size()) && profiles_equal; ++i)
+        // Compare the elements in the machines vector.
+        boolean machines_equal = (obj.machines.size() == machines.size());
+        for(i = 0; (i < machines.size()) && machines_equal; ++i)
         {
-            // Make references to HostProfile from Object.
-            HostProfile profiles1 = (HostProfile)profiles.elementAt(i);
-            HostProfile profiles2 = (HostProfile)obj.profiles.elementAt(i);
-            profiles_equal = profiles1.equals(profiles2);
+            // Make references to MachineProfile from Object.
+            MachineProfile machines1 = (MachineProfile)machines.elementAt(i);
+            MachineProfile machines2 = (MachineProfile)obj.machines.elementAt(i);
+            machines_equal = machines1.equals(machines2);
         }
         // Create the return value
-        return (profiles_equal &&
-                (activeProfile == obj.activeProfile));
+        return (machines_equal);
     }
 
     // Property setting methods
-    public void SetActiveProfile(int activeProfile_)
-    {
-        activeProfile = activeProfile_;
-        Select(1);
-    }
-
     // Property getting methods
-    public Vector GetProfiles() { return profiles; }
-    public int    GetActiveProfile() { return activeProfile; }
+    public Vector GetMachines() { return machines; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
         {
-            buf.WriteInt(profiles.size());
-            for(int i = 0; i < profiles.size(); ++i)
+            buf.WriteInt(machines.size());
+            for(int i = 0; i < machines.size(); ++i)
             {
-                HostProfile tmp = (HostProfile)profiles.elementAt(i);
+                MachineProfile tmp = (MachineProfile)machines.elementAt(i);
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(1, buf))
-            buf.WriteInt(activeProfile);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        switch(index)
         {
-        case 0:
+            int len = buf.ReadInt();
+            machines.clear();
+            for(int j = 0; j < len; ++j)
             {
-                int len = buf.ReadInt();
-                profiles.clear();
-                for(int j = 0; j < len; ++j)
-                {
-                    HostProfile tmp = new HostProfile();
-                    tmp.Read(buf);
-                    profiles.addElement(tmp);
-                }
+                MachineProfile tmp = new MachineProfile();
+                tmp.Read(buf);
+                machines.addElement(tmp);
             }
-            Select(0);
-            break;
-        case 1:
-            SetActiveProfile(buf.ReadInt());
-            break;
         }
+        Select(0);
     }
 
     public String toString(String indent)
     {
         String str = new String();
-        str = str + indent + "profiles = {\n";
-        for(int i = 0; i < profiles.size(); ++i)
+        str = str + indent + "machines = {\n";
+        for(int i = 0; i < machines.size(); ++i)
         {
-            AttributeSubject s = (AttributeSubject)profiles.elementAt(i);
+            AttributeSubject s = (AttributeSubject)machines.elementAt(i);
             str = str + s.toString(indent + "    ");
-            if(i < profiles.size()-1)
+            if(i < machines.size()-1)
                 str = str + ", ";
             str = str + "\n";
         }
         str = str + "}\n";
-        str = str + intToString("activeProfile", activeProfile, indent) + "\n";
         return str;
     }
 
     // Attributegroup convenience methods
-    public void AddProfiles(HostProfile obj)
+    public void AddMachines(MachineProfile obj)
     {
-        profiles.addElement(new HostProfile(obj));
+        machines.addElement(new MachineProfile(obj));
         Select(0);
     }
 
-    public void ClearProfiles()
+    public void ClearMachines()
     {
-        profiles.clear();
+        machines.clear();
         Select(0);
     }
 
-    public void RemoveProfiles(int index)
+    public void RemoveMachines(int index)
     {
-        if(index >= 0 && index < profiles.size())
+        if(index >= 0 && index < machines.size())
         {
-            profiles.remove(index);
+            machines.remove(index);
             Select(0);
         }
     }
 
-    public int GetNumProfiles()
+    public int GetNumMachines()
     {
-        return profiles.size();
+        return machines.size();
     }
 
-    public HostProfile GetProfiles(int i)
+    public MachineProfile GetMachines(int i)
     {
-        HostProfile tmp = (HostProfile)profiles.elementAt(i);
+        MachineProfile tmp = (MachineProfile)machines.elementAt(i);
         return tmp;
     }
 
 
     // Attributes
-    private Vector profiles; // vector of HostProfile objects
-    private int    activeProfile;
+    private Vector machines; // vector of MachineProfile objects
 }
 

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">xchem.llnl.gov</Field>
+    <Field name="hostNickname" type="string">LLNL XChem</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
+    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">2</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">30:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpiexec</Field>
+        <Field name="sublaunchArgsSet" type="bool">true</Field>
+        <Field name="sublaunchArgs" type="string">--comm=pmi</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

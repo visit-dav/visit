@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">franklin.nersc.gov</Field>
+    <Field name="hostNickname" type="string">NERSC Franklin</Field>
+    <Field name="directory" type="string">/usr/common/graphics/visit</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">regular</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">regular</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">01:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/aprun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">interactive</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">interactive</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/aprun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">debug</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">debug</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/aprun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">2</Field>
+</Object>

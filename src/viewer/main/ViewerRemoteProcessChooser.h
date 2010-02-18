@@ -44,8 +44,8 @@
 #include <string>
 #include <vector>
 
-class HostProfile;
 class HostProfileList;
+class MachineProfile;
 class RemoteProxyBase;
 class ViewerHostProfileSelector;
 
@@ -87,6 +87,9 @@ class ViewerHostProfileSelector;
 //    Brad Whitlock, Tue Apr 14 11:42:03 PDT 2009
 //    Inherit from ViewerBase.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerRemoteProcessChooser : public ViewerBase
@@ -97,7 +100,7 @@ class VIEWER_API ViewerRemoteProcessChooser : public ViewerBase
     static ViewerRemoteProcessChooser *Instance();
     static void SetNoWinMode(bool nw);
     bool SelectProfile(HostProfileList*, const std::string&, bool skip,
-                       HostProfile &profile);
+                       MachineProfile &profile);
     void AddRestartArgsToCachedProfile(const std::string&,
                                        const std::vector<std::string>&);
     void ClearCache(const std::string&);

@@ -43,11 +43,11 @@
 #include <KeepAliveRPC.h>
 #include <QuitRPC.h>
 #include <ConnectCallback.h>
-#include <HostProfile.h>
+#include <LaunchProfile.h>
+#include <MachineProfile.h>
 #include <string>
 
 // Forward declaration.
-class HostProfile;
 class RemoteProcess;
 
 // ****************************************************************************
@@ -87,6 +87,9 @@ class RemoteProcess;
 //    Brad Whitlock, Fri Dec  7 16:58:33 PST 2007
 //    Added SetupAllRPCs and GetXfer.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -98,10 +101,11 @@ public:
     void SetRemoteUserName(const std::string &rName);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
     void AddArgument(const std::string &arg);
-    void AddProfileArguments(const HostProfile &profile, bool addParallelArgs);
+    void AddProfileArguments(const MachineProfile &machine,
+                             bool addParallelArgs);
 
     void Create(const std::string &hostName,
-                HostProfile::ClientHostDetermination chd,
+                MachineProfile::ClientHostDetermination chd,
                 const std::string &clientHostName,
                 bool manualSSHPort,
                 int sshPort,

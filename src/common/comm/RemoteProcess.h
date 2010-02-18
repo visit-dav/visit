@@ -47,7 +47,7 @@
 #include <netinet/in.h>
 #endif
 #include <vectortypes.h>
-#include <HostProfile.h>
+#include <MachineProfile.h>
 #include <map>
 
 class Connection;
@@ -119,6 +119,9 @@ class Connection;
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -127,7 +130,7 @@ public:
     RemoteProcess(const std::string &rProgram);
     virtual ~RemoteProcess();
     virtual bool Open(const std::string &rHost,
-                      HostProfile::ClientHostDetermination chd,
+                      MachineProfile::ClientHostDetermination chd,
                       const std::string &clientHostName,
                       bool manualSSHPort,
                       int sshPort,
@@ -160,7 +163,7 @@ protected:
     bool CallProgressCallback(int stage);
     bool HostIsLocal(const std::string &rHost) const;
     void CreateCommandLine(stringVector &args, const std::string &rHost,
-                           HostProfile::ClientHostDetermination chd,
+                           MachineProfile::ClientHostDetermination chd,
                            const std::string &clientHostName,
                            bool manualSSHPort,
                            int sshPort, bool useTunneling,

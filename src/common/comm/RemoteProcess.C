@@ -1142,11 +1142,14 @@ RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
 //    Brad Whitlock, Thu Apr  9 10:40:08 PDT 2009
 //    I moved some code to the new Launch method.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 bool
 RemoteProcess::Open(const std::string &rHost,
-                    HostProfile::ClientHostDetermination chd,
+                    MachineProfile::ClientHostDetermination chd,
                     const std::string &clientHostName,
                     bool manualSSHPort,
                     int sshPort,
@@ -1775,11 +1778,14 @@ RemoteProcess::SecureShellArgs() const
 //    7 (on UNIX) or 10 (on Windows).  Particularly on Windows, users were
 //    still having problems.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
 RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
-                                 HostProfile::ClientHostDetermination chd,
+                                 MachineProfile::ClientHostDetermination chd,
                                  const std::string &clientHostName,
                                  bool manualSSHPort,
                                  int sshPort,
@@ -1966,15 +1972,15 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
         // the host name, and use the actual listen port number.
         switch (chd)
         {
-          case HostProfile::MachineName:
+          case MachineProfile::MachineName:
             args.push_back("-host");
             args.push_back(localHost.c_str());
             break;
-          case HostProfile::ManuallySpecified:
+          case MachineProfile::ManuallySpecified:
             args.push_back("-host");
             args.push_back(clientHostName);
             break;
-          case HostProfile::ParsedFromSSHCLIENT:
+          case MachineProfile::ParsedFromSSHCLIENT:
             args.push_back("-guesshost");
             break;
         }

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">login1.gadzooks.alcf.anl.gov</Field>
+    <Field name="hostAliases" type="string">login1.gadzooks.alcf.anl.gov vs##-mgmt.alcf.anl.gov vs##-mgmt vs##</Field>
+    <Field name="hostNickname" type="string">ANL Gadzooks</Field>
+    <Field name="directory" type="string">/soft/apps/visit</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">$COBALT_PROJ</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">2</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">60</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">-nolocal</Field>
+        <Field name="machinefileSet" type="bool">true</Field>
+        <Field name="machinefile" type="string">$COBALT_NODEFILE</Field>
+        <Field name="visitSetsUpEnv" type="bool">true</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">serial</Field>
+        <Field name="machinefileSet" type="bool">true</Field>
+        <Field name="machinefile" type="string">$COBALT_NODEFILE</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

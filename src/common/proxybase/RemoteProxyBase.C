@@ -39,7 +39,6 @@
 #include <RemoteProxyBase.h>
 #include <RemoteProcess.h>
 #include <ExistingRemoteProcess.h>
-#include <HostProfile.h>
 #include <snprintf.h>
 
 // ****************************************************************************
@@ -123,11 +122,14 @@ RemoteProxyBase::~RemoteProxyBase()
 //    Brad Whitlock, Fri Dec  7 16:50:17 PST 2007
 //    Moved RPC creation into the SetupAllRPCs method.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//
 // ****************************************************************************
 
 void
 RemoteProxyBase::Create(const std::string &hostName,
-                        HostProfile::ClientHostDetermination chd,
+                        MachineProfile::ClientHostDetermination chd,
                         const std::string &clientHostName,
                         bool manualSSHPort,
                         int sshPort,
@@ -389,19 +391,25 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Always add -noloopback for parallel launches, since they may
 //    occur on compute nodes.
 //
+//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//    Split HostProfile int MachineProfile and LaunchProfile.
+//    Added a new "directory" argument outside of the arbitrary args.
+//
 // ****************************************************************************
 
 void
-RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
-    bool addParallelArgs)
+RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
+                                     bool addParallelArgs)
 {
+    const LaunchProfile &profile = *(machine.GetActiveLaunchProfile());
+
     //
     // Set the user's login name.
     //
 #if defined(_WIN32) && defined(GetUserName)
 #undef GetUserName
 #endif
-    SetRemoteUserName(profile.GetUserName());
+    SetRemoteUserName(machine.GetUserName());
 
     //
     // Add the parallel arguments.
@@ -553,6 +561,13 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
     SNPRINTF(temp, 10, "%d", profile.GetTimeout());
     AddArgument("-timeout");
     AddArgument(temp);
+
+    // Add the directory arugmnet
+    if (machine.GetDirectory() != "")
+    {
+        AddArgument("-dir");
+        AddArgument(machine.GetDirectory());
+    }
 
     //
     // Add any additional arguments specified in the profile
