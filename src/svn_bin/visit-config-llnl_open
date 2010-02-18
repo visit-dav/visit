@@ -18,6 +18,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">alastor.llnl.gov</Field>
                     <Field name="hostAliases" type="string">alastor#.llnl.gov alastor##.llnl.gov alastor# alastor##</Field>
+                    <Field name="hostNickname" type="string">LLNL Alastor</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -40,6 +41,7 @@
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
                     <Field name="host" type="string">alastor.llnl.gov</Field>
                     <Field name="hostAliases" type="string">alastor#.llnl.gov alastor##.llnl.gov alastor# alastor##</Field>
+                    <Field name="hostNickname" type="string">LLNL Alastor</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -62,6 +64,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">atlas.llnl.gov</Field>
                     <Field name="hostAliases" type="string">atlas#.llnl.gov atlas##.llnl.gov atlas###.llnl.gov atlas####.llnl.gov atlas# atlas## atlas### atlas####</Field>
+                    <Field name="hostNickname" type="string">LLNL Atlas</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -84,6 +87,7 @@
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
                     <Field name="host" type="string">atlas.llnl.gov</Field>
                     <Field name="hostAliases" type="string">atlas#.llnl.gov atlas##.llnl.gov atlas###.llnl.gov atlas####.llnl.gov atlas# atlas## atlas### atlas####</Field>
+                    <Field name="hostNickname" type="string">LLNL Atlas</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -106,6 +110,7 @@
                     <Field name="profileName" type="string">parallel batch pbatch</Field>
                     <Field name="host" type="string">atlas.llnl.gov</Field>
                     <Field name="hostAliases" type="string">atlas#.llnl.gov atlas##.llnl.gov atlas###.llnl.gov atlas####.llnl.gov atlas# atlas## atlas### atlas####</Field>
+                    <Field name="hostNickname" type="string">LLNL Atlas</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">32</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -128,6 +133,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">red.slac.stanford.edu</Field>
                     <Field name="hostAliases" type="string">red</Field>
+                    <Field name="hostNickname" type="string">SLAC Red</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -150,6 +156,7 @@
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">red.slac.stanford.edu</Field>
                     <Field name="hostAliases" type="string">red</Field>
+                    <Field name="hostNickname" type="string">SLAC Red</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">4</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -172,6 +179,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">hera.llnl.gov</Field>
                     <Field name="hostAliases" type="string">hera#.llnl.gov hera##.llnl.gov hera###.llnl.gov hera# hera## hera###</Field>
+                    <Field name="hostNickname" type="string">LLNL Hera</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -194,6 +202,7 @@
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
                     <Field name="host" type="string">hera.llnl.gov</Field>
                     <Field name="hostAliases" type="string">hera#.llnl.gov hera##.llnl.gov hera###.llnl.gov hera# hera## hera###</Field>
+                    <Field name="hostNickname" type="string">LLNL Hera</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -216,6 +225,7 @@
                     <Field name="profileName" type="string">parallel batch pbatch</Field>
                     <Field name="host" type="string">hera.llnl.gov</Field>
                     <Field name="hostAliases" type="string">hera#.llnl.gov hera##.llnl.gov hera###.llnl.gov hera# hera## hera###</Field>
+                    <Field name="hostNickname" type="string">LLNL Hera</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">64</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -238,6 +248,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">ilx.llnl.gov</Field>
                     <Field name="hostAliases" type="string">ilx#.llnl.gov ilx##.llnl.gov ilx# ilx##</Field>
+                    <Field name="hostNickname" type="string">LLNL ILX</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -260,6 +271,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">prism.llnl.gov</Field>
                     <Field name="hostAliases" type="string">prism#.llnl.gov prism##.llnl.gov prism###.llnl.gov prism# prism## prism###</Field>
+                    <Field name="hostNickname" type="string">LLNL Prism</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -282,6 +294,7 @@
                     <Field name="profileName" type="string">parallel pbatch</Field>
                     <Field name="host" type="string">prism.llnl.gov</Field>
                     <Field name="hostAliases" type="string">prism#.llnl.gov prism##.llnl.gov prism###.llnl.gov prism# prism## prism###</Field>
+                    <Field name="hostNickname" type="string">LLNL Prism</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -304,6 +317,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">up.llnl.gov</Field>
                     <Field name="hostAliases" type="string">up.llnl.gov up###.llnl.gov</Field>
+                    <Field name="hostNickname" type="string">LLNL UP</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -326,6 +340,7 @@
                     <Field name="profileName" type="string">parallel pbatch</Field>
                     <Field name="host" type="string">up.llnl.gov</Field>
                     <Field name="hostAliases" type="string">up.llnl.gov up###.llnl.gov</Field>
+                    <Field name="hostNickname" type="string">LLNL UP</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">32</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -348,6 +363,7 @@
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
                     <Field name="host" type="string">up.llnl.gov</Field>
                     <Field name="hostAliases" type="string">up.llnl.gov up###.llnl.gov</Field>
+                    <Field name="hostNickname" type="string">LLNL UP</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -369,6 +385,7 @@
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">xchem.llnl.gov</Field>
+                    <Field name="hostNickname" type="string">LLNL XChem</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -390,6 +407,7 @@
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">xchem.llnl.gov</Field>
+                    <Field name="hostNickname" type="string">LLNL XChem</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -414,6 +432,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">yana.llnl.gov</Field>
                     <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
+                    <Field name="hostNickname" type="string">LLNL Yana</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -436,6 +455,7 @@
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">yana.llnl.gov</Field>
                     <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
+                    <Field name="hostNickname" type="string">LLNL Yana</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">4</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -458,6 +478,7 @@
                     <Field name="profileName" type="string">parallel batch</Field>
                     <Field name="host" type="string">yana.llnl.gov</Field>
                     <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
+                    <Field name="hostNickname" type="string">LLNL Yana</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -480,6 +501,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">zeus.llnl.gov</Field>
                     <Field name="hostAliases" type="string">zeus#.llnl.gov zeus##.llnl.gov zeus###.llnl.gov zeus# zeus## zeus###</Field>
+                    <Field name="hostNickname" type="string">LLNL Zeus</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -502,6 +524,7 @@
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
                     <Field name="host" type="string">zeus.llnl.gov</Field>
                     <Field name="hostAliases" type="string">zeus#.llnl.gov zeus##.llnl.gov zeus###.llnl.gov zeus# zeus## zeus###</Field>
+                    <Field name="hostNickname" type="string">LLNL Zeus</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -524,6 +547,7 @@
                     <Field name="profileName" type="string">parallel pbatch</Field>
                     <Field name="host" type="string">zeus.llnl.gov</Field>
                     <Field name="hostAliases" type="string">zeus#.llnl.gov zeus##.llnl.gov zeus###.llnl.gov zeus# zeus## zeus###</Field>
+                    <Field name="hostNickname" type="string">LLNL Zeus</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">32</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -546,6 +570,7 @@
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">ellipse.uchicago.edu</Field>
                     <Field name="hostAliases" type="string">ellipse# ellipse## ellipse### ellipse####</Field>
+                    <Field name="hostNickname" type="string">LLNL Ellipse</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -568,6 +593,7 @@
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">ellipse.uchicago.edu</Field>
                     <Field name="hostAliases" type="string">ellipse# ellipse## ellipse### ellipse####</Field>
+                    <Field name="hostNickname" type="string">LLNL Ellipse</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">4</Field>
                     <Field name="numNodesSet" type="bool">true</Field>

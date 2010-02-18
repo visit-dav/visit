@@ -10,6 +10,7 @@
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">artemis.princeton.edu</Field>
+                    <Field name="hostNickname" type="string">Princeton Artemis</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">4</Field>
@@ -26,6 +27,7 @@
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">hecate.princeton.edu</Field>
+                    <Field name="hostNickname" type="string">Princeton Hecate</Field>
                     <Field name="numProcessors" type="int">4</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
@@ -41,6 +43,7 @@
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
                     <Field name="host" type="string">tigressdata.princeton.edu</Field>
+                    <Field name="hostNickname" type="string">Princeton TigressData</Field>
                     <Field name="numProcessors" type="int">4</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">mpirun</Field>
