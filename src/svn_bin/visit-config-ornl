@@ -96,42 +96,42 @@
                     <Field name="hostAliases" type="string">photon##.ornl.gov photon##</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
                 </Object>
-                    <Object name="HostProfile">
-                        <Field name="profileName" type="string">ewok</Field>
-                        <Field name="host" type="string">ewok.ccs.ornl.gov</Field>
-                        <Field name="numProcessors" type="int">2</Field>
-                        <Field name="launchMethodSet" type="bool">true</Field>
-                        <Field name="launchMethod" type="string">qsub/mpirun</Field>
-                        <Field name="active" type="bool">true</Field>
-                        <Field name="arguments" type="stringVector">"-dir" "/sw/ewok/visit" </Field>
-                        <Field name="parallel" type="bool">true</Field>
-                        <Field name="hostAliases" type="string">ewok*.ccs.ornl.gov</Field>
-                        <Field name="tunnelSSH" type="bool">true</Field>
-                    </Object>
-                    <Object name="HostProfile">
-                        <Field name="profileName" type="string">jaguarpf</Field>
-                        <Field name="host" type="string">jaguarpf.ccs.ornl.gov</Field>
-                        <Field name="numProcessors" type="int">8</Field>
-                        <Field name="launchMethodSet" type="bool">true</Field>
-                        <Field name="launchMethod" type="string">qsub/aprun</Field>
-                        <Field name="active" type="bool">true</Field>
-                        <Field name="arguments" type="stringVector">"-dir" "/lustre/widow1/sw/visit" </Field>
-                        <Field name="parallel" type="bool">true</Field>
-                        <Field name="hostAliases" type="string">jaguarpf*</Field>
-                        <Field name="tunnelSSH" type="bool">true</Field>
-                    </Object>
-                    <Object name="HostProfile">
-                        <Field name="profileName" type="string">jaguar</Field>
-                        <Field name="host" type="string">jaguar.ccs.ornl.gov</Field>
-                        <Field name="numProcessors" type="int">4</Field>
-                        <Field name="launchMethodSet" type="bool">true</Field>
-                        <Field name="launchMethod" type="string">qsub/aprun</Field>
-                        <Field name="active" type="bool">true</Field>
-                        <Field name="arguments" type="stringVector">"-dir" "/lustre/scr144/sw/visit" </Field>
-                        <Field name="parallel" type="bool">true</Field>
-                        <Field name="hostAliases" type="string">jaguar</Field>
-                        <Field name="tunnelSSH" type="bool">true</Field>
-                    </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">ewok</Field>
+                    <Field name="host" type="string">ewok.ccs.ornl.gov</Field>
+                    <Field name="numProcessors" type="int">2</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/mpirun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/sw/ewok/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">ewok*.ccs.ornl.gov</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">jaguarpf</Field>
+                    <Field name="host" type="string">jaguarpf.ccs.ornl.gov</Field>
+                    <Field name="numProcessors" type="int">8</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/aprun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/lustre/widow1/sw/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">jaguarpf*</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">jaguar</Field>
+                    <Field name="host" type="string">jaguar.ccs.ornl.gov</Field>
+                    <Field name="numProcessors" type="int">4</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/aprun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/lustre/scr144/sw/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">jaguar</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
                 <Field name="activeProfile" type="int">0</Field>
             </Object>
         </Object>
