@@ -8,6 +8,7 @@
                     <Field name="profileName" type="string">vnc session serial</Field>
                     <Field name="host" type="string">localhost</Field>
                     <Field name="hostAliases" type="string">vis*.ranger.tacc.utexas.edu</Field>
+                    <Field name="hostNickname" type="string">TACC Ranger VNC</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">1</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -30,6 +31,7 @@
                     <Field name="profileName" type="string">vnc session parallel</Field>
                     <Field name="host" type="string">localhost</Field>
                     <Field name="hostAliases" type="string">vis*.ranger.tacc.utexas.edu</Field>
+                    <Field name="hostNickname" type="string">TACC Ranger VNC</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
@@ -52,7 +54,7 @@
                     <Field name="profileName" type="string">ranger normal queue</Field>
                     <Field name="host" type="string">login2.ranger.tacc.utexas.edu</Field>
                     <Field name="hostAliases" type="string"></Field>
-                    <Field name="hostNickname" type="string">ranger</Field>
+                    <Field name="hostNickname" type="string">TACC Ranger</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">16</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
@@ -75,7 +77,7 @@
                     <Field name="profileName" type="string">ranger dev queue</Field>
                     <Field name="host" type="string">login2.ranger.tacc.utexas.edu</Field>
                     <Field name="hostAliases" type="string"></Field>
-                    <Field name="hostNickname" type="string">ranger</Field>
+                    <Field name="hostNickname" type="string">TACC Ranger</Field>
                     <Field name="timeout" type="int">480</Field>
                     <Field name="numProcessors" type="int">16</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
