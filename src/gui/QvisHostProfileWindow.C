@@ -138,6 +138,8 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 // Creation:   February 18, 2010
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:16:18 EST 2010
+//   Changed order of two main tabs.
 //
 // ****************************************************************************
 
@@ -170,11 +172,11 @@ QvisHostProfileWindow::CreateWindowContents()
     machineTabs = new QTabWidget(central);
     mainLayout->addWidget(machineTabs, 0,3, 3,1);
 
-    CreateLaunchProfilesGroup();
-    machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
-
     CreateMachineSettingsGroup();
     machineTabs->addTab(machineSettingsGroup, tr("Host Settings"));
+
+    CreateLaunchProfilesGroup();
+    machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
 }
 
 // ****************************************************************************
@@ -721,6 +723,10 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 // Creation:   February 18, 2010
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Don't assume list index is same as host profile list index.  Add user
+//   data to store the item's actual index in the host profile list.
+//   Also, make sure at least one item is selected.
 //
 // ****************************************************************************
 
@@ -735,22 +741,34 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
     MachineProfile *oldMachine = currentMachine;
     hostList->blockSignals(true);
     hostList->clear();
-    currentMachine = false;
+    currentMachine = NULL;
     hostList->blockSignals(false);
     for (int i=0; i<nMachines; i++)
     {
         MachineProfile *mp = (MachineProfile*)profiles->GetMachines()[i];
+        QListWidgetItem *item;
         if (mp->GetHostNickname() != "")
-            hostList->addItem(mp->GetHostNickname().c_str());
+            item = new QListWidgetItem(mp->GetHostNickname().c_str());
         else
-            hostList->addItem(mp->GetHost().c_str());
+            item = new QListWidgetItem(mp->GetHost().c_str());
+        item->setData(Qt::UserRole,i);
+        hostList->addItem(item);
         if (oldMachine == mp)
         {
             hostList->blockSignals(true);
-            hostList->item(i)->setSelected(true);
+            item->setSelected(true);
             hostList->blockSignals(false);
             currentMachine = oldMachine;
         }
+    }
+    if (currentMachine == NULL && nMachines > 0)
+    {
+        QListWidgetItem *item = hostList->item(0);
+        hostList->blockSignals(true);
+        item->setSelected(true);
+        hostList->blockSignals(false);
+        currentMachine = (MachineProfile*)profiles->GetMachines()[
+                                             item->data(Qt::UserRole).toInt()];
     }
 
     UpdateMachineProfile();
@@ -770,6 +788,11 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
+//
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Select one of the launch profiles if we wouldn't have otherwise.
+//   Choose the active one if we have one, the first one otherwise.
 //
 // ****************************************************************************
 void
@@ -848,7 +871,10 @@ QvisHostProfileWindow::UpdateMachineProfile()
         // Keep track of the old selection if it's still there.
         int nProfiles = mp.GetNumLaunchProfiles();
         LaunchProfile *oldLaunch = currentLaunch;
+        profileList->blockSignals(true);
         profileList->clear();
+        currentLaunch = NULL;
+        profileList->blockSignals(false);
         for (int i=0; i<nProfiles; i++)
         {
             LaunchProfile *lp = (LaunchProfile*)mp.GetLaunchProfiles()[i];
@@ -861,9 +887,22 @@ QvisHostProfileWindow::UpdateMachineProfile()
                                            Qt::ItemIsEnabled);
             if (oldLaunch == lp)
             {
+                profileList->blockSignals(true);
                 profileList->item(i)->setSelected(true);
+                profileList->blockSignals(false);
                 currentLaunch = oldLaunch;
             }
+        }
+        // If none is selected, select one of them, ideally the active one
+        if (currentLaunch == NULL && nProfiles > 0)
+        {
+            int index = mp.GetActiveProfile();
+            if (index < 0)
+                index = 0;
+            currentLaunch = (LaunchProfile*)mp.GetLaunchProfiles()[index];
+            profileList->blockSignals(true);
+            profileList->item(index)->setSelected(true);
+            profileList->blockSignals(false);
         }
     }
 
@@ -2542,6 +2581,10 @@ QvisHostProfileWindow::loadBalancingChanged(int val)
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Don't assume list index is same as host profile list index.  Add user
+//   data to store the item's actual index in the host profile list.
+//
 // ****************************************************************************
 
 void
@@ -2557,10 +2600,20 @@ QvisHostProfileWindow::hostNameChanged(const QString &n)
     {
         if ((MachineProfile*)profiles->GetMachines()[i] == currentMachine)
         {
+            QString tmp;
             if (profiles->GetMachines(i).GetHostNickname() != "")
-                hostList->item(i)->setText(currentMachine->GetHostNickname().c_str());
+                tmp = currentMachine->GetHostNickname().c_str();
             else
-                hostList->item(i)->setText(currentMachine->GetHost().c_str());
+                tmp = currentMachine->GetHost().c_str();
+
+            for (int j=0; j<hostList->count(); j++)
+            {
+                if (hostList->item(j)->data(Qt::UserRole).toInt() == i)
+                {
+                    hostList->item(j)->setText(tmp);
+                    break;
+                }
+            }
             break;
         }
     }
@@ -2605,6 +2658,10 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Don't assume list index is same as host profile list index.  Add user
+//   data to store the item's actual index in the host profile list.
+//
 // ****************************************************************************
 
 void
@@ -2620,10 +2677,20 @@ QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
     {
         if ((MachineProfile*)profiles->GetMachines()[i] == currentMachine)
         {
+            QString tmp;
             if (profiles->GetMachines(i).GetHostNickname() != "")
-                hostList->item(i)->setText(currentMachine->GetHostNickname().c_str());
+                tmp = currentMachine->GetHostNickname().c_str();
             else
-                hostList->item(i)->setText(currentMachine->GetHost().c_str());
+                tmp = currentMachine->GetHost().c_str();
+
+            for (int j=0; j<hostList->count(); j++)
+            {
+                if (hostList->item(j)->data(Qt::UserRole).toInt() == i)
+                {
+                    hostList->item(j)->setText(tmp);
+                    break;
+                }
+            }
             break;
         }
     }
@@ -3142,6 +3209,11 @@ QvisHostProfileWindow::postCommandChanged(const QString &portStr)
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Don't assume list index is same as host profile list index.  Add user
+//   data to store the item's actual index in the host profile list.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::currentHostChanged()
@@ -3153,14 +3225,8 @@ QvisHostProfileWindow::currentHostChanged()
 
     QList<QListWidgetItem*> sel = hostList->selectedItems();
     int machine = -1;
-    for (int i=0; i<sel.size() && machine<0; i++)
-    {
-        for (int j=0; j<nMachines && machine<0; j++)
-        {
-            if (sel[i] == hostList->item(j))
-                machine = j;
-        }
-    }
+    if (sel.size() > 0)
+        machine = sel[0]->data(Qt::UserRole).toInt();
 
     if (machine>=0 && machine<nMachines)
         currentMachine = (MachineProfile*)profiles->GetMachines()[machine];
@@ -3230,15 +3296,20 @@ QvisHostProfileWindow::currentLaunchChanged()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Fix the way we set the host nickname.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::addMachineProfile()
 {
     HostProfileList *profiles = (HostProfileList *)subject;
-    MachineProfile mp = MachineProfile();
-    mp.SetHostNickname(string("unknown host"));
-    profiles->AddMachines(mp);
+    profiles->AddMachines(MachineProfile());
     ReplaceLocalHost();
+    currentMachine = (MachineProfile*)profiles->GetMachines()[
+                                              profiles->GetNumMachines()-1];
+    currentMachine->SetHostNickname(currentMachine->GetHost());
     Apply();
 }
 
@@ -3269,6 +3340,7 @@ QvisHostProfileWindow::delMachineProfile()
             profiles->RemoveMachines(i);
         }
     }
+    currentMachine = NULL;
     Apply();
 }
 
@@ -3284,6 +3356,10 @@ QvisHostProfileWindow::delMachineProfile()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:16:35 EST 2010
+//   Fix the way we set the host nickname.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::copyMachineProfile()
@@ -3292,9 +3368,11 @@ QvisHostProfileWindow::copyMachineProfile()
         return;
 
     HostProfileList *profiles = (HostProfileList *)subject;
-    MachineProfile mp = *currentMachine;
-    mp.SetHostNickname(string("Copy of ")+mp.GetHostNickname());
-    profiles->AddMachines(mp);
+    profiles->AddMachines(*currentMachine);
+    currentMachine = (MachineProfile*)profiles->GetMachines()[
+                                              profiles->GetNumMachines()-1];
+    currentMachine->SetHostNickname(string("Copy of ") +
+                                    currentMachine->GetHostNickname());
     ReplaceLocalHost();
     Apply();
 }
@@ -3311,6 +3389,10 @@ QvisHostProfileWindow::copyMachineProfile()
 //
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
+//
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:20:48 EST 2010
+//   Set the newly added launch profile as the active one.
 //
 // ****************************************************************************
 void
@@ -3332,6 +3414,8 @@ QvisHostProfileWindow::addLaunchProfile()
     {
         currentMachine->SetActiveProfile(0);
     }
+    currentLaunch = (LaunchProfile*)currentMachine->GetLaunchProfiles()[
+                                     currentMachine->GetNumLaunchProfiles()-1];
     Apply();
 }
 
@@ -3374,6 +3458,7 @@ QvisHostProfileWindow::delLaunchProfile()
         currentMachine->SetActiveProfile(currentMachine->GetActiveProfile()-1);
     currentMachine->GetLaunchProfiles().resize(currentMachine->GetNumLaunchProfiles()-1);
     currentMachine->SelectLaunchProfiles();
+    currentLaunch = NULL;
     Apply();
 }
     
@@ -3389,6 +3474,10 @@ QvisHostProfileWindow::delLaunchProfile()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 13:20:48 EST 2010
+//   Set the newly added launch profile as the active one.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::copyLaunchProfile()
@@ -3398,6 +3487,8 @@ QvisHostProfileWindow::copyLaunchProfile()
     LaunchProfile lp(*currentLaunch);
     lp.SetProfileName(std::string("Copy of ")+lp.GetProfileName());
     currentMachine->AddLaunchProfiles(lp);
+    currentLaunch = (LaunchProfile*)currentMachine->GetLaunchProfiles()[
+                                     currentMachine->GetNumLaunchProfiles()-1];
     Apply();
 }
 

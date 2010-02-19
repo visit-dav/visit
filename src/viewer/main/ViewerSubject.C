@@ -5890,6 +5890,9 @@ ViewerSubject::ExportColorTable()
 //    Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
 //    Host profiles are now handles outside the config manager.
 //
+//    Jeremy Meredith, Fri Feb 19 13:29:24 EST 2010
+//    Make sure host profile filenames are unique.
+//
 // ****************************************************************************
 
 void
@@ -5922,27 +5925,50 @@ ViewerSubject::WriteConfigFile()
 
     //
     // Clean old user host profiles from the file system
+    // and write the new ones out.
     //
     string userdir = GetAndMakeUserVisItHostsDirectory();
     HostProfileList *hpl = GetViewerState()->GetHostProfileList();
     ReadAndProcessDirectory(userdir, &CleanHostProfileCallback, hpl);
-    // Write the new ones
+    // Make a filename-safe version of the nicknames
+    stringVector basenames;
+    int n = hpl->GetNumMachines();
+    for (int i=0; i<n; i++)
+    {
+        MachineProfile &pl = hpl->GetMachines(i);
+        string s = pl.GetHostNickname();
+        for (int j=0; j<s.length(); j++)
+        {
+            if (s[j]>='A' && s[j]<='Z')
+                s[j] += int('a')-int('A');
+            if ((s[j]<'a'||s[j]>'z') && (s[j]<'0'||s[j]>'9'))
+                s[j] = '_';
+        }
+        basenames.push_back(s);
+    }
+    // Make sure the filenames are unique
+    for (int i=n-1; i>0; i--)
+    {
+        int count = 0;
+        for (int j=0; j<i; j++)
+        {
+            if (basenames[j] == basenames[i])
+                count++;
+        }
+        if (count > 0)
+        {
+            char tmp[100];
+            sprintf(tmp, "_%d", count+1);
+            basenames[i] += tmp;
+        }
+    }
+    // Write them out
     for (int i=0; i<hpl->GetNumMachines(); i++)
     {
         MachineProfile &pl = hpl->GetMachines(i);
-        // Make a filename-safe version of the nickname
-        string fn = pl.GetHostNickname();
-        for (int j=0; j<fn.length(); j++)
-        {
-            if (fn[j]>='A' && fn[j]<='Z')
-                fn[j] += int('a')-int('A');
-            if ((fn[j]<'a'||fn[j]>'z') && (fn[j]<'0'||fn[j]>'9'))
-                fn[j] = '_';
-        }
-        // Save it out
-        string filename = userdir + VISIT_SLASH_STRING + "host_"+fn+".xml";
+        string filename = userdir + VISIT_SLASH_STRING +
+                          "host_" + basenames[i] + ".xml";
         SingleAttributeConfigManager mgr(&pl);
-        cerr << "writing to "<<filename<<endl;
         mgr.Export(filename);
     }
 }
