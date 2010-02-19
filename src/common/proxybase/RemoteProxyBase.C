@@ -401,6 +401,9 @@ void
 RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
                                      bool addParallelArgs)
 {
+    if(machine.GetActiveLaunchProfile() == 0)
+        return;
+
     const LaunchProfile &profile = *(machine.GetActiveLaunchProfile());
 
     //

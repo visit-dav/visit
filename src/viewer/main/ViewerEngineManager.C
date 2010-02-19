@@ -3490,8 +3490,11 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
             {
                 MachineProfile temp(it->second.profile);
                 temp.SetHost(it->first.HostName());
-                temp.GetActiveLaunchProfile()->SetNumProcessors(it->second.proxy->NumProcessors());
-                temp.GetActiveLaunchProfile()->SetNumNodes(it->second.proxy->NumNodes());
+                if(temp.GetActiveLaunchProfile() != 0)
+                {
+                    temp.GetActiveLaunchProfile()->SetNumProcessors(it->second.proxy->NumProcessors());
+                    temp.GetActiveLaunchProfile()->SetNumNodes(it->second.proxy->NumNodes());
+                }
                 temp.CreateNode(runningEnginesNode, true, true);
             }
         }

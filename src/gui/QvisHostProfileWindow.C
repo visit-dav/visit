@@ -159,7 +159,7 @@ QvisHostProfileWindow::CreateWindowContents()
     mainLayout->addWidget(addHost, 2,0);
     connect(addHost, SIGNAL(clicked()), this, SLOT(addMachineProfile()));
 
-    delHost = new QPushButton(tr("Del"), central);
+    delHost = new QPushButton(tr("Delete"), central);
     mainLayout->addWidget(delHost, 2,1);
     connect(delHost, SIGNAL(clicked()), this, SLOT(delMachineProfile()));
 
@@ -341,7 +341,7 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
     addProfile = new QPushButton(tr("New"), launchProfilesGroup);
     layout->addWidget(addProfile, row,0);
     connect(addProfile, SIGNAL(clicked()), this, SLOT(addLaunchProfile()));
-    delProfile = new QPushButton(tr("Del"), launchProfilesGroup);
+    delProfile = new QPushButton(tr("Delete"), launchProfilesGroup);
     connect(delProfile, SIGNAL(clicked()), this, SLOT(delLaunchProfile()));
     layout->addWidget(delProfile, row,1);
     copyProfile = new QPushButton(tr("Copy"), launchProfilesGroup);
