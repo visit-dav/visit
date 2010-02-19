@@ -47,7 +47,7 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
-${VISIT_SOURCE_DIR}/sim/V2/lib ${VISIT_SOURCE_DIR}/sim/V2/runtime 
+${VISIT_SOURCE_DIR}/sim/V2/lib ${VISIT_SOURCE_DIR}/sim/V2/runtime ${MESA_INCLUDE_DIR} 
 )
 
 
@@ -59,19 +59,19 @@ SET(INSTALLTARGETS ISimV2Database)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MSimV2Database ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MSimV2Database visitcommon avtdbatts avtdatabase_ser )
+    TARGET_LINK_LIBRARIES(MSimV2Database visitcommon avtdbatts avtdatabase_ser ${TESSELLATION_LIBRARY} )
     ADD_TARGET_DEFINITIONS(MSimV2Database MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MSimV2Database)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ESimV2Database_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ESimV2Database_ser visitcommon avtdatabase_ser avtpipeline_ser simV2runtime_ser )
+TARGET_LINK_LIBRARIES(ESimV2Database_ser visitcommon avtdatabase_ser avtpipeline_ser ${TESSELLATION_LIBRARY} simV2runtime_ser )
 ADD_TARGET_DEFINITIONS(ESimV2Database_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ESimV2Database_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESimV2Database_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESimV2Database_par visitcommon avtdatabase_par avtpipeline_par simV2runtime_par )
+    TARGET_LINK_LIBRARIES(ESimV2Database_par visitcommon avtdatabase_par avtpipeline_par ${TESSELLATION_LIBRARY} simV2runtime_par )
     ADD_TARGET_DEFINITIONS(ESimV2Database_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESimV2Database_par)
 ENDIF(VISIT_PARALLEL)
