@@ -6,7 +6,11 @@
     <CXXFLAGS>
       ${VISIT_SOURCE_DIR}/sim/V2/lib
       ${VISIT_SOURCE_DIR}/sim/V2/runtime
+      ${MESA_INCLUDE_DIR}
     </CXXFLAGS>
+    <LIBS>
+      ${TESSELLATION_LIBRARY}
+    </LIBS>
     <Files components="E">
       avtSimV2FileFormat.C
       avtSimV2Writer.C
