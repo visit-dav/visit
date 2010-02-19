@@ -319,7 +319,7 @@ echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-buildall 1>> config_log.txt 2>&1
-checkAndHandleError $? fatal "Pre-update configure failed" config_log.txt 
+checkAndHandleError $? warn "Pre-update configure failed" config_log.txt 
 
 # test 'make clean' acts as expected
 rm -f ./make_clean.out
