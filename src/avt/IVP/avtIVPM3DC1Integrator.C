@@ -431,6 +431,9 @@ avtIVPM3DC1Integrator::Step(const avtIVPField* field,
 //        ivpstep->velStart = (*field)(t,yCur);
 //        ivpstep->velEnd = (*field)((t+h),yNew);
 
+        ivpstep->velStart = getBfield(field, yCur);
+        ivpstep->velEnd   = getBfield(field, yNew);
+
         yCur = yNew;
         t = t+h;
     }
@@ -452,7 +455,7 @@ avtIVPM3DC1Integrator::Step(const avtIVPField* field,
 // ****************************************************************************
 avtIVPSolver::Result 
 avtIVPM3DC1Integrator::vpstep(const avtIVPField* field,
-                        avtVector &yCur, double h, avtVector &yNew)
+                              avtVector &yCur, double h, avtVector &yNew)
 {
   avtIVPSolver::Result res;
 
@@ -479,7 +482,7 @@ avtIVPM3DC1Integrator::vpstep(const avtIVPField* field,
 //  Method: avtIVPM3DC1Integrator::partial_step
 //
 //  Purpose:
-//      Take a step and return the result.
+//      Take a partial step and return the result.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
@@ -507,7 +510,6 @@ avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
   if (getBfield(field, xout, iflow, 1, &Bval, 0, &dummy))
     return avtIVPSolver::UNSPECIFIED_ERROR;
 
-  // FIX THIS CODE - DOES THIS CODE WORK VERBATIM ???
   xout[flowtable[iflow][1]] += 0.5*h*Bval;
 
   /* P_i */
@@ -518,7 +520,6 @@ avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
   if (getBfield(field, xout, iflow, 0, &Bval, 0, &dummy))
     return avtIVPSolver::UNSPECIFIED_ERROR;
 
-  // FIX THIS CODE - DOES THIS CODE WORK VERBATIM ???
   xout[flowtable[iflow][0]] += 0.5*h*Bval;
 
   return avtIVPSolver::OK;
@@ -529,7 +530,7 @@ avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
 //  Method: avtIVPM3DC1Integrator::advance
 //
 //  Purpose:
-//      
+//      Advance and return the result.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
@@ -566,9 +567,55 @@ avtIVPM3DC1Integrator::advance(const avtIVPField* field,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::getBfield_step
+//  Method: avtIVPM3DC1Integrator::getBfield
 //
 //  Purpose:
+//      Gets the B field components directly
+//
+//  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION!!!!
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+// ****************************************************************************
+
+avtVector
+avtIVPM3DC1Integrator::getBfield(const avtIVPField* field, avtVector y)
+{
+  // FIX THIS CODE - It would be preferable to use a dynamic cast but
+  // because the field is passd down as a const it can not be used.
+  avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
+
+  double pt[3];
+
+  pt[0] = y[0];
+  pt[1] = y[1];
+  pt[2] = y[2];
+
+  double xieta[2];
+  int    element;
+
+  /* Find the element containing the point; get local coords xi,eta */
+  if ((element = m3dField->get_tri_coords2D(pt, element, xieta)) < 0) 
+  {
+    return avtVector(0,0,0);
+  }
+  else 
+  {
+    float B[3];
+
+    m3dField->interpBcomps(B, pt, element, xieta);
+    
+    return avtVector(B);
+  }
+}
+   
+// ****************************************************************************
+//  Method: avtIVPM3DC1Integrator::getBfield
+//
+//  Purpose:
+//      Returns the B field needed for fieldline integration
 //      
 //
 //  Programmer: Allen Sanderson
@@ -578,11 +625,11 @@ avtIVPM3DC1Integrator::advance(const avtIVPField* field,
 
 int
 avtIVPM3DC1Integrator::getBfield(const avtIVPField* field,
-                           double *x, int iflow, int icomp, double *Bout,
-                           int dflag, double *Bpout)
+                                 double *x, int iflow, int icomp, double *Bout,
+                                 int dflag, double *Bpout)
 {
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
-  // because the field is passd down a const it can not be used.
+  // because the field is passd down as a const it can not be used.
   avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
 
   if (m3dField->linflag)
@@ -604,8 +651,8 @@ avtIVPM3DC1Integrator::getBfield(const avtIVPField* field,
 // ****************************************************************************
 int
 avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
-                            double *x, int iflow, int icomp, double *Bout,
-                            int dflag, double *Bpout)
+                                  double *x, int iflow, int icomp, double *Bout,
+                                  int dflag, double *Bpout)
 {
   double xieta[2];
   int    element;
@@ -680,8 +727,8 @@ avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
 // ****************************************************************************
 int
 avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
-                            double *x, int iflow, int icomp, double *Bout,
-                            int dflag, double *Bpout)
+                                  double *x, int iflow, int icomp, double *Bout,
+                                  int dflag, double *Bpout)
 {
   double xieta[2];
   double co, sn, tmp1, tmp2, tmp3, tmp4;

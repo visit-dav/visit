@@ -108,6 +108,8 @@ class IVP_API avtIVPM3DC1Integrator: public avtIVPSolver
     int advance(const avtIVPField* field,
                 double *x, int iflow, int icomp, double h, double xacc);
 
+    avtVector getBfield(const avtIVPField* field, avtVector y);
+
     int getBfield(const avtIVPField* field,
                   double *x, int iflow, int icomp,
                   double *Bout, int dflag, double *Bpout);
