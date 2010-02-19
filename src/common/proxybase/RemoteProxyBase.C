@@ -395,17 +395,15 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //    Added a new "directory" argument outside of the arbitrary args.
 //
+//    Jeremy Meredith, Fri Feb 19 09:55:03 EST 2010
+//    Remove assumption that the machine profile has an active launch profile.
+//
 // ****************************************************************************
 
 void
 RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
                                      bool addParallelArgs)
 {
-    if(machine.GetActiveLaunchProfile() == 0)
-        return;
-
-    const LaunchProfile &profile = *(machine.GetActiveLaunchProfile());
-
     //
     // Set the user's login name.
     //
@@ -414,10 +412,21 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
 #endif
     SetRemoteUserName(machine.GetUserName());
 
+    // Add the directory arugment
+    if (machine.GetDirectory() != "")
+    {
+        AddArgument("-dir");
+        AddArgument(machine.GetDirectory());
+    }
+
+    const LaunchProfile *launch = machine.GetActiveLaunchProfile();
+    if (!launch)
+        return;
+
     //
     // Add the parallel arguments.
     //
-    if (profile.GetParallel())
+    if (launch->GetParallel())
     {
         AddArgument("-noloopback");
 
@@ -429,96 +438,96 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
 
         if (addParallelArgs)
         {
-            SNPRINTF(temp, 10, "%d", profile.GetNumProcessors());
+            SNPRINTF(temp, 10, "%d", launch->GetNumProcessors());
             AddArgument("-np");
             AddArgument(temp);
         }
-        SetNumProcessors(profile.GetNumProcessors());
+        SetNumProcessors(launch->GetNumProcessors());
 
-        if (profile.GetNumNodesSet() &&
-            profile.GetNumNodes() > 0)
+        if (launch->GetNumNodesSet() &&
+            launch->GetNumNodes() > 0)
         {
             if (addParallelArgs)
             {
-                SNPRINTF(temp, 10, "%d", profile.GetNumNodes());
+                SNPRINTF(temp, 10, "%d", launch->GetNumNodes());
                 AddArgument("-nn");
                 AddArgument(temp);
             }
-            SetNumNodes(profile.GetNumNodes());
+            SetNumNodes(launch->GetNumNodes());
         }
 
         if (addParallelArgs)
         {
-            if (profile.GetPartitionSet() &&
-                profile.GetPartition().length() > 0)
+            if (launch->GetPartitionSet() &&
+                launch->GetPartition().length() > 0)
             {
                 AddArgument("-p");
-                AddArgument(profile.GetPartition());
+                AddArgument(launch->GetPartition());
             }
 
-            if (profile.GetBankSet() &&
-                profile.GetBank().length() > 0)
+            if (launch->GetBankSet() &&
+                launch->GetBank().length() > 0)
             {
                 AddArgument("-b");
-                AddArgument(profile.GetBank());
+                AddArgument(launch->GetBank());
             }
 
-            if (profile.GetTimeLimitSet() &&
-                profile.GetTimeLimit().length() > 0)
+            if (launch->GetTimeLimitSet() &&
+                launch->GetTimeLimit().length() > 0)
             {
                 AddArgument("-t");
-                AddArgument(profile.GetTimeLimit());
+                AddArgument(launch->GetTimeLimit());
             }
 
-            if (profile.GetLaunchMethodSet() &&
-                profile.GetLaunchMethod().length() > 0)
+            if (launch->GetLaunchMethodSet() &&
+                launch->GetLaunchMethod().length() > 0)
             {
                 AddArgument("-l");
-                AddArgument(profile.GetLaunchMethod());
+                AddArgument(launch->GetLaunchMethod());
             }
 
-            if (profile.GetLaunchArgsSet() &&
-                profile.GetLaunchArgs().length() > 0)
+            if (launch->GetLaunchArgsSet() &&
+                launch->GetLaunchArgs().length() > 0)
             {
                 AddArgument("-la");
-                AddArgument(profile.GetLaunchArgs());
+                AddArgument(launch->GetLaunchArgs());
             }
 
-            if (profile.GetSublaunchArgsSet() &&
-                profile.GetSublaunchArgs().length() > 0)
+            if (launch->GetSublaunchArgsSet() &&
+                launch->GetSublaunchArgs().length() > 0)
             {
                 AddArgument("-sla");
-                AddArgument(profile.GetSublaunchArgs());
+                AddArgument(launch->GetSublaunchArgs());
             }
 
-            if (profile.GetSublaunchPreCmdSet() &&
-                profile.GetSublaunchPreCmd().length() > 0)
+            if (launch->GetSublaunchPreCmdSet() &&
+                launch->GetSublaunchPreCmd().length() > 0)
             {
                 AddArgument("-slpre");
-                AddArgument(profile.GetSublaunchPreCmd());
+                AddArgument(launch->GetSublaunchPreCmd());
             }
 
-            if (profile.GetSublaunchPostCmdSet() &&
-                profile.GetSublaunchPostCmd().length() > 0)
+            if (launch->GetSublaunchPostCmdSet() &&
+                launch->GetSublaunchPostCmd().length() > 0)
             {
                 AddArgument("-slpost");
-                AddArgument(profile.GetSublaunchPostCmd());
+                AddArgument(launch->GetSublaunchPostCmd());
             }
 
-            if (profile.GetMachinefileSet() &&
-                profile.GetMachinefile().length() > 0)
+            if (launch->GetMachinefileSet() &&
+                launch->GetMachinefile().length() > 0)
             {
                 AddArgument("-machinefile");
-                AddArgument(profile.GetMachinefile());
+                AddArgument(launch->GetMachinefile());
             }
 
-            if (profile.GetVisitSetsUpEnv())
+            if (launch->GetVisitSetsUpEnv())
             {
                 AddArgument("-setupenv");
             }
         }
 #if 0 // disabling dynamic load balancing for now
-        if (profile.GetForceStatic())
+        if (launch->GetForceStatic())
         {
             if (addParallelArgs)
             {
@@ -527,7 +536,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
             SetLoadBalancing(0);
         }
 
-        if (profile.GetForceDynamic())
+        if (launch->GetForceDynamic())
         {
             if (addParallelArgs)
             {
@@ -544,39 +553,33 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
         SetLoadBalancing(0);
 #endif
     }
-    if (profile.GetCanDoHWAccel())
+
+    if (launch->GetCanDoHWAccel())
     {
         AddArgument("-hw-accel");
-        if (profile.GetHavePreCommand())
+        if (launch->GetHavePreCommand())
         {
             AddArgument("-hw-pre");
-            AddArgument(profile.GetHwAccelPreCommand());
+            AddArgument(launch->GetHwAccelPreCommand());
         }
-        if (profile.GetHavePostCommand())
+        if (launch->GetHavePostCommand())
         {
             AddArgument("-hw-post");
-            AddArgument(profile.GetHwAccelPostCommand());
+            AddArgument(launch->GetHwAccelPostCommand());
         }
     }
 
     // Add the timeout argument
     char temp[10];
-    SNPRINTF(temp, 10, "%d", profile.GetTimeout());
+    SNPRINTF(temp, 10, "%d", launch->GetTimeout());
     AddArgument("-timeout");
     AddArgument(temp);
-
-    // Add the directory arugmnet
-    if (machine.GetDirectory() != "")
-    {
-        AddArgument("-dir");
-        AddArgument(machine.GetDirectory());
-    }
 
     //
     // Add any additional arguments specified in the profile
     //
-    for (size_t i = 0; i < profile.GetArguments().size(); ++i)
-        AddArgument(profile.GetArguments()[i]);
+    for (size_t i = 0; i < launch->GetArguments().size(); ++i)
+        AddArgument(launch->GetArguments()[i]);
 }
 
 // ****************************************************************************
