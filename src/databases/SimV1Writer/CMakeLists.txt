@@ -46,9 +46,9 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
+${VISIT_SOURCE_DIR}/databases/SimV1 
 )
 
-ADD_DEFINITIONS("-I../SimV1")
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
 
