@@ -291,7 +291,7 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
         /* Allocate VisIt_MeshData. */
         mesh = (VisIt_MeshData *)malloc(sz);
         memset(mesh, 0, sz);
-        /* Make VisIt_MeshData contain a VisIt_PointMesh. */
+        /* Make VisIt_MeshData contain a VisIt_UnstructuredMesh. */
         sz = sizeof(VisIt_UnstructuredMesh);
         mesh->umesh = (VisIt_UnstructuredMesh *)malloc(sz);
         memset(mesh->umesh, 0, sz);

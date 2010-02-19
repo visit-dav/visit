@@ -95,7 +95,7 @@ using std::vector;
 #ifndef MDSERVER
 vtkDataSet *SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *);
 vtkDataSet *SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *);
-vtkDataSet *SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *);
+vtkDataSet *SimV2_GetMesh_Unstructured(int, VisIt_UnstructuredMesh *);
 vtkDataSet *SimV2_GetMesh_Point(VisIt_PointMesh *);
 vtkDataSet *SimV2_GetMesh_CSG(VisIt_CSGMesh *csgm);
 #endif
@@ -803,7 +803,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
             ds = SimV2_GetMesh_Rectilinear(vmesh->rmesh);
             break;
         case VISIT_MESHTYPE_UNSTRUCTURED:
-            ds = SimV2_GetMesh_Unstructured(vmesh->umesh);
+            ds = SimV2_GetMesh_Unstructured(domain, vmesh->umesh);
             break;
         case VISIT_MESHTYPE_POINT:
             ds = SimV2_GetMesh_Point(vmesh->pmesh);

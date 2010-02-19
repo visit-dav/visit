@@ -184,6 +184,8 @@ ADD_FORTRAN_SIMV1_SIMULATION(fmesh fmesh.f)
 ADD_SIMV1_SIMULATION(point point.c)
 ADD_FORTRAN_SIMV1_SIMULATION(fpoint fpoint.f)
 
+ADD_SIMV2_SIMULATION(polyhedral polyhedral.c)
+
 ADD_SIMV1_SIMULATION(scalar scalar.c)
 ADD_FORTRAN_SIMV1_SIMULATION(fscalar fscalar.f)
 ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION(fscalarp fscalarp.f)
