@@ -435,7 +435,7 @@ void
 gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
   char me[]="gageIv3Fill";
   int _xx, _yy, _zz, xx, yy, zz, lx, ly, lz,
-    hx, hy, hz, fr, fddd, cacheIdx, dataIdx;
+    hxx, hyy, hzz, fr, fddd, cacheIdx, dataIdx;
   unsigned int sx, sy, sz;
   char *data, *here;
   unsigned int tup;
@@ -448,15 +448,15 @@ gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
   lx = ctx->point.xi - (fr - 1);
   ly = ctx->point.yi - (fr - 1);
   lz = ctx->point.zi - (fr - 1);
-  hx = lx + 2*fr - 1;
-  hy = ly + 2*fr - 1;
-  hz = lz + 2*fr - 1;
+  hxx = lx + 2*fr - 1;
+  hyy = ly + 2*fr - 1;
+  hzz = lz + 2*fr - 1;
   fddd = 2*fr*2*fr*2*fr;
   data = (char*)pvl->nin->data;
   if (lx >= 0 && ly >= 0 && lz >= 0 
-      && hx < AIR_CAST(int, sx)
-      && hy < AIR_CAST(int, sy)
-      && hz < AIR_CAST(int, sz)) {
+      && hxx < AIR_CAST(int, sx)
+      && hyy < AIR_CAST(int, sy)
+      && hzz < AIR_CAST(int, sz)) {
     /* all the samples we need are inside the existing volume */
     dataIdx = lx + sx*(ly + sy*(lz));
     if (ctx->verbose) {
@@ -518,11 +518,11 @@ gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
     /* the query requires samples which don't actually lie 
        within the volume- more care has to be taken */
     cacheIdx = 0;
-    for (_zz=lz; _zz<=hz; _zz++) {
+    for (_zz=lz; _zz<=hzz; _zz++) {
       zz = AIR_CLAMP(0, _zz, AIR_CAST(int, sz-1));
-      for (_yy=ly; _yy<=hy; _yy++) {
+      for (_yy=ly; _yy<=hyy; _yy++) {
         yy = AIR_CLAMP(0, _yy, AIR_CAST(int, sy-1));
-        for (_xx=lx; _xx<=hx; _xx++) {
+        for (_xx=lx; _xx<=hxx; _xx++) {
           xx = AIR_CLAMP(0, _xx, AIR_CAST(int, sx-1));
           dataIdx = xx + sx*(yy + sy*zz);
           here = data + dataIdx*pvl->kind->valLen*nrrdTypeSize[pvl->nin->type];
