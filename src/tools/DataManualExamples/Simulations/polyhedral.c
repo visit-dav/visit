@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -94,89 +94,55 @@ void simulate_one_timestep(simulation_data *sim)
 
 /*************************** Polyhedral Mesh variables ***********************/
 
-float xc[18] = {
-1.f,  1.f,  1.f,  1.f,
-0.5f, 0.5f, 0.5f, 0.5f,
-0.f,  0.f,  0.f,  0.f,
-0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f
+float xc[] = {
+2.5, 2.5, 2.5, 2.5,
+1.5, 1.5, 1.5, 1.5,
+/*NOTE: the 0.45's are to displace a node so we don't have 3 colinear nodes
+        since it will cause the tessellator to ignore a node.
+ */
+0.5, 0.45 ,0.5, 0.45, 0.5, 0.45, 0.5, 0.45, 0.5,
+0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.
 };
 
-float yc[18] = {
-0.f, 0.f, 1.f, 1.f,
-0.f, 0.f, 1.f, 1.f,
-0.f, 0.f, 1.f, 1.f,
-0.5f, 0.5f, 0.5f, 0.f, 1.f, 1.5f
+float yc[] = {
+0., 0., 1., 1.,
+0., 0., 1., 1.,
+0., 0., 0., 0.5, 0.5, 0.5, 1., 1., 1.,
+0., 0., 0., 0.5, 0.5, 0.5, 1., 1., 1.
 };
 
-float zc[18] = {
-1.f, 0.f, 0.f, 1.f,
-1.f, 0.f, 0.f, 1.f,
-1.f, 0.f, 0.f, 1.f,
-1.f, 0.5f, 0.f, 0.5f, 0.5f, 0.5f
+float zc[] = {
+1., 0., 0., 1.,
+1., 0., 0., 1.,
+1., 0.5, 0.,1., 0.5, 0.,1., 0.5, 0.,
+1., 0.5, 0.,1., 0.5, 0.,1., 0.5, 0.
 };
 
 int connectivity[] = {
-    VISIT_CELL_POLYHEDRON, /* Zone 0 */
-    9, /* 9 faces */
-        4, /*ids*/ 0,1,2,3,
-        4, /*ids*/ 4,0,3,7,
-        4, /*ids*/ 3,2,6,7,
-        4, /*ids*/ 2,1,5,6,
-        4, /*ids*/ 1,0,4,5,
-        4, /*ids*/ 5,15,13,14,
-        4, /*ids*/ 15,4,12,13,
-        4, /*ids*/ 14,13,16,6,
-        4, /*ids*/ 13,12,7,16,
-    VISIT_CELL_POLYHEDRON, /* Zone 1*/
-    9, /* 9 faces */
-        4, /*ids*/ 9,8,11,10,
-        4, /*ids*/ 8,4,7,11,
-        4, /*ids*/ 11,7,6,10,
-        4, /*ids*/ 10,6,5,9,
-        4, /*ids*/ 9,5,4,8,
-        4, /*ids*/ 4,15,13,12,
-        4, /*ids*/ 15,5,14,13,
-        4, /*ids*/ 12,13,16,7,
-        4, /*ids*/ 13,14,6,16,
-    VISIT_CELL_PYR, /* Zone 2*/
-        /*ids*/ 7,3,2,6,17,
-    VISIT_CELL_PYR, /* Zone 3*/
-        /*ids*/ 7,6,10,11,17
+    VISIT_CELL_HEX,
+        0,1,5,4,3,2,6,7,
+    VISIT_CELL_POLYHEDRON,
+        9, /* # faces*/
+        4, /*ids*/ 4,5,6,7,
+        5, /*ids*/ 8,4,7,14,11,
+        5, /*ids*/ 14,7,6,16,15,
+        5, /*ids*/ 16,6,5,10,13,
+        5, /*ids*/ 10,5,4,8,9,
+        4, /*ids*/ 9,8,11,12,
+        4, /*ids*/ 10,9,12,13,
+        4, /*ids*/ 12,11,14,15,
+        4, /*ids*/ 13,12,15,16,
+    VISIT_CELL_HEX,
+        8,9,18,17,11,12,21,20,
+    VISIT_CELL_HEX,
+        9,10,19,18,12,13,22,21,
+    VISIT_CELL_HEX,
+        11,12,21,20,14,15,24,23,
+    VISIT_CELL_HEX,
+        12,13,22,21,15,16,25,24,
 };
 
-#if 0
-/* try and remove some internal faces. */
-int connectivity[] = {
-    VISIT_CELL_POLYHEDRON, /* Zone 0 */
-    9, /* 9 faces */
-        4, /*ids*/ 0,1,2,3,
-        5, /*ids*/ 4,0,3,7,12,
-        5, /*ids*/ 3,2,6,16,7,
-        5, /*ids*/ 2,1,5,14,6,
-        5, /*ids*/ 1,0,4,15,5,
-        4, /*ids*/ 5,15,13,14,
-        4, /*ids*/ 15,4,12,13,
-        4, /*ids*/ 14,13,16,6,
-        4, /*ids*/ 13,12,7,16,
-    VISIT_CELL_POLYHEDRON, /* Zone 1*/
-    9, /* 9 faces */
-        4, /*ids*/ 9,8,11,10,
-        5, /*ids*/ 8,4,12,7,11,
-        5, /*ids*/ 11,7,16,6,10,
-        5, /*ids*/ 10,6,14,5,9,
-        5, /*ids*/ 9,5,15,4,8,
-        4, /*ids*/ 4,15,13,12,
-        4, /*ids*/ 15,5,14,13,
-        4, /*ids*/ 12,13,16,7,
-        4, /*ids*/ 13,14,6,16,
-    VISIT_CELL_PYR, /* Zone 2*/
-        /*ids*/ 7,3,2,6,17,
-    VISIT_CELL_PYR, /* Zone 3*/
-        /*ids*/ 7,6,10,11,17
-};
-#endif
-
-int npolyzones = 4;
+int npolyzones = 6;
 
 /*************************** Polyhedral Mesh variables ***********************/
 

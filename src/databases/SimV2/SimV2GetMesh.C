@@ -466,7 +466,7 @@ SimV2_UnstructuredMesh_Count_Cells(const VisIt_UnstructuredMesh *umesh,
 //   
 // ****************************************************************************
 
-int
+static int
 SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr, 
     int nnodes, int phIndex)
 {
@@ -531,6 +531,23 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
         }
         else if(nPointsInFace > 4)
         {
+            // Find the face center so we can determine a proxy for a normal.
+            double fc[3] = {0., 0., 0.};
+            for(int j = 0; j < nPointsInFace; ++j)
+            {
+                points->GetPoint(cell[j], pt);
+                fc[0] += pt[0];
+                fc[1] += pt[1];
+                fc[2] += pt[2];
+            }
+            fc[0] /= double(nPointsInFace);
+            fc[1] /= double(nPointsInFace);
+            fc[2] /= double(nPointsInFace);
+            double n[3] = {0.,0.,0.};
+            n[0] = center[0] - fc[0];
+            n[1] = center[1] - fc[1];
+            n[2] = center[2] - fc[2];
+
             // Tesselate the shape into triangles and add tets. We create
             // a tessellator each time so we can add the face's points to
             // it. This should cause the points to be in the same order as
@@ -540,6 +557,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
             int *local2Global = new int[nPointsInFace];
             VertexManager           uniqueVerts(localPts);
             simv2PolygonToTriangles tess(&uniqueVerts);
+            tess.SetNormal(n);
             tess.BeginPolygon();
             tess.BeginContour();
             for(int j = 0; j < nPointsInFace; ++j)
@@ -574,7 +592,30 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
     return splitCount;
 }
 
-vtkDataArray *
+// ****************************************************************************
+// Method: SimV2CreateOriginalCells
+//
+// Purpose: 
+//   Creates original cell numbers for the polyhedral mesh.
+//
+// Arguments:
+//   domain              : The domain number.
+//   normalCellCount     : The number of regular zoo cells.
+//   polyhedralSplit     : The list of cells that split into N pieces.
+//   polyhedralCellCount : The number of polyhedral cells.
+//
+// Returns:    The original cells array.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 19 12:14:03 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static vtkDataArray *
 SimV2CreateOriginalCells(int domain, int normalCellCount, 
     const int *polyhedralSplit, int polyhedralCellCount)
 {
@@ -582,7 +623,7 @@ SimV2CreateOriginalCells(int domain, int normalCellCount,
     originalCells->SetNumberOfComponents(2);
     int bloat = 0;
     for(int i = 0; i < polyhedralCellCount; ++i)
-       bloat += polyhedralSplit[i*2+1];
+        bloat += polyhedralSplit[i*2+1];
     originalCells->SetNumberOfTuples(normalCellCount + bloat);
     originalCells->SetName("avtOriginalCellNumbers");
 
@@ -592,7 +633,12 @@ SimV2CreateOriginalCells(int domain, int normalCellCount,
     for(int origCell = 0; origCell < allCells; ++origCell)
     {
         oc[1] = origCell;
-        if(origCell < polyhedralSplit[phIndex*2])
+        if(phIndex >= polyhedralCellCount)
+        {
+            *oc++ = domain;
+            *oc++ = origCell;
+        }
+        else if(origCell < polyhedralSplit[phIndex*2])
         {
             *oc++ = domain;
             *oc++ = origCell;
@@ -612,6 +658,28 @@ SimV2CreateOriginalCells(int domain, int normalCellCount,
     return originalCells;
 }
 
+// ****************************************************************************
+// Method: SimV2ExpandPolyhedralDataArray
+//
+// Purpose: 
+//   Creates a copy of the input data array, inflated for polyhedral zones
+//
+// Arguments:
+//   input               : The data array to copy.
+//   polyhedralSplit     : The list of cells that split into N pieces.
+//   polyhedralCellCount : The number of polyhedral cells.
+//
+// Returns:    An inflated data array.
+//
+// Note:       Only works for zone data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 19 12:15:30 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 vtkDataArray *
 SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
     int polyhedralCellCount)
@@ -626,8 +694,11 @@ SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
     int phIndex = 0;
     for(int i = 0; i < input->GetNumberOfTuples(); ++i)
     {
-        if(i < polyhedralSplit[phIndex*2])
+        if(phIndex >= polyhedralCellCount ||
+           i < polyhedralSplit[phIndex*2])
+        {
             output->SetTuple(out++, input->GetTuple(i));
+        }
         else
         {
             int nrepeats = polyhedralSplit[phIndex*2+1];
@@ -657,7 +728,9 @@ SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
 // Creation:   March 14, 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 19 12:17:37 PST 2010
+//   I added polyhedral cell support.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -715,8 +788,6 @@ SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
                    "Coordinate arrays must be float or double.\n");
     }
 
-debug1 << "SimV2_GetMesh_Unstructured: done creating points" << endl;
-
     //
     // Create the cells.
     //
@@ -742,7 +813,6 @@ debug1 << "SimV2_GetMesh_Unstructured: done creating points" << endl;
     ugrid->SetPoints(points);
     ugrid->Allocate(normalCellCount + 6 * polyhedralCellCount);
     points->Delete();
-debug1 << "SimV2_GetMesh_Unstructured: allocated ugrid" << endl;
 
     int *polyhedralSplit = 0;
     if(polyhedralCellCount > 0)
@@ -760,12 +830,11 @@ debug1 << "SimV2_GetMesh_Unstructured: allocated ugrid" << endl;
     while(cell < end && numCells < umesh->nzones)
     {
         int celltype = *cell++;
-debug1 << "SimV2_GetMesh_Unstructured: celltype=" << celltype << endl;
 
         if(celltype == VISIT_CELL_POLYHEDRON)
         {
             polyhedralSplit[2*phIndex] = numCells;
-            polyhedralSplit[2*phIndex] = SimV2_Add_PolyhedralCell(ugrid, &cell,
+            polyhedralSplit[2*phIndex+1] = SimV2_Add_PolyhedralCell(ugrid, &cell,
                 npts, phIndex);
             phIndex++;
         }
@@ -780,7 +849,6 @@ debug1 << "SimV2_GetMesh_Unstructured: celltype=" << celltype << endl;
 
         ++numCells;
     }
-debug1 << "SimV2_GetMesh_Unstructured: created the zones" << endl;
 
     if (numCells != umesh->nzones)
     {
@@ -844,18 +912,18 @@ debug1 << "SimV2_GetMesh_Unstructured: created the zones" << endl;
 
     if(polyhedralCellCount > 0)
     {
-#if 0
         vtkDataArray *originalCells = SimV2CreateOriginalCells(domain,
             normalCellCount, polyhedralSplit, polyhedralCellCount);
         ugrid->GetCellData()->AddArray(originalCells);
         ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
-#endif
+
         // For now
         delete [] polyhedralSplit;
 
         //Future
         // Save off normalCellCount, polyhedralSplit, polyhedralCellCount
-        // into a cached structure.
+        // into a cached structure so we can use them to inflate data arrays
+        // later when the sim provides data via GetVar.
     }
 
     return ugrid;
