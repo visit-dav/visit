@@ -189,6 +189,9 @@
 #    Mark C. Miller, Tue Jan 26 12:28:42 PST 2010
 #    Eliminated cating of stdout/stderr of mkdir command that makes 'post'
 #    directory in /project/projectdirs/visit/www to see why its failing.
+#
+#    Mark C. Miller, Fri Feb 19 08:46:29 PST 2010
+#    Made pre-update configure failure a warning instead of fatal error.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -409,7 +412,7 @@ echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-buildall 1>> config_log.txt 2>&1
-checkAndHandleError $? fatal "Pre-Update configure failed" config_log.txt 
+checkAndHandleError $? warn "Pre-Update configure failed" config_log.txt 
 cd ..
 
 # test 'make clean' acts as expected
