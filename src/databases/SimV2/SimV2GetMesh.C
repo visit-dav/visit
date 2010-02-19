@@ -1,3 +1,5 @@
+#include <set>
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
@@ -8,6 +10,8 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 
@@ -19,6 +23,8 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+
+#include <PolygonToTriangles.C>
 
 void FreeDataArray(VisIt_DataArray &da);
 
@@ -378,6 +384,263 @@ SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *rmesh)
 }
 
 // ****************************************************************************
+// Method: SimV2_UnstructuredMesh_Count_Cells
+//
+// Purpose: 
+//   Examine the connectivity and count the number of regular cells and the 
+//   number of polyhedral cells.
+//
+// Arguments: 
+//   umesh           : The unstructured mesh
+//   normalCellCount : The count of non-polyhedral cells.
+//   polyCount       : The number of polyhedral cells
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 18 16:57:18 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+SimV2_UnstructuredMesh_Count_Cells(const VisIt_UnstructuredMesh *umesh,
+    int &normalCellCount, int &polyCount)
+{
+    int celltype_npts[10];
+    celltype_npts[VISIT_CELL_BEAM]  = 2;
+    celltype_npts[VISIT_CELL_TRI]   = 3;
+    celltype_npts[VISIT_CELL_QUAD]  = 4;
+    celltype_npts[VISIT_CELL_TET]   = 4;
+    celltype_npts[VISIT_CELL_PYR]   = 5;
+    celltype_npts[VISIT_CELL_WEDGE] = 6;
+    celltype_npts[VISIT_CELL_HEX]   = 8;
+
+    polyCount = 0;
+    normalCellCount = 0;
+
+    const int *cell = umesh->connectivity.iArray;
+    const int *end = umesh->connectivity.iArray + umesh->connectivityLen;
+    while(cell < end)
+    {
+        int celltype = *cell++;
+        if(celltype == VISIT_CELL_POLYHEDRON)
+        {
+            int nfaces = *cell++;
+            for(int i = 0; i < nfaces; ++i)
+            {
+                int npts = *cell++;
+                cell += npts;
+            }
+            polyCount++;
+        }
+        else
+        {
+            cell += celltype_npts[celltype];
+            normalCellCount++;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: SimV2_Add_PolyhedralCell
+//
+// Purpose: 
+//   Append the current polyhedral cell to the mesh as tets and pyramids while
+//   updating the input cellptr to the location of the next polyhedral face.
+//
+// Arguments:
+//   ugrid   : The unstructured grid to which we're adding a cell.
+//   cellptr : The pointer to the face connectivity.
+//   nnodes  : The number of original nodes.
+//   phIndex : The index of the polyhedral zone.
+//
+// Returns:    Return the number of cells that the polyhedral cell was broken
+//             into.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 18 16:59:12 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr, 
+    int nnodes, int phIndex)
+{
+    const int *cell = *cellptr;
+
+    // cell points at the number of faces in the cell at this point.
+    int nfaces = *cell++;
+    // Iterate over the faces and get a list of unique points
+    std::set<int> uniquePointIds;
+    for(int i = 0; i < nfaces; ++i)
+    {
+        int nPointsInFace = *cell++;
+        for(int j = 0; j < nPointsInFace; ++j)
+            uniquePointIds.insert(*cell++);
+    }
+
+    // Come up with a center point and store it.
+    double pt[3] = {0.,0.,0.}, center[3] = {0.,0.,0.};
+    vtkPoints *points = ugrid->GetPoints();
+    for(std::set<int>::const_iterator it = uniquePointIds.begin();
+        it != uniquePointIds.end(); ++it)
+    {
+        points->GetPoint(*it, pt);
+        center[0] += pt[0];
+        center[1] += pt[1];
+        center[2] += pt[2];
+    }
+    double m = 1. / double(uniquePointIds.size());
+    center[0] *= m;
+    center[1] *= m;
+    center[2] *= m; 
+    vtkIdType phCenter = nnodes + phIndex;
+    points->SetPoint(phCenter, center);
+
+    // Now, iterate over the faces, adding solid cells for them
+    int splitCount = 0;
+    cell = *cellptr + 1;
+    vtkIdType verts[5];
+    for(int i = 0; i < nfaces; ++i)
+    {
+        int nPointsInFace = *cell++;
+        if(nPointsInFace == 3)
+        {
+            // Add a tet
+            verts[0] = cell[2];
+            verts[1] = cell[1];
+            verts[2] = cell[0];
+            verts[3] = phCenter;
+            ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+            splitCount++;
+        }
+        else if(nPointsInFace == 4)
+        {
+            // Add a pyramid
+            verts[0] = cell[3];
+            verts[1] = cell[2];
+            verts[2] = cell[1];
+            verts[3] = cell[0];
+            verts[4] = phCenter;
+            ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+            splitCount++;
+        }
+        else if(nPointsInFace > 4)
+        {
+            // Tesselate the shape into triangles and add tets. We create
+            // a tessellator each time so we can add the face's points to
+            // it. This should cause the points to be in the same order as
+            // they are in the face.
+            vtkPoints *localPts = vtkPoints::New();
+            localPts->Allocate(nPointsInFace);
+            int *local2Global = new int[nPointsInFace];
+            VertexManager           uniqueVerts(localPts);
+            simv2PolygonToTriangles tess(&uniqueVerts);
+            tess.BeginPolygon();
+            tess.BeginContour();
+            for(int j = 0; j < nPointsInFace; ++j)
+            {
+                local2Global[j] = cell[j];
+                tess.AddVertex(points->GetPoint(local2Global[j]));
+            }
+            tess.EndContour();
+            tess.EndPolygon();
+
+            for(int t = 0; t < tess.GetNumTriangles(); ++t)
+            {
+                int a,b,c;
+                tess.GetTriangle(t, a, b, c);
+                verts[0] = local2Global[a];
+                verts[1] = local2Global[b];
+                verts[2] = local2Global[c];
+                verts[3] = phCenter;
+                ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+                splitCount++;
+            }
+
+            localPts->Delete();
+            delete [] local2Global;
+        }
+        
+        cell += nPointsInFace;
+    }
+
+    *cellptr = cell;
+
+    return splitCount;
+}
+
+vtkDataArray *
+SimV2CreateOriginalCells(int domain, int normalCellCount, 
+    const int *polyhedralSplit, int polyhedralCellCount)
+{
+    vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::New();
+    originalCells->SetNumberOfComponents(2);
+    int bloat = 0;
+    for(int i = 0; i < polyhedralCellCount; ++i)
+       bloat += polyhedralSplit[i*2+1];
+    originalCells->SetNumberOfTuples(normalCellCount + bloat);
+    originalCells->SetName("avtOriginalCellNumbers");
+
+    int phIndex = 0;
+    unsigned int *oc = (unsigned int *)originalCells->GetVoidPointer(0);
+    int allCells = normalCellCount + polyhedralCellCount;
+    for(int origCell = 0; origCell < allCells; ++origCell)
+    {
+        oc[1] = origCell;
+        if(origCell < polyhedralSplit[phIndex*2])
+        {
+            *oc++ = domain;
+            *oc++ = origCell;
+        }
+        else
+        {
+            int nrepeats = polyhedralSplit[phIndex*2+1];
+            for(int j = 0; j < nrepeats; ++j)
+            {
+                *oc++ = domain;
+                *oc++ = origCell;
+            }
+            phIndex++;
+        }
+    }
+
+    return originalCells;
+}
+
+vtkDataArray *
+SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
+    int polyhedralCellCount)
+{
+    vtkDataArray *output = input->NewInstance();
+    int bloat = 0;
+    for(int i = 0; i < polyhedralCellCount; ++i)
+       bloat += polyhedralSplit[i*2+1];
+    output->SetNumberOfTuples(input->GetNumberOfTuples() + bloat);
+
+    int out = 0;
+    int phIndex = 0;
+    for(int i = 0; i < input->GetNumberOfTuples(); ++i)
+    {
+        if(i < polyhedralSplit[phIndex*2])
+            output->SetTuple(out++, input->GetTuple(i));
+        else
+        {
+            int nrepeats = polyhedralSplit[phIndex*2+1];
+            for(int j = 0; j < nrepeats; ++j)
+                output->SetTuple(out++, input->GetTuple(i));
+            phIndex++;
+        }
+    }
+
+    return output;    
+}
+
+// ****************************************************************************
 // Method: SimV2_GetMesh_Unstructured
 //
 // Purpose: 
@@ -398,7 +661,7 @@ SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *rmesh)
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *umesh)
+SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
 {
     if (!umesh)
         return NULL;
@@ -409,16 +672,17 @@ SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *umesh)
                    "Connectivity array must be ints.");
     }
 
-    vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New();
-    vtkPoints            *points  = vtkPoints::New();
-    ugrid->SetPoints(points);
-    points->Delete();
+    // Count the polyhedral cells so we can allocate more points
+    int normalCellCount = 0, polyhedralCellCount = 0;
+    SimV2_UnstructuredMesh_Count_Cells(umesh, normalCellCount,
+        polyhedralCellCount);
 
     //
     // Populate the coordinates.
     //
     int npts = umesh->nnodes;
-    points->SetNumberOfPoints(npts);
+    vtkPoints *points  = vtkPoints::New();
+    points->SetNumberOfPoints(npts + polyhedralCellCount);
     float *pts = (float *) points->GetVoidPointer(0);
 
     if (umesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
@@ -451,6 +715,11 @@ SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *umesh)
                    "Coordinate arrays must be float or double.\n");
     }
 
+debug1 << "SimV2_GetMesh_Unstructured: done creating points" << endl;
+
+    //
+    // Create the cells.
+    //
     int celltype_npts[10];
     celltype_npts[VISIT_CELL_BEAM]  = 2;
     celltype_npts[VISIT_CELL_TRI]   = 3;
@@ -469,55 +738,62 @@ SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *umesh)
     celltype_idtype[VISIT_CELL_WEDGE] = VTK_WEDGE;
     celltype_idtype[VISIT_CELL_HEX]   = VTK_HEXAHEDRON;
 
-    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
-    nlist->SetNumberOfValues(umesh->connectivityLen);
-    vtkIdType *nl = nlist->GetPointer(0);
+    vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    ugrid->Allocate(normalCellCount + 6 * polyhedralCellCount);
+    points->Delete();
+debug1 << "SimV2_GetMesh_Unstructured: allocated ugrid" << endl;
 
-    vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
-    cellTypes->SetNumberOfValues(umesh->nzones);
-    unsigned char *ct = cellTypes->GetPointer(0);
-
-    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
-    cellLocations->SetNumberOfValues(umesh->nzones);
-    int *cl = cellLocations->GetPointer(0);
-
-    int numCells = 0;
-    int offset = 0;
-    while (offset < umesh->connectivityLen)
+    int *polyhedralSplit = 0;
+    if(polyhedralCellCount > 0)
     {
-        int celltype = umesh->connectivity.iArray[offset];
+        polyhedralSplit = new int[2 * polyhedralCellCount];
+        memset(polyhedralSplit, 0, 2 * polyhedralCellCount * sizeof(int));
+    }
 
-        int vtktype = celltype_idtype[celltype];
-        int nelempts = celltype_npts[celltype];
-        *ct++ = vtktype;
-        *nl++ = nelempts;
+    // Iterate over the connectivity and add the appropriate cell types
+    int numCells = 0;
+    int phIndex = 0;
+    const int *cell = umesh->connectivity.iArray;
+    const int *end = cell + umesh->connectivityLen;
+    vtkIdType verts[8];
+    while(cell < end && numCells < umesh->nzones)
+    {
+        int celltype = *cell++;
+debug1 << "SimV2_GetMesh_Unstructured: celltype=" << celltype << endl;
 
-        for (int j=0; j<nelempts; j++)
+        if(celltype == VISIT_CELL_POLYHEDRON)
         {
-            *nl++ = umesh->connectivity.iArray[offset+1+j];
+            polyhedralSplit[2*phIndex] = numCells;
+            polyhedralSplit[2*phIndex] = SimV2_Add_PolyhedralCell(ugrid, &cell,
+                npts, phIndex);
+            phIndex++;
+        }
+        else
+        {
+            int vtktype = celltype_idtype[celltype];
+            int nelempts = celltype_npts[celltype];
+            for (int j=0; j<nelempts; j++)
+                verts[j] = *cell++;
+            ugrid->InsertNextCell(vtktype, nelempts, verts);
         }
 
-        numCells++;
-        *cl++ = offset;
-        offset += nelempts+1;
+        ++numCells;
     }
+debug1 << "SimV2_GetMesh_Unstructured: created the zones" << endl;
 
     if (numCells != umesh->nzones)
     {
+        delete [] polyhedralSplit;
+        ugrid->Delete();
         EXCEPTION1(ImproperUseException,
                    "Number of zones and length of connectivity "
                    "array did not match!");
     }
 
-    vtkCellArray *cells = vtkCellArray::New();
-    cells->SetCells(umesh->nzones, nlist);
-    nlist->Delete();
-
-    ugrid->SetCells(cellTypes, cellLocations, cells);
-    cellTypes->Delete();
-    cellLocations->Delete();
-    cells->Delete();
-
+    //
+    // Add the ghost zones to the mesh.
+    //
     int firstCell = umesh->firstRealZone;
     int lastCell  = umesh->lastRealZone;
     if (firstCell == 0 && lastCell == 0 )
@@ -539,39 +815,47 @@ SimV2_GetMesh_Unstructured(VisIt_UnstructuredMesh *umesh)
     {
         int i;
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
         ghostZones->SetNumberOfTuples(numCells);
         unsigned char *tmp = ghostZones->GetPointer(0);
-        for (i = 0; i < firstCell; i++)
+        unsigned char val = 0;
+        avtGhostData::AddGhostZoneType(val, 
+            DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        for(int i = 0; i < numCells; ++i)
         {
-            //
-            //  ghostZones at the begining of the zone list
-            //
-            unsigned char val = 0;
-            avtGhostData::AddGhostZoneType(val, 
-                                   DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            *tmp++ = val;
+            if(i < firstCell || i > lastCell+1)
+                *tmp++ = val;
+            else
+                *tmp++ = 0;
         }
-        for (i = firstCell; i <= lastCell; i++)
+
+        if(polyhedralCellCount > 0)
         {
-            //
-            // real zones
-            //
-            *tmp++ = 0;
+            vtkDataArray *phgz = SimV2ExpandPolyhedralDataArray(
+                ghostZones, polyhedralSplit, polyhedralCellCount);
+            ghostZones->Delete();
+            ghostZones = (vtkUnsignedCharArray *)phgz;
         }
-        for (i = lastCell+1; i < numCells; i++)
-        {
-            //
-            //  ghostZones at the end of the zone list
-            //
-            unsigned char val = 0;
-            avtGhostData::AddGhostZoneType(val, 
-                                   DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            *tmp++ = val;
-        }
+
+        ghostZones->SetName("avtGhostZones");
         ugrid->GetCellData()->AddArray(ghostZones);
         ghostZones->Delete();
         ugrid->SetUpdateGhostLevel(0);
+    }
+
+    if(polyhedralCellCount > 0)
+    {
+#if 0
+        vtkDataArray *originalCells = SimV2CreateOriginalCells(domain,
+            normalCellCount, polyhedralSplit, polyhedralCellCount);
+        ugrid->GetCellData()->AddArray(originalCells);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+#endif
+        // For now
+        delete [] polyhedralSplit;
+
+        //Future
+        // Save off normalCellCount, polyhedralSplit, polyhedralCellCount
+        // into a cached structure.
     }
 
     return ugrid;

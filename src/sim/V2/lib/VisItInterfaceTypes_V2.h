@@ -115,6 +115,7 @@ typedef enum {
 #define VISIT_CELL_WEDGE                  5
 #define VISIT_CELL_HEX                    6
 #define VISIT_CELL_POINT                  7
+#define VISIT_CELL_POLYHEDRON             8
 
 /* Definitions for CSG boundary types 
    Designed so low-order 16 bits are unused

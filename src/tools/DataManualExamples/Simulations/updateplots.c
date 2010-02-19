@@ -408,12 +408,12 @@ void mainloop(simulation_data *sim)
 
 int main(int argc, char **argv)
 {
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
-
-    simulation_data sim;
-    simulation_data_ctor(&sim);
 
 #ifdef PARALLEL
     /* Initialize MPI */
