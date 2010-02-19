@@ -323,22 +323,28 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         }
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
-        // Set the opening options
-        const DBOptionsAttributes *opts = 
-            defaultFileOpenOptions.GetOpenOptionsForID(formatid);
-        if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+        if (info)
         {
-            // The options aren't in the default options.  Maybe defaults
-            // have been added to the plugin since they saved their settings.
-            // Try to get it from the plugin.
-            opts = info->GetReadOptions();
+            // Set the opening options
+            const DBOptionsAttributes *opts = 
+                defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+            if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+            {
+                // The options aren't in the default options.  Maybe defaults
+                // have been added to the plugin since they saved their settings.
+                // Try to get it from the plugin.
+                DBOptionsAttributes *opts = info->GetReadOptions();
+                if (opts)
+                    info->SetReadOptions(opts);
+            }
+            else
+            {
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
+            }
         }
-    
-        if (opts && info)
-            info->SetReadOptions(new DBOptionsAttributes(*opts));
-        plugins.push_back(info ? info->GetName(): "");
         TRY
         {
+            plugins.push_back(info ? info->GetName(): "");
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying, false);
@@ -383,19 +389,25 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             }
 
             CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(fileMatchedIds[i]);
-            // Set the opening options
-            const DBOptionsAttributes *opts = 
-                defaultFileOpenOptions.GetOpenOptionsForID(fileMatchedIds[i]);
-            if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+            if (info)
             {
-                // The options aren't in the default options.  Maybe
-                // defaults have been added to the plugin since they saved 
-                // their settings. Try to get it from the plugin.
-                opts = info->GetReadOptions();
+                // Set the opening options
+                const DBOptionsAttributes *opts = 
+                    defaultFileOpenOptions.GetOpenOptionsForID(fileMatchedIds[i]);
+                if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+                {
+                    // The options aren't in the default options.  Maybe
+                    // defaults have been added to the plugin since they saved 
+                    // their settings. Try to get it from the plugin.
+                    DBOptionsAttributes *opts = info->GetReadOptions();
+                    if (opts)
+                        info->SetReadOptions(opts);
+                }
+                else
+                {
+                    info->SetReadOptions(new DBOptionsAttributes(*opts));
+                }
             }
-
-            if (opts && info)
-                info->SetReadOptions(new DBOptionsAttributes(*opts));
             debug3 << "avtDatabaseFactory: trying extension-matched format "
                    << fileMatchedIds[i] << endl;
             TRY
@@ -483,28 +495,33 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                << "trying preferred format " << formatid << endl;
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
-
-        // if this is strict about filename matching, don't try it either
-        if (info->AreDefaultFilePatternsStrict())
+        if (info)
         {
-            debug3 << "avtDatabaseFactory: no, skip it, since it's "
-                   << "strict about file patterns.\n";
-            continue;
-        }
+            // if this is strict about filename matching, don't try it either
+            if (info->AreDefaultFilePatternsStrict())
+            {
+                debug3 << "avtDatabaseFactory: no, skip it, since it's "
+                       << "strict about file patterns.\n";
+                continue;
+            }
 
-        // Set the opening options
-        const DBOptionsAttributes *opts = 
-            defaultFileOpenOptions.GetOpenOptionsForID(formatid);
-        if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
-        {
-            // The options aren't in the default options.  Maybe
-            // defaults have been added to the plugin since they saved 
-            // their settings. Try to get it from the plugin.
-            opts = info->GetReadOptions();
+            // Set the opening options
+            const DBOptionsAttributes *opts = 
+                defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+            if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+            {
+                // The options aren't in the default options.  Maybe
+                // defaults have been added to the plugin since they saved 
+                // their settings. Try to get it from the plugin.
+                DBOptionsAttributes *opts = info->GetReadOptions();
+                if (opts)
+                    info->SetReadOptions(opts);
+            }
+            else
+            {
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
+            }
         }
-
-        if (opts && info)
-            info->SetReadOptions(new DBOptionsAttributes(*opts));
         TRY
         {
             plugins.push_back(info ? info->GetName(): "");
