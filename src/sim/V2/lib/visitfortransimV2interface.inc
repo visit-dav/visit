@@ -1,24 +1,11 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc -*- fortran -*-
 !
-! VisIt Fortran Simulation Interface V1 include file
+! VisIt Fortran Simulation Interface V2 include file
 !
 ! Programmer: Brad Whitlock
-! Date: Fri Jan 27 17:53:41 PST 2006
+! Date: Fri Feb 19 15:44:42 PST 2010
 !
 ! Modifications:
-!   Brad Whitlock, Wed Mar 1 15:26:24 PST 2006
-!   I added functions to set more mesh attributes and I added functions
-!   to create expression metadata. I also added functions to create 
-!   point meshes and unstructured meshes.
-!
-!   Brad Whitlock, Thu Jan 11 14:49:17 PST 2007
-!   Added "2" versions of some of the mesh functions to allow the 
-!   owner parameter to be passed so we can have VisIt own the data
-!   instead of the default "sim owns the data". We want to do this
-!   when we're passing data that can go out of scope.
-!
-!   Brad Whitlock, Thu Jan 25 15:09:56 PST 2007
-!   Added visitupdateplots and visitexecutecommand
 !
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -44,14 +31,16 @@
       external visitdetectinput,visitattemptconnection
       external visitprocessenginecommand,visittimestepchanged
       external visitupdateplots,visitexecutecommand
-      external visitdisconnect,visitgetlasterror
+      external visitdisconnect,visitgetlasterror,visitopentracefile
+      external visitclosetracefile
 
       integer  visitsetdirectory,visitsetoptions,visitsetupenv
       integer  visitinitializesim,visitsetparallel,visitsetparallelrank
       integer  visitdetectinput,visitattemptconnection
       integer  visitprocessenginecommand,visittimestepchanged
       integer  visitupdateplots,visitexecutecommand
-      integer  visitdisconnect,visitgetlasterror
+      integer  visitdisconnect,visitgetlasterror,visitopentracefile
+      integer  visitclosetracefile
  
 !... Functions for the data interface
       external visitmdsetcycletime

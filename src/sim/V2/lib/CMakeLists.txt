@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -44,6 +44,7 @@ VisItDataInterface_V2.c
 SimV2Tracing.c 
 VisIt_DomainBoundaries.c 
 VisIt_DomainNesting.c
+VisIt_VariableData.c
 )
 
 SET(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)

@@ -27,8 +27,6 @@ int SIMV2_API simv2_PointMesh_free(VisIt_PointMesh *obj);
 int SIMV2_API simv2_CSGMesh_free(VisIt_CSGMesh *obj);
 int SIMV2_API simv2_MeshData_free(VisIt_MeshData *obj);
 int SIMV2_API simv2_CurveData_free(VisIt_CurveData *obj);
-int SIMV2_API simv2_VariableData_free(VisIt_VariableData *obj);
-int SIMV2_API simv2_MixedVariableData_free(VisIt_MixedVariableData *obj);
 int SIMV2_API simv2_MaterialData_free(VisIt_MaterialData *obj);
 int SIMV2_API simv2_SpeciesData_free(VisIt_SpeciesData *obj);
 int SIMV2_API simv2_DomainList_free(VisIt_DomainList *obj);

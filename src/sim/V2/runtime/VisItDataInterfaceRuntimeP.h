@@ -10,6 +10,8 @@
 #define VISIT_DOMAIN_BOUNDARIES 13
 #define VISIT_DOMAIN_NESTING    14
 
+#define VISIT_VARIABLE_DATA     15
+
 #define VISIT_OBJECT_HEAD                int objectType;
 #define VISIT_OBJECT_CHECK_TYPE(obj,ID)  (obj->objectType == ID)
 #define VISIT_OBJECT_INITIALIZE(obj, ID) obj->objectType = ID

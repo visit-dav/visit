@@ -91,6 +91,7 @@ using std::vector;
 #include <VisItDataInterface_V2P.h>
 #include <simv2_DomainBoundaries.h>
 #include <simv2_DomainNesting.h>
+#include <simv2_VariableData.h>
 
 #ifndef MDSERVER
 vtkDataSet *SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *);
@@ -894,25 +895,10 @@ CopyVariableData(vtkDataArray *array, const T *src, int nComponents, int nTuples
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   March 17, 2005
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Feb 19 15:09:06 PST 2010
 //
 //  Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
-//    Added true data array structures in place of raw array pointers.
-//
-//    Jeremy Meredith, Wed May 11 10:56:21 PDT 2005
-//    Allowed for NULL responses.  Added int/char support.
-//
-//    Brad Whitlock, Thu Apr 10 11:18:11 PDT 2008
-//    Added mixvar support.
-//
-//    Brad Whitlock, Mon Jun  2 14:12:46 PDT 2008
-//    Check that cb.GetMixedScalar != NULL.
-//
-//    Brad Whitlock, Fri Feb  6 16:39:09 PST 2009
-//    Return native data types since the transform manager should handle it. I
-//    also added code to delete the scalar objects.
 //
 // ****************************************************************************
 
@@ -923,58 +909,72 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
     return NULL;
 #else
 
-    VisIt_VariableData *sd = simv2_invoke_GetVariable(domain,varname);
-    if (sd == NULL || sd->nTuples<=0)
+    visit_handle h = simv2_invoke_GetVariable(domain, varname);
+    if (h == VISIT_INVALID_HANDLE)
+        return NULL;
+
+    // Get the data from the opaque object.
+    int owner, dataType, nComponents, nTuples;
+    void *data = NULL;
+    int err = simv2_VariableData_getData(h, owner, dataType, nComponents, 
+                                         nTuples, data);
+    if(err == VISIT_ERROR || nTuples < 1)
         return NULL;
 
     vtkDataArray *array = 0;
-    if (sd->data.dataType == VISIT_DATATYPE_FLOAT)
+    if (dataType == VISIT_DATATYPE_FLOAT)
     {
         array = vtkFloatArray::New();
-        CopyVariableData(array, sd->data.fArray, sd->nComponents, sd->nTuples);
+        CopyVariableData(array, (const float *)data, nComponents, nTuples);
     }
-    else if (sd->data.dataType == VISIT_DATATYPE_DOUBLE)
+    else if (dataType == VISIT_DATATYPE_DOUBLE)
     {
         array = vtkDoubleArray::New();
-        CopyVariableData(array, sd->data.dArray, sd->nComponents, sd->nTuples);
+        CopyVariableData(array, (const double *)data, nComponents, nTuples);
     }
-    else if (sd->data.dataType == VISIT_DATATYPE_INT)
+    else if (dataType == VISIT_DATATYPE_INT)
     {
         array = vtkIntArray::New();
-        CopyVariableData(array, sd->data.iArray, sd->nComponents, sd->nTuples);
+        CopyVariableData(array, (const int *)data, nComponents, nTuples);
     }
-    else // (sd->data.dataType == VISIT_DATATYPE_CHAR)
+    else if(dataType == VISIT_DATATYPE_CHAR)
     {
         array = vtkUnsignedCharArray::New();
-        CopyVariableData(array, sd->data.cArray, sd->nComponents, sd->nTuples);
+        CopyVariableData(array, (const char *)data, nComponents, nTuples);
+    }
+    else
+    {
+        EXCEPTION1(InvalidVariableException, varname);
     }
 
-    simv2_VariableData_free(sd);
+    simv2_VariableData_free(h);
 
     // Try and read mixed scalar data.
-    VisIt_MixedVariableData *mixed_sd = 
-        simv2_invoke_GetMixedVariable(domain,varname);
-    if (mixed_sd != NULL)
+    h = simv2_invoke_GetMixedVariable(domain, varname);
+    if (h != VISIT_INVALID_HANDLE)
     {
-        if(mixed_sd->nTuples > 0 &&
-           (mixed_sd->data.dataType == VISIT_DATATYPE_FLOAT ||
-            mixed_sd->data.dataType == VISIT_DATATYPE_DOUBLE)
+        err = simv2_VariableData_getData(h, owner, dataType, nComponents, 
+                                         nTuples, data);
+        if(err != VISIT_ERROR &&
+           nTuples > 0 &&
+           (dataType == VISIT_DATATYPE_FLOAT ||
+            dataType == VISIT_DATATYPE_DOUBLE)
            )
         {
-            int mixlen = mixed_sd->nTuples * mixed_sd->nComponents;
+            int mixlen = nTuples * nComponents;
             float *mixvar = new float[mixlen];
             debug1 << "SimV1 copying mixvar data: " << mixlen
                    << " values" << endl;
-            if(mixed_sd->data.dataType == VISIT_DATATYPE_DOUBLE)
+            if(dataType == VISIT_DATATYPE_DOUBLE)
             {
                 // Convert the doubles to floats.
-                const double *src = mixed_sd->data.dArray;
+                const double *src = (const double *)data;
                 mixvar = new float[mixlen];
                 for(int i = 0; i < mixlen; ++i)
                     mixvar[i] = (float)src[i];
             }
             else
-                memcpy(mixvar, mixed_sd->data.fArray, sizeof(float)*mixlen);
+                memcpy(mixvar, data, sizeof(float)*mixlen);
 
             // Cache the mixed data.
             avtMixedVariable *mv = new avtMixedVariable(mixvar,
@@ -988,7 +988,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
             delete [] mixvar;
         }
 
-        simv2_MixedVariableData_free(mixed_sd);
+        simv2_VariableData_free(h);
     }
 
     return array;

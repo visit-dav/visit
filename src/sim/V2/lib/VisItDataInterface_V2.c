@@ -163,24 +163,6 @@ VisIt_CurveData_free(VisIt_CurveData *obj)
 }
 
 int
-VisIt_VariableData_free(VisIt_VariableData *obj)
-{
-    VISIT_DYNAMIC_EXECUTE(simv2_VariableData_free,
-                    int (*)(VisIt_VariableData*),
-                    int (*cb)(VisIt_VariableData*),
-                    (*cb)(obj))
-}
-
-int
-VisIt_MixedVariableData_free(VisIt_MixedVariableData *obj)
-{
-    VISIT_DYNAMIC_EXECUTE(simv2_MixedVariableData_free,
-                    int (*)(VisIt_MixedVariableData*),
-                    int (*cb)(VisIt_MixedVariableData*),
-                    (*cb)(obj))
-}
-
-int
 VisIt_MaterialData_free(VisIt_MaterialData *obj)
 {
     VISIT_DYNAMIC_EXECUTE(simv2_MaterialData_free,
