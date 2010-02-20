@@ -102,7 +102,13 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   VsH5Reader* reader;
 
   private:
+  /**
+   * A user-specified setting for the stride to use when loading data.
+   * Default is 1 on all axes.
+   */
   std::vector<int> stride;
+
+
   /**
    * Set the axis labels for a mesh.
    *

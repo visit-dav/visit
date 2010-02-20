@@ -202,14 +202,14 @@ herr_t VsFilter::visitGroup(hid_t locId, const char* name, void* opdata) {
     osRef << "VsFilter::visitGroup: node '" << name << "' is a mesh."
     << std::endl;
     std::pair<std::string, VsGMeta*> el(fullName, gm);
-    metaPtr->gMeshes2.insert(el);
+    metaPtr->gMeshes.insert(el);
     metaPtr->ptr = gm;
   }
   else if (gm->isVsVars) {
     osRef << "VsFilter::visitGroup: node '" << name << "' is vsVars." <<
     std::endl;
     std::pair<std::string, VsGMeta*> el(fullName, gm);
-    metaPtr->vsVars2.insert(el);
+    metaPtr->vsVars.insert(el);
     metaPtr->ptr = gm;
   }
   else {
@@ -289,37 +289,45 @@ herr_t VsFilter::visitDataset(hid_t locId, const char* name, void* opdata) {
   // Test isVariable etc and add register
   if (vm->isVariable) {
     std::pair<std::string, VsDMeta*> el2(fullName, vm);
-    metaPtr->vars2.insert(el2);
+    metaPtr->vars.insert(el2);
     osRef <<"VsFilter::visitDataset: node '" <<name <<
     "' is a Variable." <<std::endl;
   }
-  if (vm->isVariableWithMesh) {
+  else if (vm->isVariableWithMesh) {
     std::pair<std::string, VsDMeta*> el2(fullName, vm);
-    metaPtr->varsWithMesh2.insert(el2);
+    metaPtr->varsWithMesh.insert(el2);
     osRef <<"VsFilter::visitDataset: node '" <<name <<
     "' is a variable with mesh." <<std::endl;
   }
-  if (vm->isMesh) {
+  else if (vm->isMesh) {
     std::pair<std::string, VsDMeta*> el2(fullName, vm);
-    metaPtr->dMeshes2.insert(el2);
+    metaPtr->dMeshes.insert(el2);
     osRef <<"VsFilter::visitDataset: node '" <<name <<
     "' is a dataset mesh." <<std::endl;
-  }
-  // If this dataset is not a var, mesh or varWith mesh, and its parent is a
-  // mesh group, attach to this mesh and do not change the ptr.  Otherwise delete it.
-  if (metaPtr->ptr) {
-    if ((!vm->isVariable) && (!vm->isVariableWithMesh)&&(!vm->isMesh) &&
-        (static_cast<VsGMeta*>(metaPtr->ptr)->isMesh)) {
-      (static_cast<VsGMeta*>(metaPtr->ptr))->datasets.push_back(vm);
-    }
-    if ((!vm->isVariable) && (!vm->isVariableWithMesh)&&(!vm->isMesh) &&
-        (!static_cast<VsGMeta*>(metaPtr->ptr)->isMesh) &&
-        (metaPtr->ptr)) {
-      delete vm;
-    }
+  } else {
+    //This dataset is neither a var, a mesh, or a varWithMesh
+    //If it exists inside a Mesh group, then it might still be used
+    // (e.g. as a vsPoints dataset)
+    //However, if it's not in a mesh group, it's not used
+    // so it gets deleted
+    if (metaPtr->ptr) {
+      //we have a parent - is it a Mesh group?
+      VsGMeta* parent = static_cast<VsGMeta*>(metaPtr->ptr);
+      if (parent && (parent->isMesh)) {
+        parent->datasets.push_back(vm);
+      } else {
+        osRef <<"VsFilter::visitDataset: node '" <<name <<"' is not recognized as a Vs object.  Remembering for later." <<std::endl;
+        metaPtr->orphanDatasets.push_back(vm);
+        //        delete vm;
+      }
+    } else {
+      osRef <<"VsFilter::visitDataset: node '" <<name <<"' is not recognized as a Vs object.  Remembering for later." <<std::endl;
+      metaPtr->orphanDatasets.push_back(vm);
+      //      delete vm;
+    } 
   }
 
-  osRef <<"VsFilter::visitDataset: Returned from recursion" <<std::endl;
+  osRef <<"VsFilter::visitDataset: Returning from recursion" <<std::endl;
 
   return 0;
 }

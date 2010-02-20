@@ -41,6 +41,10 @@
 #    Brad Whitlock, Wed Feb 10 10:02:53 PST 2010
 #    I added the contributed Velodyne plugin to the build.
 #
+#    Hank Childs, Sat Feb 20 09:13:11 PST 2010
+#    Added Vs plugin.  Plugin has been available for a while, but we weren't
+#    generating a Makefile for it.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -109,6 +113,7 @@ SAMRAI
 Tetrad
 UNIC
 Velodyne
+Vs
 XDMF
 )
 THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)

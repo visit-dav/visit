@@ -227,6 +227,10 @@ struct VsH5Meta {
     clear();
   }
 
+ const bool hasObjects() const {
+    return !(gMeshes.empty() && dMeshes.empty() && vars.empty() && varsWithMesh.empty() && vsVars.empty());
+  }
+
   //list of all datasets
   std::map<std::string, VsDMeta*> datasets;
   const VsDMeta* getDataset (const std::string& name) const {
@@ -246,9 +250,12 @@ struct VsH5Meta {
 
     return NULL;
   }
+  
+  //list of "orphaned" datasets - i.e. have no known parent
+  std::vector<VsDMeta*> orphanDatasets;
 
   // List of group-meshes
-  std::map<std::string, VsGMeta*> gMeshes2;
+  std::map<std::string, VsGMeta*> gMeshes;
   const VsGMeta* getGMesh(const std::string& name) const {
     //if the name does not start with a "/",
     // it is not fully qualified
@@ -261,15 +268,15 @@ struct VsH5Meta {
     std::string fullName = makeCanonicalName(name);
 
     //look for fully qualified name
-    std::map<std::string, VsGMeta*>::const_iterator it = gMeshes2.find(fullName);
-    if (it != gMeshes2.end()) {
+    std::map<std::string, VsGMeta*>::const_iterator it = gMeshes.find(fullName);
+    if (it != gMeshes.end()) {
       //found it!
       return (const VsGMeta*)it->second;
     }
 
     //Didn't find fully qualified name, do a global search for simple name
     VsGMeta* foundMesh = 0;
-    for (it = gMeshes2.begin(); it != gMeshes2.end(); ++it) {
+    for (it = gMeshes.begin(); it != gMeshes.end(); ++it) {
       VsGMeta* candidate = it->second;
       if (candidate->name.compare(name) == 0) {
         //Found a matching name
@@ -287,7 +294,7 @@ struct VsH5Meta {
   }
 
   // List of dataset-meshes
-  std::map<std::string, VsDMeta*> dMeshes2;
+  std::map<std::string, VsDMeta*> dMeshes;
   const VsDMeta* getDMesh(const std::string& name) const {
     //if the name does not start with a "/",
     // it is not fully qualified
@@ -300,15 +307,15 @@ struct VsH5Meta {
     std::string fullName = makeCanonicalName(name);
 
     //look for fully qualified name
-    std::map<std::string, VsDMeta*>::const_iterator it = dMeshes2.find(fullName);
-    if (it != dMeshes2.end()) {
+    std::map<std::string, VsDMeta*>::const_iterator it = dMeshes.find(fullName);
+    if (it != dMeshes.end()) {
       //found it!
       return (const VsDMeta*)it->second;
     }
 
     //not found, do global search
     VsDMeta* foundMesh = 0;
-    for (it = dMeshes2.begin(); it != dMeshes2.end(); ++it) {
+    for (it = dMeshes.begin(); it != dMeshes.end(); ++it) {
       VsDMeta* candidate = it->second;
       if (candidate->name.compare(name) == 0) {
         //Found a matching name
@@ -326,7 +333,7 @@ struct VsH5Meta {
   }
 
   // List of dataset-variables
-  std::map<std::string, VsDMeta*> vars2;
+  std::map<std::string, VsDMeta*> vars;
   const VsDMeta* getVar(const std::string& name) const {
     //if the name does not start with a "/",
     // it is not fully qualified
@@ -339,15 +346,15 @@ struct VsH5Meta {
     std::string fullName = makeCanonicalName(name);
 
     //look for fully qualified name
-    std::map<std::string, VsDMeta*>::const_iterator it = vars2.find(fullName);
-    if (it != vars2.end()) {
+    std::map<std::string, VsDMeta*>::const_iterator it = vars.find(fullName);
+    if (it != vars.end()) {
       //found it
       return (const VsDMeta*)it->second;
     }
 
     //not found, do global search
     VsDMeta* foundVar = 0;
-    for (it = vars2.begin(); it != vars2.end(); ++it) {
+    for (it = vars.begin(); it != vars.end(); ++it) {
       VsDMeta* candidate = it->second;
       if (candidate->name.compare(name) == 0) {
         //Found a matching name
@@ -365,10 +372,10 @@ struct VsH5Meta {
   }
 
   // List of dataset-variable with meshes
-  std::map<std::string, VsDMeta*> varsWithMesh2;
+  std::map<std::string, VsDMeta*> varsWithMesh;
 
   // List of vsVars groups
-  std::map<std::string, VsGMeta*> vsVars2;
+  std::map<std::string, VsGMeta*> vsVars;
 
   // Pointer to the last iterated group
   void* ptr;
@@ -378,50 +385,59 @@ struct VsH5Meta {
 
     // Need to delete all pointers
     std::map<std::string, VsGMeta*>::const_iterator i;
-    for (i=gMeshes2.begin(); i != gMeshes2.end(); ++i)
-    delete i->second;
+    for (i=gMeshes.begin(); i != gMeshes.end(); ++i)
+      delete i->second;
+    for(i=vsVars.begin(); i !=vsVars.end(); ++i)
+      delete i->second;
+
     std::map<std::string, VsDMeta*>::const_iterator k;
-    for (k=dMeshes2.begin(); k != dMeshes2.end(); ++k)
-    delete k->second;
-    for (k=vars2.begin(); k != vars2.end(); ++k)
-    delete k->second;
-    for(i=vsVars2.begin(); i !=vsVars2.end(); ++i)
-    delete i->second;
+    for (k=dMeshes.begin(); k != dMeshes.end(); ++k)
+      delete k->second;
+    for (k=vars.begin(); k != vars.end(); ++k)
+      delete k->second;
+    for (k=varsWithMesh.begin(); k != varsWithMesh.end(); ++k)
+      delete k->second;
+
+    std::vector<VsDMeta*>::const_iterator j;
+    for (j=orphanDatasets.begin(); j != orphanDatasets.end(); ++j)
+      delete (*j);
+
     // Clean lists
-    gMeshes2.clear();
-    dMeshes2.clear();
-    vars2.clear();
-    varsWithMesh2.clear();
-    vsVars2.clear();
+    gMeshes.clear();
+    dMeshes.clear();
+    vars.clear();
+    varsWithMesh.clear();
+    vsVars.clear();
+    orphanDatasets.clear();
   }
 
   // Write
   void write(std::ostream& os) const {
     std::map<std::string, VsGMeta*>::const_iterator i;
-    if (gMeshes2.size()) os << "gMeshes"<<std::endl;
-    for (i=gMeshes2.begin(); i != gMeshes2.end(); ++i) {
+    if (gMeshes.size()) os << "gMeshes"<<std::endl;
+    for (i=gMeshes.begin(); i != gMeshes.end(); ++i) {
       i->second->write(os);
     }
 
     std::map<std::string, VsDMeta*>::const_iterator k;
 
-    if (dMeshes2.size()) os <<"dMeshes"<< std::endl;
-    for (k=dMeshes2.begin(); k != dMeshes2.end(); ++k) {
+    if (dMeshes.size()) os <<"dMeshes"<< std::endl;
+    for (k=dMeshes.begin(); k != dMeshes.end(); ++k) {
       k->second->write(os);
     }
 
-    if (vars2.size()) os << "vars" << std::endl;
-    for (k=vars2.begin(); k != vars2.end(); ++k) {
+    if (vars.size()) os << "vars" << std::endl;
+    for (k=vars.begin(); k != vars.end(); ++k) {
       k->second->write(os);
     }
 
-    if (varsWithMesh2.size()) os << "varsWithMesh" << std::endl;
-    for (k=varsWithMesh2.begin(); k != varsWithMesh2.end(); ++k) {
+    if (varsWithMesh.size()) os << "varsWithMesh" << std::endl;
+    for (k=varsWithMesh.begin(); k != varsWithMesh.end(); ++k) {
       k->second->write(os);
     }
 
-    if (vsVars2.size()) os <<"vsVars" << std::endl;
-    for (i=vsVars2.begin(); i !=vsVars2.end(); ++i) {
+    if (vsVars.size()) os <<"vsVars" << std::endl;
+    for (i=vsVars.begin(); i !=vsVars.end(); ++i) {
       i->second->write(os);
     }
   }
