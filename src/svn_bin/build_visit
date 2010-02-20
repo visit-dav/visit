@@ -822,6 +822,9 @@
 #     Gunther H. Weber, Tue Feb 16 11:07:08 PST 2010
 #     Adapted to new H5Part
 #
+#     Hank Childs and Paul Navratil, Sat Feb 20 17:31:54 CST 2010
+#     Fix for building Ice-T when PAR_INCLUDE has a -DDEFINE first.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7343,20 +7346,6 @@ function build_tcmalloc
     cp .libs/libtcmalloc.* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
 }
 
-# `car' returns the head of a list.
-function car
-{
-    # Is there really no better way to do this?
-    first=0
-    for str in "${@}" ; do
-        if test ${first} -eq 0; then
-            echo "${str}"
-            return 0
-        fi
-        first=1
-    done
-}
-
 # *************************************************************************** #
 #                           Function 8.13, build_icet                         #
 # *************************************************************************** #
@@ -7380,20 +7369,25 @@ function build_icet
     # MPI setup requires multiple include directories.
 
     # split string at space, grab the front/first string in it.
-    b_it_par_include_first=$(car ${PAR_INCLUDE})
-    PAR_INCLUDE_DIR=${b_it_par_include_first#-I}
+    PAR_INCLUDE_DIR=""
+    for arg in $PAR_INCLUDE ; do
+       if [[ "$arg" != "${arg#-I}" ]] ; then
+          PAR_INCLUDE_DIR=${arg#-I}
+          break
+       fi
+    done
     if test -z "${PAR_INCLUDE_DIR}"  ; then
         if test -n "${PAR_INCLUDE}" ; then
-            warn "First string in PAR_INCLUDE: ${b_it_par_include_first}"
-            warn "That string with leading -I removed: ${PAR_INCLUDE_DIR}"
+            warn "This script believes you have defined PAR_INCLUDE as: $PAR_INCLUDE"
+            warn "However, to build Ice-T, this script expects to parse a -I/path/to/mpi out of PAR_INCLUDE"
         fi
-        warn "Could not determine the MPI include information which is "
-              "needed to compile IceT."
+        warn "Could not determine the MPI include information which is needed to compile IceT."
         if test -n "${PAR_INCLUDE}" ; then
-            error "Please specify the required include (`-I' option) first!"
+            error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
         else
             error "You need to specify the PAR_INCLUDE variable.  On many "
-                  " systems, the output of `mpicxx -showme' is good enough."
+                  " systems, the output of \"mpicxx -showme\" is good enough."
+            error ""
         fi
     fi
 
@@ -8657,7 +8651,7 @@ function strip_quotes
 declare -a arguments
 quoting="" # temp buffer for concatenating quoted args
 state=0    # 0 is the default state, for grabbing std arguments.
-           # 1 is for when we've seen a quote, and are currently `cramming'
+           # 1 is for when we've seen a quote, and are currently "cramming"
 for arg in $@ ; do
     case $state in
         0)
