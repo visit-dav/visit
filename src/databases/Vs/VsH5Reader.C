@@ -1,5 +1,7 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
+#include <InvalidFilesException.h>
+
 #if HDF5_VERSION_GE(1,8,1)
 /**
  *
@@ -41,9 +43,20 @@ debugStrmRef(dbgstrm) {
     debugStrmRef << msg << std::endl;
     throw std::invalid_argument(msg.c_str());
   }
+
   // Read metadata
   filter = new VsFilter(fileId, dbgstrm);
   h5meta = filter->getH5Meta();
+  
+  // Was this even a vizschema file?
+  if (!h5meta->hasObjects()) {
+    debugStrmRef <<"VsH5Reader::VsH5Reader(" <<nm <<") - file format not recognized." <<std::endl;
+    delete (filter);
+    filter = NULL;
+
+    EXCEPTION1(InvalidFilesException, nm.c_str());
+  }
+
   meta = new VsMeta();
   makeVsMeta();
   meta->write(debugStrmRef);
@@ -53,8 +66,18 @@ debugStrmRef(dbgstrm) {
 VsH5Reader::~VsH5Reader() {
   debugStrmRef <<"VsH5Reader::~VsH5Reader() entering." << std::endl;
 
-  // Check if anything is still open
+  //close what we know about
+  if (filter != NULL) {
+    delete filter;
+    filter = NULL;
+  }
 
+  if (meta != NULL) {
+    delete meta;
+    meta = NULL;
+  }
+
+  // Check if anything is still open
   int cnt = H5Fget_obj_count(fileId, H5F_OBJ_ALL);
   if (cnt) {
     debugStrmRef << "File still has " << cnt << " open objects:";
@@ -78,14 +101,14 @@ VsH5Reader::~VsH5Reader() {
     H5Fclose(fileId);
     fileId = 0;
   }
-  delete filter;
+
   debugStrmRef <<"VsH5Reader::~VsH5Reader() exiting." <<std::endl;
 }
 
 void VsH5Reader::makeVsVars () {
   debugStrmRef <<"VsH5Reader::MakeVsVars() entering." <<std::endl;
   std::map<std::string, VsGMeta*>::const_iterator i;
-  for (i = h5meta->vsVars2.begin(); i != h5meta->vsVars2.end(); ++i) {
+  for (i = h5meta->vsVars.begin(); i != h5meta->vsVars.end(); ++i) {
     VsGMeta* gm = i->second;
     std::vector<VsAMeta*>::const_iterator k;
     for (k = gm->attribs.begin(); k != gm->attribs.end(); ++k) {
@@ -107,7 +130,7 @@ void VsH5Reader::makeVsMeta() {
   // Meshes MUST come first, because the MD Vars procedures have to be able to reference the newly created md meshes
   // Insert meshes
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building G-Meshes" <<std::endl;
-  for (std::map<std::string, VsGMeta*>::const_iterator h5mesh = h5meta->gMeshes2.begin(); h5mesh != h5meta->gMeshes2.end(); ++h5mesh) {
+  for (std::map<std::string, VsGMeta*>::const_iterator h5mesh = h5meta->gMeshes.begin(); h5mesh != h5meta->gMeshes.end(); ++h5mesh) {
     VsMeshMeta* vm = new VsMeshMeta();
     std::string name = h5mesh->second->getFullName();
     vm->path = h5mesh->second->path;
@@ -152,8 +175,8 @@ void VsH5Reader::makeVsMeta() {
    // Meshes MUST come first, because the MD Vars procedures have to be able to reference the newly created md meshes
    // Insert meshes
    debugStrmRef <<"VsH5Reader::makeVsMeta() - building G-Meshes" <<std::endl;
-   std::map<std::string, VsGMeta*>::const_iterator j = h5meta->gMeshes2.begin();
-   while (j != h5meta->gMeshes2.end()) {
+   std::map<std::string, VsGMeta*>::const_iterator j = h5meta->gMeshes.begin();
+   while (j != h5meta->gMeshes.end()) {
    VsMeshMeta* vm = new VsMeshMeta();
    std::string name = j->second->getFullName();
    debugStrmRef <<"VsH5Reader::makeVsMeta() - building mesh " <<name <<std::endl;
@@ -206,7 +229,7 @@ void VsH5Reader::makeVsMeta() {
    }
    */
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building D-Meshes" <<std::endl;
-  for (std::map<std::string, VsDMeta*>::const_iterator l = h5meta->dMeshes2.begin(); l != h5meta->dMeshes2.end(); ++l) {
+  for (std::map<std::string, VsDMeta*>::const_iterator l = h5meta->dMeshes.begin(); l != h5meta->dMeshes.end(); ++l) {
     VsMeshMeta* vm = new VsMeshMeta();
     VsDMeta* meshMeta = l->second;
     std::string fullName = meshMeta->getFullName();
@@ -254,8 +277,8 @@ void VsH5Reader::makeVsMeta() {
 
   // Insert vars
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building Vars" <<std::endl;
-  for (std::map<std::string, VsDMeta*>::const_iterator i = h5meta->vars2.begin();
-      i != h5meta->vars2.end(); ++i) {
+  for (std::map<std::string, VsDMeta*>::const_iterator i = h5meta->vars.begin();
+      i != h5meta->vars.end(); ++i) {
     VsVariableMeta* vm = new VsVariableMeta();
     std::string name = i->second->getFullName();
     try {
@@ -315,8 +338,8 @@ void VsH5Reader::makeVsMeta() {
 
   // Insert vars with mesh
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building Var with Mesh" <<std::endl;
-  for (std::map<std::string, VsDMeta*>::const_iterator k = h5meta->varsWithMesh2.begin();
-      k != h5meta->varsWithMesh2.end(); ++k) {
+  for (std::map<std::string, VsDMeta*>::const_iterator k = h5meta->varsWithMesh.begin();
+      k != h5meta->varsWithMesh.end(); ++k) {
     VsVariableWithMeshMeta* vm = new VsVariableWithMeshMeta();
     std::string name = k->second->getFullName();
     try {
@@ -591,7 +614,7 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
 /*
  herr_t VsH5Reader::getMeshKind(const std::string& name, std::string& kind) const {
  // Look through group meshes
- //  std::map<std::string, VsGMeta*>::const_iterator it = h5meta->gMeshes2.find(name);
+ //  std::map<std::string, VsGMeta*>::const_iterator it = h5meta->gMeshes.find(name);
  debugStrmRef <<"VsH5Reader::getMeshKind(" <<name <<", " <<kind <<") - Entering." <<std::endl;
  const VsGMeta* gm = h5meta->getGMesh(name);
  if (gm != 0) {
@@ -609,7 +632,7 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
  }
 
  // Look through dataset meshes
- //std::map<std::string, VsDMeta*>::const_iterator it1 = h5meta->dMeshes2.find(name);
+ //std::map<std::string, VsDMeta*>::const_iterator it1 = h5meta->dMeshes.find(name);
  const VsDMeta* dm = h5meta->getDMesh(name);
  if (dm != 0) {
  std::vector<VsAMeta*>::const_iterator k;
@@ -867,8 +890,8 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     //id is the dataset
     hid_t dataspace = H5Dget_space(id);
     int rank = H5Sget_simple_extent_ndims (dataspace);
-    hsize_t dims_out[rank];
-    H5Sget_simple_extent_dims (dataspace, dims_out, NULL);
+    std::vector<hsize_t> dims_out(rank);
+    H5Sget_simple_extent_dims (dataspace, &dims_out[0], NULL);
     if (rank == 2) {
       debugStrmRef <<"Dimensions: " <<(unsigned long)(dims_out[0]) <<" x " <<(unsigned long)(dims_out[1]) <<std::endl;
     } else if (rank == 3) {
@@ -877,7 +900,7 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     }
 
     //count is how many elements to choose in each direction
-    hsize_t count[rank];
+    std::vector<hsize_t> count(rank);
     const VsMeshMeta* meshMeta = getMeshMeta(var->mesh);
     int addBefore = 0;
     int addAfter = 0;
@@ -896,13 +919,13 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     if (uniformMesh) {
       if (var->isZonal()) {
         debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Zonal on uniform = no change" <<std::endl;
-        adjustSize_hsize_t(count, rank, stride, addBefore, addAfter);
+        adjustSize_hsize_t(&count[0], rank, stride, addBefore, addAfter);
       } else {
         //nodal
         debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Nodal on uniform = -1/+1" <<std::endl;
         addBefore = -1;
         addAfter = 1;
-        adjustSize_hsize_t(count, rank, stride, addBefore, addAfter);
+        adjustSize_hsize_t(&count[0], rank, stride, addBefore, addAfter);
       }
     } else if (structuredMesh) {
       if (var->isZonal()) {
@@ -932,9 +955,9 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
      * Define hyperslab in the dataset.
      */
     //offset is the starting location
-    hsize_t offset[rank];
+    std::vector<hsize_t> offset(rank);
     //stride is the stride in each direction
-    hsize_t strideArray[rank];
+    std::vector<hsize_t> strideArray(rank);
 
     debugStrmRef <<"About to select variable hyperslab with size: ";
     for (int i = 0; i < rank; i++) {
@@ -944,30 +967,30 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     }
     debugStrmRef <<std::endl;
 
-    herr_t status = H5Sselect_hyperslab (dataspace, H5S_SELECT_SET, offset, strideArray,
-        count, NULL);
+    herr_t status = H5Sselect_hyperslab (dataspace, H5S_SELECT_SET, &offset[0], &strideArray[0],
+        &count[0], NULL);
 
     /*
      * Define the memory dataspace.
      */
-    hsize_t dimsm[rank];
+    std::vector<hsize_t> dimsm(rank);
     for (int i = 0; i < rank; i++) {
       dimsm[i] = count[i];
     }
-    hid_t memspace = H5Screate_simple (rank, dimsm, NULL);
+    hid_t memspace = H5Screate_simple (rank, &dimsm[0], NULL);
 
     /*
      * Define memory hyperslab.
      */
-    hsize_t offset_out[rank];
-    hsize_t count_out[rank];
+    std::vector<hsize_t> offset_out(rank);
+    std::vector<hsize_t> count_out(rank);
     for (int i = 0; i < rank; i++) {
       offset_out[i] = 0;
       count_out[i] = count[i];
     }
 
-    status = H5Sselect_hyperslab (memspace, H5S_SELECT_SET, offset_out, NULL,
-        count_out, NULL);
+    status = H5Sselect_hyperslab (memspace, H5S_SELECT_SET, &offset_out[0], NULL,
+        &count_out[0], NULL);
 
     /*
      * Read data from hyperslab in the file into the hyperslab in
@@ -1024,8 +1047,8 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
   debugStrmRef << "VsH5Reader::getVariableComponent(...): " << name <<
   " has rank, " << rank << "." << std::endl;
 
-  hsize_t count[rank];
-  hsize_t start[rank];
+  std::vector<hsize_t> count(rank);
+  std::vector<hsize_t> start(rank);
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
 
   if (meta->isCompMajor()) {
@@ -1062,13 +1085,13 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
     if (meshMeta->isUniformMesh()) {
       if (meta->isZonal()) {
         debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"Zonal on uniform = no change" <<std::endl;
-        adjustSize_hsize_t(count, rank - 1, stride, addBefore, addAfter);
+        adjustSize_hsize_t(&count[0], rank - 1, stride, addBefore, addAfter);
       } else {
         //nodal
         debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"Nodal on uniform = -1/+1" <<std::endl;
         addBefore = -1;
         addAfter = 1;
-        adjustSize_hsize_t(count, rank - 1, stride, addBefore, addAfter);
+        adjustSize_hsize_t(&count[0], rank - 1, stride, addBefore, addAfter);
       }
     } else if (meshMeta->isStructuredMesh()) {
       if (meta->isZonal()) {
@@ -1102,7 +1125,7 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << count[i];
   debugStrmRef << std::endl;
 
-  hsize_t strideArray[rank];
+  std::vector<hsize_t> strideArray(rank);
   for (unsigned int i = 0; i < rank; i++) {
     if (i < stride.size())
     strideArray[i] = (hsize_t)stride[i];
@@ -1110,10 +1133,10 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
   }
 
   // Select data
-  err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, strideArray,
-      count, NULL);
+  err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideArray[0],
+      &count[0], NULL);
   // Create memory space for the data
-  hid_t memspace = H5Screate_simple(rank, count, NULL);
+  hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
   // Read data
   err = H5Dread(meta->dataset->iid, meta->getType(), memspace, dataspace,
       H5P_DEFAULT, data);
@@ -1154,8 +1177,8 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
   debugStrmRef << "VsH5Reader::getVariableComponent(...): " << name <<
   " has rank " << rank << "." << std::endl;
 
-  hsize_t count[rank];
-  hsize_t start[rank];
+  std::vector<hsize_t> count(rank);
+  std::vector<hsize_t> start(rank);
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
 
   if (meta->isCompMajor())
@@ -1245,8 +1268,8 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
   }
 
   // Select data
-  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL,
-      count, NULL);
+  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], NULL,
+      &count[0], NULL);
   if (err < 0)
   {
     debugStrmRef << "VsH5Reader::getVariableComponent(): error " << err <<
@@ -1256,7 +1279,7 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
   }
 
   // Create memory space for the data
-  hid_t memspace = H5Screate_simple(rank, count, NULL);
+  hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
 
   // Allocate memory
   hid_t type = meta->getType();
@@ -1341,9 +1364,9 @@ herr_t VsH5Reader::getDatasetMeshComponent(const std::string& name,
     hsize_t rank = dims.size();
 
     debugStrmRef <<"VsH5Reader::getDatasetMeshComponent() - about to set up arguments." <<std::endl;
-    hsize_t count[rank];
-    hsize_t start[rank];
-    hsize_t strideArray[rank];
+    std::vector<hsize_t> count(rank);
+    std::vector<hsize_t> start(rank);
+    std::vector<hsize_t> strideArray(rank);
     for (unsigned int i = 0; i < rank; i++) {
       if (i < rank - 1)
       strideArray[i] = (hsize_t)stride[i];
@@ -1357,11 +1380,11 @@ herr_t VsH5Reader::getDatasetMeshComponent(const std::string& name,
     hid_t dataspace = H5Dget_space(dataSet->iid);
 
     // Select data
-    err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, strideArray,
-        count, NULL);
+    err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideArray[0],
+        &count[0], NULL);
     debugStrmRef <<"After selecting the hyperslab, err is " <<err <<std::endl;
     // Create memory space for the data
-    hid_t memspace = H5Screate_simple(rank, count, NULL);
+    hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
     // Read data
     err = H5Dread(dataSet->iid, dataSet->type, memspace, dataspace,
         H5P_DEFAULT, data);
@@ -1521,10 +1544,10 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
     return -1;
   }
 
-  hsize_t memCount[rank]; //tracks the size of the memory block we need to load the data
-  hsize_t start[rank]; //start position of each slice
-  hsize_t sliceCount[rank]; //tracks the size of each slice
-  hsize_t strideCount[rank];
+  std::vector<hsize_t> memCount(rank); //tracks the size of the memory block we need to load the data
+  std::vector<hsize_t> start(rank); //start position of each slice
+  std::vector<hsize_t> sliceCount(rank); //tracks the size of each slice
+  std::vector<hsize_t> strideCount(rank);
   hid_t dataspace = H5Dget_space(meta.dataset->iid);
   int numPoints = 0;
   if (meta.isCompMajor())
@@ -1604,7 +1627,7 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
     for (size_t i=0; i<rank; ++i) debugStrmRef << " " << sliceCount[i];
     debugStrmRef << std::endl;
 
-    err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, strideCount, sliceCount, NULL);
+    err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideCount[0], &sliceCount[0], NULL);
     hsize_t numElements = H5Sget_select_npoints(dataspace);
     debugStrmRef <<" VsH5Reader::getMeshVerWithMesh(): - we have selected this many elements in dataset: " <<numElements <<std::endl;
     if (err < 0) {
@@ -1743,9 +1766,9 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
   std::vector<int> dims = meta->getDims();
 
   size_t rank = dims.size();
-  hsize_t count[rank];
-  hsize_t start[rank];
-  hsize_t strideCount[rank];
+  std::vector<hsize_t> count(rank);
+  std::vector<hsize_t> start(rank);
+  std::vector<hsize_t> strideCount(rank);
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
 
   if (useStride) {
@@ -1805,10 +1828,10 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
   debugStrmRef << std::endl;
 
   // Select data
-  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, strideCount,
-      count, NULL);
+  herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideCount[0],
+      &count[0], NULL);
   // Create memory space for the data
-  hid_t memspace = H5Screate_simple(rank, count, NULL);
+  hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
   // Read data
   err = 10 * err + H5Dread(meta->dataset->iid, meta->getType(), memspace, dataspace,
       H5P_DEFAULT, data);

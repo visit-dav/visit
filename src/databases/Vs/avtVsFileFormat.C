@@ -95,16 +95,9 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       EXCEPTION1(InvalidDBTypeException, msg.c_str());
     }
 
-    debugStrmRef <<"avtVsFileFormat::constructor() - initializing VsH5Reader()" <<std::endl;
-    try {
-      reader = new VsH5Reader(dataFileName, debugStrmRef, stride);
-    }
-    catch (std::invalid_argument& ex) {
-      std::string msg("avtVsFileFormat::constructor(): error initializing VsH5Reader: ");
-      msg += ex.what();
-      debugStrmRef << msg << endl;
-      EXCEPTION1(InvalidDBTypeException, msg.c_str());
-    }
+    //NOTE: We used to initialize the VsH5Reader object here
+    //But now do it on demand in 'populateDatabaseMetaData'
+    //To minimize I/O
 
     debugStrmRef <<"avtVsFileFormat::constructor() - exiting" <<std::endl;
   }
@@ -815,12 +808,12 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
 
       //create cell and insert into mesh
       if (cellType != VTK_EMPTY_CELL) {
-        vtkIdType verts[cellVerts];
+        std::vector<vtkIdType> verts(cellVerts);
         for (size_t j = 0; j < cellVerts; ++j) {
           verts[j] = (vtkIdType) vertices[k++];
         }
         // insert cell into mesh
-        ugridPtr->InsertNextCell(cellType, cellVerts, verts);
+        ugridPtr->InsertNextCell(cellType, cellVerts, &verts[0]);
         if( haveVertexCount == 0 )
         k += nverts - 1 - cellVerts;
       } else {
@@ -829,7 +822,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         // NO!  Unless we've registered as a pointmesh, adding single points won't work
         //so we treat the entire row of the dataset as a single cell
         //Maybe something will work!
-        vtkIdType verts[nverts];
+        std::vector<vtkIdType> verts(nverts);
         k--;
         for (size_t j = 0; j < nverts; ++j) {
           if (warningCount < 30) {
@@ -837,7 +830,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
           }
           verts[j] = (vtkIdType) vertices[k++];
         }
-        ugridPtr->InsertNextCell (VTK_POLYGON, nverts, verts);
+        ugridPtr->InsertNextCell (VTK_POLYGON, nverts, &verts[0]);
       }
     }
 
@@ -887,7 +880,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     }
 
     debugStrmRef <<methodSig <<"Determining size of point arrays." << endl;
-    int idims[vsdim];
+    std::vector<int> idims(vsdim);
     for (size_t i = 0; i < vsdim; ++i) {
       // Number of nodes is equal to number of cells plus one
       if (i<rank)
@@ -1002,11 +995,11 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     // Create vtkRectilinearGrid
     debugStrmRef <<methodSig <<"Creating rectilinear grid." << endl;
     vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
-    rgrid->SetDimensions(idims);
+    rgrid->SetDimensions(&idims[0]);
 
     // Create coords arrays
     debugStrmRef <<methodSig <<"Creating coordinate arrays." << endl;
-    vtkDataArray* coords[vsdim];
+    std::vector<vtkDataArray*> coords(vsdim);
     for (size_t i = 0; i<rank;++i) {
       if (H5Tequal (ftype, H5T_NATIVE_DOUBLE)) {
         double delta = 0;
@@ -2203,7 +2196,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       // add var components
       std::vector<int> dims = vMeta->getDims();
       if (dims.size() <= 0) {
-        std::string msg = "avtVsFileFormat::PopulateDatabaseMetaData: could not get dimensions of variable with mesh.";
+        std::string msg = "avtVsFileFormat::RegisterVarsWithMesh: could not get dimensions of variable with mesh.";
         debugStrmRef << msg << std::endl;
         throw std::out_of_range(msg.c_str());
       }
@@ -2263,6 +2256,19 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::PopulateDatabaseMetaData() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+
+    //Actually open the file & read metadata for the first time
+    debugStrmRef <<methodSig <<"Initializing VsH5Reader()" <<std::endl;
+    try {
+      reader = new VsH5Reader(dataFileName, debugStrmRef, stride);
+    }
+    catch (std::invalid_argument& ex) {
+      std::string msg(methodSig);
+      msg += " Error initializing VsH5Reader: ";
+      msg += ex.what();
+      debugStrmRef << msg << endl;
+      EXCEPTION1(InvalidDBTypeException, msg.c_str());
+    }
 
     // Tell visit that we can split meshes into subparts when running in parallel
     // NOTE that we can't decompose domains if we have MD meshes

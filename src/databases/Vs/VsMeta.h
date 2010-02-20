@@ -163,6 +163,14 @@ struct VsMDVariableMeta {
     //centering = "nodal";
   }
 
+  //Destructor
+  ~VsMDVariableMeta() {
+    for (std::vector<VsVariableMeta*>::iterator it = blocks.begin(); it != blocks.end(); it++) {
+      delete (*it);
+    }
+    blocks.clear();
+  }
+
   //we look for user-specified component names in each subordinate variable
   //we return the first one we find
   std::string getLabel(int componentIndex) const {
@@ -202,8 +210,8 @@ struct VsMDVariableMeta {
     //In theory we can look up the subordinate mesh here,
     //but I'm leaving it as a todo for now
     ///TODO: look up subordinate mesh name
-    //   if (newBlock->mesh != mesh)
-    //      return "VsMDVariableMeta rejected new block " + newBlock->getFullName() + " because meshes did not match (" + newBlock->mesh + " vs " + mesh + ")";
+    //     if (newBlock->mesh != mesh)
+    //        return "VsMDVariableMeta rejected new block " + newBlock->getFullName() + " because meshes did not match (" + newBlock->mesh + " vs " + mesh + ")";
 
     if (newBlock->centering != centering)
     return "VsMDVariableMeta rejected new block " + newBlock->getFullName() + " because centering did not match (" + newBlock->centering + " vs " + centering + ")";
@@ -848,6 +856,14 @@ struct VsMDMeshMeta {
     indexOrder = meshIndexOrder;
     kind = meshKind;
     name = meshName;
+  }
+
+  //Destructor
+  ~VsMDMeshMeta() {
+    for(std::vector<VsMeshMeta*>::iterator it = blocks.begin(); it!= blocks.end(); it++) {
+      delete (*it);
+    }
+    blocks.clear();
   }
 
   void write(std::ostream& os) const {
