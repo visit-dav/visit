@@ -133,7 +133,7 @@ ExternalSurfaceGeneralPluginInfo::GetID() const
 bool
 ExternalSurfaceGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

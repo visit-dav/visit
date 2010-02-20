@@ -133,7 +133,7 @@ CoordSwapGeneralPluginInfo::GetID() const
 bool
 CoordSwapGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

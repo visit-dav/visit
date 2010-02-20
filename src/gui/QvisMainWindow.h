@@ -215,6 +215,10 @@ class WindowInformation;
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Jeremy Meredith, Fri Feb 19 20:59:34 EST 2010
+//   Hide the Select File menu item when we're not in selected files mode.
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -341,6 +345,8 @@ private slots:
 
     void replacePlotsToggled(bool);
     void autoUpdateToggled(bool);
+    void applyOperatorToggled(bool);
+    void applySelectionToggled(bool);
 
     void winset(int);
     void winset2(QAction *);
@@ -375,11 +381,16 @@ private:
     QPixmap                   *outputRed;
     QPixmap                   *outputBlue;
 
+    QPixmap                   *openIcon;
+
     QComboBox                 *activeWindowComboBox;
     QCheckBox                 *replacePlotsCheckBox;
     QCheckBox                 *autoUpdateCheckBox;
+    QCheckBox                 *applyOperatorCheckBox;
+    QCheckBox                 *applySelectionCheckBox;
 
     QMenu                     *filePopup;
+    QAction                   *selFileAct;
     QAction                   *openFileAct;
     QMenu                     *fileAdvancedPopup;
     QAction                   *fileAdvancedPopupAct;

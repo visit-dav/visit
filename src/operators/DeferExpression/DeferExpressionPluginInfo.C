@@ -133,7 +133,7 @@ DeferExpressionGeneralPluginInfo::GetID() const
 bool
 DeferExpressionGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

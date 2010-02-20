@@ -133,7 +133,7 @@ TubeGeneralPluginInfo::GetID() const
 bool
 TubeGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

@@ -133,7 +133,7 @@ SmoothGeneralPluginInfo::GetID() const
 bool
 SmoothGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

@@ -215,6 +215,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri Feb  5 16:37:10 PST 2010
 //   I added support for grouping operators.
 //
+//   Jeremy Meredith, Fri Feb 19 20:35:02 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -259,6 +262,7 @@ signals:
     void activateSubsetWindow();
     void activatePlotWindow(int);
     void activateOperatorWindow(int);
+    void activateFileOpenWindow();
     void addPlot(int, const QString &);
     void addOperator(int);
 protected:
@@ -276,6 +280,8 @@ private:
     void UpdateSourceList(bool updateActiveSourceOnly);
     void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
+    void UpdateDatabaseIconEnabledStates();
+
 
 private slots:
     void setActivePlots();
@@ -287,6 +293,11 @@ private slots:
     void promoteOperator(int operatorIndex);
     void demoteOperator(int operatorIndex);
     void removeOperator(int operatorIndex);
+
+    void closeCurrentSource();
+    void reOpenCurrentSource();
+    void replaceWithCurrentSource();
+    void overlayWithCurrentSource();
     
     void activatePlotWindow(QAction *);
     void activateOperatorWindow(QAction *);
@@ -299,8 +310,6 @@ private slots:
 
     void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(QAction *);
-    void applyOperatorToggled(bool val);
-    void applySelectionToggled(bool val);
     void sourceChanged(int);
 
 private:
@@ -310,29 +319,20 @@ private:
     QGridLayout             *topLayout;
     QLabel                  *sourceLabel;
     QComboBox               *sourceComboBox;
-    QLabel                  *activePlots;
     QvisPlotListBox         *plotListBox;
-    QPushButton             *hideButton;
-    QPushButton             *deleteButton;
-    QPushButton             *drawButton;
-    QCheckBox               *applyOperatorToggle;
-    QCheckBox               *applySelectionToggle;
     QMenu                   *WindowChoiceMenu;  
     QAction                 *win1Act;
     QAction                 *win2Act;
 
     // Menu widgets
-    QMenuBar                *plotMenuBar;
     QMenu                   *plotMenu;
-    QAction                 *plotMenuAct;
+    QvisVariablePopupMenu   *varMenu;
+    QMenu                   *operatorMenu;
+
     QMenu                   *plotAttsMenu;
     QAction                 *plotAttsMenuAct;
     QMenu                   *operatorAttsMenu;
     QAction                 *operatorAttsMenuAct;
-    QvisVariablePopupMenu   *varMenu;
-    QAction                 *varMenuAct;
-    QMenu                   *operatorMenu;
-    QAction                 *operatorMenuAct;
     QAction                 *operatorRemoveLastAct;
     QAction                 *operatorRemoveAllAct;
 
@@ -354,6 +354,21 @@ private:
     GlobalAttributes        *globalAtts;
     ExpressionList          *exprList;
     WindowInformation       *windowInfo;
+
+    // Various icon buttons for the plot manager
+    QPushButton *plotAddIconButton;
+    QPushButton *plotDelIconButton;
+    QPushButton *plotVarIconButton;
+    QPushButton *plotHideIconButton;
+    QPushButton *plotDrawIconButton;
+    QPushButton *addOperIconButton;
+
+    QPushButton *dbReplaceIconButton;
+    QPushButton *dbOverlayIconButton;
+    QPushButton *dbOpenIconButton;
+    QPushButton *dbReopenIconButton;
+    QPushButton *dbCloseIconButton;
+    
     PluginManagerAttributes *pluginAtts;
 };
 

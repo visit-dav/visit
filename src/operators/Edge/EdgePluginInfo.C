@@ -133,7 +133,7 @@ EdgeGeneralPluginInfo::GetID() const
 bool
 EdgeGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

@@ -2433,7 +2433,7 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
         }
         else
         {
-            w = 400;
+            w = 350;
             h = screenH - borders[0] - borders[1];
         }
     }
@@ -2441,7 +2441,7 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
     {
         debug1 << mName << "Horizontal main window" << endl;
         w = screenW - borders[2] - borders[3];
-        h = 400;
+        h = 350;
     }
 
 #if 0

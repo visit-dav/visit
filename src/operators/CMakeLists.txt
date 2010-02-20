@@ -56,6 +56,7 @@ Decimate
 DeferExpression
 Displace
 DualMesh
+Edge
 Elevate
 ExternalSurface
 IndexSelect

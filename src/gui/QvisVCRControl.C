@@ -379,6 +379,10 @@ char QvisVCRControl::augmentedForeground[15];
 //   Brad Whitlock, Tue Jun  3 13:44:42 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Feb 19 21:00:38 EST 2010
+//   Set the icon size to something reasonable.  (It's way too small in
+//   virtually every Qt style.)
+//
 // ****************************************************************************
 
 QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
@@ -407,27 +411,34 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
     topLayout->setSpacing(10);
 #endif
 
+    QSize iconsize(34,24);
+
     // Create the buttons and add the pixmaps to them.
     buttons[0] = new QPushButton(this);
     buttons[0]->setIcon(QIcon(p1));
+    buttons[0]->setIconSize(iconsize);
 
     buttons[1] = new QPushButton(this);
     buttons[1]->setIcon(QIcon(p2));
     buttons[1]->setCheckable(true);
     buttons[1]->setDown(false);
+    buttons[1]->setIconSize(iconsize);
 
     buttons[2] = new QPushButton(this);
     buttons[2]->setIcon(QIcon(p3));
     buttons[2]->setCheckable(true);
     buttons[2]->setDown(true);
+    buttons[2]->setIconSize(iconsize);
 
     buttons[3] = new QPushButton(this);
     buttons[3]->setIcon(QIcon(p4));
     buttons[3]->setCheckable(true);
     buttons[3]->setDown(false);
+    buttons[3]->setIconSize(iconsize);
 
     buttons[4] = new QPushButton(this);
     buttons[4]->setIcon(QIcon(p5));
+    buttons[4]->setIconSize(iconsize);
 
     // Connect the buttons' "pressed" signals to the appropriate VCR
     // clicked slot.
