@@ -210,6 +210,9 @@ class avtSLAlgorithm;
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Remove radius and showStart members, add circle seed source.
 //
+//   Hank Childs, Sat Feb 20 05:12:45 PST 2010
+//   Add methods for initializing locators.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -250,6 +253,8 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      SetStreamlineDirection(int dir);
     void                      SetColoringMethod(int, const std::string &var="");
     void                      SetOpacityVariable(const std::string &var);
+
+    void                      InitializeLocators(void);
 
   protected:
     int    sourceType;   
@@ -357,6 +362,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      ComputeRankList(const std::vector<int> &domList, 
                                               std::vector<int> &ranks, 
                                               std::vector<int> &doms );
+    vtkVisItCellLocator      *SetupLocator(const DomainType &, vtkDataSet *);
     
     friend class avtSLAlgorithm;
 };

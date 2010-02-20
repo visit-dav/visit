@@ -249,6 +249,26 @@ avtParDomSLAlgorithm::ExchangeTermination()
 }
 
 // ****************************************************************************
+//  Method: avtParDomSLAlgorithm::PreRunAlgorithm
+//
+//  Purpose:
+//      "PreRun" for static domain SL algorithm.  In this case, initialize
+//      the cell locators.  If we don't do it now, we will have processors
+//      busy waiting, and then doing the initialization when they finally
+//      get work ... meaning unnecessary delays.
+//  
+//  Programmer: Hank Childs
+//  Creation:   February 19, 2010
+//
+// ****************************************************************************
+
+void
+avtParDomSLAlgorithm::PreRunAlgorithm()
+{
+    streamlineFilter->InitializeLocators();
+}
+
+// ****************************************************************************
 //  Method: avtParDomSLAlgorithm::RunAlgorithm
 //
 //  Purpose:

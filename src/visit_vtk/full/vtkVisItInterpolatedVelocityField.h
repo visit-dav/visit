@@ -43,7 +43,7 @@
 #include <visit_vtk_exports.h>
 
 class vtkDataSet;
-class vtkVisItPointLocator;
+class vtkVisItCellLocator;
 
 class VISIT_VTK_API vtkVisItInterpolatedVelocityField  : public vtkObject
 {
@@ -54,6 +54,7 @@ class VISIT_VTK_API vtkVisItInterpolatedVelocityField  : public vtkObject
 
     static vtkVisItInterpolatedVelocityField *New();
     void          SetDataSet(vtkDataSet *ds);
+    void          SetLocator(vtkVisItCellLocator *loc);
     bool          Evaluate(double *pt, double *vel, double t = 0.);
  
     void          SetDoPathlines(bool b) { doPathlines = b; };
@@ -68,7 +69,7 @@ class VISIT_VTK_API vtkVisItInterpolatedVelocityField  : public vtkObject
 
   private:
     vtkDataSet  *ds;
-    vtkVisItPointLocator *locator;
+    vtkVisItCellLocator *locator;
     double       weights[1024];
     int          lastCell;
     double       pcoords[3];
