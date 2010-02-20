@@ -43,6 +43,7 @@
 #include <QPixmap>
 #include <QMenuBar>
 #include <QMenu>
+#include <QMenuItem>
 #include <QComboBox>
 #include <QSplitter>
 #include <QStatusBar>
@@ -334,6 +335,10 @@
 //    Spell out bbox.  I'm not sure most people know what that stands for.
 //    Added "mode" to full frame and spin settings to balance the extra width.
 //
+//    Jeremy Meredith, Fri Feb 19 20:59:34 EST 2010
+//    Big redesign, adding icons and functionality and shuffling arrangement.
+//    Hide the Select File menu item when we're not in selected files mode.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -343,7 +348,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     setAttribute(Qt::WA_DeleteOnClose,true);
     int     id;
-    QPixmap openIcon, saveIcon, computerIcon, printIcon, rainbowIcon;
+    QPixmap saveIcon, computerIcon, printIcon, rainbowIcon;
     QPixmap annotIcon, lightIcon, subsetIcon, viewIcon;
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
     QPixmap saveMovieIcon, commandIcon, keyframeIcon, materialIcon;
@@ -371,7 +376,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     windowInfo = NULL;
 
     // Create some pixmaps from the XPM images included at the top of the file.
-    openIcon = QPixmap(fileopen_xpm);
+    openIcon = new QPixmap(fileopen_xpm);
     saveIcon = QPixmap(filesave_xpm);
     printIcon = QPixmap(fileprint_xpm);
     computerIcon = QPixmap(computer_xpm);
@@ -402,16 +407,20 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     
     filePopup = menuBar()->addMenu(tr("&File"));
     
-    filePopup->addAction(openIcon, tr("Select &file . . ."), 
+    advancedMenuShowing = false;
+    selFileAct = NULL;
+    if (advancedMenuShowing)
+    {
+        selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."), 
                          this, SIGNAL(activateFileWindow()), 
                          QKeySequence(Qt::CTRL + Qt::Key_F));
+    }
     // keep this action so we can add reopen after it in certian cases
-    openFileAct = filePopup->addAction(openIcon, tr("Open file . . ."), 
+    openFileAct = filePopup->addAction(*openIcon, tr("Open file . . ."), 
                                        this, SIGNAL(activateFileOpenWindow()),
                                        QKeySequence(Qt::CTRL + Qt::Key_O));
 
     // Advanced pull-right menu.
-    advancedMenuShowing = false;
     if (advancedMenuShowing)
     {
         fileAdvancedPopup  = new QMenu(tr("Advanced file options"),filePopup);
@@ -694,15 +703,6 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     navigateModeAct = winPopup->addAction(tr("Bounding box navigation"),
                                          this, SLOT(toggleNavigateMode()));
     
-
- #ifndef Q_WS_MACX
-    // We put the Help menu here on all platforms other than the Mac.  The Mac
-    // help menu is done lower down.
-
-    // Add the Help menu
-    AddHelpMenu();
-#endif
-
     if(qApp->desktop()->height() < 1024)
     {
         splitter = 0;
@@ -752,13 +752,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         splitter->setSizes(splitterSizes);
     }
 
-#if defined(Q_WS_MACX)
-    // Mac OS X application guidelines require the Help menu to be the last
-    // one on the menu bar.
-
     // Add the Help menu
     AddHelpMenu();
-#endif
     
     // Create the output button and put it in the status bar as a
     // permanent widget.
@@ -813,6 +808,10 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 //   Brad Whitlock, Mon Sep 16 15:57:29 PST 2002
 //   Added a couple new subjects.
 //
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//   Hide the Select File menu item when we're not in selected files mode.
+//
 // ****************************************************************************
 
 QvisMainWindow::~QvisMainWindow()
@@ -846,6 +845,7 @@ QvisMainWindow::~QvisMainWindow()
     delete outputButton;
     delete outputRed;
     delete outputBlue;
+    delete openIcon;
 }
 
 // ****************************************************************************
@@ -901,6 +901,9 @@ QvisMainWindow::AddHelpMenu(void)
 // Creation:   Thu Jul 23 16:26:55 PDT 2009
 //
 // Modifications:
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//   The plot manager can now trigger a file->open action.
 //   
 // ****************************************************************************
 
@@ -933,6 +936,8 @@ QvisMainWindow::CreateMainContents(QWidget *parent, QSplitter *s, QVBoxLayout *L
     plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
     plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    connect(plotManager,SIGNAL(activateFileOpenWindow()),
+            this,SIGNAL(activateFileOpenWindow()));
     globalAreaWidget->layout()->addWidget(plotManager);
 }
 
@@ -972,6 +977,9 @@ QvisMainWindow::CreateMainContents(QWidget *parent, QSplitter *s, QVBoxLayout *L
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//
 // ****************************************************************************
 
 void
@@ -982,30 +990,45 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
     QGridLayout *globalLayout = new QGridLayout();
     globalTopLayout->addLayout(globalLayout);
     globalLayout->setMargin(0);
-    globalLayout->setSpacing(0);
-    globalLayout->setColumnStretch(2, 50);
-    globalLayout->setColumnStretch(5, 50);
+    globalLayout->setSpacing(3);
+    globalLayout->setVerticalSpacing(0);
+    globalLayout->setColumnStretch(0, 200);
+    globalLayout->setColumnStretch(1, 100);
+    globalLayout->setColumnStretch(2, 1);
+    globalLayout->setColumnStretch(3, 1);
+    //globalLayout->setColumnStretch(5, 50);
 
     activeWindowComboBox = new QComboBox(par);
     connect(activeWindowComboBox, SIGNAL(activated(int)),
             this, SLOT(winset(int)));
     
     activeWindowComboBox->addItem("1");
-    QLabel *activeWindowLabel = new QLabel(tr("Active window"), par);
+    QLabel *activeWindowLabel = new QLabel(tr("Window"), par);
+    activeWindowLabel->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
     
-    globalLayout->addWidget(activeWindowLabel, 0, 0, 1, 2, Qt::AlignCenter);
-    globalLayout->addWidget(activeWindowComboBox, 1, 0, 1, 2);
+    globalLayout->addWidget(activeWindowLabel, 0, 0);
+    globalLayout->addWidget(activeWindowComboBox, 1, 0);
 
     replacePlotsCheckBox = new QCheckBox(tr("Replace plots"), par);
     connect(replacePlotsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(replacePlotsToggled(bool)));
-    globalLayout->addWidget(replacePlotsCheckBox, 0, 6);
+    globalLayout->addWidget(replacePlotsCheckBox, 0, 2);
 
-    autoUpdateCheckBox = new QCheckBox(tr("Auto update"), par);
+    autoUpdateCheckBox = new QCheckBox(tr("Auto apply"), par);
     connect(autoUpdateCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoUpdateToggled(bool)));
+    globalLayout->addWidget(autoUpdateCheckBox, 0, 3);
 
-    globalLayout->addWidget(autoUpdateCheckBox, 1, 6);
+    applyOperatorCheckBox =  new QCheckBox(tr("Apply operators  /"), par);
+    connect(applyOperatorCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(applyOperatorToggled(bool)));
+    globalLayout->addWidget(applyOperatorCheckBox, 1, 2);
+
+    applySelectionCheckBox =new QCheckBox(tr("selection to all plots"), par);
+    connect(applySelectionCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(applySelectionToggled(bool)));
+    globalLayout->addWidget(applySelectionCheckBox, 1, 3);
+
 }
 
 // ****************************************************************************
@@ -1274,6 +1297,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//
 // ****************************************************************************
 
 void
@@ -1318,6 +1344,14 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             replacePlotsCheckBox->blockSignals(false);
             break;
         case GlobalAttributes::ID_applyOperator:
+            applyOperatorCheckBox->blockSignals(true);
+            applyOperatorCheckBox->setChecked(globalAtts->GetApplyOperator());
+            applyOperatorCheckBox->blockSignals(false);
+            break;
+        case GlobalAttributes::ID_applySelection:
+            applySelectionCheckBox->blockSignals(true);
+            applySelectionCheckBox->setChecked(globalAtts->GetApplySelection());
+            applySelectionCheckBox->blockSignals(false);
             break;
         case GlobalAttributes::ID_executing:
             break;
@@ -2448,6 +2482,9 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Jeremy Meredith, Thu Feb  4 17:08:03 EST 2010
 //   Redraw the plot list when this changes.
 //
+//   Jeremy Meredith, Fri Feb 19 20:59:34 EST 2010
+//   Hide the Select File menu item when we're not in selected files mode.
+//
 // ****************************************************************************
 
 void
@@ -2460,6 +2497,11 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
     {
         if(!advancedMenuShowing)
         {
+            selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."), 
+                         this, SIGNAL(activateFileWindow()), 
+                         QKeySequence(Qt::CTRL + Qt::Key_F));
+            filePopup->insertAction(openFileAct, selFileAct);
+    
             // Show selected files. Put reopen, close in an advanced menu.
             filePopup->removeAction(reopenPopupAct);
             filePopup->removeAction(closePopupAct);
@@ -2501,6 +2543,9 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
         if(advancedMenuShowing)
         {
             // No selected files. Put reopen and close in the file menu.
+            delete selFileAct;
+            selFileAct = 0;
+
             delete fileAdvancedPopupAct;
             fileAdvancedPopupAct = 0;
 
@@ -3108,4 +3153,47 @@ void
 QvisMainWindow::unlockEverything()
 {
     GetViewerMethods()->TurnOffAllLocks();
+}
+
+
+// ****************************************************************************
+// Method:  QvisMainWindow::applyOperatorToggled
+//
+// Purpose:
+//   callback when "apply operator to all plots" is toggled
+//
+// Arguments:
+//   val        the new state
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 19, 2010
+//
+// ****************************************************************************
+void
+QvisMainWindow::applyOperatorToggled(bool val)
+{
+    globalAtts->SetApplyOperator(val);
+    SetUpdate(false);
+    globalAtts->Notify();
+}
+
+// ****************************************************************************
+// Method:  QvisMainWindow::applySelectionToggled
+//
+// Purpose:
+//   callback when "apply selection to all plots" is toggled
+//
+// Arguments:
+//   val        the new state
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 19, 2010
+//
+// ****************************************************************************
+void
+QvisMainWindow::applySelectionToggled(bool val)
+{
+    globalAtts->SetApplySelection(val);
+    SetUpdate(false);
+    globalAtts->Notify();
 }
