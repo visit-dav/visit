@@ -47,7 +47,7 @@
 /* Data Access Function prototypes. */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
-int SimGetVariable(int, const char *, VisIt_VariableData *, void *);
+int SimGetVariable(int, const char *, visit_handle, void *);
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
@@ -460,48 +460,45 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
  *****************************************************************************/
 
 int
-SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
+SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
 {
-    int ret = VISIT_OKAY;
+    int ret = VISIT_ERROR;
+    int nComponents = 1, nTuples = 0;
 
     if(strcmp(name, "zonal_scalar") == 0)
     {
-        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
-        var->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, zonal);
+        nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        ret = VisIt_VariableData_setDataF(var, VISIT_OWNER_SIM, nComponents,
+            nTuples, zonal);
     }
     else if(strcmp(name, "nodal_scalar") == 0)
     {
-        var->nTuples = cmesh_dims[0] * cmesh_dims[1] *
+        nTuples = cmesh_dims[0] * cmesh_dims[1] *
             cmesh_dims[2];
-        var->data = VisIt_CreateDataArrayFromDouble(
-            VISIT_OWNER_SIM, (double*)nodal);
+        ret = VisIt_VariableData_setDataD(var, VISIT_OWNER_SIM, nComponents,
+            nTuples, (double*)nodal);
     }
     else if(strcmp(name, "zonal_vector") == 0)
     {
-        var->nComponents = 2;
-        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
-        var->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, (float *)zonal_vector);
+        nComponents = 2;
+        nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        ret = VisIt_VariableData_setDataF(var, VISIT_OWNER_SIM, nComponents,
+            nTuples, (float *)zonal_vector);
     }
     else if(strcmp(name, "nodal_vector") == 0)
     {
-        var->nComponents = 3;
-        var->nTuples = cmesh_dims[0] * cmesh_dims[1] *
+        nComponents = 3;
+        nTuples = cmesh_dims[0] * cmesh_dims[1] *
             cmesh_dims[2];
-        var->data = VisIt_CreateDataArrayFromDouble(
-            VISIT_OWNER_SIM, (double *)nodal_vector);
+        ret = VisIt_VariableData_setDataD(var, VISIT_OWNER_SIM, nComponents,
+            nTuples, (double *)nodal_vector);
     }
     else if(strcmp(name, "zonal_label") == 0)
     {
-        var->nComponents = 7;
-        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
-        var->data = VisIt_CreateDataArrayFromChar(
-            VISIT_OWNER_SIM, (char *)zonal_labels);
-    }
-    else 
-    {
-        ret = VISIT_ERROR;
+        nComponents = 7;
+        nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        ret = VisIt_VariableData_setDataC(var, VISIT_OWNER_SIM, nComponents,
+            nTuples, (char *)zonal_labels);
     }
 
     return ret;

@@ -47,7 +47,7 @@
 int VisItGetMetaData(VisIt_SimulationMetaData *, void *);
 int VisItGetMesh(int domain, const char *name, VisIt_MeshData *, void *);
 int VisItGetMaterial(int domain, const char *name, VisIt_MaterialData *, void *);
-int VisItGetVariable(int domain, const char *name, VisIt_VariableData *, void *);
+int VisItGetVariable(int domain, const char *name, visit_handle, void *);
 int VisItGetCurve(const char *name, VisIt_CurveData *, void *);
 int VisItGetDomainList(VisIt_DomainList *, void *);
 
@@ -175,6 +175,8 @@ extern void F_VISITCOMMANDCALLBACK(const char*, int*, const char*, int *);
 /* Functions provided by this module. */
 #define F_VISITSETDIRECTORY         F77_ID(visitsetdirectory_,visitsetdirectory,VISITSETDIRECTORY)
 #define F_VISITSETOPTIONS           F77_ID(visitsetoptions_,visitsetoptions,VISITSETOPTIONS)
+#define F_VISITOPENTRACEFILE        F77_ID(visitopentracefile_,visitopentracefile,VISITOPENTRACEFILE)
+#define F_VISITCLOSETRACEFILE       F77_ID(visitclosetracefile_,visitclosetracefile,VISITCLOSETRACEFILE)
 #define F_VISITSETUPENV             F77_ID(visitsetupenv_,visitsetupenv,VISITSETUPENV)
 #define F_VISITINITIALIZESIM        F77_ID(visitinitializesim_,visitinitializesim,VISITINITIALIZESIM)
 #define F_VISITSETPARALLEL          F77_ID(visitsetparallel_,visitsetparallel,VISITSETPARALLEL)
@@ -325,6 +327,54 @@ F_VISITSETOPTIONS(VISIT_F77STRING opt, int *lopt)
 
     FREE(f_opt);
 
+    return VISIT_OKAY;
+}
+
+/******************************************************************************
+ * Function: F_VISITOPENTRACEFILE
+ *
+ * Purpose:   Allows FORTRAN to open a trace file for debugging libsim.
+ *
+ * Arguments:
+ *   dir  : Fortran string containing the options.
+ *   ldir : Length of the options string.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Feb 19 15:47:02 PST 2010
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITOPENTRACEFILE(VISIT_F77STRING name, int *lname)
+{
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+
+    VisItOpenTraceFile(f_name);
+
+    FREE(f_name);
+
+    return VISIT_OKAY;
+}
+
+/******************************************************************************
+ * Function: F_VISITCLOSETRACEFILE
+ *
+ * Purpose:   Allows FORTRAN to close the trace file.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Feb 19 15:47:02 PST 2010
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITCLOSETRACEFILE(void)
+{
+    VisItCloseTraceFile();
     return VISIT_OKAY;
 }
 
@@ -764,7 +814,7 @@ void MaterialList_Resize(MaterialList *, int);
 /* Functions to be provided in the Fortran application */
 #define F_VISITGETMETADATA   F77_ID(visitgetmetadata_,visitgetmetadata,VISITGETMETADATA)
 #define F_VISITGETMESH       F77_ID(visitgetmesh_,visitgetmesh,VISITGETMESH)
-#define F_VISITGETVARIABLE     F77_ID(visitgetscalar_,visitgetscalar,VISITGETSCALAR)
+#define F_VISITGETVARIABLE   F77_ID(visitgetscalar_,visitgetscalar,VISITGETSCALAR)
 #define F_VISITGETMATERIAL   F77_ID(visitgetmaterial_,visitgetmaterial,VISITGETMATERIAL)
 #define F_VISITGETCURVE      F77_ID(visitgetcurve_,visitgetcurve,VISITGETCURVE)
 #define F_VISITGETDOMAINLIST F77_ID(visitgetdomainlist_,visitgetdomainlist,VISITGETDOMAINLIST)
@@ -1018,7 +1068,7 @@ VisItGetMaterial(int domain, const char *name, VisIt_MaterialData *mat, void *cb
  *****************************************************************************/
 
 int
-VisItGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
+VisItGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
 {
     int ret = VISIT_ERROR;
     int sid = StoreFortranPointer((void*)var);
@@ -2484,159 +2534,111 @@ F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
  *****************************************************************************/
 
 FORTRAN
-F_VISITVARIABLESETDATA(int *sid, void *scalar, int *dims, int *ndims,
+F_VISITVARIABLESETDATA(int *handle, void *scalar, int *dims, int *ndims,
     int *datatype, int *owner)
 {
     int retval = VISIT_ERROR;
-    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
-    if(sd)
-    {
-        int i, sz = 1;
-        for(i = 0; i < *ndims; ++i)
-            sz *= dims[i];
-        sd->nTuples = sz;
+    int i, nTuples = 1;
+    for(i = 0; i < *ndims; ++i)
+        nTuples *= dims[i];
 
-        if(*owner == VISIT_OWNER_SIM)
+    if(*handle == VISIT_INVALID_HANDLE)
+    {
+        fprintf(stderr, "visitsetvariabledata: Invalid handle value.\n");
+        retval = VISIT_ERROR;
+    }
+    else if(*owner == VISIT_OWNER_SIM)
+    {
+        if(*datatype == VISIT_DATATYPE_CHAR)
+            retval = VisIt_VariableData_setDataC(*handle, VISIT_OWNER_SIM, 1, nTuples, (char*)scalar);
+        else if(*datatype == VISIT_DATATYPE_INT)
+            retval = VisIt_VariableData_setDataI(*handle, VISIT_OWNER_SIM, 1, nTuples, (int*)scalar);
+        else if(*datatype == VISIT_DATATYPE_FLOAT)
+            retval = VisIt_VariableData_setDataF(*handle, VISIT_OWNER_SIM, 1, nTuples, (float*)scalar);
+        else if(*datatype == VISIT_DATATYPE_DOUBLE)
+            retval = VisIt_VariableData_setDataD(*handle, VISIT_OWNER_SIM, 1, nTuples, (double*)scalar);
+        else
         {
-            retval = VISIT_OKAY;
-            if(*datatype == VISIT_DATATYPE_CHAR)
-                sd->data = VisIt_CreateDataArrayFromChar(VISIT_OWNER_SIM, scalar);
-            else if(*datatype == VISIT_DATATYPE_INT)
-                sd->data = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM, scalar);
-            else if(*datatype == VISIT_DATATYPE_FLOAT)
-                sd->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, scalar);
-            else if(*datatype == VISIT_DATATYPE_DOUBLE)
-                sd->data = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_SIM, scalar);
-            else
-            {
-                fprintf(stderr, "visitsetvariabledata: Invalid data type value.\n");
-                retval = VISIT_ERROR;
-            }
+            fprintf(stderr, "visitsetvariabledata: Invalid data type value.\n");
+            retval = VISIT_ERROR;
         }
-        else if(*owner == VISIT_OWNER_VISIT)
+    }
+    else if(*owner == VISIT_OWNER_VISIT)
+    {
+        if(*datatype == VISIT_DATATYPE_CHAR)
         {
-            retval = VISIT_OKAY;
-            if(*datatype == VISIT_DATATYPE_CHAR)
-            {
-                char *cptr = ALLOC(char, sz);
-                sd->data = VisIt_CreateDataArrayFromChar(VISIT_OWNER_VISIT, cptr);
-                memcpy((void *)cptr, scalar, sz * sizeof(char));
-            }
-            else if(*datatype == VISIT_DATATYPE_INT)
-            {
-                int *iptr = ALLOC(int, sz);
-                sd->data = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, iptr);
-                memcpy((void *)iptr, scalar, sz * sizeof(int));
-            }
-            else if(*datatype == VISIT_DATATYPE_FLOAT)
-            {
-                float *fptr = ALLOC(float, sz);
-                sd->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, fptr);
-                memcpy((void *)fptr, scalar, sz * sizeof(float));
-            }
-            else if(*datatype == VISIT_DATATYPE_DOUBLE)
-            {
-                double *dptr = ALLOC(double, sz);
-                sd->data = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, dptr);
-                memcpy((void *)dptr, scalar, sz * sizeof(double));
-            }
-            else
-            {
-                fprintf(stderr, "visitsetvariabledata: Invalid data type value.\n");
-                retval = VISIT_ERROR;
-            }
+            char *cptr = ALLOC(char, nTuples);
+            memcpy((void *)cptr, scalar, nTuples * sizeof(char));
+            retval = VisIt_VariableData_setDataC(*handle, VISIT_OWNER_VISIT, 1, nTuples, cptr);
+        }
+        else if(*datatype == VISIT_DATATYPE_INT)
+        {
+            int *iptr = ALLOC(int, nTuples);
+            memcpy((void *)iptr, scalar, nTuples * sizeof(int));
+            retval = VisIt_VariableData_setDataI(*handle, VISIT_OWNER_VISIT, 1, nTuples, iptr);
+        }
+        else if(*datatype == VISIT_DATATYPE_FLOAT)
+        {
+            float *fptr = ALLOC(float, nTuples);
+            memcpy((void *)fptr, scalar, nTuples * sizeof(float));
+            retval = VisIt_VariableData_setDataF(*handle, VISIT_OWNER_VISIT, 1, nTuples, fptr);
+        }
+        else if(*datatype == VISIT_DATATYPE_DOUBLE)
+        {
+            double *dptr = ALLOC(double, nTuples);
+            memcpy((void *)dptr, scalar, nTuples * sizeof(double));
+            retval = VisIt_VariableData_setDataD(*handle, VISIT_OWNER_VISIT, 1, nTuples, dptr);
         }
         else
-            fprintf(stderr, "visitsetvariabledata: Invalid owner value.\n");
+        {
+            fprintf(stderr, "visitsetvariabledata: Invalid data type value.\n");
+            retval = VISIT_ERROR;
+        }
     }
     else
-        fprintf(stderr, "visitsetvariabledata: Could not set scalar data\n");
+        fprintf(stderr, "visitsetvariabledata: Invalid owner value.\n");
 
     return retval;
 }
 
 FORTRAN
-F_VISITVARIABLESETDATAC(int *sid, char *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAC(int *handle, char *scalar, int *dims, int *ndims)
 {
-    int retval = VISIT_ERROR;
-    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
-    if(sd)
-    {
-        int i;
-        sd->nTuples = 1;
-        for(i = 0; i < *ndims; ++i)
-            sd->nTuples *= dims[i];
+    int i, nTuples = 1;
+    for(i = 0; i < *ndims; ++i)
+        nTuples *= dims[i];
 
-        sd->data = VisIt_CreateDataArrayFromChar(VISIT_OWNER_SIM, scalar);
-        retval = VISIT_OKAY;
-    }
-    else
-        fprintf(stderr, "visitvariablesetdatac: Could not set scalar data\n");
-
-    return retval;
+    return VisIt_VariableData_setDataC(*handle, VISIT_OWNER_SIM, 1, nTuples, scalar);
 }
 
 FORTRAN
-F_VISITVARIABLESETDATAI(int *sid, int *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAI(int *handle, int *scalar, int *dims, int *ndims)
 {
-    int retval = VISIT_ERROR;
-    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
-    if(sd)
-    {
-        int i;
-        sd->nTuples = 1;
-        for(i = 0; i < *ndims; ++i)
-            sd->nTuples *= dims[i];
+    int i, nTuples = 1;
+    for(i = 0; i < *ndims; ++i)
+        nTuples *= dims[i];
 
-        sd->data = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM, scalar);
-        retval = VISIT_OKAY;
-    }
-    else
-        fprintf(stderr, "visitvariablesetdatai: Could not set scalar data\n");
-
-    return retval;
+    return VisIt_VariableData_setDataI(*handle, VISIT_OWNER_SIM, 1, nTuples, scalar);
 }
 
 FORTRAN
-F_VISITVARIABLESETDATAF(int *sid, float *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAF(int *handle, float *scalar, int *dims, int *ndims)
 {
-    int retval = VISIT_ERROR;
-    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
-    if(sd)
-    {
-        int i;
-        sd->nTuples = 1;
-        for(i = 0; i < *ndims; ++i)
-            sd->nTuples *= dims[i];
+    int i, nTuples = 1;
+    for(i = 0; i < *ndims; ++i)
+        nTuples *= dims[i];
 
-        sd->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, scalar);
-        retval = VISIT_OKAY;
-    }
-    else
-        fprintf(stderr, "visitvariablesetdataf: Could not set scalar data\n");
-
-    return retval;
+    return VisIt_VariableData_setDataF(*handle, VISIT_OWNER_SIM, 1, nTuples, scalar);
 }
 
 FORTRAN
-F_VISITVARIABLESETDATAD(int *sid, double *scalar, int *dims, int *ndims)
+F_VISITVARIABLESETDATAD(int *handle, double *scalar, int *dims, int *ndims)
 {
-    int retval = VISIT_ERROR;
-    VisIt_VariableData *sd = (VisIt_VariableData *)GetFortranPointer(*sid);
-    if(sd)
-    {
-        int i;
-        sd->nTuples = 1;
-        for(i = 0; i < *ndims; ++i)
-            sd->nTuples *= dims[i];
+    int i, nTuples = 1;
+    for(i = 0; i < *ndims; ++i)
+        nTuples *= dims[i];
 
-        sd->data = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_SIM, scalar);
-        retval = VISIT_OKAY;
-    }
-    else
-        fprintf(stderr, "visitvariablesetdatad: Could not set scalar data\n");
-
-    return retval;
+    return VisIt_VariableData_setDataD(*handle, VISIT_OWNER_SIM, 1, nTuples, scalar);
 }
 
 /******************************************************************************

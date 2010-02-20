@@ -51,8 +51,8 @@ int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
 int SimGetMaterial(int, const char *, VisIt_MaterialData *, void *);
 int SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdata);
-int SimGetVariable(int, const char *, VisIt_VariableData *, void *);
-int SimGetMixedVariable(int, const char *, VisIt_MixedVariableData *, void *);
+int SimGetVariable(int, const char *, visit_handle, void *);
+int SimGetMixedVariable(int, const char *, visit_handle, void *);
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
@@ -619,16 +619,14 @@ float zonal_scalar[NY-1][NX-1] = {
 };
 
 int
-SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
+SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
 {
     int ret = VISIT_ERROR;
 
     if(strcmp(name, "scalar") == 0)
     { 
-        var->nTuples = (NX-1) * (NY-1);
-        var->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, &zonal_scalar[0][0]);
-        ret = VISIT_OKAY;
+        ret = VisIt_VariableData_setDataF(var, VISIT_OWNER_SIM, 1,
+            (NX-1) * (NY-1), &zonal_scalar[0][0]); 
     }
 
     return ret;
@@ -661,16 +659,15 @@ float mixvar[] = {
 };
 
 int
-SimGetMixedVariable(int domain, const char *name, VisIt_MixedVariableData *mvar, void *cbdata)
+SimGetMixedVariable(int domain, const char *name, visit_handle mvar, void *cbdata)
 {
     int ret = VISIT_ERROR;
 
     if(strcmp(name, "scalar") == 0)
     {
-        mvar->nTuples = sizeof(mixvar) / sizeof(float);
-        mvar->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, mixvar);
-        ret = VISIT_OKAY;
+        int nTuples = sizeof(mixvar) / sizeof(float);
+        ret = VisIt_VariableData_setDataF(mvar, VISIT_OWNER_SIM, 1,
+            nTuples, mixvar);
     }
 
     return ret;

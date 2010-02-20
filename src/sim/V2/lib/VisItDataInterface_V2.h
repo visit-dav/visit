@@ -285,20 +285,6 @@ typedef struct VisIt_MeshData
     VisIt_CSGMesh          *csgmesh;
 } VisIt_MeshData;
 
-typedef struct VisIt_VariableData
-{
-    int             nTuples;
-    int             nComponents;
-    VisIt_DataArray data;
-} VisIt_VariableData;
-
-typedef struct VisIt_MixedVariableData
-{
-    int             nTuples;
-    int             nComponents;
-    VisIt_DataArray data;
-} VisIt_MixedVariableData;
-
 typedef struct VisIt_MaterialData
 {
     int nMaterials;
@@ -421,13 +407,15 @@ int VisIt_PointMesh_free(VisIt_PointMesh *obj);
 int VisIt_CSGMesh_free(VisIt_CSGMesh *obj);
 int VisIt_MeshData_free(VisIt_MeshData *obj);
 int VisIt_CurveData_free(VisIt_CurveData *obj);
-int VisIt_VariableData_free(VisIt_VariableData *obj);
-int VisIt_MixedVariableData_free(VisIt_MixedVariableData *obj);
 int VisIt_MaterialData_free(VisIt_MaterialData *obj);
 int VisIt_SpeciesData_free(VisIt_SpeciesData *obj);
 int VisIt_DomainList_free(VisIt_DomainList *obj);
 
 /****************************************************************************/
+
+#include <VisIt_DomainBoundaries.h>
+#include <VisIt_DomainNesting.h>
+#include <VisIt_VariableData.h>
 
 #ifdef __cplusplus
 }

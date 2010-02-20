@@ -145,7 +145,7 @@ ENDFUNCTION(ADD_SIMV2_SIMULATION)
 
 FUNCTION(ADD_FORTRAN_SIMV2_SIMULATION target)
     IF(VISIT_FORTRAN)
-        ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexample.f)
+        ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
         SET_SIMULATION_PROPERTIES(${target})
         TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
         ADD_TARGET_COMPILE_FLAGS(sim_${target}

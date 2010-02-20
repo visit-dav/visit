@@ -59,7 +59,7 @@ void read_input_deck(void) { }
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
 int SimGetCurve(const char *name, VisIt_CurveData *, void *);
-int SimGetVariable(int, const char *, VisIt_VariableData *, void *);
+int SimGetVariable(int, const char *, visit_handle, void *);
 int SimGetDomainList(VisIt_DomainList *, void *);
 
 /******************************************************************************
@@ -650,7 +650,7 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
  *****************************************************************************/
 
 int
-SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
+SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
 {
     int ret = VISIT_ERROR;
     simulation_data *sim = (simulation_data *)cbdata;
@@ -659,7 +659,7 @@ SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbda
     {
         float angle, xpos, ypos, cellX, cellY, dX, dY, tx, ty, *zoneptr;
         float sx, ex, sy, ey, *rmesh_zonal;
-        int i, j;
+        int i, j, nTuples;
 
         sx = -2.5  + domain * 5.;
         ex = sx + 5.;
@@ -686,9 +686,9 @@ SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbda
             }
         }
 
-        var->nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
-        var->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_VISIT, rmesh_zonal);
+        nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
+        ret = VisIt_VariableData_setDataF(var, VISIT_OWNER_VISIT, 1,
+            nTuples, rmesh_zonal);
 
         ret = VISIT_OKAY;
     }

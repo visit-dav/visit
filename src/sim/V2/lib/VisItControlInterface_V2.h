@@ -117,8 +117,8 @@ int VisItSetGetMetaData(int (*cb)(VisIt_SimulationMetaData *, void *), void *cbd
 int VisItSetGetMesh(int (*cb)(int, const char *, VisIt_MeshData *, void *), void *cbdata);
 int VisItSetGetMaterial(int (*cb)(int, const char *, VisIt_MaterialData *, void *), void *cbdata);
 int VisItSetGetSpecies(int (*cb)(int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
-int VisItSetGetVariable(int (*cb)(int, const char *, VisIt_VariableData *, void *), void *cbdata);
-int VisItSetGetMixedVariable(int (*cb)(int, const char *, VisIt_MixedVariableData *, void *), void *cbdata);
+int VisItSetGetVariable(int (*cb)(int, const char *, visit_handle, void *), void *cbdata);
+int VisItSetGetMixedVariable(int (*cb)(int, const char *, visit_handle, void *), void *cbdata);
 int VisItSetGetCurve(int (*cb)(const char *, VisIt_CurveData *, void *), void *cbdata);
 int VisItSetGetDomainList(int (*cb)(VisIt_DomainList *, void *), void *cbdata);
 

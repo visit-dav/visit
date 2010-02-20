@@ -12,8 +12,8 @@
    DECL(GetMesh,             int (*ARG(GetMesh))(int, const char *, VisIt_MeshData *, void *)) \
    DECL(GetMaterial,         int (*ARG(GetMaterial))(int, const char *, VisIt_MaterialData *, void *)) \
    DECL(GetSpecies,          int (*ARG(GetSpecies))(int, const char *, VisIt_SpeciesData *, void *)) \
-   DECL(GetVariable,         int (*ARG(GetVariable))(int, const char *, VisIt_VariableData *, void *)) \
-   DECL(GetMixedVariable,    int (*ARG(GetMixedVariable))(int, const char *, VisIt_MixedVariableData *, void *)) \
+   DECL(GetVariable,         int (*ARG(GetVariable))(int, const char *, visit_handle, void *)) \
+   DECL(GetMixedVariable,    int (*ARG(GetMixedVariable))(int, const char *, visit_handle, void *)) \
    DECL(GetCurve,            int (*ARG(GetCurve))(const char *, VisIt_CurveData *, void *)) \
    DECL(GetDomainList,       int (*ARG(GetDomainList))(VisIt_DomainList *, void *)) \
    DECL(GetDomainBoundaries, int (*ARG(GetDomainBoundaries))(const char *, visit_handle, void *)) \

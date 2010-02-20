@@ -3,6 +3,7 @@
 #include "VisItDataInterface_V2P.h"
 #include "simv2_DomainBoundaries.h"
 #include "simv2_DomainNesting.h"
+#include "simv2_VariableData.h"
 
 #include <stdlib.h>
 #include <string>
@@ -35,10 +36,10 @@ typedef struct
     int  (*cb_GetSpecies)(int, const char *, VisIt_SpeciesData *, void *);
     void  *cbdata_GetSpecies;
 
-    int  (*cb_GetVariable)(int, const char *, VisIt_VariableData *, void *);
+    int  (*cb_GetVariable)(int, const char *, visit_handle, void *);
     void  *cbdata_GetVariable;
 
-    int  (*cb_GetMixedVariable)(int, const char *, VisIt_MixedVariableData *, void *);
+    int  (*cb_GetMixedVariable)(int, const char *, visit_handle, void *);
     void  *cbdata_GetMixedVariable;
 
     int  (*cb_GetCurve)(const char *, VisIt_CurveData *, void *);
@@ -147,7 +148,7 @@ simv2_set_GetSpecies(int (*cb) (int, const char *, VisIt_SpeciesData *, void *),
 }
 
 void
-simv2_set_GetVariable(int (*cb) (int, const char *, VisIt_VariableData *, void *), void *cbdata)
+simv2_set_GetVariable(int (*cb) (int, const char *, visit_handle, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -158,7 +159,7 @@ simv2_set_GetVariable(int (*cb) (int, const char *, VisIt_VariableData *, void *
 }
 
 void
-simv2_set_GetMixedVariable(int (*cb) (int, const char *, VisIt_MixedVariableData *, void *), void *cbdata)
+simv2_set_GetMixedVariable(int (*cb) (int, const char *, visit_handle, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -597,40 +598,39 @@ simv2_invoke_GetSpecies(int dom, const char *name)
     return obj;
 }
 
-VisIt_VariableData *
+visit_handle
 simv2_invoke_GetVariable(int dom, const char *name)
 {
-    VisIt_VariableData *obj = NULL;
+    visit_handle obj = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetVariable != NULL)
     {
-        obj = ALLOC(VisIt_VariableData);
-        if(obj != NULL)
+        if(simv2_VariableData_alloc(&obj) != VISIT_ERROR)
         {
-            obj->nComponents = 1; /* Default the number of components to 1. */
             if((*callbacks->cb_GetVariable)(dom, name, obj, callbacks->cbdata_GetVariable) == VISIT_ERROR)
             {
                 simv2_VariableData_free(obj);
-                obj = NULL;
+                obj = VISIT_INVALID_HANDLE;
             }
         }
     }
     return obj;
 }
 
-VisIt_MixedVariableData *
+visit_handle
 simv2_invoke_GetMixedVariable(int dom, const char *name)
 {
-    VisIt_MixedVariableData *obj = NULL;
+    visit_handle obj = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetMixedVariable != NULL)
     {
-        obj = ALLOC(VisIt_MixedVariableData);
-        obj->nComponents = 1; /* Default the number of components to 1. */
-        if(obj != NULL && (*callbacks->cb_GetMixedVariable)(dom, name, obj, callbacks->cbdata_GetMixedVariable) == VISIT_ERROR)
+        if(simv2_VariableData_alloc(&obj) != VISIT_ERROR)
         {
-            simv2_MixedVariableData_free(obj);
-            obj = NULL;
+            if((*callbacks->cb_GetMixedVariable)(dom, name, obj, callbacks->cbdata_GetMixedVariable) == VISIT_ERROR)
+            {
+                simv2_VariableData_free(obj);
+                obj = VISIT_INVALID_HANDLE;
+            }
         }
     }
     return obj;

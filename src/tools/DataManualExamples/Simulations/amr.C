@@ -49,7 +49,7 @@
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
-int SimGetVariable(int, const char *, VisIt_VariableData *, void *);
+int SimGetVariable(int, const char *, visit_handle, void *);
 int SimGetDomainNesting(const char *, visit_handle, void *);
 
 /******************************************************************************
@@ -811,7 +811,7 @@ SimGetDomainNesting(const char *name, visit_handle nesting, void *cbdata)
  *****************************************************************************/
 
 int
-SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbdata)
+SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
 {
     int ret = VISIT_ERROR;
 
@@ -821,10 +821,8 @@ SimGetVariable(int domain, const char *name, VisIt_VariableData *var, void *cbda
 
     if(strcmp(name, "mandelbrot") == 0 && patch != NULL)
     { 
-        var->nTuples = patch->nx * patch->ny;
-        var->data = VisIt_CreateDataArrayFromChar(
-            VISIT_OWNER_SIM, (char *)patch->data);
-        ret = VISIT_OKAY;
+        ret = VisIt_VariableData_setDataC(var, VISIT_OWNER_SIM, 1,
+            patch->nx * patch->ny, (char *)patch->data);
     }
 
     return ret;

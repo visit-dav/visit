@@ -371,32 +371,6 @@ simv2_CurveData_free(VisIt_CurveData *obj)
 }
 
 int
-simv2_VariableData_free(VisIt_VariableData *obj)
-{
-    if(obj == NULL)
-        return VISIT_ERROR;
-
-    simv2_DataArray_free(&obj->data);
-
-    FREE(obj);
-
-    return VISIT_OKAY;
-}
-
-int
-simv2_MixedVariableData_free(VisIt_MixedVariableData *obj)
-{
-    if(obj == NULL)
-        return VISIT_ERROR;
-
-    simv2_DataArray_free(&obj->data);
-
-    FREE(obj);
-
-    return VISIT_OKAY;
-}
-
-int
 simv2_MaterialData_free(VisIt_MaterialData *obj)
 {
     if(obj == NULL)

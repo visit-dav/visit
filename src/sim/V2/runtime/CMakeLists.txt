@@ -43,8 +43,9 @@ VisItControlInterfaceRuntime.C
 VisItDataInterfaceRuntime.C 
 VisItDataInterfaceRuntimeP.C 
 VisItDataInterface_V2P.C 
-visit_DomainBoundaries.C 
-visit_DomainNesting.C
+simv2_DomainBoundaries.C 
+simv2_DomainNesting.C
+simv2_VariableData.C
 )
 
 INCLUDE_DIRECTORIES(
