@@ -1506,6 +1506,71 @@ avtStreamlineFilter::Initialize()
 
 
 // ****************************************************************************
+//  Method: avtStreamlineFilter::InitializeLocators
+//
+//  Purpose:
+//      Initializes the locators.  Note that some locators don't need to be
+//      initialized ... this really only makes sense for parallel static
+//      domains.  For PSL, if we don't initialize, then we end up serializing
+//      the initialization, as each processor busywaits and then initializes
+//      when they actually get something to do.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 19, 2010
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::InitializeLocators(void)
+{
+    if (doPathlines || OperatingOnDemand() || specifyPoint)
+        return;  // maybe this makes sense; haven't thought about it
+
+    int t1 = visitTimer->StartTimer();
+    for (int i = 0 ; i < numDomains ; i++)
+    {
+        DomainType dom;
+        dom.domain = i;
+        dom.timeStep = seedTimeStep0;
+        if (OwnDomain(dom))
+        {
+             vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[dom];
+             if (cellLocator == NULL)
+             {
+                  vtkDataSet *ds = GetDomain(dom, 0,0,0);
+                  if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+                      SetupLocator(dom, ds);
+             } 
+        }
+    }
+    visitTimer->StopTimer(t1, "Initializing locators");
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::SetupLocator
+//
+//  Purpose:
+//      Sets up a locator for a specific domain.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 19, 2010
+//
+// ****************************************************************************
+
+vtkVisItCellLocator *
+avtStreamlineFilter::SetupLocator(const DomainType &dom, vtkDataSet *ds)
+{
+    vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
+    cellLocator->SetDataSet(ds);
+    cellLocator->IgnoreGhostsOn();
+    cellLocator->BuildLocator();
+    domainToCellLocatorMap[dom] = cellLocator;
+    return cellLocator;
+}
+
+
+// ****************************************************************************
 //  Method: avtStreamlineFilter::PointInDomain
 //
 //  Purpose:
@@ -1543,11 +1608,16 @@ avtStreamlineFilter::Initialize()
 //
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
+//
+//   Hank Childs, Fri Feb 19 17:47:04 CST 2010
+//   Use a separate routine to generate a cell locator.
+//
 // ****************************************************************************
 
 bool
 avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
 {
+    int t1 = visitTimer->StartTimer();
     if (DebugStream::Level5())
         debug5<< "avtStreamlineFilter::PointInDomain("<<pt<<", dom= "<<domain<<") = ";
 
@@ -1609,11 +1679,9 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     }
     if ( cellLocator == NULL )
     {
-        cellLocator = vtkVisItCellLocator::New();
-        cellLocator->SetDataSet(ds);
-        cellLocator->IgnoreGhostsOn();
-        cellLocator->BuildLocator();
-        domainToCellLocatorMap[domain] = cellLocator;
+        int t2 = visitTimer->StartTimer();
+        cellLocator = SetupLocator(domain, ds);
+        visitTimer->StopTimer(t2, "Build locator inside PointInDomain");
     }
 
     double rad = 1e-6, dist=0.0;
@@ -1628,6 +1696,7 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
         debug5<< "suc = "<<success<<" dist = "<<dist<<" resPt= ["<<resPt[0]
               <<" "<<resPt[1]<<" "<<resPt[2]<<"] subId= "<<subId<<" foundCell= "<<foundCell<<endl;
     
+    visitTimer->StopTimer(t1, "PointInDomain");
     return (success == 1 ? true : false);
 }
 
@@ -1828,6 +1897,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
 //   Bug fix. Out-of-bounds SLs were being set to terminated.
 //
+//   Hank Childs, Sat Feb 20 05:12:45 PST 2010
+//   Send the SL filter's instance of a locator to the interpolated velocity
+//   field.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1836,6 +1909,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                                      double *extents,
                                      int maxSteps )
 {
+    int t0 = visitTimer->StartTimer();
     slSeg->sl->scalars.resize(0);
     if (coloringVariable != "")
         slSeg->sl->scalars.push_back(coloringVariable);
@@ -1862,6 +1936,9 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     }
     else
         velocity1->SetDataSet(ds);
+
+    vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[slSeg->domain];
+    velocity1->SetLocator(cellLocator);
 
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         ds->GetPointData()->SetActiveScalars(coloringVariable.c_str());
@@ -1989,6 +2066,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     
     if (DebugStream::Level5())
         debug5<<"::IntegrateDomain() result= "<<result<<endl;
+    visitTimer->StopTimer(t0, "IntegrateDomain");
     return result;
 }
 
@@ -2024,6 +2102,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 void
 avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps)
 {
+    int t1 = visitTimer->StartTimer();
     slSeg->status = avtStreamlineWrapper::UNSET;
     
     //Get the required domain.
@@ -2066,6 +2145,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
     
     if (DebugStream::Level5())
         debug5 << "IntegrateStreamline DONE: status = "<<slSeg->status<<" doms= "<<slSeg->seedPtDomainList<<endl;
+    visitTimer->StopTimer(t1, "IntegrateStreamline");
 }
 
 // ****************************************************************************

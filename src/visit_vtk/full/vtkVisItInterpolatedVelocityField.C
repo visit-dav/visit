@@ -48,7 +48,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkVisItPointLocator.h>
+#include <vtkVisItCellLocator.h>
 
 #include <vtkVisItUtility.h>
 #include <DebugStream.h>
@@ -102,6 +102,19 @@ vtkVisItInterpolatedVelocityField::SetDataSet(vtkDataSet *ds_)
    ds->Register(NULL);
 }
 
+void
+vtkVisItInterpolatedVelocityField::SetLocator(vtkVisItCellLocator *loc)
+{
+   if (locator != NULL)
+   {
+       locator->Delete();
+       locator = NULL;
+   }
+   locator = loc;
+   if (locator != NULL)
+       locator->Register(NULL);
+}
+
 bool
 vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
 {
@@ -141,107 +154,19 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
     }
     else
     {
-        // Pulled this from vtkPointSet::FindCell, because for
-        // some of our data, their default 'MAXWALK' is too small.
-        int nCells = ds->GetNumberOfCells();
-        if (nCells == 0)
-        {
-            return false;
-        }
-
-        vtkIdType ptId, cellId;
-        vtkCell *cellVTK;
-        int walk, found = -1, subId;
-        double pcoords[3], diagLen, tol;
-        double closestPoint[3], dist2;
-        vtkIdList *cellIds, *ptIds;
-
         if (locator == NULL)
         {
-            locator = vtkVisItPointLocator::New();
+            locator = vtkVisItCellLocator::New();
             locator->SetDataSet(ds);
-            locator->SetIgnoreDisconnectedPoints(1);
+            locator->IgnoreGhostsOn();
             locator->BuildLocator();
         }
 
-        diagLen = ds->GetLength();
-        if (nCells != 0)
-            tol = diagLen / (double) nCells;
-        else
-            tol = 1e-6;
-
-        //
-        // Finding ONLY the single closest point won't work for this use-case
-        // if any adjacent cells share identical point coordinates with  
-        // different point Ids.  (E.g. physically adjacent cells which are not
-        // logically connected.) So find 8 closest-points and work from there.
-        //
-        vtkIdList *closestPoints = vtkIdList::New();
-        locator->FindClosestNPoints(8, pt, closestPoints);
-        if (closestPoints->GetNumberOfIds() == 0)
-        {
-            closestPoints->Delete();
-            return false;
-        }
-
-        double minDist2 = FLT_MAX;
-        cellIds = vtkIdList::New(); 
-        cellIds->Allocate(8, 100);
-        ptIds = vtkIdList::New();
-        ptIds->Allocate(8, 100);
-    
-        for (int z = 0; z < closestPoints->GetNumberOfIds() && found == -1; z++)
-        {
-            ptId = closestPoints->GetId(z);
-            ds->GetPointCells(ptId, cellIds);
-            if (cellIds->GetNumberOfIds() > 0)
-            {
-                cellId = cellIds->GetId(0);
-                cellVTK = ds->GetCell(cellId);
-                int evaluate = cellVTK->EvaluatePosition
-                    (pt, closestPoint, subId, pcoords, dist2, weights);
-
-                if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
-                { 
-                    found = cellId; 
-                    minDist2 = dist2;
-                } 
-            }
-            int MAXWALK = 50;
-            if (found == -1 && cellIds->GetNumberOfIds() > 0)
-            {
-                for (walk = 0; walk < MAXWALK && minDist2 != 0. ; walk++)
-                {
-                    cellVTK->CellBoundary(subId, pcoords, ptIds);
-                    ds->GetCellNeighbors(cellId, ptIds, cellIds);
-                    if (cellIds->GetNumberOfIds() > 0)
-                    {
-                        cellId = cellIds->GetId(0);
-                        cellVTK = ds->GetCell(cellId);
-                    }
-                    else
-                    {
-                        break; // outside of data
-                    }
-                    if (cellVTK)
-                    {
-                        int eval = cellVTK->EvaluatePosition
-                            (pt, closestPoint, subId, pcoords, dist2, weights);
-                        if (eval == 1 && dist2 <= tol && dist2 < minDist2)
-                        {
-                            minDist2 = dist2;
-                            found = cellId;
-                        }
-                    }
-
-                }
-            }
-        }
-
-        ptIds->Delete();
-        cellIds->Delete();
-        closestPoints->Delete();
-        cell = found;
+        double rad = 1e-6, dist=0.0;
+        double resPt[3]={0.0,0.0,0.0};
+        int subId = 0;
+        int success = locator->FindClosestPointWithinRadius(pt, rad, resPt,
+                                                                cell, subId, dist);
     }
    
     if (cell < 0)

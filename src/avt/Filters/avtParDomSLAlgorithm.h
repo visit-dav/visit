@@ -74,6 +74,9 @@
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   Add AddStreamlines and ResetStreamlinesForContinueExecute
 //
+//   Hank Childs, Fri Feb 19 16:20:45 CST 2010
+//   Add PreRunAlgorithm.
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -89,6 +92,7 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
 
   protected:
     virtual void              RunAlgorithm();
+    virtual void              PreRunAlgorithm();
     void                      ExchangeTermination();
     void                      HandleOOBSL(avtStreamlineWrapper *s);
     
