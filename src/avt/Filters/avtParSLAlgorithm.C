@@ -477,6 +477,9 @@ avtParSLAlgorithm::CleanupAsynchronous()
 //   Dave Pugmire, Sat Mar 28 22:21:49 EDT 2009
 //   Bug fix. "notCompleted" wasn't in an else clause for the INT messages.
 //   
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
 // ****************************************************************************
 void
 avtParSLAlgorithm::CheckPendingSendRequests()
@@ -576,8 +579,11 @@ avtParSLAlgorithm::CheckPendingSendRequests()
         }
     }
 
+    bool nov = visitTimer->GetNeverOutputValue();
+    visitTimer->NeverOutput(true);
     CommTime.value += visitTimer->StopTimer(communicationTimer, 
                                             "CheckPending");
+    visitTimer->NeverOutput(nov);
     debug5 << "DONE  CheckPendingSendRequests()\n";
 }
 
@@ -655,6 +661,9 @@ avtParSLAlgorithm::PostRecvSLReq(int idx)
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Add the senders rank and msgID to the front of the message.
 //
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
 // ****************************************************************************
 
 void
@@ -686,8 +695,12 @@ avtParSLAlgorithm::SendMsg(int dst,
     
     BytesCnt.value += (sizeof(int) *statusMsgSz);
     MsgCnt.value++;
+    bool nov = visitTimer->GetNeverOutputValue();
+    visitTimer->NeverOutput(true);
     CommTime.value += visitTimer->StopTimer(communicationTimer, 
                                             "SendMsg");
+    visitTimer->NeverOutput(nov);
+    debug5 << "DONE  CheckPendingSendRequests()\n";
 }
 
 // ****************************************************************************
@@ -729,6 +742,9 @@ avtParSLAlgorithm::SendAllMsg(vector<int> &msg)
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Senders rank and msgID is in the message now.
 //   
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
 // ****************************************************************************
 
 void
@@ -792,8 +808,12 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
         if (num == 0)
             break;
     }
+    bool nov = visitTimer->GetNeverOutputValue();
+    visitTimer->NeverOutput(true);
+    debug5 << "DONE  CheckPendingSendRequests()\n";
     CommTime.value += visitTimer->StopTimer(communicationTimer,
                                             "RecvMsgs");
+    visitTimer->NeverOutput(nov);
 }
 
 // ****************************************************************************
@@ -859,6 +879,9 @@ avtParSLAlgorithm::SendSLs(int dst,
 //
 //  Modifications:
 //
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
 // ****************************************************************************
 
 bool
@@ -901,8 +924,12 @@ avtParSLAlgorithm::DoSendSLs(int dst,
     sendSLBufferMap[req] = msg;
 
     BytesCnt.value += sz;
+    bool nov = visitTimer->GetNeverOutputValue();
+    visitTimer->NeverOutput(true);
     CommTime.value += visitTimer->StopTimer(communicationTimer,
                                             "SendSLs");
+    visitTimer->NeverOutput(nov);
+    debug5 << "DONE  CheckPendingSendRequests()\n";
     return true;
 }
 
@@ -922,6 +949,9 @@ avtParSLAlgorithm::DoSendSLs(int dst,
 //  
 //  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //  Change how timings are reported/calculated.
+//
+//  Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//  Don't output timing values to the timing logs.
 //
 // ****************************************************************************
 
@@ -985,8 +1015,12 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
             break;
     }
     
+    bool nov = visitTimer->GetNeverOutputValue();
+    visitTimer->NeverOutput(true);
     CommTime.value += visitTimer->StopTimer(communicationTimer,
                                             "RecvSLs");
+    visitTimer->NeverOutput(nov);
+    debug5 << "DONE  CheckPendingSendRequests()\n";
     return slCount;
 }
 
