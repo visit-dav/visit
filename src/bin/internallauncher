@@ -581,6 +581,9 @@ $0 = shift @ARGV;
 #    will get printed. I also added code to print VISITARCHHOME so the we'll
 #    later know where to find Mesa. This was needed for simulations.
 #
+#    Hank Childs, Sun Feb 21 12:15:49 CST 2010
+#    Fix some way-ness issues on longhorn.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2698,14 +2701,19 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $ppn = ceil($procs / $nodes);
             if ($IsRunningOnRanger_TACC)
             {
+                $thread_factor=16;
+                if ($IsRunningOnLonghorn_TACC)
+                {
+                   $thread_factor=8;
+                }
                 if ($nodes_set) 
-                { $tacc_way = $ppn; $tacc_procs = 16*$nodes; }
+                { $tacc_way = $ppn; $tacc_procs = $thread_factor*$nodes; }
                 # if nodes not set explicitly assume 1way
                 else 
-                { $tacc_way = 1; $tacc_procs = 16*$procs; }  
-                if ($tacc_way > 16) {
+                { $tacc_way = 1; $tacc_procs = $thread_factor*$procs; }  
+                if ($tacc_way > $thread_factor) {
                     print STDERR "TACC-hosted engine configured with $procs procs on $nodes nodes (${ppn}x).\n";
-                    print STDERR "Number of procs must be no more than 16x number of nodes.\n";
+                    print STDERR "Number of procs must be no more than ${thread_factor}x number of nodes.\n";
                     exit(1);
                 }
                 push @parcmd, "-pe", "${tacc_way}way", $tacc_procs;
