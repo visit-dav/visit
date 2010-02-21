@@ -42,10 +42,11 @@
 
 #ifndef AVT_TRANSPARENCY_ACTOR_H
 #define AVT_TRANSPARENCY_ACTOR_H
+
 #include <plotter_exports.h>
+
 #include <vector>
 #include <map>
-
 
 class     vtkActor;
 class     vtkAppendPolyData;
@@ -59,6 +60,8 @@ class     vtkPolyData;
 class     vtkPolyDataMapper;
 class     vtkRenderer;
 class     vtkParallelImageSpaceRedistributor;
+
+class     ColorAttribute;
 
 
 // ****************************************************************************
@@ -111,6 +114,9 @@ class     vtkParallelImageSpaceRedistributor;
 //    Tom Fogal, Mon May 25 14:03:14 MDT 2009
 //    Added caching for transparency calculation.
 //
+//    Hank Childs, Wed Feb 17 18:19:53 CST 2010
+//    Add support for changes in specular lighting.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -147,6 +153,9 @@ class PLOTTER_API avtTransparencyActor
     void                             AddToRenderer(vtkRenderer *);
     void                             RemoveFromRenderer(vtkRenderer *);
     void                             ScaleByVector(const double vec[3]);
+    void                             SetSpecularProperties(bool flag,
+                                           double coeff, double power,
+                                           const ColorAttribute &color);
 
     void                             SuspendRendering() { renderingSuspended = true;  }
     void                             ResumeRendering()  { renderingSuspended = false; }
