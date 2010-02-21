@@ -123,6 +123,9 @@
 //    Hank Childs, Sat Apr 11 23:41:27 CDT 2009
 //    Add mode for NoOutputs.
 //
+//    Hank Childs, Sat Feb 20 16:45:48 CST 2010
+//    Add method for getting the NeverOutput data member.
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -153,6 +156,7 @@ class MISC_API TimingsManager
 
     void                       WithholdOutput(bool);
     void                       NeverOutput(bool);
+    bool                       GetNeverOutputValue(void) {return neverOutput;};
     void                       OutputAllTimings();
 
   protected:
