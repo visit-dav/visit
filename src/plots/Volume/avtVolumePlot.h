@@ -111,6 +111,10 @@ class avtResampleFilter;
 //    Kathleen Bonnell, Tue Mar  3 13:37:13 PST 2009
 //    Removed CanDo2DViewScaling (moved into Viewer PluginInfo)
 //
+//    Hank Childs, Sun Feb 21 10:33:44 CST 2010
+//    Declare that we are managing transparency within the plot for the
+//    splatting & 3D texturing case.
+//
 // ****************************************************************************
 
 class
@@ -134,6 +138,7 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        Equivalent(const AttributeGroup *);
 
     virtual bool        UtilizeRenderingFilters(void) { return false; };
+    virtual bool        ManagesOwnTransparency(void);
 
   protected:
     VolumeAttributes                atts;

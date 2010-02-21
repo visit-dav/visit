@@ -172,6 +172,25 @@ avtVolumePlot::~avtVolumePlot()
 
 
 // ****************************************************************************
+//  Method: avtVolumePlot::ManagesOwnTransparency
+//
+//  Purpose:
+//      Declares whether or not this plot manages its own transparency.
+//      This is one factor in the decision of whether or not to use Ice-T.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 21, 2010
+//
+// ****************************************************************************
+
+bool
+avtVolumePlot::ManagesOwnTransparency(void)
+{
+    return !PlotIsImageBased();
+}
+
+
+// ****************************************************************************
 //  Method: avtVolumePlot::PlotIsImageBased
 //
 //  Purpose:

@@ -257,6 +257,9 @@ class     WindowAttributes;
 //    Brad Whitlock, Wed Sep  9 16:17:55 PDT 2009
 //    I made ReduceGeometry, CompactTree, SetCurrentExtents virtual.
 //
+//    Hank Childs, Sun Feb 21 10:03:53 CST 2010
+//    Add method ManagesOwnTransparency.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -316,6 +319,7 @@ class PLOTTER_API avtPlot
                                   { return intermediateDataObject; };
     virtual avtMapper         *GetMapper(void) = 0;
     virtual bool               CanCacheWriterExternally(void) { return true; } 
+    virtual bool               ManagesOwnTransparency(void) { return false; };
     virtual const AttributeSubject 
                               *SetOpaqueMeshIsAppropriate(bool)
                                    { return NULL; };

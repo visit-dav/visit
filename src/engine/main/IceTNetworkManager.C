@@ -47,6 +47,7 @@
 #include <avtSourceFromImage.h>
 #include <avtTransparencyActor.h>
 #include <DebugStream.h>
+#include <DataNetwork.h>
 #include <Engine.h>
 #include <snprintf.h>
 #include <StackTimer.h>
@@ -281,6 +282,10 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Tom Fogal, Tue Jul 21 19:20:40 MDT 2009
 //    Fall back to the NetworkManager when we find transparency.
 //
+//    Hank Childs, Sun Feb 21 09:52:09 CST 2010
+//    Add case detecting plots down their own transparency.  For example
+//    splatting volume rendering, which doesn't work with Ice-T.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -301,11 +306,25 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
         this->StartTimer();
         this->RenderSetup(networkIds, getZBuffer, annotMode, windowID, leftEye);
 
+        bool plotDoingTransparencyOutsideTransparencyActor = false;
+        for(int i = 0 ; i < networkIds.size() ; i++)
+        {
+debug1 << "Calling use network on " << networkIds[i] << endl;
+            workingNet = NULL;
+            UseNetwork(networkIds[i]);
+            if(this->workingNet->GetPlot()->ManagesOwnTransparency()) 
+            {
+                plotDoingTransparencyOutsideTransparencyActor = true;
+            }
+        }
+
         // We can't easily figure out a compositing order, which IceT requires
         // in order to properly composite transparent geometry.  Thus if there
         // is some transparency, fallback to our parent implementation.
         avtTransparencyActor* trans = viswin->GetTransparencyActor();
-        if(trans->TransparenciesExist() || this->MemoMultipass(viswin))
+        bool transparenciesExist = trans->TransparenciesExist()
+                           ||  plotDoingTransparencyOutsideTransparencyActor;
+        if(transparenciesExist || this->MemoMultipass(viswin))
         {
             debug2 << "Encountered transparency: falling back to old "
                       "SR / compositing routines." << std::endl;
