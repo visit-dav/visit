@@ -1763,6 +1763,9 @@ Engine::ProcessInput()
 //    Hank Childs, Sun Feb 14 16:19:20 CST 2010
 //    Set up nDisplays automatically if n-gpus-per-node is not set.
 //
+//    Hank Childs, Sun Feb 21 13:04:25 CST 2010
+//    Do not use Ice-T if we are using the GPUs.
+//
 // ****************************************************************************
 
 void
@@ -1779,7 +1782,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
             NetworkManager::SetStereoEnabled();
         else if (strcmp(argv[i], "-hw-accel") == 0)
         {
-             haveHWAccel = true;
+            haveHWAccel = true;
+            this->useIceT = false;
             if (this->nDisplays == 0)
                 this->nDisplays = 1;
         }
