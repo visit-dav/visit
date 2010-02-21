@@ -1747,6 +1747,11 @@ VisWinPlots::SetImmediateModeRendering(bool immediateMode)
 //  Programmer: Jeremy Meredith
 //  Creation:   November 14, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 17 16:29:48 PST 2010
+//    Send the specular properties to the transparency actor as well.
+//
 // ****************************************************************************
 
 void
@@ -1758,7 +1763,9 @@ VisWinPlots::SetSpecularProperties(bool flag, double coeff, double power,
     {
         (*it)->SetSpecularProperties(flag, coeff,power,color);
     }
+    transparencyActor->SetSpecularProperties(flag, coeff, power, color);
 }
+
 
 // ****************************************************************************
 //  Method: VisWinPlots::SetColorTexturingFlag

@@ -68,6 +68,8 @@
 #include <vtkTransformFilter.h>
 #include <vtkVisItPolyDataNormals.h>
 
+#include <ColorAttribute.h>
+
 #include <DebugStream.h>
 #include <BadIndexException.h>
 #include <TimingsManager.h>
@@ -1309,6 +1311,36 @@ void
 avtTransparencyActor::ScaleByVector(const double vec[3])
 {
     myActor->SetScale(vec[0], vec[1], vec[2]);
+}
+
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::SetSpecularProperties
+//
+//  Purpose:
+//      Sets the specular properties.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 17, 2010
+//
+// ****************************************************************************
+
+void
+avtTransparencyActor::SetSpecularProperties(bool flag,double coeff,double power,
+                                            const ColorAttribute &color)
+{
+    vtkProperty *prop = myActor->GetProperty();
+    if(prop != NULL && prop->GetRepresentation() == VTK_SURFACE)
+    {
+        prop->SetSpecular(flag ? coeff : 0);
+        prop->SetSpecularPower(power);
+        int r = color.Red();
+        int g = color.Green();
+        int b = color.Blue();
+        prop->SetSpecularColor(double(r)/255.,
+                               double(g)/255.,
+                               double(b)/255.);
+    }
 }
 
 
