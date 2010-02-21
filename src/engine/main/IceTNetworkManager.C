@@ -309,7 +309,6 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
         bool plotDoingTransparencyOutsideTransparencyActor = false;
         for(int i = 0 ; i < networkIds.size() ; i++)
         {
-debug1 << "Calling use network on " << networkIds[i] << endl;
             workingNet = NULL;
             UseNetwork(networkIds[i]);
             if(this->workingNet->GetPlot()->ManagesOwnTransparency()) 
