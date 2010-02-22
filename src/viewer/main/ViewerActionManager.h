@@ -41,6 +41,7 @@
 #include <viewer_exports.h>
 #include <ViewerBase.h>
 #include <ViewerRPC.h>
+#include <ViewerConfigManager.h>
 #include <string>
 #include <vector>
 #include <vectortypes.h>
@@ -85,6 +86,10 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 //
 //   Brad Whitlock, Wed Feb 13 14:18:00 PST 2008
 //   Added argument to SetFromNode.
+//
+//   Jeremy Meredith, Mon Feb 22 15:29:23 EST 2010
+//   Added a way to get at the config manager to tell it to save
+//   another state in the undo history stack.
 //
 // ****************************************************************************
 
@@ -139,6 +144,11 @@ private:
 
     ViewerActionBase **actions;
     ActionGroupVector  actionGroups;
+
+public:
+    static void SetConfigManager(ViewerConfigManager*);
+private:
+    static ViewerConfigManager *configMgr;
 };
 
 #endif

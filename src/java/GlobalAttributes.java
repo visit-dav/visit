@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 22;
+    private static int numAdditionalAttributes = 24;
 
     public GlobalAttributes()
     {
@@ -86,6 +86,8 @@ public class GlobalAttributes extends AttributeSubject
         saveCrashRecoveryFile = true;
         applySelection = true;
         ignoreExtentsFromDbs = false;
+        undoActionName = new String("");
+        redoActionName = new String("");
     }
 
     public GlobalAttributes(int nMoreFields)
@@ -114,6 +116,8 @@ public class GlobalAttributes extends AttributeSubject
         saveCrashRecoveryFile = true;
         applySelection = true;
         ignoreExtentsFromDbs = false;
+        undoActionName = new String("");
+        redoActionName = new String("");
     }
 
     public GlobalAttributes(GlobalAttributes obj)
@@ -152,6 +156,8 @@ public class GlobalAttributes extends AttributeSubject
         saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
         applySelection = obj.applySelection;
         ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
+        undoActionName = new String(obj.undoActionName);
+        redoActionName = new String(obj.redoActionName);
 
         SelectAll();
     }
@@ -210,7 +216,9 @@ public class GlobalAttributes extends AttributeSubject
                 (userDirForSessionFiles == obj.userDirForSessionFiles) &&
                 (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
                 (applySelection == obj.applySelection) &&
-                (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs));
+                (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
+                (undoActionName.equals(obj.undoActionName)) &&
+                (redoActionName.equals(obj.redoActionName)));
     }
 
     // Property setting methods
@@ -346,6 +354,18 @@ public class GlobalAttributes extends AttributeSubject
         Select(21);
     }
 
+    public void SetUndoActionName(String undoActionName_)
+    {
+        undoActionName = undoActionName_;
+        Select(22);
+    }
+
+    public void SetRedoActionName(String redoActionName_)
+    {
+        redoActionName = redoActionName_;
+        Select(23);
+    }
+
     // Property getting methods
     public Vector  GetSources() { return sources; }
     public Vector  GetWindows() { return windows; }
@@ -369,6 +389,8 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetSaveCrashRecoveryFile() { return saveCrashRecoveryFile; }
     public boolean GetApplySelection() { return applySelection; }
     public boolean GetIgnoreExtentsFromDbs() { return ignoreExtentsFromDbs; }
+    public String  GetUndoActionName() { return undoActionName; }
+    public String  GetRedoActionName() { return redoActionName; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -417,6 +439,10 @@ public class GlobalAttributes extends AttributeSubject
             buf.WriteBool(applySelection);
         if(WriteSelect(21, buf))
             buf.WriteBool(ignoreExtentsFromDbs);
+        if(WriteSelect(22, buf))
+            buf.WriteString(undoActionName);
+        if(WriteSelect(23, buf))
+            buf.WriteString(redoActionName);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -489,6 +515,12 @@ public class GlobalAttributes extends AttributeSubject
         case 21:
             SetIgnoreExtentsFromDbs(buf.ReadBool());
             break;
+        case 22:
+            SetUndoActionName(buf.ReadString());
+            break;
+        case 23:
+            SetRedoActionName(buf.ReadString());
+            break;
         }
     }
 
@@ -517,6 +549,8 @@ public class GlobalAttributes extends AttributeSubject
         str = str + boolToString("saveCrashRecoveryFile", saveCrashRecoveryFile, indent) + "\n";
         str = str + boolToString("applySelection", applySelection, indent) + "\n";
         str = str + boolToString("ignoreExtentsFromDbs", ignoreExtentsFromDbs, indent) + "\n";
+        str = str + stringToString("undoActionName", undoActionName, indent) + "\n";
+        str = str + stringToString("redoActionName", redoActionName, indent) + "\n";
         return str;
     }
 
@@ -544,5 +578,7 @@ public class GlobalAttributes extends AttributeSubject
     private boolean saveCrashRecoveryFile;
     private boolean applySelection;
     private boolean ignoreExtentsFromDbs;
+    private String  undoActionName;
+    private String  redoActionName;
 }
 

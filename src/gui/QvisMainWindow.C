@@ -99,6 +99,8 @@
 #include <icons/view.xpm>
 #include <icons/output_blue.xpm>
 #include <icons/output_red.xpm>
+#include <icons/undo.xpm>
+#include <icons/redo.xpm>
 
 #include <icons/layout1x1.xpm>
 #include <icons/layout1x2.xpm>
@@ -339,6 +341,9 @@
 //    Big redesign, adding icons and functionality and shuffling arrangement.
 //    Hide the Select File menu item when we're not in selected files mode.
 //
+//    Jeremy Meredith, Mon Feb 22 15:57:39 EST 2010
+//    Added an undo history stack.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -353,6 +358,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
     QPixmap saveMovieIcon, commandIcon, keyframeIcon, materialIcon;
     QPixmap globalLineoutIcon, correlationIcon;
+    QPixmap undoIcon, redoIcon;
 
     // Make the main window observe the global status subject. This is
     // part of the mechanism that allows other windows to display status
@@ -397,6 +403,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     materialIcon = QPixmap(matoptions_xpm);
     globalLineoutIcon = QPixmap(globallineout_xpm);
     correlationIcon = QPixmap(correlation_xpm);
+    undoIcon = QPixmap(undo_xpm);
+    redoIcon = QPixmap(redo_xpm);
 
     outputBlue = new QPixmap( output_blue_xpm );
     outputRed = new QPixmap( output_red_xpm );
@@ -501,6 +509,14 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     
     QMenu *ctrls  = menuBar()->addMenu(tr("&Controls"));
+    undoAction = ctrls->addAction(undoIcon, tr("Can't Undo"),
+                                  this, SIGNAL(undoLastAction()));
+    undoAction->setEnabled(false);
+    redoAction = ctrls->addAction(redoIcon, tr("Can't Redo"),
+                                  this, SIGNAL(redoLastAction()));
+    redoAction->setEnabled(false);
+    ctrls->addSeparator();
+
     ctrls->addAction(animIcon, tr("&Animation . . ."),
                      this, SIGNAL(activateAnimationWindow()),
                      QKeySequence(Qt::CTRL + Qt::Key_A));
@@ -1096,6 +1112,10 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 //   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Jeremy Meredith, Mon Feb 22 15:57:39 EST 2010
+//   Added an undo history stack.  We update the text and enabled-state
+//   of the menu items based on the undo/redo action names.
+//
 // ****************************************************************************
 
 void
@@ -1223,6 +1243,34 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         // Set the crash recovery timer.
         if(okayToSaveRecoveryFile && globalAtts->IsSelected(GlobalAttributes::ID_saveCrashRecoveryFile))
             UpdateCrashRecoveryTimer();
+
+        std::string undo = globalAtts->GetUndoActionName();
+        if (undo.empty())
+        {
+            undoAction->setText("Can't Undo");
+            undoAction->setEnabled(false);
+        }
+        else
+        {
+            if (undo.length()>3 && undo.substr(undo.length()-3)=="RPC")
+                undo = undo.substr(0,undo.length()-3);
+            undoAction->setText(QString("Undo (") + undo.c_str() + ")");
+            undoAction->setEnabled(true);
+        }
+
+        std::string redo = globalAtts->GetRedoActionName();
+        if (redo.empty())
+        {
+            redoAction->setText("Can't Redo");
+            redoAction->setEnabled(false);
+        }
+        else
+        {
+            if (redo.length()>3 && redo.substr(redo.length()-3)=="RPC")
+                redo = redo.substr(0,redo.length()-3);
+            redoAction->setText(QString("Redo (") + redo.c_str() + ")");
+            redoAction->setEnabled(true);
+        }
     }
     else if(TheChangedSubject == plotList)
     {

@@ -254,6 +254,8 @@ public:
         MovePlotOrderTowardLastRPC,
         SetPlotOrderToFirstRPC,
         SetPlotOrderToLastRPC,
+        UndoLastActionRPC,
+        RedoLastActionRPC,
         MaxRPC
     };
 

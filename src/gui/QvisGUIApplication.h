@@ -329,6 +329,9 @@ class SplashScreen;
 //    Gunther H. Weber, Fri Aug 15 10:22:13 PDT 2008
 //    Added methods for initiating and synchronizing repick.
 //
+//    Jeremy Meredith, Mon Feb 22 15:57:39 EST 2010
+//    Added an undo history stack.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -414,6 +417,8 @@ private slots:
     void DelayedReadFromViewer();
     void SendKeepAlives();
     void SaveSettings();
+    void UndoLastAction();
+    void RedoLastAction();
     void ActivatePlotWindow(int index);
     void ActivateOperatorWindow(int index);
     void IconifyWindows(bool);
