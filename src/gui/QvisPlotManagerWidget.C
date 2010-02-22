@@ -199,6 +199,9 @@ using std::vector;
 //   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Jeremy Meredith, Mon Feb 22 11:53:02 EST 2010
+//   Stop forcing icon size.  (But leave it easy to re-enable.)
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent) 
@@ -253,11 +256,12 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
 
     // Create the source icons
-    const int dbiconsize=24;
+    const int dbiconsize=-1;//24;
     int iconcol = 2;
     dbOpenIconButton = new QPushButton(QIcon(db_open2_xpm), "", sourceRow);
     dbOpenIconButton->setToolTip(tr("Open Data Source"));
-    dbOpenIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
+    if (dbiconsize>0)
+        dbOpenIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     dbOpenIconButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum));
     connect(dbOpenIconButton, SIGNAL(clicked()),
             this, SIGNAL(activateFileOpenWindow()));
@@ -265,7 +269,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     dbCloseIconButton = new QPushButton(QIcon(db_close2_xpm), "", sourceRow);
     dbCloseIconButton->setToolTip(tr("Close Data Source"));
-    dbCloseIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
+    if (dbiconsize>0)
+        dbCloseIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     dbCloseIconButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum));
     connect(dbCloseIconButton, SIGNAL(clicked()),
             this, SLOT(closeCurrentSource()));
@@ -273,21 +278,24 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     dbReopenIconButton = new QPushButton(QIcon(db_reopen_xpm), "", sourceRow);
     dbReopenIconButton->setToolTip(tr("Re-open Database"));
-    dbReopenIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
+    if (dbiconsize>0)
+        dbReopenIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     connect(dbReopenIconButton, SIGNAL(clicked()),
             this, SLOT(reOpenCurrentSource()));
     sourceRowLayout->addWidget(dbReopenIconButton);
 
     dbReplaceIconButton = new QPushButton(QIcon(db_replace_xpm), "", sourceRow);
     dbReplaceIconButton->setToolTip(tr("Replace Plots"));
-    dbReplaceIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
+    if (dbiconsize>0)
+        dbReplaceIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     connect(dbReplaceIconButton, SIGNAL(clicked()),
             this, SLOT(replaceWithCurrentSource()));
     sourceRowLayout->addWidget(dbReplaceIconButton);
 
     dbOverlayIconButton = new QPushButton(QIcon(db_overlay_xpm), "", sourceRow);
     dbOverlayIconButton->setToolTip(tr("Overlay Plots"));
-    dbOverlayIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
+    if (dbiconsize>0)
+        dbOverlayIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     connect(dbOverlayIconButton, SIGNAL(clicked()),
             this, SLOT(overlayWithCurrentSource()));
     sourceRowLayout->addWidget(dbOverlayIconButton);
@@ -319,19 +327,21 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     // Create the plot list header (title, icons)
     //
     int plotButtonCol = 0;
-    const int ploticonsize=24;
+    const int ploticonsize=-1;//24;
     QLabel *plotsLabel = new QLabel("Plots", this);
     plotsLabel->setAlignment(Qt::AlignLeft|Qt::AlignBottom);
     topLayout->addWidget(plotsLabel, row,plotButtonCol++);
 
     plotAddIconButton = new QPushButton(QIcon(plot_add_xpm), "", this);
     plotAddIconButton->setToolTip(tr("New Plot"));
-    plotAddIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
+    if (ploticonsize>0)
+        plotAddIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
     topLayout->addWidget(plotAddIconButton, row,plotButtonCol++);
 
     plotDelIconButton = new QPushButton(QIcon(plot_del_xpm), "", this);
     plotDelIconButton->setToolTip(tr("Delete Plot"));
-    plotDelIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
+    if (ploticonsize>0)
+        plotDelIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
     topLayout->addWidget(plotDelIconButton, row,plotButtonCol++);
 
     connect(plotDelIconButton, SIGNAL(clicked()), this, SLOT(deletePlots()));
@@ -339,24 +349,28 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     addOperIconButton = new QPushButton(QIcon(oper_add3_xpm), "", this);
     addOperIconButton->setToolTip(tr("Add Operator"));
     // this icon's 25% wider than the others
-    addOperIconButton->setIconSize(QSize(ploticonsize*5/4,ploticonsize));
+    if (ploticonsize>0)
+        addOperIconButton->setIconSize(QSize(ploticonsize*5/4,ploticonsize));
     topLayout->addWidget(addOperIconButton, row,plotButtonCol++);
 
     plotVarIconButton = new QPushButton(QIcon(plot_var_xpm), "", this);
     plotVarIconButton->setToolTip(tr("Change Variables"));
-    plotVarIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
+    if (ploticonsize>0)
+        plotVarIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
     topLayout->addWidget(plotVarIconButton, row,plotButtonCol++);
 
     plotHideIconButton = new QPushButton(QIcon(plot_hide_xpm), "", this);
     plotHideIconButton->setToolTip(tr("Hide/Show Plot"));
-    plotHideIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
+    if (ploticonsize>0)
+        plotHideIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
     topLayout->addWidget(plotHideIconButton, row,plotButtonCol++);
 
     connect(plotHideIconButton, SIGNAL(clicked()), this, SLOT(hidePlots()));
 
     plotDrawIconButton = new QPushButton(QIcon(plot_draw_xpm), "", this);
     plotDrawIconButton->setToolTip(tr("Draw Plots"));
-    plotDrawIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
+    if (ploticonsize>0)
+        plotDrawIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
     topLayout->addWidget(plotDrawIconButton, row,plotButtonCol++);
     row++;
 
