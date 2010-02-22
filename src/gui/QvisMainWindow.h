@@ -219,9 +219,6 @@ class WindowInformation;
 //   Hide the Select File menu item when we're not in selected files mode.
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
-//   Jeremy Meredith, Mon Feb 22 15:57:39 EST 2010
-//   Added an undo history stack.
-//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -294,9 +291,6 @@ signals:
     void activateInteractorWindow();
     void activateMeshManagementWindow();
     void updateVisIt();
-
-    void undoLastAction();
-    void redoLastAction();
 
     void saveSettings();
     void saveWindow();
@@ -406,9 +400,6 @@ private:
     QAction                   *closePopupAct;
     QAction                   *refreshFileListAct;
     bool                       advancedMenuShowing;
-
-    QAction                   *undoAction;
-    QAction                   *redoAction;
 
     QMenu                    *winPopup;
     QMenu                    *layoutPopup;

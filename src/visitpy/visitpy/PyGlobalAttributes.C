@@ -202,10 +202,6 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%signoreExtentsFromDbs = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sundoActionName = \"%s\"\n", prefix, atts->GetUndoActionName().c_str());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sredoActionName = \"%s\"\n", prefix, atts->GetRedoActionName().c_str());
-    str += tmpStr;
     return str;
 }
 
@@ -810,54 +806,6 @@ GlobalAttributes_GetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-GlobalAttributes_SetUndoActionName(PyObject *self, PyObject *args)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the undoActionName in the object.
-    obj->data->SetUndoActionName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-GlobalAttributes_GetUndoActionName(PyObject *self, PyObject *args)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetUndoActionName().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-GlobalAttributes_SetRedoActionName(PyObject *self, PyObject *args)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the redoActionName in the object.
-    obj->data->SetRedoActionName(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-GlobalAttributes_GetRedoActionName(PyObject *self, PyObject *args)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetRedoActionName().c_str());
-    return retval;
-}
-
 
 
 PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
@@ -906,10 +854,6 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetApplySelection", GlobalAttributes_GetApplySelection, METH_VARARGS},
     {"SetIgnoreExtentsFromDbs", GlobalAttributes_SetIgnoreExtentsFromDbs, METH_VARARGS},
     {"GetIgnoreExtentsFromDbs", GlobalAttributes_GetIgnoreExtentsFromDbs, METH_VARARGS},
-    {"SetUndoActionName", GlobalAttributes_SetUndoActionName, METH_VARARGS},
-    {"GetUndoActionName", GlobalAttributes_GetUndoActionName, METH_VARARGS},
-    {"SetRedoActionName", GlobalAttributes_SetRedoActionName, METH_VARARGS},
-    {"GetRedoActionName", GlobalAttributes_GetRedoActionName, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -982,10 +926,6 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetApplySelection(self, NULL);
     if(strcmp(name, "ignoreExtentsFromDbs") == 0)
         return GlobalAttributes_GetIgnoreExtentsFromDbs(self, NULL);
-    if(strcmp(name, "undoActionName") == 0)
-        return GlobalAttributes_GetUndoActionName(self, NULL);
-    if(strcmp(name, "redoActionName") == 0)
-        return GlobalAttributes_GetRedoActionName(self, NULL);
 
     return Py_FindMethod(PyGlobalAttributes_methods, self, name);
 }
@@ -1044,10 +984,6 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetApplySelection(self, tuple);
     else if(strcmp(name, "ignoreExtentsFromDbs") == 0)
         obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, tuple);
-    else if(strcmp(name, "undoActionName") == 0)
-        obj = GlobalAttributes_SetUndoActionName(self, tuple);
-    else if(strcmp(name, "redoActionName") == 0)
-        obj = GlobalAttributes_SetRedoActionName(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

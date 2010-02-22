@@ -119,8 +119,6 @@ void GlobalAttributes::Copy(const GlobalAttributes &obj)
     saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
     applySelection = obj.applySelection;
     ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
-    undoActionName = obj.undoActionName;
-    redoActionName = obj.redoActionName;
 
     GlobalAttributes::SelectAll();
 }
@@ -299,9 +297,7 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (userDirForSessionFiles == obj.userDirForSessionFiles) &&
             (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
             (applySelection == obj.applySelection) &&
-            (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
-            (undoActionName == obj.undoActionName) &&
-            (redoActionName == obj.redoActionName));
+            (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs));
 }
 
 // ****************************************************************************
@@ -467,8 +463,6 @@ GlobalAttributes::SelectAll()
     Select(ID_saveCrashRecoveryFile,            (void *)&saveCrashRecoveryFile);
     Select(ID_applySelection,                   (void *)&applySelection);
     Select(ID_ignoreExtentsFromDbs,             (void *)&ignoreExtentsFromDbs);
-    Select(ID_undoActionName,                   (void *)&undoActionName);
-    Select(ID_redoActionName,                   (void *)&redoActionName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -954,20 +948,6 @@ GlobalAttributes::SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_)
     Select(ID_ignoreExtentsFromDbs, (void *)&ignoreExtentsFromDbs);
 }
 
-void
-GlobalAttributes::SetUndoActionName(const std::string &undoActionName_)
-{
-    undoActionName = undoActionName_;
-    Select(ID_undoActionName, (void *)&undoActionName);
-}
-
-void
-GlobalAttributes::SetRedoActionName(const std::string &redoActionName_)
-{
-    redoActionName = redoActionName_;
-    Select(ID_redoActionName, (void *)&redoActionName);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1116,30 +1096,6 @@ GlobalAttributes::GetIgnoreExtentsFromDbs() const
     return ignoreExtentsFromDbs;
 }
 
-const std::string &
-GlobalAttributes::GetUndoActionName() const
-{
-    return undoActionName;
-}
-
-std::string &
-GlobalAttributes::GetUndoActionName()
-{
-    return undoActionName;
-}
-
-const std::string &
-GlobalAttributes::GetRedoActionName() const
-{
-    return redoActionName;
-}
-
-std::string &
-GlobalAttributes::GetRedoActionName()
-{
-    return redoActionName;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1154,18 +1110,6 @@ void
 GlobalAttributes::SelectWindows()
 {
     Select(ID_windows, (void *)&windows);
-}
-
-void
-GlobalAttributes::SelectUndoActionName()
-{
-    Select(ID_undoActionName, (void *)&undoActionName);
-}
-
-void
-GlobalAttributes::SelectRedoActionName()
-{
-    Select(ID_redoActionName, (void *)&redoActionName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1214,8 +1158,6 @@ GlobalAttributes::GetFieldName(int index) const
     case ID_saveCrashRecoveryFile:            return "saveCrashRecoveryFile";
     case ID_applySelection:                   return "applySelection";
     case ID_ignoreExtentsFromDbs:             return "ignoreExtentsFromDbs";
-    case ID_undoActionName:                   return "undoActionName";
-    case ID_redoActionName:                   return "redoActionName";
     default:  return "invalid index";
     }
 }
@@ -1262,8 +1204,6 @@ GlobalAttributes::GetFieldType(int index) const
     case ID_saveCrashRecoveryFile:            return FieldType_bool;
     case ID_applySelection:                   return FieldType_bool;
     case ID_ignoreExtentsFromDbs:             return FieldType_bool;
-    case ID_undoActionName:                   return FieldType_string;
-    case ID_redoActionName:                   return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -1310,8 +1250,6 @@ GlobalAttributes::GetFieldTypeName(int index) const
     case ID_saveCrashRecoveryFile:            return "bool";
     case ID_applySelection:                   return "bool";
     case ID_ignoreExtentsFromDbs:             return "bool";
-    case ID_undoActionName:                   return "string";
-    case ID_redoActionName:                   return "string";
     default:  return "invalid index";
     }
 }
@@ -1446,16 +1384,6 @@ GlobalAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_ignoreExtentsFromDbs:
         {  // new scope
         retval = (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs);
-        }
-        break;
-    case ID_undoActionName:
-        {  // new scope
-        retval = (undoActionName == obj.undoActionName);
-        }
-        break;
-    case ID_redoActionName:
-        {  // new scope
-        retval = (redoActionName == obj.redoActionName);
         }
         break;
     default: retval = false;

@@ -1093,10 +1093,7 @@ ViewerActionManager::UpdateActionInformation(ViewerWindowManagerAttributes *wma)
 // Creation:   Thu Jan 30 11:05:47 PDT 2003
 //
 // Modifications:
-//   Jeremy Meredith, Mon Feb 22 15:30:46 EST 2010
-//   If an action is allowed to make a new state in the undo history
-//   (generally true except for very lightweight actions), do so here.
-//
+//   
 // ****************************************************************************
 
 void
@@ -1111,9 +1108,6 @@ ViewerActionManager::HandleAction(const ViewerRPC &rpc)
         // Process the action.
         action->Activate(false);
     }
-
-    if (action->AllowInUndoHistory() && configMgr)
-        configMgr->HistorySaveNewState(action->GetName());
 }
 
 // ****************************************************************************
@@ -1593,24 +1587,4 @@ ViewerActionManager::ActionGroup::AddAction(ActionIndex index)
 
     // Add the action to the action group.
     actions.push_back(index);
-}
-
-// ****************************************************************************
-// Method:  ViewerActionManager::SetConfigManager
-//
-// Purpose:
-//   Save a pointer to the config manager in use.
-//
-// Arguments:
-//   mgr        the config manager
-//
-// Programmer:  Jeremy Meredith
-// Creation:    February 22, 2010
-//
-// ****************************************************************************
-ViewerConfigManager *ViewerActionManager::configMgr = NULL;
-void
-ViewerActionManager::SetConfigManager(ViewerConfigManager *mgr)
-{
-    configMgr = mgr;
 }

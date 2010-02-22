@@ -64,10 +64,6 @@
     <Field name="ignoreExtentsFromDbs" label="ignoreExtentsFromDbs" type="bool">
       false
     </Field>
-    <Field name="undoActionName" label="undoActionName" type="string">
-    </Field>
-    <Field name="redoActionName" label="redoActionName" type="string">
-    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

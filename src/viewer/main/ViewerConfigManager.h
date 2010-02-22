@@ -43,8 +43,6 @@
 #include <ViewerBase.h>
 #include <string>
 #include <vectortypes.h>
-#include <deque>
-#include <utility>
 
 // Forward declarations
 class AttributeSubject;
@@ -105,9 +103,6 @@ class ViewerSubject;
 //    Brad Whitlock, Mon Feb 12 18:01:20 PST 2007
 //    Use ViewerBase base class.
 //
-//    Jeremy Meredith, Mon Feb 22 15:56:56 EST 2010
-//    Added an undo history stack.
-//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ViewerBase, public ConfigManager
@@ -129,19 +124,10 @@ public:
     void ImportEntireState(const std::string &filename, bool,
                            const stringVector &, bool);
 
-    void EnableHistoryTracking();
-    void HistorySaveNewState(const std::string&);
-    void HistoryUndo();
-    void HistoryRedo();
-
 private:
     bool                             writeDetail;
     std::vector<AttributeSubject *>  subjectList;
     ViewerSubject                   *parent;
-
-    bool                                          historyTracking;
-    std::deque<std::pair<std::string,DataNode*> > undoState;
-    std::deque<std::pair<std::string,DataNode*> > redoState;
 };
 
 #endif

@@ -81,10 +81,6 @@ class ViewerWindowManager;
 //   Brad Whitlock, Fri May  9 14:52:59 PDT 2008
 //   Qt 4.
 //
-//   Jeremy Meredith, Mon Feb 22 15:31:39 EST 2010
-//   Add a flag for whether actions should be able to make a new state
-//   in the undo history.  Generally true except for lightweight actions.
-//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionBase : public ViewerBase
@@ -107,7 +103,6 @@ public:
     virtual bool MenuTopLevel() const      { return false; }
     virtual bool CanHaveOwnToolbar() const { return false; }
     virtual bool AllowInToolbar() const    { return true; }
-    virtual bool AllowInUndoHistory() const{ return true; }
 
     virtual bool CreateNode(DataNode *)    { return false; }
     virtual void SetFromNode(DataNode *,const std::string &)   { }
