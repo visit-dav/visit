@@ -57,6 +57,7 @@
 
 #include <QNarrowLineEdit.h>
 #include <QvisVariableButton.h>
+#include <QvisPythonFilterEditor.h>
 
 #define STDMIN(A,B) (((A)<(B)) ? (A) : (B))
 #define STDMAX(A,B) (((A)<(B)) ? (B) : (A))
@@ -525,7 +526,7 @@ QvisExpressionsWindow::CreateWindowContents()
     QSplitter *mainSplitter = new QSplitter(central);
     topLayout->addWidget(mainSplitter);
     topLayout->setStretchFactor(mainSplitter, 100);
-    
+
     QGroupBox *f1 = new QGroupBox(tr("Expression List"));
     QGridLayout *listLayout = new QGridLayout(f1);
 
@@ -542,18 +543,16 @@ QvisExpressionsWindow::CreateWindowContents()
     listLayout->addWidget(displayAllVars, 3,0, 1,2);
 
     mainSplitter->addWidget(f1);
-    
-    QGroupBox *f2 = new QGroupBox(tr("Definition"));
-    QGridLayout *editLayout = new QGridLayout(f2);
-    
-    int row = 0;
 
-    row++;
+    QGroupBox *f2 = new QGroupBox(tr("Definition"));
+    QGridLayout *definitionLayout = new QGridLayout(f2);
+
+    int row = 0;
 
     nameEditLabel = new QLabel(tr("Name"), f2);
     nameEdit = new QNarrowLineEdit(f2);
-    editLayout->addWidget(nameEditLabel, row,0, 1,1);
-    editLayout->addWidget(nameEdit, row,1, 1,3);
+    definitionLayout->addWidget(nameEditLabel, row,0, 1,1);
+    definitionLayout->addWidget(nameEdit, row,1, 1,3);
     row++;
 
     typeLabel = new QLabel(tr("Type"), f2);
@@ -566,26 +565,85 @@ QvisExpressionsWindow::CreateWindowContents()
     typeList->addItem(tr("Array Mesh Variable"));
     typeList->addItem(tr("Curve Mesh Variable"));
 
-    editLayout->addWidget(typeLabel, row,0, 1,1);
-    editLayout->addWidget(typeList, row,1, 1,3);
-    row++;
-
-    definitionEditLabel = new QLabel(tr("Definition"), f2);
-    editLayout->addWidget(definitionEditLabel, row, 0);
-    row++;
-
-    definitionEdit = new QTextEdit(f2);
-    editLayout->addWidget(definitionEdit, row,0,1,4);
+    definitionLayout->addWidget(typeLabel, row,0, 1,1);
+    definitionLayout->addWidget(typeList, row,1, 1,3);
     row++;
 
     notHidden = new QCheckBox(tr("Show variable in plot menus"), f2);
-    editLayout->addWidget(notHidden, row, 0);
+    definitionLayout->addWidget(notHidden, row,1, 1,3);
+    row++;
 
-    insertFunctionButton = new QPushButton(tr("Insert Function..."));
-    insertFunctionMenu = new QMenu(f2);
+    editorTabs = new QTabWidget(f2);
+
+    // tab 1 -> standard editor
+    CreateStandardEditor();
+    editorTabs->addTab(stdEditorWidget, "Standard Editor");
+    // tab 2 -> python filter editor
+    CreatePythonFilterEditor();
+    editorTabs->addTab(pyEditorWidget, "Python Expression Editor");
+
+
+    definitionLayout->addWidget(editorTabs,row,0,1,4);
+
+    mainSplitter->addWidget(f2);
+
+    // connect signals
+
+    connect(exprListBox, SIGNAL(itemSelectionChanged()),
+            this, SLOT(UpdateWindowSingleItem()));
+    connect(nameEdit, SIGNAL(textChanged(const QString&)),
+            this, SLOT(nameTextChanged(const QString&)));
+
+    connect(newButton, SIGNAL(pressed()),
+            this, SLOT(addExpression()));
+    connect(delButton, SIGNAL(pressed()),
+            this, SLOT(delExpression()));
+    connect(typeList, SIGNAL(activated(int)),
+            this, SLOT(typeChanged(int)));
+    connect(displayAllVars, SIGNAL(clicked()),
+            this, SLOT(displayAllVarsChanged()));
+    connect(notHidden, SIGNAL(clicked()),
+            this, SLOT(notHiddenChanged()));
+
+}
+
+// ****************************************************************************
+// Method: QvisExpressionsWindow::CreateStandardEditor()
+//
+// Purpose:
+//   Creates widgets used to construct standard visit expressions.
+//   (pulled mostly from previous CreateWindowContents() method.)
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Feb 11 10:33:20 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::CreateStandardEditor()
+{
+    stdEditorWidget = new QWidget();
+
+    QGridLayout *layout = new QGridLayout(stdEditorWidget);
+    int row = 0;
+
+    stdDefinitionEditLabel = new QLabel(tr("Definition"), stdEditorWidget);
+    layout->addWidget(stdDefinitionEditLabel, row, 0);
+    row++;
+
+    stdDefinitionEdit = new QTextEdit(stdEditorWidget);
+    layout->addWidget(stdDefinitionEdit, row,0,1,4);
+    row++;
+
+
+    stdInsertFunctionButton = new QPushButton(tr("Insert Function..."));
+    stdInsertFunctionMenu = new QMenu(stdEditorWidget);
     for (int i=0; i < NUM_EXPRESSION_CATEGORIES; i++)
     {
-        QMenu *submnu = insertFunctionMenu->addMenu(exprlist[i].name);
+        QMenu *submnu = stdInsertFunctionMenu->addMenu(exprlist[i].name);
         for (int j=0; exprlist[i].list[j]; j++)
         {
             if (std::string(exprlist[i].list[j])=="&")
@@ -594,42 +652,108 @@ QvisExpressionsWindow::CreateWindowContents()
                 submnu->addAction(exprlist[i].list[j]);
         }
         connect(submnu, SIGNAL(triggered(QAction *)),
-                this, SLOT(insertFunction(QAction *)));
-        
+                this, SLOT(stdInsertFunction(QAction *)));
     }
-    insertFunctionButton->setMenu(insertFunctionMenu);
-    editLayout->addWidget(insertFunctionButton, row, 2);
+    stdInsertFunctionButton->setMenu(stdInsertFunctionMenu);
+    layout->addWidget(stdInsertFunctionButton, row, 2);
 
     // Create a variable button so we can insert variables for the
     // active source.
-    insertVariableButton = new QvisVariableButton(false, false, false, -1, f2);
-    insertVariableButton->setChangeTextOnVariableChange(false);
-    insertVariableButton->setText(tr("Insert Variable..."));
-    connect(insertVariableButton, SIGNAL(activated(const QString &)),
-            this, SLOT(insertVariable(const QString &)));
-    editLayout->addWidget(insertVariableButton, row, 3);
-    row++;
-    
-    mainSplitter->addWidget(f2);
-    // connect signals
+    stdInsertVariableButton = new QvisVariableButton(false, false, false, -1,stdEditorWidget);
+    stdInsertVariableButton->setChangeTextOnVariableChange(false);
+    stdInsertVariableButton->setText(tr("Insert Variable..."));
+    connect(stdInsertVariableButton, SIGNAL(activated(const QString &)),
+            this, SLOT(stdInsertVariable(const QString &)));
+    layout->addWidget(stdInsertVariableButton, row, 3);
 
-    connect(exprListBox, SIGNAL(itemSelectionChanged()),
-            this, SLOT(UpdateWindowSingleItem()));
-    connect(nameEdit, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
-    connect(definitionEdit, SIGNAL(textChanged()),
-            this, SLOT(definitionTextChanged()));
-    connect(newButton, SIGNAL(pressed()),
-            this, SLOT(addExpression()));
-    connect(delButton, SIGNAL(pressed()),
-            this, SLOT(delExpression()));
-    connect(typeList, SIGNAL(activated(int)),
-            this, SLOT(typeChanged(int)));
-    connect(notHidden, SIGNAL(clicked()),
-            this, SLOT(notHiddenChanged()));
-    connect(displayAllVars, SIGNAL(clicked()),
-            this, SLOT(displayAllVarsChanged()));
+    connect(stdDefinitionEdit, SIGNAL(textChanged()),
+            this, SLOT(stdDefinitionTextChanged()));
+
 }
+
+// ****************************************************************************
+// Method: QvisExpressionsWindow::CreatePythonFilterEditor()
+//
+// Purpose:
+//   Creates widgets that compose the python expression filter editor.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   2010 Thu Feb 11 10:47:51 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::CreatePythonFilterEditor()
+{
+    pyEditorWidget = new QWidget();
+
+    QGridLayout *layout = new QGridLayout(pyEditorWidget);
+    int row = 0;
+
+    pyArgsEditLabel = new QLabel(tr("Arguments"), pyEditorWidget);
+    layout->addWidget(pyArgsEditLabel, row, 0);
+    row++;
+
+    pyArgsEdit = new QLineEdit(pyEditorWidget);
+    layout->addWidget(pyArgsEdit, row,0,1,4);
+    row++;
+
+
+    connect(pyArgsEdit, SIGNAL(textChanged (const QString &)),
+            this, SLOT(pyArgsTextChanged()));
+
+
+    pyInsertFunctionButton = new QPushButton(tr("Insert Function..."));
+    pyInsertFunctionMenu = new QMenu(pyEditorWidget);
+
+    for (int i=0; i < NUM_EXPRESSION_CATEGORIES; i++)
+    {
+        QMenu *submnu = pyInsertFunctionMenu->addMenu(exprlist[i].name);
+        for (int j=0; exprlist[i].list[j]; j++)
+        {
+            if (std::string(exprlist[i].list[j])=="&")
+                submnu->addAction("&&");
+            else
+                submnu->addAction(exprlist[i].list[j]);
+        }
+
+        connect(submnu, SIGNAL(triggered(QAction *)),
+                this, SLOT(pyInsertFunction(QAction *)));
+    }
+
+    // Create a variable button so we can insert variables for the
+    // active source.
+    pyInsertVariableButton = new QvisVariableButton(false, false, false, -1,pyEditorWidget);
+    pyInsertVariableButton->setChangeTextOnVariableChange(false);
+    pyInsertVariableButton->setText(tr("Insert Variable..."));
+
+    connect(pyInsertVariableButton, SIGNAL(activated(const QString &)),
+            this, SLOT(pyInsertVariable(const QString &)));
+
+    layout->addWidget(pyInsertVariableButton, row, 3);
+
+    pyInsertFunctionButton->setMenu(pyInsertFunctionMenu);
+    layout->addWidget(pyInsertFunctionButton, row, 2);
+    row++;
+
+    pyFilterEditLabel = new QLabel(tr("Python Expression Script"), pyEditorWidget);
+
+    pyFilterEdit = new QvisPythonFilterEditor();
+    layout->addWidget(pyFilterEditLabel, row, 0);
+    row++;
+    layout->addWidget(pyFilterEdit,row,0,1,4);
+
+    connect(pyFilterEdit, SIGNAL(sourceTextChanged()),
+            this, SLOT(pyFilterSourceChanged()));
+
+    connect(pyFilterEdit, SIGNAL(templateSelected(const QString &)),
+            this, SLOT(pyTemplateSelected(const QString &)));
+
+}
+
 
 // ****************************************************************************
 // Method: QvisExpressionsWindow::UpdateWindow
@@ -705,27 +829,34 @@ QvisExpressionsWindow::UpdateWindow(bool)
 void
 QvisExpressionsWindow::UpdateWindowSingleItem()
 {
-    BlockAllSignals(true);
     int index = exprListBox->currentRow();
     if (index <  0)
     {
         nameEdit->setText("");
         notHidden->setChecked(true);
-        definitionEdit->setText("");
+
+        stdDefinitionEdit->setText("");
+        pyArgsEdit->setText("");
+        pyFilterEdit->setSource("");
     }
     else
     {
         Expression &e = (*exprList)[indexMap[index]];
 
         nameEdit->setText(e.GetName().c_str());
-        notHidden->setChecked(! e.GetHidden());
+
         int tidx = typeList->findText(Expression::GetTypeString(e.GetType()));
         typeList->setCurrentIndex(tidx);
-        definitionEdit->setText(e.GetDefinition().c_str());
+        notHidden->setChecked(! e.GetHidden());
+
+        QString expr_def = QString(e.GetDefinition().c_str());
+
+        stdDefinitionEdit->setText(expr_def);
+        UpdatePythonExpressionEditor(expr_def);
+
     }
-    
+
     UpdateWindowSensitivity();
-    BlockAllSignals(false);
 }
 
 // ****************************************************************************
@@ -772,11 +903,12 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
 
     nameEdit->setEnabled(enable);
     delButton->setEnabled(enable);
-    notHidden->setEnabled(enable);
+
     typeList->setEnabled(enable);
-    definitionEdit->setReadOnly(!enable);
-    insertFunctionButton->setEnabled(enable);
-    insertVariableButton->setEnabled(enable);
+    notHidden->setEnabled(enable);
+
+    stdEditorWidget->setEnabled(enable);
+    pyEditorWidget->setEnabled(enable && pyExprActive);
 }
 
 // ****************************************************************************
@@ -797,7 +929,8 @@ QvisExpressionsWindow::BlockAllSignals(bool block)
 {
     exprListBox->blockSignals(block);
     nameEdit->blockSignals(block);
-    definitionEdit->blockSignals(block);
+    stdEditorWidget->blockSignals(block);
+    pyEditorWidget->blockSignals(block);
 }
 
 // ****************************************************************************
@@ -849,7 +982,7 @@ QvisExpressionsWindow::apply()
     QString item;
     if (reselect)
         item = exprListBox->currentItem()->text();
-    
+
     Apply(true);
 
     if (reselect)
@@ -934,7 +1067,7 @@ QvisExpressionsWindow::addExpression()
 //    Made the delete action access the expression list by index in the
 //    expression list (instead of assuming its index in the list box was
 //    correct).  This was an oversight from my 10/25/04 change.  ('5682)
-//   
+//
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
@@ -952,13 +1085,13 @@ QvisExpressionsWindow::delExpression()
 
     exprList->RemoveExpressions(indexMap[index]);
     exprList->Notify();
-    
+
     // try to select sensible expression:
-    // if del expr was last expr: before 
+    // if del expr was last expr: before
     // else: after
-    
+
     int nrows = exprListBox->count();
-    
+
     if(nrows > 0)
     {
         if(index == nrows)
@@ -967,11 +1100,11 @@ QvisExpressionsWindow::delExpression()
         exprListBox->setCurrentRow(index);
         UpdateWindowSingleItem();
     }
-    
+
 }
 
 // ****************************************************************************
-//  Method:  QvisExpressionsWindow::definitionTextChanged
+//  Method:  QvisExpressionsWindow::stdDefinitionTextChanged
 //
 //  Purpose:
 //    Slot function when definition text is changed.  This is called for
@@ -988,9 +1121,12 @@ QvisExpressionsWindow::delExpression()
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Cyrus Harrison, Thu Feb 11 12:14:15 PST 2010
+//    Renamed from definitionTextChanged.
+//
 // ****************************************************************************
 void
-QvisExpressionsWindow::definitionTextChanged()
+QvisExpressionsWindow::stdDefinitionTextChanged()
 {
     int index = exprListBox->currentRow();
 
@@ -999,8 +1135,46 @@ QvisExpressionsWindow::definitionTextChanged()
 
     Expression &e = (*exprList)[indexMap[index]];
 
-    e.SetDefinition(definitionEdit->toPlainText().toStdString());
+    e.SetDefinition(stdDefinitionEdit->toPlainText().toStdString());
 }
+
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::pyArgsTextChanged
+//
+//  Purpose:
+//    Slot function when python args text is changed.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 18 12:45:38 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisExpressionsWindow::pyArgsTextChanged()
+{
+    UpdatePythonExpression();
+}
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::pyFilterSourceChanged
+//
+//  Purpose:
+//    Slot function when python filter script text is changed.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 18 12:45:38 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisExpressionsWindow::pyFilterSourceChanged()
+{
+    UpdatePythonExpression();
+}
+
 
 // ****************************************************************************
 //  Method:  QvisExpressionsWindow::nameTextChanged
@@ -1157,18 +1331,17 @@ QvisExpressionsWindow::displayAllVarsChanged()
     // This updates the window, which rebuilds the expression list.
     // If we have an expression selected, reselect it afterwards.
     int reselect = (exprListBox->currentRow() != -1);
-    
+
     QString item ="";
-    
+
     if (reselect)
         item = exprListBox->currentItem()->text();
-    
+
     UpdateWindow(true);
 
     if (reselect)
     {
         QString item = exprListBox->currentItem()->text();
-        
         for (int i=0; i<exprListBox->count(); i++)
         {
             if (exprListBox->item(i)->text() == item)
@@ -1184,7 +1357,320 @@ QvisExpressionsWindow::displayAllVarsChanged()
 }
 
 // ****************************************************************************
-//  Method:  QvisExpressionsWindow::insertFunction
+//  Method:  QvisExpressionsWindow::UpdatePythonExpression
+//
+//  Purpose:
+//    Slot function when python args text is changed.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 18 12:45:38 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisExpressionsWindow::UpdatePythonExpression()
+{
+    int index = exprListBox->currentRow();
+
+    if (index <  0)
+        return;
+
+    Expression &e = (*exprList)[indexMap[index]];
+
+    QString expr_def("py(");
+    expr_def += pyArgsEdit->text();
+    expr_def += QString(",\"");
+    expr_def += pyFilterEdit->getSource(true);
+    expr_def += QString("\")");
+
+    e.SetDefinition(expr_def.toStdString());
+}
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::UpdatePythonExpressionEditor
+//
+//  Purpose:
+//    Attempts to extract a python expression from given expression
+//    definition. If successful it will return true after setting res_args to
+//    the extracted arguments string and res_script to script source string.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 18 12:26:48 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
+                                             QString &res_args,
+                                             QString &res_script)
+{
+    QString edef = expr_def.trimmed();
+    if(edef == QString(""))
+    {
+        res_args   = QString("");
+        res_script = QString("");
+        return true;
+    }
+
+    int start_idx = -1;
+
+    if(start_idx =edef.indexOf("py(") == 0)
+        start_idx = 3;
+    else if (start_idx =edef.indexOf("python(") == 0)
+        start_idx = 7;
+
+    if(start_idx == -1)
+        return false;
+
+    int args_stop_idx = -1;
+
+    // look for instances of <ws>* , <ws>* " [anything] " <ws>* )
+    // all instances of " within the python expression should be escaped.
+
+    QRegExp regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
+    int match_pos = 0;
+    while((match_pos = regx.indexIn(edef, match_pos)) != -1)
+    {
+        args_stop_idx = regx.pos(1);
+        res_script    = regx.cap(2);
+        match_pos    += regx.matchedLength();
+    }
+
+    if(args_stop_idx == -1)
+        return false;
+
+    res_args = edef.mid(start_idx,args_stop_idx - start_idx).trimmed();
+    res_script.trimmed();
+
+    return true;
+}
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::UpdatePythonExpressionEditor
+//
+//  Purpose:
+//   Updates the python expression editor if the given expression def
+//   is valid python expression.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 18 12:26:48 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisExpressionsWindow::UpdatePythonExpressionEditor(const QString &expr_def)
+{
+    QString res_args;
+    QString res_script;
+    BlockAllSignals(true);
+    if(ParsePythonExpression(expr_def,res_args,res_script))
+    {
+        pyExprActive = true;
+        pyArgsEdit->setText(res_args);
+        pyFilterEdit->setSource(res_script,true);
+        if(res_script != QString(""))
+            editorTabs->setCurrentIndex(1);
+    }
+    else
+    {
+        pyExprActive = false;
+        pyArgsEdit->setText(QString(""));
+        pyFilterEdit->setSource(QString(""));
+        editorTabs->setCurrentIndex(0);
+    }
+    BlockAllSignals(false);
+}
+
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::ExpandFunction
+//
+//  Purpose:
+//    Slot function when a function was selected for insertion by 
+//    the popup menu.
+//
+//  Arguments:
+//    fun_name: Name of the function to expand.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 18 12:55:12 PST 2010
+//
+//  Notes: Refactored from insertFunction
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+QString
+QvisExpressionsWindow::ExpandFunction(const QString &func_name)
+{
+
+    QString res;
+    bool doParens = (func_name.length() >= 2);
+
+    if (func_name == "&&")
+    {
+        res = QString("&");
+        doParens = false;
+    }
+    else
+    {
+        res = func_name;
+    }
+
+
+    if (func_name == "conn_cmfe")
+    {
+        res += QString("(<filename:var>, <meshname>)");
+        doParens = false;
+    }
+    else if (func_name == "pos_cmfe")
+    {
+        res += QString("(<filename:var>, <meshname>, <fill-var-for-uncovered-regions>)");
+        doParens = false;
+    }
+    else if (func_name == "symm_point")
+    {
+        res += QString("(<var>, [Px, Py, Pz])");
+        doParens = false;
+    }
+    else if (func_name == "symm_plane")
+    {
+        res += QString("(<var>, [Nx, Ny, Nz, Ox, Oy, Oz])");
+        doParens = false;
+    }
+    else if (func_name == "symm_transform")
+    {
+        res += QString("(<var>, [T00, T01, T02, T10, T11, T12, T20, T21, T22])");
+        doParens = false;
+    }
+    else if (func_name == "matvf")
+    {
+        res += QString("(<material-object-name>, [#, #, ... #])");
+        doParens = false;
+    }
+    else if (func_name == "specmf")
+    {
+        res += QString("(<species-variable-name>, <material-name-or-number>, [#, #, ... #])");
+        doParens = false;
+    }
+    else if (func_name == "if")
+    {
+        res += QString("(<condition>, <then-var>, <else-var>)");
+        doParens = false;
+    }
+    else if (func_name == "min" || func_name == "max" || func_name == "cross" || func_name == "mod" ||
+             func_name == "and" || func_name == "or")
+    {
+        res += QString("(<var1>, <var2>)");
+        doParens = false;
+    }
+    else if (func_name == "array_compose")
+    {
+        res += QString("(<var1>, <var2>, ..., <varN>)");
+        doParens = false;
+    }
+    else if (func_name == "array_compose_with_bins")
+    {
+        res += QString("(<var1>, <var2>, ..., <varN>, [b1, b2, ..., bN+1])");
+        doParens = false;
+    }
+    else if (func_name == "eq" || func_name == "ge" || func_name == "gt" || 
+             func_name == "le" || func_name == "lt" || func_name == "ne")
+    {
+        res += QString("(<var-LHS>, <var-RHS>)");
+        doParens = false;
+    }
+    else if(func_name == "color4")
+    {
+        res += QString("(<var1>, <var2>, <var3>, <var4>)");
+        doParens = false;
+    }
+    else if(func_name == "color")
+    {
+        res += QString("(<var1>, <var2>, <var3>)");
+        doParens = false;
+    }
+    else if (func_name == "recenter")
+    {
+        res += QString("(<var>, [\"nodal\", \"zonal\", \"toggle\"])");
+        doParens = false;
+    }
+    else if(func_name == "value_for_material")
+    {
+        stdDefinitionEdit->insertPlainText("(<var>, <material-name-or-number>)");
+        doParens = false;
+    }
+    else if (func_name == "enumerate")
+    {
+        res += QString("(<var>, [<val-if-0>, <val-if-1>, ...])");
+        doParens = false;
+    }
+    else if (func_name == "cell_constant" || func_name == "point_constant")
+    {
+        res += QString("(<meshvar>, <constantvalue>)");
+        doParens = false;
+    }
+    else if(func_name == "average_over_time" || func_name == "min_over_time"
+            || func_name == "max_over_time" || func_name == "sum_over_time")
+    {
+        res += QString("(<var>, [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "last_cycle_when_condition_is_true" ||
+            func_name == "first_cycle_when_condition_is_true" ||
+            func_name == "last_time_index_when_condition_is_true" ||
+            func_name == "first_time_index_when_condition_is_true" ||
+            func_name == "last_time_when_condition_is_true" ||
+            func_name == "first_time_when_condition_is_true")
+    {
+        res += QString("(<condition>, <fillvar-for-when-condition-is-never-true> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "var_when_condition_is_first_true" ||
+            func_name == "var_when_condition_is_last_true")
+    {
+        res += QString("(<cond>, <var-for-output>, <fillvar-for-when-cond-is-never-true> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "cycle_at_minimum" ||
+            func_name == "time_at_minimum" ||
+            func_name == "time_index_at_minimum")
+    {
+        res += QString("(<var-to-find-minimum-of> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if(func_name == "cycle_at_maximum" ||
+            func_name == "time_at_maximum" ||
+            func_name == "time_index_at_maximum")
+    {
+        res += QString("(<var-to-find-maximum-of> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if (func_name == "value_at_minimum")
+    {
+        res += QString("(<var-to-find-minimum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+    else if (func_name == "value_at_maximum")
+    {
+        res += QString("(<var-to-find-maximum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
+        doParens = false;
+    }
+
+    if (doParens)
+    {
+        res += QString("()");
+    }
+
+    return res;
+}
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::stdInsertFunction
 //
 //  Purpose:
 //    Slot function when a function was selected for insertion by 
@@ -1250,207 +1736,74 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Sun Feb 22 12:42:21 PST 2009
 //    Add fillins for time iterating expressions.
 //
+//    Cyrus Harrison, Thu Feb 18 12:55:42 PST 2010
+//    Refactored from insertFunction. Expansion logic was
+//    moved to the 'ExpandFunction' method.
+//
 // ****************************************************************************
 
 void
-QvisExpressionsWindow::insertFunction(QAction * action)
+QvisExpressionsWindow::stdInsertFunction(QAction * action)
 {
-   if (!definitionEdit->isEnabled())
+   if (!stdDefinitionEdit->isEnabled())
         return;
-    
     QString func_name = action->text();
-        
-    bool doParens = (func_name.length() >= 2);
 
-    if (func_name == "&&")
-    {
-        definitionEdit->insertPlainText("&");
-        doParens = false;
-    }
-    else
-    {
-        definitionEdit->insertPlainText(func_name);
-    }
-
-
-    if (func_name == "conn_cmfe")
-    {
-        definitionEdit->insertPlainText("(<filename:var>, <meshname>)");
-        doParens = false;
-    }
-    else if (func_name == "pos_cmfe")
-    {
-        definitionEdit->insertPlainText("(<filename:var>, <meshname>, <fill-var-for-uncovered-regions>)");
-        doParens = false;
-    }
-    else if (func_name == "symm_point")
-    {
-        definitionEdit->insertPlainText("(<var>, [Px, Py, Pz])");
-        doParens = false;
-    }
-    else if (func_name == "symm_plane")
-    {
-        definitionEdit->insertPlainText("(<var>, [Nx, Ny, Nz, Ox, Oy, Oz])");
-        doParens = false;
-    }
-    else if (func_name == "symm_transform")
-    {
-        definitionEdit->insertPlainText("(<var>, [T00, T01, T02, T10, T11, T12, "
-                                        "T20, T21, T22])");
-        doParens = false;
-    }
-    else if (func_name == "matvf")
-    {
-        definitionEdit->insertPlainText("(<material-object-name>, [#, #, ... #])");
-        doParens = false;
-    }
-    else if (func_name == "specmf")
-    {
-        definitionEdit->insertPlainText("(<species-variable-name>, <material-name-or-number>, [#, #, ... #])");
-        doParens = false;
-    }
-    else if (func_name == "if")
-    {
-        definitionEdit->insertPlainText("(<condition>, <then-var>, <else-var>)");
-        doParens = false;
-    }
-    else if (func_name == "min" || func_name == "max" || func_name == "cross" || func_name == "mod" ||
-             func_name == "and" || func_name == "or")
-    {
-        definitionEdit->insertPlainText("(<var1>, <var2>)");
-        doParens = false;
-    }
-    else if (func_name == "array_compose")
-    {
-        definitionEdit->insertPlainText("(<var1>, <var2>, ..., <varN>)");
-        doParens = false;
-    }
-    else if (func_name == "array_compose_with_bins")
-    {
-        definitionEdit->insertPlainText("(<var1>, <var2>, ..., <varN>, [b1, b2, ..., bN+1])");
-        doParens = false;
-    }
-    else if (func_name == "eq" || func_name == "ge" || func_name == "gt" || 
-             func_name == "le" || func_name == "lt" || func_name == "ne")
-    {
-        definitionEdit->insertPlainText("(<var-LHS>, <var-RHS>)");
-        doParens = false;
-    }
-    else if(func_name == "color4")
-    {
-        definitionEdit->insertPlainText("(<var1>, <var2>, <var3>, <var4>)");
-        doParens = false;      
-    }
-    else if(func_name == "color")
-    {
-        definitionEdit->insertPlainText("(<var1>, <var2>, <var3>)");
-        doParens = false;      
-    }
-    else if (func_name == "recenter")
-    {
-        definitionEdit->insertPlainText("(<var>, [\"nodal\", \"zonal\", \"toggle\"])");
-        doParens = false;
-    }
-    else if(func_name == "value_for_material")
-    {
-        definitionEdit->insertPlainText("(<var>, <material-name-or-number>)");
-        doParens = false;
-    }
-    else if (func_name == "enumerate")
-    {
-        definitionEdit->insertPlainText("(<var>, [<val-if-0>, <val-if-1>, ...])");
-        doParens = false;
-    }
-    else if (func_name == "cell_constant" || func_name == "point_constant")
-    {
-        definitionEdit->insertPlainText("(<meshvar>, <constantvalue>)");
-        doParens = false;
-    }
-    else if(func_name == "average_over_time" || func_name == "min_over_time"
-            || func_name == "max_over_time" || func_name == "sum_over_time")
-    {
-        definitionEdit->insertPlainText("(<var>, [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-    else if(func_name == "last_cycle_when_condition_is_true" ||
-            func_name == "first_cycle_when_condition_is_true" ||
-            func_name == "last_time_index_when_condition_is_true" ||
-            func_name == "first_time_index_when_condition_is_true" ||
-            func_name == "last_time_when_condition_is_true" ||
-            func_name == "first_time_when_condition_is_true")
-    {
-        definitionEdit->insertPlainText("(<condition>, <fillvar-for-when-condition-is-never-true> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-    else if(func_name == "var_when_condition_is_first_true" ||
-            func_name == "var_when_condition_is_last_true")
-    {
-        definitionEdit->insertPlainText("(<cond>, <var-for-output>, <fillvar-for-when-cond-is-never-true> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-    else if(func_name == "cycle_at_minimum" ||
-            func_name == "time_at_minimum" ||
-            func_name == "time_index_at_minimum")
-    {
-        definitionEdit->insertPlainText("(<var-to-find-minimum-of> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-    else if(func_name == "cycle_at_maximum" ||
-            func_name == "time_at_maximum" ||
-            func_name == "time_index_at_maximum")
-    {
-        definitionEdit->insertPlainText("(<var-to-find-maximum-of> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-    else if (func_name == "value_at_minimum")
-    {
-        definitionEdit->insertPlainText("(<var-to-find-minimum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-    else if (func_name == "value_at_maximum")
-    {
-        definitionEdit->insertPlainText("(<var-to-find-maximum-of>, <var-for-output> [, \"pos_cmfe\", <fillvar-for-uncovered-regions>] [, start-time-index, stop-time-index, stride])");
-        doParens = false;
-    }
-
-    if (doParens)
-    {
-        definitionEdit->insertPlainText("()");
-        definitionEdit->moveCursor(QTextCursor::Left,QTextCursor::MoveAnchor);
-    }
-
-    definitionEdit->setFocus();
+    QString func_res =ExpandFunction(func_name);
+    stdDefinitionEdit->insertPlainText(func_res);
+    if(func_res.lastIndexOf("()") == (func_res.size() -2))
+        stdDefinitionEdit->moveCursor(QTextCursor::Left,QTextCursor::MoveAnchor);
+    stdDefinitionEdit->setFocus();
 }
 
 // ****************************************************************************
-// Method: QvisExpressionWindow::insertVariable
+//  Method:  QvisExpressionsWindow::pyInsertFunction
 //
-// Purpose: 
-//   This is a Qt slot function that inserts a variable name into the 
-//   current variable definition.
+//  Purpose:
+//    Slot function called when a 'function' was insertion by the popup menu.
+//
+//  Arguments:
+//    action Triggered menu action.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Feb 11 15:21:11 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::pyInsertFunction(QAction * action)
+{
+   if (!pyArgsEdit->isEnabled())
+        return;
+
+    QString func_name = action->text();
+
+    QString func_res =ExpandFunction(func_name);
+    pyArgsEdit->insert(func_res);
+    pyArgsEdit->setFocus();
+}
+
+// ****************************************************************************
+// Method: QvisExpressionWindow::QuoteVariableName
+//
+// Purpose:
+//    Helper to 'quote' variable names used as expression arguments.
 //
 // Arguments:
 //   var : The variable.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 9 10:52:37 PDT 2004
+// Programmer: Cyrus
+// Creation:   Thu Feb 11 15:22:08 PST 2010
 //
 // Modifications:
-//   
-//    Jeremy Meredith, Fri Sep  2 16:26:42 PDT 2005
-//    Made it be more aggressive about quoting.
-//
-//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
-//    Initial Qt4 Port.
 //
 // ****************************************************************************
 
-void
-QvisExpressionsWindow::insertVariable(const QString &var)
+QString
+QvisExpressionsWindow::QuoteVariable(const QString &var)
 {
-    if (!definitionEdit->isEnabled())
-        return;
-
     // If the variable name contains special characters
     // then put the <> around the variable name.
     bool needs_quoting = false;
@@ -1468,15 +1821,105 @@ QvisExpressionsWindow::insertVariable(const QString &var)
         }
     }
 
-    QString newVar;
+    QString res;
     if (needs_quoting)
-        newVar = QString("<") + var + QString(">");
+        res = QString("<") + var + QString(">");
     else
-        newVar = var;
+        res = var;
 
-    definitionEdit->insertPlainText(newVar);
-    definitionEdit->setFocus();
+    return res;
 }
+
+// ****************************************************************************
+// Method: QvisExpressionWindow::stdInsertVariable
+//
+// Purpose: 
+//   This is a Qt slot function that inserts a variable name into the 
+//   current variable definition.
+//
+// Arguments:
+//   var : The variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 10:52:37 PDT 2004
+//
+// Modifications:
+//
+//    Jeremy Meredith, Fri Sep  2 16:26:42 PDT 2005
+//    Made it be more aggressive about quoting.
+//
+//    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::stdInsertVariable(const QString &var)
+{
+    if (!stdDefinitionEdit->isEnabled())
+        return;
+
+    stdDefinitionEdit->insertPlainText(QuoteVariable(var));
+    stdDefinitionEdit->setFocus();
+}
+
+// ****************************************************************************
+// Method: QvisExpressionWindow::pyInsertVariable
+//
+// Purpose:
+//   This is a Qt slot function that inserts a variable name into the
+//   current variable definition.
+//
+// Arguments:
+//   var : The variable.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Feb 11 15:22:08 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::pyInsertVariable(const QString &var)
+{
+    if (!pyArgsEdit->isEnabled())
+        return;
+
+    pyArgsEdit->insert(QuoteVariable(var));
+    pyArgsEdit->setFocus();
+}
+
+// ****************************************************************************
+// Method: QvisExpressionWindow::pyTemplateSelected
+//
+// Purpose:
+//   This is a Qt slot function that loads a filter template.
+//
+// Arguments:
+//   tname : Template type.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Feb 11 15:22:08 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisExpressionsWindow::pyTemplateSelected(const QString &tname)
+{
+    QString fname("");
+    QString tdir = QvisPythonFilterEditor::templateDirectory();
+
+    if(tname == QString("Advanced"))
+        fname = tdir + QString("advanced_expression.py");
+    else if(tname == QString("Simple"))
+        fname = tdir + QString("simple_expression.py");
+
+    pyFilterEdit->loadScript(fname);
+}
+
 
 // ****************************************************************************
 // Method: QvisExpressionsWindow::newExpression
@@ -1493,7 +1936,7 @@ QvisExpressionsWindow::insertVariable(const QString &var)
 // Creation:   Thu Dec 9 10:18:13 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

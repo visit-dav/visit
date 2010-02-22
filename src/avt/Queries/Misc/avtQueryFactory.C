@@ -102,6 +102,10 @@
 #include <avtZoneCenterQuery.h>
 
 
+#ifdef VISIT_PYTHON_FILTERS
+#include <avtPythonQuery.h>
+#endif
+
 #include <QueryAttributes.h>
 #include <string>
 using std::string;
@@ -280,8 +284,10 @@ avtQueryFactory::Instance()
 //    that caused it to optionally use the emissivity divided by the
 //    absorbtivity in place of the emissivity.
 //
+//    Cyrus Harrison, Tue Feb  2 16:03:19 PST 2010
+//    Added the python filter query.
+//
 // ****************************************************************************
-
 
 avtDataObjectQuery *
 avtQueryFactory::CreateQuery(const QueryAttributes *qa)
@@ -623,7 +629,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         else
             shapelet_query->SetNMax(qa->GetElement()); // Element == int arg1
         shapelet_query->SetDecompOutputFileName("");
-        
+
         if(qa->GetVariables().size() >1)
             shapelet_query->SetRecompOutputFileName(qa->GetVariables()[1]);
         else
@@ -642,7 +648,29 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     {
         query = new avtSampleStatisticsQuery(true);
     }
-    
+    else if (qname == "Python")
+    {
+#ifdef VISIT_PYTHON_FILTERS
+        avtPythonQuery *py_query = new avtPythonQuery();
+        const stringVector &args = qa->GetVariables();
+        int nargs = args.size();
+        stringVector vars;
+
+        for(int i= 0; i < nargs -1;i++)
+            vars.push_back(args[i]);
+
+        // set variable names
+        py_query->SetVariableNames(vars);
+        // python script is passed in as the last variable
+        py_query->SetPythonScript(args[nargs-1]);
+        query = py_query;
+#else
+           EXCEPTION1(VisItException,
+                      "Cannot execute Python Filter Query because "
+                      "VisIt was build without Python Filter support.");
+#endif
+    }
+
     if (query == NULL && !foundAQuery)
     {
         EXCEPTION1(VisItException, "No query to execute was found. "

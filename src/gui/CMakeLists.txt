@@ -35,6 +35,11 @@
 # DAMAGE.
 #
 # Modifications:
+#   Cyrus Harrison, Mon Feb  8 15:40:54 PST 2010
+#   Added QvisPythonSyntaxHighlighter
+#
+#   Cyrus Harrison, Thu Feb 11 09:37:20 PST 2010
+#   Added QvisPythonFilterEditor
 #
 #****************************************************************************/
 
@@ -138,6 +143,8 @@ QvisPostableWindowObserver.C
 QvisPostableWindowSimpleObserver.C
 QvisPredefinedViewports.C
 QvisPreferencesWindow.C
+QvisPythonFilterEditor.C
+QvisPythonSyntaxHighlighter.C
 QvisQueryOverTimeWindow.C
 QvisQueryWindow.C
 QvisRecentPathRemovalWindow.C
@@ -252,6 +259,8 @@ QvisPostableWindow.h
 QvisPostableWindowObserver.h
 QvisPostableWindowSimpleObserver.h
 QvisPreferencesWindow.h
+QvisPythonFilterEditor.h
+QvisPythonSyntaxHighlighter.h
 QvisQueryOverTimeWindow.h
 QvisQueryWindow.h
 QvisRecentPathRemovalWindow.h

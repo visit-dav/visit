@@ -97,6 +97,9 @@ typedef ref_ptr<avtContract> avtContract_p;
 //    Tom Fogal, Sun May  3 17:52:35 MDT 2009
 //    I overloaded operator<< to allow for easier debugging.
 //
+//    Cyrus Harrison, Sat Feb 20 21:37:24 PST 2010
+//    Added Print() which calls 'operator<<' to get around visiblity issues.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtContract
@@ -139,7 +142,7 @@ class PIPELINE_API avtContract
 
     avtContract        &operator=(const avtContract &);
     void                DebugDump(avtWebpage *);
-
+    void                Print(ostream &);
   protected:
     avtDataRequest_p    data;
     int                 pipelineIndex;

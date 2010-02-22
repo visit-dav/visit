@@ -46,6 +46,7 @@ class QComboBox;
 class QPushButton;
 class QTabWidget;
 class QTextEdit;
+class QSyntaxHighlighter;
 class QVBox;
 
 // ****************************************************************************
@@ -55,7 +56,7 @@ class QVBox;
 //   This class implements a window that lets you type commands to be
 //   interpreted.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 9 10:20:44 PDT 2005
@@ -72,6 +73,9 @@ class QVBox;
 //
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Cyrus Harrison, Mon Feb  8 15:01:39 PST 2010
+//   Added syntax highlighters.
 //
 // ****************************************************************************
 
@@ -127,7 +131,8 @@ private:
     QButtonGroup    *addMacroButtonsGroup;
     QPushButton    **addMacroButtons;
 
-    QTextEdit      **lineEdits;
+    QTextEdit          **editors;
+    QSyntaxHighlighter **highlighters;
 
     QPushButton     *macroRecord;
     QPushButton     *macroPause;
@@ -135,10 +140,11 @@ private:
     QCheckBox       *macroAppendCheckBox;
     QComboBox       *macroStorageComboBox;
 
-    QWidget         *macroTab;
-    QTextEdit       *macroLineEdit;
-    QPushButton     *macroUpdateButton;
-    QPushButton     *macroClearButton;
+    QWidget            *macroTab;
+    QTextEdit          *macroEdit;
+    QPushButton        *macroUpdateButton;
+    QPushButton        *macroClearButton;
+    QSyntaxHighlighter *macroHighlighter;
 
     int              macroStorageMode;
     bool             macroAppend;

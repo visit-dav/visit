@@ -10,6 +10,8 @@
 SET(VISITHOME /scratch/harrison37/dev/libs)
 SET(VISITARCH linux-i686_gcc-4.1)
 
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_FILTERS ON)
+
 ##
 ## Specify the location of the mesa.
 ##
@@ -43,10 +45,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated")
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-## (configued w/ user provided CXX (PAR_INCLUDE) & LDFLAGS (PAR_LIBS) flags)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/home/harrison37/apps/openmpi/1.3.3/include")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-pthread -L/home/harrison37/apps/openmpi/1.3.3/lib -Wl,--export-dynamic ")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpi_cxx mpi open-rte open-pal dl nsl util m dl)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpic++)
 
 ##############################################################
 ##

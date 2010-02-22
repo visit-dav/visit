@@ -165,6 +165,7 @@
 #include <PyProcessAttributes.h>
 #include <PyRenderingAttributes.h>
 #include <PySaveWindowAttributes.h>
+#include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
 #include <PyText2DObject.h>
 #include <PyText3DObject.h>

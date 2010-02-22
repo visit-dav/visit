@@ -3597,6 +3597,7 @@ function build_vtk
         echo Snow Leopard detected. Disabling Carbon.
         ${CMAKE_BIN} \
             -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
             -DVTK_USE_CARBON:BOOL=OFF\
             -DVTK_USE_COCOA:BOOL=ON\
             -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\

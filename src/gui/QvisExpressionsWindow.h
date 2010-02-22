@@ -54,7 +54,10 @@ class QTextEdit;
 class QLabel;
 class QListWidget;
 class QComboBox;
+class QTabWidget;
 class QvisVariableButton;
+class QvisPythonFilterEditor;
+
 
 // ****************************************************************************
 // Class: QvisExpressionsWindow
@@ -106,41 +109,80 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     void    addExpression();
     void    delExpression();
     void    nameTextChanged(const QString&);
-    void    definitionTextChanged();
+
     void    typeChanged(int);
-    void    notHiddenChanged();
     void    displayAllVarsChanged();
-    void    insertFunction(QAction *);
-    void    insertVariable(const QString &);
+
+    void    notHiddenChanged();
+
+    void    stdDefinitionTextChanged();
+
+    void    stdInsertFunction(QAction *);
+    void    stdInsertVariable(const QString &);
+
+
+    void    pyArgsTextChanged();
+    void    pyFilterSourceChanged();
+    void    pyTemplateSelected(const QString &);
+
+    void    pyInsertFunction(QAction *);
+    void    pyInsertVariable(const QString &);
 
     void    UpdateWindowSingleItem();
     void    UpdateWindowSensitivity();
 
   private:
+
+    QString ExpandFunction(const QString &);
+    QString QuoteVariable(const QString &);
+
+    void    CreateStandardEditor();
+    void    CreatePythonFilterEditor();
+    void    UpdatePythonExpression();
+    bool    ParsePythonExpression(const QString &, QString &, QString &);
+    void    UpdatePythonExpressionEditor(const QString &);
+
     // Widgets and layouts.
     QListWidget        *exprListBox;
 
     QLabel             *nameEditLabel;
-    QLabel             *definitionEditLabel;
     QLabel             *typeLabel;
 
     QLineEdit          *nameEdit;
     QComboBox          *typeList;
     QCheckBox          *notHidden;
-    QTextEdit          *definitionEdit;
 
     QPushButton        *newButton;
     QPushButton        *delButton;
 
-    QPushButton        *insertFunctionButton;
-    QMenu              *insertFunctionMenu;
-    QvisVariableButton *insertVariableButton;
-
     QCheckBox          *displayAllVars;
 
+    QTabWidget         *editorTabs;
+
+    // widgets for standard editor
+    QWidget            *stdEditorWidget;
+    QLabel             *stdDefinitionEditLabel;
+    QTextEdit          *stdDefinitionEdit;
+    QPushButton        *stdInsertFunctionButton;
+    QMenu              *stdInsertFunctionMenu;
+    QvisVariableButton *stdInsertVariableButton;
+
+
+    // widgets for python filter editor
+    QWidget                *pyEditorWidget;
+    QLabel                 *pyArgsEditLabel;
+    QLineEdit              *pyArgsEdit;
+    QLabel                 *pyFilterEditLabel;
+    QvisPythonFilterEditor *pyFilterEdit;
+    QPushButton            *pyInsertFunctionButton;
+    QMenu                  *pyInsertFunctionMenu;
+    QvisVariableButton     *pyInsertVariableButton;
+
+
     // State information
-    ExpressionList     *exprList;
-    std::map<int,int>  indexMap;
+    ExpressionList         *exprList;
+    std::map<int,int>       indexMap;
+    bool                    pyExprActive;
 };
 
 #endif

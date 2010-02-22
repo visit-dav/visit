@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#    Cyrus Harrison,Tue Feb  2 16:35:18 PST 2010
+#    Added the python filter query.
 #
 #****************************************************************************/
 
@@ -136,6 +138,10 @@ Queries/avtZoneCenterQuery.C
 Queries/MinMaxInfo.C
 )
 
+IF(VISIT_PYTHON_FILTERS)
+    LIST(APPEND QUERIES_SOURCES Queries/avtPythonQuery.C)
+ENDIF(VISIT_PYTHON_FILTERS)
+
 SET(AVTQUERY_SOURCES
 ${ABSTRACT_SOURCES}
 ${MISC_SOURCES}
@@ -178,17 +184,34 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
+IF(VISIT_PYTHON_FILTERS)
+    INCLUDE_DIRECTORIES(
+        ${PYTHON_INCLUDE_DIRS}
+        ${VISIT_SOURCE_DIR}/avt/PythonFilters
+    )
+ENDIF(VISIT_PYTHON_FILTERS)
+
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR})
+
+IF(VISIT_PYTHON_FILTERS)
+    LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
+ENDIF(VISIT_PYTHON_FILTERS)
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtquery_ser ${AVTQUERY_SOURCES})
 TARGET_LINK_LIBRARIES(avtquery_ser visitcommon avtmath avtshapelets avtexpressions_ser avtfilters_ser visit_vtk)
+IF(VISIT_PYTHON_FILTERS)
+    TARGET_LINK_LIBRARIES(avtquery_ser avtpythonfilters_ser)
+ENDIF(VISIT_PYTHON_FILTERS)
 VISIT_INSTALL_TARGETS(avtquery_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtquery_par ${AVTQUERY_SOURCES})
     TARGET_LINK_LIBRARIES(avtquery_par visitcommon avtmath avtshapelets avtexpressions_par avtfilters_par visit_vtk)
+    IF(VISIT_PYTHON_FILTERS)
+        TARGET_LINK_LIBRARIES(avtquery_par avtpythonfilters_par)
+    ENDIF(VISIT_PYTHON_FILTERS)
     VISIT_INSTALL_TARGETS(avtquery_par)
 ENDIF(VISIT_PARALLEL)

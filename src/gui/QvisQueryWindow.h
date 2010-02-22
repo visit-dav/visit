@@ -56,7 +56,10 @@ class QListWidget;
 class QTextEdit;
 class QPushButton;
 class QueryList;
+class QSplitter;
+class QTabWidget;
 class QvisVariableButton;
+class QvisPythonFilterEditor;
 
 // ****************************************************************************
 // Class: QvisQueryWindow
@@ -113,7 +116,10 @@ class QvisVariableButton;
 //   QString for caption, shortName.
 //
 //   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
-//   Added QvisVariableButton for queries that need variables. 
+//   Added QvisVariableButton for queries that need variables.
+//
+//   Cyrus Harrison, Wed Feb 17 12:31:16 PST 2010
+//   Added new widgets for python query intergration.
 //
 // ****************************************************************************
 
@@ -157,32 +163,55 @@ private slots:
     void useGlobalToggled(bool);
     void saveResultText();
     void addVariable(const QString &);
+    void addPyVariable(const QString &);
+    void pyTemplateSelected(const QString &);
 
 private:
-    QueryList       *queries;
-    QueryAttributes *queryAtts;
-    PickAttributes  *pickAtts;
-    PlotList        *plotList;
+    void                CreateStandardQueryWidget();
+    void                CreatePythonQueryWidget();
+    void                CreateResultsWidget();
 
-    QComboBox       *displayMode;
-    QListWidget        *queryList;
-    QPushButton     *queryButton;
-    QPushButton     *timeQueryButton;
-    QTextEdit  *resultText;
-    QGroupBox       *argPanel;
-    QLabel          *labels[4];
-    QLineEdit       *textFields[4];
-    QCheckBox       *useGlobal;
-  
-    QLineEdit       *floatFormatText;
-    
-    QButtonGroup    *dataOpts;
+    void                ExecuteStandardQuery(bool);
+    void                ExecutePythonQuery();
 
-    QvisVariableButton *varsButton;
-    QLineEdit          *varsLineEdit;
-    
-    int              saveCount;
-    int              queryVarTypes;
+    QueryList           *queries;
+    QueryAttributes     *queryAtts;
+    PickAttributes      *pickAtts;
+    PlotList            *plotList;
+
+    QSplitter           *splitter;
+
+    QTabWidget          *queryTabs;
+
+    QWidget             *stdQueryWidget;
+    QComboBox           *displayMode;
+    QListWidget         *queryList;
+    QPushButton         *queryButton;
+    QPushButton         *timeQueryButton;
+
+    QGroupBox           *argPanel;
+    QLabel              *labels[4];
+    QLineEdit           *textFields[4];
+    QCheckBox           *useGlobal;
+    QvisVariableButton  *varsButton;
+    QLineEdit           *varsLineEdit;
+
+    QWidget             *resultsWidget;
+    QLineEdit           *floatFormatText;
+    QTextEdit           *resultText;
+
+    QButtonGroup        *dataOpts;
+
+    int                 saveCount;
+    int                 queryVarTypes;
+
+    QWidget                *pyQueryWidget;
+    QLabel                 *pyFilterEditLabel;
+    QvisPythonFilterEditor *pyFilterEdit;
+    QvisVariableButton     *pyVarsButton;
+    QLineEdit              *pyVarsLineEdit;
+    QPushButton            *pyQueryButton;
+
 };
 
 #endif

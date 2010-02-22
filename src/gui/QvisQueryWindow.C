@@ -52,6 +52,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QStringList>
+#include <QSplitter>
 #include <QTextStream>
 
 #include <QueryAttributes.h>
@@ -61,6 +62,7 @@
 #include <StringHelpers.h>
 #include <DebugStream.h>
 #include <QvisVariableButton.h>
+#include <QvisPythonFilterEditor.h>
 
 #include <ViewerProxy.h>
 
@@ -207,13 +209,59 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Corrected the layout of some of the widgets in the arguments panel so
 //   that the fourth text line isn't clobbered by the variable controls.
 //
+//   Cyrus Harrison,
+//   Refactoring for python query integration. Most of functionality was 
+//   moved into the CreateStandardQueryWidget() method.
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::CreateWindowContents()
 {
+
+    splitter = new QSplitter(central);
+    splitter->setOrientation(Qt::Vertical);
+
+    // create tab widget to separate std queries & custom python queries.
+
+    queryTabs = new QTabWidget(splitter);
+
+    CreateStandardQueryWidget();
+    CreatePythonQueryWidget();
+    CreateResultsWidget();
+
+    queryTabs->addTab(stdQueryWidget, "Standard Queries");
+    queryTabs->addTab(pyQueryWidget, "Python Query Editor");
+
+    splitter->addWidget(queryTabs);
+    splitter->addWidget(resultsWidget);
+
+    topLayout->addWidget(splitter);
+}
+
+
+
+// ****************************************************************************
+// Method: QvisQueryWindow::CreateStandardQueryWidget
+//
+// Purpose: 
+//   This method creates the widgets for the standard query tab.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Feb 17 10:32:41 PST 2010
+//
+// Notes: Refactored from CreateWindowContents()
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::CreateStandardQueryWidget()
+{
+    stdQueryWidget = new QWidget();
     QHBoxLayout *hLayout = new QHBoxLayout();
-    topLayout->addLayout(hLayout);
+    stdQueryWidget->setLayout(hLayout);
     QVBoxLayout *vLayout= new QVBoxLayout();
     hLayout->addLayout(vLayout);
 
@@ -233,13 +281,13 @@ QvisQueryWindow::CreateWindowContents()
     displayMode->addItem(tr("All queries-over-time"), QueryList::NumGroups+1);
     connect(displayMode, SIGNAL(activated(int)),
             this, SLOT(displayModeChanged(int)));
-    
+
     vLayout->addWidget(new QLabel(tr("Display "), central));
     vLayout->addWidget(displayMode);
 
     // Create the query list.
     queryList = new QListWidget(central);
-    
+
     connect(queryList, SIGNAL(currentRowChanged(int)),
             this, SLOT(selectQuery()));
     QLabel *queryLabel = new QLabel(tr("Queries"), central);
@@ -285,13 +333,13 @@ QvisQueryWindow::CreateWindowContents()
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(handleText()));
     sLayout->addWidget(varsLineEdit, 5, 1);
-  
+
     useGlobal = new QCheckBox(tr("Use Global Id"), argPanel);
     connect(useGlobal, SIGNAL(toggled(bool)), this, 
             SLOT(useGlobalToggled(bool)));
     useGlobal->hide();
     sLayout->addWidget(useGlobal, 6, 0, 1, 2);
-  
+
     // Add the data options radio button group to the argument panel.
     dataOpts = new QButtonGroup(argPanel);
     QRadioButton *origData = new QRadioButton(tr("Original Data"), argPanel);
@@ -321,26 +369,102 @@ QvisQueryWindow::CreateWindowContents()
     connect(queryButton, SIGNAL(clicked()),
             this, SLOT(apply()));
     qbLayout->addWidget(queryButton);
+}
 
-    
-    QWidget     *resultTitle = new QWidget(central);
-    QHBoxLayout *resTitleLayout = new QHBoxLayout(resultTitle);
-    
+// ****************************************************************************
+// Method: QvisQueryWindow::CreatePythonQueryWidget
+//
+// Purpose: 
+//   This method creates the widgets for the python query tab.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Feb 17 10:32:41 PST 2010
+//
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::CreatePythonQueryWidget()
+{
+    pyQueryWidget = new QWidget();
+    QGridLayout *layout = new QGridLayout(pyQueryWidget);
+    int row = 0;
+
+    pyVarsButton = new QvisVariableButton(true, false, true, queryVarTypes,
+                                          pyQueryWidget);
+    pyVarsButton->setText(tr("Variables"));
+    layout->addWidget(pyVarsButton,row, 0);
+
+    pyVarsButton->setChangeTextOnVariableChange(false);
+
+    connect(pyVarsButton, SIGNAL(activated(const QString &)),
+            this, SLOT(addPyVariable(const QString &)));
+
+    pyVarsLineEdit = new QLineEdit(pyQueryWidget);
+    pyVarsLineEdit->setText("default");
+    layout->addWidget(pyVarsLineEdit,row, 1,1,2);
+
+    row++;
+
+    pyFilterEditLabel = new QLabel(tr("Python Query Script"), pyQueryWidget);
+    pyFilterEdit = new QvisPythonFilterEditor();
+    layout->addWidget(pyFilterEditLabel, row, 0);
+    row++;
+    layout->addWidget(pyFilterEdit,row,0,1,3);
+    row++;
+
+    connect(pyFilterEdit, SIGNAL(templateSelected(const QString &)),
+            this, SLOT(pyTemplateSelected(const QString &)));
+
+    pyQueryButton = new QPushButton(tr("Execute Query"), pyQueryWidget);
+    layout->addWidget(pyQueryButton,row,2);
+
+    connect(pyQueryButton, SIGNAL(clicked()),
+            this, SLOT(apply()));
+}
+
+
+// ****************************************************************************
+// Method: QvisQueryWindow::CreateResultsWidget
+//
+// Purpose: 
+//   This method creates the widgets that display query results.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Feb 17 10:32:41 PST 2010
+//
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::CreateResultsWidget()
+{
+
+    resultsWidget = new QWidget(splitter);
+    QVBoxLayout *layout = new QVBoxLayout();
+    resultsWidget->setLayout(layout);
+    QHBoxLayout *title_layout = new QHBoxLayout();
+
+    QLabel *resultLabel = new QLabel(tr("Query results"), resultsWidget);
+
+    QLabel *floatFormatLabel = new QLabel(tr("Float Format:"), resultsWidget);
+    floatFormatText = new QLineEdit("%g",resultsWidget);
+
+    title_layout->addWidget(resultLabel);
+    title_layout->addStretch(5);
+    title_layout->addWidget(floatFormatLabel);
+    title_layout->addWidget(floatFormatText);
+
     // Create the results list.
-    resultText = new QTextEdit(central);
+    resultText = new QTextEdit(resultsWidget);
     resultText->setReadOnly(true);
-    QLabel *resultLabel = new QLabel(tr("Query results"), resultTitle);
-    
-    QLabel *floatFormatLabel = new QLabel(tr("Float Format:"), resultTitle);
-    floatFormatText = new QLineEdit("%g",resultTitle);
-    
-    resTitleLayout->addWidget(resultLabel);
-    resTitleLayout->addStretch(5);
-    resTitleLayout->addWidget(floatFormatLabel);
-    resTitleLayout->addWidget(floatFormatText);
-    
-    topLayout->addWidget(resultTitle);
-    topLayout->addWidget(resultText);
+
+    layout->addLayout(title_layout);
+    layout->addWidget(resultText);
 }
 
 // ****************************************************************************
@@ -1094,13 +1218,17 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //
 //   Cyrus Harrison, Sat Oct 18 21:33:18 PDT 2008
 //   Fixed parsing error for Connected Components Summary Query, caused by 
-//   migration of GetVars to a new text field widget. 
+//   migration of GetVars to a new text field widget.
 //
 //   Eric Brugger, Mon May 11 13:48:58 PDT 2009
 //   I added an argument to the hohlraum flux query that indicates if the
 //   emissivity divided by the absorbtivity should be used in place of the
 //   emissivity.  I also corrected the parsing of the hohlraum flux query
 //   since it was broken.
+//
+//   Cyrus Harrison, Wed Feb 17 11:54:26 PST 2010
+//   Moved majority of query execution logic to ExecuteStandardQuery().
+//   Added path for executing python queries via ExecutePythonQuery().
 //
 // ****************************************************************************
 
@@ -1109,292 +1237,358 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 {
     string format = floatFormatText
                          ->displayText().simplified().toStdString();
-    
+
     if(!StringHelpers::ValidatePrintfFormatString(format.c_str(),
                                                   "float","EOA"))
     {
         Error(tr("Invalid query floating point format string."));
         return;
     }
-    
+
     GetViewerMethods()->SetQueryFloatFormat(format);
-    
+
     if(AutoUpdate() || ignore)
     {
-        int useActualData = dataOpts->id(dataOpts->checkedButton());
-        const stringVector &names = queries->GetNames();
-        const intVector &types = queries->GetTypes();
-        const intVector &winType = queries->GetWinType();
+        // check which tab is active to determine how to procede
+        if(queryTabs->currentIndex() == 0) // std query
+            ExecuteStandardQuery(doTime);
+        else if(queryTabs->currentIndex() == 1) // python script query
+            ExecutePythonQuery();
 
-        QString currentText = queryList->currentItem()->text();
-        int index = -1;
-        for (int i = 0; i < names.size(); i++)
+    }
+}
+
+// ****************************************************************************
+// Method: QvisQueryWindow::ExecuteStandardQuery
+//
+// Purpose:
+//   Prepares arguments and executes the selected standard query.
+//
+// Arguments:
+//    doTime true if query over time was selected.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Wed Feb 17 11:55:51 PST 2010
+//
+// Note: Refactored from Apply()
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::ExecuteStandardQuery(bool doTime)
+{
+    int useActualData = dataOpts->id(dataOpts->checkedButton());
+    const stringVector &names = queries->GetNames();
+    const intVector &types = queries->GetTypes();
+    const intVector &winType = queries->GetWinType();
+
+    QString currentText = queryList->currentItem()->text();
+    int index = -1;
+    for (int i = 0; i < names.size(); i++)
+    {
+        if (currentText.toStdString() == names[i])
         {
-           if (currentText.toStdString() == names[i])
-           {
-               index = i;
-               break;
-           } 
-        } 
-        
-        if(index >= 0 && index < types.size())
-        {
-            QueryList::QueryType t = (QueryList::QueryType)types[index];
-            QueryList::WindowType winT = (QueryList::WindowType)winType[index];
-            bool noErrors = true;
-            double p0[3] = {0., 0., 0.}, p1[3] = {0., 0., 0.};
-            stringVector vars;
- 
-            // Gather the query parameters according to the type of
-            // window we're using.
-            if(winT == QueryList::Basic)
-            {
-                if(!GetVars(vars))
-                    noErrors = false;
-
-                if(noErrors)
-                {
-                    if (t == QueryList::DatabaseQuery)
-                    {
-                        GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                            doTime, useActualData);
-                    }
-                    else 
-                    {
-                        debug5 << "QueryWindow -- Attempted use BasicWindow "
-                               << "with non DatabaseQuery." << endl;
-                    }
-                }
-            }
-            else if ((winT == QueryList::DomainZone) ||
-                     (winT == QueryList::DomainNode) || 
-                     (winT == QueryList::DomainZoneVars) ||
-                     (winT == QueryList::DomainNodeVars))
-            {
-                int dom = 0, el = 0;
-                bool goodDomain = GetNumber(0, &dom);
-                if (goodDomain)
-                    goodDomain = (dom >= 0);
-                if (!goodDomain)
-                    Error(tr("The domain must be an integer >= 0."));
-                bool goodEl = GetNumber(1, &el);
-                if (goodEl)
-                    goodEl = (el >= 0);
-                if (!goodEl)
-                {
-                    if (winT == QueryList::DomainZone ||
-                        winT == QueryList::DomainZoneVars)
-                        Error(tr("The zone must be an integer >= 0."));
-                    else
-                        Error(tr("The node must be an integer >= 0."));
-                }
-
-                if (winT == QueryList::DomainZoneVars ||
-                    winT == QueryList::DomainNodeVars )
-                {
-                    if(!GetVars(vars))
-                        noErrors = false;
-                }
-
-                if(noErrors && goodDomain && goodEl)
-                {
-                    if (t == QueryList::DatabaseQuery)
-                    {
-                        GetViewerMethods()->DatabaseQuery(names[index], 
-                            vars, doTime, el, dom, useGlobal->isChecked());
-                    }
-                    else if (t == QueryList::PointQuery)
-                    {
-                        GetViewerMethods()->PointQuery(names[index], p0, 
-                            vars, doTime, el, dom, useGlobal->isChecked());
-                    }
-                    else 
-                    {
-                        debug5 << "QueryWindow -- Attempted to use "
-                               << "DomainWindow with non Database or non "
-                               << "Point Query." << endl;
-                    }
-                }
-            }
-            else if(winT == QueryList::SinglePoint)
-            {
-                if(!GetPoint(0, tr("query point"), p0))
-                    noErrors = false;
-                if(!GetVars(vars))
-                    noErrors = false;
-
-                if(noErrors)
-                {
-                    if (t == QueryList::PointQuery)
-                    {
-                        GetViewerMethods()->PointQuery(names[index], p0,
-                            vars, doTime);
-                    }
-                    else 
-                    {
-                        debug5 << "QueryWindow -- Attempted to use "
-                               << "SinglePointWindow with non PointQuery." 
-                               << endl;
-                    }
-                }
-            }
-            else if(winT == QueryList::DoublePoint)
-            {
-                if(!GetPoint(0, tr("start point"), p0))
-                    noErrors = false;
-                if(!GetPoint(1, tr("end point"), p1))
-                    noErrors = false;
-                if(!GetVars(vars))
-                    noErrors = false;
-
-                if(noErrors)
-                {
-                    if (t == QueryList::LineQuery)
-                    {
-                        GetViewerMethods()->LineQuery(names[index], p0, p1,
-                            vars, 50);
-                    }
-                    else 
-                    {
-                        debug5 << "QueryWindow -- Attempted to use "
-                               << "DoublePointWindow with non LineQuery." 
-                               << endl;
-                    }
-                }
-            }
-            else if ((winT == QueryList::ActualData) ||
-                     (winT == QueryList::ActualDataVars))
-            {
-                if(!GetVars(vars))
-                    noErrors = false;
-                if (noErrors)
-                {
-                    if (t == QueryList::DatabaseQuery)
-                    {
-                        GetViewerMethods()->DatabaseQuery(names[index], 
-                            vars, doTime, useActualData);
-                    }
-                    else 
-                    {
-                        debug5 << "QueryWindow -- Attempted to use "
-                               << "ActualDataWindow with non DatabaseQuery." 
-                               << endl;
-                    }
-                }
-            }
-            else if (winT == QueryList::LineDistribution)
-            {
-                int nLines=0;
-                if(!GetNumber(0, &nLines))
-                    noErrors = false;
-                int nBins = 0;
-                if(!GetNumber(1, &nBins))
-                    noErrors = false;
-                double min = 0.;
-                if(!GetFloatingPointNumber(2, &min))
-                    noErrors = false;
-                double max = 0.;
-                if(!GetFloatingPointNumber(3, &max))
-                    noErrors = false;
-                if (noErrors)
-                {
-                    doubleVector vmin(1), vmax(1);
-                    vmin[0] = min;
-                    vmax[0] = max;
-                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                        false, nLines, nBins, true, vmin, vmax);
-                }
-            }
-            else if (winT == QueryList::HohlraumFlux)
-            {
-                stringVector v;
-
-                if (!GetVars(vars))
-                    noErrors = false;
-
-                if (vars.size() != 2)
-                    noErrors = false;
-
-                int nLines=0;
-                if(!GetNumber(0, &nLines))
-                    noErrors = false;
-
-                int divideEmisByAbsorb=0;
-                if(!GetNumber(1, &divideEmisByAbsorb))
-                    noErrors = false;
-
-                doubleVector pos(3);
-                if(!GetPoint(2, tr("Ray Center"), p0))
-                    noErrors = false;
-                if (noErrors)
-                {
-                    pos[0] = p0[0];
-                    pos[1] = p0[1];
-                    pos[2] = p0[2];
-                }
-
-                doubleVector radiusThetaPhi(3);
-                if(!GetPoint(3, tr("Radius, Theta, Phi"), p0))
-                    noErrors = false;
-                if (noErrors)
-                {
-                    radiusThetaPhi[0] = p0[0];
-                    radiusThetaPhi[1] = p0[1];
-                    radiusThetaPhi[2] = p0[2];
-                }
-                if (noErrors)
-                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                        doTime, nLines, divideEmisByAbsorb, true, pos,
-                        radiusThetaPhi);
-            }
-            else if (winT == QueryList::ConnCompSummary)
-            {
-                // get from textFields[0] (this used to be hooked up to GetVars ...)
-                stringVector v;
-                v.push_back(textFields[0]->text().simplified().toStdString());
-                if(v[0]=="")
-                    noErrors = false;
-                if (noErrors)
-                    GetViewerMethods()->DatabaseQuery(names[index], v, 
-                                                      false,true);
-            }
-            else if (winT == QueryList::ShapeletsDecomp)
-            {
-                string ofile = "";
-                QString ofqs;
-                vars.push_back("default");
-                
-                doubleVector dvec;
-                dvec.resize(1);
-                if(!GetFloatingPointNumber(0, &dvec[0]))
-                    noErrors = false;
-                
-                int nmax = 0;
-                if(!GetNumber(1, &nmax))
-                    noErrors = false;
-
-                ofqs = textFields[2]->displayText();
-                ofile = ofqs.simplified().toStdString();
-                if(ofile == "[skip]")
-                    vars.push_back("");
-                else
-                    vars.push_back(ofile);
-
-                if(noErrors)
-                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                                                      false, nmax,0,false,
-                                                      dvec);
-            }
-
-            // Display a status message.
-            if(noErrors)
-            {
-                QString str = tr("Performing %1 query.").
-                              arg(names[index].c_str());
-                Status(str);
-            }
+            index = i;
+            break;
         }
     }
+
+    if(index >= 0 && index < types.size())
+    {
+        QueryList::QueryType t = (QueryList::QueryType)types[index];
+        QueryList::WindowType winT = (QueryList::WindowType)winType[index];
+        bool noErrors = true;
+        double p0[3] = {0., 0., 0.}, p1[3] = {0., 0., 0.};
+        stringVector vars;
+
+        // Gather the query parameters according to the type of
+        // window we're using.
+        if(winT == QueryList::Basic)
+        {
+            if(!GetVars(vars))
+                noErrors = false;
+
+            if(noErrors)
+            {
+                if (t == QueryList::DatabaseQuery)
+                {
+                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                        doTime, useActualData);
+                }
+                else 
+                {
+                    debug5 << "QueryWindow -- Attempted use BasicWindow "
+                            << "with non DatabaseQuery." << endl;
+                }
+            }
+        }
+        else if ((winT == QueryList::DomainZone) ||
+                    (winT == QueryList::DomainNode) || 
+                    (winT == QueryList::DomainZoneVars) ||
+                    (winT == QueryList::DomainNodeVars))
+        {
+            int dom = 0, el = 0;
+            bool goodDomain = GetNumber(0, &dom);
+            if (goodDomain)
+                goodDomain = (dom >= 0);
+            if (!goodDomain)
+                Error(tr("The domain must be an integer >= 0."));
+            bool goodEl = GetNumber(1, &el);
+            if (goodEl)
+                goodEl = (el >= 0);
+            if (!goodEl)
+            {
+                if (winT == QueryList::DomainZone ||
+                    winT == QueryList::DomainZoneVars)
+                    Error(tr("The zone must be an integer >= 0."));
+                else
+                    Error(tr("The node must be an integer >= 0."));
+            }
+
+            if (winT == QueryList::DomainZoneVars ||
+                winT == QueryList::DomainNodeVars )
+            {
+                if(!GetVars(vars))
+                    noErrors = false;
+            }
+
+            if(noErrors && goodDomain && goodEl)
+            {
+                if (t == QueryList::DatabaseQuery)
+                {
+                    GetViewerMethods()->DatabaseQuery(names[index], 
+                        vars, doTime, el, dom, useGlobal->isChecked());
+                }
+                else if (t == QueryList::PointQuery)
+                {
+                    GetViewerMethods()->PointQuery(names[index], p0, 
+                        vars, doTime, el, dom, useGlobal->isChecked());
+                }
+                else 
+                {
+                    debug5 << "QueryWindow -- Attempted to use "
+                            << "DomainWindow with non Database or non "
+                            << "Point Query." << endl;
+                }
+            }
+        }
+        else if(winT == QueryList::SinglePoint)
+        {
+            if(!GetPoint(0, tr("query point"), p0))
+                noErrors = false;
+            if(!GetVars(vars))
+                noErrors = false;
+
+            if(noErrors)
+            {
+                if (t == QueryList::PointQuery)
+                {
+                    GetViewerMethods()->PointQuery(names[index], p0,
+                        vars, doTime);
+                }
+                else 
+                {
+                    debug5 << "QueryWindow -- Attempted to use "
+                            << "SinglePointWindow with non PointQuery." 
+                            << endl;
+                }
+            }
+        }
+        else if(winT == QueryList::DoublePoint)
+        {
+            if(!GetPoint(0, tr("start point"), p0))
+                noErrors = false;
+            if(!GetPoint(1, tr("end point"), p1))
+                noErrors = false;
+            if(!GetVars(vars))
+                noErrors = false;
+
+            if(noErrors)
+            {
+                if (t == QueryList::LineQuery)
+                {
+                    GetViewerMethods()->LineQuery(names[index], p0, p1,
+                        vars, 50);
+                }
+                else 
+                {
+                    debug5 << "QueryWindow -- Attempted to use "
+                            << "DoublePointWindow with non LineQuery." 
+                            << endl;
+                }
+            }
+        }
+        else if ((winT == QueryList::ActualData) ||
+                    (winT == QueryList::ActualDataVars))
+        {
+            if(!GetVars(vars))
+                noErrors = false;
+            if (noErrors)
+            {
+                if (t == QueryList::DatabaseQuery)
+                {
+                    GetViewerMethods()->DatabaseQuery(names[index], 
+                        vars, doTime, useActualData);
+                }
+                else 
+                {
+                    debug5 << "QueryWindow -- Attempted to use "
+                            << "ActualDataWindow with non DatabaseQuery." 
+                            << endl;
+                }
+            }
+        }
+        else if (winT == QueryList::LineDistribution)
+        {
+            int nLines=0;
+            if(!GetNumber(0, &nLines))
+                noErrors = false;
+            int nBins = 0;
+            if(!GetNumber(1, &nBins))
+                noErrors = false;
+            double min = 0.;
+            if(!GetFloatingPointNumber(2, &min))
+                noErrors = false;
+            double max = 0.;
+            if(!GetFloatingPointNumber(3, &max))
+                noErrors = false;
+            if (noErrors)
+            {
+                doubleVector vmin(1), vmax(1);
+                vmin[0] = min;
+                vmax[0] = max;
+                GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                    false, nLines, nBins, true, vmin, vmax);
+            }
+        }
+        else if (winT == QueryList::HohlraumFlux)
+        {
+            stringVector v;
+
+            if (!GetVars(vars))
+                noErrors = false;
+
+            if (vars.size() != 2)
+                noErrors = false;
+
+            int nLines=0;
+            if(!GetNumber(0, &nLines))
+                noErrors = false;
+
+            int divideEmisByAbsorb=0;
+            if(!GetNumber(1, &divideEmisByAbsorb))
+                noErrors = false;
+
+            doubleVector pos(3);
+            if(!GetPoint(2, tr("Ray Center"), p0))
+                noErrors = false;
+            if (noErrors)
+            {
+                pos[0] = p0[0];
+                pos[1] = p0[1];
+                pos[2] = p0[2];
+            }
+
+            doubleVector radiusThetaPhi(3);
+            if(!GetPoint(3, tr("Radius, Theta, Phi"), p0))
+                noErrors = false;
+            if (noErrors)
+            {
+                radiusThetaPhi[0] = p0[0];
+                radiusThetaPhi[1] = p0[1];
+                radiusThetaPhi[2] = p0[2];
+            }
+            if (noErrors)
+                GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                    doTime, nLines, divideEmisByAbsorb, true, pos,
+                    radiusThetaPhi);
+        }
+        else if (winT == QueryList::ConnCompSummary)
+        {
+            // get from textFields[0] (this used to be hooked up to GetVars ...)
+            stringVector v;
+            v.push_back(textFields[0]->text().simplified().toStdString());
+            if(v[0]=="")
+                noErrors = false;
+            if (noErrors)
+                GetViewerMethods()->DatabaseQuery(names[index], v, 
+                                                    false,true);
+        }
+        else if (winT == QueryList::ShapeletsDecomp)
+        {
+            string ofile = "";
+            QString ofqs;
+            vars.push_back("default");
+
+            doubleVector dvec;
+            dvec.resize(1);
+            if(!GetFloatingPointNumber(0, &dvec[0]))
+                noErrors = false;
+
+            int nmax = 0;
+            if(!GetNumber(1, &nmax))
+                noErrors = false;
+
+            ofqs = textFields[2]->displayText();
+            ofile = ofqs.simplified().toStdString();
+            if(ofile == "[skip]")
+                vars.push_back("");
+            else
+                vars.push_back(ofile);
+
+            if(noErrors)
+                GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                                                    false, nmax,0,false,
+                                                    dvec);
+        }
+
+        // Display a status message.
+        if(noErrors)
+        {
+            QString str = tr("Performing %1 query.").
+                            arg(names[index].c_str());
+            Status(str);
+        }
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisQueryWindow::ExecutePythonQuery
+//
+// Purpose:
+//   Prepares arguments and executes a python query.
+//
+// Arguments:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Wed Feb 17 11:55:51 PST 2010
+//
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::ExecutePythonQuery()
+{
+    stringVector py_args;
+    QString vars(pyVarsLineEdit->displayText().trimmed());
+    QStringList vlist(vars.split(" "));
+
+    // Split the variable list using the spaces.
+    QStringListIterator itr(vlist);
+    while(itr.hasNext())
+        py_args.push_back(itr.next().toStdString());
+
+    // get python script from pyFilterEdit
+    QString query_def = pyFilterEdit->getSource();
+    py_args.push_back(query_def.toStdString());
+
+    GetViewerMethods()->DatabaseQuery("Python", py_args,false);
+    Status("Executing Python Script Query");
 }
 
 // ****************************************************************************
@@ -1842,5 +2036,65 @@ QvisQueryWindow::addVariable(const QString &var)
     varString += var;
     varsLineEdit->setText(varString);
 }
+
+// ****************************************************************************
+// Method: QvisQueryWindow::addPyVariable
+//
+// Purpose:
+//   Qt slot function that is called when the user adds a new variable to
+//   a python query.
+//
+// Arguments:
+//   var : The variable to add.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Feb 17 11:27:15 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::addPyVariable(const QString &var)
+{
+    // Add the new variable to the variable line edit.
+    QString res(pyVarsLineEdit->displayText());
+    if(res.length() > 0)
+        res += QString(" ");
+    res += var;
+    pyVarsLineEdit->setText(res);
+}
+
+
+// ****************************************************************************
+// Method: QvisQueryWindow::pyTemplateSelected
+//
+// Purpose:
+//   This is a Qt slot function that loads a filter template.
+//
+// Arguments:
+//   tname : Template type.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Feb 11 15:22:08 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::pyTemplateSelected(const QString &tname)
+{
+    QString fname("");
+    QString tdir = QvisPythonFilterEditor::templateDirectory();
+
+    if(tname == QString("Advanced"))
+        fname = tdir + QString("advanced_query.py");
+    else if(tname == QString("Simple"))
+        fname = tdir + QString("simple_query.py");
+
+    pyFilterEdit->loadScript(fname);
+}
+
 
 

@@ -46,6 +46,7 @@ common/MethodDoc.C
 common/PyImageObject.C
 common/PyLegendAttributesObject.C
 common/PyLineObject.C
+common/PySILRestrictionBase.C
 common/PySILRestriction.C
 common/PyText2DObject.C
 common/PyText3DObject.C
@@ -245,3 +246,10 @@ ELSE(VISIT_STATIC)
 
     VISIT_INSTALL_TARGETS(visitpy cli visitmodule)
 ENDIF(VISIT_STATIC)
+
+IF(VISIT_PYTHON_FILTERS)
+    ADD_SUBDIRECTORY(pyavt)
+    ADD_SUBDIRECTORY(mpicom)
+ENDIF(VISIT_PYTHON_FILTERS)
+
+
