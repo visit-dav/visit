@@ -305,6 +305,10 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Wed Jan 20 10:29:11 EST 2010
 //    Check for eof after getline, but before we use the result.
 //
+//    Jeremy Meredith, Mon Feb 22 11:11:01 EST 2010
+//    Only do extra ascii checks in strict mode, and never read too many
+//    lines if we're in the mdserver, even in strict mode.
+//
 // ****************************************************************************
 
 void
@@ -328,11 +332,13 @@ avtPoint3DFileFormat::ReadData(void)
     {
         char buf[1024];
         ifile >> buf;
-        if (!StringHelpers::IsPureASCII(buf, 1024))
+        if (GetStrictMode() && !StringHelpers::IsPureASCII(buf, 1024))
             EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
         varnames.push_back(buf);
     }
 
+    // If we're in the mdserver and not in strict mode, we can
+    // assume the file's valid.  Otherwise, read a little more.
     if (avtDatabase::OnlyServeUpMetaData() && !GetStrictMode())
         return;
 
@@ -349,11 +355,11 @@ avtPoint3DFileFormat::ReadData(void)
     vector<float> var3;
     vector<float> var4;
 
-    int linesToCheckForAscii = 100;
+    int linesToCheck = 100;
 
     line[0] = '\0';
     ifile.getline(line, 1024);
-    if (!StringHelpers::IsPureASCII(line, 1024))
+    if (GetStrictMode() && !StringHelpers::IsPureASCII(line, 1024))
         EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
     while (!ifile.eof())
     {
@@ -393,9 +399,19 @@ avtPoint3DFileFormat::ReadData(void)
 
         line[0] = '\0';
         ifile.getline(line, 1024);
-        if (--linesToCheckForAscii > 0 &&
+        --linesToCheck;
+        if (GetStrictMode() && linesToCheck > 0 &&
             !StringHelpers::IsPureASCII(line, 1024))
-            EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
+        {
+                EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
+        }
+        else if (linesToCheck <= 0 && avtDatabase::OnlyServeUpMetaData())
+        {
+            // We've now checked the first ~100 lines; the mdserver
+            // is probably safe to call this a point3d file.
+            return;
+        }
+            
     }
 
     int npts = var1.size();
