@@ -86,8 +86,8 @@
 #include <icons/oper_add3.xpm>
 #include <icons/db_replace.xpm>
 #include <icons/db_overlay.xpm>
-#include <icons/db_open.xpm>
-#include <icons/db_close.xpm>
+#include <icons/db_open2.xpm>
+#include <icons/db_close2.xpm>
 #include <icons/db_reopen.xpm>
 
 #include <DebugStream.h>
@@ -255,7 +255,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     // Create the source icons
     const int dbiconsize=24;
     int iconcol = 2;
-    dbOpenIconButton = new QPushButton(QIcon(db_open_xpm), "", sourceRow);
+    dbOpenIconButton = new QPushButton(QIcon(db_open2_xpm), "", sourceRow);
     dbOpenIconButton->setToolTip(tr("Open Data Source"));
     dbOpenIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     dbOpenIconButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum));
@@ -263,7 +263,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SIGNAL(activateFileOpenWindow()));
     sourceRowLayout->addWidget(dbOpenIconButton);
 
-    dbCloseIconButton = new QPushButton(QIcon(db_close_xpm), "", sourceRow);
+    dbCloseIconButton = new QPushButton(QIcon(db_close2_xpm), "", sourceRow);
     dbCloseIconButton->setToolTip(tr("Close Data Source"));
     dbCloseIconButton->setIconSize(QSize(dbiconsize,dbiconsize));
     dbCloseIconButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum));
