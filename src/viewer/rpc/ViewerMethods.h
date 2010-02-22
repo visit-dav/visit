@@ -127,9 +127,6 @@ class ViewerState;
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
-//   Jeremy Meredith, Mon Feb 22 15:57:39 EST 2010
-//   Added an undo history stack.
-//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -352,8 +349,6 @@ public:
     void SetDefaultMeshManagementAttributes();
     void ResetMeshManagementAttributes();
 
-    void UndoLastAction();
-    void RedoLastAction();
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);
     void ImportEntireState(const std::string &filename, bool inVisItDir);

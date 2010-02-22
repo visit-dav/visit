@@ -2782,9 +2782,6 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Thu Jan 31 12:33:17 PST 2008
 //   Connected new saveCrashRecoveryFile signal from Main window.
 //
-//   Jeremy Meredith, Mon Feb 22 15:57:39 EST 2010
-//   Added an undo history stack.
-//
 // ****************************************************************************
 
 void
@@ -2807,8 +2804,6 @@ QvisGUIApplication::CreateMainWindow()
     mainWin = new QvisMainWindow(orientation, title.c_str());
     connect(mainWin, SIGNAL(quit()), this, SLOT(Quit()));
     connect(mainWin, SIGNAL(saveSettings()), this, SLOT(SaveSettings()));
-    connect(mainWin, SIGNAL(undoLastAction()), this, SLOT(UndoLastAction()));
-    connect(mainWin, SIGNAL(redoLastAction()), this, SLOT(RedoLastAction()));
     connect(mainWin, SIGNAL(iconifyWindows(bool)), this, SLOT(IconifyWindows(bool)));
     connect(mainWin, SIGNAL(deIconifyWindows()), this, SLOT(DeIconifyWindows()));
     connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
@@ -5905,44 +5900,6 @@ QvisGUIApplication::SaveSettings()
 
     // Clear the status bar.
     ClearStatus();
-}
-
-// ****************************************************************************
-// Method: QvisGUIApplication::UndoLastAction
-//
-// Purpose: 
-//   This is a Qt slot function that's called to go back one step in history.
-//
-// Programmer: Jeremy Meredith
-// Creation:   February 22, 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisGUIApplication::UndoLastAction()
-{
-    GetViewerMethods()->UndoLastAction();
-}
-
-// ****************************************************************************
-// Method: QvisGUIApplication::RedoLastAction
-//
-// Purpose: 
-//   This is a Qt slot function that's called to go fwd one step in history.
-//
-// Programmer: Jeremy Meredith
-// Creation:   February 22, 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisGUIApplication::RedoLastAction()
-{
-    GetViewerMethods()->RedoLastAction();
 }
 
 // ****************************************************************************

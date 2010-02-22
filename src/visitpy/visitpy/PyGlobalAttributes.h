@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define GLOBALATTRIBUTES_NMETH 50
+#define GLOBALATTRIBUTES_NMETH 46
 void VISITPY_API           PyGlobalAttributes_StartUp(GlobalAttributes *subj, void *data);
 void VISITPY_API           PyGlobalAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyGlobalAttributes_GetMethodTable(int *nMethods);

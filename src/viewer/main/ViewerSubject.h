@@ -480,9 +480,6 @@ class avtDefaultPlotMetaData;
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
-//    Jeremy Meredith, Mon Feb 22 15:34:58 EST 2010
-//    Added way to set the undo/redo action names.
-//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -523,9 +520,6 @@ public:
                     const std::string &);
 
     void PostponeAction(ViewerActionBase *);
-
-    void SetUndoAndRedoActionNames(const std::string &u,const std::string &r);
-
 public slots:
     void ProcessFromParent();
 private:

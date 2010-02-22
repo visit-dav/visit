@@ -3573,56 +3573,6 @@ ViewerMethods::WriteConfigFile()
 }
 
 // ****************************************************************************
-//  Method: ViewerMethods::UndoLastAction
-//
-//  Purpose:
-//    Go backrward in history one step.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   February 22, 2010
-//
-// ****************************************************************************
-
-void
-ViewerMethods::UndoLastAction()
-{
-    //
-    // Set the rpc type.
-    //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::UndoLastActionRPC);
-
-    //
-    // Issue the RPC.
-    //
-    state->GetViewerRPC()->Notify();
-}
-
-// ****************************************************************************
-//  Method: ViewerMethods::RedoLastAction
-//
-//  Purpose:
-//    Go forward in history one step.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   February 22, 2010
-//
-// ****************************************************************************
-
-void
-ViewerMethods::RedoLastAction()
-{
-    //
-    // Set the rpc type.
-    //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::RedoLastActionRPC);
-
-    //
-    // Issue the RPC.
-    //
-    state->GetViewerRPC()->Notify();
-}
-
-// ****************************************************************************
 // Method: ViewerMethods::ExportEntireState
 //
 // Purpose: 

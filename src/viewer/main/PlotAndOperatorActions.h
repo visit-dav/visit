@@ -382,9 +382,6 @@ public:
 // Creation:   Fri Apr 11 07:30:16 PDT 2003
 //
 // Modifications:
-//   Jeremy Meredith, Mon Feb 22 15:32:14 EST 2010
-//   Don't allow this to make a new state in the undo history.
-//
 //   
 // ****************************************************************************
 
@@ -393,7 +390,6 @@ class SetActivePlotsAction : public ViewerAction
 public:
     SetActivePlotsAction(ViewerWindow *);
     virtual ~SetActivePlotsAction();
-    virtual bool AllowInUndoHistory() const { return false; }
     virtual void Execute();
 };
 

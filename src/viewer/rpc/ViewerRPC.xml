@@ -192,8 +192,6 @@
       MovePlotOrderTowardLastRPC
       SetPlotOrderToFirstRPC
       SetPlotOrderToLastRPC
-      UndoLastActionRPC
-      RedoLastActionRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
