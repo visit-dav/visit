@@ -47,7 +47,7 @@
 # I (Cyrus) am not sure how this will work on windows - there may be a
 # more general solution.
 #
-# For a 'make install'ed version libOSMesa should be propertly installed
+# For a 'make install'ed version libOSMesa should be properly installed
 # by our install targets.
 #
 # Modifications:
@@ -57,6 +57,9 @@
 #    internallauncher.  I don't know if this is a good solution, as I
 #    don't know the implication for an installed setup -- this is only
 #    intended to fix running inside a development build.
+#
+#    Cyrus Harrison, Wed Feb  3 10:10:22 PST 2010
+#    Add symlinks to allow us to locate the vtk python wrapper module.
 #
 #----------------------------------------------------------------------------
 
@@ -69,3 +72,18 @@ ENDFOREACH(LIB in ${MESA_LIB})
 EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                         ${VISIT_PYTHON_DIR}
                         ${CMAKE_CURRENT_BINARY_DIR}/python)
+
+IF(VISIT_PYTHON_FILTERS)
+# We need to be able to locate the vtk python wrapper lib at run time.
+# Place symlinks to its components in lib/site-packages/
+    FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/../python${PYTHON_VERSION}/site-packages/*")
+    FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
+        GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
+        GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${ITM_ABS}
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
+    ENDFOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
+
+ENDIF(VISIT_PYTHON_FILTERS)
+

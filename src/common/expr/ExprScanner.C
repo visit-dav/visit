@@ -310,6 +310,9 @@ ExprScanner::UpdateScanState(const std::string &parsed)
 //    Jeremy Meredith, Wed Jul 23 13:12:22 EDT 2008
 //    Add support for using a backslash as an escaping mechanism.
 //
+//    Cyrus Harrison, Thu Feb 11 21:21:46 PST 2010
+//    Add support escaped newlines.
+//
 // ****************************************************************************
 Token*
 ExprScanner::ScanOneToken()
@@ -329,7 +332,11 @@ ExprScanner::ScanOneToken()
         {
             lookahead = 0;
             if (pos+1 < text.length())
+            {
                 lookahead = text[pos+1];
+                if(lookahead == 'n')
+                    lookahead ='\n';
+            }
         }
 
         // Nothing left to parse, and no unfinished token to accept

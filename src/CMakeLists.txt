@@ -78,6 +78,9 @@
 #    Removed conditional setting of VISIT_RENDERING_SIZE_LIMIT, in case 
 #    initial configure pass was missing something. Install our zlib on windows.
 #    
+#    Cyrus Harrison, Sun Feb 21 19:12:33 PST 2010
+#    Added support for enable/disable of Python Engine Filters.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -188,6 +191,19 @@ IF(VISIT_STATIC)
     ADD_DEFINITIONS(-DVISIT_STATIC -DGLEW_STATIC)
 ENDIF(VISIT_STATIC)
 OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
+OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." OFF)
+
+# VTK Python's wrappers avalaible with the static libs, so we cannot support
+# python filters in a static build
+IF(VISIT_STATIC AND VISIT_PYTHON_FILTERS)
+    SET(VISIT_PYTHON_FILTERS OFF)
+    MESSAGE(STATUS "Python Engine Filters are not supported for static build")
+ENDIF(VISIT_STATIC AND VISIT_PYTHON_FILTERS)
+
+IF(VISIT_PYTHON_FILTERS)
+    ADD_DEFINITIONS(-DVISIT_PYTHON_FILTERS)
+ENDIF(VISIT_PYTHON_FILTERS)
+
 OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
 OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
 OPTION(VISIT_ZLIB "Use VisIt's internal libz" OFF)

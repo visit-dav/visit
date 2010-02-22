@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#    Cyrus Harrison,Tue Feb  2 16:35:18 PST 2010
+#    Added the python filter expression.
 #
 #****************************************************************************/
 
@@ -144,6 +146,10 @@ General/avtVectorDecomposeExpression.C
 General/avtViscousStressExpression.C
 General/avtZoneTypeExpression.C
 )
+
+IF(VISIT_PYTHON_FILTERS)
+    LIST(APPEND GENERAL_SOURCES General/avtPythonExpression.C)
+ENDIF(VISIT_PYTHON_FILTERS)
 
 SET(IMAGEPROCESSING_SOURCES
 ImageProcessing/avtAbelInversionExpression.C
@@ -305,17 +311,36 @@ ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
 ${VTK_INCLUDE_DIRS}
 )
 
+IF(VISIT_PYTHON_FILTERS)
+    INCLUDE_DIRECTORIES(
+        ${PYTHON_INCLUDE_DIRS}
+        ${VISIT_SOURCE_DIR}/avt/PythonFilters
+    )
+ENDIF(VISIT_PYTHON_FILTERS)
+
+
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR})
+
+IF(VISIT_PYTHON_FILTERS)
+    LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
+ENDIF(VISIT_PYTHON_FILTERS)
+
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtexpressions_ser ${AVTEXPRESSIONS_SOURCES})
 TARGET_LINK_LIBRARIES(avtexpressions_ser visitcommon avtdbatts avtdatabase_ser avtddf_ser avtplotter_ser avtfilters_ser avtpipeline_ser)
+IF(VISIT_PYTHON_FILTERS)
+    TARGET_LINK_LIBRARIES(avtexpressions_ser avtpythonfilters_ser)
+ENDIF(VISIT_PYTHON_FILTERS)
 VISIT_INSTALL_TARGETS(avtexpressions_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtexpressions_par ${AVTEXPRESSIONS_SOURCES})
     TARGET_LINK_LIBRARIES(avtexpressions_par visitcommon avtdbatts avtdatabase_par avtddf_par avtplotter_par avtfilters_par avtpipeline_par)
+    IF(VISIT_PYTHON_FILTERS)
+        TARGET_LINK_LIBRARIES(avtexpressions_par avtpythonfilters_par)
+    ENDIF(VISIT_PYTHON_FILTERS)
     VISIT_INSTALL_TARGETS(avtexpressions_par)
 ENDIF(VISIT_PARALLEL)

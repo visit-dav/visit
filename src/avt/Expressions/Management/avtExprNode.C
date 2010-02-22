@@ -90,6 +90,10 @@
 #include <avtVectorComposeExpression.h>
 #include <avtVectorDecomposeExpression.h>
 
+#ifdef VISIT_PYTHON_FILTERS
+#include <avtPythonExpression.h>
+#endif
+
 using std::string;
 
 // ****************************************************************************
@@ -451,6 +455,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Tue Aug 11 10:34:08 PDT 2009
 //    Added the "map" expression.
 //
+//    Cyrus Harrison, Tue Feb  2 14:54:25 PST 2010
+//    Added the "python" expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -498,6 +505,14 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtCylindricalCoordinatesExpression();
     if (functionName == "procid")
         return new avtProcessorIdExpression();
+    if (functionName == "python" || functionName == "py")
+#ifdef VISIT_PYTHON_FILTERS
+        return new avtPythonExpression();
+#else
+        EXCEPTION1(VisItException,
+                   "Cannot execute Python Filter Expression because "
+                   "VisIt was build without Python Filter support.");
+#endif
     if (functionName == "mean_curvature")
     {
         avtCurvatureExpression *c = new avtCurvatureExpression;

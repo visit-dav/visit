@@ -56,6 +56,7 @@
 #include <InstallationFunctions.h>
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <QvisPythonSyntaxHighlighter.h>
 
 #include <icons/macrorecord.xpm>
 #include <icons/macropause.xpm>
@@ -83,6 +84,9 @@
 //   Brad Whitlock, Wed Apr  9 11:35:58 PDT 2008
 //   QString for captionString, shortName.
 //
+//   Cyrus Harrison, Mon Feb  8 15:40:54 PST 2010
+//   Added python syntax highlighter.
+//
 // ****************************************************************************
 
 QvisCommandWindow::QvisCommandWindow(const QString &captionString,
@@ -95,14 +99,15 @@ QvisCommandWindow::QvisCommandWindow(const QString &captionString,
     clearButtonsGroup = 0;
     addMacroButtons = 0;
     addMacroButtonsGroup = 0;
-    lineEdits = 0;
+    editors = 0;
+    highlighters = 0;
 
     macroRecord = 0;
     macroPause = 0;
     macroEnd = 0;
     macroAppendCheckBox = 0;
     macroStorageComboBox = 0;
-    
+
     macroStorageMode = 0;
     macroAppend = false;
 }
@@ -124,6 +129,9 @@ QvisCommandWindow::QvisCommandWindow(const QString &captionString,
 //   Ensured all of button groups have parents, so we don't need to 
 //   explicitly delete them.
 //
+//   Cyrus Harrison, Mon Feb  8 15:40:54 PST 2010
+//   Added python syntax highlighter.
+//
 // ****************************************************************************
 
 QvisCommandWindow::~QvisCommandWindow()
@@ -131,7 +139,8 @@ QvisCommandWindow::~QvisCommandWindow()
     delete [] executeButtons;
     delete [] clearButtons;
     delete [] addMacroButtons;
-    delete [] lineEdits;
+    delete [] editors;
+    delete [] highlighters;
 }
 
 // ****************************************************************************
@@ -162,6 +171,9 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Hank Childs, Tue Jul 22 12:22:38 PDT 2008
 //   Always have the Execute button enabled.
 //
+//   Cyrus Harrison, Mon Feb  8 15:40:54 PST 2010
+//   Added python syntax highlighter.
+//
 // ****************************************************************************
 
 void
@@ -181,7 +193,7 @@ QvisCommandWindow::CreateWindowContents()
     macroRecord = new QPushButton(QIcon(QPixmap(macrorecord_xpm)),
                                   tr("Record"), macroBox);
     connect(macroRecord, SIGNAL(clicked()), this, SLOT(macroRecordClicked()));
-    
+
     macroRecord->setToolTip(tr("Start recording commands"));
     macroLayout->addWidget(macroRecord);
 
@@ -240,11 +252,12 @@ QvisCommandWindow::CreateWindowContents()
             this, SLOT(macroCreate(int)));
 
     // Create the tabs that let us edit command scripts.
-    lineEdits       = new QTextEdit*[MAXTABS];
+    editors       = new QTextEdit*[MAXTABS];
+    highlighters  = new QSyntaxHighlighter*[MAXTABS];
     executeButtons  = new QPushButton*[MAXTABS];
     clearButtons    = new QPushButton*[MAXTABS];
     addMacroButtons = new QPushButton*[MAXTABS];
-    
+
     QFont monospaced("Courier");
     for (int i = 0; i < MAXTABS; i++)
     {
@@ -252,15 +265,20 @@ QvisCommandWindow::CreateWindowContents()
         QVBoxLayout *vlayout = new QVBoxLayout(widget);
         vlayout->setMargin(10);
         vlayout->setSpacing(5);
-        lineEdits[i]  = new QTextEdit(widget);
-        lineEdits[i]->setReadOnly(false);
-        lineEdits[i]->setFont(monospaced);
-        lineEdits[i]->setWordWrapMode(QTextOption::NoWrap);
+        editors[i]  = new QTextEdit(widget);
+        editors[i]->setReadOnly(false);
+        editors[i]->setFont(monospaced);
+        editors[i]->setWordWrapMode(QTextOption::NoWrap);
+
+        // hook up a python syntax highlighter
+        highlighters[i] = new QvisPythonSyntaxHighlighter(editors[i]->document());
+
+
         QString slotName(SLOT(textChanged#()));
         QString n = QString("%1").arg(i);
         slotName.replace(slotName.indexOf("#"), 1, n);
-        vlayout->addWidget(lineEdits[i]);
-        connect(lineEdits[i], SIGNAL(textChanged()),
+        vlayout->addWidget(editors[i]);
+        connect(editors[i], SIGNAL(textChanged()),
                 this, slotName.toStdString().c_str());
 
         QHBoxLayout *hlayout = new QHBoxLayout();
@@ -280,7 +298,7 @@ QvisCommandWindow::CreateWindowContents()
         addMacroButtons[i]->setEnabled(false);
         hlayout->addWidget(addMacroButtons[i]);
         addMacroButtonsGroup->addButton(addMacroButtons[i], i);
-     
+
         // Add the top vbox as a new tab.
         n.sprintf("%d", i+1);
         tabWidget->addTab(widget, n);
@@ -291,11 +309,13 @@ QvisCommandWindow::CreateWindowContents()
     QVBoxLayout *macro_tab_vlayout = new QVBoxLayout(macroTab);
     macro_tab_vlayout->setMargin(10);
     macro_tab_vlayout->setSpacing(5);
-    macroLineEdit = new QTextEdit(macroTab);
-    macroLineEdit->setWordWrapMode(QTextOption::NoWrap);
-    macroLineEdit->setReadOnly(false);
-    macroLineEdit->setFont(monospaced);
-    macro_tab_vlayout->addWidget(macroLineEdit);
+    macroEdit = new QTextEdit(macroTab);
+    macroEdit->setWordWrapMode(QTextOption::NoWrap);
+    macroEdit->setReadOnly(false);
+    macroEdit->setFont(monospaced);
+    macroHighlighter = new QvisPythonSyntaxHighlighter(macroEdit->document());
+
+    macro_tab_vlayout->addWidget(macroEdit);
     QHBoxLayout *macro_tab_hlayout = new QHBoxLayout();
     macro_tab_vlayout->addLayout(macro_tab_hlayout);
     macro_tab_hlayout->setSpacing(5);
@@ -518,7 +538,7 @@ QvisCommandWindow::LoadScripts()
             }
             file.close();
 
-            lineEdits[i]->setText(lines);
+            editors[i]->setText(lines);
         }
     }
 
@@ -535,7 +555,7 @@ QvisCommandWindow::LoadScripts()
         }
         file.close();
 
-        macroLineEdit->setText(lines);
+        macroEdit->setText(lines);
     }
 }
 
@@ -560,7 +580,7 @@ QvisCommandWindow::SaveScripts()
     for(int i = 0; i < MAXTABS; ++i)
     {
         QFile file(fileName(i+1));
-        QString txt(lineEdits[i]->toPlainText());
+        QString txt(editors[i]->toPlainText());
         if(txt.length() > 0)
         {
             if(file.open(QIODevice::WriteOnly))
@@ -649,7 +669,7 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
             funcName + QString(")\n");
 
     // Add the function definition to the Macros tab.
-    macroLineEdit->setPlainText(macroLineEdit->toPlainText() + func);
+    macroEdit->setPlainText(macroEdit->toPlainText() + func);
 
     // Make the Macros tab active.
     tabWidget->setCurrentWidget((QWidget *)macroTab);
@@ -682,7 +702,7 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
 void
 QvisCommandWindow::executeClicked(int index)
 {
-    emit runCommand(lineEdits[index]->toPlainText());
+    emit runCommand(editors[index]->toPlainText());
 }
 
 // ****************************************************************************
@@ -705,7 +725,7 @@ QvisCommandWindow::executeClicked(int index)
 void
 QvisCommandWindow::clearClicked(int index)
 {
-    lineEdits[index]->clear();
+    editors[index]->clear();
 }
 
 // ****************************************************************************
@@ -731,7 +751,7 @@ QvisCommandWindow::clearClicked(int index)
 // ****************************************************************************
 
 #define TEXT_CHANGED(I) void QvisCommandWindow::textChanged##I() { \
-    bool e = !lineEdits[I]->toPlainText().isEmpty(); \
+    bool e = !editors[I]->toPlainText().isEmpty(); \
     addMacroButtons[I]->setEnabled(e); \
     clearButtons[I]->setEnabled(e); \
 }
@@ -877,7 +897,7 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
             bool found = false;
             for(int i = 0; i < MAXTABS; ++i)
             {
-                if(lineEdits[i]->toPlainText().isEmpty())
+                if(editors[i]->toPlainText().isEmpty())
                 {
                     index = i;
                     found = true;
@@ -893,12 +913,12 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
 
         if(macroAppend)
         {
-            QString macro(lineEdits[index]->toPlainText());
+            QString macro(editors[index]->toPlainText());
             macro += s;
-            lineEdits[index]->setText(macro);
+            editors[index]->setText(macro);
         }
         else
-            lineEdits[index]->setText(s);
+            editors[index]->setText(s);
     }
 }
 
@@ -925,7 +945,7 @@ QvisCommandWindow::macroClearClicked()
     Warning("The Clear button will only clear this text area.  If you now want"
             " to permanently remove the macros (and prevent the CLI from "
             "launching at startup), you need to also click \"Update Macros\"");
-    macroLineEdit->clear();
+    macroEdit->clear();
 }
 
 // ****************************************************************************
@@ -951,7 +971,7 @@ QvisCommandWindow::macroUpdateClicked()
 {
     // Save the updated visitrc file based on the contents in the Macros tab.
     QFile file(RCFileName());
-    QString txt(macroLineEdit->toPlainText());
+    QString txt(macroEdit->toPlainText());
     if(txt.length() > 0)
     {
         if(file.open(QIODevice::WriteOnly))
@@ -1010,5 +1030,5 @@ void
 QvisCommandWindow::macroCreate(int tab)
 {
     // Add to the macro tab.
-    CreateMacroFromText(lineEdits[tab]->toPlainText());
+    CreateMacroFromText(editors[tab]->toPlainText());
 }

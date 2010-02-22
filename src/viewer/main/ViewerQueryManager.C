@@ -3631,7 +3631,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Made some queries 'time' queries (can perform queries-over-time). 
-//   
+//
 //    Hank Childs, Tue Apr 13 12:45:33 PDT 2004
 //    Do a better job distinguishing between 2D and 3D area.
 //
@@ -3711,7 +3711,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //
 //    Cyrus Harrison, Tue Feb 20 15:27:36 PST 2007
 //    Added connected components queries
-//    
+//
 //    Cyrus Harrison,  Thu Mar  1 16:16:58 PST 2007
 //    Added connected components summary query
 //
@@ -3735,6 +3735,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //
 //    Jeremy Meredith, Wed Mar 11 17:53:13 EDT 2009
 //    Added Sample and Population statistics queries.
+//
+//    Cyrus Harrison, Fri Feb  5 10:08:53 PST 2010
+//    Added Python Query.
 //
 // ****************************************************************************
 
@@ -3766,7 +3769,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups sr = QueryList::ShapeRelated;
     QueryList::Groups ccl_r  = QueryList::ConnectedComponentsRelated;
     QueryList::Groups misc_r = QueryList::Miscellaneous;
-    
+
     QueryList::WindowType basic = QueryList::Basic;
     QueryList::WindowType sp  = QueryList::SinglePoint;
     QueryList::WindowType dp  = QueryList::DoublePoint;
@@ -3839,9 +3842,15 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Connected Component Variable Sum", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Weighted Variable Sum", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Components Summary", dq, ccl_r, ccls_wt, 1, 0, qo);
-    
+
     queryTypes->AddQuery("Shapelet Decomposition", dq, sr, shp_wt, 1, 0, qo);
 
+    // always add python query here, error checking if python filters were built
+    // happens on the engine.
+    queryTypes->AddQuery("Python", dq, misc_r, basic, 1, 0, qo);
+    // make sure the python query doesn't show up w/ the standard queries.
+    cbp = queryTypes->GetCanBePublic();
+    cbp[cbp.size()-1] = 0;
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR |
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
@@ -3936,7 +3945,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
 // ****************************************************************************
 
 string
-CreateExtentsString(const double * extents, 
+CreateExtentsString(const double * extents,
                     const int dim, 
                     const char *type,
                     const string &float_format)

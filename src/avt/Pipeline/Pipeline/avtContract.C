@@ -305,3 +305,21 @@ avtContract::DebugDump(avtWebpage *webpage)
 }
 
 
+// ****************************************************************************
+//  Method: avtContract::Print
+//
+//  Purpose:
+//       Contract print function. Uses overloaed << operator.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   June 5, 2001
+//
+// ****************************************************************************
+
+void
+avtContract::Print(ostream &os)
+{
+    os << this;
+}
+
+

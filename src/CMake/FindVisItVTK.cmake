@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Thu Dec 10 17:53:36 MT 2009
 #   Use the same find routines whether on Windows or not.
 #
+#   Cyrus Harrison, Fri Feb 19 15:41:04 PST 2010
+#   Added install of vtk python wrappers (if they exist).
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -129,6 +132,35 @@ FOREACH(X ${VTK_INCLUDE_DIRS})
         )
     ENDIF(EXISTS ${X}/vtkActor.h)
 ENDFOREACH(X)
+
+# check for python wrappers
+FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS}/python*/)
+
+IF(EXISTS ${VTK_PY_WRAPPERS_DIR})
+    MESSAGE(STATUS ${VTK_PY_WRAPPERS_DIR})
+    FILE(GLOB VTK_PY_EGG ${VTK_PY_WRAPPERS_DIR}/site-packages/*.egg*)
+    FILE(GLOB VTK_PY_MODULE ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
+    INSTALL(FILES ${VTK_PY_EGG}
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+           )
+
+    INSTALL(DIRECTORY ${VTK_PY_MODULE}
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
+            FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
+            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+           )
+    SET(VTK_PYTHON_WRAPPERS_FOUND TRUE)
+ELSE(EXISTS ${VTK_PY_WRAPPERS_DIR})
+    SET(VTK_PYTHON_WRAPPERS_FOUND FALSE)
+ENDIF(EXISTS ${VTK_PY_WRAPPERS_DIR})
+
+MARK_AS_ADVANCED(VTK_PYTHON_WRAPPERS_FOUND)
+
+#INSTALL(DIRECTORY vtk
+#            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk/include
+#            #FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
+#            DIRE
 
 IF(NOT ${VTK_FOUND})
     MESSAGE(FATAL_ERROR "VTK is required to build VisIt.")
