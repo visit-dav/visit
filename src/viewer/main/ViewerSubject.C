@@ -241,6 +241,10 @@ using std::string;
 //    Brad Whitlock, Tue Apr 14 11:47:41 PDT 2009
 //    I moved many members into ViewerProperties.
 //
+//    Jeremy Meredith, Mon Feb 22 15:52:15 EST 2010
+//    Hand a pointer to our config manager to the action manager; it'll
+//    need it to save items in the undo history stack.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0), 
@@ -310,6 +314,7 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     // By default, read the config files.
     //
     configMgr = new ViewerConfigManager(this);
+    ViewerActionManager::SetConfigManager(configMgr);
     systemSettings = 0;
     localSettings = 0;
 
@@ -951,6 +956,9 @@ ViewerSubject::InformClientOfPlugins() const
 //   Brad Whitlock, Tue Apr 14 12:00:09 PDT 2009
 //   Use ViewerProperties.
 //
+//   Jeremy Meredith, Mon Feb 22 15:52:51 EST 2010
+//   Start history tracking at the end of heavy initialization.
+//
 // ****************************************************************************
 
 void
@@ -1052,6 +1060,8 @@ ViewerSubject::HeavyInitialization()
 
         heavyInitializationDone = true;
         visitTimer->StopTimer(timeid, "Heavy initialization.");
+
+        configMgr->EnableHistoryTracking();
     }
 }
 
@@ -6019,7 +6029,8 @@ ViewerSubject::ImportEntireState()
     stringVector empty;
     configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
                                  GetViewerState()->GetViewerRPC()->GetBoolFlag(),
-                                 empty, false);
+                                 empty,
+                                 false);
     configMgr->NotifyIfSelected();
 }
 
@@ -6041,7 +6052,8 @@ ViewerSubject::ImportEntireStateWithDifferentSources()
 {
      configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
                                   GetViewerState()->GetViewerRPC()->GetBoolFlag(),
-                                  GetViewerState()->GetViewerRPC()->GetProgramOptions(), true);
+                                  GetViewerState()->GetViewerRPC()->GetProgramOptions(),
+                                  true);
      configMgr->NotifyIfSelected();
 }
 
@@ -7883,6 +7895,11 @@ ViewerSubject::HandleViewerRPC()
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Jeremy Meredith, Mon Feb 22 15:54:07 EST 2010
+//    If an action is allowed to make a new state in the undo history
+//    (generally true except for lightweight or non-undo-able actions), do so
+//    here.  Also, handle the Undo and Redo state history actions here.
+//
 // ****************************************************************************
 
 void
@@ -7912,6 +7929,7 @@ ViewerSubject::HandleViewerRPCEx()
     //
     // Handle the RPC. Note that these should be replaced with actions.
     //
+    bool saveUndoState = true;
     bool everythingOK = true;
     switch(GetViewerState()->GetViewerRPC()->GetRPCType())
     {
@@ -7972,6 +7990,7 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::ConnectToMetaDataServerRPC:
         ConnectToMetaDataServer();
+        saveUndoState = false;
         break;
     case ViewerRPC::IconifyAllWindowsRPC:
         IconifyAllWindows();
@@ -7981,6 +8000,7 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::ShowAllWindowsRPC:
         ShowAllWindows();
+        saveUndoState = false;
         break;
     case ViewerRPC::HideAllWindowsRPC:
         HideAllWindows();
@@ -8032,6 +8052,7 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::SetAppearanceRPC:
         SetAppearanceAttributes();
+        saveUndoState = false;
         break;
     case ViewerRPC::ProcessExpressionsRPC:
         ProcessExpressions();
@@ -8056,6 +8077,7 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::SetWindowAreaRPC:
         SetWindowArea();
+        saveUndoState = false;
         break;
     case ViewerRPC::PrintWindowRPC:
         PrintWindow();
@@ -8080,9 +8102,11 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::ClearCacheRPC:
         ClearCache();
+        saveUndoState = false;
         break;
     case ViewerRPC::ClearCacheForAllEnginesRPC:
         ClearCacheForAllEngines();
+        saveUndoState = false;
         break;
     case ViewerRPC::SetViewExtentsTypeRPC:
         SetViewExtentsType();
@@ -8194,6 +8218,7 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::UpdateDBPluginInfoRPC:
         UpdateDBPluginInfo();
+        saveUndoState = false;
         break;
     case ViewerRPC::ExportDBRPC:
         ExportDatabase();
@@ -8267,6 +8292,14 @@ ViewerSubject::HandleViewerRPCEx()
     case ViewerRPC::SaveNamedSelectionRPC:
         SaveNamedSelection();
         break;
+    case ViewerRPC::UndoLastActionRPC:
+        configMgr->HistoryUndo();
+        saveUndoState = false;
+        break;
+    case ViewerRPC::RedoLastActionRPC:
+        configMgr->HistoryRedo();
+        saveUndoState = false;
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -8276,6 +8309,10 @@ ViewerSubject::HandleViewerRPCEx()
             GetActiveWindow()->GetActionManager();
         actionMgr->HandleAction(*GetViewerState()->GetViewerRPC());
         actionHandled = true;
+        // The action manager will save the undo state on its own
+        // since there are other ways of triggering those actions
+        // than this particular function.
+        saveUndoState = false;
     }
 
     //
@@ -8290,6 +8327,10 @@ ViewerSubject::HandleViewerRPCEx()
     GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
     GetViewerState()->GetLogRPC()->SetBoolFlag(true);
     BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
+
+    if (saveUndoState)
+        configMgr->HistorySaveNewState(ViewerRPC::ViewerRPCType_ToString(
+                              GetViewerState()->GetViewerRPC()->GetRPCType()));
 
     debug4 << "Done handling "
            << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
@@ -10327,3 +10368,25 @@ ReadHostProfileCallback(void *hpl,
 }
                              
 
+// ****************************************************************************
+// Method:  ViewerSubject::SetUndoAndRedoActionNames
+//
+// Purpose:
+//   Set the undo and redo actions in the global attributes.  This is so
+//   we can update the GUI when there is an undo/redo action, both for
+//   enabled state and for displaying the actual action you're un/re-doing.
+//
+// Arguments:
+//   
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 22, 2010
+//
+// ****************************************************************************
+void
+ViewerSubject::SetUndoAndRedoActionNames(const string &undo,const string &redo)
+{
+    GetViewerState()->GetGlobalAttributes()->SetUndoActionName(undo);
+    GetViewerState()->GetGlobalAttributes()->SetRedoActionName(redo);
+    GetViewerState()->GetGlobalAttributes()->Notify();
+}

@@ -88,6 +88,8 @@ public:
     virtual void SelectAll();
     void SelectSources();
     void SelectWindows();
+    void SelectUndoActionName();
+    void SelectRedoActionName();
 
     // Property setting methods
     void SetSources(const stringVector &sources_);
@@ -112,6 +114,8 @@ public:
     void SetSaveCrashRecoveryFile(bool saveCrashRecoveryFile_);
     void SetApplySelection(bool applySelection_);
     void SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_);
+    void SetUndoActionName(const std::string &undoActionName_);
+    void SetRedoActionName(const std::string &redoActionName_);
 
     // Property getting methods
     const stringVector &GetSources() const;
@@ -138,6 +142,10 @@ public:
     bool               GetSaveCrashRecoveryFile() const;
     bool               GetApplySelection() const;
     bool               GetIgnoreExtentsFromDbs() const;
+    const std::string  &GetUndoActionName() const;
+          std::string  &GetUndoActionName();
+    const std::string  &GetRedoActionName() const;
+          std::string  &GetRedoActionName();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -175,6 +183,8 @@ public:
         ID_saveCrashRecoveryFile,
         ID_applySelection,
         ID_ignoreExtentsFromDbs,
+        ID_undoActionName,
+        ID_redoActionName,
         ID__LAST
     };
 
@@ -201,11 +211,13 @@ private:
     bool         saveCrashRecoveryFile;
     bool         applySelection;
     bool         ignoreExtentsFromDbs;
+    std::string  undoActionName;
+    std::string  redoActionName;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbibbbbbbbbbbbbb"
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbibbbbbbbbbbbbbss"
 
 #endif

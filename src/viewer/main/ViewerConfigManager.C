@@ -47,6 +47,10 @@
 #include <FileFunctions.h>
 #include <snprintf.h>
 
+using std::pair;
+using std::deque;
+using std::string;
+
 // ****************************************************************************
 //  Method: ViewerConfigManager::ViewerConfigManager
 //
@@ -79,6 +83,9 @@
 //    Brad Whitlock, Fri May 23 11:09:47 PDT 2008
 //    Removed name on ViewerBase.
 //
+//    Jeremy Meredith, Mon Feb 22 15:38:58 EST 2010
+//    Add Undo/Redo history.
+//
 // ****************************************************************************
 
 ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : ViewerBase(0),
@@ -86,6 +93,7 @@ ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : ViewerBase(0),
 {
     parent = vs;
     writeDetail = false;
+    historyTracking = false;
 }
 
 // ****************************************************************************
@@ -663,5 +671,260 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
            "file name or try including the entire path to the "
            "session file.");
     Error(str);
+}
+
+// ****************************************************************************
+// Method:  ViewerConfigManager::EnableHistoryTracking
+//
+// Purpose:
+//   Call this after viewer initialization to save the current state
+//   as the first one and start tracking history.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 22, 2010
+//
+// ****************************************************************************
+void
+ViewerConfigManager::EnableHistoryTracking()
+{
+    undoState.clear();
+    redoState.clear();
+    historyTracking = true;
+    HistorySaveNewState("Initial State");
+}
+
+// ****************************************************************************
+// Method:  ViewerConfigManager::HistorySaveNewState
+//
+// Purpose:
+//   Add a new item to the undo stack when history tracking is enabled.
+//   Note that this will clear the "redo" parts of the history.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 22, 2010
+//
+// ****************************************************************************
+void
+ViewerConfigManager::HistorySaveNewState(const std::string &actionName)
+{
+    if (historyTracking == false)
+        return;
+
+    // max 10 undo states
+    if (undoState.size() > 10)
+    {
+        pair<string,DataNode*> s = undoState.front();
+        DataNode *node = s.second;
+        if (node)
+            delete node;
+        undoState.pop_front();
+    }
+    // clear all redo history on a new action
+    while (! redoState.empty())
+    {
+        pair<string,DataNode*> s = redoState.front();
+        DataNode *node = s.second;
+        if (node)
+            delete node;
+        redoState.pop_front();
+    }
+
+    DataNode *node = new DataNode("UndoState");
+    undoState.push_back(pair<string,DataNode*>(actionName,node));
+
+    // Create the undo state node
+    DataNode *visitNode = new DataNode("VisIt");
+    node->AddNode(visitNode);
+    visitNode->AddNode(new DataNode("Version", std::string(VISIT_VERSION)));
+
+    // Create a "VIEWER" node and add it under "VisIt".
+    DataNode *viewerNode = new DataNode("VIEWER");
+    visitNode->AddNode(viewerNode);
+
+    // Create a "DEFAULT_VALUES" node and add it under "VIEWER".
+    DataNode *defaultsNode = new DataNode("DEFAULT_VALUES");
+    viewerNode->AddNode(defaultsNode);
+
+    // Add the attributes under the "DEFAULT_VALUES" node.
+    std::vector<AttributeSubject *>::iterator pos;
+    for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
+    {
+        (*pos)->CreateNode(defaultsNode, true/*detail*/, false);
+    }
+
+    // Let the parent write its data to the "VIEWER" node.
+    parent->CreateNode(viewerNode, true/*detail*/);
+
+    // Update the action names in the GUI
+    string newUndoName = "";
+    if (undoState.size() > 1)
+        newUndoName = undoState.back().first;
+    string newRedoName = "";
+    if (! redoState.empty())
+        newRedoName = redoState.back().first;
+    parent->SetUndoAndRedoActionNames(newUndoName,newRedoName);
+}
+
+// ****************************************************************************
+// Method:  ViewerConfigManager::HistoryUndo
+//
+// Purpose:
+//   Perform an "undo" in the history.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 22, 2010
+//
+// ****************************************************************************
+void
+ViewerConfigManager::HistoryUndo()
+{ 
+    // Note that the last item on the undo stack is
+    // always the current state.  We can't remove it.
+    if (undoState.size() < 2)
+        return;
+
+    // Take the current state, and push it on the redo pile
+    pair<string,DataNode*> s = undoState.back();
+    undoState.pop_back();
+    redoState.push_back(s);
+    // And now restore to the previous one
+    s = undoState.back();
+    DataNode *node = s.second;
+
+    // Make the hooked up objects get their settings.
+    ProcessConfigSettings(node);
+
+    // Get the VisIt node.
+    DataNode *visitRoot = node->GetNode("VisIt");
+    if(visitRoot == 0)
+        return;
+
+    // Get the viewer node.
+    DataNode *viewerNode = visitRoot->GetNode("VIEWER");
+    if(viewerNode == 0)
+        return;
+
+    // Get the SourceMap node and use it to construct a map
+    // that lets the rest of the session reading routines
+    // pick out the right database name when they see a 
+    // given source id.
+    std::map<std::string,std::string> sourceToDB;
+    DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
+    DataNode *sourceMapNode = 0;
+    if(vsNode != 0 && 
+       (sourceMapNode = vsNode->GetNode("SourceMap")) != 0)
+    {
+        DataNode **srcFields = sourceMapNode->GetChildren();
+        for(int i = 0; i < sourceMapNode->GetNumChildren(); ++i)
+        {
+            if(srcFields[i]->GetNodeType() == STRING_NODE)
+            {
+                std::string key(srcFields[i]->GetKey());
+                std::string db(srcFields[i]->AsString());
+                sourceToDB[key] = db;
+            }
+        }
+    }
+
+    // Let the parent read its settings.
+    bool fatalError = parent->SetFromNode(viewerNode, sourceToDB, 
+                                          VISIT_VERSION);
+    NotifyIfSelected();
+
+    // Update the action names in the GUI
+    string newUndoName = "";
+    if (undoState.size() > 1)
+        newUndoName = undoState.back().first;
+    string newRedoName = "";
+    if (! redoState.empty())
+        newRedoName = redoState.back().first;
+    parent->SetUndoAndRedoActionNames(newUndoName,newRedoName);
+}
+
+// ****************************************************************************
+// Method:  ViewerConfigManager::HistoryRedo
+//
+// Purpose:
+//   Perform a "redo" in the history.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 22, 2010
+//
+// ****************************************************************************
+void
+ViewerConfigManager::HistoryRedo()
+{
+    if (redoState.empty())
+        return;
+
+    pair<string,DataNode*> s = redoState.back();
+    redoState.pop_back();
+
+    DataNode *node = s.second;
+
+    // Make the hooked up objects get their settings.
+    ProcessConfigSettings(node);
+
+    // Get the VisIt node.
+    DataNode *visitRoot = node->GetNode("VisIt");
+    if(visitRoot == 0)
+        return;
+
+    // Get the viewer node.
+    DataNode *viewerNode = visitRoot->GetNode("VIEWER");
+    if(viewerNode == 0)
+        return;
+
+
+    // Get the SourceMap node and use it to construct a map
+    // that lets the rest of the session reading routines
+    // pick out the right database name when they see a 
+    // given source id.
+    std::map<std::string,std::string> sourceToDB;
+    DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
+    DataNode *sourceMapNode = 0;
+    if(vsNode != 0 && 
+       (sourceMapNode = vsNode->GetNode("SourceMap")) != 0)
+    {
+        DataNode **srcFields = sourceMapNode->GetChildren();
+        for(int i = 0; i < sourceMapNode->GetNumChildren(); ++i)
+        {
+            if(srcFields[i]->GetNodeType() == STRING_NODE)
+            {
+                std::string key(srcFields[i]->GetKey());
+                std::string db(srcFields[i]->AsString());
+                sourceToDB[key] = db;
+            }
+        }
+    }
+
+    // Let the parent read its settings.
+    bool fatalError = parent->SetFromNode(viewerNode, sourceToDB, 
+                                          VISIT_VERSION);
+    NotifyIfSelected();
+
+    undoState.push_back(s);
+
+
+    // Update the action names in the GUI
+    string newUndoName = "";
+    if (undoState.size() > 1)
+        newUndoName = undoState.back().first;
+    string newRedoName = "";
+    if (! redoState.empty())
+        newRedoName = redoState.back().first;
+    parent->SetUndoAndRedoActionNames(newUndoName,newRedoName);
 }
 
