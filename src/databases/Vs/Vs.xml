@@ -15,12 +15,15 @@
       VsSchema.C
       VsUtils.C
     </Files>
-
     <CXXFLAGS>
-      $(HDF5_INCLUDE)
+      ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
+    <LDFLAGS>
+      ${HDF5_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS>
-      $(HDF5_LIB) $(SZIP_LIB)
+      ${HDF5_LIB}
+      ${ZLIB_LIB}
     </LIBS>
     <FilePatterns>
       *.vsh5
