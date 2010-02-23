@@ -332,6 +332,11 @@ avtIVPM3DC1Integrator::OnExitDomain()
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Set the velStart/velEnd direction based on integration direction.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -428,11 +433,16 @@ avtIVPM3DC1Integrator::Step(const avtIVPField* field,
                  numStep >= (int)fabs(end))
             return TERMINATE;
 
-//        ivpstep->velStart = (*field)(t,yCur);
-//        ivpstep->velEnd = (*field)((t+h),yNew);
-
-        ivpstep->velStart = getBfield(field, yCur);
-        ivpstep->velEnd   = getBfield(field, yNew);
+        if (end > 0.0)
+        {
+            ivpstep->velStart = getBfield(field, yCur);
+            ivpstep->velEnd   = getBfield(field, yNew);
+        }
+        else
+        {
+            ivpstep->velStart = -getBfield(field, yCur);
+            ivpstep->velEnd   = -getBfield(field, yNew);
+        }
 
         yCur = yNew;
         t = t+h;

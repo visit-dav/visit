@@ -248,8 +248,10 @@ avtStreamlineFilter::~avtStreamlineFilter()
 {
     std::map<DomainType, vtkVisItCellLocator*>::const_iterator it;
     for ( it = domainToCellLocatorMap.begin(); it != domainToCellLocatorMap.end(); it++ )
-        it->second->Delete();
-
+    {
+        if (it->second)
+            it->second->Delete();
+    }
     if (intersectObj)
         intersectObj->Delete();
 }
@@ -1901,6 +1903,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Send the SL filter's instance of a locator to the interpolated velocity
 //   field.
 //
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Use domainToCellLocatorMap.find() instead of [] accessor. It will actually
+//   add an entry for the key if doesn't already exist.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1937,7 +1943,11 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     else
         velocity1->SetDataSet(ds);
 
-    vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[slSeg->domain];
+    vtkVisItCellLocator *cellLocator = NULL;
+    std::map<DomainType, vtkVisItCellLocator*>::iterator it = domainToCellLocatorMap.find(slSeg->domain);
+    
+    if (it != domainToCellLocatorMap.end())
+        cellLocator = it->second;
     velocity1->SetLocator(cellLocator);
 
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
@@ -1966,11 +1976,6 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         velocity1->SetCurrentTime(t1);
         velocity1->SetNextTime(t2);
     }
-
-    // FIX ME - This code is not on the branch?????
-//     double end = termination;
-//     if (slSeg->dir == avtStreamlineWrapper::BWD)
-//       end = - end;
 
     //slSeg->Debug();
     int numSteps = slSeg->sl->size();
@@ -2470,6 +2475,11 @@ avtStreamlineFilter::AddSeedpoints(std::vector<avtVector> &pts,
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Removed avtStreamlineWrapper:Dir
+//
 // ****************************************************************************
 
 void
@@ -2510,7 +2520,6 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
                 
                 avtStreamlineWrapper *slSeg;
                 slSeg = new avtStreamlineWrapper(sl,
-                                                 avtStreamlineWrapper::FWD,
                                                  GetNextStreamlineID());
                 slSeg->domain = dom;
                 slSeg->termination = termination;
@@ -2528,7 +2537,6 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
                 
                 avtStreamlineWrapper *slSeg;
                 slSeg = new avtStreamlineWrapper(sl,
-                                                 avtStreamlineWrapper::BWD,
                                                  GetNextStreamlineID());
                 slSeg->domain = dom;
                 slSeg->termination = -termination;

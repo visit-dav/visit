@@ -499,6 +499,9 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Set the velStart/velEnd direction based on integration direction.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -688,8 +691,16 @@ avtIVPDopri5::Step(const avtIVPField* field,
         
                 ivpstep->tStart = t;
                 ivpstep->tEnd   = t + h;
-                ivpstep->velStart = k1;
-                ivpstep->velEnd = k7;
+                if (end < 0.0)
+                {
+                    ivpstep->velStart = -k1;
+                    ivpstep->velEnd = -k7;
+                }
+                else
+                {
+                    ivpstep->velStart = k1;
+                    ivpstep->velEnd = k7;
+                }
             }
             
             // update internal state
