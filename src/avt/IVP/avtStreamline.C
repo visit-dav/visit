@@ -292,7 +292,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
     {
         // record state for later restore, if needed
         avtIVPState state;
-        ivp->GetState( state );
+        ivp->GetState(state);
 
         // create new step to be filled in by ivp
         avtIVPStep* step = new avtIVPStep;
@@ -304,8 +304,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             result = ivp->Step(field, termType, end, step);
             if (DebugStream::Level5())
                 debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
+            
             if (intersectionsSet)
-              HandleIntersections((end>0), step, termType, end, &result);
+              HandleIntersections(step, termType, end, &result);
         }
         catch( avtIVPField::Undefined& )
         {
@@ -329,14 +330,14 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             double h = ivp->GetNextStepSize();
 
             h = h/2;
-            if( fabs(h) < 1e-9 )
+            if (fabs(h) < 1e-9)
             {
                 delete step;
                 if (!field->HasGhostZones())
                 {
                     double bbox[6];
                     field->GetExtents(bbox);
-                    HandleGhostZones((end > 0.0), bbox);
+                    HandleGhostZones((end>0.0), bbox);
                 }
 
                 if (DebugStream::Level5())
@@ -344,7 +345,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 return avtIVPSolver::OUTSIDE_DOMAIN;        
             }
 
-            ivp->SetNextStepSize( h );
+            ivp->SetNextStepSize(h);
 
             // retry step
             delete step;
@@ -419,6 +420,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Use a vector instead of a list for the integration steps.
+//
 // ****************************************************************************
 
 void
@@ -445,23 +449,10 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
         return;
     
     //Get the direction of the last step.
-    avtVector dir, pt;
-    if (forward)
-    {
-        iterator si = _steps.end();
-        si--;
-        dir = (*si)->velEnd;
-        pt = (*si)->front();
-    }
-    else
-    {
-        iterator si = _steps.begin();
-        dir = (*si)->velEnd;
-        dir *= -1.0;
-        pt = (*si)->front();
-    }
-    
+    avtVector pt = _steps.back()->front();
+    avtVector dir = _steps.back()->velEnd;
     double len = dir.length();
+    
     if ( len == 0.0 )
         return;
     
@@ -651,19 +642,21 @@ avtStreamline::SetIntersectionObject(vtkObject *obj)
 //   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //   Don't record intersection points, just count them.
 //
+//   Dave Pugmire, Fri Feb 19 16:57:04 EST 2010
+//   Replace _steps.size()==0 with _steps.empty()
+//
 // ****************************************************************************
 
 void
-avtStreamline::HandleIntersections(bool forward,
-                                   avtIVPStep *step,
+avtStreamline::HandleIntersections(avtIVPStep *step,
                                    avtIVPSolver::TerminateType termType,
                                    double end,
                                    avtIVPSolver::Result *result)
 {
-    if (step == NULL || _steps.size() == 0)
+    if (step == NULL || _steps.empty())
         return;
     
-    avtIVPStep *step0 = (forward ? _steps.back() : _steps.front());
+    avtIVPStep *step0 = _steps.back();
 
     if (IntersectPlane(step0->front(), step->front()))
     {

@@ -75,6 +75,9 @@ ostream& operator<<(ostream &out, const DomainType &d)
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Add sequenceCnt.
 //
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Removed avtStreamlineWrapper:Dir
+//
 // ****************************************************************************
 
 avtStreamlineWrapper::avtStreamlineWrapper()
@@ -84,7 +87,6 @@ avtStreamlineWrapper::avtStreamlineWrapper()
     sequenceCnt = 0;
     terminated = false;
     sl = NULL;
-    dir = FWD;
     maxCnt = sum= numDomainsVisited = 0;
     id = -1;
     sortKey = 0;
@@ -111,14 +113,16 @@ avtStreamlineWrapper::avtStreamlineWrapper()
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Add sequenceCnt.
 //
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Removed avtStreamlineWrapper:Dir
+//
 // ****************************************************************************
 
-avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir, int ID)
+avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, int ID)
 {
     sl = s;
     status = UNSET;
     domain = -1;
-    dir = slDir;
     sequenceCnt = 0;
     maxCnt = sum= numDomainsVisited = 0;
     id = ID;
@@ -197,6 +201,9 @@ avtStreamlineWrapper::Debug()
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Add serialization flags, sequenceCnt.
 //
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Removed avtStreamlineWrapper:Dir
+//
 // ****************************************************************************
 
 void
@@ -207,7 +214,6 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode,
     debug5 << "avtStreamlineWrapper::Serialize: id= "<<id<<endl;
     Debug();
 
-    buff.io(mode, dir);
     buff.io(mode, id);
     buff.io(mode, domain);
     buff.io(mode, status);
@@ -415,6 +421,12 @@ avtStreamlineWrapper::DomainCompare(const avtStreamlineWrapper *slA,
 //  Programmer: Dave Pugmire
 //  Creation:   September 24, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Sorting can be done independant of streamline direction. Changed streamline
+//   step from list to vector.
+//
 // ****************************************************************************
 
 avtStreamlineWrapper*
@@ -425,11 +437,9 @@ avtStreamlineWrapper::MergeStreamlineSequence(std::vector<avtStreamlineWrapper *
     else if (v.size() == 1)
         return v[0];
     
-    //Sort (fwd or rev) the streamlines.
-    std::sort(v.begin(), v.end(), (v.front()->dir == avtStreamlineWrapper::FWD ?
-                                   avtStreamlineWrapper::IdRevSeqCompare :
-                                   avtStreamlineWrapper::IdSeqCompare));
-
+    //Sort the streamlines by Id,seq.
+    std::sort(v.begin(), v.end(), avtStreamlineWrapper::IdRevSeqCompare);
+    
     //Make sure all ids are the same.
     if (v.front()->id != v.back()->id)
         return NULL;
@@ -442,11 +452,11 @@ avtStreamlineWrapper::MergeStreamlineSequence(std::vector<avtStreamlineWrapper *
 
     for (int i = 1; i < v.size(); i++)
     {
-        std::list<avtIVPStep*>::reverse_iterator si;
+        std::vector<avtIVPStep*>::reverse_iterator si;
         for (si = v[i]->sl->_steps.rbegin(); si != v[i]->sl->_steps.rend(); si++)
         {
             avtIVPStep *step = new avtIVPStep(*(*si));
-            s->sl->_steps.push_front(step);
+            s->sl->_steps.insert(s->sl->_steps.begin(), step);
         }
         
         delete v[i];
