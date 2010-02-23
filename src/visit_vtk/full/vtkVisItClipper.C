@@ -561,9 +561,7 @@ vtkVisItClipper::StructuredGridExecute(void)
             unsigned char shapeType = *splitCase++;
             {
                 int npts;
-                int interpIDIn = -1;
-                int interpIDOut = -1;
-                int interpIDtmp = -1;
+                int interpID = -1;
                 int color    = -1;
                 switch (shapeType)
                 {
@@ -600,7 +598,7 @@ vtkVisItClipper::StructuredGridExecute(void)
                     color = *splitCase++;
                     break;
                   case ST_PNT:
-                    interpIDtmp = *splitCase++;
+                    interpID = *splitCase++;
                     color    = *splitCase++;
                     npts     = *splitCase++;
                     break;
@@ -625,10 +623,6 @@ vtkVisItClipper::StructuredGridExecute(void)
                         continue;
                     }
                 }
-                if (useVFV == &vfvIn)
-                    interpIDIn = interpIDtmp;
-                else
-                    interpIDOut = interpIDtmp;
 
                 int shape[8];
                 for (int p = 0 ; p < npts ; p++)
@@ -722,10 +716,9 @@ vtkVisItClipper::StructuredGridExecute(void)
                     useVFV->AddVertex(cellId, shape[0]);
                     break;
                   case ST_PNT:
-                    if (useVFV == &vfvIn)
-                        interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
-                    else
-                        interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
+                    interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
+                    if (computeInsideAndOut)
+                        interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
                     break;
                 }
             }
@@ -894,9 +887,7 @@ void vtkVisItClipper::RectilinearGridExecute(void)
             unsigned char shapeType = *splitCase++;
             {
                 int npts;
-                int interpIDIn = -1;
-                int interpIDOut = -1;
-                int interpIDtmp = -1;
+                int interpID = -1;
                 int color    = -1;
                 switch (shapeType)
                 {
@@ -933,7 +924,7 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                     color = *splitCase++;
                     break;
                   case ST_PNT:
-                    interpIDtmp = *splitCase++;
+                    interpID = *splitCase++;
                     color    = *splitCase++;
                     npts     = *splitCase++;
                     break;
@@ -958,10 +949,6 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                         continue;
                     }
                 }
-                if (useVFV == &vfvIn)
-                    interpIDIn = interpIDtmp;
-                else
-                    interpIDOut = interpIDtmp;
 
                 int shape[8];
                 for (int p = 0 ; p < npts ; p++)
@@ -1069,10 +1056,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                     useVFV->AddVertex(cellId, shape[0]);
                     break;
                   case ST_PNT:
-                    if (useVFV == &vfvIn)
-                        interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
-                    else
-                        interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
+                    interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
+                    if (computeInsideAndOut)
+                        interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
                     break;
                 }
             }
@@ -1315,9 +1301,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                 unsigned char shapeType = *splitCase++;
                 {
                     int npts;
-                    int interpIDIn = -1;
-                    int interpIDOut = -1;
-                    int interpIDtmp = -1;
+                    int interpID = -1;
                     int color    = -1;
                     switch (shapeType)
                     {
@@ -1354,7 +1338,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         color = *splitCase++;
                         break;
                       case ST_PNT:
-                        interpIDtmp = *splitCase++;
+                        interpID = *splitCase++;
                         color    = *splitCase++;
                         npts     = *splitCase++;
                         break;
@@ -1379,10 +1363,6 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                             continue;
                         }
                     }
-                    if (useVFV == &vfvIn)
-                        interpIDIn = interpIDtmp;
-                    else
-                        interpIDOut = interpIDtmp;
 
                     int shape[8];
                     for (int p = 0 ; p < npts ; p++)
@@ -1470,10 +1450,9 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         useVFV->AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
-                        if (useVFV == &vfvIn)
-                            interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
-                        else
-                            interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
+                        interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
+                        if (computeInsideAndOut)
+                            interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
                         break;
                     }
                 }
@@ -1736,9 +1715,7 @@ void vtkVisItClipper::PolyDataExecute(void)
                 unsigned char shapeType = *splitCase++;
                 {
                     int npts;
-                    int interpIDIn = -1;
-                    int interpIDOut = -1;
-                    int interpIDtmp = -1;
+                    int interpID = -1;
                     int color    = -1;
                     switch (shapeType)
                     {
@@ -1775,7 +1752,7 @@ void vtkVisItClipper::PolyDataExecute(void)
                         color = *splitCase++;
                         break;
                       case ST_PNT:
-                        interpIDtmp = *splitCase++;
+                        interpID = *splitCase++;
                         color    = *splitCase++;
                         npts     = *splitCase++;
                         break;
@@ -1800,10 +1777,6 @@ void vtkVisItClipper::PolyDataExecute(void)
                             continue;
                         }
                     }
-                    if (useVFV == &vfvIn)
-                        interpIDIn = interpIDtmp;
-                    else
-                        interpIDOut = interpIDtmp;
 
                     int shape[8];
                     for (int p = 0 ; p < npts ; p++)
@@ -1891,10 +1864,9 @@ void vtkVisItClipper::PolyDataExecute(void)
                         useVFV->AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
-                        if (useVFV == &vfvIn)
-                            interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
-                        else
-                            interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
+                        interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
+                        if (computeInsideAndOut)
+                            interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
                         break;
                     }
                 }
