@@ -825,6 +825,15 @@
 #     Hank Childs and Paul Navratil, Sat Feb 20 17:31:54 CST 2010
 #     Fix for building Ice-T when PAR_INCLUDE has a -DDEFINE first.
 #
+#     Eric Brugger, Mon Feb 22 13:39:04 PST 2010
+#     I modified build_qt to build a 32 bit versoin of Qt if the OBJECT_MODE
+#     environment variable was 32.  I added a check to make sure that if we
+#     are building on AIX that we are using GNU tar.  I made the tar command
+#     be a variable so that it could be easily changed.  I modified the patch
+#     commands so that they would work on AIX systems.  I modified one of the
+#     mesa patches to add some AIX specific code from a later version of mesa
+#     (that Tom Fogal had contributed to mesa).
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -841,6 +850,11 @@ export BUILD_VISIT_ENV=$(env | cut -d'=' -f1 | sort | uniq)
 
 # Can cause problems in some build systems.
 unset CDPATH
+
+# Some systems tar command does not support the deep directory hierarchies
+# used in Qt, such as AIX. Gnu tar is a good alternative.
+### export TAR=/usr/local/bin/tar # Up and Purple
+export TAR=tar
 
 export OPSYS=${OPSYS:-$(uname -s)}
 export PROC=${PROC:-$(uname -p)}
@@ -917,7 +931,11 @@ elif [[ "$OPSYS" == "AIX" ]]; then
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
    export MAKE=${MAKE:-"gmake"}
    export MESA_TARGET=${MESA_TARGET:-"aix"}
-   export QT_PLATFORM=${QT_PLATFORM:-"aix-xlc-64"}
+   if [[ "$OBJECT_MODE" == 32 ]]; then
+      export QT_PLATFORM=${QT_PLATFORM:-"aix-xlc"}
+   else
+      export QT_PLATFORM=${QT_PLATFORM:-"aix-xlc-64"}
+   fi
 elif [[ "$OPSYS" == "IRIX64" ]]; then
    export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
    export SO_EXT="so"
@@ -1389,7 +1407,7 @@ function info
 
 function uncompress_untar
 {
-    # Check if GUN tar
+    # Check if GNU tar
     if [[ $(echo $1 | egrep "\.gz$" ) != "" ]] ; then
         COMPRESSTYPE="gzip"
     elif [[ $(echo $1 | egrep "\.bz2$" ) != "" ]] ; then
@@ -1400,25 +1418,25 @@ function uncompress_untar
         warn "unsupported uncompression method"
         return 1
     fi
-    TARVERSION=$(tar --version >/dev/null 2>&1)
+    TARVERSION=$($TAR --version >/dev/null 2>&1)
     if [[ $? == 0 ]] ; then
         case $COMPRESSTYPE in
-            gzip|targzip) tar zxf $1;;
-            bzip) tar jxf $1;;
+            gzip|targzip) $TAR zxf $1;;
+            bzip) $TAR jxf $1;;
         esac
     else
         case $COMPRESSTYPE in
             gzip) 
                gunzip $1
-               tar xf ${1%.gz}
+               $TAR xf ${1%.gz}
                ;;
             targzip) 
                gunzip $1
-               tar xf "${1%.tgz}.tar"
+               $TAR xf "${1%.tgz}.tar"
                ;;
             bzip)
                bunzip2 $1
-               tar xf ${1%.bz2}
+               $TAR xf ${1%.bz2}
                ;;
         esac
     fi
@@ -1726,7 +1744,7 @@ function prepare_build_dir
        fi
     elif [[ -f ${SRC_FILE%.*} ]] ; then
        info "Untarring ${SRC_FILE%.*} . . ."
-       tar xf ${SRC_FILE%.*}
+       $TAR xf ${SRC_FILE%.*}
        untarred_src=1
        if [[ $? != 0 ]] ; then
           warn \
@@ -2524,9 +2542,9 @@ function check_variables
 function apply_mesa_75_patch_1
 {
    patch -p0 <<\EOF
-diff -p -r Mesa-7.5.orig/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
-*** Mesa-7.5.orig/src/mesa/main/config.h    2009-06-26 18:41:04.000000000 -0400
---- Mesa-7.5/src/mesa/main/config.h 2009-08-13 16:38:09.000000000 -0400
+diff -c a/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
+*** a/src/mesa/main/config.h
+--- Mesa-7.5/src/mesa/main/config.h
 ***************
 *** 138,146 ****
   /** 
@@ -2560,19 +2578,20 @@ EOF
 function apply_mesa_75_patch_2
 {
     patch -p0 <<\EOF
-diff --git a/configure.ac b/configure.ac
-index 7518976..44fb779 100644
---- a/configure.ac
-+++ Mesa-7.5/configure.ac
-@@ -230,6 +230,8 @@ else
-         LIB_EXTENSION='dylib' ;;
-     cygwin* )
-         LIB_EXTENSION='dll' ;;
-+    aix* )
-+        LIB_EXTENSION='a' ;;
-     * )
-         LIB_EXTENSION='so' ;;
-     esac
+diff -c a/configure.ac Mesa-7.5/configure.ac
+*** a/configure.ac
+--- Mesa-7.5/configure.ac
+***************
+*** 224,229 ****
+--- 224,231 ----
+          LIB_EXTENSION='dylib' ;;
+      cygwin* )
+          LIB_EXTENSION='dll' ;;
++     aix* )
++         LIB_EXTENSION='a' ;;
+      * )
+          LIB_EXTENSION='so' ;;
+      esac
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -2586,52 +2605,69 @@ EOF
 function apply_mesa_75_patch_3
 {
     patch -p0 <<\EOF
-diff --git a/progs/Makefile b/progs/Makefile
-index c99f4ee..064e5a2 100644
---- a/progs/Makefile
-+++ Mesa-7.5/progs/Makefile
-@@ -4,7 +4,7 @@ TOP = ..
- 
- include $(TOP)/configs/current
- 
--SUBDIRS = $(PROGRAM_DIRS)
-+SUBDIRS ="$(PROGRAM_DIRS)"
- 
- 
- default: message subdirs
-@@ -15,18 +15,22 @@ message:
- 
- 
- subdirs:
--	@for dir in $(SUBDIRS) ; do \
--		if [ -d $$dir ] ; then \
--			(cd $$dir && $(MAKE)) || exit 1 ; \
--		fi \
--	done
-+	@if test -n "$(SUBDIRS)" ; then \
-+		for dir in $(SUBDIRS) ; do \
-+			if [ -d $$dir ] ; then \
-+				(cd $$dir && $(MAKE)) || exit 1 ; \
-+			fi \
-+		done \
-+	fi
- 
- # Dummy install target
- install:
- 
- clean:
--	-@for dir in $(SUBDIRS) tests ; do \
--		if [ -d $$dir ] ; then \
--			(cd $$dir && $(MAKE) clean) ; \
--		fi \
--	done
-+	-@if test -n "$(SUBDIRS)" ; then \
-+		for dir in $(SUBDIRS) tests ; do \
-+			if [ -d $$dir ] ; then \
-+				(cd $$dir && $(MAKE) clean) ; \
-+			fi \
-+		done \
-+	fi
+diff -c a/progs/Makefile Mesa-7.5/progs/Makefile
+*** a/progs/Makefile
+--- Mesa-7.5/progs/Makefile
+***************
+*** 4,10 ****
+  
+  include $(TOP)/configs/current
+  
+! SUBDIRS = $(PROGRAM_DIRS)
+  
+  
+  default: message subdirs
+--- 4,10 ----
+  
+  include $(TOP)/configs/current
+  
+! SUBDIRS ="$(PROGRAM_DIRS)"
+  
+  
+  default: message subdirs
+***************
+*** 15,32 ****
+  
+  
+  subdirs:
+! 	@for dir in $(SUBDIRS) ; do \
+! 		if [ -d $$dir ] ; then \
+! 			(cd $$dir && $(MAKE)) || exit 1 ; \
+! 		fi \
+! 	done
+  
+  # Dummy install target
+  install:
+  
+  clean:
+! 	-@for dir in $(SUBDIRS) tests ; do \
+! 		if [ -d $$dir ] ; then \
+! 			(cd $$dir && $(MAKE) clean) ; \
+! 		fi \
+! 	done
+--- 15,36 ----
+  
+  
+  subdirs:
+! 	@if test -n "$(SUBDIRS)" ; then \
+! 		for dir in $(SUBDIRS) ; do \
+! 			if [ -d $$dir ] ; then \
+! 				(cd $$dir && $(MAKE)) || exit 1 ; \
+! 			fi \
+! 		done \
+! 	fi
+  
+  # Dummy install target
+  install:
+  
+  clean:
+! 	-@if test -n "$(SUBDIRS)" ; then \
+! 		for dir in $(SUBDIRS) tests ; do \
+! 			if [ -d $$dir ] ; then \
+! 				(cd $$dir && $(MAKE) clean) ; \
+! 			fi \
+! 		done \
+! 	fi
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -2646,19 +2682,31 @@ EOF
 function apply_mesa_75_patch_4
 {
     patch -p0 <<\EOF
-diff --git a/src/mesa/main/compiler.h b/src/mesa/main/compiler.h
-index 380663e..4f1df92 100644
---- a/src/mesa/main/compiler.h
-+++ Mesa-7.5/src/mesa/main/compiler.h
-@@ -234,6 +234,8 @@ extern "C" {
- #elif defined(__APPLE__)
- #include <CoreFoundation/CFByteOrder.h>
- #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
-+#elif defined(_AIX)
-+#define CPU_TO_LE32( x )	( x )
- #else /*__linux__ __APPLE__*/
- #include <sys/endian.h>
- #define CPU_TO_LE32( x )	bswap32( x )
+diff -c a/src/mesa/main/compiler.h Mesa-7.5/src/mesa/main/compiler.h
+*** a/src/mesa/main/compiler.h
+--- Mesa-7.5/src/mesa/main/compiler.h
+***************
+*** 233,239 ****
+  #elif defined(__APPLE__)
+  #include <CoreFoundation/CFByteOrder.h>
+  #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
+! #else /*__linux__ __APPLE__*/
+  #include <sys/endian.h>
+  #define CPU_TO_LE32( x )	bswap32( x )
+  #endif /*__linux__*/
+--- 233,244 ----
+  #elif defined(__APPLE__)
+  #include <CoreFoundation/CFByteOrder.h>
+  #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
+! #elif defined(_AIX)
+! #define CPU_TO_LE32( x )	x = ((x & 0x000000ff) << 24) | \
+! 				    ((x & 0x0000ff00) <<  8) | \
+! 				    ((x & 0x00ff0000) >>  8) | \
+! 				    ((x & 0xff000000) >> 24);
+! #else /*__linux__*/
+  #include <sys/endian.h>
+  #define CPU_TO_LE32( x )	bswap32( x )
+  #endif /*__linux__*/
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -3063,9 +3111,9 @@ function build_qt
 function apply_cmake_245_aix_patch
 {
    patch -p0 <<\EOF
-diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
-*** cmake-2.4.5.orig/Utilities/cmzlib/zconf.h	Mon Dec  4 08:04:11 2006
---- cmake-2.4.5/Utilities/cmzlib/zconf.h	Mon May 21 15:59:54 2007
+diff -c a/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
+*** a/Utilities/cmzlib/zconf.h
+--- cmake-2.4.5/Utilities/cmzlib/zconf.h
 ***************
 *** 89,100 ****
   #  endif
@@ -3189,17 +3237,19 @@ function build_cmake
 function apply_vtk_500d_generic_patch_1
 {
   patch -p0 << \EOF
-diff -rp VTK/Utilities/DICOMParser/DICOMParser.cxx.orig VTK/Utilities/DICOMParser/DICOMParser.cxx
---- VTK/Utilities/DICOMParser/DICOMParser.cxx.orig        2008-08-18 11:31:49.000000000 -0600
-+++ VTK/Utilities/DICOMParser/DICOMParser.cxx     2008-08-18 11:33:17.000000000 -0600
-@@ -37,6 +37,7 @@
- #endif
-
- #include <string>
-+#include <string.h>
- #include <map>
-
- #include "DICOMConfig.h"
+diff -c a/Utilities/DICOMParser/DICOMParser.cxx VTK/Utilities/DICOMParser/DICOMParser.cxx
+*** a/Utilities/DICOMParser/DICOMParser.cxx
+--- VTK/Utilities/DICOMParser/DICOMParser.cxx
+***************
+*** 37,42 ****
+--- 37,43 ----
+  #endif
+  
+  #include <string>
++ #include <string.h>
+  #include <map>
+  
+  #include "DICOMConfig.h"
 EOF
   if [[ $? != 0 ]] ; then
      warn "Unable to patch VTK. Wrong version?"
@@ -3212,15 +3262,19 @@ EOF
 function apply_vtk_500d_generic_patch_2
 {
    patch -p0 << \EOF
---- VTK/Utilities/DICOMParser/DICOMAppHelper.cxx.orig   2008-08-18 12:13:40.000000000 -0600
-+++ VTK/Utilities/DICOMParser/DICOMAppHelper.cxx        2008-08-18 12:14:03.000000000 -0600
-@@ -32,6 +32,7 @@
- #include <stdlib.h>
- #include <stdio.h>
- #include <string>
-+#include <string.h>
- #include <math.h>
- #include <algorithm>
+diff -c a/Utilities/DICOMParser/DICOMAppHelper.cxx VTK/Utilities/DICOMParser/DICOMAppHelper.cxx
+*** a/Utilities/DICOMParser/DICOMAppHelper.cxx
+--- VTK/Utilities/DICOMParser/DICOMAppHelper.cxx
+***************
+*** 32,37 ****
+--- 32,38 ----
+  #include <stdlib.h>
+  #include <stdio.h>
+  #include <string>
++ #include <string.h>
+  #include <math.h>
+  #include <algorithm>
+  
 EOF
    if [[ $? != 0 ]] ; then
       warn "Unable to patch VTK. Wrong version?"
@@ -3231,16 +3285,19 @@ EOF
 function apply_vtk_500d_generic_patch_3
 {
    patch -p0 << \EOF
---- VTK/Utilities/DICOMParser/DICOMFile.cxx.orig        2008-08-18 12:14:23.000000000 -0600
-+++ VTK/Utilities/DICOMParser/DICOMFile.cxx     2008-08-18 12:13:13.000000000 -0600
-@@ -24,6 +24,7 @@
-
- #include <stdio.h>
- #include <string>
-+#include <string.h>
-
- #include "DICOMConfig.h"
- #include "DICOMFile.h"
+diff -c a/Utilities/DICOMParser/DICOMFile.cxx VTK/Utilities/DICOMParser/DICOMFile.cxx
+*** a/Utilities/DICOMParser/DICOMFile.cxx
+--- VTK/Utilities/DICOMParser/DICOMFile.cxx
+***************
+*** 24,29 ****
+--- 24,30 ----
+  
+  #include <stdio.h>
+  #include <string>
++ #include <string.h>
+  
+  #include "DICOMConfig.h"
+  #include "DICOMFile.h"
 EOF
     if [[ $? != 0 ]] ; then
        warn "Unable to patch VTK. Wrong version?"
@@ -3251,9 +3308,9 @@ EOF
 function apply_vtk_500d_darwin_patch
 {
    patch -p0 << \EOF
-diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
-*** VTK.orig/CMakeLists.txt     Mon Mar 26 14:28:51 2007
---- VTK/CMakeLists.txt  Wed Apr 25 15:41:25 2007
+diff -rp a/CMakeLists.txt VTK/CMakeLists.txt
+*** a/CMakeLists.txt
+--- VTK/CMakeLists.txt
 *************** ELSE(CMAKE_COMPILER_IS_GNUCXX)
 *** 302,312 ****
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
@@ -3280,9 +3337,9 @@ diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
         SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
       ENDIF(VTK_USE_CARBON)
 --- 1352,1357 ----
-diff -rp VTK.orig/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
-*** VTK.orig/Rendering/vtkImagingFactory.cxx    Mon Mar 26 13:25:40 2007
---- VTK/Rendering/vtkImagingFactory.cxx Wed Apr 25 15:56:01 2007
+diff -rp a/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
+*** a/Rendering/vtkImagingFactory.cxx
+--- VTK/Rendering/vtkImagingFactory.cxx
 *************** vtkObject* vtkImagingFactory::CreateInst
 *** 202,215 ****
 --- 202,233 ----
@@ -3318,9 +3375,9 @@ diff -rp VTK.orig/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactor
         return vtkOpenGLPolyDataMapper2D::New();
         }
       }
-diff -rp VTK.orig/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.txt
-*** VTK.orig/Utilities/ftgl/CMakeLists.txt      Mon Mar 26 13:26:34 2007
---- VTK/Utilities/ftgl/CMakeLists.txt   Wed Apr 25 15:46:53 2007
+diff -rp a/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.txt
+*** a/Utilities/ftgl/CMakeLists.txt
+--- VTK/Utilities/ftgl/CMakeLists.txt
 *************** IF(NOT OPENGL_FOUND)
 *** 134,144 ****
   ENDIF(NOT OPENGL_FOUND)
@@ -3356,9 +3413,9 @@ EOF
    VER=$(uname -r)
    if (( ${VER%%.*} < 7 )) ; then
        patch -p0 << \EOF
-diff -rp VTK.orig/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRenderWindow.cxx
-*** VTK.orig/Rendering/vtkCarbonRenderWindow.cxx      Wed Aug 31 11:39:33 2005
---- VTK/Rendering/vtkCarbonRenderWindow.cxx   Wed Aug 15 17:57:10 2007
+diff -rp a/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRenderWindow.cxx
+*** a/Rendering/vtkCarbonRenderWindow.cxx
+--- VTK/Rendering/vtkCarbonRenderWindow.cxx
 *************** void vtkCarbonRenderWindow::CreateAWindo
 *** 737,743 ****
         ShowWindow(this->RootWindow);
@@ -3892,9 +3949,9 @@ function apply_python_25_darwin_patch
    VER=$(uname -r)
    if (( ${VER%%.*} < 7 )) ; then
       patch -p0 << \EOF
-diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
-*** Python-2.5.orig/Modules/getpath.c Sun Jul  9 18:18:57 2006
---- Python-2.5/Modules/getpath.c      Wed Aug 15 18:25:14 2007
+diff -rp a/Modules/getpath.c Python-2.5/Modules/getpath.c
+*** a/Modules/getpath.c
+--- Python-2.5/Modules/getpath.c
 ***************
 *** 3,8 ****
 --- 3,9 ----
@@ -4443,9 +4500,9 @@ function build_hdf5
 function apply_mili_110_darwin_patch
 {
    patch -p0 << \EOF
-diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
-*** mili.orig/src/mili_internal.h       Thu Oct 12 14:31:40 2006
---- mili/src/mili_internal.h    Thu Mar 22 16:39:39 2007
+diff -c a/src/mili_internal.h mili/src/mili_internal.h
+*** a/src/mili_internal.h
+--- mili/src/mili_internal.h
 ***************
 *** 54,59 ****
 --- 54,60 ----
@@ -6170,10 +6227,10 @@ function build_exodus
 function apply_boxlib_25_aix_patch
 {
    patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile	Sun Jul 22 21:32:20 2001
---- CCSEApps/BoxLib/GNUmakefile	Fri May 18 15:54:14 2007
-*************** PBOXLIB_HOME = ..
+diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** a/BoxLib/GNUmakefile
+--- CCSEApps/BoxLib/GNUmakefile
+***************
 *** 7,16 ****
   TOP = $(PBOXLIB_HOME)
   
@@ -6209,9 +6266,9 @@ EOF
 function apply_boxlib_25_gcc_patch
 {
     patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile    Sun Jul 22 21:32:20 2001
---- CCSEApps/BoxLib/GNUmakefile Fri May 18 15:54:14 2007
+diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** a/BoxLib/GNUmakefile
+--- CCSEApps/BoxLib/GNUmakefile
 *************** PBOXLIB_HOME = ..
 *** 7,16 ****
   TOP = $(PBOXLIB_HOME)
@@ -6247,9 +6304,9 @@ EOF
 function apply_boxlib_25_darwin_patch
 {
    patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
-*** CCSEApps.orig/BoxLib/BaseFab.cpp	Wed Mar 19 10:11:09 2003
---- CCSEApps/BoxLib/BaseFab.cpp	Fri Apr 27 15:09:29 2007
+diff -rp a/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
+*** a/BoxLib/BaseFab.cpp
+--- CCSEApps/BoxLib/BaseFab.cpp
 ***************
 *** 28,34 ****
   #include <BArena.H>
@@ -6418,9 +6475,9 @@ diff -rp CCSEApps.orig/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
 ! //    }
   }
   #endif
-diff -rp CCSEApps.orig/BoxLib/FPC.cpp CCSEApps/BoxLib/FPC.cpp
-*** CCSEApps.orig/BoxLib/FPC.cpp	Wed Jan 11 11:13:06 2006
---- CCSEApps/BoxLib/FPC.cpp	Fri Apr 27 15:06:49 2007
+diff -c a/BoxLib/FPC.cpp CCSEApps/BoxLib/FPC.cpp
+*** a/BoxLib/FPC.cpp
+--- CCSEApps/BoxLib/FPC.cpp
 *************** FPC::NativeLongDescriptor ()
 *** 64,70 ****
   #endif
@@ -6472,9 +6529,9 @@ diff -rp CCSEApps.orig/BoxLib/FPC.cpp CCSEApps/BoxLib/FPC.cpp
         defined(__i486__)   || \
         defined(i386)       || \
         defined(__i386__)   || \
-diff -rp CCSEApps.orig/BoxLib/Make.package CCSEApps/BoxLib/Make.package
-*** CCSEApps.orig/BoxLib/Make.package	Thu Nov 14 10:43:29 2002
---- CCSEApps/BoxLib/Make.package	Fri Apr 27 15:11:01 2007
+diff -c a/BoxLib/Make.package CCSEApps/BoxLib/Make.package
+*** a/BoxLib/Make.package
+--- CCSEApps/BoxLib/Make.package
 *************** T_headers += ccse-mpi.H
 *** 91,99 ****
   # Fortran interface routines.
@@ -6671,9 +6728,9 @@ function change_boxlib_dim_using_patches
        if [[ "$OPSYS" == "AIX" ]]; then
           info "PATCHING AIX"
           patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
---- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
+diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** a/BoxLib/GNUmakefile
+--- CCSEApps/BoxLib/GNUmakefile
 *************** TOP = $(PBOXLIB_HOME)
 *** 8,14 ****
   
@@ -6695,9 +6752,9 @@ EOF
        else
           info "PATCHING GCC"
           patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
---- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
+diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** a/BoxLib/GNUmakefile
+--- CCSEApps/BoxLib/GNUmakefile
 *************** TOP = $(PBOXLIB_HOME)
 *** 8,14 ****
   
@@ -6806,7 +6863,7 @@ function build_boxlib
     else
        cp libbox3d*.a \
        "$VISITDIR/boxlib/$VISITARCH/lib/libbox3D.a"
-       tar cf Boxlib3D.h.tar *.H
+       $TAR cf Boxlib3D.h.tar *.H
        if [[ $? != 0 ]] ; then
           warn "Boxlib install failed.  Giving up"
           return 1
@@ -6854,11 +6911,11 @@ function build_boxlib
         rm *.o
         cd ..
         rmdir tmp
-        tar cf Boxlib2D.h.tar *.H
+        $TAR cf Boxlib2D.h.tar *.H
     else
         cp libbox2d*.a \
         "$VISITDIR/boxlib/$VISITARCH/lib/libbox2D.a"
-        tar cf Boxlib2D.h.tar *.H
+        $TAR cf Boxlib2D.h.tar *.H
         if [[ $? != 0 ]] ; then
           warn "Boxlib install failed.  Giving up"
           return 1
@@ -7097,8 +7154,8 @@ $LD_LIBRARY_PATH
 function apply_ccmio_261_darwin_patch
 {
    patch -p0 << \EOF
-diff -rp libccmio-2.6.1.orig/config/config.gnu.to.star libccmio-2.6.1/config/config.gnu.to.star
-*** libccmio-2.6.1.orig/config/config.gnu.to.star
+diff -c a/config/config.gnu.to.star libccmio-2.6.1/config/config.gnu.to.star
+*** a/config/config.gnu.to.star
 --- libccmio-2.6.1/config/config.gnu.to.star
 *************** case ${1:-null}-${2:-null} in
 *** 34,39 ****
@@ -7110,8 +7167,8 @@ diff -rp libccmio-2.6.1.orig/config/config.gnu.to.star libccmio-2.6.1/config/con
       *)                                 echo unknown                         ;;
   esac
   
-diff -rp libccmio-2.6.1.orig/config/config.system libccmio-2.6.1/config/config.system 
-*** libccmio-2.6.1.orig/config/config.system
+diff -c a/config/config.system libccmio-2.6.1/config/config.system 
+*** a/config/config.system
 --- libccmio-2.6.1/config/config.system
 *************** case ${SYSTEM} in
 *** 85,93 ****
@@ -7473,7 +7530,7 @@ function build_fastbit
        fi
     elif [[ -f ${FASTBIT_FILE%.*} ]] ; then
        info_box "Tarring ${FASTBIT_FILE%.*} . . ." 1>&3
-       tar xf ${FASTBIT_FILE%.*}
+       $TAR xf ${FASTBIT_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
 "Unable to untar ${FASTBIT_FILE%.*}.  Corrupted file or out of space on device?"
@@ -8172,7 +8229,7 @@ function build_visit
            fi
         elif [[ -f ${VISIT_FILE%.*} ]] ; then
            info "Unzipping ${VISIT_FILE%.*} . . ."
-           tar xf ${VISIT_FILE%.*}
+           $TAR xf ${VISIT_FILE%.*}
            if [[ $? != 0 ]] ; then
               warn  \
 "Unable to untar ${VISIT_FILE%.*}.  Corrupted file or out of space on device?"
@@ -8882,6 +8939,19 @@ if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
 #    ON_MILI="on"
 #    DO_VISUS="yes"
 #    ON_VISUS="on"
+fi
+
+#
+# If we are AIX, make sure we are using GNU tar.
+#
+if [[ "$OPSYS" == "AIX" ]]; then
+    TARVERSION=$($TAR --version >/dev/null 2>&1)
+    if [[ $? != 0 ]] ; then
+        echo "Error in build process. You are using the system tar on AIX."
+        echo "Change the TAR variable in the script to the location of the"
+        echo "GNU tar command."
+        exit 1
+    fi
 fi
 
 # Show a splashscreen. This routine also determines if we have "dialog"
