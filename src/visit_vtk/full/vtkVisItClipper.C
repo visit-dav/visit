@@ -461,6 +461,11 @@ vtkVisItClipper::Execute()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code to adjust percent to new percent consistent with zero
 //    crossing of implicit func.
+//
+//    Jeremy Meredith, Tue Feb 23 10:53:46 EST 2010
+//    Added ability to compute inside and outside in one pass
+//    (logic copied from unstructured grid execution).
+//
 // ****************************************************************************
 
 void
@@ -483,7 +488,9 @@ vtkVisItClipper::StructuredGridExecute(void)
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
                          : CellListSize*5 + 100);
 
-    vtkVolumeFromVolume vfv(sg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvIn(sg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvOut(sg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume *useVFV;
 
     float *pts_ptr = (float *) inPts->GetVoidPointer(0);
 
@@ -536,7 +543,6 @@ vtkVisItClipper::StructuredGridExecute(void)
 
         unsigned char *splitCase;
         int            numOutput;
-        int            interpIDs[4];
         if (twoD)
         {
             splitCase = &clipShapesQua[startClipShapesQua[lookup_case]];
@@ -548,12 +554,16 @@ vtkVisItClipper::StructuredGridExecute(void)
             numOutput = numClipShapesHex[lookup_case];
         }
 
+        int            interpIDsIn[4];
+        int            interpIDsOut[4];
         for (j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;
             {
                 int npts;
-                int interpID = -1;
+                int interpIDIn = -1;
+                int interpIDOut = -1;
+                int interpIDtmp = -1;
                 int color    = -1;
                 switch (shapeType)
                 {
@@ -590,7 +600,7 @@ vtkVisItClipper::StructuredGridExecute(void)
                     color = *splitCase++;
                     break;
                   case ST_PNT:
-                    interpID = *splitCase++;
+                    interpIDtmp = *splitCase++;
                     color    = *splitCase++;
                     npts     = *splitCase++;
                     break;
@@ -600,13 +610,25 @@ vtkVisItClipper::StructuredGridExecute(void)
                                "the ClipCases.");
                 }
 
+                useVFV = &vfvIn;
                 if ((!insideOut && color == COLOR0) ||
                     ( insideOut && color == COLOR1))
                 {
-                    // We don't want this one; it's the wrong side.
-                    splitCase += npts;
-                    continue;
+                    if (computeInsideAndOut)
+                    {
+                        useVFV = &vfvOut;
+                    }
+                    else
+                    {
+                        // We don't want this one; it's the wrong side.
+                        splitCase += npts;
+                        continue;
+                    }
                 }
+                if (useVFV == &vfvIn)
+                    interpIDIn = interpIDtmp;
+                else
+                    interpIDOut = interpIDtmp;
 
                 int shape[8];
                 for (int p = 0 ; p < npts ; p++)
@@ -651,11 +673,14 @@ vtkVisItClipper::StructuredGridExecute(void)
                             AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
                                 clipFunction, &percent);
                                 
-                        shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
+                        shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
                     }
                     else if (pt >= N0 && pt <= N3)
                     {
-                        shape[p] = interpIDs[pt - N0];
+                        if (useVFV == &vfvIn)
+                            shape[p] = interpIDsIn[pt - N0];
+                        else
+                            shape[p] = interpIDsOut[pt - N0];
                     }
                     else
                     {
@@ -668,36 +693,39 @@ vtkVisItClipper::StructuredGridExecute(void)
                 switch (shapeType)
                 {
                   case ST_HEX:
-                    vfv.AddHex(cellId,
+                    useVFV->AddHex(cellId,
                                shape[0], shape[1], shape[2], shape[3],
                                shape[4], shape[5], shape[6], shape[7]);
                     break;
                   case ST_WDG:
-                    vfv.AddWedge(cellId,
+                    useVFV->AddWedge(cellId,
                                  shape[0], shape[1], shape[2],
                                  shape[3], shape[4], shape[5]);
                     break;
                   case ST_PYR:
-                    vfv.AddPyramid(cellId, shape[0], shape[1],
+                    useVFV->AddPyramid(cellId, shape[0], shape[1],
                                    shape[2], shape[3], shape[4]);
                     break;
                   case ST_TET:
-                    vfv.AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
+                    useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
                     break;
                   case ST_QUA:
-                    vfv.AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
+                    useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
                     break;
                   case ST_TRI:
-                    vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
+                    useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
                     break;
                   case ST_LIN:
-                    vfv.AddLine(cellId, shape[0], shape[1]);
+                    useVFV->AddLine(cellId, shape[0], shape[1]);
                     break;
                   case ST_VTX:
-                    vfv.AddVertex(cellId, shape[0]);
+                    useVFV->AddVertex(cellId, shape[0]);
                     break;
                   case ST_PNT:
-                    interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
+                    if (useVFV == &vfvIn)
+                        interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
+                    else
+                        interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
                     break;
                 }
             }
@@ -705,7 +733,13 @@ vtkVisItClipper::StructuredGridExecute(void)
         }
     }
 
-    vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+    vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
+    if (computeInsideAndOut)
+    {
+        if (otherOutput) otherOutput->Delete();
+        otherOutput = vtkUnstructuredGrid::New();
+        vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
+    }
 }
 
 // ****************************************************************************
@@ -760,6 +794,10 @@ vtkVisItClipper::StructuredGridExecute(void)
 //    Fixed case where new points were created but not required resulting
 //    in duplicate points and bad connectivity.
 //
+//    Jeremy Meredith, Tue Feb 23 10:53:46 EST 2010
+//    Added ability to compute inside and outside in one pass
+//    (logic copied from unstructured grid execution).
+//
 // ****************************************************************************
 
 void vtkVisItClipper::RectilinearGridExecute(void)
@@ -783,7 +821,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
                          : CellListSize*5 + 100);
 
-    vtkVolumeFromVolume vfv(rg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvIn(rg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvOut(rg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume *useVFV;
 
     int cell_dims[3];
     cell_dims[0] = pt_dims[0]-1;
@@ -836,7 +876,6 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 
         unsigned char *splitCase;
         int            numOutput;
-        int            interpIDs[4];
         if (twoD)
         {
             splitCase = &clipShapesQua[startClipShapesQua[lookup_case]];
@@ -848,12 +887,16 @@ void vtkVisItClipper::RectilinearGridExecute(void)
             numOutput = numClipShapesHex[lookup_case];
         }
 
+        int            interpIDsIn[4];
+        int            interpIDsOut[4];
         for (j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;
             {
                 int npts;
-                int interpID = -1;
+                int interpIDIn = -1;
+                int interpIDOut = -1;
+                int interpIDtmp = -1;
                 int color    = -1;
                 switch (shapeType)
                 {
@@ -890,7 +933,7 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                     color = *splitCase++;
                     break;
                   case ST_PNT:
-                    interpID = *splitCase++;
+                    interpIDtmp = *splitCase++;
                     color    = *splitCase++;
                     npts     = *splitCase++;
                     break;
@@ -900,13 +943,25 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                                "the ClipCases.");
                 }
 
+                useVFV = &vfvIn;
                 if ((!insideOut && color == COLOR0) ||
                     ( insideOut && color == COLOR1))
                 {
-                    // We don't want this one; it's the wrong side.
-                    splitCase += npts;
-                    continue;
+                    if (computeInsideAndOut)
+                    {
+                        useVFV = &vfvOut;
+                    }
+                    else
+                    {
+                        // We don't want this one; it's the wrong side.
+                        splitCase += npts;
+                        continue;
+                    }
                 }
+                if (useVFV == &vfvIn)
+                    interpIDIn = interpIDtmp;
+                else
+                    interpIDOut = interpIDtmp;
 
                 int shape[8];
                 for (int p = 0 ; p < npts ; p++)
@@ -965,11 +1020,14 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                         else if( percent == 0.0)
                             shape[p] = ptId2;
                         else
-                            shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
+                            shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
                     }
                     else if (pt >= N0 && pt <= N3)
                     {
-                        shape[p] = interpIDs[pt - N0];
+                        if (useVFV == &vfvIn)
+                            shape[p] = interpIDsIn[pt - N0];
+                        else
+                            shape[p] = interpIDsOut[pt - N0];
                     }
                     else
                     {
@@ -982,43 +1040,52 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                 switch (shapeType)
                 {
                   case ST_HEX:
-                    vfv.AddHex(cellId,
+                    useVFV->AddHex(cellId,
                                shape[0], shape[1], shape[2], shape[3],
                                shape[4], shape[5], shape[6], shape[7]);
                     break;
                   case ST_WDG:
-                    vfv.AddWedge(cellId,
+                    useVFV->AddWedge(cellId,
                                  shape[0], shape[1], shape[2],
                                  shape[3], shape[4], shape[5]);
                     break;
                   case ST_PYR:
-                    vfv.AddPyramid(cellId, shape[0], shape[1],
+                    useVFV->AddPyramid(cellId, shape[0], shape[1],
                                    shape[2], shape[3], shape[4]);
                     break;
                   case ST_TET:
-                    vfv.AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
+                    useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
                     break;
                   case ST_QUA:
-                    vfv.AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
+                    useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
                     break;
                   case ST_TRI:
-                    vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
+                    useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
                     break;
                   case ST_LIN:
-                    vfv.AddLine(cellId, shape[0], shape[1]);
+                    useVFV->AddLine(cellId, shape[0], shape[1]);
                     break;
                   case ST_VTX:
-                    vfv.AddVertex(cellId, shape[0]);
+                    useVFV->AddVertex(cellId, shape[0]);
                     break;
                   case ST_PNT:
-                    interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
+                    if (useVFV == &vfvIn)
+                        interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
+                    else
+                        interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
                     break;
                 }
             }
         }
     }
 
-    vfv.ConstructDataSet(inPD, inCD, output, pt_dims, X, Y, Z);
+    vfvIn.ConstructDataSet(inPD, inCD, output, pt_dims, X, Y, Z);
+    if (computeInsideAndOut)
+    {
+        if (otherOutput) otherOutput->Delete();
+        otherOutput = vtkUnstructuredGrid::New();
+        vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pt_dims, X, Y, Z);
+    }
 }
 
 // ****************************************************************************
@@ -1071,6 +1138,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //    Kathleen Bonnell, Wed Apr  9 09:01:20 PDT 2008 
 //    Initialize interpIDtmp, so it will not be used before being set.
 //
+//    Jeremy Meredith, Tue Feb 23 10:55:05 EST 2010
+//    Small renamings in inside+outside logic for consistency .
+//
 // ****************************************************************************
 
 void vtkVisItClipper::UnstructuredGridExecute(void)
@@ -1099,7 +1169,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
                          : CellListSize*5 + 100);
 
-    vtkVolumeFromVolume vfv(ug->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvIn(ug->GetNumberOfPoints(), ptSizeGuess);
     vtkVolumeFromVolume vfvOut(ug->GetNumberOfPoints(), ptSizeGuess);
     vtkVolumeFromVolume *useVFV;
 
@@ -1238,14 +1308,14 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                 break;
             }
 
-            int            interpIDs[4];
+            int            interpIDsIn[4];
             int            interpIDsOut[4];
             for (j = 0 ; j < numOutput ; j++)
             {
                 unsigned char shapeType = *splitCase++;
                 {
                     int npts;
-                    int interpID = -1;
+                    int interpIDIn = -1;
                     int interpIDOut = -1;
                     int interpIDtmp = -1;
                     int color    = -1;
@@ -1294,7 +1364,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                                    "the ClipCases.");
                     }
 
-                    useVFV = &vfv;
+                    useVFV = &vfvIn;
                     if ((!insideOut && color == COLOR0) ||
                         ( insideOut && color == COLOR1))
                     {
@@ -1309,8 +1379,8 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                             continue;
                         }
                     }
-                    if (useVFV == &vfv)
-                        interpID = interpIDtmp;
+                    if (useVFV == &vfvIn)
+                        interpIDIn = interpIDtmp;
                     else
                         interpIDOut = interpIDtmp;
 
@@ -1355,8 +1425,8 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         }
                         else if (pt >= N0 && pt <= N3)
                         {
-                            if (useVFV == &vfv)
-                                shape[p] = interpIDs[pt - N0];
+                            if (useVFV == &vfvIn)
+                                shape[p] = interpIDsIn[pt - N0];
                             else
                                 shape[p] = interpIDsOut[pt - N0];
                         }
@@ -1400,8 +1470,8 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         useVFV->AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
-                        if (useVFV == &vfv)
-                            interpIDs[interpID] = useVFV->AddCentroidPoint(npts, shape);
+                        if (useVFV == &vfvIn)
+                            interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
                         else
                             interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
                         break;
@@ -1428,7 +1498,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
         ClipDataset(stuff_I_cant_clip, not_from_zoo);
         
         vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-        vfv.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+        vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
 
         vtkAppendFilter *appender = vtkAppendFilter::New();
         appender->AddInput(not_from_zoo);
@@ -1459,7 +1529,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
     }
     else
     {
-        vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+        vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
         if (computeInsideAndOut)
         {
             if (otherOutput) otherOutput->Delete();
@@ -1502,6 +1572,10 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
 //    Added code to adjust percent to new percent consistent with zero
 //    crossing of implicit func.
 //
+//    Jeremy Meredith, Tue Feb 23 10:53:46 EST 2010
+//    Added ability to compute inside and outside in one pass
+//    (logic copied from unstructured grid execution).
+//
 // ****************************************************************************
 
 void vtkVisItClipper::PolyDataExecute(void)
@@ -1530,7 +1604,9 @@ void vtkVisItClipper::PolyDataExecute(void)
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
                          : CellListSize*5 + 100);
 
-    vtkVolumeFromVolume vfv(pd->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvIn(pd->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvOut(pd->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume *useVFV;
 
     vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
     stuff_I_cant_clip->SetPoints(pd->GetPoints());
@@ -1653,13 +1729,16 @@ void vtkVisItClipper::PolyDataExecute(void)
                 break;
             }
 
-            int            interpIDs[4];
+            int            interpIDsIn[4];
+            int            interpIDsOut[4];
             for (j = 0 ; j < numOutput ; j++)
             {
                 unsigned char shapeType = *splitCase++;
                 {
                     int npts;
-                    int interpID = -1;
+                    int interpIDIn = -1;
+                    int interpIDOut = -1;
+                    int interpIDtmp = -1;
                     int color    = -1;
                     switch (shapeType)
                     {
@@ -1696,7 +1775,7 @@ void vtkVisItClipper::PolyDataExecute(void)
                         color = *splitCase++;
                         break;
                       case ST_PNT:
-                        interpID = *splitCase++;
+                        interpIDtmp = *splitCase++;
                         color    = *splitCase++;
                         npts     = *splitCase++;
                         break;
@@ -1706,13 +1785,25 @@ void vtkVisItClipper::PolyDataExecute(void)
                                    "the ClipCases.");
                     }
 
+                    useVFV = &vfvIn;
                     if ((!insideOut && color == COLOR0) ||
                         ( insideOut && color == COLOR1))
                     {
-                        // We don't want this one; it's the wrong side.
-                        splitCase += npts;
-                        continue;
+                        if (computeInsideAndOut)
+                        {
+                            useVFV = &vfvOut;
+                        }
+                        else
+                        {
+                            // We don't want this one; it's the wrong side.
+                            splitCase += npts;
+                            continue;
+                        }
                     }
+                    if (useVFV == &vfvIn)
+                        interpIDIn = interpIDtmp;
+                    else
+                        interpIDOut = interpIDtmp;
 
                     int shape[8];
                     for (int p = 0 ; p < npts ; p++)
@@ -1751,11 +1842,14 @@ void vtkVisItClipper::PolyDataExecute(void)
                                 AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
                                     clipFunction, &percent);
                                 
-                            shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
+                            shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
                         }
                         else if (pt >= N0 && pt <= N3)
                         {
-                            shape[p] = interpIDs[pt - N0];
+                            if (useVFV == &vfvIn)
+                                shape[p] = interpIDsIn[pt - N0];
+                            else
+                                shape[p] = interpIDsOut[pt - N0];
                         }
                         else
                         {
@@ -1768,36 +1862,39 @@ void vtkVisItClipper::PolyDataExecute(void)
                     switch (shapeType)
                     {
                       case ST_HEX:
-                        vfv.AddHex(cellId,
+                        useVFV->AddHex(cellId,
                                    shape[0], shape[1], shape[2], shape[3],
                                    shape[4], shape[5], shape[6], shape[7]);
                         break;
                       case ST_WDG:
-                        vfv.AddWedge(cellId,
+                        useVFV->AddWedge(cellId,
                                      shape[0], shape[1], shape[2],
                                      shape[3], shape[4], shape[5]);
                         break;
                       case ST_PYR:
-                        vfv.AddPyramid(cellId, shape[0], shape[1],
+                        useVFV->AddPyramid(cellId, shape[0], shape[1],
                                        shape[2], shape[3], shape[4]);
                         break;
                       case ST_TET:
-                        vfv.AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
+                        useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
                         break;
                       case ST_QUA:
-                        vfv.AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
+                        useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
                         break;
                       case ST_TRI:
-                        vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
+                        useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
                         break;
                       case ST_LIN:
-                        vfv.AddLine(cellId, shape[0], shape[1]);
+                        useVFV->AddLine(cellId, shape[0], shape[1]);
                         break;
                       case ST_VTX:
-                        vfv.AddVertex(cellId, shape[0]);
+                        useVFV->AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
-                        interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
+                        if (useVFV == &vfvIn)
+                            interpIDsIn[interpIDIn] = useVFV->AddCentroidPoint(npts, shape);
+                        else
+                            interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
                         break;
                     }
                 }
@@ -1816,13 +1913,14 @@ void vtkVisItClipper::PolyDataExecute(void)
         }
     }
 
+
     if (numIcantClip > 0)
     {
         vtkUnstructuredGrid *not_from_zoo  = vtkUnstructuredGrid::New();
         ClipDataset(stuff_I_cant_clip, not_from_zoo);
         
         vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-        vfv.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+        vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
 
         vtkAppendFilter *appender = vtkAppendFilter::New();
         appender->AddInput(not_from_zoo);
@@ -1830,13 +1928,36 @@ void vtkVisItClipper::PolyDataExecute(void)
         appender->GetOutput()->Update();
 
         output->ShallowCopy(appender->GetOutput());
+
+        if (computeInsideAndOut)
+        {
+            appender->RemoveInput(just_from_zoo);
+            just_from_zoo->Delete();
+
+            just_from_zoo = vtkUnstructuredGrid::New();
+            vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+
+            appender->AddInput(just_from_zoo);
+            appender->GetOutput()->Update();
+
+            if (otherOutput) otherOutput->Delete();
+            otherOutput = vtkUnstructuredGrid::New();
+            otherOutput->ShallowCopy(appender->GetOutput());
+        }
+
         appender->Delete();
-        not_from_zoo->Delete();
         just_from_zoo->Delete();
+        not_from_zoo->Delete();
     }
     else
     {
-        vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+        vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
+        if (computeInsideAndOut)
+        {
+            if (otherOutput) otherOutput->Delete();
+            otherOutput = vtkUnstructuredGrid::New();
+            vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
+        }
     }
 
     stuff_I_cant_clip->Delete();
