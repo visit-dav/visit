@@ -440,7 +440,7 @@ vtkVisItClipper::Execute()
             pts_ptr = (float*)sg->GetPoints()->GetVoidPointer(0);
         }
 
-        bool twoD = (pt_dims[2] <= 1);
+        twoD = (pt_dims[2] <= 1);
         cell_dims[0] = pt_dims[0]-1;
         cell_dims[1] = pt_dims[1]-1;
         cell_dims[2] = pt_dims[2]-1;
@@ -472,11 +472,6 @@ vtkVisItClipper::Execute()
         debug1 << "                 reverting to raw VTK code.\n";
         GeneralExecute();
     }
-
-    cerr << "rg="<<rg<<endl;
-    cerr << "sg="<<sg<<endl;
-    cerr << "ug="<<ug<<endl;
-    cerr << "pg="<<pg<<endl;
 
     int ptSizeGuess = (CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
