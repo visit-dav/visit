@@ -44,8 +44,8 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS} 
 ${CCMIO_INCLUDE_DIR} ${MESA_INCLUDE_DIR} 
+${VTK_INCLUDE_DIRS} 
 )
 
 

@@ -72,7 +72,12 @@
 //    call to VISIT_PLUGIN_TARGET_PREFIX macro.
 //
 //    Brad Whitlock, Wed Feb 10 16:36:00 PST 2010
-//    I made all of the database plugins use the ADD_TARGET_DEFINITIONS function.
+//    I made all of the database plugins use the ADD_TARGET_DEFINITIONS
+//    function.
+//
+//    Eric Brugger, Wed Feb 24 13:00:54 PST 2010
+//    I modified the database plugins to list the include paths specified
+//    in the xml file before the VTK include paths.
 //
 // ****************************************************************************
 
@@ -685,9 +690,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${VTK_INCLUDE_DIRS} " << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes) << endl;
+        out << "${VTK_INCLUDE_DIRS} " << endl;
         out << ")" << endl;
         out << endl;
         // Pass other CXXFLAGS
