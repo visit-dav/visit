@@ -32,6 +32,8 @@
 #    Hank Childs, Wed Jun 10 09:59:48 PDT 2009
 #    Switch myself to my gmail account.
 #
+#    Marc Durant, Tue Feb 23 16:44:46 MST 2010
+#    Added case for userid "mdurant".
 # *****************************************************************************
 
 
@@ -111,6 +113,10 @@ case $1 in
     # Paul Navratil, TACC / University of Texas
     "pnav")
         emaddr=pnav@tacc.utexas.edu
+        ;;
+    # Marc Durant, Tech-X Corp
+    "mdurant")
+        emaddr=mdurant@txcorp.com
         ;;
     *)
         emaddr=visit-developers@ornl.gov
