@@ -863,7 +863,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     // startCell
     debugStrmRef <<methodSig <<"Loading startCells attribute." << endl;
     startCell = new int[rank];
-    reader->getAttMeshComponent(VsSchema::Uniform::comp1,
+    reader->getAttMeshComponent(VsSchema::Uniform::startCell,
         meta, startCell);
 
     // Adjust the box by startCell
@@ -911,7 +911,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     debugStrmRef <<methodSig <<"Loading data for point array vspoints1." << endl;
     void* lowerBounds = vpoints1->GetVoidPointer(0);
     if (lowerBounds) {
-      reader->getAttMeshComponent(VsSchema::Uniform::comp0,
+      reader->getAttMeshComponent(VsSchema::Uniform::lowerBounds,
           meta, lowerBounds);
     }
     else {
@@ -924,7 +924,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     debugStrmRef <<methodSig <<"Loading data for point array vspoints2." << endl;
     void* upperBounds = vpoints2->GetVoidPointer(0);
     if (upperBounds) {
-      reader->getAttMeshComponent(VsSchema::Uniform::comp3,
+      reader->getAttMeshComponent(VsSchema::Uniform::upperBounds,
           meta, upperBounds);
     }
     else {

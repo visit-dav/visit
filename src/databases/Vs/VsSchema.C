@@ -44,10 +44,10 @@ std::string VsSchema::structuredMeshKey = "structured";
 
 std::string VsSchema::Uniform::key = "uniform";
 std::string VsSchema::Uniform::deprecated_key = "uniformCartesian";
-std::string VsSchema::Uniform::comp0 = "vsLowerBounds";
-std::string VsSchema::Uniform::comp1 = "vsStartCell";
-std::string VsSchema::Uniform::comp2 = "vsNumCells";
-std::string VsSchema::Uniform::comp3 = "vsUpperBounds";
+std::string VsSchema::Uniform::lowerBounds = "vsLowerBounds";
+std::string VsSchema::Uniform::startCell = "vsStartCell";
+std::string VsSchema::Uniform::numCells = "vsNumCells";
+std::string VsSchema::Uniform::upperBounds = "vsUpperBounds";
 
 std::string VsSchema::Unstructured::key = "unstructured";
 
