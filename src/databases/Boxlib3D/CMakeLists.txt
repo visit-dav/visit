@@ -46,8 +46,8 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS} 
 ${BOXLIB3D_INCLUDE_DIR} 
+${VTK_INCLUDE_DIRS} 
 )
 
 ADD_DEFINITIONS("-DBL_SPACEDIM=3")

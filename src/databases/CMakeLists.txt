@@ -45,6 +45,9 @@
 #    Added Vs plugin.  Plugin has been available for a while, but we weren't
 #    generating a Makefile for it.
 #
+#    Eric Brugger, Wed Feb 24 09:27:11 PST 2010
+#    I added the paraDIS and paraDIS_tecplot plugins to the build.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -197,6 +200,8 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
+paraDIS
+paraDIS_tecplot
 )
 
 IF (NOT WIN32)

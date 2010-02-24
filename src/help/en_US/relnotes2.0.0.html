@@ -9,22 +9,15 @@
 </head>
 <body>
 
-<center><b><font size="6">VisIt 2.0 Release Notes</font></b></center>
+<center><b><font size="6">VisIt 2.0 Beta Release Notes</font></b></center>
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
 
-<!--
 <p><b><font size="4">Announcements</font></b></p>
 <ul>
-    <li>The VisIt team released a patch release, <a
-    href="relnotes1.11.1.html">version 2.0.1</a>, to fix some critical
-    defects that surfaced in the VisIt 1.11 release.  Descriptions of
-    the defects addressed by the patch release can be found in the <a
-    href="relnotes1.11.1.html">VisIt 1.11.1 release notes</a>.  All
-    version 2.0.1 fixes are included in this release.</li>
+    <li>This is a beta release of the upcoming 2.0 release. The release notes are incomplete and only partially list the changes in this release.</li>
 </ul>
--->
 
 <p><b>Sections</b></p>
 <ul>
@@ -43,16 +36,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.0</font></b></p>
 <ul>
-  <li>You can now animate every Nth time state when animating in the GUI by
-      setting the animation increment via the Animation window.
-  </li>
-  <li>VisIt will now leave plots in the visualization window when interacting
-      with tools unless you have enabled "bounding box" mode.</li>
-  <li>VisIt's point tool has been enhanced so it shows a small sphere 
-      indicating the location of the point. This is helpful when placing the
-      point within 3D geometry.</li>
-  <li>VisIt's plane tool has been enhanced so it is drawn with shading, which
-      provides some depth cues and improves the look of the tool.</li>
+  <li>You can now animate every Nth time state when animating in the GUI by setting the animation increment via the Animation window.</li>
+  <li>VisIt will now leave plots in the visualization window when interacting with tools unless you have enabled "bounding box" mode.</li>
+  <li>VisIt's point tool has been enhanced so it shows a small sphere indicating the location of the point. This is helpful when placing the point within 3D geometry.</li>
+  <li>VisIt's plane tool has been enhanced so it is drawn with shading, which provides some depth cues and improves the look of the tool.</li>
   <li>VisIt's legend has been enhanced to allow changing the number of tick marks automatically generated, as well as whether or not the min and max values should be included.  The ability to specify numeric values and associated textual labels has also been added.  There is a 1-1 correspondence between the values and the labels, so specifying empty strings will allow skipping textual labels for particular values.  Values specified outside the min/max range will be ignored.  For correct placement of textual labels, numeric values must be specified, but drawing of values can be turned off.  Label drawing now has 4 modes -- off (None), Values only, Labels only, or Values and Labels.  Default is Values only.</li>
   <li>VisIt's plot list context menu now provides options that let you change the order of plots in the plot list. You can also provide a plot description that lets the plot list display a more informative description of the contents of a plot. This is useful when you need to tell apart many similar plots.</li>
 </ul>
@@ -60,36 +47,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.0</font></b></p>
 <ul>
-  <li>When available, the IceT parallel compositor is used by default.  A new
-      flag, <TT>-no-icet</TT> was added to explicitly disable IceT.  The old
-      flag, <TT>-icet</TT>, was maintained for compatibility reasons.</li>
-  <li>Operator plugins are now grouped into categories by default and this causes
-      operators to be grouped instead of remaining in a flat, alphabetical list. Operators
-      each have a default category to which they like to belong. You may edit the
-      operator categories in the Plugin Manager window's Operators tab. Double-click
-      the operator category and type in a new name. When you click the Apply button,
-      the gui's operator menus will be changed to fit the new customized organization.
-      If you do not want operators to be grouped into submenus, simply remove the 
-      category name for each operator using the "Clear category for all operators" button
-      in the Plugin Manager window. Any customizations are saved when you save your settings.
-  </li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>When available, the IceT parallel compositor is used by default.  A new flag, <TT>-no-icet</TT> was added to explicitly disable IceT.  The old flag, <TT>-icet</TT>, was maintained for compatibility reasons.</li>
+  <li>Operator plugins are now grouped into categories by default and this causes operators to be grouped instead of remaining in a flat, alphabetical list. Operators each have a default category to which they like to belong. You may edit the operator categories in the Plugin Manager window's Operators tab. Double-click the operator category and type in a new name. When you click the Apply button, the gui's operator menus will be changed to fit the new customized organization. If you do not want operators to be grouped into submenus, simply remove the category name for each operator using the "Clear category for all operators" button in the Plugin Manager window. Any customizations are saved when you save your settings.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.0</font></b></p>
 <ul>
-  <li>VisIt's Nek reader now serves up per-domain data ranges, which optimizes 
-      operations like contouring and thresholding.</li>
-  <li>VisIt now includes a Velodyne file format reader contributed by Corvid 
-      Technologies.</li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>VisIt's Nek reader now serves up per-domain data ranges, which optimizes operations like contouring and thresholding.</li>
+  <li>VisIt now includes a Velodyne file format reader contributed by Corvid Technologies.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -99,26 +65,16 @@ enhancements and bug-fixes that were added to this release.</p>
   <ul>
     <li>The result is now more accurate, that is more like a true integration.  One nice by-product is that the picture should look substantially the same regardless of the number of samples, where, previously, volumes would get "thicker" when the number of samples increased.</li>
     <li>The samples now "count" for more, meaning that 500 samples per ray is now a "large" number of samples.</li>
-    <li>Note that your old transfer functions will no longer produce the same pictures.  
-        We apologize for any inconvenience this may cause and made the decision to make this 
-        interface change because we felt the result was an easier to use and more accurate volume renderer.</li>
+    <li>Note that your old transfer functions will no longer produce the same pictures. We apologize for any inconvenience this may cause and made the decision to make this interface change because we felt the result was an easier to use and more accurate volume renderer.</li>
   </ul></li>
   <li>The Pseudocolor plot can now correctly restore settings related to glyph types for point meshes, specifically the Sphere glyph type, which was previously not being restored correctly.</li>
   <li>A bug was fixed where ray casting volume rendering using both kernel based sampling and lighting would produce incorrect pictures.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 2.0</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
   <li></li>
 </ul>
 
@@ -127,21 +83,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.0</font></b></p>
 <ul>
   <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.0</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
   <li></li>
 </ul>
 
@@ -149,9 +95,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Other bugs fixed in version 2.0</font></b></p>
 <ul>
   <li>When a session was restored, where the user had deleted plots prior to saving the session, the legends of newly added plots might not show up in the annotation object list.</li>
-  <li></li>
-  <li></li>
-  <li></li>
   <li>You can now make plots of 2D data sets that have 2D quadratic elements (these elements will still be linearized).</li>
 </ul>
 
@@ -159,24 +102,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to configuration files in version 2.0</font></b></p>
 <ul>
   <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.0</font></b></p>
 <ul>
   <li>VisIt's user interface has been ported to Qt4.</li>
-  <li>It is now easier to integrate IceT into VisIt, in terms of build_visit and
-      CMake.  Testing showed that this library made a substantial speedup with
-      parallel rendering and is worth the compile-time effort.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>It is now easier to integrate IceT into VisIt, in terms of build_visit and CMake. Testing showed that this library made a substantial speedup with parallel rendering and is worth the compile-time effort.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

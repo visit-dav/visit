@@ -46,8 +46,8 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS} 
 ${VISIT_SOURCE_DIR}/sim/V2/lib ${VISIT_SOURCE_DIR}/sim/V2/runtime ${MESA_INCLUDE_DIR} 
+${VTK_INCLUDE_DIRS} 
 )
 
 
