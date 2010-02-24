@@ -46,8 +46,8 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS} 
 ${HDF5_INCLUDE_DIR} ${VISIT_INCLUDE_DIR}/avt/IVP 
+${VTK_INCLUDE_DIRS} 
 )
 
 IF(WIN32)
