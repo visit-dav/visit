@@ -58,7 +58,7 @@ VISIT_OPTION_DEFAULT(VISIT_VERBOSE_MAKEFILE TRUE)
 ##
 ## Make sure we use the right MPI library
 ##
-VISIT_OPTION_DEFAULT(PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/usr/lpp/ppe.poe/include/")
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-I/usr/lpp/ppe.poe/include/")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/usr/lpp/ppe.poe/lib/threads -L/usr/lpp/ppe.poe/lib -L/usr/lpp/ppe.poe/lib/ip -Wl,-binitfini:poe_remote_main")
