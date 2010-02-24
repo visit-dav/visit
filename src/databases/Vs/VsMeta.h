@@ -531,7 +531,7 @@ struct VsUniformMesh : public VsMeshMeta {
 
   hid_t getDataType() const {
 
-    VsAMeta* lowerBounds = getAttribute(VsSchema::Uniform::comp0);
+    VsAMeta* lowerBounds = getAttribute(VsSchema::Uniform::lowerBounds);
     if (lowerBounds == NULL) {
       //ERROR!
       return H5T_NATIVE_DOUBLE; //?
