@@ -371,164 +371,221 @@ vtkVisItClipper::GetOtherOutput()
 //  Method:  vtkVisItClipper::Execute
 //
 //  Purpose:
-//    Main execution method.  Delegate to mesh-specific functions.
+//    Main execution method.  
 //
 //  Arguments:
 //    none
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 11, 2003
+//  Creation:    February 24, 2010
 //
 //  Modifications:
-//    Jeremy Meredith, Mon Feb 16 19:07:02 PST 2004
-//    Added PolyData execution path.
+//    Jeremy Meredith, Wed Feb 24 10:18:33 EST 2010
+//    Initial creation: unified the old rectilinear, structured, unstructured,
+//    and polydata execution functions into this single function.
 //
 // ****************************************************************************
 void
 vtkVisItClipper::Execute()
 {
-    vtkDataSet *input  = GetInput();
+    vtkDataSet *ds = GetInput();
 
-    int do_type = input->GetDataObjectType();
-    if (do_type == VTK_RECTILINEAR_GRID)
+    int do_type = ds->GetDataObjectType();
+    vtkRectilinearGrid   *rg = NULL;
+    vtkStructuredGrid    *sg = NULL;
+    vtkUnstructuredGrid  *ug = NULL;
+    vtkPolyData          *pg = NULL;
+
+    // coordinate arrays for any mesh type
+    float      *X       = NULL;
+    float      *Y       = NULL;
+    float      *Z       = NULL;
+    float      *pts_ptr = NULL;
+
+    // dimensions for structured grids
+    int pt_dims[3];
+    int cell_dims[3];
+    int strideY;
+    int strideZ;
+    int ptstrideY;
+    int ptstrideZ;
+
+    // indices to convert structured grid cells to hexahedron/quadrilateral
+    const int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
+    const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
+    const int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+
+    // Set general input/output data
+    int                  nCells = ds->GetNumberOfCells();
+    vtkCellData         *inCD   = ds->GetCellData();
+    vtkPointData        *inPD   = ds->GetPointData();
+    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
+    vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
+
+    bool twoD = false;
+    if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
     {
-        RectilinearGridExecute();
-    }
-    else if (do_type == VTK_STRUCTURED_GRID)
-    {
-        StructuredGridExecute();
+        if (do_type == VTK_RECTILINEAR_GRID)
+        {
+            rg = (vtkRectilinearGrid*)ds;
+            rg->GetDimensions(pt_dims);
+            X = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
+            Y = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
+            Z = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
+        }
+        else // do_type == VTK_STRUCTURED_GRID
+        {
+            sg = (vtkStructuredGrid*)ds;
+            sg->GetDimensions(pt_dims);
+            pts_ptr = (float*)sg->GetPoints()->GetVoidPointer(0);
+        }
+
+        bool twoD = (pt_dims[2] <= 1);
+        cell_dims[0] = pt_dims[0]-1;
+        cell_dims[1] = pt_dims[1]-1;
+        cell_dims[2] = pt_dims[2]-1;
+        strideY = cell_dims[0];
+        strideZ = cell_dims[0]*cell_dims[1];
+        ptstrideY = pt_dims[0];
+        ptstrideZ = pt_dims[0]*pt_dims[1];
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
-        UnstructuredGridExecute();
+        ug = (vtkUnstructuredGrid*)ds;
+        pts_ptr = (float*)ug->GetPoints()->GetVoidPointer(0);
+        stuff_I_cant_clip->SetPoints(ug->GetPoints());
+        stuff_I_cant_clip->GetPointData()->ShallowCopy(ug->GetPointData());
+        stuff_I_cant_clip->Allocate(nCells);
     }
     else if (do_type == VTK_POLY_DATA)
     {
-        PolyDataExecute();
+        pg = (vtkPolyData*)ds;
+        pts_ptr = (float*)pg->GetPoints()->GetVoidPointer(0);
+        stuff_I_cant_clip->SetPoints(pg->GetPoints());
+        stuff_I_cant_clip->GetPointData()->ShallowCopy(pg->GetPointData());
+        stuff_I_cant_clip->Allocate(nCells);
+
     }
     else
     {
-        debug1 << "vtkVisItClipper: Can't operate on this dataset\n";
+        debug1 << "vtkVisItClipper: Can't operate on this dataset,\n";
+        debug1 << "                 reverting to raw VTK code.\n";
         GeneralExecute();
     }
-}
 
-
-// ****************************************************************************
-//  Method:  vtkVisItClipper::StructuredGridExecute
-//
-//  Purpose:
-//    Clips a structured grid.
-//
-//  Arguments:
-//    none
-//
-//  Note:  most of the setup logic came from Hank's new vtkSlicer.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 11, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Sep 15 17:33:03 PDT 2003
-//    Added ability for centroid-points to have an associated color.
-//    This was needed for material interface reconstruction when it was
-//    important to know if we should interpolate COLOR0's material or
-//    COLOR1's material to come up with a material volume fraction for
-//    the new point; it was not needed here, but we must skip over it.
-//
-//    Jeremy Meredith, Fri Jan 30 17:27:23 PST 2004
-//    Added support for using a scalar array to clip against.
-//
-//    Jeremy Meredith, Mon Feb 16 19:07:24 PST 2004
-//    Added polygonal cell support.
-//
-//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
-//    Made it support 2d cases as well.  Changed it to a single cutoff
-//    for scalars to make the math more robust.
-//
-//    Brad Whitlock, Thu Aug 12 14:48:46 PST 2004
-//    Added float casts to pow() arguments so it builds on MSVC7.Net.
-//
-//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
-//    Added call to SetUpClipFunction. 
-//
-//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
-//    Added support for "atomic" cells that must be removed
-//    entirely if they cannot be left whole.
-//    Added support for line and vertex output shapes (though
-//    structured grids shouldn't be outputting any, of course).
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added code to adjust percent to new percent consistent with zero
-//    crossing of implicit func.
-//
-//    Jeremy Meredith, Tue Feb 23 10:53:46 EST 2010
-//    Added ability to compute inside and outside in one pass
-//    (logic copied from unstructured grid execution).
-//
-// ****************************************************************************
-
-void
-vtkVisItClipper::StructuredGridExecute(void)
-{
-    int  i, j;
-
-    vtkStructuredGrid *sg = (vtkStructuredGrid *) GetInput();
-    int pt_dims[3];
-    sg->GetDimensions(pt_dims);
-    bool twoD = (pt_dims[2] <= 1);
-
-    int                nCells = sg->GetNumberOfCells();
-    vtkPoints         *inPts  = sg->GetPoints();
-    vtkCellData       *inCD   = sg->GetCellData();
-    vtkPointData      *inPD   = sg->GetPointData();
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
+    cerr << "rg="<<rg<<endl;
+    cerr << "sg="<<sg<<endl;
+    cerr << "ug="<<ug<<endl;
+    cerr << "pg="<<pg<<endl;
 
     int ptSizeGuess = (CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
                          : CellListSize*5 + 100);
 
-    vtkVolumeFromVolume vfvIn(sg->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume vfvOut(sg->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvIn(ds->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvOut(ds->GetNumberOfPoints(), ptSizeGuess);
     vtkVolumeFromVolume *useVFV;
 
-    float *pts_ptr = (float *) inPts->GetVoidPointer(0);
+    const int max_pts = 8;
+    int cellType = twoD ? VTK_QUAD : VTK_HEXAHEDRON; // constant for struct grd
+    int nCellPts = twoD ? 4 : 8;                     // constant for struct grd
+    vtkIdType cellPtsStruct[8];
+    vtkIdType *cellPts = cellPtsStruct; // for struct grd, we'll fill it
 
-    int cell_dims[3];
-    cell_dims[0] = pt_dims[0]-1;
-    cell_dims[1] = pt_dims[1]-1;
-    cell_dims[2] = pt_dims[2]-1;
-    int strideY = cell_dims[0];
-    int strideZ = cell_dims[0]*cell_dims[1];
-    int ptstrideY = pt_dims[0];
-    int ptstrideZ = pt_dims[0]*pt_dims[1];
-    int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
-    int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
-    int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    for (i = 0 ; i < nToProcess ; i++)
+    int numIcantClip = 0;
+    for (int i = 0 ; i < nToProcess ; i++)
     {
+        // Get the cell details
         int cellId = (CellList != NULL ? CellList[i] : i);
-        int cellI = cellId % cell_dims[0];
-        int cellJ = (cellId/strideY) % cell_dims[1];
-        int cellK = (cellId/strideZ);
-        int lookup_case = 0;
-        float dist[8];
-        int nCellPts = twoD ? 4 : 8;
-        SetUpClipFunction(cellId);
-        for (j = nCellPts-1 ; j >= 0 ; j--)
+        int cellI = -1;
+        int cellJ = -1;
+        int cellK = -1;
+        if (ug)
         {
-            int ptId = (cellI + X_val[j]) + (cellJ + Y_val[j])*ptstrideY +
-                       (cellK + Z_val[j])*ptstrideZ;
+            cellType = ug->GetCellType(cellId);
+            ug->GetCellPoints(cellId, nCellPts, cellPts);
+            // don't need cellI/J/K
+        }
+        else if (pg)
+        {
+            cellType = pg->GetCellType(cellId);
+            pg->GetCellPoints(cellId, nCellPts, cellPts);
+            // don't need cellI/J/K
+        }
+        else // structured grid
+        {
+            // cellType already set
+            // nCellPts already set
+            cellI = cellId % cell_dims[0];
+            cellJ = (cellId/strideY) % cell_dims[1];
+            cellK = (cellId/strideZ);
+            for (int j = 0; j<nCellPts; j++)
+            {
+                cellPts[j] = (cellI + X_val[j]) +
+                             (cellJ + Y_val[j])*ptstrideY +
+                             (cellK + Z_val[j])*ptstrideZ;
+            }
+        }
 
+        // If it's something we can't clip, save it for later
+        bool canClip = false;
+        switch (cellType)
+        {
+          case VTK_TETRA:
+          case VTK_PYRAMID:
+          case VTK_WEDGE:
+          case VTK_HEXAHEDRON:
+          case VTK_VOXEL:
+          case VTK_TRIANGLE:
+          case VTK_QUAD:
+          case VTK_PIXEL:
+          case VTK_LINE:
+          case VTK_VERTEX:
+            canClip = true;
+            break;
+
+          default:
+            canClip = false;
+            break;
+        }
+        if (!canClip)
+        {
+            if (numIcantClip == 0)
+                stuff_I_cant_clip->GetCellData()->
+                                       CopyAllocate(ds->GetCellData(), nCells);
+
+            stuff_I_cant_clip->InsertNextCell(cellType, nCellPts, cellPts);
+            stuff_I_cant_clip->GetCellData()->
+                            CopyData(ds->GetCellData(), cellId, numIcantClip);
+            numIcantClip++;
+            continue;
+        }
+
+        // fill the dist functions and calculate lookup case
+        int lookup_case = 0;
+        float dist[max_pts];
+        for (int j = nCellPts-1 ; j >= 0 ; j--)
+        {
             if (clipFunction)
             {
-                float *pt = pts_ptr + 3*ptId;
+                float ptRect[3];
+                float *pt = ptRect;
+                if (pts_ptr)
+                {
+                    pt = pts_ptr + 3*cellPts[j];
+                }
+                else
+                {
+                    pt[0] = X[cellI + X_val[j]];
+                    pt[1] = Y[cellJ + Y_val[j]];
+                    pt[2] = Z[cellK + Z_val[j]];
+                }
                 dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
             }
             else // if (scalarArray)
             {
-                float val = scalarArray[ptId];
+                float val = scalarArray[cellPts[j]];
                 dist[j] = scalarCutoff - val;
             }
 
@@ -541,22 +598,79 @@ vtkVisItClipper::StructuredGridExecute(void)
         if (removeWholeCells && lookup_case != 0)
             lookup_case = ((1 << nCellPts) - 1);
 
-        unsigned char *splitCase;
-        int            numOutput;
-        if (twoD)
+        unsigned char  *splitCase = NULL;
+        int             numOutput = 0;
+        typedef int     edgeIndices[2];
+        edgeIndices    *vertices_from_edges = NULL;
+
+        int startIndex;
+        switch (cellType)
         {
-            splitCase = &clipShapesQua[startClipShapesQua[lookup_case]];
-            numOutput = numClipShapesQua[lookup_case];
-        }
-        else
-        {
-            splitCase = &clipShapesHex[startClipShapesHex[lookup_case]];
-            numOutput = numClipShapesHex[lookup_case];
+          case VTK_TETRA:
+            startIndex = startClipShapesTet[lookup_case];
+            splitCase  = &clipShapesTet[startIndex];
+            numOutput  = numClipShapesTet[lookup_case];
+            vertices_from_edges = tetVerticesFromEdges;
+            break;
+          case VTK_PYRAMID:
+            startIndex = startClipShapesPyr[lookup_case];
+            splitCase  = &clipShapesPyr[startIndex];
+            numOutput  = numClipShapesPyr[lookup_case];
+            vertices_from_edges = pyramidVerticesFromEdges;
+            break;
+          case VTK_WEDGE:
+            startIndex = startClipShapesWdg[lookup_case];
+            splitCase  = &clipShapesWdg[startIndex];
+            numOutput  = numClipShapesWdg[lookup_case];
+            vertices_from_edges = wedgeVerticesFromEdges;
+            break;
+          case VTK_HEXAHEDRON:
+            startIndex = startClipShapesHex[lookup_case];
+            splitCase  = &clipShapesHex[startIndex];
+            numOutput  = numClipShapesHex[lookup_case];
+            vertices_from_edges = hexVerticesFromEdges;
+            break;
+          case VTK_VOXEL:
+            startIndex = startClipShapesVox[lookup_case];
+            splitCase  = &clipShapesVox[startIndex];
+            numOutput  = numClipShapesVox[lookup_case];
+            vertices_from_edges = voxVerticesFromEdges;
+            break;
+          case VTK_TRIANGLE:
+            startIndex = startClipShapesTri[lookup_case];
+            splitCase  = &clipShapesTri[startIndex];
+            numOutput  = numClipShapesTri[lookup_case];
+            vertices_from_edges = triVerticesFromEdges;
+            break;
+          case VTK_QUAD:
+            startIndex = startClipShapesQua[lookup_case];
+            splitCase  = &clipShapesQua[startIndex];
+            numOutput  = numClipShapesQua[lookup_case];
+            vertices_from_edges = quadVerticesFromEdges;
+            break;
+          case VTK_PIXEL:
+            startIndex = startClipShapesPix[lookup_case];
+            splitCase  = &clipShapesPix[startIndex];
+            numOutput  = numClipShapesPix[lookup_case];
+            vertices_from_edges = pixelVerticesFromEdges;
+            break;
+          case VTK_LINE:
+            startIndex = startClipShapesLin[lookup_case];
+            splitCase  = &clipShapesLin[startIndex];
+            numOutput  = numClipShapesLin[lookup_case];
+            vertices_from_edges = lineVerticesFromEdges;
+            break;
+          case VTK_VERTEX:
+            startIndex = startClipShapesVtx[lookup_case];
+            splitCase  = &clipShapesVtx[startIndex];
+            numOutput  = numClipShapesVtx[lookup_case];
+            vertices_from_edges = NULL;
+            break;
         }
 
         int            interpIDsIn[4];
         int            interpIDsOut[4];
-        for (j = 0 ; j < numOutput ; j++)
+        for (int j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;
             {
@@ -633,14 +747,12 @@ vtkVisItClipper::StructuredGridExecute(void)
                         // We know pt P0 must be >P0 since we already
                         // assume P0 == 0.  This is why we do not
                         // bother subtracting P0 from pt here.
-                        shape[p] = ((cellI + X_val[pt]) +
-                                    (cellJ + Y_val[pt])*ptstrideY +
-                                    (cellK + Z_val[pt])*ptstrideZ);
+                        shape[p] = cellPts[pt];
                     }
                     else if (pt >= EA && pt <= EL)
                     {
-                        int pt1 = hexVerticesFromEdges[pt-EA][0];
-                        int pt2 = hexVerticesFromEdges[pt-EA][1];
+                        int pt1 = vertices_from_edges[pt-EA][0];
+                        int pt2 = vertices_from_edges[pt-EA][1];
                         if (pt2 < pt1)
                         {
                             int tmp = pt2;
@@ -654,18 +766,36 @@ vtkVisItClipper::StructuredGridExecute(void)
                         // We may have physically (though not logically)
                         // degenerate cells if percent==0 or percent==1.
                         // We could pretty easily and mostly safely clamp
-                        // percent to the range [1e-4, 1. - 1e-4] right here.
-                        int ptId1 = ((cellI + X_val[pt1]) +
-                                     (cellJ + Y_val[pt1])*ptstrideY +
-                                     (cellK + Z_val[pt1])*ptstrideZ);
-                        int ptId2 = ((cellI + X_val[pt2]) +
-                                     (cellJ + Y_val[pt2])*ptstrideY +
-                                     (cellK + Z_val[pt2])*ptstrideZ);
+                        // percent to the range [1e-4, 1. - 1e-4] here.
+                        int ptId1 = cellPts[pt1];
+                        int ptId2 = cellPts[pt2];
 
                         // deal with exact zero crossings if requested
                         if (clipFunction && useZeroCrossings)
-                            AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
-                                clipFunction, &percent);
+                        {
+                            if (pts_ptr)
+                            {
+                                AdjustPercentToZeroCrossing(pts_ptr,
+                                                            ptId1, ptId2,
+                                                            clipFunction,
+                                                            &percent);
+                            }
+                            else
+                            {
+                                // fake a little points array for rgrids
+                                float pt[6];
+                                pt[0] = X[cellI + X_val[pt1]];
+                                pt[1] = Y[cellJ + Y_val[pt1]];
+                                pt[2] = Z[cellK + Z_val[pt1]];
+                                pt[3] = X[cellI + X_val[pt2]];
+                                pt[4] = Y[cellJ + Y_val[pt2]];
+                                pt[5] = Z[cellK + Z_val[pt2]];
+                                AdjustPercentToZeroCrossing(pt,
+                                                            0, 1,
+                                                            clipFunction,
+                                                            &percent);
+                            }
+                        }
                                 
                         shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
                     }
@@ -688,357 +818,17 @@ vtkVisItClipper::StructuredGridExecute(void)
                 {
                   case ST_HEX:
                     useVFV->AddHex(cellId,
-                               shape[0], shape[1], shape[2], shape[3],
-                               shape[4], shape[5], shape[6], shape[7]);
+                                   shape[0], shape[1], shape[2], shape[3],
+                                   shape[4], shape[5], shape[6], shape[7]);
                     break;
                   case ST_WDG:
                     useVFV->AddWedge(cellId,
-                                 shape[0], shape[1], shape[2],
-                                 shape[3], shape[4], shape[5]);
+                                     shape[0], shape[1], shape[2],
+                                     shape[3], shape[4], shape[5]);
                     break;
                   case ST_PYR:
                     useVFV->AddPyramid(cellId, shape[0], shape[1],
-                                   shape[2], shape[3], shape[4]);
-                    break;
-                  case ST_TET:
-                    useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
-                    break;
-                  case ST_QUA:
-                    useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
-                    break;
-                  case ST_TRI:
-                    useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
-                    break;
-                  case ST_LIN:
-                    useVFV->AddLine(cellId, shape[0], shape[1]);
-                    break;
-                  case ST_VTX:
-                    useVFV->AddVertex(cellId, shape[0]);
-                    break;
-                  case ST_PNT:
-                    interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
-                    if (computeInsideAndOut)
-                        interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
-                    break;
-                }
-            }
-
-        }
-    }
-
-    vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
-    if (computeInsideAndOut)
-    {
-        if (otherOutput) otherOutput->Delete();
-        otherOutput = vtkUnstructuredGrid::New();
-        vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
-    }
-}
-
-// ****************************************************************************
-//  Method:  vtkVisItClipper::RectilinearGridExecute
-//
-//  Purpose:
-//    Clips a rectilinear grid.
-//
-//  Arguments:
-//    none
-//
-//  Note:  most of the setup logic came from Hank's new vtkSlicer.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 11, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Sep 15 17:33:03 PDT 2003
-//    Added ability for centroid-points to have an associated color.
-//    This was needed for material interface reconstruction when it was
-//    important to know if we should interpolate COLOR0's material or
-//    COLOR1's material to come up with a material volume fraction for
-//    the new point; it was not needed here, but we must skip over it.
-//
-//    Jeremy Meredith, Fri Jan 30 17:27:23 PST 2004
-//    Added support for using a scalar array to clip against.
-//
-//    Jeremy Meredith, Mon Feb 16 19:07:24 PST 2004
-//    Added polygonal cell support.
-//
-//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
-//    Made it support 2d cases as well.  Changed it to a single cutoff
-//    for scalars to make the math more robust.
-//
-//    Brad Whitlock, Thu Aug 12 14:49:24 PST 2004
-//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
-//
-//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
-//    Added call to SetUpClipFunction. 
-//
-//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
-//    Added support for "atomic" cells that must be removed
-//    entirely if they cannot be left whole.
-//    Added support for line and vertex output shapes (though
-//    rectilinear grids shouldn't be outputting any, of course).
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added code to adjust percent to new percent consistent with zero
-//    crossing of implicit func.
-//
-//    Cyrus Harrison, Tue Aug 21 08:34:29 PDT 2007
-//    Fixed case where new points were created but not required resulting
-//    in duplicate points and bad connectivity.
-//
-//    Jeremy Meredith, Tue Feb 23 10:53:46 EST 2010
-//    Added ability to compute inside and outside in one pass
-//    (logic copied from unstructured grid execution).
-//
-// ****************************************************************************
-
-void vtkVisItClipper::RectilinearGridExecute(void)
-{
-    int  i, j;
-
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) GetInput();
-    int pt_dims[3];
-    rg->GetDimensions(pt_dims);
-    bool twoD = (pt_dims[2] <= 1);
-
-    int           nCells = rg->GetNumberOfCells();
-    float        *X      = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
-    float        *Y      = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
-    float        *Z      = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
-    vtkCellData  *inCD   = rg->GetCellData();
-    vtkPointData *inPD   = rg->GetPointData();
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
-
-    int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
-
-    vtkVolumeFromVolume vfvIn(rg->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume vfvOut(rg->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume *useVFV;
-
-    int cell_dims[3];
-    cell_dims[0] = pt_dims[0]-1;
-    cell_dims[1] = pt_dims[1]-1;
-    cell_dims[2] = pt_dims[2]-1;
-    int strideY = cell_dims[0];
-    int strideZ = cell_dims[0]*cell_dims[1];
-    int ptstrideY = pt_dims[0];
-    int ptstrideZ = pt_dims[0]*pt_dims[1];
-    int X_val[8] = { 0, 1, 1, 0, 0, 1, 1, 0 };
-    int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
-    int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
-    int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    for (i = 0 ; i < nToProcess ; i++)
-    {
-        int cellId = (CellList != NULL ? CellList[i] : i);
-        int cellI = cellId % cell_dims[0];
-        int cellJ = (cellId/strideY) % cell_dims[1];
-        int cellK = (cellId/strideZ);
-        int lookup_case = 0;
-        float dist[8];
-        int nCellPts = twoD ? 4 : 8;
-        SetUpClipFunction(cellId);
-        for (j = nCellPts-1 ; j >= 0 ; j--)
-        {
-            if (clipFunction)
-            {
-                float pt[3];
-                pt[0] = X[cellI + X_val[j]];
-                pt[1] = Y[cellJ + Y_val[j]];
-                pt[2] = Z[cellK + Z_val[j]];
-                dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
-            }
-            else // if (scalarArray)
-            {
-                float val = scalarArray[(cellK + Z_val[j])*ptstrideZ +
-                                        (cellJ + Y_val[j])*ptstrideY +
-                                        (cellI + X_val[j])];
-                dist[j] = scalarCutoff - val;
-            }
-
-            if (dist[j] >= 0)
-                lookup_case++;
-            if (j > 0)
-                lookup_case *= 2;
-        }
-
-        if (removeWholeCells && lookup_case != 0)
-            lookup_case = ((1 << nCellPts) - 1);
-
-        unsigned char *splitCase;
-        int            numOutput;
-        if (twoD)
-        {
-            splitCase = &clipShapesQua[startClipShapesQua[lookup_case]];
-            numOutput = numClipShapesQua[lookup_case];
-        }
-        else
-        {
-            splitCase = &clipShapesHex[startClipShapesHex[lookup_case]];
-            numOutput = numClipShapesHex[lookup_case];
-        }
-
-        int            interpIDsIn[4];
-        int            interpIDsOut[4];
-        for (j = 0 ; j < numOutput ; j++)
-        {
-            unsigned char shapeType = *splitCase++;
-            {
-                int npts;
-                int interpID = -1;
-                int color    = -1;
-                switch (shapeType)
-                {
-                  case ST_HEX:
-                    npts = 8;
-                    color = *splitCase++;
-                    break;
-                  case ST_WDG:
-                    npts = 6;
-                    color = *splitCase++;
-                    break;
-                  case ST_PYR:
-                    npts = 5;
-                    color = *splitCase++;
-                    break;
-                  case ST_TET:
-                    npts = 4;
-                    color = *splitCase++;
-                    break;
-                  case ST_QUA:
-                    npts = 4;
-                    color = *splitCase++;
-                    break;
-                  case ST_TRI:
-                    npts = 3;
-                    color = *splitCase++;
-                    break;
-                  case ST_LIN:
-                    npts = 2;
-                    color = *splitCase++;
-                    break;
-                  case ST_VTX:
-                    npts = 1;
-                    color = *splitCase++;
-                    break;
-                  case ST_PNT:
-                    interpID = *splitCase++;
-                    color    = *splitCase++;
-                    npts     = *splitCase++;
-                    break;
-                  default:
-                    EXCEPTION1(ImproperUseException,
-                               "An invalid output shape was found in "
-                               "the ClipCases.");
-                }
-
-                useVFV = &vfvIn;
-                if ((!insideOut && color == COLOR0) ||
-                    ( insideOut && color == COLOR1))
-                {
-                    if (computeInsideAndOut)
-                    {
-                        useVFV = &vfvOut;
-                    }
-                    else
-                    {
-                        // We don't want this one; it's the wrong side.
-                        splitCase += npts;
-                        continue;
-                    }
-                }
-
-                int shape[8];
-                for (int p = 0 ; p < npts ; p++)
-                {
-                    unsigned char pt = *splitCase++;
-                    if (pt <= P7)
-                    {
-                        // We know pt P0 must be >P0 since we already
-                        // assume P0 == 0.  This is why we do not
-                        // bother subtracting P0 from pt here.
-                        shape[p] = ((cellI + X_val[pt]) +
-                                    (cellJ + Y_val[pt])*ptstrideY +
-                                    (cellK + Z_val[pt])*ptstrideZ);
-                    }
-                    else if (pt >= EA && pt <= EL)
-                    {
-                        int pt1 = hexVerticesFromEdges[pt-EA][0];
-                        int pt2 = hexVerticesFromEdges[pt-EA][1];
-                        if (pt2 < pt1)
-                        {
-                            int tmp = pt2;
-                            pt2 = pt1;
-                            pt1 = tmp;
-                        }
-                        float dir = dist[pt2] - dist[pt1];
-                        float amt = 0. - dist[pt1];
-                        float percent = 1. - (amt / dir);
-
-                        // We may have physically (though not logically)
-                        // degenerate cells if percent==0 or percent==1.
-                        // We could pretty easily and mostly safely clamp
-                        // percent to the range [1e-4, 1. - 1e-4] right here.
-                        int ptId1 = ((cellI + X_val[pt1]) +
-                                     (cellJ + Y_val[pt1])*ptstrideY +
-                                     (cellK + Z_val[pt1])*ptstrideZ);
-                        int ptId2 = ((cellI + X_val[pt2]) +
-                                     (cellJ + Y_val[pt2])*ptstrideY +
-                                     (cellK + Z_val[pt2])*ptstrideZ);
-
-                        // deal with exact zero crossings if requested
-                        if (clipFunction && useZeroCrossings)
-                        {
-                            float pt[6];
-                            pt[0] = X[cellI + X_val[pt1]];
-                            pt[1] = Y[cellJ + Y_val[pt1]];
-                            pt[2] = Z[cellK + Z_val[pt1]];
-                            pt[3] = X[cellI + X_val[pt2]];
-                            pt[4] = Y[cellJ + Y_val[pt2]];
-                            pt[5] = Z[cellK + Z_val[pt2]];
-                            AdjustPercentToZeroCrossing(pt, 0, 1,
-                                clipFunction, &percent);
-                        }
-
-                        if( percent == 1.0)
-                            shape[p] = ptId1;
-                        else if( percent == 0.0)
-                            shape[p] = ptId2;
-                        else
-                            shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
-                    }
-                    else if (pt >= N0 && pt <= N3)
-                    {
-                        if (useVFV == &vfvIn)
-                            shape[p] = interpIDsIn[pt - N0];
-                        else
-                            shape[p] = interpIDsOut[pt - N0];
-                    }
-                    else
-                    {
-                        EXCEPTION1(ImproperUseException,
-                                   "An invalid output point value "
-                                   "was found in the ClipCases.");
-                    }
-                }
-
-                switch (shapeType)
-                {
-                  case ST_HEX:
-                    useVFV->AddHex(cellId,
-                               shape[0], shape[1], shape[2], shape[3],
-                               shape[4], shape[5], shape[6], shape[7]);
-                    break;
-                  case ST_WDG:
-                    useVFV->AddWedge(cellId,
-                                 shape[0], shape[1], shape[2],
-                                 shape[3], shape[4], shape[5]);
-                    break;
-                  case ST_PYR:
-                    useVFV->AddPyramid(cellId, shape[0], shape[1],
-                                   shape[2], shape[3], shape[4]);
+                                       shape[2], shape[3], shape[4]);
                     break;
                   case ST_TET:
                     useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
@@ -1065,419 +855,16 @@ void vtkVisItClipper::RectilinearGridExecute(void)
         }
     }
 
-    vfvIn.ConstructDataSet(inPD, inCD, output, pt_dims, X, Y, Z);
-    if (computeInsideAndOut)
-    {
-        if (otherOutput) otherOutput->Delete();
-        otherOutput = vtkUnstructuredGrid::New();
-        vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pt_dims, X, Y, Z);
-    }
-}
-
-// ****************************************************************************
-//  Method:  vtkVisItClipper::UnstructuredGridExecute
-//
-//  Purpose:
-//    Clips an unstructured grid.
-//
-//  Arguments:
-//    none
-//
-//  Note:  most of the setup logic came from Hank's new vtkSlicer.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 11, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Sep 15 17:33:03 PDT 2003
-//    Added ability for centroid-points to have an associated color.
-//    This was needed for material interface reconstruction when it was
-//    important to know if we should interpolate COLOR0's material or
-//    COLOR1's material to come up with a material volume fraction for
-//    the new point; it was not needed here, but we must skip over it.
-//
-//    Jeremy Meredith, Fri Jan 30 17:27:23 PST 2004
-//    Added support for using a scalar array to clip against.
-//
-//    Jeremy Meredith, Mon Feb 16 19:07:24 PST 2004
-//    Added polygonal cell support.
-//
-//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
-//    Changed it to a single cutoff for scalars to make the math more robust.
-//
-//    Jeremy Meredith, Thu Jun 24 09:39:31 PDT 2004
-//    Added support for unstructured voxels and pixels, letting us use this
-//    fast algorithm on thresholded/onionpeeled structured meshes.
-//
-//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
-//    Added call to SetUpClipFunction. 
-//
-//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
-//    Added support for polydata types (line and vertex).
-//    Added support for "atomic" cells that must be removed
-//    entirely if they cannot be left whole.
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added code to compute both sides of clip in one execute. Added code
-//    to adjust percent to zero crossings if requested.
-//
-//    Kathleen Bonnell, Wed Apr  9 09:01:20 PDT 2008 
-//    Initialize interpIDtmp, so it will not be used before being set.
-//
-//    Jeremy Meredith, Tue Feb 23 10:55:05 EST 2010
-//    Small renamings in inside+outside logic for consistency .
-//
-// ****************************************************************************
-
-void vtkVisItClipper::UnstructuredGridExecute(void)
-{
-    // The routine here is a bit trickier than for the Rectilinear or
-    // Structured grids.  We want to clip an unstructured grid -- but that
-    // could mean any cell type.  We only have triangulation tables for
-    // the finite element zoo.  So the gameplan is to clip any of the
-    // elements of the finite element zoo.  If there are more elements left
-    // over, clip them using the conventional VTK filters.  Finally,
-    // append together the clips from the zoo with the clips from the
-    // non-zoo elements.  If all the elements are from the zoo, then just
-    // clip them with no appending.
-
-    int   i, j;
-
-    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) GetInput();
-
-    int                nCells = ug->GetNumberOfCells();
-    vtkPoints         *inPts  = ug->GetPoints();
-    vtkCellData       *inCD   = ug->GetCellData();
-    vtkPointData      *inPD   = ug->GetPointData();
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
-
-    int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
-
-    vtkVolumeFromVolume vfvIn(ug->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume vfvOut(ug->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume *useVFV;
-
-    vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
-    stuff_I_cant_clip->SetPoints(ug->GetPoints());
-    stuff_I_cant_clip->GetPointData()->ShallowCopy(ug->GetPointData());
-    stuff_I_cant_clip->Allocate(nCells);
-
-    float *pts_ptr = (float *) inPts->GetVoidPointer(0);
-
-    int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    int numIcantClip = 0;
-    for (i = 0 ; i < nToProcess ; i++)
-    {
-        int        cellId = (CellList != NULL ? CellList[i] : i);
-        int        cellType = ug->GetCellType(cellId);
-        int        npts;
-        vtkIdType *pts;
-        ug->GetCellPoints(cellId, npts, pts);
-        bool canClip = false;
-        switch (cellType)
-        {
-          case VTK_TETRA:
-          case VTK_PYRAMID:
-          case VTK_WEDGE:
-          case VTK_HEXAHEDRON:
-          case VTK_VOXEL:
-          case VTK_TRIANGLE:
-          case VTK_QUAD:
-          case VTK_PIXEL:
-          case VTK_LINE:
-          case VTK_VERTEX:
-            canClip = true;
-            break;
-
-          default:
-            canClip = false;
-            break;
-        }
- 
-        if (canClip)
-        {
-            SetUpClipFunction(cellId);
-            const int max_pts = 8;
-            float dist[max_pts];
-            int lookup_case = 0;
-            for (j = npts-1 ; j >= 0 ; j--)
-            {
-                if (clipFunction)
-                {
-                    float *pt = pts_ptr + 3*pts[j];
-                    dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
-                }
-                else // if (scalarArray)
-                {
-                    float val = scalarArray[pts[j]];
-                    dist[j] = scalarCutoff - val;
-                }
-
-                if (dist[j] >= 0)
-                    lookup_case++;
-                if (j > 0)
-                    lookup_case *= 2;
-            }
-
-            if (removeWholeCells && lookup_case != 0)
-                lookup_case = ((1 << npts) - 1);
-
-            int             startIndex = 0;
-            unsigned char  *splitCase = NULL;
-            int             numOutput = 0;
-            typedef int     edgeIndices[2];
-            edgeIndices    *vertices_from_edges = NULL;
-
-            switch (cellType)
-            {
-              case VTK_TETRA:
-                startIndex = startClipShapesTet[lookup_case];
-                splitCase  = &clipShapesTet[startIndex];
-                numOutput  = numClipShapesTet[lookup_case];
-                vertices_from_edges = tetVerticesFromEdges;
-                break;
-              case VTK_PYRAMID:
-                startIndex = startClipShapesPyr[lookup_case];
-                splitCase  = &clipShapesPyr[startIndex];
-                numOutput  = numClipShapesPyr[lookup_case];
-                vertices_from_edges = pyramidVerticesFromEdges;
-                break;
-              case VTK_WEDGE:
-                startIndex = startClipShapesWdg[lookup_case];
-                splitCase  = &clipShapesWdg[startIndex];
-                numOutput  = numClipShapesWdg[lookup_case];
-                vertices_from_edges = wedgeVerticesFromEdges;
-                break;
-              case VTK_HEXAHEDRON:
-                startIndex = startClipShapesHex[lookup_case];
-                splitCase  = &clipShapesHex[startIndex];
-                numOutput  = numClipShapesHex[lookup_case];
-                vertices_from_edges = hexVerticesFromEdges;
-                break;
-              case VTK_VOXEL:
-                startIndex = startClipShapesVox[lookup_case];
-                splitCase  = &clipShapesVox[startIndex];
-                numOutput  = numClipShapesVox[lookup_case];
-                vertices_from_edges = voxVerticesFromEdges;
-                break;
-              case VTK_TRIANGLE:
-                startIndex = startClipShapesTri[lookup_case];
-                splitCase  = &clipShapesTri[startIndex];
-                numOutput  = numClipShapesTri[lookup_case];
-                vertices_from_edges = triVerticesFromEdges;
-                break;
-              case VTK_QUAD:
-                startIndex = startClipShapesQua[lookup_case];
-                splitCase  = &clipShapesQua[startIndex];
-                numOutput  = numClipShapesQua[lookup_case];
-                vertices_from_edges = quadVerticesFromEdges;
-                break;
-              case VTK_PIXEL:
-                startIndex = startClipShapesPix[lookup_case];
-                splitCase  = &clipShapesPix[startIndex];
-                numOutput  = numClipShapesPix[lookup_case];
-                vertices_from_edges = pixelVerticesFromEdges;
-                break;
-              case VTK_LINE:
-                startIndex = startClipShapesLin[lookup_case];
-                splitCase  = &clipShapesLin[startIndex];
-                numOutput  = numClipShapesLin[lookup_case];
-                vertices_from_edges = lineVerticesFromEdges;
-                break;
-              case VTK_VERTEX:
-                startIndex = startClipShapesVtx[lookup_case];
-                splitCase  = &clipShapesVtx[startIndex];
-                numOutput  = numClipShapesVtx[lookup_case];
-                vertices_from_edges = NULL;
-                break;
-            }
-
-            int            interpIDsIn[4];
-            int            interpIDsOut[4];
-            for (j = 0 ; j < numOutput ; j++)
-            {
-                unsigned char shapeType = *splitCase++;
-                {
-                    int npts;
-                    int interpID = -1;
-                    int color    = -1;
-                    switch (shapeType)
-                    {
-                      case ST_HEX:
-                        npts = 8;
-                        color = *splitCase++;
-                        break;
-                      case ST_WDG:
-                        npts = 6;
-                        color = *splitCase++;
-                        break;
-                      case ST_PYR:
-                        npts = 5;
-                        color = *splitCase++;
-                        break;
-                      case ST_TET:
-                        npts = 4;
-                        color = *splitCase++;
-                        break;
-                      case ST_QUA:
-                        npts = 4;
-                        color = *splitCase++;
-                        break;
-                      case ST_TRI:
-                        npts = 3;
-                        color = *splitCase++;
-                        break;
-                      case ST_LIN:
-                        npts = 2;
-                        color = *splitCase++;
-                        break;
-                      case ST_VTX:
-                        npts = 1;
-                        color = *splitCase++;
-                        break;
-                      case ST_PNT:
-                        interpID = *splitCase++;
-                        color    = *splitCase++;
-                        npts     = *splitCase++;
-                        break;
-                      default:
-                        EXCEPTION1(ImproperUseException,
-                                   "An invalid output shape was found in "
-                                   "the ClipCases.");
-                    }
-
-                    useVFV = &vfvIn;
-                    if ((!insideOut && color == COLOR0) ||
-                        ( insideOut && color == COLOR1))
-                    {
-                        if (computeInsideAndOut)
-                        {
-                            useVFV = &vfvOut;
-                        }
-                        else
-                        {
-                            // We don't want this one; it's the wrong side.
-                            splitCase += npts;
-                            continue;
-                        }
-                    }
-
-                    int shape[8];
-                    for (int p = 0 ; p < npts ; p++)
-                    {
-                        unsigned char pt = *splitCase++;
-                        if (pt <= P7)
-                        {
-                            // We know pt P0 must be >P0 since we already
-                            // assume P0 == 0.  This is why we do not
-                            // bother subtracting P0 from pt here.
-                            shape[p] = pts[pt];
-                        }
-                        else if (pt >= EA && pt <= EL)
-                        {
-                            int pt1 = vertices_from_edges[pt-EA][0];
-                            int pt2 = vertices_from_edges[pt-EA][1];
-                            if (pt2 < pt1)
-                            {
-                                int tmp = pt2;
-                                pt2 = pt1;
-                                pt1 = tmp;
-                            }
-                            float dir = dist[pt2] - dist[pt1];
-                            float amt = 0. - dist[pt1];
-                            float percent = 1. - (amt / dir);
-
-                            // We may have physically (though not logically)
-                            // degenerate cells if percent==0 or percent==1.
-                            // We could pretty easily and mostly safely clamp
-                            // percent to the range [1e-4, 1. - 1e-4] here.
-                            int ptId1 = pts[pt1];
-                            int ptId2 = pts[pt2];
-
-                            // deal with exact zero crossings if requested
-                            if (clipFunction && useZeroCrossings)
-                                AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
-                                    clipFunction, &percent);
-                                
-                            shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
-                        }
-                        else if (pt >= N0 && pt <= N3)
-                        {
-                            if (useVFV == &vfvIn)
-                                shape[p] = interpIDsIn[pt - N0];
-                            else
-                                shape[p] = interpIDsOut[pt - N0];
-                        }
-                        else
-                        {
-                            EXCEPTION1(ImproperUseException,
-                                       "An invalid output point value "
-                                       "was found in the ClipCases.");
-                        }
-                    }
-
-                    switch (shapeType)
-                    {
-                      case ST_HEX:
-                        useVFV->AddHex(cellId,
-                                   shape[0], shape[1], shape[2], shape[3],
-                                   shape[4], shape[5], shape[6], shape[7]);
-                        break;
-                      case ST_WDG:
-                        useVFV->AddWedge(cellId,
-                                     shape[0], shape[1], shape[2],
-                                     shape[3], shape[4], shape[5]);
-                        break;
-                      case ST_PYR:
-                        useVFV->AddPyramid(cellId, shape[0], shape[1],
-                                       shape[2], shape[3], shape[4]);
-                        break;
-                      case ST_TET:
-                        useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
-                        break;
-                      case ST_QUA:
-                        useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
-                        break;
-                      case ST_TRI:
-                        useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
-                        break;
-                      case ST_LIN:
-                        useVFV->AddLine(cellId, shape[0], shape[1]);
-                        break;
-                      case ST_VTX:
-                        useVFV->AddVertex(cellId, shape[0]);
-                        break;
-                      case ST_PNT:
-                        interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
-                        if (computeInsideAndOut)
-                            interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (numIcantClip == 0)
-                stuff_I_cant_clip->GetCellData()->
-                                       CopyAllocate(ug->GetCellData(), nCells);
-
-            stuff_I_cant_clip->InsertNextCell(cellType, npts, pts);
-            stuff_I_cant_clip->GetCellData()->
-                            CopyData(ug->GetCellData(), cellId, numIcantClip);
-            numIcantClip++;
-        }
-    }
-
     if (numIcantClip > 0)
     {
         vtkUnstructuredGrid *not_from_zoo  = vtkUnstructuredGrid::New();
         ClipDataset(stuff_I_cant_clip, not_from_zoo);
         
         vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-        vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+        if (pts_ptr)
+            vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+        else
+            vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pt_dims,X,Y,Z);
 
         vtkAppendFilter *appender = vtkAppendFilter::New();
         appender->AddInput(not_from_zoo);
@@ -1492,7 +879,10 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
             just_from_zoo->Delete();
 
             just_from_zoo = vtkUnstructuredGrid::New();
-            vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+            if (pts_ptr)
+                vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+            else
+                vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pt_dims,X,Y,Z);
 
             appender->AddInput(just_from_zoo);
             appender->GetOutput()->Update();
@@ -1508,432 +898,25 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
     }
     else
     {
-        vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
-        if (computeInsideAndOut)
-        {
-            if (otherOutput) otherOutput->Delete();
-            otherOutput = vtkUnstructuredGrid::New();
-            vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
-        }
-    }
-
-    stuff_I_cant_clip->Delete();
-}
-
-// ****************************************************************************
-//  Method:  vtkVisItClipper::PolyDataExecute
-//
-//  Purpose:
-//    Clips a polydata object.
-//
-//  Arguments:
-//    none
-//
-//  Note:  Copied from UnstructuredGridExecute.  Probably could unify
-//         them for ease of maintenance.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    February 16, 2004
-//
-//  Modifications:
-//    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
-//    Changed it to a single cutoff for scalars to make the math more robust.
-//
-//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
-//    Added call to SetUpClipFunction. 
-//
-//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
-//    Added support for polydata types (line and vertex).
-//    Added support for "atomic" cells that must be removed
-//    entirely if they cannot be left whole.
-//
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added code to adjust percent to new percent consistent with zero
-//    crossing of implicit func.
-//
-//    Jeremy Meredith, Tue Feb 23 10:53:46 EST 2010
-//    Added ability to compute inside and outside in one pass
-//    (logic copied from unstructured grid execution).
-//
-// ****************************************************************************
-
-void vtkVisItClipper::PolyDataExecute(void)
-{
-    // The routine here is a bit trickier than for the Rectilinear or
-    // Structured grids.  We want to clip an unstructured grid -- but that
-    // could mean any cell type.  We only have triangulation tables for
-    // the finite element zoo.  So the gameplan is to clip any of the
-    // elements of the finite element zoo.  If there are more elements left
-    // over, clip them using the conventional VTK filters.  Finally,
-    // append together the clips from the zoo with the clips from the
-    // non-zoo elements.  If all the elements are from the zoo, then just
-    // clip them with no appending.
-
-    int   i, j;
-
-    vtkPolyData *pd = (vtkPolyData *) GetInput();
-
-    int                nCells = pd->GetNumberOfCells();
-    vtkPoints         *inPts  = pd->GetPoints();
-    vtkCellData       *inCD   = pd->GetCellData();
-    vtkPointData      *inPD   = pd->GetPointData();
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
-
-    int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
-
-    vtkVolumeFromVolume vfvIn(pd->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume vfvOut(pd->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume *useVFV;
-
-    vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
-    stuff_I_cant_clip->SetPoints(pd->GetPoints());
-    stuff_I_cant_clip->GetPointData()->ShallowCopy(pd->GetPointData());
-    stuff_I_cant_clip->Allocate(nCells);
-
-    float *pts_ptr = (float *) inPts->GetVoidPointer(0);
-
-    int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    int numIcantClip = 0;
-    for (i = 0 ; i < nToProcess ; i++)
-    {
-        int        cellId = (CellList != NULL ? CellList[i] : i);
-        int        cellType = pd->GetCellType(cellId);
-        int        npts;
-        vtkIdType *pts;
-        pd->GetCellPoints(cellId, npts, pts);
-        bool canClip = false;
-        switch (cellType)
-        {
-          case VTK_TETRA:
-          case VTK_PYRAMID:
-          case VTK_WEDGE:
-          case VTK_HEXAHEDRON:
-          case VTK_TRIANGLE:
-          case VTK_QUAD:
-          case VTK_LINE:
-          case VTK_VERTEX:
-            canClip = true;
-            break;
-
-          default:
-            canClip = false;
-            break;
-        }
- 
-        if (canClip)
-        {
-            const int max_pts = 8;
-            float dist[max_pts];
-            int lookup_case = 0;
-            SetUpClipFunction(cellId);
-            for (j = npts-1 ; j >= 0 ; j--)
-            {
-                if (clipFunction)
-                {
-                    float *pt = pts_ptr + 3*pts[j];
-                    dist[j] = clipFunction->EvaluateFunction(pt[0],pt[1],pt[2]);
-                }
-                else // if (scalarArray)
-                {
-                    float val = scalarArray[pts[j]];
-                    dist[j] = scalarCutoff - val;
-                }
-
-                if (dist[j] >= 0)
-                    lookup_case++;
-                if (j > 0)
-                    lookup_case *= 2;
-            }
-
-            if (removeWholeCells && lookup_case != 0)
-                lookup_case = ((1 << npts) - 1);
-
-            int             startIndex = 0;
-            unsigned char  *splitCase = NULL;
-            int             numOutput = 0;
-            typedef int     edgeIndices[2];
-            edgeIndices    *vertices_from_edges = NULL;
-
-            switch (cellType)
-            {
-              case VTK_TETRA:
-                startIndex = startClipShapesTet[lookup_case];
-                splitCase  = &clipShapesTet[startIndex];
-                numOutput  = numClipShapesTet[lookup_case];
-                vertices_from_edges = tetVerticesFromEdges;
-                break;
-              case VTK_PYRAMID:
-                startIndex = startClipShapesPyr[lookup_case];
-                splitCase  = &clipShapesPyr[startIndex];
-                numOutput  = numClipShapesPyr[lookup_case];
-                vertices_from_edges = pyramidVerticesFromEdges;
-                break;
-              case VTK_WEDGE:
-                startIndex = startClipShapesWdg[lookup_case];
-                splitCase  = &clipShapesWdg[startIndex];
-                numOutput  = numClipShapesWdg[lookup_case];
-                vertices_from_edges = wedgeVerticesFromEdges;
-                break;
-              case VTK_HEXAHEDRON:
-                startIndex = startClipShapesHex[lookup_case];
-                splitCase  = &clipShapesHex[startIndex];
-                numOutput  = numClipShapesHex[lookup_case];
-                vertices_from_edges = hexVerticesFromEdges;
-                break;
-              case VTK_TRIANGLE:
-                startIndex = startClipShapesTri[lookup_case];
-                splitCase  = &clipShapesTri[startIndex];
-                numOutput  = numClipShapesTri[lookup_case];
-                vertices_from_edges = triVerticesFromEdges;
-                break;
-              case VTK_QUAD:
-                startIndex = startClipShapesQua[lookup_case];
-                splitCase  = &clipShapesQua[startIndex];
-                numOutput  = numClipShapesQua[lookup_case];
-                vertices_from_edges = quadVerticesFromEdges;
-                break;
-              case VTK_LINE:
-                startIndex = startClipShapesLin[lookup_case];
-                splitCase  = &clipShapesLin[startIndex];
-                numOutput  = numClipShapesLin[lookup_case];
-                vertices_from_edges = lineVerticesFromEdges;
-                break;
-              case VTK_VERTEX:
-                startIndex = startClipShapesVtx[lookup_case];
-                splitCase  = &clipShapesVtx[startIndex];
-                numOutput  = numClipShapesVtx[lookup_case];
-                vertices_from_edges = NULL;
-                break;
-            }
-
-            int            interpIDsIn[4];
-            int            interpIDsOut[4];
-            for (j = 0 ; j < numOutput ; j++)
-            {
-                unsigned char shapeType = *splitCase++;
-                {
-                    int npts;
-                    int interpID = -1;
-                    int color    = -1;
-                    switch (shapeType)
-                    {
-                      case ST_HEX:
-                        npts = 8;
-                        color = *splitCase++;
-                        break;
-                      case ST_WDG:
-                        npts = 6;
-                        color = *splitCase++;
-                        break;
-                      case ST_PYR:
-                        npts = 5;
-                        color = *splitCase++;
-                        break;
-                      case ST_TET:
-                        npts = 4;
-                        color = *splitCase++;
-                        break;
-                      case ST_QUA:
-                        npts = 4;
-                        color = *splitCase++;
-                        break;
-                      case ST_TRI:
-                        npts = 3;
-                        color = *splitCase++;
-                        break;
-                      case ST_LIN:
-                        npts = 2;
-                        color = *splitCase++;
-                        break;
-                      case ST_VTX:
-                        npts = 1;
-                        color = *splitCase++;
-                        break;
-                      case ST_PNT:
-                        interpID = *splitCase++;
-                        color    = *splitCase++;
-                        npts     = *splitCase++;
-                        break;
-                      default:
-                        EXCEPTION1(ImproperUseException,
-                                   "An invalid output shape was found in "
-                                   "the ClipCases.");
-                    }
-
-                    useVFV = &vfvIn;
-                    if ((!insideOut && color == COLOR0) ||
-                        ( insideOut && color == COLOR1))
-                    {
-                        if (computeInsideAndOut)
-                        {
-                            useVFV = &vfvOut;
-                        }
-                        else
-                        {
-                            // We don't want this one; it's the wrong side.
-                            splitCase += npts;
-                            continue;
-                        }
-                    }
-
-                    int shape[8];
-                    for (int p = 0 ; p < npts ; p++)
-                    {
-                        unsigned char pt = *splitCase++;
-                        if (pt <= P7)
-                        {
-                            // We know pt P0 must be >P0 since we already
-                            // assume P0 == 0.  This is why we do not
-                            // bother subtracting P0 from pt here.
-                            shape[p] = pts[pt];
-                        }
-                        else if (pt >= EA && pt <= EL)
-                        {
-                            int pt1 = vertices_from_edges[pt-EA][0];
-                            int pt2 = vertices_from_edges[pt-EA][1];
-                            if (pt2 < pt1)
-                            {
-                                int tmp = pt2;
-                                pt2 = pt1;
-                                pt1 = tmp;
-                            }
-                            float dir = dist[pt2] - dist[pt1];
-                            float amt = 0. - dist[pt1];
-                            float percent = 1. - (amt / dir);
-
-                            // We may have physically (though not logically)
-                            // degenerate cells if percent==0 or percent==1.
-                            // We could pretty easily and mostly safely clamp
-                            // percent to the range [1e-4, 1. - 1e-4] here.
-                            int ptId1 = pts[pt1];
-                            int ptId2 = pts[pt2];
-
-                            // deal with exact zero crossings if requested
-                            if (clipFunction && useZeroCrossings)
-                                AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
-                                    clipFunction, &percent);
-                                
-                            shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
-                        }
-                        else if (pt >= N0 && pt <= N3)
-                        {
-                            if (useVFV == &vfvIn)
-                                shape[p] = interpIDsIn[pt - N0];
-                            else
-                                shape[p] = interpIDsOut[pt - N0];
-                        }
-                        else
-                        {
-                            EXCEPTION1(ImproperUseException,
-                                       "An invalid output point value "
-                                       "was found in the ClipCases.");
-                        }
-                    }
-
-                    switch (shapeType)
-                    {
-                      case ST_HEX:
-                        useVFV->AddHex(cellId,
-                                   shape[0], shape[1], shape[2], shape[3],
-                                   shape[4], shape[5], shape[6], shape[7]);
-                        break;
-                      case ST_WDG:
-                        useVFV->AddWedge(cellId,
-                                     shape[0], shape[1], shape[2],
-                                     shape[3], shape[4], shape[5]);
-                        break;
-                      case ST_PYR:
-                        useVFV->AddPyramid(cellId, shape[0], shape[1],
-                                       shape[2], shape[3], shape[4]);
-                        break;
-                      case ST_TET:
-                        useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
-                        break;
-                      case ST_QUA:
-                        useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
-                        break;
-                      case ST_TRI:
-                        useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
-                        break;
-                      case ST_LIN:
-                        useVFV->AddLine(cellId, shape[0], shape[1]);
-                        break;
-                      case ST_VTX:
-                        useVFV->AddVertex(cellId, shape[0]);
-                        break;
-                      case ST_PNT:
-                        interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
-                        if (computeInsideAndOut)
-                            interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
-                        break;
-                    }
-                }
-            }
-        }
+        if (pts_ptr)
+            vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
         else
-        {
-            if (numIcantClip == 0)
-                stuff_I_cant_clip->GetCellData()->
-                                       CopyAllocate(pd->GetCellData(), nCells);
+            vfvIn.ConstructDataSet(inPD, inCD, output, pt_dims,X,Y,Z);
 
-            stuff_I_cant_clip->InsertNextCell(cellType, npts, pts);
-            stuff_I_cant_clip->GetCellData()->
-                            CopyData(pd->GetCellData(), cellId, numIcantClip);
-            numIcantClip++;
-        }
-    }
-
-
-    if (numIcantClip > 0)
-    {
-        vtkUnstructuredGrid *not_from_zoo  = vtkUnstructuredGrid::New();
-        ClipDataset(stuff_I_cant_clip, not_from_zoo);
-        
-        vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-        vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
-
-        vtkAppendFilter *appender = vtkAppendFilter::New();
-        appender->AddInput(not_from_zoo);
-        appender->AddInput(just_from_zoo);
-        appender->GetOutput()->Update();
-
-        output->ShallowCopy(appender->GetOutput());
-
-        if (computeInsideAndOut)
-        {
-            appender->RemoveInput(just_from_zoo);
-            just_from_zoo->Delete();
-
-            just_from_zoo = vtkUnstructuredGrid::New();
-            vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
-
-            appender->AddInput(just_from_zoo);
-            appender->GetOutput()->Update();
-
-            if (otherOutput) otherOutput->Delete();
-            otherOutput = vtkUnstructuredGrid::New();
-            otherOutput->ShallowCopy(appender->GetOutput());
-        }
-
-        appender->Delete();
-        just_from_zoo->Delete();
-        not_from_zoo->Delete();
-    }
-    else
-    {
-        vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
         if (computeInsideAndOut)
         {
             if (otherOutput) otherOutput->Delete();
             otherOutput = vtkUnstructuredGrid::New();
-            vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
+            if (pts_ptr)
+                vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
+            else
+                vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pt_dims,X,Y,Z);
         }
     }
 
     stuff_I_cant_clip->Delete();
 }
+
 
 void vtkVisItClipper::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -1958,7 +941,7 @@ void vtkVisItClipper::GeneralExecute(void)
 // ****************************************************************************
 
 void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
-                                    vtkUnstructuredGrid *out_ds)
+                                  vtkUnstructuredGrid *out_ds)
 {
     vtkClipDataSet *clipData = vtkClipDataSet::New();
     clipData->SetInput(in_ds);

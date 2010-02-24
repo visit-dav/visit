@@ -108,10 +108,6 @@ class VISIT_VTK_API vtkVisItClipper
     ~vtkVisItClipper();
 
     void Execute();
-    void RectilinearGridExecute();
-    void StructuredGridExecute();
-    void UnstructuredGridExecute();
-    void PolyDataExecute();
     void GeneralExecute();
     void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
 
