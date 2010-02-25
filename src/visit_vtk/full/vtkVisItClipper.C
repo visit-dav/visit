@@ -384,6 +384,9 @@ vtkVisItClipper::GetOtherOutput()
 //    Initial creation: unified the old rectilinear, structured, unstructured,
 //    and polydata execution functions into this single function.
 //
+//    Jeremy Meredith, Thu Feb 25 11:08:03 EST 2010
+//    Don't forget to exit early if we have a dataset we can't understand.
+//
 // ****************************************************************************
 void
 vtkVisItClipper::Execute()
@@ -448,6 +451,8 @@ vtkVisItClipper::Execute()
         strideZ = cell_dims[0]*cell_dims[1];
         ptstrideY = pt_dims[0];
         ptstrideZ = pt_dims[0]*pt_dims[1];
+        // we can clip all of structured grids; don't set up
+        // the "stuff_I_cant_clip" mesh
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
@@ -471,6 +476,7 @@ vtkVisItClipper::Execute()
         debug1 << "vtkVisItClipper: Can't operate on this dataset,\n";
         debug1 << "                 reverting to raw VTK code.\n";
         GeneralExecute();
+        return;
     }
 
     int ptSizeGuess = (CellList == NULL
@@ -546,7 +552,7 @@ vtkVisItClipper::Execute()
         }
         if (!canClip)
         {
-            if (numIcantClip == 0)
+            if (numIcantClip == NULL)
                 stuff_I_cant_clip->GetCellData()->
                                        CopyAllocate(ds->GetCellData(), nCells);
 
@@ -717,9 +723,10 @@ vtkVisItClipper::Execute()
                                "the ClipCases.");
                 }
 
+                bool out = ((!insideOut && color == COLOR0) ||
+                            ( insideOut && color == COLOR1));
                 useVFV = &vfvIn;
-                if ((!insideOut && color == COLOR0) ||
-                    ( insideOut && color == COLOR1))
+                if (out)
                 {
                     if (computeInsideAndOut)
                     {
