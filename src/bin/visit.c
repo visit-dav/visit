@@ -855,7 +855,7 @@ AddEnvironment(int useShortFileName)
             ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
             if (_stat(expvisituserpath, &fs) == -1)
             {
-                mkdir(expvisituserpath);
+                _mkdir(expvisituserpath);
             }
         }
         else
@@ -865,7 +865,7 @@ AddEnvironment(int useShortFileName)
         sprintf(tmpdir, "%s\\My images", expvisituserpath);
         if (_stat(tmpdir, &fs) == -1)
         {
-            mkdir(tmpdir);
+            _mkdir(tmpdir);
         }
         sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
         putenv(tmp);
@@ -1227,7 +1227,7 @@ copy_config_files(const char *filename, void *cbData)
 
     if (_stat(newpath, &fs) == -1)
     {
-        mkdir(newpath);
+        _mkdir(newpath);
     }
 
     len = strlen(oldpath);
