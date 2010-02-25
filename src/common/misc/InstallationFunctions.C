@@ -45,6 +45,7 @@
 
 #if defined(_WIN32)
 #include <windows.h>
+#include <direct.h>
 #else
 #include <unistd.h>
 #include <sys/types.h>
@@ -365,7 +366,7 @@ GetAndMakeUserVisItHostsDirectory()
 {
     std::string retval = GetUserVisItDirectory() + "hosts";
 #if defined(_WIN32)
-    mkdir(retval.c_str());
+    _mkdir(retval.c_str());
 #else
     mkdir(retval.c_str(), 0777);
 #endif

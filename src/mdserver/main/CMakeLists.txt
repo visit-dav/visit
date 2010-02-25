@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Thu Feb 25 10:59 MST 2010
+#   Exclude testmds on windows.
 #
 #****************************************************************************/
 
@@ -125,7 +127,9 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
+IF (NOT WIN32)
 ADD_EXECUTABLE(testmds EXCLUDE_FROM_ALL testmds.C LibPipelineStubs.C)
 TARGET_LINK_LIBRARIES(testmds mdserverproxy mdserverrpc visitcommon avtdbatts)
 
 VISIT_INSTALL_TARGETS(mdserver)
+ENDIF (NOT WIN32)

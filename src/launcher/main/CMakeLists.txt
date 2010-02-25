@@ -38,6 +38,9 @@
 #     Gunther H. Weber, Thu Jan 14 11:36:21 PST 2010
 #     Added conditional target for separate socket bridge executable.
 #
+#     Kathleen Bonnell, Thu Feb 25 11:00:43 MST 2010 
+#     Exclude testvcl on windows.
+#
 #****************************************************************************/
 
 SET(VCL_SOURCES
@@ -68,7 +71,9 @@ IF (VISIT_CREATE_SOCKET_RELAY_EXECUTABLE)
     TARGET_LINK_LIBRARIES(visit_socket_relay visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
 ENDIF (VISIT_CREATE_SOCKET_RELAY_EXECUTABLE)
 
+IF (NOT WIN32)
 ADD_EXECUTABLE(testvcl EXCLUDE_FROM_ALL testvcl.C)
 TARGET_LINK_LIBRARIES(testvcl vclproxy vclrpc visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
 
 VISIT_INSTALL_TARGETS(vcl)
+ENDIF (NOT WIN32)
