@@ -48,6 +48,10 @@
 #    Eric Brugger, Wed Feb 24 09:27:11 PST 2010
 #    I added the paraDIS and paraDIS_tecplot plugins to the build.
 #
+#    Eric Brugger, Wed Feb 24 17:46:10 PST 2010
+#    I temporalily disabled the paraDIS and paraDIS_tecplot plugins since
+#    they don't build.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -200,8 +204,6 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
-paraDIS
-paraDIS_tecplot
 )
 
 IF (NOT WIN32)

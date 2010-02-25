@@ -1,4 +1,4 @@
-#/usr/gapps/visit/cmake/2.6.4/aix_xlc_32/bin/cmake
+#/usr/gapps/visit/cmake/2.6.4/aix_xlc_64/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Wed Feb 17 11:40:29 PST 2010
