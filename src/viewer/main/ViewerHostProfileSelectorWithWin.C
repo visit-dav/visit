@@ -228,6 +228,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Jeremy Meredith, Thu Feb 25 10:16:15 EST 2010
+//    Adding debug info.
+//
 // ****************************************************************************
 
 bool 
@@ -239,14 +242,17 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
     setWindowTitle(title);
 
     profile = MachineProfile();
+    debug2 << "ViewerHostProfileSelectorWithWin::SelectProfile\n";
 
     if (skipChooser)
     {
         // do nothing; leave the profile completely blank
+        debug2 << "   Exiting: told to skip\n";
     }
     else if (cachedProfile.count(hostName))
     {
         profile = cachedProfile[hostName];
+        debug2 << "   Exiting: found cached\n";
     }
     else
     {
@@ -270,12 +276,27 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
         if (mp)
         {
             profile = *mp;
+            debug2 << "   Got a machine profile for host '"<<hostName<<"'\n";
+            debug2 << "     It has "<<profile.GetNumLaunchProfiles()
+                   <<" launch profiles\n";
+            for (int i=0; i<profile.GetNumLaunchProfiles(); i++)
+            {
+                debug2 << "        launch profile #"<<i<<" has parallel="
+                     <<(profile.GetLaunchProfiles(i).GetParallel()?"true":"false")
+                     <<endl;
+            }
+        }
+        else
+        {
+            debug2 << "   Found no matching machine profiles\n";
         }
         
         if (profile.GetNumLaunchProfiles() > 1 ||
             (profile.GetNumLaunchProfiles() == 1 &&
              profile.GetLaunchProfiles(0).GetParallel()))
         {
+            debug2 << "   Presenting a choice to the user.\n";
+
             profiles->clear();
             for (i=0; i<profile.GetNumLaunchProfiles(); i++)
             {
@@ -305,6 +326,10 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
             profile.GetActiveLaunchProfile()->SetBank(bankName->text().toStdString());
             profile.GetActiveLaunchProfile()->SetTimeLimit(timeLimit->text().toStdString());
             profile.GetActiveLaunchProfile()->SetMachinefile(machinefile->text().toStdString());
+        }
+        else
+        {
+            debug2 << "   No need to present a choice to the user.\n";
         }
 
         // Save it for use later
@@ -344,6 +369,9 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Jeremy Meredith, Thu Feb 25 10:11:36 EST 2010
+//    Fixed a bug where it didn't let the user change from the default profile.
+//
 // ****************************************************************************
 
 void
@@ -353,6 +381,7 @@ ViewerHostProfileSelectorWithWin::newProfileSelected()
     if (index < 0 || index >= profile.GetNumLaunchProfiles())
         return;
 
+    profile.SetActiveProfile(index);
     LaunchProfile &lp = profile.GetLaunchProfiles(index);
     bool parallel = lp.GetParallel();
 
