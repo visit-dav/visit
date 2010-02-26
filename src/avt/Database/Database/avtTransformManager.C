@@ -981,6 +981,14 @@ avtTransformManager::FindMatchingCSGDiscretization(
 //    Added call to find matching CSG discretization. Made it smarter about
 //    caching discretizations to reduce frequency of cases where a CSG mesh
 //    that does not vary with time is re-discretized each timestep.
+//
+//    Jeremy Meredith, Fri Feb 26 11:43:27 EST 2010
+//    Added multi-pass discretization mode.  Requires it to be able to
+//    store off the split-up mesh between domains, so we use the cache
+//    for it and store it with a -1 domain.  This mode might fail
+//    (since it's restricted to a fixed-length bitfield for the boundaries)
+//    in which case we fall back to the Uniform algorithm.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
@@ -1052,18 +1060,90 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                                                      bnds[0], bnds[1], bnds[2],
                                                      bnds[3], bnds[4], bnds[5]);
                 }
-                else if (dataRequest->DiscMode() == 1)
+                else if (dataRequest->DiscMode() == 0) // uniform
                 {
-                    dgrid = csgmesh->DiscretizeSpace3(csgreg, rank, nprocs,
-                                                     dataRequest->DiscTol(), dataRequest->FlatTol(),
+                    dgrid = csgmesh->DiscretizeSpace(csgreg,
+                                                     dataRequest->DiscTol(),
                                                      bnds[0], bnds[1], bnds[2],
                                                      bnds[3], bnds[4], bnds[5]);
                 }
-                else
+                else if (dataRequest->DiscMode() == 1) // adaptive
                 {
-                    dgrid = csgmesh->DiscretizeSpace(csgreg, dataRequest->DiscTol(),
+                    dgrid = csgmesh->DiscretizeSpace3(csgreg, rank, nprocs,
+                                                     dataRequest->DiscTol(),
+                                                     dataRequest->FlatTol(),
                                                      bnds[0], bnds[1], bnds[2],
                                                      bnds[3], bnds[4], bnds[5]);
+                }
+                else // if (dataRequest->DiscMode() == 2) // multi-pass
+                {
+                    // Look to see if there's a processed mesh we
+                    // stored for all domains.
+                    vtkDataSet *processed = 
+                        (vtkDataSet*)cache.GetVTKObject(vname, type, -1, -1, mat);
+
+                    // If so, make sure the settings used to generate it
+                    // match our current settings.
+                    if (processed)
+                    {
+                        void_ref_ptr oldVrDr = cache.GetVoidRef(vname,
+                                                                avtVariableCache::DATA_SPECIFICATION, -1, -1);
+                        avtDataRequest *oldDr = (avtDataRequest *) *oldVrDr;
+                        if (oldDr->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly() ||
+                            oldDr->DiscTol() != dataRequest->DiscTol() ||
+                            oldDr->FlatTol() != dataRequest->FlatTol() || 
+                            oldDr->DiscMode() != dataRequest->DiscMode())
+                        {
+                            processed = NULL;
+                        }
+                    }
+
+                    // If we didn't find a mesh, process it now.
+                    vtkCSGGrid *csgmesh = NULL;
+                    bool success = true;
+                    if (!processed)
+                    {
+                        csgmesh = vtkCSGGrid::SafeDownCast(ds);
+                        const double *bnds = csgmesh->GetBounds();
+                        success = csgmesh->DiscretizeSpaceMultiPass(
+                                                    dataRequest->DiscTol(),
+                                                    bnds[0], bnds[1], bnds[2],
+                                                    bnds[3], bnds[4], bnds[5]);
+                        if (success)
+                        {
+                            processed = ds;
+                            cache.CacheVTKObject(vname, type, -1, -1, mat, csgmesh);
+                            avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
+                            const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
+                            cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
+                                               -1, -1, vr);
+                        }
+                        else
+                        {
+                            // clear out any old one
+                            cache.CacheVTKObject(vname, type, -1, -1, mat, NULL);
+                        }
+                    }
+                    else
+                    {
+                        csgmesh = vtkCSGGrid::SafeDownCast(processed);
+                    }
+
+                    // On failure, revert to Uniform mode.
+                    if (success)
+                    {
+                        dgrid = csgmesh->GetMultiPassDiscretization(csgreg);
+                    }
+                    else
+                    {
+                        debug1 << "Something failed in the CSG multipass "
+                               << "algorithm; reverting to uniform\n";
+                        dgrid = csgmesh->DiscretizeSpace(csgreg,
+                                                    dataRequest->DiscTol(),
+                                                    bnds[0], bnds[1], bnds[2],
+                                                    bnds[3], bnds[4], bnds[5]);
+                    }
+
                 }
                 dgrid->Update();
 

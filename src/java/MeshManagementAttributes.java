@@ -63,6 +63,7 @@ public class MeshManagementAttributes extends AttributeSubject
     // Enum values
     public final static int DISCRETIZATIONMODES_UNIFORM = 0;
     public final static int DISCRETIZATIONMODES_ADAPTIVE = 1;
+    public final static int DISCRETIZATIONMODES_MULTIPASS = 2;
 
 
     public MeshManagementAttributes()
@@ -76,7 +77,7 @@ public class MeshManagementAttributes extends AttributeSubject
         discretizationToleranceX = new Vector();
         discretizationToleranceY = new Vector();
         discretizationToleranceZ = new Vector();
-        discretizationMode = DISCRETIZATIONMODES_ADAPTIVE;
+        discretizationMode = DISCRETIZATIONMODES_UNIFORM;
         discretizeBoundaryOnly = false;
         passNativeCSG = false;
     }
@@ -92,7 +93,7 @@ public class MeshManagementAttributes extends AttributeSubject
         discretizationToleranceX = new Vector();
         discretizationToleranceY = new Vector();
         discretizationToleranceZ = new Vector();
-        discretizationMode = DISCRETIZATIONMODES_ADAPTIVE;
+        discretizationMode = DISCRETIZATIONMODES_UNIFORM;
         discretizeBoundaryOnly = false;
         passNativeCSG = false;
     }
@@ -309,6 +310,8 @@ public class MeshManagementAttributes extends AttributeSubject
             str = str + "DISCRETIZATIONMODES_UNIFORM";
         if(discretizationMode == DISCRETIZATIONMODES_ADAPTIVE)
             str = str + "DISCRETIZATIONMODES_ADAPTIVE";
+        if(discretizationMode == DISCRETIZATIONMODES_MULTIPASS)
+            str = str + "DISCRETIZATIONMODES_MULTIPASS";
         str = str + "\n";
         str = str + boolToString("discretizeBoundaryOnly", discretizeBoundaryOnly, indent) + "\n";
         str = str + boolToString("passNativeCSG", passNativeCSG, indent) + "\n";

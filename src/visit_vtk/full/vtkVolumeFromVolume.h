@@ -81,11 +81,15 @@ class vtkUnstructuredGrid;
 //    Jeremy Meredith, Tue Aug 29 14:33:30 EDT 2006
 //    Added support for lines and vertices.
 //
+//    Jeremy Meredith, Fri Feb 26 14:00:07 EST 2010
+//    Made internal class definitions protected instead of private so
+//    we could usefully subclass this.
+//
 // ****************************************************************************
 
 class vtkVolumeFromVolume : public vtkDataSetFromVolume
 {
-
+protected:
 class ShapeList
 {
   public:

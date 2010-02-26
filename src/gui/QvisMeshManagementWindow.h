@@ -79,6 +79,9 @@ class QVBox;
 //   Cyrus Harrison, Thu Dec 18 09:29:37 PST 2008
 //   Removed tabSelected slot b/c it was an empty method.
 //
+//   Jeremy Meredith, Fri Feb 26 14:13:08 EST 2010
+//   Added a new "multi-pass" discretization algorithm
+//
 // ****************************************************************************
 
 class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
@@ -115,6 +118,7 @@ private:
     QCheckBox        *discretizeBoundaryOnly;
     QLabel           *discretizeModeLabel;
     QButtonGroup     *discretizationMode;
+    QRadioButton     *discretizeMultiPass;
     QRadioButton     *discretizeUniform;
     QRadioButton     *discretizeAdaptive;
     QLabel           *smallestZoneLabel;
