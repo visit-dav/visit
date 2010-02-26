@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: MeshManagementAttributes
 //
@@ -63,16 +64,27 @@ public:
     enum DiscretizationModes
     {
         Uniform,
-        Adaptive
+        Adaptive,
+        MultiPass
     };
 
+    // These constructors are for objects of this class
     MeshManagementAttributes();
     MeshManagementAttributes(const MeshManagementAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MeshManagementAttributes(private_tmfs_t tmfs);
+    MeshManagementAttributes(const MeshManagementAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MeshManagementAttributes();
 
     virtual MeshManagementAttributes& operator = (const MeshManagementAttributes &obj);
     virtual bool operator == (const MeshManagementAttributes &obj) const;
     virtual bool operator != (const MeshManagementAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MeshManagementAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -134,7 +146,8 @@ public:
         ID_discretizationToleranceZ,
         ID_discretizationMode,
         ID_discretizeBoundaryOnly,
-        ID_passNativeCSG
+        ID_passNativeCSG,
+        ID__LAST
     };
 
 private:
@@ -148,6 +161,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MESHMANAGEMENTATTRIBUTES_TMFS "d*d*d*d*ibb"
 
 #endif

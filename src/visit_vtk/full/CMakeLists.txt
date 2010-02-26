@@ -41,6 +41,7 @@
 SET(VISIT_VTK_SOURCES
 InitVTK.C
 vtkAxisDepthSort.C
+vtkBinaryPartitionVolumeFromVolume.C
 vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
@@ -79,6 +80,7 @@ vtkVisItProbeFilter.C
 vtkVisItRectilinearGrid.C
 vtkVisItSTLWriter.C
 vtkVisItScalarTree.C
+vtkVisItSplitter.C
 vtkVisItStreamLine.C
 vtkVisItStructuredGrid.C
 vtkVisItStructuredGridNormals.C
