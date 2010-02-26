@@ -1781,6 +1781,9 @@ RemoteProcess::SecureShellArgs() const
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Jeremy Meredith, Fri Feb 26 17:54:07 EST 2010
+//    Don't use ParsedFromSSHCLIENT on local launches.
+//
 // ****************************************************************************
 
 void
@@ -1970,6 +1973,15 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     {
         // If we're not tunneling, we must choose a method of determining
         // the host name, and use the actual listen port number.
+
+        // For local launches, don't parse from SSH_CLIENT.
+        // That's a trick that only works for remote launches.
+        if (chd == MachineProfile::ParsedFromSSHCLIENT &&
+            (HostIsLocal(rHost) || local))
+        {
+            chd = MachineProfile::MachineName;
+        }
+
         switch (chd)
         {
           case MachineProfile::MachineName:
