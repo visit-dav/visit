@@ -86,6 +86,12 @@
 // Modifications:
 //    Mark C. Miller, Tue Feb 17 17:54:34 PST 2009
 //    Added operator==
+//
+//    Jeremy Meredith, Fri Feb 26 13:29:56 EST 2010
+//    Added a new "multi-pass" approach which splits a starting data set
+//    once per boundary to increase accuracy at edges/corners and improve
+//    support for thin shells.
+//
 
 // .SECTION See Also
 // vtkImplicitFunction, vtkQuadric, vtkUnstructuredGrid, vtkDataSet
@@ -102,6 +108,8 @@
 #include "vtkImplicitFunctionCollection.h"
 #include "vtkPlanes.h"
 #include "vtkStructuredData.h"
+
+#include <FixedLengthBitField.h>
 
 #include <float.h>
 
@@ -190,6 +198,13 @@ public:
   // A discretize method that returns the volumetric mesh, uniformally
   // sampled to a specific number of samples in x, y and z
   //
+  vtkUnstructuredGrid *GetMultiPassDiscretization(int specificZone = -1);
+
+  bool                 DiscretizeSpaceMultiPass(double tol = 0.01,
+                                   double minX = -10.0, double maxX = 10.0,
+                                   double minY = -10.0, double maxY = 10.0,
+                                   double minZ = -10.0, double maxZ = 10.0);
+
   vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, double tol = 0.01,
                                    double minX = -10.0, double maxX = 10.0,
                                    double minY = -10.0, double maxY = 10.0,
@@ -294,6 +309,8 @@ protected:
   vtkCSGGrid();
   ~vtkCSGGrid();
 
+    bool EvaluateRegionBits(int region, FixedLengthBitField<16> &bits);
+
   //
   // We put this in the protected part of the interface because
   // we want to force clients of the class to use the AddBroundary/
@@ -313,6 +330,12 @@ protected:
   vtkImplicitFunctionCollection *Regions;    // Regions created by picking sides ('<' or '>') of
                                              // boundaries and binary expressions of other regions 
   vtkIdTypeArray *CellRegionIds;             // Indices into Regions of the "completed" regions
+
+  // These are storage of the binary partition tree unstructured grid
+  // and bitfield for the boundary tags for the multipass algorithm.
+  vtkUnstructuredGrid *multipassProcessedGrid;
+  vector<FixedLengthBitField<16> > *multipassTags;
+
 
 
   int numBoundaries;

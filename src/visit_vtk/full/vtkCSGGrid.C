@@ -36,6 +36,8 @@
 *
 *****************************************************************************/
 
+#define REPLACE_COMPLEMENT_WITH_DIFF
+
 #include <visit-config.h>
 #include "vtkCSGGrid.h"
 #include <vtkAppendFilter.h>
@@ -45,7 +47,9 @@
 #include <vtkCone.h>
 #include <vtkContourFilter.h>
 #include <vtkCylinder.h>
+#include <vtkDataSetWriter.h>
 #include <vtkExtentTranslator.h>
+#include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkGenericCell.h>
@@ -58,13 +62,17 @@
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkQuadric.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkSampleFunction.h>
 #include <vtkSphere.h>
+#include <vtkThreshold.h>
 #include <vtkTransform.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItClipper.h>
+#include <vtkVisItSplitter.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 #ifdef HAVE_BILIB
 #include <boost/numeric/interval.hpp>
@@ -437,6 +445,9 @@ vtkCSGGrid::vtkCSGGrid()
   rightIds = 0;
   regTypeFlags = 0;
   gridZones = 0;
+
+  multipassProcessedGrid = NULL;
+  multipassTags = NULL;
 }
 
 //----------------------------------------------------------------------------
@@ -454,10 +465,15 @@ vtkCSGGrid::~vtkCSGGrid()
   regTypeFlags = 0;
   if (gridZones) delete [] gridZones;
   gridZones = 0;
+  if (multipassProcessedGrid) multipassProcessedGrid->Delete();
+  multipassProcessedGrid = 0;
+  if (multipassTags) delete multipassTags;
+  multipassTags = 0;
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::Initialize()
+void
+vtkCSGGrid::Initialize()
 {
   vtkDataSet::Initialize();
 
@@ -483,7 +499,14 @@ void vtkCSGGrid::Initialize()
 //----------------------------------------------------------------------------
 // Copy the geometric and topological structure of an input rectilinear grid
 // object.
-void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
+//
+// Modifications:
+//   Jeremy Meredith, Fri Feb 26 14:01:44 EST 2010
+//   numBoundaries has already been increased by six and stored that way.
+//   If we do it again, we walk off the end of the array.
+//
+void
+vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 {
   int i;
   vtkCSGGrid *csgGrid=(vtkCSGGrid *)ds;
@@ -494,8 +517,8 @@ void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
   this->SetCellRegionIds(csgGrid->GetCellRegionIds());
 
   this->numBoundaries = csgGrid->numBoundaries;
-  this->gridBoundaries = new double[NUM_QCOEFFS*(this->numBoundaries+6)];
-  for (i = 0; i < NUM_QCOEFFS*(this->numBoundaries+6); i++)
+  this->gridBoundaries = new double[NUM_QCOEFFS*this->numBoundaries];
+  for (i = 0; i < NUM_QCOEFFS*this->numBoundaries; i++)
     this->gridBoundaries[i] = csgGrid->gridBoundaries[i];
 
   this->numRegions = csgGrid->numRegions;
@@ -508,7 +531,7 @@ void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
     this->rightIds[i] = csgGrid->rightIds[i];
     this->regTypeFlags[i] = csgGrid->regTypeFlags[i];
     }
-  
+
   this->numZones = csgGrid->numZones;
   this->gridZones = new int[this->numZones];
   for (i = 0; i < this->numZones; i++)
@@ -519,33 +542,38 @@ void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 }
 
 //----------------------------------------------------------------------------
-vtkCell *vtkCSGGrid::GetCell(vtkIdType cellId)
+vtkCell *
+vtkCSGGrid::GetCell(vtkIdType cellId)
 {
 //#warning GetCell NOT IMPLEMENTED
   return NULL;
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::GetCell(vtkIdType cellId, vtkGenericCell *cell)
+void
+vtkCSGGrid::GetCell(vtkIdType cellId, vtkGenericCell *cell)
 {
 //#warning GetCell NOT IMPLEMENTED
   cell->SetCellTypeToEmptyCell();
 }
 
-int vtkCSGGrid::GetCellType(vtkIdType cellId)
+int
+vtkCSGGrid::GetCellType(vtkIdType cellId)
 {
 //#warning GetCellType NOT IMPLEMENTED
   return VTK_EMPTY_CELL;
 }
 
-int vtkCSGGrid::GetMaxCellSize()
+int
+vtkCSGGrid::GetMaxCellSize()
 {
 //#warning GetMaxCellSize NOT IMPLEMENTED
   return -1;
 }
 
 //----------------------------------------------------------------------------
-double *vtkCSGGrid::GetPoint(vtkIdType ptId)
+double *
+vtkCSGGrid::GetPoint(vtkIdType ptId)
 {
   vtkErrorMacro("For a vtkCSGGrid, GetPoint() means GetBoundary()");
   vtkErrorMacro("Use GetBoundary() to avoid this message");
@@ -568,13 +596,15 @@ double *vtkCSGGrid::GetPoint(vtkIdType ptId)
 //----------------------------------------------------------------------------
 // Fast implementation of GetCellBounds().  Bounds are calculated without
 // constructing a cell.
-void vtkCSGGrid::GetCellBounds(vtkIdType cellId, double bounds[6])
+void
+vtkCSGGrid::GetCellBounds(vtkIdType cellId, double bounds[6])
 {
 //#warning GetCellBounds NOT IMPLEMENTED
   return;
 }
 
-void vtkCSGGrid::GetPoint(vtkIdType ptId, double x[3])
+void
+vtkCSGGrid::GetPoint(vtkIdType ptId, double x[3])
 {
   vtkErrorMacro("Requesting a point[3] from a vtkCSGGrid");
   vtkErrorMacro("Use GetBoundary() to avoid this message");
@@ -583,13 +613,15 @@ void vtkCSGGrid::GetPoint(vtkIdType ptId, double x[3])
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::FindPoint(double x[3])
+vtkIdType
+vtkCSGGrid::FindPoint(double x[3])
 {
   vtkErrorMacro("Finding a point on a vtkCSGGrid not yet implemented.");
   return -1;
 }
 
-vtkIdType vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell), 
+vtkIdType
+vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell), 
                                        vtkGenericCell *vtkNotUsed(gencell),
                                        vtkIdType vtkNotUsed(cellId), 
                                        double vtkNotUsed(tol2), 
@@ -601,7 +633,8 @@ vtkIdType vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell),
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell), 
+vtkIdType
+vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell), 
                                        vtkIdType vtkNotUsed(cellId),
                                        double vtkNotUsed(tol2), 
                                        int& subId, double pcoords[3],
@@ -612,7 +645,8 @@ vtkIdType vtkCSGGrid::FindCell(double x[3], vtkCell *vtkNotUsed(cell),
 }
 
 //----------------------------------------------------------------------------
-vtkCell *vtkCSGGrid::FindAndGetCell(double x[3],
+vtkCell *
+vtkCSGGrid::FindAndGetCell(double x[3],
                                             vtkCell *vtkNotUsed(cell), 
                                             vtkIdType vtkNotUsed(cellId),
                                             double vtkNotUsed(tol2),
@@ -624,20 +658,23 @@ vtkCell *vtkCSGGrid::FindAndGetCell(double x[3],
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::GetCellPoints(vtkIdType cellId, vtkIdList *ptIds)
+void
+vtkCSGGrid::GetCellPoints(vtkIdType cellId, vtkIdList *ptIds)
 {
 //#warning CellPoints NOT IMPLEMENTED
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::GetPointCells(vtkIdType ptId, vtkIdList *cellIds)
+void
+vtkCSGGrid::GetPointCells(vtkIdType ptId, vtkIdList *cellIds)
 {
 //#warning GetPointCells NOT IMPLEMENTED
 }
 
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::ComputeBounds()
+void
+vtkCSGGrid::ComputeBounds()
 {
 }
 
@@ -679,7 +716,8 @@ static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func
 }
 
 //----------------------------------------------------------------------------
-unsigned long vtkCSGGrid::GetActualMemorySize()
+unsigned long
+vtkCSGGrid::GetActualMemorySize()
 {
     int i;
     unsigned long size=this->vtkDataSet::GetActualMemorySize();
@@ -714,7 +752,8 @@ unsigned long vtkCSGGrid::GetActualMemorySize()
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
+void
+vtkCSGGrid::GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
                                           vtkIdList *cellIds)
 {
 
@@ -724,14 +763,21 @@ void vtkCSGGrid::GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::ShallowCopy(vtkDataObject *dataObject)
+void
+vtkCSGGrid::ShallowCopy(vtkDataObject *dataObject)
 {
     // There is no shallow copy
     DeepCopy(dataObject);
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
+// Modifications:
+//   Jeremy Meredith, Fri Feb 26 14:01:44 EST 2010
+//   numBoundaries has already been increased by six and stored that way.
+//   If we do it again, we walk off the end of the array.
+//
+void
+vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
 {
   vtkCSGGrid *grid = vtkCSGGrid::SafeDownCast(srcObject);
 
@@ -739,9 +785,9 @@ void vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
     {
       int i;
       this->numBoundaries = grid->numBoundaries;
-      this->gridBoundaries = new double[NUM_QCOEFFS*(this->numBoundaries+6)];
-      for (i = 0; i < NUM_QCOEFFS*(this->numBoundaries+6); i++)
-        this->gridBoundaries[i] = grid->gridBoundaries[i];
+      this->gridBoundaries = new double[NUM_QCOEFFS*this->numBoundaries];
+      for (i = 0; i < NUM_QCOEFFS*this->numBoundaries; i++)
+          this->gridBoundaries[i] = grid->gridBoundaries[i];
 
       this->numRegions = grid->numRegions;
       this->leftIds = new int[this->numRegions];
@@ -774,7 +820,8 @@ void vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
 //   Add "default" to switch statement
 //
 //----------------------------------------------------------------------------
-void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
+void
+vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
 {
     int i;
     vtkImplicitFunction *func;
@@ -956,8 +1003,8 @@ static void SpherePRToQuadric(const double *const sphere, double *quadric)
     quadric[1] = 1.0; // y^2 term
     quadric[2] = 1.0; // z^2 term
     quadric[6] = -2.0 * sphere[0]; // x term 
-    quadric[7] = -2.0 * sphere[1]; // x term 
-    quadric[8] = -2.0 * sphere[2]; // x term 
+    quadric[7] = -2.0 * sphere[1]; // y term 
+    quadric[8] = -2.0 * sphere[2]; // z term 
     quadric[9] = sphere[0]*sphere[0] + // constant term
                  sphere[1]*sphere[1] +
                  sphere[2]*sphere[2] -
@@ -1163,15 +1210,29 @@ static void QuadricToQuadric(const double *const inquad, double *quadric)
         quadric[i] = inquad[i];
 }
 
-void vtkCSGGrid::AddBoundaries(int nbounds,
+//----------------------------------------------------------------------------
+// Modifications:
+//   Jeremy Meredith, Fri Feb 26 14:01:44 EST 2010
+//   Added ifdef to wrap the replacement of complement with a diff op.
+//   It's not needed for all algorithms and hurts performance, so
+//   this will make it easier to disable later if/when it becoms possible.
+//
+void
+vtkCSGGrid::AddBoundaries(int nbounds,
     const int *const typeflags, int lcoeffs, const double *const coeffs)
 {
     int i;
 
+#ifdef REPLACE_COMPLEMENT_WITH_DIFF
     // the '+6' is so we can define the 6 faces of the "universe" box
     gridBoundaries = new double[NUM_QCOEFFS * (nbounds + 6)];
     for (i = 0; i < NUM_QCOEFFS * (nbounds + 6); i++)
         gridBoundaries[i] = 0.0;
+#else // not REPLACE_COMPLEMENT_WITH_DIFF
+    gridBoundaries = new double[NUM_QCOEFFS * nbounds];
+    for (i = 0; i < NUM_QCOEFFS * nbounds; i++)
+        gridBoundaries[i] = 0.0;
+#endif
 
     int coeffidx = 0;
     int quadidx = 0;
@@ -1212,10 +1273,15 @@ void vtkCSGGrid::AddBoundaries(int nbounds,
         quadidx += NUM_QCOEFFS;
     }
 
+#ifdef REPLACE_COMPLEMENT_WITH_DIFF
     numBoundaries = nbounds + 6;
-
+#else // not REPLACE_COMPLEMENT_WITH_DIFF
+    numBoundaries = nbounds;
+#endif
 }
-void vtkCSGGrid::AddBoundaries(int nbounds,
+
+void
+vtkCSGGrid::AddBoundaries(int nbounds,
     const int *const typeflags, int lcoeffs, const float *const coeffs)
 {
     double *tmpcoeffs = new double[lcoeffs];
@@ -1226,10 +1292,20 @@ void vtkCSGGrid::AddBoundaries(int nbounds,
 
     delete [] tmpcoeffs;
 }
-void vtkCSGGrid::AddRegions(int nregions,
+
+//----------------------------------------------------------------------------
+// Modifications:
+//   Jeremy Meredith, Fri Feb 26 14:01:44 EST 2010
+//   Added ifdef to wrap the replacement of complement with a diff op.
+//   It's not needed for all algorithms and hurts performance, so
+//   this will make it easier to disable later if/when it becoms possible.
+//
+void
+vtkCSGGrid::AddRegions(int nregions,
     const int *const lids, const int *const rids,
     const int *const typeflags, int lxforms, const double *const xforms)
 {
+#ifdef REPLACE_COMPLEMENT_WITH_DIFF
     // the '+11' is so we can define the universe (bounding box of whole mesh) 
     leftIds = new int[nregions+11];
     rightIds = new int[nregions+11];
@@ -1304,9 +1380,22 @@ void vtkCSGGrid::AddRegions(int nregions,
     regTypeFlags[regidx++] = DBCSG_INTERSECT;
 
     numRegions = regidx;
+#else // not REPLACE_COMPLEMENT_WITH_DIFF
+    leftIds = new int[nregions];
+    rightIds = new int[nregions];
+    regTypeFlags = new int[nregions];
+    for (int i = 0; i < nregions; i++)
+    {
+        leftIds[i] = lids[i];
+        rightIds[i] = rids[i];
+        regTypeFlags[i] = typeflags[i];
+    }
+    numRegions = nregions;
+#endif
 }
 
-void vtkCSGGrid::AddZones(int nzones, const int *const zoneIds)
+void
+vtkCSGGrid::AddZones(int nzones, const int *const zoneIds)
 {
     gridZones = new int[nzones];
     for (int i = 0; i < nzones; i++)
@@ -1323,7 +1412,8 @@ void vtkCSGGrid::AddZones(int nzones, const int *const zoneIds)
 //    Fixed bug where NUM_QCOEFFS multiplier was missing from loop over
 //    boundaries.
 //----------------------------------------------------------------------------
-bool vtkCSGGrid::operator==(const vtkCSGGrid &grid) const
+bool
+vtkCSGGrid::operator==(const vtkCSGGrid &grid) const
 {
     int i;
 
@@ -1360,7 +1450,8 @@ bool vtkCSGGrid::operator==(const vtkCSGGrid &grid) const
 //   Add "default" to switch statement
 //
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
+vtkIdType
+vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
                                   const double *coeffs)
 {
     vtkImplicitFunction *newBoundary = 0;
@@ -1501,7 +1592,8 @@ vtkIdType vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
 }
 
 //----------------------------------------------------------------------------
-vtkImplicitFunction *vtkCSGGrid::GetBoundaryFunc(vtkIdType id) const
+vtkImplicitFunction *
+vtkCSGGrid::GetBoundaryFunc(vtkIdType id) const
 {
     if (id >= 0 && id < Boundaries->GetNumberOfItems())
         return vtkImplicitFunction::SafeDownCast(Boundaries->GetItemAsObject(id));
@@ -1510,7 +1602,8 @@ vtkImplicitFunction *vtkCSGGrid::GetBoundaryFunc(vtkIdType id) const
 }
 
 //----------------------------------------------------------------------------
-vtkImplicitFunction *vtkCSGGrid::GetRegionFunc(vtkIdType id) const
+vtkImplicitFunction *
+vtkCSGGrid::GetRegionFunc(vtkIdType id) const
 {
     if (id >= 0 && id < Regions->GetNumberOfItems())
         return vtkImplicitFunction::SafeDownCast(Regions->GetItemAsObject(id));
@@ -1519,14 +1612,16 @@ vtkImplicitFunction *vtkCSGGrid::GetRegionFunc(vtkIdType id) const
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::GetBoundary(vtkIdType id, int *type, int *numcoeffs,
+void
+vtkCSGGrid::GetBoundary(vtkIdType id, int *type, int *numcoeffs,
                              double **coeffs) const
 {
 //#warning GetBoundary NOT IMPLEMENTED
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
+vtkIdType
+vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
 {
     vtkImplicitFunction *newRegion = 0;
     vtkImplicitFunction *bnd = GetBoundaryFunc(bndId);
@@ -1673,7 +1768,8 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
 //   Add "default" to switch statement
 //
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
+vtkIdType
+vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
                                 RegionOp op)
 {
     vtkImplicitBoolean *boolReg = vtkImplicitBoolean::New();
@@ -1705,7 +1801,8 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regIdLeft, vtkIdType regIdRight,
 //   Add "default" to switch statement
 //
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
+vtkIdType
+vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
 {
     vtkImplicitFunction *newRegion = 0;
     vtkImplicitFunction *oldReg = GetRegionFunc(regId);
@@ -1794,14 +1891,16 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
 }
 
 //----------------------------------------------------------------------------
-void vtkCSGGrid::GetRegion(vtkIdType id, vtkIdType *id1, vtkIdType *id2,
+void
+vtkCSGGrid::GetRegion(vtkIdType id, vtkIdType *id1, vtkIdType *id2,
                  RegionOp *op, double **xform) const
 {
 //#warning GetRegion NOT IMPLEMENTED
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::AddCell(vtkIdType regId)
+vtkIdType
+vtkCSGGrid::AddCell(vtkIdType regId)
 {
     if (regId >= 0 && regId < Regions->GetNumberOfItems())
         return CellRegionIds->InsertNextValue(regId);
@@ -1809,7 +1908,8 @@ vtkIdType vtkCSGGrid::AddCell(vtkIdType regId)
 }
 
 //----------------------------------------------------------------------------
-vtkIdType vtkCSGGrid::GetCellRegionId(vtkIdType cellId) const
+vtkIdType
+vtkCSGGrid::GetCellRegionId(vtkIdType cellId) const
 {
     if (cellId >= 0 && cellId < CellRegionIds->GetNumberOfTuples())
         return CellRegionIds->GetValue(cellId);
@@ -1879,7 +1979,8 @@ vtkCSGGrid::BuildVTKImplicitFunction(int zoneId, vtkImplicitFunction **func) con
 // This removed code needs to be re-implemented using new class
 double epsTol;
 #if 1
-vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
+vtkPolyData  *
+vtkCSGGrid::DiscretizeSurfaces(
     int specificZone, double tol,
     double minX, double maxX,
     double minY, double maxY,
@@ -1946,8 +2047,20 @@ vtkPolyData  *vtkCSGGrid::DiscretizeSurfaces(
 //    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
 //    Remove unused variables.
 //
+//    Jeremy Meredith, Fri Feb 26 14:04:30 EST 2010
+//    First, replaced sampler with a fixed regular grid.  The clipper
+//    already knew how to interpret an implicit function; sampling it
+//    beforehand was wasted computation.  Second, the output of
+//    the sampler was vtkImageData, which our clipper didn't
+//    understand, and so it was reverting to a triangulation based
+//    pure-VTK clipper.  By changing to a vtkRectilinearGrid, we get
+//    more accurate edges and better performance since it goes through
+//    our improved clipping algorithm.
+//
 // ****************************************************************************
-vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
+
+vtkUnstructuredGrid *
+vtkCSGGrid::DiscretizeSpace(
     int specificZone, double tol,
     double minX, double maxX,
     double minY, double maxY,
@@ -1974,28 +2087,43 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
 
     for (int i = startZone; i < endZone; i++)
     {
+        // Construct a rectilinear grid as the input to the clipper
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        vtkFloatArray   *coords[3] = {vtkFloatArray::New(),
+                                      vtkFloatArray::New(),
+                                      vtkFloatArray::New()};
+        coords[0]->SetNumberOfTuples(nX);
+        coords[1]->SetNumberOfTuples(nY);
+        coords[2]->SetNumberOfTuples(nZ);
+        for (int j = 0 ; j < nX ; j++)
+            coords[0]->SetComponent(j, 0, minX + (maxX-minX)*float(j)/float(nX-1));
+        for (int j = 0 ; j < nY ; j++)
+            coords[1]->SetComponent(j, 0, minY + (maxY-minY)*float(j)/float(nY-1));
+        for (int j = 0 ; j < nZ ; j++)
+            coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*float(j)/float(nZ-1));
+        int dims[3] = {nX,nY,nZ};
+        rgrid->SetDimensions(dims);
+        rgrid->SetXCoordinates(coords[0]);
+        rgrid->SetYCoordinates(coords[1]);
+        rgrid->SetZCoordinates(coords[2]);
+        coords[0]->Delete();
+        coords[1]->Delete();
+        coords[2]->Delete();
+
+        // Build the implicit function for this region
         vtkImplicitFunction *reg;
         BuildVTKImplicitFunction(gridZones[i], &reg);
 
-        //
-        // Resample onto a regular grid and iso-contour
-        //
-        vtkSampleFunction *regSample = vtkSampleFunction::New();
-        regSample->SetImplicitFunction(reg);
-        regSample->SetModelBounds(minX, maxX, minY, maxY, minZ, maxZ);
-        regSample->SetSampleDimensions(nX, nY, nZ);
-        regSample->SetCapValue(0.0);
-        regSample->ComputeNormalsOff();
-        regSample->CappingOn();
-
+        // Clip it!
         vtkVisItClipper *regClipper = vtkVisItClipper::New();
-        regClipper->SetInput((vtkDataSet*)regSample->GetOutput());
+        regClipper->SetInput(rgrid);
         regClipper->SetClipFunction(reg);
         regClipper->SetInsideOut(true);
+        regClipper->Update();
 
         appender->AddInput(regClipper->GetOutput());
         regClipper->Delete();
-        regSample->Delete();
+        rgrid->Delete();
         reg->Delete();
     }
 
@@ -2005,6 +2133,225 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
     appender->Delete();
     return rv;
 }
+
+// ****************************************************************************
+// Method:  vtkCSGGrid::EvaluateRegionBits
+//
+// Purpose:
+//   If the nth boundary is specified as "in" or "out" based on the state
+//   of the nth bit in the bitfield array, evaluate whether the combined
+//   state of all boundaries as representd by the bitfield are in or
+//   out of region "reg".
+//
+// Arguments:
+//   reg        the region we're evaluating
+//   bits       the bits to test against
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 26, 2010
+//
+// ****************************************************************************
+bool
+vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<16> &bits)
+{
+    int leftID  = leftIds[reg];
+    int rightID = rightIds[reg];
+    bool leftBit  = bits.TestBit(leftID);
+    bool rightBit = bits.TestBit(rightID);
+
+    switch (regTypeFlags[reg])
+    {
+      case DBCSG_INNER:
+        return leftBit;
+      case DBCSG_OUTER:
+        return ! leftBit;
+      case DBCSG_COMPLIMENT:
+        return ! EvaluateRegionBits(leftID, bits);
+      case DBCSG_UNION:
+        return EvaluateRegionBits(leftID, bits) || EvaluateRegionBits(rightID, bits);
+      case DBCSG_INTERSECT:
+        return EvaluateRegionBits(leftID, bits) && EvaluateRegionBits(rightID, bits);
+      case DBCSG_DIFF:
+        return EvaluateRegionBits(leftID, bits) && !EvaluateRegionBits(rightID, bits);
+      default:
+      case DBCSG_XFORM:
+        return true;
+      case DBCSG_SWEEP:
+        return false;
+    }
+}
+
+// ****************************************************************************
+// Method:  vtkCSGGrid::DiscretizeSpaceMultiPass
+//
+// Purpose:
+//   Generates the discretization for the multi-pass approach.  This
+//   discretization is shared for all regions; it stores the in/out
+//   boundary flags as a bitfield for each cell, letting us simply
+//   threshold the pieces we want later.
+//
+// Returns:  true on success, false on failue
+//
+// Arguments:
+//   tol             the inverse of the number of starting cells in the rgrid
+//   min/maxX/Y/Z    the bounding box of the data set
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 26, 2010
+//
+// ****************************************************************************
+bool
+vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
+                                     double minX, double maxX,
+                                     double minY, double maxY,
+                                     double minZ, double maxZ)
+{
+    if (numBoundaries > 128)
+    {
+        debug1 << "ERROR: We can't handle more than 128 boundaries yet.  "
+               << "This is a fixed limit in the code which can be adjusted.\n";
+        return false;
+    }
+
+    if (multipassProcessedGrid != NULL)
+        return true;
+
+    /*
+    // fudge the bounds a bit
+    minX -= minX * (minX < 0.0 ? -tol : tol);
+    minY -= minY * (minY < 0.0 ? -tol : tol);
+    minZ -= minZ * (minZ < 0.0 ? -tol : tol);
+    minX += minX * (minX < 0.0 ? -tol : tol);
+    minY += minY * (minY < 0.0 ? -tol : tol);
+    minZ += minZ * (minZ < 0.0 ? -tol : tol);
+    */
+
+    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
+    epsTol = tol;
+    int nX = (int) ((maxX - minX) / tol);
+    int nY = (int) ((maxY - minY) / tol);
+    int nZ = (int) ((maxZ - minZ) / tol);
+
+    // set up a rectilinear grid
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+    vtkFloatArray   *coords[3] = {vtkFloatArray::New(),
+                                  vtkFloatArray::New(),
+                                  vtkFloatArray::New()};
+    coords[0]->SetNumberOfTuples(nX);
+    coords[1]->SetNumberOfTuples(nY);
+    coords[2]->SetNumberOfTuples(nZ);
+    for (int i = 0 ; i < nX ; i++)
+        coords[0]->SetComponent(i, 0, minX + (maxX-minX)*float(i)/float(nX-1));
+    for (int i = 0 ; i < nY ; i++)
+        coords[1]->SetComponent(i, 0, minY + (maxY-minY)*float(i)/float(nY-1));
+    for (int i = 0 ; i < nZ ; i++)
+        coords[2]->SetComponent(i, 0, minZ + (maxZ-minZ)*float(i)/float(nZ-1));
+    int dims[3] = {nX,nY,nZ};
+    rgrid->SetDimensions(dims);
+    rgrid->SetXCoordinates(coords[0]);
+    rgrid->SetYCoordinates(coords[1]);
+    rgrid->SetZCoordinates(coords[2]);
+    coords[0]->Delete();
+    coords[1]->Delete();
+    coords[2]->Delete();
+
+    multipassTags = new vector<FixedLengthBitField<16> >;
+    vtkUnstructuredGrid *output = NULL;
+    vtkDataSet *input = NULL;
+    for (int bndId = 0; bndId < numBoundaries; bndId++)
+    {
+        double *coeffs = &gridBoundaries[NUM_QCOEFFS*bndId];
+        vtkQuadric *quadric = vtkQuadric::New();
+        quadric->SetCoefficients(coeffs);
+        vtkVisItSplitter *regClipper = vtkVisItSplitter::New();
+        vector<FixedLengthBitField<16> > *oldtags = NULL;
+        if (output == NULL)
+        {
+            // first pass
+            input = rgrid;
+        }
+        else
+        {
+            input = output;
+            oldtags = multipassTags;
+            multipassTags = new vector<FixedLengthBitField<16> >;
+        }
+        regClipper->SetInput(input);
+        regClipper->SetOldTagBitField(oldtags);
+        regClipper->SetNewTagBitField(multipassTags);
+        regClipper->SetNewTagBit(bndId);
+        regClipper->SetClipFunction(quadric);
+        // It isn't necessary to force zero crossings to get good results;
+        // it might improve the quality a little, but it wasn't obvious.
+        //regClipper->SetUseZeroCrossings(true);
+        regClipper->Update();
+
+        output = regClipper->GetOutput();
+
+        output->Register(0);
+        output->SetSource(NULL);
+        regClipper->Delete();
+        quadric->Delete();
+        input->Delete();
+
+        if (oldtags)
+            delete oldtags;
+    }
+
+    multipassProcessedGrid = output;
+
+    return true;
+}
+
+// ****************************************************************************
+// Method:  vtkCSGGrid::GetMultiPassDiscretization
+//
+// Purpose:
+//   Extract out a single zone from the pre-process mesh for the
+//   mutli-pass algorithm.
+//
+// Arguments:
+//   specificZone   the index of the "zone" to retrieve
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 26, 2010
+//
+// ****************************************************************************
+vtkUnstructuredGrid *
+vtkCSGGrid::GetMultiPassDiscretization(int specificZone)
+{
+    vtkUnstructuredGrid *rv = multipassProcessedGrid;
+    if (rv == NULL)
+        return NULL;
+
+    int zone = gridZones[specificZone];
+
+    // Evaluate the cell tags against this region
+    int ncells = rv->GetNumberOfCells();
+    vtkIntArray *in = vtkIntArray::New();
+    in->SetNumberOfComponents(1);
+    in->SetNumberOfTuples(rv->GetNumberOfCells());
+    for (int i=0; i<rv->GetNumberOfCells(); i++)
+    {
+        bool InOut = EvaluateRegionBits(zone,
+                                        multipassTags->operator[](i));
+        in->SetTuple1(i, InOut ? 1 : 0);
+    }
+    rv->GetCellData()->SetScalars(in);
+
+    // Threshold out the cells for this region
+    vtkThreshold *threshold = vtkThreshold::New();
+    threshold->SetInput(rv);
+    threshold->ThresholdByUpper(0.5);
+    threshold->Update();
+    rv = threshold->GetOutput();
+    rv->Register(0);
+    threshold->Delete();
+    in->Delete();
+
+    return rv;
+}
+
 #endif
 
 
@@ -2416,7 +2763,8 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
 //    agree with flatness test. 
 //
 // ****************************************************************************
-vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
+vtkUnstructuredGrid *
+vtkCSGGrid::DiscretizeSpace3(
     int specificZone, int rank, int nprocs,
     double discTol, double flatTol,
     double minX, double maxX,

@@ -36,10 +36,9 @@
 *
 *****************************************************************************/
 
-#include "vtkVisItClipper.h"
+#include "vtkVisItSplitter.h"
 #include <vtkAppendFilter.h>
 #include <vtkCellData.h>
-#include <vtkClipDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkImplicitFunction.h>
 #include <vtkObjectFactory.h>
@@ -50,7 +49,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVolumeFromVolume.h>
+#include <vtkBinaryPartitionVolumeFromVolume.h>
 
 #include <ImproperUseException.h>
 
@@ -62,8 +61,11 @@
 #include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
-vtkCxxRevisionMacro(vtkVisItClipper, "$Revision: 1.00 $");
-vtkStandardNewMacro(vtkVisItClipper);
+#include <FixedLengthBitField.h>
+#include <TimingsManager.h>
+
+vtkCxxRevisionMacro(vtkVisItSplitter, "$Revision: 1.00 $");
+vtkStandardNewMacro(vtkVisItSplitter);
 
 //
 // Function: AdjustPercentToZeroCrossing
@@ -175,21 +177,16 @@ AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
 }
 
 // ****************************************************************************
-//  Constructor:  vtkVisItClipper::vtkVisItClipper
+//  Constructor:  vtkVisItSplitter::vtkVisItSplitter
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 11, 2003
+//  Creation:    February 26, 2010
 //
 //  Modifications:
-//    Jeremy Meredith, Tue Aug 29 13:38:08 EDT 2006
-//    Added support for leaving cells whole.
-//
-//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
-//    Initialize new data members.
 //
 // ****************************************************************************
 
-vtkVisItClipper::vtkVisItClipper()
+vtkVisItSplitter::vtkVisItSplitter()
 {
     CellList = NULL;
     CellListSize = 0;
@@ -197,28 +194,24 @@ vtkVisItClipper::vtkVisItClipper()
     clipFunction = NULL;
     removeWholeCells = false;
     useZeroCrossings = false;
-    computeInsideAndOut = false;
-    otherOutput = NULL;
     scalarArrayAsVTK = NULL;
     iOwnData = false;
+    oldTags = NULL;
+    newTags = NULL;
+    newTagBit = 0;
 }
 
 // ****************************************************************************
-//  Destructor:  vtkVisItClipper::~vtkVisItClipper
+//  Destructor:  vtkVisItSplitter::~vtkVisItSplitter
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 11, 2003
+//  Creation:    February 26, 2010
 //
 //  Modifications:
 //
-//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
-//    Clean up new data members.
-//
 // ****************************************************************************
-vtkVisItClipper::~vtkVisItClipper()
+vtkVisItSplitter::~vtkVisItSplitter()
 {
-    if (otherOutput)
-        otherOutput->Delete();
     if (iOwnData)
         delete [] scalarArray;
     if (scalarArrayAsVTK != NULL)
@@ -226,7 +219,7 @@ vtkVisItClipper::~vtkVisItClipper()
 }
 
 void
-vtkVisItClipper::SetUseZeroCrossings(bool use)
+vtkVisItSplitter::SetUseZeroCrossings(bool use)
 {
     if (use && clipFunction && 
         (strcmp(clipFunction->GetClassName(), "vtkQuadric") != 0))
@@ -240,20 +233,14 @@ vtkVisItClipper::SetUseZeroCrossings(bool use)
 }
 
 void
-vtkVisItClipper::SetComputeInsideAndOut(bool compute)
-{
-    computeInsideAndOut = compute;
-}
-
-void
-vtkVisItClipper::SetCellList(int *cl, int size)
+vtkVisItSplitter::SetCellList(int *cl, int size)
 {
     CellList = cl;
     CellListSize = size;
 }
 
 void
-vtkVisItClipper::SetClipFunction(vtkImplicitFunction *func)
+vtkVisItSplitter::SetClipFunction(vtkImplicitFunction *func)
 {
     if (useZeroCrossings && (strcmp(func->GetClassName(), "vtkQuadric") != 0))
     {
@@ -270,7 +257,7 @@ vtkVisItClipper::SetClipFunction(vtkImplicitFunction *func)
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItClipper::SetClipScalars
+//  Method:  vtkVisItSplitter::SetClipScalars
 //
 //  Purpose:
 //    Set the scalar array used for clipping, and the cutoff.
@@ -282,22 +269,16 @@ vtkVisItClipper::SetClipFunction(vtkImplicitFunction *func)
 //    cutoff     the cutoff
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    January 30, 2004
+//  Creation:    February 26, 2010
 //
 //  Modifications:
-//
-//    Jeremy Meredith, Wed May  5 14:48:23 PDT 2004
-//    Made it allow only a single cutoff, and use the "insideOut"
-//    value to determine if this is a min or max value.
-//
-//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
-//    Change the array argument to be a vtk data type.  Also added support
-//    for data types besides "float".
+//   Jeremy Meredith, Fri Feb 26 13:31:31 EST 2010
+//   Initial creation, copied from vtkVisItClipper.
 //
 // ****************************************************************************
 
 void
-vtkVisItClipper::SetClipScalars(vtkDataArray *array, float cutoff)
+vtkVisItSplitter::SetClipScalars(vtkDataArray *array, float cutoff)
 {
     if (iOwnData)
     {
@@ -336,13 +317,32 @@ vtkVisItClipper::SetClipScalars(vtkDataArray *array, float cutoff)
 }
 
 void
-vtkVisItClipper::SetInsideOut(bool io)
+vtkVisItSplitter::SetInsideOut(bool io)
 {
     insideOut = io;
 }
 
+
+void
+vtkVisItSplitter::SetOldTagBitField(std::vector<FixedLengthBitField<16> > *tags)
+{
+    oldTags = tags;
+}
+
+void
+vtkVisItSplitter::SetNewTagBitField(std::vector<FixedLengthBitField<16> > *tags)
+{
+    newTags = tags;
+}
+
+void
+vtkVisItSplitter::SetNewTagBit(int bit)
+{
+    newTagBit = bit;
+}
+
 // ****************************************************************************
-//  Method:  vtkVisItClipper::SetRemoveWholeCells
+//  Method:  vtkVisItSplitter::SetRemoveWholeCells
 //
 //  Purpose:
 //    Tell the clipper if you want it to treat cells as atomic, and
@@ -352,23 +352,17 @@ vtkVisItClipper::SetInsideOut(bool io)
 //    lcw        the new setting
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 29, 2006
+//  Creation:    February 26, 2010
 //
 // ****************************************************************************
 void
-vtkVisItClipper::SetRemoveWholeCells(bool rwc)
+vtkVisItSplitter::SetRemoveWholeCells(bool rwc)
 {
     removeWholeCells = rwc;
 }
 
-vtkUnstructuredGrid*
-vtkVisItClipper::GetOtherOutput()
-{
-    return otherOutput;
-}
-
 // ****************************************************************************
-//  Method:  vtkVisItClipper::Execute
+//  Method:  vtkVisItSplitter::Execute
 //
 //  Purpose:
 //    Main execution method.  
@@ -380,21 +374,13 @@ vtkVisItClipper::GetOtherOutput()
 //  Creation:    February 24, 2010
 //
 //  Modifications:
-//    Jeremy Meredith, Wed Feb 24 10:18:33 EST 2010
-//    Initial creation: unified the old rectilinear, structured, unstructured,
-//    and polydata execution functions into this single function.
-//
-//    Jeremy Meredith, Thu Feb 25 11:08:03 EST 2010
-//    Don't forget to exit early if we have a dataset we can't understand.
-//
-//    Jeremy Meredith, Thu Feb 25 15:14:28 EST 2010
-//    Allowing clipFunction usage to precalculate (most) values.  This
-//    saves a good chunk of time in this mode since we were re-calculating
-//    these values a number of times.
+//    Jeremy Meredith, Fri Feb 26 13:31:31 EST 2010
+//    Initial creation, copied from vtkVisItClipper and modified to
+//    merely split+tag output, not remove cells.
 //
 // ****************************************************************************
 void
-vtkVisItClipper::Execute()
+vtkVisItSplitter::Execute()
 {
     vtkDataSet *ds = GetInput();
 
@@ -428,7 +414,6 @@ vtkVisItClipper::Execute()
     vtkCellData         *inCD   = ds->GetCellData();
     vtkPointData        *inPD   = ds->GetPointData();
     vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
-    vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
 
     bool twoD = false;
     if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
@@ -456,41 +441,29 @@ vtkVisItClipper::Execute()
         strideZ = cell_dims[0]*cell_dims[1];
         ptstrideY = pt_dims[0];
         ptstrideZ = pt_dims[0]*pt_dims[1];
-        // we can clip all of structured grids; don't set up
-        // the "stuff_I_cant_clip" mesh
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
         ug = (vtkUnstructuredGrid*)ds;
         pts_ptr = (float*)ug->GetPoints()->GetVoidPointer(0);
-        stuff_I_cant_clip->SetPoints(ug->GetPoints());
-        stuff_I_cant_clip->GetPointData()->ShallowCopy(ug->GetPointData());
-        stuff_I_cant_clip->Allocate(nCells);
     }
     else if (do_type == VTK_POLY_DATA)
     {
         pg = (vtkPolyData*)ds;
         pts_ptr = (float*)pg->GetPoints()->GetVoidPointer(0);
-        stuff_I_cant_clip->SetPoints(pg->GetPoints());
-        stuff_I_cant_clip->GetPointData()->ShallowCopy(pg->GetPointData());
-        stuff_I_cant_clip->Allocate(nCells);
-
     }
     else
     {
-        debug1 << "vtkVisItClipper: Can't operate on this dataset,\n";
-        debug1 << "                 reverting to raw VTK code.\n";
-        GeneralExecute();
-        return;
+        debug1 << "vtkVisItSplitter: Can't operate on this dataset.\n";
     }
 
-    //
-    // If we have a clip function, evaluate it on the points here
-    // (better than doing it multiple times when evaluating each
-    // node from each cell).
-    //
+    int ptSizeGuess = (CellList == NULL
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
+
     if (clipFunction)
     {
+        int th = visitTimer->StartTimer();
         int npts = ds->GetNumberOfPoints();
         scalarArray = new float[npts];
         scalarCutoff = 0;
@@ -514,23 +487,16 @@ vtkVisItClipper::Execute()
                     {
                         scalarArray[ctr++] = 
                            -clipFunction->EvaluateFunction(X[i],Y[j],Z[k]);
+                        //cerr << "i="<<i<<" j="<<j<<" k="<<k<<" val="<<scalarArray[ctr-1]<<endl;
                     }
                 }
             }
         }
+        visitTimer->StopTimer(th, "Calculating clipfunction values");
     }
 
-
-    //
-    // Do the actual clipping here
-    //
-    int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
-                         : CellListSize*5 + 100);
-
-    vtkVolumeFromVolume vfvIn(ds->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume vfvOut(ds->GetNumberOfPoints(), ptSizeGuess);
-    vtkVolumeFromVolume *useVFV;
+    vtkBinaryPartitionVolumeFromVolume vfv(ds->GetNumberOfPoints(),
+                                           ptSizeGuess);
 
     const int max_pts = 8;
     int cellType = twoD ? VTK_QUAD : VTK_HEXAHEDRON; // constant for struct grd
@@ -538,8 +504,8 @@ vtkVisItClipper::Execute()
     vtkIdType cellPtsStruct[8];
     vtkIdType *cellPts = cellPtsStruct; // for struct grd, we'll fill it
 
+    int th1 = visitTimer->StartTimer();
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
-    int numIcantClip = 0;
     for (int i = 0 ; i < nToProcess ; i++)
     {
         // Get the cell details
@@ -574,8 +540,7 @@ vtkVisItClipper::Execute()
             }
         }
 
-        // If it's something we can't clip, save it for later
-        bool canClip = false;
+        // If it's something we can't clip, skip this output
         switch (cellType)
         {
           case VTK_TETRA:
@@ -588,24 +553,11 @@ vtkVisItClipper::Execute()
           case VTK_PIXEL:
           case VTK_LINE:
           case VTK_VERTEX:
-            canClip = true;
             break;
 
           default:
-            canClip = false;
-            break;
-        }
-        if (!canClip)
-        {
-            if (numIcantClip == NULL)
-                stuff_I_cant_clip->GetCellData()->
-                                       CopyAllocate(ds->GetCellData(), nCells);
-
-            stuff_I_cant_clip->InsertNextCell(cellType, nCellPts, cellPts);
-            stuff_I_cant_clip->GetCellData()->
-                            CopyData(ds->GetCellData(), cellId, numIcantClip);
-            numIcantClip++;
             continue;
+            break;
         }
 
         // fill the dist functions and calculate lookup case
@@ -695,8 +647,7 @@ vtkVisItClipper::Execute()
             break;
         }
 
-        int            interpIDsIn[4];
-        int            interpIDsOut[4];
+        int interpIDs[4];
         for (int j = 0 ; j < numOutput ; j++)
         {
             unsigned char shapeType = *splitCase++;
@@ -751,20 +702,6 @@ vtkVisItClipper::Execute()
 
                 bool out = ((!insideOut && color == COLOR0) ||
                             ( insideOut && color == COLOR1));
-                useVFV = &vfvIn;
-                if (out)
-                {
-                    if (computeInsideAndOut)
-                    {
-                        useVFV = &vfvOut;
-                    }
-                    else
-                    {
-                        // We don't want this one; it's the wrong side.
-                        splitCase += npts;
-                        continue;
-                    }
-                }
 
                 int shape[8];
                 for (int p = 0 ; p < npts ; p++)
@@ -825,14 +762,11 @@ vtkVisItClipper::Execute()
                             }
                         }
                                 
-                        shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
+                        shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                     }
                     else if (pt >= N0 && pt <= N3)
                     {
-                        if (useVFV == &vfvIn)
-                            shape[p] = interpIDsIn[pt - N0];
-                        else
-                            shape[p] = interpIDsOut[pt - N0];
+                        shape[p] = interpIDs[pt - N0];
                     }
                     else
                     {
@@ -845,162 +779,69 @@ vtkVisItClipper::Execute()
                 switch (shapeType)
                 {
                   case ST_HEX:
-                    useVFV->AddHex(cellId,
-                                   shape[0], shape[1], shape[2], shape[3],
-                                   shape[4], shape[5], shape[6], shape[7]);
+                    vfv.AddHex(cellId,
+                               shape[0], shape[1], shape[2], shape[3],
+                               shape[4], shape[5], shape[6], shape[7],
+                               !out);
                     break;
                   case ST_WDG:
-                    useVFV->AddWedge(cellId,
-                                     shape[0], shape[1], shape[2],
-                                     shape[3], shape[4], shape[5]);
+                    vfv.AddWedge(cellId,
+                                 shape[0], shape[1], shape[2],
+                                 shape[3], shape[4], shape[5],
+                                 !out);
                     break;
                   case ST_PYR:
-                    useVFV->AddPyramid(cellId, shape[0], shape[1],
-                                       shape[2], shape[3], shape[4]);
+                    vfv.AddPyramid(cellId, shape[0], shape[1],
+                                   shape[2], shape[3], shape[4],
+                                   !out);
                     break;
                   case ST_TET:
-                    useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
+                    vfv.AddTet(cellId, shape[0], shape[1], shape[2], shape[3],
+                               !out);
                     break;
                   case ST_QUA:
-                    useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
+                    vfv.AddQuad(cellId, shape[0], shape[1], shape[2], shape[3],
+                                !out);
                     break;
                   case ST_TRI:
-                    useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
+                    vfv.AddTri(cellId, shape[0], shape[1], shape[2],
+                               !out);
                     break;
                   case ST_LIN:
-                    useVFV->AddLine(cellId, shape[0], shape[1]);
+                    vfv.AddLine(cellId, shape[0], shape[1],
+                                !out);
                     break;
                   case ST_VTX:
-                    useVFV->AddVertex(cellId, shape[0]);
+                    vfv.AddVertex(cellId, shape[0],
+                                  !out);
                     break;
                   case ST_PNT:
-                    interpIDsIn[interpID] = vfvIn.AddCentroidPoint(npts, shape);
-                    if (computeInsideAndOut)
-                        interpIDsOut[interpID] = vfvOut.AddCentroidPoint(npts, shape);
+                    interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
                     break;
                 }
             }
         }
     }
+    visitTimer->StopTimer(th1, "Performing clipping");
 
-    //
-    // If we had a clip function, we created the scalarArray in this function
-    //
     if (clipFunction)
     {
         delete[] scalarArray;
         scalarArray = NULL;
     }
 
-    //
-    // Construct the output data set.
-    //
-    if (numIcantClip > 0)
-    {
-        vtkUnstructuredGrid *not_from_zoo  = vtkUnstructuredGrid::New();
-        ClipDataset(stuff_I_cant_clip, not_from_zoo);
-        
-        vtkUnstructuredGrid *just_from_zoo = vtkUnstructuredGrid::New();
-        if (pts_ptr)
-            vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
-        else
-            vfvIn.ConstructDataSet(inPD, inCD, just_from_zoo, pt_dims,X,Y,Z);
-
-        vtkAppendFilter *appender = vtkAppendFilter::New();
-        appender->AddInput(not_from_zoo);
-        appender->AddInput(just_from_zoo);
-        appender->GetOutput()->Update();
-
-        output->ShallowCopy(appender->GetOutput());
-
-        if (computeInsideAndOut)
-        {
-            appender->RemoveInput(just_from_zoo);
-            just_from_zoo->Delete();
-
-            just_from_zoo = vtkUnstructuredGrid::New();
-            if (pts_ptr)
-                vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
-            else
-                vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pt_dims,X,Y,Z);
-
-            appender->AddInput(just_from_zoo);
-            appender->GetOutput()->Update();
-
-            if (otherOutput) otherOutput->Delete();
-            otherOutput = vtkUnstructuredGrid::New();
-            otherOutput->ShallowCopy(appender->GetOutput());
-        }
-
-        appender->Delete();
-        just_from_zoo->Delete();
-        not_from_zoo->Delete();
-    }
+    int th2 = visitTimer->StartTimer();
+    if (pts_ptr)
+        vfv.ConstructDataSet(inPD, inCD, output, pts_ptr,
+                             oldTags, newTags, newTagBit);
     else
-    {
-        if (pts_ptr)
-            vfvIn.ConstructDataSet(inPD, inCD, output, pts_ptr);
-        else
-            vfvIn.ConstructDataSet(inPD, inCD, output, pt_dims,X,Y,Z);
-
-        if (computeInsideAndOut)
-        {
-            if (otherOutput) otherOutput->Delete();
-            otherOutput = vtkUnstructuredGrid::New();
-            if (pts_ptr)
-                vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
-            else
-                vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pt_dims,X,Y,Z);
-        }
-    }
-
-    stuff_I_cant_clip->Delete();
+        vfv.ConstructDataSet(inPD, inCD, output, pt_dims,X,Y,Z,
+                             oldTags, newTags, newTagBit);
+    visitTimer->StopTimer(th2, "VFV Constructing data set");
 }
 
 
-void vtkVisItClipper::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItSplitter::PrintSelf(ostream& os, vtkIndent indent)
 {
     Superclass::PrintSelf(os,indent);
 }
-
-void vtkVisItClipper::GeneralExecute(void)
-{
-    ClipDataset(GetInput(), (vtkUnstructuredGrid*)GetOutput());
-}
-
-// ****************************************************************************
-//  Modifications:
-//
-//    Hank Childs, Sat Mar 27 10:56:08 PST 2004
-//    Work-around some funniness with VTK memory management.  (the funniness
-//    is a bug with the vtkClipDataSet filter.)
-//
-//    Hank Childs, Sat Oct  6 15:37:11 PDT 2007
-//    Fix bug with setting "inverse" for isovoluming.
-//
-// ****************************************************************************
-
-void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
-                                  vtkUnstructuredGrid *out_ds)
-{
-    vtkClipDataSet *clipData = vtkClipDataSet::New();
-    clipData->SetInput(in_ds);
-    if (clipFunction)
-    {
-        clipData->SetClipFunction(clipFunction);
-        clipData->GenerateClipScalarsOff();
-        clipData->SetInsideOut(insideOut);
-    }
-    else
-    {
-        clipData->SetClipFunction(NULL);
-        in_ds->GetPointData()->SetScalars(scalarArrayAsVTK);
-        clipData->GenerateClipScalarsOff();
-        clipData->SetValue(scalarCutoff);
-        clipData->SetInsideOut(!insideOut);
-    }
-    clipData->Update();
-    out_ds->ShallowCopy(clipData->GetOutput());
-    clipData->Delete();
-}
-
