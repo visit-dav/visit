@@ -51,6 +51,10 @@ Definition:
 //    I moved these include files to here so we can successfully regenerate
 //    the class.
 //
+//    Jeremy Meredith, Fri Feb 26 09:28:01 EST 2010
+//    Try matching against the original hostname if matching against the
+//    resolved host name fails.
+//
 // ****************************************************************************
 #if defined(_WIN32)
 #include <winsock2.h>
@@ -71,6 +75,14 @@ HostProfileList::GetMachineProfileForHost(const std::string &hostName) const
         MachineProfile *m = (MachineProfile *)(machines[i]);
 
         if (m->ProfileMatchesHost(fqhostName))
+            return m;
+    }
+
+    for(size_t i = 0; i < machines.size(); i++)
+    {
+        MachineProfile *m = (MachineProfile *)(machines[i]);
+        
+        if (m->ProfileMatchesHost(hostName))
             return m;
     }
 
