@@ -49,8 +49,12 @@
 #    I added the paraDIS and paraDIS_tecplot plugins to the build.
 #
 #    Eric Brugger, Wed Feb 24 17:46:10 PST 2010
-#    I temporalily disabled the paraDIS and paraDIS_tecplot plugins since
-#    they don't build.
+#    I temporalily removed the paraDIS and paraDIS_tecplot plugins from
+#    the build since they don't build.
+#
+#    Eric Brugger, Fri Feb 26 10:20:38 PST 2010
+#    I added back the paraDIS and paraDIS_tecplot plugins to the build since
+#    they now build.
 #
 #****************************************************************************/
 IF(NOT WIN32)
@@ -204,6 +208,8 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
+paraDIS
+paraDIS_tecplot
 )
 
 IF (NOT WIN32)

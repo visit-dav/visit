@@ -48,6 +48,7 @@ JMFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${PDB_INCLUDE_DIR} ${VISIT_INCLUDE_DIR}/third_party_builtin/bow 
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
@@ -68,7 +69,6 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${PDB_INCLUDE_DIR} ${VISIT_INCLUDE_DIR}/third_party_builtin/bow 
 ${VTK_INCLUDE_DIRS} 
 )
 
