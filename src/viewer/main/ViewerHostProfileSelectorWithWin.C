@@ -231,6 +231,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Jeremy Meredith, Thu Feb 25 10:16:15 EST 2010
 //    Adding debug info.
 //
+//    Jeremy Meredith, Fri Feb 26 18:14:55 EST 2010
+//    Don't forget to block signals when you mess with the list.
+//
 // ****************************************************************************
 
 bool 
@@ -297,6 +300,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
         {
             debug2 << "   Presenting a choice to the user.\n";
 
+            profiles->blockSignals(true);
             profiles->clear();
             for (i=0; i<profile.GetNumLaunchProfiles(); i++)
             {
@@ -309,6 +313,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
                 // this signals the callback to set the default profile
                 profiles->setCurrentRow(profile.GetActiveProfile());
             }
+            profiles->blockSignals(false);
 
             viewerSubject->BlockSocketSignals(true);
             waitingOnUser = true;
