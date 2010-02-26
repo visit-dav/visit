@@ -1784,6 +1784,10 @@ RemoteProcess::SecureShellArgs() const
 //    Jeremy Meredith, Fri Feb 26 17:54:07 EST 2010
 //    Don't use ParsedFromSSHCLIENT on local launches.
 //
+//    Jeremy Meredith, Fri Feb 26 18:04:58 EST 2010
+//    Oops, too aggressive -- don't ignore the ParsedFromSSHCLIENT when
+//    only "treatAsThoughLocal" is true, it must truly be a local launch.
+//
 // ****************************************************************************
 
 void
@@ -1977,7 +1981,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
         // For local launches, don't parse from SSH_CLIENT.
         // That's a trick that only works for remote launches.
         if (chd == MachineProfile::ParsedFromSSHCLIENT &&
-            (HostIsLocal(rHost) || local))
+            HostIsLocal(rHost))
         {
             chd = MachineProfile::MachineName;
         }
