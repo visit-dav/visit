@@ -79,6 +79,12 @@
 //    I modified the database plugins to list the include paths specified
 //    in the xml file before the VTK include paths.
 //
+//    Eric Brugger, Fri Feb 26 09:47:00 PST 2010
+//    I modified the database plugins to list the include paths specified
+//    in the xml file before any of the VisIt include paths.  I also modified
+//    the database plugins to also treat all flags in CXXFLAGS that start
+//    with "-I" as include paths.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -667,9 +673,13 @@ class CMakeGeneratorPlugin : public Plugin
                  extraIncludes.push_back(cxxflags[i]);
             else if(cxxflags[i].startsWith("$("))
                  extraIncludes.push_back(ConvertDollarParenthesis(cxxflags[i]));
+            else if(cxxflags[i].startsWith("-I"))
+                 extraIncludes.push_back(cxxflags[i].right(cxxflags[i].size()-2));
         }
         out << "INCLUDE_DIRECTORIES(" << endl;
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
+        if(extraIncludes.size() > 0)
+            out << ToString(extraIncludes) << endl;
         out << "${VISIT_COMMON_INCLUDES}" << endl;
         out << VisItIncludeDir() << "/avt/DBAtts/MetaData" << endl;
         out << VisItIncludeDir() << "/avt/DBAtts/SIL" << endl;
@@ -690,15 +700,15 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        if(extraIncludes.size() > 0)
-            out << ToString(extraIncludes) << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
         out << ")" << endl;
         out << endl;
         // Pass other CXXFLAGS
         for (size_t i=0; i<cxxflags.size(); i++)
         {
-            if(!cxxflags[i].startsWith("${") && !cxxflags[i].startsWith("$("))
+            if(!cxxflags[i].startsWith("${") &&
+               !cxxflags[i].startsWith("$(") &&
+               !cxxflags[i].startsWith("-I"))
                  out << "ADD_DEFINITIONS(\"" << cxxflags[i] << "\")" << endl;
         }
         bool needWindowsDefines = false;
