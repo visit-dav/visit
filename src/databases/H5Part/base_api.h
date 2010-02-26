@@ -1,7 +1,11 @@
 #ifndef _BASE_INTERFACE_H
 #define _BASE_INTERFACE_H
 
+#ifndef WIN32
 #include <stdint.h>
+#else
+typedef __int32           int32_t;
+#endif
 #include "hdf5.h"
 #include <stdio.h>
 #include <stdlib.h>
