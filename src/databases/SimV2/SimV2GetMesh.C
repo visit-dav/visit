@@ -26,6 +26,13 @@
 
 #include <PolygonToTriangles.C>
 
+#include <simv2_CSGMesh.h>
+#include <simv2_CurvilinearMesh.h>
+#include <simv2_PointMesh.h>
+#include <simv2_RectilinearMesh.h>
+#include <simv2_UnstructuredMesh.h>
+#include <simv2_VariableData.h>
+
 void FreeDataArray(VisIt_DataArray &da);
 
 // ****************************************************************************
@@ -147,6 +154,247 @@ GetQuadGhostZones(int nnodes, int ndims,
 }
 
 // ****************************************************************************
+// Function: SimV2_CreatePoints
+//
+// Purpose: 
+//   Create a vtkPoints object from various VariableData objects.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   coordMode        : The coordinate mode: separate or interleaved.
+//   x                : The handle to the x coordinate array.
+//   y                : The handle to the y coordinate array.
+//   z                : The handle to the z coordinate array.
+//   c                : The handle to the c coordinate array.
+//   additionalPoints : The number of additional points to create.
+//
+// Returns:    A vtkPoints object that contains the coordinates.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 25 11:14:01 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static vtkPoints *
+SimV2_CreatePoints(int ndims, int coordMode, 
+    visit_handle x, visit_handle y, visit_handle z, visit_handle c, 
+    int additionalPoints)
+{
+    vtkPoints *points = NULL;
+
+    if(coordMode == VISIT_COORD_MODE_SEPARATE)
+    {
+        // Let's get the VariableData properties. The API guarantees that the
+        // arrays will have the same properties so we only get the data 
+        // pointer as a unique value.
+        visit_handle cHandles[3];
+        cHandles[0] = x;
+        cHandles[1] = y;
+        cHandles[2] = z;
+        int owner, dataType, nComps, nTuples;
+        void *data[3] = {0,0,0};
+        for(int i = 0; i < ndims; ++i)
+        {
+            if(simv2_VariableData_getData(cHandles[i], owner, dataType, 
+                nComps, nTuples, data[i]) == VISIT_ERROR)
+            {
+                return NULL;
+            }
+        }
+
+        // We have all of the data. Assemble it.
+        points = vtkPoints::New();
+        if(ndims == 2)
+        {
+            if(dataType == VISIT_DATATYPE_FLOAT)
+            {
+                points->SetNumberOfPoints(nTuples + additionalPoints);
+                float *dest = (float *)points->GetVoidPointer(0);
+                float *x_src = (float*)data[0];
+                float *y_src = (float*)data[1];
+                for(int i = 0; i < nTuples; ++i)
+                {
+                    *dest++ = *x_src++;
+                    *dest++ = *y_src++;
+                    *dest++ = 0.f;
+                }
+            }
+            else if(dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                points->SetDataTypeToDouble();
+                points->SetNumberOfPoints(nTuples + additionalPoints);
+                double *dest = (double *)points->GetVoidPointer(0);
+                double *x_src = (double*)data[0];
+                double *y_src = (double*)data[1];
+                for(int i = 0; i < nTuples; ++i)
+                {
+                    *dest++ = *x_src++;
+                    *dest++ = *y_src++;
+                    *dest++ = 0.;
+                }
+            }
+            else
+            {
+                points->Delete();
+                EXCEPTION1(ImproperUseException,
+                "Coordinate arrays must be float or double.\n");
+            }
+        }
+        else
+        {
+            if(dataType == VISIT_DATATYPE_FLOAT)
+            {
+                points->SetNumberOfPoints(nTuples + additionalPoints);
+                float *dest = (float *)points->GetVoidPointer(0);
+                float *x_src = (float*)data[0];
+                float *y_src = (float*)data[1];
+                float *z_src = (float*)data[2];
+                for(int i = 0; i < nTuples; ++i)
+                {
+                    *dest++ = *x_src++;
+                    *dest++ = *y_src++;
+                    *dest++ = *z_src++;
+                }
+            }
+            else if(dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                points->SetDataTypeToDouble();
+                points->SetNumberOfPoints(nTuples + additionalPoints);
+                double *dest = (double *)points->GetVoidPointer(0);
+                double *x_src = (double*)data[0];
+                double *y_src = (double*)data[1];
+                for(int i = 0; i < nTuples; ++i)
+                {
+                    *dest++ = *x_src++;
+                    *dest++ = *y_src++;
+                    *dest++ = 0.;
+                }
+            }
+            else
+            {
+                points->Delete();
+                EXCEPTION1(ImproperUseException,
+                "Coordinate arrays must be float or double.\n");
+            }
+        }
+    }
+    else if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
+    {
+        points = vtkPoints::New();
+
+        int owner, dataType, nComps, nTuples;
+        void *data = NULL;
+        if(simv2_VariableData_getData(c, owner, dataType, nComps, nTuples, data) != VISIT_ERROR)
+        {
+            if(ndims == 2)
+            {
+                // Copy the 2D data to 3D
+                if(dataType == VISIT_DATATYPE_FLOAT)
+                {
+                    points->SetNumberOfPoints(nTuples + additionalPoints);
+                    float *dest = (float *)points->GetVoidPointer(0);
+                    float *src = (float*)data;
+                    for(int i = 0; i < nTuples; ++i)
+                    {
+                        *dest++ = *src++;
+                        *dest++ = *src++;
+                        *dest++ = 0.f;
+                    }
+                }
+                else if(dataType == VISIT_DATATYPE_DOUBLE)
+                {
+                    points->SetDataTypeToDouble();
+                    points->SetNumberOfPoints(nTuples + additionalPoints);
+                    double *dest = (double *)points->GetVoidPointer(0);
+                    double *src = (double*)data;
+                    for(int i = 0; i < nTuples; ++i)
+                    {
+                        *dest++ = *src++;
+                        *dest++ = *src++;
+                        *dest++ = 0.;
+                    }
+                }
+                else
+                {
+                    points->Delete();
+                    EXCEPTION1(ImproperUseException,
+                    "Coordinate arrays must be float or double.\n");
+                }
+            }
+            else if(additionalPoints > 0)
+            {
+                // Copy the 2D data to 3D
+                if(dataType == VISIT_DATATYPE_FLOAT)
+                {
+                    points->SetNumberOfPoints(nTuples + additionalPoints);
+                    memcpy(points->GetVoidPointer(0), data, 3 * nTuples * sizeof(float));
+                }
+                else if(dataType == VISIT_DATATYPE_DOUBLE)
+                {
+                    points->SetDataTypeToDouble();
+                    points->SetNumberOfPoints(nTuples + additionalPoints);
+                    memcpy(points->GetVoidPointer(0), data, 3 * nTuples * sizeof(double));
+                }
+                else
+                {
+                    points->Delete();
+                    EXCEPTION1(ImproperUseException,
+                    "Coordinate arrays must be float or double.\n");
+                }
+            }
+            else
+            {
+                // Use the 3D data as-is. If VisIt owns the data, we steal
+                // the pointer from the VariableData so the VTK data array
+                // can own the data.
+                int canDelete = 0;
+                if(owner == VISIT_OWNER_VISIT)
+                {
+                    canDelete = 1;
+                    simv2_VariableData_nullData(c);
+                }
+
+                // NOTE: Since I'm wrapping the raw memory with a VTK data
+                // array, does it introduce these problems?
+                //   1. Possible memory free mismatch
+                //   2. VTK could be referencing simulation memory that isn't
+                //      as enduring as we think it is. The old code used to
+                //      always copy the data into vtkPoints, which is safer.
+
+                if(dataType == VISIT_DATATYPE_FLOAT)
+                {
+                    vtkFloatArray *wrapper = vtkFloatArray::New();
+                    wrapper->SetNumberOfComponents(3);
+                    wrapper->SetArray((float *)data, nTuples, canDelete);
+                    points->SetData(wrapper);
+                    wrapper->Delete();
+                }
+                else if(dataType == VISIT_DATATYPE_DOUBLE)
+                {
+                    vtkDoubleArray *wrapper = vtkDoubleArray::New();
+                    wrapper->SetNumberOfComponents(3);
+                    wrapper->SetArray((double *)data, nTuples, canDelete);
+                    points->SetData(wrapper);
+                    wrapper->Delete();
+                }
+                else
+                {
+                    points->Delete();
+                    EXCEPTION1(ImproperUseException,
+                    "Coordinate arrays must be float or double.\n");
+                }
+            }
+        }
+    }
+
+    return points;
+}
+
+// ****************************************************************************
 // Method: SimV2_GetMesh_Curvilinear
 //
 // Purpose: 
@@ -159,99 +407,62 @@ GetQuadGhostZones(int nnodes, int ndims,
 //
 // Note:       
 //
-// Programmer: Jeremy Meredith
-// Creation:   March 14, 2005
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 24 16:41:39 PST 2010
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *cmesh)
+SimV2_GetMesh_Curvilinear(visit_handle h)
 {
-    if (!cmesh)
+    if (h == VISIT_INVALID_HANDLE)
         return NULL;
+
+    //
+    // Obtain the mesh data from the opaque object.
+    //
+    int ndims = 0, dims[3]={0,0,0}, coordMode = 0;
+    int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
+    visit_handle x,y,z,c;   
+    if(simv2_CurvilinearMesh_getData(h, ndims, dims, 
+        minRealIndex, maxRealIndex, baseIndex, coordMode,
+        x,y,z,c) == VISIT_ERROR)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain mesh data using the provided handle.\n");
+    }
+
+    //
+    // Create the points.
+    //
+    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0);
 
     //
     // Create the VTK objects and connect them up.
     //
-    vtkStructuredGrid    *sgrid   = vtkStructuredGrid::New(); 
-    vtkPoints            *points  = vtkPoints::New();
+    vtkStructuredGrid *sgrid   = vtkStructuredGrid::New(); 
     sgrid->SetPoints(points);
     points->Delete();
 
     //
     // Tell the grid what its dimensions are and populate the points array.
     //
-    sgrid->SetDimensions(cmesh->dims);
+    sgrid->SetDimensions(dims);
 
-    //
-    // Populate the coordinates.
-    //
-    int ni = cmesh->dims[0];
-    int nj = cmesh->dims[1];
-    int nk = cmesh->dims[2];
-    points->SetNumberOfPoints(ni * nj * nk);
-    float *pts = (float *) points->GetVoidPointer(0);
-
-    if (cmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
-    {
-        int npts = 0;
-        for (int i=0; i<ni; i++)
-        {
-            for (int j=0; j<nj; j++)
-            {
-                for (int k=0; k<nk; k++)
-                {
-                    pts[npts*3 + 0] = cmesh->xcoords.fArray[npts];
-                    pts[npts*3 + 1] = cmesh->ycoords.fArray[npts];
-                    if (cmesh->ndims==3)
-                        pts[npts*3 + 2] = cmesh->zcoords.fArray[npts];
-                    else
-                        pts[npts*3 + 2] = 0;
-                    npts++;
-                }
-            }
-        }
-    }
-    else if (cmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
-    {
-        int npts = 0;
-        for (int i=0; i<ni; i++)
-        {
-            for (int j=0; j<nj; j++)
-            {
-                for (int k=0; k<nk; k++)
-                {
-                    pts[npts*3 + 0] = cmesh->xcoords.dArray[npts];
-                    pts[npts*3 + 1] = cmesh->ycoords.dArray[npts];
-                    if (cmesh->ndims==3)
-                        pts[npts*3 + 2] = cmesh->zcoords.dArray[npts];
-                    else
-                        pts[npts*3 + 2] = 0;
-                    npts++;
-                }
-            }
-        }
-    }
-    else
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Coordinate arrays must be float or double.\n");
-    }
-
-    GetQuadGhostZones(ni*nj*nk,
-                      cmesh->ndims,
-                      cmesh->dims,
-                      cmesh->minRealIndex,
-                      cmesh->maxRealIndex,
+    GetQuadGhostZones(dims[0]*dims[1]*dims[2],
+                      ndims,
+                      dims,
+                      minRealIndex,
+                      maxRealIndex,
                       sgrid);
 
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(3);
-    arr->SetValue(0, cmesh->baseIndex[0]);
-    arr->SetValue(1, cmesh->baseIndex[1]);
-    arr->SetValue(2, cmesh->baseIndex[2]);
+    arr->SetValue(0, baseIndex[0]);
+    arr->SetValue(1, baseIndex[1]);
+    arr->SetValue(2, baseIndex[2]);
     arr->SetName("base_index");
     sgrid->GetFieldData()->AddArray(arr);
     arr->Delete();
@@ -272,110 +483,113 @@ SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *cmesh)
 //
 // Note:       
 //
-// Programmer: Jeremy Meredith
-// Creation:   March 14, 2005
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 25 11:57:18 PST 2010
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *rmesh)
+SimV2_GetMesh_Rectilinear(visit_handle h)
 {
-    if (!rmesh)
+    if (h == VISIT_INVALID_HANDLE)
         return NULL;
+
+    //
+    // Obtain the mesh data from the opaque object.
+    //
+    int ndims = 0, dims[3]={0,0,0};
+    int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
+    visit_handle x,y,z,c;   
+    if(simv2_RectilinearMesh_getData(h, ndims, minRealIndex, maxRealIndex, 
+        baseIndex, x, y, z) == VISIT_ERROR)
+    {
+        EXCEPTION1(ImproperUseException,
+            "Could not obtain mesh data using the provided handle.\n");
+
+    }
+
+    //
+    // Obtain the coordinate data from the opaque objects.
+    //
+    visit_handle cHandles[3];
+    cHandles[0] = x;
+    cHandles[1] = y;
+    cHandles[2] = z;
+    int owner[3]={0,0,0}, dataType[3]={0,0,0}, nComps[3]={1,1,1}, nTuples[3] = {0,0,1};
+    void *data[3] = {0,0,0};
+    for(int i = 0; i < ndims; ++i)
+    {
+        if(simv2_VariableData_getData(cHandles[i], owner[i], 
+            dataType[i], nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
+        {
+            EXCEPTION1(ImproperUseException,
+                "Could not obtain mesh data using the provided handle.\n");
+        }
+    }
 
     //
     // Create the VTK objects and connect them up.
     //
-    vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New(); 
-
-    //
-    // Tell the grid what its dimensions are and populate the points array.
-    //
-    rgrid->SetDimensions(rmesh->dims);
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New(); 
+    rgrid->SetDimensions(nTuples);
 
     //
     // Populate the coordinates.
     //
-    int ni = rmesh->dims[0];
-    int nj = rmesh->dims[1];
-    int nk = rmesh->dims[2];
-
-    vtkFloatArray *xcoords;
-    vtkFloatArray *ycoords;
-    vtkFloatArray *zcoords;
-
-    xcoords = vtkFloatArray::New();
-    xcoords->SetNumberOfTuples(ni);
-    ycoords = vtkFloatArray::New();
-    ycoords->SetNumberOfTuples(nj);
-    zcoords = vtkFloatArray::New();
-    zcoords->SetNumberOfTuples(nk);
-
-    if (rmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
+    vtkDataArray *coords[3] = {0,0,0};
+    for(int i = 0; i < 3; ++i)
     {
-        for (int i=0; i<ni; i++)
-            xcoords->SetComponent(i, 0, rmesh->xcoords.fArray[i]);
-
-        for (int j=0; j<nj; j++)
-            ycoords->SetComponent(j, 0, rmesh->ycoords.fArray[j]);
-
-        if (rmesh->ndims==3)
+        if(ndims == 2 && i == 2)
         {
-            for (int k=0; k<nk; k++)
-                zcoords->SetComponent(k, 0, rmesh->zcoords.fArray[k]);
+            coords[i] = vtkFloatArray::New();
+            coords[i]->SetNumberOfTuples(1);
+            coords[i]->SetComponent(0, 0, 0);
+        }
+        else if(dataType[i] == VISIT_DATATYPE_FLOAT)
+        {
+            coords[i] = vtkFloatArray::New();
+            coords[i]->SetNumberOfTuples(nTuples[i]);
+            memcpy(coords[i]->GetVoidPointer(0), data[i], nTuples[i] * sizeof(float));
+        }
+        else if(dataType[i] == VISIT_DATATYPE_DOUBLE)
+        {
+            coords[i] = vtkDoubleArray::New();
+            coords[i]->SetNumberOfTuples(nTuples[i]);
+            memcpy(coords[i]->GetVoidPointer(0), data[i], nTuples[i] * sizeof(double));
         }
         else
         {
-            for (int k=0; k<nk; k++)
-                zcoords->SetComponent(k, 0, 0);
+            for(int j = 0; j < i; ++j)
+            {
+                if(coords[i] != 0)
+                    coords[i]->Delete();
+            }
+            EXCEPTION1(ImproperUseException,
+                       "Coordinate arrays must be float or double.\n");
         }
     }
-    else if (rmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
-    {
-        for (int i=0; i<ni; i++)
-            xcoords->SetComponent(i, 0, rmesh->xcoords.dArray[i]);
 
-        for (int j=0; j<nj; j++)
-            ycoords->SetComponent(j, 0, rmesh->ycoords.dArray[j]);
+    rgrid->SetXCoordinates(coords[0]);
+    coords[0]->Delete();
+    rgrid->SetYCoordinates(coords[1]);
+    coords[1]->Delete();
+    rgrid->SetZCoordinates(coords[2]);
+    coords[2]->Delete();
 
-        if (rmesh->ndims==3)
-        {
-            for (int k=0; k<nk; k++)
-                zcoords->SetComponent(k, 0, rmesh->zcoords.dArray[k]);
-        }
-        else
-        {
-            for (int k=0; k<nk; k++)
-                zcoords->SetComponent(k, 0, 0);
-        }
-    }
-    else
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Coordinate arrays must be float or double.\n");
-    }
-
-    rgrid->SetXCoordinates(xcoords);
-    xcoords->Delete();
-    rgrid->SetYCoordinates(ycoords);
-    ycoords->Delete();
-    rgrid->SetZCoordinates(zcoords);
-    zcoords->Delete();
-
-    GetQuadGhostZones(ni*nj*nk,
-                      rmesh->ndims,
-                      rmesh->dims,
-                      rmesh->minRealIndex,
-                      rmesh->maxRealIndex,
+    GetQuadGhostZones(nTuples[0]*nTuples[1]*nTuples[2],
+                      ndims,
+                      nTuples,
+                      minRealIndex,
+                      maxRealIndex,
                       rgrid);
 
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(3);
-    arr->SetValue(0, rmesh->baseIndex[0]);
-    arr->SetValue(1, rmesh->baseIndex[1]);
-    arr->SetValue(2, rmesh->baseIndex[2]);
+    arr->SetValue(0, baseIndex[0]);
+    arr->SetValue(1, baseIndex[1]);
+    arr->SetValue(2, baseIndex[2]);
     arr->SetName("base_index");
     rgrid->GetFieldData()->AddArray(arr);
     arr->Delete();
@@ -403,7 +617,7 @@ SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *rmesh)
 // ****************************************************************************
 
 static void
-SimV2_UnstructuredMesh_Count_Cells(const VisIt_UnstructuredMesh *umesh,
+SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
     int &normalCellCount, int &polyCount)
 {
     int celltype_npts[10];
@@ -418,8 +632,8 @@ SimV2_UnstructuredMesh_Count_Cells(const VisIt_UnstructuredMesh *umesh,
     polyCount = 0;
     normalCellCount = 0;
 
-    const int *cell = umesh->connectivity.iArray;
-    const int *end = umesh->connectivity.iArray + umesh->connectivityLen;
+    const int *cell = connectivity;
+    const int *end = connectivity + connectivityLen;
     while(cell < end)
     {
         int celltype = *cell++;
@@ -433,10 +647,16 @@ SimV2_UnstructuredMesh_Count_Cells(const VisIt_UnstructuredMesh *umesh,
             }
             polyCount++;
         }
-        else
+        else if(celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_POLYHEDRON)
         {
             cell += celltype_npts[celltype];
             normalCellCount++;
+        }
+        else
+        {
+            EXCEPTION1(ImproperUseException,
+                       "An invalid cell type was provided in the unstructured "
+                       "mesh connectivity.\n");
         }
     }
 }
@@ -724,69 +944,55 @@ SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
 //
 // Note:       
 //
-// Programmer: Jeremy Meredith
-// Creation:   March 14, 2005
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 25 14:01:25 PST 2010
 //
 // Modifications:
-//   Brad Whitlock, Fri Feb 19 12:17:37 PST 2010
-//   I added polyhedral cell support.
 //
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
+SimV2_GetMesh_Unstructured(int domain, visit_handle h)
 {
-    if (!umesh)
+    if (h == VISIT_INVALID_HANDLE)
         return NULL;
 
-    if (umesh->connectivity.dataType != VISIT_DATATYPE_INT)
+    //
+    // Obtain the mesh data from the opaque object.
+    //
+    int ndims = 0, nzones = 0, coordMode = 0, firstRealZone=0, lastRealZone=0;
+    visit_handle x,y,z,c,conn;   
+    if(simv2_UnstructuredMesh_getData(h, ndims, coordMode, x, y, z, c, 
+        nzones, firstRealZone, lastRealZone, conn) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
-                   "Connectivity array must be ints.");
+                   "Could not obtain mesh data using the provided handle.\n");
     }
+
+    //
+    // Get the connectivity
+    //
+    int connOwner = 0, connDataType=0, connNComps=0, connectivityLen=0;
+    void *connData = 0;
+    if(simv2_VariableData_getData(conn, connOwner, 
+       connDataType, connNComps, connectivityLen, connData) == VISIT_ERROR)
+    {
+         EXCEPTION1(ImproperUseException,
+             "Could not obtain connectivity data using the provided handle.\n");
+    }
+    const int *connectivity = (const int *)connData;
 
     // Count the polyhedral cells so we can allocate more points
     int normalCellCount = 0, polyhedralCellCount = 0;
-    SimV2_UnstructuredMesh_Count_Cells(umesh, normalCellCount,
+    SimV2_UnstructuredMesh_Count_Cells(connectivity, connectivityLen, normalCellCount,
         polyhedralCellCount);
 
     //
-    // Populate the coordinates.
+    // Create the points.
     //
-    int npts = umesh->nnodes;
-    vtkPoints *points  = vtkPoints::New();
-    points->SetNumberOfPoints(npts + polyhedralCellCount);
-    float *pts = (float *) points->GetVoidPointer(0);
-
-    if (umesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
-    {
-        for (int i=0; i<npts; i++)
-        {
-            pts[i*3 + 0] = umesh->xcoords.fArray[i];
-            pts[i*3 + 1] = umesh->ycoords.fArray[i];
-            if (umesh->ndims==3)
-                pts[i*3 + 2] = umesh->zcoords.fArray[i];
-            else
-                pts[i*3 + 2] = 0;
-        }
-    }
-    else if (umesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
-    {
-        for (int i=0; i<npts; i++)
-        {
-            pts[i*3 + 0] = umesh->xcoords.dArray[i];
-            pts[i*3 + 1] = umesh->ycoords.dArray[i];
-            if (umesh->ndims==3)
-                pts[i*3 + 2] = umesh->zcoords.dArray[i];
-            else
-                pts[i*3 + 2] = 0;
-        }
-    }
-    else
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Coordinate arrays must be float or double.\n");
-    }
+    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c,
+                                           polyhedralCellCount);
+    int nRealPoints = points->GetNumberOfPoints();
 
     //
     // Create the cells.
@@ -824,22 +1030,24 @@ SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
     // Iterate over the connectivity and add the appropriate cell types
     int numCells = 0;
     int phIndex = 0;
-    const int *cell = umesh->connectivity.iArray;
-    const int *end = cell + umesh->connectivityLen;
+    const int *cell = connectivity;
+    const int *end = cell + connectivityLen;
     vtkIdType verts[8];
-    while(cell < end && numCells < umesh->nzones)
+    while(cell < end && numCells < nzones)
     {
         int celltype = *cell++;
 
         if(celltype == VISIT_CELL_POLYHEDRON)
         {
+            // Add a polyhedral cell as a collection of smaller normal cells.
             polyhedralSplit[2*phIndex] = numCells;
             polyhedralSplit[2*phIndex+1] = SimV2_Add_PolyhedralCell(ugrid, &cell,
-                npts, phIndex);
+                nRealPoints, phIndex);
             phIndex++;
         }
         else
         {
+            // Add a normal cell
             int vtktype = celltype_idtype[celltype];
             int nelempts = celltype_npts[celltype];
             for (int j=0; j<nelempts; j++)
@@ -850,7 +1058,7 @@ SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
         ++numCells;
     }
 
-    if (numCells != umesh->nzones)
+    if (numCells != nzones)
     {
         delete [] polyhedralSplit;
         ugrid->Delete();
@@ -862,24 +1070,22 @@ SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
     //
     // Add the ghost zones to the mesh.
     //
-    int firstCell = umesh->firstRealZone;
-    int lastCell  = umesh->lastRealZone;
-    if (firstCell == 0 && lastCell == 0 )
+    if (firstRealZone == 0 && lastRealZone == 0 )
     {
         debug5 << "Cannot tell if ghost zones are present because "
                << "min_index & max_index are both zero!" << endl;
     }
-    else if (firstCell < 0 || firstCell >= numCells ||
-             lastCell  < 0 || lastCell  >= numCells ||
-             firstCell > lastCell)
+    else if (firstRealZone < 0 || firstRealZone >= numCells ||
+             lastRealZone  < 0 || lastRealZone  >= numCells ||
+             firstRealZone > lastRealZone)
     {
         // bad min or max index
         debug5 << "Invalid min/max index for determining ghost zones:  "
                << "\n\tnumCells: " << numCells
-               << "\n\tfirstRealZone: " << firstCell
-               << "\n\tlastRealZone: " << lastCell << endl;
+               << "\n\tfirstRealZone: " << firstRealZone
+               << "\n\tlastRealZone: " << lastRealZone << endl;
     }
-    else if (firstCell != 0 || lastCell != numCells -1)
+    else if (firstRealZone != 0 || lastRealZone != numCells -1)
     {
         int i;
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
@@ -890,7 +1096,7 @@ SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
             DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         for(int i = 0; i < numCells; ++i)
         {
-            if(i < firstCell || i > lastCell+1)
+            if(i < firstRealZone || i > lastRealZone+1)
                 *tmp++ = val;
             else
                 *tmp++ = 0;
@@ -943,65 +1149,47 @@ SimV2_GetMesh_Unstructured(int domain, VisIt_UnstructuredMesh *umesh)
 // Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Feb  5 16:24:29 PST 2009
+// Creation:   Thu Feb 25 14:08:14 PST 2010
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Point(VisIt_PointMesh *pmesh)
+SimV2_GetMesh_Point(visit_handle h)
 {
-    if (!pmesh)
+    if (h == VISIT_INVALID_HANDLE)
         return NULL;
 
-    vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New();
-    vtkPoints    *points  = vtkPoints::New();
-    ugrid->SetPoints(points);
-    points->Delete();
-
     //
-    // Populate the coordinates.
+    // Obtain the mesh data from the opaque object.
     //
-    int npts = pmesh->nnodes;
-    points->SetNumberOfPoints(npts);
-    float *pts = (float *) points->GetVoidPointer(0);
-    ugrid->Allocate(npts);
-    vtkIdType onevertex[1];
-    if (pmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
-    {
-        for (int i=0; i<npts; i++)
-        {
-            pts[i*3 + 0] = pmesh->xcoords.fArray[i];
-            pts[i*3 + 1] = pmesh->ycoords.fArray[i];
-            if (pmesh->ndims==3)
-                pts[i*3 + 2] = pmesh->zcoords.fArray[i];
-            else
-                pts[i*3 + 2] = 0.f;
-
-            onevertex[0] = i;
-            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
-        }
-    }
-    else if (pmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
-    {
-        for (int i=0; i<npts; i++)
-        {
-            pts[i*3 + 0] = pmesh->xcoords.dArray[i];
-            pts[i*3 + 1] = pmesh->ycoords.dArray[i];
-            if (pmesh->ndims==3)
-                pts[i*3 + 2] = pmesh->zcoords.dArray[i];
-            else
-                pts[i*3 + 2] = 0.f;
-
-            onevertex[0] = i;
-            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
-        }
-    }
-    else
+    int ndims = 0, coordMode = 0;
+    visit_handle x,y,z,c;   
+    if(simv2_PointMesh_getData(h, ndims, coordMode, x, y, z, c) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
-                   "Coordinate arrays must be float or double.\n");
+                   "Could not obtain mesh data using the provided handle.\n");
+    }
+
+    //
+    // Create the points.
+    //
+    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0);
+
+    //
+    // Add point cells
+    //
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+    int npts = points->GetNumberOfPoints();
+    ugrid->Allocate(points->GetNumberOfPoints());
+    vtkIdType onevertex[1];
+    for (int i=0; i<npts; i++)
+    {
+        onevertex[0] = i;
+        ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
     }
 
     return ugrid;
@@ -1021,43 +1209,86 @@ SimV2_GetMesh_Point(VisIt_PointMesh *pmesh)
 // Note:       Adapted from the Silo reader.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Feb  5 16:24:23 PST 2009
+// Creation:   Thu Feb 25 14:32:06 PST 2010
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_CSG(VisIt_CSGMesh *csgm)
+SimV2_GetMesh_CSG(visit_handle h)
 {
-    if(csgm == NULL)
+    if(h == VISIT_INVALID_HANDLE)
         return NULL;
 
-    // Do some checks on the input.
-    if(csgm->typeflags.dataType != VISIT_DATATYPE_INT)
+    //
+    // Obtain the mesh data from the opaque object.
+    //
+    int ndims = 0, coordMode = 0;
+    visit_handle typeflags, leftids, rightids, zonelist, bndtypes, bndcoeffs;
+    double min_extents[3]={0.,0.,0.}, max_extents[3]={0.,0.,0.};
+    if(simv2_CSGMesh_getData(h, typeflags, leftids, rightids, zonelist, bndtypes, 
+        bndcoeffs, min_extents, max_extents) == VISIT_ERROR)
     {
-        EXCEPTION1(ImproperUseException, "CSG typeflags array must be int type");
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain mesh data using the provided handle.\n");
     }
-    if(csgm->coeffs.dataType != VISIT_DATATYPE_DOUBLE &&
-       csgm->coeffs.dataType != VISIT_DATATYPE_FLOAT)
+
+    //
+    // Get the data from the opaque arrays.
+    //
+    int typeflags_owner=0, typeflags_dataType=0, typeflags_nComps=0, typeflags_nTuples=0;
+    void *typeflags_data = 0;
+    if(simv2_VariableData_getData(typeflags, typeflags_owner, typeflags_dataType, 
+       typeflags_nComps, typeflags_nTuples, typeflags_data) == VISIT_ERROR)
     {
-        EXCEPTION1(ImproperUseException, "CSG coeffs array must be float or double type");
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain typeflags for CSG mesh.\n");
     }
-    if(csgm->zones.leftids.dataType != VISIT_DATATYPE_INT)
+
+    int leftids_owner=0, leftids_dataType=0, leftids_nComps=0, leftids_nTuples=0;
+    void *leftids_data = 0;
+    if(simv2_VariableData_getData(leftids, leftids_owner, leftids_dataType, 
+       leftids_nComps, leftids_nTuples, leftids_data) == VISIT_ERROR)
     {
-        EXCEPTION1(ImproperUseException, "CSG zones leftids array must be int type");
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain leftids for CSG mesh.\n");
     }
-    if(csgm->zones.rightids.dataType != VISIT_DATATYPE_INT)
+
+    int rightids_owner=0, rightids_dataType=0, rightids_nComps=0, rightids_nTuples=0;
+    void *rightids_data = 0;
+    if(simv2_VariableData_getData(rightids, rightids_owner, rightids_dataType, 
+       rightids_nComps, rightids_nTuples, rightids_data) == VISIT_ERROR)
     {
-        EXCEPTION1(ImproperUseException, "CSG zones rightids array must be int type");
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain rightids for CSG mesh.\n");
     }
-    if(csgm->zones.typeflags.dataType != VISIT_DATATYPE_INT)
+
+    int zonelist_owner=0, zonelist_dataType=0, zonelist_nComps=0, zonelist_nTuples=0;
+    void *zonelist_data = 0;
+    if(simv2_VariableData_getData(zonelist, zonelist_owner, zonelist_dataType, 
+       zonelist_nComps, zonelist_nTuples, zonelist_data) == VISIT_ERROR)
     {
-        EXCEPTION1(ImproperUseException, "CSG zones typeflags array must be int type");
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain zonelist for CSG mesh.\n");
     }
-    if(csgm->zones.zonelist.dataType != VISIT_DATATYPE_INT)
+
+    int bndtypes_owner=0, bndtypes_dataType=0, bndtypes_nComps=0, bndtypes_nTuples=0;
+    void *bndtypes_data = 0;
+    if(simv2_VariableData_getData(bndtypes, bndtypes_owner, bndtypes_dataType, 
+       bndtypes_nComps, bndtypes_nTuples, bndtypes_data) == VISIT_ERROR)
     {
-        EXCEPTION1(ImproperUseException, "CSG zones zonelist array must be int type");
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain bndtypes for CSG mesh.\n");
+    }
+
+    int bndcoeffs_owner=0, bndcoeffs_dataType=0, bndcoeffs_nComps=0, bndcoeffs_nTuples=0;
+    void *bndcoeffs_data = 0;
+    if(simv2_VariableData_getData(bndcoeffs, bndcoeffs_owner, bndcoeffs_dataType, 
+       bndcoeffs_nComps, bndcoeffs_nTuples, bndcoeffs_data) == VISIT_ERROR)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Could not obtain bndcoeffs for CSG mesh.\n");
     }
 
     //
@@ -1068,29 +1299,34 @@ SimV2_GetMesh_CSG(VisIt_CSGMesh *csgm)
     double minX = -10.0, minY = -10.0, minZ = -10.0;
     double maxX =  10.0, maxY =  10.0, maxZ =  10.0;
     // set bounds *before* anything else
-    if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
-           csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
-           csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
-          (csgm->min_extents[0] == -DBL_MAX && csgm->max_extents[0] == DBL_MAX &&
-           csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
-           csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
+    if (!((min_extents[0] == 0.0 && max_extents[0] == 0.0 &&
+           min_extents[1] == 0.0 && max_extents[1] == 0.0 &&
+           min_extents[2] == 0.0 && max_extents[2] == 0.0) ||
+          (min_extents[0] == -DBL_MAX && max_extents[0] == DBL_MAX &&
+           min_extents[1] == -DBL_MAX && max_extents[1] == DBL_MAX &&
+           min_extents[2] == -DBL_MAX && max_extents[2] == DBL_MAX)))
     {
-        minX = csgm->min_extents[0];
-        maxX = csgm->max_extents[0];
-        minY = csgm->min_extents[1];
-        maxY = csgm->max_extents[1];
-        minZ = csgm->min_extents[2];
-        maxZ = csgm->max_extents[2];
+        minX = min_extents[0];
+        maxX = max_extents[0];
+        minY = min_extents[1];
+        maxY = max_extents[1];
+        minZ = min_extents[2];
+        maxZ = max_extents[2];
     }
     csggrid->SetBounds(minX, maxX, minY, maxY, minZ, maxZ);
 
-    if (csgm->coeffs.dataType == VISIT_DATATYPE_DOUBLE)
-        csggrid->AddBoundaries(csgm->nbounds, csgm->typeflags.iArray, csgm->lcoeffs, (double*) csgm->coeffs.dArray);
+    if (bndcoeffs_dataType == VISIT_DATATYPE_DOUBLE)
+        csggrid->AddBoundaries(bndtypes_nTuples, (const int *)bndtypes_data, 
+                               bndcoeffs_nTuples, (const double*)bndcoeffs_data);
     else
-        csggrid->AddBoundaries(csgm->nbounds, csgm->typeflags.iArray, csgm->lcoeffs, (float*) csgm->coeffs.fArray);
-    csggrid->AddRegions(csgm->zones.nregs, csgm->zones.leftids.iArray, csgm->zones.rightids.iArray,
-                        csgm->zones.typeflags.iArray, 0, 0);
-    csggrid->AddZones(csgm->zones.nzones, csgm->zones.zonelist.iArray);
+        csggrid->AddBoundaries(bndtypes_nTuples, (const int *)bndtypes_data, 
+                               bndcoeffs_nTuples, (const float*)bndcoeffs_data);
+
+    csggrid->AddRegions(leftids_nTuples,
+        (const int *)leftids_data, (const int *)rightids_data,
+        (const int *)typeflags_data, 0, 0);
+
+    csggrid->AddZones(zonelist_nTuples, (const int *)zonelist_data);
 
     return csggrid;
 }

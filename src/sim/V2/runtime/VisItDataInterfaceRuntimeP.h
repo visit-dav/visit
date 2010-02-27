@@ -7,19 +7,18 @@
    in the data interface. These functions are never exposed beyond the
    runtime.
  */
-#define VISIT_DOMAIN_BOUNDARIES 13
-#define VISIT_DOMAIN_NESTING    14
 
-#define VISIT_VARIABLE_DATA     15
+struct VisIt_ObjectBase
+{
+    VisIt_ObjectBase(int t);
+    virtual ~VisIt_ObjectBase();
 
-#define VISIT_OBJECT_HEAD                int objectType;
-#define VISIT_OBJECT_CHECK_TYPE(obj,ID)  (obj->objectType == ID)
-#define VISIT_OBJECT_INITIALIZE(obj, ID) obj->objectType = ID
-#define VISIT_OBJECT_ALLOCATE(T)         (T *)calloc(1, sizeof(T))
+    int type;
+};
 
-void        *VisItGetPointer(visit_handle h);
-void         VisItFreePointer(visit_handle h);
-visit_handle VisItStorePointer(void *ptr);
+VisIt_ObjectBase *VisItGetPointer(visit_handle h);
+void              VisItFreePointer(visit_handle h);
+visit_handle      VisItStorePointer(VisIt_ObjectBase *ptr);
 
 void VisItError(const char *msg);
 

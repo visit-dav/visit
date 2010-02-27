@@ -127,7 +127,7 @@ QvisProjectWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    projectionTypeLabel = new QLabel(tr("projectionType"), central);
+    projectionTypeLabel = new QLabel(tr("Projection type"), central);
     mainLayout->addWidget(projectionTypeLabel,0,0);
     projectionType = new QWidget(central);
     projectionTypeButtonGroup= new QButtonGroup(projectionType);

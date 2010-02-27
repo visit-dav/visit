@@ -5,7 +5,7 @@
         XYCartesian
         ZRCylindrical
       </Enum>
-      <Field name="projectionType" label="projectionType" type="enum" subtype="ProjectionType">
+      <Field name="projectionType" label="Projection type" type="enum" subtype="ProjectionType">
         XYCartesian
       </Field>
     </Attribute>

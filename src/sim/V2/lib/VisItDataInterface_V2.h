@@ -194,97 +194,6 @@ typedef struct VisIt_SimulationMetaData
 *                         Problem-sized data types
 *****************************************************************************/
 
-typedef struct VisIt_CurvilinearMesh
-{
-    int ndims;
-    int dims[3];
-    int baseIndex[3];
-    int minRealIndex[3];
-    int maxRealIndex[3];
-    VisIt_DataArray xcoords;
-    VisIt_DataArray ycoords;
-    VisIt_DataArray zcoords;
-} VisIt_CurvilinearMesh;
-
-typedef struct VisIt_RectilinearMesh
-{
-    int ndims;
-    int dims[3];
-    int baseIndex[3];
-    int minRealIndex[3];
-    int maxRealIndex[3];
-    VisIt_DataArray xcoords;
-    VisIt_DataArray ycoords;
-    VisIt_DataArray zcoords;
-} VisIt_RectilinearMesh;
-
-typedef struct VisIt_UnstructuredMesh
-{
-    int ndims;
-    int nnodes;
-    int nzones;
-
-    int firstRealZone;
-    int lastRealZone;
-
-    VisIt_DataArray xcoords;
-    VisIt_DataArray ycoords;
-    VisIt_DataArray zcoords;
-
-    int connectivityLen;
-    VisIt_DataArray connectivity;
-} VisIt_UnstructuredMesh;
-
-typedef struct VisIt_PointMesh
-{
-    int ndims;
-    int nnodes;
-
-    VisIt_DataArray xcoords;
-    VisIt_DataArray ycoords;
-    VisIt_DataArray zcoords;
-} VisIt_PointMesh;
-
-typedef struct VisIt_CSGZonelist
-{
-    int             nregs;
-    VisIt_DataArray typeflags;     /* [nregs] type info about each region */
-    VisIt_DataArray leftids;       /* [nregs] left operand region refs */
-    VisIt_DataArray rightids;      /* [nregs] right operand region refs */
-
-    int             nzones;        /* number of zones */
-    VisIt_DataArray zonelist;      /* [nzones] region ids (complete regions) */
-
-    /* START - RESERVED FOR FUTURE USE */
-    VisIt_DataArray xform;         /* [lxforms] transformation coefficients */
-    int             lxform;        /* length of xforms array */
-    /* END - RESERVED FOR FUTURE USE */
-} VisIt_CSGZonelist;
-
-typedef struct VisIt_CSGMesh
-{
-    int             nbounds;       /* Total number of boundaries */
-    VisIt_DataArray typeflags;     /* int[nbounds] boundary type info flags */
-    VisIt_DataArray coeffs;        /* coefficients in the representation of
-                                      each boundary */
-    int             lcoeffs;       /* length of coeffs array */
-
-    double          min_extents[3];
-    double          max_extents[3];
-
-    VisIt_CSGZonelist zones;
-} VisIt_CSGMesh;
-
-typedef struct VisIt_MeshData
-{
-    VisIt_MeshType          meshType;
-    VisIt_CurvilinearMesh  *cmesh;
-    VisIt_RectilinearMesh  *rmesh;
-    VisIt_UnstructuredMesh *umesh;
-    VisIt_PointMesh        *pmesh;
-    VisIt_CSGMesh          *csgmesh;
-} VisIt_MeshData;
-
 typedef struct VisIt_MaterialData
 {
     int nMaterials;
@@ -335,12 +244,6 @@ typedef struct VisIt_DomainList
     VisIt_DataArray myDomains;
 } VisIt_DomainList;
 
-#ifndef VISIT_DECORATE
-#define VISIT_DECORATE(NAME) VisIt_##NAME
-#endif
-#include <VisIt_DomainBoundaries.h>
-#include <VisIt_DomainNesting.h>
-
 /* Helper Methods */
 
 static VisIt_DataArray VisIt_CreateDataArrayFromChar(int o, char *c)
@@ -389,32 +292,16 @@ static VisIt_DataArray VisIt_CreateDataArrayFromDouble(int o, double *d)
    be multiple functions that operate on each type. For example, there will
    be alloc and accessor functions.
 */
-int VisIt_DataArray_free(VisIt_DataArray *obj);
-int VisIt_NameList_free(VisIt_NameList *obj);
-int VisIt_SimulationControlCommand_free(VisIt_SimulationControlCommand *obj);
-int VisIt_MeshMetaData_free(VisIt_MeshMetaData *obj);
-int VisIt_VariableMetaData_free(VisIt_VariableMetaData *obj);
-int VisIt_MaterialMetaData_free(VisIt_MaterialMetaData *obj);
-int VisIt_CurveMetaData_free(VisIt_CurveMetaData *obj);
-int VisIt_ExpressionMetaData_free(VisIt_ExpressionMetaData *obj);
-int VisIt_SpeciesMetaData_free(VisIt_SpeciesMetaData *obj);
-int VisIt_SimulationMetaData_free(VisIt_SimulationMetaData *obj);
-
-int VisIt_CurvilinearMesh_free(VisIt_CurvilinearMesh *obj);
-int VisIt_RectilinearMesh_free(VisIt_RectilinearMesh *obj);
-int VisIt_UnstructuredMesh_free(VisIt_UnstructuredMesh *obj);
-int VisIt_PointMesh_free(VisIt_PointMesh *obj);
-int VisIt_CSGMesh_free(VisIt_CSGMesh *obj);
-int VisIt_MeshData_free(VisIt_MeshData *obj);
-int VisIt_CurveData_free(VisIt_CurveData *obj);
-int VisIt_MaterialData_free(VisIt_MaterialData *obj);
-int VisIt_SpeciesData_free(VisIt_SpeciesData *obj);
-int VisIt_DomainList_free(VisIt_DomainList *obj);
 
 /****************************************************************************/
 
+#include <VisIt_CSGMesh.h>
+#include <VisIt_CurvilinearMesh.h>
 #include <VisIt_DomainBoundaries.h>
 #include <VisIt_DomainNesting.h>
+#include <VisIt_PointMesh.h>
+#include <VisIt_RectilinearMesh.h>
+#include <VisIt_UnstructuredMesh.h>
 #include <VisIt_VariableData.h>
 
 #ifdef __cplusplus

@@ -117,6 +117,10 @@ typedef enum {
 #define VISIT_CELL_POINT                  7
 #define VISIT_CELL_POLYHEDRON             8
 
+/* Coordinate modes */
+#define VISIT_COORD_MODE_SEPARATE         0
+#define VISIT_COORD_MODE_INTERLEAVED      1
+
 /* Definitions for CSG boundary types 
    Designed so low-order 16 bits are unused
    and can be included in silo.inc for Fortran 

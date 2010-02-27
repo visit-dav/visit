@@ -94,11 +94,11 @@ using std::vector;
 #include <simv2_VariableData.h>
 
 #ifndef MDSERVER
-vtkDataSet *SimV2_GetMesh_Curvilinear(VisIt_CurvilinearMesh *);
-vtkDataSet *SimV2_GetMesh_Rectilinear(VisIt_RectilinearMesh *);
-vtkDataSet *SimV2_GetMesh_Unstructured(int, VisIt_UnstructuredMesh *);
-vtkDataSet *SimV2_GetMesh_Point(VisIt_PointMesh *);
-vtkDataSet *SimV2_GetMesh_CSG(VisIt_CSGMesh *csgm);
+vtkDataSet *SimV2_GetMesh_Curvilinear(visit_handle h);
+vtkDataSet *SimV2_GetMesh_Rectilinear(visit_handle h);
+vtkDataSet *SimV2_GetMesh_Unstructured(int, visit_handle h);
+vtkDataSet *SimV2_GetMesh_Point(visit_handle h);
+vtkDataSet *SimV2_GetMesh_CSG(visit_handle h);
 #endif
 
 // ****************************************************************************
@@ -784,10 +784,10 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
         return GetCurve(meshname);
     }
 
-    VisIt_MeshData *vmesh = simv2_invoke_GetMesh(domain, meshname);
+    visit_handle h = simv2_invoke_GetMesh(domain, meshname);
 
     // If the mesh could not be created then throw an exception.
-    if(vmesh == NULL)
+    if(h == VISIT_INVALID_HANDLE)
     {
         EXCEPTION1(InvalidVariableException, meshname);
     }
@@ -795,37 +795,39 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
     vtkDataSet *ds = 0;
     TRY
     {
-        switch (vmesh->meshType)
+        int objType = simv2_ObjectType(h);
+        switch (objType)
         {
-        case VISIT_MESHTYPE_CURVILINEAR:
-            ds = SimV2_GetMesh_Curvilinear(vmesh->cmesh);
+        case VISIT_CURVILINEAR_MESH:
+            ds = SimV2_GetMesh_Curvilinear(h);
             break;
-        case VISIT_MESHTYPE_RECTILINEAR:
-            ds = SimV2_GetMesh_Rectilinear(vmesh->rmesh);
+        case VISIT_RECTILINEAR_MESH:
+            ds = SimV2_GetMesh_Rectilinear(h);
             break;
-        case VISIT_MESHTYPE_UNSTRUCTURED:
-            ds = SimV2_GetMesh_Unstructured(domain, vmesh->umesh);
+        case VISIT_UNSTRUCTURED_MESH:
+            ds = SimV2_GetMesh_Unstructured(domain, h);
             break;
-        case VISIT_MESHTYPE_POINT:
-            ds = SimV2_GetMesh_Point(vmesh->pmesh);
+        case VISIT_POINT_MESH:
+            ds = SimV2_GetMesh_Point(h);
             break;
-        case VISIT_MESHTYPE_CSG:
-            ds = SimV2_GetMesh_CSG(vmesh->csgmesh);
+        case VISIT_CSG_MESH:
+            ds = SimV2_GetMesh_CSG(h);
             break;
         default:
             EXCEPTION1(ImproperUseException,
-                       "You've tried to use an unsupported mesh type.\n");
+                "The simulation returned a handle that does not correspond "
+                "to a mesh.\n");
             break;
         }
     }
     CATCH2(VisItException, e)
     {
-        simv2_MeshData_free(vmesh);
+        simv2_FreeObject(h);
         RETHROW;
     }
     ENDTRY
 
-    simv2_MeshData_free(vmesh);
+    simv2_FreeObject(h);
 
     return ds;
 #endif

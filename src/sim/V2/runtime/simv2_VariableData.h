@@ -12,13 +12,15 @@ SIMV2_API int simv2_VariableData_alloc(visit_handle *h);
 SIMV2_API int simv2_VariableData_free(visit_handle h);
 SIMV2_API int simv2_VariableData_setData(visit_handle h, int owner, int dataType,
                                          int nComps, int nTuples, void *data);
-
-/* This function is only available in the runtime. */
-SIMV2_API int simv2_VariableData_getData(visit_handle h, int &owner, 
-                                         int &dataType, int &nComps,
-                                         int &nTuples, void *&data);
 #ifdef __cplusplus
 }
 #endif
+
+// These functions are only available in the runtime. 
+SIMV2_API int simv2_VariableData_getData(visit_handle h, int &owner, 
+                                         int &dataType, int &nComps,
+                                         int &nTuples, void *&data);
+
+SIMV2_API int simv2_VariableData_nullData(visit_handle h);
 
 #endif
