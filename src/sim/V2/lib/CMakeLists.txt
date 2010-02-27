@@ -40,10 +40,14 @@
 
 SET(LIBSIM_SOURCES
 VisItControlInterface_V2.c 
-VisItDataInterface_V2.c
-SimV2Tracing.c 
+SimV2Tracing.c
+VisIt_CSGMesh.c
+VisIt_CurvilinearMesh.c
 VisIt_DomainBoundaries.c 
 VisIt_DomainNesting.c
+VisIt_PointMesh.c
+VisIt_RectilinearMesh.c
+VisIt_UnstructuredMesh.c
 VisIt_VariableData.c
 )
 
@@ -58,9 +62,9 @@ ${VISIT_BINARY_DIR}/include
 
 ADD_LIBRARY(simV2 ${LIBSIM_SOURCES})
 
-ADD_LIBRARY(simV2f ${FORTRAN_LIBSIM_SOURCES})
+#ADD_LIBRARY(simV2f ${FORTRAN_LIBSIM_SOURCES})
 
-INSTALL(TARGETS simV2 simV2f
+INSTALL(TARGETS simV2 #simV2f
     ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/lib   
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )

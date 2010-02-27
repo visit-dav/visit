@@ -48,7 +48,7 @@
 
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
-int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
+visit_handle SimGetMesh(int, const char *, void *);
 
 /******************************************************************************
  * Simulation data and functions
@@ -63,6 +63,8 @@ typedef struct
     double  time;
     int     runMode;
     int     done;
+
+    VisIt_MeshMetaData mmd;
 } simulation_data;
 
 void
@@ -72,11 +74,33 @@ simulation_data_ctor(simulation_data *sim)
     sim->time = 0.;
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
+
+    /* Let's initialize some mesh metadata here to show that we can pass
+     * user-defined data pointers to the various data access functions. In this
+     * case, we'll pass the address of this "mmd" structure and use it in the
+     * data access function to initialize metadata that we pass back to VisIt.
+     */
+    memset(&sim->mmd, 0, sizeof(VisIt_MeshMetaData));
+    sim->mmd.name = "polyhedral";
+    sim->mmd.meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+    sim->mmd.topologicalDimension = 3;
+    sim->mmd.spatialDimension = 3;
+    sim->mmd.numBlocks = 1;
+    sim->mmd.blockTitle = "Regions";
+    sim->mmd.blockPieceName = "region";
+    sim->mmd.blockNames = (char**)malloc(sizeof(char*));
+    sim->mmd.blockNames[0] = "zones";
+    sim->mmd.numGroups = 0;
+    sim->mmd.units = "cm";
+    sim->mmd.xLabel = "Width";
+    sim->mmd.yLabel = "Height";
+    sim->mmd.zLabel = "Depth";
 }
 
 void
 simulation_data_dtor(simulation_data *sim)
 {
+    free(sim->mmd.blockNames);
 }
 
 void read_input_deck(void) { }
@@ -166,13 +190,18 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
     simulation_data *sim = (simulation_data *)cbdata;
 
-#define IS_COMMAND(C) (strstr(cmd, C) != NULL) 
+#define IS_COMMAND(C) (strcmp(cmd, C) == 0) 
     if(IS_COMMAND("halt"))
         sim->runMode = SIM_STOPPED;
     else if(IS_COMMAND("step"))
         simulate_one_timestep(sim);
     else if(IS_COMMAND("run"))
         sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
 }
 
 /* Called to handle case 3 from VisItDetectInput where we have console
@@ -202,6 +231,11 @@ ProcessConsoleCommand(simulation_data *sim)
         simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
         sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
 }
 
 /******************************************************************************
@@ -218,29 +252,6 @@ ProcessConsoleCommand(simulation_data *sim)
 void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
-    void *cbdata[2] = {NULL, NULL};
-
-    /* Let's initialize some mesh metadata here to show that we can pass
-     * user-defined data pointers to the various data access functions. In this
-     * case, we'll pass the address of this "mmd" structure and use it in the
-     * data access function to initialize metadata that we pass back to VisIt.
-     */
-    VisIt_MeshMetaData mmd;
-    memset(&mmd, 0, sizeof(VisIt_MeshMetaData));
-    mmd.name = "polyhedral";
-    mmd.meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-    mmd.topologicalDimension = 3;
-    mmd.spatialDimension = 3;
-    mmd.numBlocks = 1;
-    mmd.blockTitle = "Regions";
-    mmd.blockPieceName = "region";
-    mmd.blockNames = (char**)malloc(sizeof(char*));
-    mmd.blockNames[0] = "zones";
-    mmd.numGroups = 0;
-    mmd.units = "cm";
-    mmd.xLabel = "Width";
-    mmd.yLabel = "Height";
-    mmd.zLabel = "Depth";
 
     /* main loop */
     fprintf(stderr, "command> ");
@@ -271,10 +282,8 @@ void mainloop(simulation_data *sim)
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
 
-                cbdata[0] = (void*)&mmd;
-                cbdata[1] = (void*)sim;
-                VisItSetGetMetaData(SimGetMetaData, (void*)cbdata);
-                VisItSetGetMesh(SimGetMesh, NULL);
+                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+                VisItSetGetMesh(SimGetMesh, (void*)sim);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -339,6 +348,9 @@ int main(int argc, char **argv)
     /* Call the main loop. */
     mainloop(&sim);
 
+    /* Cleanup */
+    simulation_data_dtor(&sim);
+
     return 0;
 }
 
@@ -380,10 +392,7 @@ int
 SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
 {
     size_t sz;
-    VisIt_MeshMetaData *mmd = NULL;
-    simulation_data *sim = NULL;
-    mmd = (VisIt_MeshMetaData *)(((void**)cbdata)[0]);
-    sim = (simulation_data *)(((void**)cbdata)[1]);
+    simulation_data *sim = (simulation_data *)cbdata;
 
     /* Set the simulation state. */
     md->currentMode = (sim->runMode == SIM_RUNNING) ?
@@ -400,10 +409,10 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     /* Set the first mesh's properties based on data that we passed in
      * as callback data.
      */
-    copy_VisIt_MeshMetaData(&md->meshes[0], mmd);
+    copy_VisIt_MeshMetaData(&md->meshes[0], &sim->mmd);
 
     /* Add some custom commands. */
-    md->numGenericCommands = 3;
+    md->numGenericCommands = 4;
     sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
     md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
     memset(md->genericCommands, 0, sz);
@@ -420,6 +429,10 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->genericCommands[2].argType = VISIT_CMDARG_NONE;
     md->genericCommands[2].enabled = 1;
 
+    md->genericCommands[3].name = strdup("update");
+    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
+    md->genericCommands[3].enabled = 1;
+
     return VISIT_OKAY;
 }
 
@@ -434,47 +447,35 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
+visit_handle
+SimGetMesh(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     if(strcmp(name, "polyhedral") == 0)
     {
-        /* Make VisIt_MeshData contain a VisIt_CSGMesh. */
-        size_t sz = sizeof(VisIt_UnstructuredMesh);
-        mesh->umesh = (VisIt_UnstructuredMesh *)malloc(sz);
-        memset(mesh->umesh, 0, sz);
+        if(VisIt_UnstructuredMesh_alloc(&h) == VISIT_OKAY)
+        {
+            visit_handle x,y,z,conn;
+            int nnodes = sizeof(xc) / sizeof(float);
 
-        /* Tell VisIt which mesh object to use. */
-        mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+            VisIt_VariableData_alloc(&x);
+            VisIt_VariableData_alloc(&y);
+            VisIt_VariableData_alloc(&z);
+            VisIt_VariableData_setDataF(x, VISIT_OWNER_SIM, 1, nnodes, xc);
+            VisIt_VariableData_setDataF(y, VISIT_OWNER_SIM, 1, nnodes, yc);
+            VisIt_VariableData_setDataF(z, VISIT_OWNER_SIM, 1, nnodes, zc);
+            VisIt_UnstructuredMesh_setCoordsXYZ(h, x, y, z);
 
-        /* Fill in the polyhedral mesh's data values. */
-        mesh->umesh->ndims = 3;
-        /* Set the number of nodes and zones in the mesh. */
-        mesh->umesh->nnodes = sizeof(xc) / sizeof(float);
-        mesh->umesh->nzones = npolyzones;
+            VisIt_VariableData_alloc(&conn);
+            VisIt_VariableData_setDataI(conn, VISIT_OWNER_SIM, 1, 
+                sizeof(connectivity)/sizeof(int), connectivity);
+            VisIt_UnstructuredMesh_setConnectivity(h, npolyzones, conn);
 
-        /* Set the indices for the first and last real zones. */
-        mesh->umesh->firstRealZone = 0;
-        mesh->umesh->lastRealZone = npolyzones-1;
-
-        /* Let VisIt use the simulation's copy of the mesh coordinates. */
-        mesh->umesh->xcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, xc);
-        mesh->umesh->ycoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, yc);
-        mesh->umesh->zcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, zc);
-
-        /* Let VisIt use the simulation's copy of the connectivity. */
-        mesh->umesh->connectivity = VisIt_CreateDataArrayFromInt(
-           VISIT_OWNER_SIM, connectivity);
-        mesh->umesh->connectivityLen = sizeof(connectivity)/sizeof(int);
-
-        ret = VISIT_OKAY;
+            VisIt_UnstructuredMesh_setRealIndices(h, 0, npolyzones-1);
+        }
     }
 
-    return ret;
+    return h;
 }
 

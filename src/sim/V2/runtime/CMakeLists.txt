@@ -43,8 +43,13 @@ VisItControlInterfaceRuntime.C
 VisItDataInterfaceRuntime.C 
 VisItDataInterfaceRuntimeP.C 
 VisItDataInterface_V2P.C 
+simv2_CurvilinearMesh.C
+simv2_CSGMesh.C
 simv2_DomainBoundaries.C 
 simv2_DomainNesting.C
+simv2_PointMesh.C
+simv2_RectilinearMesh.C
+simv2_UnstructuredMesh.C
 simv2_VariableData.C
 )
 

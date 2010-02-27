@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -36,7 +36,9 @@
 *
 *****************************************************************************/
 
+/* SIMPLE SIMULATION SKELETON */
 #include <VisItControlInterface_V2.h>
+#include <VisItDataInterface_V2.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -45,28 +47,60 @@
 
 #include "SimulationExample.h"
 
-/* Data Access Function prototypes. */
+/* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
-int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
+visit_handle SimGetMesh(int, const char *, void *);
 int SimGetMaterial(int, const char *, VisIt_MaterialData *, void *);
-int SimGetVariable(int, const char *, visit_handle, void *);
-int SimGetMixedVariable(int, const char *, visit_handle, void *);
+visit_handle SimGetVariable(int, const char *, void *);
+visit_handle SimGetMixedVariable(int, const char *, void *);
 
-void simulate_one_timestep(void);
+/******************************************************************************
+ * Simulation data and functions
+ *****************************************************************************/
+
+#define SIM_STOPPED       0
+#define SIM_RUNNING       1
+
+typedef struct
+{
+    int     cycle;
+    double  time;
+    int     runMode;
+    int     done;
+} simulation_data;
+
+void
+simulation_data_ctor(simulation_data *sim)
+{
+    sim->cycle = 0;
+    sim->time = 0.;
+    sim->runMode = SIM_STOPPED;
+    sim->done = 0;
+}
+
+void
+simulation_data_dtor(simulation_data *sim)
+{
+}
+
 void read_input_deck(void) { }
-int  simulation_done(void)   { return 0; }
 
-/* Is the simulation in run mode (not waiting for VisIt input) */
-static int    runFlag = 1;
-static int    simcycle = 0;
-static double simtime = 0.;
+/* SIMULATE ONE TIME STEP */
+#include <unistd.h>
+void simulate_one_timestep(simulation_data *sim)
+{
+    ++sim->cycle;
+    sim->time += 0.0134;
+    printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+    sleep(1);
+}
 
 /******************************************************************************
  *
  * Purpose: Callback function for control commands.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Input Arguments:
  *   cmd    : The command string that we want the sim to execute.
@@ -79,12 +113,54 @@ static double simtime = 0.;
 
 void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
-    if(strcmp(cmd, "halt") == 0)
-        runFlag = 0;
+    simulation_data *sim = (simulation_data *)cbdata;
+
+#define IS_COMMAND(C) (strcmp(cmd, C) == 0) 
+    if(IS_COMMAND("halt"))
+        sim->runMode = SIM_STOPPED;
+    else if(IS_COMMAND("step"))
+        simulate_one_timestep(sim);
+    else if(IS_COMMAND("run"))
+        sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
+}
+
+/* Called to handle case 3 from VisItDetectInput where we have console
+ * input that needs to be processed in order to accomplish an action.
+ */
+void
+ProcessConsoleCommand(simulation_data *sim)
+{
+    /* Read A Command */
+    char cmd[1000];
+
+    int iseof = (fgets(cmd, 1000, stdin) == NULL);
+    if (iseof)
+    {
+        sprintf(cmd, "quit");
+        printf("quit\n");
+    }
+
+    if (strlen(cmd)>0 && cmd[strlen(cmd)-1] == '\n')
+        cmd[strlen(cmd)-1] = '\0';
+
+    if(strcmp(cmd, "quit") == 0)
+        sim->done = 1;
+    else if(strcmp(cmd, "halt") == 0)
+        sim->runMode = SIM_STOPPED;
     else if(strcmp(cmd, "step") == 0)
-        simulate_one_timestep();
+        simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
-        runFlag = 1;
+        sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
 }
 
 /******************************************************************************
@@ -92,23 +168,24 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
  * Purpose: This is the main event loop function.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
- *  Brad Whitlock, Thu Feb 26 10:12:14 PST 2009
- *  I registered the data access functions using the V2 API.
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
+    /* main loop */
+    fprintf(stderr, "command> ");
+    fflush(stderr);
     do
     {
-        blocking = runFlag ? 0 : 1;
+        blocking = (sim->runMode == SIM_RUNNING) ? 0 : 1;
         /* Get input from VisIt or timeout so the simulation can run. */
-        visitstate = VisItDetectInput(blocking, -1);
+        visitstate = VisItDetectInput(blocking, fileno(stdin));
 
         /* Do different things depending on the output from VisItDetectInput. */
         if(visitstate >= -5 && visitstate <= -1)
@@ -119,21 +196,22 @@ void mainloop(void)
         else if(visitstate == 0)
         {
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep();
+            simulate_one_timestep(sim);
         }
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
+                sim->runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback, NULL);
+                VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
 
-                VisItSetGetMetaData(SimGetMetaData, NULL);
-                VisItSetGetMesh(SimGetMesh, NULL);
-                VisItSetGetMaterial(SimGetMaterial, NULL);
-                VisItSetGetVariable(SimGetVariable, NULL);
-                VisItSetGetMixedVariable(SimGetMixedVariable, NULL);
+                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+                VisItSetGetMesh(SimGetMesh, (void*)sim);
+                VisItSetGetMaterial(SimGetMaterial, (void*)sim);
+                VisItSetGetVariable(SimGetVariable, (void*)sim);
+                VisItSetGetMixedVariable(SimGetMixedVariable, (void*)sim);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -141,16 +219,25 @@ void mainloop(void)
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            runFlag = 0;
             if(VisItProcessEngineCommand() == VISIT_ERROR)
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                runFlag = 1;
+                sim->runMode = SIM_RUNNING;
             }
         }
-    } while(!simulation_done() && err == 0);
+        else if(visitstate == 3)
+        {
+            /* VisItDetectInput detected console input - do something with it.
+             * NOTE: you can't get here unless you pass a file descriptor to
+             * VisItDetectInput instead of -1.
+             */
+            ProcessConsoleCommand(sim);
+            fprintf(stderr, "command> ");
+            fflush(stderr);
+        }
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -158,7 +245,7 @@ void mainloop(void)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:25:37 PST 2008
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
@@ -170,10 +257,14 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
+
+    /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("material",
         "Demonstrates material data access function",
         "/path/to/where/sim/was/started",
@@ -183,19 +274,12 @@ int main(int argc, char **argv)
     read_input_deck();
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
+
+    /* Cleanup */
+    simulation_data_dtor(&sim);
 
     return 0;
-}
-
-/* SIMULATE ONE TIME STEP */
-#include <unistd.h>
-void simulate_one_timestep(void)
-{
-    ++simcycle;
-    simtime += 0.0134;
-    printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
-    sleep(1);
 }
 
 /* DATA ACCESS FUNCTIONS */
@@ -222,14 +306,9 @@ static const int   rmesh_ndims = 2;
  * Purpose: This callback function returns simulation metadata.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Jan 17 15:40:23 PST 2008
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
- *   Brad Whitlock, Thu Apr 10 11:59:07 PDT 2008
- *   Added a scalar variable so we can demonstrate mixed scalars.
- *
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
  *
  *****************************************************************************/
 
@@ -237,11 +316,13 @@ int
 SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
 {
     size_t sz;
+    simulation_data *sim = (simulation_data *)cbdata;
 
     /* Set the simulation state. */
-    md->currentMode = runFlag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = simcycle;
-    md->currentTime = simtime;
+    md->currentMode = (sim->runMode == SIM_RUNNING) ?
+        VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
+    md->currentCycle = sim->cycle;
+    md->currentTime = sim->time;
 
 #define NDOMAINS 1
     /* Allocate enough room for 1 mesh in the metadata. */
@@ -289,7 +370,7 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->variables[0].centering = VISIT_VARCENTERING_ZONE;
 
     /* Add some custom commands. */
-    md->numGenericCommands = 3;
+    md->numGenericCommands = 4;
     sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
     md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
     memset(md->genericCommands, 0, sz);
@@ -306,6 +387,10 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     md->genericCommands[2].argType = VISIT_CMDARG_NONE;
     md->genericCommands[2].enabled = 1;
 
+    md->genericCommands[3].name = strdup("update");
+    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
+    md->genericCommands[3].enabled = 1;
+
     return VISIT_OKAY;
 }
 
@@ -314,73 +399,46 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
  * Purpose: This callback function returns meshes.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
- *   Brad Whitlock, Thu Feb 26 10:21:57 PST 2009
- *   Use SimV2 API.
  *
  *****************************************************************************/
 
-int
-SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
+visit_handle
+SimGetMesh(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     if(strcmp(name, "mesh2d") == 0)
     {
-        int i;
-
-        /* Make VisIt_MeshData contain a VisIt_RectilinearMesh. */
-        size_t sz = sizeof(VisIt_RectilinearMesh);
-        mesh->rmesh = (VisIt_RectilinearMesh *)malloc(sz);
-        memset(mesh->rmesh, 0, sz);
-
-        /* Tell VisIt which mesh object to use. */
-        mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
-
-        /* Set the mesh's number of dimensions. */
-        mesh->rmesh->ndims = rmesh_ndims;
-
-        /* Set the mesh dimensions. */
-        mesh->rmesh->dims[0] = rmesh_dims[0];
-        mesh->rmesh->dims[1] = rmesh_dims[1];
-        mesh->rmesh->dims[2] = rmesh_dims[2];
-
-        mesh->rmesh->baseIndex[0] = 0;
-        mesh->rmesh->baseIndex[1] = 0;
-        mesh->rmesh->baseIndex[2] = 0;
-
-        mesh->rmesh->minRealIndex[0] = 0;
-        mesh->rmesh->minRealIndex[1] = 0;
-        mesh->rmesh->minRealIndex[2] = 0;
-        mesh->rmesh->maxRealIndex[0] = rmesh_dims[0]-1;
-        mesh->rmesh->maxRealIndex[1] = rmesh_dims[1]-1;
-        mesh->rmesh->maxRealIndex[2] = rmesh_dims[2]-1;
-
-        /* Initialize X coords. */
-        for(i = 0; i < NX; ++i)
+        if(VisIt_RectilinearMesh_alloc(&h) == VISIT_OKAY)
         {
-            float t = (float)i / (float)(NX-1);
-            rmesh_x[i] = (1.f-t)*XMIN + t*XMAX;
-        }
-        /* Initialize Y coords. */
-        for(i = 0; i < NY; ++i) 
-        {
-            float t = (float)i / (float)(NY-1);
-            rmesh_y[i] = (1.f-t)*YMIN + t*YMAX;
-        }
+            int i;
+            visit_handle x,y;
 
-        /* Let VisIt use the simulation's copy of the mesh coordinates. */
-        mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, rmesh_x);
-        mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, rmesh_y);
+            /* Initialize X coords. */
+            for(i = 0; i < NX; ++i)
+            {
+                float t = (float)i / (float)(NX-1);
+                rmesh_x[i] = (1.f-t)*XMIN + t*XMAX;
+            }
+            /* Initialize Y coords. */
+            for(i = 0; i < NY; ++i) 
+            {
+                float t = (float)i / (float)(NY-1);
+                rmesh_y[i] = (1.f-t)*YMIN + t*YMAX;
+            }
 
-        ret = VISIT_OKAY;
+            VisIt_VariableData_alloc(&x);
+            VisIt_VariableData_alloc(&y);
+            VisIt_VariableData_setDataF(x, VISIT_OWNER_SIM, 1, NX, rmesh_x);
+            VisIt_VariableData_setDataF(y, VISIT_OWNER_SIM, 1, NY, rmesh_y);
+            VisIt_RectilinearMesh_setCoordsXY(h, x, y);
+        }
     }
 
-    return ret;
+    return h;
 }
 
 /******************************************************************************
@@ -481,20 +539,22 @@ float zonal_scalar[NY-1][NX-1] = {
 {C1*1.f, C2*1.f, C3*1.f, C4*1.f}
 };
 
-int
-SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
+visit_handle
+SimGetVariable(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     if(strcmp(name, "scalar") == 0)
     {
-        ret = VisIt_VariableData_setDataF(var, VISIT_OWNER_SIM, 1,
-            (NX-1) * (NY-1), &zonal_scalar[0][0]); 
+        if(VisIt_VariableData_alloc(&h) == VISIT_OKAY)
+        {
+            VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+                (NX-1) * (NY-1), &zonal_scalar[0][0]); 
+        }
     }
 
-    return ret;
+    return h;
 }
-
 
 /******************************************************************************
  *
@@ -523,19 +583,21 @@ float mixvar[] = {
 /*cell 2,0*/ /*cell 2,1*/ C2*0.3,C2*0.7,    /*cell 2,2*/ C3*0.2,C3*0.4,C3*0.4,   /*cell 2,3*/C4*0.55,C4*0.45
 };
 
-int
-SimGetMixedVariable(int domain, const char *name, visit_handle mvar,
-    void *cbdata)
+visit_handle
+SimGetMixedVariable(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     if(strcmp(name, "scalar") == 0)
     {
-        int nTuples = sizeof(mixvar) / sizeof(float);
-        ret = VisIt_VariableData_setDataF(mvar, VISIT_OWNER_SIM, 1,
-            nTuples, mixvar);
+        if(VisIt_VariableData_alloc(&h) == VISIT_OKAY)
+        {
+            int nTuples = sizeof(mixvar) / sizeof(float);
+            VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+                nTuples, mixvar);
+        }
     }
 
-    return ret;
+    return h;
 }
 

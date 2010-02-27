@@ -4,12 +4,23 @@
 
 #include <simv2_DomainBoundaries.h>
 
-typedef struct
+struct VisIt_DomainBoundaries : public VisIt_ObjectBase
 {
-    VISIT_OBJECT_HEAD
+    VisIt_DomainBoundaries();
+    virtual ~VisIt_DomainBoundaries();
 
     avtStructuredDomainBoundaries *boundaries;
-} VisIt_DomainBoundaries;
+};
+
+VisIt_DomainBoundaries::VisIt_DomainBoundaries() : 
+    VisIt_ObjectBase(VISIT_DOMAIN_BOUNDARIES)
+{
+    boundaries = 0;
+}
+
+VisIt_DomainBoundaries::~VisIt_DomainBoundaries()
+{
+}
 
 static VisIt_DomainBoundaries *
 GetObject(visit_handle h)
@@ -17,7 +28,7 @@ GetObject(visit_handle h)
     VisIt_DomainBoundaries *obj = (VisIt_DomainBoundaries *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(!VISIT_OBJECT_CHECK_TYPE(obj, VISIT_DOMAIN_BOUNDARIES))
+        if(obj->type != VISIT_DOMAIN_BOUNDARIES)
         {
             VisItError("The provided handle does not point to a DomainBoundaries object.");
             obj = NULL;
@@ -37,9 +48,7 @@ GetObject(visit_handle h)
 int
 simv2_DomainBoundaries_alloc(visit_handle *h)
 {
-    VisIt_DomainBoundaries *obj = VISIT_OBJECT_ALLOCATE(VisIt_DomainBoundaries);
-    VISIT_OBJECT_INITIALIZE(obj, VISIT_DOMAIN_BOUNDARIES);
-    *h = VisItStorePointer(obj);
+    *h = VisItStorePointer(new VisIt_DomainBoundaries);
     return (*h != VISIT_INVALID_HANDLE) ? VISIT_OKAY : VISIT_ERROR;
 }
 

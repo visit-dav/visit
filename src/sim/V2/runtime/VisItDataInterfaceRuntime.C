@@ -1,9 +1,15 @@
 #include "VisItDataInterfaceRuntime.h"
+#include "VisItDataInterfaceRuntimeP.h"
 
 #include "VisItDataInterface_V2P.h"
 #include "simv2_DomainBoundaries.h"
 #include "simv2_DomainNesting.h"
 #include "simv2_VariableData.h"
+#include "simv2_CSGMesh.h"
+#include "simv2_CurvilinearMesh.h"
+#include "simv2_PointMesh.h"
+#include "simv2_RectilinearMesh.h"
+#include "simv2_UnstructuredMesh.h"
 
 #include <stdlib.h>
 #include <string>
@@ -27,7 +33,7 @@ typedef struct
     int  (*cb_GetMetaData)(VisIt_SimulationMetaData *, void *);
     void  *cbdata_GetMetaData;
 
-    int  (*cb_GetMesh)(int, const char *, VisIt_MeshData *, void *);
+    visit_handle (*cb_GetMesh)(int, const char *, void *);
     void  *cbdata_GetMesh;
 
     int  (*cb_GetMaterial)(int, const char *, VisIt_MaterialData *, void *);
@@ -36,10 +42,10 @@ typedef struct
     int  (*cb_GetSpecies)(int, const char *, VisIt_SpeciesData *, void *);
     void  *cbdata_GetSpecies;
 
-    int  (*cb_GetVariable)(int, const char *, visit_handle, void *);
+    visit_handle  (*cb_GetVariable)(int, const char *, void *);
     void  *cbdata_GetVariable;
 
-    int  (*cb_GetMixedVariable)(int, const char *, visit_handle, void *);
+    visit_handle  (*cb_GetMixedVariable)(int, const char *, void *);
     void  *cbdata_GetMixedVariable;
 
     int  (*cb_GetCurve)(const char *, VisIt_CurveData *, void *);
@@ -48,10 +54,10 @@ typedef struct
     int  (*cb_GetDomainList)(VisIt_DomainList *, void *);
     void  *cbdata_GetDomainList;
 
-    int  (*cb_GetDomainBoundaries)(const char *, visit_handle, void *);
+    visit_handle  (*cb_GetDomainBoundaries)(const char *, void *);
     void  *cbdata_GetDomainBoundaries;
 
-    int  (*cb_GetDomainNesting)(const char *, visit_handle, void *);
+    visit_handle  (*cb_GetDomainNesting)(const char *, void *);
     void  *cbdata_GetDomainNesting;
 
     /* Writer functions */
@@ -61,7 +67,7 @@ typedef struct
     int (*cb_WriteEnd)(const char *, void *);
     void *cbdata_WriteEnd;
 
-    int (*cb_WriteMesh)(const char *, int, const VisIt_MeshData *, const VisIt_MeshMetaData *, void *);
+    int (*cb_WriteMesh)(const char *, int, visit_handle, const VisIt_MeshMetaData *, void *);
     void *cbdata_WriteMesh;
 
     int (*cb_WriteVariable)(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *, void *);
@@ -115,7 +121,7 @@ simv2_set_GetMetaData(int (*cb) (VisIt_SimulationMetaData *, void *), void *cbda
 }
 
 void
-simv2_set_GetMesh(int (*cb) (int, const char *, VisIt_MeshData *, void *), void *cbdata)
+simv2_set_GetMesh(visit_handle (*cb) (int, const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -148,7 +154,7 @@ simv2_set_GetSpecies(int (*cb) (int, const char *, VisIt_SpeciesData *, void *),
 }
 
 void
-simv2_set_GetVariable(int (*cb) (int, const char *, visit_handle, void *), void *cbdata)
+simv2_set_GetVariable(visit_handle (*cb) (int, const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -159,7 +165,7 @@ simv2_set_GetVariable(int (*cb) (int, const char *, visit_handle, void *), void 
 }
 
 void
-simv2_set_GetMixedVariable(int (*cb) (int, const char *, visit_handle, void *), void *cbdata)
+simv2_set_GetMixedVariable(visit_handle (*cb) (int, const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -192,7 +198,7 @@ simv2_set_GetDomainList(int (*cb) (VisIt_DomainList *, void *), void *cbdata)
 }
 
 void
-simv2_set_GetDomainBoundaries(int (*cb) (const char *, visit_handle, void *), void *cbdata)
+simv2_set_GetDomainBoundaries(visit_handle (*cb) (const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -203,7 +209,7 @@ simv2_set_GetDomainBoundaries(int (*cb) (const char *, visit_handle, void *), vo
 }
 
 void
-simv2_set_GetDomainNesting(int (*cb) (const char *, visit_handle, void *), void *cbdata)
+simv2_set_GetDomainNesting(visit_handle (*cb) (const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -237,7 +243,7 @@ simv2_set_WriteEnd(int (*cb)(const char *, void *), void *cbdata)
 }
 
 void
-simv2_set_WriteMesh(int (*cb)(const char *, int, const VisIt_MeshData *, const VisIt_MeshMetaData *, void *), void *cbdata)
+simv2_set_WriteMesh(int (*cb)(const char *, int, visit_handle, const VisIt_MeshMetaData *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -350,106 +356,6 @@ simv2_SimulationMetaData_check(const VisIt_SimulationMetaData *obj, std::string 
     return ret;
 }
 
-int
-simv2_RectilinearMesh_check(const VisIt_RectilinearMesh *obj, std::string &err)
-{
-    int ret = VISIT_OKAY;
-    return ret;
-}
-
-int
-simv2_CurvilinearMesh_check(const VisIt_CurvilinearMesh *obj, std::string &err)
-{
-    int ret = VISIT_OKAY;
-    return ret;
-}
-
-int
-simv2_UnstructuredMesh_check(const VisIt_UnstructuredMesh *obj, std::string &err)
-{
-    int ret = VISIT_OKAY;
-    return ret;
-}
-
-int
-simv2_PointMesh_check(const VisIt_PointMesh *obj, std::string &err)
-{
-    int ret = VISIT_OKAY;
-    return ret;
-}
-
-int
-simv2_CSGMesh_check(const VisIt_CSGMesh *obj, std::string &err)
-{
-    int ret = VISIT_OKAY;
-    return ret;
-}
-
-int
-simv2_MeshData_check(const VisIt_MeshData *obj, std::string &err)
-{
-    int ret = VISIT_OKAY;
-    std::string suberr;
-
-    switch(obj->meshType)
-    {
-    case VISIT_MESHTYPE_RECTILINEAR:
-        if(obj->rmesh == NULL)
-        {
-            err += "The rmesh pointer is NULL.\n";
-            ret = VISIT_ERROR;
-        }
-        else
-            ret = simv2_RectilinearMesh_check(obj->rmesh, suberr);
-        break;
-    case VISIT_MESHTYPE_CURVILINEAR:
-        if(obj->cmesh == NULL)
-        {
-            err += "The cmesh pointer is NULL.\n";
-            ret = VISIT_ERROR;
-        }
-        else
-            ret = simv2_CurvilinearMesh_check(obj->cmesh, suberr);
-        break;
-    case VISIT_MESHTYPE_UNSTRUCTURED:
-        if(obj->umesh == NULL)
-        {
-            err += "The umesh pointer is NULL.\n";
-            ret = VISIT_ERROR;
-        }
-        else
-            ret = simv2_UnstructuredMesh_check(obj->umesh, suberr);
-        break;
-    case VISIT_MESHTYPE_POINT:
-        if(obj->pmesh == NULL)
-        {
-            err += "The pmesh pointer is NULL.\n";
-            ret = VISIT_ERROR;
-        }
-        else
-            ret = simv2_PointMesh_check(obj->pmesh, suberr);
-        break;
-    case VISIT_MESHTYPE_CSG:
-        if(obj->csgmesh == NULL)
-        {
-            err += "The csgmesh pointer is NULL.\n";
-            ret = VISIT_ERROR;
-        }
-        else
-            ret = simv2_CSGMesh_check(obj->csgmesh, suberr);
-        break;
-    default:
-        err += "The mesh type is invalid.\n";
-        ret = VISIT_ERROR;
-        break;
-    }
-
-    if(ret == VISIT_ERROR)
-        err += suberr;
-
-    return ret;
-}
-
 /******************************************************************************/
 
 // ****************************************************************************
@@ -534,34 +440,55 @@ simv2_invoke_GetMetaData(void)
     return obj;
 }
 
-VisIt_MeshData *
+visit_handle
 simv2_invoke_GetMesh(int dom, const char *name)
 {
-    VisIt_MeshData *obj = NULL;
+    visit_handle h = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetMesh != NULL)
     {
-        obj = ALLOC(VisIt_MeshData);
-        if(obj != NULL)
+        h = (*callbacks->cb_GetMesh)(dom, name, callbacks->cbdata_GetMesh);
+
+        if(h != VISIT_INVALID_HANDLE)
         {
-            std::string err("The simulation returned mesh data with errors that "
-                "need to be fixed before VisIt will accept the data: ");
-            if((*callbacks->cb_GetMesh)(dom, name, obj, callbacks->cbdata_GetMesh) == VISIT_OKAY)
+            int msgno = 0, err = VISIT_ERROR;
+            int objType = simv2_ObjectType(h);
+            switch (objType)
             {
-                if(simv2_MeshData_check(obj, err) == VISIT_ERROR)
-                {
-                    simv2_MeshData_free(obj);
-                    EXCEPTION1(ImproperUseException, err);
-                }
+            case VISIT_CSG_MESH:
+                err = simv2_CSGMesh_check(h);
+                break;
+            case VISIT_CURVILINEAR_MESH:
+                err = simv2_RectilinearMesh_check(h);
+                break;
+            case VISIT_RECTILINEAR_MESH:
+                err = simv2_RectilinearMesh_check(h);
+                break;
+            case VISIT_POINT_MESH:
+                err = simv2_PointMesh_check(h);
+                break;
+            case VISIT_UNSTRUCTURED_MESH:
+                err = simv2_UnstructuredMesh_check(h);
+                break;
+            default:
+                msgno = 1;
             }
-            else
+
+            if(err == VISIT_ERROR)
             {
-                simv2_MeshData_free(obj);
-                obj = NULL;
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    (msgno == 0) ? 
+                    "The mesh returned by the simulation did not pass "
+                    "a consistency check."
+                    : 
+                    "The simulation returned a handle for an object other "
+                    "than a mesh."
+                );
             }
         }
     }
-    return obj;
+    return h;
 }
 
 VisIt_MaterialData *
@@ -601,39 +528,49 @@ simv2_invoke_GetSpecies(int dom, const char *name)
 visit_handle
 simv2_invoke_GetVariable(int dom, const char *name)
 {
-    visit_handle obj = VISIT_INVALID_HANDLE;
+    visit_handle h = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetVariable != NULL)
     {
-        if(simv2_VariableData_alloc(&obj) != VISIT_ERROR)
+        h = (*callbacks->cb_GetVariable)(dom, name, callbacks->cbdata_GetVariable);
+
+        if(h != VISIT_INVALID_HANDLE)
         {
-            if((*callbacks->cb_GetVariable)(dom, name, obj, callbacks->cbdata_GetVariable) == VISIT_ERROR)
+            if(simv2_ObjectType(h) != VISIT_VARIABLE_DATA)
             {
-                simv2_VariableData_free(obj);
-                obj = VISIT_INVALID_HANDLE;
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The simulation returned a handle for an object other "
+                    "than a variable."
+                );
             }
         }
     }
-    return obj;
+    return h;
 }
 
 visit_handle
 simv2_invoke_GetMixedVariable(int dom, const char *name)
 {
-    visit_handle obj = VISIT_INVALID_HANDLE;
+    visit_handle h = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetMixedVariable != NULL)
     {
-        if(simv2_VariableData_alloc(&obj) != VISIT_ERROR)
+        h = (*callbacks->cb_GetMixedVariable)(dom, name, callbacks->cbdata_GetMixedVariable);
+
+        if(h != VISIT_INVALID_HANDLE)
         {
-            if((*callbacks->cb_GetMixedVariable)(dom, name, obj, callbacks->cbdata_GetMixedVariable) == VISIT_ERROR)
+            if(simv2_ObjectType(h) != VISIT_VARIABLE_DATA)
             {
-                simv2_VariableData_free(obj);
-                obj = VISIT_INVALID_HANDLE;
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The simulation returned a handle for an object other "
+                    "than a variable."
+                );
             }
         }
     }
-    return obj;
+    return h;
 }
 
 VisIt_CurveData *
@@ -677,14 +614,7 @@ simv2_invoke_GetDomainBoundaries(const char *name)
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetDomainBoundaries != NULL)
     {
-        if(simv2_DomainBoundaries_alloc(&h) == VISIT_OKAY)
-        {
-            if((*callbacks->cb_GetDomainBoundaries)(name, h, callbacks->cbdata_GetDomainBoundaries) == VISIT_ERROR)
-            {
-                simv2_DomainBoundaries_free(h);
-                h = VISIT_INVALID_HANDLE;
-            }
-        }
+        h = (*callbacks->cb_GetDomainBoundaries)(name, callbacks->cbdata_GetDomainBoundaries);
     }
     return h;
 }
@@ -696,14 +626,7 @@ simv2_invoke_GetDomainNesting(const char *name)
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetDomainNesting != NULL)
     {
-        if(simv2_DomainNesting_alloc(&h) == VISIT_OKAY)
-        {
-            if((*callbacks->cb_GetDomainNesting)(name, h, callbacks->cbdata_GetDomainNesting) == VISIT_ERROR)
-            {
-                simv2_DomainNesting_free(h);
-                h = VISIT_INVALID_HANDLE;
-            }
-        }
+        h = (*callbacks->cb_GetDomainNesting)(name, callbacks->cbdata_GetDomainNesting);
     }
     return h;
 }
@@ -731,7 +654,7 @@ simv2_invoke_WriteEnd(const char *name)
 }
 
 int
-simv2_invoke_WriteMesh(const char *name, int chunk, const VisIt_MeshData *md, const VisIt_MeshMetaData *mmd)
+simv2_invoke_WriteMesh(const char *name, int chunk, visit_handle md, const VisIt_MeshMetaData *mmd)
 {
     int ret = VISIT_ERROR;
     data_callback_t *callbacks = GetDataCallbacks();
@@ -751,4 +674,26 @@ simv2_invoke_WriteVariable(const char *name, const char *arrName, int chunk,
         ret = (*callbacks->cb_WriteVariable)(name, arrName, chunk, dataType, values, 
             ntuples, ncomponents, smd, callbacks->cbdata_WriteVariable);
     return ret;
+}
+
+int
+simv2_ObjectType(visit_handle h)
+{
+    VisIt_ObjectBase *obj = VisItGetPointer(h);
+    int t = -1;
+    if(obj != NULL)
+        t = obj->type;
+    return t;
+}
+
+int
+simv2_FreeObject(visit_handle h)
+{
+    VisIt_ObjectBase *obj = VisItGetPointer(h);
+    if(obj != NULL)
+    {
+        // Rely on the virtual destructor
+        delete obj;
+        VisItFreePointer(h);
+    }
 }
