@@ -55,6 +55,12 @@
 
 #include <VisItDataInterface_V2P.h>
 
+#include <simv2_CurvilinearMesh.h>
+#include <simv2_PointMesh.h>
+#include <simv2_RectilinearMesh.h>
+#include <simv2_UnstructuredMesh.h>
+#include <simv2_VariableData.h>
+
 // ****************************************************************************
 // Method: avtSimV2Writer::avtSimV2Writer
 //
@@ -286,7 +292,7 @@ avtSimV2Writer::CloseFile(void)
 //   vmmd  : The mesh metadata that has been created for this dataset.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 2 17:41:33 PST 2006
+// Creation:   Thu Feb 25 16:08:38 PST 2010
 //
 // Modifications:
 //   
@@ -296,40 +302,29 @@ void
 avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
     VisIt_MeshMetaData *vmmd)
 {
-    debug1 << "avtSimV2Writer::WriteCurvilinearMesh(chunk=" << chunk << ")\n";
+    const char *mName = "avtSimV2Writer::WriteCurvilinearMesh: ";
+    debug1 << mName << "(chunk=" << chunk << ")\n";
 
     // Set the mesh type in the sim1 metadata.
     vmmd->meshType = VISIT_MESHTYPE_CURVILINEAR;
 
     // Translate the VTK structure back into VisIt_CurvilinearMesh.
-    VisIt_CurvilinearMesh *cmesh = (VisIt_CurvilinearMesh *)malloc(sizeof(VisIt_CurvilinearMesh));
-    memset((void*)cmesh, 0, sizeof(VisIt_CurvilinearMesh));
-    cmesh->ndims = ds->GetDataDimension();
-    ds->GetDimensions(cmesh->dims);
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(simv2_CurvilinearMesh_alloc(&h) == VISIT_ERROR)
+        return;
 
-    cmesh->baseIndex[0] = 0;
-    cmesh->baseIndex[1] = 0;
-    cmesh->baseIndex[2] = 0;
+    int dims[3]={0,0,0}, baseIndex[3]={0,0,0};
+    int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0};
+    ds->GetDimensions(dims);
+    maxRealIndex[0] = dims[0]-1;
+    maxRealIndex[1] = dims[1]-1;
+    maxRealIndex[2] = dims[2]-1;
 
-    cmesh->minRealIndex[0] = 0;
-    cmesh->minRealIndex[1] = 0;
-    cmesh->minRealIndex[2] = 0;
-    
-    cmesh->maxRealIndex[0] = cmesh->dims[0]-1;
-    cmesh->maxRealIndex[1] = cmesh->dims[1]-1;
-    cmesh->maxRealIndex[2] = cmesh->dims[2]-1;
-
-    if(cmesh->ndims == 1)
+    if(ds->GetDataDimension() == 1)
     {
-        double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-        for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-        {
-            double *pt = ds->GetPoint(i);
-            x[i] = pt[0];
-        }
-        cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
+        debug1 << mName << "1D data not supported" << endl;
     }
-    else if(cmesh->ndims == 2)
+    else if(ds->GetDataDimension() == 2)
     {
         double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
         double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
@@ -339,10 +334,16 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
             x[i] = pt[0];
             y[i] = pt[1];
         }
-        cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        cmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+        visit_handle hx, hy;
+        simv2_VariableData_alloc(&hx);
+        simv2_VariableData_alloc(&hy);
+        simv2_VariableData_setData(hx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, ds->GetNumberOfPoints(), x);
+        simv2_VariableData_setData(hy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, ds->GetNumberOfPoints(), y);
+        simv2_CurvilinearMesh_setCoordsXY(h, dims, hx, hy);
     }
-    else if(cmesh->ndims == 3)
+    else if(ds->GetDataDimension() == 3)
     {
         double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
         double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
@@ -354,25 +355,33 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
             y[i] = pt[1];
             z[i] = pt[2];
         }
-        cmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        cmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-        cmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+
+        visit_handle hx, hy, hz;
+        simv2_VariableData_alloc(&hx);
+        simv2_VariableData_alloc(&hy);
+        simv2_VariableData_alloc(&hz);
+        simv2_VariableData_setData(hx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, ds->GetNumberOfPoints(), x);
+        simv2_VariableData_setData(hy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, ds->GetNumberOfPoints(), y);
+        simv2_VariableData_setData(hz, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, ds->GetNumberOfPoints(), z);
+        simv2_CurvilinearMesh_setCoordsXYZ(h, dims, hx, hy, hz);
     }
 
-    VisIt_MeshData *mesh = new VisIt_MeshData;
-    memset((void *)mesh, 0, sizeof(VisIt_MeshData));
-    mesh->meshType = VISIT_MESHTYPE_CURVILINEAR;
-    mesh->cmesh = cmesh;
+    simv2_CurvilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
+    simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
 
     // Call into the simulation to write the data back.
-    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteMesh callback returned " << ret
                << " instead of VISIT_OKAY." << endl;
     }
 
-    simv2_MeshData_free(mesh);
+    // Free the mesh that we created.
+    simv2_FreeObject(h);
  
     // Write the data arrays into the simulation.
     WriteDataArrays(ds, chunk);   
@@ -391,7 +400,7 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
 //   vmmd  : The mesh metadata that has been created for this dataset.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 2 17:41:33 PST 2006
+// Creation:   Thu Feb 25 16:17:34 PST 2010
 //
 // Modifications:
 //   
@@ -407,64 +416,70 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
     vmmd->meshType = VISIT_MESHTYPE_RECTILINEAR;
 
     // Translate the VTK structure back into VisIt_RectilinearMesh.
-    VisIt_RectilinearMesh *rmesh = (VisIt_RectilinearMesh *)malloc(sizeof(VisIt_RectilinearMesh));
-    memset((void*)rmesh, 0, sizeof(VisIt_RectilinearMesh));
-    rmesh->ndims = ds->GetDataDimension();
-    ds->GetDimensions(rmesh->dims);
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(simv2_RectilinearMesh_alloc(&h) == VISIT_ERROR)
+        return;
 
-    rmesh->baseIndex[0] = 0;
-    rmesh->baseIndex[1] = 0;
-    rmesh->baseIndex[2] = 0;
+    int dims[3]={0,0,0}, baseIndex[3]={0,0,0};
+    int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0};
+    ds->GetDimensions(dims);
+    maxRealIndex[0] = dims[0]-1;
+    maxRealIndex[1] = dims[1]-1;
+    maxRealIndex[2] = dims[2]-1;
 
-    rmesh->minRealIndex[0] = 0;
-    rmesh->minRealIndex[1] = 0;
-    rmesh->minRealIndex[2] = 0;
-    
-    rmesh->maxRealIndex[0] = rmesh->dims[0]-1;
-    rmesh->maxRealIndex[1] = rmesh->dims[1]-1;
-    rmesh->maxRealIndex[2] = rmesh->dims[2]-1;
-
-    if(rmesh->ndims >= 1)
+    visit_handle hx, hy, hz;
+    if(ds->GetDataDimension() >= 1)
     {
         vtkDataArray *xc = ds->GetXCoordinates();
         double *x = (double*)malloc(xc->GetNumberOfTuples() * sizeof(double));
         for(vtkIdType i = 0; i < xc->GetNumberOfTuples(); ++i)
             x[i] = xc->GetTuple1(i);
-        rmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
+
+        simv2_VariableData_alloc(&hx);
+        simv2_VariableData_setData(hx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, xc->GetNumberOfTuples(), x);
     }
 
-    if(rmesh->ndims >= 2)
+    if(ds->GetDataDimension() >= 2)
     {
         vtkDataArray *yc = ds->GetYCoordinates();
         double *y = (double*)malloc(yc->GetNumberOfTuples() * sizeof(double));
         for(vtkIdType i = 0; i < yc->GetNumberOfTuples(); ++i)
             y[i] = yc->GetTuple1(i);
-        rmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
+
+        simv2_VariableData_alloc(&hy);
+        simv2_VariableData_setData(hy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE, 
+            1, yc->GetNumberOfTuples(), y);
     }
 
-    if(rmesh->ndims >= 3)
+    if(ds->GetDataDimension() >= 3)
     {
         vtkDataArray *zc = ds->GetZCoordinates();
         double *z = (double*)malloc(zc->GetNumberOfTuples() * sizeof(double));
         for(vtkIdType i = 0; i < zc->GetNumberOfTuples(); ++i)
             z[i] = zc->GetTuple1(i);
-        rmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+
+        simv2_VariableData_alloc(&hz);
+        simv2_VariableData_setData(hz, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, zc->GetNumberOfTuples(), z);
     }
 
-    VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
-    memset((void *)mesh, 0, sizeof(VisIt_MeshData));
-    mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
-    mesh->rmesh = rmesh;
+    if(ds->GetDataDimension() == 3)
+        simv2_RectilinearMesh_setCoordsXYZ(h, hx, hy, hz); 
+    else
+        simv2_RectilinearMesh_setCoordsXY(h, hx, hy); 
+    simv2_CurvilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
+    simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
 
     // Call into the simulation to write the data back.
-    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteRectilinearMesh callback returned " << ret
                << " instead of VISIT_OKAY." << endl;
     }
 
-    simv2_MeshData_free(mesh);
+    simv2_FreeObject(h);
 
     // Write the data arrays into the simulation.
     WriteDataArrays(ds, chunk);
@@ -483,7 +498,7 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
 //   vmmd  : The mesh metadata that has been created for this dataset.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 2 17:41:33 PST 2006
+// Creation:   Thu Feb 25 16:31:10 PST 2010
 //
 // Modifications:
 //   
@@ -543,46 +558,30 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         debug1 << mName << "Write the mesh as a point mesh" << endl;
 
         // Do a point mesh callback.
-        VisIt_PointMesh *pmesh = new VisIt_PointMesh;
-        memset((void*)pmesh, 0, sizeof(VisIt_PointMesh));
-        pmesh->ndims = 3;
-        pmesh->nnodes = ds->GetNumberOfCells();
-        double *x = (double*)malloc(pmesh->nnodes * sizeof(double));
-        double *y = (double*)malloc(pmesh->nnodes * sizeof(double));
-        double *z = (double*)malloc(pmesh->nnodes * sizeof(double));
-        for(vtkIdType i = 0; i < ds->GetNumberOfCells(); ++i)
-        {
-            vtkIdType npts;
-            double pt[3];
+        visit_handle h = VISIT_INVALID_HANDLE;
+        if(simv2_PointMesh_alloc(&h) == VISIT_ERROR)
+            return;
 
-            ds->GetCellPoints(i, npts, pts);
-            ds->GetPoint(pts[0], pt);
-
-            x[i] = pt[0];
-            y[i] = pt[1];
-            z[i] = pt[2];
-        }
-        pmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        pmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-        pmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
+        // Send the coordinates down to the writer interleaved.
+        visit_handle hc;
+        simv2_VariableData_alloc(&hc);
+        simv2_VariableData_setData(hc, VISIT_OWNER_SIM, VISIT_DATATYPE_FLOAT, 3,
+            ds->GetPoints()->GetNumberOfPoints(), 
+            ds->GetPoints()->GetVoidPointer(0));
+        simv2_PointMesh_setCoords(h, hc);
 
         // Set the mesh type in the sim1 metadata.
         vmmd->meshType = VISIT_MESHTYPE_POINT;
 
-        VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
-        memset((void *)mesh, 0, sizeof(VisIt_MeshData));
-        mesh->meshType = VISIT_MESHTYPE_POINT;
-        mesh->pmesh = pmesh;
-
         // Call into the simulation to write the data back.
-        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WritePointMesh callback returned " << ret
                    << " instead of VISIT_OKAY." << endl;
         }
 
-        simv2_MeshData_free(mesh);
+        simv2_FreeObject(h);
 
         // Write the data arrays into the simulation.
         WriteDataArrays(ds, chunk);
@@ -644,45 +643,37 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
 
         if(cellCount > 0)
         {
-            VisIt_UnstructuredMesh *umesh = (VisIt_UnstructuredMesh *)malloc(sizeof(VisIt_UnstructuredMesh));
-            memset((void*)umesh, 0, sizeof(VisIt_UnstructuredMesh));
-            umesh->ndims = 3;
-            umesh->nnodes = ds->GetNumberOfPoints();
-            umesh->nzones = cellCount;
-            double *x = (double*)malloc(umesh->nnodes * sizeof(double));
-            double *y = (double*)malloc(umesh->nnodes * sizeof(double));
-            double *z = (double*)malloc(umesh->nnodes * sizeof(double));
-            for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-            {
-                double pt[3];
-                ds->GetPoint(i, pt);
-                x[i] = pt[0];
-                y[i] = pt[1];
-                z[i] = pt[2];
-            }
-            umesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-            umesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-            umesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
-            umesh->connectivity = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, conn);
-            umesh->connectivityLen = connLen;
+            visit_handle h = VISIT_INVALID_HANDLE;
+            if(simv2_UnstructuredMesh_alloc(&h) == VISIT_ERROR)
+                return;
+
+            // Send the coordinates down to the writer interleaved.
+            visit_handle hc;
+            simv2_VariableData_alloc(&hc);
+            simv2_VariableData_setData(hc, VISIT_OWNER_SIM, VISIT_DATATYPE_FLOAT, 3,
+                ds->GetPoints()->GetNumberOfPoints(),
+                ds->GetPoints()->GetVoidPointer(0));
+            simv2_UnstructuredMesh_setCoords(h, hc);
+
+            // Send the connectivity down.
+            visit_handle hconn;
+            simv2_VariableData_alloc(&hconn);
+            simv2_VariableData_setData(hconn, VISIT_OWNER_VISIT, 
+                VISIT_DATATYPE_DOUBLE, 1, connLen, conn);
+            simv2_UnstructuredMesh_setConnectivity(h, cellCount, hconn);
 
             // Set the mesh type in the sim1 metadata.
             vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
 
-            VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
-            memset((void *)mesh, 0, sizeof(VisIt_MeshData));
-            mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-            mesh->umesh = umesh;
-
             // Call into the simulation to write the data back.
-            int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+            int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
             if(ret != VISIT_OKAY)
             {
                 debug1 << "WriteUnstructuredMesh callback returned " << ret
                        << " instead of VISIT_OKAY." << endl;
             }
 
-            simv2_MeshData_free(mesh);
+            simv2_FreeObject(h);
 
             // Write the data arrays into the simulation.
             if(cellCount == ds->GetNumberOfCells())
@@ -715,7 +706,7 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
 //   vmmd  : The mesh metadata that has been created for this dataset.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 2 17:41:33 PST 2006
+// Creation:   Thu Feb 25 16:35:38 PST 2010
 //
 // Modifications:
 //   
@@ -728,17 +719,6 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
 
     // Build up an unstructured mesh from the types of data in the polydata.
     vtkIdType pts[100];
-    double *x = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-    double *y = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-    double *z = (double*)malloc(ds->GetNumberOfPoints() * sizeof(double));
-    for(vtkIdType i = 0; i < ds->GetNumberOfPoints(); ++i)
-    {
-        double pt[3];
-        ds->GetPoint(i, pt);
-        x[i] = pt[0];
-        y[i] = pt[1];
-        z[i] = pt[2];
-    }
 
     debug1 << "polydata npts   = " << ds->GetNumberOfPoints() << endl;
     debug1 << "polydata nverts = " << ds->GetVerts()->GetNumberOfCells() << endl;
@@ -750,32 +730,32 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
         ds->GetPolys()->GetNumberOfCells() == 0))
     {
         // It's a point mesh.
+        visit_handle h = VISIT_INVALID_HANDLE;
+        if(simv2_PointMesh_alloc(&h) == VISIT_ERROR)
+            return;
+
+        // Send the coordinates down to the writer interleaved.
+        visit_handle hc;
+        simv2_VariableData_alloc(&hc);
+        simv2_VariableData_setData(hc, VISIT_OWNER_SIM, VISIT_DATATYPE_FLOAT, 3,
+            ds->GetPoints()->GetNumberOfPoints(),
+            ds->GetPoints()->GetVoidPointer(0));
+        simv2_PointMesh_setCoords(h, hc);
+
         debug1 << "Write polydata as point mesh" << endl;
-        VisIt_PointMesh *pmesh = (VisIt_PointMesh *)malloc(sizeof(VisIt_PointMesh));
-        memset((void*)pmesh, 0, sizeof(VisIt_PointMesh));
-        pmesh->ndims = 3;
-        pmesh->nnodes = ds->GetNumberOfPoints();
-        pmesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        pmesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-        pmesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
 
         // Set the mesh type in the sim1 metadata.
         vmmd->meshType = VISIT_MESHTYPE_POINT;
 
-        VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
-        memset((void *)mesh, 0, sizeof(VisIt_MeshData));
-        mesh->meshType = VISIT_MESHTYPE_POINT;
-        mesh->pmesh = pmesh;
-
         // Call into the simulation to write the data back.
-        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WritePointMesh callback returned " << ret
                    << " instead of VISIT_OKAY." << endl;
         }
 
-        simv2_MeshData_free(mesh);
+        simv2_FreeObject(h);
 
         // Write the data arrays into the simulation.
         WriteDataArrays(ds, chunk);
@@ -871,30 +851,34 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
                 debug5 << "Cell has " << npts << " points!" << endl;
         }
 
-        VisIt_UnstructuredMesh *umesh = (VisIt_UnstructuredMesh *)malloc(sizeof(VisIt_UnstructuredMesh));
-        memset((void*)umesh, 0, sizeof(VisIt_UnstructuredMesh));
-        umesh->ndims = 3;
-        umesh->nnodes = ds->GetNumberOfPoints();
-        umesh->nzones = cellCount;
-        umesh->xcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, x);
-        umesh->ycoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, y);
-        umesh->zcoords = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_VISIT, z);
-        umesh->connectivity = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, conn);
-        umesh->connectivityLen = connPtr - conn;
+        // It's an unstructured mesh.
+        visit_handle h = VISIT_INVALID_HANDLE;
+        if(simv2_UnstructuredMesh_alloc(&h) == VISIT_ERROR)
+            return;
 
-        debug1 << "nzones = " << umesh->nzones << endl;
-        debug1 << "connectivityLen = " << umesh->connectivityLen << endl;
+        // Send the coordinates down to the writer interleaved.
+        visit_handle hc;
+        simv2_VariableData_alloc(&hc);
+        simv2_VariableData_setData(hc, VISIT_OWNER_SIM, VISIT_DATATYPE_FLOAT, 3,
+            ds->GetPoints()->GetNumberOfPoints(),
+            ds->GetPoints()->GetVoidPointer(0));
+        simv2_UnstructuredMesh_setCoords(h, hc);
+
+        // Send the connectivity down.
+        visit_handle hconn;
+        simv2_VariableData_alloc(&hconn);
+        simv2_VariableData_setData(hconn, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+            1, connPtr - conn, conn);
+        simv2_UnstructuredMesh_setConnectivity(h, cellCount, hconn);
+
+        debug1 << "nzones = " << cellCount << endl;
+        debug1 << "connectivityLen = " << (connPtr - conn) << endl;
 
         // Set the mesh type in the sim1 metadata.
         vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
 
-        VisIt_MeshData *mesh = (VisIt_MeshData *)malloc(sizeof(VisIt_MeshData));
-        memset((void *)mesh, 0, sizeof(VisIt_MeshData));
-        mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-        mesh->umesh = umesh;
-
         // Call into the simulation to write the data back.
-        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, mesh, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WriteUnstructuredMesh callback returned " << ret
@@ -906,7 +890,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
             WriteDataArrays(ds, chunk);
         } 
 
-        simv2_MeshData_free(mesh);
+        simv2_FreeObject(h);
     }
 }
 

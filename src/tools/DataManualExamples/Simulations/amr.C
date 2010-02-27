@@ -48,9 +48,9 @@
 
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
-int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
-int SimGetVariable(int, const char *, visit_handle, void *);
-int SimGetDomainNesting(const char *, visit_handle, void *);
+visit_handle SimGetMesh(int, const char *, void *);
+visit_handle SimGetVariable(int, const char *, void *);
+visit_handle SimGetDomainNesting(const char *, void *);
 
 /******************************************************************************
  * Code for calculating data values
@@ -657,11 +657,11 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
+visit_handle
+SimGetMesh(int domain, const char *name, void *cbdata)
 {
-    size_t sz;
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
+
     /* Get the patch with the appropriate domain id. */
     simulation_data *sim = (simulation_data *)cbdata;
     patch_t *patch = patch_get_patch(&sim->patch, domain);
@@ -670,64 +670,48 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
     {
         int i;
 
-        /* Make VisIt_MeshData contain a VisIt_RectilinearMesh. */
-        sz = sizeof(VisIt_RectilinearMesh);
-        mesh->rmesh = (VisIt_RectilinearMesh *)malloc(sz);
-        memset(mesh->rmesh, 0, sz);
-
-        /* Tell VisIt which mesh object to use. */
-        mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
-
-        /* Set the mesh's number of dimensions. */
-        mesh->rmesh->ndims = 2;
-
-        /* Set the mesh dimensions. */
-        mesh->rmesh->dims[0] = patch->nx+1;
-        mesh->rmesh->dims[1] = patch->ny+1;
-        mesh->rmesh->dims[2] = 1;
-
-        mesh->rmesh->baseIndex[0] = 0;
-        mesh->rmesh->baseIndex[1] = 0;
-        mesh->rmesh->baseIndex[2] = 0;
-
-        mesh->rmesh->minRealIndex[0] = 0;
-        mesh->rmesh->minRealIndex[1] = 0;
-        mesh->rmesh->minRealIndex[2] = 0;
-        mesh->rmesh->maxRealIndex[0] = patch->nx;
-        mesh->rmesh->maxRealIndex[1] = patch->ny;
-        mesh->rmesh->maxRealIndex[2] = 1;
-
-        /* Initialize X coords. */
-        float *coordX = (float *)malloc(sizeof(float) * (patch->nx+1));
-        float width  = sim->patch.window[1] - sim->patch.window[0];
-        float x0 = (patch->window[0] - sim->patch.window[0]) / width;
-        float x1 = (patch->window[1] - sim->patch.window[0]) / width;
-        for(i = 0; i < (patch->nx+1); ++i)
+        if(VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
         {
-            float t = float(i) / float(patch->nx);
-            coordX[i] = (1.-t)*x0 + t*x1;
-        }
-        /* Initialize Y coords. */
-        float *coordY = (float *)malloc(sizeof(float) * (patch->ny+1));
-        float height = sim->patch.window[3] - sim->patch.window[2];
-        float y0 = (patch->window[2] - sim->patch.window[2]) / height;
-        float y1 = (patch->window[3] - sim->patch.window[2]) / height;
-        for(i = 0; i < (patch->ny+1); ++i)
-        {
-            float t = float(i) / float(patch->ny);
-            coordY[i] = (1.-t)*y0 + t*y1;
-        }
+            /* Initialize X coords. */
+            float *coordX = (float *)malloc(sizeof(float) * (patch->nx+1));
+            float width  = sim->patch.window[1] - sim->patch.window[0];
+            float x0 = (patch->window[0] - sim->patch.window[0]) / width;
+            float x1 = (patch->window[1] - sim->patch.window[0]) / width;
+            for(i = 0; i < (patch->nx+1); ++i)
+            {
+                float t = float(i) / float(patch->nx);
+                coordX[i] = (1.-t)*x0 + t*x1;
+            }
+            /* Initialize Y coords. */
+            float *coordY = (float *)malloc(sizeof(float) * (patch->ny+1));
+            float height = sim->patch.window[3] - sim->patch.window[2];
+            float y0 = (patch->window[2] - sim->patch.window[2]) / height;
+            float y1 = (patch->window[3] - sim->patch.window[2]) / height;
+            for(i = 0; i < (patch->ny+1); ++i)
+            {
+                float t = float(i) / float(patch->ny);
+                coordY[i] = (1.-t)*y0 + t*y1;
+            }
 
-        /* Let VisIt use the simulation's copy of the mesh coordinates. */
-        mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_VISIT, coordX);
-        mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_VISIT, coordY);
-
-        ret = VISIT_OKAY;
+            /* Give the mesh some coordinates it can use. */
+            visit_handle xc, yc;
+            VisIt_VariableData_alloc(&xc);
+            VisIt_VariableData_alloc(&yc);
+            if(xc != VISIT_INVALID_HANDLE && yc != VISIT_INVALID_HANDLE)
+            {
+                VisIt_VariableData_setDataF(xc, VISIT_OWNER_VISIT, 1, patch->nx+1, coordX);
+                VisIt_VariableData_setDataF(yc, VISIT_OWNER_VISIT, 1, patch->ny+1, coordY);
+                VisIt_RectilinearMesh_setCoordsXY(h, xc, yc);
+            }
+            else
+            {
+                free(coordX);
+                free(coordY);
+            }
+        }
     }
 
-    return ret;
+    return h;
 }
 
 /******************************************************************************
@@ -741,62 +725,66 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetDomainNesting(const char *name, visit_handle nesting, void *cbdata)
+visit_handle
+SimGetDomainNesting(const char *name, void *cbdata)
 {
     simulation_data *sim = (simulation_data *)cbdata;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
-    int npatches = patch_num_patches(&sim->patch);
-    int nlevels = patch_num_levels(&sim->patch);
-    VisIt_DomainNesting_set_dimensions(nesting, npatches, nlevels, 2);
-
-    int ratios[3];
-    for(int level = 0; level < nlevels; ++level)
+    if(VisIt_DomainNesting_alloc(&h) != VISIT_ERROR)
     {
-        if(level == 0)
+        int npatches = patch_num_patches(&sim->patch);
+        int nlevels = patch_num_levels(&sim->patch);
+        VisIt_DomainNesting_set_dimensions(h, npatches, nlevels, 2);
+
+        int ratios[3];
+        for(int level = 0; level < nlevels; ++level)
         {
-            ratios[0] = ratios[1] = ratios[2] = 1;
-            VisIt_DomainNesting_set_levelRefinement(nesting, level, ratios);
+            if(level == 0)
+            {
+                ratios[0] = ratios[1] = ratios[2] = 1;
+                VisIt_DomainNesting_set_levelRefinement(h, level, ratios);
+            }
+            else
+            {
+                ratios[0] = sim->refinement_ratio;
+                ratios[1] = sim->refinement_ratio;
+                ratios[2] = 1;
+            }
+            VisIt_DomainNesting_set_levelRefinement(h, level, ratios);
         }
-        else
+
+        patch_t **patches = patch_flat_array(&sim->patch);
+        int logicalExtents[6];
+        for(int i = 0; i < npatches; ++i)
         {
-            ratios[0] = sim->refinement_ratio;
-            ratios[1] = sim->refinement_ratio;
-            ratios[2] = 1;
+            int *child_patches = NULL;
+            int nchild_patches = patches[i]->nsubpatches;
+            if(nchild_patches > 0)
+            {
+                child_patches = ALLOC(nchild_patches, int);
+                for(int j = 0; j < nchild_patches; ++j)
+                    child_patches[j] = patches[i]->subpatches[j].id;
+            }
+
+            // logical extents are stored lowI,lowJ,lowL,hiI,hiJ,hiK
+            logicalExtents[0] = patches[i]->logical_extents[0];
+            logicalExtents[1] = patches[i]->logical_extents[2];
+            logicalExtents[2] = 0;
+            logicalExtents[3] = patches[i]->logical_extents[1];
+            logicalExtents[4] = patches[i]->logical_extents[3];
+            logicalExtents[5] = 0;
+    
+            VisIt_DomainNesting_set_nestingForPatch(h, 
+                patches[i]->id, patches[i]->level, child_patches, nchild_patches,
+                logicalExtents);
+    
+            FREE(child_patches);
         }
-        VisIt_DomainNesting_set_levelRefinement(nesting, level, ratios);
+        FREE(patches);
     }
 
-    patch_t **patches = patch_flat_array(&sim->patch);
-    int logicalExtents[6];
-    for(int i = 0; i < npatches; ++i)
-    {
-        int *child_patches = NULL;
-        int nchild_patches = patches[i]->nsubpatches;
-        if(nchild_patches > 0)
-        {
-            child_patches = ALLOC(nchild_patches, int);
-            for(int j = 0; j < nchild_patches; ++j)
-                child_patches[j] = patches[i]->subpatches[j].id;
-        }
-
-        // logical extents are stored lowI,lowJ,lowL,hiI,hiJ,hiK
-        logicalExtents[0] = patches[i]->logical_extents[0];
-        logicalExtents[1] = patches[i]->logical_extents[2];
-        logicalExtents[2] = 0;
-        logicalExtents[3] = patches[i]->logical_extents[1];
-        logicalExtents[4] = patches[i]->logical_extents[3];
-        logicalExtents[5] = 0;
-
-        VisIt_DomainNesting_set_nestingForPatch(nesting, 
-            patches[i]->id, patches[i]->level, child_patches, nchild_patches,
-            logicalExtents);
-
-        FREE(child_patches);
-    }
-    FREE(patches);
-
-    return VISIT_OKAY;
+    return h;
 }
 
 /******************************************************************************
@@ -810,10 +798,10 @@ SimGetDomainNesting(const char *name, visit_handle nesting, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
+visit_handle
+SimGetVariable(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     /* Get the patch with the appropriate domain id. */
     simulation_data *sim = (simulation_data *)cbdata;
@@ -821,9 +809,10 @@ SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
 
     if(strcmp(name, "mandelbrot") == 0 && patch != NULL)
     { 
-        ret = VisIt_VariableData_setDataC(var, VISIT_OWNER_SIM, 1,
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataC(h, VISIT_OWNER_SIM, 1,
             patch->nx * patch->ny, (char *)patch->data);
     }
 
-    return ret;
+    return h;
 }

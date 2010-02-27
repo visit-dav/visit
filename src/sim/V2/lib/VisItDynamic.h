@@ -6,10 +6,18 @@
     int retval = VISIT_ERROR; \
     LIBSIM_API_ENTER(VisIt_##FUNC);\
     {\
-        FUNCVAR = (FUNCTYPE)visit_get_runtime_function(#FUNC);\
+        FUNCVAR = (FUNCTYPE)visit_get_runtime_function("simv2_"#FUNC);\
         if(cb != NULL)\
         { \
             retval = EXEC_CB;\
+            if(retval == VISIT_ERROR) \
+            { \
+                LIBSIM_MESSAGE("simv2_" #FUNC " returned VISIT_ERROR"); \
+            } \
+            else \
+            { \
+                LIBSIM_MESSAGE("simv2_" #FUNC " returned VISIT_OKAY"); \
+            } \
         } \
     }\
     LIBSIM_API_LEAVE(VisIt_##FUNC); \

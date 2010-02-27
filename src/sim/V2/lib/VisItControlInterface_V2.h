@@ -114,24 +114,24 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
 /* This is needed to do collective communication before we call the other callbacks. */
 int VisItSetActivateTimestep(int (*cb)(void *), void *cbdata);
 int VisItSetGetMetaData(int (*cb)(VisIt_SimulationMetaData *, void *), void *cbdata);
-int VisItSetGetMesh(int (*cb)(int, const char *, VisIt_MeshData *, void *), void *cbdata);
+int VisItSetGetMesh(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetMaterial(int (*cb)(int, const char *, VisIt_MaterialData *, void *), void *cbdata);
 int VisItSetGetSpecies(int (*cb)(int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
-int VisItSetGetVariable(int (*cb)(int, const char *, visit_handle, void *), void *cbdata);
-int VisItSetGetMixedVariable(int (*cb)(int, const char *, visit_handle, void *), void *cbdata);
+int VisItSetGetVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
+int VisItSetGetMixedVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetCurve(int (*cb)(const char *, VisIt_CurveData *, void *), void *cbdata);
 int VisItSetGetDomainList(int (*cb)(VisIt_DomainList *, void *), void *cbdata);
 
 /* This is needed for VisIt to create ghost zones in between the domains. */
-int VisItSetGetDomainBoundaries(int (*cb)(const char *, visit_handle, void *), void *cbdata);
+int VisItSetGetDomainBoundaries(visit_handle (*cb)(const char *, void *), void *cbdata);
 
 /* This is needed to tell VisIt how AMR patches are nested. */
-int VisItSetGetDomainNesting(int (*cb)(const char *, visit_handle, void *), void *cbdata);
+int VisItSetGetDomainNesting(visit_handle (*cb)(const char *, void *), void *cbdata);
 
 /* Functions that install data writer callback functions */
 int VisItSetWriteBegin(int (*cb)(void *, const char *), void *cbdata);
 int VisItSetWriteEnd(int (*cb)(void *, const char *), void *cbdata);
-int VisItSetWriteMesh(int (*cb)(void *, const char *, int, const VisIt_MeshData *, const VisIt_MeshMetaData *), void *cbdata);
+int VisItSetWriteMesh(int (*cb)(void *, const char *, int, visit_handle, const VisIt_MeshMetaData *), void *cbdata);
 int VisItSetWriteVariable(int (*cb)(void *, const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *), void *cbdata);
 
 #ifdef __cplusplus

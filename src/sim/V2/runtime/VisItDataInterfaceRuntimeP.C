@@ -3,13 +3,21 @@
 
 #include <VisItDataInterfaceRuntimeP.h>
 
-static void **visit_pointers = NULL;
+VisIt_ObjectBase::VisIt_ObjectBase(int t) : type(t)
+{
+}
+
+VisIt_ObjectBase::~VisIt_ObjectBase()
+{
+}
+
+static VisIt_ObjectBase **visit_pointers = NULL;
 static int  visit_pointers_size = 0;
 
-void *
+VisIt_ObjectBase *
 VisItGetPointer(visit_handle h)
 {
-    void *retval = NULL;
+    VisIt_ObjectBase *retval = NULL;
     if(visit_pointers != NULL && h >= 0 && h < visit_pointers_size)
         retval = visit_pointers[h];
     return retval;
@@ -23,13 +31,13 @@ VisItFreePointer(visit_handle h)
 }
 
 visit_handle
-VisItStorePointer(void *ptr)
+VisItStorePointer(VisIt_ObjectBase *ptr)
 {
     /* Allocate the pointers array if we haven't already */
     if(visit_pointers == NULL)
     {
         visit_pointers_size = 100;
-        visit_pointers = (void **)(void*)calloc(visit_pointers_size, sizeof(void *));
+        visit_pointers = (VisIt_ObjectBase **)(VisIt_ObjectBase*)calloc(visit_pointers_size, sizeof(VisIt_ObjectBase *));
     }
 
     /* Look for a free slot in the pointers array */
@@ -43,8 +51,8 @@ VisItStorePointer(void *ptr)
     }
 
     /* Grow the pointers array. */
-    void **new_visit_pointers = (void **)(void*)calloc(visit_pointers_size*2, sizeof(void *));
-    memcpy(new_visit_pointers, visit_pointers, visit_pointers_size*sizeof(void*));
+    VisIt_ObjectBase **new_visit_pointers = (VisIt_ObjectBase **)(VisIt_ObjectBase*)calloc(visit_pointers_size*2, sizeof(VisIt_ObjectBase *));
+    memcpy(new_visit_pointers, visit_pointers, visit_pointers_size*sizeof(VisIt_ObjectBase*));
     free(visit_pointers);
     visit_pointers = new_visit_pointers;
     int h = visit_pointers_size;

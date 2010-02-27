@@ -57,9 +57,9 @@
 void read_input_deck(void) { }
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
-int SimGetMesh(int, const char *, VisIt_MeshData *, void *);
+visit_handle SimGetMesh(int, const char *, void *);
 int SimGetCurve(const char *name, VisIt_CurveData *, void *);
-int SimGetVariable(int, const char *, visit_handle, void *);
+visit_handle SimGetVariable(int, const char *, void *);
 int SimGetDomainList(VisIt_DomainList *, void *);
 
 /******************************************************************************
@@ -581,61 +581,40 @@ int   rmesh_ndims = 2;
  *
  *****************************************************************************/
 
-int
-SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
+visit_handle
+SimGetMesh(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     if(strcmp(name, "mesh2d") == 0)
     {
-        int i;
-        float *rmesh_x, *rmesh_y;
-        size_t sz;
+        if(VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
+        {
+            int i, minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0};
+            float *rmesh_x, *rmesh_y;
+            visit_handle hx, hy;
 
-        /* Make VisIt_MeshData contain a VisIt_RectilinearMesh. */
-        sz = sizeof(VisIt_RectilinearMesh);
-        mesh->rmesh = (VisIt_RectilinearMesh *)malloc(sz);
-        memset(mesh->rmesh, 0, sz);
+            maxRealIndex[0] = rmesh_dims[0]-1;
+            maxRealIndex[1] = rmesh_dims[1]-1;
+            maxRealIndex[2] = rmesh_dims[2]-1;
 
-        /* Tell VisIt which mesh object to use. */
-        mesh->meshType = VISIT_MESHTYPE_RECTILINEAR;
+            rmesh_x = (float *)malloc(sizeof(float) * RNX);
+            for(i = 0; i < RNX; ++i)
+                rmesh_x[i] = ((float)i / (float)(RNX-1)) * 5. - 2.5 + 5 * domain;
+            rmesh_y = (float *)malloc(sizeof(float) * RNY);
+            for(i = 0; i < RNY; ++i)
+                rmesh_y[i] = ((float)i / (float)(RNY-1)) * 5. - 2.5;
 
-        /* Set the mesh's number of dimensions. */
-        mesh->rmesh->ndims = rmesh_ndims;
-
-        /* Set the mesh dimensions. */
-        mesh->rmesh->dims[0] = rmesh_dims[0];
-        mesh->rmesh->dims[1] = rmesh_dims[1];
-        mesh->rmesh->dims[2] = rmesh_dims[2];
-
-        mesh->rmesh->baseIndex[0] = 0;
-        mesh->rmesh->baseIndex[1] = 0;
-        mesh->rmesh->baseIndex[2] = 0;
-
-        mesh->rmesh->minRealIndex[0] = 0;
-        mesh->rmesh->minRealIndex[1] = 0;
-        mesh->rmesh->minRealIndex[2] = 0;
-        mesh->rmesh->maxRealIndex[0] = rmesh_dims[0]-1;
-        mesh->rmesh->maxRealIndex[1] = rmesh_dims[1]-1;
-        mesh->rmesh->maxRealIndex[2] = rmesh_dims[2]-1;
-
-        rmesh_x = (float *)malloc(sizeof(float) * RNX * RNY);
-        for(i = 0; i < RNX; ++i)
-            rmesh_x[i] = ((float)i / (float)(RNX-1)) * 5. - 2.5 + 5 * domain;
-        rmesh_y = (float *)malloc(sizeof(float) * RNX * RNY);
-        for(i = 0; i < RNY; ++i)
-            rmesh_y[i] = ((float)i / (float)(RNY-1)) * 5. - 2.5;
-
-        /* Let VisIt use the simulation's copy of the mesh coordinates. */
-        mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_VISIT, rmesh_x);
-        mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_VISIT, rmesh_y);
-
-        ret = VISIT_OKAY;
+            VisIt_VariableData_alloc(&hx);
+            VisIt_VariableData_alloc(&hy);
+            VisIt_VariableData_setDataF(hx, VISIT_OWNER_VISIT, 1, RNX, rmesh_x);
+            VisIt_VariableData_setDataF(hy, VISIT_OWNER_VISIT, 1, RNY, rmesh_y);
+            VisIt_RectilinearMesh_setCoordsXY(h, hx, hy);
+            VisIt_RectilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
+        }
     }
 
-    return ret;
+    return h;
 }
 
 /******************************************************************************
@@ -649,10 +628,10 @@ SimGetMesh(int domain, const char *name, VisIt_MeshData *mesh, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
+visit_handle
+SimGetVariable(int domain, const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    visit_handle h = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
 
     if(strcmp(name, "zonal") == 0)
@@ -687,13 +666,12 @@ SimGetVariable(int domain, const char *name, visit_handle var, void *cbdata)
         }
 
         nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
-        ret = VisIt_VariableData_setDataF(var, VISIT_OWNER_VISIT, 1,
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_VISIT, 1,
             nTuples, rmesh_zonal);
-
-        ret = VISIT_OKAY;
     }
 
-    return ret;
+    return h;
 }
 
 /******************************************************************************

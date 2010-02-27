@@ -20,12 +20,6 @@ int SIMV2_API simv2_ExpressionMetaData_free(VisIt_ExpressionMetaData *obj);
 int SIMV2_API simv2_SpeciesMetaData_free(VisIt_SpeciesMetaData *obj);
 int SIMV2_API simv2_SimulationMetaData_free(VisIt_SimulationMetaData *obj);
 
-int SIMV2_API simv2_CurvilinearMesh_free(VisIt_CurvilinearMesh *obj);
-int SIMV2_API simv2_RectilinearMesh_free(VisIt_RectilinearMesh *obj);
-int SIMV2_API simv2_UnstructuredMesh_free(VisIt_UnstructuredMesh *obj);
-int SIMV2_API simv2_PointMesh_free(VisIt_PointMesh *obj);
-int SIMV2_API simv2_CSGMesh_free(VisIt_CSGMesh *obj);
-int SIMV2_API simv2_MeshData_free(VisIt_MeshData *obj);
 int SIMV2_API simv2_CurveData_free(VisIt_CurveData *obj);
 int SIMV2_API simv2_MaterialData_free(VisIt_MaterialData *obj);
 int SIMV2_API simv2_SpeciesData_free(VisIt_SpeciesData *obj);
