@@ -192,6 +192,10 @@
 #
 #    Mark C. Miller, Fri Feb 19 08:46:29 PST 2010
 #    Made pre-update configure failure a warning instead of fatal error.
+#
+#    Mark C. Miller, Fri Feb 26 11:15:51 PST 2010
+#    Removed logic to skip on no changes as we test a different mode
+#    each time. Added logic to alternate mode tested based on day of week.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -339,7 +343,7 @@ PATH=/usr/common/usg/bin:/usr/common/mss/bin:/usr/common/pbs/bin:/global/u1/m/mi
 export PATH
 
 optError=0
-skipIfNoChanges=1
+skipIfNoChanges=0
 scriptWasChanged=0
 testEmail=""
 for options
@@ -498,8 +502,16 @@ cd ..
 curdate=`date +%Y-%m-%d-%p%I%M`
 theDay=`date +%A`
 
-# set mode to run in
-modes="davinci,serial davinci,parallel davinci,scalable,parallel,icet"
+modes="davinci,serial"
+case $theDay in
+    Monday)    modes="davinci,serial" ;; 
+    Tuesday)   modes="davinci,parallel" ;;
+    Wednesday) modes="davinci,scalable,parallel,icet" ;;
+    Thursday)  modes="davinci,serial" ;;
+    Friday)    modes="davinci,parallel" ;;
+    Saturday)  modes="davinci,scalable,parallel,icet" ;;
+    Sunday)    modes="davinci,scalable,parallel,icet" ;;
+esac
 
 # set list of tests/modes to skip
 skipList_dueTo_clientServer="\
