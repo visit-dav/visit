@@ -48,10 +48,10 @@ struct VsSchema {
   struct Uniform {
     static std::string key;
     static std::string deprecated_key;
-    static std::string comp0;
-    static std::string comp1;
-    static std::string comp2;
-    static std::string comp3;
+    static std::string lowerBounds;
+    static std::string startCell;
+    static std::string numCells;
+    static std::string upperBounds;
   };
 
   struct Unstructured {

@@ -931,6 +931,8 @@ HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) cons
 //    Try matching against the original hostname if matching against the
 //    resolved host name fails.
 //
+//    David Camp, Fri Feb 26 13:53:28 PST 2010
+//    Try matching against all of the host's aliases.
 // ****************************************************************************
 #if defined(_WIN32)
 #include <winsock2.h>
@@ -941,25 +943,40 @@ HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) cons
 MachineProfile *
 HostProfileList::GetMachineProfileForHost(const std::string &hostName) const
 {
-    std::string fqhostName(hostName);
-    struct hostent *hostEnt = gethostbyname(fqhostName.c_str());
-    if (hostEnt)
-        fqhostName = std::string(hostEnt->h_name);
-
+    // Check for the hostname
     for(size_t i = 0; i < machines.size(); i++)
     {
         MachineProfile *m = (MachineProfile *)(machines[i]);
 
-        if (m->ProfileMatchesHost(fqhostName))
+        if (m->ProfileMatchesHost(hostName))
             return m;
     }
 
-    for(size_t i = 0; i < machines.size(); i++)
+    struct hostent *hostEnt = gethostbyname(hostName.c_str());
+    if (hostEnt)
     {
-        MachineProfile *m = (MachineProfile *)(machines[i]);
-        
-        if (m->ProfileMatchesHost(hostName))
-            return m;
+        // Check for the official host name
+        std::string fqhostName(hostEnt->h_name);
+        for(size_t i = 0; i < machines.size(); i++)
+        {
+            MachineProfile *m = (MachineProfile *)(machines[i]);
+
+            if (m->ProfileMatchesHost(fqhostName))
+                return m;
+        }
+
+        // Check all of the aliases
+        for(int j=0; hostEnt->h_aliases[j] != NULL; j++)
+        {
+            fqhostName = std::string(hostEnt->h_aliases[j]);
+            for(size_t i = 0; i < machines.size(); i++)
+            {
+                MachineProfile *m = (MachineProfile *)(machines[i]);
+
+                if (m->ProfileMatchesHost(fqhostName))
+                    return m;
+            }
+        }
     }
 
     return NULL;

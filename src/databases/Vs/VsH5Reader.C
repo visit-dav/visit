@@ -25,17 +25,17 @@
 
 VsH5Reader::VsH5Reader(const std::string& nm, std::ostream& dbgstrm, std::vector<int> strideSettings) :
 debugStrmRef(dbgstrm) {
-
+  
   debugStrmRef <<"VsH5Reader::VsH5Reader(" <<nm <<") entering." <<std::endl;
-
+  
   debugStrmRef <<"VsH5Reader::VsH5Reader(" <<nm <<") handling stride settings." <<std::endl;
   stride = strideSettings;
   useStride = false;
   for (unsigned int i = 0; i < stride.size(); i++) {
     if (stride[i] != 1)
-    useStride = true;
+      useStride = true;
   }
-
+  
   fileId = H5Fopen(nm.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
   if (fileId<0) {
     std::string msg = "VsH5Reader::VsH5Reader(): HDF5 error opening the file '"
@@ -43,7 +43,7 @@ debugStrmRef(dbgstrm) {
     debugStrmRef << msg << std::endl;
     throw std::invalid_argument(msg.c_str());
   }
-
+  
   // Read metadata
   filter = new VsFilter(fileId, dbgstrm);
   h5meta = filter->getH5Meta();
@@ -53,10 +53,10 @@ debugStrmRef(dbgstrm) {
     debugStrmRef <<"VsH5Reader::VsH5Reader(" <<nm <<") - file format not recognized." <<std::endl;
     delete (filter);
     filter = NULL;
-
+    
     EXCEPTION1(InvalidFilesException, nm.c_str());
   }
-
+  
   meta = new VsMeta();
   makeVsMeta();
   meta->write(debugStrmRef);
@@ -65,18 +65,18 @@ debugStrmRef(dbgstrm) {
 
 VsH5Reader::~VsH5Reader() {
   debugStrmRef <<"VsH5Reader::~VsH5Reader() entering." << std::endl;
-
+  
   //close what we know about
   if (filter != NULL) {
     delete filter;
     filter = NULL;
   }
-
+  
   if (meta != NULL) {
     delete meta;
     meta = NULL;
   }
-
+  
   // Check if anything is still open
   int cnt = H5Fget_obj_count(fileId, H5F_OBJ_ALL);
   if (cnt) {
@@ -96,12 +96,12 @@ VsH5Reader::~VsH5Reader() {
     delete [] objIds;
   }
   debugStrmRef << "Strong close should take care of this." << std::endl;
-
+  
   if (fileId) {
     H5Fclose(fileId);
     fileId = 0;
   }
-
+  
   debugStrmRef <<"VsH5Reader::~VsH5Reader() exiting." <<std::endl;
 }
 
@@ -137,7 +137,7 @@ void VsH5Reader::makeVsMeta() {
     vm->name = h5mesh->second->name;
     try {
       makeGMeshMeta(h5mesh->second, *vm);
-
+      
       //if this mesh declares itself to be part of an MD mesh, put it there
       // otherwise, add it to the regular list
       std::string mdMeshName = vm->getStringAttribute(VsSchema::mdAtt);
@@ -169,8 +169,8 @@ void VsH5Reader::makeVsMeta() {
       delete vm;
     }
   }/*
-
-
+   
+   
    debugStrmRef <<"VsH5Reader::MakeVsMeta() entering." <<std::endl;
    // Meshes MUST come first, because the MD Vars procedures have to be able to reference the newly created md meshes
    // Insert meshes
@@ -180,12 +180,12 @@ void VsH5Reader::makeVsMeta() {
    VsMeshMeta* vm = new VsMeshMeta();
    std::string name = j->second->getFullName();
    debugStrmRef <<"VsH5Reader::makeVsMeta() - building mesh " <<name <<std::endl;
-
+   
    vm->path = j->second->path;
    vm->name = j->second->name;
    try {
    makeGMeshMeta(j->second, *vm);
-
+   
    //if this mesh declares itself to be part of an MD mesh, put it there
    // otherwise, add it to the regular list
    debugStrmRef <<"VsH5Reader::makeVsMeta() - checking for MD membership" <<std::endl;
@@ -240,7 +240,7 @@ void VsH5Reader::makeVsMeta() {
       //if this mesh declares itself to be part of an MD mesh, put it there
       // otherwise, add it to the regular list
       std::string mdMeshName = vm->getStringAttribute(VsSchema::mdAtt);
-
+      
       if (!mdMeshName.empty()) {
         VsMDMeshMeta* mdMeta = meta->getMDMesh(mdMeshName);
         if (mdMeta == NULL) {
@@ -270,20 +270,20 @@ void VsH5Reader::makeVsMeta() {
       delete vm;
     }
   }
-
+  
   // Get all derived variables (vsVars)
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building Vs Vars" <<std::endl;
   makeVsVars();
-
+  
   // Insert vars
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building Vars" <<std::endl;
   for (std::map<std::string, VsDMeta*>::const_iterator i = h5meta->vars.begin();
-      i != h5meta->vars.end(); ++i) {
+       i != h5meta->vars.end(); ++i) {
     VsVariableMeta* vm = new VsVariableMeta();
     std::string name = i->second->getFullName();
     try {
       makeVariableMeta(i->second, *vm);
-
+      
       //if this var declares itself to be part of an MD var, put it there
       // otherwise, add it to the regular list
       std::string mdVarName = vm->getStringAttribute (VsSchema::mdAtt);
@@ -293,23 +293,23 @@ void VsH5Reader::makeVsMeta() {
         if (mdMeta == NULL) {
           debugStrmRef <<"VsH5Reader::makeVsMeta() - MD variable " + mdVarName + " not found, creating." <<std::endl;
           //create md var, add to list in "meta", save in mdMeta
-
+          
           //the md var lives on an md mesh, so cross-reference to get the md mesh
           const VsMDMeshMeta* mdMeshMeta = getMDParentForMesh(vm->getMesh());
-
+          
           //did we find the appropriate md mesh?
           if (mdMeshMeta == NULL) {
             debugStrmRef <<"VsH5Reader::makeVsMeta() - WARNING: variable " + name + " is declared as part of MD Var " + mdVarName + " but referenced mesh " + vm->getMesh() + " is not part of an MD mesh." <<std::endl;
           } else {
             //note that the MD variable inherits index order and centering of first block
             mdMeta = new VsMDVariableMeta(mdMeshMeta->getFullName(), vm->centering, vm->indexOrder);
-
+            
             debugStrmRef <<"VsH5Reader::MakeVsMeta() - Created new MD Variable named " << mdVarName <<" on mesh " <<mdMeshMeta->getFullName() <<std::endl;
             std::pair<std::string, VsMDVariableMeta*> el(mdVarName, mdMeta);
             meta->mdVars.insert(el);
           }
         }
-
+        
         //see if we succeeded in creating an md var or not
         if (mdMeta == NULL) {
           std::pair<std::string, VsVariableMeta*> el(name, vm);
@@ -327,7 +327,7 @@ void VsH5Reader::makeVsMeta() {
         std::pair<std::string, VsVariableMeta*> el(name, vm);
         meta->vars.insert(el);
       }
-
+      
     }
     catch (std::invalid_argument& ex) {
       debugStrmRef << "VsH5Reader::makeVsMeta(): exception: " <<
@@ -335,11 +335,11 @@ void VsH5Reader::makeVsMeta() {
       delete vm;
     }
   }
-
+  
   // Insert vars with mesh
   debugStrmRef <<"VsH5Reader::makeVsMeta() - building Var with Mesh" <<std::endl;
   for (std::map<std::string, VsDMeta*>::const_iterator k = h5meta->varsWithMesh.begin();
-      k != h5meta->varsWithMesh.end(); ++k) {
+       k != h5meta->varsWithMesh.end(); ++k) {
     VsVariableWithMeshMeta* vm = new VsVariableWithMeshMeta();
     std::string name = k->second->getFullName();
     try {
@@ -354,7 +354,7 @@ void VsH5Reader::makeVsMeta() {
       delete vm;
     }
   }
-
+  
   debugStrmRef <<"VsH5Reader::MakeVsMeta() exiting." <<std::endl;
 }
 
@@ -363,7 +363,7 @@ herr_t VsH5Reader::makeVariableMeta(VsDMeta* dm, VsVariableMeta& vm) const {
   // Set dataset
   vm.dataset = dm;
   vm.path = dm->path;
-
+  
   // Read the mesh name and comp major/minor
   std::vector<VsAMeta*>::const_iterator k;
   for (k = dm->attribs.begin(); k != dm->attribs.end(); ++k) {
@@ -377,7 +377,7 @@ herr_t VsH5Reader::makeVariableMeta(VsDMeta* dm, VsVariableMeta& vm) const {
       //  //not fully qualified, so prepend our path
       //  s = dm->path + "/" + s;
       // }
-
+      
       vm.mesh = s;
     }
     if ((*k)->name == VsSchema::indexOrderAtt) {
@@ -394,9 +394,9 @@ herr_t VsH5Reader::makeVariableMeta(VsDMeta* dm, VsVariableMeta& vm) const {
         "optional attribute '" << (*k)->name << "'." << std::endl;
       }
     }
-
+    
   }
-
+  
   //look for user-specified labels for components
   for (k = dm->attribs.begin(); k != dm->attribs.end(); ++k) {
     if ((*k)->name == VsSchema::labelsAtt) {
@@ -413,7 +413,7 @@ herr_t VsH5Reader::makeVariableMeta(VsDMeta* dm, VsVariableMeta& vm) const {
         msg += "'.";
         debugStrmRef << msg << std::endl;
       }
-
+      
       //the string "v" contains the list of labels, but they're separated with ","
       //so we need to be smart here...
       vm.labelNames.clear();
@@ -435,13 +435,13 @@ herr_t VsH5Reader::makeVariableMeta(VsDMeta* dm, VsVariableMeta& vm) const {
           nameBuffer.push_back(currentChar);
         }
       }
-
+      
       //is the last name still in the buffer?
       if (!nameBuffer.empty()) {
         vm.labelNames.push_back(nameBuffer);
         nameBuffer.clear();
       }
-
+      
       //we construct a vector containing the proper labels
       debugStrmRef <<"VsH5Reader::makeVariableMeta() - found user-specified label names." <<std::endl;
       for (unsigned int i = 0; i < vm.labelNames.size(); i++) {
@@ -449,32 +449,32 @@ herr_t VsH5Reader::makeVariableMeta(VsDMeta* dm, VsVariableMeta& vm) const {
       }
     }
   }
-
+  
   debugStrmRef <<"VsH5Reader::makeVariableMeta() returning 0." <<std::endl;
   return 0;
-
-  atterr:
+  
+atterr:
   debugStrmRef << "VsH5Reader::makeVariableMeta(): error getting "
   "attribute '" << (*k)->name << "'." << std::endl;
   debugStrmRef <<"VsH5Reader::makeVariableMeta() returning -1 (error)." <<std::endl;
   return -1;
-
+  
 }
 
 herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
-    VsVariableWithMeshMeta& vm) const {
+                                            VsVariableWithMeshMeta& vm) const {
   debugStrmRef <<"VsH5Reader::makeVariableWithMeshMeta() entering." <<std::endl;
-
+  
   // Set dataset
   vm.dataset = dm;
-
+  
   //We have two ways of specifying information for varWithMesh:
   // 1. VsSpatialIndices indicates which columns contain spatial data (synergia style)
   // 2. Spatial information is in the first "vsNumSpatialDims" columns (regular style)
-
+  
   //we start with synergia style, and drop through to regular style on any errors
   std::vector<VsAMeta*>::const_iterator k;
-
+  
   bool numDimsSet = false;
   for (k = dm->attribs.begin(); k != dm->attribs.end(); ++k) {
     if ((*k)->name == VsSchema::spatialIndicesAtt) {
@@ -491,7 +491,7 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
         debugStrmRef <<"VsH5Reader::makeVariableWithMeshMeta(...): Saved attribute in vm" <<std::endl;
       }
     }
-
+    
     //NOTE: We load indexOrder regardless of whether we're in synergia style or not
     if ((*k)->name == VsSchema::indexOrderAtt) {
       debugStrmRef <<"VsH5Reader::makeVariableWithMeshMeta(...): found indexOrder" <<std::endl;
@@ -502,9 +502,9 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
         (*k)->name << "'." << std::endl;
       }
     }
-
+    
   }
-
+  
   if (!numDimsSet) {
     //we tried and failed to load spatialIndices synergia style
     //so we drop back into the default - get the number of spatial dimensions
@@ -526,22 +526,22 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
           debugStrmRef <<"VsH5Reader::makeVariableWithMeshMeta() - Throwing exception." <<std::endl;
           throw std::invalid_argument(msg.c_str());
         }
-
+        
         int numSpatialDims = in[0];
-
+        
         //we construct a vector containing the proper spatialIndices
         vm.spatialIndices.resize(numSpatialDims);
         for (int i = 0; i < numSpatialDims; i++) {
           vm.spatialIndices[i] = i;
         }
-
+        
         numDimsSet = true;
         debugStrmRef << "VsH5Reader::makeVariableWithMeshMeta(...): "
         "numSpatialDims = " << vm.getNumSpatialDims() << "." << std::endl;
       }
     }
   }
-
+  
   // Check that all set as needed
   if (!numDimsSet) {
     std::string msg = "VsH5Reader::makeVariableWithMeshMeta(...): "
@@ -554,11 +554,11 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
     debugStrmRef <<"VsH5Reader::makeVariableWithMeshMeta() - Throwing exception." <<std::endl;
     throw std::invalid_argument(msg.c_str());
   }
-
+  
   //look for user-specified labels for components
   for (k = dm->attribs.begin(); k != dm->attribs.end(); ++k) {
     if ((*k)->name == VsSchema::labelsAtt) {
-
+      
       //labels is a comma-delimited list of strings
       size_t len = H5Aget_storage_size((*k)->aid);
       char* v = new char[len];
@@ -572,7 +572,7 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
         msg += "'.";
         debugStrmRef << msg << std::endl;
       }
-
+      
       //the string "v" contains the list of labels, but they're separated with ","
       //so we need to be smart here...
       vm.labelNames.clear();
@@ -594,13 +594,13 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
           nameBuffer.push_back(currentChar);
         }
       }
-
+      
       //is the last name still in the buffer?
       if (!nameBuffer.empty()) {
         vm.labelNames.push_back(nameBuffer);
         nameBuffer.clear();
       }
-
+      
       //we construct a vector containing the proper labels
       debugStrmRef <<"VsH5Reader::makeVariableWithMeshMeta() - found user-specified label names." <<std::endl;
       for (unsigned int i = 0; i < vm.labelNames.size(); i++) {
@@ -630,7 +630,7 @@ herr_t VsH5Reader::makeVariableWithMeshMeta(VsDMeta* dm,
  debugStrmRef <<"VsH5Reader::getMeshKind(" <<name <<", " <<kind <<") - Returning 0." <<std::endl;
  return 0;
  }
-
+ 
  // Look through dataset meshes
  //std::map<std::string, VsDMeta*>::const_iterator it1 = h5meta->dMeshes.find(name);
  const VsDMeta* dm = h5meta->getDMesh(name);
@@ -655,7 +655,7 @@ void VsH5Reader::getMeshesNames(std::vector<std::string>& names) const {
   debugStrmRef <<"VsH5Reader::getMeshesNames() - Entering" <<std::endl;
   std::map<std::string, VsMeshMeta*>::const_iterator it;
   for (it = meta->meshes.begin(); it != meta->meshes.end(); ++it)
-  names.push_back(it->first);
+    names.push_back(it->first);
   debugStrmRef <<"VsH5Reader::getMeshesNames() - Returning" <<std::endl;
 }
 
@@ -663,7 +663,7 @@ void VsH5Reader::getMDMeshNames(std::vector<std::string>& names) const {
   debugStrmRef <<"VsH5Reader::getMDMeshesNames() - Entering" <<std::endl;
   std::map<std::string, VsMDMeshMeta*>::const_iterator it;
   for (it = meta->mdMeshes.begin(); it != meta->mdMeshes.end(); ++it)
-  names.push_back(it->first);
+    names.push_back(it->first);
   debugStrmRef <<"VsH5Reader::getMDMeshesNames() - Returning" <<std::endl;
 }
 
@@ -671,7 +671,7 @@ void VsH5Reader::getVarsNames(std::vector<std::string>& names) const {
   debugStrmRef <<"VsH5Reader::getVarsNames() - Entering" <<std::endl;
   std::map<std::string, VsVariableMeta*>::const_iterator it;
   for (it = meta->vars.begin(); it != meta->vars.end(); ++it)
-  names.push_back(it->first);
+    names.push_back(it->first);
   debugStrmRef <<"VsH5Reader::getVarsNames() - Returning" <<std::endl;
 }
 
@@ -679,7 +679,7 @@ void VsH5Reader::getMDVarsNames(std::vector<std::string>& names) const {
   debugStrmRef <<"VsH5Reader::getMDVarsNames() - Entering" <<std::endl;
   std::map<std::string, VsMDVariableMeta*>::const_iterator it;
   for (it = meta->mdVars.begin(); it != meta->mdVars.end(); ++it)
-  names.push_back(it->first);
+    names.push_back(it->first);
   debugStrmRef <<"VsH5Reader::getMDVarsNames() - Returning" <<std::endl;
 }
 
@@ -687,7 +687,7 @@ void VsH5Reader::getVarsWithMeshNames(std::vector<std::string>& names) const {
   debugStrmRef <<"VsH5Reader::getVarsWithMeshNames() - Entering" <<std::endl;
   std::map<std::string, VsVariableWithMeshMeta*>::const_iterator it;
   for (it = meta->varsWithMesh.begin(); it != meta->varsWithMesh.end(); ++it)
-  names.push_back(it->first);
+    names.push_back(it->first);
   debugStrmRef <<"VsH5Reader::getVarsWithMeshNames() - Returning" <<std::endl;
 }
 
@@ -698,25 +698,25 @@ const std::map<std::string, std::string>& VsH5Reader::getVsVars() const {
 
 herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
   debugStrmRef <<"VsH5Reader::makeGMeshMeta() - Entering" <<std::endl;
-
+  
   //start by adding all datasets to MeshMeta
   std::vector<VsDMeta*>::const_iterator y;
   for (y = gm->datasets.begin(); y != gm->datasets.end(); ++y) {
     std::pair<std::string, VsDMeta*> el((*y)->name, *y);
     mm.dComps.insert(el);
   }
-
+  
   //next add all attributes to MeshMeta
   std::vector<VsAMeta*>::const_iterator z;
   for (z = gm->attribs.begin(); z != gm->attribs.end(); ++z) {
     std::pair<std::string, VsAMeta*> el((*z)->name, *z);
     mm.aComps.insert(el);
   }
-
+  
   // Find Kind
   mm.kind = mm.getStringAttribute(VsSchema::kindAtt);
   ///TODO: check for legal values for vsKind
-
+  
   // Find IndexOrder
   mm.indexOrder = mm.getStringAttribute(VsSchema::indexOrderAtt);
   if (mm.indexOrder.empty()) {
@@ -725,7 +725,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
     mm.indexOrder = VsSchema::compMinorCKey;
   }
   else if ((mm.indexOrder == VsSchema::compMajorCKey) ||
-      (mm.indexOrder == VsSchema::compMajorFKey)) {
+           (mm.indexOrder == VsSchema::compMajorFKey)) {
     //Legal but not 100% implemented
     std::string msg = "VsH5Reader::makeGMeshMeta() - Attribute ";
     msg += VsSchema::indexOrderAtt;
@@ -734,7 +734,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
     msg += " which may not be completely implemented.";
     debugStrmRef << msg <<std::endl;
   } else if ((mm.indexOrder == VsSchema::compMinorCKey) ||
-      (mm.indexOrder == VsSchema::compMinorFKey)) {
+             (mm.indexOrder == VsSchema::compMinorFKey)) {
     //Legal and implemented
   }
   else {
@@ -742,17 +742,17 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
     << "\" - will use default value of \"" << VsSchema::compMinorCKey <<"\"" << std::endl;
     mm.indexOrder = VsSchema::compMinorCKey;
   }
-
+  
   // Determine the spatial dimensionality
   if (mm.isUniformMesh()) {
-    std::map<std::string, VsAMeta*>::const_iterator it = mm.aComps.find(VsSchema::Uniform::comp2);
+    std::map<std::string, VsAMeta*>::const_iterator it = mm.aComps.find(VsSchema::Uniform::numCells);
     if (it != mm.aComps.end()) {
       mm.numSpatialDims = it->second->getLength();
     }
     else {
       std::string msg = "VsH5Reader::makeGMeshMeta(...): uniform cartesian "
       "mesh does not have attribute named '";
-      msg += VsSchema::Uniform::comp2;
+      msg += VsSchema::Uniform::numCells;
       msg += "'.";
       debugStrmRef << msg << std::endl;
       debugStrmRef <<"VsH5Reader::makeGMeshMeta() - Throwing exception." <<std::endl;
@@ -774,7 +774,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
       debugStrmRef <<"unstructuredMesh->vsPoints0 = " <<unstructuredMesh->getPointsDatasetName(0) <<std::endl;
       debugStrmRef <<"unstructuredMesh->vsPoints1 = " <<unstructuredMesh->getPointsDatasetName(1) <<std::endl;
       debugStrmRef <<"unstructuredMesh->vsPoints2 = " <<unstructuredMesh->getPointsDatasetName(2) <<std::endl;
-
+      
       std::string datasetName = unstructuredMesh->getPointsDatasetName(0);
       const VsDMeta* points0 = h5meta->getDataset(datasetName);
       if (points0 == NULL) {
@@ -786,7 +786,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
         debugStrmRef <<msg <<std::endl;
         throw std::invalid_argument(msg.c_str());
       }
-
+      
       //spatial dimensionality = number of vspoints datasets
       unstructuredMesh->numSpatialDims = 1;
       datasetName = unstructuredMesh->getPointsDatasetName(1);
@@ -799,7 +799,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
           unstructuredMesh->numSpatialDims++;
         }
       }
-
+      
       unstructuredMesh->numnodes = points0->dims[0];
     }
   }
@@ -808,7 +808,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
    //Rectilinear meshes are defined by a series of arrays
    //Each array represents one spatial dimension
    //i.e. numSpatialDims = number of arrays
-
+   
    std::map<std::string, VsAMeta*>::iterator it;
    //look for the name of the third axis
    it = mm.aComps.find(VsSchema::Rectilinear::axis2Key);
@@ -817,7 +817,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
    //found a non-default user-specified name
    axisName = it->second->name;
    }
-
+   
    //now look for the actual dataSet for this axis
    std::map<std::string, VsDMeta*>::iterator it2;
    it2 = mm.dComps.find(axisName);
@@ -836,7 +836,7 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
     debugStrmRef <<"VsH5Reader::makeGMeshMeta() - Throwing Exception" <<std::endl;
     throw std::invalid_argument(msg.c_str());
   }
-
+  
   // Done!
   debugStrmRef <<"VsH5Reader::makeGMeshMeta() - Returning 0 (normal result)" <<std::endl;
   return 0;
@@ -847,7 +847,7 @@ herr_t VsH5Reader::makeDMeshMeta(VsDMeta* dm, VsMeshMeta& mm) const {
   std::pair<std::string, VsDMeta*> el(dm->getFullName(), dm);
   mm.dComps.insert(el);
   mm.numSpatialDims = dm->dims[dm->dims.size()-1];
-
+  
   // Find kind
   std::vector<VsAMeta*>::const_iterator k;
   for (k = dm->attribs.begin(); k != dm->attribs.end(); ++k) {
@@ -855,7 +855,7 @@ herr_t VsH5Reader::makeDMeshMeta(VsDMeta* dm, VsMeshMeta& mm) const {
       getAttributeHelper((*k)->aid, &(mm.kind), 0, 0);
     }
   }
-
+  
   // Go through attributes and add to components
   std::vector<VsAMeta*>::const_iterator z1;
   for (z1 = dm->attribs.begin(); z1 != dm->attribs.end(); ++z1) {
@@ -878,7 +878,7 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     debugStrmRef << "VsH5Reader::getVariable(" <<name <<"): Returning -1 (error)." << std::endl;
     return -1;
   }
-
+  
   hid_t id = var->dataset->iid;
   herr_t err = 0;
   if (!useStride) {
@@ -898,7 +898,7 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
       debugStrmRef <<"Dimensions: " <<(unsigned long)(dims_out[0]) <<" x " <<(unsigned long)(dims_out[1])
       <<" x " <<(unsigned long)(dims_out[2]) <<std::endl;
     }
-
+    
     //count is how many elements to choose in each direction
     std::vector<hsize_t> count(rank);
     const VsMeshMeta* meshMeta = getMeshMeta(var->mesh);
@@ -908,14 +908,14 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     bool structuredMesh = false;
     if (meshMeta) {
       if (meshMeta->isUniformMesh())
-      uniformMesh = true;
+        uniformMesh = true;
       else if (meshMeta->isStructuredMesh())
-      structuredMesh = true;
+        structuredMesh = true;
     } else {
       debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Unable to load mesh metadata with name : " <<var->mesh <<std::endl;
       debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Assuming uniform mesh, but who knows?" <<std::endl;
     }
-
+    
     if (uniformMesh) {
       if (var->isZonal()) {
         debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Zonal on uniform = no change" <<std::endl;
@@ -932,17 +932,29 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
         debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Zonal on structured = +1/-1" <<std::endl;
         std::vector<int> meshDims;
         getMeshDims(var->mesh, &meshDims);
+        if (meshDims.empty()) {
+          debugStrmRef <<"VsH5Reader::getVariable(...): Unable to load dimensions for mesh." <<std::endl;
+          debugStrmRef <<"VsH5Reader::getVariable(...): Returning -1." <<std::endl;
+          return -1;
+        }
+        
         for (int i = 0; i < rank; i++)
         {
           debugStrmRef <<"VsH5Reader::getVariable(...): " <<"About to override size " <<count[i] <<" with size from mesh - 1: " <<(meshDims[i] - 1) <<std::endl;
           count[i] = meshDims[i] - 1;
         }
-
+        
       } else {
         //nodal
         debugStrmRef <<"VsH5Reader::getVariable(...): " <<"Nodal on structured" <<std::endl;
         std::vector<int> meshDims;
         getMeshDims(var->mesh, &meshDims);
+        if (meshDims.empty()) {
+          debugStrmRef <<"VsH5Reader::getVariable(...): Unable to load dimensions for mesh." <<std::endl;
+          debugStrmRef <<"VsH5Reader::getVariable(...): Returning -1." <<std::endl;
+          return -1;
+        }
+        
         for (int i = 0; i < rank; i++)
         {
           debugStrmRef <<"VsH5Reader::getVariable(...): " <<"About to override size " <<count[i] <<" with size from mesh: " <<(meshDims[i]) <<std::endl;
@@ -950,7 +962,7 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
         }
       }
     }
-
+    
     /*
      * Define hyperslab in the dataset.
      */
@@ -958,7 +970,7 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
     std::vector<hsize_t> offset(rank);
     //stride is the stride in each direction
     std::vector<hsize_t> strideArray(rank);
-
+    
     debugStrmRef <<"About to select variable hyperslab with size: ";
     for (int i = 0; i < rank; i++) {
       offset[i] = 0;
@@ -966,10 +978,10 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
       debugStrmRef <<count[i] <<" x ";
     }
     debugStrmRef <<std::endl;
-
+    
     herr_t status = H5Sselect_hyperslab (dataspace, H5S_SELECT_SET, &offset[0], &strideArray[0],
-        &count[0], NULL);
-
+                                         &count[0], NULL);
+    
     /*
      * Define the memory dataspace.
      */
@@ -978,7 +990,7 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
       dimsm[i] = count[i];
     }
     hid_t memspace = H5Screate_simple (rank, &dimsm[0], NULL);
-
+    
     /*
      * Define memory hyperslab.
      */
@@ -988,22 +1000,22 @@ herr_t VsH5Reader::getVariable(const std::string& name, void* data) const {
       offset_out[i] = 0;
       count_out[i] = count[i];
     }
-
+    
     status = H5Sselect_hyperslab (memspace, H5S_SELECT_SET, &offset_out[0], NULL,
-        &count_out[0], NULL);
-
+                                  &count_out[0], NULL);
+    
     /*
      * Read data from hyperslab in the file into the hyperslab in
      * memory and display.
      */
     status = H5Dread (id, var->dataset->type, memspace, dataspace,
-        H5P_DEFAULT, data);
-
+                      H5P_DEFAULT, data);
+    
     //    H5Dclose (dataset);
     H5Sclose (dataspace);
     H5Sclose (memspace);
   }
-
+  
   if (err != 0) {
     debugStrmRef << "VsH5Reader::getVariable(...): error " << err <<
     " in reading variable '" << name << "'." << std::endl;
@@ -1018,20 +1030,20 @@ bool VsH5Reader::isVariable(const std::string& name) const {
   //else return false;
   debugStrmRef << "VsH5Reader::isVariable(" <<name <<"): Entering/Returning." << std::endl;
   if (meta->getVar(name) != 0)
-  return true;
-
+    return true;
+  
   if (meta->getMDVar(name) != 0)
-  return true;
-
+    return true;
+  
   if (findSubordinateMDVar(name) != 0)
-  return true;
-
+    return true;
+  
   return false;
 }
 
 herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, void* data) {
   debugStrmRef << "VsH5Reader::getVariableComponent(" <<name <<", " <<indx <<"): Entering." << std::endl;
-
+  
   herr_t err = 0;
   const VsVariableMeta* meta = getVariableMeta(name);
   if (!meta) {
@@ -1046,11 +1058,11 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
   size_t rank = dims.size();
   debugStrmRef << "VsH5Reader::getVariableComponent(...): " << name <<
   " has rank, " << rank << "." << std::endl;
-
+  
   std::vector<hsize_t> count(rank);
   std::vector<hsize_t> start(rank);
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
-
+  
   if (meta->isCompMajor()) {
     for (size_t i = 1; i<rank; ++i) {
       count[i] = dims[i];
@@ -1058,7 +1070,7 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
     }
     count[0] = 1;
     start[0] = indx;
-
+    
   }
   else { //compMinor
     for (size_t i = 0; i<(rank-1); ++i) {
@@ -1068,7 +1080,7 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
     count[rank-1] = 1;
     start[rank-1] = indx;
   }
-
+  
   //this gets complicated because it depends on the kind of variable (zonal vs nodal)
   // and the kind of the mesh (uniform vs structured)
   // We must also be careful to stay away if the mesh is NOT uniform or structured
@@ -1081,7 +1093,7 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
     }
     int addBefore = 0;
     int addAfter = 0;
-
+    
     if (meshMeta->isUniformMesh()) {
       if (meta->isZonal()) {
         debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"Zonal on uniform = no change" <<std::endl;
@@ -1098,17 +1110,29 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
         debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"Zonal on structured = +1/-1" <<std::endl;
         std::vector<int> meshDims;
         getMeshDims(meta->mesh, &meshDims);
+        if (meshDims.empty()) {
+          debugStrmRef <<"VsH5Reader::getVariable(...): Unable to load dimensions for mesh." <<std::endl;
+          debugStrmRef <<"VsH5Reader::getVariable(...): Returning -1." <<std::endl;
+          return -1;
+        }
+        
         for (unsigned int i = 0; i < rank - 1; i++)
         {
           debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"About to override size " <<count[i] <<" with size from mesh - 1: " <<(meshDims[i] - 1) <<std::endl;
           count[i] = meshDims[i] - 1;
         }
-
+        
       } else {
         //nodal
         debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"Nodal on structured" <<std::endl;
         std::vector<int> meshDims;
         getMeshDims(meta->mesh, &meshDims);
+        if (meshDims.empty()) {
+          debugStrmRef <<"VsH5Reader::getVariable(...): Unable to load dimensions for mesh." <<std::endl;
+          debugStrmRef <<"VsH5Reader::getVariable(...): Returning -1." <<std::endl;
+          return -1;
+        }
+        
         for (unsigned int i = 0; i < rank - 1; i++)
         {
           debugStrmRef <<"VsH5Reader::getVariableComponent(...): " <<"About to override size " <<count[i] <<" with size from mesh: " <<(meshDims[i]) <<std::endl;
@@ -1117,29 +1141,29 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
       }
     }
   }
-
+  
   debugStrmRef << "VsH5Reader::getVariableComponent(...): start =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << start[i];
   debugStrmRef << std::endl;
   debugStrmRef << "VsH5Reader::getVariableComponent(...): count =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << count[i];
   debugStrmRef << std::endl;
-
+  
   std::vector<hsize_t> strideArray(rank);
   for (unsigned int i = 0; i < rank; i++) {
     if (i < stride.size())
-    strideArray[i] = (hsize_t)stride[i];
+      strideArray[i] = (hsize_t)stride[i];
     else strideArray[i] = 1;
   }
-
+  
   // Select data
   err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideArray[0],
-      &count[0], NULL);
+                            &count[0], NULL);
   // Create memory space for the data
   hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
   // Read data
   err = H5Dread(meta->dataset->iid, meta->getType(), memspace, dataspace,
-      H5P_DEFAULT, data);
+                H5P_DEFAULT, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getVariableComponent(...): error " << err <<
     " in reading variable '" << name << "'." << std::endl;
@@ -1151,18 +1175,18 @@ herr_t VsH5Reader::getVariableComponent(const std::string& name, size_t indx, vo
 }
 
 void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
-    size_t partnumber, size_t numparts, size_t* splitDims)
+                                       size_t partnumber, size_t numparts, size_t* splitDims)
 {
   debugStrmRef << "VsH5Reader::getVariableComponent(" <<name <<", " <<indx
   <<", " <<partnumber <<", " <<numparts <<", splitDims): Entering." << std::endl;
-
+  
   if (partnumber >= numparts) {
     debugStrmRef <<"VsH5Reader::getVariableComponent() - Variable has " <<numparts
     <<"parts but we were asked for part number #" <<partnumber <<std::endl;
     debugStrmRef <<"VsH5Reader::getVariableComponent() - returning NULL." <<std::endl;
     return NULL;
   }
-
+  
   const VsVariableMeta* meta = getVariableMeta(name);
   if (!meta)
   {
@@ -1171,16 +1195,16 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
     debugStrmRef << "VsH5Reader::getVariableComponent(): Returning 0." << std::endl;
     return 0;
   }
-
+  
   std::vector<int> dims = meta->getDims();
   size_t rank = dims.size();
   debugStrmRef << "VsH5Reader::getVariableComponent(...): " << name <<
   " has rank " << rank << "." << std::endl;
-
+  
   std::vector<hsize_t> count(rank);
   std::vector<hsize_t> start(rank);
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
-
+  
   if (meta->isCompMajor())
   {
     for (size_t i = 1; i<rank; ++i)
@@ -1190,7 +1214,7 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
     }
     count[0] = 1;
     start[0] = indx;
-
+    
   }
   else
   { //compMinor
@@ -1202,7 +1226,7 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
     count[rank-1] = 1;
     start[rank-1] = indx;
   }
-
+  
   // Diagnostic output
   debugStrmRef << "VsH5Reader::getVariableComponent() start =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << start[i];
@@ -1210,7 +1234,7 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
   debugStrmRef << "VsH5Reader::getVariableComponent() count =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << count[i];
   debugStrmRef << std::endl;
-
+  
   if (numparts > 1)
   {
     // Determine along which axis to split
@@ -1218,7 +1242,7 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
     // never split along the "component direction"
     size_t splitAxis = 0;
     size_t largestCount = count[splitAxis];
-
+    
     for (size_t currAxis = 1; currAxis < rank; ++currAxis)
     {
       if (count[currAxis] > largestCount)
@@ -1227,14 +1251,14 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
         largestCount = count[currAxis];
       }
     }
-
+    
     // Split along axis
     size_t numCellsAlongSplitAxis = count[splitAxis] - 1;
     if (numCellsAlongSplitAxis)
     {
       size_t numCellsPerPart = numCellsAlongSplitAxis / numparts;
       size_t numPartsWithAdditionalCell = numCellsAlongSplitAxis % numparts;
-
+      
       if (partnumber < numPartsWithAdditionalCell)
       {
         start[splitAxis] = partnumber * (numCellsPerPart + 1);
@@ -1248,7 +1272,7 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
       }
     }
   }
-
+  
   if (splitDims)
   {
     if (meta->isCompMajor())
@@ -1266,10 +1290,10 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
       }
     }
   }
-
+  
   // Select data
   herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], NULL,
-      &count[0], NULL);
+                                   &count[0], NULL);
   if (err < 0)
   {
     debugStrmRef << "VsH5Reader::getVariableComponent(): error " << err <<
@@ -1277,19 +1301,19 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
     debugStrmRef << "VsH5Reader::getVariableComponent(): Returning 0." << std::endl;
     return 0;
   }
-
+  
   // Create memory space for the data
   hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
-
+  
   // Allocate memory
   hid_t type = meta->getType();
   int numElems = 1;
   for (size_t i = 0; i < rank; ++i) numElems *= count[i];
   void* data = new unsigned char[numElems*H5Tget_size(type)];
-
+  
   // Read data
   err = H5Dread(meta->dataset->iid, type, memspace, dataspace,
-      H5P_DEFAULT, data);
+                H5P_DEFAULT, data);
   if (err < 0)
   {
     debugStrmRef << "VsH5Reader::getVariableComponent(...): error " << err <<
@@ -1298,20 +1322,20 @@ void* VsH5Reader::getVariableComponent(const std::string& name, size_t indx,
     debugStrmRef << "VsH5Reader::getVariableComponent(): Returning 0." << std::endl;
     return 0;
   }
-
+  
   // Cleanup
   H5Sclose(memspace);
   H5Sclose(dataspace);
-
+  
   // Return
   debugStrmRef << "VsH5Reader::getVariableComponent(): Returning data." << std::endl;
   return data;
 }
 
 herr_t VsH5Reader::getDatasetMeshComponent(const std::string& name,
-    const VsMeshMeta& mmeta, void* data) const {
+                                           const VsMeshMeta& mmeta, void* data) const {
   debugStrmRef << "VsH5Reader::getDatasetMeshComponent(" <<name <<", mmeta, data) - Entering." << std::endl;
-
+  
   VsDMeta* dataSet = mmeta.getDataset(name);
   if (dataSet == NULL) {
     debugStrmRef << "VsH5Reader::getDatasetMeshComponent(...): "
@@ -1333,16 +1357,16 @@ herr_t VsH5Reader::getDatasetMeshComponent(const std::string& name,
     debugStrmRef << "VsH5Reader::getDatasetMeshComponent(...): type is "
     "H5T_NATIVE_DOUBLE." << std::endl;
   }
-
+  
   herr_t err;
   if (!useStride) {
     err = H5Dread(dataSet->iid, dataSet->type, H5S_ALL, H5S_ALL,
-        H5P_DEFAULT, data);
+                  H5P_DEFAULT, data);
     if (err < 0) {
       debugStrmRef << "VsH5Reader::getDatasetMeshComponent(...): error " << err <<
       " in reading mesh component '" << name << "'." << std::endl;
     }
-
+    
     //debug
     /*
      debugStrmRef <<"Dumping data: " <<std::endl;
@@ -1357,37 +1381,42 @@ herr_t VsH5Reader::getDatasetMeshComponent(const std::string& name,
      debugStrmRef <<"Finished dumping data. " <<std::endl;
      */
     //end debug
-
+    
   } else {
     std::vector<int> dims;
     getMeshDims(name, &dims);
     hsize_t rank = dims.size();
-
+    if (rank == 0) {
+      debugStrmRef <<"VsH5Reader::getDatasetMeshComponent(...): Unable to load dimensions for mesh." <<std::endl;
+      debugStrmRef <<"VsH5Reader::getDatasetMeshComponent(...): Returning -1." <<std::endl;
+      return -1;
+    }
+    
     debugStrmRef <<"VsH5Reader::getDatasetMeshComponent() - about to set up arguments." <<std::endl;
     std::vector<hsize_t> count(rank);
     std::vector<hsize_t> start(rank);
     std::vector<hsize_t> strideArray(rank);
     for (unsigned int i = 0; i < rank; i++) {
       if (i < rank - 1)
-      strideArray[i] = (hsize_t)stride[i];
+        strideArray[i] = (hsize_t)stride[i];
       else strideArray[i] = 1;
-
+      
       start[i] = 0;
       count[i] = dims[i];
-
+      
       debugStrmRef <<"For i = " <<i <<", start = " <<start[i] <<", count = " <<count[i] <<", and strideArray = " <<strideArray[i] <<std::endl;
     }
     hid_t dataspace = H5Dget_space(dataSet->iid);
-
+    
     // Select data
     err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideArray[0],
-        &count[0], NULL);
+                              &count[0], NULL);
     debugStrmRef <<"After selecting the hyperslab, err is " <<err <<std::endl;
     // Create memory space for the data
     hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
     // Read data
     err = H5Dread(dataSet->iid, dataSet->type, memspace, dataspace,
-        H5P_DEFAULT, data);
+                  H5P_DEFAULT, data);
     if (err < 0) {
       debugStrmRef << "VsH5Reader::getDatasetMeshComponent(...): error " << err <<
       " in reading variable '" << name << "'." << std::endl;
@@ -1395,15 +1424,15 @@ herr_t VsH5Reader::getDatasetMeshComponent(const std::string& name,
     err = H5Sclose(memspace);
     err = H5Sclose(dataspace);
   }
-
+  
   debugStrmRef << "VsH5Reader::getDatasetMeshComponent(" <<name <<", mmeta, data) - Returning " <<err <<"." << std::endl;
   return err;
 }
 
 herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, std::string points2,
-    const VsMeshMeta& mmeta, void* data) const {
+                                    const VsMeshMeta& mmeta, void* data) const {
   debugStrmRef << "VsH5Reader::getSplitMeshData(" <<points0 <<", " <<points1 <<", " <<points2 <<") - Entering." << std::endl;
-
+  
   std::map<std::string, VsDMeta*>::const_iterator it = h5meta->datasets.find(points0);
   if (it == h5meta->datasets.end()) {
     debugStrmRef << "VsH5Reader::getSplitMeshData(...): "
@@ -1411,7 +1440,7 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
     debugStrmRef << "VsH5Reader::getSplitMeshData(" <<points0 <<", mmeta, data) - Returning -1." << std::endl;
     return -1;
   }
-
+  
   herr_t err;
   if (!useStride) {
     std::vector<int> dims;
@@ -1427,13 +1456,13 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
       numPoints = dims[0];
       dimensions = 3;
     }
-
+    
     // Create memory space for the data
     debugStrmRef << "VsH5Reader::getSplitMeshData(): making call to H5Screate_simple: " <<std::endl;
     hsize_t memSpaceSize[1];
     memSpaceSize[0] = dimensions * numPoints;
     hid_t memspace = H5Screate_simple(1, memSpaceSize, NULL);
-
+    
     //select first hyperslab in memory space
     hsize_t stride[1];
     stride[0] = dimensions;
@@ -1442,7 +1471,7 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
     hsize_t count[1];
     count[0] = numPoints;
     H5Sselect_hyperslab(memspace, H5S_SELECT_SET, start, stride, count, NULL);
-
+    
     //read entire points0 into hyperslab
     err = H5Dread(it->second->iid, it->second->type, memspace, H5S_ALL, H5P_DEFAULT, data);
     if (err < 0) {
@@ -1450,7 +1479,7 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
       " in reading mesh component vsPoints0." << std::endl;
       return err;
     }
-
+    
     //get second dataset
     it = h5meta->datasets.find(points1);
     if (it == h5meta->datasets.end()) {
@@ -1459,11 +1488,11 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
       debugStrmRef << "VsH5Reader::getSplitMeshData(" <<points0 <<", mmeta, data) - Returning -1." << std::endl;
       return -1;
     }
-
+    
     //select second hyperslab in memory
     start[0] = 1;
     H5Sselect_hyperslab(memspace, H5S_SELECT_SET, start, stride, count, NULL);
-
+    
     //read entire points1 into hyperslab
     err = H5Dread(it->second->iid, it->second->type, memspace, H5S_ALL, H5P_DEFAULT, data);
     if (err < 0) {
@@ -1471,7 +1500,7 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
       " in reading mesh component vsPoints1." << std::endl;
       return err;
     }
-
+    
     //get third dataset (if it exists)
     it = h5meta->datasets.find(points2);
     if (it == h5meta->datasets.end()) {
@@ -1482,11 +1511,11 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
       err = H5Sclose(memspace);
       return err;
     }
-
+    
     //select third hyperslab in memory
     start[0] = 2;
     H5Sselect_hyperslab(memspace, H5S_SELECT_SET, start, stride, count, NULL);
-
+    
     //read entire points2 into hyperslab
     err = H5Dread(it->second->iid, it->second->type, memspace, H5S_ALL, H5P_DEFAULT, data);
     if (err < 0) {
@@ -1494,29 +1523,29 @@ herr_t VsH5Reader::getSplitMeshData(std::string points0, std::string points1, st
       " in reading mesh component vsPoints1." << std::endl;
       return err;
     }
-
+    
     err = H5Sclose(memspace);
-
+    
     debugStrmRef <<"VsH5Reader::getSplitMeshData() - returning data." <<std::endl;
     return err;
   } else {
     debugStrmRef <<"VsH5Reader::getSplitMeshData() - ERROR - not implemented for useStride" <<std::endl;
     return -1;
   }
-
+  
   debugStrmRef << "VsH5Reader::getSplitMeshData(" <<points0 <<", mmeta, data) - Returning " <<err <<"." << std::endl;
   return err;
 }
 
 herr_t VsH5Reader::getAttMeshComponent(const std::string& name,
-    const VsMeshMeta& mmeta, void* data) const {
+                                       const VsMeshMeta& mmeta, void* data) const {
   debugStrmRef << "VsH5Reader::getAttMeshComponent(" <<name <<", mmeta, data) - Entering." << std::endl;
   VsAMeta* attribute = mmeta.getAttribute(name);
   if (attribute == NULL) {
     debugStrmRef << "VsH5Reader::getAttMeshComponent(" <<name <<", mmeta, data) - Unable to find attribute, returning -1." << std::endl;
     return -1;
   }
-
+  
   herr_t err = H5Aread(attribute->aid, attribute->type, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getAttMeshComponent(...): error " << err <<
@@ -1527,9 +1556,9 @@ herr_t VsH5Reader::getAttMeshComponent(const std::string& name,
 }
 
 herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
-    void* data) const {
+                                      void* data) const {
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh(meta, data)" << std::endl;
-
+  
   //Since we allow the spatial indices to be specified individually,
   // we load the position data in slices
   // old style: start at 0 and read "numSpatialDims" columns
@@ -1543,7 +1572,7 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
     debugStrmRef <<"VsH5Reader::getMeshVarWithMesh(meta, data) - unable to load data." <<std::endl;
     return -1;
   }
-
+  
   std::vector<hsize_t> memCount(rank); //tracks the size of the memory block we need to load the data
   std::vector<hsize_t> start(rank); //start position of each slice
   std::vector<hsize_t> sliceCount(rank); //tracks the size of each slice
@@ -1551,19 +1580,21 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
   hid_t dataspace = H5Dget_space(meta.dataset->iid);
   int numPoints = 0;
   if (meta.isCompMajor())
-  numPoints = dims[rank-1];
+    numPoints = dims[rank-1];
   else numPoints = dims[0];
   int dimensions = meta.getNumSpatialDims();
-
+  
   //adjust points for stride
   if (stride[0] != 1) {
     debugStrmRef <<"VsH5Reader::getMeshVarWithMesh(meta, data) -" <<"Filtering points based on stride.  Before = " <<numPoints <<std::endl;
     numPoints = numPoints / stride[0];
     debugStrmRef <<"VsH5Reader::getMeshVarWithMesh(meta, data) -" <<"Filtering points based on stride.  After = " <<numPoints <<std::endl;
   }
-
-  size_t indexToChange = -1; //which index of the start array needs to be changed for each slice
-
+  
+  //The index to change depends on whether we are compMinor or compMajor
+  //we use compMajor as default (index = 0)
+  size_t indexToChange = 0;
+  
   if (meta.isCompMajor()) {
     for (size_t i = 1; i<rank; ++i) {
       memCount[i] = numPoints;
@@ -1602,21 +1633,21 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh() - stride =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << stride[i];
   debugStrmRef << std::endl;
-
+  
   herr_t lastError = 0;
-
+  
   // Select data
   // Note that we select each spatial index separately
   H5Sselect_none(dataspace);
   hsize_t numElements = H5Sget_select_npoints(dataspace);
   debugStrmRef <<" VsH5Reader::getMeshVarWithMesh(): - we have selected this many elements: " <<numElements <<std::endl;
-
+  
   // Create memory space for the data
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): making call to H5Screate_simple: " <<std::endl;
   hsize_t memSpaceSize[1];
   memSpaceSize[0] = dimensions * numPoints;
   hid_t memspace = H5Screate_simple(1, memSpaceSize, NULL);
-
+  
   for (unsigned int d = 0; d < meta.getNumSpatialDims(); d++) {
     start[indexToChange] = meta.getSpatialDim(d);
     debugStrmRef <<std::endl <<"Spatial Dim #" <<d <<std::endl;
@@ -1626,7 +1657,7 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
     debugStrmRef << "VsH5Reader::getMeshVarWithMesh() - sliceCount =";
     for (size_t i=0; i<rank; ++i) debugStrmRef << " " << sliceCount[i];
     debugStrmRef << std::endl;
-
+    
     err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideCount[0], &sliceCount[0], NULL);
     hsize_t numElements = H5Sget_select_npoints(dataspace);
     debugStrmRef <<" VsH5Reader::getMeshVerWithMesh(): - we have selected this many elements in dataset: " <<numElements <<std::endl;
@@ -1634,7 +1665,7 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
       debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): error in H5select_hyperslab: " <<err << std::endl;
       lastError = err;
     }
-
+    
     //NOTE: This routine will work perfectly for C-order data
     // but is not tested and probably will not work for Fortran-order data
     //select the destination hyperslab in memory
@@ -1651,56 +1682,56 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
     memStride[0] = dimensions;
     memStart[0] = d;
     memSliceCount[0] = numPoints;
-
+    
     debugStrmRef <<"memStride[0] = " <<memStride[0] <<std::endl;
     debugStrmRef <<"memSliceCount[0] = " <<memSliceCount[0] <<std::endl;
     debugStrmRef <<"memStart[0] = " <<memStart[0] <<std::endl;
-
+    
     H5Sselect_hyperslab(memspace, H5S_SELECT_SET, memStart, memStride, memSliceCount, NULL);
     numElements = H5Sget_select_npoints(memspace);
     debugStrmRef <<" VsH5Reader::getMeshVerWithMesh(): - we have selected this many elements in memory: " <<numElements <<std::endl;
-
+    
     // Read data
     debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): making call to H5Dread: " <<std::endl;
     err = H5Dread(meta.dataset->iid, meta.getType(), memspace, dataspace,
-        H5P_DEFAULT, data);
+                  H5P_DEFAULT, data);
     if (err < 0) {
       debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): error in H5Dread: " <<err << std::endl;
       lastError = err;
     }
-
+    
   }
-
+  
   // Read data
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): making call to H5Dread: " <<std::endl;
   err = H5Dread(meta.dataset->iid, meta.getType(), memspace, dataspace,
-      H5P_DEFAULT, data);
+                H5P_DEFAULT, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): error in H5Dread: " <<err << std::endl;
     lastError = err;
   }
-
+  
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): making call to H5Sclose: " <<std::endl;
   err = H5Sclose(memspace);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): error in H5Sclose(memspace): " <<err << std::endl;
     lastError = err;
   }
-
+  
   err = H5Sclose(dataspace);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): error in H5Sclose(dataspace): " <<err << std::endl;
     lastError = err;
   }
-
+  
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh() - Returning " <<lastError <<"." << std::endl;
   return lastError;
 }
 
 herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
-    void* data, size_t partStart, size_t partCount) const {
+                                      void* data, size_t partStart, size_t partCount) const {
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh()" << std::endl;
-
+  
   std::vector<int> dims = meta.getDims();
   size_t rank = dims.size();
   if (rank != 2)
@@ -1712,7 +1743,7 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
   hsize_t count[2];
   hsize_t start[2];
   hid_t dataspace = H5Dget_space(meta.dataset->iid);
-
+  
   if (meta.isCompMajor()) {
     count[1] = partCount;
     start[1] = partStart;
@@ -1725,7 +1756,7 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
     count[1] = meta.getNumSpatialDims();
     start[1] = 0;
   }
-
+  
   //WORK HERE - MARC - to select hyperslabs in correct order for spatialDims
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh() - start =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << start[i];
@@ -1733,15 +1764,15 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
   debugStrmRef << "VsH5Reader::getMeshVarWithMesh() - count =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << count[i];
   debugStrmRef << std::endl;
-
+  
   // Select data
   herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL,
-      count, NULL);
+                                   count, NULL);
   // Create memory space for the data
   hid_t memspace = H5Screate_simple(rank, count, NULL);
   // Read data
   err = 10 * err + H5Dread(meta.dataset->iid, meta.getType(), memspace, dataspace,
-      H5P_DEFAULT, data);
+                           H5P_DEFAULT, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getMeshVarWithMesh(): read error " << std::endl;
   }
@@ -1752,10 +1783,10 @@ herr_t VsH5Reader::getVarWithMeshMesh(const VsVariableWithMeshMeta& meta,
 }
 
 herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
-    void* data) const {
+                                           void* data) const {
   debugStrmRef << "VsH5Reader::getVarWithMeshComponent(" <<name <<", " <<idx
   <<", data) " << std::endl;
-
+  
   const VsVariableWithMeshMeta* meta = getVariableWithMeshMeta(name);
   if (!meta) {
     debugStrmRef << "VsH5Reader::getVarWithMeshComponent(): error: " << name <<
@@ -1764,13 +1795,13 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
     return 1;
   }
   std::vector<int> dims = meta->getDims();
-
+  
   size_t rank = dims.size();
   std::vector<hsize_t> count(rank);
   std::vector<hsize_t> start(rank);
   std::vector<hsize_t> strideCount(rank);
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
-
+  
   if (useStride) {
     if (meta->isCompMajor()) {
       dims[1] = dims[1] / stride[0];
@@ -1785,7 +1816,7 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
     strideCount[0] = 1;
     strideCount[1] = 1;
   }
-
+  
   //assert(dims[dims.size()-1] >= (int)(idx));
   if ((int)idx > dims[dims.size()-1]) {
     debugStrmRef <<"VsH5Reader::getVarWithMeshComponent() - WARNING: failed assertion idx < dims[dims.size()-1]" <<std::endl;
@@ -1816,7 +1847,7 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
     count[rank-1] = 1;
     start[rank-1] = idx;
   }
-
+  
   debugStrmRef << "start =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << start[i];
   debugStrmRef << std::endl;
@@ -1826,15 +1857,15 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
   debugStrmRef << "stride =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << strideCount[i];
   debugStrmRef << std::endl;
-
+  
   // Select data
   herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start[0], &strideCount[0],
-      &count[0], NULL);
+                                   &count[0], NULL);
   // Create memory space for the data
   hid_t memspace = H5Screate_simple(rank, &count[0], NULL);
   // Read data
   err = 10 * err + H5Dread(meta->dataset->iid, meta->getType(), memspace, dataspace,
-      H5P_DEFAULT, data);
+                           H5P_DEFAULT, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getVarWithMeshComponent(...): error " << err <<
     " reading variable '" << name << "'." << std::endl;
@@ -1846,10 +1877,10 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
 }
 
 herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
-    void* data, size_t partStart, size_t partCount) const {
+                                           void* data, size_t partStart, size_t partCount) const {
   debugStrmRef << "VsH5Reader::getVarWithMeshComponent(" <<name <<", " <<idx <<", data, "
   <<partStart <<", " <<partCount <<") - Entering." << std::endl;
-
+  
   const VsVariableWithMeshMeta* meta = getVariableWithMeshMeta(name);
   if (!meta) {
     debugStrmRef << "VsH5Reader::getVarWithMeshComponent(): error: " << name <<
@@ -1868,7 +1899,7 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
   hsize_t count[2];
   hsize_t start[2];
   hid_t dataspace = H5Dget_space(meta->dataset->iid);
-
+  
   // Assert used to be this:
   // assert(dims[dims.size()-1] >= (int)(meta->numSpatialDims+idx));
   // But we decided that idx can be between 0 and dims[dims.size() - 1]
@@ -1880,10 +1911,10 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
     debugStrmRef <<"dims[dims.size()-1] is " <<dims[dims.size() - 1] <<std::endl;
     debugStrmRef <<"meta->numSpatialDims is " <<meta->getNumSpatialDims() <<std::endl;
     debugStrmRef <<"idx is " <<idx <<std::endl;
-    debugStrmRef <<"VsH5Reader::getVarWithMeshComponent() - returning NULL" <<std::endl;
-    return NULL;
+    debugStrmRef <<"VsH5Reader::getVarWithMeshComponent() - returning error 1." <<std::endl;
+    return 1;
   }
-
+  
   if (meta->isCompMajor()) {
     count[1] = partCount;
     start[1] = partStart;
@@ -1896,22 +1927,22 @@ herr_t VsH5Reader::getVarWithMeshComponent(const std::string& name, size_t idx,
     count[1] = 1;
     start[1] = meta->getNumSpatialDims()+idx;
   }
-
+  
   debugStrmRef << "VsH5Reader::getVarWithMeshComponent() - start =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << start[i];
   debugStrmRef << std::endl;
   debugStrmRef << "VsH5Reader::getVarWithMeshComponent() - count =";
   for (size_t i=0; i<rank; ++i) debugStrmRef << " " << count[i];
   debugStrmRef << std::endl;
-
+  
   // Select data
   herr_t err = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL,
-      count, NULL);
+                                   count, NULL);
   // Create memory space for the data
   hid_t memspace = H5Screate_simple(rank, count, NULL);
   // Read data
   err = 10 * err + H5Dread(meta->dataset->iid, meta->getType(), memspace, dataspace,
-      H5P_DEFAULT, data);
+                           H5P_DEFAULT, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getVarWithMeshComponent(...): error " << err <<
     " reading variable '" << name << "'." << std::endl;
@@ -1929,9 +1960,9 @@ herr_t VsH5Reader::getVariableWithMesh(const std::string& name, void* data) cons
     << "variable with mesh by name " << name << "'." << std::endl;
     return -1;
   }
-
+  
   herr_t err = H5Dread(var->dataset->iid, var->dataset->type,
-      H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+                       H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
   if (err < 0) {
     debugStrmRef << "VsH5Reader::getVariableWithMesh(...): error " << err <<
     " in reading dataset '" << name << "'." << std::endl;
@@ -1942,17 +1973,17 @@ herr_t VsH5Reader::getVariableWithMesh(const std::string& name, void* data) cons
 
 const VsVariableMeta* VsH5Reader::getVariableMeta(const std::string& name) const {
   debugStrmRef << "VsH5Reader::getVariableMeta(" <<name <<"): Entering." << std::endl;
-
+  
   const VsVariableMeta* answer = meta->getVar(name);
   if (!answer) {
     debugStrmRef << "VsH5Reader::getVariableMeta(" <<name <<"): Metadata not found in regular variable list, checking md." << std::endl;
     answer = findSubordinateMDVar(name);
   }
-
+  
   if (!answer) {
     debugStrmRef << "VsH5Reader::getVariableMeta(" <<name <<"): Metadata not found in md variable list." << std::endl;
   }
-
+  
   debugStrmRef << "VsH5Reader::getVariableMeta(" <<name <<"): Returning." << std::endl;
   return answer;
 }
@@ -1963,7 +1994,7 @@ const VsMDVariableMeta* VsH5Reader::getMDVariableMeta(const std::string& name) c
 }
 
 const VsVariableWithMeshMeta* VsH5Reader::getVariableWithMeshMeta(
-    const std::string& name) const {
+                                                                  const std::string& name) const {
   debugStrmRef << "VsH5Reader::getVariableWithMeshMeta(" <<name <<"): Entering/Returning." << std::endl;
   return meta->getVarWithMesh(name);
 }
@@ -1975,11 +2006,11 @@ const VsMeshMeta* VsH5Reader::getMeshMeta(const std::string& name) const {
     debugStrmRef << "VsH5Reader::getMeshMeta(" <<name <<"): Mesh not found, checking in subordinate md mesh list." << std::endl;
     answer = findSubordinateMDMesh(name);
   }
-
+  
   if (!answer) {
     debugStrmRef << "VsH5Reader::getMeshMeta(" <<name <<"): Mesh not found." << std::endl;
   }
-
+  
   debugStrmRef << "VsH5Reader::getMeshMeta(" <<name <<"): Returning." << std::endl;
   return answer;
 }
@@ -2065,7 +2096,7 @@ size_t VsH5Reader::getMDNumComps(const std::string& mdVarName) const {
     debugStrmRef <<"VsH5Reader::getMDNumComps(" <<mdVarName <<") - unable to find metadata, returning 0." <<std::endl;
     return 0;
   }
-
+  
   debugStrmRef <<"VsH5Reader::getMDNumComps(" <<mdVarName <<") - Looking through " <<mdMeta->getNumBlocks() <<"blocks." <<std::endl;
   int fewestComponents = -1;
   for (unsigned int i = 0; i < mdMeta->getNumBlocks(); i++) {
@@ -2077,7 +2108,7 @@ size_t VsH5Reader::getMDNumComps(const std::string& mdVarName) const {
     }
     int comps = getNumComps(varMeta->getFullName());
     debugStrmRef <<"VsH5Reader::getMDNumComps(" <<mdVarName <<") - Block " <<varMeta->getFullName() <<" has " <<comps <<" components." <<std::endl;
-
+    
     //first time through the loop we just initialize the comparison variable
     if (fewestComponents == -1) {
       fewestComponents = comps;
@@ -2091,45 +2122,52 @@ size_t VsH5Reader::getMDNumComps(const std::string& mdVarName) const {
         //note that we do NOT adjust fewestComponents here
       }
     }
-
+    
     debugStrmRef <<"VsH5Reader::getMDNumComps(" <<mdVarName <<") - Smallest number of components so far is " <<fewestComponents <<"." <<std::endl;
   }
-
+  
   debugStrmRef <<"VsH5Reader::getMDNumComps(" <<mdVarName <<") - Returning " <<fewestComponents <<"." <<std::endl;
   return fewestComponents;
 }
 
 size_t VsH5Reader::getNumComps(const std::string& name) const {
   debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): Entering." << std::endl;
-
+  
   // Find VsVariable with this name, the name of the mesh
   const VsVariableMeta* vm = getVariableMeta(name);
-
+  
   //If we didn't find anything in the regular list,
   // look for it in the MD stuff
   if (!vm) {
     debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): Did not find var in regular list, checking MD." << std::endl;
     vm = findSubordinateMDVar(name);
   }
-
+  
   //Still nothing?
   if (vm == NULL) {
     debugStrmRef <<"VsH5Reader::getNumComps(" <<name <<") - unable to find metadata for var.  Returning 0." <<std::endl;
     return 0;
   }
   std::vector<int> ddims = vm->dataset->dims;
-
+  
   //we do not want to adjust the size of the variable array here
   // Because we're trying to determine how many components the variable has
   // and so we don't know if we would need to adjust ALL of the dimensions
   // or just all-but-one.
   //adjustSize_vector(&ddims, stride, debugStrmRef);
-
+  
   //we need an absolute path in order to load the mesh
   std::string mname = makeCanonicalName(vm->mesh);
   std::vector<int> mdims;
   getMeshDims(mname, &mdims);
-
+  
+  //did we get a reasonable value?
+  if (mdims.empty()) {
+    debugStrmRef <<"VsH5Reader::getNumComps(" <<name <<"): - Unable to get mesh dimensions for mesh." <<std::endl;
+    debugStrmRef <<"VsH5Reader::getNumComps(" <<name <<"): Returning 0." <<std::endl;
+    return 0;
+  }
+  
   // Debugging information
   debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): ";
   debugStrmRef << "For data, " << name << ", ddims =";
@@ -2139,10 +2177,10 @@ size_t VsH5Reader::getNumComps(const std::string& name) const {
   debugStrmRef << "For mesh, " << mname << ", mdims =";
   for (size_t i=0; i<mdims.size(); ++i) debugStrmRef << " " << mdims[i];
   debugStrmRef << "." << std::endl;
-
+  
   // For unstructured meshes
   const VsMeshMeta* meshMeta = getMeshMeta(mname);
-
+  
   size_t res = 0;
   if (meshMeta->isUnstructuredMesh()) {
     if ((mdims.size() != 1) && (mdims.size() != 2)) {
@@ -2152,7 +2190,7 @@ size_t VsH5Reader::getNumComps(const std::string& name) const {
       debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): Returning 0." << std::endl;
       return 0;
     }
-
+    
     //is ddims a single component?
     if (ddims.size() == 1) {
       debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): This dataset is 1-d, so 1 component." <<std::endl;
@@ -2170,7 +2208,7 @@ size_t VsH5Reader::getNumComps(const std::string& name) const {
     }
     goto dimwarn;
   }
-
+  
   // Compare dims
   if (meshMeta->isStructuredMesh()) {
     // Structure mesh has an extra dimension for the coordinate index
@@ -2193,7 +2231,7 @@ size_t VsH5Reader::getNumComps(const std::string& name) const {
     debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): Returning 0." << std::endl;
     return 0;
   }
-
+  
   // check that each of mesh sizes are correct (for compMinor data here)
   if (!vm->isCompMajor()) {
     /* JRC: Commenting out.  For center data, this is more complicated.
@@ -2210,7 +2248,7 @@ size_t VsH5Reader::getNumComps(const std::string& name) const {
     res = ddims.back();
     goto dimwarn;
   }
-
+  
   // Check that sizes are the same
   /* JRC: Commenting out.  See above.
    for (size_t i = 0; i < mdims.size(); ++i)
@@ -2221,30 +2259,30 @@ size_t VsH5Reader::getNumComps(const std::string& name) const {
    }
    */
   res = ddims.front();
-
-  dimwarn:
+  
+dimwarn:
   debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): warning the size of the "
   "variable '" << name << "' not validated.  Future work." << std::endl;
   debugStrmRef << "VsH5Reader::getNumComps(" <<name <<"): Returning " <<res <<" components." << std::endl;
   return res;
-
+  
 }
 
 size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) const {
   debugStrmRef << "VsH5Reader::getMeshDims(" <<name <<", dims): Entering." << std::endl;
-
+  
   // Default is zero
   size_t len = 0;
-
+  
   const VsMeshMeta* meshMeta = getMeshMeta(name);
   if (meshMeta == NULL) {
-    debugStrmRef <<"VsH5Reader::getMeshDims(" <<name <<") : Failed to load metadata for mesh." <<std::endl;
-    debugStrmRef <<"VsH5Reader::getMeshDims(" <<name <<") : returning error -1" <<std::endl;
-    return -1;
+    debugStrmRef <<"VsH5Reader::getMeshDims(" <<name <<", dims) : Failed to load metadata for mesh." <<std::endl;
+    debugStrmRef <<"VsH5Reader::getMeshDims(" <<name <<", dims) : returning 0." <<std::endl;
+    return 0;
   }
-
+  
   std::string kind = meshMeta->kind;
-
+  
   // If this is uniform cartesian, read dims of totalNumCells attribute
   if (meshMeta->isUniformMesh()) {
     // find mesh in group meshes
@@ -2257,34 +2295,34 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
     }
     std::vector<VsAMeta*>::const_iterator k;
     for (k = gm->attribs.begin(); k != gm->attribs.end(); ++k) {
-      if ((*k)->name == VsSchema::Uniform::comp2) {
+      if ((*k)->name == VsSchema::Uniform::numCells) {
         getAttributeHelper((*k)->aid, 0, dims, 0);
       }
     }
-
+    
     if (useStride) {
       debugStrmRef <<"VsH5Reader::getMeshDims() - Adjusting size of mesh using stride." <<std::endl;
       for (unsigned int i = 0; i < dims->size(); i++) {
         int value = (*dims)[i];
         debugStrmRef <<"VsH5Reader::getMeshDims() - dims[" <<i <<"] = " <<value <<" stride[" <<i <<"] = " <<stride[i] <<std::endl;
         value = value / stride[i];
-
+        
         //we round UP if there is a remainder
         // NOT FOR UNIFORM
         //if ((*dims)[i] % stride[i] != 0) {
         //  debugStrmRef <<"VsH5Reader::getMeshDims() - Added 1 because there was a remainder." <<std::endl;
         //      value ++;
         //}
-
+        
         if (value < 1)
-        value = 1;
-
+          value = 1;
+        
         (*dims)[i] = value;
         debugStrmRef <<"VsH5Reader::getMeshDims() - dims[" <<i <<"] was adjusted to " <<(*dims)[i] <<std::endl;
       }
     }
   }
-
+  
   // If this is unstructured, read the dims of points dataset
   if (meshMeta->isUnstructuredMesh()) {
     VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)meshMeta;
@@ -2296,7 +2334,8 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
       } else {
         debugStrmRef <<"ERROR VsH5Reader::getMeshDims() - tried to find points data under name: " <<datasetName <<std::endl;
         debugStrmRef <<"ERROR VsH5Reader::getMeshDims() - but failed." <<std::endl;
-        return -1;
+        debugStrmRef <<"ERROR VsH5Reader::getMeshDims() - Returning 0." <<std::endl;
+        return 0;
       }
     }
     else {
@@ -2312,9 +2351,9 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
         debugStrmRef <<msg <<std::endl;
         throw std::invalid_argument(msg.c_str());
       }
-
+      
       dims->resize(2);
-
+      
       //points0 is only one of the datasets
       //so we need to adjust dims to match union of ALL datasets
       //spatial dimensionality = number of vspoints datasets
@@ -2325,13 +2364,13 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
         (*dims)[0] = unstructuredMesh->numSpatialDims;
         (*dims)[1] = points0->dims[0];
       }
-
+      
       debugStrmRef <<"VsH5Reader::getMeshDims() - dims[0] is " <<(*dims)[0] <<std::endl;
       debugStrmRef <<"VsH5Reader::getMeshDims() - dims[1] is " <<(*dims)[1] <<std::endl;
-
+      
     }
   }
-
+  
   // If this is structured, read dataset's dims
   if (meshMeta->isStructuredMesh()) {
     const VsDMeta* dm = h5meta->getDMesh(name);
@@ -2342,34 +2381,34 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
       return 0;
     }
     *dims = dm->dims;
-
+    
     if (useStride) {
       debugStrmRef <<"VsH5Reader::getMeshDims() - Adjusting size of mesh using stride." <<std::endl;
-
+      
       //we do dims - 1 because structured meshes store their coordinates in the last dimension
       // and we don't want to resize it
       for (unsigned int i = 0; i < dims->size() - 1; i++) {
         int value = (*dims)[i];
         debugStrmRef <<"VsH5Reader::getMeshDims() - dims[" <<i <<"] = " <<value <<" stride[" <<i <<"] = " <<stride[i] <<std::endl;
-
+        
         value = value / stride[i];
-
+        
         //we round UP if there is a remainder
         if ((*dims)[i] % stride[i] != 0) {
           debugStrmRef <<"VsH5Reader::getMeshDims() - Added 1 because there was a remainder." <<std::endl;
           value ++;
         }
-
+        
         if (value < 1)
-        value = 1;
-
+          value = 1;
+        
         (*dims)[i] = value;
         debugStrmRef <<"VsH5Reader::getMeshDims() - dims[" <<i <<"] was adjusted to " <<(*dims)[i] <<std::endl;
       }
     }
     //end structured
   }
-
+  
   if ( !meshMeta->isUnstructuredMesh() &&
       !meshMeta->isStructuredMesh() &&
       !meshMeta->isUniformMesh() ) {
@@ -2378,10 +2417,10 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
     debugStrmRef << "VsH5Reader::getMeshDims(" <<name <<", dims): Returning 0." << std::endl;
     return 0;
   }
-
+  
   len = 1;
   for (size_t i = 0; i < dims->size(); ++i) len *= (*dims)[i];
-
+  
   debugStrmRef << "VsH5Reader::getMeshDims(" <<name <<", dims): Returning " <<len <<"." << std::endl;
   return len;
 }
@@ -2392,7 +2431,7 @@ void VsH5Reader::setFile (const std::string& fn) {
   filter->setFile(fileId);
   h5meta = filter->getH5Meta();
   if (meta) delete meta;
-
+  
   debugStrmRef << "VsH5Reader::setFile(" <<fn <<"): Making new VsMeta()." << std::endl;
   meta = new VsMeta();
   makeVsMeta();
@@ -2401,7 +2440,7 @@ void VsH5Reader::setFile (const std::string& fn) {
 
 bool VsH5Reader::registerComponentInfo(std::string componentName, std::string varName, int componentNumber) {
   //yes, I should use a std::hash_map for this
-
+  
   //first, look for a match and report failure if the name is already registered
   NamePair foundPair;
   getComponentInfo(componentName, &foundPair);
@@ -2417,7 +2456,7 @@ bool VsH5Reader::registerComponentInfo(std::string componentName, std::string va
       return true;
     }
   }
-
+  
   //Ok, register the new name mapping
   std::pair<std::string, int> innerPair;
   innerPair.first = varName;
@@ -2429,14 +2468,14 @@ bool VsH5Reader::registerComponentInfo(std::string componentName, std::string va
   //debugStrmRef <<"newpair.first = " <<newPair.first <<std::endl;
   //debugStrmRef <<"newpair.second.first = " <<newPair.second.first <<std::endl;
   //debugStrmRef <<"newpair.second.second = " <<newPair.second.second <<std::endl;
-
+  
   debugStrmRef <<"VsH5Reader::registerComponentInfo(" <<componentName <<", " <<varName <<", " <<componentNumber <<") - registration succeeded." <<std::endl;
   return true;
 }
 
 void VsH5Reader::getComponentInfo(std::string componentName, NamePair* namePair) {
   //yes, I should use a std::hash_map for this
-
+  
   //look for a match and return the value if the name is registered
   for (unsigned int i = 0; i < componentNames.size(); i++) {
     std::pair<std::string, NamePair > foundPair = componentNames[i];
@@ -2447,7 +2486,7 @@ void VsH5Reader::getComponentInfo(std::string componentName, NamePair* namePair)
       return;
     }
   }
-
+  
   namePair->first = "";
   namePair->second = -1;
 }
@@ -2459,7 +2498,7 @@ std::string VsH5Reader::getUniqueComponentName(std::string userName, std::string
   //If that name is not available, another level of namespace will be added:
   // like "varName_index_number"
   NamePair foundInfo;
-
+  
   //if the user supplied a name, start there
   if (!userName.empty()) {
     getComponentInfo(userName, &foundInfo);
@@ -2469,7 +2508,7 @@ std::string VsH5Reader::getUniqueComponentName(std::string userName, std::string
       return userName;
     }
   }
-
+  
   //the user-supplied name is no good
   //try generating a name
   std::string compName = varName;
@@ -2477,7 +2516,7 @@ std::string VsH5Reader::getUniqueComponentName(std::string userName, std::string
   ss << componentIndex;
   compName.append("_");
   compName.append(ss.str());
-
+  
   int secondIndex = 0;
   std::string generatedName = compName;
   getComponentInfo(compName, &foundInfo);
@@ -2487,24 +2526,24 @@ std::string VsH5Reader::getUniqueComponentName(std::string userName, std::string
     ss.clear();
     ss <<varName <<"_" <<componentIndex <<"_" <<secondIndex;
     generatedName = ss.str();
-
+    
     secondIndex++;
     getComponentInfo(generatedName, &foundInfo);
   }
-
+  
   return generatedName;
 }
 
 std::string VsH5Reader::getOldComponentName(std::string varName, int componentIndex) {
   //generates an old-style name for the component
   //of the form "varName_index"
-
+  
   std::string compName = varName;
   std::stringstream ss;
   ss << componentIndex;
   compName.append("_");
   compName.append(ss.str());
-
+  
   return compName;
 }
 #endif
