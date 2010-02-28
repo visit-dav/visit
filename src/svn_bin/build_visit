@@ -834,6 +834,9 @@
 #     mesa patches to add some AIX specific code from a later version of mesa
 #     (that Tom Fogal had contributed to mesa).
 #
+#     Hank Childs, Sun Feb 28 13:28:05 PST 2010
+#     Make IceT builds be automatic if you enable parallel builds.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1082,6 +1085,7 @@ export DO_TCMALLOC="no"
 export ON_TCMALLOC="off"
 export DO_ICET="no"
 export ON_ICET="off"
+export PREVENT_ICET="no"
 GRAPHICAL="yes"
 ON_GRAPHICAL="on"
 verify="no"
@@ -2124,7 +2128,7 @@ function check_optional_3rdparty
         fi
     fi
     
-    if [[ "$DO_ICET" == "yes" ]] ; then
+    if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         ensure_built_or_ready "icet" $ICET_VERSION $ICET_BUILD_DIR $ICET_FILE "http://www.cs.unm.edu/~kmorel/IceT"
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -8162,7 +8166,7 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_TCMALLOC_DIR \${VISITHOME}/google-perftools/$TCMALLOC_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
-    if [[ "$DO_ICET" == "yes" ]] ; then
+    if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## Ice-T" >> $HOSTCONF
@@ -8574,6 +8578,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--netcdf" "Build NetCDF" "${DO_NETCDF}"
   printf "%-15s %s [%s]\n" "--no-visit" "Do not build VisIt, build 3rd party libraries only" "$DO_VISIT"
   printf "%-15s %s [%s]\n" "--no-thirdparty" "Do not build required 3rd party libraries" "$ON_THIRD_PARTY"
+  printf "%-15s %s [%s]\n" "--no-icet" "Ice-T is automatically built with --enable-parallel.  Prevent it from being built" "$PREVENT_ICET"
   printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
   printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
@@ -8816,7 +8821,8 @@ for arg in "${arguments[@]}" ; do
         --no-visit) DO_VISIT="no"; ON_VISIT="off";;
         --no-thirdparty) DO_REQUIRED_THIRD_PARTY="no"; ON_THIRD_PARTY="off";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
-        --parallel) parallel="yes"; ON_parallel="ON";;
+        --no-icet) PREVENT_ICET="yes";;
+        --parallel) parallel="yes"; DO_ICET="yes"; ON_parallel="ON";;
         --print-vars) next_action="print-vars";;
         --python) DO_PYTHON="yes"; ON_PYTHON="on";;
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
@@ -9039,7 +9045,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  VISIT_FILE="$(cat tmp$$)"
                  USE_VISIT_FILE="yes";;
               Parallel)
-                 parallel="yes";;
+                 parallel="yes"; DO_ICET="yes";;
               PythonModule)
                  DO_MODULE="yes";;
               Java)
@@ -9239,7 +9245,7 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
         DO_PYTHON="no"
     fi
 fi
-if [[ "$DO_ICET" == "yes" ]] ; then
+if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
     DO_CMAKE="yes"
 fi
 
@@ -9451,7 +9457,7 @@ if [[ "$DO_MILI" == "yes" ]] ; then
 fi
 
 cd "$START_DIR"
-if [[ "$DO_ICET" == "yes" ]] ; then
+if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
     check_if_installed "icet" $ICET_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping Ice-T build.  Ice-T is already installed."
