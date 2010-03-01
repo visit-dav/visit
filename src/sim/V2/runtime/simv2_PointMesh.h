@@ -13,7 +13,7 @@ SIMV2_API int simv2_PointMesh_alloc(visit_handle*);
 SIMV2_API int simv2_PointMesh_free(visit_handle);
 
 SIMV2_API int simv2_PointMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y);
-SIMV2_API int simv2_PointMesh_setCoordsXYZ(visit_handle obj, visit_handle y, visit_handle y, visit_handle z);
+SIMV2_API int simv2_PointMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z);
 SIMV2_API int simv2_PointMesh_setCoords(visit_handle obj, visit_handle xyz);
 
 #ifdef __cplusplus
