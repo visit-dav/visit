@@ -13,7 +13,7 @@ SIMV2_API int simv2_RectilinearMesh_alloc(visit_handle*);
 SIMV2_API int simv2_RectilinearMesh_free(visit_handle);
 
 SIMV2_API int simv2_RectilinearMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y);
-SIMV2_API int simv2_RectilinearMesh_setCoordsXYZ(visit_handle obj, visit_handle y, visit_handle y, visit_handle z);
+SIMV2_API int simv2_RectilinearMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z);
 SIMV2_API int simv2_RectilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3]);
 SIMV2_API int simv2_RectilinearMesh_setBaseIndex(visit_handle obj, int base_index[3]);
 

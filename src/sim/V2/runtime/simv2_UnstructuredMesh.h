@@ -13,7 +13,7 @@ SIMV2_API int simv2_UnstructuredMesh_alloc(visit_handle*);
 SIMV2_API int simv2_UnstructuredMesh_free(visit_handle);
 
 SIMV2_API int simv2_UnstructuredMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y);
-SIMV2_API int simv2_UnstructuredMesh_setCoordsXYZ(visit_handle obj, visit_handle y, visit_handle y, visit_handle z);
+SIMV2_API int simv2_UnstructuredMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z);
 SIMV2_API int simv2_UnstructuredMesh_setCoords(visit_handle obj, visit_handle xyz);
 SIMV2_API int simv2_UnstructuredMesh_setConnectivity(visit_handle obj, int nzones,
                                                      visit_handle conn);
