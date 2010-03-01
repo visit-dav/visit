@@ -35,45 +35,53 @@
 # DAMAGE.
 #
 # Modifications:
+#   Eric Brugger, Thu Feb 25 16:06:22 PST 2010
+#   I enclosed all variables that were used in tests involving STREQUAL
+#   in ${} and enclosed all literal strings that were used in tests
+#   involving STREQUAL in double quotes so that it would create the
+#   correct architecture string on AIX.
+#
+#   I modified the architecture string it generates on AIX to be either
+#   ibm-aix-pwr or ibm-aix-pwr64.
 #
 #****************************************************************************/
 
 MACRO(DETERMINE_VISIT_ARCHITECTURE ARCH)
-    IF(CMAKE_SYSTEM_NAME STREQUAL Linux)
-        IF(CMAKE_SYSTEM_PROCESSOR STREQUAL ppc)
+    IF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc")
             SET(${ARCH} linux-ppc)
-        ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL ppc64)
+        ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64")
             SET(${ARCH} linux-ppc64)
-        ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL x86_64)
+        ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
             SET(${ARCH} linux-x86_64)
-        ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL ia64)
+        ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ia64")
             SET(${ARCH} linux-ia64)
-        ELSE(CMAKE_SYSTEM_PROCESSOR STREQUAL ppc)
+        ELSE(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc")
             SET(${ARCH} linux-intel)
-        ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL ppc)
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL AIX)
-        IF(CMAKE_BASE_NAME STREQUAL xlC)
-            SET(${ARCH} "ibm-aix-pwr$ENV{OBJECT_MODE}-xlc")
-        ELSE(CMAKE_BASE_NAME STREQUAL xlC)
-            SET(${ARCH} "ibm-aix-pwr$ENV{OBJECT_MODE}")
-        ENDIF(CMAKE_BASE_NAME STREQUAL xlC)
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-        IF(CMAKE_SYSTEM_PROCESSOR STREQUAL i386)
+        ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc")
+    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+        IF($ENV{OBJECT_MODE} STREQUAL "32")
+            SET(${ARCH} "ibm-aix-pwr")
+        ELSE($ENV{OBJECT_MODE} STREQUAL "32")
+            SET(${ARCH} "ibm-aix-pwr64")
+        ENDIF($ENV{OBJECT_MODE} STREQUAL "32")
+    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
             SET(${ARCH} darwin-i386)
-        ELSE(CMAKE_SYSTEM_PROCESSOR STREQUAL i386)
+        ELSE(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
             SET(${ARCH} darwin-ppc)
-        ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL i386)
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
+        ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
+    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
         SET(${ARCH} "freebsd-${CMAKE_SYSTEM_VERSION}")
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL IRIX)
+    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "IRIX")
         SET(${ARCH} sgi-irix6-mips2)
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL SunOS)
+    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "SunOS")
         SET(${ARCH} "sun4-${CMAKE_SYSTEM_VERSION}-sparc")
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL Tru64)
+    ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Tru64")
         SET(${ARCH} dec-osf1-alpha)
-    ELSE(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    ELSE(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         # Unhandled case. Make up a string.
         SET(VISITARCHTMP "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
         STRING(TOLOWER ${VISITARCHTMP} ${ARCH})
-    ENDIF(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    ENDIF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 ENDMACRO(DETERMINE_VISIT_ARCHITECTURE ARCH)
