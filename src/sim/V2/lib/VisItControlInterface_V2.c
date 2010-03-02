@@ -876,7 +876,7 @@ static int GetLocalhostName(void)
                          "gethostbyname failed. return %d", FALSE);
         return FALSE;
     }
-    sprintf(localhost, localhostEnt->h_name);
+    sprintf(localhost, "%s", localhostEnt->h_name);
     LIBSIM_API_LEAVE1(GetLocalhostName, "return %s", localhost);
 
     return TRUE;
@@ -1324,7 +1324,7 @@ static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
 
    LIBSIM_MESSAGE1("Output=%s", output);
 
-   LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (ptr-output));
+   LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (int)(ptr-output));
    return (ptr - output);
 }
 

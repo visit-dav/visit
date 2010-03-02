@@ -14,8 +14,8 @@
    DECL(GetSpecies,          int (*ARG(GetSpecies))(int, const char *, VisIt_SpeciesData *, void *)) \
    DECL(GetVariable,         visit_handle (*ARG(GetVariable))(int, const char *, void *)) \
    DECL(GetMixedVariable,    visit_handle (*ARG(GetMixedVariable))(int, const char *, void *)) \
-   DECL(GetCurve,            int (*ARG(GetCurve))(const char *, VisIt_CurveData *, void *)) \
-   DECL(GetDomainList,       int (*ARG(GetDomainList))(VisIt_DomainList *, void *)) \
+   DECL(GetCurve,            visit_handle (*ARG(GetCurve))(const char *, void *)) \
+   DECL(GetDomainList,       visit_handle (*ARG(GetDomainList))(const char *, void *)) \
    DECL(GetDomainBoundaries, visit_handle (*ARG(GetDomainBoundaries))(const char *, void *)) \
    DECL(GetDomainNesting,    visit_handle (*ARG(GetDomainNesting))(const char *, void *)) \
    /* Write callbacks */ \

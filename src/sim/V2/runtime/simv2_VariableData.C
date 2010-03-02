@@ -106,13 +106,13 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
 
     if(nComps <= 0)
     {
-        VisItError("VariableData's number of components must be greater than 1.");
+        VisItError("VariableData's number of components must be greater than 0.");
         return VISIT_ERROR;
     }
 
     if(nTuples <= 0)
     {
-        VisItError("VariableData's number of tuples must be greater than 1.");
+        VisItError("VariableData's number of tuples must be greater than 0.");
         return VISIT_ERROR;
     }
 
