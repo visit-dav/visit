@@ -119,8 +119,8 @@ int VisItSetGetMaterial(int (*cb)(int, const char *, VisIt_MaterialData *, void 
 int VisItSetGetSpecies(int (*cb)(int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
 int VisItSetGetVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetMixedVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
-int VisItSetGetCurve(int (*cb)(const char *, VisIt_CurveData *, void *), void *cbdata);
-int VisItSetGetDomainList(int (*cb)(VisIt_DomainList *, void *), void *cbdata);
+int VisItSetGetCurve(visit_handle (*cb)(const char *, void *), void *cbdata);
+int VisItSetGetDomainList(visit_handle (*cb)(const char *, void *), void *cbdata);
 
 /* This is needed for VisIt to create ghost zones in between the domains. */
 int VisItSetGetDomainBoundaries(visit_handle (*cb)(const char *, void *), void *cbdata);

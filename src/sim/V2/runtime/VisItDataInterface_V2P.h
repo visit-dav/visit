@@ -20,9 +20,7 @@ int SIMV2_API simv2_ExpressionMetaData_free(VisIt_ExpressionMetaData *obj);
 int SIMV2_API simv2_SpeciesMetaData_free(VisIt_SpeciesMetaData *obj);
 int SIMV2_API simv2_SimulationMetaData_free(VisIt_SimulationMetaData *obj);
 
-int SIMV2_API simv2_CurveData_free(VisIt_CurveData *obj);
 int SIMV2_API simv2_MaterialData_free(VisIt_MaterialData *obj);
 int SIMV2_API simv2_SpeciesData_free(VisIt_SpeciesData *obj);
-int SIMV2_API simv2_DomainList_free(VisIt_DomainList *obj);
 
 #endif

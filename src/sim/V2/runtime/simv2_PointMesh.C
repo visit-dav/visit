@@ -70,7 +70,7 @@ GetObject(visit_handle h, const char *fname)
         if(obj->type != VISIT_POINT_MESH)
         {
             SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
-                "a VariableData object.", fname);
+                "a PointMesh object.", fname);
             VisItError(tmp);
             obj = NULL;
         }
