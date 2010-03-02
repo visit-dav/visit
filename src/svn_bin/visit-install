@@ -539,6 +539,8 @@ echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 # Use the appropriate configuration file, setting the bank to the right value.
 #
 rm -f "$dir"/$version+/.visit/config
+rm -f "$dir"/$version+/.visit/config_template
+rm -rf "$dir"/$version+/.visit/hosts
 mkdir "$dir"/$version+/.visit/hosts
 if ($config == anl) then
    ln -s ../allhosts/host_anl_cosmea.xml   "$dir"/$version+/.visit/hosts/
