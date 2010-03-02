@@ -246,20 +246,6 @@ simv2_SimulationMetaData_free(VisIt_SimulationMetaData *obj)
 
 
 int
-simv2_CurveData_free(VisIt_CurveData *obj)
-{
-    if(obj == NULL)
-        return VISIT_ERROR;
-
-    simv2_DataArray_free(&obj->x);
-    simv2_DataArray_free(&obj->y);
-
-    FREE(obj);
-
-    return VISIT_OKAY;
-}
-
-int
 simv2_MaterialData_free(VisIt_MaterialData *obj)
 {
     if(obj == NULL)
@@ -305,19 +291,6 @@ simv2_SpeciesData_free(VisIt_SpeciesData *obj)
     simv2_DataArray_free(&obj->speciesMF);
     simv2_DataArray_free(&obj->species);
     simv2_DataArray_free(&obj->mixedSpecies);
-
-    FREE(obj);
-
-    return VISIT_OKAY;
-}
-
-int
-simv2_DomainList_free(VisIt_DomainList *obj)
-{
-    if(obj == NULL)
-        return VISIT_ERROR;
-
-    simv2_DataArray_free(&obj->myDomains);
 
     FREE(obj);
 

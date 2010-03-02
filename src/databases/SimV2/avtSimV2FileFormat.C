@@ -89,7 +89,9 @@ using std::vector;
 #include <VisItDataInterfaceRuntime.h>
 
 #include <VisItDataInterface_V2P.h>
+#include <simv2_CurveData.h>
 #include <simv2_DomainBoundaries.h>
+#include <simv2_DomainList.h>
 #include <simv2_DomainNesting.h>
 #include <simv2_VariableData.h>
 
@@ -110,7 +112,7 @@ vtkDataSet *SimV2_GetMesh_CSG(visit_handle h);
 //  Arguments:
 //    da         the data array structure
 //
-//  Programmer:  Jeremy Meredith
+//  Programmer:  Brad Whitlock
 //  Creation:    April 28, 2005
 //
 // ****************************************************************************
@@ -143,7 +145,7 @@ void FreeDataArray(VisIt_DataArray &da)
 // ****************************************************************************
 //  Method: avtSimV1 constructor
 //
-//  Programmer: Jeremy Meredith
+//  Programmer: Brad Whitlock
 //  Creation:   March 17, 2005
 //
 //  Modifications:
@@ -219,7 +221,7 @@ avtSimV2FileFormat::avtSimV2FileFormat(const char *filename)
 //      it has associated with it.  This method is the mechanism for doing
 //      that.
 //
-//  Programmer: Jeremy Meredith
+//  Programmer: Brad Whitlock
 //  Creation:   August 11, 2004
 //
 // ****************************************************************************
@@ -290,7 +292,7 @@ VisIt_VariableMetaData_valid(const VisIt_VariableMetaData *obj, std::string &err
 //      Fill the simulation metadata with the parameters from the file for
 //      the mdserver.  Get the info from the simulation for the engine.
 //
-//  Programmer: Jeremy Meredith
+//  Programmer: Brad Whitlock
 //  Creation:   March 14, 2005
 //
 //  Modifications:
@@ -1011,7 +1013,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
 //
-//  Programmer: Jeremy Meredith
+//  Programmer: Brad Whitlock
 //  Creation:   March 17, 2005
 //
 //  Modifications:
@@ -1038,7 +1040,7 @@ avtSimV2FileFormat::GetVectorVar(int domain, const char *varname)
 //    type       the type of auxiliary data
 //    df         (out) the destructor
 //
-//  Programmer:  Jeremy Meredith
+//  Programmer:  Brad Whitlock
 //  Creation:    April 11, 2005
 //
 //  Modifications:
@@ -1078,11 +1080,11 @@ avtSimV2FileFormat::GetAuxiliaryData(const char *var, int domain,
 //                 regardless of block origin.
 //      varname    The name of the material variable requested.
 //
-//  Programmer:  Jeremy Meredith
+//  Programmer:  Brad Whitlock
 //  Creation:    April 11, 2005
 //
 //  Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
+//    Brad Whitlock, Thu Apr 28 18:00:32 PDT 2005
 //    Added true data array structures in place of raw array pointers.
 //
 //    Brad Whitlock, Fri Jan 18 10:22:59 PST 2008
@@ -1225,22 +1227,10 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
 //  Arguments:
 //      varname    The name of the curve requested.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    April 14, 2005
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Mar  1 15:03:37 PST 2010
 //
 //  Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
-//    Added true data array structures in place of raw array pointers.
-//
-//    Jeremy Meredith, Wed May 25 14:37:58 PDT 2005
-//    Added ability to have separate types for x/y values.  Added support
-//    for integer X's.
-//
-//    Kathleen Bonnell, Mon Jul 14 15:43:23 PDT 2008
-//    Specify curves as 1D rectilinear grids with yvalues stored in point data.
-//
-//    Brad Whitlock, Tue Feb 10 11:16:31 PST 2009
-//    I added code to delete curve data.
 //
 // ****************************************************************************
 
@@ -1250,67 +1240,65 @@ avtSimV2FileFormat::GetCurve(const char *name)
 #ifdef MDSERVER
     return NULL;
 #else
-    VisIt_CurveData *cd = simv2_invoke_GetCurve(name);
-    if (!cd)
+    visit_handle h = simv2_invoke_GetCurve(name);
+    if (h == VISIT_INVALID_HANDLE)
         return NULL;
 
-    int npts = cd->len;
-
-    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(npts, VTK_FLOAT);
-    vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
-    if (cd->x.dataType == VISIT_DATATYPE_INT)
+    visit_handle cHandles[2];
+    if(simv2_CurveData_getData(h, cHandles[0], cHandles[1]) == VISIT_ERROR)
     {
-        for (int j=0; j<npts; j++)
-            xc->SetValue(j, cd->x.iArray[j]);
-    }
-    else if (cd->x.dataType == VISIT_DATATYPE_FLOAT)
-    {
-        for (int j=0; j<npts; j++)
-            xc->SetValue(j, cd->x.fArray[j]);
-    }
-    else if (cd->x.dataType == VISIT_DATATYPE_DOUBLE)
-    {
-        for (int j=0; j<npts; j++)
-            xc->SetValue(j, cd->x.dArray[j]);
-    }
-    else
-    {
-        simv2_CurveData_free(cd);
-        rg->Delete();
-        EXCEPTION1(ImproperUseException, "Curve coordinate arrays "
-                   "must be float, double, or int in X.\n");
-    }
-
-    vtkFloatArray *yv = vtkFloatArray::New();
-    yv->SetNumberOfComponents(1);
-    yv->SetNumberOfTuples(npts);
-    yv->SetName(name);
-    rg->GetPointData()->SetScalars(yv);
-    yv->Delete();
-
-    if (cd->y.dataType == VISIT_DATATYPE_FLOAT)
-    {
-        for (int j=0; j<npts; j++)
-        {
-            yv->SetValue(j, cd->y.fArray[j]);
-        }
-    }
-    else if (cd->y.dataType == VISIT_DATATYPE_DOUBLE)
-    {
-        for (int j=0; j<npts; j++)
-        {
-            yv->SetValue(j, cd->y.dArray[j]);
-        }
-    }
-    else
-    {
-        simv2_CurveData_free(cd);
-        rg->Delete();
+        simv2_FreeObject(h);
         EXCEPTION1(ImproperUseException,
-                   "Curve coordinate arrays must be float or double in Y.\n");
+                   "Could not obtain curve data using the provided handle.\n");
     }
 
-    simv2_CurveData_free(cd);
+    int owner[2], dataType[2], nComps[2], nTuples[2];
+    void *data[2] = {0, 0};
+    vtkDataArray *coords[2] = {0,0};
+    for(int i = 0; i < 2; ++i)
+    {
+        if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i],
+            nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
+        {
+            simv2_FreeObject(h);
+            EXCEPTION1(ImproperUseException,
+                "Could not obtain curve coordinate data using the provided handle.\n");
+        }
+
+        if(dataType[i] == VISIT_DATATYPE_DOUBLE)
+        {
+            vtkDoubleArray *arr = vtkDoubleArray::New();
+            arr->SetNumberOfTuples(nTuples[i]);
+            memcpy(arr->GetVoidPointer(0), data[i], nTuples[i] * sizeof(double));
+            coords[i] = arr;
+        }
+        else if(dataType[i] == VISIT_DATATYPE_FLOAT)
+        {
+            vtkFloatArray *arr = vtkFloatArray::New();
+            arr->SetNumberOfTuples(nTuples[i]);
+            memcpy(arr->GetVoidPointer(0), data[i], nTuples[i] * sizeof(float));
+            coords[i] = arr;
+        }
+        else if(dataType[i] == VISIT_DATATYPE_INT)
+        {
+            vtkIntArray *arr = vtkIntArray::New();
+            arr->SetNumberOfTuples(nTuples[i]);
+            memcpy(arr->GetVoidPointer(0), data[i], nTuples[i] * sizeof(int));
+            coords[i] = arr;
+        }
+    }
+
+    // Install the X coordinates
+    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nTuples[0], VTK_FLOAT);
+    rg->SetXCoordinates(coords[0]);
+    coords[0]->Delete();
+
+    // Add the Y coordinates as a point data field.
+    coords[1]->SetName(name);
+    rg->GetPointData()->SetScalars(coords[1]);
+    coords[1]->Delete();
+
+    simv2_FreeObject(h);
 
     return rg;
 #endif
@@ -1428,12 +1416,10 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 //  Arguments:
 //    ioinfo     the avtIOInformation containing the output domain list
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    May 9, 2005
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Mar  1 16:50:18 PST 2010
 //
 //  Modifications:
-//    Brad Whitlock, Tue Feb 10 11:24:20 PST 2009
-//    Added code to free the domain list.
 //
 // ****************************************************************************
 
@@ -1441,8 +1427,11 @@ void
 avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
 {
 #ifndef MDSERVER
-    VisIt_DomainList *dl = simv2_invoke_GetDomainList();
-    if (!dl)
+    const char *mName = "avtSimV2FileFormat::PopulateIOInformation: ";
+
+    // TODO: pass in a mesh name
+    visit_handle h = simv2_invoke_GetDomainList("any");
+    if (h == VISIT_INVALID_HANDLE)
         return;
 
     int rank = 0;
@@ -1452,17 +1441,44 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
     size = PAR_Size();
 #endif
 
+    int alldoms = 0;
+    visit_handle mydoms;
+    if(simv2_DomainList_getData(h, alldoms, mydoms) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not get domain list data" << endl;
+        simv2_FreeObject(h);
+        return;
+    }
+
+    int owner, dataType, nComps, nTuples;
+    void *data = 0;
+    if(simv2_VariableData_getData(mydoms, owner, dataType, nComps, nTuples, 
+       data) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not get domain list data" << endl;
+        simv2_FreeObject(h);
+        return;
+    }
+
     vector< vector<int> > hints;
     hints.resize(size);
-    hints[rank].resize(dl->nMyDomains);
-    for (int i=0; i<dl->nMyDomains; i++)
+    hints[rank].resize(nTuples);
+    for (int i=0; i<nTuples; i++)
     {
-        hints[rank][i] = dl->myDomains.iArray[i];
+        int dom = ((int *)data)[i];
+        if(dom >= 0 && dom < alldoms)
+            hints[rank][i] = dom; 
+        else
+        {
+            debug1 << mName << "An out of range domain number was given "
+                "in the domain list" << endl;
+            simv2_FreeObject(h);
+            return;
+        }
     }
     ioInfo.AddHints(hints);
+    ioInfo.SetNDomains(alldoms);
 
-    ioInfo.SetNDomains(dl->nTotalDomains);
-
-    simv2_DomainList_free(dl);
+    simv2_FreeObject(h);
 #endif
 }

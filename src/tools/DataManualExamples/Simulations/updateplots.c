@@ -58,9 +58,9 @@ void read_input_deck(void) { }
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 visit_handle SimGetMesh(int, const char *, void *);
-int SimGetCurve(const char *name, VisIt_CurveData *, void *);
+visit_handle SimGetCurve(const char *name, void *);
 visit_handle SimGetVariable(int, const char *, void *);
-int SimGetDomainList(VisIt_DomainList *, void *);
+visit_handle SimGetDomainList(const char *, void *);
 
 /******************************************************************************
  * Simulation data and functions
@@ -687,35 +687,39 @@ SimGetVariable(int domain, const char *name, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetCurve(const char *name, VisIt_CurveData *curve, void *cbdata)
+visit_handle
+SimGetCurve(const char *name, void *cbdata)
 {
-    int ret = VISIT_ERROR;
+    int h = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
 
     if(strcmp(name, "sine") == 0)
     {
-        int i;
-        float *x = NULL, *y = NULL;
-        x = (float*)malloc(200 * sizeof(float));
-        y = (float*)malloc(200 * sizeof(float));
-        
-        for(i = 0; i < 200; ++i)
+        if(VisIt_CurveData_alloc(&h) != VISIT_ERROR)
         {
-            float angle = sim->time + ((float)i / (float)(200-1)) * 4. * M_PI;
-            x[i] = angle;
-            y[i] = sin(x[i]);
+            visit_handle hx, hy;
+            int i;
+            float *x = NULL, *y = NULL;
+            x = (float*)malloc(200 * sizeof(float));
+            y = (float*)malloc(200 * sizeof(float));
+        
+            for(i = 0; i < 200; ++i)
+            {
+                float angle = sim->time + ((float)i / (float)(200-1)) * 4. * M_PI;
+                x[i] = angle;
+                y[i] = sin(x[i]);
+            }
+
+            /* Give the arrays to VisIt. VisIt will free them. */
+            VisIt_VariableData_alloc(&hx);
+            VisIt_VariableData_alloc(&hy);
+            VisIt_VariableData_setDataF(hx, VISIT_OWNER_VISIT, 1, 200, x);
+            VisIt_VariableData_setDataF(hy, VISIT_OWNER_VISIT, 1, 200, y);
+            VisIt_CurveData_setCoordsXY(h, hx, hy);
         }
-
-        /* Give the arrays to VisIt. VisIt will free them. */
-        curve->len = 200;
-        curve->x = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, x);
-        curve->y = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, y);
-
-        ret = VISIT_OKAY;
     }
 
-    return ret;
+    return h;
 }
 
 /******************************************************************************
@@ -729,18 +733,22 @@ SimGetCurve(const char *name, VisIt_CurveData *curve, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetDomainList(VisIt_DomainList *dl, void *cbdata)
+visit_handle
+SimGetDomainList(const char *name, void *cbdata)
 {
-    int i, *iptr = NULL;
-    simulation_data *sim = (simulation_data *)cbdata;
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
+    {
+        visit_handle hdl;
+        int i, *iptr = NULL;
+        simulation_data *sim = (simulation_data *)cbdata;
 
-    iptr = (int *)malloc(sizeof(int));
-    *iptr = sim->par_rank;
+        iptr = (int *)malloc(sizeof(int));
+        *iptr = sim->par_rank;
 
-    dl->nTotalDomains = sim->par_size;
-    dl->nMyDomains = 1;
-    dl->myDomains = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, iptr);
-
-    return VISIT_OKAY;
+        VisIt_VariableData_alloc(&hdl);
+        VisIt_VariableData_setDataI(hdl, VISIT_OWNER_VISIT, 1, 1, iptr);
+        VisIt_DomainList_setDomains(h, sim->par_size, hdl);
+    }
+    return h;
 }

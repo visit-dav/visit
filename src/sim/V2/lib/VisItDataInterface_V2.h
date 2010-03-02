@@ -230,20 +230,6 @@ typedef struct VisIt_SpeciesData
     VisIt_DataArray  mixedSpecies;
 } VisIt_SpeciesData;
 
-typedef struct VisIt_CurveData
-{
-    int len;
-    VisIt_DataArray x;
-    VisIt_DataArray y;
-} VisIt_CurveData;
-
-typedef struct VisIt_DomainList
-{
-    int nTotalDomains;
-    int nMyDomains;
-    VisIt_DataArray myDomains;
-} VisIt_DomainList;
-
 /* Helper Methods */
 
 static VisIt_DataArray VisIt_CreateDataArrayFromChar(int o, char *c)
