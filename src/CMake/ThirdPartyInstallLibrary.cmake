@@ -39,6 +39,10 @@
 #   Kathleen Bonnell, Wed Feb  3 17:25:42 PST 2010
 #   Add simplifed version for windows.
 #
+#   Eric Brugger, Mon Mar  1 16:25:36 PST 2010
+#   I modified the test to determine if a library was a shared library for
+#   AIX since on AIX shared libraries can end in ".a".
+#
 #****************************************************************************/
 
 #
@@ -85,8 +89,27 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
     SET(tmpLIBFILE ${LIBFILE})
     GET_FILENAME_COMPONENT(LIBEXT ${tmpLIBFILE} EXT)
     IF(NOT ${LIBEXT} STREQUAL ".a")
+        SET(isSHAREDLIBRARY "YES")
+    ELSE(NOT ${LIBEXT} STREQUAL ".a")
+        SET(isSHAREDLIBRARY "NO")
+    ENDIF(NOT ${LIBEXT} STREQUAL ".a")
+    IF(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+        GET_FILENAME_COMPONENT(baseNAME ${tmpLIBFILE} NAME_WE)
+        # On AIX all ".a" files are archives except the following.
+        IF((${baseNAME} STREQUAL "libpython2") OR
+           (${baseNAME} STREQUAL "libMesaGL") OR
+           (${baseNAME} STREQUAL "libOSMesa") OR
+           (${baseNAME} STREQUAL "libsz"))
+            SET(isSHAREDLIBRARY "YES")
+        ENDIF((${baseNAME} STREQUAL "libpython2") OR
+              (${baseNAME} STREQUAL "libMesaGL") OR
+              (${baseNAME} STREQUAL "libOSMesa") OR
+              (${baseNAME} STREQUAL "libsz"))
+    ENDIF(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+
+    IF(${isSHAREDLIBRARY} STREQUAL "YES")
         GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
-#        MESSAGE("***tmpLIBFILE=${tmpLIBFILE}, LIBPATH=${LIBPATH}, LIBREALPATH=${LIBREALPATH}")
+#        MESSAGE("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
         IF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             # We need to install a library and its symlinks
             GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
@@ -97,6 +120,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 SET(curNAME "${curPATH}/${curNAMEWE}")
                 # Come up with all of the possible library and symlink names
                 SET(allNAMES "${curNAME}${LIBEXT}")
+                SET(allNAMES "${curNAME}.a")
                 FOREACH(X ${extList})
                     SET(curNAME "${curNAME}.${X}")
                     SET(allNAMES ${allNAMES} "${curNAME}")           # Linux way
@@ -192,11 +216,10 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             ENDIF(IS_DIRECTORY ${tmpLIBFILE})
 #            MESSAGE("**We need to install lib ${tmpLIBFILE}")
         ENDIF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
-    ELSE(NOT ${LIBEXT} STREQUAL ".a")
+    ELSEIF(${isSHAREDLIBRARY} STREQUAL "YES")
         # We have a .a that we need to install to archives.
         IF(VISIT_INSTALL_THIRD_PARTY)
 #            MESSAGE("***INSTALL ${LIBFILE} to ${VISIT_INSTALLED_VERSION_ARCHIVES}")
-MESSAGE("INSTALL files Path 6")
             INSTALL(FILES ${tmpLIBFILE}
                 DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
@@ -206,7 +229,7 @@ MESSAGE("INSTALL files Path 6")
             # TODO: We could install windows import libraries here...
 
         ENDIF(VISIT_INSTALL_THIRD_PARTY)
-    ENDIF(NOT ${LIBEXT} STREQUAL ".a")
+    ENDIF(${isSHAREDLIBRARY} STREQUAL "YES")
   ENDIF(WIN32)
 ENDFUNCTION(THIRD_PARTY_INSTALL_LIBRARY)
 

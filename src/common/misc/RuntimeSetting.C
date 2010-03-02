@@ -115,6 +115,11 @@ s::runtime_type s::runtime_settings;
 //  Programmer: Tom Fogal
 //  Creation: July 22, 2009
 //
+//  Modifications:
+//    Eric Brugger, Tue Mar  2 09:08:43 PST 2010
+//    I modified the logic that prepends the arch dir to handle the case of
+//    multiple paths seperated by a semicolon, which occurs on AIX.
+//
 // ****************************************************************************
 
 static std::string compile_time_default(int i)
@@ -123,10 +128,29 @@ static std::string compile_time_default(int i)
 
     // If the setting starts with ".", assume it's a relative path and
     // prepend our arch dir.
-    if(s::settings[i].isFile && s::settings[i].default_value[0] == '.')
+    if(s::settings[i].isFile)
     {
-        retval = GetVisItArchitectureDirectory() + 
-                 std::string(s::settings[i].default_value + 1);
+        char *default_str = new char[strlen(s::settings[i].default_value)+1];
+        strcpy(default_str, s::settings[i].default_value);
+        char *str = default_str;
+        char *str2 = strchr(str, ';');
+        if (str2 != NULL) str2[0] = '\0';
+        if (str[0] == '.')
+            retval = GetVisItArchitectureDirectory() + std::string(str + 1);
+        else
+            retval = std::string(str);
+        while (str2 != NULL)
+        {
+            str = str2 + 1;
+            if (str[0] == '.')
+                retval = retval + ";" + GetVisItArchitectureDirectory() +
+                    std::string(str + 1);
+            else
+                retval = retval + ";" + std::string(str);
+            str2 = strchr(str, ';');
+            if (str2 != NULL) str2[0] = '\0';
+        }
+        delete [] default_str;
     }
     else
         retval = s::settings[i].default_value;
