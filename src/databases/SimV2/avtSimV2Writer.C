@@ -295,6 +295,9 @@ avtSimV2Writer::CloseFile(void)
 // Creation:   Thu Feb 25 16:08:38 PST 2010
 //
 // Modifications:
+//   Eric Brugger, Wed Mar  3 10:53:11 PST 2010
+//   I replaced the variables hx, hy and hz with hhx, hhy and hhz, so that
+//   it would compile on AIX.
 //   
 // ****************************************************************************
 
@@ -334,14 +337,14 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
             x[i] = pt[0];
             y[i] = pt[1];
         }
-        visit_handle hx, hy;
-        simv2_VariableData_alloc(&hx);
-        simv2_VariableData_alloc(&hy);
-        simv2_VariableData_setData(hx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        visit_handle hhx, hhy;
+        simv2_VariableData_alloc(&hhx);
+        simv2_VariableData_alloc(&hhy);
+        simv2_VariableData_setData(hhx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, ds->GetNumberOfPoints(), x);
-        simv2_VariableData_setData(hy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        simv2_VariableData_setData(hhy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, ds->GetNumberOfPoints(), y);
-        simv2_CurvilinearMesh_setCoordsXY(h, dims, hx, hy);
+        simv2_CurvilinearMesh_setCoordsXY(h, dims, hhx, hhy);
     }
     else if(ds->GetDataDimension() == 3)
     {
@@ -356,17 +359,17 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
             z[i] = pt[2];
         }
 
-        visit_handle hx, hy, hz;
-        simv2_VariableData_alloc(&hx);
-        simv2_VariableData_alloc(&hy);
-        simv2_VariableData_alloc(&hz);
-        simv2_VariableData_setData(hx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        visit_handle hhx, hhy, hhz;
+        simv2_VariableData_alloc(&hhx);
+        simv2_VariableData_alloc(&hhy);
+        simv2_VariableData_alloc(&hhz);
+        simv2_VariableData_setData(hhx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, ds->GetNumberOfPoints(), x);
-        simv2_VariableData_setData(hy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        simv2_VariableData_setData(hhy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, ds->GetNumberOfPoints(), y);
-        simv2_VariableData_setData(hz, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        simv2_VariableData_setData(hhz, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, ds->GetNumberOfPoints(), z);
-        simv2_CurvilinearMesh_setCoordsXYZ(h, dims, hx, hy, hz);
+        simv2_CurvilinearMesh_setCoordsXYZ(h, dims, hhx, hhy, hhz);
     }
 
     simv2_CurvilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
@@ -403,6 +406,9 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
 // Creation:   Thu Feb 25 16:17:34 PST 2010
 //
 // Modifications:
+//   Eric Brugger, Wed Mar  3 10:53:11 PST 2010
+//   I replaced the variables hx, hy and hz with hhx, hhy and hhz, so that
+//   it would compile on AIX.
 //   
 // ****************************************************************************
 
@@ -427,7 +433,7 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
     maxRealIndex[1] = dims[1]-1;
     maxRealIndex[2] = dims[2]-1;
 
-    visit_handle hx, hy, hz;
+    visit_handle hhx, hhy, hhz;
     if(ds->GetDataDimension() >= 1)
     {
         vtkDataArray *xc = ds->GetXCoordinates();
@@ -435,8 +441,8 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
         for(vtkIdType i = 0; i < xc->GetNumberOfTuples(); ++i)
             x[i] = xc->GetTuple1(i);
 
-        simv2_VariableData_alloc(&hx);
-        simv2_VariableData_setData(hx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        simv2_VariableData_alloc(&hhx);
+        simv2_VariableData_setData(hhx, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, xc->GetNumberOfTuples(), x);
     }
 
@@ -447,8 +453,8 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
         for(vtkIdType i = 0; i < yc->GetNumberOfTuples(); ++i)
             y[i] = yc->GetTuple1(i);
 
-        simv2_VariableData_alloc(&hy);
-        simv2_VariableData_setData(hy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE, 
+        simv2_VariableData_alloc(&hhy);
+        simv2_VariableData_setData(hhy, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE, 
             1, yc->GetNumberOfTuples(), y);
     }
 
@@ -459,15 +465,15 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
         for(vtkIdType i = 0; i < zc->GetNumberOfTuples(); ++i)
             z[i] = zc->GetTuple1(i);
 
-        simv2_VariableData_alloc(&hz);
-        simv2_VariableData_setData(hz, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        simv2_VariableData_alloc(&hhz);
+        simv2_VariableData_setData(hhz, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
             1, zc->GetNumberOfTuples(), z);
     }
 
     if(ds->GetDataDimension() == 3)
-        simv2_RectilinearMesh_setCoordsXYZ(h, hx, hy, hz); 
+        simv2_RectilinearMesh_setCoordsXYZ(h, hhx, hhy, hhz); 
     else
-        simv2_RectilinearMesh_setCoordsXY(h, hx, hy); 
+        simv2_RectilinearMesh_setCoordsXY(h, hhx, hhy); 
     simv2_CurvilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
     simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
 
