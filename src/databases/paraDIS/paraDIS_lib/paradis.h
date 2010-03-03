@@ -76,7 +76,10 @@
 #ifndef WIN32
 #include <stdint.h>
 #else
-#include <msc_stdint.h>
+typedef __int8  int8_t;
+typedef __int16 int16_t;
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
 #endif
 #include <stdio.h>
 #include <vector>
