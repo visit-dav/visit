@@ -64,7 +64,7 @@ extern "C" {
 SIMV2_API void simv2_set_ActivateTimestep(int (*cb) (void *), void *cbdata);
 SIMV2_API void simv2_set_GetMetaData(int (*cb) (VisIt_SimulationMetaData *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetMesh(visit_handle (*cb) (int, const char *, void *), void *cbdata);
-SIMV2_API void simv2_set_GetMaterial(int (*cb) (int, const char *, VisIt_MaterialData *, void *), void *cbdata);
+SIMV2_API void simv2_set_GetMaterial(visit_handle (*cb) (int, const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetSpecies(int (*cb) (int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetVariable(visit_handle (*cb) (int, const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetMixedVariable(visit_handle (*cb) (int, const char *, void *), void *cbdata);
@@ -82,7 +82,7 @@ SIMV2_API void simv2_set_WriteVariable(int (*cb)(const char *, const char *, int
 SIMV2_API int                       simv2_invoke_ActivateTimestep(void);
 SIMV2_API VisIt_SimulationMetaData *simv2_invoke_GetMetaData(void);
 SIMV2_API visit_handle              simv2_invoke_GetMesh(int, const char *);
-SIMV2_API VisIt_MaterialData       *simv2_invoke_GetMaterial(int, const char *);
+SIMV2_API visit_handle              simv2_invoke_GetMaterial(int, const char *);
 SIMV2_API VisIt_SpeciesData        *simv2_invoke_GetSpecies(int, const char *);
 SIMV2_API visit_handle              simv2_invoke_GetVariable(int, const char *);
 SIMV2_API visit_handle              simv2_invoke_GetMixedVariable(int, const char *);
@@ -109,6 +109,8 @@ SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, int, v
 #define VISIT_UNSTRUCTURED_MESH 24
 
 #define VISIT_CURVE_DATA        30
+
+#define VISIT_MATERIAL_DATA     40
 
 SIMV2_API int simv2_ObjectType(visit_handle h);
 SIMV2_API int simv2_FreeObject(visit_handle h);

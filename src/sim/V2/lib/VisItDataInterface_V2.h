@@ -194,22 +194,6 @@ typedef struct VisIt_SimulationMetaData
 *                         Problem-sized data types
 *****************************************************************************/
 
-typedef struct VisIt_MaterialData
-{
-    int nMaterials;
-    int *materialNumbers;
-    char **materialNames;
-
-    int  nzones;
-    VisIt_DataArray matlist;
-
-    int             mixlen;
-    VisIt_DataArray mix_mat;  /* int[mixlen]   */
-    VisIt_DataArray mix_zone; /* int[mixlen]   */
-    VisIt_DataArray mix_next; /* int[mixlen]   */
-    VisIt_DataArray mix_vf;   /* float[mixlen] */
-} VisIt_MaterialData;
-
 typedef struct VisIt_SpeciesData
 {
     int              nmaterialSpecies;     /* length of materialSpecies array. */
@@ -282,9 +266,12 @@ static VisIt_DataArray VisIt_CreateDataArrayFromDouble(int o, double *d)
 /****************************************************************************/
 
 #include <VisIt_CSGMesh.h>
+#include <VisIt_CurveData.h>
 #include <VisIt_CurvilinearMesh.h>
 #include <VisIt_DomainBoundaries.h>
+#include <VisIt_DomainList.h>
 #include <VisIt_DomainNesting.h>
+#include <VisIt_MaterialData.h>
 #include <VisIt_PointMesh.h>
 #include <VisIt_RectilinearMesh.h>
 #include <VisIt_UnstructuredMesh.h>

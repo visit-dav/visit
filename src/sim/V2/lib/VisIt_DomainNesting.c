@@ -1,5 +1,6 @@
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
+#include "VisItFortran.h"
 
 int
 VisIt_DomainNesting_alloc(visit_handle *obj)

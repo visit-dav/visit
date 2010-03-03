@@ -1,5 +1,6 @@
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
+#include "VisItFortran.h"
 
 int
 VisIt_PointMesh_alloc(visit_handle *obj)
@@ -47,11 +48,12 @@ VisIt_PointMesh_setCoords(visit_handle obj, visit_handle c)
 }
 
 /************************** Fortran callable routines *************************/
-#define F_VISITPOINTMESHALLOC         F77_ID(visitpointmeshalloc_,visitpointmeshalloc,VISITPOINTMESHALLOC)
-#define F_VISITPOINTMESHFREE          F77_ID(visitpointmeshfree_,visitpointmeshfree,VISITPOINTMESHFREE)
-#define F_VISITPOINTMESHSETCOORDSXY   F77_ID(visitpointmeshsetcoordsxy_,visitpointmeshsetcoordsxy,VISITPOINTMESHSETCOORDSXY)
-#define F_VISITPOINTMESHSETCOORDSXYZ  F77_ID(visitpointmeshsetcoordsxyz_,visitpointmeshsetcoordsxyz,VISITPOINTMESHSETCOORDSXYZ)
-#define F_VISITPOINTMESHSETCOORDS     F77_ID(visitpointmeshsetcoords_,visitpointmeshsetcoords,VISITPOINTMESHSETCOORDS)
+/* maxlen 012345678901234567890123456789                                      */
+#define F_VISITPOINTMESHALLOC            F77_ID(visitpointmeshalloc_,visitpointmeshalloc,VISITPOINTMESHALLOC)
+#define F_VISITPOINTMESHFREE             F77_ID(visitpointmeshfree_,visitpointmeshfree,VISITPOINTMESHFREE)
+#define F_VISITPOINTMESHSETCOORDSXY      F77_ID(visitpointmeshsetcoordsxy_,visitpointmeshsetcoordsxy,VISITPOINTMESHSETCOORDSXY)
+#define F_VISITPOINTMESHSETCOORDSXYZ     F77_ID(visitpointmeshsetcoordsxyz_,visitpointmeshsetcoordsxyz,VISITPOINTMESHSETCOORDSXYZ)
+#define F_VISITPOINTMESHSETCOORDS        F77_ID(visitpointmeshsetcoords_,visitpointmeshsetcoords,VISITPOINTMESHSETCOORDS)
 
 int
 F_VISITPOINTMESHALLOC(visit_handle *obj)

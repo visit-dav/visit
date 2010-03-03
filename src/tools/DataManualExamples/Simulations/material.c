@@ -43,14 +43,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <materialhelpers.h>
 
 #include "SimulationExample.h"
 
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 visit_handle SimGetMesh(int, const char *, void *);
-int SimGetMaterial(int, const char *, VisIt_MaterialData *, void *);
+visit_handle SimGetMaterial(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetMixedVariable(int, const char *, void *);
 
@@ -454,63 +453,68 @@ SimGetMesh(int domain, const char *name, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetMaterial(int domain, const char *name, VisIt_MaterialData *mat,
-    void *cbdata)
+visit_handle
+SimGetMaterial(int domain, const char *name, void *cbdata)
 {
-    int i, j, m, cell = 0, arrlen = 0;
-    int nmats, cellmat[10], matnos[3];
-    float cellmatvf[10];
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     /* Allocate a VisIt_MaterialData */
-    VisIt_MaterialData_init(mat, (NX-1)*(NY-1), &arrlen);
-
-    /* Fill in the VisIt_MaterialData */
-    matnos[0] = VisIt_MaterialData_addMaterial(mat, matNames[0]);
-    matnos[1] = VisIt_MaterialData_addMaterial(mat, matNames[1]);
-    matnos[2] = VisIt_MaterialData_addMaterial(mat, matNames[2]);
-
-    /* The matlist table indicates the material numbers that are found in
-     * each cell. Every 3 numbers indicates the material numbers in a cell.
-     * A material number of 0 means that the material entry is not used.
-     */
-    int matlist[NY-1][NX-1][3] = {
-        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
-        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
-        {{3,0,0},{2,3,0},{1,2,3},{1,2,0}}
-    };
-
-    /* The mat_vf table indicates the material volume fractions that are
-     * found in a cell.
-     */
-    float mat_vf[NY-1][NX-1][3] = {
-        {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
-        {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
-        {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
-    };
-
-    for(j = 0; j < NY-1; ++j)
+    if(VisIt_MaterialData_alloc(&h) == VISIT_OKAY)
     {
-        for(i = 0; i < NX-1; ++i, ++cell)
+        int i, j, m, cell = 0, arrlen = 0;
+        int nmats, cellmat[10], matnos[3]={1,2,3};
+        float cellmatvf[10];
+
+        /* The matlist table indicates the material numbers that are found in
+         * each cell. Every 3 numbers indicates the material numbers in a cell.
+         * A material number of 0 means that the material entry is not used.
+         */
+        int matlist[NY-1][NX-1][3] = {
+            {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
+            {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
+            {{3,0,0},{2,3,0},{1,2,3},{1,2,0}}
+        };
+
+        /* The mat_vf table indicates the material volume fractions that are
+         * found in a cell.
+         */
+        float mat_vf[NY-1][NX-1][3] = {
+            {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
+            {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
+            {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
+        };
+
+        /* Tell the object we'll be adding cells to it using add*Cell functions */
+        VisIt_MaterialData_appendCells(h, (NX-1)*(NY-1));
+
+        /* Fill in the VisIt_MaterialData */
+        VisIt_MaterialData_addMaterial(h, matNames[0], &matnos[0]);
+        VisIt_MaterialData_addMaterial(h, matNames[1], &matnos[1]);
+        VisIt_MaterialData_addMaterial(h, matNames[2], &matnos[2]);
+
+        for(j = 0; j < NY-1; ++j)
         {
-            nmats = 0;
-            for(m = 0; m < 3; ++m)
+            for(i = 0; i < NX-1; ++i, ++cell)
             {
-                if(matlist[j][i][m] > 0)
+                nmats = 0;
+                for(m = 0; m < 3; ++m)
                 {
-                    cellmat[nmats] = matnos[matlist[j][i][m] - 1];
-                    cellmatvf[nmats] = mat_vf[j][i][m];
-                    nmats++;
-                }
-            }        
-            if(nmats > 1)
-                VisIt_MaterialData_addMixedCell(mat, cell, cellmat, cellmatvf, nmats, &arrlen);
-            else
-                VisIt_MaterialData_addCleanCell(mat, cell, cellmat[0]);
+                    if(matlist[j][i][m] > 0)
+                    {
+                        cellmat[nmats] = matnos[matlist[j][i][m] - 1];
+                        cellmatvf[nmats] = mat_vf[j][i][m];
+                        nmats++;
+                    }
+                }        
+                if(nmats > 1)
+                    VisIt_MaterialData_addMixedCell(h, cell, cellmat, cellmatvf, nmats);
+                else
+                    VisIt_MaterialData_addCleanCell(h, cell, cellmat[0]);
+            }
         }
     }
 
-    return VISIT_OKAY;
+    return h;
 }
 
 /******************************************************************************

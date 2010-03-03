@@ -1,5 +1,6 @@
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
+#include "VisItFortran.h"
 
 int
 VisIt_CSGMesh_alloc(visit_handle *obj)
@@ -66,12 +67,13 @@ VisIt_CSGMesh_setExtents(visit_handle obj, double min[3], double max[3])
 }
 
 /************************** Fortran callable routines *************************/
-#define F_VISITCSGMESHALLOC           F77_ID(visitcsgmeshalloc_,visitcsgmeshalloc,VISITCSGMESHALLOC)
-#define F_VISITCSGMESHFREE            F77_ID(visitcsgmeshfree_,visitcsgmeshfree,VISITCSGMESHFREE)
-#define F_VISITCSGMESHSETCOORDSXY     F77_ID(visitcsgmeshsetcoordsxy_,visitcsgmeshsetcoordsxy,VISITCSGMESHSETCOORDSXY)
-#define F_VISITCSGMESHSETCOORDSXYZ    F77_ID(visitcsgmeshsetcoordsxyz_,visitcsgmeshsetcoordsxyz,VISITCSGMESHSETCOORDSXYZ)
-#define F_VISITCSGMESHSETBASEINDEX    F77_ID(visitcsgmeshsetbaseindex_,visitcsgmeshsetbaseindex,VISITCSGMESHSETBASEINDEX)
-#define F_VISITCSGMESHSETREALINDICES  F77_ID(visitcsgmeshsetrealindices_,visitcsgmeshsetrealindices,VISITCSGMESHSETREALINDICES)
+/* maxlen 012345678901234567890123456789                                      */
+#define F_VISITCSGMESHALLOC              F77_ID(visitcsgmeshalloc_,visitcsgmeshalloc,VISITCSGMESHALLOC)
+#define F_VISITCSGMESHFREE               F77_ID(visitcsgmeshfree_,visitcsgmeshfree,VISITCSGMESHFREE)
+#define F_VISITCSGMESHSETCOORDSXY        F77_ID(visitcsgmeshsetcoordsxy_,visitcsgmeshsetcoordsxy,VISITCSGMESHSETCOORDSXY)
+#define F_VISITCSGMESHSETCOORDSXYZ       F77_ID(visitcsgmeshsetcoordsxyz_,visitcsgmeshsetcoordsxyz,VISITCSGMESHSETCOORDSXYZ)
+#define F_VISITCSGMESHSETBASEINDEX       F77_ID(visitcsgmeshsetbaseindex_,visitcsgmeshsetbaseindex,VISITCSGMESHSETBASEINDEX)
+#define F_VISITCSGMESHSETREALINDICES     F77_ID(visitcsgmeshsetrealindices_,visitcsgmeshsetrealindices,VISITCSGMESHSETREALINDICES)
 
 int
 F_VISITCSGMESHALLOC(visit_handle *obj)

@@ -2,16 +2,17 @@
 #include "VisItDataInterfaceRuntimeP.h"
 
 #include "VisItDataInterface_V2P.h"
+#include "simv2_CSGMesh.h"
 #include "simv2_CurveData.h"
+#include "simv2_CurvilinearMesh.h"
 #include "simv2_DomainBoundaries.h"
 #include "simv2_DomainList.h"
 #include "simv2_DomainNesting.h"
-#include "simv2_VariableData.h"
-#include "simv2_CSGMesh.h"
-#include "simv2_CurvilinearMesh.h"
+#include "simv2_MaterialData.h"
 #include "simv2_PointMesh.h"
 #include "simv2_RectilinearMesh.h"
 #include "simv2_UnstructuredMesh.h"
+#include "simv2_VariableData.h"
 
 #include <stdlib.h>
 #include <string>
@@ -38,7 +39,7 @@ typedef struct
     visit_handle (*cb_GetMesh)(int, const char *, void *);
     void  *cbdata_GetMesh;
 
-    int  (*cb_GetMaterial)(int, const char *, VisIt_MaterialData *, void *);
+    visit_handle  (*cb_GetMaterial)(int, const char *, void *);
     void  *cbdata_GetMaterial;
 
     int  (*cb_GetSpecies)(int, const char *, VisIt_SpeciesData *, void *);
@@ -134,7 +135,7 @@ simv2_set_GetMesh(visit_handle (*cb) (int, const char *, void *), void *cbdata)
 }
 
 void
-simv2_set_GetMaterial(int (*cb) (int, const char *, VisIt_MaterialData *, void *), void *cbdata)
+simv2_set_GetMaterial(visit_handle (*cb) (int, const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -493,21 +494,27 @@ simv2_invoke_GetMesh(int dom, const char *name)
     return h;
 }
 
-VisIt_MaterialData *
+visit_handle
 simv2_invoke_GetMaterial(int dom, const char *name)
 {
-    VisIt_MaterialData *obj = NULL;
+    visit_handle h = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetMaterial != NULL)
     {
-        obj = ALLOC(VisIt_MaterialData);
-        if(obj != NULL && (*callbacks->cb_GetMaterial)(dom, name, obj, callbacks->cbdata_GetMaterial) == VISIT_ERROR)
+        h = (*callbacks->cb_GetMaterial)(dom, name, callbacks->cbdata_GetMaterial);
+
+        if(h != VISIT_INVALID_HANDLE)
         {
-            simv2_MaterialData_free(obj);
-            obj = NULL;
+            if(simv2_MaterialData_check(h) == VISIT_ERROR)
+            {
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The material returned by the simulation did not pass "
+                    "a consistency check.");
+            }
         }
     }
-    return obj;
+    return h;
 }
 
 VisIt_SpeciesData *

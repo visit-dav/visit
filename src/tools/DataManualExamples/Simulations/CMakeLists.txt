@@ -175,7 +175,7 @@ ADD_SIMV2_SIMULATION(csg csg.c)
 ADD_SIMV1_SIMULATION(curve curve.c)
 ADD_FORTRAN_SIMV1_SIMULATION(fcurve fcurve.f)
 
-ADD_SIMV2_SIMULATION(material material.c materialhelpers.c)
+ADD_SIMV2_SIMULATION(material material.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
 
 ADD_SIMV1_SIMULATION(mesh mesh.c)
@@ -226,7 +226,7 @@ ADD_FORTRAN_SIMV1_SIMULATION(fsim11 fsim11.f)
 ADD_SIMV1_SIMULATION(sim12 sim12.c)
 ADD_FORTRAN_SIMV1_SIMULATION(fsim12 fsim12.f)
 
-ADD_SIMV2_SIMULATION(species species.c materialhelpers.c)
+ADD_SIMV2_SIMULATION(species species.c)
 
 ADD_SIMV1_SIMULATION(unstructured unstructured.c)
 ADD_FORTRAN_SIMV1_SIMULATION(funstructured funstructured.f)

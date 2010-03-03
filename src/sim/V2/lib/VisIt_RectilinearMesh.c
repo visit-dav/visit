@@ -1,5 +1,6 @@
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
+#include "VisItFortran.h"
 
 int
 VisIt_RectilinearMesh_alloc(visit_handle *obj)
@@ -57,39 +58,40 @@ VisIt_RectilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3])
 }
 
 /************************** Fortran callable routines *************************/
-#define F_VISITRECTILINEARMESHALLOC           F77_ID(visitrectilinearmeshalloc_,visitrectilinearmeshalloc,VISITRECTILINEARMESHALLOC)
-#define F_VISITRECTILINEARMESHFREE            F77_ID(visitrectilinearmeshfree_,visitrectilinearmeshfree,VISITRECTILINEARMESHFREE)
-#define F_VISITRECTILINEARMESHSETCOORDSXY     F77_ID(visitrectilinearmeshsetcoordsxy_,visitrectilinearmeshsetcoordsxy,VISITRECTILINEARMESHSETCOORDSXY)
-#define F_VISITRECTILINEARMESHSETCOORDSXYZ    F77_ID(visitrectilinearmeshsetcoordsxyz_,visitrectilinearmeshsetcoordsxyz,VISITRECTILINEARMESHSETCOORDSXYZ)
-#define F_VISITRECTILINEARMESHSETBASEINDEX    F77_ID(visitrectilinearmeshsetbaseindex_,visitrectilinearmeshsetbaseindex,VISITRECTILINEARMESHSETBASEINDEX)
-#define F_VISITRECTILINEARMESHSETREALINDICES  F77_ID(visitrectilinearmeshsetrealindices_,visitrectilinearmeshsetrealindices,VISITRECTILINEARMESHSETREALINDICES)
+/* maxlen 012345678901234567890123456789                                      */
+#define F_VISITRECTMESHALLOC             F77_ID(visitrectmeshalloc_,visitrectmeshalloc,VISITRECTMESHALLOC)
+#define F_VISITRECTMESHFREE              F77_ID(visitrectmeshfree_,visitrectmeshfree,VISITRECTMESHFREE)
+#define F_VISITRECTMESHSETCOORDSXY       F77_ID(visitrectmeshsetcoordsxy_,visitrectmeshsetcoordsxy,VISITRECTMESHSETCOORDSXY)
+#define F_VISITRECTMESHSETCOORDSXYZ      F77_ID(visitrectmeshsetcoordsxyz_,visitrectmeshsetcoordsxyz,VISITRECTMESHSETCOORDSXYZ)
+#define F_VISITRECTMESHSETBASEINDEX      F77_ID(visitrectmeshsetbaseindex_,visitrectmeshsetbaseindex,VISITRECTMESHSETBASEINDEX)
+#define F_VISITRECTMESHSETREALINDICES    F77_ID(visitrectmeshsetrealindices_,visitrectmeshsetrealindices,VISITRECTMESHSETREALINDICES)
 
 int
-F_VISITRECTILINEARMESHALLOC(visit_handle *obj)
+F_VISITRECTMESHALLOC(visit_handle *obj)
 {
     return VisIt_RectilinearMesh_alloc(obj);
 }
 
 int
-F_VISITRECTILINEARMESHFREE(visit_handle *obj)
+F_VISITRECTMESHFREE(visit_handle *obj)
 {
     return VisIt_RectilinearMesh_free(*obj);
 }
 
 int
-F_VISITRECTILINEARMESHSETCOORDSXY(visit_handle *obj, visit_handle *x, visit_handle *y)
+F_VISITRECTMESHSETCOORDSXY(visit_handle *obj, visit_handle *x, visit_handle *y)
 {
     return VisIt_RectilinearMesh_setCoordsXY(*obj, *x, *y);
 }
 
 int
-F_VISITRECTILINEARMESHSETCOORDSXYZ(visit_handle *obj, visit_handle *x, visit_handle *y, visit_handle *z)
+F_VISITRECTMESHSETCOORDSXYZ(visit_handle *obj, visit_handle *x, visit_handle *y, visit_handle *z)
 {
     return VisIt_RectilinearMesh_setCoordsXYZ(*obj, *x, *y, *z);
 }
 
 int
-F_VISITRECTILINEARMESHSETBASEINDEX(visit_handle *obj, int *base_index)
+F_VISITRECTMESHSETBASEINDEX(visit_handle *obj, int *base_index)
 {
     int tmp[3];
     tmp[0] = base_index[0];
@@ -99,7 +101,7 @@ F_VISITRECTILINEARMESHSETBASEINDEX(visit_handle *obj, int *base_index)
 }
 
 int
-F_VISITRECTILINEARMESHSETREALINDICES(visit_handle *obj, int *mins, int *maxs)
+F_VISITRECTMESHSETREALINDICES(visit_handle *obj, int *mins, int *maxs)
 {
     int tmpMin[3], tmpMax[3];
     tmpMin[0] = mins[0];
