@@ -554,11 +554,11 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(displayEndEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayEndText()));
 
     dLayout->addWidget(displayLabel, dRow,0);
-    dLayout->addWidget(displayEndToggle, dRow,1);
-    dLayout->addWidget(displayEndEdit, dRow,2);
-    dRow++;
     dLayout->addWidget(displayBeginToggle, dRow,1);
     dLayout->addWidget(displayBeginEdit, dRow,2);
+    dRow++;
+    dLayout->addWidget(displayEndToggle, dRow,1);
+    dLayout->addWidget(displayEndEdit, dRow,2);
     dRow++;
 
 
@@ -646,8 +646,8 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cLayout->addWidget(opacityType, cRow, 1);
 
     opacityVarLabel = new QLabel(tr("Variable"), colorGrp);
-    opacityVar = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
-                                 colorGrp);
+    opacityVar = new QvisVariableButton(false, true, true,
+                                        QvisVariableButton::Scalars, colorGrp);
     cLayout->addWidget(opacityVarLabel,cRow,2);
     cLayout->addWidget(opacityVar,cRow,3);
     connect(opacityVar, SIGNAL(activated(const QString &)),
@@ -672,11 +672,11 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     connect(opacityVarMin, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMin()));
     connect(opacityVarMax, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMax()));
-    cLayout->addWidget(opacityMaxToggle, cRow, 1);
-    cLayout->addWidget(opacityVarMax, cRow, 2);
-    cRow++;
     cLayout->addWidget(opacityMinToggle, cRow, 1);
     cLayout->addWidget(opacityVarMin, cRow, 2);
+    cRow++;
+    cLayout->addWidget(opacityMaxToggle, cRow, 1);
+    cLayout->addWidget(opacityVarMax, cRow, 2);
     cRow++;   
 }
 
