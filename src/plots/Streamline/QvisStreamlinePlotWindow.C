@@ -241,7 +241,8 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     //
     // Create the widget that lets the user set the point density.
     //
-    hLayout->addWidget(new QLabel(tr("Point density"), topPageSource), 1,0);
+    pointDensityLabel = new QLabel(tr("Point density"), topPageSource);
+    hLayout->addWidget(pointDensityLabel, 1,0);
     pointDensity = new QSpinBox(topPageSource);
     pointDensity->setMinimum(1);
     pointDensity->setMaximum(1000);
@@ -625,11 +626,11 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(legendMaxEdit, SIGNAL(returnPressed()), this, SLOT(processMaxLimitText()));
     connect(legendMinEdit, SIGNAL(returnPressed()), this, SLOT(processMinLimitText()));
     cLayout->addWidget(limitsLabel, cRow,0);
-    cLayout->addWidget(legendMaxToggle, cRow,1);
-    cLayout->addWidget(legendMaxEdit, cRow,2);
-    cRow++;
     cLayout->addWidget(legendMinToggle, cRow,1);
     cLayout->addWidget(legendMinEdit, cRow,2);
+    cRow++;
+    cLayout->addWidget(legendMaxToggle, cRow,1);
+    cLayout->addWidget(legendMaxEdit, cRow,2);
     cRow++;
 
     
@@ -1535,9 +1536,17 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     }
 
     if (usePoint || usePointList)
+    {
         pointDensity->setEnabled(false);
+        pointDensityLabel->hide();
+        pointDensity->hide();
+    }
     else
+    {
         pointDensity->setEnabled(true);
+        pointDensityLabel->show();
+        pointDensity->show();
+    }
 }
 
 // ****************************************************************************
