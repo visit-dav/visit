@@ -272,6 +272,10 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    was advertised in the contract.  (This can come up if you have
 //    a data set with different topological dimensions in different domains.)
 //
+//    Cyrus Harrison, Wed Mar  3 09:36:24 PST 2010
+//    Remove 'avtRealDims' Field Data Array from output dataset if it exists 
+//    b/c the face list filter invalidates them.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -284,6 +288,7 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 
     vtkDataSet *orig_in_ds = in_ds;
     bool shouldDeleteInDs = false;
+
     if (tDim == 3 && create3DCellNumbers)
     {
         in_ds = (vtkDataSet *) orig_in_ds->NewInstance();
@@ -374,6 +379,20 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         out_ds->Delete();
     }
 
+    //
+    // remove 'avtRealDims' field data from any datasets in the result datatree
+    // b/c they are now invalid.
+    //
+    if(*out_dt != NULL)
+    {
+        int nsets;
+        vtkDataSet **data_sets = out_dt->GetAllLeaves(nsets);
+        for(int i=0;i<nsets;i++)
+        {
+            if(data_sets[i]->GetFieldData()->GetArray("avtRealDims") != NULL)
+                data_sets[i]->GetFieldData()->RemoveArray("avtRealDims");
+        }
+    }
     return out_dt;
 }
 
