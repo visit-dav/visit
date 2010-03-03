@@ -115,7 +115,7 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
 int VisItSetActivateTimestep(int (*cb)(void *), void *cbdata);
 int VisItSetGetMetaData(int (*cb)(VisIt_SimulationMetaData *, void *), void *cbdata);
 int VisItSetGetMesh(visit_handle (*cb)(int, const char *, void *), void *cbdata);
-int VisItSetGetMaterial(int (*cb)(int, const char *, VisIt_MaterialData *, void *), void *cbdata);
+int VisItSetGetMaterial(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetSpecies(int (*cb)(int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
 int VisItSetGetVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetMixedVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);

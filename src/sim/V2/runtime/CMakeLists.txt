@@ -49,6 +49,7 @@ simv2_CSGMesh.C
 simv2_DomainBoundaries.C
 simv2_DomainList.C 
 simv2_DomainNesting.C
+simv2_MaterialData.C
 simv2_PointMesh.C
 simv2_RectilinearMesh.C
 simv2_UnstructuredMesh.C
