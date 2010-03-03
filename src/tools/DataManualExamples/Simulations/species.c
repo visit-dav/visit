@@ -43,14 +43,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <materialhelpers.h>
 
 #include "SimulationExample.h"
 
 /* Data Access Function prototypes */
 int SimGetMetaData(VisIt_SimulationMetaData *, void *);
 visit_handle SimGetMesh(int, const char *, void *);
-int SimGetMaterial(int, const char *, VisIt_MaterialData *, void *);
+visit_handle SimGetMaterial(int, const char *, void *);
 int SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdata);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetMixedVariable(int, const char *, void *);
@@ -514,44 +513,49 @@ SimGetMesh(int domain, const char *name, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetMaterial(int domain, const char *name, VisIt_MaterialData *mat, void *cbdata)
+visit_handle
+SimGetMaterial(int domain, const char *name, void *cbdata)
 {
-    int i, j, m, cell = 0, arrlen = 0;
-    VisIt_MaterialData *handle = NULL;
-    int nmats, cellmat[10], matnos[3];
-    float cellmatvf[10];
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     /* Allocate a VisIt_MaterialData */
-    VisIt_MaterialData_init(mat, (NX-1)*(NY-1), &arrlen);
-
-    /* Fill in the VisIt_MaterialData */
-    matnos[0] = VisIt_MaterialData_addMaterial(mat, matNames[0]);
-    matnos[1] = VisIt_MaterialData_addMaterial(mat, matNames[1]);
-    matnos[2] = VisIt_MaterialData_addMaterial(mat, matNames[2]);
-
-    for(j = 0; j < NY-1; ++j)
+    if(VisIt_MaterialData_alloc(&h) == VISIT_OKAY)
     {
-        for(i = 0; i < NX-1; ++i, ++cell)
+        int i, j, m, cell = 0, arrlen = 0;
+        int nmats, cellmat[10], matnos[3]={1,2,3};
+        float cellmatvf[10];
+
+        /* Tell the object we'll be adding cells to it using add*Cell functions */
+        VisIt_MaterialData_appendCells(h, (NX-1)*(NY-1));
+
+        /* Fill in the VisIt_MaterialData */
+        VisIt_MaterialData_addMaterial(h, matNames[0], &matnos[0]);
+        VisIt_MaterialData_addMaterial(h, matNames[1], &matnos[1]);
+        VisIt_MaterialData_addMaterial(h, matNames[2], &matnos[2]);
+
+        for(j = 0; j < NY-1; ++j)
         {
-            nmats = 0;
-            for(m = 0; m < 3; ++m)
+            for(i = 0; i < NX-1; ++i, ++cell)
             {
-                if(matlist[j][i][m] > 0)
+                nmats = 0;
+                for(m = 0; m < 3; ++m)
                 {
-                    cellmat[nmats] = matnos[matlist[j][i][m] - 1];
-                    cellmatvf[nmats] = mat_vf[j][i][m];
-                    nmats++;
-                }
-            }        
-            if(nmats > 1)
-                VisIt_MaterialData_addMixedCell(mat, cell, cellmat, cellmatvf, nmats, &arrlen);
-            else
-                VisIt_MaterialData_addCleanCell(mat, cell, cellmat[0]);
+                    if(matlist[j][i][m] > 0)
+                    {
+                        cellmat[nmats] = matnos[matlist[j][i][m] - 1];
+                        cellmatvf[nmats] = mat_vf[j][i][m];
+                        nmats++;
+                    }
+                }        
+                if(nmats > 1)
+                    VisIt_MaterialData_addMixedCell(h, cell, cellmat, cellmatvf, nmats);
+                else
+                    VisIt_MaterialData_addCleanCell(h, cell, cellmat[0]);
+            }
         }
     }
 
-    return VISIT_OKAY;
+    return h;
 }
 
 /******************************************************************************
@@ -572,25 +576,14 @@ SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdat
     int c, mixc, mfc, i, j;
     float *speciesMF = NULL;
 
-    spec->ndims = 2;
-    spec->dims[0] = NX-1;
-    spec->dims[1] = NY-1;
-    spec->nmaterialSpecies = 3;
-    spec->materialSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM,
-        nmaterialSpecies);
-    spec->materialSpeciesNames = SpeciesNames();
-
     species = (int *)malloc(100 * sizeof(int));
     memset(species, 0, 100 * sizeof(int));
-    spec->species = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, species);
 
     mixedSpecies = (int *)malloc(100 * sizeof(int));
     memset(mixedSpecies, 0, 100 * sizeof(int));
-    spec->mixedSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, mixedSpecies);
-
+    
     speciesMF = (float *)malloc(100 * sizeof(float));
     memset(speciesMF, 0, 100 * sizeof(float));
-    spec->speciesMF = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, speciesMF);
 
     c = 0;
     mixc = 0;
@@ -657,8 +650,39 @@ SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdat
             }
         }
     }
-    spec->nspeciesMF = mfc;
+
+    /*
+    VisIt_SpeciesData_setDimensions(h, dims, ndims);
+    int matid;
+    VisIt_SpeciesData_newMaterial(&matid);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][0]);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][1]);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][2]);
+    VisIt_SpeciesData_newMaterial(&matid);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][0]);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][1]);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][2]);
+    VisIt_SpeciesData_newMaterial(&matid);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][0]);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][1]);
+    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][2]);
+    */
+
+    spec->ndims = 2;
+    spec->dims[0] = NX-1;
+    spec->dims[1] = NY-1;
+    spec->nmaterialSpecies = 3;
+    spec->materialSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM,
+        nmaterialSpecies);
+    spec->materialSpeciesNames = SpeciesNames();
+
+    spec->species = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, species);
+
     spec->nmixedSpecies = mixc;
+    spec->mixedSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, mixedSpecies);
+
+    spec->nspeciesMF = mfc;
+    spec->speciesMF = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, speciesMF);
 
     return VISIT_OKAY;
 }

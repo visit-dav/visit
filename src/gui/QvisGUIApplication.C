@@ -594,6 +594,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Tom Fogal, Sun Jan 24 17:02:27 MST 2010
 //   Apply patch from Andreas Kloeckner to tell Qt the application name.
 //
+//   Brad Whitlock, Tue Mar  2 16:49:19 PST 2010
+//   Don't call setColorSpec for now.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -605,8 +608,16 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
 
+#if 0
+    // NOTE: On Ubuntu 9.10/64bit calling setColorSpec with a compositing 
+    // window manager causes Qt windows to be semi-transparent and they are 
+    // not drawn correctly unless shown over a black background. I'm for either
+    // getting rid of this code (since most displays are better than 256 colors
+    // now) or coming up with clever conditions for conditional compilation.
+
     // Tell Qt that we want lots of colors.
     QApplication::setColorSpec(QApplication::ManyColor);
+#endif
 
     // NULL out some window pointers.
     mainWin = 0;

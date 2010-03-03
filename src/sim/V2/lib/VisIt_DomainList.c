@@ -1,5 +1,6 @@
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
+#include "VisItFortran.h"
 
 int
 VisIt_DomainList_alloc(visit_handle *obj)
@@ -29,9 +30,10 @@ VisIt_DomainList_setDomains(visit_handle obj, int alldoms, visit_handle mydoms)
 }
 
 /************************** Fortran callable routines *************************/
-#define F_VISITDOMAINLISTALLOC         F77_ID(visitdomainlistalloc_,visitdomainlistalloc,VISITDOMAINLISTALLOC)
-#define F_VISITDOMAINLISTFREE          F77_ID(visitdomainlistfree_,visitdomainlistfree,VISITDOMAINLISTFREE)
-#define F_VISITDOMAINLISTSETDOMAINS    F77_ID(visitdomainlistsetdomains_,visitdomainlistsetdomains,VISITDOMAINLISTSETDOMAINS)
+/* maxlen 012345678901234567890123456789                                      */
+#define F_VISITDOMAINLISTALLOC           F77_ID(visitdomainlistalloc_,visitdomainlistalloc,VISITDOMAINLISTALLOC)
+#define F_VISITDOMAINLISTFREE            F77_ID(visitdomainlistfree_,visitdomainlistfree,VISITDOMAINLISTFREE)
+#define F_VISITDOMAINLISTSETDOMAINS      F77_ID(visitdomainlistsetdomains_,visitdomainlistsetdomains,VISITDOMAINLISTSETDOMAINS)
 
 int
 F_VISITDOMAINLISTALLOC(visit_handle *obj)

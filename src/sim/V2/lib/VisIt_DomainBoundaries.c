@@ -1,5 +1,6 @@
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
+#include "VisItFortran.h"
 
 int
 VisIt_DomainBoundaries_alloc(visit_handle *obj)
@@ -56,12 +57,13 @@ VisIt_DomainBoundaries_set_rectIndices(visit_handle obj, int dom, const int exte
 }
 
 /************************** Fortran callable routines *************************/
-#define F_VISITDBOUNDSALLOC          F77_ID(visitdboundsalloc_,visitdboundsalloc,VISITDBOUNDSALLOC)
-#define F_VISITDBOUNDSFREE           F77_ID(visitdboundsfree_,visitdboundsfree,VISITDBOUNDSFREE)
-#define F_VISITDBOUNDSSETTYPE        F77_ID(visitdboundssettype_,visitdboundssettype,VISITDBOUNDSSETTYPE)
-#define F_VISITDBOUNDSSETNUMDOMAINS  F77_ID(visitdboundssetnumdomains_,visitdboundssetnumdomains,VISITDBOUNDSSETNUMDOMAINS)
-#define F_VISITDBOUNDSSETAMRINDICES  F77_ID(visitdboundssetamrindices_,visitdboundssetamrindices,VISITDBOUNDSSETAMRINDICES)
-#define F_VISITDBOUNDSSETRECTINDICES F77_ID(visitdboundssetrectindices_,visitdboundssetrectindices,VISITDBOUNDSSETRECTINDICES)
+/* maxlen 012345678901234567890123456789                                      */
+#define F_VISITDBOUNDSALLOC              F77_ID(visitdboundsalloc_,visitdboundsalloc,VISITDBOUNDSALLOC)
+#define F_VISITDBOUNDSFREE               F77_ID(visitdboundsfree_,visitdboundsfree,VISITDBOUNDSFREE)
+#define F_VISITDBOUNDSSETTYPE            F77_ID(visitdboundssettype_,visitdboundssettype,VISITDBOUNDSSETTYPE)
+#define F_VISITDBOUNDSSETNUMDOMAINS      F77_ID(visitdboundssetnumdomains_,visitdboundssetnumdomains,VISITDBOUNDSSETNUMDOMAINS)
+#define F_VISITDBOUNDSSETAMRINDICES      F77_ID(visitdboundssetamrindices_,visitdboundssetamrindices,VISITDBOUNDSSETAMRINDICES)
+#define F_VISITDBOUNDSSETRECTINDICES     F77_ID(visitdboundssetrectindices_,visitdboundssetrectindices,VISITDBOUNDSSETRECTINDICES)
 
 int
 F_VISITDBOUNDSALLOC(visit_handle *obj)

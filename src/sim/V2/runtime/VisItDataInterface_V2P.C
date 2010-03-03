@@ -246,33 +246,6 @@ simv2_SimulationMetaData_free(VisIt_SimulationMetaData *obj)
 
 
 int
-simv2_MaterialData_free(VisIt_MaterialData *obj)
-{
-    if(obj == NULL)
-        return VISIT_ERROR;
-
-    FREE(obj->materialNumbers);
-
-    if(obj->materialNames != NULL)
-    {
-        int i;
-        for(i = 0; i < obj->nMaterials; ++i)
-            FREE(obj->materialNames[i]);
-        FREE(obj->materialNames);
-    }
-
-    simv2_DataArray_free(&obj->matlist);
-    simv2_DataArray_free(&obj->mix_mat);
-    simv2_DataArray_free(&obj->mix_zone);
-    simv2_DataArray_free(&obj->mix_next);
-    simv2_DataArray_free(&obj->mix_vf);
-
-    FREE(obj);
-
-    return VISIT_OKAY;
-}
-
-int
 simv2_SpeciesData_free(VisIt_SpeciesData *obj)
 {
     if(obj == NULL)

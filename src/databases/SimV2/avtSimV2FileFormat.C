@@ -93,6 +93,7 @@ using std::vector;
 #include <simv2_DomainBoundaries.h>
 #include <simv2_DomainList.h>
 #include <simv2_DomainNesting.h>
+#include <simv2_MaterialData.h>
 #include <simv2_VariableData.h>
 
 #ifndef MDSERVER
@@ -1081,19 +1082,9 @@ avtSimV2FileFormat::GetAuxiliaryData(const char *var, int domain,
 //      varname    The name of the material variable requested.
 //
 //  Programmer:  Brad Whitlock
-//  Creation:    April 11, 2005
+//  Creation:    Tue Mar  2 11:49:42 PST 2010
 //
 //  Modifications:
-//    Brad Whitlock, Thu Apr 28 18:00:32 PDT 2005
-//    Added true data array structures in place of raw array pointers.
-//
-//    Brad Whitlock, Fri Jan 18 10:22:59 PST 2008
-//    Added code to detect when the material numbers are not 0..N so we can
-//    use a constructor that will reorder them into that range so VisIt will
-//    be happy.
-//
-//    Brad Whitlock, Tue Feb 10 11:34:10 PST 2009
-//    Changed material structure and added code to free data.
 //
 // ****************************************************************************
 
@@ -1105,66 +1096,111 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
 #else
     const char *mName = "avtSimV2FileFormat::GetMaterial: ";
 
-    VisIt_MaterialData *md = simv2_invoke_GetMaterial(domain,varname);
-    if (!md)
+    visit_handle h = simv2_invoke_GetMaterial(domain,varname);
+    if (h == VISIT_INVALID_HANDLE)
+    {
+        debug1 << mName << "An invalid handle was given for the material" << endl;
         return NULL;
-
-    if (md->matlist.dataType != VISIT_DATATYPE_INT)
-    {
-        simv2_MaterialData_free(md);
-        EXCEPTION1(ImproperUseException, "matlist array must be integers");
-    }
-    if (md->mix_mat.dataType != VISIT_DATATYPE_INT)
-    {
-        simv2_MaterialData_free(md);
-        EXCEPTION1(ImproperUseException, "mix_mat array must be integers");
-    }
-    if (md->mix_zone.dataType != VISIT_DATATYPE_INT)
-    {
-        simv2_MaterialData_free(md);
-        EXCEPTION1(ImproperUseException, "mix_zone array must be integers");
-    }
-    if (md->mix_next.dataType != VISIT_DATATYPE_INT)
-    {
-        simv2_MaterialData_free(md);
-        EXCEPTION1(ImproperUseException, "mix_next array must be integers");
-    }
-    if (md->mix_vf.dataType != VISIT_DATATYPE_FLOAT)
-    {
-        simv2_MaterialData_free(md);
-        EXCEPTION1(ImproperUseException, "mix_vf array must be floats");
     }
 
-    vector<string> matNames(md->nMaterials);
-    for (int m=0; m<md->nMaterials; m++)
-        matNames[m] = md->materialNames[m];
+    int nMaterials = 0;
+    if(simv2_MaterialData_getNumMaterials(h, nMaterials) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not query number of materials" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
 
-    avtMaterial *mat = 0;
+    // Get the material names
+    vector<string> matNames(nMaterials);
+    int *materialNumbers = new int[nMaterials];
+    char matName[100];
+    for (int m=0; m < nMaterials; m++)
+    {
+        if(simv2_MaterialData_getMaterial(h, m, materialNumbers[m], matName, 
+            100) == VISIT_ERROR)
+        {
+            debug1 << mName << "Could not get material " << m << endl;
+            simv2_FreeObject(h);
+            return NULL;
+        }
+        matNames[m] = string(matName);
+    }
+
+    // Get the materials
+    visit_handle mHandles[5];
+    if(simv2_MaterialData_getMaterials(h, mHandles[0]) == VISIT_ERROR)
+    {
+        debug1 << mName << "could not get material from MaterialData" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    // Get the mixed materials
+    if(simv2_MaterialData_getMixedMaterials(h, mHandles[1], mHandles[2], 
+        mHandles[3], mHandles[4]) == VISIT_ERROR)
+    {
+        debug1 << "Could not get mixed materials from MaterialData" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    // Get the actual data from the materials
+    int owner, dataType[5]={0,0,0,0,0}, nComps[5]={0,0,0,0,0};
+    int nTuples[5]={0,0,0,0,0};
+    void *data[5] = {NULL,NULL,NULL,NULL,NULL};
+    if(simv2_VariableData_getData(mHandles[0], owner, dataType[0], nComps[0], 
+        nTuples[0], data[0]) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not access variable data for matlist" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+    bool haveMixedMaterials = mHandles[1] != VISIT_INVALID_HANDLE;
+    if(haveMixedMaterials)
+    {
+        for(int i = 1; i < 5; ++i)
+        {
+           if(simv2_VariableData_getData(mHandles[i], owner, dataType[i],
+               nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
+           {
+               debug1 << mName << "Could not access mixed material data" << endl;
+               simv2_FreeObject(h);
+               return NULL;
+           }
+        }
+    }
+    const int *matlist = (const int *)data[0];
+    const int *mix_mat = (const int *)data[1];
+    const int *mix_zone = (const int *)data[2];
+    const int *mix_next = (const int *)data[3];
+    const float *mix_vf = (const float *)data[4];
+
     // Scan the material numbers to see if they are 0..N-1. If not then use
     // the contructor that will perform re-ordering.
-    bool *matUsed = new bool[md->nMaterials];
-    bool reorderRequired = false;
-    int i;
-    for(int i = 0; i < md->nMaterials; ++i)
+    bool *matUsed = new bool[nMaterials];
+    for(int i = 0; i < nMaterials; ++i)
         matUsed[i] = false;
-    for(int i = 0; i < md->nzones; ++i)
+
+    bool reorderRequired = false;
+    for(int i = 0; i < nTuples[0]; ++i)
     {
-        if(md->matlist.iArray[i] < 0)
+        if(matlist[i] < 0)
             continue;
-        else if(md->matlist.iArray[i] >= 0 && md->matlist.iArray[i] < md->nMaterials)
-            matUsed[md->matlist.iArray[i]] = true;
+        else if(matlist[i] >= 0 && matlist[i] < nMaterials)
+            matUsed[matlist[i]] = true;
         else
         {
             reorderRequired = true;
             break;
         }
     }
-    if(!reorderRequired)
-    {
-        for(i = 0; i < md->mixlen; ++i)
+    if(haveMixedMaterials && !reorderRequired)
+    {        
+        for(int i = 0; i < nTuples[1]; ++i)
         {
-            if(md->mix_mat.iArray[i] >= 0 && md->mix_mat.iArray[i] < md->nMaterials)
-                matUsed[md->mix_mat.iArray[i]] = true;
+            if(mix_mat[i] >= 0 && mix_mat[i] < nMaterials)
+                matUsed[mix_mat[i]] = true;
             else
             {
                 reorderRequired = true;
@@ -1175,44 +1211,50 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
     if(!reorderRequired)
     {
         bool allUsed = true;
-        for(i = 0; i < md->nMaterials; ++i)
+        for(int i = 0; i < nMaterials; ++i)
             allUsed &= matUsed[i];
         reorderRequired = !allUsed;
     }
     delete [] matUsed;
 
+    avtMaterial *mat = 0;
     if(reorderRequired)
     {
         debug5 << mName << "Reordering of material numbers is needed." << endl;
-        mat = new avtMaterial(md->nMaterials,
-                              md->materialNumbers,
-                              (char **)md->materialNames,
+        char **matnames = new char *[nMaterials];
+        for(int i = 0; i < nMaterials; ++i)
+            matnames[i] = (char *)matNames[i].c_str(); // for sake of avtMaterial
+        mat = new avtMaterial(nMaterials,
+                              materialNumbers,
+                              matnames,
                               1,
-                              &md->nzones,
+                              &nTuples[0], // #zones
                               0,
-                              md->matlist.iArray,
-                              md->mixlen,
-                              md->mix_mat.iArray,
-                              md->mix_next.iArray,
-                              md->mix_zone.iArray,
-                              md->mix_vf.fArray,
+                              matlist,
+                              nTuples[1], // mixlen
+                              mix_mat,
+                              mix_next,
+                              mix_zone,
+                              mix_vf,
                               "domain", 1);
+        delete [] matnames;
     }
     else
     {
         debug5 << mName << "No reordering of material numbers is needed." << endl;
-        mat = new avtMaterial(md->nMaterials,
+        mat = new avtMaterial(nMaterials,
                               matNames,
-                              md->nzones,
-                              md->matlist.iArray,
-                              md->mixlen,
-                              md->mix_mat.iArray,
-                              md->mix_next.iArray,
-                              md->mix_zone.iArray,
-                              md->mix_vf.fArray);
+                              nTuples[0], // #zones
+                              matlist,
+                              nTuples[1], // mixlen
+                              mix_mat,
+                              mix_next,
+                              mix_zone,
+                              mix_vf);
     }
 
-    simv2_MaterialData_free(md);
+    delete [] materialNumbers;
+    simv2_FreeObject(h);
 
     return mat;
 #endif

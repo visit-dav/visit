@@ -10,7 +10,7 @@
    DECL(ActivateTimestep,    int (*ARG(ActivateTimestep))(void *)) \
    DECL(GetMetaData,         int (*ARG(GetMetaData))(VisIt_SimulationMetaData *, void *)) \
    DECL(GetMesh,             visit_handle (*ARG(GetMesh))(int, const char *, void *)) \
-   DECL(GetMaterial,         int (*ARG(GetMaterial))(int, const char *, VisIt_MaterialData *, void *)) \
+   DECL(GetMaterial,         visit_handle (*ARG(GetMaterial))(int, const char *, void *)) \
    DECL(GetSpecies,          int (*ARG(GetSpecies))(int, const char *, VisIt_SpeciesData *, void *)) \
    DECL(GetVariable,         visit_handle (*ARG(GetVariable))(int, const char *, void *)) \
    DECL(GetMixedVariable,    visit_handle (*ARG(GetMixedVariable))(int, const char *, void *)) \

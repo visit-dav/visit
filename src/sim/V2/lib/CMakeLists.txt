@@ -41,12 +41,14 @@
 SET(LIBSIM_SOURCES
 VisItControlInterface_V2.c 
 SimV2Tracing.c
+VisItFortran.c
 VisIt_CSGMesh.c
 VisIt_CurveData.c
 VisIt_CurvilinearMesh.c
 VisIt_DomainBoundaries.c 
 VisIt_DomainList.c
 VisIt_DomainNesting.c
+VisIt_MaterialData.c
 VisIt_PointMesh.c
 VisIt_RectilinearMesh.c
 VisIt_UnstructuredMesh.c
