@@ -267,7 +267,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     topLayout->addSpacing(5);
 
     //
-    // Create Limits stuff .
+    // Create Limits stuff.
     //
     QGridLayout *limitsLayout = new QGridLayout(0);
     topLayout->addLayout(limitsLayout);
@@ -285,13 +285,13 @@ QvisSurfacePlotWindow::CreateWindowContents()
 
     // Create the max toggle and line edit
     maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 2);
+    limitsLayout->addWidget(maxToggle, 1, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 3);
+    limitsLayout->addWidget(maxLineEdit, 1, 2, 1, 3);
 
     // Create the min toggle and line edit
     minToggle = new QCheckBox(tr("Minimum"), central);
