@@ -537,6 +537,10 @@ IF(VISIT_TUVOK)
     SET(TUVOK_LIB tuvok ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} GLEW)
 ENDIF(VISIT_TUVOK)
 
+# Set up boost (interval) library
+SET(HAVE_BILIB 1)
+SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost/interval)
+
 # Set up the SLIVR library if it was enabled.
 IF(VISIT_SLIVR)
     SET(SLIVR_INCLUDE_DIR 

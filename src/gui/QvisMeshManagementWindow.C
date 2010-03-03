@@ -142,6 +142,9 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Jeremy Meredith, Fri Feb 26 14:13:08 EST 2010
 //   Added a new "multi-pass" discretization algorithm
 //
+//   Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
+//   Changed form of conditional compilation check for HAVE_BILIB from
+//   numeric test to existence test.
 // ****************************************************************************
 
 void
@@ -186,7 +189,7 @@ QvisMeshManagementWindow::CreateWindowContents()
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
     discretizeAdaptive = new QRadioButton(tr("Adaptive"), pageCSGGroup);
     discretizationMode->addButton(discretizeAdaptive,1);
-#if !HAVE_BILIB
+#ifndef HAVE_BILIB
     discretizeAdaptive->setEnabled(false);
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
@@ -249,6 +252,9 @@ QvisMeshManagementWindow::CreateWindowContents()
 //   Jeremy Meredith, Fri Feb 26 14:13:08 EST 2010
 //   Added a new "multi-pass" discretization algorithm
 //
+//   Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
+//   Changed form of conditional compilation check for HAVE_BILIB from
+//   numeric test to existence test.
 // ****************************************************************************
 
 void
@@ -295,7 +301,7 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 }
                 else if (dMode == MeshManagementAttributes::Adaptive)
                 {
-#if HAVE_BILIB
+#ifdef HAVE_BILIB
                     discretizationMode->button(1)->setChecked(true);
                     flatEnoughLineEdit->setEnabled(true);
 #else
@@ -505,7 +511,7 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
     else if (val == 1)
     {
-#if HAVE_BILIB
+#ifdef HAVE_BILIB
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
 #else
         GUIBase::Warning(tr("Adaptive not available. "
