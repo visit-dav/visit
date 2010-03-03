@@ -240,6 +240,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *useWholeBox;
     QLineEdit *boxExtents[3];
     QLabel    *boxExtentsLabel[3];
+    QLabel    *pointDensityLabel;
     QSpinBox  *pointDensity;
     QComboBox *displayMethod;
     QCheckBox *showSeeds, *showHeads;
