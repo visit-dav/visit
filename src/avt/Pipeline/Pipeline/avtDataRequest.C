@@ -176,6 +176,9 @@ using     std::map;
 //    Jeremy Meredith, Tue Aug  4 10:48:26 EDT 2009
 //    Added comment for Youngs algorithm.
 //
+//    Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
+//    Changed form of conditional compilation check for HAVE_BILIB from
+//    numeric test to existence test.
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -210,7 +213,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needNativePrecision = false;
     discTol = 0.01;
     flatTol = 0.05;
-#if HAVE_BILIB
+#ifdef HAVE_BILIB
     discMode = 1; // adaptive
 #else
     discMode = 0; // uniform 
@@ -1551,13 +1554,17 @@ avtDataRequest::GetAdmissibleDataTypes() const
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Made it more robust if FI library not available. 
+//
+//    Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
+//    Changed form of conditional compilation check for HAVE_BILIB from
+//    numeric test to existence test.
 // ****************************************************************************
 
 void
 avtDataRequest::SetDiscMode(int mode)
 {
     discMode = mode;
-#if !HAVE_BILIB
+#ifndef HAVE_BILIB
     if (discMode == 1) // Adaptive
     {
         debug1 << "Adaptive not available. "

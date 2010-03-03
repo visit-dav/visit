@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -35,78 +35,51 @@
 # DAMAGE.
 #
 # Modifications:
+#   Eric Brugger, Fri Jan 22 16:51:39 PST 2010
+#   I added the data generator unic, which generates UNIC test data.
+#
+#   Mark C. Miller, Fri Jan 22 16:40:43 PST 2010
+#   Added function LINK_DATA_TARGETS and invokation to create sesame.pdb.lnk
+#   and largefile.silo.lnk.
+#
+#   Mark C. Miller, Fri Jan 22 17:27:47 PST 2010
+#   Removed preceding change to satisfy purists ;)
+#
+#   Cyrus Harrison, Mon Feb  1 12:46:56 PST 2010
+#   Added missing visit includes to basic targets.
+#
+#   Brad Whitlock, Wed Feb 10 14:44:23 PST 2010
+#   I added Velodyne test data.
 #
 #****************************************************************************/
+cmake_minimum_required(VERSION 2.6)
 
-SET(VISIT_VTK_SOURCES
-InitVTK.C
-vtkAxisDepthSort.C
-vtkBinaryPartitionVolumeFromVolume.C
-vtkCSGCell.C
-vtkCSGGrid.C
-vtkConnectedTubeFilter.C
-vtkDataSetRemoveGhostCells.C
-vtkDisjointCubesFacelistFilter.C
-vtkLineoutFilter.C
-vtkLinesFromOriginalCells.C
-vtkOBJWriter.C
-vtkOnionPeelFilter.C
-vtkPPMWriter.C
-vtkPolyDataOnionPeelFilter.C
-vtkRGBWriter.C
-vtkRectilinearGridFacelistFilter.C
-vtkRectilinearLinesNoDataFilter.C
-vtkSlicer.C
-vtkStructuredGridFacelistFilter.C
-vtkSurfaceFilter.C
-vtkSurfaceFromVolume.C
-vtkTensorReduceFilter.C
-vtkUniqueFeatureEdges.C
-vtkUnstructuredGridRelevantPointsFilter.C
-vtkVectorGlyph.C
-vtkVectorReduceFilter.C
-vtkVertexFilter.C
-vtkVisItCellDataToPointData.C
-vtkVisItClipper.C
-vtkVisItContourFilter.C
-vtkVisItCutter.C
-vtkVisItExtractGrid.C
-vtkVisItExtractRectilinearGrid.C
-vtkVisItFeatureEdges.C
-vtkVisItGlyph3D.C
-vtkVisItInterpolatedVelocityField.C
-vtkVisItPolyDataNormals.C
-vtkVisItProbeFilter.C
-vtkVisItRectilinearGrid.C
-vtkVisItSTLWriter.C
-vtkVisItScalarTree.C
-vtkVisItSplitter.C
-vtkVisItStreamLine.C
-vtkVisItStructuredGrid.C
-vtkVisItStructuredGridNormals.C
-vtkVisItTIFFWriter.C
-vtkVisItTensorGlyph.C
-vtkVolumeFromVolume.C
-)
+#-----------------------------------------------------------------------------
+# Discover the proper untar command.
+#
+# "cmake -E tar" supports untaring for normal & gzipped tarballs.
+# Unfortunately it is very slow so we only use it as a fallback.
+#
+#-----------------------------------------------------------------------------
+FIND_PROGRAM(TAR_EXE tar)
+IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+    SET(UNTAR_CMD ${TAR_EXE})
+    SET(UNTAR_ARGS "-xzvf")
+ELSE(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+    SET(UNTAR_CMD "cmake")
+    SET(UNTAR_ARGS "-E tar -xzvf")
+ENDIF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
 
+#-----------------------------------------------------------------------------
+# Add a custom command to extract each archived dataset & collect
+# output directory names in a dependency list.
+#-----------------------------------------------------------------------------
+EXECUTE_PROCESS(COMMAND ${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/boost.tar.gz
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                OUTPUT_VARIABLE BOOST_FILES)
 
-INCLUDE_DIRECTORIES(
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/include
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
-${VISIT_SOURCE_DIR}/common/misc
-${VISIT_SOURCE_DIR}/common/utility
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/third_party_builtin/bilib
-${VTK_INCLUDE_DIRS}
-)
-
-# Add link directories needed to use our libraries and VTK.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
-
-ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
-TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkGraphics vtkImaging vtktiff)
-
-VISIT_INSTALL_TARGETS(visit_vtk)
+INSTALL(FILES ${BOOST_FILES}
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/boost
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ             WORLD_EXECUTE)
