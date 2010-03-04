@@ -5,8 +5,12 @@
 #ifndef PARADIS_STREAMING_H
 #define PARADIS_STREAMING_H
 
+#ifndef WIN32
 #include <unistd.h>
-#include <stdint.h>
+#endif
+#include <boost/cstdint.hpp>
+using boost::uint8_t
+using boost::uint32_t
 #include <stdio.h>
 #include <vector>
 #include <set>
