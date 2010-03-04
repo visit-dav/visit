@@ -28,10 +28,10 @@ struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
 VisIt_CurvilinearMesh::VisIt_CurvilinearMesh() : VisIt_ObjectBase(VISIT_CURVILINEAR_MESH)
 {
     ndims = 0;
-    dims[0] = dims[1] = dims[2];
+    dims[0] = dims[1] = dims[2] = 0;
     baseIndex[0] = baseIndex[1] = baseIndex[2] = 0;
     minRealIndex[0] = minRealIndex[1] = minRealIndex[2] = 0;
-    maxRealIndex[0] = maxRealIndex[1] = maxRealIndex[2] = 0;
+    maxRealIndex[0] = maxRealIndex[1] = maxRealIndex[2] = -1;
 
     coordMode = VISIT_COORD_MODE_SEPARATE;
     xcoords = VISIT_INVALID_HANDLE;
@@ -214,7 +214,7 @@ simv2_CurvilinearMesh_setCoordsXYZ(visit_handle h, int dims[3], visit_handle x, 
 }
 
 static int
-simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int dims[3], 
+simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int ndims, int dims[3], 
     visit_handle coords, const char *fname)
 {
     // Get the coordinates
@@ -228,9 +228,9 @@ simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int dims[3],
     }
 
     // Error checking.
-    if(nComps != 2 || nComps != 3)
+    if(nComps != ndims)
     {
-        VisItError("Interleaved coordinates must have 2 or 3 components");
+        VisItError("Interleaved coordinates nTuples must match the number of dimensions.");
         return VISIT_ERROR;
     }
     if(dataType != VISIT_DATATYPE_FLOAT &&
@@ -258,7 +258,9 @@ simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int dims[3],
         obj->coordMode = VISIT_COORD_MODE_INTERLEAVED;
         obj->FreeCoordinates();
         obj->coords = coords;
-
+        obj->dims[0] = dims[0];
+        obj->dims[1] = dims[1];
+        obj->dims[2] = (ndims == 3) ? dims[2] : 1;
         retval = VISIT_OKAY;
     }
     return retval;
@@ -270,14 +272,14 @@ simv2_CurvilinearMesh_setCoords2(visit_handle h, int dims[2], visit_handle coord
     int tmp[3] = {0,0,1};
     tmp[0] = dims[0];
     tmp[1] = dims[1];
-    return simv2_CurvilinearMesh_setAllCoords_helper(h, tmp, coords,
+    return simv2_CurvilinearMesh_setAllCoords_helper(h, 2, tmp, coords,
         "simv2_CurvilinearMesh_setCoords2");
 }
 
 int
 simv2_CurvilinearMesh_setCoords3(visit_handle h, int dims[3], visit_handle coords)
 {
-    return simv2_CurvilinearMesh_setAllCoords_helper(h, dims, coords,
+    return simv2_CurvilinearMesh_setAllCoords_helper(h, 3, dims, coords,
         "simv2_CurvilinearMesh_setCoords3");
 }
 
@@ -356,7 +358,8 @@ simv2_CurvilinearMesh_getData(visit_handle h,
         {
             dims[i] = obj->dims[i];
             min[i] = obj->minRealIndex[i];
-            max[i] = obj->maxRealIndex[i];
+            max[i] = (obj->maxRealIndex[i]==-1) ? (obj->dims[i]-1) :
+                obj->maxRealIndex[i];
             base_index[i] = obj->baseIndex[i];
         }
         retval = VISIT_OKAY;

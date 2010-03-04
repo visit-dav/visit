@@ -206,7 +206,7 @@ simv2_PointMesh_setCoords(visit_handle h, visit_handle coords)
     }
 
     // Error checking.
-    if(nComps != 2 || nComps != 3)
+    if(nComps != 2 && nComps != 3)
     {
         VisItError("Interleaved coordinates must have 2 or 3 components");
         return VISIT_ERROR;
@@ -223,9 +223,6 @@ simv2_PointMesh_setCoords(visit_handle h, visit_handle coords)
         obj->ndims = nComps;
         obj->coordMode = VISIT_COORD_MODE_INTERLEAVED;
         obj->FreeCoordinates();
-        obj->xcoords = VISIT_INVALID_HANDLE;
-        obj->ycoords = VISIT_INVALID_HANDLE;
-        obj->zcoords = VISIT_INVALID_HANDLE;
         obj->coords = coords;
 
         retval = VISIT_OKAY;
@@ -250,7 +247,7 @@ simv2_PointMesh_getData(visit_handle h, int &ndims, int &coordMode,
         x = obj->xcoords;
         y = obj->ycoords;
         z = obj->zcoords;
-        coords = obj->xcoords;
+        coords = obj->coords;
 
         retval = VISIT_OKAY;
     }

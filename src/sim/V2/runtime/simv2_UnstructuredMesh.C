@@ -219,7 +219,7 @@ simv2_UnstructuredMesh_setCoords(visit_handle h, visit_handle coords)
     }
 
     // Error checking.
-    if(nComps != 2 || nComps != 3)
+    if(nComps != 2 && nComps != 3)
     {
         VisItError("Interleaved coordinates must have 2 or 3 components");
         return VISIT_ERROR;

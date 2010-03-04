@@ -462,7 +462,7 @@ simv2_invoke_GetMesh(int dom, const char *name)
                 err = simv2_CSGMesh_check(h);
                 break;
             case VISIT_CURVILINEAR_MESH:
-                err = simv2_RectilinearMesh_check(h);
+                err = simv2_CurvilinearMesh_check(h);
                 break;
             case VISIT_RECTILINEAR_MESH:
                 err = simv2_RectilinearMesh_check(h);
