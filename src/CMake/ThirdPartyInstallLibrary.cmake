@@ -120,7 +120,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 SET(curNAME "${curPATH}/${curNAMEWE}")
                 # Come up with all of the possible library and symlink names
                 SET(allNAMES "${curNAME}${LIBEXT}")
-                SET(allNAMES "${curNAME}.a")
+                SET(allNAMES ${allNAMES} "${curNAME}.a")
                 FOREACH(X ${extList})
                     SET(curNAME "${curNAME}.${X}")
                     SET(allNAMES ${allNAMES} "${curNAME}")           # Linux way
