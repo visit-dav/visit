@@ -56,6 +56,10 @@
 #    I added back the paraDIS and paraDIS_tecplot plugins to the build since
 #    they now build.
 #
+#    Eric Brugger, Thu Mar  4 14:31:45 PST 2010
+#    I deleted the PlasmaState plugin from the build since it no longer
+#    exists.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -129,7 +133,7 @@ XDMF
 )
 THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)
 THIRDPARTY_DEPENDENT_PLUGINS(MILI     Mili)
-THIRDPARTY_DEPENDENT_PLUGINS(NETCDF   NETCDF PlasmaState S3D)
+THIRDPARTY_DEPENDENT_PLUGINS(NETCDF   NETCDF S3D)
 IF (NOT WIN32)
     THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI Vista)
 ELSE (NOT WIN32)
