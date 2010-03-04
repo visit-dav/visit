@@ -73,14 +73,12 @@
 #define DEBUG 1
 
 /* now for the API */  
-#ifndef WIN32
-#include <stdint.h>
-#else
-typedef __int8  int8_t;
-typedef __int16 int16_t;
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-#endif
+#include <boost/cstdint.hpp>
+using boost::int8_t;
+using boost::int16_t;
+using boost::int32_t;
+using boost::uint32_t;
+
 #include <stdio.h>
 #include <vector>
 #include <set>
@@ -114,7 +112,7 @@ namespace paraDIS {
   //============================================================
   class NodeID {  
   public: 
-    NodeID() {mDomainID = mNodeID = -1; }
+    NodeID() {mDomainID = -1; mNodeID = -1; }
     NodeID(const NodeID &other) {
       mDomainID = other.mDomainID;
       mNodeID = other.mNodeID;

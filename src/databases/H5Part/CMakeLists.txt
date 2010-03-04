@@ -70,6 +70,7 @@ ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
+${BOOST_INCLUDE_DIR} 
 )
 
 IF(WIN32)
