@@ -13,6 +13,14 @@
         Fast
         High
       </Enum>
+      <Enum name="MeshColor">
+        Foreground
+        MeshColorTable
+      </Enum>
+      <Enum name="OpaqueColor">
+        Background
+        OpaqueColorTable        
+      </Enum>
       <Enum name="OpaqueMode">
         Auto
         On
@@ -39,6 +47,12 @@
       <Field name="errorTolerance" label="Tolerance" type="double">
         0.010000
       </Field>
+      <Field name="meshColorSource" label="Mesh Color" type="enum" subtype="MeshColor">
+        Foreground
+      </Field>
+      <Field name="opaqueColorSource" label="Opaque Color" type="enum" subtype="OpaqueColor">
+        Background
+      </Field>
       <Field name="opaqueMode" label="Opaque mode" type="enum" subtype="OpaqueMode">
         Auto
       </Field>
@@ -50,12 +64,6 @@
         255
         255
         255
-      </Field>
-      <Field name="backgroundFlag" label="Use Background " type="bool">
-        true
-      </Field>
-      <Field name="foregroundFlag" label="Use Foreground " type="bool">
-        true
       </Field>
       <Field name="smoothingLevel" label="Smoothing" type="enum" subtype="SmoothingLevel">
         None
