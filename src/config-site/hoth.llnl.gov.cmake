@@ -18,6 +18,9 @@
 ## Mark C. Miller, Wed Jan 20 16:46:09 PST 2010
 ## Added (commented out) logic to build just the ITAPS_C plugin itself
 ## (not a copy) against MOAB.
+##
+## Eric Brugger, Wed Mar  3 17:11:44 PST 2010
+## Updated H5Part to 1.6.0 and HDF5 to 1.8.4.
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
