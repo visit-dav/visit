@@ -584,6 +584,10 @@ $0 = shift @ARGV;
 #    Hank Childs, Sun Feb 21 12:15:49 CST 2010
 #    Fix some way-ness issues on longhorn.
 #
+#    Eric Brugger, Thu Mar  4 13:51:50 PST 2010
+#    I modified the script so that it would properly launch VisIt in
+#    parallel on xchem.llnl.gov.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1615,6 +1619,20 @@ if ( $host =~ /^hopper/ )
 }
 
 # ----
+# HACK for xchem @ LLNL
+#
+# ----
+$IsRunningOnXchemLLNL = 0;
+if ( $host =~ /^xchem.llnl.gov/ )
+{
+    $IsRunningOnXchemLLNL = 1;
+    $ENV{LD_LIBRARY_PATH} = join ':' ,
+        ("/opt/intel/cc/10.1.021/lib",
+         "opt/intel/cc/10.1.021/lib",
+         "/opt/llnl/mpich2_shared/ch3-ssm/lib");
+}
+
+# ----
 # HACK for yana and hopi @ LLNL
 #
 # ----
@@ -2527,6 +2545,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 if ($IsRunningOnSaguaro_ASU)
                 {
                     @mpicmd = ("/packages/gcc-openmpi-1.2.7/bin/mpiexec");
+                }
+                elsif ($IsRunningOnXchemLLNL)
+                {
+                    @mpicmd = ("/opt/mpiexec/bin/mpiexec");
                 }
                 else
                 {
