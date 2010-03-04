@@ -88,37 +88,37 @@ VisIt_CurvilinearMesh_setBaseIndex(visit_handle obj, int base_index[3])
 int
 F_VISITCURVMESHALLOC(visit_handle *obj)
 {
-    return VisIt_CURVMESH_alloc(obj);
+    return VisIt_CurvilinearMesh_alloc(obj);
 }
 
 int
 F_VISITCURVMESHFREE(visit_handle *obj)
 {
-    return VisIt_CURVMESH_free(*obj);
+    return VisIt_CurvilinearMesh_free(*obj);
 }
 
 int
 F_VISITCURVMESHSETCOORDSXY(visit_handle *obj, int *dims, visit_handle *x, visit_handle *y)
 {
-    return VisIt_CURVMESH_setCoordsXY(*obj, dims, *x, *y);
+    return VisIt_CurvilinearMesh_setCoordsXY(*obj, dims, *x, *y);
 }
 
 int
 F_VISITCURVMESHSETCOORDSXYZ(visit_handle *obj, int *dims, visit_handle *x, visit_handle *y, visit_handle *z)
 {
-    return VisIt_CURVMESH_setCoordsXYZ(*obj, dims, *x, *y, *z);
+    return VisIt_CurvilinearMesh_setCoordsXYZ(*obj, dims, *x, *y, *z);
 }
 
 int
 F_VISITCURVMESHSETCOORDS2(visit_handle *obj, int *dims, visit_handle *c)
 {
-    return VisIt_CURVMESH_setCoords2(*obj, dims, *c);
+    return VisIt_CurvilinearMesh_setCoords2(*obj, dims, *c);
 }
 
 int
 F_VISITCURVMESHSETCOORDS3(visit_handle *obj, int *dims, visit_handle *c)
 {
-    return VisIt_CURVMESH_setCoords3(*obj, dims, *c);
+    return VisIt_CurvilinearMesh_setCoords3(*obj, dims, *c);
 }
 
 int
@@ -128,7 +128,7 @@ F_VISITCURVMESHSETBASEINDEX(visit_handle *obj, int *base_index)
     tmp[0] = base_index[0];
     tmp[1] = base_index[1];
     tmp[2] = base_index[2];
-    return VisIt_CURVMESH_setBaseIndex(*obj, tmp);
+    return VisIt_CurvilinearMesh_setBaseIndex(*obj, tmp);
 }
 
 int
@@ -141,6 +141,6 @@ F_VISITCURVMESHSETREALINDICES(visit_handle *obj, int *mins, int *maxs)
     tmpMax[0] = maxs[0];
     tmpMax[1] = maxs[1];
     tmpMax[2] = maxs[2];
-    return VisIt_CURVMESH_setRealIndices(*obj, tmpMin, tmpMax);
+    return VisIt_CurvilinearMesh_setRealIndices(*obj, tmpMin, tmpMax);
 }
 
