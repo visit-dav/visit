@@ -241,6 +241,10 @@ avtGenericDatabase::GetFilename(int ts)
 //    Change substitutions for (, }, [, ], <, and > to use an underscore,
 //    instead of { & }, since that was screwing up expressions.
 //
+//    Dave Pugmire, Thu Mar  4 10:27:17 EST 2010
+//    Ensure that naming collisions don't occur. Previously ()[]<> all mapped
+//    to '_'.
+//
 // ****************************************************************************
 
 void
@@ -270,19 +274,19 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
     replacementStrs.push_back("_colon_");
 
     forbiddenChars.push_back('[');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("_lb_");
     forbiddenChars.push_back(']');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("_rb_");
 
     forbiddenChars.push_back('<');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("_la_");
     forbiddenChars.push_back('>');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("_ra_");
 
     forbiddenChars.push_back('(');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("_lp_");
     forbiddenChars.push_back(')');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("_rp_");
 
     md->ReplaceForbiddenCharacters(forbiddenChars, replacementStrs);
 }

@@ -3697,6 +3697,7 @@ avtDatabaseMetaData::IsTimeAccurate(int ts) const
 //  Modifications:
 //    Mark C. Miller, Tue Mar  6 23:40:10 PST 2007
 //    Corrected logic for monotone increasing
+//
 // ****************************************************************************
 
 bool
@@ -3739,6 +3740,9 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
 //
 //    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
 //    Added support for arrays.
+//
+//    Dave Pugmire, Thu Mar  4 10:27:17 EST 2010
+//    Added support for curves.
 //
 // ****************************************************************************
 
@@ -3929,10 +3933,24 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                         replacementStr))
             GetMaterials(i).meshName = replacementName;
     }
-/*
- * Do not do curves.  They have so many spaces, special chars, etc.
- *
- */
+    for (i = 0; i < GetNumCurves(); i++)
+    {
+        if (GetCurves(i).originalName == "")
+            GetCurves(i).originalName = GetCurves(i).name;
+        if (IsForbidden(GetCurves(i).originalName, replacementName, badChars,
+                        replacementStr))
+        {
+            char msg[1024];
+            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                             ", which contains characters not supported by "
+                             "VisIt.  VisIt is renaming it to \"%s\"",
+                             GetCurves(i).originalName.c_str(), 
+                             replacementName.c_str());
+            IssueWarning(msg);
+            cout<<msg<<endl;
+            GetCurves(i).name = replacementName;
+        }
+    }
     for (i = 0 ; i < GetNumLabels() ; i++)
     {
         if (GetLabels(i).originalName == "")
