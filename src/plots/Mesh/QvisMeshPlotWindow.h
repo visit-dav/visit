@@ -130,8 +130,8 @@ private slots:
     void opaqueModeChanged(int val);
     void processErrorToleranceText();
     void opaqueColorChanged(const QColor &color);
-    void backgroundToggled(bool on);
-    void foregroundToggled(bool on);
+    void meshColorClicked(int val);
+    void opaqueColorClicked(int val);
     void smoothingLevelChanged(int index);
 
     void pointSizeChanged(double d);
@@ -145,23 +145,20 @@ private slots:
 private:
     int                     plotType;
     MeshAttributes         *meshAtts;
-    QLabel                 *lineStyleLabel;
     QvisLineStyleWidget    *lineStyle;
-    QLabel                 *lineWidthLabel;
     QvisLineWidthWidget    *lineWidth;
-    QLabel                 *meshColorLabel;
-    QvisColorButton        *meshColor;
     QCheckBox              *outlineOnlyToggle;
     QLabel                 *errorToleranceLabel;
     QLineEdit              *errorToleranceLineEdit;
     QButtonGroup           *opaqueModeGroup;
     QCheckBox              *legendToggle;
     QCheckBox              *showInternalToggle;
+    QButtonGroup           *meshColorButtons;
+    QvisColorButton        *meshColor;
     QLabel                 *opaqueColorLabel;
+    QButtonGroup           *opaqueColorButtons;
     QvisColorButton        *opaqueColor;
-    QCheckBox              *backgroundToggle;
-    QCheckBox              *foregroundToggle;
-    QButtonGroup           *smoothingLevelGroup;
+    QButtonGroup           *smoothingLevelButtons;
     QvisPointControl       *pointControl;
     QLabel                *opacityLabel;
     QvisOpacitySlider     *opacitySlider;

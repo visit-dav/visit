@@ -40,6 +40,7 @@
 #define MESHATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -74,6 +75,16 @@ public:
         Fast,
         High
     };
+    enum MeshColor
+    {
+        Foreground,
+        MeshColorTable
+    };
+    enum OpaqueColor
+    {
+        Background,
+        OpaqueColorTable
+    };
     enum OpaqueMode
     {
         Auto,
@@ -81,13 +92,23 @@ public:
         Off
     };
 
+    // These constructors are for objects of this class
     MeshAttributes();
     MeshAttributes(const MeshAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MeshAttributes(private_tmfs_t tmfs);
+    MeshAttributes(const MeshAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MeshAttributes();
 
     virtual MeshAttributes& operator = (const MeshAttributes &obj);
     virtual bool operator == (const MeshAttributes &obj) const;
     virtual bool operator != (const MeshAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MeshAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -107,11 +128,11 @@ public:
     void SetMeshColor(const ColorAttribute &meshColor_);
     void SetOutlineOnlyFlag(bool outlineOnlyFlag_);
     void SetErrorTolerance(double errorTolerance_);
+    void SetMeshColorSource(MeshColor meshColorSource_);
+    void SetOpaqueColorSource(OpaqueColor opaqueColorSource_);
     void SetOpaqueMode(OpaqueMode opaqueMode_);
     void SetPointSize(double pointSize_);
     void SetOpaqueColor(const ColorAttribute &opaqueColor_);
-    void SetBackgroundFlag(bool backgroundFlag_);
-    void SetForegroundFlag(bool foregroundFlag_);
     void SetSmoothingLevel(SmoothingLevel smoothingLevel_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
@@ -129,12 +150,12 @@ public:
           ColorAttribute &GetMeshColor();
     bool                 GetOutlineOnlyFlag() const;
     double               GetErrorTolerance() const;
+    MeshColor            GetMeshColorSource() const;
+    OpaqueColor          GetOpaqueColorSource() const;
     OpaqueMode           GetOpaqueMode() const;
     double               GetPointSize() const;
     const ColorAttribute &GetOpaqueColor() const;
           ColorAttribute &GetOpaqueColor();
-    bool                 GetBackgroundFlag() const;
-    bool                 GetForegroundFlag() const;
     SmoothingLevel       GetSmoothingLevel() const;
     bool                 GetPointSizeVarEnabled() const;
     const std::string    &GetPointSizeVar() const;
@@ -160,6 +181,16 @@ public:
 protected:
     static std::string SmoothingLevel_ToString(int);
 public:
+    static std::string MeshColor_ToString(MeshColor);
+    static bool MeshColor_FromString(const std::string &, MeshColor &);
+protected:
+    static std::string MeshColor_ToString(int);
+public:
+    static std::string OpaqueColor_ToString(OpaqueColor);
+    static bool OpaqueColor_FromString(const std::string &, OpaqueColor &);
+protected:
+    static std::string OpaqueColor_ToString(int);
+public:
     static std::string OpaqueMode_ToString(OpaqueMode);
     static bool OpaqueMode_FromString(const std::string &, OpaqueMode &);
 protected:
@@ -183,11 +214,11 @@ public:
         ID_meshColor,
         ID_outlineOnlyFlag,
         ID_errorTolerance,
+        ID_meshColorSource,
+        ID_opaqueColorSource,
         ID_opaqueMode,
         ID_pointSize,
         ID_opaqueColor,
-        ID_backgroundFlag,
-        ID_foregroundFlag,
         ID_smoothingLevel,
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
@@ -195,7 +226,8 @@ public:
         ID_opaqueMeshIsAppropriate,
         ID_showInternal,
         ID_pointSizePixels,
-        ID_opacity
+        ID_opacity,
+        ID__LAST
     };
 
 private:
@@ -205,11 +237,11 @@ private:
     ColorAttribute meshColor;
     bool           outlineOnlyFlag;
     double         errorTolerance;
+    int            meshColorSource;
+    int            opaqueColorSource;
     int            opaqueMode;
     double         pointSize;
     ColorAttribute opaqueColor;
-    bool           backgroundFlag;
-    bool           foregroundFlag;
     int            smoothingLevel;
     bool           pointSizeVarEnabled;
     std::string    pointSizeVar;
@@ -221,6 +253,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MESHATTRIBUTES_TMFS "biiabdiiidaibsibbid"
 
 #endif

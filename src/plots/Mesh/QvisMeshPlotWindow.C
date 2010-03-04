@@ -40,6 +40,7 @@
 
 #include <QWidget> 
 #include <QLayout> 
+#include <QGroupBox> 
 #include <QPushButton> 
 #include <QLabel>
 #include <QCheckBox>
@@ -163,55 +164,98 @@ void
 QvisMeshPlotWindow::CreateWindowContents()
 {
     //
-    // Create the layout that we'll use.
+    // Create the plot options
     //
-    QGridLayout *theLayout = new QGridLayout();
-    topLayout->addLayout(theLayout);
+    QGroupBox * zoneGroup = new QGroupBox(central);
+    zoneGroup->setTitle(tr("Zone"));
+    topLayout->addWidget(zoneGroup);
 
-    // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central);
-    theLayout->addWidget(lineStyle, 0, 1);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    theLayout->addWidget(lineStyleLabel, 0, 0);
+    QGridLayout *zoneLayout = new QGridLayout(zoneGroup);
+    zoneLayout->setMargin(5);
+    zoneLayout->setSpacing(10);
+ 
+    // Create the showInternal toggle
+    showInternalToggle = new QCheckBox(tr("Show internal zones"), central);
+    connect(showInternalToggle, SIGNAL(toggled(bool)),
+            this, SLOT(showInternalToggled(bool)));
+    zoneLayout->addWidget(showInternalToggle, 0, 0, 1, 2);
 
-    // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central);
-    theLayout->addWidget(lineWidth, 0, 3);
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Line width"),central);
-    theLayout->addWidget(lineWidthLabel, 0, 2);
+    // Create the outline only toggle
+    outlineOnlyToggle = new QCheckBox(tr("Outline only"), central);
+    connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
+            this, SLOT(outlineOnlyToggled(bool)));
+    zoneLayout->addWidget(outlineOnlyToggle, 1, 0, 1, 2);
+
+    // Create the error tolerance line edit
+    errorToleranceLabel = new QLabel(tr("Tolerance"),central);
+    errorToleranceLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    zoneLayout->addWidget(errorToleranceLabel, 1, 2);
+
+    errorToleranceLineEdit = new QLineEdit(central);
+    zoneLayout->addWidget(errorToleranceLineEdit, 1, 3);
+
+    connect(errorToleranceLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processErrorToleranceText()));
+
+    //
+    // Create the color stuff
+    //
+    QGroupBox * colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroup);
+
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10); 
+    
+    // Create the radio buttons for mesh color source
+    colorLayout->addWidget(new QLabel(tr("Mesh color"), central), 0, 0);
+
+    meshColorButtons = new QButtonGroup(central);
+
+    QRadioButton * rb = new QRadioButton(tr("Foreground"), central);
+    rb->setChecked(true);
+    meshColorButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Custom"), central);
+    meshColorButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(meshColorButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(meshColorClicked(int)));
 
     // Create the mesh color button.
     meshColor = new QvisColorButton(central);
     connect(meshColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(meshColorChanged(const QColor &)));
-    theLayout->addWidget(meshColor, 1, 1);
-    meshColorLabel = new QLabel( tr("Mesh color"),central);
-    theLayout->addWidget(meshColorLabel, 1, 0);
+    colorLayout->addWidget(meshColor, 0, 3);
 
-    // Create the foreground toggle
-    foregroundToggle = new QCheckBox(tr("Use foreground"),central);
-    connect(foregroundToggle, SIGNAL(toggled(bool)),
-            this, SLOT(foregroundToggled(bool)));
-    theLayout->addWidget(foregroundToggle, 1, 2, 1, 2);
 
+
+    // Create the radio buttons for opaque color source
+    opaqueColorLabel = new QLabel(tr("Opaque color"), central);
+    colorLayout->addWidget(opaqueColorLabel, 1, 0);
+
+    opaqueColorButtons = new QButtonGroup(central);
+
+    rb = new QRadioButton(tr("Background"), central);
+    rb->setChecked(true);
+    opaqueColorButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 1, 1);
+    rb = new QRadioButton(tr("Custom"), central);
+    opaqueColorButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 1, 2, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(opaqueColorButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(opaqueColorClicked(int)));
 
     // Create the opaque color button.
     opaqueColor = new QvisColorButton(central);
     connect(opaqueColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(opaqueColorChanged(const QColor &)));
-    theLayout->addWidget(opaqueColor, 2, 1);
-    opaqueColorLabel = new QLabel(tr("Opaque color"),central);
-    theLayout->addWidget(opaqueColorLabel, 2, 0);
-
-    // Create the background toggle
-    backgroundToggle = new QCheckBox(tr("Use background"), central);
-    connect(backgroundToggle, SIGNAL(toggled(bool)),
-            this, SLOT(backgroundToggled(bool)));
-    theLayout->addWidget(backgroundToggle, 2, 2, 1, 2);
+    colorLayout->addWidget(opaqueColor, 1, 3);
 
     // Create the opaque mode buttons
     opaqueModeGroup = new QButtonGroup(central);
@@ -219,11 +263,12 @@ QvisMeshPlotWindow::CreateWindowContents()
             SLOT(opaqueModeChanged(int)));
 
     QGridLayout *opaqueModeLayout = new QGridLayout();
-    opaqueModeLayout->setColumnStretch(4,1000);
+    opaqueModeLayout->setMargin(5);
+    opaqueModeLayout->setSpacing(10);
     
     opaqueModeLayout->addWidget(new QLabel(tr("Opaque mode"), central), 0,0);
     
-    QRadioButton *rb = new QRadioButton(tr("Auto"), central);
+    rb = new QRadioButton(tr("Auto"), central);
     opaqueModeGroup->addButton(rb,0);
     opaqueModeLayout->addWidget(rb, 0, 2);
     
@@ -235,43 +280,37 @@ QvisMeshPlotWindow::CreateWindowContents()
     opaqueModeGroup->addButton(rb,2);
     opaqueModeLayout->addWidget(rb, 0, 4);
     
-    theLayout->addLayout(opaqueModeLayout, 3, 0,1, 4);
+    colorLayout->addLayout(opaqueModeLayout, 3, 0,1, 4);
 
     //
     // Create the opacity slider
     //
     opacityLabel = new QLabel(tr("Opacity"), central);
-    theLayout->addWidget(opacityLabel, 4, 0);
+    opacityLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    colorLayout->addWidget(opacityLabel, 4, 0);
 
     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
     opacitySlider->setTickInterval(64);
     opacitySlider->setGradientColor(QColor(0, 0, 0));
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(changedOpacity(int, const void*)));
-    theLayout->addWidget(opacitySlider, 4, 1, 1, 3);
+    colorLayout->addWidget(opacitySlider, 4, 1, 1, 3);
     opacityLabel->setBuddy(opacitySlider);
 
 
-    // Create the showInternal toggle
-    showInternalToggle = new QCheckBox(tr("Show Internal Zones"), central);
-    connect(showInternalToggle, SIGNAL(toggled(bool)),
-            this, SLOT(showInternalToggled(bool)));
-    theLayout->addWidget(showInternalToggle, 5,0, 1,2);
+    //
+    // Create the style stuff
+    //
 
-    // Create the outline only toggle
-    outlineOnlyToggle = new QCheckBox(tr("Outline only"), central);
-    connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
-            this, SLOT(outlineOnlyToggled(bool)));
-    theLayout->addWidget(outlineOnlyToggle, 6, 0);
+    QGroupBox * styleGroup = new QGroupBox(central);
+    styleGroup->setTitle(tr("Point / Line Style"));
+    topLayout->addWidget(styleGroup);
 
-    // Create the error tolerance line edit
-    errorToleranceLineEdit = new QLineEdit(central);
-    connect(errorToleranceLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processErrorToleranceText()));
-    theLayout->addWidget(errorToleranceLineEdit, 6, 2, 1, 2);
-    errorToleranceLabel = new QLabel(tr("Tolerance"),central);
-    theLayout->addWidget(errorToleranceLabel, 6, 1);
-
+    QGridLayout *styleLayout = new QGridLayout(styleGroup);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
+ 
+    // Create the point control
     pointControl = new QvisPointControl(central);
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
@@ -283,33 +322,80 @@ QvisMeshPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    theLayout->addWidget(pointControl, 7, 0, 1, 4);
- 
+    styleLayout->addWidget(pointControl, 0, 0, 1, 4);
 
+
+    //
+    // Create the line style/width buttons
+    //
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
+
+    lineStyle = new QvisLineStyleWidget(0, central);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    styleLayout->addWidget(lineStyle, 1, 1);
+
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
+
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    styleLayout->addWidget(lineWidth, 1, 3);
+
+    //
+    // Create the geometry group
+    //
+    QGroupBox * smoothingGroup = new QGroupBox(central);
+    smoothingGroup->setTitle(tr("Geometry"));
+    topLayout->addWidget(smoothingGroup);
+
+    QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
+    smoothingLayout->setMargin(5);
+    smoothingLayout->setSpacing(10);
+    
+    smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
+
+    // Create the smoothing level buttons
+    smoothingLevelButtons = new QButtonGroup(central);
+    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+
+    rb = new QRadioButton(tr("None"), central);
+    smoothingLevelButtons->addButton(rb, 0);
+    smoothingLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Fast"), central);
+    smoothingLevelButtons->addButton(rb, 1);
+    smoothingLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("High"), central);
+    smoothingLevelButtons->addButton(rb, 2);
+    smoothingLayout->addWidget(rb, 0, 3);
+
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
     // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    theLayout->addWidget(legendToggle, 8, 0);
+    miscLayout->addWidget(legendToggle, 0, 0);
 
-    // Create the smoothing level buttons
-    smoothingLevelGroup = new QButtonGroup(central);
-    connect(smoothingLevelGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(smoothingLevelChanged(int)));
-            
-    QGridLayout *smoothingLayout = new QGridLayout();
-    smoothingLayout->setColumnStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
-    rb = new QRadioButton(tr("None"), central);
-    smoothingLevelGroup->addButton(rb,0);
-    smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Fast"), central);
-    smoothingLevelGroup->addButton(rb,1);
-    smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("High"), central);
-    smoothingLevelGroup->addButton(rb,1);
-    smoothingLayout->addWidget(rb, 0, 3);
-    theLayout->addLayout(smoothingLayout, 9,0 , 1,4);
+    // Create the lighting toggle
+//     lightingToggle = new QCheckBox(tr("Lighting"), central);
+//     connect(lightingToggle, SIGNAL(toggled(bool)),
+//             this, SLOT(lightingToggled(bool)));
+//     miscLayout->addWidget(lightingToggle, 0, 1);
+
 }
 
 // ****************************************************************************
@@ -458,26 +544,32 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
                  case MeshAttributes::Auto:
                      if (meshAtts->GetOpaqueMeshIsAppropriate())
                      {
-                         opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
-                         opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
-                         backgroundToggle->setEnabled(true);
+                         opaqueColorLabel->setEnabled(true);
+                         opaqueColorButtons->button(0)->setEnabled(true);
+                         opaqueColorButtons->button(1)->setEnabled(true);
+
+                         opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
                      }
                      else 
                      {
-                         opaqueColor->setEnabled(false);
                          opaqueColorLabel->setEnabled(false);
-                         backgroundToggle->setEnabled(false);
+                         opaqueColorButtons->button(0)->setEnabled(false);
+                         opaqueColorButtons->button(1)->setEnabled(false);
+
+                         opaqueColor->setEnabled(false);
                      }
                      break;
                  case MeshAttributes::On:
-                     opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
-                     opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
-                     backgroundToggle->setEnabled(true);
+                     opaqueColorLabel->setEnabled(true);
+                     opaqueColorButtons->button(0)->setEnabled(true);
+                     opaqueColorButtons->button(1)->setEnabled(true);
+                     opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
                      break;
                  case MeshAttributes::Off:
-                     opaqueColor->setEnabled(false);
                      opaqueColorLabel->setEnabled(false);
-                     backgroundToggle->setEnabled(false);
+                     opaqueColorButtons->button(0)->setEnabled(false);
+                     opaqueColorButtons->button(1)->setEnabled(false);
+                     opaqueColor->setEnabled(false);
                      break;
             }
             opaqueModeGroup->blockSignals(false);
@@ -497,26 +589,26 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             opaqueColor->blockSignals(false);
             }
             break;
-        case MeshAttributes::ID_backgroundFlag:
-            backgroundToggle->blockSignals(true);
-            backgroundToggle->setChecked(meshAtts->GetBackgroundFlag());
-            backgroundToggle->blockSignals(false);
+        case MeshAttributes::ID_meshColorSource:
+            meshColorButtons->blockSignals(true);
+            meshColorButtons->button(meshAtts->GetMeshColorSource())->setChecked(true);
+            meshColorButtons->blockSignals(false);
 
-            opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
-            opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
+            meshColor->setEnabled(meshAtts->GetMeshColorSource());
+
             break;
-        case MeshAttributes::ID_foregroundFlag:
-            foregroundToggle->blockSignals(true);
-            foregroundToggle->setChecked(meshAtts->GetForegroundFlag());
-            foregroundToggle->blockSignals(false);
+        case MeshAttributes::ID_opaqueColorSource:
+            opaqueColorButtons->blockSignals(true);
+            opaqueColorButtons->button(meshAtts->GetOpaqueColorSource())->setChecked(true);
+            opaqueColorButtons->blockSignals(false);
 
-            meshColor->setEnabled(!meshAtts->GetForegroundFlag());
-            meshColorLabel->setEnabled(!meshAtts->GetForegroundFlag());
+            opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
+
             break;
         case MeshAttributes::ID_smoothingLevel:
-            smoothingLevelGroup->blockSignals(true);
-            smoothingLevelGroup->button((int)meshAtts->GetSmoothingLevel())->setChecked(true);
-            smoothingLevelGroup->blockSignals(false);
+            smoothingLevelButtons->blockSignals(true);
+            smoothingLevelButtons->button((int)meshAtts->GetSmoothingLevel())->setChecked(true);
+            smoothingLevelButtons->blockSignals(false);
             break;
         case MeshAttributes::ID_pointSizeVarEnabled:
             pointControl->blockSignals(true);
@@ -543,15 +635,17 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
                 opaqueModeGroup->blockSignals(true);
                 if (meshAtts->GetOpaqueMeshIsAppropriate())
                 {
-                    opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
-                    opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
-                    backgroundToggle->setEnabled(true);
+                    opaqueColorLabel->setEnabled(true);
+                    opaqueColorButtons->button(0)->setEnabled(true);
+                    opaqueColorButtons->button(1)->setEnabled(true);
+                    opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
                 }
                 else 
                 {
-                    opaqueColor->setEnabled(false);
                     opaqueColorLabel->setEnabled(false);
-                    backgroundToggle->setEnabled(false);
+                    opaqueColorButtons->button(0)->setEnabled(false);
+                    opaqueColorButtons->button(1)->setEnabled(false);
+                    opaqueColor->setEnabled(false);
                 }
                 opaqueModeGroup->blockSignals(false);
             }
@@ -940,7 +1034,7 @@ QvisMeshPlotWindow::opaqueModeChanged(int val)
 
 
 // ****************************************************************************
-// Method: QvisMeshPlotWindow::backgroundToggled
+// Method: QvisMeshPlotWindow::opaqueColorClicked
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the background toggle
@@ -955,15 +1049,20 @@ QvisMeshPlotWindow::opaqueModeChanged(int val)
 // ****************************************************************************
 
 void
-QvisMeshPlotWindow::backgroundToggled(bool val)
+QvisMeshPlotWindow::opaqueColorClicked(int  val)
 {
-    meshAtts->SetBackgroundFlag(val);
-    Apply();
+    // Only do it if it changed.
+    if(val != meshAtts->GetOpaqueColorSource())
+    {
+        meshAtts->SetOpaqueColorSource(MeshAttributes::OpaqueColor(val));
+        opaqueColor->setEnabled(val);
+        Apply();
+    }
 }
 
 
 // ****************************************************************************
-// Method: QvisMeshPlotWindow::foregroundToggled
+// Method: QvisMeshPlotWindow::meshColorClicked
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the foreground toggle
@@ -978,10 +1077,15 @@ QvisMeshPlotWindow::backgroundToggled(bool val)
 // ****************************************************************************
 
 void
-QvisMeshPlotWindow::foregroundToggled(bool val)
+QvisMeshPlotWindow::meshColorClicked(int val)
 {
-    meshAtts->SetForegroundFlag(val);
-    Apply();
+    // Only do it if it changed.
+    if(val != meshAtts->GetMeshColorSource())
+    {
+        meshAtts->SetMeshColorSource(MeshAttributes::MeshColor(val));
+        meshColor->setEnabled(val);
+        Apply();
+    }
 }
 
 // ****************************************************************************
