@@ -1,4 +1,5 @@
 #include <set>
+#include <snprintf.h>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -184,10 +185,13 @@ SimV2_CreatePoints(int ndims, int coordMode,
     visit_handle x, visit_handle y, visit_handle z, visit_handle c, 
     int additionalPoints)
 {
+    const char *mName  = "SimV2_CreatePoints: ";
     vtkPoints *points = NULL;
 
     if(coordMode == VISIT_COORD_MODE_SEPARATE)
     {
+        debug4 << mName << "VISIT_COORD_MODE_SEPARATE" << endl;
+
         // Let's get the VariableData properties. The API guarantees that the
         // arrays will have the same properties so we only get the data 
         // pointer as a unique value.
@@ -210,8 +214,11 @@ SimV2_CreatePoints(int ndims, int coordMode,
         points = vtkPoints::New();
         if(ndims == 2)
         {
+            debug4 << mName << "ndims == 2" << endl;
+
             if(dataType == VISIT_DATATYPE_FLOAT)
             {
+                debug4 << mName << "float data: nTuples=" << nTuples << endl;
                 points->SetNumberOfPoints(nTuples + additionalPoints);
                 float *dest = (float *)points->GetVoidPointer(0);
                 float *x_src = (float*)data[0];
@@ -225,6 +232,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
             }
             else if(dataType == VISIT_DATATYPE_DOUBLE)
             {
+                debug4 << mName << "double data: nTuples=" << nTuples << endl;
                 points->SetDataTypeToDouble();
                 points->SetNumberOfPoints(nTuples + additionalPoints);
                 double *dest = (double *)points->GetVoidPointer(0);
@@ -246,8 +254,11 @@ SimV2_CreatePoints(int ndims, int coordMode,
         }
         else
         {
+            debug4 << mName << "ndims == 3" << endl;
+
             if(dataType == VISIT_DATATYPE_FLOAT)
             {
+                debug4 << mName << "float data: nTuples=" << nTuples << endl;
                 points->SetNumberOfPoints(nTuples + additionalPoints);
                 float *dest = (float *)points->GetVoidPointer(0);
                 float *x_src = (float*)data[0];
@@ -262,6 +273,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
             }
             else if(dataType == VISIT_DATATYPE_DOUBLE)
             {
+                debug4 << mName << "float data: nTuples=" << nTuples << endl;
                 points->SetDataTypeToDouble();
                 points->SetNumberOfPoints(nTuples + additionalPoints);
                 double *dest = (double *)points->GetVoidPointer(0);
@@ -284,6 +296,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
     }
     else if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
     {
+        debug4 << mName << "VISIT_COORD_MODE_INTERLEAVED" << endl;
         points = vtkPoints::New();
 
         int owner, dataType, nComps, nTuples;
@@ -292,9 +305,13 @@ SimV2_CreatePoints(int ndims, int coordMode,
         {
             if(ndims == 2)
             {
+                debug4 << mName << "ndims == 2" << endl;
+
                 // Copy the 2D data to 3D
                 if(dataType == VISIT_DATATYPE_FLOAT)
                 {
+                    debug4 << mName << "float data: nTuples=" << nTuples << endl;
+
                     points->SetNumberOfPoints(nTuples + additionalPoints);
                     float *dest = (float *)points->GetVoidPointer(0);
                     float *src = (float*)data;
@@ -307,6 +324,8 @@ SimV2_CreatePoints(int ndims, int coordMode,
                 }
                 else if(dataType == VISIT_DATATYPE_DOUBLE)
                 {
+                    debug4 << mName << "double data: nTuples=" << nTuples << endl;
+
                     points->SetDataTypeToDouble();
                     points->SetNumberOfPoints(nTuples + additionalPoints);
                     double *dest = (double *)points->GetVoidPointer(0);
@@ -325,16 +344,26 @@ SimV2_CreatePoints(int ndims, int coordMode,
                     "Coordinate arrays must be float or double.\n");
                 }
             }
+#ifdef ALLOW_WRAPPED_COORDINATES
             else if(additionalPoints > 0)
+#else
+            else
+#endif
             {
-                // Copy the 2D data to 3D
+                //
+                // Copy the 3D coordinates
+                //
+                debug4 << mName << "additionalPoints=" << additionalPoints << endl;
+
                 if(dataType == VISIT_DATATYPE_FLOAT)
                 {
+                    debug4 << mName << "float data: nTuples=" << nTuples << endl;
                     points->SetNumberOfPoints(nTuples + additionalPoints);
                     memcpy(points->GetVoidPointer(0), data, 3 * nTuples * sizeof(float));
                 }
                 else if(dataType == VISIT_DATATYPE_DOUBLE)
                 {
+                    debug4 << mName << "double data: nTuples=" << nTuples << endl;
                     points->SetDataTypeToDouble();
                     points->SetNumberOfPoints(nTuples + additionalPoints);
                     memcpy(points->GetVoidPointer(0), data, 3 * nTuples * sizeof(double));
@@ -346,14 +375,22 @@ SimV2_CreatePoints(int ndims, int coordMode,
                     "Coordinate arrays must be float or double.\n");
                 }
             }
+#ifdef ALLOW_WRAPPED_COORDINATES
+// Eh, this is probably too dangerous anyway...
             else
             {
+                //
+                // Try wrapping the simulation coordinates directly in VTK objects
+                //
+                debug4 << mName << "ndims == 3" << endl;
+
                 // Use the 3D data as-is. If VisIt owns the data, we steal
                 // the pointer from the VariableData so the VTK data array
                 // can own the data.
                 int canDelete = 0;
                 if(owner == VISIT_OWNER_VISIT)
                 {
+                    debug4 << mName << "stealing data from simv2" << endl;
                     canDelete = 1;
                     simv2_VariableData_nullData(c);
                 }
@@ -367,6 +404,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
 
                 if(dataType == VISIT_DATATYPE_FLOAT)
                 {
+                    debug4 << mName << "wrapping float data: nTuples=" << nTuples << endl;
                     vtkFloatArray *wrapper = vtkFloatArray::New();
                     wrapper->SetNumberOfComponents(3);
                     wrapper->SetArray((float *)data, nTuples, canDelete);
@@ -375,6 +413,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
                 }
                 else if(dataType == VISIT_DATATYPE_DOUBLE)
                 {
+                    debug4 << mName << "wrapping double data: nTuples=" << nTuples << endl;
                     vtkDoubleArray *wrapper = vtkDoubleArray::New();
                     wrapper->SetNumberOfComponents(3);
                     wrapper->SetArray((double *)data, nTuples, canDelete);
@@ -388,6 +427,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
                     "Coordinate arrays must be float or double.\n");
                 }
             }
+#endif
         }
     }
 
@@ -1033,7 +1073,8 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
     const int *cell = connectivity;
     const int *end = cell + connectivityLen;
     vtkIdType verts[8];
-    while(cell < end && numCells < nzones)
+    bool noConnectivityError = true;
+    while(cell < end && numCells < nzones && noConnectivityError)
     {
         int celltype = *cell++;
 
@@ -1045,19 +1086,36 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
                 nRealPoints, phIndex);
             phIndex++;
         }
-        else
+        else if(celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_HEX)
         {
             // Add a normal cell
             int vtktype = celltype_idtype[celltype];
             int nelempts = celltype_npts[celltype];
             for (int j=0; j<nelempts; j++)
+            {
                 verts[j] = *cell++;
+                noConnectivityError &= (verts[j] >= 0 && verts[j] < nRealPoints);
+            }
             ugrid->InsertNextCell(vtktype, nelempts, verts);
+        }
+        else
+        {
+            // bad cell type
+            noConnectivityError = false;
         }
 
         ++numCells;
     }
 
+    if (!noConnectivityError)
+    {
+        delete [] polyhedralSplit;
+        ugrid->Delete();
+        char tmp[100];
+        SNPRINTF(tmp, 100, "Cell %d's connectivity contained invalid points or "
+            "an invalid cell type.", numCells-1);
+        EXCEPTION1(ImproperUseException, tmp);
+    }
     if (numCells != nzones)
     {
         delete [] polyhedralSplit;

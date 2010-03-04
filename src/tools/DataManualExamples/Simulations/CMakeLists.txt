@@ -175,6 +175,8 @@ ADD_SIMV2_SIMULATION(csg csg.c)
 ADD_SIMV1_SIMULATION(curve curve.c)
 ADD_FORTRAN_SIMV1_SIMULATION(fcurve fcurve.f)
 
+ADD_SIMV2_SIMULATION(interleave interleave.c)
+
 ADD_SIMV2_SIMULATION(material material.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
 
