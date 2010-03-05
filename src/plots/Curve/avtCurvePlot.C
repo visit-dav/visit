@@ -372,7 +372,7 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     atts = *(const CurveAttributes*)a;
 
     double rgba[4];
-    atts.GetColor().GetRgba(rgba);
+    atts.GetCurveColor().GetRgba(rgba);
     curveLegend->SetColor(rgba);
 
     if (atts.GetShowLegend())

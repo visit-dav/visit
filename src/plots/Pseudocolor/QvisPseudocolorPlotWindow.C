@@ -227,7 +227,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     // Create the Limits stuff
     //
     QGroupBox * limitsGroup = new QGroupBox(central);
-    dataLayout->addWidget(limitsGroup, 2, 0, 1, 5);
+    dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
     limitsLayout->setMargin(5);

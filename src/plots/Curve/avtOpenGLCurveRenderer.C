@@ -218,7 +218,7 @@ void
 avtOpenGLCurveRenderer::DrawCurveAsLines()
 {
     // Set the curve color.
-    ColorAttribute curveColor(atts.GetColor());
+    ColorAttribute curveColor(atts.GetCurveColor());
     curveColor.SetAlpha(255);
     glColor4ubv(curveColor.GetColor());
 
@@ -366,7 +366,7 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
 #endif
 
     // Set the curve color.
-    ColorAttribute curveColor(atts.GetColor());
+    ColorAttribute curveColor(atts.GetCurveColor());
     curveColor.SetAlpha(255);
     glColor4ubv(curveColor.GetColor());
 

@@ -15,11 +15,11 @@
       </Enum>
       <Enum name="MeshColor">
         Foreground
-        MeshColorTable
+        MeshCustom
       </Enum>
       <Enum name="OpaqueColor">
         Background
-        OpaqueColorTable        
+        OpaqueCustom
       </Enum>
       <Enum name="OpaqueMode">
         Auto

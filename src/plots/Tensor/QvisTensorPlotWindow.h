@@ -92,30 +92,30 @@ protected:
 private slots:
     void tensorColorChanged(const QColor &color);
     void processScaleText();
-    void scaleByMagnitudeToggled();
-    void autoScaleToggled();
+    void scaleByMagnitudeToggled(bool on);
+    void autoScaleToggled(bool on);
     void reduceMethodChanged(int index);
     void processNTensorsText();
     void processStrideText();
-    void legendToggled();
+    void legendToggled(bool on);
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
 private:
     int                  plotType;
     TensorAttributes     *tensorAtts;
 
-    QGroupBox            *colorGroupBox;
     QvisColorButton      *tensorColor;
     QButtonGroup         *colorButtonGroup; 
     QvisColorTableButton *colorTableButton;
-    QGroupBox            *scaleGroupBox;    
+
     QLineEdit            *scaleLineEdit;
     QCheckBox            *scaleByMagnitudeToggle;
     QCheckBox            *autoScaleToggle;
-    QGroupBox            *reduceGroupBox;
+
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nTensorsLineEdit;
     QLineEdit            *strideLineEdit;
+
     QCheckBox            *legendToggle;
 };
 

@@ -297,11 +297,22 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(formatTemplate, 7, 1);
     fmtLayout->addWidget(new QLabel(tr("Format template"), formattingGroupBox), 7, 0);
 
-    // Legend toggle
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    topLayout->addWidget(legendToggle, 0,0);
+    miscLayout->addWidget(legendToggle, 0, 0);
 }
 
 

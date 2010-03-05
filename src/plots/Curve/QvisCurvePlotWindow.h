@@ -102,12 +102,13 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
   private slots:
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
-    void colorChanged(const QColor &color);
-    void showLabelsChanged(bool val);
-    void showLegendChanged(bool val);
+    void labelsToggled(bool val);
+    void legendToggled(bool val);
     void showPointsChanged(bool val);
     void processPointSizeText();
-    void cycleColorsChanged(bool val);
+
+    void curveColorClicked(int val);
+    void curveColorChanged(const QColor &color);
 
     void renderModeChanged(int);
     void symbolTypeChanged(int);
@@ -119,10 +120,12 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QvisLineWidthWidget *lineWidth;
     QLabel              *lineWidthLabel;
     QCheckBox           *cycleColors;
-    QvisColorButton     *color;
-    QLabel              *colorLabel;
-    QCheckBox           *showLabels;
-    QCheckBox           *showLegend;
+
+    QButtonGroup        *curveColorButtons;
+    QvisColorButton     *curveColor;
+
+    QCheckBox           *labelsToggle;
+    QCheckBox           *legendToggle;
     QCheckBox           *showPoints;
     QNarrowLineEdit     *pointSize;
     QLabel              *pointSizeLabel;

@@ -142,7 +142,6 @@ private:
 
     // Scale controls
     QButtonGroup           *scalingButtons;
-    QLabel                 *skewLabel;
     QLineEdit              *skewLineEdit;
 
     // Limits controls
