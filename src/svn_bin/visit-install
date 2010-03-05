@@ -184,6 +184,11 @@
 #    Unified windows and unix host profiles.
 #    Split host profiles from rest of config files.
 #
+#    Eric Brugger, Fri Mar  5 13:18:43 PST 2010
+#    I modified the script so that it handles the case where the name
+#    of the distribution file had been changed from the name created
+#    by "make package".
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -485,7 +490,10 @@ if (! -e $fname2) then
    exit (2)
 endif
 tar xvbf 20 $fname2
+rm -f $fname2
 cd ..
+
+set distributiondir = `ls -d distribution/*`
 
 #
 # If the installation directory doesn't exist, create it.
@@ -499,10 +507,10 @@ if (! -e "$dir"/data)           mkdir "$dir"/data
 # installation in a consistent state with the exception of the
 # data directory.
 #
-cp distribution/$base.$platform/bin/frontendlauncher "$dir"/bin/frontendlauncher+
-cp distribution/$base.$platform/bin/xml2plugin       "$dir"/bin/xml2plugin+
-cp distribution/$base.$platform/bin/visit_plugin     "$dir"/bin/visit_plugin+
-cp distribution/$base.$platform/bin/mkgrdbl          "$dir"/bin/mkgrdbl+
+cp $distributiondir/bin/frontendlauncher "$dir"/bin/frontendlauncher+
+cp $distributiondir/bin/xml2plugin       "$dir"/bin/xml2plugin+
+cp $distributiondir/bin/visit_plugin     "$dir"/bin/visit_plugin+
+cp $distributiondir/bin/mkgrdbl          "$dir"/bin/mkgrdbl+
 
 if (-e "$dir"/$version) then
    mv "$dir"/$version "$dir"/$version+
@@ -510,7 +518,7 @@ if (-e "$dir"/$version) then
 endif
 if (! -e "$dir"/$version+)                 mkdir "$dir"/$version+
 
-cd distribution/$base.$platform/$version
+cd $distributiondir/$version
 
 # Determine the platform
 set findcli = `find . -name cli`
@@ -526,7 +534,7 @@ end
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
 cd ../../..
-cp distribution/$base.$platform/data/* "$dir"/data
+cp $distributiondir/data/* "$dir"/data
 
 #
 # Store some of the installation options so they can be used by VisIt when
@@ -677,7 +685,7 @@ if ($group_ownership != none) then
 endif
 
 if ($logging == true) then
-    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/$base.$platform/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
+    sed -e "s/logging[ \t]*= 0/logging        = 1/" $distributiondir/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
     chmod $dir_permission "$dir"/$version+/bin/internallauncher
     touch "$dir"/$version+/usagelog
     touch "$dir"/$version+/cli_usagelog
