@@ -234,6 +234,11 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Jeremy Meredith, Fri Feb 26 18:14:55 EST 2010
 //    Don't forget to block signals when you mess with the list.
 //
+//    Jeremy Meredith, Fri Mar  5 14:19:21 EST 2010
+//    Actually, we don't want to block signals, as this sets up the
+//    window correctly the first time.  Just don't set it to a bad
+//    index before you set it to the right one.
+//
 // ****************************************************************************
 
 bool 
@@ -306,14 +311,17 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
             {
                 profiles->addItem(profile.GetLaunchProfiles(i).GetProfileName().c_str());
             }
-            profiles->setCurrentRow(0);
+            profiles->blockSignals(false);
             if (profile.GetActiveProfile()>=0 &&
                 profile.GetActiveProfile()<profile.GetNumLaunchProfiles())
             {
                 // this signals the callback to set the default profile
                 profiles->setCurrentRow(profile.GetActiveProfile());
             }
-            profiles->blockSignals(false);
+            else
+            {
+                profiles->setCurrentRow(0);
+            }
 
             viewerSubject->BlockSocketSignals(true);
             waitingOnUser = true;
