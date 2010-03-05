@@ -162,7 +162,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f hoth
 cat <<EOF > hoth
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on hoth"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -184,8 +184,8 @@ if [ $hoth = true ]
 then
    if [ $test = no ]
    then
-      scp hoth:/scratch/$user/hoth/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
-      scp visit$ver2.linux_rhel3.tar.gz kickit:
+      scp hoth:/scratch/$user/hoth/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rhel3.tar.gz
+      scp visit$ver2.linux-rhel3.tar.gz kickit:
       scp visit-install kickit:
       scp hoth kickit:hoth_install
       ssh kickit "chmod 750 hoth_install;./hoth_install"
@@ -198,8 +198,8 @@ fi
 rm -f up
 cat <<EOF > up
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver ibm-aix-pwr /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver ibm-aix-pwr64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on up"              >> resultlog 2>&1
@@ -235,10 +235,10 @@ if [ $up = true ]
 then
    if [ $test = no ]
    then
-      scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.aix.tar.gz .
-      scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.aix64.tar.gz .
-      scp visit$ver2.aix.tar.gz yana:
-      scp visit$ver2.aix64.tar.gz yana:
+      scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.ibm-aix-pwr.tar.gz .
+      scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.ibm-aix-pwr64.tar.gz .
+      scp visit$ver2.ibm-aix-pwr.tar.gz yana:
+      scp visit$ver2.ibm-aix-pwr64.tar.gz yana:
       scp visit-install yana:
       scp up yana:up_install
       ssh yana "chmod 750 up_install;./up_install"
