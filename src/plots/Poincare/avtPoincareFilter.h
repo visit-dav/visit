@@ -79,23 +79,35 @@ class avtPoincareFilter : public avtStreamlineFilter
     avtPoincareFilter();
     virtual                  ~avtPoincareFilter();
 
-    virtual const char       *GetType(void)   { return "avtPoincareFilter"; };
-    virtual const char       *GetDescription(void)
-                                  { return "Performing Poincare"; };
+    virtual const char       *GetType(void) { return "avtPoincareFilter"; };
+    virtual const char       *GetDescription(void) {
+      return "Performing Poincare"; };
 
-    void SetVerboseFlag( unsigned int val )  {verboseFlag=val;}
-    void SetShowLines( unsigned int val ) {showLines=val;}
-    void SetShowPoints( unsigned int val ) {showPoints=val;}
-    void SetColorBy( unsigned int value );
-    void SetMaxToroidalWinding( unsigned int value );
-    void SetOverrideToroidalWinding( unsigned int value);
-    void SetHitRate( double val );
-    void SetShowIslands( bool val );
-    void SetOverlaps( unsigned int val );
-    void SetShowCurves( unsigned int val );
-    void SetAdjustPlane( int val );
-    void SetClipPlanes( vector< double > planeAngles );
-    void SetMaxPunctures( double punctures );
+    void SetMaxPunctures( double punctures ) { maxPunctures = punctures; }
+
+    void SetMaxToroidalWinding( unsigned int value ) {
+      maxToroidalWinding = value; };
+    void SetOverrideToroidalWinding( unsigned int value) { override = value; }
+
+    void SetHitRate( double val ) { hitrate = val; }
+
+    void SetAdjustPlane( int val ) { adjust_plane = val; }
+
+    void SetOverlaps( unsigned int val ) { overlaps = val; }
+
+
+    void SetShowCurves( unsigned int val ) { is_curvemesh = val; }
+
+    void SetClipPlanes( vector< double > planeAngles ) {
+      planes = planeAngles; }
+
+    void SetDataValue( unsigned int val ) { dataValue = val; }
+
+    void SetShowOPoints( bool val ) { showOPoints = val; }
+    void SetShowIslands( bool val ) { showIslands = val; }
+    void SetShowLines( bool val )   { showLines = val; }
+    void SetShowPoints( bool val )  { showPoints = val; }
+    void SetVerboseFlag( bool val ) { verboseFlag = val; }
 
   protected:
     // Streamline overides.
@@ -108,6 +120,11 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual void              CreateStreamlineOutput( 
                                    vector<avtStreamlineWrapper *> &sls);
 
+  virtual void findIslandCenter( avtDataTree *dt,
+                                 vector< vector < vector < Point > > > &nodes,
+                                 unsigned int color,
+                                 double color_value );
+
   virtual void loadCurve( avtDataTree *dt,
                           vector< vector < vector < Point > > > &nodes,
                           unsigned int nnodes,
@@ -118,6 +135,7 @@ class avtPoincareFilter : public avtStreamlineFilter
   
   virtual void loadCurve( avtDataTree *dt,
                           vector< vector < vector < Point > > > &nodes,
+                          unsigned int nnodes,
                           unsigned int color,
                           double color_value );
   
@@ -143,24 +161,23 @@ class avtPoincareFilter : public avtStreamlineFilter
     bool                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
 
-    bool                      verboseFlag, showLines, showPoints;
 
     FusionPSE::FieldlineLib FLlib;         
 
-    std::vector< double > planes;
+    double maxPunctures;
+    unsigned int maxToroidalWinding;
+    unsigned int override;
 
-    int override;
-    int maxToroidalWinding;
     double hitrate;
-  
-    unsigned int showIslands;
+    int adjust_plane;
     unsigned int overlaps;
 
-    unsigned int colorBy;
     bool is_curvemesh;
-    int adjust_plane;
-
-    double maxPunctures;
+    std::vector< double > planes;
+    unsigned int dataValue;
+  
+    bool showOPoints, showIslands;
+    bool showLines, showPoints, verboseFlag;
 
     class SLHelper
     {

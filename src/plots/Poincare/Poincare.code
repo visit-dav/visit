@@ -185,7 +185,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
 
-           colorBy != obj.colorBy ||
+           dataValue != obj.dataValue ||
 
            showIslands != obj.showIslands ||
            showLines != obj.showLines ||

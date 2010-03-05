@@ -253,59 +253,68 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
-    const char *colorBy_names = "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
-        "WindingPointOrder, ToroidalWindings, PoloidalWindings, SafetyFactor, "
-        "Confidence, RidgelineVariance";
-    switch (atts->GetColorBy())
+    const char *dataValue_names = "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
+        "WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, PoloidalWindings, "
+        "SafetyFactor, Confidence, RidgelineVariance";
+    switch (atts->GetDataValue())
     {
       case PoincareAttributes::OriginalValue:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sOriginalValue  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sOriginalValue  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::InputOrder:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sInputOrder  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sInputOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PointIndex:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sPointIndex  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPointIndex  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sPlane  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPlane  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::WindingOrder:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sWindingOrder  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::WindingPointOrder:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sWindingPointOrder  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrder  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::WindingPointOrderModulo:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrderModulo  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::ToroidalWindings:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sToroidalWindings  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sToroidalWindings  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PoloidalWindings:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sPoloidalWindings  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindings  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SafetyFactor:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sSafetyFactor  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactor  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Confidence:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sConfidence  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sConfidence  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::RidgelineVariance:
-          SNPRINTF(tmpStr, 1000, "%scolorBy = %sRidgelineVariance  # %s\n", prefix, prefix, colorBy_names);
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sRidgelineVariance  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
+    if(atts->GetShowOPoints())
+        SNPRINTF(tmpStr, 1000, "%sshowOPoints = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowOPoints = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetShowIslands())
         SNPRINTF(tmpStr, 1000, "%sshowIslands = 1\n", prefix);
     else
@@ -1137,7 +1146,7 @@ PoincareAttributes_GetColorTableName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetColorBy(PyObject *self, PyObject *args)
+PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -1145,17 +1154,17 @@ PoincareAttributes_SetColorBy(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the colorBy in the object.
-    if(ival >= 0 && ival < 11)
-        obj->data->SetColorBy(PoincareAttributes::ColorBy(ival));
+    // Set the dataValue in the object.
+    if(ival >= 0 && ival < 12)
+        obj->data->SetDataValue(PoincareAttributes::DataValue(ival));
     else
     {
-        fprintf(stderr, "An invalid colorBy value was given. "
-                        "Valid values are in the range of [0,10]. "
+        fprintf(stderr, "An invalid dataValue value was given. "
+                        "Valid values are in the range of [0,11]. "
                         "You can also use the following names: "
                         "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
-                        "WindingPointOrder, ToroidalWindings, PoloidalWindings, SafetyFactor, "
-                        "Confidence, RidgelineVariance.");
+                        "WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, PoloidalWindings, "
+                        "SafetyFactor, Confidence, RidgelineVariance.");
         return NULL;
     }
 
@@ -1164,10 +1173,34 @@ PoincareAttributes_SetColorBy(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetColorBy(PyObject *self, PyObject *args)
+PoincareAttributes_GetDataValue(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColorBy()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataValue()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetShowOPoints(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showOPoints in the object.
+    obj->data->SetShowOPoints(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowOPoints(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowOPoints()?1L:0L);
     return retval;
 }
 
@@ -1369,8 +1402,10 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetSingleColor", PoincareAttributes_GetSingleColor, METH_VARARGS},
     {"SetColorTableName", PoincareAttributes_SetColorTableName, METH_VARARGS},
     {"GetColorTableName", PoincareAttributes_GetColorTableName, METH_VARARGS},
-    {"SetColorBy", PoincareAttributes_SetColorBy, METH_VARARGS},
-    {"GetColorBy", PoincareAttributes_GetColorBy, METH_VARARGS},
+    {"SetDataValue", PoincareAttributes_SetDataValue, METH_VARARGS},
+    {"GetDataValue", PoincareAttributes_GetDataValue, METH_VARARGS},
+    {"SetShowOPoints", PoincareAttributes_SetShowOPoints, METH_VARARGS},
+    {"GetShowOPoints", PoincareAttributes_GetShowOPoints, METH_VARARGS},
     {"SetShowIslands", PoincareAttributes_SetShowIslands, METH_VARARGS},
     {"GetShowIslands", PoincareAttributes_GetShowIslands, METH_VARARGS},
     {"SetShowLines", PoincareAttributes_SetShowLines, METH_VARARGS},
@@ -1492,8 +1527,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetSingleColor(self, NULL);
     if(strcmp(name, "colorTableName") == 0)
         return PoincareAttributes_GetColorTableName(self, NULL);
-    if(strcmp(name, "colorBy") == 0)
-        return PoincareAttributes_GetColorBy(self, NULL);
+    if(strcmp(name, "dataValue") == 0)
+        return PoincareAttributes_GetDataValue(self, NULL);
     if(strcmp(name, "OriginalValue") == 0)
         return PyInt_FromLong(long(PoincareAttributes::OriginalValue));
     if(strcmp(name, "InputOrder") == 0)
@@ -1506,6 +1541,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::WindingOrder));
     if(strcmp(name, "WindingPointOrder") == 0)
         return PyInt_FromLong(long(PoincareAttributes::WindingPointOrder));
+    if(strcmp(name, "WindingPointOrderModulo") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::WindingPointOrderModulo));
     if(strcmp(name, "ToroidalWindings") == 0)
         return PyInt_FromLong(long(PoincareAttributes::ToroidalWindings));
     if(strcmp(name, "PoloidalWindings") == 0)
@@ -1517,6 +1554,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "RidgelineVariance") == 0)
         return PyInt_FromLong(long(PoincareAttributes::RidgelineVariance));
 
+    if(strcmp(name, "showOPoints") == 0)
+        return PoincareAttributes_GetShowOPoints(self, NULL);
     if(strcmp(name, "showIslands") == 0)
         return PoincareAttributes_GetShowIslands(self, NULL);
     if(strcmp(name, "showLines") == 0)
@@ -1593,8 +1632,10 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetSingleColor(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
         obj = PoincareAttributes_SetColorTableName(self, tuple);
-    else if(strcmp(name, "colorBy") == 0)
-        obj = PoincareAttributes_SetColorBy(self, tuple);
+    else if(strcmp(name, "dataValue") == 0)
+        obj = PoincareAttributes_SetDataValue(self, tuple);
+    else if(strcmp(name, "showOPoints") == 0)
+        obj = PoincareAttributes_SetShowOPoints(self, tuple);
     else if(strcmp(name, "showIslands") == 0)
         obj = PoincareAttributes_SetShowIslands(self, tuple);
     else if(strcmp(name, "showLines") == 0)

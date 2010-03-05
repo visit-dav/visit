@@ -327,6 +327,35 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
 #ifdef ENGINE
 
+    // Make the number of punctures 2x because the analysis uses only
+    // the punctures in the same direction as the plane.
+    poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
+                                   2*atts.GetMinPunctures());
+
+    poincareFilter->SetMaxPunctures(2*atts.GetMaxPunctures());
+    
+    vtkPlane *intPlane = vtkPlane::New();
+    intPlane->SetOrigin( 0,0,0 ); 
+    intPlane->SetNormal( 0,1,0 ); 
+    poincareFilter->SetIntersectionObject(intPlane);    
+    intPlane->Delete();
+    
+    poincareFilter->SetStreamlineDirection(0);
+
+    switch (atts.GetSourceType())
+    {
+      case PoincareAttributes::SpecifiedPoint:
+        poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
+        poincareFilter->SetPointSource(atts.GetPointSource());
+        break;
+
+      case PoincareAttributes::SpecifiedLine:
+        poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
+        poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
+        poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
+        break;
+    }
+
     // Set the streamline attributes.
     if (atts.GetIntegrationType() == PoincareAttributes::DormandPrince)
         poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORMAND_PRINCE);
@@ -340,60 +369,36 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
 
-    // Make the number of punctures 2x because the analysis uses only
-    // the punctures in the same direction as the plane.
-    poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
-                                   2*atts.GetMinPunctures());
 
-    poincareFilter->SetMaxPunctures(2*atts.GetMaxPunctures());
-    
-    vtkPlane *intPlane = vtkPlane::New();
-    intPlane->SetOrigin( 0,0,0 ); 
-    intPlane->SetNormal( 0,1,0 ); 
-    
-    poincareFilter->SetIntersectionObject(intPlane);
-    
-    intPlane->Delete();
-    
-    poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
-    poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
-    poincareFilter->SetStreamlineDirection(0);
-    poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
 
-    switch (atts.GetSourceType())
-    {
-      case PoincareAttributes::SpecifiedPoint:
-        poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
-        poincareFilter->SetPointSource(atts.GetPointSource());
-        break;
-
-      case PoincareAttributes::SpecifiedLine:
-        poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
-        poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
-        break;
-    }
-
-    poincareFilter->SetShowLines(atts.GetShowLines());
-    poincareFilter->SetShowPoints(atts.GetShowPoints());
-    poincareFilter->SetShowIslands( atts.GetShowIslands() );
-    poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
-
-    poincareFilter->SetColorBy( atts.GetColorBy() );
     poincareFilter->SetMaxToroidalWinding( atts.GetMaxToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetHitRate( atts.GetHitRate() );
     poincareFilter->SetOverlaps( atts.GetOverlaps() );
-    poincareFilter->SetShowCurves( atts.GetMeshType() == 0 );
     poincareFilter->SetAdjustPlane( atts.GetAdjustPlane() );
 
-    vector < double > planes;
 
+    poincareFilter->SetShowCurves( atts.GetMeshType() == 0 );
+
+    vector < double > planes;
     unsigned int nplanes = atts.GetNumberPlanes();
 
     for( unsigned int i=0; i<nplanes; i++ )
         planes.push_back(2.0 * M_PI * (double) i / (double) nplanes - M_PI/2.0);
 
     poincareFilter->SetClipPlanes( planes );
+
+    poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
+    poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
+
+    poincareFilter->SetDataValue( atts.GetDataValue() );
+
+    poincareFilter->SetShowOPoints( atts.GetShowOPoints() );
+    poincareFilter->SetShowIslands( atts.GetShowIslands() );
+    poincareFilter->SetShowLines(atts.GetShowLines());
+    poincareFilter->SetShowPoints(atts.GetShowPoints());
+    poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
+
 #endif
 
     if(atts.GetColorType() == PoincareAttributes::ColorByColorTable)

@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 32;
+    private static int numAdditionalAttributes = 33;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -81,17 +81,18 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
     public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 1;
 
-    public final static int COLORBY_ORIGINALVALUE = 0;
-    public final static int COLORBY_INPUTORDER = 1;
-    public final static int COLORBY_POINTINDEX = 2;
-    public final static int COLORBY_PLANE = 3;
-    public final static int COLORBY_WINDINGORDER = 4;
-    public final static int COLORBY_WINDINGPOINTORDER = 5;
-    public final static int COLORBY_TOROIDALWINDINGS = 6;
-    public final static int COLORBY_POLOIDALWINDINGS = 7;
-    public final static int COLORBY_SAFETYFACTOR = 8;
-    public final static int COLORBY_CONFIDENCE = 9;
-    public final static int COLORBY_RIDGELINEVARIANCE = 10;
+    public final static int DATAVALUE_ORIGINALVALUE = 0;
+    public final static int DATAVALUE_INPUTORDER = 1;
+    public final static int DATAVALUE_POINTINDEX = 2;
+    public final static int DATAVALUE_PLANE = 3;
+    public final static int DATAVALUE_WINDINGORDER = 4;
+    public final static int DATAVALUE_WINDINGPOINTORDER = 5;
+    public final static int DATAVALUE_WINDINGPOINTORDERMODULO = 6;
+    public final static int DATAVALUE_TOROIDALWINDINGS = 7;
+    public final static int DATAVALUE_POLOIDALWINDINGS = 8;
+    public final static int DATAVALUE_SAFETYFACTOR = 9;
+    public final static int DATAVALUE_CONFIDENCE = 10;
+    public final static int DATAVALUE_RIDGELINEVARIANCE = 11;
 
 
     public PoincareAttributes()
@@ -132,7 +133,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
-        colorBy = COLORBY_SAFETYFACTOR;
+        dataValue = DATAVALUE_SAFETYFACTOR;
+        showOPoints = false;
         showIslands = false;
         showLines = true;
         showPoints = false;
@@ -179,7 +181,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
-        colorBy = COLORBY_SAFETYFACTOR;
+        dataValue = DATAVALUE_SAFETYFACTOR;
+        showOPoints = false;
         showIslands = false;
         showLines = true;
         showPoints = false;
@@ -231,7 +234,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = obj.colorType;
         singleColor = new ColorAttribute(obj.singleColor);
         colorTableName = new String(obj.colorTableName);
-        colorBy = obj.colorBy;
+        dataValue = obj.dataValue;
+        showOPoints = obj.showOPoints;
         showIslands = obj.showIslands;
         showLines = obj.showLines;
         showPoints = obj.showPoints;
@@ -297,7 +301,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (colorType == obj.colorType) &&
                 (singleColor == obj.singleColor) &&
                 (colorTableName.equals(obj.colorTableName)) &&
-                (colorBy == obj.colorBy) &&
+                (dataValue == obj.dataValue) &&
+                (showOPoints == obj.showOPoints) &&
                 (showIslands == obj.showIslands) &&
                 (showLines == obj.showLines) &&
                 (showPoints == obj.showPoints) &&
@@ -490,46 +495,52 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(24);
     }
 
-    public void SetColorBy(int colorBy_)
+    public void SetDataValue(int dataValue_)
     {
-        colorBy = colorBy_;
+        dataValue = dataValue_;
         Select(25);
+    }
+
+    public void SetShowOPoints(boolean showOPoints_)
+    {
+        showOPoints = showOPoints_;
+        Select(26);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(26);
+        Select(27);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(27);
+        Select(28);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(28);
+        Select(29);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(29);
+        Select(30);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(30);
+        Select(31);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(31);
+        Select(32);
     }
 
     // Property getting methods
@@ -558,7 +569,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetColorType() { return colorType; }
     public ColorAttribute GetSingleColor() { return singleColor; }
     public String         GetColorTableName() { return colorTableName; }
-    public int            GetColorBy() { return colorBy; }
+    public int            GetDataValue() { return dataValue; }
+    public boolean        GetShowOPoints() { return showOPoints; }
     public boolean        GetShowIslands() { return showIslands; }
     public boolean        GetShowLines() { return showLines; }
     public boolean        GetShowPoints() { return showPoints; }
@@ -620,18 +632,20 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(24, buf))
             buf.WriteString(colorTableName);
         if(WriteSelect(25, buf))
-            buf.WriteInt(colorBy);
+            buf.WriteInt(dataValue);
         if(WriteSelect(26, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteBool(showOPoints);
         if(WriteSelect(27, buf))
-            buf.WriteBool(showLines);
+            buf.WriteBool(showIslands);
         if(WriteSelect(28, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteBool(showLines);
         if(WriteSelect(29, buf))
-            buf.WriteBool(verboseFlag);
+            buf.WriteBool(showPoints);
         if(WriteSelect(30, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(31, buf))
+            buf.WriteBool(legendFlag);
+        if(WriteSelect(32, buf))
             buf.WriteBool(lightingFlag);
     }
 
@@ -716,24 +730,27 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetColorTableName(buf.ReadString());
             break;
         case 25:
-            SetColorBy(buf.ReadInt());
+            SetDataValue(buf.ReadInt());
             break;
         case 26:
-            SetShowIslands(buf.ReadBool());
+            SetShowOPoints(buf.ReadBool());
             break;
         case 27:
-            SetShowLines(buf.ReadBool());
+            SetShowIslands(buf.ReadBool());
             break;
         case 28:
-            SetShowPoints(buf.ReadBool());
+            SetShowLines(buf.ReadBool());
             break;
         case 29:
-            SetVerboseFlag(buf.ReadBool());
+            SetShowPoints(buf.ReadBool());
             break;
         case 30:
-            SetLegendFlag(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 31:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 32:
             SetLightingFlag(buf.ReadBool());
             break;
         }
@@ -798,30 +815,33 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
-        str = str + indent + "colorBy = ";
-        if(colorBy == COLORBY_ORIGINALVALUE)
-            str = str + "COLORBY_ORIGINALVALUE";
-        if(colorBy == COLORBY_INPUTORDER)
-            str = str + "COLORBY_INPUTORDER";
-        if(colorBy == COLORBY_POINTINDEX)
-            str = str + "COLORBY_POINTINDEX";
-        if(colorBy == COLORBY_PLANE)
-            str = str + "COLORBY_PLANE";
-        if(colorBy == COLORBY_WINDINGORDER)
-            str = str + "COLORBY_WINDINGORDER";
-        if(colorBy == COLORBY_WINDINGPOINTORDER)
-            str = str + "COLORBY_WINDINGPOINTORDER";
-        if(colorBy == COLORBY_TOROIDALWINDINGS)
-            str = str + "COLORBY_TOROIDALWINDINGS";
-        if(colorBy == COLORBY_POLOIDALWINDINGS)
-            str = str + "COLORBY_POLOIDALWINDINGS";
-        if(colorBy == COLORBY_SAFETYFACTOR)
-            str = str + "COLORBY_SAFETYFACTOR";
-        if(colorBy == COLORBY_CONFIDENCE)
-            str = str + "COLORBY_CONFIDENCE";
-        if(colorBy == COLORBY_RIDGELINEVARIANCE)
-            str = str + "COLORBY_RIDGELINEVARIANCE";
+        str = str + indent + "dataValue = ";
+        if(dataValue == DATAVALUE_ORIGINALVALUE)
+            str = str + "DATAVALUE_ORIGINALVALUE";
+        if(dataValue == DATAVALUE_INPUTORDER)
+            str = str + "DATAVALUE_INPUTORDER";
+        if(dataValue == DATAVALUE_POINTINDEX)
+            str = str + "DATAVALUE_POINTINDEX";
+        if(dataValue == DATAVALUE_PLANE)
+            str = str + "DATAVALUE_PLANE";
+        if(dataValue == DATAVALUE_WINDINGORDER)
+            str = str + "DATAVALUE_WINDINGORDER";
+        if(dataValue == DATAVALUE_WINDINGPOINTORDER)
+            str = str + "DATAVALUE_WINDINGPOINTORDER";
+        if(dataValue == DATAVALUE_WINDINGPOINTORDERMODULO)
+            str = str + "DATAVALUE_WINDINGPOINTORDERMODULO";
+        if(dataValue == DATAVALUE_TOROIDALWINDINGS)
+            str = str + "DATAVALUE_TOROIDALWINDINGS";
+        if(dataValue == DATAVALUE_POLOIDALWINDINGS)
+            str = str + "DATAVALUE_POLOIDALWINDINGS";
+        if(dataValue == DATAVALUE_SAFETYFACTOR)
+            str = str + "DATAVALUE_SAFETYFACTOR";
+        if(dataValue == DATAVALUE_CONFIDENCE)
+            str = str + "DATAVALUE_CONFIDENCE";
+        if(dataValue == DATAVALUE_RIDGELINEVARIANCE)
+            str = str + "DATAVALUE_RIDGELINEVARIANCE";
         str = str + "\n";
+        str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
         str = str + boolToString("showIslands", showIslands, indent) + "\n";
         str = str + boolToString("showLines", showLines, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
@@ -858,7 +878,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            colorType;
     private ColorAttribute singleColor;
     private String         colorTableName;
-    private int            colorBy;
+    private int            dataValue;
+    private boolean        showOPoints;
     private boolean        showIslands;
     private boolean        showLines;
     private boolean        showPoints;
