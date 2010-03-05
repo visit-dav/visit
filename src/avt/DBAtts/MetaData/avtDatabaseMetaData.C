@@ -3697,7 +3697,6 @@ avtDatabaseMetaData::IsTimeAccurate(int ts) const
 //  Modifications:
 //    Mark C. Miller, Tue Mar  6 23:40:10 PST 2007
 //    Corrected logic for monotone increasing
-//
 // ****************************************************************************
 
 bool
@@ -3947,7 +3946,6 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                              GetCurves(i).originalName.c_str(), 
                              replacementName.c_str());
             IssueWarning(msg);
-            cout<<msg<<endl;
             GetCurves(i).name = replacementName;
         }
     }
