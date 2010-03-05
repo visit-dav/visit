@@ -112,7 +112,7 @@ do
    $cmd visit$version2.linux-x86_64-fedora4.tar.gz >> $output
    $cmd visit$version2.linux-x86_64-ubuntu8.tar.gz >> $output
    $cmd visit$version2.linux-x86_64.tar.gz         >> $output
-   $cmd visit$version2.linux_rhel3.tar.gz          >> $output
+   $cmd visit$version2.linux-rhel3.tar.gz          >> $output
 
    echo ""                                         >> $output
    echo "The VisIt source code $property"          >> $output
