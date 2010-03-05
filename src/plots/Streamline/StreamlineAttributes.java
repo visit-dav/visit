@@ -66,12 +66,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
-    public final static int SOURCETYPE_SPECIFIEDLINE = 1;
-    public final static int SOURCETYPE_SPECIFIEDPLANE = 2;
-    public final static int SOURCETYPE_SPECIFIEDSPHERE = 3;
-    public final static int SOURCETYPE_SPECIFIEDBOX = 4;
-    public final static int SOURCETYPE_SPECIFIEDCIRCLE = 5;
-    public final static int SOURCETYPE_SPECIFIEDPOINTLIST = 6;
+    public final static int SOURCETYPE_SPECIFIEDPOINTLIST = 1;
+    public final static int SOURCETYPE_SPECIFIEDLINE = 2;
+    public final static int SOURCETYPE_SPECIFIEDCIRCLE = 3;
+    public final static int SOURCETYPE_SPECIFIEDPLANE = 4;
+    public final static int SOURCETYPE_SPECIFIEDSPHERE = 5;
+    public final static int SOURCETYPE_SPECIFIEDBOX = 6;
 
     public final static int COLORINGMETHOD_SOLID = 0;
     public final static int COLORINGMETHOD_COLORBYSPEED = 1;
@@ -1351,18 +1351,18 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + indent + "sourceType = ";
         if(sourceType == SOURCETYPE_SPECIFIEDPOINT)
             str = str + "SOURCETYPE_SPECIFIEDPOINT";
+        if(sourceType == SOURCETYPE_SPECIFIEDPOINTLIST)
+            str = str + "SOURCETYPE_SPECIFIEDPOINTLIST";
         if(sourceType == SOURCETYPE_SPECIFIEDLINE)
             str = str + "SOURCETYPE_SPECIFIEDLINE";
+        if(sourceType == SOURCETYPE_SPECIFIEDCIRCLE)
+            str = str + "SOURCETYPE_SPECIFIEDCIRCLE";
         if(sourceType == SOURCETYPE_SPECIFIEDPLANE)
             str = str + "SOURCETYPE_SPECIFIEDPLANE";
         if(sourceType == SOURCETYPE_SPECIFIEDSPHERE)
             str = str + "SOURCETYPE_SPECIFIEDSPHERE";
         if(sourceType == SOURCETYPE_SPECIFIEDBOX)
             str = str + "SOURCETYPE_SPECIFIEDBOX";
-        if(sourceType == SOURCETYPE_SPECIFIEDCIRCLE)
-            str = str + "SOURCETYPE_SPECIFIEDCIRCLE";
-        if(sourceType == SOURCETYPE_SPECIFIEDPOINTLIST)
-            str = str + "SOURCETYPE_SPECIFIEDPOINTLIST";
         str = str + "\n";
         str = str + doubleToString("maxStepLength", maxStepLength, indent) + "\n";
         str = str + doubleToString("termination", termination, indent) + "\n";

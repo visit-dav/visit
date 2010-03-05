@@ -27,12 +27,12 @@
     <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">
         SpecifiedPoint
+        SpecifiedPointList
         SpecifiedLine
+        SpecifiedCircle
         SpecifiedPlane
         SpecifiedSphere
         SpecifiedBox
-        SpecifiedCircle
-        SpecifiedPointList
       </Enum>
       <Enum name="ColoringMethod">
         Solid

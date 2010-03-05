@@ -77,16 +77,24 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *sourceType_names = "SpecifiedPoint, SpecifiedLine, SpecifiedPlane, SpecifiedSphere, SpecifiedBox, "
-        "SpecifiedCircle, SpecifiedPointList";
+    const char *sourceType_names = "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
+        "SpecifiedSphere, SpecifiedBox";
     switch (atts->GetSourceType())
     {
       case StreamlineAttributes::SpecifiedPoint:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPoint  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
+      case StreamlineAttributes::SpecifiedPointList:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPointList  # %s\n", prefix, prefix, sourceType_names);
+          str += tmpStr;
+          break;
       case StreamlineAttributes::SpecifiedLine:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::SpecifiedCircle:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedCircle  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::SpecifiedPlane:
@@ -99,14 +107,6 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::SpecifiedBox:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedBox  # %s\n", prefix, prefix, sourceType_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::SpecifiedCircle:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedCircle  # %s\n", prefix, prefix, sourceType_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::SpecifiedPointList:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPointList  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -591,8 +591,8 @@ StreamlineAttributes_SetSourceType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid sourceType value was given. "
                         "Valid values are in the range of [0,6]. "
                         "You can also use the following names: "
-                        "SpecifiedPoint, SpecifiedLine, SpecifiedPlane, SpecifiedSphere, SpecifiedBox, "
-                        "SpecifiedCircle, SpecifiedPointList.");
+                        "SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, "
+                        "SpecifiedSphere, SpecifiedBox.");
         return NULL;
     }
 
@@ -2568,18 +2568,18 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetSourceType(self, NULL);
     if(strcmp(name, "SpecifiedPoint") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedPoint));
+    if(strcmp(name, "SpecifiedPointList") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::SpecifiedPointList));
     if(strcmp(name, "SpecifiedLine") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedLine));
+    if(strcmp(name, "SpecifiedCircle") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::SpecifiedCircle));
     if(strcmp(name, "SpecifiedPlane") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedPlane));
     if(strcmp(name, "SpecifiedSphere") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedSphere));
     if(strcmp(name, "SpecifiedBox") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedBox));
-    if(strcmp(name, "SpecifiedCircle") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::SpecifiedCircle));
-    if(strcmp(name, "SpecifiedPointList") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::SpecifiedPointList));
 
     if(strcmp(name, "maxStepLength") == 0)
         return StreamlineAttributes_GetMaxStepLength(self, NULL);
