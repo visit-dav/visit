@@ -90,7 +90,7 @@ class QvisTruecolorPlotWindow : public QvisPostableWindowObserver
     int plotType;
     QvisOpacitySlider *opacity;
     QLabel *opacityLabel;
-    QCheckBox *lighting;
+    QCheckBox *lightingToggle;
 
     TruecolorAttributes *atts;
 };

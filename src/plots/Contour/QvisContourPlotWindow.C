@@ -297,7 +297,7 @@ QvisContourPlotWindow::CreateWindowContents()
     //
 
     QGroupBox * styleGroup = new QGroupBox(central);
-    styleGroup->setTitle(tr("Point / Line Style"));
+    styleGroup->setTitle(tr("Line Style"));
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);

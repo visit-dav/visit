@@ -43,6 +43,7 @@
 
 #include <QCheckBox>
 #include <QLabel>
+#include <QGroupBox>
 #include <QLayout>
 #include <QvisOpacitySlider.h>
 #include <stdio.h>
@@ -115,21 +116,42 @@ QvisTruecolorPlotWindow::~QvisTruecolorPlotWindow()
 void
 QvisTruecolorPlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(0);
-    topLayout->addLayout(mainLayout);
+    //
+    // Create the color stuff
+    //
+    QGroupBox * colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroup);
 
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10);
+ 
     opacityLabel = new QLabel(tr("Opacity"), central);
-    mainLayout->addWidget(opacityLabel,0,0);
+    colorLayout->addWidget(opacityLabel,0,0);
     opacity = new QvisOpacitySlider(0,255,25,255, central, NULL);
     opacity->setTickInterval(64);
     opacity->setGradientColor(QColor(0, 0, 0));
     connect(opacity, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(opacityChanged(int, const void*)));
-    mainLayout->addWidget(opacity, 0,1);
+    colorLayout->addWidget(opacity, 0, 1, 1, 3);
 
-    lighting = new QCheckBox(tr("Lighting"), central);
-    connect(lighting, SIGNAL(toggled(bool)), this, SLOT(lightingToggled(bool)));
-    mainLayout->addWidget(lighting, 1, 0);
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the lighting toggle
+    lightingToggle = new QCheckBox(tr("Lighting"), central);
+    connect(lightingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(lightingToggled(bool)));
+    miscLayout->addWidget(lightingToggle, 0, 1);
 }
 
 
@@ -169,9 +191,9 @@ QvisTruecolorPlotWindow::UpdateWindow(bool doAll)
             opacity->blockSignals(false);
             break;
           case 1: //lighting
-            lighting->blockSignals(true);
-            lighting->setChecked(atts->GetLightingFlag());
-            lighting->blockSignals(false);
+            lightingToggle->blockSignals(true);
+            lightingToggle->setChecked(atts->GetLightingFlag());
+            lightingToggle->blockSignals(false);
             break;
         }
     }
