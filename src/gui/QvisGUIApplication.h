@@ -329,6 +329,9 @@ class SplashScreen;
 //    Gunther H. Weber, Fri Aug 15 10:22:13 PDT 2008
 //    Added methods for initiating and synchronizing repick.
 //
+//    Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
+//    Added FireInit & Init to work around a Qt/Glib init problem in linux.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -338,6 +341,9 @@ public:
     QvisGUIApplication(int &argc, char **argv);
     ~QvisGUIApplication();
     int Exec();
+
+signals:
+    void FireInit(int stage);
 
 private:
     void AddViewerArguments(int argc, char **argv);
@@ -398,16 +404,19 @@ private:
     void RestoreCrashRecoveryFile();
     void RemoveCrashRecoveryFile(bool) const;
     QString CrashRecoveryFile() const;
-    
+
     void ExtractSystemDefaultAppearance();
-        
+
+
 public slots:
     void newExpression();
     void SaveCrashRecoveryFile();
     void Interpret(const QString &);
     void redoPick();
     void restorePickAttributesAfterRepick();
+
 private slots:
+    void Init(int stage);
     void Quit();
     void HeavyInitialization();
     void ReadFromViewer(int);

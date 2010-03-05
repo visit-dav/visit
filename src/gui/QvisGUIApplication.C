@@ -597,6 +597,10 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Brad Whitlock, Tue Mar  2 16:49:19 PST 2010
 //   Don't call setColorSpec for now.
 //
+//   Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
+//   Use Queued signal/slot connection instead of QTimer::singleShot for
+//   init to work around a Qt/Glib init problem in linux.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -890,8 +894,14 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 
     //
     // Start the heavy duty initialization from within the event loop.
+    // Emitting a signal connected to the Init() slot via a Queued
+    // connection accomplishes this.
     //
-    QTimer::singleShot(10, this, SLOT(HeavyInitialization()));
+    connect(this,SIGNAL(FireInit(int)),
+            this, SLOT(Init(int)),
+            Qt::QueuedConnection);
+
+    emit FireInit(0); // 0 for HeavyInit
 
     visitTimer->StopTimer(total, "QvisGUIApplication constuctor");
 }
@@ -1012,6 +1022,31 @@ QvisGUIApplication::~QvisGUIApplication()
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::Init
+//
+// Purpose:
+//   This slot calls HeavyInit or FinalInit.
+//   It is a replacement/work around for using QTimer::singleShot to provide
+//   interactive startup. On X11 with Qt 4.5 & Qt 4.6 the QTimer::singleShot 
+//   approach hangs in the GLib event loop waiting for mouse events.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Mar  5 09:43:17 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::Init(int stage)
+{
+    if(stage ==0)
+        HeavyInitialization();
+    else if(stage == 1)
+        FinalInitialization();
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::HeavyInitialization
 //
 // Purpose: 
@@ -1041,6 +1076,10 @@ QvisGUIApplication::~QvisGUIApplication()
 //   Brad Whitlock, Tue Jun 24 11:46:31 PDT 2008
 //   Change how the plugin managers get initialized.
 //
+//   Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
+//   Emit FireInit signal instead of using QTimer::singleShot to
+//   work around a Qt/Glib init problem in linux.
+//
 // ****************************************************************************
 
 void
@@ -1055,7 +1094,7 @@ QvisGUIApplication::HeavyInitialization()
     if(heavyInitStage == 0) 
         stagedInit = visitTimer->StartTimer();
     timeid = visitTimer->StartTimer();
-    
+
     debug4 << "QvisGUIApplication::HeavyInitialization: heavyInitStage="
            << heavyInitStage << endl;
 
@@ -1189,7 +1228,7 @@ QvisGUIApplication::HeavyInitialization()
     {
         if(gotoNextStage)
            ++heavyInitStage;
-        QTimer::singleShot(10, this, SLOT(HeavyInitialization()));
+        emit FireInit(0);
     }
     else
         visitTimer->StopTimer(stagedInit, "HeavyInitialization");
@@ -1314,6 +1353,10 @@ QvisGUIApplication::Synchronize(int tag)
 //   current path from fileServer instead of '.', as '.' evaluates to the
 //   install dir on Windows, and users may not have write access. 
 //
+//   Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
+//   Emit FireInit signal instead of using QTimer::singleShot to
+//   work around a Qt/Glib init problem in linux.
+//
 // ****************************************************************************
 
 void
@@ -1321,7 +1364,7 @@ QvisGUIApplication::HandleSynchronize(int val)
 {
     if(val == VIEWER_READY_TAG)
     {
-        QTimer::singleShot(10, this, SLOT(FinalInitialization()));
+        emit FireInit(1);
     }
     else if(val == SET_FILE_HIGHLIGHT_TAG)
     {
@@ -1505,7 +1548,11 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //
 //   Gunther H. Weber, Fri Aug 15 10:47:43 PDT 2008
 //   Bug fix: Check for system visitrc file when determining whether loading
-//   the file should be delayed. 
+//   the file should be delayed.
+//
+//   Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
+//   Emit FireInit signal instead of using QTimer::singleShot to
+//   work around a Qt/Glib init problem in linux.
 //
 // ****************************************************************************
 
@@ -1710,7 +1757,7 @@ QvisGUIApplication::FinalInitialization()
     if(moreInit)
     {
         ++initStage;
-        QTimer::singleShot(10, this, SLOT(FinalInitialization()));
+        emit FireInit(1);
     }
 }
 
