@@ -1462,7 +1462,7 @@ create_rect2d()
 
     fprintf(xmf, "   <Grid Name=\"mesh\" GridType=\"Uniform\">\n");
     fprintf(xmf, "     <Topology TopologyType=\"2DRectMesh\" NumberOfElements=\"%d %d\"/>\n", NY+1, NX+1);
-    fprintf(xmf, "     <Geometry GeometryType=\"X_Y_Z\">\n");
+    fprintf(xmf, "     <Geometry GeometryType=\"VXVYVZ\">\n");
     fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NX+1);
     fprintf(xmf, "        mesh.h5:/X_1D\n");
     fprintf(xmf, "       </DataItem>\n");
@@ -1511,7 +1511,7 @@ create_rect3d()
 
     fprintf(xmf, "   <Grid Name=\"mesh\" GridType=\"Uniform\">\n");
     fprintf(xmf, "     <Topology TopologyType=\"3DRectMesh\" NumberOfElements=\"%d %d %d\"/>\n", NZ+1, NY+1, NX+1);
-    fprintf(xmf, "     <Geometry GeometryType=\"X_Y_Z\">\n");
+    fprintf(xmf, "     <Geometry GeometryType=\"VXVYVZ\">\n");
     fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NX+1);
     fprintf(xmf, "        mesh.h5:/X_1D\n");
     fprintf(xmf, "       </DataItem>\n");
@@ -1807,7 +1807,7 @@ create_err_dataitem7()
 
     fprintf(xmf, "   <Grid Name=\"mesh1\" GridType=\"Uniform\">\n");
     fprintf(xmf, "     <Topology TopologyType=\"3DSMesh\" NumberOfElements=\"%d %d %d\"/>\n", NZ+1, NY+1, NX+1);
-    fprintf(xmf, "     <Geometry GeometryType=\"VXVYVZ\">\n");
+    fprintf(xmf, "     <Geometry GeometryType=\"X_Y_Z\">\n");
     fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", (NZ+2)*(NY+1)*(NX+1), 1);
     fprintf(xmf, "        mesh.h5:/X\n");
     fprintf(xmf, "       </DataItem>\n");
@@ -1822,7 +1822,7 @@ create_err_dataitem7()
 
     fprintf(xmf, "   <Grid Name=\"mesh2\" GridType=\"Uniform\">\n");
     fprintf(xmf, "     <Topology TopologyType=\"3DSMesh\" NumberOfElements=\"%d %d %d\"/>\n", NZ+2, NY+1, NX+1);
-    fprintf(xmf, "     <Geometry GeometryType=\"VXVYVZ\">\n");
+    fprintf(xmf, "     <Geometry GeometryType=\"X_Y_Z\">\n");
     fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", (NZ+1)*(NY+1)*(NX+1), 1);
     fprintf(xmf, "        mesh.h5:/X\n");
     fprintf(xmf, "       </DataItem>\n");
