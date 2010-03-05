@@ -50,9 +50,9 @@
 //
 
 static const char *SourceType_strings[] = {
-"SpecifiedPoint", "SpecifiedLine", "SpecifiedPlane", 
-"SpecifiedSphere", "SpecifiedBox", "SpecifiedCircle", 
-"SpecifiedPointList"};
+"SpecifiedPoint", "SpecifiedPointList", "SpecifiedLine", 
+"SpecifiedCircle", "SpecifiedPlane", "SpecifiedSphere", 
+"SpecifiedBox"};
 
 std::string
 StreamlineAttributes::SourceType_ToString(StreamlineAttributes::SourceType t)
