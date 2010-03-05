@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <QvisTensorPlotWindow.h>
+#include <QTabWidget>
 #include <QLayout> 
 #include <QButtonGroup>
 #include <QGroupBox>
@@ -130,12 +131,24 @@ QvisTensorPlotWindow::~QvisTensorPlotWindow()
 void
 QvisTensorPlotWindow::CreateWindowContents()
 {
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
+
+    // ----------------------------------------------------------------------
+    // First tab
+    // ----------------------------------------------------------------------
+    QWidget *firstTab = new QWidget(central);
+    propertyTabs->addTab(firstTab, tr("Data"));
+    
+    QGridLayout *mainLayout = new QGridLayout(firstTab);
+
+
     //
     // Create the scale-related widgets.
     //
     QGroupBox * scaleGroupBox = new QGroupBox(central);
     scaleGroupBox->setTitle(tr("Scale"));
-    topLayout->addWidget(scaleGroupBox);
+    mainLayout->addWidget(scaleGroupBox);
 
     QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
     sgLayout->setMargin(5);
@@ -163,12 +176,57 @@ QvisTensorPlotWindow::CreateWindowContents()
             this, SLOT(autoScaleToggled(bool)));
     sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
 
+
+    //
+    // Create the reduce-related widgets.
+    //
+    QGroupBox * reduceGroupBox = new QGroupBox(central);
+    reduceGroupBox->setTitle(tr("Reduce by"));
+    mainLayout->addWidget(reduceGroupBox);
+    QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
+    rgLayout->setSpacing(10);
+//    rgLayout->setColumnStretch(1, 10);
+
+    // Create the reduce button group.
+    reduceButtonGroup = new QButtonGroup(reduceGroupBox);
+    connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+    QRadioButton *rb = new QRadioButton(tr("N tensors"), reduceGroupBox);
+    rb->setChecked(true);
+    reduceButtonGroup->addButton(rb, 0);
+    rgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
+    reduceButtonGroup->addButton(rb, 1);
+    rgLayout->addWidget(rb, 1, 0);
+
+    // Add the N tensors line edit.
+    nTensorsLineEdit = new QLineEdit(reduceGroupBox);
+    connect(scaleLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processNTensorsText()));
+    rgLayout->addWidget(nTensorsLineEdit, 0, 1);
+
+    // Add the stride line edit.
+    strideLineEdit = new QLineEdit(reduceGroupBox);
+    connect(strideLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processStrideText()));
+    rgLayout->addWidget(strideLineEdit, 1, 1);
+
+
+
+    // ----------------------------------------------------------------------
+    // Second tab
+    // ----------------------------------------------------------------------
+    QWidget *secondTab = new QWidget(central);
+    propertyTabs->addTab(secondTab, tr("Display"));
+    
+    mainLayout = new QGridLayout(secondTab);
+
     //
     // Create the color-related widgets.
     //
     QGroupBox * colorGroupBox = new QGroupBox(central);
     colorGroupBox->setTitle(tr("Color"));
-    topLayout->addWidget(colorGroupBox);
+    mainLayout->addWidget(colorGroupBox);
 
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
     cgLayout->setMargin(5);
@@ -179,7 +237,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     colorButtonGroup = new QButtonGroup(colorGroupBox);
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QRadioButton *rb = new QRadioButton(tr("Eigenvalues"), colorGroupBox);
+    rb = new QRadioButton(tr("Eigenvalues"), colorGroupBox);
     colorButtonGroup->addButton(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
     rb = new QRadioButton(tr("Constant"), colorGroupBox);
@@ -200,47 +258,12 @@ QvisTensorPlotWindow::CreateWindowContents()
             this, SLOT(tensorColorChanged(const QColor &)));
     cgLayout->addWidget(tensorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
-
-    //
-    // Create the reduce-related widgets.
-    //
-    QGroupBox * reduceGroupBox = new QGroupBox(central);
-    reduceGroupBox->setTitle(tr("Reduce by"));
-    topLayout->addWidget(reduceGroupBox);
-    QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
-    rgLayout->setSpacing(10);
-    rgLayout->setColumnStretch(1, 10);
-
-    // Create the reduce button group.
-    reduceButtonGroup = new QButtonGroup(reduceGroupBox);
-    connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton(tr("N tensors"), reduceGroupBox);
-    rb->setChecked(true);
-    reduceButtonGroup->addButton(rb, 0);
-    rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
-    reduceButtonGroup->addButton(rb, 1);
-    rgLayout->addWidget(rb, 1, 0);
-
-    // Add the N tensors line edit.
-    nTensorsLineEdit = new QLineEdit(reduceGroupBox);
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processNTensorsText()));
-    rgLayout->addWidget(nTensorsLineEdit, 0, 1);
-
-    // Add the stride line edit.
-    strideLineEdit = new QLineEdit(reduceGroupBox);
-    connect(strideLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processStrideText()));
-    rgLayout->addWidget(strideLineEdit, 1, 1);
-
     //
     // Create the misc stuff
     //
     QGroupBox * miscGroup = new QGroupBox(central);
     miscGroup->setTitle(tr("Misc"));
-    topLayout->addWidget(miscGroup);
+    mainLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
     miscLayout->setMargin(5);

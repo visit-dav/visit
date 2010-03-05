@@ -175,12 +175,24 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 void
 QvisVectorPlotWindow::CreateWindowContents()
 {
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
+
+    // ----------------------------------------------------------------------
+    // First tab
+    // ----------------------------------------------------------------------
+    QWidget *firstTab = new QWidget(central);
+    propertyTabs->addTab(firstTab, tr("Data"));
+    
+    QGridLayout *mainLayout = new QGridLayout(firstTab);
+
+
     //
     // Create the scale-related widgets.
     //
     QGroupBox * scaleGroupBox = new QGroupBox(central);
     scaleGroupBox->setTitle(tr("Scale"));
-    topLayout->addWidget(scaleGroupBox);
+    mainLayout->addWidget(scaleGroupBox);
 
     QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
     sgLayout->setMargin(5);
@@ -208,49 +220,13 @@ QvisVectorPlotWindow::CreateWindowContents()
             this, SLOT(autoScaleToggled(bool)));
     sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
 
-    //
-    // Create the color-related widgets.
-    //
-    QGroupBox * colorGroupBox = new QGroupBox(central);
-    colorGroupBox->setTitle(tr("Color"));
-    topLayout->addWidget(colorGroupBox);
-
-    QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
-    cgLayout->setMargin(5);
-    cgLayout->setSpacing(10);
-    cgLayout->setColumnStretch(1, 10);
-
-    // Add the vector color label.
-    colorButtonGroup = new QButtonGroup(colorGroupBox);
-    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-    QRadioButton *rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
-    colorButtonGroup->addButton(rb, 0);
-    cgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Constant"), colorGroupBox);
-    rb->setChecked(true);
-    colorButtonGroup->addButton(rb, 1);
-    cgLayout->addWidget(rb, 1, 0);
-
-    // Create the color-by-eigenvalues button.
-    colorTableButton = new QvisColorTableButton(colorGroupBox);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(colorTableClicked(bool, const QString &)));
-    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
-
-    // Create the vector color button.
-    vectorColor = new QvisColorButton(colorGroupBox);
-    vectorColor->setButtonColor(QColor(255, 0, 0));
-    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(vectorColorChanged(const QColor &)));
-    cgLayout->addWidget(vectorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
-
 
     //
     // Create the Limits stuff
     //
     limitsGroup = new QGroupBox(central);
-    cgLayout->addWidget(limitsGroup, 2, 0, 1, 3);
+    limitsGroup->setTitle(tr("Limits"));
+    mainLayout->addWidget(limitsGroup);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
     limitsLayout->setMargin(5);
@@ -285,22 +261,21 @@ QvisVectorPlotWindow::CreateWindowContents()
             this, SLOT(processMaxLimitText())); 
     limitsLayout->addWidget(maxLineEdit, 1, 3);
 
-
     //
     // Create the reduce-related widgets.
     //
     QGroupBox * reduceGroupBox = new QGroupBox(central);
     reduceGroupBox->setTitle(tr("Reduce by"));
-    topLayout->addWidget(reduceGroupBox);
+    mainLayout->addWidget(reduceGroupBox);
     QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
     rgLayout->setSpacing(10);
-    rgLayout->setColumnStretch(1, 10);
+//    rgLayout->setColumnStretch(1, 10);
 
     // Create the reduce button group.
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton(tr("N vectors"), reduceGroupBox);
+    QRadioButton *rb = new QRadioButton(tr("N vectors"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->addButton(rb, 0);
     rgLayout->addWidget(rb, 0, 0);
@@ -326,7 +301,54 @@ QvisVectorPlotWindow::CreateWindowContents()
                     reduceGroupBox);
     connect(limitToOrigToggle, SIGNAL(toggled(bool)),
             this, SLOT(limitToOrigToggled(bool)));
-    rgLayout->addWidget(limitToOrigToggle, 2, 0, 1, 2);
+    rgLayout->addWidget(limitToOrigToggle, 2, 0, 1, 4);
+
+
+    // ----------------------------------------------------------------------
+    // Second tab
+    // ----------------------------------------------------------------------
+    QWidget *secondTab = new QWidget(central);
+    propertyTabs->addTab(secondTab, tr("Display"));
+    
+    mainLayout = new QGridLayout(secondTab);
+
+
+    //
+    // Create the color-related widgets.
+    //
+    QGroupBox * colorGroupBox = new QGroupBox(central);
+    colorGroupBox->setTitle(tr("Color"));
+    mainLayout->addWidget(colorGroupBox);
+
+    QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
+    cgLayout->setMargin(5);
+    cgLayout->setSpacing(10);
+    cgLayout->setColumnStretch(1, 10);
+
+    // Add the vector color label.
+    colorButtonGroup = new QButtonGroup(colorGroupBox);
+    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+    rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
+    colorButtonGroup->addButton(rb, 0);
+    cgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Constant"), colorGroupBox);
+    rb->setChecked(true);
+    colorButtonGroup->addButton(rb, 1);
+    cgLayout->addWidget(rb, 1, 0);
+
+    // Create the color-by-eigenvalues button.
+    colorTableButton = new QvisColorTableButton(colorGroupBox);
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    // Create the vector color button.
+    vectorColor = new QvisColorButton(colorGroupBox);
+    vectorColor->setButtonColor(QColor(255, 0, 0));
+    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(vectorColorChanged(const QColor &)));
+    cgLayout->addWidget(vectorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
 
     //
@@ -334,7 +356,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     QGroupBox * styleGroupBox = new QGroupBox(central);
     styleGroupBox->setTitle(tr("Style"));
-    topLayout->addWidget(styleGroupBox);
+    mainLayout->addWidget(styleGroupBox);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroupBox);
     styleLayout->setMargin(5);
@@ -369,6 +391,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     lineWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     lineWidthLabel->setBuddy(lineWidth);
     styleLayout->addWidget(lineWidthLabel, 0, 3);
+
 
     // Add the stem width edit.
     stemWidthEdit = new QLineEdit(styleGroupBox);
@@ -416,7 +439,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Tail"), originBox);
     originButtonGroup->addButton(rb,2);
     originLayout->addWidget(rb);
-    styleLayout->addWidget(originBox, 7, 0, 1, 3);
+    styleLayout->addWidget(originBox, 3, 0, 1, 3);
 
 
     //
@@ -424,7 +447,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     QGroupBox * geometryGroup = new QGroupBox(central);
     geometryGroup->setTitle(tr("Geometry"));
-    topLayout->addWidget(geometryGroup);
+    mainLayout->addWidget(geometryGroup);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
@@ -450,7 +473,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     QGroupBox * miscGroup = new QGroupBox(central);
     miscGroup->setTitle(tr("Misc"));
-    topLayout->addWidget(miscGroup);
+    mainLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
     miscLayout->setMargin(5);
@@ -592,7 +615,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             colorButtonGroup->blockSignals(true);
             colorButtonGroup->button(vectorAtts->GetColorByMag() ? 0 : 1)->setChecked(true);
             colorButtonGroup->blockSignals(false);
-            limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+//            limitsGroup->setEnabled(vectorAtts->GetColorByMag());
             break;
           case VectorAttributes::ID_useLegend:
             legendToggle->blockSignals(true);
@@ -1183,7 +1206,7 @@ void
 QvisVectorPlotWindow::colorModeChanged(int index)
 {
     vectorAtts->SetColorByMag(index == 0);
-    limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+//    limitsGroup->setEnabled(vectorAtts->GetColorByMag());
     Apply();
 }
 
