@@ -131,12 +131,47 @@ void
 QvisTensorPlotWindow::CreateWindowContents()
 {
     //
+    // Create the scale-related widgets.
+    //
+    QGroupBox * scaleGroupBox = new QGroupBox(central);
+    scaleGroupBox->setTitle(tr("Scale"));
+    topLayout->addWidget(scaleGroupBox);
+
+    QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
+    sgLayout->setMargin(5);
+    sgLayout->setSpacing(10);
+    sgLayout->setColumnStretch(1, 10);
+
+    // Add the scale line edit.
+    scaleLineEdit = new QLineEdit(scaleGroupBox);
+    connect(scaleLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processScaleText()));
+    sgLayout->addWidget(scaleLineEdit, 0, 1);
+    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroupBox);
+    scaleLabel->setBuddy(scaleLineEdit);
+    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Add the scale by magnitude toggle button.
+    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox);
+    connect(scaleByMagnitudeToggle, SIGNAL(clicked(bool)), 
+            this, SLOT(scaleByMagnitudeToggled(bool)));
+    sgLayout->addWidget(scaleByMagnitudeToggle, 1, 0, 1, 2);
+
+    // Add the auto scale toggle button.
+    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox);
+    connect(autoScaleToggle, SIGNAL(clicked(bool)),
+            this, SLOT(autoScaleToggled(bool)));
+    sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
+
+    //
     // Create the color-related widgets.
     //
-    colorGroupBox = new QGroupBox(central);
-    colorGroupBox->setTitle(tr("Tensor color"));
+    QGroupBox * colorGroupBox = new QGroupBox(central);
+    colorGroupBox->setTitle(tr("Color"));
     topLayout->addWidget(colorGroupBox);
+
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
+    cgLayout->setMargin(5);
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
@@ -165,40 +200,11 @@ QvisTensorPlotWindow::CreateWindowContents()
             this, SLOT(tensorColorChanged(const QColor &)));
     cgLayout->addWidget(tensorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
-    //
-    // Create the scale-related widgets.
-    //
-    scaleGroupBox = new QGroupBox(central);
-    scaleGroupBox->setTitle(tr("Tensor scale"));
-    topLayout->addWidget(scaleGroupBox);
-    QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
-    sgLayout->setSpacing(10);
-    sgLayout->setColumnStretch(1, 10);
-
-    // Add the scale line edit.
-    scaleLineEdit = new QLineEdit(scaleGroupBox);
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processScaleText()));
-    sgLayout->addWidget(scaleLineEdit, 0, 1);
-    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroupBox);
-    scaleLabel->setBuddy(scaleLineEdit);
-    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
-
-    // Add the scale by magnitude toggle button.
-    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox);
-    connect(scaleByMagnitudeToggle, SIGNAL(clicked()), 
-            this, SLOT(scaleByMagnitudeToggled()));
-    sgLayout->addWidget(scaleByMagnitudeToggle, 1, 0, 1, 2);
-
-    // Add the auto scale toggle button.
-    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox);
-    connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
-    sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
 
     //
     // Create the reduce-related widgets.
     //
-    reduceGroupBox = new QGroupBox(central);
+    QGroupBox * reduceGroupBox = new QGroupBox(central);
     reduceGroupBox->setTitle(tr("Reduce by"));
     topLayout->addWidget(reduceGroupBox);
     QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
@@ -230,13 +236,21 @@ QvisTensorPlotWindow::CreateWindowContents()
     rgLayout->addWidget(strideLineEdit, 1, 1);
 
     //
-    // Add the toggle buttons
+    // Create the misc stuff
     //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
 
-    // Add the legend toggle button.
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
-    connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
-    topLayout->addWidget(legendToggle);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
 }
 
 // ****************************************************************************
@@ -531,7 +545,7 @@ QvisTensorPlotWindow::processScaleText()
 // ****************************************************************************
 
 void
-QvisTensorPlotWindow::scaleByMagnitudeToggled()
+QvisTensorPlotWindow::scaleByMagnitudeToggled(bool)
 {
     tensorAtts->SetScaleByMagnitude(!tensorAtts->GetScaleByMagnitude());
     Apply();
@@ -550,7 +564,7 @@ QvisTensorPlotWindow::scaleByMagnitudeToggled()
 // ****************************************************************************
 
 void
-QvisTensorPlotWindow::autoScaleToggled()
+QvisTensorPlotWindow::autoScaleToggled(bool)
 {
     tensorAtts->SetAutoScale(!tensorAtts->GetAutoScale());
     Apply();
@@ -629,7 +643,7 @@ QvisTensorPlotWindow::processStrideText()
 // ****************************************************************************
 
 void
-QvisTensorPlotWindow::legendToggled()
+QvisTensorPlotWindow::legendToggled(bool)
 {
     tensorAtts->SetUseLegend(!tensorAtts->GetUseLegend());
     Apply();

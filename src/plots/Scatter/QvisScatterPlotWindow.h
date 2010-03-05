@@ -132,7 +132,7 @@ private slots:
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void singleColorChanged(const QColor &color);
     void foregroundFlagChanged(bool val);
-    void legendFlagChanged(bool val);
+    void legendToggled(bool val);
 private:
     int plotType;
     static const char *roleNames[5];
@@ -185,7 +185,7 @@ private:
     QLabel *singleColorLabel;
     QvisColorButton *singleColor;
     QCheckBox *foregroundFlag;
-    QCheckBox *legendFlag;
+    QCheckBox *legendToggle;
 
     QLabel *var1ScalingLabel;
     QLabel *var1SkewFactorLabel;

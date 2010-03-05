@@ -42,6 +42,7 @@
 
 // Forward declarations
 class QButtonGroup;
+class QGroupBox;
 class QCheckBox;
 class QComboBox;
 class QLabel;
@@ -82,7 +83,7 @@ class VectorAttributes;
 //   Added widgets for min/max and limitsSelection.
 //
 //   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
-//   Added controls for lineStem, stemWidth, and highQuality.
+//   Added controls for lineStem, stemWidth, and geometryQuality.
 //   Reorganized the window a bit.
 //
 //   Jeremy Meredith, Tue Jul  8 15:11:19 EDT 2008
@@ -117,14 +118,14 @@ private slots:
     void lineWidthChanged(int newWidth);
     void vectorColorChanged(const QColor &color);
     void processScaleText();
-    void scaleByMagnitudeToggled();
-    void autoScaleToggled();
+    void scaleByMagnitudeToggled(bool);
+    void autoScaleToggled(bool);
     void processHeadSizeText();
     void reduceMethodChanged(int index);
     void processNVectorsText();
     void processStrideText();
-    void legendToggled();
-    void drawHeadToggled();
+    void legendToggled(bool);
+    void drawHeadToggled(bool);
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
     void originTypeChanged(int);
@@ -136,45 +137,45 @@ private slots:
     void limitsSelectChanged(int);
 
     void lineStemMethodChanged(int);
-    void highQualityToggled(bool);
     void processStemWidthText();
 
     void limitToOrigToggled(bool);
+
+    void geometeryQualityChanged(int index);
 
 private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
 
-    QWidget              *styleGroup;
+    QvisColorButton      *vectorColor;
+    QButtonGroup         *colorButtonGroup; 
+    QvisColorTableButton *colorTableButton;
+
+    QLineEdit            *scaleLineEdit;
+    QCheckBox            *scaleByMagnitudeToggle;
+    QCheckBox            *autoScaleToggle;
+
+    QButtonGroup         *reduceButtonGroup;
+    QLineEdit            *nVectorsLineEdit;
+    QLineEdit            *strideLineEdit;
+
+    QButtonGroup         *geometryQualityButtons;
+    QCheckBox            *legendToggle;
+
+
     QButtonGroup         *lineStemButtonGroup; 
-    QCheckBox            *highQualityToggle;
     QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
     QLabel               *lineStyleLabel;
     QLabel               *lineWidthLabel;
     QLineEdit            *stemWidthEdit;
     QLabel               *stemWidthLabel;
-
-    QWidget              *colorGroup;
-    QvisColorButton      *vectorColor;
-    QButtonGroup         *colorButtonGroup; 
-    QvisColorTableButton *colorTableButton;
-
-    QWidget              *scaleGroup;    
-    QLineEdit            *scaleLineEdit;
-    QCheckBox            *scaleByMagnitudeToggle;
-    QCheckBox            *autoScaleToggle;
     QLineEdit            *headSizeLineEdit;
-
-    QWidget              *reduceGroup;
-    QButtonGroup         *reduceButtonGroup;
-    QLineEdit            *nVectorsLineEdit;
-    QLineEdit            *strideLineEdit;
-    QCheckBox            *legendToggle;
     QCheckBox            *drawHeadToggle;
+
     QButtonGroup         *originButtonGroup;
 
-    QWidget              *limitsGroup;
+    QGroupBox            *limitsGroup;
     QCheckBox            *minToggle;
     QCheckBox            *maxToggle;
     QComboBox            *limitsSelect;

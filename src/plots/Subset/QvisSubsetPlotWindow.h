@@ -125,7 +125,7 @@ private:
     QLabel                 *lineWidthLabel;
     QvisLineWidthWidget    *lineWidth;
     QButtonGroup           *colorModeButtons;
-    QCheckBox              *legendCheckBox;
+    QCheckBox              *legendToggle;
     QGroupBox              *subsetColorGroup;
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
@@ -135,10 +135,10 @@ private:
     QvisOpacitySlider      *multipleColorOpacity;
     QvisColorTableButton   *colorTableButton;
     QvisOpacitySlider      *overallOpacity;
-    QCheckBox              *wireframeCheckBox;
+    QCheckBox              *wireframeToggle;
     QButtonGroup           *smoothingLevelButtons;
     QvisPointControl       *pointControl;
-    QCheckBox              *drawInternalCheckBox;
+    QCheckBox              *drawInternalToggle;
 };
 
 #endif

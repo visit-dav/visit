@@ -113,8 +113,6 @@ protected:
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
-    void legendToggled(bool val);
-    void wireframeToggled(bool val);
     void singleColorChanged(const QColor &color);
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color, int index);
@@ -128,15 +126,20 @@ private slots:
     void processMinLimitText();
     void maxToggled(bool);
     void processMaxLimitText();
+
+    void wireframeToggled(bool val);
+    void legendToggled(bool val);
 private:
     int                     plotType;
     ContourAttributes      *contourAtts;
+
+    QButtonGroup           *scalingButtons;
+
     QLabel                 *lineStyleLabel;
     QvisLineStyleWidget    *lineStyle;
     QLabel                 *lineWidthLabel;
     QvisLineWidthWidget    *lineWidth;
     QButtonGroup           *colorModeButtons;
-    QCheckBox              *legendCheckBox;
     QGroupBox              *contourColorGroup;
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
@@ -144,12 +147,13 @@ private:
     QvisColorTableButton   *colorTableButton;
     QComboBox              *selectByComboBox;
     QLineEdit              *selectByLineEdit;
-    QButtonGroup           *scalingButtons;
     QCheckBox              *minToggle;
     QLineEdit              *minLineEdit;
     QCheckBox              *maxToggle;
     QLineEdit              *maxLineEdit;
-    QCheckBox              *wireframeCheckBox;
+
+    QCheckBox              *wireframeToggle;
+    QCheckBox              *legendToggle;
 };
 
 #endif

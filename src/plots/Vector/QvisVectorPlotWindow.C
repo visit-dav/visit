@@ -149,7 +149,7 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Added widgets for min/max and limits selection. 
 //
 //   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
-//   Added controls for lineStem, stemWidth, and highQuality.
+//   Added controls for lineStem, stemWidth, and geometryquality.
 //   Reorganized the window a bit.  Allowed disabling use of tabs
 //   by simply removing the TABS #define below -- this puts it back
 //   to the tall version of the window with groupboxes for sections.
@@ -175,137 +175,230 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 void
 QvisVectorPlotWindow::CreateWindowContents()
 {
-    QRadioButton *rb;
+    //
+    // Create the scale-related widgets.
+    //
+    QGroupBox * scaleGroupBox = new QGroupBox(central);
+    scaleGroupBox->setTitle(tr("Scale"));
+    topLayout->addWidget(scaleGroupBox);
 
-    QTabWidget *topTab = new QTabWidget(central);
-    topLayout->addWidget(topTab);
+    QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
+    sgLayout->setMargin(5);
+    sgLayout->setSpacing(10);
+    sgLayout->setColumnStretch(1, 10);
 
-    QGridLayout *gLayout = new QGridLayout(0);
-    topLayout->addLayout(gLayout);
-    gLayout->setSpacing(10);
+    // Add the scale line edit.
+    scaleLineEdit = new QLineEdit(scaleGroupBox);
+    connect(scaleLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processScaleText()));
+    sgLayout->addWidget(scaleLineEdit, 0, 1);
+    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroupBox);
+    scaleLabel->setBuddy(scaleLineEdit);
+    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Add the scale by magnitude toggle button.
+    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox);
+    connect(scaleByMagnitudeToggle, SIGNAL(clicked(bool)), 
+            this, SLOT(scaleByMagnitudeToggled(bool)));
+    sgLayout->addWidget(scaleByMagnitudeToggle, 1, 0, 1, 2);
+
+    // Add the auto scale toggle button.
+    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox);
+    connect(autoScaleToggle, SIGNAL(clicked(bool)),
+            this, SLOT(autoScaleToggled(bool)));
+    sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
+
+    //
+    // Create the color-related widgets.
+    //
+    QGroupBox * colorGroupBox = new QGroupBox(central);
+    colorGroupBox->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroupBox);
+
+    QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
+    cgLayout->setMargin(5);
+    cgLayout->setSpacing(10);
+    cgLayout->setColumnStretch(1, 10);
+
+    // Add the vector color label.
+    colorButtonGroup = new QButtonGroup(colorGroupBox);
+    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+    QRadioButton *rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
+    colorButtonGroup->addButton(rb, 0);
+    cgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Constant"), colorGroupBox);
+    rb->setChecked(true);
+    colorButtonGroup->addButton(rb, 1);
+    cgLayout->addWidget(rb, 1, 0);
+
+    // Create the color-by-eigenvalues button.
+    colorTableButton = new QvisColorTableButton(colorGroupBox);
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    // Create the vector color button.
+    vectorColor = new QvisColorButton(colorGroupBox);
+    vectorColor->setButtonColor(QColor(255, 0, 0));
+    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(vectorColorChanged(const QColor &)));
+    cgLayout->addWidget(vectorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    cgLayout->addWidget(limitsGroup, 2, 0, 1, 3);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 1, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
+
 
     //
     // Create the reduce-related widgets.
     //
-    reduceGroup = new QWidget(central);
-    topTab->addTab(reduceGroup, tr("Reduce by"));
-
-    QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroup);
-    QGridLayout *rgLayout = new QGridLayout(0);
-    rgTopLayout->addLayout(rgLayout);
-    rgTopLayout->addStretch(10);
-    rgLayout->setMargin(0);
+    QGroupBox * reduceGroupBox = new QGroupBox(central);
+    reduceGroupBox->setTitle(tr("Reduce by"));
+    topLayout->addWidget(reduceGroupBox);
+    QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
     rgLayout->setSpacing(10);
     rgLayout->setColumnStretch(1, 10);
 
     // Create the reduce button group.
-    reduceButtonGroup = new QButtonGroup(reduceGroup);
+    reduceButtonGroup = new QButtonGroup(reduceGroupBox);
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton(tr("N vectors"), reduceGroup);
+    rb= new QRadioButton(tr("N vectors"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->addButton(rb, 0);
     rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Stride"), reduceGroup);
+    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
     reduceButtonGroup->addButton(rb, 1);
     rgLayout->addWidget(rb, 1, 0);
 
     // Add the N vectors line edit.
-    nVectorsLineEdit = new QLineEdit(reduceGroup);
-    connect(nVectorsLineEdit, SIGNAL(returnPressed()),
+    nVectorsLineEdit = new QLineEdit(reduceGroupBox);
+    connect(scaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNVectorsText()));
     rgLayout->addWidget(nVectorsLineEdit, 0, 1);
 
     // Add the stride line edit.
-    strideLineEdit = new QLineEdit(reduceGroup);
+    strideLineEdit = new QLineEdit(reduceGroupBox);
     connect(strideLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processStrideText()));
     rgLayout->addWidget(strideLineEdit, 1, 1);
 
     // Add the toggle to limit to one vector per original cell/node
-    limitToOrigToggle = new QCheckBox(tr("Only show vectors on original nodes/cells"),
-                                      reduceGroup);
+    limitToOrigToggle =
+      new QCheckBox(tr("Only show vectors on original nodes/cells"),
+                    reduceGroupBox);
     connect(limitToOrigToggle, SIGNAL(toggled(bool)),
             this, SLOT(limitToOrigToggled(bool)));
     rgLayout->addWidget(limitToOrigToggle, 2, 0, 1, 2);
 
+
     //
     // Create the style-related widgets
     //
-    styleGroup = new QWidget(central);
-    topTab->addTab(styleGroup, tr("Style"));
+    QGroupBox * styleGroupBox = new QGroupBox(central);
+    styleGroupBox->setTitle(tr("Style"));
+    topLayout->addWidget(styleGroupBox);
 
-    QVBoxLayout *styleTopLayout = new QVBoxLayout(styleGroup);
-    QGridLayout *styleLayout = new QGridLayout(0);
-    styleTopLayout->addLayout(styleLayout);
-    styleTopLayout->addStretch(10);
-    styleLayout->setMargin(0);
+    QGridLayout *styleLayout = new QGridLayout(styleGroupBox);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
     styleLayout->setColumnStretch(1, 10);
 
     // Create the line stem method radio buttons
-    lineStemButtonGroup = new QButtonGroup(styleGroup);
+    lineStemButtonGroup = new QButtonGroup(styleGroupBox);
     connect(lineStemButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(lineStemMethodChanged(int)));
-    rb = new QRadioButton(tr("Line"), styleGroup);
+    rb = new QRadioButton(tr("Line"), styleGroupBox);
     lineStemButtonGroup->addButton(rb, 0);
     styleLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Cylinder"), styleGroup);
+    rb = new QRadioButton(tr("Cylinder"), styleGroupBox);
     lineStemButtonGroup->addButton(rb, 1);
-    styleLayout->addWidget(rb, 2, 0);
+    styleLayout->addWidget(rb, 1, 0);
 
     // Create the lineStyle widget.
-    lineStyle = new QvisLineStyleWidget(0, styleGroup);
+    lineStyle = new QvisLineStyleWidget(0, styleGroupBox);
     styleLayout->addWidget(lineStyle, 0, 2);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(tr("Style"), styleGroup);
+    lineStyleLabel = new QLabel(tr("Style"), styleGroupBox);
     lineStyleLabel->setBuddy(lineStyle);
     styleLayout->addWidget(lineStyleLabel, 0, 1);
 
     // Create the lineWidth widget.
-    lineWidth = new QvisLineWidthWidget(0, styleGroup);
-    styleLayout->addWidget(lineWidth, 1, 2);
+    lineWidth = new QvisLineWidthWidget(0, styleGroupBox);
+    styleLayout->addWidget(lineWidth, 0, 4);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Width"), styleGroup);
+    lineWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     lineWidthLabel->setBuddy(lineWidth);
-    styleLayout->addWidget(lineWidthLabel, 1, 1);
+    styleLayout->addWidget(lineWidthLabel, 0, 3);
 
     // Add the stem width edit.
-    stemWidthEdit = new QLineEdit(styleGroup);
+    stemWidthEdit = new QLineEdit(styleGroupBox);
     connect(stemWidthEdit, SIGNAL(returnPressed()),
             this, SLOT(processStemWidthText()));
-    styleLayout->addWidget(stemWidthEdit, 2, 2);
-    stemWidthLabel = new QLabel(tr("Width"), styleGroup);
+    styleLayout->addWidget(stemWidthEdit, 1, 2);
+    stemWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     stemWidthLabel->setBuddy(stemWidthEdit);
-    styleLayout->addWidget(stemWidthLabel, 2, 1);
+    styleLayout->addWidget(stemWidthLabel, 1, 1);
 
     // Add the "draw head" toggle button.
-    drawHeadToggle = new QCheckBox(tr("Draw head"), styleGroup);
-    connect(drawHeadToggle, SIGNAL(clicked()),
-            this, SLOT(drawHeadToggled()));
+    drawHeadToggle = new QCheckBox(tr("Draw head"), styleGroupBox);
+    connect(drawHeadToggle, SIGNAL(clicked(bool)),
+            this, SLOT(drawHeadToggled(bool)));
     styleLayout->addWidget(drawHeadToggle, 4, 0);
 
     // Add the head size edit.
-    headSizeLineEdit = new QLineEdit(styleGroup);
+    headSizeLineEdit = new QLineEdit(styleGroupBox);
     connect(headSizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeadSizeText()));
     styleLayout->addWidget(headSizeLineEdit, 4, 2);
-    QLabel *headSizeLabel = new QLabel(tr("Size"), styleGroup);
+    QLabel *headSizeLabel = new QLabel(tr("Size"), styleGroupBox);
     headSizeLabel->setBuddy(headSizeLineEdit);
     styleLayout->addWidget(headSizeLabel, 4, 1);
-
-    // Create the high quality toggle
-    highQualityToggle = new QCheckBox(tr("High quality geometry"), styleGroup);
-    styleLayout->addWidget(highQualityToggle, 6, 0, 1, 3);
-    connect(highQualityToggle, SIGNAL(toggled(bool)),
-            this, SLOT(highQualityToggled(bool)));
 
     //
     // Create the radio buttons to choose the glyph origin
     //
     
-    QWidget *originBox = new QWidget(styleGroup);
+    QWidget *originBox = new QWidget(styleGroupBox);
     originButtonGroup = new QButtonGroup(originBox);
     QHBoxLayout *originLayout = new QHBoxLayout(originBox);
     originLayout->setMargin(0);
@@ -327,126 +420,47 @@ QvisVectorPlotWindow::CreateWindowContents()
 
 
     //
-    // Create the color-related widgets.
+    // Create the geometry group
     //
-    colorGroup = new QWidget(central);
-    topTab->addTab(colorGroup, tr("Color"));
+    QGroupBox * geometryGroup = new QGroupBox(central);
+    geometryGroup->setTitle(tr("Geometry"));
+    topLayout->addWidget(geometryGroup);
 
-    QVBoxLayout *colorTopLayout = new QVBoxLayout(colorGroup);
-    QGridLayout *cgLayout = new QGridLayout(0);
-    colorTopLayout->addLayout(cgLayout);
-    colorTopLayout->addStretch(10);
-    cgLayout->setMargin(0);
-    cgLayout->setSpacing(10);
-    cgLayout->setColumnStretch(1, 10);
+    QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
+    geometryLayout->setMargin(5);
+    geometryLayout->setSpacing(10);
 
-    // Add the vector color label.
-    colorButtonGroup = new QButtonGroup(colorGroup);
-    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-    rb = new QRadioButton(tr("Magnitude"), colorGroup);
-    colorButtonGroup->addButton(rb, 0);
-    cgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Constant"), colorGroup);
-    rb->setChecked(true);
-    colorButtonGroup->addButton(rb, 1);
-    cgLayout->addWidget(rb, 2, 0);
+    geometryLayout->addWidget(new QLabel(tr("Quality"), central), 0, 0);
 
-    // Create the color-by-magnitude button.
-    colorTableButton = new QvisColorTableButton(colorGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(colorTableClicked(bool, const QString &)));
-    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    // Create the quality level buttons
+    geometryQualityButtons = new QButtonGroup(central);
+    connect(geometryQualityButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(geometeryQualityChanged(int)));
 
-    // Create the vector color button.
-    vectorColor = new QvisColorButton(colorGroup);
-    vectorColor->setButtonColor(QColor(255, 0, 0));
-    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(vectorColorChanged(const QColor &)));
-    cgLayout->addWidget(vectorColor, 2, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    rb = new QRadioButton(tr("Fast"), central);
+    geometryQualityButtons->addButton(rb, 0);
+    geometryLayout->addWidget(rb, 0, 1);
+
+    rb = new QRadioButton(tr("High"), central);
+    geometryQualityButtons->addButton(rb, 1);
+    geometryLayout->addWidget(rb, 0, 2);
 
     //
-    // Create the Limits stuff
+    // Create the misc stuff
     //
-    limitsGroup = new QWidget(colorGroup);
-    cgLayout->addWidget(limitsGroup, 1, 0, 1, 3);
-    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(0);
-    limitsLayout->setSpacing(10);
-    cgLayout->setColumnStretch(1, 10);
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
 
-    limitsSelect = new QComboBox(limitsGroup);
-    limitsSelect->addItem(tr("Use Original Data"));
-    limitsSelect->addItem(tr("Use Current Plot"));
-    connect(limitsSelect, SIGNAL(activated(int)),
-            this, SLOT(limitsSelectChanged(int))); 
-    QLabel *limitsLabel = new QLabel(tr("Limits"), limitsGroup);
-    limitsLabel->setBuddy(limitsSelect);
-    limitsLayout->addWidget(limitsLabel, 0, 0);
-    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2);
-
-    // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Maximum"), limitsGroup);
-    limitsLayout->addWidget(maxToggle, 1, 1);
-    connect(maxToggle, SIGNAL(toggled(bool)),
-            this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(limitsGroup);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 2);
-
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Minimum"), limitsGroup);
-    limitsLayout->addWidget(minToggle, 2, 1);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(limitsGroup);
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 2, 2);
-
-    //
-    // Create the scale-related widgets.
-    //
-    scaleGroup = new QWidget(central);
-    topTab->addTab(scaleGroup, tr("Scale"));
-
-    QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroup);
-    QGridLayout *sgLayout = new QGridLayout(0);
-    sgTopLayout->addLayout(sgLayout);
-    sgTopLayout->addStretch(10);
-    sgLayout->setMargin(0);
-    sgLayout->setSpacing(10);
-    sgLayout->setColumnStretch(1, 10);
-
-    // Add the scale line edit.
-    scaleLineEdit = new QLineEdit(scaleGroup);
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processScaleText()));
-    sgLayout->addWidget(scaleLineEdit, 0, 1);
-    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroup);
-    scaleLabel->setBuddy(scaleLineEdit);
-    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
-
-    // Add the scale by magnitude toggle button.
-    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroup);
-    connect(scaleByMagnitudeToggle, SIGNAL(clicked()), this, SLOT(scaleByMagnitudeToggled()));
-    sgLayout->addWidget(scaleByMagnitudeToggle, 1, 0, 1, 2);
-
-    // Add the auto scale toggle button.
-    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroup);
-    connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
-    sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
-
-
-    //
-    // Add the toggle buttons
-    //
-
-    // Add the legend toggle button.
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
-    connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
-    gLayout->addWidget(legendToggle, 4, 0, 1, 2);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
 }
 
 // ****************************************************************************
@@ -496,7 +510,7 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Update widgets for min/max and limits selection. 
 //
 //   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
-//   Added controls for lineStem, stemWidth, and highQuality.
+//   Added controls for lineStem, stemWidth, and geometryquality.
 //
 //   Jeremy Meredith, Tue Jul  8 15:15:18 EDT 2008
 //   Added ability to limit vectors to come from original cell only
@@ -657,10 +671,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             stemWidthEdit->setEnabled(!vectorAtts->GetLineStem());
             stemWidthLabel->setEnabled(!vectorAtts->GetLineStem());
             break;
-          case VectorAttributes::ID_highQuality:
-            highQualityToggle->blockSignals(true);
-            highQualityToggle->setChecked(vectorAtts->GetHighQuality());
-            highQualityToggle->blockSignals(false);
+          case VectorAttributes::ID_geometryQuality:
+            geometryQualityButtons->blockSignals(true);
+            geometryQualityButtons->button(vectorAtts->GetGeometryQuality())->setChecked(true);
+            geometryQualityButtons->blockSignals(false);
             break;
           case VectorAttributes::ID_stemWidth:
             temp.setNum(vectorAtts->GetStemWidth());
@@ -990,7 +1004,7 @@ QvisVectorPlotWindow::processScaleText()
 // ****************************************************************************
 
 void
-QvisVectorPlotWindow::scaleByMagnitudeToggled()
+QvisVectorPlotWindow::scaleByMagnitudeToggled(bool)
 {
     vectorAtts->SetScaleByMagnitude(!vectorAtts->GetScaleByMagnitude());
     Apply();
@@ -1011,7 +1025,7 @@ QvisVectorPlotWindow::scaleByMagnitudeToggled()
 // ****************************************************************************
 
 void
-QvisVectorPlotWindow::autoScaleToggled()
+QvisVectorPlotWindow::autoScaleToggled(bool)
 {
     vectorAtts->SetAutoScale(!vectorAtts->GetAutoScale());
     Apply();
@@ -1119,7 +1133,7 @@ QvisVectorPlotWindow::processStrideText()
 // ****************************************************************************
 
 void
-QvisVectorPlotWindow::legendToggled()
+QvisVectorPlotWindow::legendToggled(bool)
 {
     vectorAtts->SetUseLegend(!vectorAtts->GetUseLegend());
     Apply();
@@ -1140,9 +1154,12 @@ QvisVectorPlotWindow::legendToggled()
 // ****************************************************************************
 
 void
-QvisVectorPlotWindow::drawHeadToggled()
+QvisVectorPlotWindow::drawHeadToggled(bool val)
 {
     vectorAtts->SetHeadOn(!vectorAtts->GetHeadOn());
+
+    headSizeLineEdit->setEnabled(val);
+
     Apply();
 }
 
@@ -1356,7 +1373,7 @@ QvisVectorPlotWindow::lineStemMethodChanged(int val)
 }
 
 // ****************************************************************************
-// Method: QvisVectorPlotWindow::highQualityToggled
+// Method: QvisVectorPlotWindow::geometeryQualityChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user toggles the
@@ -1369,9 +1386,9 @@ QvisVectorPlotWindow::lineStemMethodChanged(int val)
 //   
 // ****************************************************************************
 void
-QvisVectorPlotWindow::highQualityToggled(bool val)
+QvisVectorPlotWindow::geometeryQualityChanged(int val)
 {
-    vectorAtts->SetHighQuality(val);
+    vectorAtts->SetGeometryQuality( (VectorAttributes::Quality)val);
     Apply();
 }
 

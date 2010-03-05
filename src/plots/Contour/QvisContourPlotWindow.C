@@ -154,34 +154,94 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 void
 QvisContourPlotWindow::CreateWindowContents()
 {
-    QHBoxLayout *lineLayout = new QHBoxLayout(0);
-    lineLayout->setMargin(0);
-    topLayout->addLayout(lineLayout);
+    //
+    // Create the scale group
+    //
+    QGroupBox * dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    topLayout->addWidget(dataGroup);
 
-    // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    lineStyleLabel->setBuddy(lineStyle);
-    lineLayout->addWidget(lineStyleLabel);
-    lineLayout->addWidget(lineStyle);
+    QGridLayout *dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
 
-    // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central);
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Line width"), central);
-    lineWidthLabel->setBuddy(lineWidth);
-    lineLayout->addWidget(lineWidthLabel);
-    lineLayout->addWidget(lineWidth);
+    //
+    // Create the scale radio buttons
+    //
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
+    
+    // Create the radio buttons
+    scalingButtons = new QButtonGroup(central);
+
+    QRadioButton * rb = new QRadioButton(tr("Linear"), central);
+    rb->setChecked(true);
+    scalingButtons->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    scalingButtons->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+
+    //
+    // Create the Limits stuff
+    //
+    QGroupBox * limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 1, 5);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 0, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 0, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 0, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 0, 3);
+
+
+
+    // Add the select by combo box.
+    selectByComboBox = new QComboBox(central);
+    selectByComboBox->addItem(tr("N levels"));
+    selectByComboBox->addItem(tr("Value(s)"));
+    selectByComboBox->addItem(tr("Percent(s)"));
+    connect(selectByComboBox, SIGNAL(activated(int)),
+           this, SLOT(selectByChanged(int)));
+    QLabel *selectByLabel = new QLabel(tr("Select by"), central);
+    selectByLabel->setBuddy(selectByComboBox);
+    dataLayout->addWidget(selectByLabel, 2, 0);
+    dataLayout->addWidget(selectByComboBox, 2, 1);
+
+    // Add the select by text field.
+    selectByLineEdit = new QLineEdit(central);
+    connect(selectByLineEdit, SIGNAL(returnPressed()),
+           this, SLOT(processSelectByText()));
+    dataLayout->addWidget(selectByLineEdit, 2, 2);
+
+
+
 
     // Create the contour color group box.
     contourColorGroup = new QGroupBox(central);
     contourColorGroup->setTitle(tr("Contour colors"));
     topLayout->addWidget(contourColorGroup);
     topLayout->setStretchFactor(contourColorGroup, 100);
+
     QGridLayout *colorLayout = new QGridLayout(contourColorGroup);
+    colorLayout->setMargin(5);
     colorLayout->setSpacing(10);
 
     // Create the mode buttons that determine if the window is in single,
@@ -190,7 +250,7 @@ QvisContourPlotWindow::CreateWindowContents()
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
 
-    QRadioButton *rb = new QRadioButton(tr("Color table"), contourColorGroup);
+    rb = new QRadioButton(tr("Color table"), contourColorGroup);
     colorModeButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 0, 0);
     rb = new QRadioButton(tr("Single"), contourColorGroup);
@@ -231,93 +291,60 @@ QvisContourPlotWindow::CreateWindowContents()
     colorLayout->addWidget(colorTableButton, 0, 1, 1, 2,
         Qt::AlignLeft | Qt::AlignVCenter);
 
-    // Add the select by and limits stuff.
-    topLayout->addSpacing(5);
-    QGridLayout *limitsLayout = new QGridLayout(0);
-    topLayout->addLayout(limitsLayout);
-    limitsLayout->setSpacing(10);
-    limitsLayout->setMargin(0);
-
-    // Add the select by combo box.
-    selectByComboBox = new QComboBox(central);
-    selectByComboBox->addItem(tr("N levels"));
-    selectByComboBox->addItem(tr("Value(s)"));
-    selectByComboBox->addItem(tr("Percent(s)"));
-    connect(selectByComboBox, SIGNAL(activated(int)),
-           this, SLOT(selectByChanged(int)));
-    QLabel *selectByLabel = new QLabel(tr("Select by"), central);
-    selectByLabel->setBuddy(selectByComboBox);
-    limitsLayout->addWidget(selectByLabel, 0, 0);
-    limitsLayout->addWidget(selectByComboBox, 0, 1);
-
-    // Add the select by text field.
-    selectByLineEdit = new QLineEdit(central);
-    connect(selectByLineEdit, SIGNAL(returnPressed()),
-           this, SLOT(processSelectByText()));
-    limitsLayout->addWidget(selectByLineEdit, 0, 2);
 
     //
-    // Create the Limits stuff
+    // Create the style stuff
     //
-    QLabel *limitsLabel = new QLabel(tr("Limits"), central);
-    limitsLayout->addWidget(limitsLabel, 1, 0);
 
-    // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 1);
-    connect(maxToggle, SIGNAL(toggled(bool)),
-            this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 2);
+    QGroupBox * styleGroup = new QGroupBox(central);
+    styleGroup->setTitle(tr("Point / Line Style"));
+    topLayout->addWidget(styleGroup);
 
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Minimum"), central);
-    limitsLayout->addWidget(minToggle, 2, 1);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central);
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 2, 2);
+    QGridLayout *styleLayout = new QGridLayout(styleGroup);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
+ 
+    //
+    // Create the line style/width buttons
+    //
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
+
+    lineStyle = new QvisLineStyleWidget(0, central);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    styleLayout->addWidget(lineStyle, 1, 1);
+
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
+
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    styleLayout->addWidget(lineWidth, 1, 3);
 
     //
-    // Create the scale radio buttons
+    // Create the misc stuff
     //
-    QHBoxLayout *scaleLayout = new QHBoxLayout(0);
-    topLayout->addLayout(scaleLayout);
-    scaleLayout->setMargin(0);
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
 
-    // Create a group of radio buttons
-    scalingButtons = new QButtonGroup(central);
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-
-    QLabel *scaleLabel = new QLabel(tr("Scale"), central);
-    scaleLayout->addWidget(scaleLabel);
-
-    rb = new QRadioButton(tr("Linear"), central);
-    scalingButtons->addButton(rb, 0);
-    rb->setChecked(TRUE);
-    scaleLayout->addWidget(rb);
-
-    rb = new QRadioButton(tr("Log"), central);
-    scalingButtons->addButton(rb, 1);
-    scaleLayout->addWidget(rb);
-    scaleLayout->addStretch(0);
-
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
     // Create the legend toggle
-    legendCheckBox = new QCheckBox(tr("Legend"), central);
-    connect(legendCheckBox, SIGNAL(toggled(bool)),
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    topLayout->addWidget(legendCheckBox);
+    miscLayout->addWidget(legendToggle, 0, 0);
 
     // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central);
-    connect(wireframeCheckBox, SIGNAL(toggled(bool)),
+    wireframeToggle = new QCheckBox(tr("Wireframe"), central);
+    connect(wireframeToggle, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
-    topLayout->addWidget(wireframeCheckBox);
+    miscLayout->addWidget(wireframeToggle, 0, 1);
 }
 
 // ****************************************************************************
@@ -421,9 +448,9 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             colorTableButton->setColorTable(contourAtts->GetColorTableName().c_str());
             break;
         case ContourAttributes::ID_legendFlag:
-            legendCheckBox->blockSignals(true);
-            legendCheckBox->setChecked(contourAtts->GetLegendFlag());
-            legendCheckBox->blockSignals(false);
+            legendToggle->blockSignals(true);
+            legendToggle->setChecked(contourAtts->GetLegendFlag());
+            legendToggle->blockSignals(false);
             break;
         case ContourAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
@@ -533,9 +560,9 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             scalingButtons->button(contourAtts->GetScaling())->setChecked(true);
             break;
         case ContourAttributes::ID_wireframe:
-            wireframeCheckBox->blockSignals(true);
-            wireframeCheckBox->setChecked(contourAtts->GetWireframe());
-            wireframeCheckBox->blockSignals(false);
+            wireframeToggle->blockSignals(true);
+            wireframeToggle->setChecked(contourAtts->GetWireframe());
+            wireframeToggle->blockSignals(false);
             break;
         }
     } // end for
