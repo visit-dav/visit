@@ -923,14 +923,20 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 10, 2004
 //
+// Modifications:
+//   Cyrus Harrison, Fri Mar  5 13:22:24 PST 2010
+//   Block signals from all edits related to python filters.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::BlockAllSignals(bool block)
 {
     exprListBox->blockSignals(block);
     nameEdit->blockSignals(block);
-    stdEditorWidget->blockSignals(block);
-    pyEditorWidget->blockSignals(block);
+
+    stdDefinitionEdit->blockSignals(block);
+    pyArgsEdit->blockSignals(block);
+    pyFilterEdit->blockSignals(block);
 }
 
 // ****************************************************************************
@@ -1388,7 +1394,7 @@ QvisExpressionsWindow::UpdatePythonExpression()
 }
 
 // ****************************************************************************
-//  Method:  QvisExpressionsWindow::UpdatePythonExpressionEditor
+//  Method:  QvisExpressionsWindow::ParsePythonExpression
 //
 //  Purpose:
 //    Attempts to extract a python expression from given expression

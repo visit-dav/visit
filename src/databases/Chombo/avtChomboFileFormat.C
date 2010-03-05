@@ -116,6 +116,9 @@ using     std::string;
 //    Gunther H. Weber, Tue Sep 15 11:26:12 PDT 2009
 //    Added support for 3D mappings for 2D files.
 //
+//    Hank Childs, Fri Mar  5 13:16:52 PST 2010
+//    Initialize hasParticles.
+//
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
@@ -130,6 +133,7 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
     checkForMappingFile = true;
     mappingFileExists = false;
     mappingIs3D = false;
+    hasParticles = false;
     if (atts != NULL)
     {
         for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
