@@ -70,6 +70,8 @@ class  QMenuBar;
 class  QMenu;
 class  QPushButton;
 struct QualifiedFilename;
+class  QToolBar;
+class  QToolButton;
 class  QvisPlotListBox;
 class  QvisVariablePopupMenu;
 
@@ -218,6 +220,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Jeremy Meredith, Fri Feb 19 20:35:02 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -257,7 +262,7 @@ public slots:
     void redrawThisPlot();
     void disconnectThisPlot();
     void setActivePlot();
-    
+
 signals:
     void activateSubsetWindow();
     void activatePlotWindow(int);
@@ -298,7 +303,7 @@ private slots:
     void reOpenCurrentSource();
     void replaceWithCurrentSource();
     void overlayWithCurrentSource();
-    
+
     void activatePlotWindow(QAction *);
     void activateOperatorWindow(QAction *);
 
@@ -355,20 +360,23 @@ private:
     ExpressionList          *exprList;
     WindowInformation       *windowInfo;
 
-    // Various icon buttons for the plot manager
-    QPushButton *plotAddIconButton;
-    QPushButton *plotDelIconButton;
-    QPushButton *plotVarIconButton;
-    QPushButton *plotHideIconButton;
-    QPushButton *plotDrawIconButton;
-    QPushButton *addOperIconButton;
+    QToolBar    *plotActionsToolbar;
+
+    // Various Toolbar actions for the plot manager
+    QToolButton *plotMenuButton;
+    QToolButton *operMenuButton;
+    QToolButton *varMenuButton;
+    QAction     *plotHideShowAction;
+    QAction     *plotDrawAction;
+
+    // used in plotMenu
+    QAction     *plotDeleteAction;
 
     QPushButton *dbReplaceIconButton;
     QPushButton *dbOverlayIconButton;
     QPushButton *dbOpenIconButton;
     QPushButton *dbReopenIconButton;
     QPushButton *dbCloseIconButton;
-    
     PluginManagerAttributes *pluginAtts;
 };
 

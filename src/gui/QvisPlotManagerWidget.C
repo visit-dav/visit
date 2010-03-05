@@ -53,6 +53,8 @@
 #include <QPushButton>
 #include <QTreeWidget>
 #include <QWidget>
+#include <QToolBar>
+#include <QToolButton>
 
 #include <ViewerProxy.h>
 #include <PlotList.h>
@@ -202,6 +204,9 @@ using std::vector;
 //   Jeremy Meredith, Mon Feb 22 11:53:02 EST 2010
 //   Stop forcing icon size.  (But leave it easy to re-enable.)
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent) 
@@ -213,6 +218,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     windowInfo = 0;
     exprList = 0;
     pluginAtts = 0;
+
+    plotDeleteAction = NULL;
 
     pluginsLoaded = false;
     updatePlotVariableMenuEnabledState = false;
@@ -328,60 +335,43 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     //
     int plotButtonCol = 0;
     const int ploticonsize=-1;//24;
-    QLabel *plotsLabel = new QLabel("Plots", this);
-    plotsLabel->setAlignment(Qt::AlignLeft|Qt::AlignBottom);
-    topLayout->addWidget(plotsLabel, row,plotButtonCol++);
 
-    plotAddIconButton = new QPushButton(QIcon(plot_add_xpm), "", this);
-    plotAddIconButton->setToolTip(tr("New Plot"));
-    if (ploticonsize>0)
-        plotAddIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
-    topLayout->addWidget(plotAddIconButton, row,plotButtonCol++);
+    plotActionsToolbar = new QToolBar(this);
 
-    plotDelIconButton = new QPushButton(QIcon(plot_del_xpm), "", this);
-    plotDelIconButton->setToolTip(tr("Delete Plot"));
-    if (ploticonsize>0)
-        plotDelIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
-    topLayout->addWidget(plotDelIconButton, row,plotButtonCol++);
+    plotActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-    connect(plotDelIconButton, SIGNAL(clicked()), this, SLOT(deletePlots()));
+    plotMenuButton = new QToolButton;
+    plotMenuButton->setIcon(QIcon(plot_add_xpm));
+    plotMenuButton->setText(tr("Plots"));
+    plotMenuButton->setPopupMode(QToolButton::InstantPopup);
+    plotMenuButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    plotActionsToolbar->addWidget(plotMenuButton);
 
-    addOperIconButton = new QPushButton(QIcon(oper_add3_xpm), "", this);
-    addOperIconButton->setToolTip(tr("Add Operator"));
-    // this icon's 25% wider than the others
-    if (ploticonsize>0)
-        addOperIconButton->setIconSize(QSize(ploticonsize*5/4,ploticonsize));
-    topLayout->addWidget(addOperIconButton, row,plotButtonCol++);
+    operMenuButton = new QToolButton;
+    operMenuButton->setIcon(QIcon(oper_add3_xpm));
+    operMenuButton->setText(tr("Operators"));
+    operMenuButton->setPopupMode(QToolButton::InstantPopup);
+    operMenuButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    plotActionsToolbar->addWidget(operMenuButton);
 
-    plotVarIconButton = new QPushButton(QIcon(plot_var_xpm), "", this);
-    plotVarIconButton->setToolTip(tr("Change Variables"));
-    if (ploticonsize>0)
-        plotVarIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
-    topLayout->addWidget(plotVarIconButton, row,plotButtonCol++);
+    varMenuButton = new QToolButton;
+    varMenuButton->setIcon(QIcon(plot_var_xpm));
+    varMenuButton->setText(tr("Variables"));
+    varMenuButton->setPopupMode(QToolButton::InstantPopup);
+    varMenuButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    plotActionsToolbar->addWidget(varMenuButton);
 
-    plotHideIconButton = new QPushButton(QIcon(plot_hide_xpm), "", this);
-    plotHideIconButton->setToolTip(tr("Hide/Show Plot"));
-    if (ploticonsize>0)
-        plotHideIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
-    topLayout->addWidget(plotHideIconButton, row,plotButtonCol++);
+    plotHideShowAction = plotActionsToolbar->addAction(QIcon(plot_hide_xpm),tr("Hide/Show"),this, SLOT(hidePlots()));
+    plotDrawAction = plotActionsToolbar->addAction(QIcon(plot_draw_xpm),tr("Draw"), this, SLOT(drawPlots()));
+    topLayout->addWidget(plotActionsToolbar,  row, 0, 1, 7);
 
-    connect(plotHideIconButton, SIGNAL(clicked()), this, SLOT(hidePlots()));
-
-    plotDrawIconButton = new QPushButton(QIcon(plot_draw_xpm), "", this);
-    plotDrawIconButton->setToolTip(tr("Draw Plots"));
-    if (ploticonsize>0)
-        plotDrawIconButton->setIconSize(QSize(ploticonsize,ploticonsize));
-    topLayout->addWidget(plotDrawIconButton, row,plotButtonCol++);
     row++;
-
-    connect(plotDrawIconButton, SIGNAL(clicked()), this, SLOT(drawPlots()));
-
 
     // Create the plot list box.
     plotListBox = new QvisPlotListBox(this);
     plotListBox->setSelectionMode(QAbstractItemView::ExtendedSelection);
     plotListBox->setMinimumHeight(fontMetrics().boundingRect("X").height() * 6);
-    
+
     connect(plotListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(setActivePlots()));
     connect(plotListBox, SIGNAL(itemExpansionChanged()),
@@ -612,6 +602,9 @@ QvisPlotManagerWidget::SetSourceVisible(bool val)
 //   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 void
@@ -623,18 +616,20 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 
     // Create the Plot menu. Each time we highlight a plot, we
     // update the current plot type.
-    plotMenu = new QMenu(tr("Plots"),plotAddIconButton);
-    plotAddIconButton->setMenu(plotMenu);
-    plotAddIconButton->setEnabled(false);
+    plotMenu = new QMenu(tr("Plots"),plotActionsToolbar);
+
+    plotMenuButton->setMenu(plotMenu);
+    plotMenuButton->setEnabled(false);
+    //plotAddIconButton->setMenu(plotMenu);
 
     //
     // Create the operator menu.
     //
-    operatorMenu = new QMenu(tr("Operators"),addOperIconButton);
+    operatorMenu = new QMenu(tr("Operators"),plotActionsToolbar);
     connect(operatorMenu, SIGNAL(triggered(QAction*)),
-            this, SLOT(operatorAction(QAction *)));   
-    addOperIconButton->setMenu(operatorMenu);
-    addOperIconButton->setEnabled(false);
+            this, SLOT(operatorAction(QAction *)));
+    operMenuButton->setMenu(operatorMenu);
+    operMenuButton->setEnabled(false);
 
     //
     // Create the Plot attributes menu.
@@ -699,6 +694,9 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 //   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 void
@@ -711,8 +709,9 @@ QvisPlotManagerWidget::CreateVariableMenu()
 
     connect(varMenu, SIGNAL(activated(int, const QString &)),
             this, SLOT(changeVariable(int, const QString &)));
-    plotVarIconButton->setMenu(varMenu);
-    plotVarIconButton->setEnabled(false);
+
+    varMenuButton->setMenu(varMenu);
+    varMenuButton->setEnabled(false);
 }
 
 // ****************************************************************************
@@ -1220,6 +1219,9 @@ QvisPlotManagerWidget::UpdateSourceList(bool updateActiveSourceOnly)
 //   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 void
@@ -1240,9 +1242,10 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
            ++nHideablePlots;
     }
 
-    plotHideIconButton->setEnabled(nHideablePlots > 0);
-    plotDelIconButton->setEnabled(plotList->GetNumPlots() > 0);
-    plotDrawIconButton->setEnabled(plotList->GetNumPlots() > 0);
+    plotHideShowAction->setEnabled(nHideablePlots > 0);
+    if(plotDeleteAction)
+        plotDeleteAction->setEnabled(plotList->GetNumPlots() > 0);
+    plotDrawAction->setEnabled(plotList->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -1785,6 +1788,9 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 //   I changed how the menus are made so that we destroy menus when needed
 //   since clearing them does not seem to really destroy them.
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 void
@@ -1815,6 +1821,7 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         plotMenu->clear();
         for(int i = 0; i < plotPlugins.size(); ++i)
             DestroyPlotMenuItem(i);
+        plotDeleteAction = NULL;
 #endif
 
         // Recreate the plot menu and update the menus so they have the right 
@@ -1834,6 +1841,17 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
             bool hasEntries = (varCount > 0);
             plotMenu->actions()[i]->setEnabled(hasEntries);
         }
+
+
+        if(plotDeleteAction == NULL)
+        {
+            plotMenu->addSeparator();
+            plotDeleteAction = plotMenu->addAction(QIcon(plot_del_xpm),
+                                                   tr("Delete Plot(s)"),
+                                                   this,SLOT(deletePlots()));
+        }
+
+
         visitTimer->StopTimer(id, "Updating menus");
 
         //
@@ -1895,6 +1913,9 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
 //   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
+//   Change from QPushButtons QToolbar/QToolButtons
+//
 // ****************************************************************************
 
 void
@@ -1904,11 +1925,11 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
     // These values will be used to set the enabled state for the items in
     // the plot and operator menu.
     //
-    bool plotMenuEnabled = plotAddIconButton->isEnabled();
+    bool plotMenuEnabled = plotMenuButton->isEnabled();
     bool plotAttsMenuEnabled = plotAttsMenuAct->isEnabled();
-    bool operatorMenuEnabled = addOperIconButton->isEnabled();
+    bool operatorMenuEnabled = operMenuButton->isEnabled();
     bool operatorAttsMenuEnabled = operatorAttsMenuAct->isEnabled();
-    bool varMenuEnabled = plotVarIconButton->isEnabled();
+    bool varMenuEnabled = varMenuButton->isEnabled();
 
     if(pluginsLoaded)
     {
@@ -1944,25 +1965,25 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
     bool different = false;
     if(this->updatePlotVariableMenuEnabledState)
     {
-        different = plotAddIconButton->isEnabled() != plotMenuEnabled;
+        different = plotMenuButton->isEnabled() != plotMenuEnabled;
         if(different)
-            plotAddIconButton->setEnabled(plotMenuEnabled);
+            plotMenuButton->setEnabled(plotMenuEnabled);
         needUpdate |= different;
     }
 
     if(this->updateOperatorMenuEnabledState)
     {
-        different = addOperIconButton->isEnabled() != operatorMenuEnabled;
+        different = operMenuButton->isEnabled() != operatorMenuEnabled;
         if(different)
-            addOperIconButton->setEnabled(operatorMenuEnabled);
+            operMenuButton->setEnabled(operatorMenuEnabled);
         needUpdate |= different;
     }
 
     if(this->updateVariableMenuEnabledState)
     {
-        different = plotVarIconButton->isEnabled() != varMenuEnabled;
+        different = varMenuButton->isEnabled() != varMenuEnabled;
         if(different)
-            plotVarIconButton->setEnabled(varMenuEnabled);
+            varMenuButton->setEnabled(varMenuEnabled);
         needUpdate |= different;
     }
 
