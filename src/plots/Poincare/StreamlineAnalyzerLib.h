@@ -100,14 +100,16 @@ public:
   int intersect( Point l0_p0, Point l0_p1,
                  Point l1_p0, Point l1_p1 );
 
-  void convexHull( vector< Point > &hullPts,
-                   vector< unsigned int > &ordering,
+  void convexHull( vector< pair< Point, unsigned int > > &hullPts,
                    unsigned int &m,
                    unsigned int toroidalWinding,
                    int dir );
 
   bool hullCheck( vector< Point > &points,
-                  unsigned int toroidalWinding );
+                  unsigned int toroidalWinding,
+                  int direction,
+                  unsigned int &nhulls,
+                  bool &reversed);
 
   unsigned int factorial( unsigned int n0, unsigned int n1 );
 

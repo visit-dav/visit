@@ -230,39 +230,40 @@ PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttr
 }
 
 //
-// Enum conversion methods for PoincareAttributes::ColorBy
+// Enum conversion methods for PoincareAttributes::DataValue
 //
 
-static const char *ColorBy_strings[] = {
+static const char *DataValue_strings[] = {
 "OriginalValue", "InputOrder", "PointIndex", 
 "Plane", "WindingOrder", "WindingPointOrder", 
-"ToroidalWindings", "PoloidalWindings", "SafetyFactor", 
-"Confidence", "RidgelineVariance"};
+"WindingPointOrderModulo", "ToroidalWindings", "PoloidalWindings", 
+"SafetyFactor", "Confidence", "RidgelineVariance"
+};
 
 std::string
-PoincareAttributes::ColorBy_ToString(PoincareAttributes::ColorBy t)
+PoincareAttributes::DataValue_ToString(PoincareAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 11) index = 0;
-    return ColorBy_strings[index];
+    if(index < 0 || index >= 12) index = 0;
+    return DataValue_strings[index];
 }
 
 std::string
-PoincareAttributes::ColorBy_ToString(int t)
+PoincareAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 11) ? 0 : t;
-    return ColorBy_strings[index];
+    int index = (t < 0 || t >= 12) ? 0 : t;
+    return DataValue_strings[index];
 }
 
 bool
-PoincareAttributes::ColorBy_FromString(const std::string &s, PoincareAttributes::ColorBy &val)
+PoincareAttributes::DataValue_FromString(const std::string &s, PoincareAttributes::DataValue &val)
 {
     val = PoincareAttributes::OriginalValue;
-    for(int i = 0; i < 11; ++i)
+    for(int i = 0; i < 12; ++i)
     {
-        if(s == ColorBy_strings[i])
+        if(s == DataValue_strings[i])
         {
-            val = (ColorBy)i;
+            val = (DataValue)i;
             return true;
         }
     }
@@ -315,7 +316,8 @@ void PoincareAttributes::Init()
     minFlag = false;
     maxFlag = false;
     colorType = ColorBySingleColor;
-    colorBy = SafetyFactor;
+    dataValue = SafetyFactor;
+    showOPoints = false;
     showIslands = false;
     showLines = true;
     showPoints = false;
@@ -377,7 +379,8 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     colorType = obj.colorType;
     singleColor = obj.singleColor;
     colorTableName = obj.colorTableName;
-    colorBy = obj.colorBy;
+    dataValue = obj.dataValue;
+    showOPoints = obj.showOPoints;
     showIslands = obj.showIslands;
     showLines = obj.showLines;
     showPoints = obj.showPoints;
@@ -583,7 +586,8 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (colorType == obj.colorType) &&
             (singleColor == obj.singleColor) &&
             (colorTableName == obj.colorTableName) &&
-            (colorBy == obj.colorBy) &&
+            (dataValue == obj.dataValue) &&
+            (showOPoints == obj.showOPoints) &&
             (showIslands == obj.showIslands) &&
             (showLines == obj.showLines) &&
             (showPoints == obj.showPoints) &&
@@ -783,7 +787,8 @@ PoincareAttributes::SelectAll()
     Select(ID_colorType,               (void *)&colorType);
     Select(ID_singleColor,             (void *)&singleColor);
     Select(ID_colorTableName,          (void *)&colorTableName);
-    Select(ID_colorBy,                 (void *)&colorBy);
+    Select(ID_dataValue,               (void *)&dataValue);
+    Select(ID_showOPoints,             (void *)&showOPoints);
     Select(ID_showIslands,             (void *)&showIslands);
     Select(ID_showLines,               (void *)&showLines);
     Select(ID_showPoints,              (void *)&showPoints);
@@ -974,10 +979,16 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("colorTableName", colorTableName));
     }
 
-    if(completeSave || !FieldsEqual(ID_colorBy, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_dataValue, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("colorBy", ColorBy_ToString(colorBy)));
+        node->AddNode(new DataNode("dataValue", DataValue_ToString(dataValue)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showOPoints, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showOPoints", showOPoints));
     }
 
     if(completeSave || !FieldsEqual(ID_showIslands, &defaultObject))
@@ -1172,22 +1183,24 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         singleColor.SetFromNode(node);
     if((node = searchNode->GetNode("colorTableName")) != 0)
         SetColorTableName(node->AsString());
-    if((node = searchNode->GetNode("colorBy")) != 0)
+    if((node = searchNode->GetNode("dataValue")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 11)
-                SetColorBy(ColorBy(ival));
+            if(ival >= 0 && ival < 12)
+                SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ColorBy value;
-            if(ColorBy_FromString(node->AsString(), value))
-                SetColorBy(value);
+            DataValue value;
+            if(DataValue_FromString(node->AsString(), value))
+                SetDataValue(value);
         }
     }
+    if((node = searchNode->GetNode("showOPoints")) != 0)
+        SetShowOPoints(node->AsBool());
     if((node = searchNode->GetNode("showIslands")) != 0)
         SetShowIslands(node->AsBool());
     if((node = searchNode->GetNode("showLines")) != 0)
@@ -1388,10 +1401,17 @@ PoincareAttributes::SetColorTableName(const std::string &colorTableName_)
 }
 
 void
-PoincareAttributes::SetColorBy(PoincareAttributes::ColorBy colorBy_)
+PoincareAttributes::SetDataValue(PoincareAttributes::DataValue dataValue_)
 {
-    colorBy = colorBy_;
-    Select(ID_colorBy, (void *)&colorBy);
+    dataValue = dataValue_;
+    Select(ID_dataValue, (void *)&dataValue);
+}
+
+void
+PoincareAttributes::SetShowOPoints(bool showOPoints_)
+{
+    showOPoints = showOPoints_;
+    Select(ID_showOPoints, (void *)&showOPoints);
 }
 
 void
@@ -1620,10 +1640,16 @@ PoincareAttributes::GetColorTableName()
     return colorTableName;
 }
 
-PoincareAttributes::ColorBy
-PoincareAttributes::GetColorBy() const
+PoincareAttributes::DataValue
+PoincareAttributes::GetDataValue() const
 {
-    return ColorBy(colorBy);
+    return DataValue(dataValue);
+}
+
+bool
+PoincareAttributes::GetShowOPoints() const
+{
+    return showOPoints;
 }
 
 bool
@@ -1745,7 +1771,8 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_colorType:               return "colorType";
     case ID_singleColor:             return "singleColor";
     case ID_colorTableName:          return "colorTableName";
-    case ID_colorBy:                 return "colorBy";
+    case ID_dataValue:               return "dataValue";
+    case ID_showOPoints:             return "showOPoints";
     case ID_showIslands:             return "showIslands";
     case ID_showLines:               return "showLines";
     case ID_showPoints:              return "showPoints";
@@ -1801,7 +1828,8 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_colorType:               return FieldType_enum;
     case ID_singleColor:             return FieldType_color;
     case ID_colorTableName:          return FieldType_colortable;
-    case ID_colorBy:                 return FieldType_enum;
+    case ID_dataValue:               return FieldType_enum;
+    case ID_showOPoints:             return FieldType_bool;
     case ID_showIslands:             return FieldType_bool;
     case ID_showLines:               return FieldType_bool;
     case ID_showPoints:              return FieldType_bool;
@@ -1857,7 +1885,8 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_colorType:               return "enum";
     case ID_singleColor:             return "color";
     case ID_colorTableName:          return "colortable";
-    case ID_colorBy:                 return "enum";
+    case ID_dataValue:               return "enum";
+    case ID_showOPoints:             return "bool";
     case ID_showIslands:             return "bool";
     case ID_showLines:               return "bool";
     case ID_showPoints:              return "bool";
@@ -2030,9 +2059,14 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (colorTableName == obj.colorTableName);
         }
         break;
-    case ID_colorBy:
+    case ID_dataValue:
         {  // new scope
-        retval = (colorBy == obj.colorBy);
+        retval = (dataValue == obj.dataValue);
+        }
+        break;
+    case ID_showOPoints:
+        {  // new scope
+        retval = (showOPoints == obj.showOPoints);
         }
         break;
     case ID_showIslands:
@@ -2168,7 +2202,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
 
-           colorBy != obj.colorBy ||
+           dataValue != obj.dataValue ||
 
            showIslands != obj.showIslands ||
            showLines != obj.showLines ||

@@ -100,8 +100,7 @@ int FieldlineLib::intersect( Point l0_p0, Point l0_p1,
 }
 
 
-void FieldlineLib::convexHull( vector< Point > &hullPts,
-                               vector< unsigned int > &ordering,
+void FieldlineLib::convexHull( vector< pair< Point, unsigned int > > &hullPts,
                                unsigned int &m,
                                unsigned int npts,
                                int dir ) {
@@ -115,25 +114,24 @@ void FieldlineLib::convexHull( vector< Point > &hullPts,
 
   // Find the point with the minimum z value.
   for( unsigned int i=m; i<npts; i++ ) {
-    if( hullPts[ min ].z > hullPts[i].z )
+    if( hullPts[ min ].first.z > hullPts[i].first.z )
       min = i;
   }
 
   // Store the minimum point so that we know when we are done.
   hullPts[npts] = hullPts[min];
-  ordering[npts] = ordering[min];
 
   do {
 
-    // Swap the point that is the farthest to the right of all others.
+    // Make the point with the smallest z value first.
     if( min != m ) {
-      Point tmpPt = hullPts[m];
+      pair< Point, unsigned int > tmpPt = hullPts[m];
       hullPts[m] = hullPts[min];
       hullPts[min] = tmpPt;
 
-      unsigned tmpIndex = ordering[m];
-      ordering[m] = ordering[min];
-      ordering[min] = tmpIndex;
+//       unsigned tmpIndex = ordering[m];
+//       ordering[m] = ordering[min];
+//       ordering[min] = tmpIndex;
     }
 
     m++;
@@ -142,8 +140,8 @@ void FieldlineLib::convexHull( vector< Point > &hullPts,
     // Find the next point that is the farthest to the right of all others.
     for( unsigned int i=min+1; i<npts+1; i++ ) {
 
-      Vector v0 = (Vector) hullPts[m-1] - (Vector) hullPts[min];
-      Vector v1 = (Vector) hullPts[i  ] - (Vector) hullPts[min];
+      Vector v0 = (Vector) hullPts[m-1].first - (Vector) hullPts[min].first;
+      Vector v1 = (Vector) hullPts[i  ].first - (Vector) hullPts[min].first;
 
       int CCW = ccw( v0, v1 );
 
@@ -155,8 +153,8 @@ void FieldlineLib::convexHull( vector< Point > &hullPts,
 
       // In this case the points are co-linear so take the point
       // that is closest to the starting point.
-      else if( ordering[i] != ordering[m-1] && CCW == 0 ) {
-        v1 = (Vector) hullPts[m-1] - (Vector) hullPts[i];
+      else if( hullPts[i].second != hullPts[m-1].second && CCW == 0 ) {
+        v1 = (Vector) hullPts[m-1].first - (Vector) hullPts[i].first;
 
         if( v0.length2() > v1.length2() )
           min = i;
@@ -169,7 +167,10 @@ void FieldlineLib::convexHull( vector< Point > &hullPts,
 
 
 bool FieldlineLib::hullCheck( vector< Point > &points,
-                              unsigned int npts ) {
+                              unsigned int npts,
+                              int direction,
+                              unsigned int &nhulls,
+                              bool &reversed ) {
 
   // If one, two, or three points the ordering makes no difference and
   // it is convex.
@@ -177,45 +178,61 @@ bool FieldlineLib::hullCheck( vector< Point > &points,
     return true;
   }
 
-  vector< Point > hullPts;
-  vector< unsigned int > ordering;
+  vector< pair < Point, unsigned int > > hullPts;
 
   // Store the points and their order in a temporary vector.
   for( unsigned int i=0; i<npts; i++ ) {
-    hullPts.push_back( points[i] );
-    ordering.push_back( i );
+    hullPts.push_back( pair< Point, unsigned int >( points[i], i ) );
   }
 
   // Add one more point as a terminal.
-  hullPts.push_back( points[0] );
-  ordering.push_back( 0 );
+  hullPts.push_back( pair< Point, unsigned int >( points[0], 0 ) );
 
-  unsigned int cc = 0;
+  nhulls = 0;
   unsigned int start = 0;
   unsigned int last = 0;
 
-  int dir = 1;
+  // The direction of the returned hull will be counterclockwise if 1
+  // or clockwise if -1.
+  int dir = direction;
 
   // Get the convex hull(s).
   do {
 
-    // Swap the direction back and forth so to get the correct ordering.
-    dir *= -1;
-
-    convexHull( hullPts, ordering, start, npts, dir );
+    convexHull( hullPts, start, npts, dir );
 
 //     cerr << "npts " << npts << "  "
 //       << "start " << last << "  "
 //       << "points " << start - last << "  "
 //       << endl;
 
+    // Swap the direction back and forth so to get the correct ordering.
+    dir *= -1;
+
     last = start;
 
-    ++cc;
+    // For the first hull check to see if point ordering match the
+    // desired hull direction.
+    if( nhulls == 0 )
+    {
+      reversed = false;
+
+      for( unsigned int i=0; i<start-2; i++ )
+      {
+        if( hullPts[i].second == hullPts[i+1].second+1 &&
+            hullPts[i].second == hullPts[i+2].second+2 )
+        {
+          reversed = true;
+          break;
+        }
+      }
+    }
+
+    ++nhulls;
 
   } while( start != npts );
 
-  return (cc == 1);
+  return (nhulls == 1);
 }
 
 
@@ -723,6 +740,10 @@ islandChecks( vector< Point >& points,
 
   globalCentroid /= (float) points.size();
 
+  unsigned int nhulls;
+  int direction = 1;
+  bool reversed;
+
   bool convex;
 
   if( toroidalWinding == 1 ) {
@@ -756,11 +777,11 @@ islandChecks( vector< Point >& points,
       }
     }
 
-    convex = hullCheck( points, (unsigned int) npts );
+    convex = hullCheck( points, (unsigned int) npts, direction, nhulls, reversed );
 
   } else {
 
-    convex = hullCheck( points, toroidalWinding );
+    convex = hullCheck( points, toroidalWinding, direction, nhulls, reversed );
   }
 
 //  cerr << "Convex  " << convex << endl;
@@ -1051,11 +1072,31 @@ islandChecks( vector< Point >& points,
   nnodes /= (float) toroidalWinding;
 
   if( islands ) {
+
+    unsigned int cc = 0;
+    unsigned int index = 0;
+    unsigned int new_nnodes = 0;
+
+    for( unsigned int i=0; i<toroidalWinding; i++ ) {
+      if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] )
+      {
+        cc++;
+        index = i;
+      }
+      else
+        new_nnodes += nodes[i];
+    }
+
+    if( cc == 1 )
+    {
+      nnodes = new_nnodes / (float) (toroidalWinding-cc);
+    }
+
     for( unsigned int i=0; i<toroidalWinding; i++ ) {
       if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] ) {
-          if( verboseFlag )
-            cerr << "Appears to be islands but not self consistant, "
-                 << "average number of nodes  " << nnodes << "   (  ";
+        if( verboseFlag )
+          cerr << "Appears to be islands but not self consistant, "
+               << "average number of nodes  " << nnodes << "   (  ";
           
         for( unsigned int i=0; i<toroidalWinding; i++ )
             if( verboseFlag )
@@ -1314,10 +1355,10 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
            << poloidal_points.size() << " poloidal points, and "
            << ridgeline_points.size() << " ridgeline points " << endl;
 
-  if( ptList.size() == 0 ||
-      toroidal_points.size() == 0 ||
-      poloidal_points.size() == 0 ||
-      ridgeline_points.size() == 0 )
+  if( ptList.empty() ||
+      toroidal_points.empty() ||
+      poloidal_points.empty() ||
+      ridgeline_points.empty() )
   {
     FieldlineInfo fi;
 
@@ -1575,7 +1616,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
              << "ridgeline " << ridgelineList[0].second << "  "
              << "percent " << ridgelineVariance << endl;
 
-      if( ridgeline_dc_var < 1.0e-04 )
+      if( ridgeline_dc_var > 1.0e-04 )
       {
         if( verboseFlag )
           cerr << endl << "!!!!!!!!!!!!!!!!!!!!!!  "
@@ -1599,7 +1640,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       // Find the base island poloidal periodicity standard deviation.
       unsigned int basePoloidalWinding =
         poloidalWinding * (unsigned int) nnodes;
-
  
       // Decide if there are enough points.
       if( !complete ||
@@ -1637,8 +1677,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       for( int i=-1; i<=1; ++i )
       {
         // If the best is the same value of the base then a perfect match.
-        if( ridgelinePeriod ==
-            (poloidalWinding * (unsigned int) (nnodes+i)) )
+        if( ridgelinePeriod == (poloidalWinding * ((unsigned int) nnodes+i)) )
         {
           confidence += 0.40;
           
@@ -1657,7 +1696,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         // If the best is an integer value of the base then the result is
         // the same because more groups can create smaller regions.
         else if( ridgelinePeriod %
-            (poloidalWinding * (unsigned int) (nnodes+i)) == 0 )
+                  (poloidalWinding * ((unsigned int) nnodes+i)) == 0 )
         {
           confidence += 0.30;
           
@@ -1667,6 +1706,26 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
           {
             cerr << "Integer Island poloidal via nodes ";
             if(i)  cerr << i << "  ";
+            cerr << ridgelinePeriod << endl;
+          }
+
+          break;
+        }
+
+        // If the best is an integer value of the base then the result is
+        // the same because more groups can create smaller regions.
+        else if( ridgelinePeriod %
+                  (poloidalWinding * (2*(unsigned int) nnodes+i)) == 0 )
+        {
+          confidence += 0.30;
+          
+          nnodes += i;
+          
+          if( verboseFlag )
+          {
+            cerr << "Integer Island poloidal via half nodes ";
+            if(i<0)  cerr << nnodes << " + " << nnodes-i << " % ";
+            if(i>0)  cerr << nnodes-i << " + " << nnodes << " % ";
             cerr << ridgelinePeriod << endl;
           }
 
@@ -1707,7 +1766,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         {
           type = UNKNOWN;
           islands = 0;
-//            nPuncturesNeeded = 0;
+//        nPuncturesNeeded = 0;
           
           unsigned int i = 0;
           vector< pair < pair<unsigned int, unsigned int >, double > >::iterator
