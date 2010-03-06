@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtPoincareFilter.h>
-//#include <avtSLAlgorithm.h>
+#include <avtSLAlgorithm.h>
 #include <avtStreamlineWrapper.h>
 
 #include <vtkDataSet.h>
@@ -64,7 +64,9 @@
 
 #include <utility>
 
+#ifdef STRAIGHTLINE_SKELETON
 #include "skelet.h"
+#endif
 
 using namespace std;
 
@@ -1173,7 +1175,7 @@ avtPoincareFilter::CreatePoincareOutput()
                            dataValue, color_value );
               else
                 loadCurve( dt, puncturePts, nnodes, dataValue, color_value );
-#ifdef STRAIGHTLINE
+#ifdef STRAIGHTLINE_SKELETON
               if( type == ISLAND_CHAIN && showOPoints )
                 findIslandCenter( dt, puncturePts, dataValue, color_value );
 #endif
@@ -1729,7 +1731,7 @@ avtPoincareFilter::findIslandCenter( avtDataTree *dt,
                                      unsigned int color,
                                      double color_value ) 
 {
-#ifdef STRAIGHTLINE
+#ifdef STRAIGHTLINE_SKELETON
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     
     unsigned int nplanes = nodes.size();
