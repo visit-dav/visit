@@ -99,8 +99,8 @@ ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
 ${VISIT_SOURCE_DIR}/common/misc
 ${VISIT_SOURCE_DIR}/common/utility
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/third_party_builtin/bilib
 ${VTK_INCLUDE_DIRS}
+${BOOST_INCLUDE_DIRS}
 )
 
 # Add link directories needed to use our libraries and VTK.
