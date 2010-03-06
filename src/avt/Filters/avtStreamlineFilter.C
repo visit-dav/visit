@@ -1818,7 +1818,7 @@ int
 avtStreamlineFilter::DomainToRank(DomainType &domain)
 {
     // First time through, compute the mapping.
-    if (domainToRank.size() == 0)
+    if (domainToRank.empty())
         ComputeDomainToRankMapping();
 
     if (domain.domain < 0 || domain.domain >= domainToRank.size())
@@ -1984,7 +1984,9 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     // When restarting a streamline one step is always taken. To avoid
     // this unneed step check to see if the termination criteria was
     // previously met.
-    if (DebugStream::Level5()) debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+    if (DebugStream::Level5())
+      debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+
     if( ! slSeg->terminated )
     {
         if (intersectObj)
@@ -2032,7 +2034,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         SetDomain(slSeg);
         
         // Not in any domains.
-        if (slSeg->seedPtDomainList.size() == 0)
+        if (slSeg->seedPtDomainList.empty())
         {
             slSeg->status = avtStreamlineWrapper::TERMINATE;
         }
