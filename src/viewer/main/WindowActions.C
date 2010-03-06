@@ -101,8 +101,8 @@
 AddWindowAction::AddWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Add new window"));
-    SetMenuText(tr("Add"));
+    SetAllText(tr("Create a new viewer window"));
+    SetMenuText(tr("New"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(newwindow_xpm)));
 }
@@ -147,7 +147,7 @@ AddWindowAction::Execute()
 CloneWindowAction::CloneWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Clone window"));
+    SetAllText(tr("Clone this window"));
     SetMenuText(tr("Clone"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(copymenu_xpm)));
@@ -197,7 +197,7 @@ CloneWindowAction::Execute()
 DeleteWindowAction::DeleteWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Delete window"));
+    SetAllText(tr("Delete this window"));
     SetMenuText(tr("Delete"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(deletewindow_xpm)));
@@ -271,7 +271,7 @@ DeleteWindowAction::Update()
 ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Clear plots"));
+    SetAllText(tr("Clear all plots from this window"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(clearwindow_xpm)));
 }
@@ -518,7 +518,7 @@ SetActiveWindowAction::SetActiveWindowAction(ViewerWindow *win) :
     ViewerToggleAction(win)
 {
     SetAllText(tr("Make active"));
-    SetToolTip(tr("Make window active"));
+    SetToolTip(tr("Make this window active"));
     if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(checkwindow_xpm), QPixmap(blankwindow_xpm));
 }
@@ -1006,20 +1006,20 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     if (!GetViewerProperties()->GetNowin())
     {
         AddChoice(tr("Navigate"), tr("Navigate mode"), QPixmap(navigatemode_xpm));
+        AddChoice(tr("Zoom"), tr("Zoom mode"), QPixmap(zoommode_xpm));
         AddChoice(tr("Zone Pick"), tr("Zone Pick mode"), QPixmap(zonepickmode_xpm));
         AddChoice(tr("Node Pick"), tr("Node Pick mode"), QPixmap(nodepickmode_xpm));
-        AddChoice(tr("Zoom"), tr("Zoom mode"), QPixmap(zoommode_xpm));
-        AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
         AddChoice(tr("Spreadsheet Pick"), tr("Spreadsheet Pick mode"), QPixmap(spreadsheetpickmode_xpm));
+        AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
     }
     else 
     {
         AddChoice(tr("Navigate"));
+        AddChoice(tr("Zoom"));
         AddChoice(tr("Zone Pick"));
         AddChoice(tr("Node Pick"));
-        AddChoice(tr("Zoom"));
-        AddChoice(tr("Lineout"));
         AddChoice(tr("Spreadsheet Pick"));
+        AddChoice(tr("Lineout"));
     }
 }
 
