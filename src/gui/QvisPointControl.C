@@ -90,15 +90,27 @@ QvisPointControl::QvisPointControl(QWidget *parent) :
     topLayout->setMargin(0);
     topLayout->setSpacing(10);
 
-    QString temp;
+    // Create the type combo box
+    topLayout->addWidget(new QLabel(tr("Point type"), this), 0, 0);
+
+    typeComboBox = new QComboBox(this);
+    typeComboBox->addItem(tr("Box"));
+    typeComboBox->addItem(tr("Axis"));
+    typeComboBox->addItem(tr("Icosahedron"));
+    typeComboBox->addItem(tr("Point"));
+    typeComboBox->addItem(tr("Sphere"));
+    connect(typeComboBox, SIGNAL(activated(int)),
+            this, SLOT(typeComboBoxChanged(int)));
+    topLayout->addWidget(typeComboBox, 0, 1);
+
     // Create the size label and line edit.
+    sizeLabel = new QLabel(tr("Point size"), this);
+    topLayout->addWidget(sizeLabel, 0, 2, Qt::AlignRight);
+
     sizeLineEdit = new QLineEdit(this);
     connect(sizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSizeText()));
-    topLayout->addWidget(sizeLineEdit, 0, 1, 1, 2);
-    sizeLabel = new QLabel(tr("Point size"), this);
-    sizeLabel->setBuddy(sizeLabel);
-    topLayout->addWidget(sizeLabel, 0, 0);
+    topLayout->addWidget(sizeLineEdit, 0, 3);
 
     // Create the size variable check box and variable button.
     sizeVarToggle = new QCheckBox(tr("Scale point size by variable"), this);
@@ -111,18 +123,6 @@ QvisPointControl::QvisPointControl(QWidget *parent) :
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
             this, SLOT(sizeVarChanged(const QString &)));
     topLayout->addWidget(sizeVarButton, 1, 2);
-
-    // Create the type combo box
-    typeComboBox = new QComboBox(this);
-    typeComboBox->addItem(tr("Box"));
-    typeComboBox->addItem(tr("Axis"));
-    typeComboBox->addItem(tr("Icosahedron"));
-    typeComboBox->addItem(tr("Point"));
-    typeComboBox->addItem(tr("Sphere"));
-    connect(typeComboBox, SIGNAL(activated(int)),
-            this, SLOT(typeComboBoxChanged(int)));
-    topLayout->addWidget(new QLabel(tr("Point Type"), this), 2, 0);
-    topLayout->addWidget(typeComboBox, 2, 1, 1, 2);
 
     SetPointSize(lastGoodSize);
     SetPointSizeVar(lastGoodVar);
