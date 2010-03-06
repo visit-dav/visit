@@ -114,6 +114,9 @@
 #
 #    Mark C. Miller, Fri Jan 15 22:44:32 PST 2010
 #    Temporarily set to run only serial tests.
+#
+#    Mark C. Miller, Fri Mar  5 16:21:43 PST 2010
+#    Added VERBOSE=1 to make commands
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -395,15 +398,15 @@ checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$confli
 cd src
 ./configure CXXFLAGS=-g MAKE=gmake --enable-parallel --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "Post-update configure failed" config_log.txt 
-gmake -j 4 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt 1000
+gmake VERBOSE=1 -j 4 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake VERBOSE=1 -j 4 failed in src" make_log.txt 1000
 
 # build data
 cd ../data
 rm -f make_log.txt
 gmake clean 1> /dev/null 2>&1
-gmake -j 4 test 1>> make_log.txt 2>&1
-checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt  1000
+gmake VERBOSE=1 -j 4 test 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake VERBOSE=1 -j 4 failed in data" make_log.txt  1000
 cd ../src
 
 # set the datestamp used for all test modes
