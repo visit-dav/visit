@@ -140,6 +140,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     void    CreatePythonFilterEditor();
     void    UpdatePythonExpression();
     bool    ParsePythonExpression(const QString &, QString &, QString &);
+    void    UpdateStandardExpressionEditor(const QString &);
     void    UpdatePythonExpressionEditor(const QString &);
 
     // Widgets and layouts.
@@ -182,6 +183,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     // State information
     ExpressionList         *exprList;
     std::map<int,int>       indexMap;
+    bool                    stdExprActive;
     bool                    pyExprActive;
 };
 

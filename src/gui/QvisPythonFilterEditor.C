@@ -147,7 +147,6 @@ QvisPythonFilterEditor::~QvisPythonFilterEditor()
 QString
 QvisPythonFilterEditor::getSource(bool escape)
 {
-    // TODO test escape
     QString res = editor->toPlainText();
     res = res.trimmed() + QString("\n");
 
@@ -155,6 +154,7 @@ QvisPythonFilterEditor::getSource(bool escape)
     {
         res.replace(QString("\""),QString("\\\""));
         res.replace(QString("\n"),QString("\\n"));
+        res.replace(QString(" "),QString("\\s"));
     }
 
     return res;
@@ -182,6 +182,7 @@ QvisPythonFilterEditor::setSource(const QString &py_script, bool escaped)
         QString res = py_script;
         res.replace(QString("\\\""),QString("\""));
         res.replace(QString("\\n"),QString("\n"));
+        res.replace(QString("\\s"),QString(" "));
         editor->setText(res);
     }
     else

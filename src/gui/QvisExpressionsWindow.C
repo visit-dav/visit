@@ -838,6 +838,8 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
         stdDefinitionEdit->setText("");
         pyArgsEdit->setText("");
         pyFilterEdit->setSource("");
+        stdExprActive = true;
+        pyExprActive = true;
     }
     else
     {
@@ -851,9 +853,10 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 
         QString expr_def = QString(e.GetDefinition().c_str());
 
-        stdDefinitionEdit->setText(expr_def);
+        UpdateStandardExpressionEditor(expr_def);
         UpdatePythonExpressionEditor(expr_def);
-
+        if(expr_def.trimmed() == QString("") && pyExprActive)
+            stdExprActive = true;
     }
 
     UpdateWindowSensitivity();
@@ -907,7 +910,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     typeList->setEnabled(enable);
     notHidden->setEnabled(enable);
 
-    stdEditorWidget->setEnabled(enable);
+    stdEditorWidget->setEnabled(enable && stdExprActive);
     pyEditorWidget->setEnabled(enable && pyExprActive);
 }
 
@@ -1475,6 +1478,7 @@ QvisExpressionsWindow::UpdatePythonExpressionEditor(const QString &expr_def)
     if(ParsePythonExpression(expr_def,res_args,res_script))
     {
         pyExprActive = true;
+        stdExprActive = false;
         pyArgsEdit->setText(res_args);
         pyFilterEdit->setSource(res_script,true);
         if(res_script != QString(""))
@@ -1483,6 +1487,7 @@ QvisExpressionsWindow::UpdatePythonExpressionEditor(const QString &expr_def)
     else
     {
         pyExprActive = false;
+        stdExprActive = true;
         pyArgsEdit->setText(QString(""));
         pyFilterEdit->setSource(QString(""));
         editorTabs->setCurrentIndex(0);
@@ -1490,6 +1495,26 @@ QvisExpressionsWindow::UpdatePythonExpressionEditor(const QString &expr_def)
     BlockAllSignals(false);
 }
 
+
+// ****************************************************************************
+//  Method:  QvisExpressionsWindow::UpdateStandardExpressionEditor
+//
+//  Purpose:
+//   Updates the standard expression editor.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Fri Mar  5 16:55:08 PST 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
+{
+    BlockAllSignals(true);
+    stdDefinitionEdit->setText(expr_def);
+    BlockAllSignals(false);
+}
 
 // ****************************************************************************
 //  Method:  QvisExpressionsWindow::ExpandFunction
