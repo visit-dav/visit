@@ -100,7 +100,7 @@ ${VISIT_SOURCE_DIR}/common/misc
 ${VISIT_SOURCE_DIR}/common/utility
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
-${BOOST_INCLUDE_DIRS}
+${BOOST_INCLUDE_DIR}
 )
 
 # Add link directories needed to use our libraries and VTK.

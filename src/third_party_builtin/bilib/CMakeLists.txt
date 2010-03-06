@@ -54,32 +54,8 @@
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
-#-----------------------------------------------------------------------------
-# Discover the proper untar command.
-#
-# "cmake -E tar" supports untaring for normal & gzipped tarballs.
-# Unfortunately it is very slow so we only use it as a fallback.
-#
-#-----------------------------------------------------------------------------
-FIND_PROGRAM(TAR_EXE tar)
-IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-    SET(UNTAR_CMD ${TAR_EXE})
-    SET(UNTAR_ARGS "-xzvf")
-ELSE(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-    SET(UNTAR_CMD "cmake")
-    SET(UNTAR_ARGS "-E tar -xzvf")
-ENDIF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-
-#-----------------------------------------------------------------------------
-# Add a custom command to extract each archived dataset & collect
-# output directory names in a dependency list.
-#-----------------------------------------------------------------------------
-EXECUTE_PROCESS(COMMAND ${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/boost.tar.gz
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                OUTPUT_VARIABLE BOOST_FILES)
-
 INSTALL(FILES ${BOOST_FILES}
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/boost
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/boost_1_42_0
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
