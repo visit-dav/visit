@@ -159,19 +159,19 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     numTools = 0;
 
     // Create the tools.
-    boxTool = new VisitBoxTool(toolProxy);
+    pointTool = new VisitPointTool(toolProxy);
     lineTool = new VisitLineTool(toolProxy);
     planeTool = new VisitPlaneTool(toolProxy);
-    pointTool = new VisitPointTool(toolProxy);
+    boxTool = new VisitBoxTool(toolProxy);
     sphereTool = new VisitSphereTool(toolProxy);
     axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
 
     // Add the tools to the tools array.
-    tools[numTools++] = boxTool;
+    tools[numTools++] = pointTool;
     tools[numTools++] = lineTool;
     tools[numTools++] = planeTool;
+    tools[numTools++] = boxTool;
     tools[numTools++] = sphereTool;
-    tools[numTools++] = pointTool;
     tools[numTools++] = axisRestrictionTool;
 }
 
