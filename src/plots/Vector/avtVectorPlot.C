@@ -419,6 +419,10 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Added ability to limit vectors to come from original cell only
 //    (useful for material-selected vector plots).
 //
+//    Hank Childs, Sun Mar  7 15:50:55 PST 2010
+//    Fix problem where color table wouldn't update when transitioning between
+//    color-by-magnitude settings.
+//
 // ****************************************************************************
 
 void
@@ -428,7 +432,8 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
-       (atts.GetColorTableName() != newAtts->GetColorTableName());
+       (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+       (atts.GetColorByMag() != newAtts->GetColorByMag());
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
