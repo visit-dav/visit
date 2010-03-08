@@ -104,6 +104,9 @@ class PseudocolorAttributes;
 //   (instead of just a single global opacity for the whole plot).
 //   There's a new toggle for this, and it overrides the whole-plot opacity.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver

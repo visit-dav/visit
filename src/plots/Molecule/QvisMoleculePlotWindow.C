@@ -126,6 +126,9 @@ QvisMoleculePlotWindow::~QvisMoleculePlotWindow()
 //   Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void

@@ -83,6 +83,9 @@ class QvisOpacitySlider;
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Moved StringToDoubleList to QvisWindowBase 
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisContourPlotWindow : public QvisPostableWindowObserver

@@ -140,6 +140,9 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 //   Brad Whitlock, Thu Jul 17 11:35:40 PDT 2008
 //   Qt 4.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void

@@ -93,6 +93,9 @@ class VectorAttributes;
 //   Brad Whitlock, Tue Jul 29 11:07:34 PDT 2008
 //   Qt 4.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver

@@ -74,10 +74,10 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     public final static int SMOOTHINGLEVEL_HIGH = 2;
 
     public final static int MESHCOLOR_FOREGROUND = 0;
-    public final static int MESHCOLOR_MESHCOLORTABLE = 1;
+    public final static int MESHCOLOR_MESHCUSTOM = 1;
 
     public final static int OPAQUECOLOR_BACKGROUND = 0;
-    public final static int OPAQUECOLOR_OPAQUECOLORTABLE = 1;
+    public final static int OPAQUECOLOR_OPAQUECUSTOM = 1;
 
     public final static int OPAQUEMODE_AUTO = 0;
     public final static int OPAQUEMODE_ON = 1;
@@ -455,14 +455,14 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         str = str + indent + "meshColorSource = ";
         if(meshColorSource == MESHCOLOR_FOREGROUND)
             str = str + "MESHCOLOR_FOREGROUND";
-        if(meshColorSource == MESHCOLOR_MESHCOLORTABLE)
-            str = str + "MESHCOLOR_MESHCOLORTABLE";
+        if(meshColorSource == MESHCOLOR_MESHCUSTOM)
+            str = str + "MESHCOLOR_MESHCUSTOM";
         str = str + "\n";
         str = str + indent + "opaqueColorSource = ";
         if(opaqueColorSource == OPAQUECOLOR_BACKGROUND)
             str = str + "OPAQUECOLOR_BACKGROUND";
-        if(opaqueColorSource == OPAQUECOLOR_OPAQUECOLORTABLE)
-            str = str + "OPAQUECOLOR_OPAQUECOLORTABLE";
+        if(opaqueColorSource == OPAQUECOLOR_OPAQUECUSTOM)
+            str = str + "OPAQUECOLOR_OPAQUECUSTOM";
         str = str + "\n";
         str = str + indent + "opaqueMode = ";
         if(opaqueMode == OPAQUEMODE_AUTO)

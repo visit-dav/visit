@@ -144,6 +144,9 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Brad Whitlock, Fri Jul 18 10:40:08 PDT 2008
 //   Qt 4.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
@@ -153,7 +156,7 @@ QvisCurvePlotWindow::CreateWindowContents()
     // Create the geometry
     //
     QGroupBox * geometryGroup = new QGroupBox(central);
-    geometryGroup->setTitle(tr("Geometry"));
+    geometryGroup->setTitle(tr("Line Geometry"));
     topLayout->addWidget(geometryGroup);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);

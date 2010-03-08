@@ -158,6 +158,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Jeremy Meredith, Fri Feb 20 17:28:17 EST 2009
 //   Added per-plot alpha (opacity) support.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
@@ -471,6 +474,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //
 //   Jeremy Meredith, Fri Feb 20 17:28:17 EST 2009
 //   Added per-plot alpha (opacity) support.
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
 //
 // ****************************************************************************
 
@@ -1046,6 +1052,11 @@ QvisMeshPlotWindow::opaqueModeChanged(int val)
 // Programmer: Kathleen Bonnell 
 // Creation:   September 26, 2001 
 //
+// Modifications:
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
@@ -1074,6 +1085,11 @@ QvisMeshPlotWindow::opaqueColorClicked(int  val)
 // Programmer: Kathleen Bonnell 
 // Creation:   September 26, 2001 
 //   
+// Modifications:
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
