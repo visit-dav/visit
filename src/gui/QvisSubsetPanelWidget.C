@@ -42,6 +42,7 @@
 #include <QTreeWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <QToolButton>
 #include <QMenu>
 
 #include <ViewerProxy.h>
@@ -93,73 +94,74 @@ S2S(SetState s)
 // Programmer: Cyrus Harrison
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
+// Modifications:
+//   Cyrus Harrison, Mon Mar  8 09:19:12 PST 2010
+//   Switch from using two QPushButtons to a single QToolButton.
+//
 // ****************************************************************************
 
-QvisSubsetPanelWidget::QvisSubsetPanelWidget(QWidget *parent, 
+QvisSubsetPanelWidget::QvisSubsetPanelWidget(QWidget *parent,
                                              ViewerProxy *viewer_proxy) 
 :  QWidget(parent), viewerProxy(viewer_proxy), activeChild(NULL),
    numChecked(0), numCheckable(0)
 {
     // create contents
-    
+
     QGridLayout *layout = new QGridLayout(this);
-    layout->setColumnStretch(1,3);
     tree = new QTreeWidget(this);
-    
+
     tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    
+
     QTreeWidgetItem *header = new QTreeWidgetItem();
     header->setText(0,"");
     tree->setHeaderItem(header);
-    
+
     connect(tree,SIGNAL(itemSelectionChanged()),
             this,SLOT(onItemSelectionChanged()));
-    
+
     connect(tree,SIGNAL(itemClicked(QTreeWidgetItem*,int)),
             this,SLOT(onItemClicked(QTreeWidgetItem*,int)));
-    
-    layout->addWidget(tree,0,0,1,3);
 
-    
+    layout->addWidget(tree,0,0,1,2);
+
+
     allSetsLabel = new QLabel(tr("All Sets:"),this);
-    allSetsButton = new QPushButton(tr("Reverse"),this);
-    allSetsActionButton = new QPushButton("",this);
-    
+    allSetsButton = new QToolButton(this);
+    allSetsButton->setText(tr("Reverse"));
+
     layout->addWidget(allSetsLabel,1,0);
     layout->addWidget(allSetsButton,1,1);
-    layout->addWidget(allSetsActionButton,1,2);
-    
+
     QMenu *allSetsMenu = new QMenu();
     allSetsMenu->addAction(tr("Reverse"),this,SLOT(onAllSetsActionReverse()));
     allSetsMenu->addAction(tr("Turn On"),this,SLOT(onAllSetsActionOn()));
     allSetsMenu->addAction(tr("Turn Off"),this,SLOT(onAllSetsActionOff()));
-    allSetsActionButton->setMenu(allSetsMenu);
-    
+    allSetsButton->setPopupMode(QToolButton::MenuButtonPopup);
+    allSetsButton->setMenu(allSetsMenu);
+
     connect(allSetsButton,SIGNAL(clicked()),
             this,SLOT(onAllSetsButton()));
-    
-    
+
+
     selectedSetsLabel = new QLabel(tr("Selected Sets:"),this);
-    selectedSetsButton = new QPushButton(tr("Reverse"),this);
-    selectedSetsActionButton = new QPushButton("",this);
-    
+    selectedSetsButton = new QToolButton(this);
+    selectedSetsButton->setText(tr("Reverse"));
+
     selectedSetsLabel->setEnabled(false);
     selectedSetsButton->setEnabled(false);
-    selectedSetsActionButton->setEnabled(false);
-    
+
     layout->addWidget(selectedSetsLabel,2,0);
     layout->addWidget(selectedSetsButton,2,1);
-    layout->addWidget(selectedSetsActionButton,2,2);
 
     QMenu *selectedSetsMenu = new QMenu();
     selectedSetsMenu->addAction(tr("Reverse"),this,SLOT(onSelectedSetsActionReverse()));
     selectedSetsMenu->addAction(tr("Turn On"),this,SLOT(onSelectedSetsActionOn()));
     selectedSetsMenu->addAction(tr("Turn Off"),this,SLOT(onSelectedSetsActionOff()));
-    selectedSetsActionButton->setMenu(selectedSetsMenu);
-    
+    selectedSetsButton->setPopupMode(QToolButton::MenuButtonPopup);
+    selectedSetsButton->setMenu(selectedSetsMenu);
+
     connect(selectedSetsButton,SIGNAL(clicked()),
             this,SLOT(onSelectedSetsButton()));
-    
 }
 
 // ****************************************************************************
@@ -618,7 +620,9 @@ QvisSubsetPanelWidget::onSelectedSetsActionOff()
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Mon Mar  8 09:19:12 PST 2010
+//   Switch from using two QPushButtons to a single QToolButton.
+//
 // ****************************************************************************
 
 void 
@@ -626,10 +630,10 @@ QvisSubsetPanelWidget::onItemSelectionChanged()
 {
     // if any root items are selected, make sure
     // child items are not
-    
+
     tree->blockSignals(true);
     QListIterator<QTreeWidgetItem*> itr(tree->selectedItems());
-    
+
     bool sel_root = false;
     while(itr.hasNext() && ! sel_root)
     {
@@ -637,7 +641,7 @@ QvisSubsetPanelWidget::onItemSelectionChanged()
         if(item->parent() == NULL)
             sel_root = true;
     }
-    
+
     if(sel_root)
     {
         itr.toFront();
@@ -648,17 +652,15 @@ QvisSubsetPanelWidget::onItemSelectionChanged()
                 item->setSelected(false);
         }
     }
-    
+
     tree->blockSignals(false);
-    
+
     bool has_sel = false;
     if(tree->selectedItems().count() > 0)
         has_sel = true;
-    
+
     selectedSetsLabel->setEnabled(has_sel);
     selectedSetsButton->setEnabled(has_sel);
-    selectedSetsActionButton->setEnabled(has_sel);
-
 }
 
 // ****************************************************************************
@@ -680,13 +682,13 @@ QvisSubsetPanelWidget::onItemClicked(QTreeWidgetItem *item, int col)
     activeChild = NULL;    
 
     QvisSubsetPanelItem *spi = (QvisSubsetPanelItem*)item;
-    
+
     // check for top level item
     if(spi->parent() == NULL)
     {
         // change checked state
         spi->toggleState();
-        
+
         if(spi->isOn())
             numChecked++;
         else
@@ -697,10 +699,10 @@ QvisSubsetPanelWidget::onItemClicked(QTreeWidgetItem *item, int col)
             restriction->TurnOnSet(spi->id());
         else
             restriction->TurnOffSet(spi->id());
-    
+
         // emit change for sub views!
         emit itemSelected(spi->id(),true);
-    
+
         UpdateParentState();
     }
     else
@@ -740,14 +742,16 @@ QvisSubsetPanelWidget::UpdateParentState()
 // ****************************************************************************
 // Method: QvisSubsetPanelWidget::EnableButtons
 //
-// Purpose: 
+// Purpose:
 //   Helper that enables/disables subset panel buttons.
 //
 // Programmer: Cyrus Harrison
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Mon Mar  8 09:19:12 PST 2010
+//   Switch from using two QPushButtons to a single QToolButton.
+//
 // ****************************************************************************
 
 void
@@ -755,18 +759,16 @@ QvisSubsetPanelWidget::EnableButtons(bool on)
 {
     allSetsLabel->setEnabled(on);
     allSetsButton->setEnabled(on);
-    allSetsActionButton->setEnabled(on);
-    
+
     selectedSetsLabel->setEnabled(on);
     selectedSetsButton->setEnabled(on);
-    selectedSetsActionButton->setEnabled(on);
 }
 
 // ****************************************************************************
 // Method: QvisSubsetPanelWidget::Reverse
 //
-// Purpose: 
-//   Reverses the SIL state of sets. 
+// Purpose:
+//   Reverses the SIL state of sets.
 //
 // Arguments:
 //  only_selected: If all (false) or selected (true) tree items should be 
@@ -776,7 +778,7 @@ QvisSubsetPanelWidget::EnableButtons(bool on)
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -787,7 +789,7 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
 
     bool update = false;
     QTreeWidgetItemIterator itr(tree);
-    
+
     while(*itr)
     {
         QvisSubsetPanelItem *item = (QvisSubsetPanelItem *)*itr;
@@ -800,7 +802,7 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
                 numChecked--;
             else
                 numChecked++;
-            
+
             // if the child item is active, subpanels will depend on it
             if(activeChild && activeChild->parent() == item)
                 update  = true;
@@ -817,7 +819,7 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
 // ****************************************************************************
 // Method: QvisSubsetPanelWidget::Reverse
 //
-// Purpose: 
+// Purpose:
 //   Sets the SIL state of sets.
 //
 // Arguments:
@@ -829,7 +831,7 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -840,7 +842,7 @@ QvisSubsetPanelWidget::TurnOnOff(bool on, bool only_selected)
 
     bool update = false;
     QTreeWidgetItemIterator itr(tree);
-    
+
     while(*itr)
     {
         QvisSubsetPanelItem *item = (QvisSubsetPanelItem *)*itr;
@@ -863,7 +865,7 @@ QvisSubsetPanelWidget::TurnOnOff(bool on, bool only_selected)
                 if(prev_on)
                     numChecked--;
             }
-            
+
             // if the child item is active, subpanels will depend on it
             if(activeChild && activeChild->parent() == item)
                 update  = true;
