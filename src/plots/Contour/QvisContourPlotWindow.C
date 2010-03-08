@@ -149,6 +149,9 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 //   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
 //   Swap the min/max in the gui.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
@@ -158,7 +161,7 @@ QvisContourPlotWindow::CreateWindowContents()
     // Create the scale group
     //
     QGroupBox * dataGroup = new QGroupBox(central);
-    dataGroup->setTitle(tr("Data"));
+    dataGroup->setTitle(tr("Contour Levels"));
     topLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
@@ -180,6 +183,10 @@ QvisContourPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Log"), central);
     scalingButtons->addButton(rb, 1);
     dataLayout->addWidget(rb, 0, 2);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(scalingButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(scaleClicked(int)));
 
     //
     // Create the Limits stuff
@@ -230,9 +237,6 @@ QvisContourPlotWindow::CreateWindowContents()
     connect(selectByLineEdit, SIGNAL(returnPressed()),
            this, SLOT(processSelectByText()));
     dataLayout->addWidget(selectByLineEdit, 2, 2);
-
-
-
 
     // Create the contour color group box.
     contourColorGroup = new QGroupBox(central);

@@ -112,6 +112,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
 //   Add display head geom as cone.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver

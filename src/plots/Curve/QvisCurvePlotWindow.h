@@ -78,6 +78,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Mon Nov 20 13:25:30 PST 2006
 //   Added controls to control symbol-based rendering.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisCurvePlotWindow : public QvisPostableWindowObserver

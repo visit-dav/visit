@@ -178,7 +178,7 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
 
-    if (curveAtts->GetCycleColors())
+    if (curveAtts->GetCurveColorSource())
     {
         ColorAttribute c;
         unsigned char rgb[3] = {0,0,0};

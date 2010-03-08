@@ -170,6 +170,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
 //   Switch the order of the min/max.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void

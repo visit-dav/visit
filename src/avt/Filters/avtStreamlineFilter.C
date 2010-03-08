@@ -1814,6 +1814,15 @@ avtStreamlineFilter::ComputeDomainToRankMapping()
 #endif
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change ".size() == 0" test with empty, as empty has much better 
+//   performance.
+//
+// ****************************************************************************
+
 int
 avtStreamlineFilter::DomainToRank(DomainType &domain)
 {
@@ -1906,6 +1915,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
 //   Use domainToCellLocatorMap.find() instead of [] accessor. It will actually
 //   add an entry for the key if doesn't already exist.
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change ".size() == 0" test with empty, as empty has much better 
+//   performance.
 //
 // ****************************************************************************
 

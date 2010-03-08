@@ -100,6 +100,9 @@ class QvisOpacitySlider;
 //   Jeremy Meredith, Fri Feb 20 17:28:17 EST 2009
 //   Added per-plot alpha (opacity) support.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver

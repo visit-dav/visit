@@ -70,6 +70,9 @@ class QvisPointControl;
 //   Brad Whitlock, Thu Jul 17 15:44:03 PDT 2008
 //   Adapted from Boundary plot window after that windows was ported to Qt 4.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisSubsetPlotWindow : public QvisPostableWindowObserver

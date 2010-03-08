@@ -145,6 +145,9 @@ protected:
 //   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
 //   Removed Extents tool.  (Subsumed by axis restriction tool.)
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Reorder the icons (2.0 interface changes).
+//
 // ****************************************************************************
 
 VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),

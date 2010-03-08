@@ -68,6 +68,9 @@ class QvisPointControl;
 //
 // Modifications:
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisFilledBoundaryPlotWindow : public QvisPostableWindowObserver

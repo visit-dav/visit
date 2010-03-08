@@ -78,12 +78,12 @@ public:
     enum MeshColor
     {
         Foreground,
-        MeshColorTable
+        MeshCustom
     };
     enum OpaqueColor
     {
         Background,
-        OpaqueColorTable
+        OpaqueCustom
     };
     enum OpaqueMode
     {

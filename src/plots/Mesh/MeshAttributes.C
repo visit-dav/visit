@@ -120,7 +120,7 @@ MeshAttributes::SmoothingLevel_FromString(const std::string &s, MeshAttributes::
 //
 
 static const char *MeshColor_strings[] = {
-"Foreground", "MeshColorTable"};
+"Foreground", "MeshCustom"};
 
 std::string
 MeshAttributes::MeshColor_ToString(MeshAttributes::MeshColor t)
@@ -157,7 +157,7 @@ MeshAttributes::MeshColor_FromString(const std::string &s, MeshAttributes::MeshC
 //
 
 static const char *OpaqueColor_strings[] = {
-"Background", "OpaqueColorTable"};
+"Background", "OpaqueCustom"};
 
 std::string
 MeshAttributes::OpaqueColor_ToString(MeshAttributes::OpaqueColor t)
