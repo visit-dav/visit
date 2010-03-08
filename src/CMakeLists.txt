@@ -81,6 +81,10 @@
 #    Cyrus Harrison, Sun Feb 21 19:12:33 PST 2010
 #    Added support for enable/disable of Python Engine Filters.
 #
+#    Eric Brugger, Mon Mar  8 13:02:08 PST 2010
+#    Modified the logic that sets the VISIT_SVN_REVISION to get it from
+#    the file SVN_REVISION before trying svn to get it.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -958,24 +962,29 @@ ENDIF (WIN32)
 #dummy revision, in case commands fail
 SET(VISIT_SVN_REVISION "Unknown") 
 # Get the subversion revision number
-FIND_PACKAGE(Subversion)
-IF(Subversion_FOUND)
-    IF(UNIX AND EXISTS ${VISIT_SOURCE_DIR}/.svn)
-        # Only try and determine the version number if it looks like we're in
-        # a working copy (a .svn directory should be present)
-        Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-        SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-    ENDIF(UNIX AND EXISTS ${VISIT_SOURCE_DIR}/.svn)
-#ELSE(Subversion_FOUND)
-# THIS NEEDS TO BE UPDATED: FindTortoiseSVN.cmake needs to use keyword substituion and templates!@
-#    IF(WIN32)
-#        INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
-#        IF(TortoiseSVN_FOUND)
-#            TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-#            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-#        ENDIF(TortoiseSVN_FOUND)
-#    ENDIF(WIN32)
-ENDIF(Subversion_FOUND)
+IF(EXISTS SVN_REVISION)
+    FILE(STRINGS SVN_REVISION VISIT_SVN_REVISION)
+ELSE(EXISTS SVN_REVISION)
+    FIND_PACKAGE(Subversion)
+    IF(Subversion_FOUND)
+        IF(UNIX AND EXISTS ${VISIT_SOURCE_DIR}/.svn)
+            # Only try and determine the version number if it looks like
+            # we're in a working copy (a .svn directory should be present)
+            Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+        ENDIF(UNIX AND EXISTS ${VISIT_SOURCE_DIR}/.svn)
+    ELSE(Subversion_FOUND)
+        IF(WIN32)
+            # THIS NEEDS TO BE UPDATED: FindTortoiseSVN.cmake needs to use
+            # keyword substituion and templates!@
+#            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
+#            IF(TortoiseSVN_FOUND)
+#                TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+#                SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+#            ENDIF(TortoiseSVN_FOUND)
+        ENDIF(WIN32)
+    ENDIF(Subversion_FOUND)
+ENDIF(EXISTS SVN_REVSION)
 
 #-----------------------------------------------------------------------------
 # Create visit-config.h
