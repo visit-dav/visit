@@ -640,6 +640,7 @@ QvisPointControl::UpdatePointType()
     else
         sizeLabel->setText(tr("Point size (pixels)"));
 
+    sizeVarToggle->setEnabled(e);
     sizeVarButton->setEnabled(e && sizeVarToggle->isChecked());
 }
 
