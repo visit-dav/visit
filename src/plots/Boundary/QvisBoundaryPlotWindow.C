@@ -140,47 +140,30 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 //   Brad Whitlock, Thu Jul 17 11:35:40 PDT 2008
 //   Qt 4.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
 QvisBoundaryPlotWindow::CreateWindowContents()
 {
-    QHBoxLayout *lineLayout = new QHBoxLayout(0);
-    lineLayout->setMargin(0);
-    topLayout->addLayout(lineLayout);
-
-    // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    lineStyleLabel->setBuddy(lineStyle);
-    lineLayout->addWidget(lineStyleLabel);
-    lineLayout->addWidget(lineStyle);
-
-    // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central);
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Line width"), central);
-    lineWidthLabel->setBuddy(lineWidth);
-    lineLayout->addWidget(lineWidthLabel);
-    lineLayout->addWidget(lineWidth);
-
     // Create the boundary color group box.
     boundaryColorGroup = new QGroupBox(central);
     boundaryColorGroup->setTitle(tr("Boundary colors"));
     topLayout->addWidget(boundaryColorGroup);
+
+    QGridLayout *colorLayout = new QGridLayout(boundaryColorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10);
+    colorLayout->setColumnStretch(2, 1000);
 
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
     colorModeButtons = new QButtonGroup(boundaryColorGroup);
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QGridLayout *colorLayout = new QGridLayout(boundaryColorGroup);
-    colorLayout->setSpacing(10);
-    colorLayout->setMargin(5);
-    colorLayout->setColumnStretch(2, 1000);
+
     QRadioButton *rb = new QRadioButton(tr("Color table"), boundaryColorGroup);
     colorModeButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 1, 0);
@@ -242,7 +225,8 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     QHBoxLayout *opLayout = new QHBoxLayout(0);
     opLayout->setMargin(0);
     opLayout->setSpacing(5);
-    topLayout->addLayout(opLayout);
+    colorLayout->addLayout(opLayout, 5, 0, 1, 3);
+
     overallOpacity = new QvisOpacitySlider(0, 255, 25, 255, central, 
                      NULL);
     overallOpacity->setTickInterval(64);
@@ -257,7 +241,36 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     opLayout->addWidget(overallOpacity);
     opLayout->setStretchFactor(overallOpacity, 10);
 
-    // Create the point control 
+    //
+    // Create the option stuff
+    //
+    QGroupBox * optionscGroup = new QGroupBox(central);
+    optionscGroup->setTitle(tr("Options"));
+    topLayout->addWidget(optionscGroup);
+
+    QGridLayout *optionsLayout = new QGridLayout(optionscGroup);
+    optionsLayout->setMargin(5);
+    optionsLayout->setSpacing(10);
+ 
+    // Create the wireframe toggle
+    wireframeToggle = new QCheckBox(tr("Wireframe"), central);
+    connect(wireframeToggle, SIGNAL(toggled(bool)),
+            this, SLOT(wireframeToggled(bool)));
+    optionsLayout->addWidget(wireframeToggle, 0, 0);
+
+    //
+    // Create the style stuff
+    //
+
+    QGroupBox * styleGroup = new QGroupBox(central);
+    styleGroup->setTitle(tr("Point / Line Style"));
+    topLayout->addWidget(styleGroup);
+
+    QGridLayout *styleLayout = new QGridLayout(styleGroup);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
+ 
+    // Create the point control
     pointControl = new QvisPointControl(central);
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
@@ -269,30 +282,45 @@ QvisBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    topLayout->addWidget(pointControl);
- 
-    // Create the legend toggle
-    legendCheckBox = new QCheckBox(tr("Legend"), central);
-    connect(legendCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(legendToggled(bool)));
-    topLayout->addWidget(legendCheckBox);
+    styleLayout->addWidget(pointControl, 0, 0, 1, 4);
 
-    // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central);
-    connect(wireframeCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(wireframeToggled(bool)));
-    topLayout->addWidget(wireframeCheckBox);
+    //
+    // Create the line style/width buttons
+    //
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
+
+    lineStyle = new QvisLineStyleWidget(0, central);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    styleLayout->addWidget(lineStyle, 1, 1);
+
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
+
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    styleLayout->addWidget(lineWidth, 1, 3);
+
+    //
+    // Create the geometry group
+    //
+    QGroupBox * smoothingGroup = new QGroupBox(central);
+    smoothingGroup->setTitle(tr("Geometry"));
+    topLayout->addWidget(smoothingGroup);
+
+    QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
+    smoothingLayout->setMargin(5);
+    smoothingLayout->setSpacing(10);
+
+    smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-    QGridLayout *smoothingLayout = new QGridLayout(0);
-    smoothingLayout->setMargin(0);
-    topLayout->addLayout(smoothingLayout);
-    smoothingLayout->setSpacing(10);
-    smoothingLayout->setColumnStretch(4, 100);
-    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0, 0);
+
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);
     smoothingLayout->addWidget(rb, 0, 1);
@@ -302,6 +330,23 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("High"), central);
     smoothingLevelButtons->addButton(rb, 2);
     smoothingLayout->addWidget(rb, 0, 3);
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
 }
 
 // ****************************************************************************
@@ -375,9 +420,9 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             // nothing anymore
             break;
         case BoundaryAttributes::ID_legendFlag:
-            legendCheckBox->blockSignals(true);
-            legendCheckBox->setChecked(boundaryAtts->GetLegendFlag());
-            legendCheckBox->blockSignals(false);
+            legendToggle->blockSignals(true);
+            legendToggle->setChecked(boundaryAtts->GetLegendFlag());
+            legendToggle->blockSignals(false);
             break;
         case BoundaryAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
@@ -418,9 +463,9 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             overallOpacity->blockSignals(false);
             break;
         case BoundaryAttributes::ID_wireframe:
-            wireframeCheckBox->blockSignals(true);
-            wireframeCheckBox->setChecked(boundaryAtts->GetWireframe());
-            wireframeCheckBox->blockSignals(false);
+            wireframeToggle->blockSignals(true);
+            wireframeToggle->setChecked(boundaryAtts->GetWireframe());
+            wireframeToggle->blockSignals(false);
             break;
         case BoundaryAttributes::ID_smoothingLevel:
             smoothingLevelButtons->blockSignals(true);

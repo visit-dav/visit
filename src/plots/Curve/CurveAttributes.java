@@ -66,6 +66,9 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     public final static int RENDERMODE_RENDERASLINES = 0;
     public final static int RENDERMODE_RENDERASSYMBOLS = 1;
 
+    public final static int CURVECOLOR_CYCLE = 0;
+    public final static int CURVECOLOR_CUSTOM = 1;
+
     public final static int SYMBOLTYPES_TRIANGLEUP = 0;
     public final static int SYMBOLTYPES_TRIANGLEDOWN = 1;
     public final static int SYMBOLTYPES_SQUARE = 2;
@@ -80,13 +83,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
         lineStyle = 0;
         lineWidth = 0;
-        color = new ColorAttribute(0, 0, 0);
+        curveColor = new ColorAttribute(0, 0, 0);
         showLabels = true;
         designator = new String("");
         showPoints = false;
         pointSize = 5;
         showLegend = true;
-        cycleColors = true;
+        curveColorSource = CURVECOLOR_CYCLE;
         renderMode = RENDERMODE_RENDERASLINES;
         symbol = SYMBOLTYPES_TRIANGLEUP;
         symbolDensity = 50;
@@ -98,13 +101,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
         lineStyle = 0;
         lineWidth = 0;
-        color = new ColorAttribute(0, 0, 0);
+        curveColor = new ColorAttribute(0, 0, 0);
         showLabels = true;
         designator = new String("");
         showPoints = false;
         pointSize = 5;
         showLegend = true;
-        cycleColors = true;
+        curveColorSource = CURVECOLOR_CYCLE;
         renderMode = RENDERMODE_RENDERASLINES;
         symbol = SYMBOLTYPES_TRIANGLEUP;
         symbolDensity = 50;
@@ -116,13 +119,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
-        color = new ColorAttribute(obj.color);
+        curveColor = new ColorAttribute(obj.curveColor);
         showLabels = obj.showLabels;
         designator = new String(obj.designator);
         showPoints = obj.showPoints;
         pointSize = obj.pointSize;
         showLegend = obj.showLegend;
-        cycleColors = obj.cycleColors;
+        curveColorSource = obj.curveColorSource;
         renderMode = obj.renderMode;
         symbol = obj.symbol;
         symbolDensity = obj.symbolDensity;
@@ -145,13 +148,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         // Create the return value
         return ((lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
-                (color == obj.color) &&
+                (curveColor == obj.curveColor) &&
                 (showLabels == obj.showLabels) &&
                 (designator.equals(obj.designator)) &&
                 (showPoints == obj.showPoints) &&
                 (pointSize == obj.pointSize) &&
                 (showLegend == obj.showLegend) &&
-                (cycleColors == obj.cycleColors) &&
+                (curveColorSource == obj.curveColorSource) &&
                 (renderMode == obj.renderMode) &&
                 (symbol == obj.symbol) &&
                 (symbolDensity == obj.symbolDensity));
@@ -173,9 +176,9 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
-    public void SetColor(ColorAttribute color_)
+    public void SetCurveColor(ColorAttribute curveColor_)
     {
-        color = color_;
+        curveColor = curveColor_;
         Select(2);
     }
 
@@ -209,9 +212,9 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
-    public void SetCycleColors(boolean cycleColors_)
+    public void SetCurveColorSource(int curveColorSource_)
     {
-        cycleColors = cycleColors_;
+        curveColorSource = curveColorSource_;
         Select(8);
     }
 
@@ -236,13 +239,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     // Property getting methods
     public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
-    public ColorAttribute GetColor() { return color; }
+    public ColorAttribute GetCurveColor() { return curveColor; }
     public boolean        GetShowLabels() { return showLabels; }
     public String         GetDesignator() { return designator; }
     public boolean        GetShowPoints() { return showPoints; }
     public double         GetPointSize() { return pointSize; }
     public boolean        GetShowLegend() { return showLegend; }
-    public boolean        GetCycleColors() { return cycleColors; }
+    public int            GetCurveColorSource() { return curveColorSource; }
     public int            GetRenderMode() { return renderMode; }
     public int            GetSymbol() { return symbol; }
     public int            GetSymbolDensity() { return symbolDensity; }
@@ -255,7 +258,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(1, buf))
             buf.WriteInt(lineWidth);
         if(WriteSelect(2, buf))
-            color.Write(buf);
+            curveColor.Write(buf);
         if(WriteSelect(3, buf))
             buf.WriteBool(showLabels);
         if(WriteSelect(4, buf))
@@ -267,7 +270,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(7, buf))
             buf.WriteBool(showLegend);
         if(WriteSelect(8, buf))
-            buf.WriteBool(cycleColors);
+            buf.WriteInt(curveColorSource);
         if(WriteSelect(9, buf))
             buf.WriteInt(renderMode);
         if(WriteSelect(10, buf))
@@ -287,7 +290,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
             SetLineWidth(buf.ReadInt());
             break;
         case 2:
-            color.Read(buf);
+            curveColor.Read(buf);
             Select(2);
             break;
         case 3:
@@ -306,7 +309,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
             SetShowLegend(buf.ReadBool());
             break;
         case 8:
-            SetCycleColors(buf.ReadBool());
+            SetCurveColorSource(buf.ReadInt());
             break;
         case 9:
             SetRenderMode(buf.ReadInt());
@@ -325,13 +328,18 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         String str = new String();
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
-        str = str + indent + "color = {" + color.Red() + ", " + color.Green() + ", " + color.Blue() + ", " + color.Alpha() + "}\n";
+        str = str + indent + "curveColor = {" + curveColor.Red() + ", " + curveColor.Green() + ", " + curveColor.Blue() + ", " + curveColor.Alpha() + "}\n";
         str = str + boolToString("showLabels", showLabels, indent) + "\n";
         str = str + stringToString("designator", designator, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + doubleToString("pointSize", pointSize, indent) + "\n";
         str = str + boolToString("showLegend", showLegend, indent) + "\n";
-        str = str + boolToString("cycleColors", cycleColors, indent) + "\n";
+        str = str + indent + "curveColorSource = ";
+        if(curveColorSource == CURVECOLOR_CYCLE)
+            str = str + "CURVECOLOR_CYCLE";
+        if(curveColorSource == CURVECOLOR_CUSTOM)
+            str = str + "CURVECOLOR_CUSTOM";
+        str = str + "\n";
         str = str + indent + "renderMode = ";
         if(renderMode == RENDERMODE_RENDERASLINES)
             str = str + "RENDERMODE_RENDERASLINES";
@@ -360,13 +368,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     // Attributes
     private int            lineStyle;
     private int            lineWidth;
-    private ColorAttribute color;
+    private ColorAttribute curveColor;
     private boolean        showLabels;
     private String         designator;
     private boolean        showPoints;
     private double         pointSize;
     private boolean        showLegend;
-    private boolean        cycleColors;
+    private int            curveColorSource;
     private int            renderMode;
     private int            symbol;
     private int            symbolDensity;

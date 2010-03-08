@@ -40,6 +40,7 @@
 #define VECTORATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -60,6 +61,11 @@
 class VectorAttributes : public AttributeSubject
 {
 public:
+    enum Quality
+    {
+        Fast,
+        High
+    };
     enum OriginType
     {
         Head,
@@ -72,13 +78,23 @@ public:
         CurrentPlot
     };
 
+    // These constructors are for objects of this class
     VectorAttributes();
     VectorAttributes(const VectorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    VectorAttributes(private_tmfs_t tmfs);
+    VectorAttributes(const VectorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~VectorAttributes();
 
     virtual VectorAttributes& operator = (const VectorAttributes &obj);
     virtual bool operator == (const VectorAttributes &obj) const;
     virtual bool operator != (const VectorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const VectorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -112,7 +128,7 @@ public:
     void SetMin(double min_);
     void SetMax(double max_);
     void SetLineStem(bool lineStem_);
-    void SetHighQuality(bool highQuality_);
+    void SetGeometryQuality(Quality geometryQuality_);
     void SetStemWidth(double stemWidth_);
     void SetOrigOnly(bool origOnly_);
 
@@ -140,7 +156,7 @@ public:
     double               GetMin() const;
     double               GetMax() const;
     bool                 GetLineStem() const;
-    bool                 GetHighQuality() const;
+    Quality              GetGeometryQuality() const;
     double               GetStemWidth() const;
     bool                 GetOrigOnly() const;
 
@@ -149,6 +165,11 @@ public:
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
+    static std::string Quality_ToString(Quality);
+    static bool Quality_FromString(const std::string &, Quality &);
+protected:
+    static std::string Quality_ToString(int);
+public:
     static std::string OriginType_ToString(OriginType);
     static bool OriginType_FromString(const std::string &, OriginType &);
 protected:
@@ -192,9 +213,10 @@ public:
         ID_min,
         ID_max,
         ID_lineStem,
-        ID_highQuality,
+        ID_geometryQuality,
         ID_stemWidth,
-        ID_origOnly
+        ID_origOnly,
+        ID__LAST
     };
 
 private:
@@ -219,12 +241,14 @@ private:
     double         min;
     double         max;
     bool           lineStem;
-    bool           highQuality;
+    int            geometryQuality;
     double         stemWidth;
     bool           origOnly;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VECTORATTRIBUTES_TMFS "biiiidbbdbbbasibbiddbidb"
 
 #endif

@@ -38,6 +38,7 @@
 
 #ifndef QVIS_SURFACE_PLOT_WINDOW_H
 #define QVIS_SURFACE_PLOT_WINDOW_H
+
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
 
@@ -85,6 +86,9 @@ class QvisOpacitySlider;
 //   Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
 //   Revert back to using one min/max for both scaling and coloring purposes. 
 //   
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisSurfacePlotWindow : public QvisPostableWindowObserver
@@ -142,7 +146,6 @@ private:
 
     // Scale controls
     QButtonGroup           *scalingButtons;
-    QLabel                 *skewLabel;
     QLineEdit              *skewLineEdit;
 
     // Limits controls

@@ -89,7 +89,7 @@ public:
         ColorBySingleColor,
         ColorByColorTable
     };
-    enum ColorBy
+    enum DataValue
     {
         OriginalValue,
         InputOrder,
@@ -97,6 +97,7 @@ public:
         Plane,
         WindingOrder,
         WindingPointOrder,
+        WindingPointOrderModulo,
         ToroidalWindings,
         PoloidalWindings,
         SafetyFactor,
@@ -161,7 +162,8 @@ public:
     void SetColorType(ColoringMethod colorType_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetColorTableName(const std::string &colorTableName_);
-    void SetColorBy(ColorBy colorBy_);
+    void SetDataValue(DataValue dataValue_);
+    void SetShowOPoints(bool showOPoints_);
     void SetShowIslands(bool showIslands_);
     void SetShowLines(bool showLines_);
     void SetShowPoints(bool showPoints_);
@@ -200,7 +202,8 @@ public:
           ColorAttribute &GetSingleColor();
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
-    ColorBy              GetColorBy() const;
+    DataValue            GetDataValue() const;
+    bool                 GetShowOPoints() const;
     bool                 GetShowIslands() const;
     bool                 GetShowLines() const;
     bool                 GetShowPoints() const;
@@ -238,10 +241,10 @@ public:
 protected:
     static std::string ColoringMethod_ToString(int);
 public:
-    static std::string ColorBy_ToString(ColorBy);
-    static bool ColorBy_FromString(const std::string &, ColorBy &);
+    static std::string DataValue_ToString(DataValue);
+    static bool DataValue_FromString(const std::string &, DataValue &);
 protected:
-    static std::string ColorBy_ToString(int);
+    static std::string DataValue_ToString(int);
 public:
 
     // Keyframing methods
@@ -282,7 +285,8 @@ public:
         ID_colorType,
         ID_singleColor,
         ID_colorTableName,
-        ID_colorBy,
+        ID_dataValue,
+        ID_showOPoints,
         ID_showIslands,
         ID_showLines,
         ID_showPoints,
@@ -318,7 +322,8 @@ private:
     int            colorType;
     ColorAttribute singleColor;
     std::string    colorTableName;
-    int            colorBy;
+    int            dataValue;
+    bool           showOPoints;
     bool           showIslands;
     bool           showLines;
     bool           showPoints;
@@ -330,6 +335,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "ddiDDDiidddiidiiiiddbbiasibbbbbb"
+#define POINCAREATTRIBUTES_TMFS "ddiDDDiidddiidiiiiddbbiasibbbbbbb"
 
 #endif

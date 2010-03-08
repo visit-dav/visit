@@ -17,6 +17,10 @@
         RenderAsLines
         RenderAsSymbols
       </Enum>
+      <Enum name="CurveColor">
+        Cycle
+        Custom
+      </Enum>
       <Enum name="SymbolTypes">
         TriangleUp
         TriangleDown
@@ -31,7 +35,7 @@
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>
-      <Field name="color" label="Color" type="color">
+      <Field name="curveColor" label="Color" type="color">
         0
         0
         0
@@ -51,8 +55,8 @@
       <Field name="showLegend" label="Legend" type="bool">
         true
       </Field>
-      <Field name="cycleColors" label="cycleColors" type="bool">
-        true
+      <Field name="curveColorSource" label="Curve color" type="enum" subtype="CurveColor">
+        Cycle
       </Field>
       <Field name="renderMode" label="Render mode" type="enum" subtype="RenderMode">
         RenderAsLines

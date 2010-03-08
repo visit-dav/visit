@@ -62,6 +62,9 @@ class QvisOpacitySlider;
 //   Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005
 //   Add lighting toggle.
 //   
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Rename lighting to lightingToggle.
+//
 // ****************************************************************************
 
 class QvisTruecolorPlotWindow : public QvisPostableWindowObserver
@@ -90,7 +93,7 @@ class QvisTruecolorPlotWindow : public QvisPostableWindowObserver
     int plotType;
     QvisOpacitySlider *opacity;
     QLabel *opacityLabel;
-    QCheckBox *lighting;
+    QCheckBox *lightingToggle;
 
     TruecolorAttributes *atts;
 };

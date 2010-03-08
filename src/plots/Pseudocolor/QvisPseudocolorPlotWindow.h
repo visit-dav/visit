@@ -104,6 +104,9 @@ class PseudocolorAttributes;
 //   (instead of just a single global opacity for the whole plot).
 //   There's a new toggle for this, and it overrides the whole-plot opacity.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -130,7 +133,7 @@ private slots:
     void lightingToggled(bool on);
     void minToggled(bool on);
     void maxToggled(bool on);
-    void useColorTableOpacityToggled(bool on);
+    void setOpaacityClicked(int on);
     void processMaxLimitText();
     void processMinLimitText();
     void processSkewText();
@@ -153,7 +156,7 @@ private:
     int                   plotType;
     PseudocolorAttributes *pcAtts;
     QButtonGroup          *centeringButtons;
-    QCheckBox             *useColorTableOpacity;
+    QButtonGroup          *opacityButtons;
     QCheckBox             *legendToggle;
     QCheckBox             *lightingToggle;
     QCheckBox             *minToggle;
@@ -162,9 +165,8 @@ private:
     QLineEdit             *maxLineEdit;
     QLineEdit             *minLineEdit;
     QButtonGroup          *scalingButtons;
-    QLabel                *skewLabel;
     QLineEdit             *skewLineEdit;
-    QLabel                *opacityLabel;
+    QLabel                *opacitySliderLabel;
     QvisOpacitySlider     *opacitySlider;
     QvisColorTableButton  *colorTableButton;
     QButtonGroup          *smoothingLevelButtons;

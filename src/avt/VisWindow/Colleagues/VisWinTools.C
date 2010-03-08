@@ -145,6 +145,9 @@ protected:
 //   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
 //   Removed Extents tool.  (Subsumed by axis restriction tool.)
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Reorder the icons (2.0 interface changes).
+//
 // ****************************************************************************
 
 VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
@@ -159,19 +162,19 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     numTools = 0;
 
     // Create the tools.
-    boxTool = new VisitBoxTool(toolProxy);
+    pointTool = new VisitPointTool(toolProxy);
     lineTool = new VisitLineTool(toolProxy);
     planeTool = new VisitPlaneTool(toolProxy);
-    pointTool = new VisitPointTool(toolProxy);
+    boxTool = new VisitBoxTool(toolProxy);
     sphereTool = new VisitSphereTool(toolProxy);
     axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
 
     // Add the tools to the tools array.
-    tools[numTools++] = boxTool;
+    tools[numTools++] = pointTool;
     tools[numTools++] = lineTool;
     tools[numTools++] = planeTool;
+    tools[numTools++] = boxTool;
     tools[numTools++] = sphereTool;
-    tools[numTools++] = pointTool;
     tools[numTools++] = axisRestrictionTool;
 }
 

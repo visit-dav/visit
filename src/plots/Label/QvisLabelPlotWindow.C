@@ -136,6 +136,9 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
 //   Initial Qt4 Port. 
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
@@ -297,11 +300,22 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(formatTemplate, 7, 1);
     fmtLayout->addWidget(new QLabel(tr("Format template"), formattingGroupBox), 7, 0);
 
-    // Legend toggle
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    topLayout->addWidget(legendToggle, 0,0);
+    miscLayout->addWidget(legendToggle, 0, 0);
 }
 
 

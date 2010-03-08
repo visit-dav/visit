@@ -64,12 +64,12 @@ public:
     enum SourceType
     {
         SpecifiedPoint,
+        SpecifiedPointList,
         SpecifiedLine,
+        SpecifiedCircle,
         SpecifiedPlane,
         SpecifiedSphere,
-        SpecifiedBox,
-        SpecifiedCircle,
-        SpecifiedPointList
+        SpecifiedBox
     };
     enum ColoringMethod
     {

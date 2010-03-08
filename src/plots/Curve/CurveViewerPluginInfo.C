@@ -305,7 +305,7 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
 
-    if (curveAtts->GetCycleColors())
+    if (curveAtts->GetCurveColorSource())
     {
         ColorAttribute c;
         unsigned char rgb[3] = {0,0,0};
@@ -322,7 +322,7 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
             c.SetGreen(int(rgb[1]));
             c.SetBlue(int(rgb[2]));
         }
-        curveAtts->SetColor(c);
+        curveAtts->SetCurveColor(c);
         // Increment the color index.
         colorIndex = (colorIndex + 1) % ct->GetNumColors();
     }

@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define POINCAREATTRIBUTES_NMETH 66
+#define POINCAREATTRIBUTES_NMETH 68
 void           PyPoincareAttributes_StartUp(PoincareAttributes *subj, void *data);
 void           PyPoincareAttributes_CloseDown();
 PyMethodDef *  PyPoincareAttributes_GetMethodTable(int *nMethods);

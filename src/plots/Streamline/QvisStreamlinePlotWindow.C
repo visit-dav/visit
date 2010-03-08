@@ -166,232 +166,303 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
 QvisStreamlinePlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(0);
-    topLayout->addLayout(mainLayout);
-    mainLayout->setMargin(0);
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
+
+    // ----------------------------------------------------------------------
+    // Streamline tab
+    // ----------------------------------------------------------------------
+    QWidget *streamlineTab = new QWidget(central);
+    propertyTabs->addTab(streamlineTab, tr("Streamlines"));
+    
+    QGridLayout *mainLayout = new QGridLayout(streamlineTab);
+
+    // Create the source group box.
+    QGroupBox *sourceGroup = new QGroupBox(central);
+    sourceGroup->setTitle(tr("Source"));
+    mainLayout->addWidget(sourceGroup, 0, 0, 5, 2);
+//    mainLayout->setStretchFactor(sourceGroup, 100);
+    QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
+    sourceLayout->setMargin(5);
+    sourceLayout->setSpacing(10);
+
+
+    // Create the source type combo box.
+    sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
+    sourceType = new QComboBox(sourceGroup);
+    sourceType->addItem(tr("Single Point"));
+    sourceType->addItem(tr("Point List"));
+    sourceType->addItem(tr("Line"));
+    sourceType->addItem(tr("Circle"));
+    sourceType->addItem(tr("Plane"));
+    sourceType->addItem(tr("Sphere"));
+    sourceType->addItem(tr("Box"));
+    connect(sourceType, SIGNAL(activated(int)),
+            this, SLOT(sourceTypeChanged(int)));
+    sourceLayout->addWidget(sourceType, 0, 1);
+
+
+
+    // Create the source geometry subgroup
+    QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 2);
+
+    QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
+    geometryLayout->setMargin(5);
+    geometryLayout->setSpacing(10);
+    geometryLayout->setRowStretch(5,10);
+
+
+    //
+    // Create the widget that lets the user set the point density.
+    //
+    int gRow = 0;
+    pointDensityLabel = new QLabel(tr("Point density"), sourceGroup);
+    geometryLayout->addWidget(pointDensityLabel, gRow, 0);
+    pointDensity = new QSpinBox(sourceGroup);
+    pointDensity->setMinimum(1);
+    pointDensity->setMaximum(1000);
+    connect(pointDensity, SIGNAL(valueChanged(int)), this, SLOT(pointDensityChanged(int)));
+    geometryLayout->addWidget(pointDensity, gRow, 1);
+    ++gRow;
+
+    // Create the widgets that specify a point source.
+    pointSource = new QLineEdit(sourceGroup);
+    connect(pointSource, SIGNAL(returnPressed()),
+            this, SLOT(pointSourceProcessText()));
+    pointSourceLabel = new QLabel(tr("Location"), sourceGroup);
+    pointSourceLabel->setBuddy(pointSource);
+    geometryLayout->addWidget(pointSourceLabel, gRow, 0);
+    geometryLayout->addWidget(pointSource, gRow, 1);
+    ++gRow;
+
+
+    // Create the widgets that specify a point list.
+    pointList = new QLineEdit(sourceGroup);
+    connect(pointList, SIGNAL(returnPressed()),
+            this, SLOT(pointListProcessText()));
+    pointListLabel = new QLabel(tr("Locations"), sourceGroup);
+    pointListInfo = new QLabel(tr("Format as \"X1 Y1 Z1 X2 Y2 Z2 ...\".  For 2D, use 0 for Z."), sourceGroup);
+    pointListLabel->setBuddy(pointList);
+    geometryLayout->addWidget(pointListLabel, gRow, 0);
+    geometryLayout->addWidget(pointList, gRow, 1);
+    ++gRow;
+    geometryLayout->addWidget(pointListInfo, gRow, 0, 1, 2);
+    ++gRow;
+
+
+    // Create the widgets that specify a line source.
+    lineStart = new QLineEdit(sourceGroup);
+    connect(lineStart, SIGNAL(returnPressed()),
+            this, SLOT(lineStartProcessText()));
+    lineStartLabel = new QLabel(tr("Start"), sourceGroup);
+    lineStartLabel->setBuddy(lineStart);
+    geometryLayout->addWidget(lineStartLabel, gRow, 0);
+    geometryLayout->addWidget(lineStart, gRow, 1);
+    ++gRow;
+    lineEnd = new QLineEdit(sourceGroup);
+    connect(lineEnd, SIGNAL(returnPressed()),
+            this, SLOT(lineEndProcessText()));
+    lineEndLabel = new QLabel(tr("End"), sourceGroup);
+    lineEndLabel->setBuddy(lineEnd);
+    geometryLayout->addWidget(lineEndLabel, gRow, 0);
+    geometryLayout->addWidget(lineEnd, gRow, 1);
+    ++gRow;
+
+
+    // Create the widgets that specify a plane source.
+    planeOrigin = new QLineEdit(sourceGroup);
+    connect(planeOrigin, SIGNAL(returnPressed()),
+            this, SLOT(planeOriginProcessText()));
+    planeOriginLabel = new QLabel(tr("Origin"), sourceGroup);
+    planeOriginLabel->setBuddy(planeOrigin);
+    geometryLayout->addWidget(planeOriginLabel,gRow,0);
+    geometryLayout->addWidget(planeOrigin, gRow,1);
+    ++gRow;
+
+    planeNormal = new QLineEdit(sourceGroup);
+    connect(planeNormal, SIGNAL(returnPressed()),
+            this, SLOT(planeNormalProcessText()));
+    planeNormalLabel = new QLabel(tr("Normal"), sourceGroup);
+    planeNormalLabel->setBuddy(planeNormal);
+    geometryLayout->addWidget(planeNormalLabel,gRow,0);
+    geometryLayout->addWidget(planeNormal, gRow,1);
+    ++gRow;
+
+    planeUpAxis = new QLineEdit(sourceGroup);
+    connect(planeUpAxis, SIGNAL(returnPressed()),
+            this, SLOT(planeUpAxisProcessText()));
+    planeUpAxisLabel = new QLabel(tr("Up axis"), sourceGroup);
+    planeUpAxisLabel->setBuddy(planeUpAxis);
+    geometryLayout->addWidget(planeUpAxisLabel,gRow,0);
+    geometryLayout->addWidget(planeUpAxis, gRow,1);
+    ++gRow;
+
+    planeRadius = new QLineEdit(sourceGroup);
+    connect(planeRadius, SIGNAL(returnPressed()),
+            this, SLOT(planeRadiusProcessText()));
+    planeRadiusLabel = new QLabel(tr("Radius"), sourceGroup);
+    planeRadiusLabel->setBuddy(planeRadius);
+    geometryLayout->addWidget(planeRadiusLabel,gRow,0);
+    geometryLayout->addWidget(planeRadius, gRow,1);
+    ++gRow;
+
+    // Create the widgets that specify a sphere source.
+    sphereOrigin = new QLineEdit(sourceGroup);
+    connect(sphereOrigin, SIGNAL(returnPressed()),
+            this, SLOT(sphereOriginProcessText()));
+    sphereOriginLabel = new QLabel(tr("Origin"), sourceGroup);
+    sphereOriginLabel->setBuddy(sphereOrigin);
+    geometryLayout->addWidget(sphereOriginLabel,gRow,0);
+    geometryLayout->addWidget(sphereOrigin, gRow,1);
+    ++gRow;
+
+    sphereRadius = new QLineEdit(sourceGroup);
+    connect(sphereRadius, SIGNAL(returnPressed()),
+            this, SLOT(sphereRadiusProcessText()));
+    sphereRadiusLabel = new QLabel(tr("Radius"), sourceGroup);
+    sphereRadiusLabel->setBuddy(sphereRadius);
+    geometryLayout->addWidget(sphereRadiusLabel,gRow,0);
+    geometryLayout->addWidget(sphereRadius, gRow,1);
+    ++gRow;
+
+    // Create the widgets that specify a box source
+    useWholeBox = new QCheckBox(tr("Whole data set"), sourceGroup);
+    connect(useWholeBox, SIGNAL(toggled(bool)),
+            this, SLOT(useWholeBoxChanged(bool)));
+    geometryLayout->addWidget(useWholeBox, gRow, 0);
+    ++gRow;
+
+    boxExtents[0] = new QLineEdit(sourceGroup);
+    connect(boxExtents[0], SIGNAL(returnPressed()),
+            this, SLOT(boxExtentsProcessText()));
+    boxExtentsLabel[0] = new QLabel(tr("X Extents"), sourceGroup);
+    boxExtentsLabel[0]->setBuddy(boxExtents[0]);
+    geometryLayout->addWidget(boxExtentsLabel[0], gRow, 0);
+    geometryLayout->addWidget(boxExtents[0], gRow, 1);
+    ++gRow;
+
+    boxExtents[1] = new QLineEdit(sourceGroup);
+    connect(boxExtents[1], SIGNAL(returnPressed()),
+            this, SLOT(boxExtentsProcessText()));
+    boxExtentsLabel[1] = new QLabel(tr("Y Extents"), sourceGroup);
+    boxExtentsLabel[1]->setBuddy(boxExtents[1]);
+    geometryLayout->addWidget(boxExtentsLabel[1], gRow, 0);
+    geometryLayout->addWidget(boxExtents[1], gRow, 1);
+    ++gRow;
+
+    boxExtents[2] = new QLineEdit(sourceGroup);
+    connect(boxExtents[2], SIGNAL(returnPressed()),
+            this, SLOT(boxExtentsProcessText()));
+    boxExtentsLabel[2] = new QLabel(tr("Z Extents"), sourceGroup);
+    boxExtentsLabel[2]->setBuddy(boxExtents[2]);
+    geometryLayout->addWidget(boxExtentsLabel[2], gRow, 0);
+    geometryLayout->addWidget(boxExtents[2], gRow, 1);
+
+
+    // Create the termination group box.
+    QGroupBox *terminationGroup = new QGroupBox(central);
+    terminationGroup->setTitle(tr("Termination"));
+    mainLayout->addWidget(terminationGroup, 6, 0, 2, 2);
+//    mainLayout->setStretchFactor(terminationGroup, 100);
+    QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
+    terminationLayout->setMargin(5);
+    terminationLayout->setSpacing(10);
+
 
     // Create the maximum time text field.
-    mainLayout->addWidget(new QLabel(tr("Termination criteria"), central),0,0);
     termType = new QComboBox(central);
     termType->addItem(tr("Distance"));
     termType->addItem(tr("Time"));
     termType->addItem(tr("Number of Steps"));
     connect(termType, SIGNAL(activated(int)),
             this, SLOT(termTypeChanged(int)));
-    mainLayout->addWidget(termType, 1,0);
+    terminationLayout->addWidget(termType, 1,0);
 
     termination = new QLineEdit(central);
     connect(termination, SIGNAL(returnPressed()),
             this, SLOT(terminationProcessText()));
-    mainLayout->addWidget(termination, 1,1);
+    terminationLayout->addWidget(termination, 1,1);
 
     //Create the direction of integration.
-    mainLayout->addWidget(new QLabel(tr("Streamline direction"), central),3,0);
+    terminationLayout->addWidget(new QLabel(tr("Streamline direction"), central),3,0);
     directionType = new QComboBox(central);
     directionType->addItem(tr("Forward"));
     directionType->addItem(tr("Backward"));
     directionType->addItem(tr("Both"));
     connect(directionType, SIGNAL(activated(int)),
             this, SLOT(directionTypeChanged(int)));
-    mainLayout->addWidget(directionType, 3,1);
+    terminationLayout->addWidget(directionType, 3,1);
 
     /*pathlineFlag = new QCheckBox(tr("Pathlines"), central);
     connect(pathlineFlag, SIGNAL(toggled(bool)),
             this, SLOT(pathlineFlagChanged(bool)));
-    mainLayout->addWidget(pathlineFlag, 4,0);
+    terminationLayout->addWidget(pathlineFlag, 4,0);
     */
 
-    // Add some space....
-    mainLayout->addWidget(new QLabel(tr(""), central), 5,0);
 
-    //
-    // Create a tab widget so we can split source type and appearance.
-    //
-    QTabWidget *tabs = new QTabWidget(central);
-    mainLayout->addWidget(tabs, 6, 0, 1, 2);
+    // Create the integration group box.
+    QGroupBox *integrationGroup = new QGroupBox(central);
+    integrationGroup->setTitle(tr("Integration"));
+    mainLayout->addWidget(integrationGroup, 8, 0, 4, 2);
+//    mainLayout->setStretchFactor(integrationGroup, 100);
+    QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
+    integrationLayout->setMargin(5);
+    integrationLayout->setSpacing(10);
 
-    //
-    // Create a tab for the streamline source widgets.
-    //
-    QWidget *topPageSource = new QWidget(central);
-    tabs->addTab(topPageSource, tr("Source"));
-    QGridLayout *hLayout = new QGridLayout(topPageSource);
-    hLayout->setMargin(10);
-    hLayout->setColumnStretch(1,10);
-
-    // Create the source type combo box.
-    hLayout->addWidget(new QLabel(tr("Source type"), topPageSource), 0,0);
-    sourceType = new QComboBox(topPageSource);
-    sourceType->addItem(tr("Single Point"));
-    sourceType->addItem(tr("Line"));
-    sourceType->addItem(tr("Plane"));
-    sourceType->addItem(tr("Sphere"));
-    sourceType->addItem(tr("Box"));
-    sourceType->addItem(tr("Circle"));
-    sourceType->addItem(tr("Point List"));
-    connect(sourceType, SIGNAL(activated(int)),
-            this, SLOT(sourceTypeChanged(int)));
-    hLayout->addWidget(sourceType, 0,1);
-
-    //
-    // Create the widget that lets the user set the point density.
-    //
-    hLayout->addWidget(new QLabel(tr("Point density"), topPageSource), 1,0);
-    pointDensity = new QSpinBox(topPageSource);
-    pointDensity->setMinimum(1);
-    pointDensity->setMaximum(1000);
-    connect(pointDensity, SIGNAL(valueChanged(int)), this, SLOT(pointDensityChanged(int)));
-    hLayout->addWidget(pointDensity,1,1);
-
-    // Create a group box for the source attributes.
-    QGroupBox *pageSource = new QGroupBox(topPageSource);
-    sourceAtts = pageSource;
-    sourceAtts->setTitle(tr("Point"));
-    hLayout->addWidget(pageSource,2,0,1,2);
-    QVBoxLayout *sTopLayout = new QVBoxLayout(pageSource);
-    QGridLayout *sLayout = new QGridLayout(0);
-    sTopLayout->addLayout(sLayout);
-    sTopLayout->addStretch(10);
-    sLayout->setSpacing(5);
-    sLayout->setMargin(0);
-
-    // Create the widgets that specify a point source.
-    pointSource = new QLineEdit(pageSource);
-    connect(pointSource, SIGNAL(returnPressed()),
-            this, SLOT(pointSourceProcessText()));
-    pointSourceLabel = new QLabel(tr("Location"), pageSource);
-    pointSourceLabel->setBuddy(pointSource);
-    sLayout->addWidget(pointSourceLabel, 3, 0);
-    sLayout->addWidget(pointSource, 3,1);
-
-    // Create the widgets that specify a line source.
-    lineStart = new QLineEdit(pageSource);
-    connect(lineStart, SIGNAL(returnPressed()),
-            this, SLOT(lineStartProcessText()));
-    lineStartLabel = new QLabel(tr("Start"), pageSource);
-    lineStartLabel->setBuddy(lineStart);
-    sLayout->addWidget(lineStartLabel,4,0);
-    sLayout->addWidget(lineStart, 4,1);
-
-    lineEnd = new QLineEdit(pageSource);
-    connect(lineEnd, SIGNAL(returnPressed()),
-            this, SLOT(lineEndProcessText()));
-    lineEndLabel = new QLabel(tr("End"), pageSource);
-    lineEndLabel->setBuddy(lineEnd);
-    sLayout->addWidget(lineEndLabel,5,0);
-    sLayout->addWidget(lineEnd, 5,1);
-
-    // Create the widgets that specify a plane source.
-    planeOrigin = new QLineEdit(pageSource);
-    connect(planeOrigin, SIGNAL(returnPressed()),
-            this, SLOT(planeOriginProcessText()));
-    planeOriginLabel = new QLabel(tr("Origin"), pageSource);
-    planeOriginLabel->setBuddy(planeOrigin);
-    sLayout->addWidget(planeOriginLabel,6,0);
-    sLayout->addWidget(planeOrigin, 6,1);
-
-    planeNormal = new QLineEdit(pageSource);
-    connect(planeNormal, SIGNAL(returnPressed()),
-            this, SLOT(planeNormalProcessText()));
-    planeNormalLabel = new QLabel(tr("Normal"), pageSource);
-    planeNormalLabel->setBuddy(planeNormal);
-    sLayout->addWidget(planeNormalLabel,7,0);
-    sLayout->addWidget(planeNormal, 7,1);
-
-    planeUpAxis = new QLineEdit(pageSource);
-    connect(planeUpAxis, SIGNAL(returnPressed()),
-            this, SLOT(planeUpAxisProcessText()));
-    planeUpAxisLabel = new QLabel(tr("Up axis"), pageSource);
-    planeUpAxisLabel->setBuddy(planeUpAxis);
-    sLayout->addWidget(planeUpAxisLabel,8,0);
-    sLayout->addWidget(planeUpAxis, 8,1);
-
-    planeRadius = new QLineEdit(pageSource);
-    connect(planeRadius, SIGNAL(returnPressed()),
-            this, SLOT(planeRadiusProcessText()));
-    planeRadiusLabel = new QLabel(tr("Radius"), pageSource);
-    planeRadiusLabel->setBuddy(planeRadius);
-    sLayout->addWidget(planeRadiusLabel,9,0);
-    sLayout->addWidget(planeRadius, 9,1);
-
-    // Create the widgets that specify a sphere source.
-    sphereOrigin = new QLineEdit(pageSource);
-    connect(sphereOrigin, SIGNAL(returnPressed()),
-            this, SLOT(sphereOriginProcessText()));
-    sphereOriginLabel = new QLabel(tr("Origin"), pageSource);
-    sphereOriginLabel->setBuddy(sphereOrigin);
-    sLayout->addWidget(sphereOriginLabel,10,0);
-    sLayout->addWidget(sphereOrigin, 10,1);
-
-    sphereRadius = new QLineEdit(pageSource);
-    connect(sphereRadius, SIGNAL(returnPressed()),
-            this, SLOT(sphereRadiusProcessText()));
-    sphereRadiusLabel = new QLabel(tr("Radius"), pageSource);
-    sphereRadiusLabel->setBuddy(sphereRadius);
-    sLayout->addWidget(sphereRadiusLabel,11,0);
-    sLayout->addWidget(sphereRadius, 11,1);
-
-    // Create the widgets that specify a box source
-    useWholeBox = new QCheckBox(tr("Whole data set"), pageSource);
-    connect(useWholeBox, SIGNAL(toggled(bool)),
-            this, SLOT(useWholeBoxChanged(bool)));
-    sLayout->addWidget(useWholeBox, 12, 0);
-
-    boxExtents[0] = new QLineEdit(pageSource);
-    connect(boxExtents[0], SIGNAL(returnPressed()),
-            this, SLOT(boxExtentsProcessText()));
-    boxExtentsLabel[0] = new QLabel(tr("X Extents"), pageSource);
-    boxExtentsLabel[0]->setBuddy(boxExtents[0]);
-    sLayout->addWidget(boxExtentsLabel[0], 13, 0);
-    sLayout->addWidget(boxExtents[0], 13, 1);
-    boxExtents[1] = new QLineEdit(pageSource);
-    connect(boxExtents[1], SIGNAL(returnPressed()),
-            this, SLOT(boxExtentsProcessText()));
-    boxExtentsLabel[1] = new QLabel(tr("Y Extents"), pageSource);
-    boxExtentsLabel[1]->setBuddy(boxExtents[1]);
-    sLayout->addWidget(boxExtentsLabel[1], 14, 0);
-    sLayout->addWidget(boxExtents[1], 14, 1);
-    boxExtents[2] = new QLineEdit(pageSource);
-    connect(boxExtents[2], SIGNAL(returnPressed()),
-            this, SLOT(boxExtentsProcessText()));
-    boxExtentsLabel[2] = new QLabel(tr("Z Extents"), pageSource);
-    boxExtentsLabel[2]->setBuddy(boxExtents[2]);
-    sLayout->addWidget(boxExtentsLabel[2], 15, 0);
-    sLayout->addWidget(boxExtents[2], 15, 1);
-
-    // Create the widgets that specify a point list.
-    pointList = new QLineEdit(pageSource);
-    connect(pointList, SIGNAL(returnPressed()),
-            this, SLOT(pointListProcessText()));
-    pointListLabel = new QLabel(tr("Format as \"X1 Y1 Z1 X2 Y2 Z2 ...\".  For 2D, use 0 for Z."), pageSource);
-    pointListLabel->setBuddy(pointList);
-    sLayout->addWidget(pointListLabel,16,0);
-    sLayout->addWidget(pointList, 17,0);
-
-    // Create appearance-related widgets.
-    QWidget *pageAppearance = new QWidget(central);
-    tabs->addTab(pageAppearance, tr("Appearance"));
-    CreateAppearanceTab(pageAppearance);
+    integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 0,0);
+    integrationType = new QComboBox(integrationGroup);
+    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
+    connect(integrationType, SIGNAL(activated(int)),
+            this, SLOT(integrationTypeChanged(int)));
+    integrationLayout->addWidget(integrationType, 0,1);
     
-    // Create advanced widgets.
-    QWidget *pageAdvanced = new QWidget(central);
-    tabs->addTab(pageAdvanced, tr("Advanced"));
-    CreateAdvancedTab(pageAdvanced);
+    // Create the step length text field.
+    maxStepLengthLabel = new QLabel(tr("Maximum step length"), integrationGroup);
+    maxStepLength = new QLineEdit(integrationGroup);
+    connect(maxStepLength, SIGNAL(returnPressed()),
+            this, SLOT(maxStepLengthProcessText()));
+    integrationLayout->addWidget(maxStepLengthLabel, 1,0);
+    integrationLayout->addWidget(maxStepLength, 1,1);
 
-    legendFlag = new QCheckBox(tr("Legend"), central);
-    connect(legendFlag, SIGNAL(toggled(bool)),
-            this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 7,0);
+    // Create the relative tolerance text field.
+    relTolLabel = new QLabel(tr("Relative tolerance"), integrationGroup);
+    relTol = new QLineEdit(integrationGroup);
+    connect(relTol, SIGNAL(returnPressed()),
+            this, SLOT(relTolProcessText()));
+    integrationLayout->addWidget(relTolLabel, 2,0);
+    integrationLayout->addWidget(relTol, 2, 1);
 
-    lightingFlag = new QCheckBox(tr("Lighting"), central);
-    connect(lightingFlag, SIGNAL(toggled(bool)),
-            this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 7,1);
+    // Create the absolute tolerance text field.
+    absTolLabel = new QLabel(tr("Absolute tolerance"), integrationGroup);
+    absTol = new QLineEdit(integrationGroup);
+    connect(absTol, SIGNAL(returnPressed()),
+            this, SLOT(absTolProcessText()));
+    integrationLayout->addWidget(absTolLabel, 3,0);
+    integrationLayout->addWidget(absTol, 3, 1);
+
+    // ----------------------------------------------------------------------
+    // Appearance tab
+    // ----------------------------------------------------------------------
+    QWidget *appearanceTab = new QWidget(central);
+    propertyTabs->addTab(appearanceTab, tr("Appearance"));
+    CreateAppearanceTab(appearanceTab);
+
+    // ----------------------------------------------------------------------
+    // Parallel tab
+    // ----------------------------------------------------------------------
+    QWidget *parallelTab = new QWidget(central);
+    propertyTabs->addTab(parallelTab, tr("Parallel"));
+    CreateAdvancedTab(parallelTab);
 }
 
 // ****************************************************************************
@@ -416,20 +487,86 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 void
 QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
-    int row = 0;
     QGridLayout *appearanceLayout = new QGridLayout(pageAppearance);
-    appearanceLayout->setMargin(10);
-    appearanceLayout->setSpacing(5);
+    appearanceLayout->setMargin(5);
+    appearanceLayout->setSpacing(10);
 
+    // Create the data group
+    QGroupBox *dataGroup = new QGroupBox(pageAppearance);
+    dataGroup->setTitle(tr("Data"));
+    appearanceLayout->addWidget(dataGroup);
+
+    QGridLayout *dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setSpacing(10);
+    dataLayout->setColumnStretch(2,10);
+
+    // Create the data value.
+    dataLayout->addWidget(new QLabel(tr("Data Value"), dataGroup), 0, 0);
+
+    dataValueComboBox = new QComboBox(dataGroup);
+    dataValueComboBox->addItem(tr("Solid"),0);
+    dataValueComboBox->addItem(tr("Speed"),1);
+    dataValueComboBox->addItem(tr("Vorticity magnitude"),2);
+    dataValueComboBox->addItem(tr("Arc length"),3);
+    dataValueComboBox->addItem(tr("Time"),4);
+    dataValueComboBox->addItem(tr("Seed point ID"),5);
+    dataValueComboBox->addItem(tr("Variable"),6);
+    connect(dataValueComboBox, SIGNAL(activated(int)),
+            this, SLOT(coloringMethodChanged(int)));
+
+    dataLayout->addWidget(dataValueComboBox, 0, 1);
+
+    dataLayout->addWidget(new QLabel(tr("   "), central), 0, 2);
+
+
+    // Create the limits group box.
+    QGroupBox *limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 1, 3);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget(new QLabel(tr("Limits"), central), 0, 0);
+
+    legendMinToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(legendMinToggle, 0, 1);
+    connect(legendMinToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendMinToggled(bool)));
+    legendMinEdit = new QLineEdit(central);
+    connect(legendMinEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText()));
+    limitsLayout->addWidget(legendMinEdit, 0, 2);
+
+    legendMaxToggle = new QCheckBox(tr("Maximum"), central);
+    connect(legendMaxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendMaxToggled(bool)));
+    limitsLayout->addWidget(legendMaxToggle, 0, 3);
+
+    legendMaxEdit = new QLineEdit(central);
+    connect(legendMaxEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText()));
+    limitsLayout->addWidget(legendMaxEdit, 0, 4);
+
+
+    // Create the display group
     QGroupBox *displayGrp = new QGroupBox(pageAppearance);
-    displayGrp->setTitle(tr("Display options"));
-    appearanceLayout->addWidget(displayGrp, row, 0, 1, 5);
-    row++;
+    displayGrp->setTitle(tr("Display"));
+    appearanceLayout->addWidget(displayGrp);
 
     QGridLayout *dLayout = new QGridLayout(displayGrp);
+    dLayout->setMargin(5);
     dLayout->setSpacing(10);
-    dLayout->setColumnStretch(1,10);
-    int dRow = 0;
+    dLayout->setColumnStretch(2,10);
+
+
+    // Create the display subgroup
+    QWidget *drawGroup = new QWidget(displayGrp);
+    dLayout->addWidget(drawGroup, 0, 0, 2, 5);
+
+    QGridLayout *drawLayout = new QGridLayout(drawGroup);
+    drawLayout->setMargin(5);
+    drawLayout->setSpacing(10);
 
     // Create widgets that help determine the appearance of the streamlines.
     displayMethod = new QComboBox(displayGrp);
@@ -437,19 +574,21 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     displayMethod->addItem(tr("Tubes"), 1);
     displayMethod->addItem(tr("Ribbons"), 2);
     connect(displayMethod, SIGNAL(activated(int)), this, SLOT(displayMethodChanged(int)));
-    dLayout->addWidget(new QLabel(tr("Draw as"), displayGrp), dRow,0);
-    dRow++;
-    
-    dLayout->addWidget(displayMethod, dRow,0);
+    drawLayout->addWidget(new QLabel(tr("Draw as"), displayGrp), 0, 0);
+    drawLayout->addWidget(displayMethod, 0, 1);
 
     //--lines
     lineWidth = new QvisLineWidthWidget(0, displayGrp);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
     lineWidthLabel = new QLabel(tr("Width"), displayGrp);
+    lineWidthDummy = new QLabel(tr("  "), displayGrp);
     lineWidthLabel->setBuddy(lineWidth);
-    dLayout->addWidget(lineWidthLabel,dRow,1);
-    dLayout->addWidget(lineWidth, dRow,2);
+    lineWidthDummy->setBuddy(lineWidth);
+    drawLayout->addWidget(lineWidthLabel, 1, 0, Qt::AlignRight);
+    drawLayout->addWidget(lineWidth, 1, 1);
+    drawLayout->addWidget(lineWidthDummy, 1, 2);
+    drawLayout->addWidget(lineWidthDummy, 1, 3);
 
     //--tube/ribbon
     tubeRadius = new QLineEdit(displayGrp);
@@ -461,29 +600,39 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     radiusLabel = new QLabel(tr("Radius"), displayGrp);
     radiusLabel->setBuddy(tubeRadius);
     radiusLabel->setToolTip(tr("Radius used for tubes and ribbons."));
-    dLayout->addWidget(radiusLabel,dRow,1);
-    dLayout->addWidget(tubeRadius, dRow,2);
-    dLayout->addWidget(ribbonWidth, dRow,2);
+    drawLayout->addWidget(radiusLabel, 1, 0, Qt::AlignRight);
+    drawLayout->addWidget(tubeRadius, 1, 1);
+    drawLayout->addWidget(ribbonWidth, 1, 1);
 
     tubeDisplayDensity = new QSpinBox(displayGrp);
     tubeDisplayDensity->setMinimum(2);
     tubeDisplayDensity->setMaximum(100);
     tubeDisplayDensityLabel = new QLabel(tr("Display density"), displayGrp);
     connect(tubeDisplayDensity, SIGNAL(valueChanged(int)), this, SLOT(tubeDisplayDensityChanged(int)));
-    dLayout->addWidget(tubeDisplayDensityLabel, dRow,3);
-    dLayout->addWidget(tubeDisplayDensity, dRow,4);
-    dRow++;
+    drawLayout->addWidget(tubeDisplayDensityLabel, 1, 2);
+    drawLayout->addWidget(tubeDisplayDensity, 1, 3);
 
+
+    // Splitter
     QFrame *splitter = new QFrame(displayGrp);
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    dLayout->addWidget(splitter, dRow, 0, 1, 5);
-    dRow++;
+    dLayout->addWidget(splitter, 2, 0, 1, 5);
+
+
+
+    // Create the show subgroup
+    QWidget *showGroup = new QWidget(displayGrp);
+    dLayout->addWidget(showGroup, 3, 0, 4, 5);
+
+    QGridLayout *showLayout = new QGridLayout(showGroup);
+    showLayout->setMargin(5);
+    showLayout->setSpacing(10);
 
     //show seeds
     showSeeds = new QCheckBox(tr("Show seeds"), displayGrp);
     connect(showSeeds, SIGNAL(toggled(bool)),
             this, SLOT(showSeedsChanged(bool)));
-    dLayout->addWidget(showSeeds, dRow,0);
+    showLayout->addWidget(showSeeds, 0, 0);
 
     seedRadius = new QLineEdit(displayGrp);
     connect(seedRadius, SIGNAL(returnPressed()), this, SLOT(seedRadiusProcessText()));
@@ -491,23 +640,22 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     seedRadiusLabel->setBuddy(seedRadius);
     seedRadiusLabel->setToolTip(tr("Radius for seed point display."));
     seedRadiusLabel->setBuddy(seedRadius);
-    dLayout->addWidget(seedRadiusLabel,dRow,1);
-    dLayout->addWidget(seedRadius, dRow,2);
-    dRow++;
+    showLayout->addWidget(seedRadiusLabel, 0, 1, Qt::AlignRight);
+    showLayout->addWidget(seedRadius, 0, 2);
 
     //show heads
     showHeads = new QCheckBox(tr("Show heads"), displayGrp);
     connect(showHeads, SIGNAL(toggled(bool)),this, SLOT(showHeadsChanged(bool)));
-    dLayout->addWidget(showHeads, dRow,0);
+    showLayout->addWidget(showHeads, 1, 0);
     
     headDisplayTypeLabel = new QLabel(tr("Display as"), displayGrp);
     headDisplayType = new QComboBox(displayGrp);
     headDisplayType->addItem(tr("Sphere"), 0);
     headDisplayType->addItem(tr("Cone"), 1);
     connect(headDisplayType, SIGNAL(activated(int)), this, SLOT(headDisplayTypeChanged(int)));
-    dLayout->addWidget(headDisplayTypeLabel, dRow,1);
-    dLayout->addWidget(headDisplayType, dRow,2);
-    dRow++;
+    showLayout->addWidget(headDisplayTypeLabel, 1, 1, Qt::AlignRight);
+    showLayout->addWidget(headDisplayType, 1, 2);
+
 
     headRadius = new QLineEdit(displayGrp);
     connect(headRadius, SIGNAL(returnPressed()), this, SLOT(headRadiusProcessText()));
@@ -519,11 +667,11 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     headHeightLabel = new QLabel(tr("Height"), displayGrp);
     headHeightLabel->setBuddy(headHeight);
     headHeightLabel->setToolTip(tr("Height for head point display."));
-    dLayout->addWidget(headRadiusLabel,dRow,1);
-    dLayout->addWidget(headRadius, dRow,2);
-    dLayout->addWidget(headHeightLabel,dRow,3);
-    dLayout->addWidget(headHeight, dRow,4);
-    dRow++;
+    showLayout->addWidget(headRadiusLabel, 2, 1, Qt::AlignRight);
+    showLayout->addWidget(headRadius, 2, 2);
+    showLayout->addWidget(headHeightLabel, 2, 3);
+    showLayout->addWidget(headHeight, 2, 4);
+
 
     geomDisplayQuality = new QComboBox(displayGrp);
     geomDisplayQuality->addItem(tr("Low"), 0);
@@ -532,14 +680,23 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     geomDisplayQuality->addItem(tr("Super"), 3);
     geomDisplayQualityLabel = new QLabel(tr("Display quality"), displayGrp);
     connect(geomDisplayQuality, SIGNAL(activated(int)), this, SLOT(geomDisplayQualityChanged(int)));
-    dLayout->addWidget(geomDisplayQualityLabel, dRow,0);
-    dLayout->addWidget(geomDisplayQuality, dRow,1);
-    dRow++;
+    showLayout->addWidget(geomDisplayQualityLabel, 3, 0);
+    showLayout->addWidget(geomDisplayQuality, 3, 1);
 
+
+    // Splitter
     splitter = new QFrame(displayGrp);
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    dLayout->addWidget(splitter, dRow, 0, 1, 5);
-    dRow++;
+    dLayout->addWidget(splitter, 7, 0, 1, 5);
+
+
+    QWidget *ddGroup = new QWidget(displayGrp);
+    dLayout->addWidget(ddGroup, 8, 0, 1, 5);
+
+    QHBoxLayout *ddLayout = new QHBoxLayout(ddGroup);
+    ddLayout->setMargin(5);
+    ddLayout->setSpacing(10);
+
 
     displayLabel = new QLabel(tr("Display"), displayGrp);
     displayBeginToggle = new QCheckBox(tr("Begin"), displayGrp);
@@ -552,46 +709,23 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(displayBeginEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayBeginText()));
     connect(displayEndEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayEndText()));
 
-    dLayout->addWidget(displayLabel, dRow,0);
-    dLayout->addWidget(displayEndToggle, dRow,1);
-    dLayout->addWidget(displayEndEdit, dRow,2);
-    dRow++;
-    dLayout->addWidget(displayBeginToggle, dRow,1);
-    dLayout->addWidget(displayBeginEdit, dRow,2);
-    dRow++;
+    ddLayout->addWidget(displayLabel, 0);
+    ddLayout->addWidget(displayBeginToggle, 1);
+    ddLayout->addWidget(displayBeginEdit, 2);
+    ddLayout->addWidget(displayEndToggle, 3, Qt::AlignRight);
+    ddLayout->addWidget(displayEndEdit, 4);
+
 
 
     QGroupBox *colorGrp = new QGroupBox(pageAppearance);
-    colorGrp->setTitle(tr("Color options"));
-    appearanceLayout->addWidget(colorGrp, row, 0, 1, 5);
-    row++;
+    colorGrp->setTitle(tr("Color"));
+    appearanceLayout->addWidget(colorGrp);
 
     QGridLayout *cLayout = new QGridLayout(colorGrp);
+    cLayout->setMargin(5);
     cLayout->setSpacing(10);
     cLayout->setColumnStretch(1,10);
     int cRow = 0;
-
-    coloringMethod = new QComboBox(colorGrp);
-    coloringMethod->addItem(tr("Solid"),0);
-    coloringMethod->addItem(tr("Speed"),1);
-    coloringMethod->addItem(tr("Vorticity magnitude"),2);
-    coloringMethod->addItem(tr("Arc length"),3);
-    coloringMethod->addItem(tr("Time"),4);
-    coloringMethod->addItem(tr("Seed point ID"),5);
-    coloringMethod->addItem(tr("Variable"),6);
-    connect(coloringMethod, SIGNAL(activated(int)),
-            this, SLOT(coloringMethodChanged(int)));
-    cLayout->addWidget(new QLabel(tr("Color by"), colorGrp), cRow,0);
-    cLayout->addWidget(coloringMethod, cRow, 1);
-
-    varLabel = new QLabel(tr("Variable"), colorGrp);
-    var = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
-                                 colorGrp);
-    cLayout->addWidget(varLabel,cRow,2);
-    cLayout->addWidget(var,cRow,3);
-    connect(var, SIGNAL(activated(const QString &)),
-            this, SLOT(coloringVariableChanged(const QString&)));
-    cRow++;
 
 
     //--table
@@ -602,6 +736,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     colorTableNameLabel->setBuddy(colorTableName);
     cLayout->addWidget(colorTableNameLabel,cRow,0);
     cLayout->addWidget(colorTableName, cRow,1, Qt::AlignLeft);
+    cRow++;
 
     //--single
     singleColor = new QvisColorButton(colorGrp);
@@ -613,24 +748,6 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cLayout->addWidget(singleColor, cRow,1, Qt::AlignLeft);
     cRow++;
 
-    //min/max display.
-    limitsLabel = new QLabel(tr("Limits"), colorGrp);
-    legendMaxToggle = new QCheckBox(tr("Max"), colorGrp);
-    legendMinToggle = new QCheckBox(tr("Min"), colorGrp);
-    connect(legendMaxToggle, SIGNAL(toggled(bool)), this, SLOT(legendMaxToggled(bool)));
-    connect(legendMinToggle, SIGNAL(toggled(bool)), this, SLOT(legendMinToggled(bool)));
-
-    legendMaxEdit = new QLineEdit(colorGrp);
-    legendMinEdit = new QLineEdit(colorGrp);
-    connect(legendMaxEdit, SIGNAL(returnPressed()), this, SLOT(processMaxLimitText()));
-    connect(legendMinEdit, SIGNAL(returnPressed()), this, SLOT(processMinLimitText()));
-    cLayout->addWidget(limitsLabel, cRow,0);
-    cLayout->addWidget(legendMaxToggle, cRow,1);
-    cLayout->addWidget(legendMaxEdit, cRow,2);
-    cRow++;
-    cLayout->addWidget(legendMinToggle, cRow,1);
-    cLayout->addWidget(legendMinEdit, cRow,2);
-    cRow++;
 
     
     // Create the opacity widgets.
@@ -645,8 +762,8 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cLayout->addWidget(opacityType, cRow, 1);
 
     opacityVarLabel = new QLabel(tr("Variable"), colorGrp);
-    opacityVar = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
-                                 colorGrp);
+    opacityVar = new QvisVariableButton(false, true, true,
+                                        QvisVariableButton::Scalars, colorGrp);
     cLayout->addWidget(opacityVarLabel,cRow,2);
     cLayout->addWidget(opacityVar,cRow,3);
     connect(opacityVar, SIGNAL(activated(const QString &)),
@@ -671,12 +788,44 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     connect(opacityVarMin, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMin()));
     connect(opacityVarMax, SIGNAL(returnPressed()), this, SLOT(processOpacityVarMax()));
-    cLayout->addWidget(opacityMaxToggle, cRow, 1);
-    cLayout->addWidget(opacityVarMax, cRow, 2);
-    cRow++;
     cLayout->addWidget(opacityMinToggle, cRow, 1);
     cLayout->addWidget(opacityVarMin, cRow, 2);
-    cRow++;   
+    cLayout->addWidget(opacityMaxToggle, cRow, 3);
+    cLayout->addWidget(opacityVarMax, cRow, 4);
+    cRow++;
+
+    varLabel = new QLabel(tr("Variable"), colorGrp);
+    var = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
+                                 colorGrp);
+    cLayout->addWidget(varLabel,cRow,2);
+    cLayout->addWidget(var,cRow,3);
+    connect(var, SIGNAL(activated(const QString &)),
+            this, SLOT(coloringVariableChanged(const QString&)));
+    cRow++;
+
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    appearanceLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendFlag = new QCheckBox(tr("Legend"), central);
+    connect(legendFlag, SIGNAL(toggled(bool)),
+            this, SLOT(legendFlagChanged(bool)));
+    miscLayout->addWidget(legendFlag, 0, 0);
+
+    // Create the lighting toggle
+    lightingFlag = new QCheckBox(tr("Lighting"), central);
+    connect(lightingFlag, SIGNAL(toggled(bool)),
+            this, SLOT(lightingFlagChanged(bool)));
+    miscLayout->addWidget(lightingFlag, 0, 1);
 }
 
 // ****************************************************************************
@@ -745,47 +894,6 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
             this, SLOT(workGroupSizeChanged(int)));
     algoGLayout->addWidget( workGroupSizeLabel, 4,0);
     algoGLayout->addWidget( workGroupSize, 4,1);
-
-    // Integrator group.
-    QGroupBox *intGrp = new QGroupBox(pageAdvanced);
-    intGrp->setTitle(tr("Integration method") );
-
-    advGLayout->addWidget(intGrp, 1, 0, 1, 4);
-    QGridLayout *intGLayout = new QGridLayout(intGrp);
-    intGLayout->setSpacing(10);
-    intGLayout->setColumnStretch(1,10);
-
-    intGLayout->addWidget( new QLabel(tr("Integrator"), intGrp), 0,0);
-    integrationType = new QComboBox(intGrp);
-    integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
-    integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    connect(integrationType, SIGNAL(activated(int)),
-            this, SLOT(integrationTypeChanged(int)));
-    intGLayout->addWidget(integrationType, 0,1);
-    
-    // Create the step length text field.
-    maxStepLengthLabel = new QLabel(tr("Maximum step length"), intGrp);
-    maxStepLength = new QLineEdit(intGrp);
-    connect(maxStepLength, SIGNAL(returnPressed()),
-            this, SLOT(maxStepLengthProcessText()));
-    intGLayout->addWidget(maxStepLengthLabel, 1,0);
-    intGLayout->addWidget(maxStepLength, 1,1);
-
-    // Create the absolute tolerance text field.
-    absTolLabel = new QLabel(tr("Absolute tolerance"), intGrp);
-    absTol = new QLineEdit(intGrp);
-    connect(absTol, SIGNAL(returnPressed()),
-            this, SLOT(absTolProcessText()));
-    intGLayout->addWidget(absTolLabel, 2,0);
-    intGLayout->addWidget(absTol, 2,1);
-
-    // Create the relative tolerance text field.
-    relTolLabel = new QLabel(tr("Relative tolerance"), intGrp);
-    relTol = new QLineEdit(intGrp);
-    connect(relTol, SIGNAL(returnPressed()),
-            this, SLOT(relTolProcessText()));
-    intGLayout->addWidget(relTolLabel, 3,0);
-    intGLayout->addWidget(relTol, 3,1);
 }
 
 // ****************************************************************************
@@ -1011,6 +1119,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             {
                 lineWidth->show();
                 lineWidthLabel->show();
+                lineWidthDummy->show();
 
                 tubeRadius->hide();
                 ribbonWidth->hide();
@@ -1022,6 +1131,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             {
                 lineWidth->hide();
                 lineWidthLabel->hide();
+                lineWidthDummy->hide();
                 if (streamAtts->GetDisplayMethod() == StreamlineAttributes::Tubes)
                 {
                     tubeRadius->show();
@@ -1127,9 +1237,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             legendMaxEdit->setEnabled((needCT ? streamAtts->GetLegendMaxFlag() : false));
             legendMinEdit->setEnabled((needCT ? streamAtts->GetLegendMinFlag() : false));
 
-            coloringMethod->blockSignals(true);
-            coloringMethod->setCurrentIndex(int(streamAtts->GetColoringMethod()));
-            coloringMethod->blockSignals(false);
+            dataValueComboBox->blockSignals(true);
+            dataValueComboBox->setCurrentIndex(int(streamAtts->GetColoringMethod()));
+            dataValueComboBox->blockSignals(false);
 
             if (streamAtts->GetColoringMethod() == StreamlineAttributes::ColorByVariable)
             {
@@ -1377,14 +1487,20 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 void
 QvisStreamlinePlotWindow::UpdateSourceAttributes()
 {
-    bool usePoint =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPoint;
-    bool useLine  =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedLine;
-    bool usePlane =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPlane;
-    bool useSphere =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedSphere;
-    bool useBox =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedBox;
-    bool useCircle =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedCircle;
-    bool usePointList =  streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPointList;
-
+    bool usePoint =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPoint;
+    bool usePointList =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPointList;
+    bool useLine  =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedLine;
+    bool useCircle =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedCircle;
+    bool usePlane =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedPlane;
+    bool useSphere =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedSphere;
+    bool useBox =
+      streamAtts->GetSourceType() == StreamlineAttributes::SpecifiedBox;
     //
     // Update the point widgets.
     //
@@ -1392,7 +1508,6 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     pointSourceLabel->setEnabled(usePoint);
     if(usePoint)
     {
-        sourceAtts->setTitle(tr("Point"));
         pointSource->show();
         pointSourceLabel->show();
     }
@@ -1411,7 +1526,6 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     lineEndLabel->setEnabled(useLine);
     if(useLine)
     {
-        sourceAtts->setTitle(tr("Line"));
         lineStart->show();
         lineEnd->show();
         lineStartLabel->show();
@@ -1438,10 +1552,6 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     planeRadiusLabel->setEnabled(usePlane || useCircle);
     if(usePlane || useCircle)
     {
-        if(usePlane)
-            sourceAtts->setTitle(tr("Plane"));
-        else
-            sourceAtts->setTitle(tr("Circle"));
         planeOrigin->show();
         planeNormal->show();
         planeUpAxis->show();
@@ -1472,7 +1582,6 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     sphereRadiusLabel->setEnabled(useSphere);
     if(useSphere)
     {
-        sourceAtts->setTitle(tr("Sphere"));
         sphereOrigin->show();
         sphereRadius->show();
         sphereOriginLabel->show();
@@ -1491,7 +1600,6 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     //
     if(useBox)
     {
-        sourceAtts->setTitle(tr("Box"));
         useWholeBox->show();
     }
     else
@@ -1522,22 +1630,32 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     //
     pointList->setEnabled(usePointList);
     pointListLabel->setEnabled(usePointList);
+    pointListInfo->setEnabled(usePointList);
     if(usePointList)
     {
-        sourceAtts->setTitle(tr("Point List"));
         pointList->show();
         pointListLabel->show();
+        pointListInfo->show();
     }
     else
     {
         pointList->hide();
         pointListLabel->hide();
+        pointListInfo->hide();
     }
 
     if (usePoint || usePointList)
+    {
         pointDensity->setEnabled(false);
+        pointDensityLabel->hide();
+        pointDensity->hide();
+    }
     else
+    {
         pointDensity->setEnabled(true);
+        pointDensityLabel->show();
+        pointDensity->show();
+    }
 }
 
 // ****************************************************************************

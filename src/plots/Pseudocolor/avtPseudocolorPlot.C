@@ -415,7 +415,7 @@ avtPseudocolorPlot::CustomizeBehavior()
     SetLimitsMode(atts.GetLimitsMode());
     SetPointGlyphSize();
 
-    bool fullyOpaque = atts.GetUseColorTableOpacity() ?
+    bool fullyOpaque = atts.GetOpacityType() ?
         colorTableIsFullyOpaque : (atts.GetOpacity() == 1.);
     if (!fullyOpaque)
     {
@@ -534,7 +534,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
         (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
-        (atts.GetUseColorTableOpacity() != newAtts->GetUseColorTableOpacity());
+        (atts.GetOpacityType() != newAtts->GetOpacityType());
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -662,10 +662,10 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
                    (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque));
     if (atts.GetColorTableName() == "Default")
         retval |= avtLUT->SetColorTable(NULL, namesMatch,
-                                     atts.GetUseColorTableOpacity()); 
+                                     atts.GetOpacityType()); 
     else
         retval |= avtLUT->SetColorTable(ctName, namesMatch,
-                                     atts.GetUseColorTableOpacity());
+                                     atts.GetOpacityType());
     return retval;
 }
 
@@ -915,7 +915,7 @@ void
 avtPseudocolorPlot::SetOpacityFromAtts()
 {
     double origOpacity = atts.GetOpacity();
-    double realOpacity = atts.GetUseColorTableOpacity() ?
+    double realOpacity = atts.GetOpacityType() ?
         (colorTableIsFullyOpaque ? 1.0 : 0.99) : origOpacity;
 
     glyphMapper->SetOpacity(realOpacity);

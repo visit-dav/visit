@@ -152,6 +152,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
 //   Swap the min/max in the gui.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
@@ -579,10 +582,22 @@ QvisScatterPlotWindow::CreateWindowContents()
 
 
 
-    legendFlag = new QCheckBox(tr("Legend"), central);
-    connect(legendFlag, SIGNAL(toggled(bool)),
-            this, SLOT(legendFlagChanged(bool)));
-    topLayout->addWidget(legendFlag);
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
 }
 
 
@@ -851,9 +866,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             foregroundFlag->blockSignals(false);
             break;
         case ScatterAttributes::ID_legendFlag:
-            legendFlag->blockSignals(true);
-            legendFlag->setChecked(atts->GetLegendFlag());
-            legendFlag->blockSignals(false);
+            legendToggle->blockSignals(true);
+            legendToggle->setChecked(atts->GetLegendFlag());
+            legendToggle->blockSignals(false);
             break;
         }
     }
@@ -1662,7 +1677,7 @@ QvisScatterPlotWindow::foregroundFlagChanged(bool val)
 
 
 void
-QvisScatterPlotWindow::legendFlagChanged(bool val)
+QvisScatterPlotWindow::legendToggled(bool val)
 {
     atts->SetLegendFlag(val);
     SetUpdate(false);

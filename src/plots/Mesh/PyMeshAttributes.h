@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define MESHATTRIBUTES_NMETH 38
 void           PyMeshAttributes_StartUp(MeshAttributes *subj, void *data);
 void           PyMeshAttributes_CloseDown();
-PyMethodDef *   PyMeshAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyMeshAttributes_GetMethodTable(int *nMethods);
 bool           PyMeshAttributes_Check(PyObject *obj);
 MeshAttributes *  PyMeshAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyMeshAttributes_New();
-PyObject *      PyMeshAttributes_Wrap(const MeshAttributes *attr);
+PyObject *     PyMeshAttributes_New();
+PyObject *     PyMeshAttributes_Wrap(const MeshAttributes *attr);
 void           PyMeshAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMeshAttributes_SetDefaults(const MeshAttributes *atts);
 std::string    PyMeshAttributes_GetLogString();
 std::string    PyMeshAttributes_ToString(const MeshAttributes *, const char *);
+PyObject *     PyMeshAttributes_getattr(PyObject *self, char *name);
+int            PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH];
 
 #endif
 

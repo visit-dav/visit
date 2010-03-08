@@ -78,6 +78,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Mon Nov 20 13:25:30 PST 2006
 //   Added controls to control symbol-based rendering.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisCurvePlotWindow : public QvisPostableWindowObserver
@@ -102,12 +105,13 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
   private slots:
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
-    void colorChanged(const QColor &color);
-    void showLabelsChanged(bool val);
-    void showLegendChanged(bool val);
+    void labelsToggled(bool val);
+    void legendToggled(bool val);
     void showPointsChanged(bool val);
     void processPointSizeText();
-    void cycleColorsChanged(bool val);
+
+    void curveColorClicked(int val);
+    void curveColorChanged(const QColor &color);
 
     void renderModeChanged(int);
     void symbolTypeChanged(int);
@@ -119,10 +123,12 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QvisLineWidthWidget *lineWidth;
     QLabel              *lineWidthLabel;
     QCheckBox           *cycleColors;
-    QvisColorButton     *color;
-    QLabel              *colorLabel;
-    QCheckBox           *showLabels;
-    QCheckBox           *showLegend;
+
+    QButtonGroup        *curveColorButtons;
+    QvisColorButton     *curveColor;
+
+    QCheckBox           *labelsToggle;
+    QCheckBox           *legendToggle;
     QCheckBox           *showPoints;
     QNarrowLineEdit     *pointSize;
     QLabel              *pointSizeLabel;

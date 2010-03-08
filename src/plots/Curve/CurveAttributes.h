@@ -40,6 +40,7 @@
 #define CURVEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <visitstream.h>
 
@@ -66,6 +67,11 @@ public:
         RenderAsLines,
         RenderAsSymbols
     };
+    enum CurveColor
+    {
+        Cycle,
+        Custom
+    };
     enum SymbolTypes
     {
         TriangleUp,
@@ -76,13 +82,23 @@ public:
         X
     };
 
+    // These constructors are for objects of this class
     CurveAttributes();
     CurveAttributes(const CurveAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    CurveAttributes(private_tmfs_t tmfs);
+    CurveAttributes(const CurveAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~CurveAttributes();
 
     virtual CurveAttributes& operator = (const CurveAttributes &obj);
     virtual bool operator == (const CurveAttributes &obj) const;
     virtual bool operator != (const CurveAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const CurveAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -91,19 +107,19 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectColor();
+    void SelectCurveColor();
     void SelectDesignator();
 
     // Property setting methods
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
-    void SetColor(const ColorAttribute &color_);
+    void SetCurveColor(const ColorAttribute &curveColor_);
     void SetShowLabels(bool showLabels_);
     void SetDesignator(const std::string &designator_);
     void SetShowPoints(bool showPoints_);
     void SetPointSize(double pointSize_);
     void SetShowLegend(bool showLegend_);
-    void SetCycleColors(bool cycleColors_);
+    void SetCurveColorSource(CurveColor curveColorSource_);
     void SetRenderMode(RenderMode renderMode_);
     void SetSymbol(SymbolTypes symbol_);
     void SetSymbolDensity(int symbolDensity_);
@@ -111,15 +127,15 @@ public:
     // Property getting methods
     int                  GetLineStyle() const;
     int                  GetLineWidth() const;
-    const ColorAttribute &GetColor() const;
-          ColorAttribute &GetColor();
+    const ColorAttribute &GetCurveColor() const;
+          ColorAttribute &GetCurveColor();
     bool                 GetShowLabels() const;
     const std::string    &GetDesignator() const;
           std::string    &GetDesignator();
     bool                 GetShowPoints() const;
     double               GetPointSize() const;
     bool                 GetShowLegend() const;
-    bool                 GetCycleColors() const;
+    CurveColor           GetCurveColorSource() const;
     RenderMode           GetRenderMode() const;
     SymbolTypes          GetSymbol() const;
     int                  GetSymbolDensity() const;
@@ -133,6 +149,11 @@ public:
     static bool RenderMode_FromString(const std::string &, RenderMode &);
 protected:
     static std::string RenderMode_ToString(int);
+public:
+    static std::string CurveColor_ToString(CurveColor);
+    static bool CurveColor_FromString(const std::string &, CurveColor &);
+protected:
+    static std::string CurveColor_ToString(int);
 public:
     static std::string SymbolTypes_ToString(SymbolTypes);
     static bool SymbolTypes_FromString(const std::string &, SymbolTypes &);
@@ -154,34 +175,37 @@ public:
     enum {
         ID_lineStyle = 0,
         ID_lineWidth,
-        ID_color,
+        ID_curveColor,
         ID_showLabels,
         ID_designator,
         ID_showPoints,
         ID_pointSize,
         ID_showLegend,
-        ID_cycleColors,
+        ID_curveColorSource,
         ID_renderMode,
         ID_symbol,
-        ID_symbolDensity
+        ID_symbolDensity,
+        ID__LAST
     };
 
 private:
     int            lineStyle;
     int            lineWidth;
-    ColorAttribute color;
+    ColorAttribute curveColor;
     bool           showLabels;
     std::string    designator;
     bool           showPoints;
     double         pointSize;
     bool           showLegend;
-    bool           cycleColors;
+    int            curveColorSource;
     int            renderMode;
     int            symbol;
     int            symbolDensity;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CURVEATTRIBUTES_TMFS "iiabsbdbiiii"
 
 #endif

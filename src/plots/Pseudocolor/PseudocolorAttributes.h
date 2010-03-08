@@ -40,6 +40,7 @@
 #define PSEUDOCOLORATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -85,14 +86,29 @@ public:
         Point,
         Sphere
     };
+    enum Opacity
+    {
+        Explicit,
+        ColorTable
+    };
 
+    // These constructors are for objects of this class
     PseudocolorAttributes();
     PseudocolorAttributes(const PseudocolorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PseudocolorAttributes(private_tmfs_t tmfs);
+    PseudocolorAttributes(const PseudocolorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PseudocolorAttributes();
 
     virtual PseudocolorAttributes& operator = (const PseudocolorAttributes &obj);
     virtual bool operator == (const PseudocolorAttributes &obj) const;
     virtual bool operator != (const PseudocolorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PseudocolorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -125,7 +141,7 @@ public:
     void SetPointSizePixels(int pointSizePixels_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
-    void SetUseColorTableOpacity(bool useColorTableOpacity_);
+    void SetOpacityType(Opacity opacityType_);
 
     // Property getting methods
     bool              GetLegendFlag() const;
@@ -150,7 +166,7 @@ public:
     int               GetPointSizePixels() const;
     int               GetLineStyle() const;
     int               GetLineWidth() const;
-    bool              GetUseColorTableOpacity() const;
+    Opacity           GetOpacityType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -176,6 +192,11 @@ public:
     static bool PointType_FromString(const std::string &, PointType &);
 protected:
     static std::string PointType_ToString(int);
+public:
+    static std::string Opacity_ToString(Opacity);
+    static bool Opacity_FromString(const std::string &, Opacity &);
+protected:
+    static std::string Opacity_ToString(int);
 public:
 
     // Keyframing methods
@@ -210,7 +231,8 @@ public:
         ID_pointSizePixels,
         ID_lineStyle,
         ID_lineWidth,
-        ID_useColorTableOpacity
+        ID_opacityType,
+        ID__LAST
     };
 
 private:
@@ -234,10 +256,12 @@ private:
     int         pointSizePixels;
     int         lineStyle;
     int         lineWidth;
-    bool        useColorTableOpacity;
+    int         opacityType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PSEUDOCOLORATTRIBUTES_TMFS "bbbbiiidddiddsibsiiii"
 
 #endif

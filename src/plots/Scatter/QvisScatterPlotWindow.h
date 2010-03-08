@@ -72,6 +72,9 @@ class QvisVariableButton;
 //   Brad Whitlock, Wed Jul 20 15:26:06 PST 2005
 //   Added pointSizeLabel.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisScatterPlotWindow : public QvisPostableWindowObserver
@@ -132,7 +135,7 @@ private slots:
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void singleColorChanged(const QColor &color);
     void foregroundFlagChanged(bool val);
-    void legendFlagChanged(bool val);
+    void legendToggled(bool val);
 private:
     int plotType;
     static const char *roleNames[5];
@@ -185,7 +188,7 @@ private:
     QLabel *singleColorLabel;
     QvisColorButton *singleColor;
     QCheckBox *foregroundFlag;
-    QCheckBox *legendFlag;
+    QCheckBox *legendToggle;
 
     QLabel *var1ScalingLabel;
     QLabel *var1SkewFactorLabel;

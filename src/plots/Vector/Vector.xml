@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="Vector" type="plot" label="Vector" version="1.0" enabled="true" vartype="vector" iconFile="Vector.xpm">
     <Attribute name="VectorAttributes" purpose="Attributes for the vector plot" persistent="true" codefile="VectorAttributes.code">
+      <Enum name="Quality">
+        Fast
+        High
+      </Enum>
       <Enum name="OriginType">
         Head
         Middle
@@ -76,8 +80,8 @@
       <Field name="lineStem" label="Draw stem as line" type="bool">
         true
       </Field>
-      <Field name="highQuality" label="High quality geometry" type="bool">
-        false
+      <Field name="geometryQuality" label="Geometry quality" type="enum" subtype="Quality">
+        Fast
       </Field>
       <Field name="stemWidth" label="Stem width" type="double">
         0.080000

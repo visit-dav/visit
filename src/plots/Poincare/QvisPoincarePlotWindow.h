@@ -72,6 +72,9 @@ class QvisVariableButton;
 //
 // Modifications:
 //   
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisPoincarePlotWindow : public QvisPostableWindowObserver
@@ -119,13 +122,14 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void colorTypeChanged(int val);
     void singleColorChanged(const QColor &color);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
-    void colorByChanged(int val);
+    void dataValueChanged(int val);
+    void showOPointsChanged(bool val);
     void showIslandsChanged(bool val);
     void showLinesChanged(bool val);
     void showPointsChanged(bool val);
     void verboseFlagChanged(bool val);
-    void legendFlagChanged(bool val);
-    void lightingFlagChanged(bool val);
+    void legendToggled(bool val);
+    void lightingToggled(bool val);
   private:
     QTabWidget      *propertyTabs;
 
@@ -160,14 +164,15 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QButtonGroup *colorTypeButtonGroup;
     QvisColorButton *singleColor;
     QvisColorTableButton *colorTableName;
-    QWidget      *colorBy;
-    QComboBox *colorByCombo;
+    QWidget      *dataValue;
+    QComboBox *dataValueCombo;
+    QCheckBox *showOPoints;
     QCheckBox *showIslands;
     QCheckBox *showLines;
     QCheckBox *showPoints;
     QCheckBox *verboseFlag;
-    QCheckBox *legendFlag;
-    QCheckBox *lightingFlag;
+    QCheckBox *legendToggle;
+    QCheckBox *lightingToggle;
     QLabel *minPuncturesLabel;
     QLabel *maxPuncturesLabel;
     QLabel *sourceTypeLabel;
@@ -191,7 +196,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *colorTypeLabel;
     QLabel *singleColorLabel;
     QLabel *colorTableNameLabel;
-    QLabel *colorByLabel;
+    QLabel *dataValueLabel;
 
     QWidget *firstTab;
     QWidget *secondTab;

@@ -147,12 +147,94 @@ QvisSurfacePlotWindow::~QvisSurfacePlotWindow()
 //   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
 //   Swap the min/max in the gui.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
 QvisSurfacePlotWindow::CreateWindowContents()
 {
-    topLayout->addSpacing(5);
+    //
+    // Create the scale group
+    //
+    QGroupBox * dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    topLayout->addWidget(dataGroup);
+
+    QGridLayout *dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
+
+    //
+    // Create the scale radio buttons
+    //
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
+    
+    // Create the radio buttons
+    scalingButtons = new QButtonGroup(central);
+
+    QRadioButton * rb = new QRadioButton(tr("Linear"), central);
+    rb->setChecked(true);
+    scalingButtons->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    scalingButtons->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew factor"), central);
+    scalingButtons->addButton(rb, 2);
+    dataLayout->addWidget(rb, 0, 3);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(scalingButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(scaleClicked(int)));
+
+    // Create the skew factor line edit    
+    skewLineEdit = new QLineEdit(central);
+    dataLayout->addWidget(skewLineEdit, 0, 4);
+    connect(skewLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processSkewText()));
+
+
+    //
+    // Create the Limits stuff
+    //
+    QGroupBox * limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 2, 0, 1, 5);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 1, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
+
 
     //
     // Create the surface color controls
@@ -163,38 +245,36 @@ QvisSurfacePlotWindow::CreateWindowContents()
             this, SLOT(surfaceToggled(bool)));
     topLayout->addWidget(surfaceGroup);
  
-    QHBoxLayout *surfaceInnerLayout = new QHBoxLayout(surfaceGroup);
-    surfaceInnerLayout->setMargin(8);
-    QGridLayout *surfaceLayout = new QGridLayout(0);
-    surfaceLayout->setMargin(0);
-    surfaceLayout->setSpacing(5);
-    surfaceInnerLayout->addLayout(surfaceLayout);
-    surfaceInnerLayout->addStretch(10);
+
+    QGridLayout *surfaceLayout = new QGridLayout(surfaceGroup);
+    surfaceLayout->setMargin(5);
+    surfaceLayout->setSpacing(10);
+    surfaceLayout->setColumnStretch(1, 10);
 
     colorModeButtons = new QButtonGroup(surfaceGroup);
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
 
-    QRadioButton *rb;
     rb = new QRadioButton(tr("Color by Z value"), surfaceGroup);
     colorModeButtons->addButton(rb, 0);
-    surfaceLayout->addWidget(rb, 1, 0);
+    surfaceLayout->addWidget(rb, 0, 0);
+
     rb = new QRadioButton(tr("Constant color"), surfaceGroup);
     colorModeButtons->addButton(rb, 1);
-    surfaceLayout->addWidget(rb, 0, 0);
+    surfaceLayout->addWidget(rb, 1, 0);
+
+    // Create the surface color-by-z button.
+    colorTableButton = new QvisColorTableButton(surfaceGroup);
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    surfaceLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the surface color button.
     surfaceColor = new QvisColorButton(surfaceGroup);
     surfaceColor->setButtonColor(QColor(255, 0, 0));
     connect(surfaceColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(surfaceColorChanged(const QColor &)));
-    surfaceLayout->addWidget(surfaceColor, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
-
-    // Create the surface color-by-z button.
-    colorTableButton = new QvisColorTableButton(surfaceGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(colorTableClicked(bool, const QString &)));
-    surfaceLayout->addWidget(colorTableButton, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    surfaceLayout->addWidget(surfaceColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
     //
     // Create the wireframe controls
@@ -206,6 +286,8 @@ QvisSurfacePlotWindow::CreateWindowContents()
     topLayout->addWidget(wireframeGroup);
  
     QGridLayout *wireframeLayout = new QGridLayout(wireframeGroup);
+    wireframeLayout->setMargin(5);
+    wireframeLayout->setSpacing(10);
 
     // Create the lineStyle widget.
     lineStyle = new QvisLineStyleWidget(0, wireframeGroup);
@@ -225,104 +307,39 @@ QvisSurfacePlotWindow::CreateWindowContents()
     lineWidthLabel->setBuddy(lineWidth);
     wireframeLayout->addWidget(lineWidthLabel, 0, 3);
 
+    // Create the wire frame color widget.
     wireframeColor = new QvisColorButton(wireframeGroup);
     wireframeColor->setButtonColor(QColor(0, 0, 0));
     connect(wireframeColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(wireframeColorChanged(const QColor &)));
     wireframeLayout->addWidget(wireframeColor, 1, 1);
+
     QLabel *wireframeLabel = new QLabel(tr("Wire color"), wireframeGroup);
     wireframeLabel->setBuddy(wireframeColor);
     wireframeLayout->addWidget(wireframeLabel, 1, 0);
 
     //
-    // Scale controls
+    // Create the misc stuff
     //
-    QGridLayout *scaleLayout = new QGridLayout(0);
-    scaleLayout->setMargin(0);
-    topLayout->addLayout(scaleLayout);
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
 
-    QLabel *scaleLabel = new QLabel(tr("Scale"), central);
-    scaleLayout->addWidget(scaleLabel, 0, 0);
-
-    scalingButtons = new QButtonGroup(central);
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-    rb = new QRadioButton(tr("Linear"), central);
-    scalingButtons->addButton(rb, 0);
-    scaleLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Log"), central);
-    scalingButtons->addButton(rb, 1);
-    scaleLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("Skew"), central);
-    scalingButtons->addButton(rb, 2);
-    scaleLayout->addWidget(rb, 0, 3);
-
-    skewLineEdit = new QLineEdit(central);
-    connect(skewLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processSkewText()));
-    scaleLayout->addWidget(skewLineEdit, 1, 2, 1, 3);
-    skewLabel = new QLabel(tr("Skew factor"), central);
-    skewLabel->setBuddy(skewLineEdit);
-    scaleLayout->addWidget(skewLabel, 1, 0, 1, 2, Qt::AlignRight | Qt::AlignVCenter);
-    topLayout->addSpacing(5);
-
-    //
-    // Create Limits stuff .
-    //
-    QGridLayout *limitsLayout = new QGridLayout(0);
-    topLayout->addLayout(limitsLayout);
-    limitsLayout->setMargin(0);
-                                                     
-    limitsSelect = new QComboBox(central);
-    limitsSelect->addItem(tr("Use Original Data"));
-    limitsSelect->addItem(tr("Use Current Plot"));
-    connect(limitsSelect, SIGNAL(activated(int)),
-            this, SLOT(limitsSelectChanged(int)));
-    QLabel *limitsLabel = new QLabel(tr("Limits"), central);
-    limitsLabel->setBuddy(limitsLabel);
-    limitsLayout->addWidget(limitsLabel, 0, 0);
-    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
-
-    // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 2);
-    connect(maxToggle, SIGNAL(toggled(bool)),
-            this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 3);
-
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Minimum"), central);
-    limitsLayout->addWidget(minToggle, 2, 1);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central);
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 2, 2, 1, 3);
-
-    topLayout->addSpacing(5);
-
-    // Create toggle buttons for various flags
-    QHBoxLayout *toggleLayout = new QHBoxLayout(0);
-    toggleLayout->setMargin(0);
-    topLayout->addLayout(toggleLayout);
-    toggleLayout->setSpacing(10);
-
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
     // Create the legend toggle
     legendToggle = new QCheckBox(tr("Legend"), central);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    toggleLayout->addWidget(legendToggle);
+    miscLayout->addWidget(legendToggle, 0, 0);
 
     // Create the lighting toggle
     lightingToggle = new QCheckBox(tr("Lighting"), central);
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    toggleLayout->addWidget(lightingToggle);
-    toggleLayout->addStretch(10);
+    miscLayout->addWidget(lightingToggle, 0, 1);
 }
 
 // ****************************************************************************
@@ -453,8 +470,6 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
         case SurfaceAttributes::ID_scaling:
             scalingButtons->button(surfaceAtts->GetScaling())->setChecked(true);
             skewLineEdit->setEnabled(surfaceAtts->GetScaling() ==
-                SurfaceAttributes::Skew);
-            skewLabel->setEnabled(surfaceAtts->GetScaling() ==
                 SurfaceAttributes::Skew);
             break;
 

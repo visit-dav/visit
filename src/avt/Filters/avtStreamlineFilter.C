@@ -1814,11 +1814,20 @@ avtStreamlineFilter::ComputeDomainToRankMapping()
 #endif
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change ".size() == 0" test with empty, as empty has much better 
+//   performance.
+//
+// ****************************************************************************
+
 int
 avtStreamlineFilter::DomainToRank(DomainType &domain)
 {
     // First time through, compute the mapping.
-    if (domainToRank.size() == 0)
+    if (domainToRank.empty())
         ComputeDomainToRankMapping();
 
     if (domain.domain < 0 || domain.domain >= domainToRank.size())
@@ -1907,6 +1916,10 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Use domainToCellLocatorMap.find() instead of [] accessor. It will actually
 //   add an entry for the key if doesn't already exist.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change ".size() == 0" test with empty, as empty has much better 
+//   performance.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1984,7 +1997,9 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     // When restarting a streamline one step is always taken. To avoid
     // this unneed step check to see if the termination criteria was
     // previously met.
-    if (DebugStream::Level5()) debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+    if (DebugStream::Level5())
+      debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+
     if( ! slSeg->terminated )
     {
         if (intersectObj)
@@ -2032,7 +2047,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         SetDomain(slSeg);
         
         // Not in any domains.
-        if (slSeg->seedPtDomainList.size() == 0)
+        if (slSeg->seedPtDomainList.empty())
         {
             slSeg->status = avtStreamlineWrapper::TERMINATE;
         }

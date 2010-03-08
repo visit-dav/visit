@@ -42,6 +42,7 @@
 #include <ViewerProxy.h>
 
 #include <QButtonGroup>
+#include <QGroupBox>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QWidget>
@@ -132,7 +133,7 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Added showLegend.
 //   
 //   Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
-//   Added cycleColors. 
+//   Added curveColor. 
 // 
 //   Brad Whitlock, Mon Nov 20 13:34:15 PST 2006
 //   Added symbol rendering and changed the layout of the window.
@@ -143,24 +144,37 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Brad Whitlock, Fri Jul 18 10:40:08 PDT 2008
 //   Qt 4.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(0);
-    topLayout->addLayout(mainLayout);
+    //
+    // Create the geometry
+    //
+    QGroupBox * geometryGroup = new QGroupBox(central);
+    geometryGroup->setTitle(tr("Line Geometry"));
+    topLayout->addWidget(geometryGroup);
+
+    QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
+    geometryLayout->setMargin(5);
+    geometryLayout->setSpacing(10);
+ 
 
     renderMode = new QButtonGroup(central);
     connect(renderMode, SIGNAL(buttonClicked(int)),
             this, SLOT(renderModeChanged(int)));
     QRadioButton *rb0 = new QRadioButton(tr("Draw curve using lines"), central);
     renderMode->addButton(rb0, 0);
-    mainLayout->addWidget(rb0, 0, 0, 1, 4);
+    geometryLayout->addWidget(rb0, 0, 0, 1, 4);
     QRadioButton *rb1 = new QRadioButton(tr("Draw curve using symbols"), central);
     renderMode->addButton(rb1, 1);
-    mainLayout->addWidget(rb1, 5, 0, 1, 4);
-    mainLayout->addWidget(new QLabel("     ", central), 1, 0);
+    geometryLayout->addWidget(rb1, 3, 0, 1, 4);
+
+    geometryLayout->addWidget(new QLabel("     ", central), 1, 0);
 
     //
     // Create line related controls.
@@ -168,32 +182,37 @@ QvisCurvePlotWindow::CreateWindowContents()
     lineStyle = new QvisLineStyleWidget(0, central);
     lineStyleLabel = new QLabel(tr("Line style"), central);
     lineStyleLabel->setBuddy(lineStyle);
+    geometryLayout->addWidget(lineStyleLabel, 1, 1);
+    geometryLayout->addWidget(lineStyle, 1, 2);
+
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    mainLayout->addWidget(lineStyleLabel, 1, 1);
-    mainLayout->addWidget(lineStyle, 1, 2, 1, 2);
 
     lineWidth = new QvisLineWidthWidget(0, central);
     lineWidthLabel = new QLabel(tr("Line width"), central);
     lineWidthLabel->setBuddy(lineWidth);
+    geometryLayout->addWidget(lineWidthLabel, 1, 3);
+    geometryLayout->addWidget(lineWidth, 1, 4);
+
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    mainLayout->addWidget(lineWidthLabel,2, 1);
-    mainLayout->addWidget(lineWidth, 2, 2, 1, 2);
 
     showPoints = new QCheckBox(tr("Show points"), central);
+    geometryLayout->addWidget(showPoints, 2, 1);
+
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
-    mainLayout->addWidget(showPoints, 3, 1, 1, 2);
 
     // Create the point size line edit
     pointSize = new QNarrowLineEdit(central);
-    connect(pointSize, SIGNAL(returnPressed()),
-            this, SLOT(processPointSizeText())); 
-    mainLayout->addWidget(pointSize, 4, 2, 1, 2);
     pointSizeLabel = new QLabel(tr("Point size"), central);
     pointSizeLabel->setBuddy(pointSize);
-    mainLayout->addWidget(pointSizeLabel, 4, 1);
+    geometryLayout->addWidget(pointSizeLabel, 2, 2,
+                              Qt::AlignRight | Qt::AlignVCenter);
+    geometryLayout->addWidget(pointSize, 2, 3);
+
+    connect(pointSize, SIGNAL(returnPressed()),
+            this, SLOT(processPointSizeText())); 
 
     //
     // Create symbol-related controls
@@ -232,8 +251,8 @@ QvisCurvePlotWindow::CreateWindowContents()
             this, SLOT(symbolTypeChanged(int)));
     symbolTypeLabel = new QLabel(tr("Symbol"), central);
     symbolTypeLabel->setBuddy(symbolType);
-    mainLayout->addWidget(symbolTypeLabel, 6, 1);
-    mainLayout->addWidget(symbolType, 6, 2, 1, 2);
+    geometryLayout->addWidget(symbolTypeLabel, 4, 1);
+    geometryLayout->addWidget(symbolType, 4, 2);
 
     symbolDensity = new QSpinBox(central);
     symbolDensity->setMinimum(10);
@@ -242,38 +261,66 @@ QvisCurvePlotWindow::CreateWindowContents()
             this, SLOT(symbolDensityChanged(int)));
     symbolDensityLabel = new QLabel(tr("Density"), central);
     symbolDensityLabel->setBuddy(symbolDensity);
-    mainLayout->addWidget(symbolDensityLabel, 7, 1);
-    mainLayout->addWidget(symbolDensity, 7, 2, 1, 2);
+    geometryLayout->addWidget(symbolDensityLabel, 4, 3);
+    geometryLayout->addWidget(symbolDensity, 4, 4);
 
     //
-    // Add color controls
-    // 
-    cycleColors = new QCheckBox(tr("Cycle colors"), central);
-    connect(cycleColors, SIGNAL(toggled(bool)),
-            this, SLOT(cycleColorsChanged(bool)));
-    mainLayout->addWidget(cycleColors, 8, 0, 1, 2);
+    // Create the color
+    //
+    QGroupBox * colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroup);
 
-    colorLabel = new QLabel(tr("Color"), central);
-    color = new QvisColorButton(central);
-    color->setButtonColor(QColor(255, 0, 0));
-    connect(color, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(colorChanged(const QColor &)));
-    mainLayout->addWidget(colorLabel, 8, 2);
-    mainLayout->addWidget(color, 8, 3);
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10);
+ 
+    // Create the radio buttons for curve color source
+    colorLayout->addWidget(new QLabel(tr("Curve color"), central), 0, 0);
+
+    curveColorButtons = new QButtonGroup(central);
+
+    QRadioButton * rb = new QRadioButton(tr("Cycle"), central);
+    rb->setChecked(true);
+    curveColorButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Custom"), central);
+    curveColorButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(curveColorButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(curveColorClicked(int)));
+
+    // Create the curve color button.
+    curveColor = new QvisColorButton(central);
+    connect(curveColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(curveColorChanged(const QColor &)));
+    colorLayout->addWidget(curveColor, 0, 3);
+
 
     //
-    // Global controls
+    // Create the misc stuff
     //
-    showLegend = new QCheckBox(tr("Legend"), central);
-    connect(showLegend, SIGNAL(toggled(bool)),
-            this, SLOT(showLegendChanged(bool)));
-    mainLayout->addWidget(showLegend, 9, 0, 1, 2);
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
 
-    showLabels = new QCheckBox(tr("Labels"), central);
-    connect(showLabels, SIGNAL(toggled(bool)),
-            this, SLOT(showLabelsChanged(bool)));
-    mainLayout->addWidget(showLabels, 9, 2);
-    mainLayout->setColumnStretch(3, 10);
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
+
+    // Create the labels toggle
+    labelsToggle = new QCheckBox(tr("Labels"), central);
+    connect(labelsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(labelsToggled(bool)));
+    miscLayout->addWidget(labelsToggle, 0, 1);
 }
 
 
@@ -298,8 +345,8 @@ QvisCurvePlotWindow::CreateWindowContents()
 //   Added showLegend.
 //   
 //   Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
-//   Added cycleColors, made the enabled state of color be dependent upon
-//   the value of cycleColors.
+//   Added curveColor, made the enabled state of color be dependent upon
+//   the value of curveColor.
 //
 //   Brad Whitlock, Mon Nov 20 14:45:46 PST 2006
 //   Added code for new members related to symbol-based rendering.
@@ -335,21 +382,21 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             lineWidth->SetLineWidth(atts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-          case CurveAttributes::ID_color:
+          case CurveAttributes::ID_curveColor:
             { // new scope
-              if (color->isEnabled())
+              if (curveColor->isEnabled())
               {
-                QColor temp(atts->GetColor().Red(),
-                            atts->GetColor().Green(),
-                            atts->GetColor().Blue());
-                color->blockSignals(true);
-                color->setButtonColor(temp);
-                color->blockSignals(false);
+                QColor temp(atts->GetCurveColor().Red(),
+                            atts->GetCurveColor().Green(),
+                            atts->GetCurveColor().Blue());
+                curveColor->blockSignals(true);
+                curveColor->setButtonColor(temp);
+                curveColor->blockSignals(false);
               }
             }
             break;
           case CurveAttributes::ID_showLabels:
-            showLabels->setChecked(atts->GetShowLabels());
+            labelsToggle->setChecked(atts->GetShowLabels());
             break;
           case CurveAttributes::ID_designator: // internal
             break;
@@ -365,12 +412,15 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             pointSize->setText(tempText);
             break;
           case CurveAttributes::ID_showLegend:
-            showLegend->setChecked(atts->GetShowLegend());
+            legendToggle->setChecked(atts->GetShowLegend());
             break;
-          case CurveAttributes::ID_cycleColors:
-            cycleColors->setChecked(atts->GetCycleColors());
-            color->setEnabled(!atts->GetCycleColors()); 
-            colorLabel->setEnabled(!atts->GetCycleColors()); 
+
+          case CurveAttributes::ID_curveColorSource:
+            curveColorButtons->blockSignals(true);
+            curveColorButtons->button(atts->GetCurveColorSource())->setChecked(true);
+            curveColorButtons->blockSignals(false);
+
+            curveColor->setEnabled(atts->GetCurveColorSource());
             break;
           case CurveAttributes::ID_renderMode:
             {
@@ -569,29 +619,34 @@ QvisCurvePlotWindow::lineWidthChanged(int style)
 
 
 void
-QvisCurvePlotWindow::colorChanged(const QColor &color_)
+QvisCurvePlotWindow::curveColorChanged(const QColor &color_)
 {
     ColorAttribute temp(color_.red(), color_.green(), color_.blue());
-    atts->SetColor(temp);
+    atts->SetCurveColor(temp);
     Apply();
 }
 
 void
-QvisCurvePlotWindow::cycleColorsChanged(bool val)
+QvisCurvePlotWindow::curveColorClicked(int val)
 {
-    atts->SetCycleColors(val);
-    Apply();
+    // Only do it if it changed.
+    if(val != atts->GetCurveColorSource())
+    {
+        atts->SetCurveColorSource(CurveAttributes::CurveColor(val));
+        curveColor->setEnabled(val);
+        Apply();
+    }
 }
 
 void
-QvisCurvePlotWindow::showLabelsChanged(bool val)
+QvisCurvePlotWindow::labelsToggled(bool val)
 {
     atts->SetShowLabels(val);
     Apply();
 }
 
 void
-QvisCurvePlotWindow::showLegendChanged(bool val)
+QvisCurvePlotWindow::legendToggled(bool val)
 {
     atts->SetShowLegend(val);
     Apply();

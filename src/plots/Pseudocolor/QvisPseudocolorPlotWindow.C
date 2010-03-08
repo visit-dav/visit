@@ -38,6 +38,7 @@
 
 #include <QWidget> 
 #include <QLayout> 
+#include <QGroupBox>
 #include <QPushButton> 
 #include <QRadioButton>
 #include <QButtonGroup>
@@ -176,147 +177,190 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   (instead of just a single global opacity for the whole plot).
 //   There's a new toggle for this, and it overrides the whole-plot opacity.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
-{
+{ 
     //
-    // Create the line style/width buttons
+    // Create the scale group
     //
-    QHBoxLayout *lineLayout = new QHBoxLayout(0);
-    lineLayout->setMargin(0);
-    topLayout->addLayout(lineLayout);
+    QGroupBox * dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    topLayout->addWidget(dataGroup);
 
-    // Create the lineSyle widget.
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    lineStyleLabel->setBuddy(lineStyle);
-    lineLayout->addWidget(lineStyleLabel);
-    lineLayout->addWidget(lineStyle);
-
-    // Create the lineSyle widget.
-    lineWidth = new QvisLineWidthWidget(0, central);
-    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Line width"), central);
-    lineWidthLabel->setBuddy(lineWidth);
-    lineLayout->addWidget(lineWidthLabel);
-    lineLayout->addWidget(lineWidth);
+    QGridLayout *dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
 
     //
-    // Create the centering radio buttons
+    // Create the scale radio buttons
     //
-    QHBoxLayout *centeringLayout = new QHBoxLayout(0);
-    centeringLayout->setMargin(0);
-    topLayout->addLayout(centeringLayout);
-
-    // Create a group of radio buttons
-    centeringButtons = new QButtonGroup(central);
-    QLabel *centeringLabel = new QLabel(tr("Centering"), central);
-    centeringLayout->addWidget(centeringLabel);
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
     
     // Create the radio buttons
-    QRadioButton *rb= new QRadioButton(tr("Natural"), central );
+    scalingButtons = new QButtonGroup(central);
+
+    QRadioButton * rb = new QRadioButton(tr("Linear"), central);
     rb->setChecked(true);
-    centeringButtons->addButton(rb, 0);
-    centeringLayout->addWidget(rb);
-    rb = new QRadioButton(tr("Nodal"), central );
-    centeringLayout->addWidget(rb);
-    centeringButtons->addButton(rb, 1);
-    rb = new QRadioButton(tr("Zonal"), central );
-    centeringLayout->addWidget(rb);
-    centeringButtons->addButton(rb, 2);
-    centeringLayout->addStretch(0);
-    // Each time a radio button is clicked, call the centeringClicked slot.
-    connect(centeringButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(centeringClicked(int)));
-    
+    scalingButtons->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    scalingButtons->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew factor"), central);
+    scalingButtons->addButton(rb, 2);
+    dataLayout->addWidget(rb, 0, 3);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(scalingButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(scaleClicked(int)));
+
+    // Create the skew factor line edit    
+    skewLineEdit = new QLineEdit(central);
+    dataLayout->addWidget(skewLineEdit, 0, 4);
+    connect(skewLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processSkewText()));
+
+
     //
     // Create the Limits stuff
     //
-    QGridLayout *limitsLayout = new QGridLayout(0);
-    limitsLayout->setMargin(0);
-    topLayout->addLayout(limitsLayout);
+    QGroupBox * limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
 
     limitsSelect = new QComboBox(central);
     limitsSelect->addItem(tr("Use Original Data"));
     limitsSelect->addItem(tr("Use Current Plot"));
     connect(limitsSelect, SIGNAL(activated(int)),
             this, SLOT(limitsSelectChanged(int))); 
-    QLabel *limitsLabel = new QLabel(tr("Limits"), central);
-    limitsLabel->setBuddy(limitsSelect);
-    limitsLayout->addWidget(limitsLabel, 0, 0);
     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
-
-    // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 1);
-    connect(maxToggle, SIGNAL(toggled(bool)),
-            this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 2);
 
     // Create the min toggle and line edit
     minToggle = new QCheckBox(tr("Minimum"), central);
-    limitsLayout->addWidget(minToggle, 2, 1);
+    limitsLayout->addWidget(minToggle, 1, 0);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
     minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 2, 2);
+    limitsLayout->addWidget(minLineEdit, 1, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
+
+
 
     //
-    // Create the scale radio buttons
+    // Create the mesh group
     //
-    QHBoxLayout *scaleLayout = new QHBoxLayout(0);
-    scaleLayout->setMargin(0);
-    topLayout->addLayout(scaleLayout);
 
-    // Create a group of radio buttons
-    scalingButtons = new QButtonGroup(central);
-    QLabel *scaleLabel = new QLabel(tr("Scale"), central);
-    scaleLayout->addWidget(scaleLabel);
+    // Create the centering label
+    dataLayout->addWidget(new QLabel(tr("Centering"), central), 3, 0);
     
-    rb = new QRadioButton(tr("Linear"), central);
+    // Create the radio buttons
+    centeringButtons = new QButtonGroup(central);
+    rb = new QRadioButton(tr("Original"), central );
     rb->setChecked(true);
-    scalingButtons->addButton(rb, 0);
-    scaleLayout->addWidget(rb);
-    rb = new QRadioButton(tr("Log"), central);
-    scalingButtons->addButton(rb, 1);
-    scaleLayout->addWidget(rb);
-    rb = new QRadioButton(tr("Skew"), central);
-    scalingButtons->addButton(rb, 2);
-    scaleLayout->addWidget(rb);
-    scaleLayout->addStretch(0);
-    // Each time a radio button is clicked, call the scalelicked slot.
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
+    centeringButtons->addButton(rb, 0);
+    dataLayout->addWidget(rb, 3, 1);
+    rb = new QRadioButton(tr("Nodal"), central );
+    dataLayout->addWidget(rb, 3, 2);
+    centeringButtons->addButton(rb, 1);
+    rb = new QRadioButton(tr("Zonal"), central );
+    dataLayout->addWidget(rb, 3, 3);
+    centeringButtons->addButton(rb, 2);
+    // Each time a radio button is clicked, call the centeringClicked slot.
+    connect(centeringButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(centeringClicked(int)));
 
     //
-    // Create the rest of the window in a grid layout.
+    // Create the color stuff
     //
-    QGridLayout *gLayout = new QGridLayout(0);
-    gLayout->setMargin(0);
-    topLayout->addLayout(gLayout);
+    QGroupBox * colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroup);
+
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10);
+ 
     int gRow = 0;
 
-    // Create the skew factor line edit    
-    skewLineEdit = new QLineEdit(central);
-    connect(skewLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processSkewText())); 
-    gLayout->addWidget(skewLineEdit, 0, 1);
-    skewLabel = new QLabel(tr("Skew factor"), central);
-    skewLabel->setBuddy(skewLineEdit);
-    skewLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    gLayout->addWidget(skewLabel, gRow, 0);
+    // Create the color table widgets
+    colorLayout->addWidget( new QLabel(tr("Color table"), central), gRow, 0);
+
+    colorTableButton = new QvisColorTableButton(central);
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    colorLayout->addWidget(colorTableButton, gRow, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
     gRow++;
 
+    // Create the use-color-table-opacity checkbox
+
+    // Create the radio buttons
+    colorLayout->addWidget(new QLabel(tr("Opacity"), central), 1, 0);
+
+    opacityButtons = new QButtonGroup(central);
+
+    rb = new QRadioButton(tr("Set explicitly"), central);
+    rb->setChecked(true);
+    opacityButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, gRow, 1);
+    rb = new QRadioButton(tr("From color table"), central);
+    opacityButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, gRow, 2);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(opacityButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(setOpaacityClicked(int)));
+
+    gRow++;
+
+    //
+    // Create the opacity slider
+    //
+    opacitySliderLabel = new QLabel(tr("Opacity"), central);
+    opacitySliderLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    colorLayout->addWidget(opacitySliderLabel, gRow, 0);
+
+    opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
+    opacitySlider->setTickInterval(64);
+    opacitySlider->setGradientColor(QColor(0, 0, 0));
+    connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(changedOpacity(int, const void*)));
+    colorLayout->addWidget(opacitySlider, gRow, 1, 1, 3);
+
+    
+    //
+    // Create the style stuff
+    //
+
+    QGroupBox * styleGroup = new QGroupBox(central);
+    styleGroup->setTitle(tr("Point / Line Style"));
+    topLayout->addWidget(styleGroup);
+
+    QGridLayout *styleLayout = new QGridLayout(styleGroup);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
+ 
     // Create the point control
     pointControl = new QvisPointControl(central);
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
@@ -329,66 +373,47 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    gLayout->addWidget(pointControl, gRow, 0, 1, 2);
-    gRow++;
- 
-    // Create the use-color-table-opacity checkbox
-    useColorTableOpacity =
-        new QCheckBox(tr("Use opacity from color table"), central);
-    connect(useColorTableOpacity, SIGNAL(toggled(bool)),
-            this, SLOT(useColorTableOpacityToggled(bool)));
-    gLayout->addWidget(useColorTableOpacity, gRow, 0, 1,2);
-    gRow++;
+    styleLayout->addWidget(pointControl, 0, 0, 1, 4);
+
 
     //
-    // Create the opacity slider
+    // Create the line style/width buttons
     //
-    opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
-    opacitySlider->setTickInterval(64);
-    opacitySlider->setGradientColor(QColor(0, 0, 0));
-    connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(changedOpacity(int, const void*)));
-    gLayout->addWidget(opacitySlider, gRow, 1);
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
 
-    opacityLabel = new QLabel(tr("Opacity"), central);
-    opacityLabel->setBuddy(opacitySlider);
-    opacityLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    gLayout->addWidget(opacityLabel, gRow, 0);
-    gRow++;
+    lineStyle = new QvisLineStyleWidget(0, central);
+    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
+            this, SLOT(lineStyleChanged(int)));
+    styleLayout->addWidget(lineStyle, 1, 1);
 
-    // Create the color table widgets
-    colorTableButton = new QvisColorTableButton(central);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(colorTableClicked(bool, const QString &)));
-    gLayout->addWidget(colorTableButton, gRow, 1, Qt::AlignLeft | Qt::AlignVCenter);
-    QLabel *colorTableLabel = new QLabel(tr("Color table"), central);
-    colorTableLabel->setBuddy(colorTableButton);
-    colorTableLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    gLayout->addWidget(colorTableLabel, gRow, 0);
-    gRow++;
+    // Create the lineSyle widget.
+    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
 
-    // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
-    connect(legendToggle, SIGNAL(toggled(bool)),
-            this, SLOT(legendToggled(bool)));
-    gLayout->addWidget(legendToggle, gRow, 0);
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    styleLayout->addWidget(lineWidth, 1, 3);
 
-    // Create the lighting toggle
-    lightingToggle = new QCheckBox(tr("Lighting"), central);
-    connect(lightingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(lightingToggled(bool)));
-    gLayout->addWidget(lightingToggle, gRow, 1);
-    gRow++;
+
+    //
+    // Create the geometry group
+    //
+    QGroupBox * smoothingGroup = new QGroupBox(central);
+    smoothingGroup->setTitle(tr("Geometry"));
+    topLayout->addWidget(smoothingGroup);
+
+    QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
+    smoothingLayout->setMargin(5);
+    smoothingLayout->setSpacing(10);
+
+    smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-    QGridLayout *smoothingLayout = new QGridLayout(0);
-    smoothingLayout->setMargin(0);
-    smoothingLayout->setSpacing(10);
-    smoothingLayout->setColumnStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
+
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);
     smoothingLayout->addWidget(rb, 0, 1);
@@ -398,8 +423,30 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("High"), central);
     smoothingLevelButtons->addButton(rb, 2);
     smoothingLayout->addWidget(rb, 0, 3);
-    gLayout->addLayout(smoothingLayout, gRow,0, 1,2);
-    gRow++;
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
+
+    // Create the lighting toggle
+    lightingToggle = new QCheckBox(tr("Lighting"), central);
+    connect(lightingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(lightingToggled(bool)));
+    miscLayout->addWidget(lightingToggle, 0, 1);
+
 }
 
 // ****************************************************************************
@@ -541,10 +588,16 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             scalingButtons->blockSignals(true);
             scalingButtons->button(pcAtts->GetScaling())->setChecked(true);
             scalingButtons->blockSignals(false);
-            skewLineEdit->setEnabled(pcAtts->GetScaling() ==
-                PseudocolorAttributes::Skew);
-            skewLabel->setEnabled(pcAtts->GetScaling() ==
-                PseudocolorAttributes::Skew);
+
+            if( pcAtts->GetScaling() == PseudocolorAttributes::Skew )
+            {
+              skewLineEdit->setEnabled(true);
+            }
+            else
+            {
+              skewLineEdit->setEnabled(false);
+            }
+
             break;
         case PseudocolorAttributes::ID_limitsMode:
             limitsSelect->blockSignals(true);
@@ -612,12 +665,12 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             lineWidth->SetLineWidth(pcAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case PseudocolorAttributes::ID_useColorTableOpacity:
-            useColorTableOpacity->blockSignals(true);
-            useColorTableOpacity->setChecked(pcAtts->GetUseColorTableOpacity());
-            opacitySlider->setEnabled(!pcAtts->GetUseColorTableOpacity());
-            opacityLabel->setEnabled(!pcAtts->GetUseColorTableOpacity());
-            useColorTableOpacity->blockSignals(false);
+        case PseudocolorAttributes::ID_opacityType:
+            opacityButtons->blockSignals(true);
+            opacityButtons->button(pcAtts->GetOpacityType())->setChecked(true);
+            opacitySlider->setEnabled(!pcAtts->GetOpacityType());
+            opacitySliderLabel->setEnabled(!pcAtts->GetOpacityType());
+            opacityButtons->blockSignals(false);
             break;
         }
     } // end for
@@ -1078,14 +1131,14 @@ QvisPseudocolorPlotWindow::lineWidthChanged(int newWidth)
 
 
 // ****************************************************************************
-// Method: QvisPseudocolorPlotWindow::useColorTableOpacityToggled
+// Method: QvisPseudocolorPlotWindow::setOpaacityClicked
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the 
-//   useColorTableOpacity button is toggled.
+//   setOpacityExplicitly button is toggled.
 //
 // Arguments:
-//   val : The new state of the useColorTableOpacity toggle.
+//   val : The new state of the setOpacityExplicitly toggle.
 //
 // Programmer: Jeremy Meredith
 // Creation:   February 20, 2009
@@ -1093,12 +1146,16 @@ QvisPseudocolorPlotWindow::lineWidthChanged(int newWidth)
 // ****************************************************************************
 
 void
-QvisPseudocolorPlotWindow::useColorTableOpacityToggled(bool val)
+QvisPseudocolorPlotWindow::setOpaacityClicked(int opacity)
 {
-    pcAtts->SetUseColorTableOpacity(val);
-    opacitySlider->setEnabled(!pcAtts->GetUseColorTableOpacity());
-    opacityLabel->setEnabled(!pcAtts->GetUseColorTableOpacity());
-    Apply();
+    // Only do it if it changed.
+    if(opacity != pcAtts->GetOpacityType())
+    {
+        pcAtts->SetOpacityType(PseudocolorAttributes::Opacity(opacity));
+        opacitySliderLabel->setEnabled(!opacity);
+        opacitySlider->setEnabled(!opacity);
+        Apply();
+    }
 }
 
 

@@ -67,12 +67,12 @@ class DomainType;
 class avtSLAlgorithm;
 
 #define STREAMLINE_SOURCE_POINT      0
-#define STREAMLINE_SOURCE_LINE       1
-#define STREAMLINE_SOURCE_PLANE      2
-#define STREAMLINE_SOURCE_SPHERE     3
-#define STREAMLINE_SOURCE_BOX        4
-#define STREAMLINE_SOURCE_CIRCLE     5
-#define STREAMLINE_SOURCE_POINT_LIST 6
+#define STREAMLINE_SOURCE_POINT_LIST 1
+#define STREAMLINE_SOURCE_LINE       2
+#define STREAMLINE_SOURCE_CIRCLE     3
+#define STREAMLINE_SOURCE_PLANE      4
+#define STREAMLINE_SOURCE_SPHERE     5
+#define STREAMLINE_SOURCE_BOX        6
 
 #define STREAMLINE_COLOR_SOLID       0
 #define STREAMLINE_COLOR_SPEED       1
@@ -212,6 +212,10 @@ class avtSLAlgorithm;
 //
 //   Hank Childs, Sat Feb 20 05:12:45 PST 2010
 //   Add methods for initializing locators.
+//
+//   Allen Sanderson, Sun Mar  7 16:18:46 PST 2010
+//   Re-order define's for source type to match recent changes in the 
+//   streamline attributes.
 //
 // ****************************************************************************
 

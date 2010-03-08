@@ -73,6 +73,9 @@ class QvisPointControl;
 //   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
 //   Added a new slot to handle a new signal from QvisPointControl.
 //
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
 // ****************************************************************************
 
 class QvisBoundaryPlotWindow : public QvisPostableWindowObserver
@@ -126,7 +129,7 @@ private:
     QLabel                 *lineWidthLabel;
     QvisLineWidthWidget    *lineWidth;
     QButtonGroup           *colorModeButtons;
-    QCheckBox              *legendCheckBox;
+    QCheckBox              *legendToggle;
     QGroupBox              *boundaryColorGroup;
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
@@ -136,7 +139,7 @@ private:
     QvisOpacitySlider      *multipleColorOpacity;
     QvisColorTableButton   *colorTableButton;
     QvisOpacitySlider      *overallOpacity;
-    QCheckBox              *wireframeCheckBox;
+    QCheckBox              *wireframeToggle;
     QButtonGroup           *smoothingLevelButtons;
     QvisPointControl       *pointControl;
 };

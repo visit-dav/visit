@@ -63,6 +63,9 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private static int numAdditionalAttributes = 24;
 
     // Enum values
+    public final static int QUALITY_FAST = 0;
+    public final static int QUALITY_HIGH = 1;
+
     public final static int ORIGINTYPE_HEAD = 0;
     public final static int ORIGINTYPE_MIDDLE = 1;
     public final static int ORIGINTYPE_TAIL = 2;
@@ -96,7 +99,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         min = 0;
         max = 1;
         lineStem = true;
-        highQuality = false;
+        geometryQuality = QUALITY_FAST;
         stemWidth = 0.08;
         origOnly = true;
     }
@@ -126,7 +129,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         min = 0;
         max = 1;
         lineStem = true;
-        highQuality = false;
+        geometryQuality = QUALITY_FAST;
         stemWidth = 0.08;
         origOnly = true;
     }
@@ -156,7 +159,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         min = obj.min;
         max = obj.max;
         lineStem = obj.lineStem;
-        highQuality = obj.highQuality;
+        geometryQuality = obj.geometryQuality;
         stemWidth = obj.stemWidth;
         origOnly = obj.origOnly;
 
@@ -197,7 +200,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
                 (min == obj.min) &&
                 (max == obj.max) &&
                 (lineStem == obj.lineStem) &&
-                (highQuality == obj.highQuality) &&
+                (geometryQuality == obj.geometryQuality) &&
                 (stemWidth == obj.stemWidth) &&
                 (origOnly == obj.origOnly));
     }
@@ -332,9 +335,9 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(20);
     }
 
-    public void SetHighQuality(boolean highQuality_)
+    public void SetGeometryQuality(int geometryQuality_)
     {
-        highQuality = highQuality_;
+        geometryQuality = geometryQuality_;
         Select(21);
     }
 
@@ -372,7 +375,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public double         GetMin() { return min; }
     public double         GetMax() { return max; }
     public boolean        GetLineStem() { return lineStem; }
-    public boolean        GetHighQuality() { return highQuality; }
+    public int            GetGeometryQuality() { return geometryQuality; }
     public double         GetStemWidth() { return stemWidth; }
     public boolean        GetOrigOnly() { return origOnly; }
 
@@ -422,7 +425,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(20, buf))
             buf.WriteBool(lineStem);
         if(WriteSelect(21, buf))
-            buf.WriteBool(highQuality);
+            buf.WriteInt(geometryQuality);
         if(WriteSelect(22, buf))
             buf.WriteDouble(stemWidth);
         if(WriteSelect(23, buf))
@@ -498,7 +501,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             SetLineStem(buf.ReadBool());
             break;
         case 21:
-            SetHighQuality(buf.ReadBool());
+            SetGeometryQuality(buf.ReadInt());
             break;
         case 22:
             SetStemWidth(buf.ReadDouble());
@@ -545,7 +548,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("min", min, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + boolToString("lineStem", lineStem, indent) + "\n";
-        str = str + boolToString("highQuality", highQuality, indent) + "\n";
+        str = str + indent + "geometryQuality = ";
+        if(geometryQuality == QUALITY_FAST)
+            str = str + "QUALITY_FAST";
+        if(geometryQuality == QUALITY_HIGH)
+            str = str + "QUALITY_HIGH";
+        str = str + "\n";
         str = str + doubleToString("stemWidth", stemWidth, indent) + "\n";
         str = str + boolToString("origOnly", origOnly, indent) + "\n";
         return str;
@@ -574,7 +582,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private double         min;
     private double         max;
     private boolean        lineStem;
-    private boolean        highQuality;
+    private int            geometryQuality;
     private double         stemWidth;
     private boolean        origOnly;
 }

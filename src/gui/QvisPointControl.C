@@ -621,6 +621,10 @@ void QvisPointControl::SetPointType(int type)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Allen Sanderson, Sun Mar  7 16:29:40 PST 2010
+//   Combine point type test ... we wanted an 'and', where the current test
+//   was just giving us a last one in.
+//
 // ****************************************************************************
 
 void
@@ -636,8 +640,7 @@ QvisPointControl::UpdatePointType()
     else
         sizeLabel->setText(tr("Point size (pixels)"));
 
-    sizeVarToggle->setEnabled(e);
-    sizeVarButton->setEnabled(sizeVarToggle->isChecked());
+    sizeVarButton->setEnabled(e && sizeVarToggle->isChecked());
 }
 
 // ****************************************************************************
