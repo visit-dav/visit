@@ -169,7 +169,11 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     sphereTool = new VisitSphereTool(toolProxy);
     axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
 
-    // Add the tools to the tools array.
+    // Add the tools to the tools array. The ordering of the tools
+    // will define the ordering of the icons in viewer.
+
+    // When adding new tools please use a logical ordering even
+    // if means putting it beween two existing tools.
     tools[numTools++] = pointTool;
     tools[numTools++] = lineTool;
     tools[numTools++] = planeTool;

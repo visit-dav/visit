@@ -1003,6 +1003,14 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     SetToolTip(tr("Set window mode"));
     SetExclusive(true);
 
+    // NOTE The ordering of these glyphs must match the ordering of the enum 
+    // INTERACTION_MODE that is defined in:
+    // avt/VisWindow/VisWindow/VisWindowTypes.h
+
+    // DO NOT ADD A GLYPH WITHOUT UPDATING THE ENUMS.
+
+    // Also when adding new action please use a logical ordering even
+    // if means putting it beween two existing actions.
     if (!GetViewerProperties()->GetNowin())
     {
         AddChoice(tr("Navigate"), tr("Navigate mode"), QPixmap(navigatemode_xpm));
