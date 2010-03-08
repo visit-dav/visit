@@ -339,6 +339,9 @@
 //    Big redesign, adding icons and functionality and shuffling arrangement.
 //    Hide the Select File menu item when we're not in selected files mode.
 //
+//    Hank Childs, Sun Mar  7 16:57:18 PST 2010
+//    Put Save Session above Restore Session, so it won't be so close to Exit.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -479,12 +482,12 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     
     filePopup->addSeparator();
     
+    filePopup->addAction(tr("Save session . . ."),
+                         this, SIGNAL(saveSession()));
     filePopup->addAction(tr("Restore session . . ."),
                          this, SIGNAL(restoreSession()));
     filePopup->addAction(tr("Restore session with sources . . ."),
                          this, SIGNAL(restoreSessionWithSources()));
-    filePopup->addAction(tr("Save session . . ."),
-                         this, SIGNAL(saveSession()));
                          
     filePopup->addSeparator();
 
