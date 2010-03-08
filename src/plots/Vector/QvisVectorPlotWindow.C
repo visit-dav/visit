@@ -990,7 +990,6 @@ QvisVectorPlotWindow::vectorColorChanged(const QColor &color)
 {
     ColorAttribute temp(color.red(), color.green(), color.blue());
     vectorAtts->SetVectorColor(temp);
-cerr << "Vector color changed, not doing mag" << endl;
     vectorAtts->SetColorByMag(false);
     Apply();
 }
@@ -1210,7 +1209,6 @@ void
 QvisVectorPlotWindow::colorModeChanged(int index)
 {
     vectorAtts->SetColorByMag(index == 0);
-cerr << "Color mode = " << index << endl;
 //    limitsGroup->setEnabled(vectorAtts->GetColorByMag());
     Apply();
 }
@@ -1238,10 +1236,7 @@ void
 QvisVectorPlotWindow::colorTableClicked(bool useDefault,
     const QString &ctName)
 {
-cerr << "Color table clicked" << endl;
-cerr << "Color by mag = true" << endl;
     vectorAtts->SetColorByMag(true);
-cerr << "Name  " << ctName.toStdString() << endl;
     vectorAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
