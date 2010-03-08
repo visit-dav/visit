@@ -748,6 +748,9 @@ avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
 //    Cyrus Harrison, Fri Mar 16 15:49:42 PDT 2007
 //    Added progress update. 
 //
+//    Hank Childs, Sun Mar  7 12:55:18 CST 2010
+//    Remove n^2 algorithm.
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::MultiSetResolve(int num_comps,
@@ -775,15 +778,42 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
     vector<int> can_cells;
     int src_label, can_label;
 
+    avtIntervalTree tree(nsets, 3, false);
+    for (i = 0 ; i < nsets ; i++)
+    {
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        tree.AddElement(i, bounds);
+    }
+    tree.Calculate(true);
+
     // loop over all sets
     for( i = 0; i < nsets; i++)
     {
+        vector<int> possible_matches;
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        double lower[3];
+        double upper[3];
+        lower[0] = bounds[0];
+        lower[1] = bounds[2];
+        lower[2] = bounds[4];
+        upper[0] = bounds[1];
+        upper[1] = bounds[3];
+        upper[2] = bounds[5];
+        tree.GetElementsListFromRange(lower, upper, possible_matches);
+
         vtkIntArray  *src_labels   = labels[i];
-        // get intersection between set i and j 
-        for ( j = 0; j < nsets; j++)
+
+        // get intersection between set i and possible matches
+        for (int m = 0 ; m < possible_matches.size() ; m++)
         {
+            j = possible_matches[m];
             // self intersection test not necessary
             if ( j == i )
+                continue;
+            // no need to do j & i and also i & j
+            if ( j < i )
                 continue;
 
             vtkIntArray  *can_labels   = labels[j]; 
@@ -857,6 +887,11 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
 //  Programmer: Cyrus Harrison
 //  Creation:   January 25, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Mar  7 12:55:18 CST 2010
+//    Remove n^2 algorithm.
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::MultiSetList(int num_comps,
@@ -895,14 +930,42 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
     vector<int> can_cells;
     int src_label, can_label;
 
+    avtIntervalTree tree(nsets, 3, false);
+    for (i = 0 ; i < nsets ; i++)
+    {
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        tree.AddElement(i, bounds);
+    }
+    tree.Calculate(true);
+
     // loop over all sets
     for( i = 0; i < nsets; i++)
     {
+        vector<int> possible_matches;
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        double lower[3];
+        double upper[3];
+        lower[0] = bounds[0];
+        lower[1] = bounds[2];
+        lower[2] = bounds[4];
+        upper[0] = bounds[1];
+        upper[1] = bounds[3];
+        upper[2] = bounds[5];
+        tree.GetElementsListFromRange(lower, upper, possible_matches);
+
         vtkIntArray  *src_labels   = labels[i];
-        // get intersection set
-        for ( j = 0; j < nsets; j++)
+
+        // get intersection between set i and possible matches
+        for (int m = 0 ; m < possible_matches.size() ; m++)
         {
+            j = possible_matches[m];
+            // self intersection test not necessary
             if ( j == i )
+                continue;
+            // no need to do j & i and also i & j
+            if ( j < i )
                 continue;
 
             vtkIntArray  *can_labels   = labels[j]; 
@@ -2580,7 +2643,7 @@ PartitionBoundary::AddPoint(const float *pt)
 
 
 // ****************************************************************************
-//  Method: PartitionBoundary::PrepareSplitQuery
+//  Method: PartitionBoundary::AttemptSplit
 //
 //  Purpose:
 //      Sees if the boundary has found an acceptable pivot to split around.
@@ -2740,6 +2803,9 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 //    Do not use copy constructor for interval tree, since it was recently 
 //    declared to be private.
 //
+//    Hank Childs, Sat Mar  6 10:46:11 PST 2010
+//    Cache the locations of the cells, rather than calling GetCell repeatedly.
+//
 // ****************************************************************************
 
 void
@@ -2787,8 +2853,46 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     int listSize = 1;
     int *bin_lookup = new int[2*nProcs];
     bool keepGoing = (nProcs > 1);
+
+    // Calculate the cell center for each cell.  This will be used
+    // repeatedly, so caching it is a big performance improvement.
+    int t3 = visitTimer->StartTimer();
+    vector<vtkDataSet *> meshes = bset.GetMeshes();
+    std::vector<double *> cellCenter(meshes.size(), NULL);
+    for (i = 0 ; i < meshes.size() ; i++)
+    {
+        const int ncells = meshes[i]->GetNumberOfCells();
+        cellCenter[i] = new double[3*ncells];
+        double bbox[6];
+
+        // get ghost zone neighbor info if available
+        vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
+                     ->GetCellData()->GetArray("avtGhostZoneNeighbors");
+
+        unsigned char *gzn_ptr = NULL;
+
+        if (gzn_array)
+            gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+
+        for (j = 0 ; j < ncells ; j++)
+        {
+            // if we have ghost neighbors labled, we only need to send them
+            if(gzn_ptr)
+                if(gzn_ptr[j] !=1)
+                    continue;
+
+            vtkCell *cell = meshes[i]->GetCell(j);
+            cell->GetBounds(bbox);
+            cellCenter[i][3*j+0] = (bbox[0] + bbox[1]) / 2.;
+            cellCenter[i][3*j+1] = (bbox[2] + bbox[3]) / 2.;
+            cellCenter[i][3*j+2] = (bbox[4] + bbox[5]) / 2.;
+        }
+    }
+    visitTimer->StopTimer(t3,"Getting cell centers for spatial partition generation");
+
     while (keepGoing)
     {
+        int t5 = visitTimer->StartTimer();
         // Figure out how many boundaries need to keep going.
         int nBins = 0;
         for (i = 0 ; i < listSize ; i++)
@@ -2819,34 +2923,25 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         // Now do the cells.  We are using the cell centers, which is a decent
         // approximation.
         vector<int> list;
-        vector<vtkDataSet *> meshes = bset.GetMeshes();
         for (i = 0 ; i < meshes.size() ; i++)
         {
             const int ncells = meshes[i]->GetNumberOfCells();
-            double bbox[6];
-            double pt[3];
-            
             // get ghost zone neighbor info if available
             vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
                          ->GetCellData()->GetArray("avtGhostZoneNeighbors");
-
             unsigned char *gzn_ptr = NULL;
-            
             if (gzn_array)
                 gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
-            
             for (j = 0 ; j < ncells ; j++)
             {
                 // if we have ghost neighbors labled, we only need to send them
                 if(gzn_ptr)
                     if(gzn_ptr[j] !=1)
                         continue;
-
-                vtkCell *cell = meshes[i]->GetCell(j);
-                cell->GetBounds(bbox);
-                pt[0] = (bbox[0] + bbox[1]) / 2.;
-                pt[1] = (bbox[2] + bbox[3]) / 2.;
-                pt[2] = (bbox[4] + bbox[5]) / 2.;
+                double pt[3];
+                pt[0] = cellCenter[i][3*j];
+                pt[1] = cellCenter[i][3*j+1];
+                pt[2] = cellCenter[i][3*j+2];
                 it.GetElementsListFromRange(pt, pt, list);
                 float fpt[3] = {pt[0], pt[1], pt[2]};
                 for (k = 0 ; k < list.size() ; k++)
@@ -2879,6 +2974,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         for (i = 0 ; i < listSize ; i++)
             if (!(b_list[i]->IsDone()))
                 keepGoing = true;
+        visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
     }
 
     // Construct an interval tree out of the boundaries.  This interval tree
@@ -2903,6 +2999,8 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         delete b_list[i];
     delete [] b_list;
     delete [] bin_lookup;
+    for (i = 0 ; i < cellCenter.size() ; i++)
+        delete [] cellCenter[i];
 
     visitTimer->StopTimer(t0, "Creating spatial partition");
 }
