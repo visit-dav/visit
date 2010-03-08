@@ -46,6 +46,7 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QLabel;
 class QPushButton;
+class QToolButton;
 class QMenu;
 class ViewerProxy;
 class QvisSubsetPanelItem;
@@ -59,7 +60,7 @@ class QvisSubsetPanelItem;
 // Purpose:
 //   Provide a selection panel widget or the subset window.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Cyrus Harrison
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
@@ -67,6 +68,8 @@ class QvisSubsetPanelItem;
 // Notes: The guts of this class were pulled out of QvisSubsetWindow.
 //
 // Modifications:
+//   Cyrus Harrison, Mon Mar  8 09:19:12 PST 2010
+//   Switch from using two QPushButtons to a single QToolButton.
 //
 // ****************************************************************************
 
@@ -84,23 +87,23 @@ public slots:
     void UpdateView();
     void SetSelectedItemState(int state);
     void Clear();
-    
+
 signals:
     void itemSelected(int id, bool parent);
     void parentStateChanged(int value);
     void stateChanged();
-    
+
 protected slots:
     void onAllSetsButton();
     void onAllSetsActionReverse();
     void onAllSetsActionOn();
     void onAllSetsActionOff();
-    
+
     void onSelectedSetsButton();
     void onSelectedSetsActionReverse();
     void onSelectedSetsActionOn();
     void onSelectedSetsActionOff();
-    
+
     void onItemSelectionChanged();
     void onItemClicked(QTreeWidgetItem *,int);
 
@@ -109,21 +112,19 @@ private:
     void EnableButtons(bool);
     void Reverse(bool);
     void TurnOnOff(bool,bool);
-    
+
     ViewerProxy         *viewerProxy;
-    
+
     QTreeWidget         *tree;
     QvisSubsetPanelItem *activeChild;
     int                  numCheckable;
     int                  numChecked;
-    
+
     QLabel              *allSetsLabel;
-    QPushButton         *allSetsButton;
-    QPushButton         *allSetsActionButton;
-    
+    QToolButton         *allSetsButton;
+
     QLabel              *selectedSetsLabel;
-    QPushButton         *selectedSetsButton;
-    QPushButton         *selectedSetsActionButton;
+    QToolButton         *selectedSetsButton;
 
 };
 
