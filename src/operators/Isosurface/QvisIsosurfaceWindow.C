@@ -131,6 +131,9 @@ QvisIsosurfaceWindow::~QvisIsosurfaceWindow()
 //   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
 //   Swapped the min/max fields.
 //
+//   Hank Childs, Mon Mar  8 19:45:46 PST 2010
+//   Make the min/max fields be left/right.
+//
 // ****************************************************************************
 
 void
@@ -161,35 +164,32 @@ QvisIsosurfaceWindow::CreateWindowContents()
     //
     // Create the Limits stuff
     //
-    QLabel *limitsLabel = new QLabel(tr("Limits"), central);
-    limitsLayout->addWidget(limitsLabel, 1, 0);
-
-    // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 1);
-    connect(maxToggle, SIGNAL(toggled(bool)),
-            this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText()));
-    limitsLayout->addWidget(maxLineEdit, 1, 2);
-
     // Create the min toggle and line edit
     minToggle = new QCheckBox(tr("Minimum"), central);
-    limitsLayout->addWidget(minToggle, 2, 1);
+    limitsLayout->addWidget(minToggle, 1, 0);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
     minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMinLimitText()));
-    limitsLayout->addWidget(minLineEdit, 2, 2);
+    limitsLayout->addWidget(minLineEdit, 1, 1);
  
-    limitsLayout->addWidget(new QLabel(tr("Variable"), central),3,0);
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText()));
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
+
+    limitsLayout->addWidget(new QLabel(tr("Variable"), central),2,0);
     variable = new QvisVariableButton(true, true, true, 
                                       QvisVariableButton::Scalars, central);
     connect(variable, SIGNAL(activated(const QString &)),
             this, SLOT(variableChanged(const QString &)));
-    limitsLayout->addWidget(variable, 3, 1, 1, 2);
+    limitsLayout->addWidget(variable, 2, 1, 1, 2);
     
     //
     // Create the scale radio buttons
