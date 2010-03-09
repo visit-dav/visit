@@ -39,7 +39,6 @@
 #   Added Windows-specific version of EXECUTE_PROCESS.
 #
 #****************************************************************************/
-cmake_minimum_required(VERSION 2.6)
 
 INSTALL(FILES ${BOOST_FILES}
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/boost_1_42_0
