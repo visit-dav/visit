@@ -96,6 +96,9 @@
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 AddWindowAction::AddWindowAction(ViewerWindow *win) :
@@ -142,6 +145,9 @@ AddWindowAction::Execute()
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 CloneWindowAction::CloneWindowAction(ViewerWindow *win) :
@@ -192,6 +198,9 @@ CloneWindowAction::Execute()
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 DeleteWindowAction::DeleteWindowAction(ViewerWindow *win) :
@@ -266,6 +275,9 @@ DeleteWindowAction::Update()
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
@@ -512,6 +524,9 @@ ClearReferenceLinesAction::Enabled() const
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 SetActiveWindowAction::SetActiveWindowAction(ViewerWindow *win) :
@@ -994,6 +1009,10 @@ InvertBackgroundAction::Execute()
 //   
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //   Added Spreadsheet Pick choice 
+//
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Reorder icons (put picks together).
+//
 // ****************************************************************************
 
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
@@ -1148,6 +1167,9 @@ SetWindowModeAction::Enabled() const
 //   Brad Whitlock, Tue Jun 24 14:53:49 PDT 2008
 //   Changed how the plugin managers are accessed.
 //
+//   Hank Childs, Mon Mar  8 20:55:13 PST 2010
+//   Update for new ordering.
+//
 // ****************************************************************************
 
 bool
@@ -1155,30 +1177,32 @@ SetWindowModeAction::ChoiceEnabled(int i) const
 {
     bool retval = false;
 
-    if(i == 0)
-        retval = true;
-    else if(i == 1) // zone pick
-    {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
-    }
-    else if(i == 2) // node pick
-    {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
-    }
-    else if(i == 3) // zoom
+    if(i == 0) // navigate
     {
         retval = true;
     }
-    else if(i == 4)
+    else if(i == 1) // zoom
+    {
+        retval = true;
+    }
+    else if(i == 2) // zone pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
+    else if(i == 3) // node pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
+    else if(i == 4) // spreadsheet pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY &&
+                  GetPlotPluginManager()->PluginAvailable("Spreadsheet_1.0"));
+    }
+    else if(i == 5) // lineout
     {
         retval = (window->GetWindowMode() == WINMODE_2D) &&
                  GetPlotPluginManager()->PluginAvailable("Curve_1.0") &&
                  GetOperatorPluginManager()->PluginAvailable("Lineout_1.0");
-    }
-    else if(i == 5) // spreadsheet pick
-    {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY &&
-                  GetPlotPluginManager()->PluginAvailable("Spreadsheet_1.0"));
     }
 
     return retval;

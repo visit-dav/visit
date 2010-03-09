@@ -70,8 +70,11 @@
 //    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //    Support for internationalization.
 //
-//   Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
-//   Initial Qt4 Port
+//    Cyrus Harrison, Tue Jul  8 09:58:45 PDT 2008
+//    Initial Qt4 Port
+//
+//    Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//    Reorganize layout of widget.
 //
 // ****************************************************************************
 
