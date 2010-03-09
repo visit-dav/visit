@@ -168,6 +168,11 @@ inline char toupper(char c)
 //
 //    Mark C. Miller, Wed Aug 26 10:53:51 PDT 2009
 //    Added logic to count methods WITHOUT writing them.
+//
+//    Cyrus Harrison, Tue Mar  9 14:43:34 PST 2010
+//    Added better error message when a yser trys to set non existant 
+//    attribute.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -3081,6 +3086,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;
         c << "    Py_DECREF(tuple);" << Endl;
+        c << "    if( obj == NULL)" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"Unable to set unknown attribute: '\%s'\", name);" << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
         c << Endl;
