@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#   Cyrus Harrison, Tue Mar  9 08:28:53 PST 2010
+#   Define __USE_ISOC99 if we are using the boost interval lib to make sure
+#   a rounding scheme is available. 
 #
 #****************************************************************************/
 
@@ -102,6 +105,10 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${BOOST_INCLUDE_DIR}
 )
+
+IF(HAVE_BILIB)
+    ADD_DEFINITIONS(-D__USE_ISOC99)
+ENDIF(HAVE_BILIB)
 
 # Add link directories needed to use our libraries and VTK.
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
