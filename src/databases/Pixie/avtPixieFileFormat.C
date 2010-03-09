@@ -88,6 +88,10 @@
 //   Don't need to call Initialize here -- it will be called when we need it,
 //   even if we are being strict about ruling out non-Pixie files.
 //
+//   Eric Brugger, Tue Mar  9 15:20:50 PST 2010
+//   Moved the code to turn off error message printing to the constructor
+//   so that it is always called.
+//
 // ****************************************************************************
 
 avtPixieFileFormat::avtPixieFileFormat(const char *filename)
@@ -97,6 +101,9 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename)
      fileId = -1;
      nTimeStates = 0;
      haveMeshCoords = false;
+
+    // Turn off error message printing.
+    H5Eset_auto(0,0);
 }
 
 // ****************************************************************************
@@ -273,6 +280,10 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Jeremy Meredith, Fri Jan 15 17:25:23 EST 2010
 //   Use runtime strictness checking behavior.
 //
+//   Eric Brugger, Tue Mar  9 15:20:50 PST 2010
+//   Moved the code to turn off error message printing to the constructor
+//   so that it is always called.
+//
 // ****************************************************************************
     
 void
@@ -292,14 +303,12 @@ avtPixieFileFormat::Initialize()
 
         if (GetStrictMode())
         {
-            // Turn off error message printing.
-            H5Eset_auto(0,0);
-
             //
-            // See if the file format looks like a Tetrad file. I know it's
-            // hackish to have to check like this but how else should it be
-            // done when we don't want Pixie to read HDF5 files that happen
-            // to have Tetrad stuff in them.
+            // See if the file format looks like a some other file format.
+            // I know it's hackish to have to check like this but how else
+            // should it be done when we don't want Pixie to read HDF5 files
+            // that are really HDF5 files following a convention supported
+            // by another format.
             //
             hid_t siloDir = H5Gopen(fileId, ".silo");
             if (siloDir >= 0)
