@@ -984,7 +984,7 @@ ELSE(EXISTS SVN_REVISION)
 #            ENDIF(TortoiseSVN_FOUND)
         ENDIF(WIN32)
     ENDIF(Subversion_FOUND)
-ENDIF(EXISTS SVN_REVSION)
+ENDIF(EXISTS SVN_REVISION)
 
 #-----------------------------------------------------------------------------
 # Create visit-config.h
