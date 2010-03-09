@@ -122,6 +122,9 @@ QvisIsovolumeWindow::~QvisIsovolumeWindow()
 //   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
 //   Swapped the min/max.
 //
+//   Hank Childs, Mon Mar  8 19:49:28 PST 2010
+//   Make the min/max be left/right.
+//
 // ****************************************************************************
 
 void
@@ -130,28 +133,28 @@ QvisIsovolumeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    uboundLabel = new QLabel(tr("Upper bound"), central);
-    mainLayout->addWidget(uboundLabel,0,0);
-    ubound = new QLineEdit(central);
-    connect(ubound, SIGNAL(returnPressed()),
-            this, SLOT(uboundProcessText()));
-    mainLayout->addWidget(ubound, 0,1);
-
     lboundLabel = new QLabel(tr("Lower bound"), central);
-    mainLayout->addWidget(lboundLabel, 1,0);
+    mainLayout->addWidget(lboundLabel, 0,0);
     lbound = new QLineEdit(central);
     connect(lbound, SIGNAL(returnPressed()),
             this, SLOT(lboundProcessText()));
-    mainLayout->addWidget(lbound, 1,1);
+    mainLayout->addWidget(lbound, 0,1);
+
+    uboundLabel = new QLabel(tr("Upper bound"), central);
+    mainLayout->addWidget(uboundLabel,0,2);
+    ubound = new QLineEdit(central);
+    connect(ubound, SIGNAL(returnPressed()),
+            this, SLOT(uboundProcessText()));
+    mainLayout->addWidget(ubound, 0,3);
 
     variableLabel = new QLabel(tr("Variable"), central);
-    mainLayout->addWidget(variableLabel,2,0);
+    mainLayout->addWidget(variableLabel,1,0);
     int variableMask = QvisVariableButton::Scalars;
     variable = new QvisVariableButton(true, true, true, variableMask, central);
     variable->setDefaultVariable("default");
     connect(variable, SIGNAL(activated(const QString&)),
             this, SLOT(variableChanged(const QString&)));
-    mainLayout->addWidget(variable, 2,1);
+    mainLayout->addWidget(variable, 1,1);
 }
 
 
