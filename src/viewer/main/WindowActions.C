@@ -96,13 +96,16 @@
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 AddWindowAction::AddWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Add new window"));
-    SetMenuText(tr("Add"));
+    SetAllText(tr("Create a new viewer window"));
+    SetMenuText(tr("New"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(newwindow_xpm)));
 }
@@ -142,12 +145,15 @@ AddWindowAction::Execute()
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 CloneWindowAction::CloneWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Clone window"));
+    SetAllText(tr("Clone this window"));
     SetMenuText(tr("Clone"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(copymenu_xpm)));
@@ -192,12 +198,15 @@ CloneWindowAction::Execute()
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 DeleteWindowAction::DeleteWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Delete window"));
+    SetAllText(tr("Delete this window"));
     SetMenuText(tr("Delete"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(deletewindow_xpm)));
@@ -266,12 +275,15 @@ DeleteWindowAction::Update()
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
     ViewerAction(win)
 {
-    SetAllText(tr("Clear plots"));
+    SetAllText(tr("Clear all plots from this window"));
     if (!GetViewerProperties()->GetNowin())
         SetIcon(QIcon(QPixmap(clearwindow_xpm)));
 }
@@ -512,13 +524,16 @@ ClearReferenceLinesAction::Enabled() const
 //
 // Modifications:
 //   
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Change description displayed to the user.
+//
 // ****************************************************************************
 
 SetActiveWindowAction::SetActiveWindowAction(ViewerWindow *win) :
     ViewerToggleAction(win)
 {
     SetAllText(tr("Make active"));
-    SetToolTip(tr("Make window active"));
+    SetToolTip(tr("Make this window active"));
     if (!GetViewerProperties()->GetNowin())
         SetIcons(QPixmap(checkwindow_xpm), QPixmap(blankwindow_xpm));
 }
@@ -994,6 +1009,10 @@ InvertBackgroundAction::Execute()
 //   
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //   Added Spreadsheet Pick choice 
+//
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Reorder icons (put picks together).
+//
 // ****************************************************************************
 
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
@@ -1003,23 +1022,31 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     SetToolTip(tr("Set window mode"));
     SetExclusive(true);
 
+    // NOTE The ordering of these glyphs must match the ordering of the enum 
+    // INTERACTION_MODE that is defined in:
+    // avt/VisWindow/VisWindow/VisWindowTypes.h
+
+    // DO NOT ADD A GLYPH WITHOUT UPDATING THE ENUMS.
+
+    // Also when adding new action please use a logical ordering even
+    // if means putting it beween two existing actions.
     if (!GetViewerProperties()->GetNowin())
     {
         AddChoice(tr("Navigate"), tr("Navigate mode"), QPixmap(navigatemode_xpm));
+        AddChoice(tr("Zoom"), tr("Zoom mode"), QPixmap(zoommode_xpm));
         AddChoice(tr("Zone Pick"), tr("Zone Pick mode"), QPixmap(zonepickmode_xpm));
         AddChoice(tr("Node Pick"), tr("Node Pick mode"), QPixmap(nodepickmode_xpm));
-        AddChoice(tr("Zoom"), tr("Zoom mode"), QPixmap(zoommode_xpm));
-        AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
         AddChoice(tr("Spreadsheet Pick"), tr("Spreadsheet Pick mode"), QPixmap(spreadsheetpickmode_xpm));
+        AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
     }
     else 
     {
         AddChoice(tr("Navigate"));
+        AddChoice(tr("Zoom"));
         AddChoice(tr("Zone Pick"));
         AddChoice(tr("Node Pick"));
-        AddChoice(tr("Zoom"));
-        AddChoice(tr("Lineout"));
         AddChoice(tr("Spreadsheet Pick"));
+        AddChoice(tr("Lineout"));
     }
 }
 
@@ -1140,6 +1167,9 @@ SetWindowModeAction::Enabled() const
 //   Brad Whitlock, Tue Jun 24 14:53:49 PDT 2008
 //   Changed how the plugin managers are accessed.
 //
+//   Hank Childs, Mon Mar  8 20:55:13 PST 2010
+//   Update for new ordering.
+//
 // ****************************************************************************
 
 bool
@@ -1147,30 +1177,32 @@ SetWindowModeAction::ChoiceEnabled(int i) const
 {
     bool retval = false;
 
-    if(i == 0)
-        retval = true;
-    else if(i == 1) // zone pick
-    {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
-    }
-    else if(i == 2) // node pick
-    {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
-    }
-    else if(i == 3) // zoom
+    if(i == 0) // navigate
     {
         retval = true;
     }
-    else if(i == 4)
+    else if(i == 1) // zoom
+    {
+        retval = true;
+    }
+    else if(i == 2) // zone pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
+    else if(i == 3) // node pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
+    else if(i == 4) // spreadsheet pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY &&
+                  GetPlotPluginManager()->PluginAvailable("Spreadsheet_1.0"));
+    }
+    else if(i == 5) // lineout
     {
         retval = (window->GetWindowMode() == WINMODE_2D) &&
                  GetPlotPluginManager()->PluginAvailable("Curve_1.0") &&
                  GetOperatorPluginManager()->PluginAvailable("Lineout_1.0");
-    }
-    else if(i == 5) // spreadsheet pick
-    {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY &&
-                  GetPlotPluginManager()->PluginAvailable("Spreadsheet_1.0"));
     }
 
     return retval;

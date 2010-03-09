@@ -375,6 +375,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Removed radius and showStart from the filter.
 //
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Safer setting of attributes (more checks for enums).
+//
 // ****************************************************************************
 
 void
@@ -388,34 +391,77 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     // Set the filter's attributes based on the plot attributes.
     //
-    streamlineFilter->SetSourceType(atts.GetSourceType());
-    streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
+
+    switch (atts.GetSourceType())
+    {
+      case StreamlineAttributes::SpecifiedPoint:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
+        streamlineFilter->SetPointSource(atts.GetPointSource());
+        break;
+
+      case StreamlineAttributes::SpecifiedPointList:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_POINT_LIST);
+        streamlineFilter->SetPointListSource(atts.GetPointList());
+        break;
+
+      case StreamlineAttributes::SpecifiedLine:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
+        streamlineFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
+        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        break;
+
+      case StreamlineAttributes::SpecifiedCircle:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_CIRCLE);
+        streamlineFilter->SetPlaneSource(atts.GetPlaneOrigin(),
+                                         atts.GetPlaneNormal(),
+                                         atts.GetPlaneUpAxis(),
+                                         atts.GetPlaneRadius());
+        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        break;
+
+      case StreamlineAttributes::SpecifiedPlane:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_PLANE);
+        streamlineFilter->SetPlaneSource(atts.GetPlaneOrigin(),
+                                         atts.GetPlaneNormal(),
+                                         atts.GetPlaneUpAxis(),
+                                         atts.GetPlaneRadius());
+        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        break;
+
+      case StreamlineAttributes::SpecifiedSphere:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_SPHERE);
+        streamlineFilter->SetSphereSource(atts.GetSphereOrigin(),
+                                          atts.GetSphereRadius());
+        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        break;
+
+      case StreamlineAttributes::SpecifiedBox:
+        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_BOX);
+        streamlineFilter->SetBoxSource(atts.GetBoxExtents());
+        streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
+        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        break;
+    }
+
     streamlineFilter->SetPathlines(atts.GetPathlines());
+
+    streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                              atts.GetMaxStreamlineProcessCount(),
                                              atts.GetMaxDomainCacheSize(),
                                              atts.GetWorkGroupSize());
     streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
-    streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
-    streamlineFilter->SetTermination(atts.GetTerminationType(), atts.GetTermination());
+    streamlineFilter->SetTolerances(atts.GetRelTol(), atts.GetAbsTol());
+
+    streamlineFilter->SetTermination(atts.GetTerminationType(),
+                                     atts.GetTermination());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
-    streamlineFilter->SetPointDensity(atts.GetPointDensity());
+
     streamlineFilter->SetStreamlineDirection(atts.GetStreamlineDirection());
 
-    streamlineFilter->SetPointSource(atts.GetPointSource());
-    streamlineFilter->SetLineSource(atts.GetLineStart(),
-                                    atts.GetLineEnd());
-    streamlineFilter->SetPlaneSource(atts.GetPlaneOrigin(),
-                                     atts.GetPlaneNormal(),
-                                     atts.GetPlaneUpAxis(),
-                                     atts.GetPlaneRadius());
-    streamlineFilter->SetSphereSource(atts.GetSphereOrigin(),
-                                      atts.GetSphereRadius());
-    streamlineFilter->SetPointListSource(atts.GetPointList());
-    streamlineFilter->SetBoxSource(atts.GetBoxExtents());
-    streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
                                         atts.GetColoringVariable());
+
     if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
         streamlineFilter->SetOpacityVariable(atts.GetOpacityVariable());
 #endif

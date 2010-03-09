@@ -92,11 +92,11 @@ typedef enum
 typedef enum
 {
     NAVIGATE         = 0,
-    ZONE_PICK,       /* 1 */
-    NODE_PICK,       /* 2 */
-    ZOOM,            /* 3 */
-    LINEOUT,         /* 4 */
-    SPREADSHEET_PICK /* 5*/
+    ZOOM,             /* 1 */
+    ZONE_PICK,        /* 2 */
+    NODE_PICK,        /* 3 */
+    SPREADSHEET_PICK, /* 4 */
+    LINEOUT,          /* 5 */
 }  INTERACTION_MODE;
 
 typedef enum {
