@@ -108,8 +108,8 @@ QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
     if (doNothing)
     {
         parAxisAtts->ResetAxes();
-        SetupFinishPage(tr("Click Finish"),
-                        tr("The plot has successfully been "
+        SetupFinishPage(tr("Click Done"),
+                        tr("The plot has been successfully "
                            "defined by use of an array variable."), false);
         numPages = 1;
         return;
@@ -123,8 +123,8 @@ QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
 
 
     SetupAxisVariableSelectionPage();
-    SetupFinishPage(tr("Click Finish"),
-        tr("Click the Finish button to create a new ParallelCoordinates plot."),
+    SetupFinishPage(tr("Click Done"),
+        tr("Click the Done button to create a new ParallelCoordinates plot."),
         true);
     SetParallelCoordinatesAttributes();
     numPages = 2;
