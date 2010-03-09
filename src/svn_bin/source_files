@@ -16,6 +16,9 @@ exec perl -x $0 ${1+"$@"};
 #   Brad Whitlock, Tue Nov 17 11:40:57 PST 2009
 #   I made it add the CMake directory to the list of files.
 #
+#   Eric Brugger, Mon Mar  8 16:13:40 PST 2010
+#   I added data/CMakeLists.txt and data/*.h.
+#
 
 if  (! -d "src")
 {
@@ -142,8 +145,10 @@ else
     push @files, get_norecursive      "./src/SVN_REVISION";
     if  (-d "data")
     {
+        push @files, get_norecursive      "./data/CMakeLists.txt";
         push @files, get_norecursive      "./data/Makefile.in";
         push @files, get_norecursive      "./data/*.C";
+        push @files, get_norecursive      "./data/*.h";
     }
 }
 
