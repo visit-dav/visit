@@ -85,6 +85,9 @@
 #    Modified the logic that sets the VISIT_SVN_REVISION to get it from
 #    the file SVN_REVISION before trying svn to get it.
 #
+#    Cyrus Harrison, Tue Mar  9 08:02:50 PST 2010
+#    Enabled python filters support by default.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
@@ -195,7 +198,7 @@ IF(VISIT_STATIC)
     ADD_DEFINITIONS(-DVISIT_STATIC -DGLEW_STATIC)
 ENDIF(VISIT_STATIC)
 OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
-OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." OFF)
+OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." ON)
 
 # VTK Python's wrappers avalaible with the static libs, so we cannot support
 # python filters in a static build
