@@ -1177,28 +1177,28 @@ SetWindowModeAction::ChoiceEnabled(int i) const
 {
     bool retval = false;
 
-    if(i == 0) // navigate
+    if(i == NAVIGATE) // navigate
     {
         retval = true;
     }
-    else if(i == 1) // zoom
+    else if(i == ZOOM) // zoom
     {
         retval = true;
     }
-    else if(i == 2) // zone pick
+    else if(i == ZONE_PICK) // zone pick
     {
         retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
     }
-    else if(i == 3) // node pick
+    else if(i == NODE_PICK) // node pick
     {
         retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
     }
-    else if(i == 4) // spreadsheet pick
+    else if(i == SPREADSHEET_PICK) // spreadsheet pick
     {
         retval = (window->GetWindowMode() != WINMODE_AXISARRAY &&
                   GetPlotPluginManager()->PluginAvailable("Spreadsheet_1.0"));
     }
-    else if(i == 5) // lineout
+    else if(i == LINEOUT) // lineout
     {
         retval = (window->GetWindowMode() == WINMODE_2D) &&
                  GetPlotPluginManager()->PluginAvailable("Curve_1.0") &&
