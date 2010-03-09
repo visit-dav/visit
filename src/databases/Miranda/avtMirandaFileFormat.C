@@ -44,10 +44,11 @@
 
 
 #include <string>
+#include <boost/cstdint.hpp>
+using boost::int32_t;
 #ifdef _WIN32
 #include <direct.h> /* for _getcwd */
 #else
-#include <inttypes.h>
 #include <unistd.h>
 #endif
 
@@ -81,9 +82,6 @@ using std::string;
 #endif
 #endif
 
-#ifdef _WIN32
-typedef int int32_t;
-#endif
 
 
 // ****************************************************************************

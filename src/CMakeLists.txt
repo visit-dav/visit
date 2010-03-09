@@ -543,7 +543,9 @@ ENDIF(VISIT_TUVOK)
 
 # Set up boost (interval) library
 SET(HAVE_BILIB 1)
-SET(BOOST_INCLUDE_DIR ${VISIT_BINARY_DIR}/third_party_builtin/bilib/boost_1_42_0)
+SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0    CACHE PATH "Path to boost lib")
+
+ 
 
 # Set up the SLIVR library if it was enabled.
 IF(VISIT_SLIVR)

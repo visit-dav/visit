@@ -96,11 +96,8 @@ using     std::string;
 #endif
 #endif
 
-#ifdef WIN32
-typedef __int64 int64_t;
-#else
-#include <inttypes.h>
-#endif
+#include <boost/cstdint.hpp>
+using boost::int64_t;
 
 
 // ****************************************************************************

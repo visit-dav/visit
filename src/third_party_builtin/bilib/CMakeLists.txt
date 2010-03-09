@@ -35,24 +35,10 @@
 # DAMAGE.
 #
 # Modifications:
-#   Eric Brugger, Fri Jan 22 16:51:39 PST 2010
-#   I added the data generator unic, which generates UNIC test data.
-#
-#   Mark C. Miller, Fri Jan 22 16:40:43 PST 2010
-#   Added function LINK_DATA_TARGETS and invokation to create sesame.pdb.lnk
-#   and largefile.silo.lnk.
-#
-#   Mark C. Miller, Fri Jan 22 17:27:47 PST 2010
-#   Removed preceding change to satisfy purists ;)
-#
-#   Cyrus Harrison, Mon Feb  1 12:46:56 PST 2010
-#   Added missing visit includes to basic targets.
-#
-#   Brad Whitlock, Wed Feb 10 14:44:23 PST 2010
-#   I added Velodyne test data.
+#   Kathleen Bonnell, Wed Mar 3 11:53:17 PST 2010
+#   Added Windows-specific version of EXECUTE_PROCESS.
 #
 #****************************************************************************/
-cmake_minimum_required(VERSION 2.6)
 
 INSTALL(FILES ${BOOST_FILES}
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/boost_1_42_0
