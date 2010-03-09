@@ -38,6 +38,7 @@ class vtkDataArraySelection;
 class vtkDoubleArray;
 class vtkStringArray;
 class vtkIntArray;
+class vtkLongLongArray;
 class vtkFloatArray;
 class vtkXMLUnstructuredGridWriter;
 class vtkCell;
@@ -242,7 +243,7 @@ protected:
                                        // for the particular variable.
   vtkIntArray *VariableIndexToSPX;  //  This gives the spx file number for the 
                                     //  particular variable.
-  vtkIntArray *SPXTimestepIndexTable; //  This a table look up for the index 
+  vtkLongLongArray *SPXTimestepIndexTable; //  This a table look up for the index 
                               //  into a file for a certain variable.
 
 private:

@@ -29,6 +29,7 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongLongArray.h>
 #include <vtkCellArray.h>
 #include <vtkHexahedron.h>
 #include <vtkFloatArray.h>
@@ -105,7 +106,7 @@ vtkMFIXReader::vtkMFIXReader()
   this->VariableToSkipTable = vtkIntArray::New();
   this->SpxFileExists = vtkIntArray::New();
   this->SetNumberOfInputPorts(0);
-  this->SPXTimestepIndexTable = vtkIntArray::New();
+  this->SPXTimestepIndexTable = vtkLongLongArray::New();
 
   // Time support:
   this->TimeStep = 0; // By default the file does not have timestep
@@ -2218,7 +2219,7 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep,
     }
 
   int index = (vari*this->MaximumTimestep) + tstep;
-  int nBytesSkip = this->SPXTimestepIndexTable->GetValue(index);
+  long long nBytesSkip = this->SPXTimestepIndexTable->GetValue(index);
 #ifdef _WIN32
   ifstream in(fileName,ios::binary);
 #else
@@ -2244,9 +2245,9 @@ void vtkMFIXReader::MakeSPXTimeStepIndexTable(int nvars)
       spx = this->VariableIndexToSPX->GetValue(i);
       NumberOfVariablesInSPX = this->SPXToNVarTable->GetValue(spx);
       int skip = this->VariableToSkipTable->GetValue(i);
-      int index = (3*512) + (timestep-1) * 
-        ((NumberOfVariablesInSPX*this->SPXRecordsPerTimestep*512)+512) + 
-        512 + (skip*this->SPXRecordsPerTimestep*512);
+      long long index = ((long long)3*(long long)512) + ((long long)timestep-(long long)1) * 
+        (((long long)NumberOfVariablesInSPX*(long long)this->SPXRecordsPerTimestep*(long long)512)+(long long)512) + 
+        (long long)512 + ((long long)skip*(long long)this->SPXRecordsPerTimestep*(long long)512);
       int ind = (i*this->MaximumTimestep) + j;
       SPXTimestepIndexTable->InsertValue(ind, index);
       }
