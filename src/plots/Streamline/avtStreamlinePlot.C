@@ -375,6 +375,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Removed radius and showStart from the filter.
 //
+//   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
+//   Safer setting of attributes (more checks for enums).
+//
 // ****************************************************************************
 
 void
