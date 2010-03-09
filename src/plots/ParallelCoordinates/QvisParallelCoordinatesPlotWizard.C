@@ -81,9 +81,9 @@
 //
 //    Brad Whitlock, Wed Apr 23 10:12:44 PDT 2008
 //    Added tr()
-//  
+//
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 //    Cyrus Harrison, Wed May 13 08:30:56 PDT 2009
 //    Overhauled to create a simpler list widget based interface.
@@ -91,15 +91,19 @@
 // ****************************************************************************
 
 QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
-                                   AttributeSubject *s, 
+                                   AttributeSubject *s,
                                    QWidget *parent,
                                    const std::string &varName,
                                    const avtDatabaseMetaData *md,
                                    const ExpressionList *expList,
-                                   bool doNothing) 
-: QvisWizard(s, parent) 
+                                   bool doNothing)
+: QvisWizard(s, parent)
 {
     this->varName = varName;
+
+    setOption(QWizard::NoCancelButton, false);
+    setOption(QWizard::HaveHelpButton, false);
+    setOption(QWizard::HaveNextButtonOnLastPage, false);
 
     if (doNothing)
     {
@@ -108,16 +112,16 @@ QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
                         tr("The plot has successfully been "
                            "defined by use of an array variable."), false);
         numPages = 1;
-        return;    
+        return;
     }
 
     // Set the wizard title.
     topLevelWidget()->setWindowTitle(tr("ParallelCoordinates Plot Wizard"));
-    
+
     InitScalarVarNames(md,expList);
     usedVars[QString(varName.c_str())] = true;
-    
-    
+
+
     SetupAxisVariableSelectionPage();
     SetupFinishPage(tr("Click Finish"),
         tr("Click the Finish button to create a new ParallelCoordinates plot."),
