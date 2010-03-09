@@ -837,6 +837,9 @@
 #     Hank Childs, Sun Feb 28 13:28:05 PST 2010
 #     Make IceT builds be automatic if you enable parallel builds.
 #
+#     Cyrus Harrison, Tue Mar  9 07:52:50 PST 2010
+#     Install name patching for vtk python module on OSX.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3906,6 +3909,42 @@ function build_vtk
                 $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
           done
         done
+
+        #
+        # Fix vtk python wrapper module intall names.
+        #
+        for i in libvtkCommonPython.so libvtkFilteringPython.so libvtkGenericFilteringPython.so \
+        libvtkGraphicsPython.so libvtkHybridPython.so libvtkIOPython.so libvtkImagingPython.so \
+        libvtkRenderingPython.so libvtkVolumeRenderingPython.so 
+        do
+            install_name_tool -id \
+             $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i \
+             $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i
+        done
+
+        #
+        # The vtk python module libs depend on the main vtk libs, resolve these install names.
+        #
+        for i in libvtkCommonPython.so libvtkFilteringPython.so libvtkGenericFilteringPython.so \
+        libvtkGraphicsPython.so libvtkHybridPython.so libvtkIOPython.so libvtkImagingPython.so \
+        libvtkRenderingPython.so libvtkVolumeRenderingPython.so 
+        do
+          for j in libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering \
+          libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD \
+          libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO \
+          libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkMPEG2Encode libvtkRendering \
+          libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkexpat \
+          libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+          libvtktiff libvtkzlib
+          do
+             install_name_tool -change \
+                $j.5.0.$SO_EXT \
+                $INSTALLNAMEPATH/$j.$SO_EXT \
+                $VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/vtk/$i
+          done
+        done
+
+
     fi
 
     #
