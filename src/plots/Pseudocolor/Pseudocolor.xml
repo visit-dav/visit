@@ -93,7 +93,7 @@
         0
       </Field>
       <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
-        ColorTable
+        Explicit
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

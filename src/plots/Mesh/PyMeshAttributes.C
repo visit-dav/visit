@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -968,6 +968,19 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opacity") == 0)
         return MeshAttributes_GetOpacity(self, NULL);
 
+    // Try and handle legacy fields in MeshAttributes
+    if(strcmp(name, "backgroundFlag") == 0)
+    {
+        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
+        bool backgroundFlag = meshObj->data->GetOpaqueColorSource() == MeshAttributes::Background;
+        return PyInt_FromLong(backgroundFlag?1L:0L);
+    }
+    else if(strcmp(name, "foregroundFlag") == 0)
+    {
+        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
+        bool foregroundFlag = meshObj->data->GetMeshColorSource() == MeshAttributes::Foreground;
+        return PyInt_FromLong(foregroundFlag?1L:0L);
+    }
     return Py_FindMethod(PyMeshAttributes_methods, self, name);
 }
 
@@ -1018,10 +1031,49 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, tuple);
 
+    // Try and handle legacy fields in MeshAttributes
+    if(obj == NULL)
+    {
+        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
+        if(strcmp(name, "backgroundFlag") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
+            else
+                meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "foregroundFlag") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
+            else
+                meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

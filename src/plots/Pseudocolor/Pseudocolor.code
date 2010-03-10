@@ -1,3 +1,41 @@
+Target: xml2python
+Code: PyPseudocolorAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in PseudocolorAttributes
+    if(strcmp(name, "useColorTableOpacity") == 0)
+    {
+        PseudocolorAttributesObject *meshObj = (PseudocolorAttributesObject *)self;
+        bool useCT = meshObj->data->GetOpacityType() == PseudocolorAttributes::ColorTable;
+        return PyInt_FromLong(useCT?1L:0L);
+    }
+
+Code: PyPseudocolorAttributes_setattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in PseudocolorAttributes
+    if(obj == NULL)
+    {
+        PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
+        if(strcmp(name, "useColorTableOpacity") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Explicit);
+            else
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+Target: xml2atts    
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const PseudocolorAttributes &) const;
 Definition:

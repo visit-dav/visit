@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -951,6 +951,13 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PseudocolorAttributes::ColorTable));
 
 
+    // Try and handle legacy fields in PseudocolorAttributes
+    if(strcmp(name, "useColorTableOpacity") == 0)
+    {
+        PseudocolorAttributesObject *meshObj = (PseudocolorAttributesObject *)self;
+        bool useCT = meshObj->data->GetOpacityType() == PseudocolorAttributes::ColorTable;
+        return PyInt_FromLong(useCT?1L:0L);
+    }
     return Py_FindMethod(PyPseudocolorAttributes_methods, self, name);
 }
 
@@ -1007,10 +1014,33 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacityType") == 0)
         obj = PseudocolorAttributes_SetOpacityType(self, tuple);
 
+    // Try and handle legacy fields in PseudocolorAttributes
+    if(obj == NULL)
+    {
+        PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
+        if(strcmp(name, "useColorTableOpacity") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Explicit);
+            else
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

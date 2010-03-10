@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" enabled="true" vartype="mesh" iconFile="Mesh.xpm">
-    <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" codefile="MeshAttributes.code">
+  <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="mesh" iconFile="Mesh.xpm">
+    <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MeshAttributes.code">
       <Enum name="PointType">
         Box
         Axis
@@ -35,7 +35,7 @@
       <Field name="lineWidth" label="Line width" type="linewidth">
         0
       </Field>
-      <Field name="meshColor" label="Color" type="color">
+      <Field name="meshColor" label="Color" type="color" length="4">
         0
         0
         0
@@ -59,7 +59,7 @@
       <Field name="pointSize" label="Point size" type="double">
         0.050000
       </Field>
-      <Field name="opaqueColor" label="Color" type="color">
+      <Field name="opaqueColor" label="Color" type="color" length="4">
         255
         255
         255
