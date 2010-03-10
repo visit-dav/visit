@@ -29,7 +29,7 @@
 #       MacOSX  ppc,		GCC 4.0.1	snailbait.llnl.gov
 #
 #   It is believed that this script will also work with other Linux variations.
-#   Please send feedback to visit-users@ornl.gov if you run into problems 
+#   Please send feedback to visit-users@ornl.gov if you run into problems
 #   so that this script can be improved in the future.  If you have built
 #   VisIt using this script on an OS/hardware/compiler combination not listed
 #   above, please send a note to visit-users@ornl.gov, so we can add that
