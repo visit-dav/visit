@@ -45,7 +45,8 @@
 #include <VisItException.h>
 #include <ADIOSFileObject.h>
 
-#include <avtADIOSBasicFileFormat.h>
+#include "avtADIOSBasicFileFormat.h"
+#include "avtXGCFileFormat.h"
 
 // ****************************************************************************
 // Method: ADIOS_CreateFileFormatInterface
@@ -67,6 +68,9 @@
 //
 // Modifications:
 //
+//  Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
+//  Added XGC reader.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -82,7 +86,13 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
         TRY
         {
             f = new ADIOSFileObject(list[0]);
-            if (avtADIOSBasicFileFormat::Identify(f))
+            f->Open();
+            if (avtXGCFileFormat::Identify(f))
+            {
+                debug5<<"Database is avtXGCFileFormat"<<endl;
+                flavor = 1;
+            }
+            else if (avtADIOSBasicFileFormat::Identify(f))
             {
                 debug5<<"Database is avtADIOSBasicFileFormat"<<endl;
                 flavor = 0;
@@ -97,6 +107,10 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 
         switch(flavor)
         {
+          case 1:
+            ffi = avtXGCFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+
           case 0:
             ffi = avtADIOSBasicFileFormat::CreateInterface(f, list, nList, nBlock);
             break;

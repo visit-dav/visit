@@ -40,8 +40,8 @@
 //                            avtADIOSFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_ADIOS_BASIC_FILE_FORMAT_H
-#define AVT_ADIOS_BASIC_FILE_FORMAT_H
+#ifndef AVT_XGC_FILE_FORMAT_H
+#define AVT_XGC_FILE_FORMAT_H
 
 #include <avtMTMDFileFormat.h>
 #include <vector>
@@ -54,22 +54,17 @@ class vtkRectilinearGrid;
 
 
 // ****************************************************************************
-//  Class: avtADIOSBasicFileFormat
+//  Class: avtXGCFileFormat
 //
 //  Purpose:
-//      Reads in ADIOS files as a plugin to VisIt.
+//      Reads in XGC-ADIOS files as a plugin to VisIt.
 //
 //  Programmer: Dave Pugmire
-//  Creation:   Thu Sep 17 11:23:05 EDT 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
-//   Use uint64_t for start/count arrays.
+//  Creation:   Tue Mar  9 12:40:15 EST 2010
 //
 // ****************************************************************************
 
-class avtADIOSBasicFileFormat : public avtMTMDFileFormat
+class avtXGCFileFormat : public avtMTMDFileFormat
 {
   public:
     static bool        Identify(ADIOSFileObject *);
@@ -77,9 +72,13 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
                                                    const char *const *list,
                                                    int nList,
                                                    int nBlock);
-    avtADIOSBasicFileFormat(const char *);
-    avtADIOSBasicFileFormat(const char *, ADIOSFileObject *);
-    virtual  ~avtADIOSBasicFileFormat();
+    static std::string CreateMeshName(const std::string &filename);
+    static bool IsFieldPFile(ADIOSFileObject *f);
+    static bool IsFieldIFile(ADIOSFileObject *f);
+    
+    avtXGCFileFormat(const char *);
+    avtXGCFileFormat(const char *, ADIOSFileObject *);
+    virtual  ~avtXGCFileFormat();
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -108,49 +107,15 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
-    ADIOSFileObject *fileObj;
+    ADIOSFileObject *file, *meshFile;
+    std::map<std::string, std::string> labelToVar;
+    
     bool             initialized;
 
 
     void                   Initialize();
-    std::string            GenerateMeshName(const ADIOSVar &v);
-    void                   DoDomainDecomposition();
 
-    class meshInfo
-    {
-      public:
-        meshInfo()
-        {
-            start[0] = start[1] = start[2] = 0;
-            count[0] = count[1] = count[2] = 0;
-            global[0] = global[1] = global[2] = 0;
-            dim = 0;
-        }
-        ~meshInfo() {}
-
-        int dim;
-        uint64_t start[3], count[3], global[3];
-        std::string name;
-
-        void SwapIndices()
-        {
-            ::SwapIndices(dim, start);
-            ::SwapIndices(dim, count);
-            ::SwapIndices(dim, global);
-        }
-    };
-
-    std::map<std::string, meshInfo> meshes;
-
-    vtkRectilinearGrid    *CreateUniformGrid(const uint64_t *start,
-                                             const uint64_t *count);
-    
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-
-    static void ComputeStartCount(uint64_t *globalDims,
-                                  int dim,
-                                  uint64_t *start,
-                                  uint64_t *count);
 };
 
 #endif
