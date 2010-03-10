@@ -102,7 +102,7 @@ GetObject(visit_handle h)
     VisIt_MaterialData *obj = (VisIt_MaterialData *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_MATERIAL_DATA)
+        if(obj->objectType() != VISIT_MATERIAL_DATA)
         {
             VisItError("The provided handle does not point to a MaterialData object.");
             obj = NULL;

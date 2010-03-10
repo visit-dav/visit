@@ -44,7 +44,7 @@ GetObject(visit_handle h, const char *fname)
     VisIt_DomainList *obj = (VisIt_DomainList *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_DOMAINLIST)
+        if(obj->objectType() != VISIT_DOMAINLIST)
         {
             SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
                 "a DomainList object.", fname);
@@ -75,13 +75,15 @@ simv2_DomainList_alloc(visit_handle *h)
 int
 simv2_DomainList_free(visit_handle h)
 {
-    int retval = VISIT_ERROR;
     VisIt_DomainList *obj = GetObject(h, "simv2_DomainList_free");
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 int

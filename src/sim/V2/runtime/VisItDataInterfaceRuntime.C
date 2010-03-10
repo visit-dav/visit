@@ -1,7 +1,6 @@
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
 
-#include "VisItDataInterface_V2P.h"
 #include "simv2_CSGMesh.h"
 #include "simv2_CurveData.h"
 #include "simv2_CurvilinearMesh.h"
@@ -11,6 +10,8 @@
 #include "simv2_MaterialData.h"
 #include "simv2_PointMesh.h"
 #include "simv2_RectilinearMesh.h"
+#include "simv2_SimulationMetaData.h"
+#include "simv2_SpeciesData.h"
 #include "simv2_UnstructuredMesh.h"
 #include "simv2_VariableData.h"
 
@@ -33,7 +34,7 @@ typedef struct
     int  (*cb_ActivateTimestep)(void *);
     void  *cbdata_ActivateTimestep;
 
-    int  (*cb_GetMetaData)(VisIt_SimulationMetaData *, void *);
+    visit_handle  (*cb_GetMetaData)(void *);
     void  *cbdata_GetMetaData;
 
     visit_handle (*cb_GetMesh)(int, const char *, void *);
@@ -42,7 +43,7 @@ typedef struct
     visit_handle  (*cb_GetMaterial)(int, const char *, void *);
     void  *cbdata_GetMaterial;
 
-    int  (*cb_GetSpecies)(int, const char *, VisIt_SpeciesData *, void *);
+    visit_handle  (*cb_GetSpecies)(int, const char *, void *);
     void  *cbdata_GetSpecies;
 
     visit_handle  (*cb_GetVariable)(int, const char *, void *);
@@ -70,10 +71,10 @@ typedef struct
     int (*cb_WriteEnd)(const char *, void *);
     void *cbdata_WriteEnd;
 
-    int (*cb_WriteMesh)(const char *, int, visit_handle, const VisIt_MeshMetaData *, void *);
+    int (*cb_WriteMesh)(const char *, int, int, visit_handle, visit_handle, void *);
     void *cbdata_WriteMesh;
 
-    int (*cb_WriteVariable)(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *, void *);
+    int (*cb_WriteVariable)(const char *, const char *, int, int, void *, int, int, visit_handle, void *);
     void *cbdata_WriteVariable;
 
 } data_callback_t;
@@ -113,7 +114,7 @@ simv2_set_ActivateTimestep(int (*cb) (void *), void *cbdata)
 }
 
 void
-simv2_set_GetMetaData(int (*cb) (VisIt_SimulationMetaData *, void *), void *cbdata)
+simv2_set_GetMetaData(visit_handle (*cb) (void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -146,7 +147,7 @@ simv2_set_GetMaterial(visit_handle (*cb) (int, const char *, void *), void *cbda
 }
 
 void
-simv2_set_GetSpecies(int (*cb) (int, const char *, VisIt_SpeciesData *, void *), void *cbdata)
+simv2_set_GetSpecies(visit_handle (*cb) (int, const char *, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -246,7 +247,7 @@ simv2_set_WriteEnd(int (*cb)(const char *, void *), void *cbdata)
 }
 
 void
-simv2_set_WriteMesh(int (*cb)(const char *, int, visit_handle, const VisIt_MeshMetaData *, void *), void *cbdata)
+simv2_set_WriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_handle, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -257,7 +258,7 @@ simv2_set_WriteMesh(int (*cb)(const char *, int, visit_handle, const VisIt_MeshM
 }
 
 void
-simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *, void *), void *cbdata)
+simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, visit_handle, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -270,96 +271,6 @@ simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, 
 // *****************************************************************************
 // Callable from SimV2 reader
 // *****************************************************************************
-#include <stdio.h>
-void
-simv2_VariableMetaData_print(VisIt_VariableMetaData *obj, FILE *f, const char *indent)
-{
-    fprintf(f, "%s{\n", indent);
-    fprintf(f, "%s    name = %s\n", indent, obj->name);
-    fprintf(f, "%s    meshName = %s\n", indent, obj->meshName);
-    fprintf(f, "%s    centering = %d\n", indent, obj->centering);
-    fprintf(f, "%s    type = %d\n", indent, obj->type);
-    fprintf(f, "%s    treatAsASCII = %d\n", indent, obj->treatAsASCII);
-    fprintf(f, "%s}\n", indent);
-}
-
-void
-simv2_SimulationMetaData_print(VisIt_SimulationMetaData *md, FILE *f)
-{
-    fprintf(f, "VisIt_SimulationMetaData\n{\n");
-    fprintf(f, "    numVariables = %d\n", md->numVariables);
-    for(int i = 0; i < md->numVariables; ++i)
-    {
-        fprintf(f, "    variables[%d] = ", i);
-        simv2_VariableMetaData_print(&md->variables[i], f, "    ");
-    }
-    fprintf(f, "}\n");
-}
-
-/******************** START CHECKER FUNCTIONS *********************************/
-int
-simv2_VariableMetaData_check(const VisIt_VariableMetaData *obj, std::string &err)
-{
-    char tmp[100];
-    int ret = VISIT_OKAY;
-    if(obj->name == NULL)
-    {
-        err += "The name field was not set. ";
-        ret = VISIT_ERROR;
-    }
-    if(obj->meshName == NULL)
-    {
-        err += "The meshName field was not set. ";
-        ret = VISIT_ERROR;
-    }
-    if(obj->centering != VISIT_VARCENTERING_NODE &&
-       obj->centering != VISIT_VARCENTERING_ZONE)
-    {
-        SNPRINTF(tmp, 100, "Invalid centering (%d). ", (int)obj->centering);
-        err += tmp;
-        ret = VISIT_ERROR;
-    }
-    if(!(obj->type >= VISIT_VARTYPE_SCALAR &&
-         obj->type <= VISIT_VARTYPE_ARRAY))
-    {
-        SNPRINTF(tmp, 100, "Invalid type (%d). ", (int)obj->type);
-        err += tmp;
-        ret = VISIT_ERROR;
-    }
-    return ret;
-}
-
-int
-simv2_SimulationMetaData_check(const VisIt_SimulationMetaData *obj, std::string &err)
-{
-    int i, ret = VISIT_OKAY;
-    char tmp[100];
-
-    if(obj->numVariables < 0)
-    {
-        err += "The number of variables is less than zero.\n";
-        ret = VISIT_ERROR;
-    }
-    if(obj->numVariables > 0 && obj->variables == NULL)
-    {
-        err += "The number of variables is non-zero, yet no variable metadata has been allocated.\n";
-        ret = VISIT_ERROR;
-    }
-    for(i = 0; i < obj->numVariables; ++i)
-    {
-        std::string suberr;
-        if(simv2_VariableMetaData_check(&obj->variables[i], suberr) == VISIT_ERROR)
-        {
-            SNPRINTF(tmp, 100, "Metadata for variables[%d] contains errors:\n", i);
-            err += (std::string(tmp) + suberr + "\n");
-            ret = VISIT_ERROR;
-        }
-    }
-
-    return ret;
-}
-
-/******************************************************************************/
 
 // ****************************************************************************
 // Method: simv2_invoke_ActivateTimeStep
@@ -410,37 +321,36 @@ simv2_invoke_ActivateTimestep(void)
 //   
 // ****************************************************************************
 
-VisIt_SimulationMetaData *
+visit_handle
 simv2_invoke_GetMetaData(void)
 {
-    VisIt_SimulationMetaData *obj = NULL;
+    visit_handle h = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetMetaData != NULL)
     {
-        obj = ALLOC(VisIt_SimulationMetaData);
-        if(obj != NULL)
+        h = (*callbacks->cb_GetMetaData)(callbacks->cbdata_GetMetaData);
+
+        if(h != VISIT_INVALID_HANDLE)
         {
-            std::string err("The simulation returned metadata with errors that "
-                "need to be fixed before VisIt will accept the metadata. ");
-            if((*callbacks->cb_GetMetaData)(obj, callbacks->cbdata_GetMetaData) == VISIT_OKAY)
+            if(simv2_ObjectType(h) != VISIT_SIMULATION_METADATA)
             {
-                if(simv2_SimulationMetaData_check(obj, err) == VISIT_ERROR)
-                {
-                    simv2_SimulationMetaData_free(obj);
-                    EXCEPTION1(ImproperUseException, err);
-                }
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The simulation returned a handle for an object other "
+                    "than simulation metadata."
+                );
             }
-            else
+
+            if(simv2_SimulationMetaData_check(h) == VISIT_ERROR)
             {
-                simv2_SimulationMetaData_free(obj);
-                obj = NULL;
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The metadata returned by the simulation did not pass "
+                    "a consistency check.");
             }
         }
-#if 0
-        simv2_SimulationMetaData_print(obj, stdout);
-#endif
     }
-    return obj;
+    return h;
 }
 
 visit_handle
@@ -505,6 +415,15 @@ simv2_invoke_GetMaterial(int dom, const char *name)
 
         if(h != VISIT_INVALID_HANDLE)
         {
+            if(simv2_ObjectType(h) != VISIT_MATERIAL_DATA)
+            {
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The simulation returned a handle for an object other "
+                    "than a material data object."
+                );
+            }
+
             if(simv2_MaterialData_check(h) == VISIT_ERROR)
             {
                 simv2_FreeObject(h);
@@ -517,21 +436,36 @@ simv2_invoke_GetMaterial(int dom, const char *name)
     return h;
 }
 
-VisIt_SpeciesData *
+visit_handle
 simv2_invoke_GetSpecies(int dom, const char *name)
 {
-    VisIt_SpeciesData *obj = NULL;
+    visit_handle h = VISIT_INVALID_HANDLE;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_GetSpecies != NULL)
     {
-        obj = ALLOC(VisIt_SpeciesData);
-        if(obj != NULL && (*callbacks->cb_GetSpecies)(dom, name, obj, callbacks->cbdata_GetSpecies) == VISIT_ERROR)
+        h = (*callbacks->cb_GetSpecies)(dom, name, callbacks->cbdata_GetSpecies);
+
+        if(h != VISIT_INVALID_HANDLE)
         {
-            simv2_SpeciesData_free(obj);
-            obj = NULL;
+            if(simv2_ObjectType(h) != VISIT_SPECIES_DATA)
+            {
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The simulation returned a handle for an object other "
+                    "than a species data object."
+                );
+            }
+
+            if(simv2_SpeciesData_check(h) == VISIT_ERROR)
+            {
+                simv2_FreeObject(h);
+                EXCEPTION1(ImproperUseException, 
+                    "The species returned by the simulation did not pass "
+                    "a consistency check.");
+            }
         }
     }
-    return obj;
+    return h;
 }
 
 visit_handle
@@ -695,19 +629,19 @@ simv2_invoke_WriteEnd(const char *name)
 }
 
 int
-simv2_invoke_WriteMesh(const char *name, int chunk, visit_handle md, const VisIt_MeshMetaData *mmd)
+simv2_invoke_WriteMesh(const char *name, int chunk, int meshType, visit_handle md, visit_handle mmd)
 {
     int ret = VISIT_ERROR;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_WriteMesh != NULL)
-        ret = (*callbacks->cb_WriteMesh)(name, chunk, md, mmd, callbacks->cbdata_WriteMesh);
+        ret = (*callbacks->cb_WriteMesh)(name, chunk, meshType, md, mmd, callbacks->cbdata_WriteMesh);
     return ret;
 }
 
 int
 simv2_invoke_WriteVariable(const char *name, const char *arrName, int chunk,
     int dataType, void *values, int ntuples, int ncomponents,
-    const VisIt_VariableMetaData *smd)
+    visit_handle smd)
 {
     int ret = VISIT_ERROR;
     data_callback_t *callbacks = GetDataCallbacks();
@@ -723,7 +657,7 @@ simv2_ObjectType(visit_handle h)
     VisIt_ObjectBase *obj = VisItGetPointer(h);
     int t = -1;
     if(obj != NULL)
-        t = obj->type;
+        t = obj->objectType();
     return t;
 }
 

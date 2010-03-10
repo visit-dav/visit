@@ -64,7 +64,7 @@ GetObject(visit_handle h, const char *fname)
     VisIt_RectilinearMesh *obj = (VisIt_RectilinearMesh *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_RECTILINEAR_MESH)
+        if(obj->objectType() != VISIT_RECTILINEAR_MESH)
         {
             SNPRINTF(tmp, 100, "%s: The provided handle does not point to a "
                 "RectilinearMesh object.", fname);
@@ -95,13 +95,15 @@ simv2_RectilinearMesh_alloc(visit_handle *h)
 int
 simv2_RectilinearMesh_free(visit_handle h)
 {
-    int retval = VISIT_ERROR;
     VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_free");
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 static int

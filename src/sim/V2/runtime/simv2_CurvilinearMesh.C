@@ -77,7 +77,7 @@ GetObject(visit_handle h, const char *fname)
     VisIt_CurvilinearMesh *obj = (VisIt_CurvilinearMesh *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_CURVILINEAR_MESH)
+        if(obj->objectType() != VISIT_CURVILINEAR_MESH)
         {
             SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
                 "a CurvilinearMesh object.", fname);
@@ -108,13 +108,15 @@ simv2_CurvilinearMesh_alloc(visit_handle *h)
 int
 simv2_CurvilinearMesh_free(visit_handle h)
 {
-    int retval = VISIT_ERROR;
     VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_free");
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 static int

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+  <Attribute name="VariableMetaData" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="" codefile="VariableMetaData.code">
+    <Enum name="VisIt_VarCentering">
+      VISIT_VARCENTERING_NODE
+      VISIT_VARCENTERING_ZONE
+    </Enum>
+    <Enum name="VisIt_VarType">
+      VISIT_VARTYPE_SCALAR
+      VISIT_VARTYPE_VECTOR
+      VISIT_VARTYPE_TENSOR
+      VISIT_VARTYPE_SYMMETRIC_TENSOR
+      VISIT_VARTYPE_MATERIAL
+      VISIT_VARTYPE_MATSPECIES
+      VISIT_VARTYPE_LABEL
+      VISIT_VARTYPE_ARRAY
+      VISIT_VARTYPE_MESH
+      VISIT_VARTYPE_CURVE
+    </Enum>
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="meshName" label="Mesh name" type="string">
+    </Field>
+    <Field name="units" label="units" type="string">
+    </Field>
+    <Field name="centering" label="Variable centering" type="enum" subtype="VisIt_VarCentering">
+      VISIT_VARCENTERING_ZONE
+    </Field>
+    <Field name="type" label="Variable type" type="enum" subtype="VisIt_VarType">
+      VISIT_VARTYPE_SCALAR
+    </Field>
+    <Field name="treatAsASCII" label="Treat as ASCII" type="bool">
+      false
+    </Field>
+    <Function name="simv2_VariableMetaData_check" user="true" member="true">
+    </Function>
+  </Attribute>

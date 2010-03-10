@@ -37,7 +37,8 @@
 #define FREE(ptr)  if(ptr != NULL) free(ptr);
 
 extern const char *VISIT_F77NULLSTRING;
-char *visit_fstring_copy_string(char *src, int len);
-char *visit_fstring_to_cstring(char *ptr, int len);
+char *visit_fstring_copy_string(const char *src, int len);
+char *visit_fstring_to_cstring(const char *ptr, int len);
+void visit_cstring_to_fstring(const char *src, char *dest, int len);
 
 #endif

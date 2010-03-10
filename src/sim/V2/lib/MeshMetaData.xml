@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+  <Attribute name="MeshMetaData" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="" codefile="MeshMetaData.code">
+    <Enum name="VisIt_MeshType">
+      VISIT_MESHTYPE_UNKNOWN
+      VISIT_MESHTYPE_RECTILINEAR
+      VISIT_MESHTYPE_CURVILINEAR
+      VISIT_MESHTYPE_UNSTRUCTURED
+      VISIT_MESHTYPE_POINT
+      VISIT_MESHTYPE_CSG
+      VISIT_MESHTYPE_AMR
+    </Enum>
+    <Enum name="visit_handle">
+      VISIT_INVALID_HANDLE
+    </Enum>
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="meshType" label="Mesh type" type="enum" subtype="VisIt_MeshType">
+    </Field>
+    <Field name="topologicalDimension" label="Topological dimension" type="int">
+      2
+    </Field>
+    <Field name="spatialDimension" label="Spatial dimension" type="int">
+      2
+    </Field>
+    <Field name="numDomains" label="Number of domains" type="int">
+      1
+    </Field>
+    <Field name="domainTitle" label="Domain title" type="string">
+      Domains
+    </Field>
+    <Field name="domainPieceName" label="Domain piece name" type="string">
+      domain
+    </Field>
+    <Field name="domainNames" label="Domain names" type="stringVector">
+    </Field>
+    <Field name="numGroups" label="Number of groups" type="int">
+      0
+    </Field>
+    <Field name="groupTitle" label="Group title" type="string">
+    </Field>
+    <Field name="groupPieceName" label="Group piece name" type="string">
+      group
+    </Field>
+    <Field name="groupIds" label="Group ids" type="intVector">
+    </Field>
+    <Field name="xUnits" label="X Units" type="string">
+    </Field>
+    <Field name="yUnits" label="Y Units" type="string">
+    </Field>
+    <Field name="zUnits" label="Z Units" type="string">
+    </Field>
+    <Field name="xLabel" label="X Label" type="string">
+      Width
+    </Field>
+    <Field name="yLabel" label="Y Label" type="string">
+      Height
+    </Field>
+    <Field name="zLabel" label="Z Label" type="string">
+      Depth
+    </Field>
+    <Function name="simv2_MeshMetaData_check" user="true" member="true">
+    </Function>
+  </Attribute>

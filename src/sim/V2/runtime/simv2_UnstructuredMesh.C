@@ -87,7 +87,7 @@ GetObject(visit_handle h)
     VisIt_UnstructuredMesh *obj = (VisIt_UnstructuredMesh *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_UNSTRUCTURED_MESH)
+        if(obj->objectType() != VISIT_UNSTRUCTURED_MESH)
         {
             VisItError("The provided handle does not point to a VariableData object.");
             obj = NULL;
@@ -115,13 +115,15 @@ simv2_UnstructuredMesh_alloc(visit_handle *h)
 int
 simv2_UnstructuredMesh_free(visit_handle h)
 {
-    int retval = VISIT_ERROR;
     VisIt_UnstructuredMesh *obj = GetObject(h);
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 static int

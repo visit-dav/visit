@@ -3,12 +3,18 @@
 
 #include <VisItDataInterfaceRuntimeP.h>
 
-VisIt_ObjectBase::VisIt_ObjectBase(int t) : type(t)
+VisIt_ObjectBase::VisIt_ObjectBase(int t) : object_type(t)
 {
 }
 
 VisIt_ObjectBase::~VisIt_ObjectBase()
 {
+}
+
+int
+VisIt_ObjectBase::objectType() const
+{
+    return object_type;
 }
 
 static VisIt_ObjectBase **visit_pointers = NULL;
