@@ -1,0 +1,62 @@
+Target: xml2sim
+Code: simv2_MeshMetaData_setNumDomains
+Prefix:
+    if(val < 1)
+    {
+        VisItError("Number of domains must be greater than zero");
+        return VISIT_ERROR;
+    }
+Postfix:
+
+Code: simv2_MeshMetaData_setNumGroups
+Prefix:
+    if(val < 0)
+    {
+        VisItError("Number of groups must be greater than zero");
+        return VISIT_ERROR;
+    }
+Postfix:
+
+Code: simv2_MeshMetaData_setSpatialDimension
+Prefix:
+    if(val < 0 || val > 3)
+    {
+        VisItError("Spatial dimensions must be in [0,3]");
+        return VISIT_ERROR;
+    }
+Postfix:
+
+Code: simv2_MeshMetaData_setTopologicalDimension
+Prefix:
+    if(val < 0 || val > 3)
+    {
+        VisItError("Topological dimensions must be in [0,3]");
+        return VISIT_ERROR;
+    }
+Postfix:
+
+Function: simv2_MeshMetaData_check
+Declaration: SIMV2_API int simv2_MeshMetaData_check(visit_handle);
+Definition:
+int
+simv2_MeshMetaData_check(visit_handle h)
+{
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_check");
+    int retval = VISIT_ERROR;
+    if(obj != NULL)
+    {
+        if(obj->name == "")
+        {
+            VisItError("MeshMetaData needs a name");
+            return VISIT_ERROR;
+        }
+        if(obj->meshType == VISIT_MESHTYPE_UNKNOWN)
+        {
+            VisItError("MeshMetaData needs a valid mesh type");
+            return VISIT_ERROR;
+        }
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+

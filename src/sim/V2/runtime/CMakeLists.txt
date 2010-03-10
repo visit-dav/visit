@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -42,18 +42,27 @@ SET(LIBSIM_RUNTIME_SOURCES
 VisItControlInterfaceRuntime.C 
 VisItDataInterfaceRuntime.C 
 VisItDataInterfaceRuntimeP.C 
-VisItDataInterface_V2P.C 
+simv2_CommandMetaData.C
 simv2_CurveData.C
+simv2_CurveMetaData.C
 simv2_CurvilinearMesh.C
 simv2_CSGMesh.C
 simv2_DomainBoundaries.C
 simv2_DomainList.C 
 simv2_DomainNesting.C
+simv2_ExpressionMetaData.C
 simv2_MaterialData.C
+simv2_MaterialMetaData.C
+simv2_MeshMetaData.C
+simv2_NameList.C
 simv2_PointMesh.C
 simv2_RectilinearMesh.C
+simv2_SimulationMetaData.C
+simv2_SpeciesData.C
+simv2_SpeciesMetaData.C
 simv2_UnstructuredMesh.C
 simv2_VariableData.C
+simv2_VariableMetaData.C
 )
 
 INCLUDE_DIRECTORIES(

@@ -42,17 +42,27 @@ SET(LIBSIM_SOURCES
 VisItControlInterface_V2.c 
 SimV2Tracing.c
 VisItFortran.c
+VisIt_CommandMetaData.c
 VisIt_CSGMesh.c
 VisIt_CurveData.c
+VisIt_CurveMetaData.c
 VisIt_CurvilinearMesh.c
 VisIt_DomainBoundaries.c 
 VisIt_DomainList.c
 VisIt_DomainNesting.c
+VisIt_ExpressionMetaData.c
 VisIt_MaterialData.c
+VisIt_MaterialMetaData.c
+VisIt_MeshMetaData.c
+VisIt_NameList.c
 VisIt_PointMesh.c
 VisIt_RectilinearMesh.c
+VisIt_SimulationMetaData.c
+VisIt_SpeciesData.c
+VisIt_SpeciesMetaData.c
 VisIt_UnstructuredMesh.c
 VisIt_VariableData.c
+VisIt_VariableMetaData.c
 )
 
 SET(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)

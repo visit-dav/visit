@@ -15,11 +15,13 @@ struct VisIt_DomainBoundaries : public VisIt_ObjectBase
 VisIt_DomainBoundaries::VisIt_DomainBoundaries() : 
     VisIt_ObjectBase(VISIT_DOMAIN_BOUNDARIES)
 {
-    boundaries = 0;
+    boundaries = NULL;
 }
 
 VisIt_DomainBoundaries::~VisIt_DomainBoundaries()
 {
+    if(boundaries != NULL)
+        delete boundaries;
 }
 
 static VisIt_DomainBoundaries *
@@ -28,7 +30,7 @@ GetObject(visit_handle h)
     VisIt_DomainBoundaries *obj = (VisIt_DomainBoundaries *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_DOMAIN_BOUNDARIES)
+        if(obj->objectType() != VISIT_DOMAIN_BOUNDARIES)
         {
             VisItError("The provided handle does not point to a DomainBoundaries object.");
             obj = NULL;
@@ -56,14 +58,14 @@ int
 simv2_DomainBoundaries_free(visit_handle h)
 {
     VisIt_DomainBoundaries *obj = GetObject(h);
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
-        if(obj->boundaries != NULL)
-            delete obj->boundaries;
-        if(obj != NULL)
-            free(obj);
+        delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 int

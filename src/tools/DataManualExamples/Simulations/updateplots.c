@@ -56,7 +56,7 @@
 
 void read_input_deck(void) { }
 /* Data Access Function prototypes */
-int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetCurve(const char *name, void *);
 visit_handle SimGetVariable(int, const char *, void *);
@@ -98,6 +98,8 @@ void
 simulation_data_dtor(simulation_data *sim)
 {
 }
+
+const char *cmd_names[] = {"halt", "step", "run", "addplot"};
 
 /******************************************************************************
  ******************************************************************************
@@ -474,94 +476,94 @@ int main(int argc, char **argv)
  *
  *****************************************************************************/
 
-int
-SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
+    visit_handle md = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
-    int i;
-    size_t sz;
 
-    /* Set the simulation state. */
-    md->currentMode = (sim->runMode == SIM_STOPPED) ? VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING;
-    md->currentCycle = sim->cycle;
-    md->currentTime = sim->time;
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
+    {
+        int i;
+        visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle vmd = VISIT_INVALID_HANDLE;
+        visit_handle cmd = VISIT_INVALID_HANDLE;
+        visit_handle emd = VISIT_INVALID_HANDLE;
 
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 1;
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
 
-    /* Set the first mesh's properties.*/
-    md->meshes[0].name = strdup("mesh2d");
-    md->meshes[0].meshType = VISIT_MESHTYPE_RECTILINEAR;
-    md->meshes[0].topologicalDimension = 2;
-    md->meshes[0].spatialDimension = 2;
-    md->meshes[0].numBlocks = sim->par_size;
-    md->meshes[0].blockTitle = strdup("Domains");
-    md->meshes[0].blockPieceName = strdup("domain");
-    md->meshes[0].numGroups = 0;
-    md->meshes[0].units = strdup("cm");
-    md->meshes[0].xLabel = strdup("Width");
-    md->meshes[0].yLabel = strdup("Height");
-    md->meshes[0].zLabel = strdup("Depth");
+        /* Add mesh metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "mesh2d");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_RECTILINEAR);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
+            VisIt_MeshMetaData_setNumDomains(mmd, sim->par_size);
+            VisIt_MeshMetaData_setDomainTitle(mmd, "Domains");
+            VisIt_MeshMetaData_setDomainPieceName(mmd, "domain");
+            VisIt_MeshMetaData_setNumGroups(mmd, 0);
+            VisIt_MeshMetaData_setXUnits(mmd, "cm");
+            VisIt_MeshMetaData_setYUnits(mmd, "cm");
+            VisIt_MeshMetaData_setZUnits(mmd, "cm");
+            VisIt_MeshMetaData_setXLabel(mmd, "Width");
+            VisIt_MeshMetaData_setYLabel(mmd, "Height");
+            VisIt_MeshMetaData_setZLabel(mmd, "Depth");
 
-    /* Add a variable. */
-    md->numVariables = 1;
-    sz = sizeof(VisIt_VariableMetaData) * md->numVariables;
-    md->variables = (VisIt_VariableMetaData *)malloc(sz);
-    memset(md->variables, 0, sz);
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
 
-    /* Add a zonal variable on mesh2d. */
-    md->variables[0].name = strdup("zonal");
-    md->variables[0].meshName = strdup("mesh2d");
-    md->variables[0].type = VISIT_VARTYPE_SCALAR;
-    md->variables[0].centering = VISIT_VARCENTERING_ZONE;
+        /* Add a variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "zonal");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh2d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
 
-    /* Add a curve variable. */
-    md->numCurves = 1;
-    sz = sizeof(VisIt_CurveMetaData) * md->numCurves;
-    md->curves = (VisIt_CurveMetaData *)malloc(sz);
-    memset(md->curves, 0, sz);
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
 
-    md->curves[0].name = strdup("sine");
-    md->curves[0].xUnits = strdup("radians");
-    md->curves[0].xLabel = strdup("angle");
-    md->curves[0].yLabel = strdup("amplitude");
+        /* Add a curve variable. */
+        if(VisIt_CurveMetaData_alloc(&cmd) == VISIT_OKAY)
+        {
+            VisIt_CurveMetaData_setName(cmd, "sine");
+            VisIt_CurveMetaData_setXLabel(cmd, "Angle");
+            VisIt_CurveMetaData_setXUnits(cmd, "radians");
+            VisIt_CurveMetaData_setYLabel(cmd, "Amplitude");
+            VisIt_CurveMetaData_setYUnits(cmd, "");
 
-    /* Add an expression. */
-    md->numExpressions = 1;
-    sz = sizeof(VisIt_ExpressionMetaData) * md->numExpressions;
-    md->expressions = (VisIt_ExpressionMetaData *)malloc(sz);
-    memset(md->expressions, 0, sz);
+            VisIt_SimulationMetaData_addCurve(md, cmd);
+        }
 
-    md->expressions[0].name = strdup("zvec");
-    md->expressions[0].definition = strdup("{zonal, zonal}");
-    md->expressions[0].vartype = VISIT_VARTYPE_VECTOR;
+        /* Add an expression. */
+        if(VisIt_ExpressionMetaData_alloc(&emd) == VISIT_OKAY)
+        {
+            VisIt_ExpressionMetaData_setName(emd, "zvec");
+            VisIt_ExpressionMetaData_setDefinition(emd, "{zonal, zonal}");
+            VisIt_ExpressionMetaData_setType(emd, VISIT_VARTYPE_VECTOR);
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 4;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
+            VisIt_SimulationMetaData_addExpression(md, emd);
+        }
+            
+        /* Add some custom commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
+            }
+        }
+    }
 
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
-
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
-
-    md->genericCommands[3].name = strdup("addplot");
-    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[3].enabled = 1;
-
-    return VISIT_OKAY;
+    return md;
 }
 
 /* Rectilinear mesh */
@@ -697,7 +699,7 @@ SimGetCurve(const char *name, void *cbdata)
     {
         if(VisIt_CurveData_alloc(&h) != VISIT_ERROR)
         {
-            visit_handle hx, hy;
+            visit_handle hxc, hyc;
             int i;
             float *x = NULL, *y = NULL;
             x = (float*)malloc(200 * sizeof(float));
@@ -711,11 +713,11 @@ SimGetCurve(const char *name, void *cbdata)
             }
 
             /* Give the arrays to VisIt. VisIt will free them. */
-            VisIt_VariableData_alloc(&hx);
-            VisIt_VariableData_alloc(&hy);
-            VisIt_VariableData_setDataF(hx, VISIT_OWNER_VISIT, 1, 200, x);
-            VisIt_VariableData_setDataF(hy, VISIT_OWNER_VISIT, 1, 200, y);
-            VisIt_CurveData_setCoordsXY(h, hx, hy);
+            VisIt_VariableData_alloc(&hxc);
+            VisIt_VariableData_alloc(&hyc);
+            VisIt_VariableData_setDataF(hxc, VISIT_OWNER_VISIT, 1, 200, x);
+            VisIt_VariableData_setDataF(hyc, VISIT_OWNER_VISIT, 1, 200, y);
+            VisIt_CurveData_setCoordsXY(h, hxc, hyc);
         }
     }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Attribute name="MaterialMetaData" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="" codefile="MaterialMetaData.code">
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="meshName" label="Mesh name" type="string">
+    </Field>
+    <Field name="materialNames" label="Material names" type="stringVector">
+    </Field>
+    <Function name="simv2_MaterialMetaData_check" user="true" member="true">
+    </Function>
+  </Attribute>

@@ -53,7 +53,8 @@
 
 #include <DebugStream.h>
 
-#include <VisItDataInterface_V2P.h>
+#include <simv2_MeshMetaData.h>
+#include <simv2_VariableMetaData.h>
 
 #include <simv2_CurvilinearMesh.h>
 #include <simv2_PointMesh.h>
@@ -183,11 +184,9 @@ avtSimV2Writer::WriteHeaders(const avtDatabaseMetaData *md,
 //             different types of SimV1 meshes.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 2 17:39:35 PST 2006
+// Creation:   Tue Mar  9 13:57:31 PST 2010
 //
 // Modifications:
-//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
-//    Use the saved number of blocks instead of assuming the mmd was correct.
 //   
 // ****************************************************************************
 
@@ -199,36 +198,39 @@ avtSimV2Writer::WriteChunk(vtkDataSet *ds, int chunk)
     //
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     const avtMeshMetaData *mmd = metadata->GetMesh(atts.GetMeshname());
-    VisIt_MeshMetaData *vmmd = (VisIt_MeshMetaData*)malloc(sizeof(VisIt_MeshMetaData));
-    memset(vmmd, 0, sizeof(VisIt_MeshMetaData));
-    vmmd->name = strdup(objectName.c_str());
-    vmmd->topologicalDimension = atts.GetTopologicalDimension();
-    vmmd->spatialDimension = atts.GetSpatialDimension();
+
+    visit_handle vmmd = VISIT_INVALID_HANDLE;
+    simv2_MeshMetaData_alloc(&vmmd);
+    simv2_MeshMetaData_setName(vmmd, objectName.c_str());
+    simv2_MeshMetaData_setTopologicalDimension(vmmd, atts.GetTopologicalDimension());
+    simv2_MeshMetaData_setSpatialDimension(vmmd, atts.GetSpatialDimension());
 
     if(mmd != 0)
     {
-        vmmd->numBlocks = numblocks;
-        vmmd->blockTitle = strdup(mmd->blockTitle.c_str());
-        vmmd->blockPieceName = strdup(mmd->blockPieceName.c_str());
+        simv2_MeshMetaData_setNumDomains(vmmd, numblocks);
+        simv2_MeshMetaData_setDomainTitle(vmmd, mmd->blockTitle.c_str());
+        simv2_MeshMetaData_setDomainPieceName(vmmd, mmd->blockPieceName.c_str());
 
-        vmmd->numGroups = 0;
-        vmmd->groupTitle = strdup(mmd->groupTitle.c_str());
-        vmmd->groupIds = 0;
+        simv2_MeshMetaData_setNumGroups(vmmd, 0);
+        simv2_MeshMetaData_setGroupTitle(vmmd, mmd->groupTitle.c_str());
     }
     else
     {
-        vmmd->numBlocks = 1;
-        vmmd->blockTitle = strdup("domains");
-        vmmd->blockPieceName = strdup("domain");
+        simv2_MeshMetaData_setNumDomains(vmmd, 1);
+        simv2_MeshMetaData_setDomainTitle(vmmd, "domains");
+        simv2_MeshMetaData_setDomainPieceName(vmmd, "domain");
 
-        vmmd->numGroups = 0;
-        vmmd->groupTitle = strdup("groups");
-        vmmd->groupIds = 0;
+        simv2_MeshMetaData_setNumGroups(vmmd, 0);
+        simv2_MeshMetaData_setGroupTitle(vmmd, "groups");
     }
-    vmmd->units = strdup(atts.GetXUnits().c_str());
-    vmmd->xLabel = strdup(atts.GetXLabel().c_str());
-    vmmd->yLabel = strdup(atts.GetYLabel().c_str());
-    vmmd->zLabel = strdup(atts.GetZLabel().c_str());
+
+    simv2_MeshMetaData_setXUnits(vmmd, atts.GetXUnits().c_str());
+    simv2_MeshMetaData_setYUnits(vmmd, atts.GetYUnits().c_str());
+    simv2_MeshMetaData_setZUnits(vmmd, atts.GetZUnits().c_str());
+
+    simv2_MeshMetaData_setXLabel(vmmd, atts.GetXLabel().c_str());
+    simv2_MeshMetaData_setYLabel(vmmd, atts.GetYLabel().c_str());
+    simv2_MeshMetaData_setZLabel(vmmd, atts.GetZLabel().c_str());
 
     //
     // Translate the VTK input into SimV1 data structures and call back
@@ -254,7 +256,6 @@ avtSimV2Writer::WriteChunk(vtkDataSet *ds, int chunk)
 
     // Free the mesh metadata.
     simv2_MeshMetaData_free(vmmd);
-    free(vmmd);
 }
 
 // ****************************************************************************
@@ -303,13 +304,10 @@ avtSimV2Writer::CloseFile(void)
 
 void
 avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
-    VisIt_MeshMetaData *vmmd)
+    visit_handle vmmd)
 {
     const char *mName = "avtSimV2Writer::WriteCurvilinearMesh: ";
     debug1 << mName << "(chunk=" << chunk << ")\n";
-
-    // Set the mesh type in the sim1 metadata.
-    vmmd->meshType = VISIT_MESHTYPE_CURVILINEAR;
 
     // Translate the VTK structure back into VisIt_CurvilinearMesh.
     visit_handle h = VISIT_INVALID_HANDLE;
@@ -376,7 +374,8 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
     simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
 
     // Call into the simulation to write the data back.
-    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
+    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
+        VISIT_MESHTYPE_CURVILINEAR, h, vmmd);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteMesh callback returned " << ret
@@ -414,12 +413,9 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
 
 void
 avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk, 
-    VisIt_MeshMetaData *vmmd)
+    visit_handle vmmd)
 {
     debug1 << "avtSimV2Writer::WriteRectilinearMesh(chunk=" << chunk << ")\n";
-
-    // Set the mesh type in the sim1 metadata.
-    vmmd->meshType = VISIT_MESHTYPE_RECTILINEAR;
 
     // Translate the VTK structure back into VisIt_RectilinearMesh.
     visit_handle h = VISIT_INVALID_HANDLE;
@@ -478,7 +474,8 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
     simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
 
     // Call into the simulation to write the data back.
-    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
+    int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
+        VISIT_MESHTYPE_RECTILINEAR, h, vmmd);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteRectilinearMesh callback returned " << ret
@@ -512,7 +509,7 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
 
 void
 avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
-    VisIt_MeshMetaData *vmmd)
+    visit_handle vmmd)
 {
     const char *mName = "avtSimV2Writer::WriteUnstructuredMesh: ";
     debug1 << mName << "chunk=" << chunk << ")\n";
@@ -576,11 +573,9 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
             ds->GetPoints()->GetVoidPointer(0));
         simv2_PointMesh_setCoords(h, hc);
 
-        // Set the mesh type in the sim1 metadata.
-        vmmd->meshType = VISIT_MESHTYPE_POINT;
-
         // Call into the simulation to write the data back.
-        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
+             VISIT_MESHTYPE_POINT, h, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WritePointMesh callback returned " << ret
@@ -668,11 +663,9 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
                 VISIT_DATATYPE_DOUBLE, 1, connLen, conn);
             simv2_UnstructuredMesh_setConnectivity(h, cellCount, hconn);
 
-            // Set the mesh type in the sim1 metadata.
-            vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-
             // Call into the simulation to write the data back.
-            int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
+            int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
+                VISIT_MESHTYPE_UNSTRUCTURED, h, vmmd);
             if(ret != VISIT_OKAY)
             {
                 debug1 << "WriteUnstructuredMesh callback returned " << ret
@@ -719,7 +712,7 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
 // ****************************************************************************
 
 void
-avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData *vmmd)
+avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
 {
     debug1 << "avtSimV2Writer::WritePolyDataMesh(chunk=" << chunk << ")\n";
 
@@ -750,11 +743,9 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
 
         debug1 << "Write polydata as point mesh" << endl;
 
-        // Set the mesh type in the sim1 metadata.
-        vmmd->meshType = VISIT_MESHTYPE_POINT;
-
         // Call into the simulation to write the data back.
-        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
+            VISIT_MESHTYPE_POINT, h, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WritePointMesh callback returned " << ret
@@ -880,11 +871,9 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, VisIt_MeshMetaData
         debug1 << "nzones = " << cellCount << endl;
         debug1 << "connectivityLen = " << (connPtr - conn) << endl;
 
-        // Set the mesh type in the sim1 metadata.
-        vmmd->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-
         // Call into the simulation to write the data back.
-        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, h, vmmd);
+        int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
+            VISIT_MESHTYPE_UNSTRUCTURED, h, vmmd);
         if(ret != VISIT_OKAY)
         {
             debug1 << "WriteUnstructuredMesh callback returned " << ret
@@ -942,13 +931,12 @@ avtSimV2Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectNa
 
     // Assemble a scalar metadata object.
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();    
-    VisIt_VariableMetaData *smd = (VisIt_VariableMetaData*)malloc(
-        sizeof(VisIt_VariableMetaData));
-    memset(smd, 0, sizeof(VisIt_VariableMetaData));
-    smd->name = strdup(arr->GetName());
-    smd->meshName = strdup(objectName.c_str());
-    smd->centering = cent;
-    smd->treatAsASCII = atts.GetTreatAsASCII(arr->GetName());
+    visit_handle smd = VISIT_INVALID_HANDLE;
+    simv2_VariableMetaData_alloc(&smd);
+    simv2_VariableMetaData_setName(smd, arr->GetName());
+    simv2_VariableMetaData_setMeshName(smd, objectName.c_str());
+    simv2_VariableMetaData_setCentering(smd, cent);
+    simv2_VariableMetaData_setTreatAsASCII(smd, atts.GetTreatAsASCII(arr->GetName())?1:0);
 
     int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), chunk, t,
         arr->GetVoidPointer(0), arr->GetNumberOfTuples(),
@@ -961,7 +949,6 @@ avtSimV2Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectNa
 
     // Free the variable metadata.
     simv2_VariableMetaData_free(smd);
-    free(smd);
 }
 
 // ****************************************************************************
@@ -1066,14 +1053,14 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
     }
 
     // Assemble a scalar metadata object.
-    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();    
-    VisIt_VariableMetaData *smd = (VisIt_VariableMetaData*)malloc(
-        sizeof(VisIt_VariableMetaData));
-    memset(smd, 0, sizeof(VisIt_VariableMetaData));
-    smd->name = strdup(arr->GetName());
-    smd->meshName = strdup(objectName.c_str());
-    smd->centering = VISIT_VARCENTERING_ZONE;
-    smd->treatAsASCII = atts.GetTreatAsASCII(arr->GetName());
+    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
+    visit_handle smd = VISIT_INVALID_HANDLE;
+    simv2_VariableMetaData_alloc(&smd);
+    simv2_VariableMetaData_setName(smd, arr->GetName());
+    simv2_VariableMetaData_setMeshName(smd, objectName.c_str());
+    simv2_VariableMetaData_setCentering(smd, VISIT_VARCENTERING_ZONE);
+    simv2_VariableMetaData_setTreatAsASCII(smd, atts.GetTreatAsASCII(arr->GetName())?1:0);
 
     int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), 
          chunk, t, S, sum, arr->GetNumberOfComponents(), smd);
@@ -1089,7 +1076,6 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
 
     // Free the variable metadata.
     simv2_VariableMetaData_free(smd);
-    free(smd);
 }
 
 // ****************************************************************************

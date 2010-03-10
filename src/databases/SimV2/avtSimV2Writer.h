@@ -90,13 +90,13 @@ private:
     int                            numblocks;
 
     void           WriteCurvilinearMesh(vtkStructuredGrid *,
-                                       int, VisIt_MeshMetaData *);
+                                       int, visit_handle);
     void           WriteUnstructuredMesh(vtkUnstructuredGrid *,
-                                       int, VisIt_MeshMetaData *);
+                                       int, visit_handle);
     void           WriteRectilinearMesh(vtkRectilinearGrid *,
-                                       int, VisIt_MeshMetaData *);
+                                       int, visit_handle);
     void           WritePolyDataMesh(vtkPolyData *,
-                                       int, VisIt_MeshMetaData *);
+                                       int, visit_handle);
 
     void           WriteDataArrays(vtkDataSet *ds, int chunk);
     void           WriteOneDataArray(vtkDataArray *, const std::string &, int, VisIt_VarCentering);

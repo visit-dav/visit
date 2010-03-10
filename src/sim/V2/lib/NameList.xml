@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="NameList" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="">
+    <Field name="names" label="names" type="stringVector">
+    </Field>
+  </Attribute>

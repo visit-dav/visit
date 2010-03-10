@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -58,6 +58,8 @@ SET(PROGRAM9_SOURCES main9.C)
 
 SET(PROGRAM10_SOURCES main10.C)
 
+SET(XML2SIM_SOURCES xml2sim.C)
+
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_BINARY_DIR}/include
@@ -79,6 +81,7 @@ ADD_EXECUTABLE(xml2avt         ${PROGRAM6_SOURCES})
 ADD_EXECUTABLE(xml2python      ${PROGRAM7_SOURCES})
 ADD_EXECUTABLE(xml2java        ${PROGRAM8_SOURCES})
 ADD_EXECUTABLE(xml2cmake       ${PROGRAM10_SOURCES})
+ADD_EXECUTABLE(xml2sim         ${XML2SIM_SOURCES})
 
 SET(RELEVANT_QT_LIBS 
 ${QT_QTXML_LIBRARY}
@@ -101,6 +104,7 @@ TARGET_LINK_LIBRARIES(xml2avt    ${RELEVANT_QT_LIBS})
 TARGET_LINK_LIBRARIES(xml2python ${RELEVANT_QT_LIBS})
 TARGET_LINK_LIBRARIES(xml2java   ${RELEVANT_QT_LIBS})
 TARGET_LINK_LIBRARIES(xml2cmake  ${RELEVANT_QT_LIBS})
+TARGET_LINK_LIBRARIES(xml2sim    ${RELEVANT_QT_LIBS})
 
 # Install the targets
 VISIT_INSTALL_TARGETS(xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake)
