@@ -35,13 +35,15 @@
 # DAMAGE.
 #
 # Modifications:
+#  Cyrus Harrison, Wed Mar 10 11:06:40 PST 2010 
+#  Use CMAKE_LIBRARY_OUTPUT_DIRECTORY instead of LIBRARY_OUTPUT_DIRECTORY.
 #
 #****************************************************************************/
 
 
 # install the serial stub module.
 CONFIGURE_FILE(src/mpistub.py
-               ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/mpistub.py @ONLY)
+               ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/mpistub.py @ONLY)
 
 INSTALL(FILES src/mpistub.py
               DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
