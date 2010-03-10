@@ -213,6 +213,10 @@ avtADIOSBasicFileFormat::FreeUpResources(void)
 //  Programmer: Dave Pugmire
 //  Creation:   Thu Sep 17 11:23:05 EDT 2009
 //
+//  Modifications:
+//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
+//   Use name/originalName for names starting with /.
+//
 // ****************************************************************************
 
 void
@@ -250,15 +254,30 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
             // define as a curve
             avtCurveMetaData *curve = new avtCurveMetaData;
             curve->name = v->first;
+            if (curve->name[0] == '/')
+            {
+                curve->originalName = curve->name;
+                curve->name = std::string(&curve->name[1]);
+            }
             md->Add(curve);
             debug5<< "added metadata: curve " << v->first << endl;
 
         } 
         else
         {
-            avtCentering cent = AVT_NODECENT;
             string meshName = GenerateMeshName(v->second);
-            AddScalarVarToMetaData(md, v->first, meshName, cent);
+            avtScalarMetaData *smd = new avtScalarMetaData();
+            
+            smd->name = v->first;
+            if (smd->name[0] == '/')
+            {
+                smd->originalName = smd->name;
+                smd->name = std::string(&smd->name[1]);
+            }
+
+            smd->meshName = meshName;
+            smd->centering = AVT_NODECENT;
+            md->Add(smd);
             debug5 << "added metadata: var "<<v->first<<" on mesh "<<meshName<<endl;
         }
     }
@@ -473,16 +492,21 @@ avtADIOSBasicFileFormat::Initialize()
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Feb 10 16:08:01 EST 2010
 //
+//  Modifications:
+//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
+//   Use uint64_t for start/count arrays.
+//
 // ****************************************************************************
 
 void
-avtADIOSBasicFileFormat::ComputeStartCount(int *globalDims,
+avtADIOSBasicFileFormat::ComputeStartCount(uint64_t *globalDims,
                                            int dim,
-                                           int *start,
-                                           int *count)
+                                           uint64_t *start,
+                                           uint64_t *count)
 {
 #if PARALLEL
     int domCount[3] = {0, 0, 0};
+    int s[3] = {start[0],start[1],start[2]}, c[3] = {count[0],count[1],count[2]};
     avtDatabase::ComputeRectilinearDecomposition(dim, PAR_Size(),
                                                  globalDims[0], globalDims[1], globalDims[2],
                                                  &domCount[0], &domCount[1], &domCount[2]);
@@ -496,13 +520,15 @@ avtADIOSBasicFileFormat::ComputeStartCount(int *globalDims,
     for (int i = 0; i < 3; i++)
     {
         avtDatabase::ComputeDomainBounds(globalDims[i], domCount[i], domLogicalCoords[i],
-                                         &(start[i]),
-                                         &(count[i]));
+                                         &(s[i]),
+                                         &(c[i]));
         
-        count[i]++;
-        if (start[i]+count[i] >= globalDims[i])
-            count[i]--;
+        c[i]++;
+        if (s[i]+c[i] >= globalDims[i])
+            c[i]--;
         
+        start[i] = s[i];
+        count[i] = c[i];
     }
 #endif
 }
@@ -517,6 +543,10 @@ avtADIOSBasicFileFormat::ComputeStartCount(int *globalDims,
 //  Programmer: Dave Pugmire
 //  Creation:   Thu Sep 17 11:23:05 EDT 2009
 //
+//  Modifications:
+//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
+//   Use uint64_t for start/count arrays.
+//
 // ****************************************************************************
 
 void
@@ -529,8 +559,7 @@ avtADIOSBasicFileFormat::DoDomainDecomposition()
     std::map<std::string, ADIOSVar>::iterator v;
     for (v = fileObj->variables.begin(); v != fileObj->variables.end(); v++)
     {
-        int globalDims[3];
-        int start[3], count[3];
+        uint64_t globalDims[3], start[3], count[3];
         
         for (int i = 0; i < 3; i++)
             globalDims[i] = v->second.global[i];
@@ -549,8 +578,8 @@ avtADIOSBasicFileFormat::DoDomainDecomposition()
     for (m = meshes.begin(); m != meshes.end(); m++)
     {
 
-        int globalDims[3] = {1,1,1};
-        int start[3], count[3];
+        uint64_t globalDims[3] = {1,1,1};
+        uint64_t start[3], count[3];
         for (int i = 0; i < 3; i++)
             globalDims[i] = m->second.global[i];
 
@@ -578,11 +607,15 @@ avtADIOSBasicFileFormat::DoDomainDecomposition()
 //  Programmer: Dave Pugmire
 //  Creation:   Thu Sep 17 11:23:05 EDT 2009
 //
+//  Modifications:
+//   Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
+//   Use uint64_t for start/count arrays.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
-avtADIOSBasicFileFormat::CreateUniformGrid(const int *start,
-                                           const int *count)
+avtADIOSBasicFileFormat::CreateUniformGrid(const uint64_t *start,
+                                           const uint64_t *count)
 {
     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
     vtkFloatArray *coords[3] = {NULL,NULL,NULL};
