@@ -42,10 +42,6 @@
 #include <VisItDataInterface_V2.h>
 #include <VisItSimV2Exports.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // ****************************************************************************
 //  Library:  libsimV2runtime
 //
@@ -60,12 +56,16 @@ extern "C" {
 //
 // ****************************************************************************
 
-// Data functions that let the control interface uses
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Data functions that the control interface uses
 SIMV2_API void simv2_set_ActivateTimestep(int (*cb) (void *), void *cbdata);
-SIMV2_API void simv2_set_GetMetaData(int (*cb) (VisIt_SimulationMetaData *, void *), void *cbdata);
+SIMV2_API void simv2_set_GetMetaData(visit_handle (*cb) (void *), void *cbdata);
 SIMV2_API void simv2_set_GetMesh(visit_handle (*cb) (int, const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetMaterial(visit_handle (*cb) (int, const char *, void *), void *cbdata);
-SIMV2_API void simv2_set_GetSpecies(int (*cb) (int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
+SIMV2_API void simv2_set_GetSpecies(visit_handle (*cb) (int, const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetVariable(visit_handle (*cb) (int, const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetMixedVariable(visit_handle (*cb) (int, const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_GetCurve(visit_handle (*cb) (const char *, void *), void *cbdata);
@@ -75,26 +75,30 @@ SIMV2_API void simv2_set_GetDomainNesting(visit_handle (*cb) (const char *, void
 
 SIMV2_API void simv2_set_WriteBegin(int (*cb)(const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_WriteEnd(int (*cb)(const char *, void *), void *cbdata);
-SIMV2_API void simv2_set_WriteMesh(int (*cb)(const char *, int, visit_handle, const VisIt_MeshMetaData *, void *), void *cbdata);
-SIMV2_API void simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *, void *), void *cbdata);
+SIMV2_API void simv2_set_WriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_handle, void *), void *cbdata);
+SIMV2_API void simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, visit_handle, void *), void *cbdata);
+
+#ifdef __cplusplus
+}
+#endif
 
 // Data functions callable from SimV2 reader
-SIMV2_API int                       simv2_invoke_ActivateTimestep(void);
-SIMV2_API VisIt_SimulationMetaData *simv2_invoke_GetMetaData(void);
-SIMV2_API visit_handle              simv2_invoke_GetMesh(int, const char *);
-SIMV2_API visit_handle              simv2_invoke_GetMaterial(int, const char *);
-SIMV2_API VisIt_SpeciesData        *simv2_invoke_GetSpecies(int, const char *);
-SIMV2_API visit_handle              simv2_invoke_GetVariable(int, const char *);
-SIMV2_API visit_handle              simv2_invoke_GetMixedVariable(int, const char *);
-SIMV2_API visit_handle              simv2_invoke_GetCurve(const char *);
-SIMV2_API visit_handle              simv2_invoke_GetDomainList(const char *);
-SIMV2_API visit_handle              simv2_invoke_GetDomainBoundaries(const char *name);
-SIMV2_API visit_handle              simv2_invoke_GetDomainNesting(const char *name);
+SIMV2_API int          simv2_invoke_ActivateTimestep(void);
+SIMV2_API visit_handle simv2_invoke_GetMetaData(void);
+SIMV2_API visit_handle simv2_invoke_GetMesh(int, const char *);
+SIMV2_API visit_handle simv2_invoke_GetMaterial(int, const char *);
+SIMV2_API visit_handle simv2_invoke_GetSpecies(int, const char *);
+SIMV2_API visit_handle simv2_invoke_GetVariable(int, const char *);
+SIMV2_API visit_handle simv2_invoke_GetMixedVariable(int, const char *);
+SIMV2_API visit_handle simv2_invoke_GetCurve(const char *);
+SIMV2_API visit_handle simv2_invoke_GetDomainList(const char *);
+SIMV2_API visit_handle simv2_invoke_GetDomainBoundaries(const char *name);
+SIMV2_API visit_handle simv2_invoke_GetDomainNesting(const char *name);
 
 SIMV2_API int simv2_invoke_WriteBegin(const char *);
 SIMV2_API int simv2_invoke_WriteEnd(const char *);
-SIMV2_API int simv2_invoke_WriteMesh(const char *, int, visit_handle, const VisIt_MeshMetaData *);
-SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *);
+SIMV2_API int simv2_invoke_WriteMesh(const char *name, int dom, int meshType, visit_handle mesh, visit_handle mmd);
+SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, int, void *, int, int, visit_handle);
 
 #define VISIT_DOMAINLIST        12
 #define VISIT_DOMAIN_BOUNDARIES 13
@@ -111,12 +115,21 @@ SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, int, v
 #define VISIT_CURVE_DATA        30
 
 #define VISIT_MATERIAL_DATA     40
+#define VISIT_SPECIES_DATA     50
+
+#define VISIT_SIMULATION_METADATA    100
+#define VISIT_MESHMETADATA           101
+#define VISIT_VARIABLEMETADATA       102
+#define VISIT_MATERIALMETADATA       103
+#define VISIT_CURVEMETADATA          104
+#define VISIT_EXPRESSIONMETADATA     105
+#define VISIT_SPECIESMETADATA        106
+#define VISIT_NAMELIST               107
+#define VISIT_COMMANDMETADATA        108
+
 
 SIMV2_API int simv2_ObjectType(visit_handle h);
 SIMV2_API int simv2_FreeObject(visit_handle h);
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif

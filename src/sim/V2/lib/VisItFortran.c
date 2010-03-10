@@ -2,10 +2,10 @@
 
 const char *VISIT_F77NULLSTRING = "NULLSTRING";
 
-static char *fcdtocp_ptr = NULL;
+static const char *fcdtocp_ptr = NULL;
 static char *fcdtocp_data = NULL;
 
-char *visit_fstring_copy_string(char *src, int len)
+char *visit_fstring_copy_string(const char *src, int len)
 {
     char *cptr = NULL, *newstr = (char *)malloc(len+1);
     memcpy(newstr, src, len);
@@ -19,7 +19,7 @@ char *visit_fstring_copy_string(char *src, int len)
     return newstr;
 }
 
-char *visit_fstring_to_cstring(char *ptr, int len)
+char *visit_fstring_to_cstring(const char *ptr, int len)
 {
     if((ptr != fcdtocp_ptr) ||
        (fcdtocp_data != NULL && strncmp(fcdtocp_data, ptr, len) != 0))
@@ -30,4 +30,18 @@ char *visit_fstring_to_cstring(char *ptr, int len)
     }
 
     return fcdtocp_data;
+}
+
+void
+visit_cstring_to_fstring(const char *src, char *dest, int len)
+{
+    int i;
+    char *c = dest;
+    for(i = 0; i < len; ++i)
+    {
+        if(*src != '\0')
+            *dest++ = *src++;
+        else
+            *dest = ' ';
+    }
 }

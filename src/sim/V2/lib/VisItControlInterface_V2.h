@@ -113,10 +113,10 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
 
 /* This is needed to do collective communication before we call the other callbacks. */
 int VisItSetActivateTimestep(int (*cb)(void *), void *cbdata);
-int VisItSetGetMetaData(int (*cb)(VisIt_SimulationMetaData *, void *), void *cbdata);
+int VisItSetGetMetaData(visit_handle (*cb)(void *), void *cbdata);
 int VisItSetGetMesh(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetMaterial(visit_handle (*cb)(int, const char *, void *), void *cbdata);
-int VisItSetGetSpecies(int (*cb)(int, const char *, VisIt_SpeciesData *, void *), void *cbdata);
+int VisItSetGetSpecies(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetMixedVariable(visit_handle (*cb)(int, const char *, void *), void *cbdata);
 int VisItSetGetCurve(visit_handle (*cb)(const char *, void *), void *cbdata);
@@ -129,10 +129,10 @@ int VisItSetGetDomainBoundaries(visit_handle (*cb)(const char *, void *), void *
 int VisItSetGetDomainNesting(visit_handle (*cb)(const char *, void *), void *cbdata);
 
 /* Functions that install data writer callback functions */
-int VisItSetWriteBegin(int (*cb)(void *, const char *), void *cbdata);
-int VisItSetWriteEnd(int (*cb)(void *, const char *), void *cbdata);
-int VisItSetWriteMesh(int (*cb)(void *, const char *, int, visit_handle, const VisIt_MeshMetaData *), void *cbdata);
-int VisItSetWriteVariable(int (*cb)(void *, const char *, const char *, int, int, void *, int, int, const VisIt_VariableMetaData *), void *cbdata);
+int VisItSetWriteBegin(int (*cb)(const char *, void *), void *cbdata);
+int VisItSetWriteEnd(int (*cb)(const char *, void *), void *cbdata);
+int VisItSetWriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_handle, void *), void *cbdata);
+int VisItSetWriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, visit_handle, void *), void *cbdata);
 
 #ifdef __cplusplus
 }

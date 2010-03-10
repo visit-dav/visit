@@ -112,7 +112,7 @@ GetObject(visit_handle h)
     VisIt_CSGMesh *obj = (VisIt_CSGMesh *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_CSG_MESH)
+        if(obj->objectType() != VISIT_CSG_MESH)
         {
             VisItError("The provided handle does not point to a CSGMesh object.");
             obj = NULL;
@@ -140,13 +140,15 @@ simv2_CSGMesh_alloc(visit_handle *h)
 int
 simv2_CSGMesh_free(visit_handle h)
 {
-    int retval = VISIT_ERROR;
     VisIt_CSGMesh *obj = GetObject(h);
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 int

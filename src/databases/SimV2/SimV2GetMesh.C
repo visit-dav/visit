@@ -34,8 +34,6 @@
 #include <simv2_UnstructuredMesh.h>
 #include <simv2_VariableData.h>
 
-void FreeDataArray(VisIt_DataArray &da);
-
 // ****************************************************************************
 //  Function:  GetQuadGhostZones
 //

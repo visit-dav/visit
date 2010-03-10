@@ -13,7 +13,9 @@ struct VisIt_ObjectBase
     VisIt_ObjectBase(int t);
     virtual ~VisIt_ObjectBase();
 
-    int type;
+    int objectType() const;
+private:
+    int object_type;
 };
 
 VisIt_ObjectBase *VisItGetPointer(visit_handle h);

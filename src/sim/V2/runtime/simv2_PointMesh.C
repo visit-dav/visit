@@ -67,7 +67,7 @@ GetObject(visit_handle h, const char *fname)
     VisIt_PointMesh *obj = (VisIt_PointMesh *)VisItGetPointer(h);
     if(obj != NULL)
     {
-        if(obj->type != VISIT_POINT_MESH)
+        if(obj->objectType() != VISIT_POINT_MESH)
         {
             SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
                 "a PointMesh object.", fname);
@@ -98,13 +98,15 @@ simv2_PointMesh_alloc(visit_handle *h)
 int
 simv2_PointMesh_free(visit_handle h)
 {
-    int retval = VISIT_ERROR;
     VisIt_PointMesh *obj = GetObject(h, "simv2_PointMesh_free");
+    int retval = VISIT_ERROR;
     if(obj != NULL)
     {
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }
 
 static int

@@ -1,0 +1,26 @@
+Target: xml2sim
+Function: simv2_ExpressionMetaData_check
+Declaration: SIMV2_API int simv2_ExpressionMetaData_check(visit_handle);
+Definition:
+int
+simv2_ExpressionMetaData_check(visit_handle h)
+{
+    VisIt_ExpressionMetaData *obj = GetObject(h, "simv2_ExpressionMetaData_check");
+    int retval = VISIT_ERROR;
+    if(obj != NULL)
+    {
+        if(obj->name == "")
+        {
+            VisItError("ExpressionMetaData needs a name");
+            return VISIT_ERROR;
+        }
+        if(obj->definition == "")
+        {
+            VisItError("ExpressionMetaData needs a definition");
+            return VISIT_ERROR;
+        }
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
