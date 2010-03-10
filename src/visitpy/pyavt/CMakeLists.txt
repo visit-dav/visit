@@ -35,26 +35,28 @@
 # DAMAGE.
 #
 # Modifications:
+#  Cyrus Harrison, Wed Mar 10 11:05:26 PST 2010
+#  Use CMAKE_LIBRARY_OUTPUT_DIRECTORY instead of LIBRARY_OUTPUT_DIRECTORY.
 #
 #****************************************************************************/
 
-# custom install the pyavt module to ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt
+# custom install the pyavt module to ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt
 
 CONFIGURE_FILE(src/__init__.py
-               ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt/__init__.py @ONLY)
+               ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt/__init__.py @ONLY)
 CONFIGURE_FILE(src/filters.py
-               ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt/filters.py @ONLY)
+               ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt/filters.py @ONLY)
 
 # custom install templates to ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/
 CONFIGURE_FILE(templates/simple_expression.py
-       ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/simple_expression.py @ONLY)
+       ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/simple_expression.py @ONLY)
 CONFIGURE_FILE(templates/advanced_expression.py
-       ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/advanced_expression.py @ONLY)
+       ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/advanced_expression.py @ONLY)
 
 CONFIGURE_FILE(templates/simple_query.py
-       ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/simple_query.py @ONLY)
+       ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/simple_query.py @ONLY)
 CONFIGURE_FILE(templates/advanced_query.py
-       ${LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/advanced_query.py @ONLY)
+       ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/pyavt-templates/advanced_query.py @ONLY)
 
 INSTALL(FILES src/__init__.py src/filters.py
               DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/pyavt/
