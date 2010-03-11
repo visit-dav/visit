@@ -49,7 +49,17 @@ SimulationArguments(int argc, char **argv)
         else if(strcmp(argv[i], "-trace") == 0 &&
            (i+1) < argc)
         {
+#ifdef PARALLEL
+            int rank;
+            char *tmpfile = NULL;
+            tmpfile = (char*)malloc(strlen(argv[i+1]) + 10);
+            MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+            sprintf(tmpfile, "%s.%04d", argv[i+1], rank);
+            VisItOpenTraceFile(tmpfile);
+            free(tmpfile);
+#else
             VisItOpenTraceFile(argv[i+1]);
+#endif
             ++i;
         }
 #endif
