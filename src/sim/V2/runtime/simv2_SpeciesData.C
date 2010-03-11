@@ -125,15 +125,15 @@ simv2_SpeciesData_free(visit_handle h)
 }
 
 int
-simv2_SpeciesData_addSpeciesNames(visit_handle h, visit_handle val)
+simv2_SpeciesData_addSpeciesName(visit_handle h, visit_handle val)
 {
     int retval = VISIT_ERROR;
     if(simv2_ObjectType(val) != VISIT_NAMELIST)
     {
-        VisItError("simv2_SpeciesData_setSpeciesNames: Namelist object required");
+        VisItError("simv2_SpeciesData_setSpeciesName: Namelist object required");
         return VISIT_ERROR;
     }
-    VisIt_SpeciesData *obj = GetObject(h, "simv2_SpeciesData_setSpeciesNames");
+    VisIt_SpeciesData *obj = GetObject(h, "simv2_SpeciesData_setSpeciesName");
     if(obj != NULL)
     {
         obj->speciesNames.push_back(val);

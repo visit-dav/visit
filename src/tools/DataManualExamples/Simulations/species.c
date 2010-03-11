@@ -47,10 +47,10 @@
 #include "SimulationExample.h"
 
 /* Data Access Function prototypes */
-int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetMaterial(int, const char *, void *);
-int SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdata);
+visit_handle SimGetSpecies(int domain, const char *name, void *cbdata);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetMixedVariable(int, const char *, void *);
 
@@ -82,6 +82,8 @@ void
 simulation_data_dtor(simulation_data *sim)
 {
 }
+
+const char *cmd_names[] = {"halt", "step", "run", "update"};
 
 void read_input_deck(void) { }
 
@@ -334,19 +336,17 @@ const float matspeciesMF[3][4] = {
     {0.7f,  0.2f,    0.06f,   0.04f}
 };
 
-VisIt_NameList *
-SpeciesNames(void)
+visit_handle
+SpeciesNames(int i)
 {
-    int i, j;
-    VisIt_NameList *elem = (VisIt_NameList *)malloc(3 * sizeof(VisIt_NameList));
-    for(i = 0; i < 3; ++i)
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(VisIt_NameList_alloc(&h) == VISIT_OKAY)
     {
-        elem[i].numNames = nmaterialSpecies[i];
-        elem[i].names = (char **)malloc(sizeof(char*)*nmaterialSpecies[i]);
+        int j;
         for(j = 0; j < nmaterialSpecies[i]; ++j)
-            elem[i].names[j] = strdup(materialSpecies[i][j]);
+            VisIt_NameList_addName(h, materialSpecies[i][j]);
     }
-    return elem;
+    return h;
 }
 
 /******************************************************************************
@@ -360,97 +360,94 @@ SpeciesNames(void)
  *
  *****************************************************************************/
 
-int
-SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
-    size_t sz;
+    visit_handle md = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
 
-    /* Set the simulation state. */
-    md->currentMode = (sim->runMode == SIM_RUNNING) ?
-        VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = sim->cycle;
-    md->currentTime = sim->time;
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
+    {
+        int i;
+        visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle vmd = VISIT_INVALID_HANDLE;
+        visit_handle mat = VISIT_INVALID_HANDLE;
+        visit_handle smd = VISIT_INVALID_HANDLE;
 
-#define NDOMAINS 1
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 1;
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
 
-    /* Set the first mesh's properties.*/
-    md->meshes[0].name = strdup("mesh2d");
-    md->meshes[0].meshType = VISIT_MESHTYPE_RECTILINEAR;
-    md->meshes[0].topologicalDimension = 2;
-    md->meshes[0].spatialDimension = 2;
-    md->meshes[0].numBlocks = NDOMAINS;
-    md->meshes[0].blockTitle = strdup("Domains");
-    md->meshes[0].blockPieceName = strdup("domain");
-    md->meshes[0].numGroups = 0;
-    md->meshes[0].units = strdup("cm");
-    md->meshes[0].xLabel = strdup("Width");
-    md->meshes[0].yLabel = strdup("Height");
-    md->meshes[0].zLabel = strdup("Depth");
+        /* Add mesh metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "mesh2d");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_RECTILINEAR);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
+            VisIt_MeshMetaData_setNumDomains(mmd, 1);
+            VisIt_MeshMetaData_setDomainTitle(mmd, "Domains");
+            VisIt_MeshMetaData_setDomainPieceName(mmd, "domain");
+            VisIt_MeshMetaData_setXUnits(mmd, "cm");
+            VisIt_MeshMetaData_setYUnits(mmd, "cm");
+            VisIt_MeshMetaData_setXLabel(mmd, "Width");
+            VisIt_MeshMetaData_setYLabel(mmd, "Height");
 
-    /* Add a material */
-    sz = sizeof(VisIt_MaterialMetaData);
-    md->numMaterials = 1;
-    md->materials = (VisIt_MaterialMetaData *)malloc(sz);
-    md->materials[0].name = strdup("Material");
-    md->materials[0].meshName = strdup("mesh2d");
-    md->materials[0].numMaterials = 3;
-    md->materials[0].materialNames = (char **)malloc(3*sizeof(char*));
-    md->materials[0].materialNames[0] = strdup(matNames[0]);
-    md->materials[0].materialNames[1] = strdup(matNames[1]);
-    md->materials[0].materialNames[2] = strdup(matNames[2]);
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
 
-    /* Add a scalar. */
-    md->numVariables = 1;
-    sz = sizeof(VisIt_VariableMetaData) * md->numVariables;
-    md->variables = (VisIt_VariableMetaData *)malloc(sz);
-    memset(md->variables, 0, sz);
+        /* Add a material */
+        if(VisIt_MaterialMetaData_alloc(&mat) == VISIT_OKAY)
+        {
+            VisIt_MaterialMetaData_setName(mat, "Material");
+            VisIt_MaterialMetaData_setMeshName(mat, "mesh2d");
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[0]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[1]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[2]);
 
-    /* Add a zonal variable on mesh2d. */
-    md->variables[0].name = strdup("scalar");
-    md->variables[0].meshName = strdup("mesh2d");
-    md->variables[0].type = VISIT_VARTYPE_SCALAR;
-    md->variables[0].centering = VISIT_VARCENTERING_ZONE;
+            VisIt_SimulationMetaData_addMaterial(md, mat);
+        }
 
-    /* Add species */
-    sz = sizeof(VisIt_SpeciesMetaData);
-    md->numSpecies = 1;
-    md->species = (VisIt_SpeciesMetaData *)malloc(sz);
-    md->species[0].name = strdup("Species");
-    md->species[0].meshName = strdup("mesh2d");
-    md->species[0].materialName = strdup("Material");
-    md->species[0].nmaterialSpecies = 3;
-    sz = sizeof(VisIt_NameList) * 3;
-    md->species[0].materialSpeciesNames = SpeciesNames();
+        /* Add a variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "scalar");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh2d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 4;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
 
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
+        /* Add species */
+        if(VisIt_SpeciesMetaData_alloc(&smd) == VISIT_OKAY)
+        {
+            VisIt_SpeciesMetaData_setName(smd, "Species");
+            VisIt_SpeciesMetaData_setMeshName(smd, "mesh2d");
+            VisIt_SpeciesMetaData_setMaterialName(smd, "Material");
+            VisIt_SpeciesMetaData_addSpeciesName(smd, SpeciesNames(0));
+            VisIt_SpeciesMetaData_addSpeciesName(smd, SpeciesNames(1));
+            VisIt_SpeciesMetaData_addSpeciesName(smd, SpeciesNames(2));
 
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
+            VisIt_SimulationMetaData_addSpecies(md, smd);
+        }
 
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
+        /* Add some commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
+            }
+        }
+    }
 
-    md->genericCommands[3].name = strdup("update");
-    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[3].enabled = 1;
-
-    return VISIT_OKAY;
+    return md;
 }
 
 /******************************************************************************
@@ -569,122 +566,119 @@ SimGetMaterial(int domain, const char *name, void *cbdata)
  *
  *****************************************************************************/
 
-int
-SimGetSpecies(int domain, const char *name, VisIt_SpeciesData *spec, void *cbdata)
+visit_handle
+SimGetSpecies(int domain, const char *name, void *cbdata)
 {
-    int *species = NULL, *mixedSpecies = NULL;
-    int c, mixc, mfc, i, j;
-    float *speciesMF = NULL;
+    visit_handle h = VISIT_INVALID_HANDLE;
 
-    species = (int *)malloc(100 * sizeof(int));
-    memset(species, 0, 100 * sizeof(int));
-
-    mixedSpecies = (int *)malloc(100 * sizeof(int));
-    memset(mixedSpecies, 0, 100 * sizeof(int));
-    
-    speciesMF = (float *)malloc(100 * sizeof(float));
-    memset(speciesMF, 0, 100 * sizeof(float));
-
-    c = 0;
-    mixc = 0;
-    mfc = 0;
-    for (j = 0; j < NY-1; j++)
+    if(VisIt_SpeciesData_alloc(&h) == VISIT_OKAY)
     {
-        for (i = 0; i < NX-1; i++, c++)
+        visit_handle hspecies = VISIT_INVALID_HANDLE;
+        visit_handle hspeciesMF = VISIT_INVALID_HANDLE;
+        visit_handle hmixedSpecies = VISIT_INVALID_HANDLE;
+
+        int *species = NULL, *mixedSpecies = NULL;
+        int c, mixc, mfc, i, j;
+        float *speciesMF = NULL;
+
+        /* Allocate the species arrays */
+        species = (int *)malloc(100 * sizeof(int));
+        memset(species, 0, 100 * sizeof(int));
+
+        mixedSpecies = (int *)malloc(100 * sizeof(int));
+        memset(mixedSpecies, 0, 100 * sizeof(int));
+    
+        speciesMF = (float *)malloc(100 * sizeof(float));
+        memset(speciesMF, 0, 100 * sizeof(float));
+
+        /* Populate the species arrays based on our simpler data */
+        c = 0;
+        mixc = 0;
+        mfc = 0;
+        for (j = 0; j < NY-1; j++)
         {
-            int m, mi, s, nmats = 0;
-            /* Count the number of materials in the cell. */
-            for(mi = 0; mi < 3; ++mi)
+            for (i = 0; i < NX-1; i++, c++)
             {
-                if(matlist[j][i][mi] > 0)
-                    nmats++;
-            }   
-
-            if (nmats == 1)
-            {
-                m = matlist[j][i][0]-1;
-
-                if (nmaterialSpecies[m] == 1)
+                int m, mi, s, nmats = 0;
+                /* Count the number of materials in the cell. */
+                for(mi = 0; mi < 3; ++mi)
                 {
-                    /* This 1 material has 1 species. */
-                    species[c] = 0;
-                }
-                else
-                {
-                    /* This 1 material has many species */
-                    species[c] = mfc + 1; /* 1-origin */
-                    for (s = 0; s < nmaterialSpecies[m]; s++)
-                    {
-                        speciesMF[mfc] = matspeciesMF[m][s];
-                        mfc++;
-                    }
-                }
-            }
-            else
-            {
-                /* There are mixed materials */
-                species[c] = -mixc - 1;
+                    if(matlist[j][i][mi] > 0)
+                        nmats++;
+                }   
 
-                for (mi = 0; mi < nmats; ++mi)
+                if (nmats == 1)
                 {
-                    m = matlist[j][i][mi]-1;
-
+                    m = matlist[j][i][0]-1;
+    
                     if (nmaterialSpecies[m] == 1)
                     {
-                        /* The current material has 1 species. */
-                        mixedSpecies[mixc] = 0;
+                        /* This 1 material has 1 species. */
+                        species[c] = 0;
                     }
                     else
                     {
-                        /* The current material has many species. */
-                        int     s;
-                        mixedSpecies[mixc] = mfc + 1; /* 1-origin */
+                        /* This 1 material has many species */
+                        species[c] = mfc + 1; /* 1-origin */
                         for (s = 0; s < nmaterialSpecies[m]; s++)
                         {
                             speciesMF[mfc] = matspeciesMF[m][s];
                             mfc++;
                         }
                     }
-                    mixc++;
+                }
+                else
+                {
+                    /* There are mixed materials */
+                    species[c] = -mixc - 1;
+
+                    for (mi = 0; mi < nmats; ++mi)
+                    {
+                        m = matlist[j][i][mi]-1;
+
+                        if (nmaterialSpecies[m] == 1)
+                        {
+                            /* The current material has 1 species. */
+                            mixedSpecies[mixc] = 0;
+                        }
+                        else
+                        {
+                            /* The current material has many species. */
+                            int     s;
+                            mixedSpecies[mixc] = mfc + 1; /* 1-origin */
+                            for (s = 0; s < nmaterialSpecies[m]; s++)
+                            {
+                                speciesMF[mfc] = matspeciesMF[m][s];
+                                mfc++;
+                            }
+                        }
+                        mixc++;
+                    }
                 }
             }
         }
+
+        VisIt_SpeciesData_addSpeciesName(h, SpeciesNames(0));
+        VisIt_SpeciesData_addSpeciesName(h, SpeciesNames(1));
+        VisIt_SpeciesData_addSpeciesName(h, SpeciesNames(2));
+
+        VisIt_VariableData_alloc(&hspecies);
+        VisIt_VariableData_setDataI(hspecies, VISIT_OWNER_VISIT, 1,
+            (NX-1)*(NY-1), species);
+        VisIt_SpeciesData_setSpecies(h, hspecies);
+
+        VisIt_VariableData_alloc(&hspeciesMF);
+        VisIt_VariableData_setDataF(hspeciesMF, VISIT_OWNER_VISIT, 1,
+            mfc, speciesMF);
+        VisIt_SpeciesData_setSpeciesMF(h, hspeciesMF);
+
+        VisIt_VariableData_alloc(&hmixedSpecies);
+        VisIt_VariableData_setDataI(hmixedSpecies, VISIT_OWNER_VISIT, 1,
+            mixc, mixedSpecies);
+        VisIt_SpeciesData_setMixedSpecies(h, hmixedSpecies);
     }
 
-    /*
-    VisIt_SpeciesData_setDimensions(h, dims, ndims);
-    int matid;
-    VisIt_SpeciesData_newMaterial(&matid);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][0]);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][1]);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][2]);
-    VisIt_SpeciesData_newMaterial(&matid);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][0]);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][1]);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][2]);
-    VisIt_SpeciesData_newMaterial(&matid);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][0]);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][1]);
-    VisIt_SpeciesData_addSpecies(h, matid, materialSpecies[0][2]);
-    */
-
-    spec->ndims = 2;
-    spec->dims[0] = NX-1;
-    spec->dims[1] = NY-1;
-    spec->nmaterialSpecies = 3;
-    spec->materialSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM,
-        nmaterialSpecies);
-    spec->materialSpeciesNames = SpeciesNames();
-
-    spec->species = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, species);
-
-    spec->nmixedSpecies = mixc;
-    spec->mixedSpecies = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT, mixedSpecies);
-
-    spec->nspeciesMF = mfc;
-    spec->speciesMF = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, speciesMF);
-
-    return VISIT_OKAY;
+    return h;
 }
 
 /******************************************************************************

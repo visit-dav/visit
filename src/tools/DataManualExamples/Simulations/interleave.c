@@ -47,7 +47,7 @@
 #include "SimulationExample.h"
 
 /* Data Access Function prototypes */
-int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
 
 /******************************************************************************
@@ -78,6 +78,8 @@ void
 simulation_data_dtor(simulation_data *sim)
 {
 }
+
+const char *cmd_names[] = {"halt", "step", "run", "update"};
 
 void read_input_deck(void) { }
 
@@ -288,11 +290,10 @@ int main(int argc, char **argv)
  *
  *****************************************************************************/
 
-int
-SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
-    int i;
-    size_t sz;
+    visit_handle md = VISIT_INVALID_HANDLE;
     const char *meshNames[] = {
         "curv2d_static_float", "curv2d_static_double", 
         "curv2d_dynamic_float", "curv2d_dynamic_double",
@@ -332,58 +333,56 @@ SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
     };
     simulation_data *sim = (simulation_data *)cbdata;
 
-    /* Set the simulation state. */
-    md->currentMode = (sim->runMode == SIM_RUNNING) ?
-        VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = sim->cycle;
-    md->currentTime = sim->time;
-
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 24;
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
-
-    /* Set the mesh properties.*/
-    for(i = 0; i < md->numMeshes; ++i)
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
-        md->meshes[i].name = strdup(meshNames[i]);
-        md->meshes[i].meshType = meshTypes[i];
-        md->meshes[i].topologicalDimension = dims[i];
-        md->meshes[i].spatialDimension = dims[i];
-        md->meshes[i].numBlocks = 1;
-        md->meshes[i].blockTitle = strdup("Domains");
-        md->meshes[i].blockPieceName = strdup("domain");
-        md->meshes[i].numGroups = 0;
-        md->meshes[i].units = strdup("cm");
-        md->meshes[i].xLabel = strdup("Width");
-        md->meshes[i].yLabel = strdup("Height");
-        md->meshes[i].zLabel = strdup("Depth");
+        int i;
+        visit_handle cmd = VISIT_INVALID_HANDLE;
+
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
+
+        /* Add mesh metadata. */
+        for(i = 0; i < 24; ++i)
+        {
+            visit_handle mmd = VISIT_INVALID_HANDLE;
+            if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+            {
+                /* Set the mesh's properties.*/
+                VisIt_MeshMetaData_setName(mmd, meshNames[i]);
+                VisIt_MeshMetaData_setMeshType(mmd, meshTypes[i]);
+                VisIt_MeshMetaData_setTopologicalDimension(mmd, dims[i]);
+                VisIt_MeshMetaData_setSpatialDimension(mmd, dims[i]);
+                VisIt_MeshMetaData_setNumDomains(mmd, 1);
+                VisIt_MeshMetaData_setDomainTitle(mmd, "Domains");
+                VisIt_MeshMetaData_setDomainPieceName(mmd, "domain");
+                VisIt_MeshMetaData_setNumGroups(mmd, 0);
+                VisIt_MeshMetaData_setXUnits(mmd, "cm");
+                VisIt_MeshMetaData_setYUnits(mmd, "cm");
+                VisIt_MeshMetaData_setZUnits(mmd, "cm");
+                VisIt_MeshMetaData_setXLabel(mmd, "Width");
+                VisIt_MeshMetaData_setYLabel(mmd, "Height");
+                VisIt_MeshMetaData_setZLabel(mmd, "Depth");
+
+                VisIt_SimulationMetaData_addMesh(md, mmd);
+            }
+        }
+            
+        /* Add some commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
+            }
+        }
     }
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 4;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
-
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
-
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
-
-    md->genericCommands[3].name = strdup("update");
-    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[3].enabled = 1;
-
-    return VISIT_OKAY;
+    return md;
 }
 
 #define NX 5

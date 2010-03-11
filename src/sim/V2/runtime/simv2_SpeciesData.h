@@ -49,7 +49,7 @@ extern "C" {
 
 SIMV2_API int simv2_SpeciesData_alloc(visit_handle *obj);
 SIMV2_API int simv2_SpeciesData_free(visit_handle obj);
-SIMV2_API int simv2_SpeciesData_addSpeciesNames(visit_handle h, visit_handle);
+SIMV2_API int simv2_SpeciesData_addSpeciesName(visit_handle h, visit_handle);
 SIMV2_API int simv2_SpeciesData_setSpecies(visit_handle h, visit_handle);
 SIMV2_API int simv2_SpeciesData_setSpeciesMF(visit_handle h, visit_handle);
 SIMV2_API int simv2_SpeciesData_setMixedSpecies(visit_handle h, visit_handle);

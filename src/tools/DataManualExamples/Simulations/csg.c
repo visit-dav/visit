@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -47,7 +47,7 @@
 #include "SimulationExample.h"
 
 /* Data Access Function prototypes */
-int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
 
 /******************************************************************************
@@ -63,8 +63,6 @@ typedef struct
     double  time;
     int     runMode;
     int     done;
-
-    VisIt_MeshMetaData mmd;
 } simulation_data;
 
 void
@@ -74,34 +72,14 @@ simulation_data_ctor(simulation_data *sim)
     sim->time = 0.;
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
-
-    /* Let's initialize some mesh metadata here to show that we can pass
-     * user-defined data pointers to the various data access functions. In this
-     * case, we'll pass the address of this "mmd" structure and use it in the
-     * data access function to initialize metadata that we pass back to VisIt.
-     */
-    memset(&sim->mmd, 0, sizeof(VisIt_MeshMetaData));
-    sim->mmd.name = "csg";
-    sim->mmd.meshType = VISIT_MESHTYPE_CSG;
-    sim->mmd.topologicalDimension = 3;
-    sim->mmd.spatialDimension = 3;
-    sim->mmd.numBlocks = 1;
-    sim->mmd.blockTitle = "Regions";
-    sim->mmd.blockPieceName = "region";
-    sim->mmd.blockNames = (char**)malloc(sizeof(char*));
-    sim->mmd.blockNames[0] = "Clipped Hollow Sphere";
-    sim->mmd.numGroups = 0;
-    sim->mmd.units = "cm";
-    sim->mmd.xLabel = "Width";
-    sim->mmd.yLabel = "Height";
-    sim->mmd.zLabel = "Depth";
 }
 
 void
 simulation_data_dtor(simulation_data *sim)
 {
-    free(sim->mmd.blockNames);
 }
+
+const char *cmd_names[] = {"halt", "step", "run", "addplot", "saveimage"};
 
 void simulate_one_timestep(simulation_data *sim);
 void read_input_deck(void) { }
@@ -398,27 +376,6 @@ int main(int argc, char **argv)
 }
 
 /* DATA ACCESS FUNCTIONS */
-static void
-copy_VisIt_MeshMetaData(VisIt_MeshMetaData *dest, VisIt_MeshMetaData *src)
-{
-#define STRDUP(s) ((s == NULL) ? NULL : strdup(s))
-    int i;
-
-    memcpy(dest, src, sizeof(VisIt_MeshMetaData));
-    dest->name           = STRDUP(src->name);
-    dest->blockTitle     = STRDUP(src->blockTitle);
-    dest->blockPieceName = STRDUP(src->blockPieceName);
-    if(src->blockNames != NULL)
-    {
-        dest->blockNames = (char**)malloc(src->numBlocks*sizeof(char*));
-        for(i = 0; i < src->numBlocks; ++i)
-            dest->blockNames[i] = STRDUP(src->blockNames[i]);
-    }
-    dest->units          = STRDUP(src->units);
-    dest->xLabel         = STRDUP(src->xLabel);
-    dest->yLabel         = STRDUP(src->yLabel);
-    dest->zLabel         = STRDUP(src->zLabel);
-}
 
 /******************************************************************************
  *
@@ -431,55 +388,59 @@ copy_VisIt_MeshMetaData(VisIt_MeshMetaData *dest, VisIt_MeshMetaData *src)
  *
  *****************************************************************************/
 
-int
-SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
+    visit_handle md = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
-    size_t sz;
 
-    /* Set the simulation state. */
-    md->currentMode = (sim->runMode == SIM_RUNNING) ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = sim->cycle;
-    md->currentTime = sim->time;
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
+    {
+        int i;
+        visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle cmd = VISIT_INVALID_HANDLE;
 
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 1;
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
 
-    /* Set the first mesh's properties based on data that we passed in
-     * as callback data.
-     */
-    copy_VisIt_MeshMetaData(&md->meshes[0], &sim->mmd);
+        /* Fill in the AMR metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "csg");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_CSG);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 3);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 3);
+            VisIt_MeshMetaData_setNumDomains(mmd, 1);
+            VisIt_MeshMetaData_setDomainTitle(mmd, "Regions");
+            VisIt_MeshMetaData_setDomainPieceName(mmd, "region");
+            VisIt_MeshMetaData_addDomainName(mmd, "Clipped Hollow Sphere");
+            VisIt_MeshMetaData_setXUnits(mmd, "cm");
+            VisIt_MeshMetaData_setYUnits(mmd, "cm");
+            VisIt_MeshMetaData_setZUnits(mmd, "cm");
+            VisIt_MeshMetaData_setXLabel(mmd, "Width");
+            VisIt_MeshMetaData_setYLabel(mmd, "Height");
+            VisIt_MeshMetaData_setZLabel(mmd, "Depth");
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 5;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
 
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
+        /* Add some custom commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
+            }
+        }
+    }
 
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
-
-    md->genericCommands[3].name = strdup("update");
-    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[3].enabled = 1;
-
-    md->genericCommands[4].name = strdup("saveimage");
-    md->genericCommands[4].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[4].enabled = 1;
-
-    return VISIT_OKAY;
+    return md;
 }
 
 /******************************************************************************

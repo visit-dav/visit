@@ -585,9 +585,9 @@ void
 AddMaterialMetaData(avtDatabaseMetaData *md, visit_handle h)
 {
     char *name = NULL, *meshName = NULL;
-    if(simv2_VariableMetaData_getName(h, &name) == VISIT_OKAY)
+    if(simv2_MaterialMetaData_getName(h, &name) == VISIT_OKAY)
     {
-        if(simv2_VariableMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
+        if(simv2_MaterialMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
         {
             int nMat = 0;
             if(simv2_MaterialMetaData_getNumMaterialName(h, &nMat) == VISIT_OKAY)
@@ -701,12 +701,13 @@ AddSpeciesMetaData(avtDatabaseMetaData *md, visit_handle h)
                             numSpecies.push_back(onelist.size());
                             speciesNames.push_back(onelist);
                         }
-
-                        avtSpeciesMetaData *species = new avtSpeciesMetaData(name,
-                            meshName, matName, numSpecies.size(), numSpecies, 
-                            speciesNames);
-                        md->Add(species);
                     }
+
+                    avtSpeciesMetaData *species = new avtSpeciesMetaData(name,
+                        meshName, matName, numSpecies.size(), numSpecies, 
+                        speciesNames);
+
+                    md->Add(species);
                 }            
                 free(matName);
             }
@@ -1119,7 +1120,8 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
     }
 
-    //md->Print(cout);
+    md->Print(DebugStream::Stream4());
+
     simv2_SimulationMetaData_free(h);
 #endif
 }
