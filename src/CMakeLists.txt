@@ -200,17 +200,6 @@ ENDIF(VISIT_STATIC)
 OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
 OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." ON)
 
-# VTK Python's wrappers avalaible with the static libs, so we cannot support
-# python filters in a static build
-IF(VISIT_STATIC AND VISIT_PYTHON_FILTERS)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters are not supported for static build")
-ENDIF(VISIT_STATIC AND VISIT_PYTHON_FILTERS)
-
-IF(VISIT_PYTHON_FILTERS)
-    ADD_DEFINITIONS(-DVISIT_PYTHON_FILTERS)
-ENDIF(VISIT_PYTHON_FILTERS)
-
 OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
 OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
 OPTION(VISIT_ZLIB "Use VisIt's internal libz" OFF)
@@ -528,6 +517,23 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
+
+#-----------------------------------------------------------------------------
+# If we are doing a static build or the VTK Python wrappers do not exist:
+#   Disable python filters.
+#-----------------------------------------------------------------------------
+
+# VTK Python's wrappers are not available with a static build of VTK.
+IF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
+    SET(VISIT_PYTHON_FILTERS OFF)
+    MESSAGE(STATUS "Python Engine Filters disabled because a static build of VisIt was selected.")
+ENDIF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
+
+# Disable python filters if the VTK Python's wrappers are not found.
+IF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
+    SET(VISIT_PYTHON_FILTERS OFF)
+    MESSAGE(STATUS "Python Engine Filters disabled because VTK python wrappers are not installed.")
+ENDIF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
 
 # Configure Qt4 support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
@@ -1142,6 +1148,10 @@ SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering si
 
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-config.h @ONLY IMMEDIATE)
+
+CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
+               ${VISIT_BINARY_DIR}/include/visit-python-config.h @ONLY IMMEDIATE)
+
 
 #-----------------------------------------------------------------------------
 # Create common/misc/ConfigureInfo.C 

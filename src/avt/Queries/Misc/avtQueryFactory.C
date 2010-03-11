@@ -39,7 +39,6 @@
 #include <avtQueryFactory.h>
 #include <avtDataObjectQuery.h>
 
-
 // available queries
 #include <avtActualDataMinMaxQuery.h>
 #include <avtActualDataNumNodesQuery.h>
@@ -101,7 +100,7 @@
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtZoneCenterQuery.h>
 
-
+#include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
 #include <avtPythonQuery.h>
 #endif
