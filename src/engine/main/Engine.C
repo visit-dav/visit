@@ -141,7 +141,7 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 // Purpose:
 //   This class is used when the engine needs to reverse launch the viewer.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr  9 11:51:35 PDT 2009
