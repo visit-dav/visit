@@ -147,7 +147,7 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 // Creation:   Thu Apr  9 11:51:35 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class ViewerRemoteProcess : public RemoteProcess
