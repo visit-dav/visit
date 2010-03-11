@@ -47,7 +47,7 @@
 #include "SimulationExample.h"
 
 /* Data Access Function prototypes */
-int SimGetMetaData(VisIt_SimulationMetaData *, void *);
+visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetMaterial(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
@@ -81,6 +81,8 @@ void
 simulation_data_dtor(simulation_data *sim)
 {
 }
+
+const char *cmd_names[] = {"halt", "step", "run", "update"};
 
 void read_input_deck(void) { }
 
@@ -311,86 +313,80 @@ static const int   rmesh_ndims = 2;
  *
  *****************************************************************************/
 
-int
-SimGetMetaData(VisIt_SimulationMetaData *md, void *cbdata)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
-    size_t sz;
+    visit_handle md = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
 
-    /* Set the simulation state. */
-    md->currentMode = (sim->runMode == SIM_RUNNING) ?
-        VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = sim->cycle;
-    md->currentTime = sim->time;
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
+    {
+        int i;
+        visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle vmd = VISIT_INVALID_HANDLE;
+        visit_handle mat = VISIT_INVALID_HANDLE;
 
-#define NDOMAINS 1
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 1;
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
 
-    /* Set the first mesh's properties.*/
-    md->meshes[0].name = strdup("mesh2d");
-    md->meshes[0].meshType = VISIT_MESHTYPE_RECTILINEAR;
-    md->meshes[0].topologicalDimension = 2;
-    md->meshes[0].spatialDimension = 2;
-    md->meshes[0].numBlocks = NDOMAINS;
-    md->meshes[0].blockTitle = strdup("Domains");
-    md->meshes[0].blockPieceName = strdup("domain");
-    md->meshes[0].numGroups = 0;
-    md->meshes[0].units = strdup("cm");
-    md->meshes[0].xLabel = strdup("Width");
-    md->meshes[0].yLabel = strdup("Height");
-    md->meshes[0].zLabel = strdup("Depth");
+        /* Add mesh metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "mesh2d");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_RECTILINEAR);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
+            VisIt_MeshMetaData_setNumDomains(mmd, 1);
+            VisIt_MeshMetaData_setDomainTitle(mmd, "Domains");
+            VisIt_MeshMetaData_setDomainPieceName(mmd, "domain");
+            VisIt_MeshMetaData_setXUnits(mmd, "cm");
+            VisIt_MeshMetaData_setYUnits(mmd, "cm");
+            VisIt_MeshMetaData_setXLabel(mmd, "Width");
+            VisIt_MeshMetaData_setYLabel(mmd, "Height");
 
-    /* Add a material */
-    sz = sizeof(VisIt_MaterialMetaData);
-    md->numMaterials = 1;
-    md->materials = (VisIt_MaterialMetaData *)malloc(sz);
-    md->materials[0].name = strdup("Material");
-    md->materials[0].meshName = strdup("mesh2d");
-    md->materials[0].numMaterials = 3;
-    md->materials[0].materialNames = (char **)malloc(3*sizeof(char*));
-    md->materials[0].materialNames[0] = strdup(matNames[0]);
-    md->materials[0].materialNames[1] = strdup(matNames[1]);
-    md->materials[0].materialNames[2] = strdup(matNames[2]);
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
+       
+        /* Add a material */
+        if(VisIt_MaterialMetaData_alloc(&mat) == VISIT_OKAY)
+        {
+            VisIt_MaterialMetaData_setName(mat, "Material");
+            VisIt_MaterialMetaData_setMeshName(mat, "mesh2d");
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[0]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[1]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[2]);
 
-    /* Add a scalar. */
-    md->numVariables = 1;
-    sz = sizeof(VisIt_VariableMetaData) * md->numVariables;
-    md->variables = (VisIt_VariableMetaData *)malloc(sz);
-    memset(md->variables, 0, sz);
+            VisIt_SimulationMetaData_addMaterial(md, mat);
+        }
 
-    /* Add a zonal variable on mesh2d. */
-    md->variables[0].name = strdup("scalar");
-    md->variables[0].meshName = strdup("mesh2d");
-    md->variables[0].type = VISIT_VARTYPE_SCALAR;
-    md->variables[0].centering = VISIT_VARCENTERING_ZONE;
+        /* Add a variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "scalar");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh2d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 4;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
 
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
+        /* Add some commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
+            }
+        }
+    }
 
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
-
-    md->genericCommands[3].name = strdup("update");
-    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[3].enabled = 1;
-
-    return VISIT_OKAY;
+    return md;
 }
 
 /******************************************************************************

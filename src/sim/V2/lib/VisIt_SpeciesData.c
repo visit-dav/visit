@@ -59,9 +59,9 @@ VisIt_SpeciesData_free(visit_handle obj)
 }
 
 int
-VisIt_SpeciesData_addSpeciesNames(visit_handle h, visit_handle val)
+VisIt_SpeciesData_addSpeciesName(visit_handle h, visit_handle val)
 {
-    VISIT_DYNAMIC_EXECUTE(SpeciesData_addSpeciesNames,
+    VISIT_DYNAMIC_EXECUTE(SpeciesData_addSpeciesName,
         int (*)(visit_handle, visit_handle),
         int (*cb)(visit_handle, visit_handle),
         (*cb)(h, val));
@@ -99,7 +99,7 @@ VisIt_SpeciesData_setMixedSpecies(visit_handle h, visit_handle val)
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITSPECDATAALLOC           F77_ID(visitspecdataalloc_,visitspecdataalloc,VISITSPECDATAALLOC)
 #define F_VISITSPECDATAFREE            F77_ID(visitspecdatafree_,visitspecdatafree,VISITSPECDATAFREE)
-#define F_VISITSPECDATAADDSPECIESNAMES F77_ID(visitspecdataaddspeciesnames_,visitspecdataaddspeciesnames, VISITSPECDATAADDSPECIESNAMES)
+#define F_VISITSPECDATAADDSPECIESNAME  F77_ID(visitspecdataaddspeciesname_,visitspecdataaddspeciesname, VISITSPECDATAADDSPECIESNAME)
 #define F_VISITSPECDATASETSPECIES      F77_ID(visitspecdatasetspecies_,visitspecdatasetspecies, VISITSPECDATASETSPECIES)
 #define F_VISITSPECDATASETSPECIESMF    F77_ID(visitspecdatasetspeciesmf_,visitspecdatasetspeciesmf, VISITSPECDATASETSPECIESMF)
 #define F_VISITSPECDATASETMIXEDSPECIES F77_ID(visitspecdatasetmixedspecies_,visitspecdatasetmixedspecies, VISITSPECDATASETMIXEDSPECIES)
@@ -117,9 +117,9 @@ F_VISITSPECDATAFREE(visit_handle *h)
 }
 
 int
-F_VISITSPECDATAADDSPECIESNAMES(visit_handle *h, visit_handle *val)
+F_VISITSPECDATAADDSPECIESNAME(visit_handle *h, visit_handle *val)
 {
-    return VisIt_SpeciesData_addSpeciesNames(*h, *val);
+    return VisIt_SpeciesData_addSpeciesName(*h, *val);
 }
 
 int

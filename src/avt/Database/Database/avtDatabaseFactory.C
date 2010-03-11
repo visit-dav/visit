@@ -256,6 +256,9 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Delete a database pointer in the event that a 2nd reader could open
 //    the data file too.
 //
+//    Brad Whitlock, Wed Mar 10 10:50:00 PST 2010
+//    Rethrow a caught ImproperUseException so its message won't be changed.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -348,6 +351,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying, false);
+        }
+        CATCH(ImproperUseException)
+        {
+            rv = NULL;
+            RETHROW;
         }
         CATCHALL
         {

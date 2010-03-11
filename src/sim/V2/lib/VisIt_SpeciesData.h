@@ -45,7 +45,7 @@ extern "C" {
 
 int VisIt_SpeciesData_alloc(visit_handle *obj);
 int VisIt_SpeciesData_free(visit_handle obj);
-int VisIt_SpeciesData_addSpeciesNames(visit_handle h, visit_handle);
+int VisIt_SpeciesData_addSpeciesName(visit_handle h, visit_handle);
 int VisIt_SpeciesData_setSpecies(visit_handle h, visit_handle);
 int VisIt_SpeciesData_setSpeciesMF(visit_handle h, visit_handle);
 int VisIt_SpeciesData_setMixedSpecies(visit_handle h, visit_handle);
