@@ -468,7 +468,7 @@ Engine *Engine::Instance()
 //    Cyrus Harrison, Wed Jan 23 09:21:18 PST 2008
 //    Changed set_new_handler to std::set_new_handler b/c of change from
 //    deprecated <new.h> to <new>
-//  
+//
 //    Cyrus Harrison, Thu Jan 31 14:48:18 PST 2008
 //    Removed a lingering cerr message showing the MPI rank of the engine 
 //    process.
