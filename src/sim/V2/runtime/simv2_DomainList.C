@@ -123,6 +123,7 @@ simv2_DomainList_setDomains(visit_handle h, int alldoms, visit_handle mydoms)
     {
         obj->FreeDomains();
         obj->mydoms = mydoms;
+        obj->alldoms = alldoms;
 
         retval = VISIT_OKAY;
     }
@@ -159,6 +160,21 @@ simv2_DomainList_check(visit_handle h)
         {
             VisItError("No domains were supplied for the DomainList");
             return VISIT_ERROR;
+        }
+        int owner, dataType, nComps, nTuples;
+        void *data = NULL;
+        if(simv2_VariableData_getData(obj->mydoms, owner, dataType, nComps,
+            nTuples, data) == VISIT_OKAY)
+        {
+            int *doms = (int*)data;
+            for(int i = 0; i < nTuples; ++i)
+            {
+                if(doms[i] < 0 || doms[i] >= obj->alldoms)
+                {
+                    VisItError("The domain list contained out of range domain numbers");
+                    return VISIT_ERROR;
+                }
+            }
         }
         retval = VISIT_OKAY;
     }
