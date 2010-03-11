@@ -472,7 +472,7 @@ Engine *Engine::Instance()
 //    Cyrus Harrison, Thu Jan 31 14:48:18 PST 2008
 //    Removed a lingering cerr message showing the MPI rank of the engine
 //    process.
-//  
+//
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
 //
