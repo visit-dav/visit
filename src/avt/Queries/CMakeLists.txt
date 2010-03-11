@@ -38,6 +38,10 @@
 #    Cyrus Harrison,Tue Feb  2 16:35:18 PST 2010
 #    Added the python filter query.
 #
+#    Cyrus Harrison, Wed Mar 10 14:28:33 PST 2010   
+#    Use proper python include path ${PYTHON_INCLUDE_PATH}, instead of 
+#    ${PYTHON_INCLUDE_DIRS}
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -186,7 +190,7 @@ ${VTK_INCLUDE_DIRS}
 
 IF(VISIT_PYTHON_FILTERS)
     INCLUDE_DIRECTORIES(
-        ${PYTHON_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_PATH}
         ${VISIT_SOURCE_DIR}/avt/PythonFilters
     )
 ENDIF(VISIT_PYTHON_FILTERS)

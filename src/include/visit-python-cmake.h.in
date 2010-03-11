@@ -1,0 +1,6 @@
+/*******************************************************************************
+ * Configure options related to Python Filters
+ ******************************************************************************/
+
+/* Define if Python Filters are enabled */
+#cmakedefine VISIT_PYTHON_FILTERS
