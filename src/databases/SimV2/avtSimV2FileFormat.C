@@ -1908,8 +1908,9 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
             hints[rank][i] = dom; 
         else
         {
-            debug1 << mName << "An out of range domain number was given "
-                "in the domain list" << endl;
+            debug1 << mName << "An out of range domain number " << dom
+                   << " was given in the domain list. Valid numbers are in [0,"
+                   << alldoms << "]" << endl;
             simv2_FreeObject(h);
             return;
         }
