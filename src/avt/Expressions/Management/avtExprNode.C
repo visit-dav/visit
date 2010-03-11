@@ -90,6 +90,7 @@
 #include <avtVectorComposeExpression.h>
 #include <avtVectorDecomposeExpression.h>
 
+#include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
 #include <avtPythonExpression.h>
 #endif
