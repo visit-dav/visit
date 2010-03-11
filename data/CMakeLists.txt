@@ -51,6 +51,10 @@
 #   Brad Whitlock, Wed Feb 10 14:44:23 PST 2010
 #   I added Velodyne test data.
 #
+#   Eric Brugger, Thu Mar 11 15:04:16 PST 2010
+#   I added logic to create the example data files for a visit distribution
+#   if the file visit_dist_data.tar.gz was not present.
+#
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -406,20 +410,59 @@ ADD_CUSTOM_TARGET(test)
 ADD_DEPENDENCIES(test data)
 
 #-----------------------------------------------------------------------------
-# Add install command for contents of "visit_dist_data"
+# Add install command for contents of "data"
 #-----------------------------------------------------------------------------
 
-SET(DIST_UNTAR_CMD "${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
+IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
+    SET(DIST_UNTAR_CMD "${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
 
-INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+    INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
 
-INSTALL(DIRECTORY
-            ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
-        DESTINATION
-            data
-        DIRECTORY_PERMISSIONS
-            OWNER_READ OWNER_WRITE OWNER_EXECUTE
-            GROUP_READ GROUP_WRITE GROUP_EXECUTE
-            WORLD_READ WORLD_EXECUTE)
+    INSTALL(DIRECTORY
+                ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
+            DESTINATION
+                data
+            DIRECTORY_PERMISSIONS
+                OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                WORLD_READ WORLD_EXECUTE)
+ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
+    ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv3d.silo poly3d.silo rect2d.silo
+                              rect3d.silo ucd2d.silo ucd3d.silo
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/testall)
+    ADD_CUSTOM_COMMAND(OUTPUT globe.silo globe_mat0.silo
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/globe)
+    ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/correlationtest)
+    ADD_CUSTOM_COMMAND(OUTPUT multi_rect2d.silo multi_rect3d.silo
+                              multi_ucd3d.silo
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/multi_test)
+    ADD_CUSTOM_COMMAND(OUTPUT noise.silo
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/noise)
+    ADD_CUSTOM_COMMAND(OUTPUT tire.silo
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tire)
+
+    ADD_CUSTOM_TARGET(create_data_examples ALL
+                      DEPENDS
+                          curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
+                          globe.silo globe_mat0.silo
+                          multi_rect2d.silo multi_rect3d.silo multi_ucd3d.silo
+                          noise.silo poly3d.silo rect2d.silo rect3d.silo
+                          tire.silo ucd2d.silo ucd3d.silo
+                     )
+
+    INSTALL(FILES
+                curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
+                globe.silo globe_mat0.silo
+                multi_rect2d.silo multi_rect3d.silo multi_ucd3d.silo
+                noise.silo poly3d.silo rect2d.silo rect3d.silo
+                tire.silo ucd2d.silo ucd3d.silo
+            DESTINATION
+                data
+            PERMISSIONS
+                OWNER_READ OWNER_WRITE
+                GROUP_READ GROUP_WRITE
+                WORLD_READ)
+ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
 
 
