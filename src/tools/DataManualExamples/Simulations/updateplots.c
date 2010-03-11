@@ -551,7 +551,7 @@ SimGetMetaData(void *cbdata)
             VisIt_SimulationMetaData_addExpression(md, emd);
         }
             
-        /* Add some custom commands. */
+        /* Add some commands. */
         for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
         {
             visit_handle cmd = VISIT_INVALID_HANDLE;

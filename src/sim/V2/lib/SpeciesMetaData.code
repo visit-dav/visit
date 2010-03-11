@@ -1,7 +1,7 @@
 Target: xml2sim
 Code: simv2_SpeciesMetaData_addSpeciesName
 Prefix:
-    if(simv2_ObjectType(h) != VISIT_NAMELIST)
+    if(simv2_ObjectType(val) != VISIT_NAMELIST)
     {
         VisItError("Only NameList objects can be inserted as species names");
         return VISIT_ERROR;

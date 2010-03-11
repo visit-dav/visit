@@ -141,12 +141,6 @@ simv2_CurvilinearMesh_setCoords_helper(visit_handle h, visit_handle *cHandles,
         }
 
         // Error checking.
-        if(nComps[i] != ndims)
-        {
-            SNPRINTF(tmp, 80, "Coordinates must have %d components", ndims);
-            VisItError(tmp);
-            return VISIT_ERROR;
-        }
         if(dataType[i] != VISIT_DATATYPE_FLOAT &&
            dataType[i] != VISIT_DATATYPE_DOUBLE)
         {
@@ -232,7 +226,7 @@ simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int ndims, int dims[3]
     // Error checking.
     if(nComps != ndims)
     {
-        VisItError("Interleaved coordinates nTuples must match the number of dimensions.");
+        VisItError("Interleaved coordinates nComps must match the number of dimensions.");
         return VISIT_ERROR;
     }
     if(dataType != VISIT_DATATYPE_FLOAT &&

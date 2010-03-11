@@ -235,7 +235,7 @@ simv2_SpeciesMetaData_getMaterialName(visit_handle h, char **val)
 int
 simv2_SpeciesMetaData_addSpeciesName(visit_handle h, visit_handle val)
 {
-    if(simv2_ObjectType(h) != VISIT_NAMELIST)
+    if(simv2_ObjectType(val) != VISIT_NAMELIST)
     {
         VisItError("Only NameList objects can be inserted as species names");
         return VISIT_ERROR;
