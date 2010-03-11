@@ -174,7 +174,7 @@ protected:
         for(size_t i = 0; i < commandLine.size(); ++i)
         {
             if(commandLine[i] == "-host" ||
-               commandLine[i] == "-port" || 
+               commandLine[i] == "-port" ||
                commandLine[i] == "-key")
             {
                 launchArgs[commandLine[i]] = commandLine[i+1];
