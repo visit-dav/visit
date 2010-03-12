@@ -845,6 +845,9 @@
 #     are files instead of links in the installation directory so that make
 #     package works with VISIT_INSTALL_THIRD_PARTY defined.
 #
+#     Cyrus Harrison, Fri Mar 12 15:47:11 PST 2010
+#     Use qt 4.6.1 & python 2.6.4 on all platforms.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1147,39 +1150,18 @@ export MESA_VERSION=${MESA_VERSION:-"7.5"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.5"}
 export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5"
 
-# The old Python version at LLNL does not work on Mac, we need a newer version
-export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
-export PYTHON_VERSION=${PYTHON_VERSION:-"2.5"}
-# Need this for the dylib build
-export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.5"}
-export PYTHON_FILE=${PYTHON_FILE:-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
-export PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR:-"Python-$PYTHON_VERSION"}
-
-# FIXME: Hack: Use newer versions for OSX
-if [[ "$OPSYS" == "Darwin" ]] ; then
-    export PYTHON_VERSION="2.6.4"
-    export PYTHON_COMPATIBILITY_VERSION=2.6
-    export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-    export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-fi
+export PYTHON_FILE_SUFFIX="tgz"
+export PYTHON_VERSION="2.6.4"
+export PYTHON_COMPATIBILITY_VERSION=2.6
+export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
 
 export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
 export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
 export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
-if [[ "$OPSYS" == "Darwin" ]] ; then
-   VER=$(uname -r)
-   if [[ ${VER%%.*} -ge 10 ]] ; then
-       export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.5.3.tar.gz"}
-       export QT_VERSION=${QT_VERSION:-"4.5.3"}
-   else
-       export QT_FILE=${QT_FILE:-"qt-mac-opensource-src-4.4.3.tar.gz"}
-       export QT_VERSION=${QT_VERSION:-"4.4.3"}
-   fi
-else
-   export QT_FILE=${QT_FILE:-"qt-x11-opensource-src-4.4.3.tar.gz"}
-   export QT_VERSION=${QT_VERSION:-"4.4.3"}
-fi
+export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.6.1.tar.gz"}
+export QT_VERSION=${QT_VERSION:-"4.6.1"}
 
 export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
 
@@ -2943,17 +2925,19 @@ function build_mesa
 function qt_license_prompt
 {
 
+
 QT_LIC_MSG="During the build process this script will build Qt and confirm\
             that you accept Trolltech's license for the Qt4 Open Source\
             Edition. Please respond \"yes\" to accept (in advance) either\
-            the GNU General Public License (GPL) version 2 or 3. Visit\
+            the Lesser GNU General Public License (LGPL) version 2.1 or \
+            the GNU General Public License (GPL) version 3. Visit\
             http://trolltech.com/products/appdev/licensing to view these\
             licenses."
 
 QT_CONFIRM_MSG="VisIt requires Qt4: Please respond with \"yes\" to accept\
-                Qt licensing under the terms of the GNU General Public License\
-                (GPL) version 2 or 3."
-
+                Qt licensing under the terms of the Lesser GNU General \
+                Public License (LGPL) version 2.1 or \
+                the GNU General Public License (GPL) version 3"
 if [[ "$GRAPHICAL" == "yes" ]] ; then
     $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 
     if [[ $? == 1 ]] ; then
@@ -2982,17 +2966,17 @@ function build_qt
     #
     # Prepare the build dir using src file.
     #
-    
+
     prepare_build_dir $QT_BUILD_DIR $QT_FILE
     # 0, already exists, 1  untarred src, 2 error
-    
+
     if [[ $? == -1 ]] ; then
        warn "Unable to prepare Qt4 build directory. Giving Up!"
        return 1
     fi
-    
+
     cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
-      
+
     #
     # Platform specific configuration
     #
@@ -3042,8 +3026,7 @@ function build_qt
          "-make libs -make tools -fast -no-separate-debug-info" \
          "${qt_flags}" \
          "${EXTRA_QT_FLAGS}"
-    (if [[ $(echo $QT_VERSION | cut -c 3) > 4 ]]; then echo 'o'; fi; echo "yes" ) | \
-        ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
+   (echo "o"; echo "yes") | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
                     -platform ${QT_PLATFORM} \
                     -make libs -make tools -fast -no-separate-debug-info \
                     ${qt_flags} \
@@ -3065,7 +3048,7 @@ function build_qt
           return 1
        fi
     fi
-    
+
     #
     # Build Qt4. Config options above make sure we only build the libs & tools.
     #
@@ -3075,10 +3058,10 @@ function build_qt
        warn "Qt4 build failed.  Giving up"
        return 1
     fi
-    
+
     info "Installing Qt4 . . . "
     $MAKE install
-    
+
     #
     # Visit expects .so suffix on qt libs but xlc uses .a suffixe even 
     # for shared libs (however subversioned qts libs end up with a .so suffix)
@@ -3109,10 +3092,15 @@ function build_qt
             done
         done
     fi
-    
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/qt"
+       chgrp -R ${GROUP} "$VISITDIR/qt"
+    fi
+
     cd "$START_DIR"
     info "Done with Qt4"
-    
+
     return 0
 }
 
