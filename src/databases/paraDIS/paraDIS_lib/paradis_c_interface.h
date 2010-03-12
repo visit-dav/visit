@@ -5,12 +5,11 @@
 
 #ifndef PARADIS_C_INTERFACE_H
 #define PARADIS_C_INTERFACE_H
-
-#include <boost/cstdint.hpp>
-using boost::int8_t;
-using boost::int32_t;
-using boost::uint32_t;
-
+#ifndef WIN32
+#  include <stdint.h>
+#else
+#  include <msc_stdint.h>
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif  

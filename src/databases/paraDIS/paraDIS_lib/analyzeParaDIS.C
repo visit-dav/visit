@@ -10,6 +10,7 @@ void usage(void) {
   fprintf(stderr, "options:  \n"); 
   fprintf(stderr, " -debugfiles:  dump out detailed analysis in files\n"); 
   fprintf(stderr, " -v (or -verbose) num:  set verbosity level to num (scale of 0-5, 5 is very verbose, 0 is strangely quiet)\n"); 
+  fprintf(stderr, " -threshold num:  report on number of arms of various types which have length less than the given threshold\n"); 
   return; 
 }
 
@@ -17,13 +18,15 @@ int main(int argc, char *argv[]) {
 
   try {
     long debugfiles = 0, verbosity=0, help=false; 
-    argt args[7] = {
+    double threshold=-1.0; 
+    argt args[5] = {
       {BOOL_TYPE, "-debugfiles", 1, &debugfiles}, 
       {BOOL_TYPE, "-help", 1, &help}, 
       {LONG_TYPE, "-v", 1, &verbosity}, 
       {LONG_TYPE, "-verbose", 1, &verbosity}, 
-    };
-    arg_expect_args(args, 3);
+      {DOUBLE_TYPE, "-threshold", 1, &threshold}      
+    }; 
+    arg_expect_args(args, 5);
     arg_ignore_bad_args(1); 
     if (!arg_parse_args(&argc, argv)) {
       fprintf(stderr, "****************************************\n"); 
@@ -46,7 +49,8 @@ int main(int argc, char *argv[]) {
     if (verbosity) {
       gDataSet->SetVerbosity(verbosity, "analyzeParaDIS-debug.txt"); 
     }
-    
+    gDataSet->SetThreshold(threshold);
+
     gDataSet->SetDataFile(argv[1]); 
     
     gDataSet->EnableDebugOutput(debugfiles); 
