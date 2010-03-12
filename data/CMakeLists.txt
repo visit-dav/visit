@@ -55,6 +55,11 @@
 #   I added logic to create the example data files for a visit distribution
 #   if the file visit_dist_data.tar.gz was not present.
 #
+#   Eric Brugger, Fri Mar 12 13:08:21 PST 2010
+#   I added dependencies and additional outputs to the custom commands I
+#   added yesterday so that parallel builds would work and make clean would
+#   remove all the files.
+#
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -427,20 +432,40 @@ IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                 GROUP_READ GROUP_WRITE GROUP_EXECUTE
                 WORLD_READ WORLD_EXECUTE)
 ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
-    ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv3d.silo poly3d.silo rect2d.silo
+    ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv2d_colmajor.silo
+                              curv3d.silo curv3d_colmajor.silo
+                              poly3d.silo rect2d.silo
                               rect3d.silo ucd2d.silo ucd3d.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/testall)
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/testall
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/testall)
     ADD_CUSTOM_COMMAND(OUTPUT globe.silo globe_mat0.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/globe)
-    ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/correlationtest)
-    ADD_CUSTOM_COMMAND(OUTPUT multi_rect2d.silo multi_rect3d.silo
-                              multi_ucd3d.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/multi_test)
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/globe
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/globe)
+    ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb dbC00.pdb
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/correlationtest
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/correlationtest)
+    ADD_CUSTOM_COMMAND(OUTPUT multi_curv2d.silo multi_curv3d.silo
+                              multi_point2d.silo multi_rect2d.silo
+                              multi_rect3d.silo multi_ucd3d.silo
+                              hist_ucd3d_0000 hist_ucd3d_0001 hist_ucd3d_0002
+                              hist_ucd3d_0003 hist_ucd3d_0004 hist_ucd3d_0005
+                              hist_ucd3d_0006 hist_ucd3d_0007 hist_ucd3d_0008
+                              hist_ucd3d_0009
+                              histne_ucd3d_0000 histne_ucd3d_0001
+                              histne_ucd3d_0002 histne_ucd3d_0003
+                              histne_ucd3d_0004 histne_ucd3d_0005
+                              histne_ucd3d_0006 histne_ucd3d_0007
+                              histne_ucd3d_0008 histne_ucd3d_0009
+                              multi_ucd3d_ti_0001 multi_ucd3d_ti_0002
+                              multi_ucd3d_ti_0003 multi_ucd3d_ti_base
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/multi_test
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/multi_test)
     ADD_CUSTOM_COMMAND(OUTPUT noise.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/noise)
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/noise
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/noise)
     ADD_CUSTOM_COMMAND(OUTPUT tire.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tire)
+                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tire
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tire)
 
     ADD_CUSTOM_TARGET(create_data_examples ALL
                       DEPENDS
