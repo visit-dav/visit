@@ -230,12 +230,12 @@ ADD_FORTRAN_SIMV1_SIMULATION(fsim12 fsim12.f)
 
 ADD_SIMV2_SIMULATION(species species.c)
 
-ADD_SIMV1_SIMULATION(unstructured unstructured.c)
-ADD_FORTRAN_SIMV1_SIMULATION(funstructured funstructured.f)
+ADD_SIMV2_SIMULATION(unstructured unstructured.c)
+ADD_FORTRAN_SIMV2_SIMULATION(funstructured funstructured.f)
 
 ADD_SIMV2_SIMULATION(updateplots updateplots.c)
 ADD_PARALLEL_SIMV2_SIMULATION(updateplots_par updateplots.c)
-ADD_FORTRAN_SIMV1_SIMULATION(fupdateplots fupdateplots.f)
+ADD_FORTRAN_SIMV2_SIMULATION(fupdateplots fupdateplots.f)
 
 #usequeries.c
 

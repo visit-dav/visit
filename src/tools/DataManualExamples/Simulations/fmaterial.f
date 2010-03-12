@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------------
 c
-c Copyright (c) 2000 - 2006, The Regents of the University of California
+c Copyright (c) 2000 - 2010, The Regents of the University of California
 c Produced at the Lawrence Livermore National Laboratory
 c LLNL-CODE-400142
 c All rights reserved.
@@ -40,7 +40,7 @@ c-----------------------------------------------------------------
 c Program: main
 c
 c Programmer: Brad Whitlock
-c Date:       Fri Feb 2 17:47:08 PST 2007
+c Date:       Thu Mar 11 12:13:06 PST 2010
 c
 c Modifications:
 c
@@ -58,7 +58,7 @@ ccc   local variables
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING,VISIT_F77NULLSTRINGLEN)
+     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
       call mainloop()
       stop
       end
@@ -73,7 +73,7 @@ ccc   local variables
       integer visitstate, result, blocking
 ccc   SIMSTATE common block
       integer runflag, simcycle
-      real simtime
+      double precision simtime
       common /SIMSTATE/ runflag, simcycle, simtime
       save /SIMSTATE/
 
@@ -115,7 +115,7 @@ c     main loop
       subroutine simulate_one_timestep()
 ccc   SIMSTATE common block
       integer runFlag, simcycle
-      real simtime
+      double precision simtime
       common /SIMSTATE/ runflag, simcycle, simtime
 c Simulate one time step
       simcycle = simcycle + 1
@@ -140,7 +140,7 @@ c---------------------------------------------------------------------------
       include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
-      real simtime
+      double precision simtime
       common /SIMSTATE/ runflag, simcycle, simtime
 
 c     Handle the commands that we define in visitgetmetadata.
@@ -183,64 +183,92 @@ c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
       end
 
 c---------------------------------------------------------------------------
+c visitactivatetimestep
+c---------------------------------------------------------------------------
+      integer function visitactivatetimestep()
+      implicit none
+      include "visitfortransimV2interface.inc"
+      visitactivatetimestep = VISIT_OKAY
+      end
+
+c---------------------------------------------------------------------------
 c visitgetmetadata
 c---------------------------------------------------------------------------
-      integer function visitgetmetadata(handle)
+      integer function visitgetmetadata()
       implicit none
-      integer handle
       include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
-      real simtime
+      double precision simtime
       common /SIMSTATE/ runflag, simcycle, simtime
-      integer err, tdim, sdim, mesh, mt, scalar, curve, mat, e
+      integer md, mmd, mat, cmd, err
 
-      err = visitmdsetcycletime(handle, simcycle, simtime)
-      if(runflag.eq.1) then
-          err = visitmdsetrunning(handle, VISIT_SIMMODE_RUNNING)
-      else
-          err = visitmdsetrunning(handle, VISIT_SIMMODE_STOPPED)
-      endif
+      if(visitmdsimalloc(md).eq.VISIT_OKAY) then
+          err = visitmdsimsetcycletime(md, simcycle, simtime)
+          if(runflag.eq.1) then
+              err = visitmdsimsetmode(md, VISIT_SIMMODE_RUNNING)
+          else
+              err = visitmdsimsetmode(md, VISIT_SIMMODE_STOPPED)
+          endif
 
 c     Add a 2D rectilinear mesh
-      mt = VISIT_MESHTYPE_RECTILINEAR
-      tdim = 2
-      sdim = 2
-      mesh = visitmdmeshcreate(handle, "mesh2d", 6, mt, tdim, sdim, 1)
-      if(mesh.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmeshsetunits(handle, mesh, "cm", 2)
-          err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
-     .    "Height", 6, "Depth", 5)
-          err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
-          err = visitmdmeshsetblockpiecename(handle, mesh, "domain", 6)
-      endif
+          err = visitmdmeshalloc(mmd);
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdmeshsetname(mmd, "mesh2d", 6)
+              err = visitmdmeshsetmeshtype(mmd, 
+     .            VISIT_MESHTYPE_RECTILINEAR)
+              err = visitmdmeshsettopologicaldim(mmd, 2)
+              err = visitmdmeshsetspatialdim(mmd, 2)
+              err = visitmdmeshsetnumdomains(mmd, 1)
+              err = visitmdmeshsetdomaintitle(mmd, "Domains", 7)
+              err = visitmdmeshsetdomainpiecename(mmd, "domain", 6)
+              err = visitmdmeshsetxunits(mmd, "cm", 2)
+              err = visitmdmeshsetyunits(mmd, "cm", 2)
+              err = visitmdmeshsetxlabel(mmd, "Width", 5)
+              err = visitmdmeshsetylabel(mmd, "Height", 6)
+              err = visitmdsimaddmesh(md, mmd)
+          endif
 
 c     Add a material
-      mat = visitmdmaterialcreate(handle, "mat", 3, "mesh2d", 6)
-      if(mat.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmaterialadd(handle, mat, "Water", 5)
-          err = visitmdmaterialadd(handle, mat, "Membrane", 8)
-          err = visitmdmaterialadd(handle, mat, "Air", 3)
-      endif
+          err = visitmdmatalloc(mat)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdmatsetname(mat, "mat", 3)
+              err = visitmdmatsetmeshname(mat, "mesh2d", 6)
+              err = visitmdmataddmaterialname(mat, "Water", 5)
+              err = visitmdmataddmaterialname(mat,
+     .           "Membrane", 8)
+              err = visitmdmataddmaterialname(mat, 
+     .           "Air", 3)
+              err = visitmdsimaddmaterial(md, mat)
+          endif
 
 c     Add simulation commands
-      err = visitmdaddsimcommand(handle, "halt", 4, VISIT_CMDARG_NONE,
-     .                           1)
-      err = visitmdaddsimcommand(handle, "step", 4, VISIT_CMDARG_NONE,
-     .                           1)
-      err = visitmdaddsimcommand(handle, "run", 3, VISIT_CMDARG_NONE,
-     .                           1)
-
-      visitgetmetadata = VISIT_OKAY
+          err = visitmdcmdalloc(cmd)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdcmdsetname(cmd, "halt", 4)
+              err = visitmdsimaddgenericcommand(md, cmd)
+          endif
+          err = visitmdcmdalloc(cmd)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdcmdsetname(cmd, "step", 4)
+              err = visitmdsimaddgenericcommand(md, cmd)
+          endif
+          err = visitmdcmdalloc(cmd)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdcmdsetname(cmd, "run", 3)
+              err = visitmdsimaddgenericcommand(md, cmd)
+          endif
+      endif
+      visitgetmetadata = md
       end
 
 c---------------------------------------------------------------------------
 c visitgetmesh
 c---------------------------------------------------------------------------
-      integer function visitgetmesh(handle, domain, name, lname)
+      integer function visitgetmesh(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
+      integer     domain, lname
       include "visitfortransimV2interface.inc" 
 ccc   RECTMESH
       integer NX, NY
@@ -248,73 +276,87 @@ ccc   RECTMESH
       parameter (NY = 4)
 
       real rmx(NX), rmy(NY)
-      integer rmdims(3), rmndims
-      data rmndims /2/
-      data rmdims /NX, NY, 1/
       data rmx/0., 1., 2., 3., 4./
       data rmy/0., 1., 2., 3./
 ccc   local variables
-      integer m, baseindex(3), minrealindex(3), maxrealindex(3)
-      real rmz
+      integer h, x, y, err
 
-      m = VISIT_ERROR
-      if(visitstrcmp(name, lname, "mesh2d", 6).eq.0) then
-          baseindex(1) = 1
-          baseindex(2) = 1
-          baseindex(3) = 1
-          minrealindex(1) = 0
-          minrealindex(2) = 0
-          minrealindex(3) = 0
-          maxrealindex(1) = rmdims(1)-1
-          maxrealindex(2) = rmdims(2)-1
-          maxrealindex(3) = rmdims(3)-1
-c Create a rectilinear rmesh here
-          m = visitmeshrectilinear(handle, baseindex, minrealindex,
-     .        maxrealindex, rmdims, rmndims, rmx, rmy, rmz)
+      h = VISIT_INVALID_HANDLE
+      if(visitstrcmp(name, lname, "mesh2d", 6).eq.0) then          
+c Create a rectilinear mesh here
+          if(visitrectmeshalloc(h).eq.VISIT_OKAY) then
+              err = visitvardataalloc(x)
+              err = visitvardataalloc(y)
+              err = visitvardatasetf(x,VISIT_OWNER_COPY,1,NX,rmx)
+              err = visitvardatasetf(y,VISIT_OWNER_COPY,1,NY,rmy)
+              err = visitrectmeshsetcoordsxy(h, x, y)
+          endif
       endif
-      visitgetmesh = m
+      visitgetmesh = h
       end
 
 c---------------------------------------------------------------------------
 c visitgetscalar
 c---------------------------------------------------------------------------
-      integer function visitgetscalar(handle, domain, name, lname)
+      integer function visitgetscalar(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
+      integer     domain, lname
       include "visitfortransimV2interface.inc"
       visitgetscalar = VISIT_ERROR
       end
 
-
 c---------------------------------------------------------------------------
 c visitgetcurve
 c---------------------------------------------------------------------------
-      integer function visitgetcurve(handle, name, lname)
+      integer function visitgetcurve(name, lname)
       implicit none
       character*8 name
-      integer     handle, lname
+      integer     lname
       include "visitfortransimV2interface.inc"
-      visitgetcurve = VISIT_ERROR
+      visitgetcurve = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetdomainlist
 c---------------------------------------------------------------------------
-      integer function visitgetdomainlist(handle)
+      integer function visitgetdomainlist(name, lname)
       implicit none
-      integer handle
+      character*8 name
+      integer     lname
       include "visitfortransimV2interface.inc"
-      visitgetdomainlist = VISIT_OKAY
+      visitgetdomainlist = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainbounds
+c---------------------------------------------------------------------------
+      integer function visitgetdomainbounds(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainbounds = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainnesting
+c---------------------------------------------------------------------------
+      integer function visitgetdomainnesting(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainnesting = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetmaterial
 c---------------------------------------------------------------------------
-      integer function visitgetmaterial(handle, domain, name, lname)
+      integer function visitgetmaterial(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
+      integer     domain, lname
       include "visitfortransimV2interface.inc"
 ccc   RECTMESH
       integer NX, NY
@@ -339,19 +381,20 @@ c Size the material object so it has the right dimensions (equal to
 c the number of cells in the mesh. Unstructured grids would have
 c /ncells,1,1/ size for the material. That means that the cellid array
 c would have one linear index in its first element.
-      integer dims(3), err, I, J, cellid(2), nmats, m
+      integer err, I, J, m, cellid, nmats, h
       integer matno(3), cellmat(3)
       real cellmatvf(3)
-      data dims/4, 3,1/
-      err = visitmaterialsetdims(handle, dims, 2)
-      matno(1) = visitmaterialadd(handle, "Water", 5)
-      matno(2) = visitmaterialadd(handle, "Membrane", 8)
-      matno(3) = visitmaterialadd(handle, "Air", 3)
 
+      h = VISIT_INVALID_HANDLE
+      err = visitmatdataalloc(h)
+      err = visitmatdataappendcells(h, (NX-1) * (NY-1))
+      err = visitmatdataaddmat(h, "Water", 5, matno(1))
+      err = visitmatdataaddmat(h, "Membrane", 8, matno(2))
+      err = visitmatdataaddmat(h, "Air", 3, matno(3))
+
+      cellid = 0
       do 2020 J=1,NY-1
-          cellid(2) = J
           do 2010 I=1,NX-1
-              cellid(1) = I
               nmats = 0
               do 2000 m=1,3
                   if(matlist(m,I,J).gt.0) then
@@ -361,16 +404,17 @@ c would have one linear index in its first element.
                   endif
 2000          continue
               if(nmats.gt.1) then
-                  err = visitmaterialaddmixed(handle,
+                  err = visitmatdataaddmixedcell(h,
      . cellid, cellmat, cellmatvf, nmats)
               else
-                  err = visitmaterialaddclean(handle, 
+                  err = visitmatdataaddcleancell(h, 
      . cellid, cellmat)
               endif
+              cellid = cellid + 1
 2010      continue
 2020  continue
 
-      visitgetmaterial = err
+      visitgetmaterial = h
       end
 
 
