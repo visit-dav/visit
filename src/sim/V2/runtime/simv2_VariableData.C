@@ -1,4 +1,5 @@
 #include <snprintf.h>
+#include <string.h>
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
 
@@ -89,10 +90,11 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
     int nTuples, void *data)
 {
     if(owner != VISIT_OWNER_SIM &&
-       owner != VISIT_OWNER_VISIT)
+       owner != VISIT_OWNER_VISIT &&
+       owner != VISIT_OWNER_COPY)
     {
-        VisItError("VariableData's owner must be set to VISIT_OWNER_SIM "
-            "or VISIT_SIM_VISIT.");
+        VisItError("VariableData's owner must be set to VISIT_OWNER_SIM"
+            ", VISIT_SIM_VISIT, or VISIT_OWNER_COPY.");
         return VISIT_ERROR;
     }
 
@@ -125,15 +127,43 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
         return VISIT_ERROR;
     }
 
+    int realOwner = owner;
+    void *realData = data;
+    if(owner == VISIT_OWNER_COPY)
+    {
+        size_t sz = 1;
+        if(dataType == VISIT_DATATYPE_CHAR)
+            sz = sizeof(char);
+        else if(dataType == VISIT_DATATYPE_INT)
+            sz = sizeof(int);
+        else if(dataType == VISIT_DATATYPE_FLOAT)
+            sz = sizeof(float);
+        else
+            sz = sizeof(double);
+        sz *= nComps;
+        sz *= nTuples;
+        realData = malloc(sz);
+        if(realData != NULL)
+        {
+            memcpy(realData, data, sz);
+            realOwner = VISIT_OWNER_VISIT;
+        }
+        else
+        {
+            VisItError("Could not allocate memory to copy data");
+            return VISIT_ERROR;
+        }
+    }
+
     int retval = VISIT_ERROR;
     VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_setData");
     if(obj != NULL)
     {
-        obj->owner = owner;
+        obj->owner = realOwner;
         obj->dataType = dataType; 
         obj->nComponents = nComps;
         obj->nTuples = nTuples;
-        obj->data = data;
+        obj->data = realData;
 
         retval = VISIT_OKAY;
     }

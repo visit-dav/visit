@@ -105,6 +105,7 @@ typedef enum {
 /* Array Owner */
 #define VISIT_OWNER_SIM                   0
 #define VISIT_OWNER_VISIT                 1
+#define VISIT_OWNER_COPY                  2
 
 /* Cell Types */
 #define VISIT_CELL_BEAM                   0

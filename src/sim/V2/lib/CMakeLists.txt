@@ -76,13 +76,38 @@ ${VISIT_BINARY_DIR}/include
 
 ADD_LIBRARY(simV2 ${LIBSIM_SOURCES})
 
-#ADD_LIBRARY(simV2f ${FORTRAN_LIBSIM_SOURCES})
+ADD_LIBRARY(simV2f ${FORTRAN_LIBSIM_SOURCES})
 
-INSTALL(TARGETS simV2 #simV2f
+INSTALL(TARGETS simV2 simV2f
     ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/lib   
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
-INSTALL(FILES VisItControlInterface_V2.h VisItDataInterface_V2.h VisItInterfaceTypes_V2.h visitfortransimV2interface.inc
+INSTALL(FILES 
+VisItControlInterface_V2.h
+VisItDataInterface_V2.h
+VisItInterfaceTypes_V2.h
+VisIt_CSGMesh.h
+VisIt_CommandMetaData.h
+VisIt_CurveData.h
+VisIt_CurveMetaData.h
+VisIt_CurvilinearMesh.h
+VisIt_DomainBoundaries.h
+VisIt_DomainList.h
+VisIt_DomainNesting.h
+VisIt_ExpressionMetaData.h
+VisIt_MaterialData.h
+VisIt_MaterialMetaData.h
+VisIt_MeshMetaData.h
+VisIt_NameList.h
+VisIt_PointMesh.h
+VisIt_RectilinearMesh.h
+VisIt_SimulationMetaData.h
+VisIt_SpeciesData.h
+VisIt_SpeciesMetaData.h
+VisIt_UnstructuredMesh.h
+VisIt_VariableData.h
+VisIt_VariableMetaData.h
+visitfortransimV2interface.inc
     DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/include
     PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ 
 )

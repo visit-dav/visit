@@ -121,24 +121,28 @@ F_VISITVARDATAFREE(visit_handle *obj)
 int
 F_VISITVARDATASETC(visit_handle *obj, int *owner, int *ncomps, int *ntuples, char *ptr)
 {
-    return VisIt_VariableData_setDataC(*obj, *owner, *ncomps, *ntuples, ptr);
+    int realOwner = (*owner == VISIT_OWNER_VISIT) ? VISIT_OWNER_COPY : *owner;
+    return VisIt_VariableData_setDataC(*obj, realOwner, *ncomps, *ntuples, ptr);
 }
 
 int
 F_VISITVARDATASETI(visit_handle *obj, int *owner, int *ncomps, int *ntuples, int *ptr)
 {
-    return VisIt_VariableData_setDataI(*obj, *owner, *ncomps, *ntuples, ptr);
+    int realOwner = (*owner == VISIT_OWNER_VISIT) ? VISIT_OWNER_COPY : *owner;
+    return VisIt_VariableData_setDataI(*obj, realOwner, *ncomps, *ntuples, ptr);
 }
 
 int
 F_VISITVARDATASETF(visit_handle *obj, int *owner, int *ncomps, int *ntuples, float *ptr)
 {
-    return VisIt_VariableData_setDataF(*obj, *owner, *ncomps, *ntuples, ptr);
+    int realOwner = (*owner == VISIT_OWNER_VISIT) ? VISIT_OWNER_COPY : *owner;
+    return VisIt_VariableData_setDataF(*obj, realOwner, *ncomps, *ntuples, ptr);
 }
 
 int
 F_VISITVARDATASETD(visit_handle *obj, int *owner, int *ncomps, int *ntuples, double *ptr)
 {
-    return VisIt_VariableData_setDataD(*obj, *owner, *ncomps, *ntuples, ptr);
+    int realOwner = (*owner == VISIT_OWNER_VISIT) ? VISIT_OWNER_COPY : *owner;
+    return VisIt_VariableData_setDataD(*obj, realOwner, *ncomps, *ntuples, ptr);
 }
 
