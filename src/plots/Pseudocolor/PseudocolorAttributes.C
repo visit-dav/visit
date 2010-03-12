@@ -1633,3 +1633,39 @@ PseudocolorAttributes::Print(ostream &out, bool selected_only) const
     out << "}";
 }
 
+// ****************************************************************************
+// Method: PseudocolorAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method handles some old fields by converting them to new fields.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 09:33:52 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <Utility.h>
+void
+PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
+    if(searchNode == 0)
+        return;
+
+    if(VersionLessThan(configVersion, "2.0.0"))
+    {
+        DataNode *k = 0;
+        if((k = searchNode->GetNode("useColorTableOpacity")) != 0)
+        {
+            PseudocolorAttributes::Opacity val = k->AsBool() ? ColorTable : Explicit;
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("opacityType", Opacity_ToString(val)));
+        }
+    }
+}
+
