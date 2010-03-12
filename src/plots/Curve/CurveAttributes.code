@@ -1,3 +1,50 @@
+Target: xml2python
+Code: PyCurveAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in CurveAttributes
+    if(strcmp(name, "cycleColors") == 0)
+    {
+        CurveAttributesObject *curveObj = (CurveAttributesObject *)self;
+        bool cycleColors = curveObj->data->GetCurveColorSource() == CurveAttributes::Custom;
+        return PyInt_FromLong(cycleColors?1L:0L);
+    }
+    // Try and handle legacy fields in CurveAttributes
+    if(strcmp(name, "color") == 0)
+    {
+        return CurveAttributes_GetCurveColor(self, NULL);
+    }
+
+Code: PyCurveAttributes_setattr
+Prefix:
+Postfix:
+   // Try and handle legacy fields in CurveAttributes
+    if(obj == NULL)
+    {
+        CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
+        if(strcmp(name, "color") == 0)
+        {
+            obj = CurveAttributes_SetCurveColor(self, tuple);
+        }
+        if(strcmp(name, "cycleColors") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
+            else
+                CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -201,8 +248,7 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
     }
 }
 
-Target: xml2info
-Function:  CurveViewerPluginInfo::PermitsCurveViewScaling
+Function: CurveViewerPluginInfo::PermitsCurveViewScaling
 Declaration: virtual bool PermitsCurveViewScaling() const;
 Definition:
 bool
@@ -210,3 +256,4 @@ CurveViewerPluginInfo::PermitsCurveViewScaling() const
 {
     return true;
 }
+

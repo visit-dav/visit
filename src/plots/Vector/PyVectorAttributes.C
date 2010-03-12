@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -1032,6 +1032,13 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "origOnly") == 0)
         return VectorAttributes_GetOrigOnly(self, NULL);
 
+    // Try and handle legacy fields in VectorAttributes
+    if(strcmp(name, "highQuality") == 0)
+    {
+        VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
+        bool highQuality = vectorObj->data->GetGeometryQuality() == VectorAttributes::High;
+        return PyInt_FromLong(highQuality?1L:0L);
+    }
     return Py_FindMethod(PyVectorAttributes_methods, self, name);
 }
 
@@ -1094,10 +1101,33 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "origOnly") == 0)
         obj = VectorAttributes_SetOrigOnly(self, tuple);
 
+   // Try and handle legacy fields in VectorAttributes
+    if(obj == NULL)
+    {
+        VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
+        if(strcmp(name, "highQuality") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
+            else
+                VectorObj->data->SetGeometryQuality(VectorAttributes::High);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 
