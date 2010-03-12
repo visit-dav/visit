@@ -61,6 +61,9 @@ vtkVisItTensorGlyph::~vtkVisItTensorGlyph()
 //   Strengthen tests for mismatched data types.  Also fix possible memory 
 //   leak.
 //   
+//   Hank Childs, Fri Mar 12 12:15:49 PST 2010
+//   Incorporate fix from Seth Johnson of UMich for scaling.
+//
 // ****************************************************************************
 
 int 
@@ -441,6 +444,10 @@ vtkVisItTensorGlyph::RequestData(
         // If ThreeGlyphs is false we use the first (largest) 
         // eigenvalue as scalar.
         s = w[eigen_dir];
+        if (this->ScaleFactor > 0.0)
+          {
+          s /= this->ScaleFactor;
+          }
         for (i=0; i < numSourcePts; i++) 
           {
           newScalars->InsertTuple(ptIncr+i, &s);

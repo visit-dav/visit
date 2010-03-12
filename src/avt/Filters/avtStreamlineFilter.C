@@ -1155,6 +1155,10 @@ avtStreamlineFilter::SetStreamlineDirection(int dir)
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Reverse the logic to check for on demand.
 //
+//   Hank Childs, Fri Mar 12 12:25:11 PST 2010
+//   Don't use the interval tree if another filter has invalidated it
+//   (i.e. displace, reflect)
+//
 // ****************************************************************************
 
 bool
@@ -1167,8 +1171,12 @@ avtStreamlineFilter::CheckOnDemandViability(void)
         return false;
     }
     
-    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
-    bool val = (it == NULL ? false : true);
+    bool val = false;
+    if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    {
+        avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+        bool val = (it == NULL ? val : true);
+    }
     debug1 << "avtStreamlineFilter::CheckOnDemandViability(): = " << val <<endl;
     return val;
 }
