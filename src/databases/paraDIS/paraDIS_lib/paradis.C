@@ -19,10 +19,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 using namespace RC_Math; 
- 
-
-
-
 using namespace std; 
 namespace paraDIS {
   
@@ -302,8 +298,96 @@ namespace paraDIS {
     return true;  
   }/* end HaveFourUniqueType111ExternalArms */ 
 
+#if LINKED_LOOPS
+  //===========================================================================
+  void Arm::CheckForLinkedLoops(void) {
+    if (mCheckedForLinkedLoop) return; 
+    mCheckedForLinkedLoop = true; 
+    
+    /*!
+      Iff we have one terminal node with four arms and one neighbor, or two terminal nodes with three arms and num neighbors == 2, then we are part of a linked loop.   
+      Note that it's not true that if you have two terminal nodes with N arms and number of arms on each terminal node == N-1 that it's necessarily a linked loop, although it certainly is an interesting beast.  
+    */     
+    
+    bool notPartOfLoop = false; //set for early termination
+    int numTerminalNodeArms = 0; // all terminal nodes must have the same number of arms. 
+    // Count the number of distinct neighboring arms to this one
+    vector<Arm*> myNeighbors; 
+    vector<FullNode *>::iterator termNode = mTerminalNodes.begin(), endNode = mTerminalNodes.end();  
+    for (; !notPartOfLoop && termNode != endNode; termNode++) {
+      int neighborNum = (*termNode)->GetNumNeighbors(); 
+      if (!numTerminalNodeArms) {
+        numTerminalNodeArms = neighborNum; 
+      } else if (neighborNum != numTerminalNodeArms) {
+        notPartOfLoop = true; 
+        break; 
+      }
+      
+      while (neighborNum --) {
+        Arm *neighbor = (*termNode)->GetNeighbor(neighborNum)->mParentArm; 
+        bool knownNeighbor = (neighbor == this); 
+        if (!knownNeighbor && 
+            neighbor->mCheckedForLinkedLoop) {
+   
+          /*!
+            Since this neighbor has been checked, we cannot be 
+            part of a linked loop, or we would already be marked as such.
+            Just a quick reality check to confirm it and we're done.
+          */
+  
+    if (neighbor->mPartOfLinkedLoop) {
+            dbprintf(0, "Impossible -- neighbor is part of linked loop but we are not!\n"); 
+            exit(1); 
+          }
+          notPartOfLoop = true; 
+          break; 
+        }
+        int myNeighborNum = myNeighbors.size(); 
+        while (!knownNeighbor && myNeighborNum--) {
+          if (myNeighbors[myNeighborNum] == neighbor) {
+            // duplicates are ok, and for linked loops, actually expected
+            knownNeighbor = true; 
+          }
+        }
+        if (!knownNeighbor) { 
+          // Aha!  We have a new neighbor of us
+          myNeighbors.push_back(neighbor);         
+        }// found a new neighbor
+      }// looking at all neighbors of terminal node
+    } // looking at both terminal nodes
+  
+    /*! 
+      Are we part of a linked loop? See definition above -- it's tricky.
+    */ 
+     
+       if (!notPartOfLoop) {
+      if ((myNeighbors.size() ==  2 && mTerminalNodes.size() == 2 && numTerminalNodeArms == 3) ||  
+          (myNeighbors.size() == 1 && mTerminalNodes.size() == 1 && numTerminalNodeArms == 4)) {
+        mPartOfLinkedLoop = true; 
+      } 
+    }
+    
+    /*!
+      If we are not part of a linked loop, none of our neighbors are, 
+      and if we are part of a linked loop, all of our neighbors are.
+      So mark this arm and all neighbors of both terminal nodes appropriately.
+    */ 
+    int neighborNum = myNeighbors.size(); 
+    while (neighborNum --) {
+      myNeighbors[neighborNum]->mCheckedForLinkedLoop = true; 
+      myNeighbors[neighborNum]->mPartOfLinkedLoop = mPartOfLinkedLoop; 
+    }
+    return; 
+    
+  }
+#endif // LINKED_LOOPS
+  
   //===========================================================================
   void Arm::Classify(void) {
+#if LINKED_LOOPS
+    CheckForLinkedLoops(); 
+#endif
+
     if (mTerminalNodes.size() == 1) {
       mArmType = ARM_LOOP; 
     } else {
@@ -337,7 +421,7 @@ namespace paraDIS {
     } else {
       throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
     } 
-
+    
     ArmSegment *lastSegment; 
     uint32_t numSeen = 0; 
     if (mTerminalSegments.size() == 1)  lastSegment = currentSegment; 
@@ -501,12 +585,20 @@ namespace paraDIS {
 
   //===========================================================================
   std::string Arm::Stringify(void) const {
-    std::string s(string("(arm): ") + 
+    std::string s  = string("(arm): ") + 
 #ifdef DEBUG
-                  "number " + doubleToString(mArmID) + 
-                  ", numSegments = " +doubleToString(mNumSegments) +
+      "number " + doubleToString(mArmID) + 
+      ", numSegments = " +doubleToString(mNumSegments) +
 #endif
-                  ", Type " +  doubleToString(mArmType) + string("\n"));
+      ", Type " +  doubleToString(mArmType);
+#if LINKED_LOOPS
+    if (mPartOfLinkedLoop) {
+      s += ", is part of linked loop.\n"; 
+    } else {
+      s += ", is NOT part of linked loop.\n"; 
+    }
+#endif 
+
     int num = 0, max = mTerminalNodes.size(); 
     while (num < max) {
       s+= "Terminal Node " + doubleToString(num) + string(": ");
@@ -535,7 +627,27 @@ namespace paraDIS {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
     double armLengths[9] = {0}, totalArmLength=0; 
-    uint32_t numArms[9] = {0}, totalArms=0;  // number of arms of each type
+    
+   
+    uint32_t numArms[9] = {0},  // number of arms of each type
+      totalArms=0;
+#if LINKED_LOOPS
+      double linkedLoopLength = 0; 
+      uint32_t numLinkedLoops = 0; 
+#endif
+      
+    char *armTypes[7] = {
+      "NN_100", 
+      "NN_010", 
+      "NN_001", 
+      "NN_+++",
+      "NN_++-",
+      "NN_+-+",
+      "NN_-++"
+    };
+    
+    double shortLengths[7] = {0}, longLengths[7]={0}; 
+    uint32_t numShortArms[7]={0}, numLongArms[7]={0}; 
 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) { 
@@ -543,10 +655,33 @@ namespace paraDIS {
       armLengths[armpos->mArmType] += length;
       totalArmLength += length; 
       numArms[armpos->mArmType]++; 
+      if (mThreshold >= 0 &&
+          (armpos->mArmType == 5 || armpos->mArmType == 8 )) {
+        int8_t btype = armpos->GetBurgersType(); 
+        if (!btype) {
+          printf("Error:  armpos has no terminal segments!\n"); 
+        }
+        if (length < mThreshold) {
+          numShortArms[btype-1]++;
+          shortLengths[btype-1] += length; 
+        }
+        else {
+          numLongArms[btype-1]++;
+          longLengths[btype-1] += length; 
+        }       
+      }
+      
+      
       totalArms++; 
+#if LINKED_LOOPS
+      if (armpos->mPartOfLinkedLoop) {
+        numLinkedLoops ++; 
+        linkedLoopLength += length; 
+      }
+#endif
       ++armpos; 
     }
-
+    
     printf("\n"); 
     printf("===========================================\n"); 
     printf("total Number of arms: %d\n", totalArms); 
@@ -571,19 +706,67 @@ namespace paraDIS {
     printf("ARM_MN_111: total length of arms = %.2f\n", armLengths[4]); 
     printf("----------------------\n"); 
     printf("ARM_NN_111: total number of arms = %d\n", numArms[5]); 
-    printf("ARM_NN_111: total length of arms = %.2f\n", armLengths[5]); 
+    printf("ARM_NN_111: total length of arms = %.2f\n", armLengths[5]);   
     printf("--------------------------------------------\n"); 
     printf("ARM_MM_100: total number of arms = %d\n", numArms[6]); 
-    printf("ARM_MM_100: total length of arms = %.2f\n", armLengths[6]); 
+    printf("ARM_MM_100: total length of arms = %.2f\n", armLengths[6]);     
     printf("----------------------\n"); 
     printf("ARM_MN_100: total number of arms = %d\n", numArms[7]); 
     printf("ARM_MN_100: total length of arms = %.2f\n", armLengths[7]); 
     printf("----------------------\n"); 
     printf("ARM_NN_100: total number of arms = %d\n", numArms[8]); 
     printf("ARM_NN_100: total length of arms = %.2f\n", armLengths[8]); 
+#if LINKED_LOOPS
+    printf("----------------------\n"); 
+    printf("LINKED LOOPS: total number of arms = %d\n", numLinkedLoops); 
+    printf("LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength); 
+#endif
 
-    printf("\n\n");
+    // write a row of non-threshold arm lengths to make analysis via spreadsheet easier
+    printf("----------------------\n"); 
+    printf("Key: UNKNOWN\tUNINTRSTNG\tLOOP\tMM_111\tMN_111\tNN_111\tMM_100\tMN_100\tNN_100\n"); 
+    int n = 0; 
+    while (n<9) {
+      printf("%.2f\t",  armLengths[n]); 
+      ++n;
+    }
+
+           
     
+    if (mThreshold >= 0.0) {
+      printf("\n\n----------------------\n"); 
+      printf("THRESHOLD data.  Threshold = %.2f\n", mThreshold); 
+      int n = 0; 
+      for (n=0; n<7; n++) {       
+        printf("----------------------\n"); 
+        printf("Total number of %s arms: %d\n", armTypes[n], numShortArms[n] + numLongArms[n]); 
+        printf("Total length of %s arms: %.2f\n", armTypes[n], shortLengths[n] + longLengths[n]); 
+        printf("Number of %s arms SHORTER than threshold = %d\n", armTypes[n], numShortArms[n]); 
+        printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], shortLengths[n]); 
+        printf("Number of %s arms LONGER than threshold = %d\n", armTypes[n], numLongArms[n]); 
+        printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], longLengths[n]); 
+        printf("\n"); 
+      }
+    }
+    
+    // write a row of non-threshold arm lengths to make analysis via spreadsheet easier
+    printf("----------------------\n"); 
+    printf("Key: NN_100\tNN_010\tNN_001\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n"); 
+    printf("SHORT ARM LENGTHS:\n"); 
+    n=0; while (n<7) {
+      printf("%.2f\t",  shortLengths[n]); 
+      ++n;
+    }
+    printf("\nLONG ARM LENGTHS:\n"); 
+    n = 0; while (n<7) {
+      printf("%.2f\t",  longLengths[n]); 
+      ++n;
+    }
+    printf("\n"); 
+
+    printf("----------------------\n\n\n"); 
+
+#ifdef DEBUG_SEGMENTS
     // check against segment lengths: 
     uint32_t numSegments[9] = {0}, totalSegments=0, culledSegments=0;  // number of arms of each type
     double segmentLengths[9] = {0}, totalSegmentLength=0, culledLength=0; 
@@ -603,8 +786,7 @@ namespace paraDIS {
       }
       ++segpos; 
     }
-        
-    
+
     printf("===========================================\n"); 
     printf("REALITY CHECK:  total length of all segments, skipping wrapped segments\n"); 
     printf("total Number of segments: %d\n", totalSegments); 
@@ -642,6 +824,8 @@ namespace paraDIS {
     printf("CULLED length = %.2f\n", culledLength); 
 
     printf("Wrapped lengths: %.2f\n", gSegLen); 
+     printf("----------------------\n\n\n"); 
+#endif
    return; 
   }
 
@@ -1358,14 +1542,14 @@ namespace paraDIS {
   }
   
   //===========================================================================
-  void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode, const ArmSegment *iStartSegment, const ArmSegment *&oEndSegment
+  void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment
 #ifdef DEBUG
 , Arm &theArm
 #endif
 ) {
     //FullNodeIterator currentNode = iStartNode, otherEnd; 
     FullNode *currentNode = *iStartNode, *otherEnd; 
-    const ArmSegment *currentSegment = iStartSegment; 
+    ArmSegment *currentSegment = iStartSegment; 
     /* loop, don't recurse */ 
     while(true) {
 #ifdef DEBUG
@@ -1374,7 +1558,7 @@ namespace paraDIS {
         dbprintf(5, "Arm %d: adding segment %s\n", theArm.mArmID, currentSegment->Stringify().c_str());
       }
 #endif
-      const_cast<ArmSegment *>(currentSegment)->SetSeen(true);  
+      currentSegment->SetSeen(true);  
       
       otherEnd = currentSegment->GetOtherEndpoint(currentNode);
       if ((otherEnd)->GetNodeID() == (*iStartNode)->GetNodeID() ||
@@ -1394,9 +1578,9 @@ namespace paraDIS {
         Move on to the next segment, we are not done yet.
       */ 
       if (*currentSegment == *(otherEnd)->GetNeighbor(0)) {
-        currentSegment = dynamic_cast<const ArmSegment*>((otherEnd)->GetNeighbor(1)); 
+        currentSegment = const_cast<ArmSegment*>(otherEnd->GetNeighbor(1)); 
       } else {
-        currentSegment = dynamic_cast<const ArmSegment*>((otherEnd)->GetNeighbor(0)); 
+        currentSegment = const_cast<ArmSegment*>(otherEnd->GetNeighbor(0)); 
       }     
       currentNode = otherEnd; 
     }
@@ -1425,25 +1609,25 @@ namespace paraDIS {
         int neighbornum = 0, numneighbors = (*nodepos)->GetNumNeighbors();       
         
         FullNode *endNode0, *endNode1; 
-        const ArmSegment *endSegment0 = NULL, *endSegment1 = NULL, 
+        ArmSegment *endSegment0 = NULL, *endSegment1 = NULL, 
           *startSegment0 = NULL, *startSegment1 = NULL; 
         if (numneighbors == 2) {
-          startSegment0 = dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(0));
+          startSegment0 = const_cast< ArmSegment*>((*nodepos)->GetNeighbor(0));
           if (!startSegment0->Seen()) {
 #ifdef DEBUG
             dbprintf(5, "Starting in middle of arm\n"); 
 #endif
             theArm.Clear();
             theArm.SetID(); 
-            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0 
+            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
 #ifdef DEBUG
                          , theArm
 #endif
                          ); 
             theArm.mTerminalNodes.push_back(endNode0); 
             theArm.mTerminalSegments.push_back(endSegment0); 
-            
-            startSegment1 = dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(1));
+
+            startSegment1 = const_cast< ArmSegment*>((*nodepos)->GetNeighbor(1));
             FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
 #ifdef DEBUG
                          , theArm
@@ -1457,12 +1641,12 @@ namespace paraDIS {
               theArm.mTerminalSegments.push_back(endSegment1); 
             }
             dbprintf(5, "(1) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
-            mArms.push_back(theArm);
+            mArms.push_back(theArm);            
           }
         } else {
           while (neighbornum < numneighbors) {
             startSegment0 = 
-              dynamic_cast<const ArmSegment*>((*nodepos)->GetNeighbor(neighbornum));
+              const_cast< ArmSegment*>((*nodepos)->GetNeighbor(neighbornum));
             if (!startSegment0->Seen()) {
 #ifdef DEBUG
               dbprintf(5, "Starting at one end of arm\n"); 
@@ -1495,6 +1679,12 @@ namespace paraDIS {
     } catch (string err) {
       throw string("Arm #")+doubleToString(armnum)+": "+err;
     }
+#if LINKED_LOOPS
+    int armNum = mArms.size(); 
+    while (armNum--) {
+      mArms[armNum].SetSegmentBackPointers(); 
+    } 
+#endif
     dbprintf(2, "BuildArms ended; %d arms created.\n", armnum); 
     return; 
   }
