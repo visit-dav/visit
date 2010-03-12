@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Vector" type="plot" label="Vector" version="1.0" enabled="true" vartype="vector" iconFile="Vector.xpm">
-    <Attribute name="VectorAttributes" purpose="Attributes for the vector plot" persistent="true" codefile="VectorAttributes.code">
+  <Plugin name="Vector" type="plot" label="Vector" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="vector" iconFile="Vector.xpm">
+    <Attribute name="VectorAttributes" purpose="Attributes for the vector plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VectorAttributes.code">
       <Enum name="Quality">
         Fast
         High
@@ -50,7 +50,7 @@
       <Field name="useLegend" label="Legend" type="bool">
         true
       </Field>
-      <Field name="vectorColor" label="color" type="color">
+      <Field name="vectorColor" label="color" type="color" length="4">
         0
         0
         0
