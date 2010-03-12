@@ -121,8 +121,8 @@ VisIt_MaterialData_setMixedMaterials(visit_handle h,
 #define F_VISITMATDATAFREE               F77_ID(visitmatdatafree_,visitmatdatafree,VISITMATDATAFREE)
 #define F_VISITMATDATAAPPENDCELLS        F77_ID(visitmatdataappendcells_,visitmatdataappendcells,VISITMATDATAAPPENDCELLS)
 #define F_VISITMATDATAADDMAT             F77_ID(visitmatdataaddmat_,visitmatdataaddmat,VISITMATDATAADDMAT)
-#define F_VISIT_MATDATAADDCLEANCELL      F77_ID(visitmatdataaddcleancell_,visitmatdataaddcleancell,VISITMATDATAADDCLEANCELL)
-#define F_VISIT_MATDATAADDMIXEDCELL      F77_ID(visitmatdataaddmixedcell_,visitmatdataaddmixedcell,VISITMATDATAADDMIXEDCELL)
+#define F_VISITMATDATAADDCLEANCELL       F77_ID(visitmatdataaddcleancell_,visitmatdataaddcleancell,VISITMATDATAADDCLEANCELL)
+#define F_VISITMATDATAADDMIXEDCELL       F77_ID(visitmatdataaddmixedcell_,visitmatdataaddmixedcell,VISITMATDATAADDMIXEDCELL)
 #define F_VISITMATDATASETMATS            F77_ID(visitmatdatasetmats_,visitmatdatasetmats,VISITMATDATASETMATS)
 #define F_VISITMATDATASETMIXEDMATS       F77_ID(visitmatdatasetmixedmats_,visitmatdatasetmixedmats,VISITMATDATASETMIXEDMATS)
 

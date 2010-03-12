@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -37,49 +37,118 @@
 *****************************************************************************/
 
 /* SIMPLE SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
+#include <VisItDataInterface_V2.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "SimulationExample.h"
 
-void simulate_one_timestep(void);
-void read_input_deck(void) { }
-int  simulation_done(void)   { return 0; }
+/* Data Access Function prototypes */
+visit_handle SimGetMetaData(void *);
+visit_handle SimGetMesh(int, const char *, void *);
 
-/* Is the simulation in run mode (not waiting for VisIt input) */
-static int    runFlag = 1;
-static int    simcycle = 0;
-static double simtime = 0.;
+/******************************************************************************
+ * Simulation data and functions
+ ******************************************************************************/
+
+#define SIM_STOPPED       0
+#define SIM_RUNNING       1
+
+typedef struct
+{
+    int     cycle;
+    double  time;
+    int     runMode;
+    int     done;
+} simulation_data;
+
+void
+simulation_data_ctor(simulation_data *sim)
+{
+    sim->cycle = 0;
+    sim->time = 0.;
+    sim->runMode = SIM_STOPPED;
+    sim->done = 0;
+}
+
+void
+simulation_data_dtor(simulation_data *sim)
+{
+}
+
+const char *cmd_names[] = {"halt", "step", "run"};
+
+void simulate_one_timestep(simulation_data *sim);
+void read_input_deck(void) { }
 
 /******************************************************************************
  *
  * Purpose: Callback function for control commands.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:39:59 PST 2007
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Input Arguments:
- *   cmd         : The command string that we want the sim to execute.
- *   int_data    : Integer argument for the command.
- *   float_data  : Float argument for the command.
- *   string_data : String argument for the command.
+ *   cmd    : The command string that we want the sim to execute.
+ *   args   : String argument for the command.
+ *   cbdata : User-provided callback data.
  *
  * Modifications:
  *
  *****************************************************************************/
 
-void ControlCommandCallback(const char *cmd,
-    int int_data, float float_data,
-    const char *string_data)
+void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
+    simulation_data *sim = (simulation_data *)cbdata;
+
     if(strcmp(cmd, "halt") == 0)
-        runFlag = 0;
+        sim->runMode = SIM_STOPPED;
     else if(strcmp(cmd, "step") == 0)
-        simulate_one_timestep();
+        simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
-        runFlag = 1;
+        sim->runMode = SIM_RUNNING;
+}
+
+/* Called to handle case 3 from VisItDetectInput where we have console
+ * input that needs to be processed in order to accomplish an action.
+ */
+void
+ProcessConsoleCommand(simulation_data *sim)
+{
+    /* Read A Command */
+    char cmd[1000];
+
+    int iseof = (fgets(cmd, 1000, stdin) == NULL);
+    if (iseof)
+    {
+        sprintf(cmd, "quit");
+        printf("quit\n");
+    }
+
+    if (strlen(cmd)>0 && cmd[strlen(cmd)-1] == '\n')
+        cmd[strlen(cmd)-1] = '\0';
+
+    if(strcmp(cmd, "quit") == 0)
+        sim->done = 1;
+    else if(strcmp(cmd, "halt") == 0)
+        sim->runMode = SIM_STOPPED;
+    else if(strcmp(cmd, "step") == 0)
+        simulate_one_timestep(sim);
+    else if(strcmp(cmd, "run") == 0)
+        sim->runMode = SIM_RUNNING;
+}
+
+/* SIMULATE ONE TIME STEP */
+#include <unistd.h>
+void simulate_one_timestep(simulation_data *sim)
+{
+    ++sim->cycle;
+    sim->time += 0.0134;
+    printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+    sleep(1);
 }
 
 /******************************************************************************
@@ -87,7 +156,7 @@ void ControlCommandCallback(const char *cmd,
  * Purpose: This is the main event loop function.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:35:53 PST 2007
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
  *
@@ -97,11 +166,18 @@ void mainloop(void)
 {
     int blocking, visitstate, err = 0;
 
+    /* Set up some simulation data. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
+    /* main loop */
+    fprintf(stderr, "command> ");
+    fflush(stderr);
     do
     {
-        blocking = runFlag ? 0 : 1;
+        blocking = (sim.runMode == SIM_RUNNING) ? 0 : 1;
         /* Get input from VisIt or timeout so the simulation can run. */
-        visitstate = VisItDetectInput(blocking, -1);
+        visitstate = VisItDetectInput(blocking, fileno(stdin));
 
         /* Do different things depending on the output from VisItDetectInput. */
         if(visitstate >= -5 && visitstate <= -1)
@@ -112,15 +188,19 @@ void mainloop(void)
         else if(visitstate == 0)
         {
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep();
+            simulate_one_timestep(&sim);
         }
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
-            if(VisItAttemptToCompleteConnection())
+            if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
+                sim.runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback);
+                VisItSetCommandCallback(ControlCommandCallback, (void*)&sim);
+
+                VisItSetGetMetaData(SimGetMetaData, (void*)&sim);
+                VisItSetGetMesh(SimGetMesh, (void*)&sim);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -128,16 +208,28 @@ void mainloop(void)
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            runFlag = 0;
-            if(!VisItProcessEngineCommand())
+            if(VisItProcessEngineCommand() == VISIT_ERROR)
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                runFlag = 1;
+                sim.runMode = SIM_RUNNING;
             }
         }
-    } while(!simulation_done() && err == 0);
+        else if(visitstate == 3)
+        {
+            /* VisItDetectInput detected console input - do something with it.
+             * NOTE: you can't get here unless you pass a file descriptor to
+             * VisItDetectInput instead of -1.
+             */
+            ProcessConsoleCommand(&sim);
+            fprintf(stderr, "command> ");
+            fflush(stderr);
+        }
+    } while(!sim.done && err == 0);
+
+    /* Clean up */
+    simulation_data_dtor(&sim);
 }
 
 /******************************************************************************
@@ -145,7 +237,7 @@ void mainloop(void)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:36:17 PST 2007
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
@@ -160,7 +252,8 @@ int main(int argc, char **argv)
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
+
+    /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("unstructured",
         "Demonstrates creating an unstructured mesh",
         "/path/to/where/sim/was/started",
@@ -175,81 +268,67 @@ int main(int argc, char **argv)
     return 0;
 }
 
-/* SIMULATE ONE TIME STEP */
-#include <unistd.h>
-void simulate_one_timestep(void)
-{
-    ++simcycle;
-    simtime += 0.0134;
-    printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
-    sleep(1);
-}
-
 /* DATA ACCESS FUNCTIONS */
-#include <VisItDataInterface_V1.h>
 
 /******************************************************************************
  *
  * Purpose: This callback function returns simulation metadata.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_SimulationMetaData *VisItGetMetaData(void)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
-    /* Create a metadata object with no variables. */
-    size_t sz = sizeof(VisIt_SimulationMetaData);
-    VisIt_SimulationMetaData *md = 
-        (VisIt_SimulationMetaData *)malloc(sz);
-    memset(md, 0, sz);
+    visit_handle md = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
 
-    /* Set the simulation state. */
-    md->currentMode = runFlag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = simcycle;
-    md->currentTime = simtime;
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
+    {
+        int i;
+        visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle cmd = VISIT_INVALID_HANDLE;
 
-#define NDOMAINS 1
-    /* Allocate enough room for 1 mesh in the metadata. */
-    md->numMeshes = 1;
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
 
-    /* Set the first mesh's properties.*/
-    md->meshes[0].name = strdup("unstructured3d");
-    md->meshes[0].meshType = VISIT_MESHTYPE_UNSTRUCTURED;
-    md->meshes[0].topologicalDimension = 3;
-    md->meshes[0].spatialDimension = 3;
-    md->meshes[0].numBlocks = NDOMAINS;
-    md->meshes[0].blockTitle = strdup("Domains");
-    md->meshes[0].blockPieceName = strdup("domain");
-    md->meshes[0].numGroups = 0;
-    md->meshes[0].units = strdup("cm");
-    md->meshes[0].xLabel = strdup("Width");
-    md->meshes[0].yLabel = strdup("Height");
-    md->meshes[0].zLabel = strdup("Depth");
+        /* Fill in the AMR metadata. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "unstructured3d");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_UNSTRUCTURED);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 3);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 3);
+            VisIt_MeshMetaData_setNumDomains(mmd, 1);
+            VisIt_MeshMetaData_setXUnits(mmd, "cm");
+            VisIt_MeshMetaData_setYUnits(mmd, "cm");
+            VisIt_MeshMetaData_setZUnits(mmd, "cm");
+            VisIt_MeshMetaData_setXLabel(mmd, "Width");
+            VisIt_MeshMetaData_setYLabel(mmd, "Height");
+            VisIt_MeshMetaData_setZLabel(mmd, "Depth");
 
-    /* Add some custom commands. */
-    md->numGenericCommands = 3;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
 
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
-
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
+        /* Add some custom commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
+            }
+        }
+    }
 
     return md;
 }
@@ -275,69 +354,38 @@ int umnzones = 5;
  * Purpose: This callback function returns meshes.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
+ * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_MeshData *VisItGetMesh(int domain, const char *name)
+visit_handle
+SimGetMesh(int domain, const char *name, void *cbdata)
 {
-    VisIt_MeshData *mesh = NULL;
-    size_t sz = sizeof(VisIt_MeshData);
+    visit_handle h = VISIT_INVALID_HANDLE;
 
     if(strcmp(name, "unstructured3d") == 0)
     {
-        /* Allocate VisIt_MeshData. */
-        mesh = (VisIt_MeshData *)malloc(sz);
-        memset(mesh, 0, sz);
-        /* Make VisIt_MeshData contain a VisIt_UnstructuredMesh. */
-        sz = sizeof(VisIt_UnstructuredMesh);
-        mesh->umesh = (VisIt_UnstructuredMesh *)malloc(sz);
-        memset(mesh->umesh, 0, sz);
+        if(VisIt_UnstructuredMesh_alloc(&h) != VISIT_ERROR)
+        {
+            visit_handle x,y,z,conn;
 
-        /* Tell VisIt which mesh object to use. */
-        mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+            VisIt_VariableData_alloc(&x);
+            VisIt_VariableData_alloc(&y);
+            VisIt_VariableData_alloc(&z);
+            VisIt_VariableData_setDataF(x, VISIT_OWNER_SIM, 1, umnnodes, umx);
+            VisIt_VariableData_setDataF(y, VISIT_OWNER_SIM, 1, umnnodes, umy);
+            VisIt_VariableData_setDataF(z, VISIT_OWNER_SIM, 1, umnnodes, umz);
 
-        /* Set the mesh's number of dimensions. */
-        mesh->umesh->ndims = 3;
-        /* Set the number of nodes and zones in the mesh. */
-        mesh->umesh->nnodes = umnnodes;
-        mesh->umesh->nzones = umnzones;
+            VisIt_VariableData_alloc(&conn);
+            VisIt_VariableData_setDataI(conn, VISIT_OWNER_SIM, 1, 
+                lconnectivity, connectivity);
 
-        /* Set the indices for the first and last real zones. */
-        mesh->umesh->firstRealZone = 0;
-        mesh->umesh->lastRealZone = umnzones-1;
-
-        /* Let VisIt use the simulation's copy of the mesh coordinates. */
-        mesh->umesh->xcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, umx);
-        mesh->umesh->ycoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, umy);
-        mesh->umesh->zcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, umz);
-
-        /* Let VisIt use the simulation's copy of the connectivity. */
-        mesh->umesh->connectivity = VisIt_CreateDataArrayFromInt(
-           VISIT_OWNER_SIM, connectivity);
-        mesh->umesh->connectivityLen = lconnectivity;
+            VisIt_UnstructuredMesh_setCoordsXYZ(h, x, y, z);
+            VisIt_UnstructuredMesh_setConnectivity(h, umnzones, conn);
+        }
     }
 
-    return mesh;
+    return h;
 }
-
-VisIt_SimulationCallback 
-#if __GNUC__ >= 4
-__attribute__ ((visibility("default"))) 
-#endif
-visitCallbacks =
-{
-    &VisItGetMetaData,
-    &VisItGetMesh,
-    NULL, /* GetMaterial */
-    NULL, /* GetSpecies */
-    NULL, /* GetScalar */
-    NULL, /* GetCurve */
-    NULL, /* GetMixedScalar */
-    NULL /* GetDomainList */
-};
