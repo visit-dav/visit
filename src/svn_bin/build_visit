@@ -840,6 +840,11 @@
 #     Cyrus Harrison, Tue Mar  9 07:52:50 PST 2010
 #     Install name patching for vtk python module on OSX.
 #
+#     Eric Brugger, Fri Mar 12 14:18:26 PST 2010
+#     I modified build_exodus so that the netcdf header file and library
+#     are files instead of links in the installation directory so that make
+#     package works with VISIT_INSTALL_THIRD_PARTY defined.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -6230,11 +6235,10 @@ function build_exodus
         cp libexoIIv2c.${SO_EXT} \
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
         cp ../include/*.h "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        ln -s  "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h"\
-           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
-        ln -s  \
-        "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}"\
-        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}"
+        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}" \
+           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
     else
         ar -cr libexoIIv2c.a *.o
         if [[ $? != 0 ]] ; then
@@ -6243,14 +6247,13 @@ function build_exodus
         fi
         cp libexoIIv2c.a "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
         cp ../include/exodusII.h \
-        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
         cp ../include/exodusII_ext.h \
-        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        ln -s  "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
-        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
-        ln -s  \
-        "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.a" \
-        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib/libnetcdf.a"
+           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.a" \
+           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
