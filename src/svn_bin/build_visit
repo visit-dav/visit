@@ -36,7 +36,7 @@
 #   information to the script.
 #
 #   Setup:
-#       This script assumes you have downloaded the VisIt source code and 
+#       This script assumes you have downloaded the VisIt source code and
 #       the necessary third party libraries and that they are placed in the
 #       current directory.  If it does not locate these libraries, it will
 #       try to download them.
