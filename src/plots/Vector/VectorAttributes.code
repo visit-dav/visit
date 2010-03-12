@@ -1,3 +1,41 @@
+Target: xml2python
+Code: PyVectorAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in VectorAttributes
+    if(strcmp(name, "highQuality") == 0)
+    {
+        VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
+        bool highQuality = vectorObj->data->GetGeometryQuality() == VectorAttributes::High;
+        return PyInt_FromLong(highQuality?1L:0L);
+    }
+
+Code: PyVectorAttributes_setattr
+Prefix:
+Postfix:
+   // Try and handle legacy fields in VectorAttributes
+    if(obj == NULL)
+    {
+        VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
+        if(strcmp(name, "highQuality") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
+            else
+                VectorObj->data->SetGeometryQuality(VectorAttributes::High);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const VectorAttributes &obj);
 Definition:
