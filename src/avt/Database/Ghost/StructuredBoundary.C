@@ -137,6 +137,9 @@ Boundary::SetExtents(int e[6])
 //   Added a guard to prevent seams in 3D datasets from generating incorrect
 //   ghost nodes.
 //
+//   Cyrus Harrison, Fri Mar  5 13:37:47 PST 2010
+//   Disabled above guard b/c it is too agressive.
+//
 // ****************************************************************************
 void
 Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
@@ -178,6 +181,7 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
     // In a 3D dataset overlaping nodes that form a logical line
     // generate incorrect ghost nodes with the following logic.
     //
+    //
     // To resolve this we test the logical dimension of
     // the current neighbor overlap. If we have a 2d dataset
     // or if the logical overlap represents a set of faces in
@@ -191,7 +195,8 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
     if ((e[3] - e[2]) != 0) bdim+=1;
     if ((e[5] - e[4]) != 0) bdim+=1;
 
-    if( e[5] == -1 && e[4] == -1 ||  bdim >= 2)
+    // disable for now
+    if(true) // e[5] == -1 && e[4] == -1 ||  bdim >= 2)
     {
         // ---- I ----
         if (e[0] == e[1]  &&  oldnextents[0] != oldnextents[1])
