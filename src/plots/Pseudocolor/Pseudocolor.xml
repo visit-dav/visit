@@ -99,6 +99,8 @@
       </Function>
       <Function name="Print" user="true" member="true">
       </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
       <Include file="header" quoted="false">
         visitstream.h
       </Include>

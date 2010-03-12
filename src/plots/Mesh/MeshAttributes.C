@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -1532,5 +1532,47 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
             (needSecondaryVar) ||
             (smoothingLevel != obj.smoothingLevel) ||
             (showInternal != obj.showInternal && spatDim == 3));
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method handles some old fields by converting them to new fields.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 09:33:52 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <Utility.h>
+void
+MeshAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
+    if(searchNode == 0)
+        return;
+
+    if(VersionLessThan(configVersion, "2.0.0"))
+    {
+        DataNode *k = 0;
+        if((k = searchNode->GetNode("foregroundFlag")) != 0)
+        {
+            MeshColor val = k->AsBool() ? Foreground : MeshCustom;
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("meshColorSource", MeshColor_ToString(val)));
+        }
+        if((k = searchNode->GetNode("backgroundFlag")) != 0)
+        {
+            OpaqueColor val = k->AsBool() ? Background : OpaqueCustom;
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(val)));
+        }
+    }
 }
 
