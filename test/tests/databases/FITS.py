@@ -14,6 +14,9 @@
 #    Hank Childs, Tue Mar 18 15:40:19 PDT 2008
 #    Reflect change in variable names.
 #
+#    Hank Childs, Sat Mar 13 10:57:19 PST 2010
+#    Reflect change in variable names.
+#    
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -37,7 +40,7 @@ def test1(datapath):
     # Set up the plots.
     db = datapath + "y2000m2.fits"
     OpenDatabase(db)
-    AddPlot("Pseudocolor", "NGC7083 V 550nm _Intens_")
+    AddPlot("Pseudocolor", "NGC7083 V 550nm _lp_Intens_rp_")
     pc = PseudocolorAttributes()
     pc.minFlag = 1
     pc.scaling = pc.Log  # Linear, Log, Skew

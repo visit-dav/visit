@@ -19,6 +19,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Hank Childs, Sat Mar 13 11:13:26 PST 2010
+#    Change variable names for forbidden characters.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -89,7 +93,7 @@ e.filename = "xmdv2"
 ExportDatabase(e)
 DeleteAllPlots()
 OpenDatabase("xmdv2.okc")
-AddPlot("Pseudocolor", "vel_0_")
+AddPlot("Pseudocolor", "vel_lb_0_rb_")
 DrawPlots()
 Test("Xmdv_05")
 
