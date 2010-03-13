@@ -43,6 +43,10 @@
 #   I modified the test to determine if a library was a shared library for
 #   AIX since on AIX shared libraries can end in ".a".
 #
+#   Eric Brugger, Fri Mar 12 16:53:54 PST 2010
+#   I corrected a typo I made that prevented archives from being included
+#   in a binary distribution when VISIT_INSTALL_THIRD_PARTY was defined.
+#
 #****************************************************************************/
 
 #
@@ -216,7 +220,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             ENDIF(IS_DIRECTORY ${tmpLIBFILE})
 #            MESSAGE("**We need to install lib ${tmpLIBFILE}")
         ENDIF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
-    ELSEIF(${isSHAREDLIBRARY} STREQUAL "YES")
+    ELSE(${isSHAREDLIBRARY} STREQUAL "YES")
         # We have a .a that we need to install to archives.
         IF(VISIT_INSTALL_THIRD_PARTY)
 #            MESSAGE("***INSTALL ${LIBFILE} to ${VISIT_INSTALLED_VERSION_ARCHIVES}")
