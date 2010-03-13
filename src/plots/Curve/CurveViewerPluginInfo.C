@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -297,6 +297,11 @@ CurveViewerPluginInfo::XPMIconData() const
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 31, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 13 10:35:34 PST 2010
+//    Change Boolean test to comparison with enumeration.
+//
 // ****************************************************************************
 #include <avtColorTables.h>
 
@@ -305,7 +310,7 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
 
-    if (curveAtts->GetCurveColorSource())
+    if (curveAtts->GetCurveColorSource() == CurveAttributes::Cycle)
     {
         ColorAttribute c;
         unsigned char rgb[3] = {0,0,0};
