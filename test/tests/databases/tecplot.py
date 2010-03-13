@@ -27,6 +27,9 @@
 #    from the simpscat.tec file, so I changed the plot to be a pseudocolor
 #    plot instead of a curve plot.
 #
+#    Hank Childs, Sat Mar 13 11:13:26 PST 2010
+#    Change variable names for forbidden characters.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -202,7 +205,7 @@ Test("tecplot_19")
 DeleteAllPlots();
 
 OpenDatabase("../data/tecplot_test_data/simpscat.tec")
-AddPlot("Pseudocolor","T_K_")
+AddPlot("Pseudocolor","T_lb_K_rb_")
 p = PseudocolorAttributes()
 p.pointSizePixels = 6
 SetPlotOptions(p)
