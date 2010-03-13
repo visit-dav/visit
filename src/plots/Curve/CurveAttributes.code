@@ -217,6 +217,11 @@ Definition:
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 31, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 13 10:35:34 PST 2010
+//    Change Boolean test to comparison with enumeration.
+//
 // ****************************************************************************
 #include <avtColorTables.h>
 
@@ -225,7 +230,7 @@ CurveViewerPluginInfo::SetColor(AttributeSubject *atts)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
 
-    if (curveAtts->GetCurveColorSource())
+    if (curveAtts->GetCurveColorSource() == CurveAttributes::Cycle)
     {
         ColorAttribute c;
         unsigned char rgb[3] = {0,0,0};
