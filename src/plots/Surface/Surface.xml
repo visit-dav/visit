@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-  <Plugin name="Surface" type="plot" label="Surface" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Surface.xpm">
+  <Plugin name="Surface" type="plot" label="Surface" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Surface.xpm">
     <Files components="V">
       avtWireframeFilter.C
     </Files>
     <Files components="E">
       avtWireframeFilter.C
     </Files>
-    <Attribute name="SurfaceAttributes" purpose="Attributes for the surface plot" persistent="true" codefile="Surface.code">
+    <Attribute name="SurfaceAttributes" purpose="Attributes for the surface plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Surface.code">
       <Enum name="ColorByType">
         Constant
         ZValue
@@ -53,13 +53,13 @@
       <Field name="lineWidth" label="Line width" type="linewidth">
         0
       </Field>
-      <Field name="surfaceColor" label="Surface color" type="color">
+      <Field name="surfaceColor" label="Surface color" type="color" length="4">
         0
         0
         0
         255
       </Field>
-      <Field name="wireframeColor" label="Wireframe color" type="color">
+      <Field name="wireframeColor" label="Wireframe color" type="color" length="4">
         0
         0
         0
