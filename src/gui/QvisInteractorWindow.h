@@ -79,6 +79,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Wed Apr  9 11:31:21 PDT 2008
 //   QString for caption, shortName.
 //
+//   Hank Childs, Sat Mar 13 19:03:03 PST 2010
+//   Add bounding box mode.
+//
 // ****************************************************************************
 
 class QvisInteractorWindow : public QvisPostableWindowObserver
@@ -105,12 +108,14 @@ class QvisInteractorWindow : public QvisPostableWindowObserver
     void clampSquareChanged(bool val);
     void fillViewportOnZoomChanged(bool val);
     void navigationModeChanged(int val);
+    void boundingBoxModeChanged(int val);
     void axisSnapChanged(bool val);
   private:
     QCheckBox *showGuidelines;
     QCheckBox *clampSquare;
     QCheckBox *fillViewportOnZoom;
     QButtonGroup *navigationMode;
+    QButtonGroup *boundingBoxMode;
     QCheckBox *axisSnap;
 
     InteractorAttributes *atts;

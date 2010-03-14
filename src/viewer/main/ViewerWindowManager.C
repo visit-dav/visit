@@ -3243,41 +3243,6 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
 }
 
 // ****************************************************************************
-//  Method: ViewerWindowManager::ToggleBoundingBoxMode
-//
-//  Purpose: 
-//    This method toggles the bbox mode for the specified window.
-//
-//  Arguments:
-//    windowIndex  This is a zero-origin integer that specifies the index
-//                 of the window we want to change. If the value is -1, use
-//                 use the active window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Nov 7 13:31:14 PST 2000
-//
-// Modifications:
-//   Brad Whitlock, Mon Sep 16 15:21:09 PST 2002
-//   I made it update the WindowInformation.
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::ToggleBoundingBoxMode(int windowIndex)
-{
-    if(windowIndex < -1 || windowIndex >= maxWindows)
-        return;
-
-    int index = (windowIndex == -1) ? activeWindow : windowIndex;
-    if(windows[index] != 0)
-    {
-        bool bboxMode = windows[index]->GetBoundingBoxMode();
-        windows[index]->SetBoundingBoxMode(!bboxMode);
-        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
-    }
-}
-
-// ****************************************************************************
 //  Method: ViewerWindowManager::ToggleSpinMode
 //
 //  Purpose: 
@@ -7393,6 +7358,9 @@ ViewerWindowManager::GetWindowInformation()
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Hank Childs, Sat Mar 13 18:46:54 PST 2010
+//   Remove reference to bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -7463,7 +7431,6 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
         {
             windowInfo->SetInteractionMode(int(win->GetInteractionMode()));
             windowInfo->SetToolUpdateMode(int(win->GetToolUpdateMode()));
-            windowInfo->SetBoundingBoxNavigate(win->GetBoundingBoxMode());
             windowInfo->SetSpin(win->GetSpinMode());
             windowInfo->SetLockView(win->GetViewIsLocked());
             windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
@@ -7983,6 +7950,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
 //    Added depth cueing properties.
 //
+//    Hank Childs, Sat Mar 13 18:46:54 PST 2010
+//    Remove reference to bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -7990,7 +7960,6 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
 {
     ViewerWindow *w = windows[windowIndex];
 
-    w->SetBoundingBoxMode(windowInfo->GetBoundingBoxNavigate());
     w->SetViewExtentsType((avtExtentType)windowInfo->GetViewExtentsType());
     w->SetPerspectiveProjection(windowInfo->GetPerspective());
     w->SetFullFrameMode(windowInfo->GetFullFrame());

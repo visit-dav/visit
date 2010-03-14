@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: InteractorAttributes
 //
@@ -66,14 +67,30 @@ public:
         Dolly,
         Flythrough
     };
+    enum BoundingBoxMode
+    {
+        Always,
+        Never,
+        Auto
+    };
 
+    // These constructors are for objects of this class
     InteractorAttributes();
     InteractorAttributes(const InteractorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    InteractorAttributes(private_tmfs_t tmfs);
+    InteractorAttributes(const InteractorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~InteractorAttributes();
 
     virtual InteractorAttributes& operator = (const InteractorAttributes &obj);
     virtual bool operator == (const InteractorAttributes &obj) const;
     virtual bool operator != (const InteractorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const InteractorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -89,6 +106,7 @@ public:
     void SetFillViewportOnZoom(bool fillViewportOnZoom_);
     void SetNavigationMode(NavigationMode navigationMode_);
     void SetAxisArraySnap(bool axisArraySnap_);
+    void SetBoundingBoxMode(BoundingBoxMode boundingBoxMode_);
 
     // Property getting methods
     bool GetShowGuidelines() const;
@@ -96,6 +114,7 @@ public:
     bool GetFillViewportOnZoom() const;
     NavigationMode GetNavigationMode() const;
     bool GetAxisArraySnap() const;
+    BoundingBoxMode GetBoundingBoxMode() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -106,6 +125,11 @@ public:
     static bool NavigationMode_FromString(const std::string &, NavigationMode &);
 protected:
     static std::string NavigationMode_ToString(int);
+public:
+    static std::string BoundingBoxMode_ToString(BoundingBoxMode);
+    static bool BoundingBoxMode_FromString(const std::string &, BoundingBoxMode &);
+protected:
+    static std::string BoundingBoxMode_ToString(int);
 public:
 
     // Keyframing methods
@@ -121,7 +145,9 @@ public:
         ID_clampSquare,
         ID_fillViewportOnZoom,
         ID_navigationMode,
-        ID_axisArraySnap
+        ID_axisArraySnap,
+        ID_boundingBoxMode,
+        ID__LAST
     };
 
 private:
@@ -130,9 +156,12 @@ private:
     bool fillViewportOnZoom;
     int  navigationMode;
     bool axisArraySnap;
+    int  boundingBoxMode;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define INTERACTORATTRIBUTES_TMFS "bbbibi"
 
 #endif

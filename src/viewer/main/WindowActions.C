@@ -694,98 +694,6 @@ ToggleSpinModeAction::Checked() const
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
-// Method: ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction
-//
-// Purpose: 
-//   Constructor for the ToggleBoundingBoxModeAction class.
-//
-// Arguments:
-//   win : The window to which the action belongs.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Apr 4 15:40:56 PST 2003
-//
-// Modifications:
-//   Jeremy Meredith, Tue Feb  2 17:31:07 EST 2010
-//   Spell out bbox.  I'm not sure most people know what that stands for.
-//
-// ****************************************************************************
-
-ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction(ViewerWindow *win) :
-    ViewerToggleAction(win)
-{
-    SetAllText(tr("Bounding box navigation"));
-    SetToolTip(tr("Toggle bounding box navigation"));
-    if (!GetViewerProperties()->GetNowin())
-        SetIcons(QPixmap(navigatebboxon_xpm), QPixmap(navigatebboxoff_xpm));
-}
-
-// ****************************************************************************
-// Method: ToggleBoundingBoxModeAction::Execute
-//
-// Purpose: 
-//   Does the work for ToggleBoundingBoxModeAction.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Apr 4 15:41:30 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ToggleBoundingBoxModeAction::Execute()
-{
-    windowMgr->ToggleBoundingBoxMode(window->GetWindowId());
-}
-
-// ****************************************************************************
-// Method: ToggleBoundingBoxModeAction::Enabled
-//
-// Purpose: 
-//   Returns when the action is enabled.
-//
-// Returns:    True if the action is enabled; false otherwise.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Apr 4 15:41:45 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ToggleBoundingBoxModeAction::Enabled() const
-{
-    // This action should only be enabled if the window to which the action belongs
-    // has plots in it.
-    return (window->GetPlotList()->GetNumPlots() > 0);
-}
-
-// ****************************************************************************
-// Method: ToggleBoundingBoxModeAction::Checked
-//
-// Purpose: 
-//   Returns whether the action should be toggled.
-//
-// Returns:    Whether the action should be toggled.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Apr 4 15:42:12 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ToggleBoundingBoxModeAction::Checked() const
-{
-    return window->GetBoundingBoxMode();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
 // Method: SetWindowLayoutAction::SetWindowLayoutAction
 //
 // Purpose: 
@@ -1541,8 +1449,6 @@ SetToolUpdateModeAction::ChoiceChecked(int i) const
 // Programmer: Jeremy Meredith
 // Creation:   February  2, 2010
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 bool
