@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -133,5 +133,5 @@ SurfaceGeneralPluginInfo::GetID() const
 bool
 SurfaceGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }
