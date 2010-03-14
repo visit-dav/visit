@@ -451,6 +451,9 @@ class ViewerToolbar;
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Hank Childs, Sat Mar 13 18:43:02 PST 2010
+//    Removed bounding box mode.  Now handled through interactors.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -501,7 +504,6 @@ public:
     void SetViewExtentsType(const avtExtentType);
     avtExtentType GetViewExtentsType() const;
     void GetExtents(int nDimensions, double *extents) const;
-    void SetBoundingBoxMode(const bool mode);
     bool GetBoundingBoxMode() const;
     void SetSpinMode(const bool mode);
     bool GetSpinMode() const;
