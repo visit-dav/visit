@@ -588,6 +588,9 @@ $0 = shift @ARGV;
 #    I modified the script so that it would properly launch VisIt in
 #    parallel on xchem.llnl.gov.
 #
+#    Hank Childs and Rick Angelini, Sat Mar 13 20:19:49 PST 2010
+#    Add support for salloc.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2473,6 +2476,29 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-expedite"   if $expedite_engine;
         push @parcmd, "-i", "cd $cwd ; $limitcmd ; $libpathcmd ; ".
                             " @sublaunchprecmd $sublauncher $sublauncherargs @visitcmd ; @sublaunchpostcmd";
+        @printcmd = @parcmd;
+        push @printcmd, ("\"".(pop @printcmd)."\"");
+    }
+    # salloc
+    elsif (substr($launch,0,6) eq "salloc")
+    {
+        @parcmd = ("salloc");
+        push @parcmd, "-N", $procs if $procs_set;
+        if ($nodes_set)
+        {
+           $ppn = ceil($procs / $nodes);
+           push @parcmd, "--ntasks-per-node=$ppn";
+        }
+        push @parcmd, "srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun";
+
+        if ($nodes_set)
+        {
+           $ppn = ceil($procs / $nodes);
+           push @parcmd, "--npernode", $ppn;
+        }
+        push @parcmd, @visitcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
     }

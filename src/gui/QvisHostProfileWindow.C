@@ -447,6 +447,11 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//
+//   Hank Childs, Sat Mar 13 20:21:17 PST 2010
+//   Add support for salloc.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateLaunchSettingsGroup()
@@ -471,6 +476,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("poe");
     launchMethod->addItem("prun");
     launchMethod->addItem("psub");
+    launchMethod->addItem("salloc");
     launchMethod->addItem("srun");
     launchMethod->addItem("yod");
     launchMethod->addItem("msub/srun");
