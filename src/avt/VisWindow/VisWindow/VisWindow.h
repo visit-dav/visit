@@ -412,6 +412,10 @@ class VisitInteractor;
 //    Jeremy Meredith, Tue Feb  2 13:45:20 EST 2010
 //    Added new tool update mode.
 //
+//    Hank Childs, Sat Mar 13 18:00:59 PST 2010
+//    Add "auto" setting to bounding box mode.  Remove call to 
+//    SetBoundingBoxMode, since that is now done through the interactor atts.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -498,7 +502,6 @@ public:
 
     void                 SetTitle(const char *);
 
-    void                 SetBoundingBoxMode(bool);
     bool                 GetBoundingBoxMode() const;
     void                 SetSpinMode(bool);
     bool                 GetSpinMode() const;

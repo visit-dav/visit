@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define INTERACTORATTRIBUTES_NMETH 14
 void VISITPY_API           PyInteractorAttributes_StartUp(InteractorAttributes *subj, void *data);
 void VISITPY_API           PyInteractorAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyInteractorAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyInteractorAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyInteractorAttributes_Check(PyObject *obj);
 VISITPY_API InteractorAttributes *  PyInteractorAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyInteractorAttributes_New();
-VISITPY_API PyObject *      PyInteractorAttributes_Wrap(const InteractorAttributes *attr);
+VISITPY_API PyObject *     PyInteractorAttributes_New();
+VISITPY_API PyObject *     PyInteractorAttributes_Wrap(const InteractorAttributes *attr);
 void VISITPY_API           PyInteractorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyInteractorAttributes_SetDefaults(const InteractorAttributes *atts);
 std::string VISITPY_API    PyInteractorAttributes_GetLogString();
 std::string VISITPY_API    PyInteractorAttributes_ToString(const InteractorAttributes *, const char *);
+VISITPY_API PyObject *     PyInteractorAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyInteractorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyInteractorAttributes_methods[INTERACTORATTRIBUTES_NMETH];
 
 #endif
 

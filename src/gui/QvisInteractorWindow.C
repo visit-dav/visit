@@ -140,6 +140,9 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Cyrus Harrison, Tue Jun 24 08:39:21 PDT
 //   Initial Qt4 Port.
 //
+//   Hank Childs, Sat Mar 13 19:03:03 PST 2010
+//   Add interface for bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -192,6 +195,27 @@ QvisInteractorWindow::CreateWindowContents()
     navigationMode->addButton(flythrough,2);
     navigationLayout->addWidget(flythrough, 1, 3);
 
+    QGroupBox *boundingBoxGroup = new QGroupBox(central);
+    boundingBoxGroup->setTitle(tr("Switch to bounding box when changing views:"));
+    topLayout->addWidget(boundingBoxGroup);
+
+    QVBoxLayout *boundingBoxVBoxLayout = new QVBoxLayout(boundingBoxGroup);
+
+    QGridLayout *boundingBoxLayout = new QGridLayout();
+    boundingBoxVBoxLayout->addLayout(boundingBoxLayout);
+
+    boundingBoxMode = new QButtonGroup(boundingBoxGroup);
+    connect(boundingBoxMode, SIGNAL(buttonClicked(int)),
+            this, SLOT(boundingBoxModeChanged(int)));
+    QRadioButton *always = new QRadioButton(tr("Always"), boundingBoxGroup);
+    boundingBoxMode->addButton(always,0);
+    boundingBoxLayout->addWidget(always, 1, 1);
+    QRadioButton *never = new QRadioButton(tr("Never"), boundingBoxGroup);
+    boundingBoxMode->addButton(never,1);
+    boundingBoxLayout->addWidget(never, 1, 2);
+    QRadioButton *autorb = new QRadioButton(tr("Auto (remote rendering only)"), boundingBoxGroup);
+    boundingBoxMode->addButton(autorb,2);
+    boundingBoxLayout->addWidget(autorb, 1, 3);
 
     QGroupBox *axisGroup = new QGroupBox(central);
     axisGroup->setTitle(tr("Axis Array interaction:"));
@@ -237,6 +261,9 @@ QvisInteractorWindow::CreateWindowContents()
 //   Cyrus Harrison, Tue Jun 24 08:39:21 PDT
 //   Initial Qt4 Port.
 //
+//   Hank Childs, Sat Mar 13 19:03:03 PST 2010
+//   Add bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -273,6 +300,14 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
             break;
           case InteractorAttributes::ID_axisArraySnap:
             axisSnap->setChecked(atts->GetAxisArraySnap());
+            break;
+          case InteractorAttributes::ID_boundingBoxMode:
+            if (atts->GetBoundingBoxMode() == InteractorAttributes::Always)
+               boundingBoxMode->button(0)->setChecked(true);
+            else if (atts->GetBoundingBoxMode() == InteractorAttributes::Never)
+               boundingBoxMode->button(1)->setChecked(true);
+            else if (atts->GetBoundingBoxMode() == InteractorAttributes::Auto)
+               boundingBoxMode->button(2)->setChecked(true);
             break;
         }
     }
@@ -459,6 +494,21 @@ QvisInteractorWindow::navigationModeChanged(int val)
         atts->SetNavigationMode(InteractorAttributes::Dolly);
     else
         atts->SetNavigationMode(InteractorAttributes::Flythrough);
+    SetUpdate(false);
+    Apply();
+}
+
+
+
+void
+QvisInteractorWindow::boundingBoxModeChanged(int val)
+{
+    if (val == 0)
+        atts->SetBoundingBoxMode(InteractorAttributes::Always);
+    else if (val == 1)
+        atts->SetBoundingBoxMode(InteractorAttributes::Never);
+    else
+        atts->SetBoundingBoxMode(InteractorAttributes::Auto);
     SetUpdate(false);
     Apply();
 }

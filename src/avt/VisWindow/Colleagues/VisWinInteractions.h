@@ -93,6 +93,9 @@ class VisitHotPointInteractor;
 //     Jeremy Meredith, Tue Feb  2 13:43:43 EST 2010
 //     Added a new setting for when tools should update.
 //
+//     Hank Childs, Sat Mar 13 18:07:25 PST 2010
+//     Add "auto" setting to bounding box mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -104,8 +107,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
    
     void                     SetInteractionMode(INTERACTION_MODE);
     INTERACTION_MODE         GetInteractionMode() const;
-    void                     SetBoundingBoxMode(bool);
-    bool                     GetBoundingBoxMode() const;
+    void                     SetBoundingBoxMode(int);
+    int                      GetBoundingBoxMode() const;
     void                     SetSpinMode(bool);
     bool                     GetSpinMode() const;
     void                     SetSpinModeSuspended(bool);
@@ -130,7 +133,7 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
   protected:
     INTERACTION_MODE         mode;
     TOOLUPDATE_MODE          toolUpdateMode;
-    bool                     bboxMode;
+    int                      bboxMode;
     bool                     spinMode;
     bool                     spinModeSuspended;
     VisitHotPointInteractor *hotPointInteractor;

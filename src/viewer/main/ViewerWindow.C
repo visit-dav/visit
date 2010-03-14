@@ -1549,27 +1549,6 @@ ViewerWindow::GetExtents(int nDimensions, double *extents) const
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::SetBoundingBoxMode
-//
-//  Purpose: 
-//    Set the window's bounding box mode.
-//
-//  Arguments:
-//    mode      The bbox mode.  A true value indicates that the window
-//              is in navigate bbox mode.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Nov 9 15:34:23 PST 2000
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetBoundingBoxMode(const bool mode)
-{
-    visWindow->SetBoundingBoxMode(mode);
-}
-
-// ****************************************************************************
 //  Method: ViewerWindow::GetBoundingBoxMode
 //
 //  Purpose: 
@@ -2256,6 +2235,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Hank Childs, Sat Mar 13 18:46:54 PST 2010
+//   Remove reference to bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -2284,7 +2266,6 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     //
     // Set window mode flags.
     //
-    SetBoundingBoxMode(source->GetBoundingBoxMode());
     SetSpinMode(source->GetSpinMode());
     SetCameraViewMode(source->GetCameraViewMode());
     SetMaintainViewMode(source->GetMaintainViewMode());
@@ -7862,6 +7843,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Hank Childs, Sat Mar 13 18:46:54 PST 2010
+//   Remove reference to bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -7891,7 +7875,6 @@ ViewerWindow::CreateNode(DataNode *parentNode,
     //
     if(detailed)
     {
-        windowNode->AddNode(new DataNode("boundingBoxMode", GetBoundingBoxMode()));
         windowNode->AddNode(new DataNode("cameraView", cameraView));
         windowNode->AddNode(new DataNode("maintainView", maintainView));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
@@ -8132,6 +8115,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Hank Childs, Sat Mar 13 18:46:54 PST 2010
+//   Remove reference to bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -8220,8 +8206,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
         SetViewAxisArray(viewAxisArray);
     }
-    if((node = windowNode->GetNode("boundingBoxMode")) != 0)
-        SetBoundingBoxMode(node->AsBool());
     if((node = windowNode->GetNode("cameraView")) != 0)
         SetCameraViewMode(node->AsBool());
     if((node = windowNode->GetNode("maintainView")) != 0)

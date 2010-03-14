@@ -40,9 +40,12 @@
 //                         VisWinInteractions.C                              //
 // ************************************************************************* //
 
+#include <VisWinInteractions.h>
+
+#include <InteractorAttributes.h>
+
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
-#include <VisWinInteractions.h>
 
 #include <BadInteractorException.h>
 #include <VisitHotPointInteractor.h>
@@ -68,6 +71,9 @@
 //    Jeremy Meredith, Tue Feb  2 13:43:07 EST 2010
 //    Initialize new toolUpdateMode.
 //
+//    Hank Childs, Sat Mar 13 18:07:25 PST 2010
+//    Add "auto" setting to bounding box mode.
+//
 // ****************************************************************************
 
 VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
@@ -75,7 +81,7 @@ VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
     : VisWinColleague(c)
 {
     mode = NAVIGATE;
-    bboxMode = true;
+    bboxMode = InteractorAttributes::Auto;
     spinMode = false;
     spinModeSuspended = false;
     hotPointInteractor = new VisitHotPointInteractor(i);
@@ -459,21 +465,39 @@ VisWinInteractions::StopAxisParallelMode(void)
 //  Creation:   Thu Nov 9 15:52:59 PST 2000
 //
 //  Modifications:
+//
 //   Jeremy Meredith, Tue Feb  2 13:44:21 EST 2010
 //   Turn off continuous tool update mode if we're turning on bbox mode.
+//
+//   Hank Childs, Sat Mar 13 18:07:25 PST 2010
+//   Add "auto" setting to bounding box mode.
 //
 // ****************************************************************************
 
 void
-VisWinInteractions::SetBoundingBoxMode(bool val)
+VisWinInteractions::SetBoundingBoxMode(int val)
 {
     bboxMode = val;
-    if (bboxMode)
+    bool doingBBox = false;
+    if (val == InteractorAttributes::Always)
+        doingBBox = true;
+    VisWindow *vw = mediator;
+    bool doingSR = vw->GetScalableRendering();
+    if (val == InteractorAttributes::Auto && doingSR)
+        doingBBox = true;
+    if (doingBBox)
     {
         // The continuous tool update mode does not
         // work when bounding box mode is on.
         if (toolUpdateMode == UPDATE_CONTINUOUS)
             toolUpdateMode = UPDATE_ONRELEASE;
+    }
+    else
+    {
+        // The continuous tool update mode does 
+        // work when bounding box mode is off.
+        if (toolUpdateMode == UPDATE_ONRELEASE)
+            toolUpdateMode = UPDATE_CONTINUOUS;
     }
 }
 
@@ -489,9 +513,14 @@ VisWinInteractions::SetBoundingBoxMode(bool val)
 //  Programmer: Hank Childs
 //  Creation:   November 8, 2000
 //
+//  Modifications:
+//
+//   Hank Childs, Sat Mar 13 18:07:25 PST 2010
+//   Add "auto" setting to bounding box mode.
+//
 // ****************************************************************************
 
-bool
+int
 VisWinInteractions::GetBoundingBoxMode() const
 {
     return bboxMode;

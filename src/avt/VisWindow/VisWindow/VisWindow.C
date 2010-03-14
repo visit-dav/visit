@@ -2275,27 +2275,6 @@ VisWindow::EndBoundingBox(void)
 
 
 // ****************************************************************************
-//  Method: VisWindow::SetBoundingBoxMode
-//
-//  Purpose:
-//      Sets the VisWindow's bounding box mode.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Nov 9 15:40:54 PST 2000
-//
-// ****************************************************************************
-
-void
-VisWindow::SetBoundingBoxMode(bool mode)
-{
-    if(mode != interactions->GetBoundingBoxMode())
-    {
-        interactions->SetBoundingBoxMode(mode);
-    }
-}
-
-
-// ****************************************************************************
 //  Method: VisWindow::GetBoundingBoxMode
 //
 //  Purpose:
@@ -2303,15 +2282,39 @@ VisWindow::SetBoundingBoxMode(bool mode)
 //
 //  Returns:    true if the viswindow is in bounding box mode, false otherwise.
 //
+//  Notes:      inside this class, the mode is represented as a tri-state:
+//              always, never, auto, where auto keys off scalable rendering
+//              mode.  Outside this class, there is only on and off.
+//
+//              always      -> on
+//              never       -> off
+//              auto &&  sr -> on
+//              auto && !sr -> off
+//
 //  Programmer: Hank Childs
 //  Creation:   November 8, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 13 18:00:59 PST 2010
+//    Add "auto" setting.  Implement logic here, so code outside VisWindow can
+//    still depend on true/false.
 //
 // ****************************************************************************
 
 bool
 VisWindow::GetBoundingBoxMode() const
 {
-    return interactions->GetBoundingBoxMode();
+    InteractorAttributes::BoundingBoxMode mode =
+     (InteractorAttributes::BoundingBoxMode) interactions->GetBoundingBoxMode();
+
+    if (mode == InteractorAttributes::Always)
+        return true;
+    if (mode == InteractorAttributes::Never)
+        return false;
+
+    // In Auto mode.  If we are doing SR, then we should do BBox.  Else not.
+    return (GetScalableRendering());
 }
 
 
@@ -6155,6 +6158,9 @@ VisWindow::ReAddToolsToRenderWindow(void)
 //   Eric Brugger, Fri Nov 12 14:51:13 PST 2004
 //   Add code to update the interactors if the attributes changed.
 //
+//   Hank Childs, Sat Mar 13 18:59:36 PST 2010
+//   Set the bounding box mode.
+//
 // ****************************************************************************
 
 void
@@ -6165,6 +6171,7 @@ VisWindow::SetInteractorAtts(const InteractorAttributes *atts)
     if (changed)
     {
         interactorAtts = *atts;
+        interactions->SetBoundingBoxMode(atts->GetBoundingBoxMode());
 
         //
         // Update the interactors.  This is necessary to handle a change
