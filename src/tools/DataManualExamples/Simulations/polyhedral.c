@@ -49,6 +49,7 @@
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
+visit_handle SimGetVariable(int, const char *, void *);
 
 /******************************************************************************
  * Simulation data and functions
@@ -99,10 +100,10 @@ void simulate_one_timestep(simulation_data *sim)
 float xc[] = {
 2.5, 2.5, 2.5, 2.5,
 1.5, 1.5, 1.5, 1.5,
-/*NOTE: the 0.45's are to displace a node so we don't have 3 colinear nodes
+/*NOTE: the 0.49's are to displace a node so we don't have 3 colinear nodes
         since it will cause the tessellator to ignore a node.
  */
-0.5, 0.45 ,0.5, 0.45, 0.5, 0.45, 0.5, 0.45, 0.5,
+0.5, 0.49 ,0.5, 0.49, 0.5, 0.49, 0.5, 0.49, 0.5,
 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.
 };
 
@@ -144,7 +145,12 @@ int connectivity[] = {
         12,13,22,21,15,16,25,24,
 };
 
+int npolynodes = 9 + 9 + 4 + 4;
 int npolyzones = 6;
+
+float zonal[] = {
+    0., 1., 2., 3., 4., 5.
+};
 
 /*************************** Polyhedral Mesh variables ***********************/
 
@@ -153,7 +159,7 @@ int npolyzones = 6;
  * Purpose: Callback function for control commands.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Feb  6 14:29:36 PST 2009
+ * Date:       Fri Feb  6 14:29:36 PST 2010
  *
  * Input Arguments:
  *   cmd    : The command string that we want the sim to execute.
@@ -221,7 +227,7 @@ ProcessConsoleCommand(simulation_data *sim)
  * Purpose: This is the main event loop function.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Feb  6 14:29:36 PST 2009
+ * Date:       Fri Feb  6 14:29:36 PST 2010
  *
  * Modifications:
  *
@@ -262,6 +268,7 @@ void mainloop(simulation_data *sim)
 
                 VisItSetGetMetaData(SimGetMetaData, (void*)sim);
                 VisItSetGetMesh(SimGetMesh, (void*)sim);
+                VisItSetGetVariable(SimGetVariable, (void*)sim);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -295,7 +302,7 @@ void mainloop(simulation_data *sim)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Feb  6 14:29:36 PST 2009
+ * Date:       Fri Feb  6 14:29:36 PST 2010
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
@@ -339,7 +346,7 @@ int main(int argc, char **argv)
  * Purpose: This callback function returns simulation metadata.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Feb  6 14:29:36 PST 2009
+ * Date:       Fri Feb  6 14:29:36 PST 2010
  *
  * Modifications:
  *
@@ -356,6 +363,7 @@ SimGetMetaData(void *cbdata)
     {
         int i;
         visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle vmd = VISIT_INVALID_HANDLE;
         visit_handle cmd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
@@ -382,6 +390,28 @@ SimGetMetaData(void *cbdata)
             VisIt_SimulationMetaData_addMesh(md, mmd);
         }
 
+        /* Add a variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "zonal");
+            VisIt_VariableMetaData_setMeshName(vmd, "polyhedral");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
+        /* Add a nodal variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "nodal");
+            VisIt_VariableMetaData_setMeshName(vmd, "polyhedral");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
         /* Add some custom commands. */
         for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
         {
@@ -404,7 +434,7 @@ SimGetMetaData(void *cbdata)
  * Purpose: This callback function returns meshes.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Feb  6 14:29:36 PST 2009
+ * Date:       Fri Feb  6 14:29:36 PST 2010
  *
  * Modifications:
  *
@@ -421,7 +451,6 @@ SimGetMesh(int domain, const char *name, void *cbdata)
         {
             visit_handle x,y,z,conn;
             int nnodes = sizeof(xc) / sizeof(float);
-
             VisIt_VariableData_alloc(&x);
             VisIt_VariableData_alloc(&y);
             VisIt_VariableData_alloc(&z);
@@ -442,3 +471,34 @@ SimGetMesh(int domain, const char *name, void *cbdata)
     return h;
 }
 
+/******************************************************************************
+ *
+ * Purpose: This callback function returns scalars.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2010
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+visit_handle
+SimGetVariable(int domain, const char *name, void *cbdata)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
+
+    if(strcmp(name, "zonal") == 0)
+    {
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+            npolyzones, zonal);
+    }
+    else if(strcmp(name, "nodal") == 0)
+    {
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+            npolynodes, xc);
+    }
+    return h;
+}

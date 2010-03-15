@@ -1,3 +1,41 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-400124
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
 #include <set>
 #include <snprintf.h>
 
@@ -26,6 +64,7 @@
 #include <ImproperUseException.h>
 
 #include <PolygonToTriangles.C>
+#include <PolyhedralSplit.h>
 
 #include <simv2_CSGMesh.h>
 #include <simv2_CurvilinearMesh.h>
@@ -726,7 +765,7 @@ SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
 
 static int
 SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr, 
-    int nnodes, int phIndex)
+    int nnodes, int phIndex, PolyhedralSplit *polyhedralSplit)
 {
     const int *cell = *cellptr;
 
@@ -744,9 +783,11 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
     // Come up with a center point and store it.
     double pt[3] = {0.,0.,0.}, center[3] = {0.,0.,0.};
     vtkPoints *points = ugrid->GetPoints();
+    polyhedralSplit->AppendPolyhedralNode(uniquePointIds.size());
     for(std::set<int>::const_iterator it = uniquePointIds.begin();
         it != uniquePointIds.end(); ++it)
     {
+        polyhedralSplit->AppendPolyhedralNode(*it);
         points->GetPoint(*it, pt);
         center[0] += pt[0];
         center[1] += pt[1];
@@ -851,132 +892,15 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 }
 
 // ****************************************************************************
-// Method: SimV2CreateOriginalCells
-//
-// Purpose: 
-//   Creates original cell numbers for the polyhedral mesh.
-//
-// Arguments:
-//   domain              : The domain number.
-//   normalCellCount     : The number of regular zoo cells.
-//   polyhedralSplit     : The list of cells that split into N pieces.
-//   polyhedralCellCount : The number of polyhedral cells.
-//
-// Returns:    The original cells array.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 19 12:14:03 PST 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-static vtkDataArray *
-SimV2CreateOriginalCells(int domain, int normalCellCount, 
-    const int *polyhedralSplit, int polyhedralCellCount)
-{
-    vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::New();
-    originalCells->SetNumberOfComponents(2);
-    int bloat = 0;
-    for(int i = 0; i < polyhedralCellCount; ++i)
-        bloat += polyhedralSplit[i*2+1];
-    originalCells->SetNumberOfTuples(normalCellCount + bloat);
-    originalCells->SetName("avtOriginalCellNumbers");
-
-    int phIndex = 0;
-    unsigned int *oc = (unsigned int *)originalCells->GetVoidPointer(0);
-    int allCells = normalCellCount + polyhedralCellCount;
-    for(int origCell = 0; origCell < allCells; ++origCell)
-    {
-        oc[1] = origCell;
-        if(phIndex >= polyhedralCellCount)
-        {
-            *oc++ = domain;
-            *oc++ = origCell;
-        }
-        else if(origCell < polyhedralSplit[phIndex*2])
-        {
-            *oc++ = domain;
-            *oc++ = origCell;
-        }
-        else
-        {
-            int nrepeats = polyhedralSplit[phIndex*2+1];
-            for(int j = 0; j < nrepeats; ++j)
-            {
-                *oc++ = domain;
-                *oc++ = origCell;
-            }
-            phIndex++;
-        }
-    }
-
-    return originalCells;
-}
-
-// ****************************************************************************
-// Method: SimV2ExpandPolyhedralDataArray
-//
-// Purpose: 
-//   Creates a copy of the input data array, inflated for polyhedral zones
-//
-// Arguments:
-//   input               : The data array to copy.
-//   polyhedralSplit     : The list of cells that split into N pieces.
-//   polyhedralCellCount : The number of polyhedral cells.
-//
-// Returns:    An inflated data array.
-//
-// Note:       Only works for zone data.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 19 12:15:30 PST 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-vtkDataArray *
-SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
-    int polyhedralCellCount)
-{
-    vtkDataArray *output = input->NewInstance();
-    int bloat = 0;
-    for(int i = 0; i < polyhedralCellCount; ++i)
-       bloat += polyhedralSplit[i*2+1];
-    output->SetNumberOfTuples(input->GetNumberOfTuples() + bloat);
-
-    int out = 0;
-    int phIndex = 0;
-    for(int i = 0; i < input->GetNumberOfTuples(); ++i)
-    {
-        if(phIndex >= polyhedralCellCount ||
-           i < polyhedralSplit[phIndex*2])
-        {
-            output->SetTuple(out++, input->GetTuple(i));
-        }
-        else
-        {
-            int nrepeats = polyhedralSplit[phIndex*2+1];
-            for(int j = 0; j < nrepeats; ++j)
-                output->SetTuple(out++, input->GetTuple(i));
-            phIndex++;
-        }
-    }
-
-    return output;    
-}
-
-// ****************************************************************************
 // Method: SimV2_GetMesh_Unstructured
 //
 // Purpose: 
 //   Builds a VTK unstructured mesh from the simulation mesh.
 //
 // Arguments:
-//   umesh : The simulation mesh.
+//   umesh   : The simulation mesh.
+//   h       : The handle that references the real mesh data.
+//   phSplit : Return a polyhedral split object if we had polyhedra.
 //
 // Returns:    A VTK dataset that represents the simulation mesh.
 //
@@ -990,7 +914,7 @@ SimV2ExpandPolyhedralDataArray(vtkDataArray *input, const int *polyhedralSplit,
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Unstructured(int domain, visit_handle h)
+SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit)
 {
     if (h == VISIT_INVALID_HANDLE)
         return NULL;
@@ -1030,7 +954,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
     //
     vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c,
                                            polyhedralCellCount);
-    int nRealPoints = points->GetNumberOfPoints();
+    int nRealPoints = points->GetNumberOfPoints() - polyhedralCellCount;
 
     //
     // Create the cells.
@@ -1058,11 +982,12 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
     ugrid->Allocate(normalCellCount + 6 * polyhedralCellCount);
     points->Delete();
 
-    int *polyhedralSplit = 0;
+    *phSplit = 0;
+    PolyhedralSplit *polyhedralSplit = 0;
     if(polyhedralCellCount > 0)
     {
-        polyhedralSplit = new int[2 * polyhedralCellCount];
-        memset(polyhedralSplit, 0, 2 * polyhedralCellCount * sizeof(int));
+        polyhedralSplit = new PolyhedralSplit(normalCellCount,
+            polyhedralCellCount);
     }
 
     // Iterate over the connectivity and add the appropriate cell types
@@ -1079,9 +1004,9 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
         if(celltype == VISIT_CELL_POLYHEDRON)
         {
             // Add a polyhedral cell as a collection of smaller normal cells.
-            polyhedralSplit[2*phIndex] = numCells;
-            polyhedralSplit[2*phIndex+1] = SimV2_Add_PolyhedralCell(ugrid, &cell,
-                nRealPoints, phIndex);
+            int nsplits = SimV2_Add_PolyhedralCell(ugrid, &cell, nRealPoints, 
+                phIndex, polyhedralSplit);
+            polyhedralSplit->SetCellSplits(phIndex, numCells, nsplits);
             phIndex++;
         }
         else if(celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_HEX)
@@ -1107,7 +1032,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
 
     if (!noConnectivityError)
     {
-        delete [] polyhedralSplit;
+        delete polyhedralSplit;
         ugrid->Delete();
         char tmp[100];
         SNPRINTF(tmp, 100, "Cell %d's connectivity contained invalid points or "
@@ -1116,7 +1041,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
     }
     if (numCells != nzones)
     {
-        delete [] polyhedralSplit;
+        delete polyhedralSplit;
         ugrid->Delete();
         EXCEPTION1(ImproperUseException,
                    "Number of zones and length of connectivity "
@@ -1160,8 +1085,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
 
         if(polyhedralCellCount > 0)
         {
-            vtkDataArray *phgz = SimV2ExpandPolyhedralDataArray(
-                ghostZones, polyhedralSplit, polyhedralCellCount);
+            vtkDataArray *phgz = polyhedralSplit->ExpandDataArray(ghostZones, true);
             ghostZones->Delete();
             ghostZones = (vtkUnsignedCharArray *)phgz;
         }
@@ -1174,18 +1098,13 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h)
 
     if(polyhedralCellCount > 0)
     {
-        vtkDataArray *originalCells = SimV2CreateOriginalCells(domain,
-            normalCellCount, polyhedralSplit, polyhedralCellCount);
+        vtkDataArray *originalCells = polyhedralSplit->CreateOriginalCells(domain,
+            normalCellCount);
         ugrid->GetCellData()->AddArray(originalCells);
         ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
 
-        // For now
-        delete [] polyhedralSplit;
-
-        //Future
-        // Save off normalCellCount, polyhedralSplit, polyhedralCellCount
-        // into a cached structure so we can use them to inflate data arrays
-        // later when the sim provides data via GetVar.
+        // Return the polyhedral split object.
+        *phSplit = polyhedralSplit;
     }
 
     return ugrid;
