@@ -169,30 +169,11 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
     n.zextents[5] = BNDMAX(e[5]-1, e[4]);
 
     n.type = NONE;
-
-    // In a 3D dataset overlaping nodes that form a logical line
-    // generate incorrect ghost nodes with the following logic.
-    //
-    //
-    // To resolve this we test the logical dimension of
-    // the current neighbor overlap.
-    //
-
-    int bdim = 0;
-    // check for a 2d problem via flat negative logical z indices.
-
-    if ((e[1] - e[0]) != 0) bdim+=1;
-    if ((e[3] - e[2]) != 0) bdim+=1;
-    if ((e[5] - e[4]) != 0) bdim+=1;
-
-    // disable for now
-    if(true) // e[5] == -1 && e[4] == -1 ||  bdim >= 2)
-    {
     // ---- I ----
     if (e[0] == e[1]  &&  oldnextents[0] != oldnextents[1])
     {
-        // ---- I ----
-        if (e[0] == e[1]  &&  oldnextents[0] != oldnextents[1])
+        int ei = e[0];
+        if (ei == oldnextents[0])
         {
             n.type |= IMIN;
             expand[0] = 1;
@@ -239,7 +220,7 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
             n.zextents[5]--;
         }
     }
-    }
+
     // Add the neighbor to the list
     neighbors.push_back(n);
 }
