@@ -22,6 +22,7 @@ ${COMMON_SOURCES}
 avtSimV2FileFormat.C
 avtSimV2Writer.C
 SimV2GetMesh.C
+PolyhedralSplit.C
 )
 
 INCLUDE_DIRECTORIES(

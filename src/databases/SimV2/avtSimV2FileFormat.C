@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -85,6 +85,7 @@ using std::vector;
 #include <avtParallel.h>
 #endif
 
+#ifndef MDSERVER
 #include <VisItControlInterfaceRuntime.h>
 #include <VisItDataInterfaceRuntime.h>
 
@@ -108,12 +109,15 @@ using std::vector;
 #include <simv2_SpeciesData.h>
 #include <simv2_VariableData.h>
 
-#ifndef MDSERVER
+#include <PolyhedralSplit.h>
+
 vtkDataSet *SimV2_GetMesh_Curvilinear(visit_handle h);
 vtkDataSet *SimV2_GetMesh_Rectilinear(visit_handle h);
-vtkDataSet *SimV2_GetMesh_Unstructured(int, visit_handle h);
+vtkDataSet *SimV2_GetMesh_Unstructured(int, visit_handle h, PolyhedralSplit **);
 vtkDataSet *SimV2_GetMesh_Point(visit_handle h);
 vtkDataSet *SimV2_GetMesh_CSG(visit_handle h);
+
+const char *AUXILIARY_DATA_POLYHEDRAL_SPLIT = "POLYHEDRAL_SPLIT";
 #endif
 
 // ****************************************************************************
@@ -1168,6 +1172,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
     }
 
     vtkDataSet *ds = 0;
+    PolyhedralSplit *phSplit = 0;
     TRY
     {
         int objType = simv2_ObjectType(h);
@@ -1180,7 +1185,20 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
             ds = SimV2_GetMesh_Rectilinear(h);
             break;
         case VISIT_UNSTRUCTURED_MESH:
-            ds = SimV2_GetMesh_Unstructured(domain, h);
+        {
+            ds = SimV2_GetMesh_Unstructured(domain, h, &phSplit);
+
+            // Cache the polyhedral split object in case we need it for
+            // variables later.
+            if(phSplit != 0)
+            {
+                void_ref_ptr vr = void_ref_ptr(phSplit, PolyhedralSplit::Destruct);
+                debug4 << "Caching polyhedral split for mesh:" << meshname << endl;
+                cache->CacheVoidRef(meshname,
+                                    AUXILIARY_DATA_POLYHEDRAL_SPLIT,
+                                    timestep, domain, vr);
+            }
+        }
             break;
         case VISIT_POINT_MESH:
             ds = SimV2_GetMesh_Point(h);
@@ -1188,7 +1206,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
         case VISIT_CSG_MESH:
             ds = SimV2_GetMesh_CSG(h);
             break;
-        default:
+        default:       
             EXCEPTION1(ImproperUseException,
                 "The simulation returned a handle that does not correspond "
                 "to a mesh.\n");
@@ -1197,6 +1215,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
     }
     CATCH2(VisItException, e)
     {
+        delete phSplit;
         simv2_FreeObject(h);
         RETHROW;
     }
@@ -1297,7 +1316,6 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
                                          nTuples, data);
     if(err == VISIT_ERROR || nTuples < 1)
         return NULL;
-
     vtkDataArray *array = 0;
     if (dataType == VISIT_DATATYPE_FLOAT)
     {
@@ -1326,8 +1344,52 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
 
     simv2_VariableData_free(h);
 
-    // Try and read mixed scalar data.
-    h = simv2_invoke_GetMixedVariable(domain, varname);
+    // See if there is a polyhedral split for this variable's mesh.
+    PolyhedralSplit *phSplit = 0;
+    TRY
+    {
+        std::string meshName = metadata->MeshForVar(varname);
+        void_ref_ptr vr = cache->GetVoidRef(meshName.c_str(), 
+            AUXILIARY_DATA_POLYHEDRAL_SPLIT, this->timestep, domain);
+        if(*vr != 0)
+        {
+            debug4 << "Found a cached polyhedral split for "
+                   << meshName << " at: " << (*vr) << endl;
+            phSplit = (PolyhedralSplit *)(*vr);
+
+            // Get the variable centering
+            avtVarType varType = metadata->DetermineVarType(varname, false);
+            avtCentering centering = AVT_ZONECENT;
+            if(varType == AVT_SCALAR_VAR)
+                centering = metadata->GetScalar(varname)->centering;
+            else if(varType == AVT_VECTOR_VAR)
+                centering = metadata->GetVector(varname)->centering;
+            else if(varType == AVT_TENSOR_VAR)
+                centering = metadata->GetTensor(varname)->centering;
+            else if(varType == AVT_SYMMETRIC_TENSOR_VAR)
+                centering = metadata->GetSymmTensor(varname)->centering;
+            else if(varType == AVT_ARRAY_VAR)
+                centering = metadata->GetArray(varname)->centering;
+            else if(varType == AVT_LABEL_VAR)
+                centering = metadata->GetLabel(varname)->centering;
+
+            vtkDataArray *splitArray = phSplit->ExpandDataArray(array, 
+                centering == AVT_ZONECENT);
+            array->Delete();
+            array = splitArray;
+        }
+    }
+    CATCH(VisItException)
+    {
+        // ignore the exception
+    }
+    ENDTRY
+
+    // Try and read mixed scalar data (unless we're splitting cells).
+    if(phSplit == 0)
+        h = VISIT_INVALID_HANDLE;
+    else
+        h = simv2_invoke_GetMixedVariable(domain, varname);
     if (h != VISIT_INVALID_HANDLE)
     {
         err = simv2_VariableData_getData(h, owner, dataType, nComponents, 
