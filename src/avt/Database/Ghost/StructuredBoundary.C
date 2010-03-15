@@ -132,14 +132,6 @@ Boundary::SetExtents(int e[6])
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 21, 2001
 //
-//  Modifications:
-//   Cyrus Harrison, Fri Mar  5 13:37:47 PST 2010
-//   Added a guard to prevent seams in 3D datasets from generating incorrect
-//   ghost nodes.
-//
-//   Cyrus Harrison, Fri Mar  5 13:37:47 PST 2010
-//   Disabled above guard b/c it is too agressive.
-//
 // ****************************************************************************
 void
 Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
@@ -202,53 +194,32 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
         // ---- I ----
         if (e[0] == e[1]  &&  oldnextents[0] != oldnextents[1])
         {
-            int ei = e[0];
-            if (ei == oldnextents[0])
-            {
-                n.type |= IMIN;
-                expand[0] = 1;
-            }
-            if (ei == oldnextents[1])
-            {
-                n.type |= IMAX;
-                expand[1] = 1;
-                n.zextents[0]--;
-                n.zextents[1]--;
-            }
+            n.type |= IMIN;
+            expand[0] = 1;
         }
-        // ---- J ----
-        if (e[2] == e[3]  &&  oldnextents[2] != oldnextents[3])
+        if (ei == oldnextents[1])
         {
-            int ej = e[2];
-            if (ej == oldnextents[2])
-            {
-                n.type |= JMIN;
-                expand[2] = 1;
-            }
-            if (ej == oldnextents[3])
-            {
-                n.type |= JMAX;
-                expand[3] = 1;
-                n.zextents[2]--;
-                n.zextents[3]--;
-            }
+            n.type |= IMAX;
+            expand[1] = 1;
+            n.zextents[0]--;
+            n.zextents[1]--;
         }
-        // ---- K ----
-        if (e[4] == e[5]  &&  oldnextents[4] != oldnextents[5])
+    }
+    // ---- J ----
+    if (e[2] == e[3]  &&  oldnextents[2] != oldnextents[3])
+    {
+        int ej = e[2];
+        if (ej == oldnextents[2])
         {
-            int ek = e[4];
-            if (ek == oldnextents[4])
-            {
-                n.type |= KMIN;
-                expand[4] = 1;
-            }
-            if (ek == oldnextents[5])
-            {
-                n.type |= KMAX;
-                expand[5] = 1;
-                n.zextents[4]--;
-                n.zextents[5]--;
-            }
+            n.type |= JMIN;
+            expand[2] = 1;
+        }
+        if (ej == oldnextents[3])
+        {
+            n.type |= JMAX;
+            expand[3] = 1;
+            n.zextents[2]--;
+            n.zextents[3]--;
         }
     }
     // ---- K ----
