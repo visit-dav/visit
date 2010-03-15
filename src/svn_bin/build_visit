@@ -848,6 +848,10 @@
 #     Cyrus Harrison, Fri Mar 12 15:47:11 PST 2010
 #     Use qt 4.6.1 & python 2.6.4 on all platforms.
 #
+#     Eric Brugger, Mon Mar 15 14:27:23 PDT 2010
+#     I added a patch for ccmio 2.6.1 so that it would build in 32 bit mode
+#     on AIX.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7252,6 +7256,92 @@ function apply_ccmio_261_linux_ppc_patch
  QMAKE_TAR		= tar -cf
  QMAKE_GZIP		= gzip -9f
 EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply linux ppc patch to CCMIO 2.6.1."
+        return 1
+   else
+        return 0
+   fi
+}
+
+function apply_ccmio_261_aix_patch
+{
+  patch -p0 <<\EOF
+diff -c a/config/aix64_5.1-pwr4/qmake.conf libccmio-2.6.1/config/aix64_5.1-pwr4/qmake.conf
+*** a/config/aix64_5.1-pwr4/qmake.conf
+--- libccmio-2.6.1/config/aix64_5.1-pwr4/qmake.conf
+***************
+*** 15,21 ****
+  QMAKE_LEXFLAGS		= 
+  QMAKE_YACC		= yacc
+  QMAKE_YACCFLAGS		= -d
+! QMAKE_CFLAGS		= -q64 -ma -qrndsngl -qnomaf -qstrict -DLARGE_FILES
+  # -qwarn64 turns on too many bogus warnings and shadows real warnings
+  #QMAKE_CFLAGS_WARN_ON	= -qwarn64
+  QMAKE_CFLAGS_WARN_ON    =
+--- 15,21 ----
+  QMAKE_LEXFLAGS		= 
+  QMAKE_YACC		= yacc
+  QMAKE_YACCFLAGS		= -d
+! QMAKE_CFLAGS		= -ma -qrndsngl -qnomaf -qstrict -DLARGE_FILES
+  # -qwarn64 turns on too many bogus warnings and shadows real warnings
+  #QMAKE_CFLAGS_WARN_ON	= -qwarn64
+  QMAKE_CFLAGS_WARN_ON    =
+***************
+*** 49,61 ****
+  QMAKE_LINK		= xlC
+  QMAKE_LINK_THREAD	= xlC_r
+  QMAKE_LINK_SHLIB	= ld
+! QMAKE_LINK_SHLIB_CMD	= makeC++SharedLib -p 0 -X64 \
+  			    -o $(TARGETD) \
+  			    $(LFLAGS) $(OBJECTS) $(OBJMOC) $(LIBS); \
+  			  $(AR) lib$(QMAKE_TARGET).a $(TARGETD); \
+  			  $(RANLIB) lib$(QMAKE_TARGET).a; \
+  			  mv lib$(QMAKE_TARGET).a $(DESTDIR)
+! QMAKE_LFLAGS		= -q64 -qnotempinc
+  QMAKE_LFLAGS_RELEASE	=
+  QMAKE_LFLAGS_DEBUG	=
+  QMAKE_LFLAGS_SHLIB	=
+--- 49,61 ----
+  QMAKE_LINK		= xlC
+  QMAKE_LINK_THREAD	= xlC_r
+  QMAKE_LINK_SHLIB	= ld
+! QMAKE_LINK_SHLIB_CMD	= makeC++SharedLib -p 0 \
+  			    -o $(TARGETD) \
+  			    $(LFLAGS) $(OBJECTS) $(OBJMOC) $(LIBS); \
+  			  $(AR) lib$(QMAKE_TARGET).a $(TARGETD); \
+  			  $(RANLIB) lib$(QMAKE_TARGET).a; \
+  			  mv lib$(QMAKE_TARGET).a $(DESTDIR)
+! QMAKE_LFLAGS		= -qnotempinc
+  QMAKE_LFLAGS_RELEASE	=
+  QMAKE_LFLAGS_DEBUG	=
+  QMAKE_LFLAGS_SHLIB	=
+***************
+*** 77,84 ****
+  QMAKE_MOC		= $(QTDIR)/bin/moc
+  QMAKE_UIC		= $(QTDIR)/bin/uic
+  
+! QMAKE_AR		= ar -X64 cq
+! QMAKE_RANLIB		= ranlib -X64
+  
+  QMAKE_TAR		= tar -cf
+  QMAKE_GZIP		= gzip -9f
+--- 77,84 ----
+  QMAKE_MOC		= $(QTDIR)/bin/moc
+  QMAKE_UIC		= $(QTDIR)/bin/uic
+  
+! QMAKE_AR		= ar cq
+! QMAKE_RANLIB		= ranlib
+  
+  QMAKE_TAR		= tar -cf
+  QMAKE_GZIP		= gzip -9f
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply aix patch to CCMIO 2.6.1."
+        return 1
+   else
+        return 0
+   fi
 }
 
 function apply_ccmio_261_patch
@@ -7264,6 +7354,13 @@ function apply_ccmio_261_patch
    fi
    if [[ `uname -m` == "ppc64" ]]; then
        apply_ccmio_261_linux_ppc_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+   apply_ccmio_261_aix_patch
+   if [[ $? != 0 ]] ; then
+       return 1
    fi
 
    return 0
@@ -7344,10 +7441,10 @@ function build_ccmio
         env RELEASE=1 STATIC=1 $MAKE CXX="$CXX_COMPILER" CC="$C_COMPILER" \
            CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
     fi
-##  if [[ $? != 0 ]] ; then
-##     echo "CCMIO build failed.  Giving up"
-##     return 1
-##  fi
+    if [[ $? != 0 ]] ; then
+       echo "CCMIO build failed.  Giving up"
+       return 1
+    fi
     info "Installing CCMIO . . ."
 
     mkdir $VISITDIR/ccmio
