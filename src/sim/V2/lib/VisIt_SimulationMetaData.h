@@ -40,7 +40,7 @@
 #define VISIT_SIMULATIONMETADATA_H
 #include <VisItInterfaceTypes_V2.h>
 
-// C-callable implementation of front end functions
+/* C-callable implementation of front end functions */
 #ifdef __cplusplus
 extern "C"
 {
