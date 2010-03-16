@@ -3360,7 +3360,13 @@ ViewerFileServer::SetSimulationMetaData(const std::string &host,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Tue Mar 16 11:51:51 PDT 2010
+//    Add the SIL if it has not been added before. Otherwise, the mdserver
+//    will be queried for the SIL and that's useless for simulations.
+//
 // ****************************************************************************
+
 void
 ViewerFileServer::SetSimulationSILAtts(const std::string &host,
                                        const std::string &filename,
@@ -3368,6 +3374,7 @@ ViewerFileServer::SetSimulationSILAtts(const std::string &host,
 {
     avtSIL *sil = new avtSIL(silAtts);
     std::string dbName(ComposeDatabaseName(host, filename));
+    bool added = false;
     for(FileSILMap::const_iterator pos = fileSIL.begin();
         pos != fileSIL.end();
         ++pos)
@@ -3381,10 +3388,20 @@ ViewerFileServer::SetSimulationSILAtts(const std::string &host,
 
         if(name == dbName)
         {
+            added = true;
             *(pos->second) = *sil;
         }
     }
-    delete sil;
+    if(!added)
+    {
+        // If we have not added the simuation SIL before, add it now.
+        debug5 << "Adding simulation SIL for " << dbName << endl;
+        fileSIL[dbName] = sil;
+    }
+    else
+    { 
+        delete sil;
+    }
 }
 
 // ****************************************************************************
