@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Eric Brugger, Tue Mar 16 12:42:01 PDT 2010
+#   I modified the script to not install libraries located in /usr/lib.
 #
 #****************************************************************************/
 
@@ -113,7 +115,9 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
                      NO_SYSTEM_ENVIRONMENT_PATH
                      NO_CMAKE_SYSTEM_PATH)
         IF(full_lib_path)
-            THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+            IF(NOT "${lib_dir_var}" STREQUAL "/usr/lib")
+                THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+            ENDIF(NOT "${lib_dir_var}" STREQUAL "/usr/lib")
             GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
             LIST(APPEND "${lib_var}" ${alib})
             MESSAGE(STATUS "  Found library ${X} in ${${lib_dir_var}}")
@@ -151,7 +155,9 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
                              NO_SYSTEM_ENVIRONMENT_PATH
                              NO_CMAKE_SYSTEM_PATH)
                 IF(full_lib_path)
-                    THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+                    IF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
+                        THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+                    ENDIF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
                     GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
                     LIST(APPEND "${lib_var}" ${alib})
                     MESSAGE(STATUS "  Found library ${X_VALUE} in ${current_lib_dir}")
