@@ -65,6 +65,12 @@
  
    8)  You now have a complete set of data for the given bounds.  Let the user (e.g. VisIt or povrayDumper) do the filtering to determine what gets drawn.  I could have done filtering within the library for performance reasons, but I don't think this is a good idea.  The bulk of the slowdown is in rendering for PovRay, and VisIt will do good filtering by itself.  
 
+   =========================================================================
+   CHANGES
+
+   2010-03-12 Rich Cook
+   Add two new types: NN_+++_short and NN_100_short.  
+
 */ 
 #ifndef PARADIS_H
 #define PARADIS_H
@@ -672,6 +678,19 @@ namespace paraDIS {
   
 
   //=============================================
+
+  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))
+#define BURGERS_NONE 0
+#define BURGERS_100  1
+#define BURGERS_010  2
+#define BURGERS_001  3
+#define BURGERS_PPP  4  // +++
+#define BURGERS_PPM  5  // ++-
+#define BURGERS_PMP  6  // +-+
+#define BURGERS_PMM  7  // +--
+#define BURGERS_UNKNOWN  8  
+ 
+  // Arm MN types:
 #define ARM_UNKNOWN 0
 #define ARM_UNINTERESTING 1
 #define ARM_LOOP 2
@@ -681,13 +700,15 @@ namespace paraDIS {
 #define ARM_MM_100 6
 #define ARM_MN_100 7
 #define ARM_NN_100 8
+#define ARM_SHORT_NN_111 9
+#define ARM_SHORT_NN_100 10
   /*! 
     Arm segments are like Neighbors in that they contain neighbor relationships, but these are encoded as pointers to nodes instead of NodeIDs, for faster access to complete node data as needed. They also contain burgers and arm-type information for later analysis.  I almost called them "FullNeighbor", but in common terminology they are called "arm segments," since one or more of them comprise an Arm, so I just called them that.  
   */ 
   class ArmSegment {
 
   public: 
-    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(0)
+    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(false)
 #if LINKED_LOOPS
       , mParentArm(NULL)
 #endif
@@ -829,6 +850,7 @@ namespace paraDIS {
       Accessor function
     */
     void SetSeen(bool tf) {mSeen = tf; }
+
     /*!
       convert ArmSegment to string
     */ 
@@ -1032,9 +1054,10 @@ namespace paraDIS {
      
       
     /*!
-      Marker used for "once-through" operations like building arms that must look at every segment, but which will usually discover echo particular segment more than once 
+      Marker used for "once-through" operations like building arms that must look at every segment, but which will usually discover echo particular segment more than once. 
     */ 
-    bool mSeen;   
+    bool mSeen; 
+
     /*!
       Pointers to actual nodes, as opposed to just NodeID's as in Neighbors.  
     */ 
@@ -1103,7 +1126,7 @@ namespace paraDIS {
     Arms are used just for classifying nodes and segments and are not expected to be useful to the user of this library; 
   */ 
   struct Arm { 
-    Arm():mArmType(0)
+    Arm():mArmType(0), mArmLength(0)
 #if LINKED_LOOPS
          , mPartOfLinkedLoop(false), mCheckedForLinkedLoop(false) 
 #endif
@@ -1196,7 +1219,9 @@ namespace paraDIS {
     /*! 
       Return the sum of the length of all segments in the arm
     */ 
-    double GetLength(void); 
+    double GetLength(void) { 
+      return mArmLength; 
+    }
 
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 100 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -33 ("special butterfly"). 
@@ -1208,7 +1233,9 @@ namespace paraDIS {
     bool HaveFourUniqueType111ExternalArms(void); 
     vector < ArmSegment *> mTerminalSegments; // At least one, but not more than two
     vector <FullNode *> mTerminalNodes;  // At least one, but not more than two
-    int8_t mArmType; 
+    int8_t mArmType;
+    double mArmLength; 
+    static double mThreshold; // shorter than this and an arm is "short"
 #if LINKED_LOOPS
     bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
 #endif
@@ -1270,6 +1297,7 @@ namespace paraDIS {
 
     void SetThreshold(double threshold) {
       mThreshold = threshold;
+      Arm::mThreshold = threshold; 
       return; 
     }
 
