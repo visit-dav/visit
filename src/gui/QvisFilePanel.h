@@ -40,6 +40,7 @@
 #define QVIS_FILE_PANEL_H
 #include <gui_exports.h>
 #include <QWidget>
+#include <QGroupBox>
 #include <SimpleObserver.h>
 #include <GUIBase.h>
 #include <QualifiedFilename.h>
@@ -72,7 +73,7 @@ class ViewerProxy;
 //   This class contains all the objects and logic for the top panel
 //   of the VisIt main window.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 24 14:47:44 PST 2000
@@ -147,10 +148,10 @@ class ViewerProxy;
 //
 //   Brad Whitlock, Fri May 30 14:23:14 PDT 2008
 //   Qt 4.
-// 
+//
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 //   Brad Whitlock, Thu Jul 24 09:17:05 PDT 2008
 //   Made it possible to overlay a file at a given state.
 //
@@ -158,13 +159,17 @@ class ViewerProxy;
 //   Added SetTimeFieldText() helper to make sure long time values remain 
 //   visible.
 //
-//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
-//    Added right click popup menu w/ file options including new 
-//    "Replace Selected" option, which only replaces active plots.
+//   Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//   Added right click popup menu w/ file options including new
+//   "Replace Selected" option, which only replaces active plots.
+//
+//   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
+//   Moved timeslider controls into a QvisTimeSliderControlWidget.
 //
 // ****************************************************************************
 
-class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
+class GUI_API QvisFilePanel : public QGroupBox, public SimpleObserver, 
+ public GUIBase
 {
     Q_OBJECT
 
@@ -198,30 +203,26 @@ public:
     virtual ~QvisFilePanel();
     virtual void Update(Subject *);
     virtual void SubjectRemoved(Subject *);
+
     void ConnectFileServer(FileServerList *);
     void ConnectWindowInformation(WindowInformation *);
 
     bool HaveFileInformation(const QualifiedFilename &filename) const;
     void AddExpandedFile(const QualifiedFilename &filename);
+
     void SetTimeStateFormat(const TimeFormat &fmt);
     const TimeFormat &GetTimeStateFormat() const;
 
-    bool GetShowSelectedFiles() const;
-    void SetShowSelectedFiles(bool);
     bool GetAllowFileSelectionChange() const;
     void SetAllowFileSelectionChange(bool);
 
     void UpdateOpenButtonState();
-signals:
-    void reopenOnNextFrame();
+
 private:
     void UpdateFileList(bool doAll);
     void RepopulateFileList();
-    void UpdateAnimationControls(bool doAll);
+    void UpdateWindowInfo(bool doAll);
     void UpdateFileSelection();
-    void UpdateTimeFieldText(int timeState);
-    void SetTimeFieldText(const QString &text);
-    void UpdateAnimationControlsEnabledState();
     bool CheckIfReplaceIsValid();
     bool UpdateReplaceButtonEnabledState();
     void UpdateOpenButtonState(QvisFilePanelItem *fileItem);
@@ -248,22 +249,9 @@ private:
     QString FormattedTimeString(const double d, bool accurate) const;
     bool DisplayVirtualDBInformation(const QualifiedFilename &file) const;
 
-    void SetTimeSliderState(int);
 protected:
     void contextMenuEvent(QContextMenuEvent *e);
 private slots:
-    void changeActiveTimeSlider(int);
-    void backwardStep();
-    void reversePlay();
-    void stop();
-    void play();
-    void forwardStep();
-    void sliderStart();
-    void sliderMove(int val);
-    void sliderEnd();
-    void sliderChange(int val);
-    void processTimeText();
-
     void fileCollapsed(QTreeWidgetItem *);
     void fileExpanded(QTreeWidgetItem *);
     void highlightFile(QTreeWidgetItem *);
@@ -276,32 +264,25 @@ private slots:
     void internalUpdateFileList();
 
 private:
-    bool                     showSelectedFiles;
-
     QTreeWidget              *fileTree;
-    QComboBox                *activeTimeSlider;
-    QLabel                   *activeTimeSliderLabel;
     QPushButton              *openButton;
     QPushButton              *replaceButton;
     QPushButton              *overlayButton;
-    QvisAnimationSlider      *animationPosition;
-    QLineEdit                *timeField;
-    QvisVCRControl           *vcrControls;
+
     QPixmap                  *computerPixmap;
     QPixmap                  *databasePixmap;
     QPixmap                  *folderPixmap;
-    
+
     QMenu                    *filePopupMenu;
     QAction                  *openAct;
     QAction                  *replaceAct;
     QAction                  *replaceSelectedAct;
     QAction                  *overlayAct;
     QAction                  *closeAct;
-    
+
     WindowInformation        *windowInfo;
 
     bool                      allowFileSelectionChange;
-    int                       sliderVal;
     FileDisplayInformationMap displayInfo;
     TimeFormat                timeStateFormat;
 };

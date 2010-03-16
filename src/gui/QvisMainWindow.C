@@ -57,6 +57,8 @@
 
 #include <QvisMainWindow.h>
 #include <QvisFilePanel.h>
+#include <QvisSourceManagerWidget.h>
+#include <QvisTimeSliderControlWidget.h>
 #include <QvisNotepadArea.h>
 #include <QvisPostableWindow.h>
 #include <QvisPostableMainWindow.h>
@@ -342,6 +344,9 @@
 //    Hank Childs, Sun Mar  7 16:57:18 PST 2010
 //    Put Save Session above Restore Session, so it won't be so close to Exit.
 //
+//    Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//    More shuffling to provide better layouts.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -407,9 +412,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     // Add the File menu.
     //
-    
+
     filePopup = menuBar()->addMenu(tr("&File"));
-    
+
     advancedMenuShowing = false;
     selFileAct = NULL;
     if (advancedMenuShowing)
@@ -461,9 +466,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(tr("Simulations . . ."),
                          this, SIGNAL(activateSimulationWindow()),
                          QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
-                          
+
     filePopup->addSeparator();
-    
+
     filePopup->addAction(saveIcon, tr("&Save window"),
                          this, SIGNAL(saveWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_S));
@@ -479,16 +484,16 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(tr("Set Print options . . ."),
                          this, SIGNAL(activatePrintWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_P));
-    
+
     filePopup->addSeparator();
-    
+
     filePopup->addAction(tr("Save session . . ."),
                          this, SIGNAL(saveSession()));
     filePopup->addAction(tr("Restore session . . ."),
                          this, SIGNAL(restoreSession()));
     filePopup->addAction(tr("Restore session with sources . . ."),
                          this, SIGNAL(restoreSessionWithSources()));
-                         
+
     filePopup->addSeparator();
 
 #ifdef Q_WS_MACX
@@ -502,7 +507,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     // Add the Controls menu.
     //
-    
+
     QMenu *ctrls  = menuBar()->addMenu(tr("&Controls"));
     ctrls->addAction(animIcon, tr("&Animation . . ."),
                      this, SIGNAL(activateAnimationWindow()),
@@ -564,7 +569,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     ctrls->addAction(viewIcon, tr("&View . . ."),
                      this, SIGNAL(activateViewWindow()), 
                      QKeySequence(Qt::CTRL + Qt::Key_V));
-    
+
     //
     // Add the Prefs menu.
     //
@@ -584,25 +589,25 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                     this, SIGNAL(activatePreferencesWindow()));
     pref->addAction(tr("Rendering . . ."),
                     this, SIGNAL(activateRenderingWindow()));
-    
+
     pref->addSeparator();
-    
+
     pref->addAction(tr("Save Settings"),
                     this, SIGNAL(saveSettings()));
 
     //
     // Add the Windows menu.
     //
-    
+
     winPopup = menuBar()->addMenu(tr("&Windows"));
-    
+
     winPopup->addAction(QPixmap(newwindow_xpm), tr("Add"),
                         this, SLOT(windowAdd())
 #ifndef Q_WS_MACX
                          , QKeySequence(Qt::CTRL + Qt::Key_Insert)
 #endif
                         );
-    
+
     winPopup->addAction(copyIcon, tr("Clone"),this, SLOT(windowClone()));
 
     winPopup->addAction(QPixmap(deletewindow_xpm), tr("Delete"),
@@ -610,10 +615,10 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                          QKeySequence(Qt::CTRL + Qt::Key_Delete));
 
     winPopup->addAction(tr("Clear all"), this, SLOT(windowClearAll()));
-    
+
     // Layout sub menu
     layoutPopup = winPopup->addMenu(QPixmap(layout2x2_xpm),tr("Layouts"));
-    
+
     layoutActions[0] = layoutPopup->addAction(QPixmap(layout1x1_xpm), tr("1x1"),
                                               this, SLOT(windowLayout1x1()));
     layoutActions[1] = layoutPopup->addAction(QPixmap(layout1x2_xpm), tr("1x2"),
@@ -626,61 +631,60 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                                               this, SLOT(windowLayout2x4()));
     layoutActions[5] = layoutPopup->addAction(QPixmap(layout3x3_xpm), tr("3x3"),
                                               this, SLOT(windowLayout3x3()));
-    
-    
-    
+
+
+
     // Active window sub menu
     activeWindowPopup = new QMenu(tr("Active window"));
     activeWindowPopupAct =  winPopup->addMenu(activeWindowPopup);
     activeWindowPopupAct->setEnabled(false);
     winPopup->addSeparator();
-    
+
     connect(activeWindowPopup, SIGNAL(triggered(QAction *)),
             this, SLOT(winset2(QAction *)));
-      
+
     // Copy sub menu.
-    
+
     topCopyPopup = new QMenu(tr("Copy"),winPopup);
     topCopyPopup->setIcon(copyIcon);
-    
+
     copyPopup[0] = new QMenu(tr("View from"),topCopyPopup);
     connect(copyPopup[0], SIGNAL(triggered(QAction*)),
             this, SLOT(copyView(QAction*)));
     copyPopupAct[0] = topCopyPopup->addMenu(copyPopup[0]);
     copyPopupAct[0]->setEnabled(false);
-    
-    
+
+
     copyPopup[1] = new QMenu(tr("Lighting from"),topCopyPopup);
     connect(copyPopup[1], SIGNAL(triggered(QAction*)),
             this, SLOT(copyLighting(QAction*)));
     copyPopupAct[1] = topCopyPopup->addMenu(copyPopup[1]);
     copyPopupAct[1]->setEnabled(false);
-    
+
     copyPopup[2] = new QMenu(tr("Annotations from"), topCopyPopup);
     connect(copyPopup[2], SIGNAL(triggered(QAction*)),
             this, SLOT(copyAnnotations(QAction*)));
     copyPopupAct[2] = topCopyPopup->addMenu(copyPopup[2]);
     copyPopupAct[2]->setEnabled(false);
-    
+
     copyPopup[3] = new QMenu(tr("Plots from"), topCopyPopup);
     connect(copyPopup[3], SIGNAL(triggered(QAction*)),
             this, SLOT(copyPlots(QAction*)));
     copyPopupAct[3] = topCopyPopup->addMenu(copyPopup[3]);
     copyPopupAct[3]->setEnabled(false);
-    
-    
+
+
     copyPopup[4] = new QMenu(tr("Everything from"),topCopyPopup);
     connect(copyPopup[4], SIGNAL(triggered(QAction*)),
             this, SLOT(copyAll(QAction*)));
     copyPopupAct[4] = topCopyPopup->addMenu(copyPopup[4]);
     copyPopupAct[4]->setEnabled(false);
-    
-    
+
+
     topCopyPopupAct = winPopup->addMenu(topCopyPopup);
     topCopyPopupAct->setEnabled(false);    
-    
+
     // Clear sub menu
-    
     clearPopup = new QMenu(tr("Clear"));
     clearPopup->addAction( tr("Pick points"), this, SLOT(clearPickPoints()));
     clearPopup->addAction( tr("Plots"), this, SLOT(clearPlots()));
@@ -696,7 +700,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     lockPopup->addSeparator();
     lockPopup->addAction(tr("Unlock everything"), this, SLOT(unlockEverything()));
     lockPopupAct = winPopup->addMenu(lockPopup);
-    
+
 
     // Other options.
     fullFrameModeAct = winPopup->addAction(tr("Full frame mode"),
@@ -705,7 +709,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                                      this, SLOT(toggleSpinMode()));
     navigateModeAct = winPopup->addAction(tr("Bounding box navigation"),
                                          this, SLOT(toggleNavigateMode()));
-    
+
     if(qApp->desktop()->height() < 1024)
     {
         splitter = 0;
@@ -720,7 +724,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
         // Create the main window's widgets into the postable window
         pmw->ContentsWidget()->setMinimumHeight(400);
-        CreateMainContents(pmw->ContentsWidget(), 0, pmw->ContentsLayout());
+        CreateMainContents(pmw);
 
         // Post the window
         pmw->post();
@@ -728,11 +732,16 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     else
     {
         // Make a central widget to contain the other widgets
-        splitter = new QSplitter(this);
-        splitter->setOrientation(Qt::Vertical);
-        setCentralWidget(splitter);
 
-        CreateMainContents(splitter, splitter, 0);
+        QWidget *central = new QWidget(this);
+        QVBoxLayout *layout = new QVBoxLayout(central);
+        setCentralWidget(central);
+
+        splitter = new QSplitter(central);
+        splitter->setOrientation(Qt::Vertical);
+        layout->addWidget(splitter,10);
+
+        CreateMainContents(splitter);
 
         // Create the notepad widget.
         notepad = new QvisNotepadArea( splitter );
@@ -757,7 +766,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     // Add the Help menu
     AddHelpMenu();
-    
+
     // Create the output button and put it in the status bar as a
     // permanent widget.
     // need to add a label to the status bar so the output button 
@@ -769,9 +778,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     outputButton->setIcon(*outputBlue);
     outputButton->setFixedSize(32 , 32);
-    
     outputButton->setToolTip(tr("Output window"));
-    
+
     statusBar()->addWidget(outputButton, 0);
     statusBar()->setSizeGripEnabled(false);
     unreadOutputFlag = false;
@@ -884,7 +892,7 @@ QvisMainWindow::AddHelpMenu(void)
                          this, SIGNAL(activateReleaseNotesWindow()));
 
     helpPopup->addSeparator();
-    
+
     updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
                                           this, SIGNAL(updateVisIt()));
 }
@@ -892,13 +900,11 @@ QvisMainWindow::AddHelpMenu(void)
 // ****************************************************************************
 // Method: QvisMainWindow::CreateMainContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates most of the interesting window controls.
 //
 // Arguments:
-//   parent : The parent that will contain the widgets.
 //   s      : The splitter to use.
-//   L      : The layout to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 23 16:26:55 PDT 2009
@@ -907,42 +913,84 @@ QvisMainWindow::AddHelpMenu(void)
 //   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //   The plot manager can now trigger a file->open action.
-//   
+//
+//   Cyrus Harrison, Fri Mar 12 10:47:47 PST 2010
+//   More refactoring.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::CreateMainContents(QWidget *parent, QSplitter *s, QVBoxLayout *L)
+QvisMainWindow::CreateMainContents(QSplitter *parent)
 {
-    //
-    // Create the file panel and make it an observer of the file server.
-    //
+
     filePanel = new QvisFilePanel(parent);
-    if(s != 0)
-        s->addWidget(filePanel);
-    if(L != 0)
-        L->addWidget(filePanel, 10);
-    connect(filePanel, SIGNAL(reopenOnNextFrame()),
-            this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
     filePanel->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    parent->addWidget(filePanel);
 
-    // create the plot manager    
-    QWidget     *globalAreaWidget = new QWidget(parent);
-    CreateGlobalArea(globalAreaWidget);
-    if(s != 0)
-        s->addWidget(globalAreaWidget);
-    if(L != 0)
-        L->addWidget(globalAreaWidget, 10);
-    plotManager = new QvisPlotManagerWidget(menuBar(), globalAreaWidget);
+    QWidget *mainControls = new QWidget(parent);
+    QVBoxLayout *layout = new QVBoxLayout(mainControls);
+    layout ->setMargin(0);
+
+    sourceManager = new QvisSourceManagerWidget(parent);
+    sourceManager->ConnectPlotList(GetViewerState()->GetPlotList());
+    sourceManager->ConnectFileServer(fileServer);
+    sourceManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    sourceManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    connect(sourceManager,SIGNAL(activateFileOpenWindow()),
+            this,SIGNAL(activateFileOpenWindow()));
+    layout->addWidget(sourceManager);
+
+    tsControl = new QvisTimeSliderControlWidget(parent);
+    tsControl->ConnectFileServer(fileServer);
+    tsControl->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    connect(tsControl, SIGNAL(reopenOnNextFrame()),
+            this, SIGNAL(reopenOnNextFrame()));
+    layout->addWidget(tsControl);
+
+    plotManager = new QvisPlotManagerWidget(menuBar(), parent);
     plotManager->ConnectPlotList(GetViewerState()->GetPlotList());
     plotManager->ConnectFileServer(fileServer);
     plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
     plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
-    connect(plotManager,SIGNAL(activateFileOpenWindow()),
-            this,SIGNAL(activateFileOpenWindow()));
-    globalAreaWidget->layout()->addWidget(plotManager);
+    layout->addWidget(plotManager,10);
+
+
+    QWidget     *globalAreaWidget = new QWidget(parent);
+    CreateGlobalArea(globalAreaWidget);
+    layout->addWidget(globalAreaWidget);
+
+    parent->addWidget(mainControls);
 }
+// ****************************************************************************
+// Method: QvisMainWindow::CreateMainContents
+//
+// Purpose:
+//   This method creates most of the interesting window controls.
+//   Overloaded to handle different parent in low res display case.
+//
+// Arguments:
+//   win     : Parent Window.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Mar 12 10:48:31 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::CreateMainContents(QvisPostableMainWindow *win)
+{
+    QSplitter *parent = new QSplitter(win->ContentsWidget());
+    parent->setOrientation(Qt::Vertical);
+    win->ContentsLayout()->setMargin(3);
+    win->ContentsLayout()->addWidget(parent);
+    CreateMainContents(parent);
+}
+
+
 
 // ****************************************************************************
 // Method: QvisMainWindow::CreateGlobalArea
@@ -1004,11 +1052,11 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
     activeWindowComboBox = new QComboBox(par);
     connect(activeWindowComboBox, SIGNAL(activated(int)),
             this, SLOT(winset(int)));
-    
+
     activeWindowComboBox->addItem("1");
     QLabel *activeWindowLabel = new QLabel(tr("Window"), par);
     activeWindowLabel->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
-    
+
     globalLayout->addWidget(activeWindowLabel, 0, 0);
     globalLayout->addWidget(activeWindowComboBox, 1, 0);
 
@@ -2422,13 +2470,16 @@ QvisMainWindow::updateNotAllowed()
 // Creation:   Mon Oct 13 17:15:52 PST 2003
 //
 // Modifications:
-//   
+//  Cyrus Harrison, Mon Mar 15 12:02:26 PDT 2010
+//  Update due to widget refactor.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::SetTimeStateFormat(const TimeFormat &fmt)
 {
-    //filePanel->SetTimeStateFormat(fmt);
+    filePanel->SetTimeStateFormat(fmt);
+    tsControl->SetTimeStateFormat(fmt);
 }
 
 // ****************************************************************************
@@ -2488,23 +2539,26 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Jeremy Meredith, Fri Feb 19 20:59:34 EST 2010
 //   Hide the Select File menu item when we're not in selected files mode.
 //
+//   Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//   More shuffling to provide better layouts.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::SetShowSelectedFiles(bool val)
 {
-    filePanel->SetShowSelectedFiles(val);
     plotManager->SetSourceVisible(!val);
-
     if(val)
     {
+        filePanel->show();
+        sourceManager->hide();
         if(!advancedMenuShowing)
         {
-            selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."), 
+            selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."),
                          this, SIGNAL(activateFileWindow()), 
                          QKeySequence(Qt::CTRL + Qt::Key_F));
             filePopup->insertAction(openFileAct, selFileAct);
-    
+
             // Show selected files. Put reopen, close in an advanced menu.
             filePopup->removeAction(reopenPopupAct);
             filePopup->removeAction(closePopupAct);
@@ -2543,6 +2597,8 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
     }
     else
     {
+        filePanel->hide();
+        sourceManager->show();
         if(advancedMenuShowing)
         {
             // No selected files. Put reopen and close in the file menu.
@@ -2590,13 +2646,15 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
 // Creation:   Fri Jan 30 14:36:24 PST 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//    More shuffling to provide better layouts.
+//
 // ****************************************************************************
 
 bool
 QvisMainWindow::GetShowSelectedFiles() const
 {
-    return filePanel->GetShowSelectedFiles();
+    return filePanel->isVisible();
 }
 
 // ****************************************************************************

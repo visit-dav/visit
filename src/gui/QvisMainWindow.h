@@ -53,7 +53,10 @@ class QTimer;
 class QVBoxLayout;
 class QvisFilePanel;
 class QvisNotepadArea;
+class QvisSourceManagerWidget;
 class QvisPlotManagerWidget;
+class QvisTimeSliderControlWidget;
+class QvisPostableMainWindow;
 class GlobalAttributes;
 class MessageAttributes;
 class PlotList;
@@ -219,6 +222,9 @@ class WindowInformation;
 //   Hide the Select File menu item when we're not in selected files mode.
 //   Big redesign, adding icons and functionality and shuffling arrangement.
 //
+//   Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//   More shuffling to provide better layouts. 
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -360,7 +366,8 @@ private slots:
     void lockView();
     void unlockEverything();
 private:
-    void CreateMainContents(QWidget *parent, QSplitter *splitter, QVBoxLayout *L);
+    void CreateMainContents(QSplitter *parent);
+    void CreateMainContents(QvisPostableMainWindow *win);
     void CreateGlobalArea(QWidget *par);
     void UpdateFileMenuPopup(QMenu *, QAction *);
     void UpdateGlobalArea(bool doAll);
@@ -370,11 +377,13 @@ private:
     void AddHelpMenu(void);
 
 private:
-    QSplitter                 *splitter;
-    QBoxLayout                *topLayout;
-    QvisFilePanel             *filePanel;
-    QvisPlotManagerWidget     *plotManager;
-    QvisNotepadArea           *notepad;
+    QSplitter                   *splitter;
+    QBoxLayout                  *topLayout;
+    QvisFilePanel               *filePanel;
+    QvisSourceManagerWidget     *sourceManager;
+    QvisTimeSliderControlWidget *tsControl;
+    QvisPlotManagerWidget       *plotManager;
+    QvisNotepadArea             *notepad;
 
     bool                      unreadOutputFlag;
     QPushButton               *outputButton;
@@ -413,7 +422,7 @@ private:
     QMenu                    *clearPopup;
     QAction                  *clearPopupAct;
     QMenu                    *lockPopup;
-    
+
     QAction                  *lockPopupAct;
     QAction                  *lockTimeAct;
     QAction                  *lockToolsAct;

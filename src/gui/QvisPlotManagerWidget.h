@@ -47,6 +47,7 @@
 #include <QMenu>
 #include <QStringList>
 #include <QWidget>
+#include <QGroupBox>
 
 #include <GUIBase.h>
 #include <SimpleObserver.h>
@@ -63,9 +64,11 @@ class  WindowInformation;
 
 class  QComboBox;
 class  QGridLayout;
+class  QVBoxLayout;
 class  QLabel;
 class  QListWidgetItem;
 class  QCheckBox;
+class  QGroupBox;
 class  QMenuBar;
 class  QMenu;
 class  QPushButton;
@@ -223,9 +226,12 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
 //   Change from QPushButtons QToolbar/QToolButtons
 //
+//   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
+//   Moved source related controls into QvisSourceManagerWidget.
+//
 // ****************************************************************************
 
-class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
+class GUI_API QvisPlotManagerWidget : public QGroupBox, public GUIBase,
     public SimpleObserver
 {
     Q_OBJECT
@@ -249,16 +255,14 @@ public:
     void FinishAddingOperators();
     void EnablePluginMenus();
     void UpdateOperatorCategories();
-
-    void SetSourceVisible(bool);
     void UpdatePlotList();
+    void SetSourceVisible(bool);
 public slots:
     void hideThisPlot();
     void deleteThisPlot();
     void drawThisPlot();
     void clearThisPlot();
     void copyThisPlot();
-    void copyToWinThisPlot();
     void redrawThisPlot();
     void disconnectThisPlot();
     void setActivePlot();
@@ -267,7 +271,6 @@ signals:
     void activateSubsetWindow();
     void activatePlotWindow(int);
     void activateOperatorWindow(int);
-    void activateFileOpenWindow();
     void addPlot(int, const QString &);
     void addOperator(int);
 protected:
@@ -282,10 +285,8 @@ private:
                                const QualifiedFilename &filename);
     void UpdatePlotVariableMenu();
     void UpdateVariableMenu();
-    void UpdateSourceList(bool updateActiveSourceOnly);
     void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
-    void UpdateDatabaseIconEnabledStates();
 
 
 private slots:
@@ -293,16 +294,10 @@ private slots:
     void hidePlots();
     void deletePlots();
     void drawPlots();
-    void copyPlotToWin(int winIndex);
     void changeVariable(int, const QString &varName);
     void promoteOperator(int operatorIndex);
     void demoteOperator(int operatorIndex);
     void removeOperator(int operatorIndex);
-
-    void closeCurrentSource();
-    void reOpenCurrentSource();
-    void replaceWithCurrentSource();
-    void overlayWithCurrentSource();
 
     void activatePlotWindow(QAction *);
     void activateOperatorWindow(QAction *);
@@ -315,19 +310,12 @@ private slots:
 
     void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(QAction *);
-    void sourceChanged(int);
 
 private:
-    bool                     sourceVisible;
-
+    bool                    sourceVisible;
     // Plot manager widgets
-    QGridLayout             *topLayout;
-    QLabel                  *sourceLabel;
-    QComboBox               *sourceComboBox;
+    QVBoxLayout             *topLayout;
     QvisPlotListBox         *plotListBox;
-    QMenu                   *WindowChoiceMenu;  
-    QAction                 *win1Act;
-    QAction                 *win2Act;
 
     // Menu widgets
     QMenu                   *plotMenu;
@@ -360,23 +348,15 @@ private:
     ExpressionList          *exprList;
     WindowInformation       *windowInfo;
 
-    QToolBar    *plotActionsToolbar;
-
     // Various Toolbar actions for the plot manager
-    QToolButton *plotMenuButton;
-    QToolButton *operMenuButton;
-    QToolButton *varMenuButton;
+    QToolBar    *plotActionsToolbar;
+    QAction     *plotAddMenuAction;
+    QAction     *operMenuAction;
+    QAction     *plotDeleteAction;
     QAction     *plotHideShowAction;
     QAction     *plotDrawAction;
+    QAction     *varMenuAction;
 
-    // used in plotMenu
-    QAction     *plotDeleteAction;
-
-    QPushButton *dbReplaceIconButton;
-    QPushButton *dbOverlayIconButton;
-    QPushButton *dbOpenIconButton;
-    QPushButton *dbReopenIconButton;
-    QPushButton *dbCloseIconButton;
     PluginManagerAttributes *pluginAtts;
 };
 
