@@ -4000,6 +4000,10 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Brad Whitlock, Tue Apr 14 13:38:10 PDT 2009
 //    Use ViewerProperties.
 //
+//    Brad Whitlock, Tue Mar 16 11:56:53 PDT 2010
+//    I added a call to ClearCache for simulations to force this method to
+//    block until metadata and SIL have come back from the simulation.
+//
 // ****************************************************************************
 
 int
@@ -4239,6 +4243,13 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             {
                 eMgr->OpenDatabase(ek, md->GetFileFormat().c_str(),
                                    db.c_str(), timeState);
+
+                // If we're opening a simulation, send ClearCache to it since that
+                // is a harmless blocking RPC that will prevent OpenDatabaase from
+                // returning until we get simulation metadata and SIL back. This is
+                // a synchronize operation.
+                if(md->GetIsSimulation())
+                    eMgr->ClearCache(ek, "invalid name");
             }
         }
         
