@@ -41,6 +41,9 @@
 #   Cyrus Harrison, Thu Feb 11 09:37:20 PST 2010
 #   Added QvisPythonFilterEditor
 #
+#   Cyrus Harrison, Mon Mar 15 13:27:16 PDT 2010
+#   Added  QvisTimeSliderControlWidget & QvisSourceManagerWidget.
+#
 #****************************************************************************/
 
 SET(GUILIB_SOURCES
@@ -166,6 +169,7 @@ QvisSessionSourceChangerDialog.C
 QvisSimulationCommandWindow.C
 QvisSimulationMessageWindow.C
 QvisSimulationWindow.C
+QvisSourceManagerWidget.C
 QvisSpectrumBar.C
 QvisStripChart.C
 QvisStripChartMgr.C
@@ -175,6 +179,7 @@ QvisSubsetPanelWidget.C
 QvisSubsetWindow.C
 QvisText2DInterface.C
 QvisText3DInterface.C
+QvisTimeSliderControlWidget.C
 QvisTimeSliderInterface.C
 QvisTurnDownButton.C
 QvisUiLoader.C
@@ -272,6 +277,7 @@ QvisScribbleOpacityBar.h
 QvisSessionFileDatabaseLoader.h
 QvisSessionSourceChanger.h
 QvisSessionSourceChangerDialog.h
+QvisSourceManagerWidget.h
 QvisSpectrumBar.h
 QvisTurnDownButton.h
 QvisVCRControl.h
@@ -297,6 +303,7 @@ QvisLegendAttributesInterface.h
 QvisLine2DInterface.h
 QvisText3DInterface.h
 QvisText2DInterface.h
+QvisTimeSliderControlWidget.h
 QvisVisItUpdate.h
 QvisSequenceButton.h
 QvisCompositeTransition.h
