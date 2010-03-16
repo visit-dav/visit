@@ -347,6 +347,9 @@
 //    Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
 //    More shuffling to provide better layouts.
 //
+//    Cyrus Harrison, Tue Mar 16 09:20:05 PDT 2010
+//    Make sure selected files is off by default.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -790,6 +793,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     connect(recoveryFileTimer, SIGNAL(timeout()),
             this, SIGNAL(saveCrashRecoveryFile()));
 
+
+    SetShowSelectedFiles(false);
 #ifdef Q_WS_X11
     // Move the window to a known position on the screen
     // so we can take some measurements later
@@ -955,7 +960,6 @@ QvisMainWindow::CreateMainContents(QSplitter *parent)
     plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
     layout->addWidget(plotManager,10);
-
 
     QWidget     *globalAreaWidget = new QWidget(parent);
     CreateGlobalArea(globalAreaWidget);
