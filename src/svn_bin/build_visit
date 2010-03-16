@@ -41,12 +41,11 @@
 #       current directory.  If it does not locate these libraries, it will
 #       try to download them.
 #       You must have:
-#          Qt		qt-x11-opensource-4.4.3.tar.gz
-#                    or qt-mac-opensource-4.4.3.tar.gz (Mac)
-#          Mesa         MesaLib-7.5.tar.gz
-#          Python	Python-2.5.tgz
-#          VTK		vtk-5.0.0d.tar.gz
-#          CMake	cmake-2.6.4.tar.gz
+#          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
+#          Mesa     MesaLib-7.5.tar.gz
+#          Python   Python-2.6.4tgz
+#          VTK      vtk-5.0.0d.tar.gz
+#          CMake    cmake-2.8.0.tar.gz
 #
 #        The following optional libraries need to be in the current directory
 #        to be built. You must explicitly select which option library to
@@ -302,7 +301,7 @@
 #     1) Rename some variables that are conflicting with names used elsewhere.
 #     (QT_DIR by Linux, MILI_DIR by VisIt's configure script.)
 #     2) Do not do a parallel build for H5_part.
-#     
+#
 #     Thomas R. Treadway, Wed Feb  6 15:08:07 PST 2008
 #     Corrected the silo build
 #     Added an explicit CMake build step.
@@ -852,6 +851,9 @@
 #     I added a patch for ccmio 2.6.1 so that it would build in 32 bit mode
 #     on AIX.
 #
+#     Cyrus Harrison, Fri Mar 12 15:47:11 PST 2010
+#     Use cmake 2.8.0.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1145,9 +1147,9 @@ export VTK_FILE=${VTK_FILE:-"vtk-5.0.0d.tar.gz"}
 export VTK_VERSION=${VTK_VERSION:-"5.0.0d"}
 export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
 
-export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.6.4.tar.gz"}
-export CMAKE_VERSION=${CMAKE_VERSION:-"2.6.4"}
-export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.6.4"}
+export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.0.tar.gz"}
+export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.0"}
+export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.0"}
 
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.5.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.5"}
@@ -3112,60 +3114,6 @@ function build_qt
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
-function apply_cmake_245_aix_patch
-{
-   patch -p0 <<\EOF
-diff -c a/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
-*** a/Utilities/cmzlib/zconf.h
---- cmake-2.4.5/Utilities/cmzlib/zconf.h
-***************
-*** 89,100 ****
-  #  endif
-  #endif
-  
-- #ifndef STDC
-- #  ifndef const /* cannot use !defined(STDC) && !defined(const) on Mac */
-- #    define const
-- #  endif
-- #endif
-- 
-  /* Some Mac compilers merge all .h files incorrectly: */
-  #if defined(__MWERKS__) || defined(applec) ||defined(THINK_C) ||defined(__SC__)
-  #  define NO_DUMMY_DECL
---- 89,94 ----
-EOF
-   if [[ $? != 0 ]] ; then
-      warn "CMake patch for V2.4.5 on AIX failed."
-      return 1
-   fi
-
-   return 0
-}
-
-function apply_cmake_245_patch
-{
-   if [[ "$OPSYS" == "AIX" ]]; then
-       apply_cmake_245_aix_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
-   return 0
-}
-
-function apply_cmake_patch
-{
-   if [[ ${CMAKE_VERSION} == 2.4.5 ]] ; then
-       apply_cmake_245_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
-   return 0
-}
-
 function build_cmake
 {
     #
@@ -3176,23 +3124,6 @@ function build_cmake
     if [[ $untarred_cmake == -1 ]] ; then
        warn "Unable to prepare CMake build directory. Giving Up!"
        return 1
-    fi
-
-    #
-    # Patching cmake.
-    #
-    info "Patching cmake . . ."
-    apply_cmake_patch
-    if [[ $? != 0 ]] ; then
-       if [[ $untarred_cmake == 1 ]] ; then
-          warn "Giving up on CMake build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script" \
-               "tried to apply a patch to an existing directory which had " \
-               "already been patched ... that is, that the patch is " \
-               "failing harmlessly on a second application."
-       fi
     fi
 
     #
