@@ -75,6 +75,7 @@ class ADIOSVar;
 class ADIOSScalar;
 class ADIOSAttr;
 class vtkDataArray;
+class vtkFloatArray;
 class vtkPoints;
 
 // ****************************************************************************
@@ -90,6 +91,9 @@ class vtkPoints;
 //
 //  Dave Pugmire, Tue Mar  9 12:40:15 EST 2010
 //  Major overhaul. Added scalars, attributes, and reorganized the class.
+//
+//  Dave Pugmire, Wed Mar 17 15:29:24 EDT 2010
+//  Add a vtkFloatArray ReadVariable method.
 //
 // ****************************************************************************
 
@@ -127,6 +131,9 @@ class ADIOSFileObject
     bool ReadVariable(const std::string &nm,
                       int ts,
                       vtkDataArray **array);
+    bool ReadVariable(const std::string &nm,
+                      int ts,
+                      vtkFloatArray **array);
     
     std::map<std::string, ADIOSVar> variables;
     std::map<std::string, ADIOSScalar> scalars;

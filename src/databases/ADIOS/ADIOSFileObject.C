@@ -58,6 +58,9 @@
 static bool
 SupportedVariable(ADIOS_VARINFO *avi);
 
+static void
+ConvertToFloat(float *data, int &n, ADIOS_DATATYPES &t, const void *readData);
+
 // ****************************************************************************
 //  Method: ADIOSFileObject::ADIOSFileObject
 //
@@ -575,6 +578,70 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
     uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, data);
         
     CloseGroup(v.groupIdx);
+
+    return (retval > 0);
+}
+
+
+// ****************************************************************************
+//  Method: ADIOSFileObject::ReadVariable
+//
+//  Purpose:
+//      Read variable.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Mar 17 15:29:24 EDT 2010
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+bool
+ADIOSFileObject::ReadVariable(const std::string &nm,
+                              int ts,
+                              vtkFloatArray **array)
+{
+    debug5<<"ADIOSFileObject::ReadVariable("<<nm<<")"<<endl;
+    Open();
+
+    varIter vi = variables.find(nm);
+    if (vi == variables.end())
+    {
+        debug5<<"Variable "<<nm<<" not found."<<endl;
+        return false;
+    }
+    ADIOSVar v = vi->second;
+
+    int tupleSz = adios_type_size(v.type, NULL);
+    *array = vtkFloatArray::New();
+
+    int ntuples = 1;
+    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
+    v.GetReadArrays(ts, start, count, &ntuples);
+    
+    (*array)->SetNumberOfTuples(ntuples);
+    float *data = (float *)(*array)->GetVoidPointer(0);
+    void *readData = (void *)data;
+
+    bool convertData = (v.type != adios_real);
+    if (convertData)
+        readData = malloc(ntuples*tupleSz);
+
+    debug5<<"ARR: adios_read_var:"<<endl<<v<<endl;
+    OpenGroup(v.groupIdx);
+
+    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
+        
+    CloseGroup(v.groupIdx);
+
+    if (retval > 0 && convertData)
+    {
+        ConvertToFloat(data, ntuples, v.type, readData);
+        free(readData);
+    }
+
+    
     return (retval > 0);
 }
 
@@ -866,4 +933,66 @@ ADIOSVar::GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples)
     
     ::SwapIndices(dim, s);
     ::SwapIndices(dim, c);
+}
+
+
+// ****************************************************************************
+//  Method: ConvertToFloat
+//
+//  Purpose:
+//      Convert array to floats.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Mar 17 15:29:24 EDT 2010
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+template<class T> static void
+CopyArray( T readData, float *data, int n )
+{
+    T p1 = (T)readData;
+    for (int i = 0; i < n; i++)
+        data[i] = (float)p1[i];
+}
+
+static void
+ConvertToFloat(float *data, int &n, ADIOS_DATATYPES &t, const void *readData)
+{
+    switch(t)
+    {
+      case adios_unsigned_byte:
+        CopyArray((const unsigned char *)readData, data, n);
+        break;
+      case adios_byte:
+        CopyArray((const char *)readData, data, n);
+        break;
+      case adios_unsigned_short:
+        CopyArray((const unsigned short *)readData, data, n);
+        break;
+      case adios_short:
+        CopyArray((const short *)readData, data, n);
+        break;
+      case adios_unsigned_integer:
+        CopyArray((const unsigned int *)readData, data, n);
+        break;
+      case adios_integer:
+        CopyArray((const int *)readData, data, n);
+        break;
+      case adios_unsigned_long:
+        CopyArray((const unsigned long *)readData, data, n);
+        break;
+      case adios_long:
+        CopyArray((const long *)readData, data, n);
+        break;
+      case adios_double:
+        CopyArray((const double *)readData, data, n);
+        break;
+      default:
+        std::string str = "Inavlid variable type";
+        EXCEPTION1(InvalidVariableException, str);
+        break;        
+    }
 }

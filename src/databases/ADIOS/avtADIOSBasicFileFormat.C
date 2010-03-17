@@ -328,15 +328,15 @@ avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname
         vtkRectilinearGrid *grid = NULL;
         grid = CreateUniformGrid(v->second.start,
                                  v->second.count);
-
-        vtkDataArray *vals = NULL; //GetADIOSVar(timestate, v->first.c_str());
+        vtkFloatArray *vals = NULL;
+        if (!fileObj->ReadVariable(meshname, timestate, &vals))
+            EXCEPTION1(InvalidVariableException, meshname);
         vals->SetName(meshname);
         grid->GetPointData()->SetScalars(vals);
         vals->Delete();
         grid->Register(NULL);
         return grid;
     }
-
     debug1<<meshname<<" not found"<<endl;
     EXCEPTION1(InvalidVariableException, meshname);
 }
@@ -365,7 +365,7 @@ avtADIOSBasicFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     debug1 << "avtADIOSBasicFileFormat::GetVar " << varname << endl;
     Initialize();
-    vtkDataArray *arr = NULL;
+    vtkFloatArray *arr = NULL;
     if (! fileObj->ReadVariable(varname, timestate, &arr))
         EXCEPTION1(InvalidVariableException, varname);
         
