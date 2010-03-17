@@ -42,6 +42,10 @@
 #  Kathleen Bonnell, Wed Feb  3 17:22:12 PST 2010
 #  Add install for visit_exe.
 #
+#  Kathleen Bonnell, Sun Mar  14 14:06:51 MST 2010
+#  Change copy_directory for VISIT_BIN_DIRECTORIES to a FILE(COPY 
+#  so that '.svn' can be skipped.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -82,9 +86,12 @@ SET(VISIT_BIN_FILES
         xmltest)
 
 FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_DIRECTORIES})
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy_directory
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
-                            ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
+    # Resolve symlink 
+    GET_FILENAME_COMPONENT(ITM_RP ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM} 
+                           REALPATH)
+    FILE(COPY ${ITM_RP}
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+         PATTERN ".svn" EXCLUDE)
 ENDFOREACH(VISIT_BIN_ITEM)
 
 FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher)

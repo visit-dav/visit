@@ -44,6 +44,11 @@
 #   Cyrus Harrison, Tue Mar  9 07:51:00 PST 2010
 #   Added install_name_tool patch of of vtk python wrappers (if they exist)
 #
+#   Kathleen Bonnell,  Wed Mar 17 10:03:52 MST 2010
+#   Prevent '.svn' from being included when installing directories. 
+#   Change how python wrappers are handled on windows, due to different
+#   VTK directory structure.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -127,17 +132,23 @@ FOREACH(X ${VTK_INCLUDE_DIRS})
             DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk/include
             FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
             DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            PATTERN ".svn" EXCLUDE
         )
         INSTALL(DIRECTORY ${X}/../MangleMesaInclude
             DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk/include
             FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
             DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            PATTERN ".svn" EXCLUDE
         )
     ENDIF(EXISTS ${X}/vtkActor.h)
 ENDFOREACH(X)
 
 # check for python wrappers
-FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS}/python*/)
+IF (NOT WIN32)
+    FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS}/python*/)
+ELSE (NOT WIN32)
+    FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS})
+ENDIF (NOT WIN32)
 
 IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
     MESSAGE(STATUS "Found VTK Python Wrappers - ${VTK_PY_WRAPPERS_DIR}")
@@ -152,6 +163,7 @@ IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
             FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
             DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            PATTERN ".svn" EXCLUDE
            )
 #
 # On OSX we need to patch the lib names in the vtk python wrappers.

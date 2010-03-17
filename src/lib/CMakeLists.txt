@@ -61,28 +61,54 @@
 #    Cyrus Harrison, Wed Feb  3 10:10:22 PST 2010
 #    Add symlinks to allow us to locate the vtk python wrapper module.
 #
+#    Kathleen Bonnell, Wed Mar 17 10:08:17 MST 2010 
+#    Use FILE(COPY ...) on windows, as windows doesn't support symlinks.
+#    Handled python filters on windows differently, as the VTK directory 
+#    structure is different.
+#
 #----------------------------------------------------------------------------
 
 FOREACH(LIB ${MESA_LIB})
-EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                        ${MESA_LIBRARY_DIR}/${LIB}
-                        ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
+    IF (NOT WIN32)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${MESA_LIBRARY_DIR}/${LIB}
+                                ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
+    ELSE (NOT WIN32)
+        FILE(COPY        ${MESA_LIBRARY_DIR}/${LIB}
+             DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    ENDIF (NOT WIN32)
 ENDFOREACH(LIB in ${MESA_LIB})
 
-EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                        ${VISIT_PYTHON_DIR}
-                        ${CMAKE_CURRENT_BINARY_DIR}/python)
+IF (NOT WIN32)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                            ${VISIT_PYTHON_DIR}
+                            ${CMAKE_CURRENT_BINARY_DIR}/python)
+ELSE (NOT WIN32)
+    FILE(COPY        ${VISIT_PYTHON_DIR}/Lib
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python
+         PATTERN ".svn" EXCLUDE)
+ENDIF (NOT WIN32)
 
 IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
-    FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/../python${PYTHON_VERSION}/site-packages/*")
+    IF (NOT WIN32)
+        FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/../python${PYTHON_VERSION}/site-packages/*")
+    ELSE (NOT WIN32)
+        FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/../site-packages/*")
+    ENDIF (NOT WIN32)
     FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
         GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
         GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
-        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                                ${ITM_ABS}
-                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
+        IF (NOT WIN32)
+            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                    ${ITM_ABS}
+                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
+        ELSE (NOT WIN32)
+            FILE(COPY ${ITM_ABS}
+                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/site-packages
+                 PATTERN ".svn" EXCLUDE)
+        ENDIF (NOT WIN32)
     ENDFOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
 
 ENDIF(VISIT_PYTHON_FILTERS)

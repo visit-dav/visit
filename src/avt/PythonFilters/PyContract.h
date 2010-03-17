@@ -36,10 +36,20 @@
 *
 *****************************************************************************/
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Kathleen Bonnell, Mon Mar 15 13:50:27 MST 2010
+//    Use AVTPYTHON_FILTERS_API for proper symbol export an all platforms. 
+//
+// ****************************************************************************
+
+
 #ifndef PY_CONTRACT_H
 #define PY_CONTRACT_H
 
 #include <avtContract.h>
+#include <python_filters_exports.h>
 
 // Forward Declare PyObject*
 #ifndef PyObject_HEAD
@@ -54,11 +64,7 @@ typedef _object PyObject;
 
 bool                 PyContract_Check(PyObject *obj);
 avtContract_p        PyContract_FromPyObject(PyObject *obj);
-PyObject            
-#if __GNUC__ >= 4
-/* Ensure this function is visible even if -fvisibility=hidden was passed */
-__attribute__ ((visibility("default")))
-#endif
-*PyContract_Wrap(avtContract_p contract);
+
+PyObject AVTPYTHON_FILTERS_API *PyContract_Wrap(avtContract_p contract);
 
 #endif

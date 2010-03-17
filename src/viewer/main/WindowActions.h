@@ -271,31 +271,6 @@ public:
     virtual bool Checked() const;
 };
 
-// ****************************************************************************
-// Class: ToggleBoundingBoxModeAction
-//
-// Purpose:
-//   Handles the toggle bounding box mode action.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 5 16:18:22 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-class VIEWER_API ToggleBoundingBoxModeAction : public ViewerToggleAction
-{
-public:
-    ToggleBoundingBoxModeAction(ViewerWindow *win);
-    virtual ~ToggleBoundingBoxModeAction(){}
-
-    virtual void Execute();
-    virtual bool Enabled() const;
-    virtual bool Checked() const;
-};
 
 // ****************************************************************************
 // Class: SetWindowLayoutAction
