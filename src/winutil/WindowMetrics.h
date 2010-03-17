@@ -60,13 +60,16 @@
 //    Brad Whitlock, Wed Jan 11 17:37:08 PST 2006
 //    Added MeasureScreen.
 //
+//    Cyrus Harrison, Wed Mar 17 08:59:17 PDT 2010
+//    Added testWindow member.
+//
 // ****************************************************************************
 
 class WINUTIL_API WindowMetrics
 {
   public:
     static WindowMetrics *Instance();
-    void MeasureScreen(bool);
+    void                  MeasureScreen(bool);
 
     int GetScreenX()   {return screenX;   }
     int GetScreenY()   {return screenY;   }
@@ -109,6 +112,7 @@ class WINUTIL_API WindowMetrics
 
     WindowMetrics();
     static WindowMetrics *instance;
+    QWidget              *testWindow;
 };
 
 #endif
