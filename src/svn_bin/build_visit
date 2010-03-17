@@ -851,8 +851,11 @@
 #     I added a patch for ccmio 2.6.1 so that it would build in 32 bit mode
 #     on AIX.
 #
-#     Cyrus Harrison, Fri Mar 12 15:47:11 PST 2010
+#     Cyrus Harrison, Wed Mar 17 10:21:15 PDT 2010
 #     Use cmake 2.8.0.
+#
+#     Cyrus Harrison, Wed Mar 17 10:21:15 PDT 2010
+#     Fix python shared lib gen on AIX + removed old python patches.
 #
 # *****************************************************************************
 #                                                                             #
@@ -3914,59 +3917,6 @@ function build_vtk
 #                         Function 7, build_python                            #
 # *************************************************************************** #
 
-function apply_python_25_darwin_patch
-{
-   # Check for version >= 7.0.0 (MacOS 10.3, Panther)
-   VER=$(uname -r)
-   if (( ${VER%%.*} < 7 )) ; then
-      patch -p0 << \EOF
-diff -rp a/Modules/getpath.c Python-2.5/Modules/getpath.c
-*** a/Modules/getpath.c
---- Python-2.5/Modules/getpath.c
-***************
-*** 3,8 ****
---- 3,9 ----
-  #include "Python.h"
-  #include "osdefs.h"
-  
-+ #include <stdint.h>
-  #include <sys/types.h>
-  #include <string.h>
-  
-EOF
-      if [[ $? != 0 ]] ; then
-         warn "Python patch for V2.5 on Darwin failed."
-         return 1
-      fi
-   fi
-
-   return 0
-}
-
-function apply_python_25_patch
-{
-   if [[ "$OPSYS" == "Darwin" ]]; then
-       apply_python_25_darwin_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
-   return 0
-}
-
-function apply_python_patch
-{
-   if [[ $PYTHON__VERSION} == 2.5 ]] ; then
-       apply_python_25_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
-   return 0
-}
-
 function build_python
 {
     prepare_build_dir $PYTHON_BUILD_DIR $PYTHON_FILE
@@ -3974,23 +3924,6 @@ function build_python
     if [[ $untarred_python == -1 ]] ; then
        warn "Unable to prepare Python build directory. Giving Up!"
        return 1
-    fi
-
-    #
-    # Apply patches
-    #
-    info "Patching python . . ."
-    apply_python_patch
-    if [[ $? != 0 ]] ; then
-       if [[ $untarred_python == 1 ]] ; then
-          warn "Giving up on Python build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script" \
-               "tried to apply a patch to an existing directory which had" \
-               "already been patched ... that is, that the patch is" \
-               "failing harmlessly on a second application."
-       fi
     fi
 
     #
@@ -4068,14 +4001,22 @@ function build_python
         # configure flag --enable-shared doesn't work on llnl aix5 systems
         # we need to create the shared lib manually and place it in the
         # proper loc
+        mv $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT \
+           $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a
+
         $C_COMPILER -qmkshrobj -lm \
-          $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/libpython$PYTHON_COMPATIBILITY_VERSION.a \
+             $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a \
           -o $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.$SO_EXT
+
         if [[ $? != 0 ]] ; then
           warn "Python dynamic library build failed.  Giving up"
           return 1
         fi
+
+        # we can safely remove this version of the static lib b/c it also exists under python2.6/config/
+        rm -f $VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/libpython$PYTHON_COMPATIBILITY_VERSION.static.a
     fi
+
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/python"
