@@ -454,6 +454,40 @@ StringHelpers::ReplaceRE(string &s, const string &re, const string &repl)
     return true;
 }
 
+
+// ****************************************************************************
+//  Function: Replace
+//
+//  Purpose: Simple string replace helper.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Wed Mar 17 13:00:43 PDT 2010
+//
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+string
+StringHelpers::Replace(const string &source,
+                       const string &before,
+                       const string &after)
+{
+    string res = source;
+    string::size_type before_len = before.size();
+    string::size_type after_len  = after.size();
+    if(before_len == 0)
+        return res;
+    string::size_type pos = 0; // Must initialize
+    while ( ( pos = res.find (before,pos) ) != string::npos )
+    {
+        res.replace(pos,before_len,after);
+        pos += after_len;
+    }
+
+    return res;
+}
+
 // ****************************************************************************
 //  Function: ExtractRESubstr 
 //
