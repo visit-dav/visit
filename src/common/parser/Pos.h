@@ -66,6 +66,8 @@
 //    Jeremy Meredith, Mon Jun 13 12:14:21 PDT 2005
 //    Let Join() work with null positions.
 //
+//    Mark C. Miller, Wed Mar 17 10:02:23 PDT 2010
+//    Handle truncation of error text to specified buffer size.
 // ****************************************************************************
 
 class PARSER_API Pos
@@ -95,15 +97,19 @@ class PARSER_API Pos
             o << '^';
         o << endl;
     }
-    std::string GetErrorText(const std::string &s) const
+    std::string GetErrorText(const std::string &s, int _n) const
     {
         int i;
-        std::string msg = s + '\n';
+        int n = 0;
+        std::string tmp, msg;
+        if (_n <= 2*(p2+1))
+            n = p2 - (_n/2) + 8; // '8' is fudge
+        msg = std::string(s,n) + '\n';
         for (i=0; i<p1; i++)
-            msg += ' ';
+            tmp += ' ';
         for (i=p1; i<=p2; i++)
-            msg += '^';
-        msg += '\n';
+            tmp += '^';
+        msg += (std::string(tmp,n) + '\n');
         return msg;
     }
     std::string GetText(const std::string &s) const
