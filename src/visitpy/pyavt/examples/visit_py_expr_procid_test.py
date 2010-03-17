@@ -1,10 +1,17 @@
 # [VisIt Python Script]
 #
 # Driver to test example process id python expression.
-# 
+#
 # Usage:
 #  visit -o path/to/rect2d.silo -nowin -cli -s visit_py_expr_procid_test.py
 #
+
+def script_path():
+    # path magic to make sure we can locate the script file
+    # no matter where we run visit from
+    script_dir = os.path.split(__visit_source_file__)[0]
+    return os.path.join(script_dir,"py_expr_procid.py")
+
 def setup_save_win():
     swa= SaveWindowAttributes()
     swa.outputToCurrentDirectory = 1
@@ -27,10 +34,9 @@ def setup_save_win():
 
 if __name__ == "__main__":
     setup_save_win()
-    DefineScalarExpression('myvar','py(d,"PythonFilter.load(\'py_expr_procid.py\')")')
+    DefinePythonExpression("myvar",["d"],file=script_path())
     AddPlot("Pseudocolor","myvar")
     DrawPlots()
     SaveWindow()
     sys.exit(0)
-
 

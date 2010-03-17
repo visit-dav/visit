@@ -10589,6 +10589,224 @@ visit_Query(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
+// Function: visit_PythonQuery
+//
+// Purpose:
+//   Executes a Python Filter Query.
+//
+// Notes:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Mar 17 11:07:35 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char     *source_text   = NULL;
+    char     *source_file   = NULL;
+    PyObject *py_vars_tuple = NULL;
+
+    static char *kwlist[] = {"source", "file", "vars",NULL};
+
+    // keyword arguments
+    // source: string containg the python filter source
+    // file: string containing the location of a script file
+    // vars: tuple containing variable names
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ssO", kwlist,
+                                     &source_text, &source_file, &py_vars_tuple))
+        return NULL;
+
+    stringVector vars;
+    // if vars were passed in, add them to the variable list
+    if(py_vars_tuple != NULL)
+    {
+        GetStringVectorFromPyObject(py_vars_tuple, vars);
+    }
+
+    if(source_text != NULL)
+    {
+        debug5 << "Using passed source text as Python Query script" << endl;
+        // add the source as the last variable
+        vars.push_back(source_text);
+    }
+    else if(source_file != NULL)
+    {
+        debug5 << "Attempting to load Python Query script from file:"
+               << source_file << endl;
+        ifstream ifs(source_file);
+        if(ifs.fail())
+        {
+            // invalid file
+            std::ostringstream err_msg;
+            err_msg << "PythonQuery: Failed to open script file '"
+                    << source_file << "'."<<endl;
+            PyErr_SetString(VisItError, err_msg.str().c_str());
+            return NULL;
+        }
+        string py_script((std::istreambuf_iterator<char>(ifs)),
+                          std::istreambuf_iterator<char>());
+        vars.push_back(py_script);
+    }
+
+
+    MUTEX_LOCK();
+        GetViewerMethods()->DatabaseQuery("Python", vars);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_DefinePythonExpression
+//
+// Purpose:
+//   Defines a Python expression.
+//
+// Notes:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Mar 17 11:07:35 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_DefinePythonExpression(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char     *var_name      = NULL;
+    char     *var_type      = "scalar";
+    PyObject *args_tuple    = NULL;
+    char     *source_text   = NULL;
+    char     *source_file   = NULL;
+
+    static char *kwlist[] = {"name","args","source", "file", "type", NULL};
+
+    // keyword arguments
+    // source: string containg the python filter source
+    // file: string containing the location of a script file
+    // vars: tuple containing variable names
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|sss", kwlist,
+                                     &var_name, &args_tuple,
+                                     &source_text,
+                                     &source_file, &var_type))
+        return NULL;
+
+    stringVector expr_args;
+    GetStringVectorFromPyObject(args_tuple, expr_args);
+
+    Expression::ExprType expr_type;
+    if(strcmp(var_type,"scalar") == 0 || strcmp(var_type,"Scalar") == 0)
+        expr_type = Expression::ScalarMeshVar;
+    else if(strcmp(var_type,"vector") == 0 || strcmp(var_type,"Vector") == 0)
+        expr_type = Expression::VectorMeshVar;
+    else if(strcmp(var_type,"tensor") == 0 || strcmp(var_type,"Tensor") == 0)
+        expr_type = Expression::TensorMeshVar;
+    else if(strcmp(var_type,"array") == 0 || strcmp(var_type,"Array") == 0)
+        expr_type = Expression::ArrayMeshVar;
+    else if(strcmp(var_type,"curve") == 0 || strcmp(var_type,"Curve") == 0)
+        expr_type = Expression::CurveMeshVar;
+    else if(strcmp(var_type,"mesh") == 0 || strcmp(var_type,"Mesh") == 0)
+        expr_type = Expression::Mesh;
+    else if(strcmp(var_type,"material") == 0 || strcmp(var_type,"Material") == 0)
+        expr_type = Expression::Material;
+    else if(strcmp(var_type,"species") == 0 || strcmp(var_type,"Species") == 0)
+        expr_type = Expression::Species;
+    else
+    {
+        std::ostringstream err_msg;
+        err_msg << "DefinePythonExpression: Invalid expression output variable type '" << var_type << "'."<<endl;
+        err_msg << " Valid Types: 'scalar','vector','tensor','array','curve'\n" <<endl;
+        PyErr_SetString(VisItError, err_msg.str().c_str());
+        return NULL;
+    }
+
+    string expr_name(var_name);
+    string py_script="";
+
+    if(source_text != NULL)
+    {
+        debug5 << "Using passed source text as Python Expression script" << endl;
+        // add the source as the last variable
+        py_script = source_text;
+    }
+    else if(source_file != NULL)
+    {
+        debug5 << "Attempting to load Python Expression script from file:"
+               << source_file << endl;
+        ifstream ifs(source_file);
+        if(ifs.fail())
+        {
+            // invalid file
+            std::ostringstream err_msg;
+            err_msg << "DefinePythonExpression: Failed to open script file '"
+                    << source_file << "'."<<endl;
+            PyErr_SetString(VisItError, err_msg.str().c_str());
+            return NULL;
+        }
+        py_script = string((std::istreambuf_iterator<char>(ifs)),
+                          std::istreambuf_iterator<char>());
+    }
+
+    // escape specials so the script can travel through the expr
+    // machinery unaltered.
+    py_script = StringHelpers::Replace(py_script,"\"","\\\"");
+    py_script = StringHelpers::Replace(py_script,"\n","\\n");
+    py_script = StringHelpers::Replace(py_script," ","\\s");
+
+    string expr_def = "py(";
+    vector<string>::iterator itr;
+    for( itr =expr_args.begin() ; itr != expr_args.end(); ++itr)
+        expr_def += *itr + ",";
+    expr_def += "\"";
+    expr_def += py_script;
+    expr_def += "\")";
+
+    // Access the expression list and add a new one, if necessary.
+    MUTEX_LOCK();
+
+        ExpressionList *list = GetViewerState()->GetExpressionList();
+        // Get the existing expression if it exists or create a new one.
+        Expression *e = list->operator[](expr_name.c_str());
+        bool expressionExists = e != 0;
+        if(!expressionExists)
+            e = new Expression();
+        else
+            debug4 << "Replacing definition for expression " << expr_name << endl;
+
+        // Set the expression properties.
+        e->SetName(expr_name);
+        e->SetDefinition(expr_def);
+        e->SetType(expr_type);
+
+        // Add the expression if it's not in the list.
+        if(!expressionExists)
+        {
+            list->AddExpressions(*e);
+            delete e;
+        }
+
+        // Send the new list to the viewer.
+        list->Notify();
+        GetViewerMethods()->ProcessExpressions();
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+
+// ****************************************************************************
 // Function: visit_SuppressQueryOutputOn
 //
 // Purpose:
@@ -13833,27 +14051,63 @@ std::vector<PyMethodDef> VisItMethods;
 //
 // Arguments:
 //   methodName : The name of the method.
-//   cb         : The Python callback function.
+//   methodImp  : The Python callback function.
 //   doc        : The documentation string for the method.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep 4 15:36:47 PST 2001
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Wed Mar 17 11:16:58 PDT 2010
+//   Use PyCFunction typedef.
+//
 // ****************************************************************************
 
 static void
-AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
+AddMethod(const char *methodName,
+          PyCFunction methodImp,
           const char *doc = NULL)
 {
     PyMethodDef newMethod;
-    newMethod.ml_name = (char *)methodName;
-    newMethod.ml_meth = cb;
+    newMethod.ml_name  = (char *)methodName;
+    newMethod.ml_meth  = methodImp;
     newMethod.ml_flags = METH_VARARGS;
-    newMethod.ml_doc = (char *)doc;
+    newMethod.ml_doc   = (char *)doc;
     VisItMethods.push_back(newMethod);
 }
+
+// ****************************************************************************
+// Function: AddMethod
+//
+// Purpose:
+//   This function adds a method to the VisIt module's Python method table.
+//   Overloaded to handle functions with keyword arguments.
+//
+// Arguments:
+//   methodName : The name of the method.
+//   methodImp  : The Python callback function.
+//   doc        : The documentation string for the method.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Mar 17 11:04:30 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static void
+AddMethod(const char *methodName,
+          PyCFunctionWithKeywords methodImp,
+          const char *doc = NULL)
+{
+    PyMethodDef newMethod;
+    newMethod.ml_name  = (char *)methodName;
+    newMethod.ml_meth  = (PyCFunction)methodImp;
+    newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
+    newMethod.ml_doc   = (char *)doc;
+    VisItMethods.push_back(newMethod);
+}
+
 
 // ****************************************************************************
 // Function: AddDefaultMethods
@@ -14123,6 +14377,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Cyrus Harrison, Wed Mar 17 16:25:04 PDT 2010
+//   Added 'PythonQuery' and 'DefinePythonExpression'.
+//
 // ****************************************************************************
 
 static void
@@ -14344,6 +14601,8 @@ AddDefaultMethods()
                                                     visit_PromoteOperator_doc);
     AddMethod("Query", visit_Query, visit_Query_doc);
     AddMethod("QueryOverTime", visit_QueryOverTime, visit_QueryOverTime_doc);
+    AddMethod("PythonQuery", visit_PythonQuery,visit_PythonQuery_doc);
+    AddMethod("DefinePythonExpression", visit_DefinePythonExpression,visit_DefinePythonExpression_doc);
     AddMethod("RecenterView", visit_RecenterView, visit_RecenterView_doc);
     AddMethod("RedrawWindow", visit_RedrawWindow, visit_RedrawWindow_doc);
     AddMethod("RemoveAllOperators", visit_RemoveAllOperators,
@@ -15250,7 +15509,7 @@ InitializeModule()
     // Add extension methods to the module's method table.
     AddExtensions();
     // Mark the end of the method table.
-    AddMethod(NULL, NULL);
+    AddMethod(NULL, (PyCFunction)NULL);
 
     // Set the module initialized flag.
     moduleInitialized = true;
