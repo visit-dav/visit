@@ -46,8 +46,11 @@
 #   Kathleen Bonnell, Thu Dec 10 17:50:01 MT 2009
 #   Removed MSVC_VERSION from searchpath in favor of 'libs' for windows.
 #
-#    Gunther H. Weber, Fri Jan 29 12:00:39 PST 2010
-#    Only install Python if we are not using the system Python.
+#   Gunther H. Weber, Fri Jan 29 12:00:39 PST 2010
+#   Only install Python if we are not using the system Python.
+#
+#   Kathleen Bonnell, Wed Mar 17 10:01:22 MT 2010
+#   Exclude '.svn' from being included when installing directories. 
 #
 #****************************************************************************/
 
@@ -305,6 +308,7 @@ IF(PYTHONLIBS_FOUND)
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
                 FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
                 DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                PATTERN ".svn" EXCLUDE
             )
         ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr")) 
     ENDIF(Python_FRAMEWORKS)

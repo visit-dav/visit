@@ -88,9 +88,12 @@
 #    Cyrus Harrison, Tue Mar  9 08:02:50 PST 2010
 #    Enabled python filters support by default.
 #
+#    Kathleen Bonnell, Wed Mar 17 10:06:44 MST 2010 
+#    Change cmake minimum required to 2.8.0, to support FILE(COPY .
+#
 #****************************************************************************/
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
 
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
