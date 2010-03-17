@@ -47,6 +47,7 @@
 
 #include "avtADIOSBasicFileFormat.h"
 #include "avtXGCFileFormat.h"
+#include "avtPixieFileFormat.h"
 
 // ****************************************************************************
 // Method: ADIOS_CreateFileFormatInterface
@@ -92,6 +93,11 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
                 debug5<<"Database is avtXGCFileFormat"<<endl;
                 flavor = 1;
             }
+            else if (avtPixieFileFormat::Identify(f))
+            {
+                debug5<<"Database is avtPixieFileFormat"<<endl;
+                flavor = 2;
+            }
             else if (avtADIOSBasicFileFormat::Identify(f))
             {
                 debug5<<"Database is avtADIOSBasicFileFormat"<<endl;
@@ -109,6 +115,9 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
         {
           case 1:
             ffi = avtXGCFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+          case 2:
+            ffi = avtPixieFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
 
           case 0:

@@ -16,6 +16,7 @@ ${COMMON_SOURCES}
 avtADIOSFileFormat.C
 avtADIOSBasicFileFormat.C
 avtXGCFileFormat.C
+avtPixieFileFormat.C
 ADIOSFileObject.C
 )
 
@@ -25,6 +26,7 @@ ${COMMON_SOURCES}
 avtADIOSFileFormat.C
 avtADIOSBasicFileFormat.C
 avtXGCFileFormat.C
+avtPixieFileFormat.C
 ADIOSFileObject.C
 )
 
