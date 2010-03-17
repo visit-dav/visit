@@ -15,6 +15,8 @@ ADIOSMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtADIOSFileFormat.C
 avtADIOSBasicFileFormat.C
+avtXGCFileFormat.C
+avtPixieFileFormat.C
 ADIOSFileObject.C
 )
 
@@ -23,6 +25,8 @@ ADIOSEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtADIOSFileFormat.C
 avtADIOSBasicFileFormat.C
+avtXGCFileFormat.C
+avtPixieFileFormat.C
 ADIOSFileObject.C
 )
 

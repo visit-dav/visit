@@ -12,6 +12,8 @@
     <Files components="M">
       avtADIOSFileFormat.C
       avtADIOSBasicFileFormat.C
+      avtXGCFileFormat.C
+      avtPixieFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="M">
@@ -20,6 +22,8 @@
     <Files components="E">
       avtADIOSFileFormat.C
       avtADIOSBasicFileFormat.C
+      avtXGCFileFormat.C
+      avtPixieFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="ESer">
