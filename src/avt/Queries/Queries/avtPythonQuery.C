@@ -219,6 +219,8 @@ avtPythonQuery::SetPythonScript(const std::string &py_script)
 //  Creation:   April 17, 2009
 //
 //  Modifications:
+//    Cyrus Harrison,Wed Mar 17 12:32:40 PDT 2010
+//    Remove catch b/c it prevented script errors from being reported.
 //
 // ****************************************************************************
 void
@@ -245,7 +247,7 @@ avtPythonQuery::PerformQuery(QueryAttributes *qatts)
     int validInputTree = 0;
     if (*tree != NULL && !tree->IsEmpty())
         validInputTree = 1;
-    else 
+    else
     {
         validInputTree |= 0;
         debug4 << "avtPythonQuery encountered EMPTY InputDataTree after ApplyFilters.  "
@@ -253,43 +255,27 @@ avtPythonQuery::PerformQuery(QueryAttributes *qatts)
                << "are more processors than domains." << endl;
     }
 
-    bool hadError = false;
     PreExecute();
-    TRY
-    {
-        Execute();
-    }
-    CATCH2(VisItException, e)
-    {
-        debug1 << "Exception occurred in " << GetType() << endl;
-        debug1 << "Going to keep going to prevent a parallel hang." << endl;
-        queryAtts.SetResultsMessage(e.Message());
-        hadError = true;
-    }
-    ENDTRY
-
+    Execute();
     PostExecute();
 
     validInputTree = UnifyMaximumValue(validInputTree);
 
-    if (!hadError)
+    if (validInputTree)
     {
-        if (validInputTree)
-        {
-            //
-            // Retrieve the query results and set the message in the atts. 
-            //
-            queryAtts.SetResultsMessage(resultMessage);
-            queryAtts.SetResultsValue(resultValues);
-            queryAtts.SetXmlResult(resultXml);
-        }
-        else
-        {
-            queryAtts.SetResultsMessage(std::string(GetType()) +
+        //
+        // Retrieve the query results and set the message in the atts.
+        //
+        queryAtts.SetResultsMessage(resultMessage);
+        queryAtts.SetResultsValue(resultValues);
+        queryAtts.SetXmlResult(resultXml);
+    }
+    else
+    {
+        queryAtts.SetResultsMessage(std::string(GetType()) +
                     " was asked to execute on an empty data set.  The query "
                     "produced the following message: " + resultMessage);
-            queryAtts.SetResultsValue(resultValues);
-        }
+                    queryAtts.SetResultsValue(resultValues);
     }
 
     UpdateProgress(1, 0);
