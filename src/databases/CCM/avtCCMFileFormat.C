@@ -72,11 +72,12 @@
 
 using     std::string;
 
+#include <avtParallel.h>
+
 #ifdef PARALLEL
 // If we're running in parallel then we can enable subdivision of single domains.
 // This only kicks in when there is a single domain that we want to split among
 // all processors.
-#include <avtParallel.h>
 #define ENABLE_SUBDIVISION
 #endif
 
@@ -374,6 +375,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
     //intVector faces;
     intVector faceNodes, faceCells;
 
+    int t0 = visitTimer->StartTimer();
     // Determine the size of the faceNodes array, which is of the
     // form n1, v1, v2, ...vn1, n2, v1, v2, ... vn2, )
     CCMIOReadFaces(&ccmErr, faceID, faceType, NULL, &size, NULL,
@@ -389,6 +391,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
     CCMIOReadFaceCells(&ccmErr, faceID, faceType, &faceCells[0],
                        kCCMIOStart, kCCMIOEnd);
     //CCMIOReadMap(&ccmErr, mapID, &faces[0], kCCMIOStart, kCCMIOEnd);
+    visitTimer->StopTimer(t0, "CCM IO calls");
 
     unsigned int pos = 0;
     for (unsigned int i = 0; i < nFaces; ++i)
@@ -792,6 +795,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
 #ifdef MDSERVER
     return 0;
 #else
+    int t5 = visitTimer->StartTimer();
     // Override domain if we're automatically dividing the data
     int dom = subdividingSingleMesh ? 0 : domain;
 
@@ -801,19 +805,25 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
     TRY
     {
         // Read the points
+        int t0 = visitTimer->StartTimer();
         points = ReadPoints(dom, meshname);
+        visitTimer->StopTimer(t0, "Reading points");
 
         // Read the cell connectivity
         CellInfoVector cellInfo;
         int minFaceSize = VTK_LARGE_INTEGER;
         int maxFaceSize = -1;
+        int t1 = visitTimer->StartTimer();
         ReadCellInfo(dom, meshname,
                      cellInfo, minFaceSize, maxFaceSize);
+        visitTimer->StopTimer(t1, "Reading cell info");
 
         //
         // Convert cellInfo into vtkUnstructuredGrid
         //
+        int t2 = visitTimer->StartTimer();
         SelectCellsForThisProcessor(cellInfo, points);
+        visitTimer->StopTimer(t2, "cells for this processor");
 
         ugrid = vtkUnstructuredGrid::New();
 
@@ -911,7 +921,9 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
         }
         else
         {
+            int t4 = visitTimer->StartTimer();
             TesselateCell(domain, cellInfo, points, ugrid);
+            visitTimer->StopTimer(t4, "TesselateCell");
         }
 
         points->Delete();
@@ -925,6 +937,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
     }
     ENDTRY
 
+    visitTimer->StopTimer(t5, "GetMesh");
     return ugrid;
 #endif
 }
@@ -1049,12 +1062,16 @@ avtCCMFileFormat::ReadPoints(int dom, const char *meshname)
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Mar 16 21:04:16 PDT 2010
+//   Remove STL slowness, possibly n^2 algorithm.
+//
 // ****************************************************************************
 
 void
 avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
     CellInfoVector &cellInfo, int &minFaceSize, int &maxFaceSize)
 {
+    int t1 = visitTimer->StartTimer();
     CCMIOID processor, vertices, topology, solution;
     bool hasSolution = true;
     if(!GetIDsForDomain(dom, processor, vertices, topology, solution,
@@ -1142,27 +1159,46 @@ avtCCMFileFormat::ReadCellInfo(int dom, const char *meshname,
     // Get the InternalFaces size (num faces).
     CCMIOEntitySize(&ccmErr, faceID, &nIFaces, NULL);
     
+    visitTimer->StopTimer(t1, "CCM I/O calls (2)");
+    int t2 = visitTimer->StartTimer();
+
     GetFaces(faceID, kCCMIOInternalFaces, nIFaces, cellIDMap, vertexIDMap,
              minFaceSize, maxFaceSize, cellInfo);
+    visitTimer->StopTimer(t2, "GetFaces");
 
 
     if (find(varsOnSubmesh.begin(), varsOnSubmesh.end(), activeVisItVar) 
             != varsOnSubmesh.end())
     {
+        int t3 = visitTimer->StartTimer();
         // need to reduce the number of cells we actually process.
         intVector validCells;
         CellInfoVector vcv;
+        int t6 = visitTimer->StartTimer();
         GetCellMapData(dom, activeVisItVar, validCells);
+        visitTimer->StopTimer(t6, "Get cell map data");
           
+        int maxId = -1;
+        int j;
+        for (j = 0 ; j < cellInfo.size() ; j++)
+        {
+            maxId = (maxId > cellInfo[j].id ? maxId : cellInfo[j].id);
+        }
+        vector<bool> cellIsValid(maxId+1, false);
+        for (j = 0 ; j < cellInfo.size() ; j++)
+        {
+            cellIsValid[cellInfo[j].id] = true;
+        }
+
         for (int i = 0; i < cellInfo.size(); ++i)
         {
-            if (find(validCells.begin(), validCells.end(), cellInfo[i].id)
-                     != validCells.end())
+            if (cellIsValid[cellInfo[i].id])
             {
                 vcv.push_back(cellInfo[i]);
             }
         }
         cellInfo = vcv;
+        visitTimer->StopTimer(t3, "valid cells");
     } 
 
     debug5 << "minFaceSize = " << minFaceSize
@@ -1412,6 +1448,7 @@ void
 avtCCMFileFormat::GetCellMapData(const int domain, const string &var, 
     intVector &mapData)
 {
+    int t1 = visitTimer->StartTimer();
     VarFieldMap::const_iterator pos = varsToFields.find(var.c_str());
     if (pos == varsToFields.end())
         EXCEPTION1(InvalidVariableException, var);
@@ -1451,6 +1488,7 @@ avtCCMFileFormat::GetCellMapData(const int domain, const string &var,
         CCMIOReadMap(&ferr, mapID, &mapData[cnt], kCCMIOStart, kCCMIOEnd);
         cnt += n;
     } 
+    visitTimer->StopTimer(t1, "avtCCMFileFormat::GetCellMapData");
 }
 
 
@@ -1484,6 +1522,7 @@ avtCCMFileFormat::GetCellMapData(const int domain, const string &var,
 vtkDataArray *
 avtCCMFileFormat::GetVar(int domain, const char *varname)
 {
+    int t1 = visitTimer->StartTimer();
     const char *mName = "avtCCMFileFormat::GetVar: ";
     // Override domain if we're automatically dividing the data
     domain = subdividingSingleMesh ? 0 : domain;
@@ -1534,6 +1573,7 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
         }
     }
 
+    visitTimer->StopTimer(t1, "CCM::GetVar");
     return rv;
 }
 
