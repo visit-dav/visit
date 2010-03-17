@@ -67,7 +67,7 @@ WindowMetrics *WindowMetrics::instance = NULL;
 class TestWin : public QWidget
 {
   public:
-    TestWin() : QWidget()   { resize(1,1); move(100,100); }
+     TestWin() : QWidget()   { resize(1,1); move(100,100); }
 };
 
 
@@ -122,9 +122,17 @@ WindowMetrics::Instance()
 //    Brad Whitlock, Wed Jan 11 17:35:10 PST 2006
 //    I moved most of the code into the MeasureScreen method.
 //
+//    Cyrus Harrison, Wed Mar 17 09:03:49 PDT 2010
+//    X11 Only:
+//    Hide the test window instead of deleting it. The timing of the screen
+//    measure is strange on some linux systems and deleting this window can
+//    cause Qt to belive there are no active windows and emit a single to
+//    exit the main application loop.
+//
 // ****************************************************************************
 
 WindowMetrics::WindowMetrics()
+: testWindow(0)
 {
     //
     // Default values
@@ -171,53 +179,53 @@ WindowMetrics::MeasureScreen(bool waitForWM)
     //
     // Create the test window
     //
-    TestWin *win = new TestWin;
-    win->show();
+    testWindow = new TestWin;
+    testWindow->show();
 
     //
     // Calculate the metrics
     //
-    CalculateScreen(win, screenX, screenY, screenW, screenH);
+    CalculateScreen(testWindow, screenX, screenY, screenW, screenH);
 
     // We need for the window manager to put borders on the window
     // before we can determine their sizes
     if(waitForWM)
-        WaitForWindowManagerToGrabWindow(win);
+        WaitForWindowManagerToGrabWindow(testWindow);
 
     // We tried to put the main window at 100,100...
     // ...see where it *really* started out
     preshiftX = 100;
     preshiftY = 100;
-    CalculateTopLeft(win, preshiftX, preshiftY);
+    CalculateTopLeft(testWindow, preshiftX, preshiftY);
     preshiftX -= 100;
     preshiftY -= 100;
 
     // Determine the border sizes of the main window.
-    CalculateBorders(win, borderT, borderB, borderL, borderR);
+    CalculateBorders(testWindow, borderT, borderB, borderL, borderR);
 
     // Move it to the top left (we think)
-    win->move(borderL,borderT);
-    win->resize(2,2);
+    testWindow->move(borderL,borderT);
+    testWindow->resize(2,2);
 
     if(waitForWM)
     {
         do
-        {  
+        {
             // If it's not at 0,0, then we have a shift
-            WaitForWindowManagerToMoveWindow(win);
-            CalculateTopLeft(win, shiftX, shiftY);
+            WaitForWindowManagerToMoveWindow(testWindow);
+            CalculateTopLeft(testWindow, shiftX, shiftY);
         }
         while (shiftX == preshiftX+100  &&  shiftY == preshiftY+100);
         // (sometimes we need to wait for more than one ConfigureNotify)
     }
     else
-        CalculateTopLeft(win, shiftX, shiftY);
+        CalculateTopLeft(testWindow, shiftX, shiftY);
 
     // Adjust preshift to account for the actual shift
     preshiftX += (borderL - shiftX);
     preshiftY += (borderT - shiftY);
 
-    delete win;
+    testWindow->hide();
 #else
     //
     // Calculate the metrics
@@ -298,7 +306,7 @@ WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
 // Creation:   Thu Apr 18 11:58:37 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -444,7 +452,7 @@ WindowMetrics::CalculateScreen(QWidget *win,
 // Purpose: 
 //   This method calculates the border sizes of the window decorations.
 //
-// Note:       
+// Note:
 //   This method is platform specific. This is the X11 implementation.
 //
 // Programmer: Brad Whitlock
@@ -454,7 +462,7 @@ WindowMetrics::CalculateScreen(QWidget *win,
 //    Jeremy Meredith, Thu Apr  5 13:47:02 PDT 2001
 //    Added a check -- sometimes there is a desktop-size window over the
 //    root window, and we assumed this was part of the main window.
-//   
+//
 //    Jeremy Meredith, Fri Jul 20 11:18:50 PDT 2001
 //    Added checks to make sure the borders are not negative.  This somehow
 //    happened under twm.
@@ -465,7 +473,7 @@ WindowMetrics::CalculateScreen(QWidget *win,
 // ****************************************************************************
 
 void
-WindowMetrics::CalculateBorders(QWidget *win, 
+WindowMetrics::CalculateBorders(QWidget *win,
                                 int &borderT, int &borderB,
                                 int &borderL, int &borderR)
 {
@@ -490,7 +498,7 @@ WindowMetrics::CalculateBorders(QWidget *win,
     // Deallocate the memory allocated by XQueryTree().
     if(nchildren > 0)
         XFree((char *)children);
-    
+
     // Get the attributes of the main window and place them
     // into the leaf_attributes structure.
     if(XGetWindowAttributes(dpy, main_window, &leaf_attributes ) == 0)
@@ -599,8 +607,8 @@ WindowMetrics::CalculateBorders(QWidget *win,
 void
 WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
 {
-    XFlush(QX11Info::display()); 
-    XEvent ev; 
+    XFlush(QX11Info::display());
+    XEvent ev;
     while (!XCheckTypedWindowEvent(QX11Info::display(), win->winId(),
                                    ReparentNotify, &ev))
     { 
@@ -608,7 +616,7 @@ WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
                                    MapNotify, &ev)) 
             break; 
     } 
-    qApp->x11ProcessEvent(&ev); 
+    qApp->x11ProcessEvent(&ev);
 }
 
 // ****************************************************************************
@@ -631,8 +639,8 @@ WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
 void
 WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
 {
-    XFlush(QX11Info::display()); 
-    XEvent ev; 
+    XFlush(QX11Info::display());
+    XEvent ev;
     while (!XCheckTypedWindowEvent(QX11Info::display(), win->winId(),
                                    ConfigureNotify, &ev))
     {
