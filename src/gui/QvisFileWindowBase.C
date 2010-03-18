@@ -40,6 +40,7 @@
 #include <QCheckBox>
 #include <QEvent>
 #include <QComboBox>
+#include <QFrame>
 #include <QItemDelegate>
 #include <QLineEdit>
 #include <QLayout>
@@ -410,7 +411,9 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
 // Creation:   Tue Jul 15 12:07:15 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 18 16:26:50 PDT 2010
+//   I added frame separators between crowded controls.
+//
 // ****************************************************************************
 
 void
@@ -478,6 +481,11 @@ QvisFileWindowBase::CreateHostPathFilterControls()
             this, SLOT(currentDir(bool)));
     toggleLayout->addWidget(currentDirToggle);
 
+    QFrame *sep1 = new QFrame(central);
+    sep1->setFrameShape(QFrame::VLine);
+    sep1->setFrameShadow(QFrame::Sunken);
+    toggleLayout->addWidget(sep1);
+
     // Create the file grouping checkbox.
     fileGroupingComboBox = new QComboBox(central);
     fileGroupingComboBox->addItem(tr("Off"));
@@ -490,6 +498,11 @@ QvisFileWindowBase::CreateHostPathFilterControls()
     toggleLayout->addWidget(new QLabel(tr("File grouping"), central), 0, Qt::AlignRight);
     toggleLayout->addWidget(fileGroupingComboBox, 0, Qt::AlignLeft);
     toggleLayout->addStretch(5);
+
+    QFrame *sep2 = new QFrame(central);
+    sep2->setFrameShape(QFrame::VLine);
+    sep2->setFrameShadow(QFrame::Sunken);
+    toggleLayout->addWidget(sep2);
 
     // Create a window we can activate to remove recent paths.
     recentPathsRemovalWindow = new QvisRecentPathRemovalWindow(fileServer,
