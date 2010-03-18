@@ -857,6 +857,10 @@
 #     Cyrus Harrison, Wed Mar 17 10:21:15 PDT 2010
 #     Fix python shared lib gen on AIX + removed old python patches.
 #
+#     Eric Brugger, Thu Mar 18 15:12:19 PDT 2010
+#     I added several patches for VTK so that VTK would compile under AIX
+#     with cmake 2.8.0.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3243,6 +3247,174 @@ EOF
     fi
 }
 
+function apply_vtk_500d_generic_patch_4
+{
+   patch -p0 << \EOF
+diff -c a/CMake/cmVTKGenerateJavaDependencies.c VTK/CMake/cmVTKGenerateJavaDependencies.c
+*** a/CMake/cmVTKGenerateJavaDependencies.c
+--- VTK/CMake/cmVTKGenerateJavaDependencies.c
+***************
+*** 43,49 ****
+    const char *endTempFile;
+  
+    FILE* outfile = 0;
+!   const char* filename = 0;
+  
+    if(argc < 2 )
+      {
+--- 43,49 ----
+    const char *endTempFile;
+  
+    FILE* outfile = 0;
+!   char* filename = 0;
+  
+    if(argc < 2 )
+      {
+EOF
+    if [[ $? != 0 ]] ; then
+       warn "Unable to patch VTK. Wrong version?"
+       return 1
+    fi
+}
+
+function apply_vtk_500d_generic_patch_5
+{
+   patch -p0 << \EOF
+diff -c a/CMake/cmVTKWrapPython2Command.c VTK/CMake/cmVTKWrapPython2Command.c
+*** a/CMake/cmVTKWrapPython2Command.c
+--- VTK/CMake/cmVTKWrapPython2Command.c
+***************
+*** 124,130 ****
+      return 0;
+      }
+    
+!   info->CAPI->ExpandSourceListArguments(mf, argc, argv, 
+                                          &newArgc, &newArgv, 2);
+    
+    /* Now check and see if the value has been stored in the cache */
+--- 124,130 ----
+      return 0;
+      }
+    
+!   info->CAPI->ExpandSourceListArguments(mf, argc, (const char **)argv, 
+                                          &newArgc, &newArgv, 2);
+    
+    /* Now check and see if the value has been stored in the cache */
+***************
+*** 233,239 ****
+    info->CAPI->SourceFileSetProperty(cfile,"ABSTRACT","0");
+    newName = (char *)malloc(strlen(newArgv[0]) + 5);
+    sprintf(newName,"%sInit",newArgv[0]);
+!   CreateInitFile(info,mf,newArgv[0],numClasses,classes);
+    info->CAPI->SourceFileSetName2(cfile, newName, 
+                                   info->CAPI->GetCurrentOutputDirectory(mf),
+                                   "cxx",0);
+--- 233,239 ----
+    info->CAPI->SourceFileSetProperty(cfile,"ABSTRACT","0");
+    newName = (char *)malloc(strlen(newArgv[0]) + 5);
+    sprintf(newName,"%sInit",newArgv[0]);
+!   CreateInitFile(info,mf,newArgv[0],numClasses,(const char **)classes);
+    info->CAPI->SourceFileSetName2(cfile, newName, 
+                                   info->CAPI->GetCurrentOutputDirectory(mf),
+                                   "cxx",0);
+***************
+*** 301,307 ****
+      numArgs++;
+      info->CAPI->AddCustomCommand(mf, args[0],
+                         wpython, numArgs, args, numDepends, depends, 
+!                        1, &res, cdata->LibraryName);
+      free(res);
+      }
+  }
+--- 301,307 ----
+      numArgs++;
+      info->CAPI->AddCustomCommand(mf, args[0],
+                         wpython, numArgs, args, numDepends, depends, 
+!                        1, (const char **) &res, cdata->LibraryName);
+      free(res);
+      }
+  }
+EOF
+    if [[ $? != 0 ]] ; then
+       warn "Unable to patch VTK. Wrong version?"
+       return 1
+    fi
+}
+
+function apply_vtk_500d_generic_patch_6
+{
+   patch -p0 << \EOF
+diff -c a/CMake/cmVTKWrapTcl2Command.c VTK/CMake/cmVTKWrapTcl2Command.c
+*** a/CMake/cmVTKWrapTcl2Command.c
+--- VTK/CMake/cmVTKWrapTcl2Command.c
+***************
+*** 203,214 ****
+    
+    if (!strcmp(argv[1],"SOURCES"))
+      {
+!     info->CAPI->ExpandSourceListArguments(mf, argc, argv, &newArgc, 
+                                            &newArgv, 3);
+      }
+    else
+      {
+!     info->CAPI->ExpandSourceListArguments(mf, argc, argv, 
+                                            &newArgc, &newArgv, 2);
+      }
+    
+--- 203,214 ----
+    
+    if (!strcmp(argv[1],"SOURCES"))
+      {
+!     info->CAPI->ExpandSourceListArguments(mf, argc, (const char **)argv, &newArgc, 
+                                            &newArgv, 3);
+      }
+    else
+      {
+!     info->CAPI->ExpandSourceListArguments(mf, argc, (const char **)argv, 
+                                            &newArgc, &newArgv, 2);
+      }
+    
+***************
+*** 350,356 ****
+      info->CAPI->SourceFileSetProperty(cfile,"ABSTRACT","0");
+      newName = (char *)malloc(strlen(argv[0]) + 5);
+      sprintf(newName,"%sInit",argv[0]);
+!     CreateInitFile(info,mf,argv[0],numConcrete,concrete,numCommands,commands);
+      info->CAPI->SourceFileSetName2(cfile, newName, 
+                                     info->CAPI->GetCurrentOutputDirectory(mf),
+                                     "cxx",0);
+--- 350,356 ----
+      info->CAPI->SourceFileSetProperty(cfile,"ABSTRACT","0");
+      newName = (char *)malloc(strlen(argv[0]) + 5);
+      sprintf(newName,"%sInit",argv[0]);
+!     CreateInitFile(info,mf,argv[0],numConcrete,(const char **)concrete,numCommands,(const char **)commands);
+      info->CAPI->SourceFileSetName2(cfile, newName, 
+                                     info->CAPI->GetCurrentOutputDirectory(mf),
+                                     "cxx",0);
+***************
+*** 429,435 ****
+      numArgs++;
+      info->CAPI->AddCustomCommand(mf, args[0],
+                         wtcl, numArgs, args, numDepends, depends, 
+!                        1, &res, cdata->LibraryName);
+      free(res);
+      }
+  }
+--- 429,435 ----
+      numArgs++;
+      info->CAPI->AddCustomCommand(mf, args[0],
+                         wtcl, numArgs, args, numDepends, depends, 
+!                        1, (const char **)&res, cdata->LibraryName);
+      free(res);
+      }
+  }
+EOF
+    if [[ $? != 0 ]] ; then
+       warn "Unable to patch VTK. Wrong version?"
+       return 1
+    fi
+}
+
 function apply_vtk_500d_darwin_patch
 {
    patch -p0 << \EOF
@@ -3436,6 +3608,18 @@ function apply_vtk_500d_generic_patches
        return 1
    fi
    apply_vtk_500d_generic_patch_3
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+   apply_vtk_500d_generic_patch_4
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+   apply_vtk_500d_generic_patch_5
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+   apply_vtk_500d_generic_patch_6
    if [[ $? != 0 ]] ; then
        return 1
    fi
