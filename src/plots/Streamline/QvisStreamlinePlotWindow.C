@@ -207,13 +207,13 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sourceType->addItem(tr("Box"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
-    sourceLayout->addWidget(sourceType, 0, 1);
+    sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
 
 
 
     // Create the source geometry subgroup
     QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
-    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 2);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
@@ -513,7 +513,6 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataValueComboBox->addItem(tr("Variable"),6);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
-
     dataLayout->addWidget(dataValueComboBox, 0, 1);
 
     dataLayout->addWidget(new QLabel(tr("   "), central), 0, 2);
@@ -576,6 +575,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(displayMethod, SIGNAL(activated(int)), this, SLOT(displayMethodChanged(int)));
     drawLayout->addWidget(new QLabel(tr("Draw as"), displayGrp), 0, 0);
     drawLayout->addWidget(displayMethod, 0, 1);
+    drawLayout->addWidget(new QLabel(tr("  "), displayGrp), 0, 2, 1, 2);
 
     //--lines
     lineWidth = new QvisLineWidthWidget(0, displayGrp);
