@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -155,6 +155,7 @@ public:
     void SetOverlaps(OverlapType overlaps_);
     void SetMeshType(ShowMeshType meshType_);
     void SetNumberPlanes(int numberPlanes_);
+    void SetSinglePlane(double singlePlane_);
     void SetMin(double min_);
     void SetMax(double max_);
     void SetMinFlag(bool minFlag_);
@@ -168,6 +169,7 @@ public:
     void SetShowLines(bool showLines_);
     void SetShowPoints(bool showPoints_);
     void SetVerboseFlag(bool verboseFlag_);
+    void SetShowRidgelines(bool showRidgelines_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
 
@@ -193,6 +195,7 @@ public:
     OverlapType          GetOverlaps() const;
     ShowMeshType         GetMeshType() const;
     int                  GetNumberPlanes() const;
+    double               GetSinglePlane() const;
     double               GetMin() const;
     double               GetMax() const;
     bool                 GetMinFlag() const;
@@ -208,6 +211,7 @@ public:
     bool                 GetShowLines() const;
     bool                 GetShowPoints() const;
     bool                 GetVerboseFlag() const;
+    bool                 GetShowRidgelines() const;
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
 
@@ -278,6 +282,7 @@ public:
         ID_overlaps,
         ID_meshType,
         ID_numberPlanes,
+        ID_singlePlane,
         ID_min,
         ID_max,
         ID_minFlag,
@@ -291,6 +296,7 @@ public:
         ID_showLines,
         ID_showPoints,
         ID_verboseFlag,
+        ID_showRidgelines,
         ID_legendFlag,
         ID_lightingFlag,
         ID__LAST
@@ -315,6 +321,7 @@ private:
     int            overlaps;
     int            meshType;
     int            numberPlanes;
+    double         singlePlane;
     double         min;
     double         max;
     bool           minFlag;
@@ -328,6 +335,7 @@ private:
     bool           showLines;
     bool           showPoints;
     bool           verboseFlag;
+    bool           showRidgelines;
     bool           legendFlag;
     bool           lightingFlag;
 
@@ -335,6 +343,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "ddiDDDiidddiidiiiiddbbiasibbbbbbb"
+#define POINCAREATTRIBUTES_TMFS "ddiDDDiidddiidiiiidddbbiasibbbbbbbb"
 
 #endif

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -311,6 +311,7 @@ void PoincareAttributes::Init()
     overlaps = Remove;
     meshType = Curves;
     numberPlanes = 1;
+    singlePlane = 0;
     min = 0;
     max = 0;
     minFlag = false;
@@ -322,6 +323,7 @@ void PoincareAttributes::Init()
     showLines = true;
     showPoints = false;
     verboseFlag = true;
+    showRidgelines = false;
     legendFlag = true;
     lightingFlag = true;
 
@@ -372,6 +374,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     overlaps = obj.overlaps;
     meshType = obj.meshType;
     numberPlanes = obj.numberPlanes;
+    singlePlane = obj.singlePlane;
     min = obj.min;
     max = obj.max;
     minFlag = obj.minFlag;
@@ -385,6 +388,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     showLines = obj.showLines;
     showPoints = obj.showPoints;
     verboseFlag = obj.verboseFlag;
+    showRidgelines = obj.showRidgelines;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
 
@@ -579,6 +583,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (overlaps == obj.overlaps) &&
             (meshType == obj.meshType) &&
             (numberPlanes == obj.numberPlanes) &&
+            (singlePlane == obj.singlePlane) &&
             (min == obj.min) &&
             (max == obj.max) &&
             (minFlag == obj.minFlag) &&
@@ -592,6 +597,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (showLines == obj.showLines) &&
             (showPoints == obj.showPoints) &&
             (verboseFlag == obj.verboseFlag) &&
+            (showRidgelines == obj.showRidgelines) &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag));
 }
@@ -780,6 +786,7 @@ PoincareAttributes::SelectAll()
     Select(ID_overlaps,                (void *)&overlaps);
     Select(ID_meshType,                (void *)&meshType);
     Select(ID_numberPlanes,            (void *)&numberPlanes);
+    Select(ID_singlePlane,             (void *)&singlePlane);
     Select(ID_min,                     (void *)&min);
     Select(ID_max,                     (void *)&max);
     Select(ID_minFlag,                 (void *)&minFlag);
@@ -793,6 +800,7 @@ PoincareAttributes::SelectAll()
     Select(ID_showLines,               (void *)&showLines);
     Select(ID_showPoints,              (void *)&showPoints);
     Select(ID_verboseFlag,             (void *)&verboseFlag);
+    Select(ID_showRidgelines,          (void *)&showRidgelines);
     Select(ID_legendFlag,              (void *)&legendFlag);
     Select(ID_lightingFlag,            (void *)&lightingFlag);
 }
@@ -935,6 +943,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("numberPlanes", numberPlanes));
     }
 
+    if(completeSave || !FieldsEqual(ID_singlePlane, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("singlePlane", singlePlane));
+    }
+
     if(completeSave || !FieldsEqual(ID_min, &defaultObject))
     {
         addToParent = true;
@@ -1013,6 +1027,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("verboseFlag", verboseFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showRidgelines, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showRidgelines", showRidgelines));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -1155,6 +1175,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("numberPlanes")) != 0)
         SetNumberPlanes(node->AsInt());
+    if((node = searchNode->GetNode("singlePlane")) != 0)
+        SetSinglePlane(node->AsDouble());
     if((node = searchNode->GetNode("min")) != 0)
         SetMin(node->AsDouble());
     if((node = searchNode->GetNode("max")) != 0)
@@ -1209,6 +1231,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowPoints(node->AsBool());
     if((node = searchNode->GetNode("verboseFlag")) != 0)
         SetVerboseFlag(node->AsBool());
+    if((node = searchNode->GetNode("showRidgelines")) != 0)
+        SetShowRidgelines(node->AsBool());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -1352,6 +1376,13 @@ PoincareAttributes::SetNumberPlanes(int numberPlanes_)
 }
 
 void
+PoincareAttributes::SetSinglePlane(double singlePlane_)
+{
+    singlePlane = singlePlane_;
+    Select(ID_singlePlane, (void *)&singlePlane);
+}
+
+void
 PoincareAttributes::SetMin(double min_)
 {
     min = min_;
@@ -1440,6 +1471,13 @@ PoincareAttributes::SetVerboseFlag(bool verboseFlag_)
 {
     verboseFlag = verboseFlag_;
     Select(ID_verboseFlag, (void *)&verboseFlag);
+}
+
+void
+PoincareAttributes::SetShowRidgelines(bool showRidgelines_)
+{
+    showRidgelines = showRidgelines_;
+    Select(ID_showRidgelines, (void *)&showRidgelines);
 }
 
 void
@@ -1587,6 +1625,12 @@ PoincareAttributes::GetNumberPlanes() const
 }
 
 double
+PoincareAttributes::GetSinglePlane() const
+{
+    return singlePlane;
+}
+
+double
 PoincareAttributes::GetMin() const
 {
     return min;
@@ -1677,6 +1721,12 @@ PoincareAttributes::GetVerboseFlag() const
 }
 
 bool
+PoincareAttributes::GetShowRidgelines() const
+{
+    return showRidgelines;
+}
+
+bool
 PoincareAttributes::GetLegendFlag() const
 {
     return legendFlag;
@@ -1764,6 +1814,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_overlaps:                return "overlaps";
     case ID_meshType:                return "meshType";
     case ID_numberPlanes:            return "numberPlanes";
+    case ID_singlePlane:             return "singlePlane";
     case ID_min:                     return "min";
     case ID_max:                     return "max";
     case ID_minFlag:                 return "minFlag";
@@ -1777,6 +1828,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_showLines:               return "showLines";
     case ID_showPoints:              return "showPoints";
     case ID_verboseFlag:             return "verboseFlag";
+    case ID_showRidgelines:          return "showRidgelines";
     case ID_legendFlag:              return "legendFlag";
     case ID_lightingFlag:            return "lightingFlag";
     default:  return "invalid index";
@@ -1821,6 +1873,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_overlaps:                return FieldType_enum;
     case ID_meshType:                return FieldType_enum;
     case ID_numberPlanes:            return FieldType_int;
+    case ID_singlePlane:             return FieldType_double;
     case ID_min:                     return FieldType_double;
     case ID_max:                     return FieldType_double;
     case ID_minFlag:                 return FieldType_bool;
@@ -1834,6 +1887,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_showLines:               return FieldType_bool;
     case ID_showPoints:              return FieldType_bool;
     case ID_verboseFlag:             return FieldType_bool;
+    case ID_showRidgelines:          return FieldType_bool;
     case ID_legendFlag:              return FieldType_bool;
     case ID_lightingFlag:            return FieldType_bool;
     default:  return FieldType_unknown;
@@ -1878,6 +1932,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_overlaps:                return "enum";
     case ID_meshType:                return "enum";
     case ID_numberPlanes:            return "int";
+    case ID_singlePlane:             return "double";
     case ID_min:                     return "double";
     case ID_max:                     return "double";
     case ID_minFlag:                 return "bool";
@@ -1891,6 +1946,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_showLines:               return "bool";
     case ID_showPoints:              return "bool";
     case ID_verboseFlag:             return "bool";
+    case ID_showRidgelines:          return "bool";
     case ID_legendFlag:              return "bool";
     case ID_lightingFlag:            return "bool";
     default:  return "invalid index";
@@ -2024,6 +2080,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (numberPlanes == obj.numberPlanes);
         }
         break;
+    case ID_singlePlane:
+        {  // new scope
+        retval = (singlePlane == obj.singlePlane);
+        }
+        break;
     case ID_min:
         {  // new scope
         retval = (min == obj.min);
@@ -2087,6 +2148,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_verboseFlag:
         {  // new scope
         retval = (verboseFlag == obj.verboseFlag);
+        }
+        break;
+    case ID_showRidgelines:
+        {  // new scope
+        retval = (showRidgelines == obj.showRidgelines);
         }
         break;
     case ID_legendFlag:
@@ -2201,12 +2267,16 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
+           singlePlane != obj.singlePlane ||
 
            dataValue != obj.dataValue ||
 
+           showOPoints != obj.showOPoints ||
            showIslands != obj.showIslands ||
+           showRidgelines != obj.showRidgelines ||
+           verboseFlag != obj.verboseFlag ||
+
            showLines != obj.showLines ||
-           showPoints != obj.showPoints ||
-           verboseFlag != obj.verboseFlag;
+           showPoints != obj.showPoints;
 }
 

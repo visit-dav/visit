@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 33;
+    private static int numAdditionalAttributes = 35;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -126,6 +126,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
         numberPlanes = 1;
+        singlePlane = 0;
         min = 0;
         max = 0;
         minFlag = false;
@@ -139,6 +140,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showLines = true;
         showPoints = false;
         verboseFlag = true;
+        showRidgelines = false;
         legendFlag = true;
         lightingFlag = true;
     }
@@ -174,6 +176,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
         numberPlanes = 1;
+        singlePlane = 0;
         min = 0;
         max = 0;
         minFlag = false;
@@ -187,6 +190,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showLines = true;
         showPoints = false;
         verboseFlag = true;
+        showRidgelines = false;
         legendFlag = true;
         lightingFlag = true;
     }
@@ -227,6 +231,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overlaps = obj.overlaps;
         meshType = obj.meshType;
         numberPlanes = obj.numberPlanes;
+        singlePlane = obj.singlePlane;
         min = obj.min;
         max = obj.max;
         minFlag = obj.minFlag;
@@ -240,6 +245,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showLines = obj.showLines;
         showPoints = obj.showPoints;
         verboseFlag = obj.verboseFlag;
+        showRidgelines = obj.showRidgelines;
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
 
@@ -294,6 +300,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (overlaps == obj.overlaps) &&
                 (meshType == obj.meshType) &&
                 (numberPlanes == obj.numberPlanes) &&
+                (singlePlane == obj.singlePlane) &&
                 (min == obj.min) &&
                 (max == obj.max) &&
                 (minFlag == obj.minFlag) &&
@@ -307,6 +314,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (showLines == obj.showLines) &&
                 (showPoints == obj.showPoints) &&
                 (verboseFlag == obj.verboseFlag) &&
+                (showRidgelines == obj.showRidgelines) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag));
     }
@@ -453,94 +461,106 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(17);
     }
 
+    public void SetSinglePlane(double singlePlane_)
+    {
+        singlePlane = singlePlane_;
+        Select(18);
+    }
+
     public void SetMin(double min_)
     {
         min = min_;
-        Select(18);
+        Select(19);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(19);
+        Select(20);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(20);
+        Select(21);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(21);
+        Select(22);
     }
 
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(22);
+        Select(23);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(23);
+        Select(24);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(24);
+        Select(25);
     }
 
     public void SetDataValue(int dataValue_)
     {
         dataValue = dataValue_;
-        Select(25);
+        Select(26);
     }
 
     public void SetShowOPoints(boolean showOPoints_)
     {
         showOPoints = showOPoints_;
-        Select(26);
+        Select(27);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(27);
+        Select(28);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(28);
+        Select(29);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(29);
+        Select(30);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(30);
+        Select(31);
+    }
+
+    public void SetShowRidgelines(boolean showRidgelines_)
+    {
+        showRidgelines = showRidgelines_;
+        Select(32);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(31);
+        Select(33);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(32);
+        Select(34);
     }
 
     // Property getting methods
@@ -562,6 +582,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetOverlaps() { return overlaps; }
     public int            GetMeshType() { return meshType; }
     public int            GetNumberPlanes() { return numberPlanes; }
+    public double         GetSinglePlane() { return singlePlane; }
     public double         GetMin() { return min; }
     public double         GetMax() { return max; }
     public boolean        GetMinFlag() { return minFlag; }
@@ -575,6 +596,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetShowLines() { return showLines; }
     public boolean        GetShowPoints() { return showPoints; }
     public boolean        GetVerboseFlag() { return verboseFlag; }
+    public boolean        GetShowRidgelines() { return showRidgelines; }
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
 
@@ -618,34 +640,38 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(17, buf))
             buf.WriteInt(numberPlanes);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(min);
+            buf.WriteDouble(singlePlane);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(min);
         if(WriteSelect(20, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteDouble(max);
         if(WriteSelect(21, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(minFlag);
         if(WriteSelect(22, buf))
-            buf.WriteInt(colorType);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(23, buf))
-            singleColor.Write(buf);
+            buf.WriteInt(colorType);
         if(WriteSelect(24, buf))
-            buf.WriteString(colorTableName);
+            singleColor.Write(buf);
         if(WriteSelect(25, buf))
-            buf.WriteInt(dataValue);
+            buf.WriteString(colorTableName);
         if(WriteSelect(26, buf))
-            buf.WriteBool(showOPoints);
+            buf.WriteInt(dataValue);
         if(WriteSelect(27, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteBool(showOPoints);
         if(WriteSelect(28, buf))
-            buf.WriteBool(showLines);
+            buf.WriteBool(showIslands);
         if(WriteSelect(29, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteBool(showLines);
         if(WriteSelect(30, buf))
-            buf.WriteBool(verboseFlag);
+            buf.WriteBool(showPoints);
         if(WriteSelect(31, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(32, buf))
+            buf.WriteBool(showRidgelines);
+        if(WriteSelect(33, buf))
+            buf.WriteBool(legendFlag);
+        if(WriteSelect(34, buf))
             buf.WriteBool(lightingFlag);
     }
 
@@ -708,49 +734,55 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetNumberPlanes(buf.ReadInt());
             break;
         case 18:
-            SetMin(buf.ReadDouble());
+            SetSinglePlane(buf.ReadDouble());
             break;
         case 19:
-            SetMax(buf.ReadDouble());
+            SetMin(buf.ReadDouble());
             break;
         case 20:
-            SetMinFlag(buf.ReadBool());
+            SetMax(buf.ReadDouble());
             break;
         case 21:
-            SetMaxFlag(buf.ReadBool());
+            SetMinFlag(buf.ReadBool());
             break;
         case 22:
-            SetColorType(buf.ReadInt());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 23:
-            singleColor.Read(buf);
-            Select(23);
+            SetColorType(buf.ReadInt());
             break;
         case 24:
-            SetColorTableName(buf.ReadString());
+            singleColor.Read(buf);
+            Select(24);
             break;
         case 25:
-            SetDataValue(buf.ReadInt());
+            SetColorTableName(buf.ReadString());
             break;
         case 26:
-            SetShowOPoints(buf.ReadBool());
+            SetDataValue(buf.ReadInt());
             break;
         case 27:
-            SetShowIslands(buf.ReadBool());
+            SetShowOPoints(buf.ReadBool());
             break;
         case 28:
-            SetShowLines(buf.ReadBool());
+            SetShowIslands(buf.ReadBool());
             break;
         case 29:
-            SetShowPoints(buf.ReadBool());
+            SetShowLines(buf.ReadBool());
             break;
         case 30:
-            SetVerboseFlag(buf.ReadBool());
+            SetShowPoints(buf.ReadBool());
             break;
         case 31:
-            SetLegendFlag(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 32:
+            SetShowRidgelines(buf.ReadBool());
+            break;
+        case 33:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 34:
             SetLightingFlag(buf.ReadBool());
             break;
         }
@@ -803,6 +835,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "SHOWMESHTYPE_SURFACES";
         str = str + "\n";
         str = str + intToString("numberPlanes", numberPlanes, indent) + "\n";
+        str = str + doubleToString("singlePlane", singlePlane, indent) + "\n";
         str = str + doubleToString("min", min, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + boolToString("minFlag", minFlag, indent) + "\n";
@@ -846,6 +879,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("showLines", showLines, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
+        str = str + boolToString("showRidgelines", showRidgelines, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         return str;
@@ -871,6 +905,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            overlaps;
     private int            meshType;
     private int            numberPlanes;
+    private double         singlePlane;
     private double         min;
     private double         max;
     private boolean        minFlag;
@@ -884,6 +919,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        showLines;
     private boolean        showPoints;
     private boolean        verboseFlag;
+    private boolean        showRidgelines;
     private boolean        legendFlag;
     private boolean        lightingFlag;
 }

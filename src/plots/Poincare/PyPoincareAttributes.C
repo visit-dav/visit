@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -219,6 +219,8 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
 
     SNPRINTF(tmpStr, 1000, "%snumberPlanes = %d\n", prefix, atts->GetNumberPlanes());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%ssinglePlane = %g\n", prefix, atts->GetSinglePlane());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
@@ -334,6 +336,11 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
         SNPRINTF(tmpStr, 1000, "%sverboseFlag = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sverboseFlag = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowRidgelines())
+        SNPRINTF(tmpStr, 1000, "%sshowRidgelines = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowRidgelines = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -916,6 +923,30 @@ PoincareAttributes_GetNumberPlanes(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetSinglePlane(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the singlePlane in the object.
+    obj->data->SetSinglePlane(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetSinglePlane(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSinglePlane());
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetMin(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -1301,6 +1332,30 @@ PoincareAttributes_GetVerboseFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetShowRidgelines(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showRidgelines in the object.
+    obj->data->SetShowRidgelines(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowRidgelines(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowRidgelines()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -1388,6 +1443,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMeshType", PoincareAttributes_GetMeshType, METH_VARARGS},
     {"SetNumberPlanes", PoincareAttributes_SetNumberPlanes, METH_VARARGS},
     {"GetNumberPlanes", PoincareAttributes_GetNumberPlanes, METH_VARARGS},
+    {"SetSinglePlane", PoincareAttributes_SetSinglePlane, METH_VARARGS},
+    {"GetSinglePlane", PoincareAttributes_GetSinglePlane, METH_VARARGS},
     {"SetMin", PoincareAttributes_SetMin, METH_VARARGS},
     {"GetMin", PoincareAttributes_GetMin, METH_VARARGS},
     {"SetMax", PoincareAttributes_SetMax, METH_VARARGS},
@@ -1414,6 +1471,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetShowPoints", PoincareAttributes_GetShowPoints, METH_VARARGS},
     {"SetVerboseFlag", PoincareAttributes_SetVerboseFlag, METH_VARARGS},
     {"GetVerboseFlag", PoincareAttributes_GetVerboseFlag, METH_VARARGS},
+    {"SetShowRidgelines", PoincareAttributes_SetShowRidgelines, METH_VARARGS},
+    {"GetShowRidgelines", PoincareAttributes_GetShowRidgelines, METH_VARARGS},
     {"SetLegendFlag", PoincareAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", PoincareAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLightingFlag", PoincareAttributes_SetLightingFlag, METH_VARARGS},
@@ -1508,6 +1567,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "numberPlanes") == 0)
         return PoincareAttributes_GetNumberPlanes(self, NULL);
+    if(strcmp(name, "singlePlane") == 0)
+        return PoincareAttributes_GetSinglePlane(self, NULL);
     if(strcmp(name, "min") == 0)
         return PoincareAttributes_GetMin(self, NULL);
     if(strcmp(name, "max") == 0)
@@ -1564,6 +1625,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetShowPoints(self, NULL);
     if(strcmp(name, "verboseFlag") == 0)
         return PoincareAttributes_GetVerboseFlag(self, NULL);
+    if(strcmp(name, "showRidgelines") == 0)
+        return PoincareAttributes_GetShowRidgelines(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return PoincareAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
@@ -1618,6 +1681,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMeshType(self, tuple);
     else if(strcmp(name, "numberPlanes") == 0)
         obj = PoincareAttributes_SetNumberPlanes(self, tuple);
+    else if(strcmp(name, "singlePlane") == 0)
+        obj = PoincareAttributes_SetSinglePlane(self, tuple);
     else if(strcmp(name, "min") == 0)
         obj = PoincareAttributes_SetMin(self, tuple);
     else if(strcmp(name, "max") == 0)
@@ -1644,6 +1709,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetShowPoints(self, tuple);
     else if(strcmp(name, "verboseFlag") == 0)
         obj = PoincareAttributes_SetVerboseFlag(self, tuple);
+    else if(strcmp(name, "showRidgelines") == 0)
+        obj = PoincareAttributes_SetShowRidgelines(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = PoincareAttributes_SetLegendFlag(self, tuple);
     else if(strcmp(name, "lightingFlag") == 0)
@@ -1653,6 +1720,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

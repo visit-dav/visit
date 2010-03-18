@@ -113,8 +113,12 @@
       <Field name="meshType" label="Mesh Type" type="enum" subtype="ShowMeshType">
         Curves
       </Field>
-      <Field name="numberPlanes" label="numberPlanes" type="int">
+      <Field name="numberPlanes" label="Number of planes" type="int">
         1
+      </Field>
+
+      <Field name="singlePlane" label="Single plane" type="double">
+        0
       </Field>
 
       <Field name="min" label="min" type="double">
@@ -161,6 +165,9 @@
       </Field>
       <Field name="verboseFlag" label="Verbose" type="bool">
         true
+      </Field>
+      <Field name="showRidgelines" label="Show Ridgelines" type="bool">
+        false
       </Field>
 
       <Field name="legendFlag" label="Legend" type="bool">
