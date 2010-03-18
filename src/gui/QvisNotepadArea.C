@@ -79,6 +79,7 @@ QvisNotepadArea::QvisNotepadArea(QWidget *parent) : QWidget(parent),
     postedLookup()
 {
     QVBoxLayout *topLayout = new QVBoxLayout(this);
+    topLayout->setMargin(0);
 
     tabs = new QTabWidget(this);
     topLayout->addWidget(tabs);

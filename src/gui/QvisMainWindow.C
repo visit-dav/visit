@@ -1041,7 +1041,7 @@ void
 QvisMainWindow::CreateGlobalArea(QWidget *par)
 {
     QVBoxLayout *globalTopLayout = new QVBoxLayout(par);
-    globalTopLayout->setMargin(5);
+    globalTopLayout->setMargin(0);
     QGridLayout *globalLayout = new QGridLayout();
     globalTopLayout->addLayout(globalLayout);
     globalLayout->setMargin(0);
