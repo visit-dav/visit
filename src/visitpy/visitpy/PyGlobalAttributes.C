@@ -202,6 +202,11 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%signoreExtentsFromDbs = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetExpandNewPlots())
+        SNPRINTF(tmpStr, 1000, "%sexpandNewPlots = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sexpandNewPlots = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -806,6 +811,30 @@ GlobalAttributes_GetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+GlobalAttributes_SetExpandNewPlots(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the expandNewPlots in the object.
+    obj->data->SetExpandNewPlots(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetExpandNewPlots(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetExpandNewPlots()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
@@ -854,6 +883,8 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetApplySelection", GlobalAttributes_GetApplySelection, METH_VARARGS},
     {"SetIgnoreExtentsFromDbs", GlobalAttributes_SetIgnoreExtentsFromDbs, METH_VARARGS},
     {"GetIgnoreExtentsFromDbs", GlobalAttributes_GetIgnoreExtentsFromDbs, METH_VARARGS},
+    {"SetExpandNewPlots", GlobalAttributes_SetExpandNewPlots, METH_VARARGS},
+    {"GetExpandNewPlots", GlobalAttributes_GetExpandNewPlots, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -926,6 +957,8 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetApplySelection(self, NULL);
     if(strcmp(name, "ignoreExtentsFromDbs") == 0)
         return GlobalAttributes_GetIgnoreExtentsFromDbs(self, NULL);
+    if(strcmp(name, "expandNewPlots") == 0)
+        return GlobalAttributes_GetExpandNewPlots(self, NULL);
 
     return Py_FindMethod(PyGlobalAttributes_methods, self, name);
 }
@@ -984,6 +1017,8 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetApplySelection(self, tuple);
     else if(strcmp(name, "ignoreExtentsFromDbs") == 0)
         obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, tuple);
+    else if(strcmp(name, "expandNewPlots") == 0)
+        obj = GlobalAttributes_SetExpandNewPlots(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
