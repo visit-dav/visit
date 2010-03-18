@@ -1,4 +1,4 @@
-#/usr/gapps/visit/cmake/2.6.4/linux-x86_64_gcc-4.1/bin/cmake
+#/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake
 
 ##
 ## Set the VISITHOME environment variable.
