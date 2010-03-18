@@ -1,4 +1,4 @@
-#/project/projectdirs/visit/visit_3rdparty/cmake/2.6.4/linux-ia64_gcc-4.1/bin/cmake
+#/project/projectdirs/visit/visit_3rdparty/cmake/2.8.0/linux-ia64_gcc-4.1/bin/cmake
 
 ##
 ## Set the VISITHOME environment variable.
