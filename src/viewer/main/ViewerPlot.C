@@ -58,6 +58,7 @@
 #include <AttributeSubjectMap.h>
 #include <CompactSILRestrictionAttributes.h>
 #include <DatabaseAttributes.h>
+#include <GlobalAttributes.h>
 #include <OperatorPluginManager.h>
 #include <Plot.h>
 #include <PlotPluginInfo.h>
@@ -193,6 +194,9 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Brad Whitlock, Fri May  9 14:38:03 PDT 2008
 //    Qt 4.
 //
+//    Hank Childs, Wed Mar 17 20:13:21 PDT 2010
+//    Set expanded flag based on user preferences.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -220,7 +224,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
     isLabel = (strcmp(viewerPluginInfo->GetName(), "Label") == 0); 
     followsTime         = true;
-    expandedFlag        = false;
+    expandedFlag        = GetViewerState()->GetGlobalAttributes()->GetExpandNewPlots();
     errorFlag           = false;
     networkID           = -1;
     clonedNetworkId     = -1;

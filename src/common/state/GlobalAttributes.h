@@ -112,6 +112,7 @@ public:
     void SetSaveCrashRecoveryFile(bool saveCrashRecoveryFile_);
     void SetApplySelection(bool applySelection_);
     void SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_);
+    void SetExpandNewPlots(bool expandNewPlots_);
 
     // Property getting methods
     const stringVector &GetSources() const;
@@ -138,6 +139,7 @@ public:
     bool               GetSaveCrashRecoveryFile() const;
     bool               GetApplySelection() const;
     bool               GetIgnoreExtentsFromDbs() const;
+    bool               GetExpandNewPlots() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -175,6 +177,7 @@ public:
         ID_saveCrashRecoveryFile,
         ID_applySelection,
         ID_ignoreExtentsFromDbs,
+        ID_expandNewPlots,
         ID__LAST
     };
 
@@ -201,11 +204,12 @@ private:
     bool         saveCrashRecoveryFile;
     bool         applySelection;
     bool         ignoreExtentsFromDbs;
+    bool         expandNewPlots;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbibbbbbbbbbbbbb"
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbibbbbbbbbbbbbbb"
 
 #endif

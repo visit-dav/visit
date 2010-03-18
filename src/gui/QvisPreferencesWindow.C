@@ -177,6 +177,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //   Added support for ignoring bad extents from dbs. 
 //
+//   Hank Childs, Wed Mar 17 20:13:21 PDT 2010
+//   Added "Expand new plots"
+//
 // ****************************************************************************
 
 void
@@ -212,6 +215,13 @@ QvisPreferencesWindow::CreateWindowContents()
             this, SLOT(newPlotsInheritSILRestrictionToggled(bool)));
     topLayout->addWidget(newPlotsInheritSILRestrictionToggle);
 
+    expandNewPlotsToggle =
+        new QCheckBox(tr("New plots automatically expanded"),central);
+    connect(expandNewPlotsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(expandNewPlotsToggled(bool)));
+    topLayout->addWidget(expandNewPlotsToggle);
+
+    //
     //
     // Create group box for database controls.
     //
@@ -438,6 +448,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Jeremy Meredith, Fri Nov  6 11:39:11 EST 2009
 //   Removed duplicate code which looked like a copy/paste error.
 //
+//   Hank Childs, Wed Mar 17 20:13:21 PDT 2010
+//   Added support for "Expand New Plots".
+//
 // ****************************************************************************
 
 void
@@ -485,6 +498,16 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         newPlotsInheritSILRestrictionToggle->setChecked(
             atts->GetNewPlotsInheritSILRestriction());
         newPlotsInheritSILRestrictionToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_expandNewPlots))
+    {
+        //
+        // New plots expanded by default
+        //
+        expandNewPlotsToggle->blockSignals(true);
+        expandNewPlotsToggle->setChecked(atts->GetExpandNewPlots());
+        expandNewPlotsToggle->blockSignals(false);
     }
 
     if (doAll || atts->IsSelected(GlobalAttributes::ID_tryHarderCyclesTimes))
@@ -773,6 +796,31 @@ void
 QvisPreferencesWindow::newPlotsInheritSILRestrictionToggled(bool val)
 {
     atts->SetNewPlotsInheritSILRestriction(val);
+    SetUpdate(false);
+    atts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::expandNewPlotsToggled
+//
+// Purpose: 
+//   This is a Qt slot function that gets the flag that tells whether new plots
+//   should be automatically expanded.
+//
+// Arguments:
+//   val : The new value.
+//
+// Programmer: Hank Childs
+// Creation:   March 17, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::expandNewPlotsToggled(bool val)
+{
+    atts->SetExpandNewPlots(val);
     SetUpdate(false);
     atts->Notify();
 }
