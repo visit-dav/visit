@@ -272,11 +272,11 @@ ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=32
 export OBJECT_MODE
 cp config-site/up041_32.cmake config-site/up041.cmake
-/usr/gapps/visit/cmake/2.6.4/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 gmake -j 3 >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.ibm-aix-pwr.tar.gz ../../visit_llnl\$ver2.ibm-aix-pwr.tar.gz
-/usr/gapps/visit/cmake/2.6.4/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
 cd ../..
@@ -316,11 +316,11 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=64
 export OBJECT_MODE
-/usr/gapps/visit/cmake/2.6.4/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 gmake -j 3 >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.ibm-aix-pwr64.tar.gz ../../visit_llnl\$ver2.ibm-aix-pwr64.tar.gz
-/usr/gapps/visit/cmake/2.6.4/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.ibm-aix-pwr64.tar.gz ../..
 cd ../..
