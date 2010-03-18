@@ -108,6 +108,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetShowLines( bool val )   { showLines = val; }
     void SetShowPoints( bool val )  { showPoints = val; }
     void SetVerboseFlag( bool val ) { verboseFlag = val; }
+    void SetShowRidgelines( bool val )   { showRidgelines = val; }
 
   protected:
     // Streamline overides.
@@ -174,10 +175,11 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     bool is_curvemesh;
     std::vector< double > planes;
+
     unsigned int dataValue;
   
     bool showOPoints, showIslands;
-    bool showLines, showPoints, verboseFlag;
+    bool showLines, showPoints, showRidgelines, verboseFlag;
 
     class SLHelper
     {

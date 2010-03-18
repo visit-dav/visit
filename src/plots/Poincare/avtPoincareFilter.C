@@ -1186,9 +1186,10 @@ avtPoincareFilter::CreatePoincareOutput()
                            dataValue, color_value );
             }
 
-          loadPoints( dt, ridgelinePts, ridgelinePeriod,
-                      nnodes, islands, poloidalWinding,
-                      dataValue, color_value, true );
+            if( showRidgelines )
+              loadPoints( dt, ridgelinePts, ridgelinePeriod,
+                          nnodes, islands, poloidalWinding,
+                          dataValue, color_value, true );
 
 //     double best_period = 0;
 //     double best_amp = 0;

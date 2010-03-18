@@ -115,6 +115,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void overlapsChanged(int val);
     void meshTypeChanged(int val);
     void numberPlanesProcessText();
+    void singlePlaneProcessText();
     void minProcessText();
     void maxProcessText();
     void minFlagChanged(bool val);
@@ -128,6 +129,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void showLinesChanged(bool val);
     void showPointsChanged(bool val);
     void verboseFlagChanged(bool val);
+    void showRidgelinesChanged(bool val);
     void legendToggled(bool val);
     void lightingToggled(bool val);
   private:
@@ -156,6 +158,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QWidget      *meshType;
     QComboBox *meshTypeCombo;
     QLineEdit *numberPlanes;
+    QLineEdit *singlePlane;
     QLineEdit *min;
     QLineEdit *max;
     QCheckBox *minFlag;
@@ -170,6 +173,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QCheckBox *showIslands;
     QCheckBox *showLines;
     QCheckBox *showPoints;
+    QCheckBox *showRidgelines;
     QCheckBox *verboseFlag;
     QCheckBox *legendToggle;
     QCheckBox *lightingToggle;
@@ -191,6 +195,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *overlapsLabel;
     QLabel *meshTypeLabel;
     QLabel *numberPlanesLabel;
+    QLabel *singlePlaneLabel;
     QLabel *minLabel;
     QLabel *maxLabel;
     QLabel *colorTypeLabel;

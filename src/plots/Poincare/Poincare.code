@@ -184,12 +184,16 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
+           singlePlane != obj.singlePlane ||
 
            dataValue != obj.dataValue ||
 
+           showOPoints != obj.showOPoints ||
            showIslands != obj.showIslands ||
+           showRidgelines != obj.showRidgelines ||
+           verboseFlag != obj.verboseFlag ||
+
            showLines != obj.showLines ||
-           showPoints != obj.showPoints ||
-           verboseFlag != obj.verboseFlag;
+           showPoints != obj.showPoints;
 }
 

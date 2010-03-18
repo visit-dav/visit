@@ -383,8 +383,15 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     vector < double > planes;
     unsigned int nplanes = atts.GetNumberPlanes();
 
-    for( unsigned int i=0; i<nplanes; i++ )
-        planes.push_back(2.0 * M_PI * (double) i / (double) nplanes - M_PI/2.0);
+    // Offset of M_PI/2.0 gives a Y normal but whether the
+    // intersection is on the +X or -X side depends on the direction
+    // of the fieldline.
+
+    if( nplanes == 1 )
+      planes.push_back( atts.GetSinglePlane() / 360.0 * 2.0 * M_PI + M_PI/2.0);
+    else
+      for( unsigned int i=0; i<nplanes; i++ )
+        planes.push_back(2.0 * M_PI * (double) i / (double) nplanes + M_PI/2.0);
 
     poincareFilter->SetClipPlanes( planes );
 
@@ -397,8 +404,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetShowLines(atts.GetShowLines());
     poincareFilter->SetShowPoints(atts.GetShowPoints());
+    poincareFilter->SetShowRidgelines(atts.GetShowRidgelines());
     poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
-
 #endif
 
     if(atts.GetColorType() == PoincareAttributes::ColorByColorTable)
