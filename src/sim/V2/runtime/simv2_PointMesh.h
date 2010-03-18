@@ -16,19 +16,15 @@ SIMV2_API int simv2_PointMesh_setCoordsXY(visit_handle obj, visit_handle x, visi
 SIMV2_API int simv2_PointMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z);
 SIMV2_API int simv2_PointMesh_setCoords(visit_handle obj, visit_handle xyz);
 
+SIMV2_API int simv2_PointMesh_getCoords(visit_handle h,
+    int *ndims, int *coordMode,
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords);
+
 #ifdef __cplusplus
 }
 #endif
 
 // Callable from within the runtime and SimV2
-SIMV2_API int simv2_PointMesh_getData(visit_handle h, 
-                                      int &ndims,
-                                      int &coordMode,
-                                      visit_handle &x,
-                                      visit_handle &y,
-                                      visit_handle &z,
-                                      visit_handle &allCoords);
-
 SIMV2_API int simv2_PointMesh_check(visit_handle h);
 
 #endif

@@ -232,29 +232,30 @@ simv2_PointMesh_setCoords(visit_handle h, visit_handle coords)
     return retval;
 }
 
-/*******************************************************************************
- * C++ code callable from the SimV2 plugin and within the runtime
- ******************************************************************************/
-
 int
-simv2_PointMesh_getData(visit_handle h, int &ndims, int &coordMode,
-    visit_handle &x, visit_handle &y, visit_handle &z, visit_handle &coords)
+simv2_PointMesh_getCoords(visit_handle h,
+    int *ndims, int *coordMode,
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
 {
     int retval = VISIT_ERROR;
     VisIt_PointMesh *obj = GetObject(h, "simv2_PointMesh_getData");
     if(obj != NULL)
     {
-        ndims = obj->ndims;
-        coordMode = obj->coordMode;
-        x = obj->xcoords;
-        y = obj->ycoords;
-        z = obj->zcoords;
-        coords = obj->coords;
+        *ndims = obj->ndims;
+        *coordMode = obj->coordMode;
+        *x = obj->xcoords;
+        *y = obj->ycoords;
+        *z = obj->zcoords;
+        *coords = obj->coords;
 
         retval = VISIT_OKAY;
     }
     return retval;
 }
+
+/*******************************************************************************
+ * C++ code callable from the SimV2 plugin and within the runtime
+ ******************************************************************************/
 
 int
 simv2_PointMesh_check(visit_handle h)

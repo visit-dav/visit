@@ -330,38 +330,64 @@ simv2_CurvilinearMesh_setBaseIndex(visit_handle h, int base_index[3])
     return retval;
 }
 
-/*******************************************************************************
- * C++ code callable from the SimV2 plugin and within the runtime
- ******************************************************************************/
-
 int
-simv2_CurvilinearMesh_getData(visit_handle h, 
-    int &ndims, int dims[3], int min[3], int max[3], int base_index[3],
-    int &coordMode, visit_handle &x, visit_handle &y, visit_handle &z,
-    visit_handle &c)
+simv2_CurvilinearMesh_getCoords(visit_handle h, 
+    int *ndims, int dims[3], int *coordMode, 
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
 {
     int retval = VISIT_ERROR;
-    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_getData");
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_getCoords");
     if(obj != NULL)
     {
-        ndims = obj->ndims;
-        coordMode = obj->coordMode;
-        x = obj->xcoords;
-        y = obj->ycoords;
-        z = obj->zcoords;
-        c = obj->coords;
+        *ndims = obj->ndims;
+        dims[0] = obj->dims[0];
+        dims[1] = obj->dims[1];
+        dims[2] = obj->dims[2];
+        *coordMode = obj->coordMode;
+        *x = obj->xcoords;
+        *y = obj->ycoords;
+        *z = obj->zcoords;
+        *c = obj->coords;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_CurvilinearMesh_getRealIndices(visit_handle h, int min[3], int max[3])
+{
+    int retval = VISIT_ERROR;
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_getRealIndices");
+    if(obj != NULL)
+    {
         for(int i = 0; i < 3; ++i)
         {
-            dims[i] = obj->dims[i];
             min[i] = obj->minRealIndex[i];
             max[i] = (obj->maxRealIndex[i]==-1) ? (obj->dims[i]-1) :
                 obj->maxRealIndex[i];
-            base_index[i] = obj->baseIndex[i];
         }
         retval = VISIT_OKAY;
     }
     return retval;
 }
+
+int
+simv2_CurvilinearMesh_getBaseIndex(visit_handle h, int base_index[3])
+{
+    int retval = VISIT_ERROR;
+    VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_getBaseIndex");
+    if(obj != NULL)
+    {
+        for(int i = 0; i < 3; ++i)
+            base_index[i] = obj->baseIndex[i];
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+/*******************************************************************************
+ * C++ code callable from the SimV2 plugin and within the runtime
+ ******************************************************************************/
 
 int
 simv2_CurvilinearMesh_check(visit_handle h)

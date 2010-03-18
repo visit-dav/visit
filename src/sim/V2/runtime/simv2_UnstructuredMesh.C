@@ -327,40 +327,59 @@ simv2_UnstructuredMesh_setRealIndices(visit_handle h, int minval, int maxval)
     return retval;
 }
 
-
-/*******************************************************************************
- * C++ code callable from the SimV2 plugin and within the runtime
- ******************************************************************************/
-
 int
-simv2_UnstructuredMesh_getData(visit_handle h,
-    int &ndims, 
-    int &coordMode,
-    visit_handle &x, visit_handle &y, visit_handle &z, visit_handle &coords,
-    int &nzones, 
-    int &firstRealZone, int &lastRealZone,
-    visit_handle &conn)
+simv2_UnstructuredMesh_getCoords(visit_handle h,
+    int *ndims, int *coordMode,
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
 {
     int retval = VISIT_ERROR;
     VisIt_UnstructuredMesh *obj = GetObject(h);
     if(obj != NULL)
     {
-        ndims = obj->ndims;
-        coordMode = obj->coordMode;
-        x = obj->xcoords;
-        y = obj->ycoords;
-        z = obj->zcoords;
-        coords = obj->coords;
+        *ndims = obj->ndims;
+        *coordMode = obj->coordMode;
+        *x = obj->xcoords;
+        *y = obj->ycoords;
+        *z = obj->zcoords;
+        *coords = obj->coords;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
 
-        firstRealZone = obj->firstRealZone;
-        lastRealZone = (obj->lastRealZone == -1) ? (obj->nzones-1) : obj->lastRealZone;
-        nzones = obj->nzones;
-        conn = obj->connectivity;
+int
+simv2_UnstructuredMesh_getConnectivity(visit_handle h, int *nzones, visit_handle *conn)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h);
+    if(obj != NULL)
+    {
+        *nzones = obj->nzones;
+        *conn = obj->connectivity;
 
         retval = VISIT_OKAY;
     }
     return retval;
 }
+
+int
+simv2_UnstructuredMesh_getRealIndices(visit_handle h, int *firstRealZone, int *lastRealZone)
+{
+    int retval = VISIT_ERROR;
+    VisIt_UnstructuredMesh *obj = GetObject(h);
+    if(obj != NULL)
+    {
+        *firstRealZone = obj->firstRealZone;
+        *lastRealZone = (obj->lastRealZone == -1) ? (obj->nzones-1) : obj->lastRealZone;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+/*******************************************************************************
+ * C++ code callable from the SimV2 plugin and within the runtime
+ ******************************************************************************/
 
 int
 simv2_UnstructuredMesh_check(visit_handle h)

@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <string.h>
 
 #include <VisItDataInterface_V2.h>
 #include "VisItDynamic.h"
@@ -98,13 +99,73 @@ VisIt_VariableData_setDataD(visit_handle obj, int owner, int ncomps,
                     (*cb)(obj,owner,VISIT_DATATYPE_DOUBLE,ncomps,ntuples,(void *)ptr));
 }
 
+int
+VisIt_VariableData_getData(visit_handle obj, int *owner, int *dataType, int *ncomps,
+    int *ntuples, void **ptr)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
+                    int (*)(visit_handle,int*,int*,int*,int*,void**), 
+                    int (*cb)(visit_handle,int*,int*,int*,int*,void **), 
+                    (*cb)(obj,owner,dataType,ncomps,ntuples,(void **)ptr));
+}
+
+int
+VisIt_VariableData_getDataC(visit_handle obj, int *owner, int *ncomps,
+    int *ntuples, char **ptr)
+{
+    int dataType;
+    VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
+                    int (*)(visit_handle,int*,int*,int*,int*,void**), 
+                    int (*cb)(visit_handle,int*,int*,int*,int*,void **), 
+                    (*cb)(obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
+}
+
+int
+VisIt_VariableData_getDataI(visit_handle obj, int *owner, int *ncomps,
+    int *ntuples, int **ptr)
+{
+    int dataType;
+    VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
+                    int (*)(visit_handle,int*,int*,int*,int*,void**), 
+                    int (*cb)(visit_handle,int*,int*,int*,int*,void **), 
+                    (*cb)(obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
+}
+
+int
+VisIt_VariableData_getDataF(visit_handle obj, int *owner, int *ncomps,
+    int *ntuples, float **ptr)
+{
+    int dataType;
+    VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
+                    int (*)(visit_handle,int*,int*,int*,int*,void**), 
+                    int (*cb)(visit_handle,int*,int*,int*,int*,void **), 
+                    (*cb)(obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
+}
+
+int
+VisIt_VariableData_getDataD(visit_handle obj, int *owner, int *ncomps,
+    int *ntuples, double **ptr)
+{
+    int dataType;
+    VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
+                    int (*)(visit_handle,int*,int*,int*,int*,void**), 
+                    int (*cb)(visit_handle,int*,int*,int*,int*,void **), 
+                    (*cb)(obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
+}
+
+
 /************************** Fortran callable routines *************************/
-#define F_VISITVARDATAALLOC F77_ID(visitvardataalloc_,visitvardataalloc,VISITVARDATAALLOC)
-#define F_VISITVARDATAFREE  F77_ID(visitvardatafree_,visitvardatafree,VISITVARDATAFREE)
-#define F_VISITVARDATASETC  F77_ID(visitvardatasetc_,visitvardatasetc,VISITVARDATASETC)
-#define F_VISITVARDATASETI  F77_ID(visitvardataseti_,visitvardataseti,VISITVARDATASETI)
-#define F_VISITVARDATASETF  F77_ID(visitvardatasetf_,visitvardatasetf,VISITVARDATASETF)
-#define F_VISITVARDATASETD  F77_ID(visitvardatasetd_,visitvardatasetd,VISITVARDATASETD)
+#define F_VISITVARDATAALLOC   F77_ID(visitvardataalloc_,visitvardataalloc,VISITVARDATAALLOC)
+#define F_VISITVARDATAFREE    F77_ID(visitvardatafree_,visitvardatafree,VISITVARDATAFREE)
+#define F_VISITVARDATASETC    F77_ID(visitvardatasetc_,visitvardatasetc,VISITVARDATASETC)
+#define F_VISITVARDATASETI    F77_ID(visitvardataseti_,visitvardataseti,VISITVARDATASETI)
+#define F_VISITVARDATASETF    F77_ID(visitvardatasetf_,visitvardatasetf,VISITVARDATASETF)
+#define F_VISITVARDATASETD    F77_ID(visitvardatasetd_,visitvardatasetd,VISITVARDATASETD)
+#define F_VISITVARDATAGETTYPE F77_ID(visitvardatagettype_,visitvardatagettype,VISITVARDATAGETTYPE)
+#define F_VISITVARDATAGETC    F77_ID(visitvardatagetc_,visitvardatagetc,VISITVARDATAGETC)
+#define F_VISITVARDATAGETI    F77_ID(visitvardatageti_,visitvardatageti,VISITVARDATAGETI)
+#define F_VISITVARDATAGETF    F77_ID(visitvardatagetf_,visitvardatagetf,VISITVARDATAGETF)
+#define F_VISITVARDATAGETD    F77_ID(visitvardatagetd_,visitvardatagetd,VISITVARDATAGETD)
 
 int
 F_VISITVARDATAALLOC(visit_handle *obj)
@@ -146,3 +207,62 @@ F_VISITVARDATASETD(visit_handle *obj, int *owner, int *ncomps, int *ntuples, dou
     return VisIt_VariableData_setDataD(*obj, realOwner, *ncomps, *ntuples, ptr);
 }
 
+int
+F_VISITVARDATAGETTYPE(visit_handle *obj, int *dataType)
+{
+    int owner, ncomps, ntuples;
+    void *ptr = NULL;
+    return VisIt_VariableData_getData(*obj, &owner, dataType, &ncomps, &ntuples, &ptr);
+}
+
+int
+F_VISITVARDATAGETC(visit_handle *obj, int *owner, int *ncomps, int *ntuples, char *dest, int *ldest)
+{
+    int retval, sz;
+    char *ptr = NULL;
+    sz = *ldest;
+    retval = VisIt_VariableData_getDataC(*obj, owner, ncomps, ntuples, &ptr);
+    if(*ncomps * *ntuples < *ldest)
+        sz = *ncomps * *ntuples;
+    memcpy((void *)dest, (void *)ptr, sz * sizeof(char));
+    return retval;
+}
+
+int
+F_VISITVARDATAGETI(visit_handle *obj, int *owner, int *ncomps, int *ntuples, int *dest, int *ldest)
+{
+    int retval, sz;
+    int *ptr = NULL;
+    sz = *ldest;
+    retval = VisIt_VariableData_getDataI(*obj, owner, ncomps, ntuples, &ptr);
+    if(*ncomps * *ntuples < *ldest)
+        sz = *ncomps * *ntuples;
+    memcpy((void *)dest, (void *)ptr, sz * sizeof(int));
+    return retval;
+}
+
+int
+F_VISITVARDATAGETF(visit_handle *obj, int *owner, int *ncomps, int *ntuples, float *dest, int *ldest)
+{
+    int retval, sz;
+    float *ptr = NULL;
+    sz = *ldest;
+    retval = VisIt_VariableData_getDataF(*obj, owner, ncomps, ntuples, &ptr);
+    if(*ncomps * *ntuples < *ldest)
+        sz = *ncomps * *ntuples;
+    memcpy((void *)dest, (void *)ptr, sz * sizeof(float));
+    return retval;
+}
+
+int
+F_VISITVARDATAGETD(visit_handle *obj, int *owner, int *ncomps, int *ntuples, double *dest, int *ldest)
+{
+    int retval, sz;
+    double *ptr = NULL;
+    sz = *ldest;
+    retval = VisIt_VariableData_getDataD(*obj, owner, ncomps, ntuples, &ptr);
+    if(*ncomps * *ntuples < *ldest)
+        sz = *ncomps * *ntuples;
+    memcpy((void *)dest, (void *)ptr, sz * sizeof(double));
+    return retval;
+}

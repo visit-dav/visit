@@ -57,7 +57,7 @@
 #define PLANE_SIZE         1.
 #define NUM_ARROWS         3
 #define ARROW_NUMSIDES     12
-#define ARROW_LENGTH       PLANE_SIZE/5.0
+#define ARROW_LENGTH       PLANE_SIZE
 #define ARROW_HEAD_LENGTH  (0.15 * ARROW_LENGTH)
 #define ARROW_HEAD_RADIUS  (ARROW_HEAD_LENGTH * 0.5)
 #define ARROW_SHAFT_RADIUS (ARROW_HEAD_RADIUS * 0.4)
@@ -803,7 +803,6 @@ VisitPlaneTool::CreateVectorActor()
     vectorActor->GetProperty()->SetDiffuse(1.);
     vectorActor->GetProperty()->SetSpecular(0.6);
     vectorActor->GetProperty()->SetSpecularPower(20.);
-    vectorActor->GetProperty()->SetOpacity(0.50);
 
     m->Delete();
 }
