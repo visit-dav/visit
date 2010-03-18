@@ -2,7 +2,7 @@
 #
 # Example embedded python query that calcultes the average cell value.
 # (currently serial only)
-# 
+#
 #
 # Usage:
 #  Load in the Query window or run with provided driver:
@@ -27,7 +27,7 @@ class CellAvgQuery(SimplePythonQuery):
             self.total_sum += cell_data.GetTuple1(i)
     def post_execute(self):
         # calculate average and set results
-        res_val = self.total_sum / float(self.total_ncells)
+        res_val = mpicom.sum(self.total_sum) / mpicom.sum(self.total_ncells)
         res_txt = "The average value = " + self.float_format
         res_txt = res_txt % res_val
         self.set_result_text(res_txt)
