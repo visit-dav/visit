@@ -751,6 +751,9 @@ avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
 //    Hank Childs, Sun Mar  7 12:55:18 CST 2010
 //    Remove n^2 algorithm.
 //
+//    Hank Childs, Tue Mar 16 19:42:55 PST 2010
+//    One optimization from Mar 7th was too aggressive; back that out.
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::MultiSetResolve(int num_comps,
@@ -811,9 +814,6 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
             j = possible_matches[m];
             // self intersection test not necessary
             if ( j == i )
-                continue;
-            // no need to do j & i and also i & j
-            if ( j < i )
                 continue;
 
             vtkIntArray  *can_labels   = labels[j]; 
@@ -892,6 +892,9 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
 //    Hank Childs, Sun Mar  7 12:55:18 CST 2010
 //    Remove n^2 algorithm.
 //
+//    Hank Childs, Tue Mar 16 19:42:55 PST 2010
+//    One optimization from Mar 7th was too aggressive; back that out.
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::MultiSetList(int num_comps,
@@ -963,9 +966,6 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
             j = possible_matches[m];
             // self intersection test not necessary
             if ( j == i )
-                continue;
-            // no need to do j & i and also i & j
-            if ( j < i )
                 continue;
 
             vtkIntArray  *can_labels   = labels[j]; 
