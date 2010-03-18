@@ -22,6 +22,6 @@
    DECL(WriteBegin,       int (*ARG(WriteBegin))(const char *, void *)) \
    DECL(WriteEnd,         int (*ARG(WriteEnd))(const char *, void *)) \
    DECL(WriteMesh,        int (*ARG(WriteMesh))(const char *, int, int, visit_handle, visit_handle, void *)) \
-   DECL(WriteVariable,    int (*ARG(WriteVariable))(const char *, const char *, int, int, void *, int, int, visit_handle, void *))
+   DECL(WriteVariable,    int (*ARG(WriteVariable))(const char *, const char *, int, visit_handle, visit_handle, void *))
 
 #endif

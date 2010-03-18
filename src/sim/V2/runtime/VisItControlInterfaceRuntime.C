@@ -78,25 +78,43 @@ void *simv2_get_engine()
 
 int simv2_initialize(void *e, int argc, char *argv[])
 {
+    int retval = 1;
     Engine *engine = (Engine*)(e);
-    engine->Initialize(&argc, &argv, false);
+    TRY
+    {
+        engine->Initialize(&argc, &argv, false);
+    }
+    CATCHALL
+    {
+        retval = 0;
+    }
+    ENDTRY
     return 1;
 }
 
 int simv2_connect_viewer(void *e, int argc, char *argv[])
 {
-    Engine *engine = (Engine*)(e);
-    bool success = engine->ConnectViewer(&argc, &argv);
-    if (!success)
+    TRY
     {
-        return 0;
+        Engine *engine = (Engine*)(e);
+        bool success = engine->ConnectViewer(&argc, &argv);
+        if (!success)
+        {
+            return 0;
+        }
+        else
+        {
+            engine->SetUpViewerInterface(&argc, &argv);
+            LoadBalancer::SetScheme(LOAD_BALANCE_RESTRICTED);
+            return 1;
+        }
     }
-    else
+    CATCHALL
     {
-        engine->SetUpViewerInterface(&argc, &argv);
-        LoadBalancer::SetScheme(LOAD_BALANCE_RESTRICTED);
-        return 1;
     }
+    ENDTRY
+
+    return 0;
 }
 
 int simv2_get_descriptor(void *e)
@@ -140,23 +158,43 @@ int simv2_process_input(void *e)
 void simv2_time_step_changed(void *e)
 {
     Engine *engine = (Engine*)(e);
-    engine->SimulationTimeStepChanged();
+    TRY
+    {
+        engine->SimulationTimeStepChanged();
+    }
+    CATCHALL
+    {
+    }
+    ENDTRY
 }
 
 void simv2_execute_command(void *e, const char *command)
 {
-    if(command != NULL)
+    TRY
     {
-        Engine *engine = (Engine*)(e);       
-        engine->SimulationInitiateCommand(command);
+        if(command != NULL)
+        {
+            Engine *engine = (Engine*)(e);       
+            engine->SimulationInitiateCommand(command);
+        }
     }
+    CATCHALL
+    {
+    }
+    ENDTRY
 }
 
 void simv2_disconnect()
 {
-    Engine::DisconnectSimulation();
-
-    DataCallbacksCleanup();
+    TRY
+    {
+        Engine::DisconnectSimulation();
+        DataCallbacksCleanup();
+    }
+    CATCHALL
+    {
+    }
+    ENDTRY
 }
 
 void simv2_set_slave_process_callback(void(*spic)())
@@ -177,25 +215,35 @@ int
 simv2_save_window(void *e, const char *filename, int w, int h, int format)
 {
     Engine *engine = (Engine*)(e);
+    int retval = VISIT_OKAY;
+    TRY
+    {
+        SaveWindowAttributes::FileFormat fmt;
+        if(format == VISIT_IMAGEFORMAT_BMP)
+            fmt = SaveWindowAttributes::BMP;
+        else if(format == VISIT_IMAGEFORMAT_JPEG)
+            fmt = SaveWindowAttributes::JPEG;
+        else if(format == VISIT_IMAGEFORMAT_PNG)
+            fmt = SaveWindowAttributes::PNG;
+        else if(format == VISIT_IMAGEFORMAT_POVRAY)
+            fmt = SaveWindowAttributes::POVRAY;
+        else if(format == VISIT_IMAGEFORMAT_PPM)
+            fmt = SaveWindowAttributes::PPM;
+        else if(format == VISIT_IMAGEFORMAT_RGB)
+            fmt = SaveWindowAttributes::RGB;
+        else
+            fmt = SaveWindowAttributes::TIFF;
 
-    SaveWindowAttributes::FileFormat fmt;
-    if(format == VISIT_IMAGEFORMAT_BMP)
-        fmt = SaveWindowAttributes::BMP;
-    else if(format == VISIT_IMAGEFORMAT_JPEG)
-        fmt = SaveWindowAttributes::JPEG;
-    else if(format == VISIT_IMAGEFORMAT_PNG)
-        fmt = SaveWindowAttributes::PNG;
-    else if(format == VISIT_IMAGEFORMAT_POVRAY)
-        fmt = SaveWindowAttributes::POVRAY;
-    else if(format == VISIT_IMAGEFORMAT_PPM)
-        fmt = SaveWindowAttributes::PPM;
-    else if(format == VISIT_IMAGEFORMAT_RGB)
-        fmt = SaveWindowAttributes::RGB;
-    else
-        fmt = SaveWindowAttributes::TIFF;
+        retval =  engine->SaveWindow(filename, w, h, fmt) ?
+            VISIT_OKAY : VISIT_ERROR;
+    }
+    CATCHALL
+    {
+        retval = VISIT_ERROR;
+    }
+    ENDTRY
 
-    int ret = engine->SaveWindow(filename, w, h, fmt);
-    return ret ? VISIT_OKAY : VISIT_ERROR;
+    return retval;
 }
 
 void

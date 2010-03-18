@@ -103,6 +103,36 @@ VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max)
                     (*cb)(obj,min,max));
 }
 
+int
+VisIt_UnstructuredMesh_getCoords(visit_handle obj,
+    int *ndims, int *coordMode,
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *coords)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getCoords,
+                    int (*)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
+                    int (*cb)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
+                    (*cb)(obj,ndims,coordMode,x,y,z,coords));
+}
+
+int
+VisIt_UnstructuredMesh_getConnectivity(visit_handle obj, int *nzones,
+    visit_handle *conn)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getConnectivity,
+                    int (*)(visit_handle,int*,visit_handle*), 
+                    int (*cb)(visit_handle,int*,visit_handle*), 
+                    (*cb)(obj,nzones, conn));
+}
+
+int
+VisIt_UnstructuredMesh_getRealIndices(visit_handle obj, int *min, int *max)
+{
+    VISIT_DYNAMIC_EXECUTE(UnstructuredMesh_getRealIndices,
+                    int (*)(visit_handle,int*,int*), 
+                    int (*cb)(visit_handle,int*,int*), 
+                    (*cb)(obj,min,max));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITUCDMESHALLOC              F77_ID(visitucdmeshalloc_,visitucdmeshalloc,VISITUCDMESHALLOC)
@@ -112,6 +142,9 @@ VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max)
 #define F_VISITUCDMESHSETCOORDS          F77_ID(visitucdmeshsetcoords_,visitucdmeshsetcoords,VISITUCDMESHSETCOORDS)
 #define F_VISITUCDMESHSETCONNECTIVITY    F77_ID(visitucdmeshsetconnectivity_,visitucdmeshsetconnectivity,VISITUCDMESHSETCONNECTIVITY)
 #define F_VISITUCDMESHSETREALINDICES     F77_ID(visitucdmeshsetrealindices_,visitucdmeshsetrealindices,VISITUCDMESHSETREALINDICES)
+#define F_VISITUCDMESHGETCOORDS          F77_ID(visitucdmeshgetcoords_,visitucdmeshgetcoords,VISITUCDMESHGETCOORDS)
+#define F_VISITUCDMESHGETCONNECTIVITY    F77_ID(visitucdmeshgetconnectivity_,visitucdmeshgetconnectivity,VISITUCDMESHGETCONNECTIVITY)
+#define F_VISITUCDMESHGETREALINDICES     F77_ID(visitucdmeshgetrealindices_,visitucdmeshgetrealindices,VISITUCDMESHGETREALINDICES)
 
 int
 F_VISITUCDMESHALLOC(visit_handle *obj)
@@ -155,4 +188,22 @@ F_VISITUCDMESHSETREALINDICES(visit_handle *obj, int *min, int *max)
     return VisIt_UnstructuredMesh_setRealIndices(*obj, *min, *max);
 }
 
+int
+F_VISITUCDMESHGETCOORDS(visit_handle *obj, int *ndims, int *coordMode, 
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
+{
+    return VisIt_UnstructuredMesh_getCoords(*obj, ndims, coordMode, x, y, z, c);
+}
+
+int
+F_VISITUCDMESHGETCONNECTIVITY(visit_handle *obj, int *nzones, visit_handle *c)
+{
+    return VisIt_UnstructuredMesh_getConnectivity(*obj, nzones, c);
+}
+
+int
+F_VISITUCDMESHGETREALINDICES(visit_handle *obj, int *min, int *max)
+{
+    return VisIt_UnstructuredMesh_getRealIndices(*obj, min, max);
+}
 

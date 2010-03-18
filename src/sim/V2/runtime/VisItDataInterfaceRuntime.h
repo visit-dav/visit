@@ -76,7 +76,7 @@ SIMV2_API void simv2_set_GetDomainNesting(visit_handle (*cb) (const char *, void
 SIMV2_API void simv2_set_WriteBegin(int (*cb)(const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_WriteEnd(int (*cb)(const char *, void *), void *cbdata);
 SIMV2_API void simv2_set_WriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_handle, void *), void *cbdata);
-SIMV2_API void simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, visit_handle, void *), void *cbdata);
+SIMV2_API void simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, visit_handle, visit_handle, void *), void *cbdata);
 
 #ifdef __cplusplus
 }
@@ -98,7 +98,7 @@ SIMV2_API visit_handle simv2_invoke_GetDomainNesting(const char *name);
 SIMV2_API int simv2_invoke_WriteBegin(const char *);
 SIMV2_API int simv2_invoke_WriteEnd(const char *);
 SIMV2_API int simv2_invoke_WriteMesh(const char *name, int dom, int meshType, visit_handle mesh, visit_handle mmd);
-SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, int, void *, int, int, visit_handle);
+SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, visit_handle, visit_handle);
 
 #define VISIT_DOMAINLIST        12
 #define VISIT_DOMAIN_BOUNDARIES 13

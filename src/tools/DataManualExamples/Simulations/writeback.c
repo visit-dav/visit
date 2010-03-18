@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -49,7 +49,7 @@
  *          for use in further application-specific calculations.
  *
  * Programmer: Brad Whitlock
- * Date: Thu Nov 2 17:32:48 PST 2006
+ * Date: Wed Mar 17 16:07:34 PDT 2010
  *
  * Build command:
  *   gcc -o writeback -I. -I/usr/gapps/visit/1.5.4/linux-intel/libsim/V1/include -DPARALLEL -I/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/include -L/usr/gapps/visit/1.5.4/linux-intel/libsim/V1/lib -L/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/lib writeback.c -Wl,--export-dynamic -lsim -ldl -lmpich
@@ -58,13 +58,13 @@
  *
  ******************************************************************************/
 
-#include <VisItControlInterface_V1.h>
-#include <VisItDataInterface_V1.h>
-
+#include <VisItControlInterface_V2.h>
+#include <VisItDataInterface_V2.h>
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -72,36 +72,9 @@
 
 #include "SimulationExample.h"
 
-/* Is the simulation in run mode (not waiting for VisIt input) */
-static int    runFlag = 0;
-static int    simcycle = 0;
-static double simtime = 0.;
-static int    simDone = 0;
-
-static int par_rank = 0;
-static int par_size = 1;
-
-#define VISIT_COMMAND_PROCESS 0
-#define VISIT_COMMAND_SUCCESS 1
-#define VISIT_COMMAND_FAILURE 2
-
-#define VISIT_OKAY 0
-
-int  simulation_done(void) { return simDone; }
-
-/* SIMULATE ONE TIME STEP */
-#include <unistd.h>
-void simulate_one_timestep(void)
-{
-    ++simcycle;
-    simtime += 0.0134;
-
-    if(par_rank == 0)
-    {
-        printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
-        sleep(1);
-    }
-}
+#ifndef FREE
+#define FREE(ptr) if((ptr) != NULL){free(ptr);}
+#endif
 
 /*****************************************************************************
  *****************************************************************************
@@ -180,187 +153,558 @@ parsim_map_get(parsim_map_t *m, const void *key,
 /*****************************************************************************
  *****************************************************************************
  ***
- *** Functions to deal with structures from VisItDataInterface_V1.h
+ *** Simulation data model.
  ***
  *****************************************************************************
  *****************************************************************************/
 
-static void FreeDataArray(VisIt_DataArray da)
+typedef struct SimDataArray
 {
-    if (da.owner != VISIT_OWNER_SIM)
-        return;
+    void *data;
+    int   dataType;
+    int   nComps;
+    int   nTuples;
+} SimDataArray;
 
-    switch (da.dataType)
-    {
-      case VISIT_DATATYPE_CHAR:
-        free(da.cArray);
-        da.cArray = NULL;
-        break;
-      case VISIT_DATATYPE_INT:
-        free(da.iArray);
-        da.iArray = NULL;
-        break;
-      case VISIT_DATATYPE_FLOAT:
-        free(da.fArray);
-        da.fArray = NULL;
-        break;
-      case VISIT_DATATYPE_DOUBLE:
-        free(da.dArray);
-        da.dArray = NULL;
-        break;
+typedef struct SimRectilinearMesh
+{
+    int          ndims;
+    SimDataArray coords[3];
+} SimRectilinearMesh;
+
+typedef struct SimCurvilinearMesh
+{
+    int          ndims;
+    int          dims[3];
+    SimDataArray coords;
+} SimCurvilinearMesh;
+
+typedef struct SimPointMesh
+{
+    SimDataArray coords;
+    int          ndims;
+} SimPointMesh;
+
+typedef struct SimUnstructuredMesh
+{
+    SimDataArray coords;
+    SimDataArray conn;
+    int          nzones;
+    int          ndims;
+} SimUnstructuredMesh;
+
+typedef struct SimMeshMetaData
+{
+    char *name;
+ 
+    int   meshType;
+    int   topologicalDimension;
+    int   spatialDimension;
+
+    int   numDomains;
+    char *domainTitle;
+    char *domainPieceName;
+
+    int   numGroups;
+    char *groupTitle;
+    char *groupPieceName;
+
+    char *xUnits;
+    char *yUnits;
+    char *zUnits;
+
+    char *xLabel;
+    char *yLabel;
+    char *zLabel;
+} SimMeshMetaData;
+
+typedef struct SimVariableMetaData
+{
+    char *name;
+    char *meshName;
+    int   centering;
+    int   type;
+    char *units;
+} SimVariableMetaData;
+
+void
+SimDataArray_free(SimDataArray *ptr)
+{
+    if(ptr != NULL)
+    { 
+        FREE(ptr->data);
     }
 }
 
-static void *
-Mesh_Copy(int mesh_type, void *mesh)
+void
+SimRectilinearMesh_free(SimRectilinearMesh *ptr)
 {
-    void *mc = NULL;
-    size_t sz = 0;
+    if(ptr != NULL)
+    {
+        if(ptr->ndims > 0)
+            SimDataArray_free(&ptr->coords[0]);
+        if(ptr->ndims > 1)
+            SimDataArray_free(&ptr->coords[1]);
+        if(ptr->ndims > 2)
+            SimDataArray_free(&ptr->coords[2]);
+    }
+}
 
-    if(mesh_type == VISIT_MESHTYPE_RECTILINEAR)
+void
+SimCurvilinearMesh_free(SimCurvilinearMesh *ptr)
+{
+    if(ptr != NULL)
+        SimDataArray_free(&ptr->coords);
+}
+
+void
+SimPointMesh_free(SimPointMesh *ptr)
+{
+    if(ptr != NULL)
+        SimDataArray_free(&ptr->coords);
+}
+
+void
+SimUnstructuredMesh_free(SimUnstructuredMesh *ptr)
+{
+    if(ptr != NULL)
     {
-        VisIt_RectilinearMesh *orig = (VisIt_RectilinearMesh *)mesh;
-        sz = sizeof(VisIt_RectilinearMesh);
-        /* Steal the data from VisIt so the new copy will own the data. */
-        orig->xcoords.owner = VISIT_OWNER_SIM;
-        orig->ycoords.owner = VISIT_OWNER_SIM;
-        orig->zcoords.owner = VISIT_OWNER_SIM;
+        SimDataArray_free(&ptr->coords);
+        SimDataArray_free(&ptr->conn);
     }
-    else if(mesh_type == VISIT_MESHTYPE_CURVILINEAR)
+}
+
+void
+SimMeshMetaData_free(SimMeshMetaData *ptr)
+{
+    if(ptr != NULL)
     {
-        VisIt_CurvilinearMesh *orig = (VisIt_CurvilinearMesh *)mesh;
-        sz = sizeof(VisIt_CurvilinearMesh);
-        /* Steal the data from VisIt so the new copy will own the data. */
-        orig->xcoords.owner = VISIT_OWNER_SIM;
-        orig->ycoords.owner = VISIT_OWNER_SIM;
-        orig->zcoords.owner = VISIT_OWNER_SIM;
+        FREE((void*)ptr->name);
+        FREE((void*)ptr->domainTitle);
+        FREE((void*)ptr->domainPieceName);
+        FREE((void*)ptr->groupTitle);
+        FREE((void*)ptr->groupPieceName);
+        FREE((void*)ptr->xUnits);
+        FREE((void*)ptr->yUnits);
+        FREE((void*)ptr->zUnits);
+        FREE((void*)ptr->xLabel);
+        FREE((void*)ptr->yLabel);
+        FREE((void*)ptr->zLabel);
     }
-    else if(mesh_type == VISIT_MESHTYPE_UNSTRUCTURED)
+}
+
+void
+SimVariableMetaData_free(SimVariableMetaData *ptr)
+{
+    if(ptr != NULL)
     {
-        VisIt_UnstructuredMesh *orig = (VisIt_UnstructuredMesh *)mesh;
-        sz = sizeof(VisIt_UnstructuredMesh);
-        /* Steal the data from VisIt so the new copy will own the data. */
-        orig->xcoords.owner = VISIT_OWNER_SIM;
-        orig->ycoords.owner = VISIT_OWNER_SIM;
-        orig->zcoords.owner = VISIT_OWNER_SIM;
-        orig->connectivity.owner = VISIT_OWNER_SIM;
+        FREE((void*)ptr->name);
+        FREE((void*)ptr->meshName);
+        FREE((void*)ptr->units);
     }
-    else if(mesh_type == VISIT_MESHTYPE_POINT)
+}
+
+/*****************************************************************************
+ *****************************************************************************
+ ***
+ *** Convert to and from Simulation data model and SimV2.
+ ***
+ *****************************************************************************
+ *****************************************************************************/
+
+void
+CombineCoordinates_From_Handles(SimDataArray *coords, int ndims, 
+    visit_handle x, visit_handle y, visit_handle z)
+{
+    int owner[3], dataTypes[3], nComps[3], nTuples[3];
+    void *data[3] = {NULL,NULL,NULL}, *ptr;
+    int i = 0;
+    VisIt_VariableData_getData(x, &owner[i], &dataTypes[i], &nComps[i], &nTuples[i], &data[i]);
+    i = 1;
+    VisIt_VariableData_getData(y, &owner[i], &dataTypes[i], &nComps[i], &nTuples[i], &data[i]);
+    if(ndims > 2)
     {
-        VisIt_PointMesh *orig = (VisIt_PointMesh *)mesh;
-        sz = sizeof(VisIt_PointMesh);
-        /* Steal the data from VisIt so the new copy will own the data. */
-        orig->xcoords.owner = VISIT_OWNER_SIM;
-        orig->ycoords.owner = VISIT_OWNER_SIM;
-        orig->zcoords.owner = VISIT_OWNER_SIM;
+        i = 2;
+        VisIt_VariableData_getData(z, &owner[i], &dataTypes[i], &nComps[i], &nTuples[i], &data[i]);
+        if(dataTypes[0] == VISIT_DATATYPE_DOUBLE)
+        {
+            double *dest;
+            ptr = malloc(nTuples[0] * 3 * sizeof(double));
+            dest = (double *)ptr;
+            for(i = 0; i < nTuples[0]; ++i)
+            {
+                *dest++ = ((double*)data[0])[i];
+                *dest++ = ((double*)data[1])[i];
+                *dest++ = ((double*)data[2])[i];
+            }
+        }
+        else
+        {
+            float *dest;
+            ptr = malloc(nTuples[0] * 3 * sizeof(float));
+            dest = (float *)ptr;
+            for(i = 0; i < nTuples[0]; ++i)
+            {
+                *dest++ = ((float*)data[0])[i];
+                *dest++ = ((float*)data[1])[i];
+                *dest++ = ((float*)data[2])[i];
+            }
+        }
+    }
+    else if(dataTypes[0] == VISIT_DATATYPE_DOUBLE)
+    {
+        double *dest;
+        ptr = (double *)malloc(nTuples[0] * 3 * sizeof(double));
+        dest = (double *)ptr;
+        for(i = 0; i < nTuples[0]; ++i)
+        {
+            *dest++ = ((double*)data[0])[i];
+            *dest++ = ((double*)data[1])[i];
+            *dest++ = 0.;
+        }
     }
     else
-        return 0;
+    {
+        float *dest;
+        ptr = (float *)malloc(nTuples[0] * 3 * sizeof(float));
+        dest = (float *)ptr;
+        for(i = 0; i < nTuples[0]; ++i)
+        {
+            *dest++ = ((float*)data[0])[i];
+            *dest++ = ((float*)data[1])[i];
+            *dest++ = 0.;
+        }
+    }
 
-    /* Return a copy of the mesh.*/
-    mc = malloc(sz);
-    memcpy(mc, mesh, sz);
-    return mc;
+    coords->data = ptr;
+    coords->dataType = VISIT_DATATYPE_DOUBLE;
+    coords->nComps = 3;
+    coords->nTuples = nTuples[0];
+}
+
+void
+SimDataArray_From_Handle(SimDataArray *ptr, visit_handle h)
+{
+    if(ptr != NULL)
+    {
+        int owner;
+        void *data = NULL;
+
+        memset(ptr, 0, sizeof(SimDataArray));
+
+        if(VisIt_VariableData_getData(h, &owner, &ptr->dataType, &ptr->nComps, 
+            &ptr->nTuples, &data) == VISIT_OKAY)
+        {
+            size_t sz = 1;
+            if(ptr->dataType == VISIT_DATATYPE_CHAR)
+                sz = ptr->nComps * ptr->nTuples * sizeof(char);
+            else if(ptr->dataType == VISIT_DATATYPE_INT)
+                sz = ptr->nComps * ptr->nTuples * sizeof(int);
+            else if(ptr->dataType == VISIT_DATATYPE_FLOAT)
+                sz = ptr->nComps * ptr->nTuples * sizeof(float);
+            else if(ptr->dataType == VISIT_DATATYPE_DOUBLE)
+                sz = ptr->nComps * ptr->nTuples * sizeof(double);
+            ptr->data = malloc(sz);
+            memcpy(ptr->data, data, sz);
+        }
+    }
+}
+
+visit_handle
+Handle_From_SimDataArray(SimDataArray *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_VariableData_alloc(&h) == VISIT_OKAY)
+    {
+        switch(ptr->dataType)
+        {
+        case VISIT_DATATYPE_CHAR:
+            VisIt_VariableData_setDataC(h, VISIT_OWNER_SIM, ptr->nComps,
+                ptr->nTuples, (char *)ptr->data);
+            break;
+        case VISIT_DATATYPE_INT:
+            VisIt_VariableData_setDataI(h, VISIT_OWNER_SIM, ptr->nComps,
+                ptr->nTuples, (int *)ptr->data);
+            break;
+        case VISIT_DATATYPE_FLOAT:
+            VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, ptr->nComps,
+                ptr->nTuples, (float *)ptr->data);
+            break;
+        case VISIT_DATATYPE_DOUBLE:
+            VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, ptr->nComps,
+                ptr->nTuples, (double *)ptr->data);
+            break;
+        }
+    }
+    return h;
+}
+
+SimRectilinearMesh *
+SimRectilinearMesh_From_Handle(visit_handle h)
+{
+    SimRectilinearMesh *ptr = (SimRectilinearMesh *)malloc(sizeof(SimRectilinearMesh));
+    if(ptr != NULL)
+    {
+        visit_handle x,y,z;
+
+        memset(ptr, 0, sizeof(SimRectilinearMesh));
+
+        if(VisIt_RectilinearMesh_getCoords(h, &ptr->ndims, &x, &y, &z) == VISIT_OKAY)
+        {
+            SimDataArray_From_Handle(&ptr->coords[0], x);
+            SimDataArray_From_Handle(&ptr->coords[1], y);
+            if(ptr->ndims > 2)
+                SimDataArray_From_Handle(&ptr->coords[2], z);
+        }
+    }
+    return ptr;
+}
+
+visit_handle
+Handle_From_SimRectilinearMesh(SimRectilinearMesh *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_RectilinearMesh_alloc(&h) == VISIT_OKAY)
+    {
+        visit_handle x,y,z;
+        x = Handle_From_SimDataArray(&ptr->coords[0]);
+        y = Handle_From_SimDataArray(&ptr->coords[1]);
+        if(ptr->ndims > 2)
+        {
+            z = Handle_From_SimDataArray(&ptr->coords[2]);
+            VisIt_RectilinearMesh_setCoordsXYZ(h, x,y,z);
+        }
+        else
+            VisIt_RectilinearMesh_setCoordsXY(h,x,y);
+    }
+    return h;
+}
+
+SimCurvilinearMesh *
+SimCurvilinearMesh_From_Handle(visit_handle h)
+{
+    SimCurvilinearMesh *ptr = (SimCurvilinearMesh *)malloc(sizeof(SimCurvilinearMesh));
+    if(ptr != NULL)
+    {
+        int coordMode;
+        visit_handle x,y,z,c;
+
+        memset(ptr, 0, sizeof(SimCurvilinearMesh));
+
+        if(VisIt_CurvilinearMesh_getCoords(h, &ptr->ndims, ptr->dims, &coordMode,
+           &x, &y, &z, &c) == VISIT_OKAY)
+        {
+            if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
+                SimDataArray_From_Handle(&ptr->coords, c);
+            else
+                CombineCoordinates_From_Handles(&ptr->coords, ptr->ndims, x,y,z);
+        }
+    }
+    return ptr;
+}
+
+visit_handle
+Handle_From_SimCurvilinearMesh(SimCurvilinearMesh *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_CurvilinearMesh_alloc(&h) == VISIT_OKAY)
+    {
+        visit_handle c;
+        c = Handle_From_SimDataArray(&ptr->coords);
+        VisIt_CurvilinearMesh_setCoords3(h, ptr->dims, c);
+    }
+    return h;
+}
+
+SimPointMesh *
+SimPointMesh_From_Handle(visit_handle h)
+{
+    SimPointMesh *ptr = (SimPointMesh *)malloc(sizeof(SimPointMesh));
+    if(ptr != NULL)
+    {
+        int coordMode;
+        visit_handle x,y,z,c;
+
+        memset(ptr, 0, sizeof(SimPointMesh));
+
+        if(VisIt_PointMesh_getCoords(h, &ptr->ndims, &coordMode,
+           &x, &y, &z, &c) == VISIT_OKAY)
+        {
+            if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
+                SimDataArray_From_Handle(&ptr->coords, c);
+            else
+                CombineCoordinates_From_Handles(&ptr->coords, ptr->ndims, x,y,z);
+        }
+    }
+    return ptr;
+}
+
+visit_handle
+Handle_From_SimPointMesh(SimPointMesh *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_PointMesh_alloc(&h) == VISIT_OKAY)
+    {
+        visit_handle c;
+        c = Handle_From_SimDataArray(&ptr->coords);
+        VisIt_PointMesh_setCoords(h, c);
+    }
+    return h;
+}
+
+SimUnstructuredMesh *
+SimUnstructuredMesh_From_Handle(visit_handle h)
+{
+    SimUnstructuredMesh *ptr = (SimUnstructuredMesh *)malloc(sizeof(SimUnstructuredMesh));
+    if(ptr != NULL)
+    {
+        int coordMode;
+        visit_handle x,y,z,c,conn;
+
+        memset(ptr, 0, sizeof(SimUnstructuredMesh));
+
+        if(VisIt_UnstructuredMesh_getCoords(h, &ptr->ndims, &coordMode,
+           &x, &y, &z, &c) == VISIT_OKAY)
+        {
+            if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
+                SimDataArray_From_Handle(&ptr->coords, c);
+            else
+                CombineCoordinates_From_Handles(&ptr->coords, ptr->ndims, x,y,z);
+        }
+
+        if(VisIt_UnstructuredMesh_getConnectivity(h, &ptr->nzones, &conn) == VISIT_OKAY)
+        {
+            SimDataArray_From_Handle(&ptr->conn, conn);
+        }
+    }
+    return ptr;
+}
+
+visit_handle
+Handle_From_SimUnstructuredMesh(SimUnstructuredMesh *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_UnstructuredMesh_alloc(&h) == VISIT_OKAY)
+    {
+        visit_handle c, conn;
+        c = Handle_From_SimDataArray(&ptr->coords);
+        VisIt_UnstructuredMesh_setCoords(h, c);
+
+        conn = Handle_From_SimDataArray(&ptr->conn);
+        VisIt_UnstructuredMesh_setConnectivity(h, ptr->nzones, conn);
+    }
+    return h;
+}
+
+SimMeshMetaData *
+SimMeshMetaData_From_Handle(visit_handle h)
+{
+    SimMeshMetaData *ptr = (SimMeshMetaData *)malloc(sizeof(SimMeshMetaData));
+    if(ptr != NULL)
+    {
+        memset(ptr, 0, sizeof(SimMeshMetaData));
+
+        VisIt_MeshMetaData_getName(h, &ptr->name);
+        VisIt_MeshMetaData_getMeshType(h, &ptr->meshType);
+        VisIt_MeshMetaData_getTopologicalDimension(h, &ptr->topologicalDimension);
+        VisIt_MeshMetaData_getSpatialDimension(h, &ptr->spatialDimension);
+        VisIt_MeshMetaData_getNumDomains(h, &ptr->numDomains);
+        VisIt_MeshMetaData_getDomainTitle(h, &ptr->domainTitle);
+        VisIt_MeshMetaData_getDomainPieceName(h, &ptr->domainPieceName);
+        VisIt_MeshMetaData_getNumGroups(h, &ptr->numGroups);
+        VisIt_MeshMetaData_getGroupTitle(h, &ptr->groupTitle);
+        VisIt_MeshMetaData_getXUnits(h, &ptr->xUnits);
+        VisIt_MeshMetaData_getYUnits(h, &ptr->yUnits);
+        VisIt_MeshMetaData_getZUnits(h, &ptr->zUnits);
+        VisIt_MeshMetaData_getXLabel(h, &ptr->xLabel);
+        VisIt_MeshMetaData_getYLabel(h, &ptr->yLabel);
+        VisIt_MeshMetaData_getZLabel(h, &ptr->zLabel);
+    }
+    return ptr;
+}
+
+visit_handle
+Handle_From_SimMeshMetaData(SimMeshMetaData *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_MeshMetaData_alloc(&h) == VISIT_OKAY)
+    {
+        VisIt_MeshMetaData_setName(h, ptr->name);
+        VisIt_MeshMetaData_setMeshType(h, ptr->meshType);
+        VisIt_MeshMetaData_setTopologicalDimension(h, ptr->topologicalDimension);
+        VisIt_MeshMetaData_setSpatialDimension(h, ptr->spatialDimension);
+        VisIt_MeshMetaData_setNumDomains(h, ptr->numDomains);
+        VisIt_MeshMetaData_setDomainTitle(h, ptr->domainTitle);
+        VisIt_MeshMetaData_setDomainPieceName(h, ptr->domainPieceName);
+        VisIt_MeshMetaData_setNumGroups(h, ptr->numGroups);
+        VisIt_MeshMetaData_setGroupTitle(h, ptr->groupTitle);
+        VisIt_MeshMetaData_setXUnits(h, ptr->xUnits);
+        VisIt_MeshMetaData_setYUnits(h, ptr->yUnits);
+        VisIt_MeshMetaData_setZUnits(h, ptr->zUnits);
+        VisIt_MeshMetaData_setXLabel(h, ptr->xLabel);
+        VisIt_MeshMetaData_setYLabel(h, ptr->yLabel);
+        VisIt_MeshMetaData_setZLabel(h, ptr->zLabel);
+    }
+    return h;
+}
+
+SimVariableMetaData *
+SimVariableMetaData_From_Handle(visit_handle h)
+{
+    SimVariableMetaData *ptr = (SimVariableMetaData *)malloc(sizeof(SimVariableMetaData));
+    if(ptr != NULL)
+    {
+        memset(ptr, 0, sizeof(SimVariableMetaData));
+
+        VisIt_VariableMetaData_getName(h, &ptr->name);
+        VisIt_VariableMetaData_getMeshName(h, &ptr->meshName);
+        VisIt_VariableMetaData_getCentering(h, &ptr->centering);
+        VisIt_VariableMetaData_getType(h, &ptr->type);
+        VisIt_VariableMetaData_getUnits(h, &ptr->units);
+    }
+    return ptr;
+}
+
+visit_handle
+Handle_From_SimVariableMetaData(SimVariableMetaData *ptr)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(ptr != NULL &&
+       VisIt_VariableMetaData_alloc(&h) == VISIT_OKAY)
+    {
+        VisIt_VariableMetaData_setName(h, ptr->name);
+        VisIt_VariableMetaData_setMeshName(h, ptr->meshName);
+        VisIt_VariableMetaData_setCentering(h, ptr->centering);
+        VisIt_VariableMetaData_setType(h, ptr->type);
+        VisIt_VariableMetaData_setUnits(h, ptr->units);
+    }
+    return h;
 }
 
 static void
 Mesh_Free(int mesh_type, void *mesh)
 {
     if(mesh_type == VISIT_MESHTYPE_RECTILINEAR)
-    {
-        VisIt_RectilinearMesh *m = (VisIt_RectilinearMesh *)mesh;
-        FreeDataArray(m->xcoords);
-        FreeDataArray(m->ycoords);
-        FreeDataArray(m->zcoords);
-    }
+        SimRectilinearMesh_free((SimRectilinearMesh *)mesh);
     else if(mesh_type == VISIT_MESHTYPE_CURVILINEAR)
-    {
-        VisIt_CurvilinearMesh *m = (VisIt_CurvilinearMesh *)mesh;
-        FreeDataArray(m->xcoords);
-        FreeDataArray(m->ycoords);
-        FreeDataArray(m->zcoords);
-    }
+        SimCurvilinearMesh_free((SimCurvilinearMesh *)mesh);
     else if(mesh_type == VISIT_MESHTYPE_UNSTRUCTURED)
-    {
-        VisIt_UnstructuredMesh *m = (VisIt_UnstructuredMesh *)mesh;
-        FreeDataArray(m->xcoords);
-        FreeDataArray(m->ycoords);
-        FreeDataArray(m->zcoords);
-        FreeDataArray(m->connectivity);
-    }
+        SimUnstructuredMesh_free((SimUnstructuredMesh *)mesh);
     else if(mesh_type == VISIT_MESHTYPE_POINT)
-    {
-        VisIt_PointMesh *m = (VisIt_PointMesh *)mesh;
-        FreeDataArray(m->xcoords);
-        FreeDataArray(m->ycoords);
-        FreeDataArray(m->zcoords);
-    }
+        SimPointMesh_free((SimPointMesh *)mesh);
     free(mesh);
-}
-
-VisIt_MeshMetaData *
-MeshMetaData_Copy(const VisIt_MeshMetaData *mmd)
-{
-    VisIt_MeshMetaData *newmd = (VisIt_MeshMetaData*)malloc(sizeof(VisIt_MeshMetaData));
-    memcpy(newmd, mmd, sizeof(VisIt_MeshMetaData));
-
-#define SAFE_STRDUP(ptr) (((ptr) != NULL) ? strdup(ptr) : NULL)
-
-    /* Duplicate the strings */
-    newmd->name = SAFE_STRDUP(mmd->name);
-    newmd->blockTitle = SAFE_STRDUP(mmd->blockTitle);
-    newmd->blockPieceName = SAFE_STRDUP(mmd->blockPieceName);
-    newmd->groupTitle = SAFE_STRDUP(mmd->groupTitle);
-    newmd->units = SAFE_STRDUP(mmd->units);
-    newmd->xLabel = SAFE_STRDUP(mmd->xLabel);
-    newmd->yLabel = SAFE_STRDUP(mmd->yLabel);
-    newmd->zLabel = SAFE_STRDUP(mmd->zLabel);
-
-    return newmd;
-}
-
-
-void
-MeshMetaData_Free(VisIt_MeshMetaData *mmd)
-{
-    /* Free the mesh metadata.*/
-    free((void*)mmd->name);
-    free((void*)mmd->blockTitle);
-    free((void*)mmd->blockPieceName);
-    free((void*)mmd->groupTitle);
-    free((void*)mmd->units);
-    free((void*)mmd->xLabel);
-    free((void*)mmd->yLabel);
-    free((void*)mmd->zLabel);
-    free(mmd);
-}
-
-VisIt_ScalarMetaData *
-ScalarMetaData_Copy(const VisIt_ScalarMetaData *smd)
-{
-    VisIt_ScalarMetaData *newmd = (VisIt_ScalarMetaData*)malloc(sizeof(VisIt_ScalarMetaData));
-    memcpy(newmd, smd, sizeof(VisIt_ScalarMetaData));
-
-    /* Duplicate the strings */
-    newmd->name = strdup(smd->name);
-    newmd->meshName = strdup(smd->meshName);
-
-    return newmd;
-}
-void
-ScalarMetaData_Free(VisIt_ScalarMetaData *smd)
-{
-    /* Free the scalar metadata.*/
-    free((void*)smd->name);
-    free((void*)smd->meshName);
-    free(smd);
 }
 
 /*****************************************************************************
  *****************************************************************************
  ***
- *** Functions to manage the mesh and variable caches that we use to store
- *** data that we give to VisIt and get from VisIt.
+ *** Functions to manage the mesh cache.
  ***
  *****************************************************************************
  *****************************************************************************/
@@ -398,35 +742,74 @@ key_newstring(const char *s)
     return (void*)strdup(s);
 }
 
-parsim_map_t mesh_cache;
-parsim_map_t var_cache;
-
 typedef struct
 {
-    VisIt_MeshMetaData *metadata;
-    parsim_map_t        domain_meshes;
+    SimMeshMetaData *metadata;
+    parsim_map_t     domain_meshes;
 } parsim_mesh_record_t;
 
 typedef struct
 {
-    void               *mesh;
-    VisIt_MeshMetaData *metadata;
+    void            *mesh;
+    SimMeshMetaData *metadata;
 } MeshAndMetaData;
 
 void
-MeshCache_Init()
+mesh_dtor_0(void *ptr)
 {
-    parsim_map_create(&mesh_cache);
+    SimRectilinearMesh_free((SimRectilinearMesh *)ptr);
+    free(ptr);
 }
 
 void
-MeshCache_add_mesh(const char *name, int domain, MeshAndMetaData m_mmd)
+mesh_dtor_1(void *ptr)
+{
+    SimCurvilinearMesh_free((SimCurvilinearMesh *)ptr);
+    free(ptr);
+}
+
+void
+mesh_dtor_2(void *ptr)
+{
+    SimPointMesh_free((SimPointMesh *)ptr);
+    free(ptr);
+}
+
+void
+mesh_dtor_3(void *ptr)
+{
+    SimUnstructuredMesh_free((SimUnstructuredMesh *)ptr);
+    free(ptr);
+}
+
+void
+parsim_mesh_record_t_free(void *ptr)
+{
+    parsim_mesh_record_t *rec = (parsim_mesh_record_t *)ptr;
+    if(rec->metadata->meshType == VISIT_MESHTYPE_RECTILINEAR)
+        parsim_map_destroy(&rec->domain_meshes, free, mesh_dtor_0);
+    if(rec->metadata->meshType == VISIT_MESHTYPE_CURVILINEAR)
+        parsim_map_destroy(&rec->domain_meshes, free, mesh_dtor_1);
+    if(rec->metadata->meshType == VISIT_MESHTYPE_POINT)
+        parsim_map_destroy(&rec->domain_meshes, free, mesh_dtor_2);
+    if(rec->metadata->meshType == VISIT_MESHTYPE_UNSTRUCTURED)
+        parsim_map_destroy(&rec->domain_meshes, free, mesh_dtor_3);
+
+    SimMeshMetaData_free((SimMeshMetaData *)rec->metadata);
+    free(rec->metadata);
+
+    free(ptr);
+}
+
+void
+MeshCache_add_mesh(parsim_map_t *mesh_cache, const char *name, int domain, 
+    MeshAndMetaData m_mmd)
 {
     void *mesh_copy;
     parsim_mesh_record_t *mesh_entry;
 
     /* Look for an entry in the map with the same mesh name. */
-    mesh_entry = (parsim_mesh_record_t*)parsim_map_get(&mesh_cache, name, key_compare_strings);
+    mesh_entry = (parsim_mesh_record_t*)parsim_map_get(mesh_cache, name, key_compare_strings);
     if(mesh_entry == NULL)
     {
         /* No domain list with the given name was found. Add one. */
@@ -439,12 +822,12 @@ MeshCache_add_mesh(const char *name, int domain, MeshAndMetaData m_mmd)
         parsim_map_add(&mesh_entry->domain_meshes, key_newint(domain), m_mmd.mesh);
 
         /* Add the new domain map to the mesh cache.*/
-        parsim_map_add(&mesh_cache, key_newstring(name), mesh_entry);
+        parsim_map_add(mesh_cache, key_newstring(name), mesh_entry);
     }
     else
     {
         /* Replace the existing metadata. */
-        MeshMetaData_Free(mesh_entry->metadata);
+        SimMeshMetaData_free(mesh_entry->metadata);
         mesh_entry->metadata = m_mmd.metadata;
 
         /* We found a mesh with the given name. Look for the specified domain. */
@@ -476,29 +859,31 @@ MeshCache_add_mesh(const char *name, int domain, MeshAndMetaData m_mmd)
 }
 
 int
-MeshCache_get_nmeshes()
+MeshCache_get_nmeshes(parsim_map_t *mesh_cache)
 {
-    return mesh_cache.nelems;
+    return mesh_cache->nelems;
 }
 
 int
-MeshCache_get_mesh_info(int i, char **name, VisIt_MeshMetaData **mmd)
+MeshCache_get_mesh_info(parsim_map_t *mesh_cache, int i, char **name, 
+    SimMeshMetaData **mmd)
 {
     int ret = 0;
-    if(i >= 0 && i < mesh_cache.nelems)
+    if(i >= 0 && i < mesh_cache->nelems)
     {
-        *name = mesh_cache.elems[i].key;
-        *mmd = ((parsim_mesh_record_t *)mesh_cache.elems[i].value)->metadata;
+        *name = mesh_cache->elems[i].key;
+        *mmd = ((parsim_mesh_record_t *)mesh_cache->elems[i].value)->metadata;
         ret = 1;
     }
     return ret;
 }
 
 int
-MeshCache_get_mesh_info2(const char *name, VisIt_MeshMetaData **mmd)
+MeshCache_get_mesh_info2(parsim_map_t *mesh_cache, const char *name, 
+    SimMeshMetaData **mmd)
 {
     int ret = 0;
-    parsim_mesh_record_t *info = parsim_map_get(&mesh_cache, name, key_compare_strings);
+    parsim_mesh_record_t *info = parsim_map_get(mesh_cache, name, key_compare_strings);
     if(info != 0)
     {
         *mmd = info->metadata;
@@ -508,13 +893,13 @@ MeshCache_get_mesh_info2(const char *name, VisIt_MeshMetaData **mmd)
 }
 
 void *
-MeshCache_get_mesh(const char *name, int domain)
+MeshCache_get_mesh(parsim_map_t *mesh_cache, const char *name, int domain)
 {
     void *ret = NULL;
 
     /* Look for an entry in the map with the same mesh name. */
     parsim_mesh_record_t *mesh_entry = (parsim_mesh_record_t*)parsim_map_get(
-        &mesh_cache, name, key_compare_strings);
+        mesh_cache, name, key_compare_strings);
 
     if(mesh_entry != NULL)
     {
@@ -525,75 +910,65 @@ MeshCache_get_mesh(const char *name, int domain)
     return ret;
 }
 
-typedef struct
-{
-    const char *meshName;
-    int   dataType;
-    int   centering;
-    int   ntuples;
-    int   ncomps;
-    void *values;
-} parsim_var_t;
+/*****************************************************************************
+ *****************************************************************************
+ ***
+ *** Functions to manage the variable cache.
+ ***
+ *****************************************************************************
+ *****************************************************************************/
+
 
 typedef struct
 {
-    VisIt_ScalarMetaData *metadata;
-    parsim_map_t          domain_vars;
+    SimVariableMetaData *metadata;
+    parsim_map_t         domain_vars;
 } parsim_var_record_t;
 
 void
-VarCache_Init()
+SimDataArray_free2(void *ptr)
 {
-    parsim_map_create(&var_cache);
+    SimDataArray_free((SimDataArray *)ptr);
+    free(ptr);
 }
 
 void
-VarCache_add_var(const char *name, int domain, const char *meshName, 
-    int dataType, int centering, 
-    int ntuples, int ncomps, void *values, VisIt_ScalarMetaData *smd)
+parsim_var_record_t_free(void *ptr)
+{
+    parsim_var_record_t *rec = (parsim_var_record_t *)ptr;
+    SimVariableMetaData_free((SimVariableMetaData *)rec->metadata);
+    free(rec->metadata);
+    parsim_map_destroy(&rec->domain_vars, free, SimDataArray_free2);
+    free(ptr);
+}
+
+void
+VarCache_add_var(parsim_map_t *var_cache, const char *name, int domain, 
+    const char *meshName, SimDataArray *data, SimVariableMetaData *metadata)
 {
     parsim_var_record_t *var_entry = NULL;
 
-    /* Copy the incoming data. */
-    size_t sz = 0;
-    parsim_var_t *newvar_rec = (parsim_var_t*)malloc(sizeof(parsim_var_t));
-    newvar_rec->meshName = strdup(meshName);
-    newvar_rec->dataType = dataType;
-    newvar_rec->centering = centering;
-    newvar_rec->ntuples = ntuples;
-    newvar_rec->ncomps = ncomps;
-    if(dataType == VISIT_DATATYPE_CHAR)
-        sz = ntuples * ncomps * sizeof(char);
-    else if(dataType == VISIT_DATATYPE_INT)
-        sz = ntuples * ncomps * sizeof(int);
-    else if(dataType == VISIT_DATATYPE_FLOAT)
-        sz = ntuples * ncomps * sizeof(float);
-    else if(dataType == VISIT_DATATYPE_DOUBLE)
-        sz = ntuples * ncomps * sizeof(double);
-    newvar_rec->values = malloc(sz);
-    memcpy(newvar_rec->values, values, sz);
-
     /* Look for an entry in the map with the same var name. */
-    var_entry = (parsim_var_record_t*)parsim_map_get(&var_cache, 
+    var_entry = (parsim_var_record_t*)parsim_map_get(var_cache, 
         name, key_compare_strings);
     if(var_entry == NULL)
     {
         /* The var cache did not have an entry for the variable. Add one. */
         var_entry = (parsim_var_record_t*)malloc(sizeof(parsim_var_record_t));
-        var_entry->metadata = smd;
+        var_entry->metadata = metadata;
         parsim_map_create(&var_entry->domain_vars);
 
-        /* Add the domain to the domain map. */
-        parsim_map_add(&var_entry->domain_vars, key_newint(domain), newvar_rec);
+        /* Add the domain data to the domain map. */
+        parsim_map_add(&var_entry->domain_vars, key_newint(domain), data);
 
         /* Add the domain map to the var cache. */
-        parsim_map_add(&var_cache, key_newstring(name), var_entry);
+        parsim_map_add(var_cache, key_newstring(name), var_entry);
     }
     else
     {
         /* Replace the metadata. */
-        ScalarMetaData_Free(var_entry->metadata);
-        var_entry->metadata = smd;
+        SimVariableMetaData_free(var_entry->metadata);
+        var_entry->metadata = metadata;
 
         /* We found a var with the given name. Look for the specified domain. */
         void *domain_var = parsim_map_get(&var_entry->domain_vars, 
@@ -602,7 +977,7 @@ VarCache_add_var(const char *name, int domain, const char *meshName,
         if(domain_var == NULL)
         {
             /* Add the domain var. */
-            parsim_map_add(&var_entry->domain_vars, key_newint(domain), newvar_rec);
+            parsim_map_add(&var_entry->domain_vars, key_newint(domain), data);
         }
         else
         {
@@ -612,10 +987,9 @@ VarCache_add_var(const char *name, int domain, const char *meshName,
             {
                 if(var_entry->domain_vars.elems[i].value == domain_var)
                 {
-                    parsim_var_t *var = (parsim_var_t *)var_entry->domain_vars.elems[i].value;
-                    free(var->values);
-                    free(var);
-                    var_entry->domain_vars.elems[i].value = newvar_rec;
+                    SimDataArray *var = (SimDataArray *)var_entry->domain_vars.elems[i].value;
+                    SimDataArray_free(var);
+                    var_entry->domain_vars.elems[i].value = data;
                     break;
                 }
             }
@@ -624,21 +998,22 @@ VarCache_add_var(const char *name, int domain, const char *meshName,
 }
 
 int
-VarCache_get_nvars()
+VarCache_get_nvars(parsim_map_t *var_cache)
 {
-    return var_cache.nelems;
+    return var_cache->nelems;
 }
 
 int
-VarCache_get_var_info(int i, char **name, VisIt_ScalarMetaData **smd)
+VarCache_get_var_info(parsim_map_t *var_cache, int i, char **name, 
+    SimVariableMetaData **smd)
 {
     int ret = 0;
-    if(i >= 0 && i < var_cache.nelems)
+    if(i >= 0 && i < var_cache->nelems)
     {
         parsim_var_record_t *var_entry;
-        var_entry = (parsim_var_record_t *)var_cache.elems[i].value;
+        var_entry = (parsim_var_record_t *)var_cache->elems[i].value;
       
-        *name = (char *)var_cache.elems[i].key;
+        *name = (char *)var_cache->elems[i].key;
         *smd = var_entry->metadata;
 
         ret = 1;
@@ -647,39 +1022,86 @@ VarCache_get_var_info(int i, char **name, VisIt_ScalarMetaData **smd)
     return ret;
 }
 
-VisIt_ScalarData *
-VarCache_get_var(const char *name, int domain)
+visit_handle
+VarCache_get_var(parsim_map_t *var_cache, const char *name, int domain)
 {
-    VisIt_ScalarData *scalar = NULL;
+    visit_handle scalar = VISIT_INVALID_HANDLE;
 
     /* Look for an entry in the map with the same mesh name. */
     parsim_var_record_t *var_entry = (parsim_var_record_t*)parsim_map_get(
-        &var_cache, name, key_compare_strings);
+        var_cache, name, key_compare_strings);
 
     if(var_entry != NULL)
     {
-        parsim_var_t *var = (parsim_var_t *)parsim_map_get(&var_entry->domain_vars,
+        SimDataArray *var = (SimDataArray *)parsim_map_get(&var_entry->domain_vars,
            (void*)&domain, key_compare_ints);
 
         if(var != NULL)
-        {
-            scalar = (VisIt_ScalarData*)malloc(sizeof(VisIt_ScalarData));
-            memset(scalar, 0, sizeof(VisIt_ScalarData));
-
-            scalar->len = var->ntuples * var->ncomps;
-            if(var->dataType == VISIT_DATATYPE_CHAR)
-                scalar->data = VisIt_CreateDataArrayFromChar(VISIT_OWNER_SIM, (char*)var->values);
-            else if(var->dataType == VISIT_DATATYPE_INT)
-                scalar->data = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM, (int*)var->values);
-            else if(var->dataType == VISIT_DATATYPE_FLOAT)
-                scalar->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, (float*)var->values);
-            else if(var->dataType == VISIT_DATATYPE_DOUBLE)
-                scalar->data = VisIt_CreateDataArrayFromDouble(VISIT_OWNER_SIM, (double*)var->values);
-        }
+            scalar = Handle_From_SimDataArray(var);
     }
 
     return scalar;
 }
+
+/******************************************************************************
+ ******************************************************************************
+ ***
+ *** Simulation data and functions
+ ***
+ ******************************************************************************
+ *****************************************************************************/
+#define VISIT_COMMAND_PROCESS 0
+#define VISIT_COMMAND_SUCCESS 1
+#define VISIT_COMMAND_FAILURE 2
+
+#define SIM_STOPPED       0
+#define SIM_RUNNING       1
+
+typedef struct
+{
+    int     par_rank;
+    int     par_size;
+    int     cycle;
+    double  time;
+    int     runMode;
+    int     done;
+
+    /* The real data */
+    parsim_map_t mesh_cache;
+    parsim_map_t var_cache;
+} simulation_data;
+
+void
+simulation_data_ctor(simulation_data *sim)
+{
+    sim->par_rank = 0;
+    sim->par_size = 1;
+    sim->cycle = 0;
+    sim->time = 0.;
+    sim->runMode = SIM_STOPPED;
+    sim->done = 0;
+
+    parsim_map_create(&sim->mesh_cache);
+    parsim_map_create(&sim->var_cache);
+}
+
+
+void
+free_mesh_cache_item(void *ptr)
+{
+    SimDataArray_free((SimDataArray *)ptr);
+    free(ptr);
+}
+
+void
+simulation_data_dtor(simulation_data *sim)
+{
+   parsim_map_destroy(&sim->var_cache, free, parsim_var_record_t_free);
+   parsim_map_destroy(&sim->mesh_cache, free, parsim_mesh_record_t_free);
+}
+
+const char *cmd_names[] = {"halt", "step", "run", "update"};
+
 
 /******************************************************************************
  ******************************************************************************
@@ -690,195 +1112,145 @@ VarCache_get_var(const char *name, int domain)
  *****************************************************************************/
 
 /******************************************************************************
- * Function: parsim_GetMetaData
+ * Function: SimGetMetaData
  *
  * Purpose: Returns metadata to VisIt based on the metadata that we have stored
  *          in our program's mesh and variable caches.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 15:47:08 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_SimulationMetaData *
-parsim_GetMetaData(void)
+visit_handle
+SimGetMetaData(void *cbdata)
 {
-    int i, index;
+    visit_handle md = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
 
-    /* Create a metadata object with no variables. */
-    size_t sz = sizeof(VisIt_SimulationMetaData);
-    VisIt_SimulationMetaData *md = 
-        (VisIt_SimulationMetaData *)malloc(sz);
-    memset(md, 0, sz);
-
-    /* Set the simulation state. */
-    md->currentMode = runFlag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
-    md->currentCycle = simcycle;
-    md->currentTime = simtime;
-
-    /* Look through the mesh cache and return information about
-     * meshes that we know about.
-     */
-    md->numMeshes = MeshCache_get_nmeshes();
-    sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
-    md->meshes = (VisIt_MeshMetaData *)malloc(sz);
-    memset(md->meshes, 0, sz);
-    index = 0;
-    for(i = 0; i < md->numMeshes; ++i)
+    /* Create metadata. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
-        char *name;
-        VisIt_MeshMetaData *mmd;
+        int i, n;
+        visit_handle mmd = VISIT_INVALID_HANDLE;
+        visit_handle vmd = VISIT_INVALID_HANDLE;
+        visit_handle cmd = VISIT_INVALID_HANDLE;
+        visit_handle emd = VISIT_INVALID_HANDLE;
 
-        if(MeshCache_get_mesh_info(i, &name, &mmd))
+        /* Set the simulation state. */
+        VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
+            VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);
+        VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
+
+        /* Look through the mesh cache and return information about
+         * meshes that we know about.
+         */
+        n = MeshCache_get_nmeshes(&sim->mesh_cache);
+        for(i = 0; i < n; ++i)
         {
-            /* Create a copy of mmd and copy it straight into the md->meshes 
-             * array so that copy gets the pointers. Then, just free the husk
-             * of mmd2.
-             */
-            VisIt_MeshMetaData *mmd2 = MeshMetaData_Copy(mmd);
-            memcpy(&md->meshes[index], mmd2, sizeof(VisIt_MeshMetaData));
-            free(mmd2);
+            char *name = NULL;
+            SimMeshMetaData *mmd = NULL;
 
-            md->meshes[index].numBlocks = par_size;
-
-            ++index;
+            if(MeshCache_get_mesh_info(&sim->mesh_cache, i, &name, &mmd))
+                VisIt_SimulationMetaData_addMesh(md, Handle_From_SimMeshMetaData(mmd));
         }
-    }
-    md->numMeshes = index;
 
-    /* Look through the variables that we know about and expose them. */
-    md->numScalars = VarCache_get_nvars();
-    if(md->numScalars > 0)
-    {
-        sz = md->numScalars * sizeof(VisIt_ScalarMetaData);
-        md->scalars = (VisIt_ScalarMetaData *)malloc(sz);
-        memset(md->scalars, 0, sz);
-
-        index = 0;
-        for(i = 0; i < md->numScalars; ++i)
+        /* Look through the variables that we know about and expose them. */
+        n = VarCache_get_nvars(&sim->var_cache);
+        for(i = 0; i < n; ++i)
         {
-            char *name = 0;
-            VisIt_ScalarMetaData *smd;
-            if(VarCache_get_var_info(i, &name, &smd))
-            {
-                /* Create a copy of smd and copy it straight into the md->scalars 
-                 * array so that copy gets the pointers. Then, just free the husk
-                 * of smd2.
-                 */
-                VisIt_ScalarMetaData *smd2 = ScalarMetaData_Copy(smd);
-                memcpy(&md->scalars[index], smd2, sizeof(VisIt_ScalarMetaData));
-                free(smd2);
+            char *name = NULL;
+            SimVariableMetaData *smd = NULL;
+            if(VarCache_get_var_info(&sim->var_cache, i, &name, &smd))
+                VisIt_SimulationMetaData_addVariable(md, Handle_From_SimVariableMetaData(smd));
+        }
 
-                ++index;
+        /* Add some commands. */
+        for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        {
+            visit_handle cmd = VISIT_INVALID_HANDLE;
+            if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
+            {
+                VisIt_CommandMetaData_setName(cmd, cmd_names[i]);
+                VisIt_SimulationMetaData_addGenericCommand(md, cmd);
             }
         }
     }
-
-    /* Add some custom commands. */
-    md->numGenericCommands = 3;
-    sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
-    md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
-    memset(md->genericCommands, 0, sz);
-
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
-
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
-
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
 
     return md;
 }
 
 /******************************************************************************
- * Function: parsim_GetMeta
+ * Function: SimGetMesh
  *
  * Purpose: Returns the specified mesh and domain to VisIt.
  * 
- * Notes: Since we're storing meshes in our mesh cache in VisIt's SimV1 format,
- *        we just return the meshes that we have in the cache. Most applications
- *        will need to translate from their internal data representation into
- *        the SimV1 format.
+ * Notes: This function returns the requested mesh from the mesh cache.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_MeshData *
-parsim_GetMesh(int domain, const char *name)
+visit_handle
+SimGetMesh(int domain, const char *name, void *cbdata)
 {
-    VisIt_MeshData *mesh = NULL;
-    VisIt_MeshMetaData *mmd = NULL;
-    size_t sz = sizeof(VisIt_MeshData);
-    
+    visit_handle h = VISIT_INVALID_HANDLE;
+    SimMeshMetaData *mmd = NULL;  
+    simulation_data *sim = (simulation_data *)cbdata;
 
     /* Look up the mesh name in our mesh cache to get some information
      * about the mesh.
      */
-    if(MeshCache_get_mesh_info2(name, &mmd))
+    if(MeshCache_get_mesh_info2(&sim->mesh_cache, name, &mmd))
     {
-        void *mesh_data = MeshCache_get_mesh(name, domain);
+        void *mesh_data = MeshCache_get_mesh(&sim->mesh_cache, name, domain);
         if(mesh_data != NULL)
         {
-            mesh = (VisIt_MeshData*)malloc(sizeof(VisIt_MeshData));
-            memset(mesh, 0, sizeof(VisIt_MeshData));
-            mesh->meshType = mmd->meshType;
-
             /* We found the mesh/domain that we were looking for.
-             * Here's where we would translate from the sim's format
-             * into the mesh formats provided by VisItDataInterface_V1.h.
-             * Note that we're just returning pointers in this case
-             * because this simulation uses the formats provided
-             * in the header for its own internal format.
+             * Wrap up our sim's data into objects that we return to VisIt.
              */
             if(mmd->meshType == VISIT_MESHTYPE_RECTILINEAR)
-                mesh->rmesh = (VisIt_RectilinearMesh*)mesh_data;
+                h = Handle_From_SimRectilinearMesh((SimRectilinearMesh*)mesh_data);
             else if(mmd->meshType == VISIT_MESHTYPE_CURVILINEAR)
-                mesh->cmesh = (VisIt_CurvilinearMesh* )mesh_data;
+                h = Handle_From_SimCurvilinearMesh((SimCurvilinearMesh* )mesh_data);
             else if(mmd->meshType == VISIT_MESHTYPE_UNSTRUCTURED)
-                mesh->umesh = (VisIt_UnstructuredMesh *)mesh_data;
+                h = Handle_From_SimUnstructuredMesh((SimUnstructuredMesh *)mesh_data);
             else if(mmd->meshType == VISIT_MESHTYPE_POINT)
-                mesh->pmesh = (VisIt_PointMesh *)mesh_data;
+                h = Handle_From_SimPointMesh((SimPointMesh *)mesh_data);
         }
     }
 
-    return mesh;
+    return h;
 }
 
 /******************************************************************************
- * Function: parsim_GetScalar
+ * Function: SimGetVariable
  *
  * Purpose: Returns the specified scalar from the right domain.
  *
- * Notes: This program stores its variables in VisIt's SimV1 format so we only
- *        have to return the data. Most applications will translate from their
- *        internal representation to a format that VisIt likes.
+ * Notes: This function returns the requested variable from the variable cache.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_ScalarData *
-parsim_GetScalar(int domain, const char *name)
+visit_handle
+SimGetVariable(int domain, const char *name, void *cbdata)
 {
-    return VarCache_get_var(name, domain);
+    simulation_data *sim = (simulation_data *)cbdata;
+    return VarCache_get_var(&sim->var_cache, name, domain);
 }
 
 /******************************************************************************
- * Function: parsim_GetDomainList
+ * Function: SimGetDomainList
  *
  * Purpose: Returns the domain list to VisIt.
  *
@@ -888,47 +1260,31 @@ parsim_GetScalar(int domain, const char *name)
  *        example assumes that each processor will have 1 domain.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_DomainList *
-parsim_GetDomainList()
+visit_handle
+SimGetDomainList(const char *name, void *cbdata)
 {
-    int i;
-    VisIt_DomainList *dl = malloc(sizeof(VisIt_DomainList));
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
+    {
+        visit_handle hdl;
+        int i, *iptr = NULL;
+        simulation_data *sim = (simulation_data *)cbdata;
 
-    dl->nTotalDomains = par_size;
+        iptr = (int *)malloc(sizeof(int));
+        *iptr = sim->par_rank;
 
-    dl->nMyDomains = 1;
-    dl->myDomains = VisIt_CreateDataArrayFromInt(VISIT_OWNER_VISIT,
-                                                 malloc(sizeof(int)));
-    dl->myDomains.iArray[0] = par_rank;
-
-    return dl;
+        VisIt_VariableData_alloc(&hdl);
+        VisIt_VariableData_setDataI(hdl, VISIT_OWNER_VISIT, 1, 1, iptr);
+        VisIt_DomainList_setDomains(h, sim->par_size, hdl);
+    }
+    return h;
 }
-
-/*
- * visitCallbacks structure lets SimV1 know how to access your 
- * application's data access functions.
- */
-VisIt_SimulationCallback 
-#if __GNUC__ >= 4
-__attribute__ ((visibility("default"))) 
-#endif
-visitCallbacks =
-{
-    parsim_GetMetaData,  /* GetMetaData */
-    parsim_GetMesh,      /* GetMesh */
-    NULL,                /* GetMaterial */
-    NULL,                /* GetSpecies */
-    parsim_GetScalar,    /* GetScalar */
-    NULL,                /* GetCurve */
-    NULL,                /* GetMixedScalar */
-    parsim_GetDomainList /* GetDomainList */
-};
 
 /******************************************************************************
  ******************************************************************************
@@ -939,7 +1295,7 @@ visitCallbacks =
  *****************************************************************************/
 
 /******************************************************************************
- * Function: parsim_WriteBegin
+ * Function: SimWriteBegin
  *
  * Purpose: This function is called before any data is sent to the application.
  *
@@ -947,15 +1303,16 @@ visitCallbacks =
  *        sends it data.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-int parsim_WriteBegin(const char *objName)
+int SimWriteBegin(const char *objName, void *cbdata)
 {
-    if(par_rank == 0)
+    simulation_data *sim = (simulation_data *)cbdata;
+    if(sim->par_rank == 0)
     { 
         printf("Simulation preparing for %s from VisIt.\n", objName);
     }
@@ -963,20 +1320,21 @@ int parsim_WriteBegin(const char *objName)
 }
 
 /******************************************************************************
- * Function: parsim_WriteEnd
+ * Function: SimWriteEnd
  *
  * Purpose: This function is called after VisIt has sent all data to the application.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-int parsim_WriteEnd(const char *objName)
+int SimWriteEnd(const char *objName, void *cbdata)
 {
-    if(par_rank == 0)
+    simulation_data *sim = (simulation_data *)cbdata;
+    if(sim->par_rank == 0)
     { 
         printf("Simulation handled %s from VisIt.\n", objName);
     }
@@ -984,179 +1342,86 @@ int parsim_WriteEnd(const char *objName)
 }
 
 /******************************************************************************
- * Function: parsim_WriteCurvilinearMesh
+ * Function: SimWriteMesh
  *
  * Purpose: This function is called when VisIt wants to send the application a
  *          curvilinear mesh.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-int parsim_WriteCurvilinearMesh(const char *objName, int chunk, VisIt_CurvilinearMesh *m, 
-    const VisIt_MeshMetaData *mmd)
+int SimWriteMesh(const char *objName, int chunk, int meshType, 
+    visit_handle m, visit_handle mmd, void *cbdata)
 {
-    /* Create a copy of the mesh. Note that the Mesh_Copy function that we've
-     * defined will steal the data arrays from the input mesh, which is okay 
-     * since VisIt's writer class would only have deleted them anyway. Other
-     * clients using this writer interface might translate the VisIt_CurvilinearMesh
-     * into an internal representation convenient for the client.
-     */
-    MeshAndMetaData m_mmd;
-    m_mmd.mesh = Mesh_Copy(VISIT_MESHTYPE_CURVILINEAR, m);
-    m_mmd.metadata = MeshMetaData_Copy(mmd);
-    if(par_rank == 0)
+    MeshAndMetaData m_mmd = {NULL, NULL};
+    simulation_data *sim = (simulation_data *)cbdata;
+
+    /* Create a copy of the mesh. */
+    if(meshType == VISIT_MESHTYPE_CURVILINEAR)
+        m_mmd.mesh = (void *)SimCurvilinearMesh_From_Handle(m);
+    else if(meshType == VISIT_MESHTYPE_RECTILINEAR)
+        m_mmd.mesh = (void *)SimRectilinearMesh_From_Handle(m);
+    else if(meshType == VISIT_MESHTYPE_POINT)
+        m_mmd.mesh = (void *)SimPointMesh_From_Handle(m);
+    else if(meshType == VISIT_MESHTYPE_UNSTRUCTURED)
+        m_mmd.mesh = (void *)SimUnstructuredMesh_From_Handle(m);
+    /* Create a copy of the mesh metadata. */
+    m_mmd.metadata = SimMeshMetaData_From_Handle(mmd);
+
+    if(sim->par_rank == 0)
     { 
-        printf("Simulation received domain %d of curvilinear mesh called %s from VisIt.\n",
+        printf("Simulation received domain %d of mesh %s from VisIt.\n",
                chunk, objName);
     }
-    MeshCache_add_mesh(objName, chunk, m_mmd);
+
+    MeshCache_add_mesh(&sim->mesh_cache, objName, chunk, m_mmd);
 
     return VISIT_OKAY;
 }
 
 /******************************************************************************
- * Function: parsim_WriteRectilinearMesh
- *
- * Purpose: This function is called when VisIt wants to send the application a
- *          rectilinear mesh.
- *
- * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
- *
- * Modifications:
- *
- *****************************************************************************/
-
-int parsim_WriteRectilinearMesh(const char *objName, int chunk, VisIt_RectilinearMesh *m,
-    const VisIt_MeshMetaData *mmd)
-{
-    /* Create a copy of the mesh. Note that the Mesh_Copy function that we've
-     * defined will steal the data arrays from the input mesh, which is okay 
-     * since VisIt's writer class would only have deleted them anyway. Other
-     * clients using this writer interface might translate the VisIt_RectilinearMesh
-     * into an internal representation convenient for the client.
-     */
-    MeshAndMetaData m_mmd;
-    m_mmd.mesh = Mesh_Copy(VISIT_MESHTYPE_RECTILINEAR, m);
-    m_mmd.metadata = MeshMetaData_Copy(mmd);
-    if(par_rank == 0)
-    { 
-        printf("Simulation received domain %d of rectilinear mesh called %s from VisIt.\n",
-               chunk, objName);
-    }
-    MeshCache_add_mesh(objName, chunk, m_mmd);
-
-    return VISIT_OKAY;
-}
-
-/******************************************************************************
- * Function: parsim_WritePointMesh
- *
- * Purpose: This function is called when VisIt wants to send the application a
- *          point mesh.
- *
- * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
- *
- * Modifications:
- *
- *****************************************************************************/
-
-int parsim_WritePointMesh(const char *objName, int chunk, VisIt_PointMesh *m,
-    const VisIt_MeshMetaData *mmd)
-{
-    /* Create a copy of the mesh. Note that the Mesh_Copy function that we've
-     * defined will steal the data arrays from the input mesh, which is okay 
-     * since VisIt's writer class would only have deleted them anyway. Other
-     * clients using this writer interface might translate the VisIt_PointMesh
-     * into an internal representation convenient for the client.
-     */
-    MeshAndMetaData m_mmd;
-    m_mmd.mesh = Mesh_Copy(VISIT_MESHTYPE_POINT, m);
-    m_mmd.metadata = MeshMetaData_Copy(mmd);
-    if(par_rank == 0)
-    { 
-        printf("Simulation received domain %d of point mesh called %s from VisIt.\n",
-               chunk, objName);
-    }
-    MeshCache_add_mesh(objName, chunk, m_mmd);
-
-    return VISIT_OKAY;
-}
-
-/******************************************************************************
- * Function: parsim_WriteUnstructuredMesh
- *
- * Purpose: This function is called when VisIt wants to send the application an
- *          unstructured mesh.
- *
- * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
- *
- * Modifications:
- *
- *****************************************************************************/
-
-int parsim_WriteUnstructuredMesh(const char *objName, int chunk, VisIt_UnstructuredMesh *m,
-    const VisIt_MeshMetaData *mmd)
-{
-    /* Create a copy of the mesh. Note that the Mesh_Copy function that we've
-     * defined will steal the data arrays from the input mesh, which is okay 
-     * since VisIt's writer class would only have deleted them anyway. Other
-     * clients using this writer interface might translate the VisIt_UnstructuredMesh
-     * into an internal representation convenient for the client.
-     */
-    MeshAndMetaData m_mmd;
-    m_mmd.mesh = Mesh_Copy(VISIT_MESHTYPE_UNSTRUCTURED, m);
-    m_mmd.metadata = MeshMetaData_Copy(mmd);
-    if(par_rank == 0)
-    { 
-        printf("Simulation received domain %d of unstructured mesh called %s from VisIt.\n",
-               chunk, objName);
-    }
-    MeshCache_add_mesh(objName, chunk, m_mmd);
-
-    return VISIT_OKAY;
-}
-
-/******************************************************************************
- * Function: parsim_WriteDataArray
+ * Function: SimWriteVariable
  *
  * Purpose: This function is called when VisIt wants to send the application a
  *          data array for the mesh that was sent previously.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-int parsim_WriteDataArray(const char *objName, const char *arrName, int chunk,
-    int dataType, void *values, int ntuples, int ncomponents,
-    const VisIt_ScalarMetaData *smd)
+int SimWriteVariable(const char *objName, const char *arrName, int chunk,
+    visit_handle data, visit_handle metadata, void *cbdata)
 {
-    VisIt_ScalarMetaData *smd2 = NULL;
+    char varname[200];
+    SimDataArray *d = NULL;
+    SimVariableMetaData *md = NULL;
+    simulation_data *sim = (simulation_data *)cbdata;
 
     /* Create a name that VisIt will treat like a subdirectory in the GUI. This also
      * prevents the original data from getting clobbered if only the mesh changed.
      * If you want to clobber the original data then by all means do so.
      */
-    char varname[200];
     sprintf(varname, "%s/%s", objName, arrName);
-
-    if(par_rank == 0)
+    if(sim->par_rank == 0)
     { 
         printf("Simulation getting new data array %s:%s:%d from VisIt.\n", objName, arrName, chunk);
     }
 
-    smd2 = ScalarMetaData_Copy(smd);
-    free((void*)smd2->name);
-    smd2->name = strdup(varname);
+    /* Package up the data into SimDataArray */
+    d = (SimDataArray *)malloc(sizeof(SimDataArray));
+    SimDataArray_From_Handle(d, data);
+
+    /* Convert the metadata and replace the variable name. */
+    md = SimVariableMetaData_From_Handle(metadata);
+    free((void*)md->name);
+    md->name = strdup(varname);
 
     /* Store the variable coming in from VisIt on the "objName" mesh. Since we are
      * adding the variable to our sim's variable cache, we're adding it to the list
@@ -1166,26 +1431,10 @@ int parsim_WriteDataArray(const char *objName, const char *arrName, int chunk,
      */
 
     /* Add the data to the variable cache. */
-    VarCache_add_var(varname, chunk, objName, dataType, smd->centering, 
-                     ntuples, ncomponents, values, smd2);
+    VarCache_add_var(&sim->var_cache, varname, chunk, objName, d, md);
 
     return VISIT_OKAY;
 }
-
-/*
- * visitWriterCallbacks lets you tell VisIt which functions to call when you want
- * to export data back to your application.
- */
-VisIt_SimulationWriterCallback visitWriterCallbacks =
-{
-    parsim_WriteBegin,            /* WriteBegin */
-    parsim_WriteEnd,              /* WriteEnd */
-    parsim_WriteCurvilinearMesh,  /* WriteCurvilinearMesh */
-    parsim_WriteRectilinearMesh,  /* WriteRectilinearMesh */
-    parsim_WritePointMesh,        /* WritePointMesh */
-    parsim_WriteUnstructuredMesh, /* WriteUnstructuredMesh */
-    parsim_WriteDataArray,        /* WriteDataArray */
-};
 
 /******************************************************************************/
 
@@ -1196,70 +1445,76 @@ VisIt_SimulationWriterCallback visitWriterCallbacks =
  *          give to VisIt.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-VisIt_RectilinearMesh *
-CreateRectMesh(int domain)
+void
+CreateRectMesh(int domain, SimRectilinearMesh **rmesh, SimDataArray **dist)
 {
-    int i;
-    size_t sz;
-    float *x, *y;
-    /* Rectilinear mesh */
-    VisIt_RectilinearMesh *rmesh = NULL;
-    const float rmesh_x[] = {0., 1., 2.5, 5.};
-    const float rmesh_y[] = {0., 2., 2.25, 2.55,  5.};
-    const int   rmesh_dims[] = {4, 5, 1};
-    const int   rmesh_ndims = 2;
+    int i,j,k, dims[3] = {101, 151, 201};
+    float x_offset, y_offset, z_offset = 0.;
+    float *x, *y, *z, *distvar;
 
-    /* Make VisIt_MeshData contain a VisIt_RectilinearMesh. */
-    sz = sizeof(VisIt_RectilinearMesh);
-    rmesh = (VisIt_RectilinearMesh *)malloc(sz);
-    memset(rmesh, 0, sz);
+    /* Offset the coordinates based on the domain. */
+    x_offset = (float)(domain % 4);
+    y_offset = (float)(domain / 4);
 
-    /* Set the mesh's number of dimensions. */
-    rmesh->ndims = rmesh_ndims;
-
-    /* Set the mesh dimensions. */
-    rmesh->dims[0] = rmesh_dims[0];
-    rmesh->dims[1] = rmesh_dims[1];
-    rmesh->dims[2] = rmesh_dims[2];
-
-    rmesh->baseIndex[0] = 0;
-    rmesh->baseIndex[1] = 0;
-    rmesh->baseIndex[2] = 0;
-
-    rmesh->minRealIndex[0] = 0;
-    rmesh->minRealIndex[1] = 0;
-    rmesh->minRealIndex[2] = 0;
-    rmesh->maxRealIndex[0] = rmesh_dims[0]-1;
-    rmesh->maxRealIndex[1] = rmesh_dims[1]-1;
-    rmesh->maxRealIndex[2] = rmesh_dims[2]-1;
-
-    /*Change mesh coords based on the domain #.*/
-    x = (float*)malloc(4 * sizeof(float));
-    for(i = 0; i < 4; ++i)
+    /* Create coordinates. */
+    x = (float*)malloc(dims[0] * sizeof(float));
+    for(i = 0; i < dims[0]; ++i)
     {
-        x[i] = rmesh_x[i];
-        if(domain > 0)
-            x[i] += (par_rank * 5.f);
+        float t = (float)i / (float)(dims[0] - 1);
+        x[i] = t + x_offset;
     }
-    y = (float*)malloc(5 * sizeof(float));
-    for(i = 0; i < 5; ++i)
-        y[i] = rmesh_y[i];
-      
-    /* Give VisIt a copy of the mesh coordinates. Since we're letting
-     * VisIt own the data arrays here, it will delete when no longer needed.
-     */
-    rmesh->xcoords = VisIt_CreateDataArrayFromFloat(
-        VISIT_OWNER_SIM, x);
-    rmesh->ycoords = VisIt_CreateDataArrayFromFloat(
-        VISIT_OWNER_SIM, y);
+    y = (float*)malloc(dims[1] * sizeof(float));
+    for(i = 0; i < dims[1]; ++i)
+    {
+        float t = (float)i / (float)(dims[1] - 1);
+        y[i] = t + y_offset;
+    }
+    z = (float*)malloc(dims[2] * sizeof(float));
+    for(i = 0; i < dims[2]; ++i)
+    {
+        float t = (float)i / (float)(dims[2] - 1);
+        z[i] = t + z_offset;
+    }
 
-    return rmesh;
+    *rmesh = (SimRectilinearMesh *)malloc(sizeof(SimRectilinearMesh));
+    memset(*rmesh, 0, sizeof(SimRectilinearMesh));
+    (*rmesh)->ndims = 3;
+
+    (*rmesh)->coords[0].data = (void *)x;
+    (*rmesh)->coords[0].dataType = VISIT_DATATYPE_FLOAT;
+    (*rmesh)->coords[0].nComps = 1;
+    (*rmesh)->coords[0].nTuples = dims[0];
+      
+    (*rmesh)->coords[1].data = (void *)y;
+    (*rmesh)->coords[1].dataType = VISIT_DATATYPE_FLOAT;
+    (*rmesh)->coords[1].nComps = 1;
+    (*rmesh)->coords[1].nTuples = dims[1];
+      
+    (*rmesh)->coords[2].data = (void *)z;
+    (*rmesh)->coords[2].dataType = VISIT_DATATYPE_FLOAT;
+    (*rmesh)->coords[2].nComps = 1;
+    (*rmesh)->coords[2].nTuples = dims[2];
+
+    /* Create distance variable. */
+    distvar = (float*)malloc((dims[0]-1) * (dims[1]-1) * (dims[2]-1) * sizeof(float));
+    for(k = 0; k < dims[2]-1; ++k)
+    for(j = 0; j < dims[1]-1; ++j)
+    for(i = 0; i < dims[0]-1; ++i)
+    {
+        distvar[k*(dims[1]-1)*(dims[0]-1) + j*(dims[0]-1) + i] = 
+           sqrt(x[i]*x[i] + y[j]*y[j] + z[k]*z[k]);
+    }
+    *dist = (SimDataArray *)malloc(sizeof(SimDataArray));
+    (*dist)->data = (void *)distvar;
+    (*dist)->dataType = VISIT_DATATYPE_FLOAT;
+    (*dist)->nComps = 1;
+    (*dist)->nTuples = (dims[0]-1) * (dims[1]-1) * (dims[2]-1);
 }
 
 /******************************************************************************
@@ -1269,54 +1524,55 @@ CreateRectMesh(int domain)
  *          data were read from an input deck.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:10:53 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
 void
-read_input_deck()
+read_input_deck(simulation_data *sim)
 {
-    MeshAndMetaData m_mmd;
-    VisIt_ScalarMetaData *smd;
-    double rmesh_zc_var[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.};
-    int domain = par_rank;
+    MeshAndMetaData m_mmd = {NULL, NULL};
+    SimRectilinearMesh *rmesh = NULL;
+    SimDataArray *rdata = NULL;
+    SimVariableMetaData *smd = NULL;
+    int domain = sim->par_rank;
 
-    MeshCache_Init();
-    VarCache_Init();
+    /* Create the data for this domain */
+    CreateRectMesh(domain, &rmesh, &rdata);
 
-    /* Create the mesh and mesh metadata that we will report to VisIt 
-     * and cache it.
-     */
-    m_mmd.mesh = CreateRectMesh(domain);
-    m_mmd.metadata = (VisIt_MeshMetaData *)malloc(sizeof(VisIt_MeshMetaData));
-    memset(m_mmd.metadata, 0, sizeof(VisIt_MeshMetaData));
+    /* Create the mesh metadata that we will report to VisIt. */
+    m_mmd.mesh = rmesh;
+    m_mmd.metadata = (SimMeshMetaData *)malloc(sizeof(SimMeshMetaData));
+    memset(m_mmd.metadata, 0, sizeof(SimMeshMetaData));
     m_mmd.metadata->name = strdup("mesh");
     m_mmd.metadata->meshType = VISIT_MESHTYPE_RECTILINEAR;
-    m_mmd.metadata->topologicalDimension = 2;
-    m_mmd.metadata->spatialDimension = 2;
-    m_mmd.metadata->numBlocks = par_size;
-    m_mmd.metadata->blockTitle = strdup("domains");
-    m_mmd.metadata->blockPieceName = strdup("domain");
+    m_mmd.metadata->topologicalDimension = 3;
+    m_mmd.metadata->spatialDimension = 3;
+    m_mmd.metadata->numDomains = sim->par_size;
+    m_mmd.metadata->domainTitle = strdup("domains");
+    m_mmd.metadata->domainPieceName = strdup("domain");
     m_mmd.metadata->numGroups = 0;
     m_mmd.metadata->groupTitle = strdup("groups");
     m_mmd.metadata->groupPieceName = strdup("group");
-    m_mmd.metadata->groupIds = NULL;
-    m_mmd.metadata->units = strdup("cm");
+    m_mmd.metadata->xUnits = strdup("cm");
+    m_mmd.metadata->yUnits = strdup("cm");
+    m_mmd.metadata->zUnits = strdup("cm");
     m_mmd.metadata->xLabel = strdup("Width");
     m_mmd.metadata->yLabel = strdup("Height");
     m_mmd.metadata->zLabel = strdup("Depth");
-    MeshCache_add_mesh("mesh", domain, m_mmd);
+    MeshCache_add_mesh(&sim->mesh_cache, "mesh", domain, m_mmd);
 
     /* Add a variable to the variable cache. */
-    smd = (VisIt_ScalarMetaData *)malloc(sizeof(VisIt_ScalarMetaData));
-    smd->name = strdup("zc");
+    smd = (SimVariableMetaData *)malloc(sizeof(SimVariableMetaData));
+    memset(smd, 0, sizeof(SimVariableMetaData));
+    smd->name = strdup("distance");
     smd->meshName = strdup("mesh");
+    smd->type = VISIT_VARTYPE_SCALAR;
     smd->centering = VISIT_VARCENTERING_ZONE;
-    smd->treatAsASCII = 0;
-    VarCache_add_var("zc", domain, "mesh",VISIT_DATATYPE_DOUBLE, VISIT_VARCENTERING_ZONE, 
-                     12, 1, rmesh_zc_var, smd);
+    smd->units = strdup("cm");
+    VarCache_add_var(&sim->var_cache, "distance", domain, "mesh", rdata, smd);
 }
 
 /******************************************************************************
@@ -1327,20 +1583,48 @@ read_input_deck()
  ******************************************************************************
  *****************************************************************************/
 
+/******************************************************************************
+ *
+ * Purpose: This function simulates one time step
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Wed Mar 17 16:11:39 PDT 2010
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void simulate_one_timestep(simulation_data *sim)
+{
+    ++sim->cycle;
+    sim->time += (M_PI / 10.);
+
+    if(sim->par_rank == 0)
+        printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+
+    VisItTimeStepChanged();
+    VisItUpdatePlots();
+}
+
 /* Callback function for control commands, which are the buttons in the 
  * GUI's Simulation window. This type of command is handled automatically
  * provided that you have registered a command callback such as this.
  */
-void ControlCommandCallback(const char *cmd,
-    int int_data, float float_data,
-    const char *string_data)
+void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
+    simulation_data *sim = (simulation_data *)cbdata;
+
     if(strcmp(cmd, "halt") == 0)
-        runFlag = 0;
+        sim->runMode = SIM_STOPPED;
     else if(strcmp(cmd, "step") == 0)
-        simulate_one_timestep();
+        simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
-        runFlag = 1;
+        sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
 }
 
 /* CHANGE 1 */
@@ -1373,14 +1657,14 @@ void SlaveProcessCallback()
 }
 
 /* Process commands from viewer on all processors. */
-int ProcessVisItCommand(void)
+int ProcessVisItCommand(simulation_data *sim)
 {
     int command;
-    if (par_rank==0)
+    if (sim->par_rank==0)
     {  
         int success = VisItProcessEngineCommand();
 
-        if (success)
+        if (success == VISIT_OKAY)
         {
             command = VISIT_COMMAND_SUCCESS;
             BroadcastSlaveCommand(&command);
@@ -1419,37 +1703,42 @@ int ProcessVisItCommand(void)
  * input that needs to be processed in order to accomplish an action.
  */
 void
-ProcessConsoleCommand()
+ProcessConsoleCommand(simulation_data *sim)
 {
     /* Read A Command */
-    char buff[1000];
+    char cmd[1000];
 
-    if (par_rank == 0)
+    if (sim->par_rank == 0)
     {
-        int iseof = (fgets(buff, 1000, stdin) == NULL);
+        int iseof = (fgets(cmd, 1000, stdin) == NULL);
         if (iseof)
         {
-            sprintf(buff, "quit");
+            sprintf(cmd, "quit");
             printf("quit\n");
         }
 
-        if (strlen(buff)>0 && buff[strlen(buff)-1] == '\n')
-            buff[strlen(buff)-1] = '\0';
+        if (strlen(cmd)>0 && cmd[strlen(cmd)-1] == '\n')
+            cmd[strlen(cmd)-1] = '\0';
     }
 
 #ifdef PARALLEL
     /* Broadcast the command to all processors. */
-    MPI_Bcast(buff, 1000, MPI_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast(cmd, 1000, MPI_CHAR, 0, MPI_COMM_WORLD);
 #endif
 
-    if(strcmp(buff, "run") == 0)
-        runFlag = 1;
-    else if(strcmp(buff, "halt") == 0)
-        runFlag = 0;
-    else if(strcmp(buff, "step") == 0)
-        simulate_one_timestep();
-    else if(strcmp(buff, "quit") == 0)
-        simDone = 1;
+    if(strcmp(cmd, "quit") == 0)
+        sim->done = 1;
+    else if(strcmp(cmd, "halt") == 0)
+        sim->runMode = SIM_STOPPED;
+    else if(strcmp(cmd, "step") == 0)
+        simulate_one_timestep(sim);
+    else if(strcmp(cmd, "run") == 0)
+        sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+    {
+        VisItTimeStepChanged();
+        VisItUpdatePlots();
+    }
 }
 
 /******************************************************************************
@@ -1460,17 +1749,23 @@ ProcessConsoleCommand()
  *          other functions for processing.
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:26:08 PST 2006
+ * Date:       Wed Mar 17 16:07:34 PDT 2010
  *
  * Modifications:
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
-    if (par_rank == 0)
+    /* If we're not running by default then simulate once there's something
+     * once VisIt connects.
+     */
+    if(sim->runMode == SIM_STOPPED)
+        simulate_one_timestep(sim);
+
+    if (sim->par_rank == 0)
     {
         fprintf(stderr, "command> ");
         fflush(stderr);
@@ -1478,9 +1773,9 @@ void mainloop(void)
 
     do
     {
-        blocking = runFlag ? 0 : 1;
+        blocking = (sim->runMode == SIM_RUNNING) ? 0 : 1;
         /* Get input from VisIt or timeout so the simulation can run. */
-        if(par_rank == 0)
+        if(sim->par_rank == 0)
         {
             visitstate = VisItDetectInput(blocking, fileno(stdin));
         }
@@ -1493,28 +1788,44 @@ void mainloop(void)
         {
         case 0:
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep();
+            simulate_one_timestep(sim);
             break;
         case 1:
             /* VisIt is trying to connect to sim. */
-            if(VisItAttemptToCompleteConnection())
+            if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback);
+                VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
                 VisItSetSlaveProcessCallback(SlaveProcessCallback);
+
+                /* Read functions */
+                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+                VisItSetGetMesh(SimGetMesh, (void*)sim);
+                VisItSetGetVariable(SimGetVariable, (void*)sim);
+                VisItSetGetDomainList(SimGetDomainList, (void*)sim);
+
+                /* Write functions */
+                VisItSetWriteBegin(SimWriteBegin, (void *)sim);
+                VisItSetWriteEnd(SimWriteEnd, (void *)sim);
+                VisItSetWriteMesh(SimWriteMesh, (void *)sim);
+                VisItSetWriteVariable(SimWriteVariable, (void*)sim);
             }
-            else
-                fprintf(stderr, "VisIt did not connect\n");
+            else 
+            {
+                /* Print the error message */
+                char *err = VisItGetLastError();
+                fprintf(stderr, "VisIt did not connect: %s\n", err);
+                free(err);
+            }
             break;
         case 2:
             /* VisIt wants to tell the engine something. */
-            runFlag = 0;
-            if(!ProcessVisItCommand())
+            if(!ProcessVisItCommand(sim))
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                runFlag = 1;
+                /*sim->runMode = SIM_RUNNING;*/
             }
             break;
         case 3:
@@ -1522,8 +1833,8 @@ void mainloop(void)
              * NOTE: you can't get here unless you pass a file descriptor to
              * VisItDetectInput instead of -1.
              */
-            ProcessConsoleCommand();
-            if (par_rank == 0)
+            ProcessConsoleCommand(sim);
+            if (sim->par_rank == 0)
             {
                 fprintf(stderr, "command> ");
                 fflush(stderr);
@@ -1534,7 +1845,7 @@ void mainloop(void)
             err = 1;
             break;
         }
-    } while(!simulation_done() && err == 0);
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -1542,7 +1853,7 @@ void mainloop(void)
  * Function:  main
  *
  * Programmer: Brad Whitlock
- * Date:       Thu Nov 2 17:27:14 PST 2006
+ * Date:       Wed Mar 17 15:57:56 PDT 2010
  *
  * Modifications:
  *
@@ -1550,41 +1861,47 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
+#ifdef PARALLEL
+    /* Initialize MPI */
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
+#endif
+
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
 #ifdef PARALLEL
-    /* Initialize MPI */
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &par_size);
-
     /* Install callback functions for global communication. */
     VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
     VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
     /* Tell VSIL whether the simulation is parallel. */
-    VisItSetParallel(par_size > 1);
-    VisItSetParallelRank(par_rank);
+    VisItSetParallel(sim.par_size > 1);
+    VisItSetParallelRank(sim.par_rank);
 #endif
 
     /* Write out .sim file that VisIt uses to connect. Only do it
      * on processor 0.
      */
     /* CHANGE 3 */
-    if(par_rank == 0)
+    if(sim.par_rank == 0)
     {
-        VisItInitializeSocketAndDumpSimFile("parsim",
-        "Parallel C prototype simulation connects to VisIt",
+        VisItInitializeSocketAndDumpSimFile("writeback",
+        "Accept data from VisIt and expose that data as new data sources",
         "/path/to/where/sim/was/started", NULL, NULL, NULL);
     }
 
     /* Read input problem setup, geometry, data.*/
-    read_input_deck();
+    read_input_deck(&sim);
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
 
+    simulation_data_dtor(&sim);
 #ifdef PARALLEL
     MPI_Finalize();
 #endif

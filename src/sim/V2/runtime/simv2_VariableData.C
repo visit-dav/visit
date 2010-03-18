@@ -170,6 +170,31 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
     return retval;
 }
 
+int
+simv2_VariableData_getData2(visit_handle h, int *owner, int *dataType, int *nComps,
+    int *nTuples, void **data)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableData *obj = GetObject(h, "simv2_VariableData_getData");
+    if(obj != NULL)
+    {
+        if(obj->data == NULL)
+        {
+            VisItError("The data array does not contain any data");
+            return VISIT_ERROR;
+        }
+
+        *owner = obj->owner;
+        *dataType = obj->dataType;
+        *nComps = obj->nComponents;
+        *nTuples = obj->nTuples;
+        *data = obj->data;
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
 /*******************************************************************************
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/

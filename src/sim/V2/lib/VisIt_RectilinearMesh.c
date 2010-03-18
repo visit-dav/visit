@@ -95,6 +95,34 @@ VisIt_RectilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3])
                     (*cb)(obj,min,max));
 }
 
+int
+VisIt_RectilinearMesh_getCoords(visit_handle obj, int *ndims, 
+                  visit_handle *x, visit_handle *y, visit_handle *z)
+{
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_getCoords,
+                    int (*)(visit_handle,int*,visit_handle*,visit_handle*,visit_handle*), 
+                    int (*cb)(visit_handle,int*,visit_handle*,visit_handle*,visit_handle*), 
+                    (*cb)(obj,ndims,x,y,z));
+}
+
+int
+VisIt_RectilinearMesh_getRealIndices(visit_handle obj, int min[3], int max[3])
+{
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_getRealIndices,
+                    int (*)(visit_handle,int[3], int[3]), 
+                    int (*cb)(visit_handle,int[3], int[3]), 
+                    (*cb)(obj,min,max));
+}
+
+int
+VisIt_RectilinearMesh_getBaseIndex(visit_handle obj, int base_index[3])
+{
+    VISIT_DYNAMIC_EXECUTE(RectilinearMesh_getCoords,
+                    int (*)(visit_handle,int[3]), 
+                    int (*cb)(visit_handle,int[3]), 
+                    (*cb)(obj,base_index));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITRECTMESHALLOC             F77_ID(visitrectmeshalloc_,visitrectmeshalloc,VISITRECTMESHALLOC)
@@ -103,6 +131,9 @@ VisIt_RectilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3])
 #define F_VISITRECTMESHSETCOORDSXYZ      F77_ID(visitrectmeshsetcoordsxyz_,visitrectmeshsetcoordsxyz,VISITRECTMESHSETCOORDSXYZ)
 #define F_VISITRECTMESHSETBASEINDEX      F77_ID(visitrectmeshsetbaseindex_,visitrectmeshsetbaseindex,VISITRECTMESHSETBASEINDEX)
 #define F_VISITRECTMESHSETREALINDICES    F77_ID(visitrectmeshsetrealindices_,visitrectmeshsetrealindices,VISITRECTMESHSETREALINDICES)
+#define F_VISITRECTMESHGETCOORDS         F77_ID(visitrectmeshgetcoords_,visitrectmeshgetcoords,VISITRECTMESHGETCOORDS)
+#define F_VISITRECTMESHGETBASEINDEX      F77_ID(visitrectmeshgetbaseindex_,visitrectmeshgetbaseindex,VISITRECTMESHGETBASEINDEX)
+#define F_VISITRECTMESHGETREALINDICES    F77_ID(visitrectmeshgetrealindices_,visitrectmeshgetrealindices,VISITRECTMESHGETREALINDICES)
 
 int
 F_VISITRECTMESHALLOC(visit_handle *obj)
@@ -149,5 +180,23 @@ F_VISITRECTMESHSETREALINDICES(visit_handle *obj, int *mins, int *maxs)
     tmpMax[1] = maxs[1];
     tmpMax[2] = maxs[2];
     return VisIt_RectilinearMesh_setRealIndices(*obj, tmpMin, tmpMax);
+}
+
+int
+F_VISITRECTMESHGETCOORDS(visit_handle *obj, int *ndims, visit_handle *x, visit_handle *y, visit_handle *z)
+{
+    return VisIt_RectilinearMesh_getCoords(*obj, ndims, x, y, z);
+}
+
+int
+F_VISITRECTMESHGETBASEINDEX(visit_handle *obj, int *base_index)
+{
+    return VisIt_RectilinearMesh_getBaseIndex(*obj, base_index);
+}
+
+int
+F_VISITRECTMESHGETREALINDICES(visit_handle *obj, int *mins, int *maxs)
+{
+    return VisIt_RectilinearMesh_getRealIndices(*obj, mins, maxs);
 }
 

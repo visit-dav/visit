@@ -52,6 +52,13 @@ int VisIt_CSGMesh_setBoundaryTypes(visit_handle obj, visit_handle csgtypes);
 int VisIt_CSGMesh_setBoundaryCoeffs(visit_handle obj, visit_handle coeffs);
 int VisIt_CSGMesh_setExtents(visit_handle obj, double min[3], double max[3]);
 
+int VisIt_CSGMesh_getRegions(visit_handle h, visit_handle *typeflags,
+                             visit_handle *left, visit_handle *right);
+int VisIt_CSGMesh_getZonelist(visit_handle h, visit_handle *zl);
+int VisIt_CSGMesh_getBoundaryTypes(visit_handle h, visit_handle *cshtypes);
+int VisIt_CSGMesh_getBoundaryCoeffs(visit_handle h, visit_handle *coeffs);
+int VisIt_CSGMesh_getExtents(visit_handle h, double min[3], double max[3]);
+
 #ifdef __cplusplus
 }
 #endif

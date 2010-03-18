@@ -503,9 +503,11 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
     int ndims = 0, dims[3]={0,0,0}, coordMode = 0;
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
     visit_handle x,y,z,c;   
-    if(simv2_CurvilinearMesh_getData(h, ndims, dims, 
-        minRealIndex, maxRealIndex, baseIndex, coordMode,
-        x,y,z,c) == VISIT_ERROR)
+    if(simv2_CurvilinearMesh_getCoords(h, &ndims, dims, &coordMode,
+                                       &x,&y,&z,&c) == VISIT_ERROR ||
+       simv2_CurvilinearMesh_getRealIndices(h, minRealIndex, 
+                                       maxRealIndex) == VISIT_ERROR ||
+       simv2_CurvilinearMesh_getBaseIndex(h, baseIndex) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
                    "Could not obtain mesh data using the provided handle.\n");
@@ -579,12 +581,12 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     int ndims = 0, dims[3]={0,0,0};
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
     visit_handle x,y,z,c;   
-    if(simv2_RectilinearMesh_getData(h, ndims, minRealIndex, maxRealIndex, 
-        baseIndex, x, y, z) == VISIT_ERROR)
+    if(simv2_RectilinearMesh_getCoords(h, &ndims, &x, &y, &z) == VISIT_ERROR ||
+       simv2_RectilinearMesh_getRealIndices(h, minRealIndex, maxRealIndex) == VISIT_ERROR ||
+       simv2_RectilinearMesh_getBaseIndex(h, baseIndex) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
             "Could not obtain mesh data using the provided handle.\n");
-
     }
 
     //
@@ -924,8 +926,9 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
     //
     int ndims = 0, nzones = 0, coordMode = 0, firstRealZone=0, lastRealZone=0;
     visit_handle x,y,z,c,conn;   
-    if(simv2_UnstructuredMesh_getData(h, ndims, coordMode, x, y, z, c, 
-        nzones, firstRealZone, lastRealZone, conn) == VISIT_ERROR)
+    if(simv2_UnstructuredMesh_getCoords(h, &ndims, &coordMode, &x, &y, &z, &c) == VISIT_ERROR ||
+       simv2_UnstructuredMesh_getConnectivity(h, &nzones, &conn) == VISIT_ERROR ||
+       simv2_UnstructuredMesh_getRealIndices(h, &firstRealZone, &lastRealZone) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
                    "Could not obtain mesh data using the provided handle.\n");
@@ -1141,7 +1144,7 @@ SimV2_GetMesh_Point(visit_handle h)
     //
     int ndims = 0, coordMode = 0;
     visit_handle x,y,z,c;   
-    if(simv2_PointMesh_getData(h, ndims, coordMode, x, y, z, c) == VISIT_ERROR)
+    if(simv2_PointMesh_getCoords(h, &ndims, &coordMode, &x, &y, &z, &c) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
                    "Could not obtain mesh data using the provided handle.\n");
@@ -1199,11 +1202,13 @@ SimV2_GetMesh_CSG(visit_handle h)
     //
     // Obtain the mesh data from the opaque object.
     //
-    int ndims = 0, coordMode = 0;
     visit_handle typeflags, leftids, rightids, zonelist, bndtypes, bndcoeffs;
     double min_extents[3]={0.,0.,0.}, max_extents[3]={0.,0.,0.};
-    if(simv2_CSGMesh_getData(h, typeflags, leftids, rightids, zonelist, bndtypes, 
-        bndcoeffs, min_extents, max_extents) == VISIT_ERROR)
+    if(simv2_CSGMesh_getRegions(h, &typeflags, &leftids, &rightids) == VISIT_ERROR ||
+       simv2_CSGMesh_getZonelist(h, &zonelist) == VISIT_ERROR ||
+       simv2_CSGMesh_getBoundaryTypes(h, &bndtypes) == VISIT_ERROR ||
+       simv2_CSGMesh_getBoundaryCoeffs(h, &bndcoeffs) == VISIT_ERROR ||
+       simv2_CSGMesh_getExtents(h, min_extents, max_extents) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
                    "Could not obtain mesh data using the provided handle.\n");

@@ -241,5 +241,5 @@ ADD_FORTRAN_SIMV2_SIMULATION(fupdateplots fupdateplots.f)
 
 ADD_SIMV2_SIMULATION(var var.c)
 
-ADD_SIMV1_SIMULATION(writeback writeback.c)
-ADD_PARALLEL_SIMV1_SIMULATION(writeback_par writeback.c)
+ADD_SIMV2_SIMULATION(writeback writeback.c)
+ADD_PARALLEL_SIMV2_SIMULATION(writeback_par writeback.c)

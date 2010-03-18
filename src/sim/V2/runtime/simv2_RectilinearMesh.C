@@ -239,24 +239,32 @@ simv2_RectilinearMesh_setBaseIndex(visit_handle h, int base_index[3])
     return retval;
 }
 
-/*******************************************************************************
- * C++ code callable from the SimV2 plugin and within the runtime
- ******************************************************************************/
-
 int
-simv2_RectilinearMesh_getData(visit_handle h,
-    int &ndims, int min[3], int max[3], int base_index[3],
-    visit_handle &x, visit_handle &y, visit_handle &z)
+simv2_RectilinearMesh_getCoords(visit_handle h,
+    int *ndims,
+    visit_handle *x, visit_handle *y, visit_handle *z)
 {
     int retval = VISIT_ERROR;
-    VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_getData");
+    VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_getCoords");
     if(obj != NULL)
     {
-        ndims = obj->ndims;
-        x = obj->xcoords;
-        y = obj->ycoords;
-        z = obj->zcoords;
+        *ndims = obj->ndims;
+        *x = obj->xcoords;
+        *y = obj->ycoords;
+        *z = obj->zcoords;
 
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_RectilinearMesh_getRealIndices(visit_handle h, int min[3], int max[3])
+{
+    int retval = VISIT_ERROR;
+    VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_getRealIndices");
+    if(obj != NULL)
+    {
         visit_handle cHandles[3];
         cHandles[0] = obj->xcoords;
         cHandles[1] = obj->ycoords;
@@ -267,19 +275,36 @@ simv2_RectilinearMesh_getData(visit_handle h,
             // so we can set the maxRealIndex if it has not been set.
             int owner, dataType, nComps, nTuples=1;
             void *data = NULL;
-            if(i < ndims)
+            if(i < obj->ndims)
             {
                 simv2_VariableData_getData(cHandles[i], owner, dataType, nComps, 
                     nTuples, data);
             }
             min[i] = obj->minRealIndex[i];
             max[i] = (obj->maxRealIndex[i] == -1) ? (nTuples-1) : obj->maxRealIndex[i];
-            base_index[i] = obj->baseIndex[i];
         }
         retval = VISIT_OKAY;
     }
     return retval;
 }
+
+int
+simv2_RectilinearMesh_getBaseIndex(visit_handle h, int base_index[3])
+{
+    int retval = VISIT_ERROR;
+    VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_getBaseIndex");
+    if(obj != NULL)
+    {
+        for(int i = 0; i < 3; ++i)
+            base_index[i] = obj->baseIndex[i];
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+/*******************************************************************************
+ * C++ code callable from the SimV2 plugin and within the runtime
+ ******************************************************************************/
 
 int
 simv2_RectilinearMesh_check(visit_handle h)

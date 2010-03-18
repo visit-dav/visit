@@ -52,6 +52,16 @@ int VisIt_UnstructuredMesh_setCoords(visit_handle obj, visit_handle c);
 int VisIt_UnstructuredMesh_setConnectivity(visit_handle obj, int nzones, visit_handle c);
 int VisIt_UnstructuredMesh_setRealIndices(visit_handle obj, int min, int max);
 
+int VisIt_UnstructuredMesh_getCoords(visit_handle h,
+                                     int *ndims, int *coordMode,
+                                     visit_handle *x, 
+                                     visit_handle *y, 
+                                     visit_handle *z, 
+                                     visit_handle *coords);
+int VisIt_UnstructuredMesh_getConnectivity(visit_handle h, int *nzones,
+                                           visit_handle *conn);
+int VisIt_UnstructuredMesh_getRealIndices(visit_handle obj, int *, int *);
+
 #ifdef __cplusplus
 }
 #endif
