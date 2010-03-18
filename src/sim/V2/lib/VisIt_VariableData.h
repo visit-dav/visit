@@ -51,6 +51,12 @@ int VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTu
 int VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, float *);
 int VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, double *);
 
+int VisIt_VariableData_getData(visit_handle obj, int *owner, int *dataType, int *nComps, int *nTuples, void **);
+int VisIt_VariableData_getDataC(visit_handle obj, int *owner, int *nComps, int *nTuples, char **);
+int VisIt_VariableData_getDataI(visit_handle obj, int *owner, int *nComps, int *nTuples, int **);
+int VisIt_VariableData_getDataF(visit_handle obj, int *owner, int *nComps, int *nTuples, float **);
+int VisIt_VariableData_getDataD(visit_handle obj, int *owner, int *nComps, int *nTuples, double **);
+
 #ifdef __cplusplus
 }
 #endif

@@ -51,6 +51,11 @@ int VisIt_RectilinearMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_h
 int VisIt_RectilinearMesh_setRealIndices(visit_handle obj, int min[3], int max[3]);
 int VisIt_RectilinearMesh_setBaseIndex(visit_handle obj, int base_index[3]);
 
+int VisIt_RectilinearMesh_getCoords(visit_handle obj, int *ndims, 
+                  visit_handle *x, visit_handle *y, visit_handle *z);
+int VisIt_RectilinearMesh_getRealIndices(visit_handle obj, int min[3], int max[3]);
+int VisIt_RectilinearMesh_getBaseIndex(visit_handle obj, int base_index[3]);
+
 #ifdef __cplusplus
 }
 #endif

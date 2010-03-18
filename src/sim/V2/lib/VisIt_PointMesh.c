@@ -85,6 +85,16 @@ VisIt_PointMesh_setCoords(visit_handle obj, visit_handle c)
                     (*cb)(obj,c));
 }
 
+int
+VisIt_PointMesh_getCoords(visit_handle obj, int *ndims, int *coordMode, 
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
+{
+    VISIT_DYNAMIC_EXECUTE(PointMesh_getCoords,
+                    int (*)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
+                    int (*cb)(visit_handle,int*,int*,visit_handle*,visit_handle*,visit_handle*,visit_handle*), 
+                    (*cb)(obj,ndims,coordMode,x,y,z,c));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITPOINTMESHALLOC            F77_ID(visitpointmeshalloc_,visitpointmeshalloc,VISITPOINTMESHALLOC)
@@ -92,6 +102,7 @@ VisIt_PointMesh_setCoords(visit_handle obj, visit_handle c)
 #define F_VISITPOINTMESHSETCOORDSXY      F77_ID(visitpointmeshsetcoordsxy_,visitpointmeshsetcoordsxy,VISITPOINTMESHSETCOORDSXY)
 #define F_VISITPOINTMESHSETCOORDSXYZ     F77_ID(visitpointmeshsetcoordsxyz_,visitpointmeshsetcoordsxyz,VISITPOINTMESHSETCOORDSXYZ)
 #define F_VISITPOINTMESHSETCOORDS        F77_ID(visitpointmeshsetcoords_,visitpointmeshsetcoords,VISITPOINTMESHSETCOORDS)
+#define F_VISITPOINTMESHGETCOORDS        F77_ID(visitpointmeshgetcoords_,visitpointmeshgetcoords,VISITPOINTMESHGETCOORDS)
 
 int
 F_VISITPOINTMESHALLOC(visit_handle *obj)
@@ -123,4 +134,10 @@ F_VISITPOINTMESHSETCOORDS(visit_handle *obj, visit_handle *c)
     return VisIt_PointMesh_setCoords(*obj, *c);
 }
 
+int
+F_VISITPOINTMESHGETCOORDS(visit_handle obj, int *ndims, int *coordMode, 
+    visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c)
+{
+    return VisIt_PointMesh_getCoords(obj, ndims, coordMode, x,y,z,c);
+}
 

@@ -374,6 +374,7 @@ avtSimV2Writer::WriteCurvilinearMesh(vtkStructuredGrid *ds, int chunk,
     simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
 
     // Call into the simulation to write the data back.
+    simv2_MeshMetaData_setMeshType(vmmd, VISIT_MESHTYPE_CURVILINEAR);
     int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
         VISIT_MESHTYPE_CURVILINEAR, h, vmmd);
     if(ret != VISIT_OKAY)
@@ -470,10 +471,11 @@ avtSimV2Writer::WriteRectilinearMesh(vtkRectilinearGrid *ds, int chunk,
         simv2_RectilinearMesh_setCoordsXYZ(h, hhx, hhy, hhz); 
     else
         simv2_RectilinearMesh_setCoordsXY(h, hhx, hhy); 
-    simv2_CurvilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
-    simv2_CurvilinearMesh_setBaseIndex(h, baseIndex);
+    simv2_RectilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
+    simv2_RectilinearMesh_setBaseIndex(h, baseIndex);
 
     // Call into the simulation to write the data back.
+    simv2_MeshMetaData_setMeshType(vmmd, VISIT_MESHTYPE_RECTILINEAR);
     int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
         VISIT_MESHTYPE_RECTILINEAR, h, vmmd);
     if(ret != VISIT_OKAY)
@@ -574,6 +576,7 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         simv2_PointMesh_setCoords(h, hc);
 
         // Call into the simulation to write the data back.
+        simv2_MeshMetaData_setMeshType(vmmd, VISIT_MESHTYPE_POINT);
         int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
              VISIT_MESHTYPE_POINT, h, vmmd);
         if(ret != VISIT_OKAY)
@@ -660,10 +663,11 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
             visit_handle hconn;
             simv2_VariableData_alloc(&hconn);
             simv2_VariableData_setData(hconn, VISIT_OWNER_VISIT, 
-                VISIT_DATATYPE_DOUBLE, 1, connLen, conn);
+                VISIT_DATATYPE_INT, 1, connLen, conn);
             simv2_UnstructuredMesh_setConnectivity(h, cellCount, hconn);
 
             // Call into the simulation to write the data back.
+            simv2_MeshMetaData_setMeshType(vmmd, VISIT_MESHTYPE_UNSTRUCTURED);
             int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
                 VISIT_MESHTYPE_UNSTRUCTURED, h, vmmd);
             if(ret != VISIT_OKAY)
@@ -744,6 +748,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         debug1 << "Write polydata as point mesh" << endl;
 
         // Call into the simulation to write the data back.
+        simv2_MeshMetaData_setMeshType(vmmd, VISIT_MESHTYPE_POINT);
         int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
             VISIT_MESHTYPE_POINT, h, vmmd);
         if(ret != VISIT_OKAY)
@@ -864,7 +869,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         // Send the connectivity down.
         visit_handle hconn;
         simv2_VariableData_alloc(&hconn);
-        simv2_VariableData_setData(hconn, VISIT_OWNER_VISIT, VISIT_DATATYPE_DOUBLE,
+        simv2_VariableData_setData(hconn, VISIT_OWNER_VISIT, VISIT_DATATYPE_INT,
             1, connPtr - conn, conn);
         simv2_UnstructuredMesh_setConnectivity(h, cellCount, hconn);
 
@@ -872,6 +877,7 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
         debug1 << "connectivityLen = " << (connPtr - conn) << endl;
 
         // Call into the simulation to write the data back.
+        simv2_MeshMetaData_setMeshType(vmmd, VISIT_MESHTYPE_UNSTRUCTURED);
         int ret = simv2_invoke_WriteMesh(objectName.c_str(), chunk, 
             VISIT_MESHTYPE_UNSTRUCTURED, h, vmmd);
         if(ret != VISIT_OKAY)
@@ -913,42 +919,59 @@ avtSimV2Writer::WriteOneDataArray(vtkDataArray *arr, const std::string &objectNa
 {
     debug1 << "avtSimV2Writer::WriteOneDataArray(chunk=" << chunk 
            << ", name=\"" << arr->GetName() << "\")\n";
-    int t = -1;
+
+    // Assemble a variable object.
+    visit_handle data = VISIT_INVALID_HANDLE;
+    simv2_VariableData_alloc(&data);
     if(arr->GetDataType() == VTK_CHAR)
-        t = VISIT_DATATYPE_CHAR;
+        simv2_VariableData_setData(data, VISIT_OWNER_SIM, VISIT_DATATYPE_CHAR,
+                                   arr->GetNumberOfComponents(),
+                                   arr->GetNumberOfTuples(), 
+                                   (char *)arr->GetVoidPointer(0));
     else if(arr->GetDataType() == VTK_INT)
-        t = VISIT_DATATYPE_INT;
+        simv2_VariableData_setData(data, VISIT_OWNER_SIM, VISIT_DATATYPE_INT,
+                                   arr->GetNumberOfComponents(),
+                                   arr->GetNumberOfTuples(),
+                                   (int *)arr->GetVoidPointer(0));
     else if(arr->GetDataType() == VTK_FLOAT)
-        t = VISIT_DATATYPE_FLOAT;
+        simv2_VariableData_setData(data, VISIT_OWNER_SIM, VISIT_DATATYPE_FLOAT,
+                                   arr->GetNumberOfComponents(),
+                                   arr->GetNumberOfTuples(),
+                                   (float *)arr->GetVoidPointer(0));
     else if(arr->GetDataType() == VTK_DOUBLE)
-        t = VISIT_DATATYPE_DOUBLE;
+        simv2_VariableData_setData(data, VISIT_OWNER_SIM,  VISIT_DATATYPE_DOUBLE,
+                                   arr->GetNumberOfComponents(),
+                                   arr->GetNumberOfTuples(), 
+                                   (double*)arr->GetVoidPointer(0));
     else
     {
         debug1 << "Can't export type " << arr->GetDataType()
                << " to simulation." << endl;
+        simv2_VariableData_free(data);
         return;
     }
 
-    // Assemble a scalar metadata object.
+    // Assemble a variable metadata object.
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();    
-    visit_handle smd = VISIT_INVALID_HANDLE;
-    simv2_VariableMetaData_alloc(&smd);
-    simv2_VariableMetaData_setName(smd, arr->GetName());
-    simv2_VariableMetaData_setMeshName(smd, objectName.c_str());
-    simv2_VariableMetaData_setCentering(smd, cent);
-    simv2_VariableMetaData_setTreatAsASCII(smd, atts.GetTreatAsASCII(arr->GetName())?1:0);
+    visit_handle metadata = VISIT_INVALID_HANDLE;
+    simv2_VariableMetaData_alloc(&metadata);
+    simv2_VariableMetaData_setName(metadata, arr->GetName());
+    simv2_VariableMetaData_setMeshName(metadata, objectName.c_str());
+    simv2_VariableMetaData_setCentering(metadata, cent);
+    simv2_VariableMetaData_setTreatAsASCII(metadata, atts.GetTreatAsASCII(arr->GetName())?1:0);
 
-    int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), chunk, t,
-        arr->GetVoidPointer(0), arr->GetNumberOfTuples(),
-        arr->GetNumberOfComponents(), smd);
+    // Call back to the simulation to write the data.
+    int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), 
+                                         chunk, data, metadata);
     if(ret != VISIT_OKAY)
     {
         debug1 << "WriteDataArray callback returned " << ret
                << " instead of VISIT_OKAY." << endl;
     }
 
-    // Free the variable metadata.
-    simv2_VariableMetaData_free(smd);
+    // Free the objects
+    simv2_VariableData_free(data);
+    simv2_VariableMetaData_free(metadata);
 }
 
 // ****************************************************************************
@@ -1052,6 +1075,12 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
         return;
     }
 
+    // Store the data in a variabledata object
+    visit_handle data = VISIT_INVALID_HANDLE;
+    simv2_VariableData_alloc(&data);
+    simv2_VariableData_setData(data, VISIT_OWNER_VISIT, t,
+        arr->GetNumberOfComponents(), arr->GetNumberOfTuples(), S);
+
     // Assemble a scalar metadata object.
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
@@ -1063,7 +1092,7 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
     simv2_VariableMetaData_setTreatAsASCII(smd, atts.GetTreatAsASCII(arr->GetName())?1:0);
 
     int ret = simv2_invoke_WriteVariable(objectName.c_str(), arr->GetName(), 
-         chunk, t, S, sum, arr->GetNumberOfComponents(), smd);
+         chunk, data, smd);
 
     if(ret != VISIT_OKAY)
     {
@@ -1071,10 +1100,8 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
                << " instead of VISIT_OKAY." << endl;
     }
 
-    // Free the temporary copy of the array.
-    free(S);
-
-    // Free the variable metadata.
+    // Free the objects
+    simv2_VariableData_free(data);
     simv2_VariableMetaData_free(smd);
 }
 

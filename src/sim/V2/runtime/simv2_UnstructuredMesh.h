@@ -19,23 +19,21 @@ SIMV2_API int simv2_UnstructuredMesh_setConnectivity(visit_handle obj, int nzone
                                                      visit_handle conn);
 SIMV2_API int simv2_UnstructuredMesh_setRealIndices(visit_handle obj, int,int);
 
+SIMV2_API int simv2_UnstructuredMesh_getCoords(visit_handle h,
+                                               int *ndims, int *coordMode,
+                                               visit_handle *x, 
+                                               visit_handle *y, 
+                                               visit_handle *z, 
+                                               visit_handle *coords);
+SIMV2_API int simv2_UnstructuredMesh_getConnectivity(visit_handle h, int *nzones,
+                                                     visit_handle *conn);
+SIMV2_API int simv2_UnstructuredMesh_getRealIndices(visit_handle obj, int *, int *);
+
 #ifdef __cplusplus
 }
 #endif
 
 // Callable from within the runtime and SimV2
-SIMV2_API int simv2_UnstructuredMesh_getData(visit_handle h, 
-                                             int &ndims,
-                                             int &coordMode,
-                                             visit_handle &x,
-                                             visit_handle &y,
-                                             visit_handle &z,
-                                             visit_handle &c,
-                                             int &nzones,
-                                             int &firstRealZone,
-                                             int &lastRealZone,
-                                             visit_handle &connectivity);
-
 SIMV2_API int simv2_UnstructuredMesh_check(visit_handle h);
 
 #endif

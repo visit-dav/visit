@@ -50,6 +50,9 @@ int VisIt_PointMesh_setCoordsXY(visit_handle obj, visit_handle x, visit_handle y
 int VisIt_PointMesh_setCoordsXYZ(visit_handle obj, visit_handle x, visit_handle y, visit_handle z);
 int VisIt_PointMesh_setCoords(visit_handle obj, visit_handle c);
 
+int VisIt_PointMesh_getCoords(visit_handle obj, int *ndims, int *coordMode, 
+                              visit_handle *x, visit_handle *y, visit_handle *z, visit_handle *c);
+
 #ifdef __cplusplus
 }
 #endif

@@ -74,7 +74,7 @@ typedef struct
     int (*cb_WriteMesh)(const char *, int, int, visit_handle, visit_handle, void *);
     void *cbdata_WriteMesh;
 
-    int (*cb_WriteVariable)(const char *, const char *, int, int, void *, int, int, visit_handle, void *);
+    int (*cb_WriteVariable)(const char *, const char *, int, visit_handle, visit_handle, void *);
     void *cbdata_WriteVariable;
 
 } data_callback_t;
@@ -258,7 +258,7 @@ simv2_set_WriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_handle
 }
 
 void
-simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, visit_handle, void *), void *cbdata)
+simv2_set_WriteVariable(int (*cb)(const char *, const char *, int, visit_handle, visit_handle, void *), void *cbdata)
 {
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL)
@@ -640,14 +640,12 @@ simv2_invoke_WriteMesh(const char *name, int chunk, int meshType, visit_handle m
 
 int
 simv2_invoke_WriteVariable(const char *name, const char *arrName, int chunk,
-    int dataType, void *values, int ntuples, int ncomponents,
-    visit_handle smd)
+    visit_handle data, visit_handle smd)
 {
     int ret = VISIT_ERROR;
     data_callback_t *callbacks = GetDataCallbacks();
     if(callbacks != NULL && callbacks->cb_WriteVariable != NULL)
-        ret = (*callbacks->cb_WriteVariable)(name, arrName, chunk, dataType, values, 
-            ntuples, ncomponents, smd, callbacks->cbdata_WriteVariable);
+        ret = (*callbacks->cb_WriteVariable)(name, arrName, chunk, data, smd, callbacks->cbdata_WriteVariable);
     return ret;
 }
 

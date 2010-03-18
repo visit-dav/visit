@@ -104,14 +104,66 @@ VisIt_CSGMesh_setExtents(visit_handle obj, double min[3], double max[3])
                     (*cb)(obj,min,max));
 }
 
+int
+VisIt_CSGMesh_getRegions(visit_handle obj, visit_handle *boolops, visit_handle *leftids, 
+    visit_handle *rightids)
+{
+    VISIT_DYNAMIC_EXECUTE(CSGMesh_getRegions,
+                    int (*)(visit_handle,visit_handle*,visit_handle*,visit_handle*), 
+                    int (*cb)(visit_handle,visit_handle*,visit_handle*,visit_handle*), 
+                    (*cb)(obj,boolops,leftids,rightids));
+}
+
+int
+VisIt_CSGMesh_getZonelist(visit_handle obj, visit_handle *zl)
+{
+    VISIT_DYNAMIC_EXECUTE(CSGMesh_getZonelist,
+                    int (*)(visit_handle,visit_handle*), 
+                    int (*cb)(visit_handle,visit_handle*), 
+                    (*cb)(obj,zl));
+}
+
+int
+VisIt_CSGMesh_getBoundaryTypes(visit_handle obj, visit_handle *boundaryTypes)
+{
+    VISIT_DYNAMIC_EXECUTE(CSGMesh_getBoundaryTypes,
+                    int (*)(visit_handle,visit_handle*), 
+                    int (*cb)(visit_handle,visit_handle*), 
+                    (*cb)(obj,boundaryTypes));
+}
+
+int
+VisIt_CSGMesh_getBoundaryCoeffs(visit_handle obj, visit_handle *boundaryCoeffs)
+{
+    VISIT_DYNAMIC_EXECUTE(CSGMesh_getBoundaryCoeffs,
+                    int (*)(visit_handle,visit_handle*), 
+                    int (*cb)(visit_handle,visit_handle*), 
+                    (*cb)(obj,boundaryCoeffs));
+}
+
+int
+VisIt_CSGMesh_getExtents(visit_handle obj, double min[3], double max[3])
+{
+    VISIT_DYNAMIC_EXECUTE(CSGMesh_getExtents,
+                    int (*)(visit_handle,double[3], double[3]), 
+                    int (*cb)(visit_handle,double[3], double[3]), 
+                    (*cb)(obj,min,max));
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITCSGMESHALLOC              F77_ID(visitcsgmeshalloc_,visitcsgmeshalloc,VISITCSGMESHALLOC)
 #define F_VISITCSGMESHFREE               F77_ID(visitcsgmeshfree_,visitcsgmeshfree,VISITCSGMESHFREE)
-#define F_VISITCSGMESHSETCOORDSXY        F77_ID(visitcsgmeshsetcoordsxy_,visitcsgmeshsetcoordsxy,VISITCSGMESHSETCOORDSXY)
-#define F_VISITCSGMESHSETCOORDSXYZ       F77_ID(visitcsgmeshsetcoordsxyz_,visitcsgmeshsetcoordsxyz,VISITCSGMESHSETCOORDSXYZ)
-#define F_VISITCSGMESHSETBASEINDEX       F77_ID(visitcsgmeshsetbaseindex_,visitcsgmeshsetbaseindex,VISITCSGMESHSETBASEINDEX)
-#define F_VISITCSGMESHSETREALINDICES     F77_ID(visitcsgmeshsetrealindices_,visitcsgmeshsetrealindices,VISITCSGMESHSETREALINDICES)
+#define F_VISITCSGMESHSETREGIONS         F77_ID(visitcsgmeshsetregions_,visitcsgmeshsetregions,VISITCSGMESHSETREGIONS)
+#define F_VISITCSGMESHSETZONELIST        F77_ID(visitcsgmeshsetzonelist_,visitcsgmeshsetzonelist,VISITCSGMESHSETZONELIST)
+#define F_VISITCSGMESHSETBOUNDARYTYPES   F77_ID(visitcsgmeshsetboundarytypes_,visitcsgmeshsetboundarytypes,VISITCSGMESHSETBOUNDARYTYPES)
+#define F_VISITCSGMESHSETBOUNDARYCOEFFS  F77_ID(visitcsgmeshsetboundarycoeffs_,visitcsgmeshsetboundarycoeffs,VISITCSGMESHSETBOUNDARYCOEFFS)
+#define F_VISITCSGMESHSETEXTENTS         F77_ID(visitcsgmeshsetextents_,visitcsgmeshsetextents,VISITCSGMESHSETEXTENTS)
+#define F_VISITCSGMESHGETREGIONS         F77_ID(visitcsgmeshgetregions_,visitcsgmeshgetregions,VISITCSGMESHGETREGIONS)
+#define F_VISITCSGMESHGETZONELIST        F77_ID(visitcsgmeshgetzonelist_,visitcsgmeshgetzonelist,VISITCSGMESHGETZONELIST)
+#define F_VISITCSGMESHGETBOUNDARYTYPES   F77_ID(visitcsgmeshgetboundarytypes_,visitcsgmeshgetboundarytypes,VISITCSGMESHGETBOUNDARYTYPES)
+#define F_VISITCSGMESHGETBOUNDARYCOEFFS  F77_ID(visitcsgmeshgetboundarycoeffs_,visitcsgmeshgetboundarycoeffs,VISITCSGMESHGETBOUNDARYCOEFFS)
+#define F_VISITCSGMESHGETEXTENTS         F77_ID(visitcsgmeshgetextents_,visitcsgmeshgetextents,VISITCSGMESHGETEXTENTS)
 
 int
 F_VISITCSGMESHALLOC(visit_handle *obj)
@@ -162,3 +214,32 @@ F_VISITCSGMESHSETEXTENTS(visit_handle *obj, double *mins, double *maxs)
     return VisIt_CSGMesh_setExtents(*obj, tmpMin, tmpMax);
 }
 
+int
+F_VISITCSGMESHGETREGIONS(visit_handle *obj, visit_handle *boolops, visit_handle *leftids, visit_handle *rightids)
+{
+    return VisIt_CSGMesh_getRegions(*obj, boolops, leftids, rightids);
+}
+
+int
+F_VISITCSGMESHGETZONELIST(visit_handle *obj, visit_handle *zl)
+{
+    return VisIt_CSGMesh_getZonelist(*obj, zl);
+}
+
+int
+F_VISITCSGMESHGETBOUNDARYTYPES(visit_handle *obj, visit_handle *boundaryTypes)
+{
+    return VisIt_CSGMesh_getBoundaryTypes(*obj, boundaryTypes);
+}
+
+int
+F_VISITCSGMESHGETBOUNDARYCOEFFS(visit_handle *obj, visit_handle *boundaryCoeffs)
+{
+    return VisIt_CSGMesh_getBoundaryCoeffs(*obj, boundaryCoeffs);
+}
+
+int
+F_VISITCSGMESHGETEXTENTS(visit_handle *obj, double *mins, double *maxs)
+{
+    return VisIt_CSGMesh_getExtents(*obj, mins, maxs);
+}

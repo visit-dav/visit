@@ -917,6 +917,27 @@
       external visitcsgmeshsetextents
       integer  visitcsgmeshsetextents
 
+! visitcsgmeshgetregions(visit_handle obj, visit_handle boolops, 
+!                        visit_handle leftids, visit_handle rightids)
+      external visitcsgmeshgetregions
+      integer  visitcsgmeshgetregions
+
+! visitcsgmeshgetzonelist(visit_handle obj, visit_handle zl)
+      external visitcsgmeshgetzonelist
+      integer  visitcsgmeshgetzonelist
+
+! visitcsgmeshgetboundarytypes(visit_handle obj, visit_handle boundarytypes)
+      external visitcsgmeshgetboundarytypes
+      integer  visitcsgmeshgetboundarytypes
+
+! visitcsgmeshgetboundarycoeffs(visit_handle obj, visit_handle boundarycoeffs)
+      external visitcsgmeshgetboundarycoeffs
+      integer  visitcsgmeshgetboundarycoeffs
+
+! visitcsgmeshgetextents(visit_handle obj, double mins, double maxs)
+      external visitcsgmeshgetextents
+      integer  visitcsgmeshgetextents
+
 
 ! VisIt_CurveData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -968,6 +989,18 @@
 ! visitcurvmeshsetrealindices(visit_handle obj, int mins, int maxs)
       external visitcurvmeshsetrealindices
       integer  visitcurvmeshsetrealindices
+
+! visitcurvmeshgetcoords(visit_handle obj, int ndims, int dims,
+      external visitcurvmeshgetcoords
+      integer  visitcurvmeshgetcoords
+
+! visitcurvmeshgetbaseindex(visit_handle obj, int base_index)
+      external visitcurvmeshgetbaseindex
+      integer  visitcurvmeshgetbaseindex
+
+! visitcurvmeshgetrealindices(visit_handle obj, int mins, int maxs)
+      external visitcurvmeshgetrealindices
+      integer  visitcurvmeshgetrealindices
 
 
 ! VisIt_DomainBoundaries functions
@@ -1097,6 +1130,11 @@
       external visitpointmeshsetcoords
       integer  visitpointmeshsetcoords
 
+! visitpointmeshgetcoords(visit_handle obj, int ndims, int coordmode,
+!    visit_handle x, visit_handle y, visit_handle z, visit_handle c)
+      external visitpointmeshgetcoords
+      integer  visitpointmeshgetcoords
+
 
 ! VisIt_RectilinearMesh functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1124,6 +1162,19 @@
 ! visitrectmeshsetrealindices(visit_handle obj, int mins, int maxs)
       external visitrectmeshsetrealindices
       integer  visitrectmeshsetrealindices
+
+! visitrectmeshgetcoords(visit_handle obj, int ndims, visit_handle x, 
+!                        visit_handle y, visit_handle z)
+      external visitrectmeshgetcoords
+      integer  visitrectmeshgetcoords
+
+! visitrectmeshgetbaseindex(visit_handle obj, int base_index)
+      external visitrectmeshgetbaseindex
+      integer  visitrectmeshgetbaseindex
+
+! visitrectmeshgetrealindices(visit_handle obj, int mins, int maxs)
+      external visitrectmeshgetrealindices
+      integer  visitrectmeshgetrealindices
 
 
 ! VisIt_SpeciesData functions
@@ -1185,6 +1236,19 @@
       external visitucdmeshsetrealindices
       integer  visitucdmeshsetrealindices
 
+! visitucdmeshgetcoords(visit_handle obj, int ndims, int coordmode,  
+!     visit_handle x, visit_handle y, visit_handle z, visit_handle c)
+      external visitucdmeshgetcoords
+      integer  visitucdmeshgetcoords
+
+! visitucdmeshgetconnectivity(visit_handle obj, int nzones, visit_handle c)
+      external visitucdmeshgetconnectivity
+      integer  visitucdmeshgetconnectivity
+
+! visitucdmeshgetrealindices(visit_handle obj, int min, int max)
+      external visitucdmeshgetrealindices
+      integer  visitucdmeshgetrealindices
+
 
 ! VisIt_VariableData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1213,4 +1277,27 @@
       external visitvardatasetd
       integer  visitvardatasetd
 
+! visitvardatagettype(visit_handle obj, int datatype)
+      external visitvardatagettype
+      integer  visitvardatagettype
+
+! visitvardatagetc(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  char dest, int ldest)
+      external visitvardatagetc
+      integer  visitvardatagetc
+
+! visitvardatageti(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  int dest, int ldest)
+      external visitvardatageti
+      integer  visitvardatageti
+
+! visitvardatagetf(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  float dest, int ldest)
+      external visitvardatagetf
+      integer  visitvardatagetf
+
+! visitvardatagetd(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  double dest, int ldest)
+      external visitvardatagetd
+      integer  visitvardatagetd
 

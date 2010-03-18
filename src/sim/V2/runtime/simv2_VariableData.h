@@ -12,6 +12,11 @@ SIMV2_API int simv2_VariableData_alloc(visit_handle *h);
 SIMV2_API int simv2_VariableData_free(visit_handle h);
 SIMV2_API int simv2_VariableData_setData(visit_handle h, int owner, int dataType,
                                          int nComps, int nTuples, void *data);
+
+SIMV2_API int simv2_VariableData_getData2(visit_handle h, int *owner, 
+                                          int *dataType, int *nComps,
+                                          int *nTuples, void **data);
+
 #ifdef __cplusplus
 }
 #endif

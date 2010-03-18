@@ -935,10 +935,7 @@ int VisItSetWriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_hand
  *               const char*  : name of mesh
  *               const char*  : name of variable
  *               int          : The domain number
- *               int          : The variable type
- *               void*        : Raw data pointer
- *               int          : number of tuples
- *               int          : number of components
+ *               visit_handle : A handle to variable data
  *               visit_handle : A handle to variable metadata.
  *               void*        : User-supplied callback data.
  *
@@ -948,7 +945,7 @@ int VisItSetWriteMesh(int (*cb)(const char *, int, int, visit_handle, visit_hand
  *            call to VisItAttemptToCompleteConnection
  *
  * ****************************************************************************/
-int VisItSetWriteVariable(int (*cb)(const char *, const char *, int, int, void *, int, int, visit_handle, void *), void *cbdata);
+int VisItSetWriteVariable(int (*cb)(const char *, const char *, int, visit_handle, visit_handle, void *), void *cbdata);
 
 #ifdef __cplusplus
 }

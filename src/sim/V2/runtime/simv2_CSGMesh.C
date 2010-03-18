@@ -357,40 +357,82 @@ simv2_CSGMesh_setExtents(visit_handle h, double min[3], double max[3])
     return retval;
 }
 
-/*******************************************************************************
- * C++ code callable from the SimV2 plugin and within the runtime
- ******************************************************************************/
-
 int
-simv2_CSGMesh_getData(visit_handle h, 
-     visit_handle &typeflags, visit_handle &left, visit_handle &right,
-     visit_handle &zl,
-     visit_handle &bndtypes, visit_handle &bndcoeff,
-     double min[3], double max[3])
+simv2_CSGMesh_getRegions(visit_handle h, 
+    visit_handle *typeflags, visit_handle *left, visit_handle *right)
 {
     int retval = VISIT_ERROR;
     VisIt_CSGMesh *obj = GetObject(h);
     if(obj != NULL)
     {
-        typeflags = obj->typeflags;
-        left = obj->leftids;
-        right = obj->rightids;
-
-        zl = obj->zonelist;
-
-        bndtypes = obj->boundaryTypes;
-        bndcoeff = obj->boundaryCoeffs;
-
-        for(int i = 0; i < 3; ++i)
-        {
-            min[i] = obj->min_extents[i];
-            max[i] = obj->max_extents[i];
-        }
+        *typeflags = obj->typeflags;
+        *left = obj->leftids;
+        *right = obj->rightids;
 
         retval = VISIT_OKAY;
     }
     return retval;
 }
+
+int
+simv2_CSGMesh_getZonelist(visit_handle h, visit_handle *zl)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CSGMesh *obj = GetObject(h);
+    if(obj != NULL)
+    {
+        *zl = obj->zonelist;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_CSGMesh_getBoundaryTypes(visit_handle h, visit_handle *bndtypes)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CSGMesh *obj = GetObject(h);
+    if(obj != NULL)
+    {
+        *bndtypes = obj->boundaryTypes;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_CSGMesh_getBoundaryCoeffs(visit_handle h, visit_handle *bndcoeff)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CSGMesh *obj = GetObject(h);
+    if(obj != NULL)
+    {
+        *bndcoeff = obj->boundaryCoeffs;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_CSGMesh_getExtents(visit_handle h, double min[3], double max[3])
+{
+    int retval = VISIT_ERROR;
+    VisIt_CSGMesh *obj = GetObject(h);
+    if(obj != NULL)
+    {
+        for(int i = 0; i < 3; ++i)
+        {
+            min[i] = obj->min_extents[i];
+            max[i] = obj->max_extents[i];
+        }
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+/*******************************************************************************
+ * C++ code callable from the SimV2 plugin and within the runtime
+ ******************************************************************************/
 
 int
 simv2_CSGMesh_check(visit_handle h)
