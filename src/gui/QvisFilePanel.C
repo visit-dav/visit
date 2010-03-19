@@ -2840,6 +2840,9 @@ QvisFilePanel::overlayFile()
 //
 // Modifications: 
 //
+//   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we do.
 //
 // ****************************************************************************
 
@@ -2849,7 +2852,7 @@ QvisFilePanel::closeFile()
     QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
     if((fileItem != 0) && fileItem ->isFile() && (!fileItem->file.Empty()))
     {
-        fileServer->ClearFile(fileItem->file.FullName());
+        fileServer->ClearFile(fileItem->file.FullName(), true);
         GetViewerMethods()->CloseDatabase(fileItem->file.FullName());
         UpdateOpenButtonState();
     }

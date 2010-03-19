@@ -504,6 +504,14 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
             in >> zMin >> zMax;
             in.getline(buff, 1000); // get rest of Z line
         }
+        else if (item == "BOX BOUNDS xy xz yz")
+        {
+            float xy, xz, yz;
+            in >> xMin >> xMax >> xy;
+            in >> yMin >> yMax >> xz;
+            in >> zMin >> zMax >> yz;
+            in.getline(buff, 1000); // get rest of Z line
+        }
         else if (item == "NUMBER OF ATOMS")
         {
             in.getline(buff,1000);

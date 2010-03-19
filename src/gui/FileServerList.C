@@ -215,6 +215,10 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Made fileMetaData and SILData MRUCache's
+//
+//   Jeremy Meredith, Fri Mar 19 13:25:47 EDT 2010
+//   Clear the cache of which plugins opened which files.
+//
 // ****************************************************************************
 
 FileServerList::~FileServerList()
@@ -234,6 +238,7 @@ FileServerList::~FileServerList()
 
     fileMetaData.clear();
     SILData.clear();
+    filePlugins.clear();
 
     // delete the message attributes.
     delete messageAtts;
@@ -1093,6 +1098,10 @@ FileServerList::SetFilter(const string &newFilter)
 //   Added a work-around for bad indexing into timeStates.  This fixes a crash
 //   on windows, but the use of timeStates here should be reworked.
 // 
+//   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we don't.
+//
 // ****************************************************************************
 
 void
@@ -1136,7 +1145,7 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles,
             }
 
             // Free the metadata and SIL for the file.
-            ClearFile(appliedFileList[i]);
+            ClearFile(appliedFileList[i], false);
 
             // If the file happens to be the open file, reopen it so we
             // get new cached metadata for later.
@@ -1642,10 +1651,16 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 //   Mark C. Miller, Mon Sep 18 16:24:12 PDT 2006
 //   Changed to build list of keys to remove beforing removing keyed values.
 //   Because gnu's compare(0,n,string) is buggy, use compare(0,n,string,0,n)
+//
+//   Jeremy Meredith, Fri Mar 19 13:23:00 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  (E.g. on ReOpen, we don't.)
+//
 // ****************************************************************************
 
 void
-FileServerList::ClearFile(const QualifiedFilename &filename)
+FileServerList::ClearFile(const QualifiedFilename &filename,
+                          bool forgetPlugin)
 {
     const string& fullName = filename.FullName();
     const int n = fullName.size();
@@ -1670,6 +1685,9 @@ FileServerList::ClearFile(const QualifiedFilename &filename)
     }
     for (i = 0; i < keysToRemove.size(); i++)
         SILData.remove(keysToRemove[i]);
+
+    if (forgetPlugin)
+        filePlugins.erase(fullName);   
 }
 
 // ****************************************************************************
@@ -2478,6 +2496,11 @@ FileServerList::GetOpenFile() const
 //   Send flags for creation of MeshQuality and TimeDerivative expressions
 //   in GetMetaData call.
 //
+//   Jeremy Meredith, Fri Mar 19 13:27:07 EDT 2010
+//   Replicate the logic already in the viewer, where we keep a cache
+//   of which plugin we used to open a given file.  So when we re-open
+//   it, we don't get it wrong.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -2525,10 +2548,16 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
         if (svit == servers.end()) 
             return 0;
 
+        // get and clear the cached plugin type for this file
+        std::string forcedFileType("");
+        if (filePlugins.count(mdKeys[0]) > 0)
+            forcedFileType = filePlugins[mdKeys[0]];
+        filePlugins.erase(mdKeys[0]);
+
         MDServerProxy *mds = svit->second->server;
         const avtDatabaseMetaData *md =
             mds->GetMetaData(filename.PathAndFile(), timeState,
-                             forceReadAllCyclesTimes, "",
+                             forceReadAllCyclesTimes, forcedFileType,
                              treatAllDBsAsTimeVarying,
                              createMeshQualityExpressions,
                              createTimeDerivativeExpressions,
@@ -2537,6 +2566,9 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
         // cache what we got
         if (md)
         {
+            // store the plugin we used
+            filePlugins[mdKeys[0]] = md->GetFileFormat();
+
            // make a copy to cache
             avtDatabaseMetaData *newmd = new avtDatabaseMetaData;
             *newmd = *md;
