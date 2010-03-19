@@ -32,8 +32,8 @@ PoincareEnginePluginInfo.C
 avtPoincarePlot.C
 avtPoincareFilter.C
 StreamlineAnalyzerLib.C
-prim.C
-skelet.C
+#prim.C
+#skelet.C
 ${COMMON_SOURCES}
 )
 
