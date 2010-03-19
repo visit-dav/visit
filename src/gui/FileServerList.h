@@ -205,6 +205,11 @@ class MessageAttributes;
 //   Brad Whitlock, Fri Dec 14 17:16:51 PST 2007
 //   Added ids for the fields that make up the object.
 //
+//   Jeremy Meredith, Fri Mar 19 13:27:07 EDT 2010
+//   Replicate the logic already in the viewer, where we keep a cache
+//   of which plugin we used to open a given file.  So when we re-open
+//   it, we don't get it wrong.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -257,7 +262,7 @@ public:
     void ReplaceFile(const QualifiedFilename &filename);
     void OverlayFile(const QualifiedFilename &filename);
     void CloseFile();
-    void ClearFile(const QualifiedFilename &filename);
+    void ClearFile(const QualifiedFilename &filename, bool forgetPlugin);
     void CreateGroupList(const string &filename,
                          const stringVector &groupList);
 
@@ -390,6 +395,7 @@ private:
 
     // MRU caches for MetaData and SIL
     FileMetaDataMap   fileMetaData;
+    StringStringMap   filePlugins;
     SILMap            SILData;
 
     StringStringVectorMap recentPaths;

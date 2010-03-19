@@ -571,6 +571,10 @@ GUIBase::RestoreCursor()
 //   Do not issue an error if you can't open a file ... the viewer will do this
 //   for us.
 //
+//   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we don't.
+//
 // ****************************************************************************
 
 bool
@@ -586,7 +590,7 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
     //
     if(reOpen)
     {
-        fileServer->ClearFile(qf);
+        fileServer->ClearFile(qf, false);
         fileServer->CloseFile();
         if(sob)
             sob->SetUpdate(false);

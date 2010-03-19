@@ -146,9 +146,9 @@ QvisSourceManagerWidget::QvisSourceManagerWidget(QWidget *parent)
     dbCloseAction   = dbActionsToolbar->addAction(QIcon(db_reopen_xpm),tr("Reopen"),
                                                   this, SLOT(reOpenCurrentSource()));
     dbActionsToolbar->addSeparator();
-    dbReplaceAction = dbActionsToolbar->addAction(QIcon(db_replace_xpm),tr("Replace Plots"),
+    dbReplaceAction = dbActionsToolbar->addAction(QIcon(db_replace_xpm),tr("Replace"),
                                                   this, SLOT(replaceWithCurrentSource()));
-    dbOverlayAction = dbActionsToolbar->addAction(QIcon(db_overlay_xpm),tr("Overlay Plots"),
+    dbOverlayAction = dbActionsToolbar->addAction(QIcon(db_overlay_xpm),tr("Overlay"),
                                                   this, SLOT(overlayWithCurrentSource()));
 
     sourceLabel = new QLabel(tr("Active source"), this);
@@ -510,6 +510,10 @@ QvisSourceManagerWidget::reOpenCurrentSource()
 //
 // Note: Taken/Refactored from QvisPlotManager.
 //
+//   Jeremy Meredith, Fri Mar 19 13:37:35 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we do.
+//
 // ****************************************************************************
 void
 QvisSourceManagerWidget::closeCurrentSource()
@@ -521,7 +525,7 @@ QvisSourceManagerWidget::closeCurrentSource()
         //
         // Clear out the metadata and SIL for the file.
         //
-        fileServer->ClearFile(sources[index]);
+        fileServer->ClearFile(sources[index], true);
 
         //
         // Tell the viewer to replace close the specified database. If the

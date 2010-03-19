@@ -2285,6 +2285,10 @@ QvisMainWindow::reopenFile(QAction *action)
 //   Brad Whitlock, Mon Apr  6 15:18:46 PDT 2009
 //   I added code to translate the action id to a file index.
 //
+//   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we do.
+//
 // ****************************************************************************
 
 void
@@ -2298,7 +2302,7 @@ QvisMainWindow::closeFile(QAction *action)
         //
         // Clear out the metadata and SIL for the file.
         //
-        fileServer->ClearFile(sources[fileIndex]);
+        fileServer->ClearFile(sources[fileIndex], true);
 
         //
         // Tell the viewer to replace close the specified database. If the

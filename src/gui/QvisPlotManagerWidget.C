@@ -86,7 +86,7 @@
 #include <icons/plot_atts.xpm>
 #include <icons/plot_hide.xpm>
 #include <icons/plot_draw.xpm>
-#include <icons/oper_add3.xpm>
+#include <icons/oper_add4.xpm>
 #include <icons/db_replace.xpm>
 #include <icons/db_overlay.xpm>
 #include <icons/db_open2.xpm>
@@ -250,7 +250,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     add_button->setPopupMode(QToolButton::InstantPopup);
 
     // add operators menu action
-    operMenuAction = plotActionsToolbar->addAction(QIcon(oper_add3_xpm),tr("Operators"));
+    operMenuAction = plotActionsToolbar->addAction(QIcon(oper_add4_xpm),tr("Operators"));
     QToolButton *oper_button = (QToolButton*) plotActionsToolbar->widgetForAction(operMenuAction);
     oper_button->setPopupMode(QToolButton::InstantPopup);
 
