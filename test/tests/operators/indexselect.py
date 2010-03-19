@@ -235,9 +235,10 @@ Test("ops_indexselect14")
 DeleteAllPlots()
 
 # 2D surface of curvilinear
-AddPlot("Surface", "d")
+AddPlot("Pseudocolor", "d")
 AddOperator("IndexSelect")
 SetOperatorOptions(atts)
+AddOperator("Elevate")
 DrawPlots()
 ResetView()
 Test("ops_indexselect15")
