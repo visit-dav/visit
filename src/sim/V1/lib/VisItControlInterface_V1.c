@@ -55,6 +55,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <visit-config.h>
+
 /* ****************************************************************************
  *  File:  VisItControlInterface.c
  *
