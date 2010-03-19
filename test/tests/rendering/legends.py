@@ -123,8 +123,10 @@ def TestSizeAndPosition(a):
     Test("legends_05")
     DeleteAllPlots()
 
-    AddPlot("Surface", "d")
-    AddPlot("Surface", "p")
+    AddPlot("Pseudocolor", "d")
+    AddOperator("Elevate")
+    AddPlot("Pseudocolor", "p")
+    AddOperator("Elevate")
     DrawPlots()
     Test("legends_06")
     DeleteAllPlots()

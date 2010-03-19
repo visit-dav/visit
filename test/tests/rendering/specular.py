@@ -4,7 +4,7 @@
 #  Test Case:  specular.py
 #
 #  Tests:      mesh      - 2D/3D rectilinear, one domain
-#              plots     - pseudocolor, surface
+#              plots     - pseudocolor
 #              operators - isosurface
 #              selection - no
 #
@@ -68,12 +68,14 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 Test("specular_06")
 
-# Now do the same things over again with the surface plot.
+# Now do the same things over again with Pseudocolor + Elevate
+
 DeleteAllPlots()
 r.specularFlag = 0
 SetRenderingAttributes(r)
 OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
-AddPlot("Surface", "hgslice")
+AddPlot("Pseudocolor", "hgslice")
+AddOperator("Elevate")
 DrawPlots()
 
 v = GetView3D()
@@ -110,9 +112,9 @@ SetRenderingAttributes(r)
 Test("specular_10")
 
 # Test that specular is properly turned off when PC's lighting is turned off.
-s_atts = SurfaceAttributes()
-s_atts.lightingFlag = 0
-SetPlotOptions(s_atts)
+pc_atts = PseudocolorAttributes()
+pc_atts.lightingFlag = 0
+SetPlotOptions(pc_atts)
 Test("specular_11")
 
 Exit()
