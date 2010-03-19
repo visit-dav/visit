@@ -601,10 +601,6 @@ QvisPlotListBox::contextMenuCreateActions()
      hideShowAct->setCheckable(true);
      connect( hideShowAct, SIGNAL(toggled(bool)), this, SIGNAL(hideThisPlot()));
      
-     deleteAct = new QAction(tr("Delete"), this);
-     deleteAct->setStatusTip(tr("Delete this plot"));
-     connect( deleteAct, SIGNAL(triggered()), this, SIGNAL(deleteThisPlot()));
-          
      drawAct = new QAction(tr("Draw"), this);
      drawAct->setStatusTip(tr("Draw this plot"));
      connect( drawAct, SIGNAL(triggered()), this, SIGNAL(drawThisPlot()));    
@@ -617,9 +613,13 @@ QvisPlotListBox::contextMenuCreateActions()
      redrawAct->setStatusTip(tr("Redraw this plot"));
      connect( redrawAct, SIGNAL(triggered()), this, SIGNAL(redrawThisPlot()));  
      
-     copyAct = new QAction(tr("Copy"), this);
-     copyAct->setStatusTip(tr("Copy this plot"));
-     connect( copyAct, SIGNAL(triggered()), this, SIGNAL(copyThisPlot()));  
+     deleteAct = new QAction(tr("Delete"), this);
+     deleteAct->setStatusTip(tr("Delete this plot"));
+     connect( deleteAct, SIGNAL(triggered()), this, SIGNAL(deleteThisPlot()));
+          
+     cloneAct = new QAction(tr("Clone"), this);
+     cloneAct->setStatusTip(tr("Clone this plot"));
+     connect( cloneAct, SIGNAL(triggered()), this, SIGNAL(cloneThisPlot()));  
 
     setPlotDescriptionAct = new QAction(tr("Edit plot description"), this);
     setPlotDescriptionAct->setStatusTip(tr("Add a meaningful name for the plot"));
@@ -644,10 +644,12 @@ QvisPlotListBox::contextMenuCreateActions()
      // build the menu
      plotContextMenu = new QMenu(this);
      plotContextMenu->addAction(hideShowAct);
-     plotContextMenu->addAction(deleteAct);
-     plotContextMenu->addAction(drawAct);
      plotContextMenu->addAction(clearAct);
+     plotContextMenu->addAction(drawAct);
      plotContextMenu->addAction(redrawAct);
+     plotContextMenu->addSeparator();
+     plotContextMenu->addAction(cloneAct);
+     plotContextMenu->addAction(deleteAct);
      plotContextMenu->addSeparator();
      plotContextMenu->addAction(makeThisPlotFirstAct);
      plotContextMenu->addAction(moveThisPlotTowardFirstAct);
@@ -656,7 +658,6 @@ QvisPlotListBox::contextMenuCreateActions()
      plotContextMenu->addSeparator();
      plotContextMenu->addAction(setPlotDescriptionAct);
      plotContextMenu->addSeparator();
-     plotContextMenu->addAction(copyAct);
     
 // copy to window incomplete!!!!! Commented out below...
      copyToWinAct = new QAction(tr("Copy To Window"), 0);
@@ -740,7 +741,7 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
     deleteAct->setEnabled(anyActive);
     drawAct->setEnabled(anyActive);
     clearAct->setEnabled(anyActive);
-    copyAct->setEnabled(anyActive);
+    cloneAct->setEnabled(anyActive);
     redrawAct->setEnabled(anyActive);
     disconnectAct->setEnabled(anyActive);
 
