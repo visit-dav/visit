@@ -38,6 +38,9 @@
 #   Eric Brugger, Tue Mar 16 12:42:01 PDT 2010
 #   I modified the script to not install libraries located in /usr/lib.
 #
+#   Tom Fogal, Tue Mar 16 17:20:59 MDT 2010
+#   Set the proper type for some MESSAGE calls which report errors.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -86,12 +89,12 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
     SET("${lib_dir_var}" "${base_dir_val}/${libdirextension}")
 
     IF(NOT EXISTS ${${inc_dir_var}})
-        MESSAGE(STATUS "Error: Include Directory for ${pkg} (${${inc_dir_var}}) does not exist.")
+        MESSAGE(SEND_ERROR "Include Directory for ${pkg} (${${inc_dir_var}}) does not exist.")
         SET(lib_setup_error 1)
     ENDIF(NOT EXISTS ${${inc_dir_var}})
 
     IF(NOT EXISTS ${${lib_dir_var}})
-        MESSAGE(STATUS "Error: Library Directory for ${pkg} (${${lib_dir_var}}) does not exist.")
+        MESSAGE(SEND_ERROR "Library Directory for ${pkg} (${${lib_dir_var}}) does not exist.")
         SET(lib_setup_error 1)
     ENDIF(NOT EXISTS ${${lib_dir_var}})
 
@@ -122,7 +125,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
             LIST(APPEND "${lib_var}" ${alib})
             MESSAGE(STATUS "  Found library ${X} in ${${lib_dir_var}}")
         ELSE(full_lib_path)
-            MESSAGE(STATUS "  Error: Library ${X} not found in ${${lib_dir_var}}")
+            MESSAGE(SEND_ERROR "Library ${X} not found in ${${lib_dir_var}}")
             SET(lib_setup_error 1)
         ENDIF(full_lib_path)
         UNSET(full_lib_path CACHE)
@@ -162,7 +165,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
                     LIST(APPEND "${lib_var}" ${alib})
                     MESSAGE(STATUS "  Found library ${X_VALUE} in ${current_lib_dir}")
                 ELSE(full_lib_path)
-                    MESSAGE(STATUS "  Error: Library ${X_VALUE} not found in ${current_lib_dir}")
+                    MESSAGE(SEND_ERROR "Library ${X_VALUE} not found in ${current_lib_dir}")
                     SET(lib_setup_error 1)
                 ENDIF(full_lib_path)
                 UNSET(full_lib_path CACHE)
