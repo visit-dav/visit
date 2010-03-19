@@ -117,7 +117,7 @@ signals:
     void deleteThisPlot();
     void drawThisPlot();
     void clearThisPlot();
-    void copyThisPlot();
+    void cloneThisPlot();
     void copyToWinThisPlot();
     void redrawThisPlot();
     void disconnectThisPlot();
@@ -143,7 +143,7 @@ private:
     QAction    *deleteAct;
     QAction    *drawAct;
     QAction    *clearAct;
-    QAction    *copyAct;
+    QAction    *cloneAct;
     QAction    *copyToWinAct;
     QAction    *redrawAct;
     QAction    *disconnectAct;

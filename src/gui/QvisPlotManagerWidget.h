@@ -194,7 +194,7 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Ellen Tarwate, Fri, May 25
 //   adding Context Menu to the Active Plots list
 //   hideThisPlot, deleteThisPlot, drawThisPlot,
-//   copyThisPlot, clearThisPlot, redrawThisPlot,
+//   cloneThisPlot, clearThisPlot, redrawThisPlot,
 //   copyToWinThisPlot, disconnectThisPlot...
 //
 //   Brad Whitlock, Thu Dec 20 11:05:48 PST 2007
@@ -262,7 +262,7 @@ public slots:
     void deleteThisPlot();
     void drawThisPlot();
     void clearThisPlot();
-    void copyThisPlot();
+    void cloneThisPlot();
     void redrawThisPlot();
     void disconnectThisPlot();
     void setActivePlot();

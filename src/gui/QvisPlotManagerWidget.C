@@ -310,8 +310,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(drawThisPlot()));
     connect(plotListBox, SIGNAL(clearThisPlot()),
             this, SLOT(clearThisPlot()));
-    connect(plotListBox, SIGNAL(copyThisPlot()),
-            this, SLOT(copyThisPlot()));
+    connect(plotListBox, SIGNAL(cloneThisPlot()),
+            this, SLOT(cloneThisPlot()));
     connect(plotListBox, SIGNAL(redrawThisPlot()),
             this, SLOT(redrawThisPlot()));
     connect(plotListBox, SIGNAL(disconnectThisPlot()),
@@ -2655,7 +2655,7 @@ QvisPlotManagerWidget::clearThisPlot()
 }
 
 // ****************************************************************************
-// Method: QvisPlotManagerWidget::copyThisPlot
+// Method: QvisPlotManagerWidget::cloneThisPlot
 //
 // Purpose: 
 //   This is a Qt slot function that tells the viewer to copy 
@@ -2670,7 +2670,7 @@ QvisPlotManagerWidget::clearThisPlot()
 //
 // ****************************************************************************
 void
-QvisPlotManagerWidget::copyThisPlot()
+QvisPlotManagerWidget::cloneThisPlot()
 {
     // Copy the active plot.
     GetViewerMethods()->CopyActivePlots();
