@@ -60,6 +60,9 @@
 #    I deleted the PlasmaState plugin from the build since it no longer
 #    exists.
 #
+#    Cyrus Harrion, Thu Mar 18 17:07:55 PDT 2010
+#    Temporarily removed the paraDIS due to a build issue.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -212,7 +215,6 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
-paraDIS
 paraDIS_tecplot
 )
 
