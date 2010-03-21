@@ -114,6 +114,9 @@ class     DBOptionsAttributes;
 //    Hank Childs, Thu Dec 17 14:07:52 PST 2009
 //    Add support for database options.
 //
+//    Hank Childs, Sat Mar 20 20:21:47 PDT 2010
+//    Add data members for more database options.
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -266,6 +269,8 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::vector<int>          visitIdToFLASHId;
     std::vector<int>          FLASHIdToVisitId;
     bool                      showProcessors;
+    bool                      newStyleCurves;
+    bool                      addStructuredDomainBoundaries;
 };
 
 
