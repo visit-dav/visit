@@ -240,6 +240,9 @@ avtFLASHFileFormat::FinalizeHDF5(void)
 //    Hank Childs, Thu Dec 17 14:07:52 PST 2009
 //    Added database options (for toggling between processors or levels).
 //
+//    Hank Childs, Sat Mar 20 20:21:47 PDT 2010
+//    Initialize new database options options.
+//
 // ****************************************************************************
 
 avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename, 
@@ -256,6 +259,8 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename,
     fileFormatVersion = -1;
 
     showProcessors = opts->GetBool("Show generating processor instead of refinement level");
+    newStyleCurves = opts->GetBool("Use new style curve generation");
+    addStructuredDomainBoundaries = opts->GetBool("Set up patch abutment information");
 
     // do HDF5 library initialization on consturction of first instance
     if (avtFLASHFileFormat::objcnt == 0)
@@ -676,6 +681,47 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
 
 // ****************************************************************************
+//  Function: QsortCurveSorter
+//
+//  Purpose:
+//      Sorts the left-hand-side location for a curve, keeping the block ID
+//      along with the sort.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2010
+//
+// ****************************************************************************
+
+
+typedef struct
+{
+    double f;
+    int   b;
+} DoubleInt;
+
+
+static int
+QsortCurveSorter(const void *arg1, const void *arg2)
+{
+    DoubleInt *A = (DoubleInt *) arg1;
+    DoubleInt *B = (DoubleInt *) arg2;
+
+    if (A->f < B->f)
+        return -1;
+    else if (B->f < A->f)
+        return 1;
+
+    // equal start.  Return the coarser blocks first.  (Coarser blocks have 
+    // lower block numbers)
+    if (A->b < B->b)
+        return -1;
+    if (B->b < A->b)
+        return 1;
+
+    return 0;
+}
+
+// ****************************************************************************
 //  Method: avtFLASHFileFormat::GetMesh
 //
 //  Purpose:
@@ -726,6 +772,9 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Hank Childs, Fri Dec 11 13:15:13 PST 2009
 //    Add support for reordering of indices for SIL efficiencies.
+//
+//    Hank Childs, Fri Mar 19 11:06:49 PDT 2010
+//    Do not flatten curves ... leave them as AMR.
 //
 // ****************************************************************************
 
@@ -925,108 +974,234 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         H5Dread(varId, H5T_NATIVE_FLOAT, H5S_ALL,H5S_ALL,H5P_DEFAULT, vals);
         H5Dclose(varId);
 
-        //
-        // Find a sampling
-        //
-        double ds_size   = maxSpatialExtents[0] - minSpatialExtents[0];
-        double step_size = ds_size;
-        for (b=0; b<numBlocks; b++)
+        if (newStyleCurves)
         {
-            double minExt = blocks[b].minSpatialExtents[0];
-            double maxExt = blocks[b].maxSpatialExtents[0];
-            double step   = (maxExt - minExt) / double(block_zdims[0]);
-            if (step < step_size)
-                step_size = step;
-        }
-        int nsteps = int(.5 + (ds_size / step_size));
-
-        //
-        // Create and initialize the sampling arrays
-        //
-        float *x = new float[nsteps];
-        float *y = new float[nsteps];
-        float *l = new float[nsteps];
-
-        for (i=0; i<nsteps; i++)
-        {
-            x[i] = (step_size * (double(i)+.5)) + minSpatialExtents[0];
-            y[i] = 0;
-            l[i] = -1;
-        }
-
-        //
-        // Sample each block
-        //
-        for (b=0; b<numBlocks; b++)
-        {
-            double minExt = blocks[b].minSpatialExtents[0];
-            double maxExt = blocks[b].maxSpatialExtents[0];
-            double size   = maxExt - minExt;
-            double step   = size / double(block_zdims[0]);
-
-            int first_index = int((minExt - (minSpatialExtents[0]+step_size/2.))/step_size+.99999);
-            int last_index  = int((maxExt - (minSpatialExtents[0]+step_size/2.))/step_size);
-
-            if (first_index < 0 || first_index >= nsteps)
+            if (numBlocks <= 0)
             {
-                // Logic error!  Recover.
-                first_index = 0;
+                delete [] vals;
+                return NULL;
             }
-            if (last_index < 0 || last_index >= nsteps)
+    
+            //
+            // Get info about each segment.
+            //
+            DoubleInt *di = new DoubleInt[numBlocks];
+            for (b=0; b<numBlocks; b++)
             {
-                // Logic error!  Recover.
-                last_index = nsteps-1;
+                 di[b].f = blocks[b].minSpatialExtents[0];
+                 di[b].b = b;
             }
+    
+            vector<double> xvals;
+            vector<double> yvals;
 
-            for (int j = first_index; j <= last_index; j++)
+            // Sort them from left to right.
+            qsort(di, numBlocks, sizeof(DoubleInt), QsortCurveSorter);
+    
+            vector<int> blocksInProgress;
+            blocksInProgress.push_back(di[0].b);
+            double curLocation = blocks[di[0].b].minSpatialExtents[0];
+            int    lastBlockIdx = 1;
+            int    blocksInProgressIdx = 0;
+            while (blocksInProgressIdx >= 0)
             {
-                if (blocks[b].level < l[j])
-                    continue;
-
-                int block_index = int((x[j] - minExt) / step);
-                if (block_index < 0 || block_index >= block_zdims[0])
+                int curBlock  = blocksInProgress[blocksInProgressIdx];
+                int nextBlock = di[lastBlockIdx].b;
+                double goUntilLocation;
+                if (lastBlockIdx >= numBlocks)
                 {
-                    // Logic error! Could be propagated from earlier. Recover.
-                    continue;
+                     // we are at the last block.
+                    goUntilLocation = blocks[curBlock].maxSpatialExtents[0];
                 }
-
-                y[j] = vals[b * block_zdims[0] + block_index];
-                l[j] = blocks[b].level;
+                else
+                    goUntilLocation = blocks[nextBlock].minSpatialExtents[0];
+    
+                bool curBlockWillEnd = false;
+                if (goUntilLocation >= blocks[curBlock].maxSpatialExtents[0])
+                {
+                    curBlockWillEnd = true;
+                    goUntilLocation = blocks[curBlock].maxSpatialExtents[0];
+                }
+    
+                // We know that we want to add points for "curBlock" from "curLocation"
+                // to "goUntilLocation".
+                if (curLocation < goUntilLocation)
+                {
+                    double minExt = blocks[curBlock].minSpatialExtents[0];
+                    double maxExt = blocks[curBlock].maxSpatialExtents[0];
+                    double step = (maxExt-minExt) / block_zdims[0];
+                    int start = (int) floor((curLocation-minExt)/step);
+                    int stop  = (int) ceil((goUntilLocation-minExt)/step);
+                    if (start < 0)
+                        start = 0;
+                    if (stop >= block_zdims[0])
+                        stop = block_zdims[0]-1;
+                    for (int j = start ; j <= stop ; j++)
+                    {
+                        double x = minExt + j*step + step/2.;
+                        if (x < curLocation || x > goUntilLocation)
+                            continue;
+                        xvals.push_back(x);
+                        yvals.push_back(vals[curBlock*block_zdims[0] + j]);
+                    }
+                }
+                curLocation = goUntilLocation;
+    
+                if (curBlockWillEnd)
+                {
+                    // continue with the previous block.  If the new block
+                    // starts, we will figure that out on the next iteration.
+                    // This statement corresponds to a no-op.  However,
+                    // if we have no blocks queued up, then the logic would end.
+                    // So test for that.
+                    if (lastBlockIdx < numBlocks && blocksInProgressIdx <= 0)
+                    {
+                        blocksInProgress[0] = nextBlock;
+                        blocksInProgressIdx = 0;
+                        lastBlockIdx++;
+                    }
+                    else
+                        blocksInProgressIdx--;
+                }
+                else
+                {
+                    // queue up the old block and put the new block in.
+                    blocksInProgressIdx++;
+                    blocksInProgress.resize(blocksInProgressIdx+1);
+                    blocksInProgress[blocksInProgressIdx] = nextBlock;
+                    lastBlockIdx++;
+                }
             }
+
+            //
+            // Add all of the points to an array.
+            //
+            int nPts = xvals.size();
+            vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+            vtkFloatArray    *valarray = vtkFloatArray::New();
+            valarray->SetNumberOfComponents(1);
+            valarray->SetNumberOfTuples(nPts);
+            valarray->SetName(meshname);
+            rg->GetPointData()->SetScalars(valarray);
+            vtkDataArray *xc = rg->GetXCoordinates();
+            for (int j = 0 ; j < nPts ; j++)
+            {
+                //  NODE CENTERED:
+                xc->SetComponent(j,  0, xvals[j]);
+                
+                valarray->SetValue(j, yvals[j]);
+            }
+            valarray->Delete();    
+    
+            delete[] vals;
+        
+            return rg;
         }
+        else
+        {    
+            //
+            // Find a sampling
+            //
+            double ds_size   = maxSpatialExtents[0] - minSpatialExtents[0];
+            double step_size = ds_size;
 
-        //
-        // Create the rectilinear grid
-        //   (Lifted from avtCurve2DFileFormat::ReadFile())
-        //
+            for (b=0; b<numBlocks; b++)
+            {
+                double minExt = blocks[b].minSpatialExtents[0];
+                double maxExt = blocks[b].maxSpatialExtents[0];
+                double step   = (maxExt - minExt) / double(block_zdims[0]);
+                if (step < step_size)
+                    step_size = step;
+            }
+            int nsteps = int(.5 + (ds_size / step_size));
+   
+            //
+            // Create and initialize the sampling arrays
+            //
+            float *x = new float[nsteps];
+            float *y = new float[nsteps];
+            float *l = new float[nsteps];
+  
+            for (i=0; i<nsteps; i++)
+            {
+                x[i] = (step_size * (double(i)+.5)) + minSpatialExtents[0];
+                y[i] = 0;
+                l[i] = -1;
+            }
+    
+            //
+            // Sample each block
+            //
+            for (b=0; b<numBlocks; b++)
+            {
+                double minExt = blocks[b].minSpatialExtents[0];
+                double maxExt = blocks[b].maxSpatialExtents[0];
+                double size   = maxExt - minExt;
+                double step   = size / double(block_zdims[0]);
+    
+                int first_index = int((minExt - (minSpatialExtents[0]+step_size/2.))/step_size+.99999);
+                int last_index  = int((maxExt - (minSpatialExtents[0]+step_size/2.))/step_size);
+    
+                if (first_index < 0 || first_index >= nsteps)
+                {
+                    // Logic error!  Recover.
+                    first_index = 0;
+                }
+                if (last_index < 0 || last_index >= nsteps)
+                {
+                    // Logic error!  Recover.
+                    last_index = nsteps-1;
+                }
+    
+                for (int j = first_index; j <= last_index; j++)
+                {
+                    if (blocks[b].level < l[j])
+                        continue;
+    
+                    int block_index = int((x[j] - minExt) / step);
+                    if (block_index < 0 || block_index >= block_zdims[0])
+                    {
+                        // Logic error! Could be propagated from earlier. Recover.
+                        continue;
+                    }
 
-        //
-        // Add all of the points to an array.
-        //
-        int nPts = nsteps;
-        vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
-        vtkFloatArray    *valarray = vtkFloatArray::New();
-        valarray->SetNumberOfComponents(1);
-        valarray->SetNumberOfTuples(nPts);
-        valarray->SetName(meshname);
-        rg->GetPointData()->SetScalars(valarray);
-        vtkDataArray *xc = rg->GetXCoordinates();
-        for (int j = 0 ; j < nPts ; j++)
-        {
-            //  NODE CENTERED:
-            xc->SetComponent(j,  0, x[j]);
-            
-            valarray->SetValue(j, y[j]);
+                    y[j] = vals[b * block_zdims[0] + block_index];
+                    l[j] = blocks[b].level;
+                }
+            }
+    
+            //
+            // Create the rectilinear grid
+            //   (Lifted from avtCurve2DFileFormat::ReadFile())
+            //
+    
+            //
+            // Add all of the points to an array.
+            //
+            int nPts = nsteps;
+            vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+            vtkFloatArray    *valarray = vtkFloatArray::New();
+            valarray->SetNumberOfComponents(1);
+            valarray->SetNumberOfTuples(nPts);
+            valarray->SetName(meshname);
+            rg->GetPointData()->SetScalars(valarray);
+            vtkDataArray *xc = rg->GetXCoordinates();
+            for (int j = 0 ; j < nPts ; j++)
+            {
+                //  NODE CENTERED:
+                xc->SetComponent(j,  0, x[j]);
+                
+                valarray->SetValue(j, y[j]);
+            }
+            valarray->Delete();    
+    
+            delete[] vals;
+            delete[] x;
+            delete[] y;
+            delete[] l;
+        
+            return rg;
         }
-        valarray->Delete();    
-
-        delete[] vals;
-        delete[] x;
-        delete[] y;
-        delete[] l;
-
-        return rg;
-
     }
     else if (string(meshname) == "morton_blockandlevel")
     {
@@ -2574,6 +2749,9 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //    Hank Childs, Thu Dec 17 14:07:52 PST 2009
 //    Added database options (for toggling between processors or levels).
 //
+//    Hank Childs, Sat Mar 20 20:25:14 PDT 2010
+//    Only do domain abutment based on database option.
+//
 // ****************************************************************************
 
 void
@@ -2595,28 +2773,31 @@ avtFLASHFileFormat::BuildDomainNesting()
     {
         int i;
 
-        int t1 = visitTimer->StartTimer();
-        avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
-        rdb->SetNumDomains(numBlocks);
-        for (i = 0; i < numBlocks; i++)
+        if (addStructuredDomainBoundaries)
         {
-            int logExts[6];
-            logExts[0] = blocks[i].minGlobalLogicalExtents[0];
-            logExts[1] = blocks[i].maxGlobalLogicalExtents[0];
-            logExts[2] = blocks[i].minGlobalLogicalExtents[1];
-            logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
-            logExts[4] = blocks[i].minGlobalLogicalExtents[2];
-            logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-            rdb->SetIndicesForAMRPatch(FLASHIdToVisitId[i], blocks[i].level - 1, logExts);
+            int t1 = visitTimer->StartTimer();
+            avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
+            rdb->SetNumDomains(numBlocks);
+            for (i = 0; i < numBlocks; i++)
+            {
+                int logExts[6];
+                logExts[0] = blocks[i].minGlobalLogicalExtents[0];
+                logExts[1] = blocks[i].maxGlobalLogicalExtents[0];
+                logExts[2] = blocks[i].minGlobalLogicalExtents[1];
+                logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
+                logExts[4] = blocks[i].minGlobalLogicalExtents[2];
+                logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
+                rdb->SetIndicesForAMRPatch(FLASHIdToVisitId[i], blocks[i].level - 1, logExts);
+            }
+            rdb->CalculateBoundaries();
+    
+            void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                             avtStructuredDomainBoundaries::Destruct);
+            cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                timestep, -1, vrdb);
+            visitTimer->StopTimer(t1, "FLASH setting up domain boundaries");
         }
-        rdb->CalculateBoundaries();
-
-        void_ref_ptr vrdb = void_ref_ptr(rdb,
-                                         avtStructuredDomainBoundaries::Destruct);
-        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                            timestep, -1, vrdb);
-        visitTimer->StopTimer(t1, "FLASH setting up domain boundaries");
-
+    
         //
         // build the avtDomainNesting object
         //
