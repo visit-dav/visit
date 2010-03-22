@@ -60,8 +60,11 @@
 #    I deleted the PlasmaState plugin from the build since it no longer
 #    exists.
 #
-#    Cyrus Harrion, Thu Mar 18 17:07:55 PDT 2010
+#    Cyrus Harrison, Thu Mar 18 17:07:55 PDT 2010
 #    Temporarily removed the paraDIS due to a build issue.
+#
+#    Cyrus Harrison, Mon Mar 22 09:01:32 PDT 2010
+#    Added back paraDIS after build issue was resolved.
 #
 #****************************************************************************/
 IF(NOT WIN32)
@@ -215,6 +218,7 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
+paraDIS
 paraDIS_tecplot
 )
 
