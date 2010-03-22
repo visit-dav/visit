@@ -594,6 +594,10 @@ $0 = shift @ARGV;
 #    Dave Pugmire, Fri Mar 19 10:15:04 EDT 2010 
 #    Updates for jaguarpf.ccs.ornl.gov
 #
+#    Eric Brugger, Mon Mar 22 11:53:43 PDT 2010
+#    I modified the script so that it would properly launch VisIt in
+#    parallel on up and purple at LLNL.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1646,6 +1650,16 @@ $UsePPN = 1;
 if ($host =~ /^graph\d+$/)
 {
     $UsePPN  = 0;
+}
+
+# ----
+# HACK for up and purple @ LLNL
+#
+# ----
+if ( $host =~ /^up\d+$/ or $host =~ /^purple\d+$/)
+{
+    $ENV{LD_LIBRARY_PATH} = "/usr/lpp/ppe.poe/lib";
+    $ENV{LIBPATH} = "/usr/lpp/ppe.poe/lib";
 }
 
 # ----
