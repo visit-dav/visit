@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Tom Fogal, Mon Mar 22 17:13:38 MDT 2010
+#   On Mac, GDAL builds libgdal.1.dylib for some reason.
+#
 #****************************************************************************/
 
 # Use the GDAL_DIR hint from the config-site .cmake file 
@@ -56,6 +59,6 @@ IF (WIN32)
       )
 
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(GDAL lib include gdal)
+  SET_UP_THIRD_PARTY(GDAL lib include gdal gdal.1)
 ENDIF (WIN32)
 
