@@ -31,7 +31,7 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN /home/harrison37/apps/Trolltech/Qt-4.6.1/bin)
 ##
 ## Specify the location of the python.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
 ## Compiler flags.

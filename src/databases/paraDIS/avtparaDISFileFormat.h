@@ -45,7 +45,6 @@
 
 #include "paradis_c_interface.h"
 #include <avtSTSDFileFormat.h>
-#include "avtparaDISOptions.h"
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 #include "Point.h"
@@ -66,8 +65,7 @@ using namespace std;
 class avtparaDISFileFormat : public avtSTSDFileFormat
 {
   public:
-                       avtparaDISFileFormat(const char *filename,
-                                            DBOptionsAttributes *rdatts);
+                       avtparaDISFileFormat(const char *filename);
     virtual           ~avtparaDISFileFormat() {;};
 
     //
@@ -118,7 +116,6 @@ class avtparaDISFileFormat : public avtSTSDFileFormat
 
     int mVerbosity; 
     int mProcNum, mNumProcs;
-    int mMaterialSetChoice; 
 
     bool PopulateParaDISMetaData(avtDatabaseMetaData *md); 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
