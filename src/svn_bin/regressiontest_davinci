@@ -199,6 +199,10 @@
 #
 #    Mark C. Miller, Fri Mar  5 16:21:43 PST 2010
 #    Added VERBOSE=1 to make commands
+#
+#    Cyrus Harrison, Mon Mar 22 10:59:26 PDT 2010
+#    Temporarily only run the 'serial' case.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -515,6 +519,12 @@ case $theDay in
     Saturday)  modes="davinci,scalable,parallel,icet" ;;
     Sunday)    modes="davinci,scalable,parallel,icet" ;;
 esac
+
+#
+# cyrush (3/22/2010)
+# For now run only serial so we can focus on resolving issues.
+#
+modes="davinci,serial"
 
 # set list of tests/modes to skip
 skipList_dueTo_clientServer="\
