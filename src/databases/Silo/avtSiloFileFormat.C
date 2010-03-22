@@ -14078,6 +14078,10 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //
 //    Mark C. Miller, Wed Jan 20 16:35:37 PST 2010
 //    Made calls to ForceSingle on and off UNconditional.
+//
+//    Cyrus Harrison, Mon Mar 22 15:07:25 PDT 2010
+//    Use curvi domain boundries if db_mesh_type == DB_QUADMESH.
+//
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -14303,7 +14307,7 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     bool canComputeNeighborsFromExtents = true;
     avtStructuredDomainBoundaries *sdb = 0;
 
-    if (db_mesh_type == DB_QUAD_CURV)
+    if (db_mesh_type == DB_QUAD_CURV || db_mesh_type == DB_QUADMESH )
     {
         sdb = new avtCurvilinearDomainBoundaries(canComputeNeighborsFromExtents);
         debug5 << "using curvilinear boundaries" << endl;
