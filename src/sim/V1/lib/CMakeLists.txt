@@ -35,11 +35,14 @@
 # DAMAGE.
 #
 # Modifications:
+#  Cyrus Harrison, Mon Mar 22 08:36:52 PDT 2010
+#  Adding missing include of ${VISIT_BINARY_DIR}/include for out of source
+#  build.
 #
 #****************************************************************************/
 
 SET(LIBSIM_SOURCES
-VisItControlInterface_V1.c 
+VisItControlInterface_V1.c
 )
 #SimHelperFunc.c  # DEPRECATE THESE!
 #UI_Connection.c
@@ -53,6 +56,7 @@ INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_SOURCE_DIR}/databases/SimV1
 ${VISIT_SOURCE_DIR}/include
+${VISIT_BINARY_DIR}/include
 )
 
 ADD_LIBRARY(sim ${LIBSIM_SOURCES})
