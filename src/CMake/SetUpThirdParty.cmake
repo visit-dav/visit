@@ -41,9 +41,6 @@
 #   Tom Fogal, Tue Mar 16 17:20:59 MDT 2010
 #   Set the proper type for some MESSAGE calls which report errors.
 #
-#   Tom Fogal, Mon Mar 22 17:09:34 MDT 2010
-#   Updated the search logic when multiple library options are given.
-#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -127,11 +124,8 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
             GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
             LIST(APPEND "${lib_var}" ${alib})
             MESSAGE(STATUS "  Found library ${X} in ${${lib_dir_var}}")
-            SET(lib_setup_error 0)
-            # Bail out.  We found it, no need to keep searching.
-            BREAK()
         ELSE(full_lib_path)
-            MESSAGE(WARNING "Library ${X} not found in ${${lib_dir_var}}")
+            MESSAGE(SEND_ERROR "Library ${X} not found in ${${lib_dir_var}}")
             SET(lib_setup_error 1)
         ENDIF(full_lib_path)
         UNSET(full_lib_path CACHE)
