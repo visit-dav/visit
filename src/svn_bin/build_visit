@@ -866,6 +866,10 @@
 #     scripttools for Qt 4.6.1 so that it would compile with gcc 3.2.3 on
 #     an x86 platform.
 #
+#     Cyrus Harrison, Tue Mar 23 09:21:32 PDT 2010
+#     Added support to set group permissions on:
+#      pil, tcmalloc, icet & advio
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -4423,7 +4427,6 @@ function build_pil
             return 1
         fi
     fi
-    
 
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PIL_BUILD_DIR > /dev/null
@@ -4432,16 +4435,23 @@ function build_pil
         info "Installing PIL ..."
         ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
-    info "Done with PIL."
 
+    # PIL installs into site-packages dir of Visit's Python.
+    # Simply re-execute the python perms command.
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/python"
+       chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    info "Done with PIL."
     return 0
 }
 
 
 # *************************************************************************** #
-#                            Function 8, build_silo                           
+#                            Function 8, build_silo
 #
-# Modfications:                                                          
+# Modfications:
 #   Mark C. Miller, Wed Feb 18 22:57:25 PST 2009
 #   Added logic to build silex and copy bins on Mac. Removed disablement of
 #   browser.
@@ -7779,6 +7789,15 @@ function build_tcmalloc
     mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH
     mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
     cp .libs/libtcmalloc.* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/google-perftools"
+       chgrp -R ${GROUP} "$VISITDIR/google-perftools"
+    fi
+
+    cd "$START_DIR"
+    echo "Done with google-perftools"
+    return 0
 }
 
 # *************************************************************************** #
@@ -7874,14 +7893,25 @@ function build_icet
     info "Building Ice-T . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "VTK did not build correctly.  Giving up."
+       warn "Ice-T did not build correctly.  Giving up."
        return 1
     fi
 
     info "Installing Ice-T . . ."
 
     $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "Ice-T: 'make install' failed.  Giving up"
+       return 1
+    fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/icet"
+       chgrp -R ${GROUP} "$VISITDIR/icet"
+    fi
+
+    cd "$START_DIR"
+    echo "Done with Ice-T"
     return 0
 }
 
@@ -8228,10 +8258,18 @@ function build_advio
     # Install AdvIO
     info "Installing AdvIO"
     $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "AdvIO install failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/AdvIO"
+       chgrp -R ${GROUP} "$VISITDIR/AdvIO"
+    fi
 
     cd "$START_DIR"
     info "Done with AdvIO"
-
     return 0
 }
 
