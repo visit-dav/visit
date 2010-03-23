@@ -23,7 +23,7 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0d/${VISITARCH2}/lib/vtk
 ## Qt
 ##
 # Add Qt's qmake to the path so we can use CMake's Qt4 autodetection.
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/chaos_4_x86_64_gcc_4.1.2/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH2}/bin)
 
 ##
 ## Use VisIt's Python.
