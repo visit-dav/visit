@@ -1,4 +1,4 @@
-#/usr/gapps/visit/cmake/2.6.4/linux-x86_64-gcc-4.0.2/bin/cmake
+#/usr/gapps/visit/cmake/2.8.0/linux-x86_64-gcc-4.0.2/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Fri Feb 26 13:16:05 PST 2010
@@ -32,7 +32,7 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.4.3/${VISITARCH}/bin)
 ##
 ## Specify the location of the python.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
 ## Compiler flags.
