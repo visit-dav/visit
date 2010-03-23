@@ -185,7 +185,8 @@ then
    if [ $test = no ]
    then
       scp hoth:/scratch/$user/hoth/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rhel3.tar.gz
-      scp visit$ver2.linux-rhel3.tar.gz kickit:
+      scp hoth:/scratch/$user/hoth/visitbuild/visit_llnl$ver2.linux-intel.tar.gz visit_llnl$ver2.linux-rhel3.tar.gz
+      scp visit_llnl$ver2.linux-rhel3.tar.gz kickit:visit$ver2.linux-rhel3.tar.gz
       scp visit-install kickit:
       scp hoth kickit:hoth_install
       ssh kickit "chmod 750 hoth_install;./hoth_install"
@@ -236,9 +237,11 @@ then
    if [ $test = no ]
    then
       scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.ibm-aix-pwr.tar.gz .
+      scp up:/p/gup1/$user/up32/visitbuild/visit_llnl$ver2.ibm-aix-pwr.tar.gz .
       scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.ibm-aix-pwr64.tar.gz .
-      scp visit$ver2.ibm-aix-pwr.tar.gz yana:
-      scp visit$ver2.ibm-aix-pwr64.tar.gz yana:
+      scp up:/p/gup1/$user/up64/visitbuild/visit_llnl$ver2.ibm-aix-pwr64.tar.gz .
+      scp visit_llnl$ver2.ibm-aix-pwr.tar.gz yana:visit$ver2.ibm-aix-pwr.tar.gz
+      scp visit_llnl$ver2.ibm-aix-pwr64.tar.gz yana:visit$ver2.ibm-aix-pwr64.tar.gz
       scp visit-install yana:
       scp up yana:up_install
       ssh yana "chmod 750 up_install;./up_install"
@@ -274,7 +277,8 @@ then
    if [ $test = no ]
    then
       scp yana3:/usr/tmp/$user/yana/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp visit$ver2.linux-x86_64.tar.gz yana:
+      scp yana3:/usr/tmp/$user/yana/visitbuild/visit_llnl$ver2.linux-x86_64.tar.gz .
+      scp visit_llnl$ver2.linux-x86_64.tar.gz yana:visit$ver2.linux-x86_64.tar.gz
       scp visit-install yana:
       scp yana yana:yana_install
       ssh yana "chmod 750 yana_install;./yana_install"
@@ -381,7 +385,7 @@ if [ $ellipse = true ]
 then
    if [ $test = no ]
    then
-      scp ellipse.uchicago.edu:tmp/$user/ellipse/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux-ellipse.tar.gz
+      scp ellipse.uchicago.edu:tmp/$user/ellipse/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-ellipse.tar.gz
       scp visit$ver2.linux-ellipse.tar.gz ellipse.uchicago.edu:
       scp visit-install ellipse.uchicago.edu:
       scp ellipse ellipse.uchicago.edu:ellipse_install
