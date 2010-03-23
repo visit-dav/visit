@@ -1,85 +1,117 @@
-#/what/is/the/path/to/bin/cmake
+#/autonfs/home/brugger/visit/cmake/2.8.0/linux-i686-gcc-3.4.6/bin/cmake
+##
+## ./build_visit generated host.cmake
+## created: Tue Mar 23 12:31:50 CDT 2010
+## system: Linux ellipse.uchicago.edu 2.6.9-89.0.7.ELsmp #1 SMP Wed Aug 5 14:12:18 EDT 2009 i686 i686 i386 GNU/Linux
+## by: brugger
 
 ##
-## Set the VISITHOME environment variable.
+## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /autonfs/home/brugger/visit)
-SET(VISIT_VERBOSE_MAKEFILE TRUE)
+SET(VISITARCH linux-i686-gcc-3.4.6)
 
 ##
-## Use the icc 9.1 compiler.
+## Specify the location of the mesa.
 ##
-#if test -z "$CXX"; then
-SET(VISIT_C_COMPILER icc)
-SET(VISIT_CXX_COMPILER icpc)
-#fi
-#if test -z "$CC"; then
-#fi
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH})
 
 ##
-## Specify the location of the mesa include files and libraries.
+## Specify the location of the vtk.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/5.0/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0d/${VISITARCH}/lib/vtk-5.0/)
 
 ##
-## Specify the location of the vtk include files and libraries.
+## Specify the Qt4 binary dir. 
+## (qmake us used to locate & setup Qt4 dependencies)
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0c/linux_rhel3_gcc_3.4.6/lib/vtk-5.0)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
 
 ##
-## Specify the location of the qt include files and libraries.
+## Specify the location of the python.
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/3.3.2/linux_rhel3_gcc_3.4.6/bin)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
-## Specify the location of the python include files and libraries.
+## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-O2")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-O2")
 
 ##
 ## Add parallel arguments.
 ##
-SET(VISIT_MPI_CXX_FLAGS "-I/soft/mpich-gm-1.2.7p1.2-intel-r1/include")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/soft/mpich-gm-1.2.7p1.2-intel-r1/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/soft/mpich-gm-1.2.7p1.2-intel-r1/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/soft/mpich-gm-1.2.7p1.2-intel-r1/lib -Wl,-rpath,/soft/gm-2.1.29_Linux-r1/lib -L/soft/gm-2.1.29_Linux-r1/lib -L/soft/pvfs-2.6.2-r1/lib -L/soft/pvfs-1.6.3-r1/lib -L/soft/intel-c-9.1.042-f-9.1.036-r1/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich gm pvfs2 pvfs pthread rt irc)
 
+##############################################################
 ##
 ## Database reader plugin support libraries
 ##
-###############################################################################
+##############################################################
 
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR ${VISITHOME}/boxlib/linux_rhel3_gcc_3.4.6)
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR ${VISITHOME}/boxlib/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR ${VISITHOME}/boxlib/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR ${VISITHOME}/boxlib/${VISITARCH})
+
+##
+## CCMIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
 
 ##
 ## CFITSIO
 ##
-VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/${VISITARCH})
 
 ##
 ## CGNS
 ##
-VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/${VISITARCH})
+
+##
+## HDF4
+##
+VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib jpeg)
 
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.1/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.4/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
 
 ##
-## GDAL
+## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.3.2/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
-## netCDF
+## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.0/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.10.0/${VISITARCH})
+
+##
+## NetCDF
+##
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.3/${VISITARCH})
+
+##
+## SZIP
+##
+VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.6.2/linux_rhel3_gcc_3.4.6)
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+
