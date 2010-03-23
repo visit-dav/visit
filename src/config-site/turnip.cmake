@@ -1,4 +1,4 @@
-#/apps/visit/thirdparty/visit/cmake/2.6.4/linux-x86_64_gcc-3.4/bin/cmake
+#/apps/visit/thirdparty/visit/cmake/2.8.0/linux-x86_64_gcc-3.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Wed Jan  6 14:16:58 EST 2010
@@ -26,7 +26,7 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0d/${VISITARCH}/lib/vtk-
 ## Specify the Qt4 binary dir. 
 ## (qmake us used to locate & setup Qt4 dependencies)
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.4.3/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
 
 ##
 ## Specify the location of the python.
@@ -69,7 +69,7 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/${VISITARCH})
 ##
 ## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.4.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.0/${VISITARCH})
 
 ##
 ## FastBit

@@ -200,6 +200,9 @@ avtStreamlinePlot::GetMapper(void)
 //    Test to make sure we have a valid variable before asking for its 
 //    centering.
 //
+//    Dave Pugmire, Tue Mar 23 11:11:11 EDT 2010
+//    Do zone-to-node centering, if needed.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -216,12 +219,11 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
 
     // If the variable centering is zonal, convert it to nodal or the
     // streamline filter will not play with it.
-    //if(centering == AVT_ZONECENT)
-    if (0)
+    if(centering == AVT_ZONECENT)
     {
         if(shiftCenteringFilter != NULL)
             delete shiftCenteringFilter;
-        shiftCenteringFilter = new avtShiftCenteringFilter(AVT_ZONECENT);
+        shiftCenteringFilter = new avtShiftCenteringFilter(AVT_NODECENT);
         shiftCenteringFilter->SetInput(input);
         dob = shiftCenteringFilter->GetOutput();
     }

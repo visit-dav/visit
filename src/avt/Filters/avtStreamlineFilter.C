@@ -55,7 +55,6 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <math.h>
 #include <visitstream.h>
 
-#include <vtkCellDataToPointData.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -1622,6 +1621,9 @@ avtStreamlineFilter::SetupLocator(const DomainType &dom, vtkDataSet *ds)
 //   Hank Childs, Fri Feb 19 17:47:04 CST 2010
 //   Use a separate routine to generate a cell locator.
 //
+//   Dave Pugmire, Tue Mar 23 11:11:11 EDT 2010
+//   Make sure we ignore ghost zones with using cell locator.
+//
 // ****************************************************************************
 
 bool
@@ -1697,6 +1699,9 @@ avtStreamlineFilter::PointInDomain(avtVector &pt, DomainType &domain)
     double rad = 1e-6, dist=0.0;
     double p[3] = {pt.x, pt.y, pt.z}, resPt[3]={0.0,0.0,0.0};
     int foundCell = -1, subId = 0;
+    
+    //Ignore ghost zones.
+    cellLocator->IgnoreGhostsOn();
     int success = cellLocator->FindClosestPointWithinRadius(p, rad, resPt, 
                                                             foundCell, subId, dist);
 
@@ -1928,6 +1933,9 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Change ".size() == 0" test with empty, as empty has much better 
 //   performance.
 //
+//   Dave Pugmire, Tue Mar 23 11:11:11 EDT 2010
+//   Moved zone-to-node centering to the streamline plot.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -1945,24 +1953,12 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
 
-    if (DebugStream::Level5())
-        debug5<<"avtStreamlineFilter::IntegrateDom(dom= "<<slSeg->domain<<")"<<endl;
+    if (DebugStream::Level4())
+        debug4<<"avtStreamlineFilter::IntegrateDom(dom= "<<slSeg->domain<<")"<<endl;
 
     // prepare streamline integration ingredients
     vtkVisItInterpolatedVelocityField* velocity1 = vtkVisItInterpolatedVelocityField::New();
-    
-    // See if we have cell cenetered data...
-    vtkCellDataToPointData *cellToPt1 = NULL;
-    if (ds->GetPointData()->GetVectors() == NULL)
-    {
-        cellToPt1 = vtkCellDataToPointData::New();
-        
-        cellToPt1->SetInput(ds);
-        cellToPt1->Update();
-        velocity1->SetDataSet(cellToPt1->GetOutput());
-    }
-    else
-        velocity1->SetDataSet(ds);
+    velocity1->SetDataSet(ds);
 
     vtkVisItCellLocator *cellLocator = NULL;
     std::map<DomainType, vtkVisItCellLocator*>::iterator it = domainToCellLocatorMap.find(slSeg->domain);
@@ -2005,8 +2001,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     // When restarting a streamline one step is always taken. To avoid
     // this unneed step check to see if the termination criteria was
     // previously met.
-    if (DebugStream::Level5())
-      debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+    if (DebugStream::Level4())
+        debug4<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
 
     if( ! slSeg->terminated )
     {
@@ -2089,11 +2085,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     }
     
     velocity1->Delete();
-    if (cellToPt1)
-        cellToPt1->Delete();
-    
-    if (DebugStream::Level5())
-        debug5<<"::IntegrateDomain() result= "<<result<<endl;
+    if (DebugStream::Level4())
+        debug4<<"::IntegrateDomain() result= "<<result<<endl;
     visitTimer->StopTimer(t0, "IntegrateDomain");
     return result;
 }
@@ -2138,8 +2131,8 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
     slSeg->GetEndPoint(pt);
     vtkDataSet *ds = GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
 
-    if (DebugStream::Level5())
-        debug5 << "avtStreamlineFilter::IntegrateStreamline("<<pt<<" "<<slSeg->domain<<")"<<endl;
+    if (DebugStream::Level4())
+        debug4 << "avtStreamlineFilter::IntegrateStreamline("<<pt<<" "<<slSeg->domain<<")"<<endl;
 
     if (ds == NULL)
     {
@@ -2171,8 +2164,8 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
         }
     }
     
-    if (DebugStream::Level5())
-        debug5 << "IntegrateStreamline DONE: status = "<<slSeg->status<<" doms= "<<slSeg->seedPtDomainList<<endl;
+    if (DebugStream::Level4())
+        debug4 << "IntegrateStreamline DONE: status = "<<slSeg->status<<" doms= "<<slSeg->seedPtDomainList<<endl;
     visitTimer->StopTimer(t1, "IntegrateStreamline");
 }
 
