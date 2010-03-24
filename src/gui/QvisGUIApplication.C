@@ -6825,6 +6825,11 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Gunther H. Weber, Tue Mar 23 17:59:52 PDT 2010
+//   Since a plot now gets cleared when an operator is added (see changes to
+//   ViewerPlotList), we need to ensure that plots get  redrawn if auto update
+//   is enabled.
+//
 // ****************************************************************************
 
 void
@@ -6862,6 +6867,10 @@ QvisGUIApplication::AddOperator(int operatorType)
 
         wiz->deleteLater();
     }
+
+    // If auto-update is enabled, ensure that plot gets drawn immediately
+    if(AutoUpdate())
+        GetViewerMethods()->DrawPlots();
 }
 
 // ****************************************************************************

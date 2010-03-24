@@ -12,7 +12,7 @@ SET(VISITHOME /Users/ghweber/devel/visit_3rdparty)
 SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/local/visit)
-VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Debug)
+VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
 
 ##
 ## Specify the location of Mesa.
@@ -39,11 +39,9 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr)
 ## Compiler flags.
 ##
 SET(VISIT_C_COMPILER gcc)
-#SET(VISIT_C_FLAGS "-O2 -fno-common -fexceptions")
-SET(VISIT_C_FLAGS "-g -fno-common -fexceptions")
+SET(VISIT_C_FLAGS "-fno-common -fexceptions")
 SET(VISIT_CXX_COMPILER g++)
-#SET(VISIT_CXX_FLAGS "-O2 -fno-common -fexceptions -D__USE_ISOC99")
-SET(VISIT_CXX_FLAGS "-g -fno-common -fexceptions -D__USE_ISOC99")
+SET(VISIT_CXX_FLAGS "-fno-common -fexceptions -D__USE_ISOC99")
 
 ##
 ##  Parallel flags
