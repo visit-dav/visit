@@ -115,8 +115,8 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename, DBOptionsAttribut
     }
 
     // Activate first time step
-    H5PartSetStep(file, 0);
     activeTimeStep = 0;
+    H5PartSetStep(file, activeTimeStep);
 
     // Iterate over particle var names
     h5part_int64_t nPointVars = H5PartGetNumDatasets(file);
@@ -368,6 +368,7 @@ avtH5PartFileFormat::GetNTimesteps(void)
 #endif
     } 
     if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
+    H5PartSetStep(file, activeTimeStep);
 
     return H5PartGetNumSteps(file);
 }
@@ -511,6 +512,8 @@ avtH5PartFileFormat::RegisterDataSelections(
                 reader.openFile(filenames[0], true);
             } 
             if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
+            H5PartSetStep(file, activeTimeStep);
+
             reader.executeQuery((char*)queryString.c_str(), activeTimeStep, queryResults);
         }
         else
@@ -773,17 +776,7 @@ avtH5PartFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataSet *
 avtH5PartFileFormat::GetParticleMesh(int timestate)
 {
-    // Open file if necessary
-    if (!file)
-    {
-        file = H5PartOpenFile(filenames[0], H5PART_READ);
-#ifdef HAVE_LIBFASTBIT
-        reader.openFile(filenames[0], true);
-#endif
-    } 
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
- 
-    // Switch to appropriate time step
+    // Switch to appropriate time step (opens file if necessary)
     ActivateTimestep(timestate);
 
     // Select particles to actually read
@@ -949,17 +942,7 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
 vtkDataSet *
 avtH5PartFileFormat::GetFieldMesh(int timestate, const char *meshname)
 {
-    // Open file if necessary
-    if (!file)
-    {
-        file = H5PartOpenFile(filenames[0], H5PART_READ);
-#ifdef HAVE_LIBFASTBIT
-        reader.openFile(filenames[0], true);
-#endif
-    } 
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
- 
-    // Activate correct time step
+    // Switch to appropriate time step (opens file if necessary)
     ActivateTimestep(timestate);
 
     // FIXME: assume all fields have the same dimensions
@@ -1080,17 +1063,7 @@ avtH5PartFileFormat::GetVar(int timestate, const char *varname)
     if (it == particleVarNameToTypeMap.end())
         return GetFieldVar(timestate, varname);
 
-    // Open file if  necessary
-    if (!file)
-    {
-        file = H5PartOpenFile(filenames[0], H5PART_READ);
-#ifdef HAVE_LIBFASTBIT
-        reader.openFile(filenames[0], true);
-#endif
-    } 
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
- 
-    // Switch to appropriate time step
+    // Switch to appropriate time step (opens file if necessary)
     ActivateTimestep(timestate);
 
     // Select particles to actually read
@@ -1185,17 +1158,7 @@ avtH5PartFileFormat::GetFieldVar(int timestate, const char* varname)
     if (it == fieldScalarVarNameToTypeMap.end())
         EXCEPTION1(InvalidVariableException, varname);
 
-    // Open file if necessary
-    if (!file)
-    {
-        file = H5PartOpenFile(filenames[0], H5PART_READ);
-#ifdef HAVE_LIBFASTBIT
-        reader.openFile(filenames[0], true);
-#endif
-    } 
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
-
-    // Activate correct time step
+   // Activate correct time step (opens file if necessary)
     ActivateTimestep(timestate);
 
     char fieldName[maxVarNameLen];
@@ -1308,17 +1271,7 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varname)
     if (it == fieldVectorVarNameToTypeMap.end())
         EXCEPTION1(InvalidVariableException, varname);
 
-    // Open file if necessary
-    if (!file)
-    {
-        file = H5PartOpenFile(filenames[0], H5PART_READ);
-#ifdef HAVE_LIBFASTBIT
-        reader.openFile(filenames[0], true);
-#endif
-    } 
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
-
-    // Activate correct time step
+   // Activate correct time step (opens file if necessary)
     ActivateTimestep(timestate);
 
     char fieldName[maxVarNameLen];
@@ -1487,6 +1440,9 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
 #ifdef HAVE_LIBFASTBIT
         reader.openFile(filenames[0], true);
 #endif
+        // Force the check ts != activeTimeStep to be true thus ensuring that
+        // H5PartSetStep is called for the newly opened file.
+        activeTimeStep = -1;
     } 
     if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
  
@@ -1632,6 +1588,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
         reader.openFile(filenames[0], true);
     } 
     if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
+    H5PartSetStep(file, activeTimeStep);
  
     std::string method = "avtH5PartFileFormat::ConstructHistogram(): ";
     if (NULL==spec) 
@@ -1930,6 +1887,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
 #endif
         } 
         if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
+        H5PartSetStep(file, activeTimeStep);
 
         std::vector<hsize_t> qResults;
         reader.executeQuery((char*)query.c_str(), activeTimeStep, qResults);
