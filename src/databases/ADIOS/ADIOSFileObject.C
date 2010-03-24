@@ -407,7 +407,29 @@ ADIOSFileObject::GetDoubleScalar(const std::string &nm, double &val)
     
     val = s->second.AsDouble();
     return true;
+}
 
+// ****************************************************************************
+//  Method: ADIOSFileObject::GetStringScalar
+//
+//  Purpose:
+//      Return a string scalar
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Wed Mar 24 16:32:09 EDT 2010
+//
+// ****************************************************************************
+
+bool
+ADIOSFileObject::GetStringScalar(const std::string &nm, std::string &val)
+{
+    Open();
+    std::map<std::string, ADIOSScalar>::const_iterator s = scalars.find(nm);
+    if (s == scalars.end() || !s->second.IsString())
+        return false;
+    
+    val = s->second.AsString();
+    return true;
 }
 
 // ****************************************************************************
@@ -641,7 +663,6 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
         free(readData);
     }
 
-    
     return (retval > 0);
 }
 

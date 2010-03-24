@@ -62,6 +62,11 @@ class vtkRectilinearGrid;
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
+//  Handle time varying variables and add expressions.
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTMDFileFormat
@@ -94,11 +99,12 @@ class avtPixieFileFormat : public avtMTMDFileFormat
 
     virtual void     PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     
-    bool           HasCoordinates(const std::string &var, std::string *coords);
+    bool             HasCoordinates(const std::string &var, std::string *coords);
                                   
     struct VarInfo
     {
         std::string fileVarName, mesh;
+        bool isTimeVarying;
     };
     typedef std::map<std::string, VarInfo> VarInfoMap;
 
@@ -113,9 +119,10 @@ class avtPixieFileFormat : public avtMTMDFileFormat
     std::vector<int> timecycles;
     VarInfoMap       variables;
     MeshInfoMap      meshes;
+    std::string      rawExpression;
 
     bool             IsVariable(const std::string &vname);
-    std::string      GetVarName(const std::string &vname);
+    std::string      GetVarName(const std::string &vname, bool &isTimeVarying);
     std::string      GetVarMesh(const std::string &vname, MeshInfo &mi);
     bool             GetTimeStep(const std::string &vname, int &ts);
     std::string      GetCoordName(const std::string &nm, int ts);

@@ -216,6 +216,11 @@ avtPixieFileFormat::FreeUpResources(void)
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
+//  Add expressions.
+//
 // ****************************************************************************
 
 void
@@ -254,6 +259,44 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSt
     for (vi = variables.begin(); vi != variables.end(); vi++)
     {
         AddScalarVarToMetaData(md, vi->first, vi->second.mesh, AVT_NODECENT);            
+    }
+
+    //Add expressions.
+    if (rawExpression.size())
+    {
+        std::string::size_type s = 0;
+        while (s != std::string::npos)
+        {
+            std::string::size_type nexts = rawExpression.find_first_of(";", s);
+            std::string exprStr;
+            if (nexts != std::string::npos)
+            {
+                exprStr = std::string(rawExpression, s, nexts-s);
+                nexts += 1;
+            }
+            else
+            {
+                exprStr = std::string(rawExpression,s, std::string::npos);
+            }
+
+            // remove offending chars from exprStr (spaces)
+            std::string newExprStr;
+            for (int i = 0; i < exprStr.size(); i++)
+            {
+                if (exprStr[i] != ' ')
+                    newExprStr += exprStr[i];
+            }
+
+            std::string::size_type t = newExprStr.find_first_of(':');
+
+            Expression vec;
+            vec.SetName(std::string(newExprStr,0,t));
+            vec.SetDefinition(std::string(newExprStr,t+1,std::string::npos));
+            vec.SetType(Expression::VectorMeshVar);
+            md->AddExpression(&vec);
+
+            s = nexts;
+        }
     }
 }
 
@@ -332,7 +375,7 @@ avtPixieFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         for (int i = 0; i < 3; i++)
         {
             string coordNm = GetCoordName(mi->second.coords[i], timestate);
-            file->ReadVariable(coordNm, timestate, &coords[i]);
+            file->ReadVariable(coordNm, 0, &coords[i]);
         }
         
         int nx = mi->second.dims[0], ny = mi->second.dims[1], nz = mi->second.dims[2];
@@ -391,6 +434,11 @@ avtPixieFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
+//  Handle time varying variables correctly.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -403,8 +451,18 @@ avtPixieFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (vi == variables.end())
         EXCEPTION1(InvalidVariableException, varname);
 
+    string nm = vi->second.fileVarName;
+    if (vi->second.isTimeVarying)
+    {
+        char tmp[256];
+        string::size_type index = nm.find("/", 1);
+        string v = nm.substr(index+1, index-nm.size());
+        SNPRINTF(tmp, 256, "%s_%d/%s", "/Timestep", timestate, v.c_str());
+        nm = tmp;
+    }
+    
     vtkFloatArray *arr = NULL;
-    if ( !file->ReadVariable(vi->second.fileVarName, 0, &arr))
+    if ( !file->ReadVariable(nm, 0, &arr))
         EXCEPTION1(InvalidVariableException, varname);
         
     return arr;
@@ -445,6 +503,11 @@ avtPixieFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
+//  Read in expressions.
+//
 // ****************************************************************************
 
 void
@@ -466,15 +529,14 @@ avtPixieFileFormat::Initialize()
 
         if (!IsVariable(v.name))
             continue;
-        
-        string varName = GetVarName(v.name);
-        
+
         MeshInfo mi;
         string meshname = GetVarMesh(v.name, mi);
-
+        
         VarInfo varInfo;
         varInfo.fileVarName = v.name;
         varInfo.mesh = meshname;
+        string varName = GetVarName(v.name, varInfo.isTimeVarying);
 
         if (meshes.find(meshname) == meshes.end())
         {
@@ -486,7 +548,6 @@ avtPixieFileFormat::Initialize()
             variables[varName] = varInfo;
         }
 
-
         //Extract the timestep.
         int ts;
         if (numTS > 0 && GetTimeStep(v.name, ts))
@@ -496,12 +557,14 @@ avtPixieFileFormat::Initialize()
     set<int>::const_iterator it;
     for (it=timestepsSet.begin(); it != timestepsSet.end(); it++)
         timecycles.push_back(*it);
-    
     std::sort(timecycles.begin(), timecycles.end());
+
+    //Get expressions.
+    rawExpression = "";
+    file->GetStringScalar("/visit_expressions", rawExpression);
 
     initialized = true;
 }
-
 
 // ****************************************************************************
 //  Method: avtPixieFileFormat::HasCoordinates
@@ -571,20 +634,28 @@ avtPixieFileFormat::IsVariable(const std::string &vname)
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
+//  Handle time varying variables.
+//
 // ****************************************************************************
 
 string
-avtPixieFileFormat::GetVarName(const std::string &vname)
+avtPixieFileFormat::GetVarName(const std::string &vname, bool &isTimeVarying)
 {
-    const std::string prefix("/Timestep_");
+    const std::string timePrefix("/Timestep_");
     std::string::size_type index;
     string varname = vname;
     
-    if (vname.substr(0, prefix.size()) == prefix)
+    if (vname.substr(0, timePrefix.size()) == timePrefix)
     {
         index = vname.find("/", 1);
         varname = vname.substr(index+1, vname.size());
+        isTimeVarying = true;
     }
+    else
+        isTimeVarying = false;
     
     return varname;
 }
