@@ -95,6 +95,9 @@ class vtkPoints;
 //  Dave Pugmire, Wed Mar 17 15:29:24 EDT 2010
 //  Add a vtkFloatArray ReadVariable method.
 //
+//  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
+//  Add GetStringScalar.
+//
 // ****************************************************************************
 
 class ADIOSFileObject
@@ -121,6 +124,7 @@ class ADIOSFileObject
     //Scalars.
     bool GetIntScalar(const std::string &nm, int &val);
     bool GetDoubleScalar(const std::string &nm, double &val);
+    bool GetStringScalar(const std::string &nm, std::string &val);
     
     //Coordinates.
     bool ReadCoordinates(const std::string &nm,
