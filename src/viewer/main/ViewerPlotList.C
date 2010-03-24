@@ -5716,6 +5716,11 @@ ViewerPlotList::MovePlotOrderTowardLast(int plotId)
 //    Update the expression list here; since some operators can now create new
 //    variables, the expression list might change when an operator is added.
 //
+//    Gunther H. Weber, Tue Mar 23 17:57:20 PDT 2010
+//    Clear plot when adding an operator (consistent with bahavior when 
+//    removing an operator) so that user can change operator attributes
+//    before drawing the plot.
+//
 // ****************************************************************************
 
 void
@@ -5731,6 +5736,7 @@ ViewerPlotList::AddOperator(const int type, bool applyToAll, const bool fromDefa
         if (plots[i].active || applyToAll)
         {
             plots[i].plot->AddOperator(type, fromDefault);
+            plots[i].realized = false; // Set the plot to non-realized so that we can change attributes 
 
             // Update the new operator's client attributes.
             if (notUpdatedClientAtts)
