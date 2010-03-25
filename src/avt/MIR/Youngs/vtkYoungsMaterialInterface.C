@@ -183,7 +183,11 @@ vtkYoungsMaterialInterface_GetPointData(
 
 #define GET_POINT_DATA(a,i,t) vtkYoungsMaterialInterface_GetPointData(nPointData,inPointArrays,input,prevPointsMap,nmat,Mats,a,i,t)
 
-struct CellInfo
+//  Modifications:
+//   Jeremy Meredith, Thu Mar 25 11:30:20 EDT 2010
+//   Renamed.  There was a namespace conflict and the compiler got confused
+//   at runtime (but not compile time, frustratingly).
+struct YoungsCellInfo
 {
     double points[vtkYoungsMaterialInterface::MAX_CELL_POINTS][3];
     vtkIdType pointIds[vtkYoungsMaterialInterface::MAX_CELL_POINTS];
@@ -200,7 +204,7 @@ struct CellInfo
     bool triangulationOk;
     bool needTriangulation;
 
-    inline CellInfo() : dim(2), np(0), nf(0), ntri(0), type(VTK_EMPTY_CELL), nEdges(0), triangulationOk(false), needTriangulation(false) {}
+    inline YoungsCellInfo() : dim(2), np(0), nf(0), ntri(0), type(VTK_EMPTY_CELL), nEdges(0), triangulationOk(false), needTriangulation(false) {}
 };
 
 int vtkYoungsMaterialInterface::CellProduceInterface( int dim, int np, double fraction, double minFrac, double maxFrac )
@@ -412,7 +416,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         // read cell information for the first iteration
         // a temporary cell will then be generated after each iteration for the next one.
         vtkCell* vtkcell = input->GetCell(ci);
-        CellInfo cell;
+        YoungsCellInfo cell;
         cell.dim = vtkcell->GetCellDimension();
         cell.np = vtkcell->GetNumberOfPoints();
         cell.nf = vtkcell->GetNumberOfFaces();
@@ -505,7 +509,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
 
             if( this->CellProduceInterface(cell.dim,cell.np,fraction,minFrac,maxFrac) )
             {
-                CellInfo nextCell; // empty cell by default
+                YoungsCellInfo nextCell; // empty cell by default
                 int interfaceCellType = VTK_EMPTY_CELL;
 
                 if( mi==0 || ( !this->OnionPeel && !twoMaterialOptimization) )
@@ -1015,6 +1019,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
         Mats[m].outPointArrays[nPointData-1]->Squeeze();
         vtkPoints* points = vtkPoints::New();
         points->SetDataTypeToDouble();
+        //points->SetDataTypeToFloat();
         points->SetNumberOfPoints( Mats[m].pointCount );
         points->SetData( Mats[m].outPointArrays[nPointData-1] );
         Mats[m].outPointArrays[nPointData-1]->Delete();
