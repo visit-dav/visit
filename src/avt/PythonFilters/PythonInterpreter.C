@@ -191,12 +191,16 @@ PythonInterpreter::Shutdown()
 //  Programmer:   Cyrus Harrison
 //  Creation:     May 2, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 24 16:19:44 MST 2010
+//    Use raw string.
+//
 // ****************************************************************************
 
 bool
 PythonInterpreter::AddSystemPath(const std::string &path)
 {
-    return RunScript("sys.path.insert(1,'" + path + "')\n");
+    return RunScript("sys.path.insert(1,r'" + path + "')\n");
 }
 
 // ****************************************************************************

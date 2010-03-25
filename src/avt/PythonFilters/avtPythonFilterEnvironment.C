@@ -45,6 +45,7 @@
 #include <DebugStream.h>
 #include <Environment.h>
 #include <StringHelpers.h>
+#include <InstallationFunctions.h>
 
 using namespace std;
 
@@ -89,6 +90,11 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //  Programmer:   Cyrus Harrison
 //  Creation:     Tue Feb  2 13:14:44 PST 2010
 //
+//  Modifications: 
+//    Kathleen Bonnell, Wed Mar 24 16:17:23 MST 2010
+//    Retrieve VISITARCHHOME via GetVisItArchitectureDirectory.
+//    Remove slash from end of paths passed to AddSystemPath.
+//
 // ****************************************************************************
 
 bool
@@ -99,9 +105,10 @@ avtPythonFilterEnvironment::Initialize()
         return false;
     // setup pyavt env:
     // add system paths: $VISITARCHOME/lib & $VISITARCHOME/lib/site-packages
-    string varchdir = Environment::get("VISITARCHHOME");
-    string vlibdir = varchdir + VISIT_SLASH_CHAR + "lib" + VISIT_SLASH_CHAR;
-    string vlibsp  = vlibdir  + "site-packages" + VISIT_SLASH_CHAR;
+    string varchdir = GetVisItArchitectureDirectory();
+    string vlibdir = varchdir + VISIT_SLASH_CHAR + "lib";
+    string vlibsp  = vlibdir  + VISIT_SLASH_CHAR + "site-packages";
+
     if(!pyi->AddSystemPath(vlibdir))
         return false;
     if(!pyi->AddSystemPath(vlibsp)) // vtk module is symlinked here

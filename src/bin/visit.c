@@ -775,6 +775,9 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Wed Feb  3 13:59:42 PST 2010
  *   Removed use of VISITDEVDIR env var.
  *
+ *   Kathleen Bonnell, Wed Mar 24 16:21:03 MST 2010
+ *   Check for VISITHOME in env. Set PYTHONPATH.
+ *
  *****************************************************************************/
 
 char *
@@ -791,6 +794,14 @@ AddEnvironment(int useShortFileName)
      * Determine visit path
      */
     haveVISITHOME         = ReadKey("VISITHOME", &visitpath);
+
+    if (!haveVISITHOME)
+    {
+        free(visitpath);
+        visitpath = 0;
+        if ((visitpath = getenv("VISITHOME")) != NULL)
+            haveVISITHOME = 1;
+    }
 
     /*
      * We could not get the value associated with the key. It may mean
@@ -927,6 +938,12 @@ AddEnvironment(int useShortFileName)
      * Set the ultrawrapper dir.
      */
     sprintf(tmp, "VISITULTRAHOME=%s\\ultrawrapper", visitpath);
+    putenv(tmp);
+
+    /*
+     * Set PYTHONPATH
+     */
+    sprintf(tmp, "PYTHONPATH=%s\\lib\\Python\\lib", visitpath);
     putenv(tmp);
 
     /*

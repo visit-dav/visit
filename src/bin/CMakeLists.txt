@@ -46,6 +46,10 @@
 #  Change copy_directory for VISIT_BIN_DIRECTORIES to a FILE(COPY 
 #  so that '.svn' can be skipped.
 #
+#  Kathleen Bonnell, Mon Mar  22 11:08:46 MST 2010
+#  Don't copy VISIT_BIN_FILES on windows, instead only copy makemovie.py,
+#  makemoviemain.py and visitdiff.py.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -94,17 +98,31 @@ FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_DIRECTORIES})
          PATTERN ".svn" EXCLUDE)
 ENDFOREACH(VISIT_BIN_ITEM)
 
-FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
-                            ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
-ENDFOREACH(VISIT_BIN_ITEM)
+IF (NOT WIN32)
+    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
+                                ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
+    ENDFOREACH(VISIT_BIN_ITEM)
 
 
-#-----------------------------------------------------------------------------
-# Create VisIt launcher binary for windows
-#----------------------------------------------------------------------------
-IF(WIN32)
+    INSTALL(FILES ${VISIT_BIN_FILES}
+            DESTINATION bin
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                        WORLD_READ             WORLD_EXECUTE) 
+
+    INSTALL(FILES internallauncher
+        DESTINATION ${VISIT_VERSION}/bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ             WORLD_EXECUTE)
+
+ELSE (NOT WIN32)
+
+    #--------------------------------------------------------------------------
+    # Create VisIt launcher binary for windows
+    #--------------------------------------------------------------------------
     INCLUDE_DIRECTORIES(${VISIT_COMMON_INCLUDES})
     LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
     ADD_EXECUTABLE(visit_exe visit.c)
@@ -112,22 +130,38 @@ IF(WIN32)
     SET_SOURCE_FILES_PROPERTIES(visit.c PROPERTIES LANGUAGE CXX)
     TARGET_LINK_LIBRARIES(visit_exe shlwapi)
     VISIT_INSTALL_TARGETS(visit_exe)
-ENDIF(WIN32)
 
+    #--------------------------------------------------------------------------
+    # Copy movie helper scripts
+    #--------------------------------------------------------------------------
+    SET(VISIT_BIN_WIN_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/makemovie.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/makemoviemain.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/visitdiff.py)
 
-INSTALL(FILES ${VISIT_BIN_FILES}
-    DESTINATION bin
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-)
-IF(NOT WIN32)
-    INSTALL(FILES internallauncher
-        DESTINATION ${VISIT_VERSION}/bin
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-    )
+    INSTALL(FILES ${VISIT_BIN_WIN_FILES}
+            DESTINATION ${VISIT_INSTALLED_VERSION}
+            PERMISSIONS OWNER_READ OWNER_WRITE
+                        GROUP_READ GROUP_WRITE
+                        WORLD_READ)
+
+    FOREACH (CFG Release Debug RelWithDebuInfo MinSizeRel)
+        FILE(COPY ${VISIT_BIN_WIN_FILES}
+             DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}
+             FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                              GROUP_READ GROUP_WRITE
+                              WORLD_READ)
+    ENDFOREACH (CFG)
 ENDIF(NOT WIN32)
+
+
 INSTALL(DIRECTORY movietemplates translations
     DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-    FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
+                     GROUP_READ GROUP_WRITE 
+                     WORLD_READ
+    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                          WORLD_READ             WORLD_EXECUTE
     PATTERN ".svn" EXCLUDE
 )
