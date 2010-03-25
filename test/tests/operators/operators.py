@@ -33,6 +33,11 @@
 #    
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -59,6 +64,7 @@ slice.SetUpAxis(0,0,1)
 slice.project2d = 1
 SetDefaultOperatorOptions(slice)
 AddOperator("Slice")
+DrawPlots()
 
 Test("ops_sliceop01")
 
@@ -66,6 +72,7 @@ RemoveAllOperators()
 slice.project2d = 0
 SetDefaultOperatorOptions(slice)
 AddOperator("Slice")
+DrawPlots()
 
 Test("ops_sliceop02")
 
@@ -79,6 +86,7 @@ clip.SetPlane1Normal(-1,1,0)
 clip.funcType = 0
 SetDefaultOperatorOptions(clip)
 AddOperator("Clip")
+DrawPlots()
 
 Test("ops_clip01")
 
@@ -88,6 +96,7 @@ clip.radius = 9
 clip.funcType = 1
 SetDefaultOperatorOptions(clip)
 AddOperator("Clip")
+DrawPlots()
 
 Test("ops_clip02")
 
@@ -101,6 +110,7 @@ clip.SetPlane2Normal(-1,0,0)
 clip.funcType = 0
 SetDefaultOperatorOptions(clip)
 AddOperator("Clip")
+DrawPlots()
 
 Test("ops_clip03")
 
@@ -113,6 +123,7 @@ onion.index = 30
 onion.requestedLayer = 3
 SetDefaultOperatorOptions(onion)
 AddOperator("OnionPeel")
+DrawPlots()
 
 Test("ops_onion01")
 
@@ -121,6 +132,7 @@ onion.adjacencyType = 1
 onion.requestedLayer = 7
 SetDefaultOperatorOptions(onion)
 AddOperator("OnionPeel")
+DrawPlots()
 
 Test("ops_onion02")
 
