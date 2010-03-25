@@ -71,6 +71,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
@@ -109,6 +114,7 @@ def QueryRect2d():
     transform.doScale = 1
     transform.scaleX = 10
     SetOperatorOptions(transform)
+    DrawPlots()
 
     Query("SpatialExtents", "actual")
     s = s + GetQueryOutputString()
@@ -411,6 +417,7 @@ def QueryGlobe():
     clip.plane1Origin = (0.2, 0.3, 0.4)
     clip.plane1Normal = (1, 1, 1)
     SetOperatorOptions(clip)
+    DrawPlots()
 
     s = s + "\nAFTER CLIPPING:\n" 
     Query("3D surface area")
@@ -608,6 +615,7 @@ def QueryMinMaxCurve():
     clip.planeInverse = 1
     clip.plane1Origin = (0.5, 0, 0)
     SetOperatorOptions(clip) 
+    DrawPlots()
     for frame in frames:
         SetTimeSliderState(frame)
         s = s + "For clipped curve at frame %d:" %frame 

@@ -13,6 +13,10 @@
 #    Brad Whitlock, Mon May 8 15:57:12 PST 2006
 #    Added test for higher_order_triangles.vtk
 #
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -51,6 +55,7 @@ def TestMaterials():
     silr.TurnOnSet(setId2)
     SetPlotSILRestriction(silr)
     AddOperator("Slice")
+    DrawPlots()
     Test("vtk_03")
 
     TurnMaterialsOn()

@@ -105,6 +105,7 @@ def TestViewChangeFullFrame():
     c.plane1Origin = (0, 3, 0)
     c.plane1Normal = (0, -1, 0)
     SetOperatorOptions(c)
+    DrawPlots()
     SetViewExtentsType("actual")
     # Turn full frame mode ON
     ToggleFullFrameMode()
@@ -291,6 +292,7 @@ def TestViewChangeLogScalingCurves():
     b.miny = 0.000001 
     b.maxy = 10000 
     SetOperatorOptions(b) 
+    DrawPlots()
 
     SetViewExtentsType("actual")
 
