@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Tom Fogal, Thu Mar 25 14:24:49 MDT 2010
+#   Fix GDAL library naming convention on OS X.
+#
 #****************************************************************************/
 
 # Use the GDAL_DIR hint from the config-site .cmake file 
@@ -54,7 +57,8 @@ IF (WIN32)
       PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
       CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
       )
-
+ELSEIF(APPLE)
+  SET_UP_THIRD_PARTY(GDAL lib include gdal.1)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(GDAL lib include gdal)
 ENDIF (WIN32)
