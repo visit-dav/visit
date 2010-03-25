@@ -195,6 +195,11 @@ using std::vector;
 //    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
 //    Reorder constructor initializers to be the correct order.
 //
+//    Jeremy Meredith, Thu Mar 25 14:13:10 EDT 2010
+//    For att vectors, if we don't get any new contents, then don't
+//    clear the old vector.  This mirrors the behavior for other
+//    types of fields.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1141,9 +1146,9 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         if(Name.right(1) != "s")
             plural = "s";
 
-        c << "    // Clear all the " << attType << "s." << Endl;
-        c << "    Clear" << Name << plural << "();" << Endl;
         c << Endl;
+        c << "    // Clear all the " << attType << "s if we got any." << Endl;
+        c << "    bool cleared" << Name << plural << " = false;" << Endl;
         c << "    // Go through all of the children and construct a new" << Endl;
         c << "    // " << attType << " for each one of them." << Endl;
                   
@@ -1154,6 +1159,11 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "        {" << Endl;
         c << "            if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << Endl;
         c << "            {" << Endl;
+        c << "                if (!cleared" << Name << plural << ")" << Endl;
+        c << "                {" << Endl;
+        c << "                    Clear" << Name << plural << "();" << Endl;
+        c << "                    cleared" << Name << plural << " = true;" << Endl;
+        c << "                }" << Endl;
         c << "                " << attType << " temp;" << Endl;
         c << "                temp.SetFromNode(children[i]);" << Endl;
         c << "                Add" << Name << "(temp);" << Endl;
