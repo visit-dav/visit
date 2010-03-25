@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -547,9 +547,9 @@ FileOpenOptions::SetFromNode(DataNode *parentNode)
         SetTypeNames(node->AsStringVector());
     if((node = searchNode->GetNode("typeIDs")) != 0)
         SetTypeIDs(node->AsStringVector());
-    // Clear all the DBOptionsAttributess.
-    ClearOpenOptions();
 
+    // Clear all the DBOptionsAttributess if we got any.
+    bool clearedOpenOptions = false;
     // Go through all of the children and construct a new
     // DBOptionsAttributes for each one of them.
     children = searchNode->GetChildren();
@@ -559,6 +559,11 @@ FileOpenOptions::SetFromNode(DataNode *parentNode)
         {
             if(children[i]->GetKey() == std::string("DBOptionsAttributes"))
             {
+                if (!clearedOpenOptions)
+                {
+                    ClearOpenOptions();
+                    clearedOpenOptions = true;
+                }
                 DBOptionsAttributes temp;
                 temp.SetFromNode(children[i]);
                 AddOpenOptions(temp);
