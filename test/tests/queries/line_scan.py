@@ -63,10 +63,10 @@ def TestOne(index, filename, varname, meshname, limit):
     DrawPlots()
 
     # Do the queries...
-    Query("Chord Length Distribution (individual)", 15000, 100, 0, limit)
-    Query("Chord Length Distribution (aggregate)", 15000, 100, 0, limit)
-    Query("Ray Length Distribution (individual)", 15000, 100, 0, limit)
-    Query("Ray Length Distribution (aggregate)", 15000, 100, 0, limit)
+    Query("Chord Length Distribution - individual", 15000, 100, 0, limit)
+    Query("Chord Length Distribution - aggregate", 15000, 100, 0, limit)
+    Query("Ray Length Distribution - individual", 15000, 100, 0, limit)
+    Query("Ray Length Distribution - aggregate", 15000, 100, 0, limit)
     Query("Mass Distribution", 15000, 100, 0, limit)
     Query("Distance From Boundary", 15000, 100, 0, limit)
     Query("Line Scan Transform", 15000, 100, 0, limit)
@@ -75,7 +75,7 @@ def TestOne(index, filename, varname, meshname, limit):
     # Now test the outputs
     OpenDatabase("cld_i0.ult")
     ReOpenDatabase("cld_i0.ult")  # Flush out cached version
-    AddPlot("Curve", "Chord length distribution <individual>")
+    AddPlot("Curve", "Chord length distribution - individual")
     DrawPlots()
     ResetView()
     test1 = "ls_%d_%d" %(index,1)
@@ -123,7 +123,7 @@ def TestOne(index, filename, varname, meshname, limit):
     DeleteAllPlots()
     OpenDatabase("cld_a0.ult")
     ReOpenDatabase("cld_a0.ult")  # Flush out cached version
-    AddPlot("Curve", "Chord length distribution <aggregate>")
+    AddPlot("Curve", "Chord length distribution - aggregate")
     DrawPlots()
     ResetView()
     test1 = "ls_%d_%d" %(index,10)
@@ -139,7 +139,7 @@ def TestOne(index, filename, varname, meshname, limit):
     DeleteAllPlots()
     OpenDatabase("rld_i0.ult")
     ReOpenDatabase("rld_i0.ult")  # Flush out cached version
-    AddPlot("Curve", "Ray length distribution <individual>")
+    AddPlot("Curve", "Ray length distribution - individual")
     DrawPlots()
     ResetView()
     test1 = "ls_%d_%d" %(index,13)
@@ -155,7 +155,7 @@ def TestOne(index, filename, varname, meshname, limit):
     DeleteAllPlots()
     OpenDatabase("rld_a0.ult")
     ReOpenDatabase("rld_a0.ult")  # Flush out cached version
-    AddPlot("Curve", "Ray length distribution <aggregate>")
+    AddPlot("Curve", "Ray length distribution - aggregate")
     DrawPlots()
     ResetView()
     test1 = "ls_%d_%d" %(index,16)
