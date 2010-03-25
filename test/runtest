@@ -261,6 +261,9 @@
 #    Cyrus Harrison, Tue Dec  8 09:59:42 PST 2009
 #    Updated to reflect reorg of data directory.
 #
+#    Tom Fogal, Thu Mar 25 14:43:08 MDT 2010
+#    Acceptable differences ("-pixdiff X") shouldn't count as a failure.
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -970,7 +973,6 @@ for t in $testcases; do
         fi
     elif test "$error" = "112"; then
         echo -e "    $name:\tsucceeded, acceptable differences" >> summary
-        anyerror=1
         echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Acceptable</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Acceptable differences found in test file: $t"
