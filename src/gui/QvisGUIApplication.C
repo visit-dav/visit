@@ -2491,7 +2491,7 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
         }
         else
         {
-            w = 350;
+            w = 352;
             h = screenH - borders[0] - borders[1];
         }
     }
