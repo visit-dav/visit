@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
   <Attribute name="MaterialAttributes" purpose="Attributes to control material interface reconstruction" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="Algorithm">
-      Tetrahedral
-      ZooClipping
+      EquiT
+      EquiZ
       Isovolume
-      Youngs
+      PLIC
       Discrete
     </Enum>
     <Field name="smoothing" label="Enable interface smoothing" type="bool">
@@ -20,7 +20,7 @@
       false
     </Field>
     <Field name="algorithm" label="Algorithm" type="enum" subtype="Algorithm">
-      ZooClipping
+      EquiZ
     </Field>
     <Field name="iterationEnabled" label="Iteration enabled" type="bool">
       false

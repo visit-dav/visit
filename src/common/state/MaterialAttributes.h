@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -63,10 +63,10 @@ class STATE_API MaterialAttributes : public AttributeSubject
 public:
     enum Algorithm
     {
-        Tetrahedral,
-        ZooClipping,
+        EquiT,
+        EquiZ,
         Isovolume,
-        Youngs,
+        PLIC,
         Discrete
     };
 

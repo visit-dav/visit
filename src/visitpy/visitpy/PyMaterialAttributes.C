@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -96,23 +96,23 @@ PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sneedValidConnectivity = 0\n", prefix);
     str += tmpStr;
-    const char *algorithm_names = "Tetrahedral, ZooClipping, Isovolume, Youngs, Discrete";
+    const char *algorithm_names = "EquiT, EquiZ, Isovolume, PLIC, Discrete";
     switch (atts->GetAlgorithm())
     {
-      case MaterialAttributes::Tetrahedral:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sTetrahedral  # %s\n", prefix, prefix, algorithm_names);
+      case MaterialAttributes::EquiT:
+          SNPRINTF(tmpStr, 1000, "%salgorithm = %sEquiT  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
-      case MaterialAttributes::ZooClipping:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sZooClipping  # %s\n", prefix, prefix, algorithm_names);
+      case MaterialAttributes::EquiZ:
+          SNPRINTF(tmpStr, 1000, "%salgorithm = %sEquiZ  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       case MaterialAttributes::Isovolume:
           SNPRINTF(tmpStr, 1000, "%salgorithm = %sIsovolume  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
-      case MaterialAttributes::Youngs:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sYoungs  # %s\n", prefix, prefix, algorithm_names);
+      case MaterialAttributes::PLIC:
+          SNPRINTF(tmpStr, 1000, "%salgorithm = %sPLIC  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       case MaterialAttributes::Discrete:
@@ -268,7 +268,7 @@ MaterialAttributes_SetAlgorithm(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid algorithm value was given. "
                         "Valid values are in the range of [0,4]. "
                         "You can also use the following names: "
-                        "Tetrahedral, ZooClipping, Isovolume, Youngs, Discrete"
+                        "EquiT, EquiZ, Isovolume, PLIC, Discrete"
                         ".");
         return NULL;
     }
@@ -519,14 +519,14 @@ PyMaterialAttributes_getattr(PyObject *self, char *name)
         return MaterialAttributes_GetNeedValidConnectivity(self, NULL);
     if(strcmp(name, "algorithm") == 0)
         return MaterialAttributes_GetAlgorithm(self, NULL);
-    if(strcmp(name, "Tetrahedral") == 0)
-        return PyInt_FromLong(long(MaterialAttributes::Tetrahedral));
-    if(strcmp(name, "ZooClipping") == 0)
-        return PyInt_FromLong(long(MaterialAttributes::ZooClipping));
+    if(strcmp(name, "EquiT") == 0)
+        return PyInt_FromLong(long(MaterialAttributes::EquiT));
+    if(strcmp(name, "EquiZ") == 0)
+        return PyInt_FromLong(long(MaterialAttributes::EquiZ));
     if(strcmp(name, "Isovolume") == 0)
         return PyInt_FromLong(long(MaterialAttributes::Isovolume));
-    if(strcmp(name, "Youngs") == 0)
-        return PyInt_FromLong(long(MaterialAttributes::Youngs));
+    if(strcmp(name, "PLIC") == 0)
+        return PyInt_FromLong(long(MaterialAttributes::PLIC));
     if(strcmp(name, "Discrete") == 0)
         return PyInt_FromLong(long(MaterialAttributes::Discrete));
 
@@ -587,6 +587,8 @@ PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

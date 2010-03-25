@@ -148,6 +148,9 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Added Youngs algorithm choice.
 //    Added hints for algorithm specificity of some options.
 //
+//    Jeremy Meredith, Thu Mar 25 12:27:49 EDT 2010
+//    Renamed some algorithms, added some window hints.
+//
 // ****************************************************************************
 
 void
@@ -162,22 +165,22 @@ QvisMaterialWindow::CreateWindowContents()
     algLayout->addWidget(algorithmLabel);
 
     algorithm = new QComboBox(central);
-    algorithm->addItem(tr("Tetrahedral (obsolete)"));
-    algorithm->addItem(tr("Zoo-based (default)"));
+    algorithm->addItem(tr("Equi-T (obsolete)"));
+    algorithm->addItem(tr("Equi-Z (default, supports iteration)"));
     algorithm->addItem(tr("Isovolume (special-purpose)"));
-    algorithm->addItem(tr("Youngs (accurate/discontinuous)"));
+    algorithm->addItem(tr("PLIC (accurate/discontinuous)"));
     algorithm->addItem(tr("Discrete (accurate/10X memory footprint/rect. only)"));
     algLayout->addWidget(algorithm);
     connect(algorithm, SIGNAL(activated(int)),
             this, SLOT(algorithmChanged(int)));
     mainLayout->addLayout(algLayout, 0,0, 1,2);
 
-    smoothing = new QCheckBox(tr("Enable interface smoothing (Zoo/Tet only)"), central);
+    smoothing = new QCheckBox(tr("Enable interface smoothing (Equi-* only)"), central);
     connect(smoothing, SIGNAL(toggled(bool)),
             this, SLOT(smoothingChanged(bool)));
     mainLayout->addWidget(smoothing, 1,0);
 
-    forceFullConnectivity = new QCheckBox(tr("Force full connectivity (Tet only)"), central);
+    forceFullConnectivity = new QCheckBox(tr("Force full connectivity (Equi-T only)"), central);
     connect(forceFullConnectivity, SIGNAL(toggled(bool)),
             this, SLOT(forceFullConnectivityChanged(bool)));
     mainLayout->addWidget(forceFullConnectivity, 2,0);
@@ -217,7 +220,7 @@ QvisMaterialWindow::CreateWindowContents()
     mainLayout->addWidget(isoVolumeFraction, 7,1);
 
     // Iteration options
-    enableIteration = new QCheckBox(tr("Enable iteration (Zoo/Isovol only)"), 
+    enableIteration = new QCheckBox(tr("Enable iteration (Equi-Z, Isovolume only)"), 
                                               central);
     connect(enableIteration, SIGNAL(toggled(bool)),
             this, SLOT(enableIterationChanged(bool)));
@@ -239,7 +242,7 @@ QvisMaterialWindow::CreateWindowContents()
             this, SLOT(iterationDampingProcessText()));
     mainLayout->addWidget(iterationDamping, 10,1);
 
-    annealingTimeLabel = new QLabel(tr("Annealing time (seconds)"), central);
+    annealingTimeLabel = new QLabel(tr("Annealing time (seconds) (Discrete only)"), central);
     mainLayout->addWidget(annealingTimeLabel,11,0);
     annealingTime = new QNarrowLineEdit(central);
     connect(annealingTime, SIGNAL(returnPressed()),
@@ -283,6 +286,9 @@ QvisMaterialWindow::CreateWindowContents()
 //
 //    Jeremy Meredith, Tue Aug  4 13:49:49 EDT 2009
 //    Added better sensitivity setting based on algorithm.
+//
+//    Jeremy Meredith, Thu Mar 25 12:27:49 EDT 2010
+//    Renamed some algorithms.
 //
 // ****************************************************************************
 
@@ -343,27 +349,27 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             annealingTimeLabel->setEnabled(atts->GetAlgorithm() == MaterialAttributes::Discrete);
                 
             smoothing->setEnabled(
-                   atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
-                   atts->GetAlgorithm()==MaterialAttributes::Tetrahedral);
+                   atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
+                   atts->GetAlgorithm()==MaterialAttributes::EquiT);
             forceFullConnectivity->setEnabled(
-                   atts->GetAlgorithm()==MaterialAttributes::Tetrahedral);
+                   atts->GetAlgorithm()==MaterialAttributes::EquiT);
             enableIteration->setEnabled(
-                   atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                   atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume);
             iterationDamping->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             iterationDampingLabel->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             numIterations->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             numIterationsLabel->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             algorithm->setCurrentIndex(atts->GetAlgorithm());
@@ -385,19 +391,19 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
           case MaterialAttributes::ID_iterationEnabled:
             enableIteration->setChecked(atts->GetIterationEnabled());
             iterationDamping->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             iterationDampingLabel->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             numIterations->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             numIterationsLabel->setEnabled(
-                  (atts->GetAlgorithm()==MaterialAttributes::ZooClipping ||
+                  (atts->GetAlgorithm()==MaterialAttributes::EquiZ ||
                    atts->GetAlgorithm()==MaterialAttributes::Isovolume) &&
                   atts->GetIterationEnabled());
             break;

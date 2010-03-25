@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -44,8 +44,8 @@
 //
 
 static const char *Algorithm_strings[] = {
-"Tetrahedral", "ZooClipping", "Isovolume", 
-"Youngs", "Discrete"};
+"EquiT", "EquiZ", "Isovolume", 
+"PLIC", "Discrete"};
 
 std::string
 MaterialAttributes::Algorithm_ToString(MaterialAttributes::Algorithm t)
@@ -65,7 +65,7 @@ MaterialAttributes::Algorithm_ToString(int t)
 bool
 MaterialAttributes::Algorithm_FromString(const std::string &s, MaterialAttributes::Algorithm &val)
 {
-    val = MaterialAttributes::Tetrahedral;
+    val = MaterialAttributes::EquiT;
     for(int i = 0; i < 5; ++i)
     {
         if(s == Algorithm_strings[i])
@@ -98,7 +98,7 @@ void MaterialAttributes::Init()
     forceMIR = false;
     cleanZonesOnly = false;
     needValidConnectivity = false;
-    algorithm = ZooClipping;
+    algorithm = EquiZ;
     iterationEnabled = false;
     numIterations = 5;
     iterationDamping = 0.4;
