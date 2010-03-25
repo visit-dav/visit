@@ -9,6 +9,7 @@
     <Field name="Enabled" label="Enabled" type="intVector">
     </Field>
     <Field name="preferredIDs" label="preferredIDs" type="stringVector">
+      Silo_1.0
     </Field>
     <Function name="MergeNewFromPluginInfo" user="true" member="true">
     </Function>
