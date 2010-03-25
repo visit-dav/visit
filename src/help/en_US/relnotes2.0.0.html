@@ -42,6 +42,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's plane tool has been enhanced so it is drawn with shading, which provides some depth cues and improves the look of the tool.</li>
   <li>VisIt's legend has been enhanced to allow changing the number of tick marks automatically generated, as well as whether or not the min and max values should be included.  The ability to specify numeric values and associated textual labels has also been added.  There is a 1-1 correspondence between the values and the labels, so specifying empty strings will allow skipping textual labels for particular values.  Values specified outside the min/max range will be ignored.  For correct placement of textual labels, numeric values must be specified, but drawing of values can be turned off.  Label drawing now has 4 modes -- off (None), Values only, Labels only, or Values and Labels.  Default is Values only.</li>
   <li>VisIt's plot list context menu now provides options that let you change the order of plots in the plot list. You can also provide a plot description that lets the plot list display a more informative description of the contents of a plot. This is useful when you need to tell apart many similar plots.</li>
+  <li>The <b>Operators</b> menu and <b>Operator attributes</b> menus now group operators into different categories, which lets more operators be loaded on startup without running off the screen as they would have in a flat list. The operator categories can be customized in the <b>Operators</b> tab of the <b>Plugin Manager</b> window. Double-click on the operator category to edit it. When you apply your changes, the menus will adjust accordingly. Save your settings to make the changes permanent.</li>
+  <li>Henk Krus of the dolfyn.net project was kind enough to provide a complete Dutch translation of VisIt. To try it, run "visit -locale nl".</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -50,6 +52,22 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>When available, the IceT parallel compositor is used by default.  IceT provides significantly faster rendering times when VisIt is rendering in parallel.  VisIt has supported IceT previously, but many improvements have been put into this release to allow it to work robustly.  A new flag, <TT>-no-icet</TT> was added to explicitly disable IceT.  The old flag, <TT>-icet</TT>, was maintained for compatibility reasons.</li>
   <li>Operator plugins are now grouped into categories by default and this causes operators to be grouped instead of remaining in a flat, alphabetical list. Operators each have a default category to which they like to belong. You may edit the operator categories in the Plugin Manager window's Operators tab. Double-click the operator category and type in a new name. When you click the Apply button, the gui's operator menus will be changed to fit the new customized organization. If you do not want operators to be grouped into submenus, simply remove the category name for each operator using the "Clear category for all operators" button in the Plugin Manager window. Any customizations are saved when you save your settings.</li>
   <li>An internal data structure that manages subset relations was tuned significantly.  This tuning should prevent sluggishness when adding plots, deleting plots, and also is noticeable through a delay in progress reporting when drawing a plot.  Note that some file formats can be updated to use new features in this data structure.  If you are observing sluggishness with your file format and would like to inquire about using this data structure more efficiently, contact a VisIt developer.</li>
+  <li>A new version 2 libsim, SimV2, has been created for instrumenting simulation codes. The new SimV2 API differs from the older libsim (SimV1) API. The control API in SimV2 is nearly the same as in SimV1. The largest difference is in the data API. Where SimV1 provided data to VisIt using C structures, SimV2 uses functions to allocate handles to data structures which are then manipulated using other functions. This eliminates a class of common coding problems and allows detection of missing or malformed data at runtime. It also makes the C and Fortran interfaces for using SimV2 the same, apart from calling different function names. In addition to being more error tolerant, SimV2 provides many new features, including:
+  <ul>
+      <li>Vector, tensor, array, and label data; not just scalars</li>
+      <li>CSG meshes</li>
+      <li>AMR meshes</li>
+      <li>Polyhedra</li>
+      <li>Species</li>
+      <li>Ability to save images directly from the simulation</li>
+      <li>Better synchronization with VisIt</li>
+      <li>Interleaved XY, XYZ coordinate arrays</li>
+  </ul>
+NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. In order to use the newer features provided in SimV2, migration to SimV2 is required.
+  </li>
+  <li>
+      It is now possible to launch the VisIt compute engine directly and have it "reverse launch" the VisIt viewer, reversing the normal launch order. This can be useful when VisIt needs to run in batch jobs and it can be useful for launching the engine directly under a debugger. To use reverse launching to execute a script, you can execute <i>"visit -engine -reverse_launch -nowin -s script.py"</i>.
+  </li>
 </ul>
 
 <a name="File_format"></a>
@@ -57,6 +75,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>VisIt's Nek reader now serves up per-domain data ranges, which optimizes operations like contouring and thresholding.</li>
   <li>VisIt now includes a Velodyne file format reader contributed by Corvid Technologies.</li>
+  <li>VisIt now includes a file format reader for the Adventure (AdvIO) file format.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -67,7 +86,14 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The result is now more accurate, that is more like a true integration.  One nice by-product is that the picture should look substantially the same regardless of the number of samples, where, previously, volumes would get "thicker" when the number of samples increased.</li>
     <li>The samples now "count" for more, meaning that 500 samples per ray is now a "large" number of samples.</li>
     <li>Note that your old transfer functions will no longer produce the same pictures. We apologize for any inconvenience this may cause and made the decision to make this interface change because we felt the result was an easier to use and more accurate volume renderer.</li>
+    <li>Lighting has been improved.</li>
   </ul></li>
+  <li>The Volume plot's hardware accelerated mode has been enhanced.
+    <ul>
+       <li>Support for 2D volume transfer functions was added for the SLIVR renderer.</li>
+       <li>Histograms of the data are now shown in the Volume plot's transfer function editors. Histograms are drawn after the plot has been rendered and can be used to refine the design of the volume transfer function.</li>
+    </ul>
+  </li>
   <li>The Pseudocolor plot can now correctly restore settings related to glyph types for point meshes, specifically the Sphere glyph type, which was previously not being restored correctly.</li>
   <li>A bug was fixed where ray casting volume rendering using both kernel based sampling and lighting would produce incorrect pictures.</li>
 </ul>
@@ -97,6 +123,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>When a session was restored, where the user had deleted plots prior to saving the session, the legends of newly added plots might not show up in the annotation object list.</li>
   <li>You can now make plots of 2D data sets that have 2D quadratic elements (these elements will still be linearized).</li>
+  <li>Simulation metadata was not immediately available after a call to OpenDatabase.</li>
+  <li>Blanking of zones in the PDB reader works again.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -109,6 +137,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 2.0</font></b></p>
 <ul>
   <li>VisIt's user interface has been ported to Qt4.</li>
+  <li>VisIt's build system has been replaced with one based on CMake. This enables a single set of build logic to generate Makefiles or project files for all platforms that VisIt supports, eliminating the need to maintain separate Windows project files. The new system includes some other  enhancements:
+      <ul>
+      <li>Out of source builds</li>
+      <li>make install</li>
+      <li>make package</li>
+      <li>Engine-only builds</li>
+      <li>Static builds</li>
+      <li>Better support for parallel make</li>
+      </ul>
+  </li>
   <li>It is now easier to integrate IceT into VisIt, in terms of build_visit and CMake. Testing showed that this library made a substantial speedup with parallel rendering and is worth the compile-time effort.</li>
 </ul>
 

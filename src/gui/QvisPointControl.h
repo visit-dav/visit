@@ -44,7 +44,7 @@
 class QCheckBox;
 class QComboBox;
 class QLabel;
-class QLineEdit;
+class QNarrowLineEdit;
 class QvisVariableButton;
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ private:
     bool ProcessSizeText(int pointType);
 
     QLabel                 *sizeLabel;
-    QLineEdit              *sizeLineEdit;
+    QNarrowLineEdit        *sizeLineEdit;
     QCheckBox              *sizeVarToggle;
     QvisVariableButton     *sizeVarButton;
     QComboBox              *typeComboBox;

@@ -211,7 +211,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Log"), central);
     scalingButtons->addButton(rb, 1);
     dataLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton(tr("Skew factor"), central);
+    rb = new QRadioButton(tr("Skew"), central);
     scalingButtons->addButton(rb, 2);
     dataLayout->addWidget(rb, 0, 3);
 
@@ -338,7 +338,6 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     // Create the opacity slider
     //
     opacitySliderLabel = new QLabel(tr("Opacity"), central);
-    opacitySliderLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     colorLayout->addWidget(opacitySliderLabel, gRow, 0);
 
     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
