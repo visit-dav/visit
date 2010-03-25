@@ -42,8 +42,9 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
 #include <QRadioButton>
+
+#include <QNarrowLineEdit.h>
 #include <QvisVariableButton.h>
 
 #define POINT_TYPE_POINTS 3
@@ -110,7 +111,7 @@ QvisPointControl::QvisPointControl(QWidget *parent) :
     sizeLabel = new QLabel(tr("Point size"), this);
     topLayout->addWidget(sizeLabel, 0, 2, Qt::AlignRight);
 
-    sizeLineEdit = new QLineEdit(this);
+    sizeLineEdit = new QNarrowLineEdit(this);
     connect(sizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSizeText()));
     topLayout->addWidget(sizeLineEdit, 0, 3);
