@@ -286,6 +286,11 @@ avtQueryFactory::Instance()
 //    Cyrus Harrison, Tue Feb  2 16:03:19 PST 2010
 //    Added the python filter query.
 //
+//    Eric Brugger, Thu Mar 25 09:30:02 PDT 2010
+//    Renamed the individual/aggregate "Chord Length Distribution" and
+//    individual/aggregate "Ray Length Distribution" queries so that they do
+//    not use special characters.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
@@ -359,7 +364,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         lst->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = lst;
     }
-    else if (qname == "Chord Length Distribution (aggregate)")
+    else if (qname == "Chord Length Distribution - aggregate")
     {
         avtAggregateChordLengthDistributionQuery *cldq =
                                 new avtAggregateChordLengthDistributionQuery();
@@ -368,7 +373,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
-    else if (qname == "Chord Length Distribution (individual)")
+    else if (qname == "Chord Length Distribution - individual")
     {
         avtIndividualChordLengthDistributionQuery *cldq =
                                 new avtIndividualChordLengthDistributionQuery();
@@ -377,7 +382,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
-    else if (qname == "Ray Length Distribution (aggregate)")
+    else if (qname == "Ray Length Distribution - aggregate")
     {
         avtAggregateRayLengthDistributionQuery *cldq =
                                 new avtAggregateRayLengthDistributionQuery();
@@ -386,7 +391,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
-    else if (qname == "Ray Length Distribution (individual)")
+    else if (qname == "Ray Length Distribution - individual")
     {
         avtIndividualRayLengthDistributionQuery *cldq =
                                 new avtIndividualRayLengthDistributionQuery();

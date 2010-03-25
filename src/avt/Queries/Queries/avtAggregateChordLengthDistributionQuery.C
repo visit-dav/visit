@@ -125,6 +125,11 @@ avtAggregateChordLengthDistributionQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 31, 2006
 //
+//  Modifications:
+//    Eric Brugger, Thu Mar 25 09:42:25 PDT 2010
+//    I changed the name of the curve in the ultra file to avoid using
+//    special characters.
+//
 // ****************************************************************************
 
 void
@@ -184,7 +189,7 @@ avtAggregateChordLengthDistributionQuery::PostExecute(void)
             SetResultMessage(msg);
             return;
         }
-        ofile << "# Chord length distribution (aggregate)" << endl;
+        ofile << "# Chord length distribution - aggregate" << endl;
 
         for (int i = 0 ; i < numBins ; i++)
         {

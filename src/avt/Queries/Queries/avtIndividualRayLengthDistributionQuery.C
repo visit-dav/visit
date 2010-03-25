@@ -134,6 +134,11 @@ avtIndividualRayLengthDistributionQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 28, 2006
 //
+//  Modifications:
+//    Eric Brugger, Thu Mar 25 09:48:31 PDT 2010
+//    I changed the name of the curve in the ultra file to avoid using
+//    special characters.
+//
 // ****************************************************************************
 
 void
@@ -192,7 +197,7 @@ avtIndividualRayLengthDistributionQuery::PostExecute(void)
             SetResultMessage(msg);
             return;
         }
-        ofile << "# Ray length distribution (individual)" << endl;
+        ofile << "# Ray length distribution - individual" << endl;
         double binWidth = (maxLength) / numBins;
         for (int i = 0 ; i < numBins ; i++)
         {
