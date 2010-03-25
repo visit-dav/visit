@@ -51,6 +51,7 @@
 #include <visit-config.h>
 #include <sstream>
 #include <Environment.h>
+#include <InstallationFunctions.h>
 
 #include <iostream>
 using namespace std;
@@ -321,13 +322,15 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 // Creation:   Thu Feb 11 09:35:54 PST 2010
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Mar 24 16:28:37 MST 2010
+//   Retrieve VISITARCHHOME via GetVisItArchitectureDirectory.
 //
 // ****************************************************************************
 
 QString
 QvisPythonFilterEditor::templateDirectory()
 {
-    QString res(Environment::get("VISITARCHHOME").c_str());
+    QString res(GetVisItArchitectureDirectory().c_str());
     res += QString(VISIT_SLASH_CHAR)
            + QString("lib")
            + QString(VISIT_SLASH_CHAR)

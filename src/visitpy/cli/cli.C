@@ -144,6 +144,9 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Added book keeping to track execution stack of source files and the
 //    script file passed via the '-s' command line option.
 //
+//    Kathleen Bonnell, Wed Mar 24 08:20:01 MST 2010
+//    Fix pointer overwrite problem when both "-s" and "-o" are used on Windows
+//
 // ****************************************************************************
 
 int
@@ -209,8 +212,8 @@ main(int argc, char *argv[])
                         break;
                 }
                 i += (nArgsSkip -1);
-                // We want to remove the beginning and ending quotes, to ensure proper
-                // operation further on.
+                // We want to remove the beginning and ending quotes, to 
+                // ensure proper operation further on.
                 strncpy(tmpArg, tmpArg+1, tmplen-2);
                 tmpArg[tmplen-2] = '\0';
             }
@@ -220,12 +223,14 @@ main(int argc, char *argv[])
             }
             if (runF)
             {
-                runFile = tmpArg;
+                runFile = new char [strlen(tmpArg)+1];
+                sprintf(runFile, "%s", tmpArg);
                 s_found = true;
             }
             else
             {
-                loadFile = tmpArg;
+                loadFile = new char [strlen(tmpArg)+1];
+                sprintf(loadFile, "%s", tmpArg);
             }
         }
 #else
@@ -346,6 +351,9 @@ main(int argc, char *argv[])
              sprintf(command, "OpenDatabase(\"%s\")", loadFile);
              PyRun_SimpleString(command);
              delete [] command;
+#ifdef WIN32
+             delete [] loadFile;
+#endif
         }
 
 
@@ -362,6 +370,9 @@ main(int argc, char *argv[])
             PyRun_SimpleString(pycmd.c_str());
 
             cli_runscript(runFile);
+#ifdef WIN32
+             delete [] runFile;
+#endif
         }
 
         // Enter the python interpreter loop.

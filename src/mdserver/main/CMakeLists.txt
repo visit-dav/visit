@@ -38,6 +38,10 @@
 #   Kathleen Bonnell, Thu Feb 25 10:59 MST 2010
 #   Exclude testmds on windows.
 #
+#   Kathleen Bonnell, Tue Mar 23 11:51:02 MST 2010
+#   Put install of mdserver outside of NOT WIN32 loop so it will get installed
+#   on windows.
+#
 #****************************************************************************/
 
 SET(MDSERVER_SOURCES
@@ -128,8 +132,8 @@ IF(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 IF (NOT WIN32)
-ADD_EXECUTABLE(testmds EXCLUDE_FROM_ALL testmds.C LibPipelineStubs.C)
-TARGET_LINK_LIBRARIES(testmds mdserverproxy mdserverrpc visitcommon avtdbatts)
+    ADD_EXECUTABLE(testmds EXCLUDE_FROM_ALL testmds.C LibPipelineStubs.C)
+    TARGET_LINK_LIBRARIES(testmds mdserverproxy mdserverrpc visitcommon avtdbatts)
+ENDIF (NOT WIN32)
 
 VISIT_INSTALL_TARGETS(mdserver)
-ENDIF (NOT WIN32)
