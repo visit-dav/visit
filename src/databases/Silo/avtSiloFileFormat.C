@@ -105,6 +105,7 @@
 
 #include <visit-config.h>
 
+#include <sstream>
 #include <snprintf.h>
 #include <stdlib.h> // for qsort
 
@@ -122,6 +123,7 @@ using std::string;
 using std::vector;
 using std::map;
 using std::set;
+using std::ostringstream;
 using namespace SiloDBOptions;
 
 static void      ExceptionGenerator(char *);
@@ -236,6 +238,10 @@ static const int maxCoincidentNodelists = 12;
 //    situation where you opened a file with dontForceSingle false and later
 //    set dontForceSingle to true but would then neglect to call
 //    DBForceSingle unsetting the value.
+//
+//    Cyrus Harrison, Wed Mar 24 10:39:30 PDT 2010
+//    Added init of haveAmrGroupInfo.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -258,6 +264,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     connectivityIsTimeVarying = false;
     metadataIsTimeVarying = false;
     groupInfo.haveGroups = false;
+    haveAmrGroupInfo = false;
     hasDisjointElements = false;
     topDir = "/";
     dbfiles = new DBfile*[MAX_FILES];
@@ -1507,6 +1514,10 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //
 //    Mark C. Miller, Mon Nov  9 10:41:48 PST 2009
 //    Added 'dontForceSingle' to call to HandleMrgtree
+//
+//   Cyrus Harrison, Wed Mar 24 10:41:20 PDT 2010
+//   Set haveAmrGroupInfo if we have amr level info.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile, 
@@ -1745,6 +1756,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     break;
                 }
 
+
                 avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
                     mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
                     groupOrigin, ndims, tdims, mt);
@@ -1804,7 +1816,13 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     mmd->meshType = AVT_AMR_MESH;
                     md->Add(mmd);
                     groupInfo.haveGroups = false;
+                    // On the engine groupInfo.haveGroups may get changed when connectivty
+                    // info is read. To avoid clobbering amr group info we set haveAmrGroupInfo
+                    // to true to guard against md->AddGroupInformation getting called in
+                    // DoRootDirectroyWork()
+                    haveAmrGroupInfo = true;
                     md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
+                    debug1 << "Using AMR levels as Group Information"<<endl;
                 }
                 else
                 {
@@ -4008,6 +4026,10 @@ const char *const name_w_dir, int meshnum, const DBmultimesh *const mm)
 //    Code around the case where 'treatAllDBsAsTimeVarying' is turned on
 //    and we need to produce a good SIL, but haven't gotten the group info.
 //
+//    Cyrus Harrison, Wed Mar 24 10:45:30 PDT 2010
+//    Don't set group information if we have already set it for an AMR
+//    dataset.
+//
 // ****************************************************************************
 
 void
@@ -4035,9 +4057,11 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
         GetConnectivityAndGroupInformation(dbfile, true);
     }
 
-    if (groupInfo.haveGroups)
+    if (!haveAmrGroupInfo && groupInfo.haveGroups)
+    {
         md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
                                 groupInfo.ids);
+    }
 }
 
 // ****************************************************************************
@@ -7123,10 +7147,32 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     }
     else if (type==DB_QUADMESH || type==DB_QUAD_RECT || type==DB_QUAD_CURV)
     {
-        if (metadata->GetMesh(m)->meshType == AVT_AMR_MESH)
-            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep, type,
-                cache, dontForceSingle);
+
+        //
+        // We need to wait to create domain boundries until after we obtain
+        // the actual mesh so we know if it is rectilinear or curvilinear.
+
         rv = GetQuadMesh(domain_file, directory_mesh, domain);
+
+        // DB_QUADMESH won't cut it for the call to BuildDomainAuxiliaryInfoForAMRMeshes
+        // we need DB_QUAD_RECT or DB_QUAD_CURV to be able to create the proper domain
+        // boundries.
+        //
+        // Resolve this using the type of the newly created mesh.
+        //
+
+        int true_type = type;
+        if(type == DB_QUADMESH)
+        {
+            if(rv->IsA("vtkRectilinearGrid"))
+                true_type  = DB_QUAD_RECT;
+            else
+                true_type  = DB_QUAD_CURV;
+        }
+
+        if (metadata->GetMesh(m)->meshType == AVT_AMR_MESH)
+            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep, true_type,
+                                                 cache, dontForceSingle);
     }
     else if (type == DB_POINTMESH)
     {
@@ -14082,6 +14128,10 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //    Cyrus Harrison, Mon Mar 22 15:07:25 PDT 2010
 //    Use curvi domain boundries if db_mesh_type == DB_QUADMESH.
 //
+//    Cyrus Harrison, Mon Mar 22 15:07:25 PDT 2010
+//    This function requires db_mesh_type to be either DB_QUAD_RECT or DB_QUAD_CURV
+//    (DB_QUADMESH is ambiguous).
+//
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -14307,15 +14357,27 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     bool canComputeNeighborsFromExtents = true;
     avtStructuredDomainBoundaries *sdb = 0;
 
-    if (db_mesh_type == DB_QUAD_CURV || db_mesh_type == DB_QUADMESH )
+    if (db_mesh_type == DB_QUAD_RECT)
+    {
+        sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
+        debug5 << "using rectilinear boundaries" << endl;
+    }
+    else if(db_mesh_type == DB_QUAD_CURV)
     {
         sdb = new avtCurvilinearDomainBoundaries(canComputeNeighborsFromExtents);
         debug5 << "using curvilinear boundaries" << endl;
     }
     else
     {
-        sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
-        debug5 << "using rectilinear boundaries" << endl;
+        // DB_QUADMESH is ambiguous in this case, we need either
+        //  DB_QUAD_RECT or DB_QUAD_CURV.
+        //  throw an exception if we end up here to warn a developer.
+        ostringstream oss;
+        oss << "Could not determine coordinate type for AMR mesh=\""
+            << meshName << "\".\n"
+            << "Expected: QB_QUAD_RECT (DB_COLLINEAR) or "
+            << "DB_QUAD_CURV (DB_NONCOLLINEAR).";
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
     }
 
     sdb->SetNumDomains(num_patches);

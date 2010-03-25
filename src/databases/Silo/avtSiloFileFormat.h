@@ -246,6 +246,11 @@ typedef struct _GroupInfo
 //    Mark C. Miller, Wed Jan 27 13:13:20 PST 2010
 //    Added an extra level of indirection to the arbMeshXXXRemap maps to
 //    make sure they work for multi-block case.
+//
+//    Cyrus Harrison, Wed Mar 24 10:59:17 PDT 2010
+//    Added haveAmrGroupInfo, which is used to prevent collsion of amr
+//    levels info with connectivity group info.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -318,6 +323,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     map<string, string>             multivarToMultimeshMap;
 
     GroupInfo                       groupInfo;
+    bool                            haveAmrGroupInfo;
 
     map<string, map<int, vector<int>* > >      arbMeshCellReMap;
     map<string, map<int, vector<int>* > >      arbMeshNodeReMap;
