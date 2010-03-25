@@ -53,8 +53,8 @@ def TestOneFile(isRectilinear, file, matname, prefix):
 
     # Discrete currently only works on rectilinear
     if isRectilinear:
+        m.algorithm = m.Discrete
         # Discrete is stochastic, we can't test it reliably
-        #m.algorithm = m.Discrete
         #TestOneMode(file, m, prefix + "_discrete")
 
     DeleteAllPlots()
