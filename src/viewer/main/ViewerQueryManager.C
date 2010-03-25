@@ -3739,6 +3739,11 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Cyrus Harrison, Fri Feb  5 10:08:53 PST 2010
 //    Added Python Query.
 //
+//    Eric Brugger, Thu Mar 25 10:24:30 PDT 2010
+//    Renamed the individual/aggregate "Chord Length Distribution" and
+//    individual/aggregate "Ray Length Distribution" queries so that they do
+//    not use special characters.
+//
 // ****************************************************************************
 
 void
@@ -3799,10 +3804,10 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, qo);
-    queryTypes->AddQuery("Chord Length Distribution (individual)", dq, sr, ld, 1, 0, qo);
-    queryTypes->AddQuery("Chord Length Distribution (aggregate)", dq, sr, ld, 1, 0, qo);
-    queryTypes->AddQuery("Ray Length Distribution (individual)", dq, sr, ld, 1, 0, qo);
-    queryTypes->AddQuery("Ray Length Distribution (aggregate)", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Chord Length Distribution - individual", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Chord Length Distribution - aggregate", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Ray Length Distribution - individual", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Ray Length Distribution - aggregate", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Mass Distribution", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Distance From Boundary", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Line Scan Transform", dq, sr, ld, 1, 0, qo);

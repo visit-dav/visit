@@ -130,6 +130,10 @@ avtIndividualChordLengthDistributionQuery::PreExecute(void)
 //    Hank Childs, Fri Sep  1 15:13:33 PDT 2006
 //    Output a histogram, not a curve.
 //
+//    Eric Brugger, Thu Mar 25 09:45:08 PDT 2010
+//    I changed the name of the curve in the ultra file to avoid using
+//    special characters.
+//
 // ****************************************************************************
 
 void
@@ -189,7 +193,7 @@ avtIndividualChordLengthDistributionQuery::PostExecute(void)
             SetResultMessage(msg);
             return;
         }
-        ofile << "# Chord length distribution (individual)" << endl;
+        ofile << "# Chord length distribution - individual" << endl;
 
         for (int i = 0 ; i < numBins ; i++)
         {
