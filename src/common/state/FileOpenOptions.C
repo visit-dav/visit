@@ -57,6 +57,7 @@
 
 void FileOpenOptions::Init()
 {
+    preferredIDs.push_back("Silo_1.0");
 
     FileOpenOptions::SelectAll();
 }
