@@ -161,6 +161,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Brad Whitlock, Wed Mar 24 16:42:50 PDT 2010
+//   Subtle layout tweaks.
+//
 // ****************************************************************************
 
 void
@@ -261,43 +264,41 @@ QvisMeshPlotWindow::CreateWindowContents()
     colorLayout->addWidget(opaqueColor, 1, 3);
 
     // Create the opaque mode buttons
+    colorLayout->addWidget(new QLabel(tr("Opaque mode"), central), 2, 0);
     opaqueModeGroup = new QButtonGroup(central);
     connect(opaqueModeGroup, SIGNAL(buttonClicked(int)), this,
             SLOT(opaqueModeChanged(int)));
 
-    QGridLayout *opaqueModeLayout = new QGridLayout();
-    opaqueModeLayout->setMargin(5);
+    QHBoxLayout *opaqueModeLayout = new QHBoxLayout();
+    opaqueModeLayout->setMargin(0);
     opaqueModeLayout->setSpacing(10);
-    
-    opaqueModeLayout->addWidget(new QLabel(tr("Opaque mode"), central), 0,0);
-    
+   
     rb = new QRadioButton(tr("Auto"), central);
     opaqueModeGroup->addButton(rb,0);
-    opaqueModeLayout->addWidget(rb, 0, 2);
+    opaqueModeLayout->addWidget(rb);
     
     rb = new QRadioButton(tr("On"), central);
     opaqueModeGroup->addButton(rb,1);
-    opaqueModeLayout->addWidget(rb, 0, 3);
+    opaqueModeLayout->addWidget(rb);
     
     rb = new QRadioButton(tr("Off"), central);
     opaqueModeGroup->addButton(rb,2);
-    opaqueModeLayout->addWidget(rb, 0, 4);
+    opaqueModeLayout->addWidget(rb);
     
-    colorLayout->addLayout(opaqueModeLayout, 3, 0,1, 4);
+    colorLayout->addLayout(opaqueModeLayout, 2, 1, 1, 3);
 
     //
     // Create the opacity slider
     //
     opacityLabel = new QLabel(tr("Opacity"), central);
-    opacityLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    colorLayout->addWidget(opacityLabel, 4, 0);
+    colorLayout->addWidget(opacityLabel, 3, 0);
 
     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
     opacitySlider->setTickInterval(64);
     opacitySlider->setGradientColor(QColor(0, 0, 0));
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(changedOpacity(int, const void*)));
-    colorLayout->addWidget(opacitySlider, 4, 1, 1, 3);
+    colorLayout->addWidget(opacitySlider, 3, 1, 1, 3);
     opacityLabel->setBuddy(opacitySlider);
 
 

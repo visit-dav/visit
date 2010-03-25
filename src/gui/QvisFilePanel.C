@@ -263,6 +263,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
+    topLayout->setMargin(5);
 
     fileTree = new QTreeWidget(this);
     fileTree->header()->hide();

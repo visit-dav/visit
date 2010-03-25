@@ -234,7 +234,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     varMenuFlags = 0;
 
     topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setMargin(5);
 
     plotActionsToolbar = new QToolBar(this);
     plotActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
