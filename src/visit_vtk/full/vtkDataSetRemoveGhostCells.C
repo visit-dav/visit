@@ -466,20 +466,44 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 //    Hank Childs, Sun Oct 28 10:56:37 PST 2007
 //    Added support for GhostZoneTypesToRemove.
 //
+//    Cyrus Harrison, Fri Mar 26 15:29:47 PDT 2010
+//    Guard against invalid 'avtRealDims' data.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 {
   vtkRectilinearGrid *input  = (vtkRectilinearGrid*)this->GetInput();
   vtkRectilinearGrid *output  = (vtkRectilinearGrid*)this->GetOutput();
- 
+
   vtkDataArray *realDims = input->GetFieldData()->GetArray("avtRealDims");
- 
-  if (!realDims || (realDims->GetDataType() != VTK_INT)
-    || (realDims->GetNumberOfComponents() != 1))
+
+
+    bool realDimsOk = false;
+
+    if(realDims &&
+       realDims->GetDataType() == VTK_INT &&
+       realDims->GetNumberOfComponents() == 1)
     {
-    GenericExecute();
-    return;
+        // make sure the realDims data isn't garbage (the facelist filter
+        // will undermine us here if we don't double check)
+        vtkIntArray *iarr = (vtkIntArray *)realDims;
+
+        int ddims[3];
+        int rdims[6];
+        input->GetDimensions(ddims);
+        memcpy(rdims,iarr->GetPointer(0),sizeof(int)*6);
+
+        if( ((rdims[1] - rdims[0]) < ddims[0]) &&
+            ((rdims[3] - rdims[2]) < ddims[1]) &&
+            ((rdims[5] - rdims[4]) < ddims[2]) )
+        realDimsOk = true;
+    }
+
+    if (!realDimsOk)
+    {
+        GenericExecute();
+        return;
     }
 
   vtkDebugMacro(<< "Executing remove ghost cells filter for rectilinear grid");
@@ -490,7 +514,7 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
     voi[i] = (int) realDims->GetComponent(i, 0);
     }
 
-  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) 
+  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
                                input->GetCellData()->GetArray("avtGhostZones");
   if (GhostZoneTypesToRemove != 255 && arr != NULL)
   {
@@ -498,7 +522,7 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
     int dims[3];
     input->GetDimensions(dims);
 
-    // Check to make sure that the zones we are going to remove are 
+    // Check to make sure that the zones we are going to remove are
     // uniformly of the type we should remove.
     // It will modify the voi if necessary.
     ConfirmRegion(ghosts, dims, voi);
@@ -533,8 +557,8 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 //    Hank Childs, Sat Jun 29 16:27:41 PDT 2002
 //    Copy over field data and set the dimensions.
 //
-//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002 
-//    Reworked code to properly use vtkExtractGrid filter. 
+//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002
+//    Reworked code to properly use vtkExtractGrid filter.
 //    Use new avtRealDims array.
 //
 //    Hank Childs, Fri Aug 27 15:10:50 PDT 2004
@@ -569,7 +593,7 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
      voi[i] = (int) realDims->GetComponent(i, 0);
      }
  
-  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) 
+  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
                                input->GetCellData()->GetArray("avtGhostZones");
   if (GhostZoneTypesToRemove != 255 && arr != NULL)
   {
@@ -577,7 +601,7 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
     int dims[3];
     input->GetDimensions(dims);
 
-    // Check to make sure that the zones we are going to remove are 
+    // Check to make sure that the zones we are going to remove are
     // uniformly of the type we should remove.
     // It will modify the voi if necessary.
     ConfirmRegion(ghosts, dims, voi);
@@ -590,7 +614,7 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
  
   output->ShallowCopy(extractor->GetOutput());
   extractor->Delete();
-  output->GetFieldData()->PassData(input->GetFieldData()); 
+  output->GetFieldData()->PassData(input->GetFieldData());
   output->GetFieldData()->RemoveArray("avtRealDims");
   if (GhostZoneTypesToRemove == 255)
   {
@@ -598,7 +622,7 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
   }
 }
 
-void vtkDataSetRemoveGhostCells::ConfirmRegion(unsigned char *ghosts, 
+void vtkDataSetRemoveGhostCells::ConfirmRegion(unsigned char *ghosts,
                                                int *pt_dims, int *voi)
 {
     int  i, j, k;
