@@ -101,6 +101,7 @@
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <KeyframeAttributes.h>
+#include <StringHelpers.h>
 
 #include <QvisApplication.h>
 #include <FileServerList.h>
@@ -1984,6 +1985,10 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Fri Apr 10 16:46:38 PDT 2009
 //    I removed -dv handling since it's now handled in VisItInit.
 //
+//    Jeremy Meredith, Fri Mar 26 13:11:46 EDT 2010
+//    Allow for the -o command line option to take an optional ,<pluginID>
+//    suffix, e.g. "-o foobar,LAMMPS_1.0".
+//
 // ****************************************************************************
 
 void
@@ -2037,6 +2042,16 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 #endif
                     // Remove quotes around the string if any exist.
                     StripSurroundingQuotes(tmpFileName);
+
+                    // See if it's in the format "file,plugin", and if so,
+                    // extract the file name from the plugin name and save
+                    // the latter for later use
+                    stringVector split = StringHelpers::split(tmpFileName,',');
+                    if (split.size() == 2)
+                    {
+                        tmpFileName = split[0];
+                        loadFilePlugin = split[1];
+                    }
 
                     // If the string contains a "*" and the end of the string is
                     // not " database" then add that suffix.
@@ -5629,6 +5644,10 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   Brad Whitlock, Thu Jul 24 12:05:14 PDT 2008
 //   Added support for setting just the host and applied file list.
 //
+//   Jeremy Meredith, Fri Mar 26 13:15:02 EDT 2010
+//   Allow for the -o command line option to take an optional ,<pluginID>
+//   suffix, e.g. "-o foobar,LAMMPS_1.0".
+//
 // ****************************************************************************
 
 void
@@ -5738,8 +5757,11 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
                 SetOpenDataFile(f, timeState);
 
                 // Tell the viewer to open the file too.
+                // Pass loadFilePlugin as well, which is empty if
+                // the user did not add a ,<pluginID> suffix to the file name.
                 GetViewerMethods()->OpenDatabase(f.FullName().c_str(), timeState,
-                                                 addDefaultPlots);
+                                                 addDefaultPlots,
+                                                 loadFilePlugin);
             }
         }
         CATCH2(BadHostException, bhe)
