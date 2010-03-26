@@ -1528,6 +1528,11 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
 #    Mark C. Miller, Fri Jan 22 20:17:13 PST 2010
 #    Added this comment to explain a previous update in which I added
 #    externDbPaths variable and FindAndOpenDatabase() function.
+#
+#    Jeremy Meredith, Fri Mar 26 10:33:44 EDT 2010
+#    It was decided that Silo should be a global preferred file format
+#    for all users everywhere, so I removed the setting in this file.
+#
 # ----------------------------------------------------------------------------
 
 import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
@@ -1685,7 +1690,6 @@ epids.close()
 # This is to prevent new tests getting committed that
 # are unnecessarily dependent on annotations.
 TurnOffAllAnnotations()
-SetPreferredFileFormats("Silo_1.0")
 
 # set up our html output
 html = open("html/%s_%s.html" % (category, pyfilebase), 'wt')
