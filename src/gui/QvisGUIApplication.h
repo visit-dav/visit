@@ -332,6 +332,10 @@ class SplashScreen;
 //    Cyrus Harrison, Fri Mar  5 10:28:42 PST 2010
 //    Added FireInit & Init to work around a Qt/Glib init problem in linux.
 //
+//    Jeremy Meredith, Fri Mar 26 13:11:46 EDT 2010
+//    Allow for the -o command line option to take an optional ,<pluginID>
+//    suffix, e.g. "-o foobar,LAMMPS_1.0".
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -583,6 +587,7 @@ private:
 
     // File to load on startup.
     QualifiedFilename            loadFile;
+    std::string                  loadFilePlugin;
     bool                         allowFileSelectionChange;
 
     // Session variables

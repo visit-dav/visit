@@ -1775,6 +1775,9 @@ ViewerSubject::LaunchEngineOnStartup()
 // Creation:   Thu Apr  9 16:05:43 PDT 2009
 //
 // Modifications:
+//   Jeremy Meredith, Fri Mar 26 13:12:48 EDT 2010
+//   Allow for the -o command line option to take an optional ,<pluginID>
+//   suffix, e.g. "-o foobar,LAMMPS_1.0".
 //   
 // ****************************************************************************
 
@@ -1783,11 +1786,28 @@ ViewerSubject::OpenDatabaseOnStartup()
 {
     if(openDatabaseOnStartup != "")
     {
-        OpenDatabaseHelper(openDatabaseOnStartup, // DB name
-           0,    // timeState, 
-           true, // addDefaultPlots
-           true, // updateWindowInfo,
-           "");  // forcedFileType
+        stringVector split = StringHelpers::split(openDatabaseOnStartup,',');
+
+        int ts = -1; // OpenDatabaseHelper returns -1 on error
+        if (split.size() == 2)
+        {
+            ts = OpenDatabaseHelper(split[0],  // DB name
+                                    0,         // timeState, 
+                                    true,      // addDefaultPlots
+                                    true,      // updateWindowInfo,
+                                    split[1]); // forcedFileType
+        }
+
+        // If we didn't try, or failed, to open using the above
+        // method, try using just the given name without splitting.
+        if (ts < 0)
+        {
+            ts = OpenDatabaseHelper(openDatabaseOnStartup, // DB name
+                                    0,    // timeState, 
+                                    true, // addDefaultPlots
+                                    true, // updateWindowInfo,
+                                    "");  // forcedFileType
+        }
 
         ViewerWindowManager::Instance()->UpdateActions();
         ViewerWindowManager::Instance()->ShowAllWindows();
