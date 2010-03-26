@@ -2031,6 +2031,11 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
 //    about existing file opening options.  These will not override, but
 //    instead append to, existing options (like ones saved in a config file).
 //
+//    Jeremy Meredith, Fri Mar 26 10:40:40 EDT 2010
+//    Though we do not need to use the command line to specify assumed and
+//    fallback formats anymore, such usage still has some conveniences.
+//    Added support to munge the preferred list when given those options.
+//
 // ****************************************************************************
 void
 ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
@@ -2041,6 +2046,8 @@ ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
         dbPluginInfoAtts->SetHost(host);
         dbPluginInfoAtts->Notify();
         fileOpenOptions->MergeNewFromPluginInfo(dbPluginInfoAtts);
+        fileOpenOptions->AddAssumedFormatsToPreferred(assumedFormatsFromCL);
+        fileOpenOptions->AddFallbackFormatsToPreferred(fallbackFormatsFromCL);
         fileOpenOptions->Notify();
     }
 }
@@ -3471,3 +3478,49 @@ ViewerFileServer::BroadcastUpdatedFileOpenOptions()
     }
 }
 
+
+// ****************************************************************************
+// Method:  ViewerFileServer::AddAssumedFormatFromCL
+//
+// Purpose:
+//   Though we do not need to use the command line to specify 
+//   assumed and fallback formats anymore, such usage still has
+//   some conveniences.  This function adds an "assumed" format
+//   which we will prepend to the preferred list in the file
+//   open options as seen by the meta-data server.
+//
+// Arguments:
+//   fmt        the format to make preferred
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 26, 2010
+//
+// ****************************************************************************
+void
+ViewerFileServer::AddAssumedFormatFromCL(const std::string &fmt)
+{
+    assumedFormatsFromCL.push_back(fmt);
+}
+
+// ****************************************************************************
+// Method:  ViewerFileServer::AddFallbackFormatFromCL
+//
+// Purpose:
+//   Though we do not need to use the command line to specify 
+//   assumed and fallback formats anymore, such usage still has
+//   some conveniences.  This function adds a "fallback" format
+//   which we will append to the preferred list in the file
+//   open options as seen by the meta-data server.
+//
+// Arguments:
+//   fmt        the format to make preferred
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 26, 2010
+//
+// ****************************************************************************
+void
+ViewerFileServer::AddFallbackFormatFromCL(const std::string &fmt)
+{
+    fallbackFormatsFromCL.push_back(fmt);
+}
