@@ -7135,6 +7135,10 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
 //
 //    Mark C. Miller, Mon Nov  9 10:42:13 PST 2009
 //    Added dontForceSingle to call to BuildDomainAux... for AMR cases.
+//
+//    Cyrus Harrison, Fri Mar 26 09:07:59 PDT 2010
+//    Resolve mesh type before constructing amr domain boundries.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -7162,7 +7166,6 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     else if (type==DB_QUADMESH || type==DB_QUAD_RECT || type==DB_QUAD_CURV)
     {
 
-        //
         // We need to wait to create domain boundries until after we obtain
         // the actual mesh so we know if it is rectilinear or curvilinear.
 
@@ -7174,19 +7177,21 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
         //
         // Resolve this using the type of the newly created mesh.
         //
-
-        int true_type = type;
-        if(type == DB_QUADMESH)
+        if (rv != NULL && metadata->GetMesh(m)->meshType == AVT_AMR_MESH)
         {
-            if(rv->IsA("vtkRectilinearGrid"))
-                true_type  = DB_QUAD_RECT;
-            else
-                true_type  = DB_QUAD_CURV;
-        }
+            int true_type = type;
+            if(type == DB_QUADMESH)
+            {
+                if(rv->IsA("vtkRectilinearGrid"))
+                    true_type  = DB_QUAD_RECT;
+                else
+                    true_type  = DB_QUAD_CURV;
+            }
 
-        if (metadata->GetMesh(m)->meshType == AVT_AMR_MESH)
-            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep, true_type,
-                                                 cache, dontForceSingle);
+            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep,
+                                                 true_type, cache,
+                                                 dontForceSingle);
+        }
     }
     else if (type == DB_POINTMESH)
     {
