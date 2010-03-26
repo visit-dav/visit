@@ -598,6 +598,11 @@ $0 = shift @ARGV;
 #    I modified the script so that it would properly launch VisIt in
 #    parallel on up and purple at LLNL.
 #
+#    Jeremy Meredith, Fri Mar 26 10:28:51 EDT 2010
+#    Allow assume_format and fallback_format arguments to still work.
+#    They are now deprecated, though.  I added good warning/error messages
+#    for both those and for the truly obsolete default_format option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1114,6 +1119,7 @@ $ssh_tunneling  = 0;
 $leftdb = "";
 $rightdb = "";
 $noloopback = 0;
+$assume_fallback_warned = 0;
 $argc = scalar(@ARGV);
 
 # Parse the arguments 
@@ -1167,18 +1173,35 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
                                           if ($launchengine eq "") { $launchengine="localhost"; }
                                           elsif ($launchengine =~ /^-/) { unshift @ARGV, $launchengine; $launchengine = "localhost";}}
-    elsif ($arg eq "-default_format" or
-           $arg eq "-assume_format" or
-           $arg eq "-fallback_format")
+    elsif ($arg eq "-default_format")
     {
-        # All obsolete in 2.0.
+        # Obsolete in 2.0.
         print STDERR "\n";
-        print STDERR "ERROR: -default_format, -assume_format, and -fallback_format\n";
-        print STDERR "are all obsolete.  Automatic file format detection has been\n";
-        print STDERR "improved in version 2.0, and any adjustments, if still\n";
+        print STDERR "ERROR: -default_format is obsolete.\n";
+        print STDERR "Automatic file format detection has been improved\n";
+        print STDERR "in version 2.0, and any adjustments, if still\n";
         print STDERR "necessary, can be made within VisIt proper.\n";
+        print STDERR "See the Preferred File Formats list and other\n";
+        print STDERR "settings available in the Databases tab of\n";
+        print STDERR "the Plugin Manager window.\n";
         print STDERR "\n";
         exit(1);
+    }
+    elsif (($arg eq "-assume_format" or $arg eq "-fallback_format") and
+          !$assume_fallback_warned and $exe_name eq "viewer")
+    {
+        $assume_fallback_warned = 1;
+        # Deprecated in 2.0.
+        print STDERR "\n";
+        print STDERR "NOTE: -assume_format and -fallback_format have been\n";
+        print STDERR "deprecated.  Automatic file format detection has been\n";
+        print STDERR "improved in version 2.0, and any adjustments, if still\n";
+        print STDERR "necessary, can be made within VisIt proper. See the\n";
+        print STDERR "Preferred File Formats list in the Databases tab of\n";
+        print STDERR "the Plugin Manager window.  The formats you supplied\n";
+        print STDERR "will be added to that list for you right now.\n";
+        print STDERR "\n";
+        push @visitargs, $arg;
     }
     elsif ($arg eq "-gdb")              { $debug_gdb = 1; $gdb_xterm = 1;}
     elsif ($arg eq "-gdb-gui")          { if($exe_name eq "gui") {$debug_gdb = 1;} else {push @visitargs, $arg;}}

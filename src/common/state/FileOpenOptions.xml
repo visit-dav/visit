@@ -13,6 +13,10 @@
     </Field>
     <Function name="MergeNewFromPluginInfo" user="true" member="true">
     </Function>
+    <Function name="AddAssumedFormatsToPreferred" user="true" member="true">
+    </Function>
+    <Function name="AddFallbackFormatsToPreferred" user="true" member="true">
+    </Function>
     <Function name="GetOpenOptionsForID" user="true" member="true">
     </Function>
     <Function name="IsIDEnabled" user="true" member="true">
