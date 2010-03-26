@@ -190,6 +190,11 @@ class SILAttributes;
 //    Added extra flag to tell ClearFile whether or not we want to 
 //    forget which plugin was used to open it.  In this case, we do not.
 //
+//    Jeremy Meredith, Fri Mar 26 10:39:17 EDT 2010
+//    Though we do not need to use the command line to specify assumed and
+//    fallback formats anymore, such usage still has some conveniences.
+//    Added support to munge the preferred list when given those options.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -344,6 +349,9 @@ public:
     FileOpenOptions           *GetFileOpenOptions() { return fileOpenOptions; }
     void                       BroadcastUpdatedFileOpenOptions();
 
+    void                       AddAssumedFormatFromCL(const std::string&);
+    void                       AddFallbackFormatFromCL(const std::string&);
+
 protected:
     ViewerFileServer();
     ViewerFileServer(const ViewerFileServer&);
@@ -372,6 +380,9 @@ private:
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
     bool                      shouldSendFileOpenOptions;
+
+    stringVector              assumedFormatsFromCL;
+    stringVector              fallbackFormatsFromCL;
 };
 
 #endif

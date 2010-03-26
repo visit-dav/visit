@@ -2507,6 +2507,12 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //
 //    Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
 //    Added logic to manage buffering of debug logs; an extra 'b' after level.
+//
+//    Jeremy Meredith, Fri Mar 26 10:39:17 EDT 2010
+//    Though we do not need to use the command line to specify assumed and
+//    fallback formats anymore, such usage still has some conveniences.
+//    Added support to munge the preferred list when given those options.
+//
 // ****************************************************************************
 
 void
@@ -2845,6 +2851,26 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         else if(strcmp(argv[i], "-sshtunneling") == 0)
         {
             ViewerServerManager::ForceSSHTunnelingForAllConnections();
+        }
+        else if (strcmp(argv[i], "-assume_format") == 0)
+        {
+            if ((i + 1 >= argc))
+            {
+                cerr << "The -assume_format option must be followed by a "
+                        "string." << endl;
+            }
+            ViewerFileServer::Instance()->AddAssumedFormatFromCL(argv[i+1]);
+            ++i;
+        }
+        else if (strcmp(argv[i], "-fallback_format") == 0)
+        {
+            if ((i + 1 >= argc))
+            {
+                cerr << "The -fallback_format option must be followed by a "
+                        "string." << endl;
+            }
+            ViewerFileServer::Instance()->AddFallbackFormatFromCL(argv[i+1]);
+            ++i;
         }
         else // Unknown argument -- add it to the list
         {

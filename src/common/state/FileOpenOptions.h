@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -137,6 +137,8 @@ public:
 
     // User-defined methods
     void MergeNewFromPluginInfo(const DBPluginInfoAttributes*);
+    void AddAssumedFormatsToPreferred(const stringVector &formats);
+    void AddFallbackFormatsToPreferred(const stringVector &given);
     const DBOptionsAttributes *GetOpenOptionsForID(const std::string&);
     bool IsIDEnabled(const std::string&);
 

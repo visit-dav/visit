@@ -177,3 +177,106 @@ FileOpenOptions::IsIDEnabled(const std::string &id)
     return true; // default is what, true?
 }
 
+Function: AddAssumedFormatsToPreferred
+Declaration: void AddAssumedFormatsToPreferred(const stringVector &formats);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::AddAssumedFormatsToPreferred
+//
+// Purpose:
+//   Adds any given formats to the *beginning* of the preferred list, moving
+//   their position to the front if they were already in the list.
+//
+// Arguments:
+//   given    the list of formats labeled as "assumed"
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 26, 2010
+//
+// ****************************************************************************
+void
+FileOpenOptions::AddAssumedFormatsToPreferred(const stringVector &given)
+{
+    // for each format, prepend it; visit them in reverse order
+    // so the first one given winds up first in the new list
+    for (int i=given.size()-1; i>=0; i--)
+    {
+        // get its actual ID
+        std::string id = "";
+        for (int j=0; j<typeIDs.size(); j++)
+        {
+            if (given[i] == typeIDs[j] ||
+                given[i] == typeNames[j])
+            {
+                id = typeIDs[j];
+                break;
+            }
+        }
+        // if no id, we don't have that plugin, so skip this one
+        if (id == "")
+            continue;
+
+        // make a new list with this given one at the front
+        stringVector newPreferredIDs;
+        newPreferredIDs.push_back(id);
+        for (int j=0; j<preferredIDs.size(); j++)
+        {
+            if (preferredIDs[j] != id)
+                newPreferredIDs.push_back(preferredIDs[j]);
+        }
+        preferredIDs = newPreferredIDs;
+    }
+    SelectPreferredIDs();
+}
+
+
+Function: AddFallbackFormatsToPreferred
+Declaration: void AddFallbackFormatsToPreferred(const stringVector &given);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::AddFallbackFormatsToPreferred
+//
+// Purpose:
+//   Adds any given formats to the *end* of the preferred list, moving
+//   their position to the back if they were already in the list.
+//
+// Arguments:
+//   given    the list of formats labeled as "fallback"
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 26, 2010
+//
+// ****************************************************************************
+void
+FileOpenOptions::AddFallbackFormatsToPreferred(const stringVector &given)
+{
+    // for each format, append it
+    for (int i=0; i<given.size(); i++)
+    {
+        // get its actual ID
+        std::string id = "";
+        for (int j=0; j<typeIDs.size(); j++)
+        {
+            if (given[i] == typeIDs[j] ||
+                given[i] == typeNames[j])
+            {
+                id = typeIDs[j];
+                break;
+            }
+        }
+        // if no id, we don't have that plugin, so skip this one
+        if (id == "")
+            continue;
+
+        // make a new list with this given one at the back
+        stringVector newPreferredIDs;
+        for (int j=0; j<preferredIDs.size(); j++)
+        {
+            if (preferredIDs[j] != id)
+                newPreferredIDs.push_back(preferredIDs[j]);
+        }
+        newPreferredIDs.push_back(id);
+        preferredIDs = newPreferredIDs;
+    }
+    SelectPreferredIDs();
+}
