@@ -53,6 +53,7 @@ CracksClipper
 CreateBonds
 Cylinder
 Decimate
+Delaunay
 DeferExpression
 Displace
 DualMesh
