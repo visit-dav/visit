@@ -203,6 +203,8 @@
 #    Cyrus Harrison, Mon Mar 22 10:59:26 PDT 2010
 #    Temporarily only run the 'serial' case.
 #
+#    Mark C. MIller, Sat Mar 27 08:49:54 PDT 2010
+#    Removed above, temporary fix once serial started passing.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -519,12 +521,6 @@ case $theDay in
     Saturday)  modes="davinci,scalable,parallel,icet" ;;
     Sunday)    modes="davinci,scalable,parallel,icet" ;;
 esac
-
-#
-# cyrush (3/22/2010)
-# For now run only serial so we can focus on resolving issues.
-#
-modes="davinci,serial"
 
 # set list of tests/modes to skip
 skipList_dueTo_clientServer="\
