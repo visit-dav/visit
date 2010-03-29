@@ -1432,7 +1432,7 @@ static void WriteCopyright(ostream &out)
 {
     out << "/*****************************************************************************" << endl;
     out << "*" << endl;
-    out << "* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC" << endl;
+    out << "* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC" << endl;
     out << "* Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124" << endl;
     out << "* All rights reserved." << endl;
