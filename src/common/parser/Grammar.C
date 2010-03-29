@@ -476,7 +476,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
 {
     o << "/*****************************************************************************" << endl;
     o << "*" << endl;
-    o << "* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC" << endl;
+    o << "* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC" << endl;
     o << "* Produced at the Lawrence Livermore National Laboratory" << endl;
     o << "* LLNL-CODE-400124" << endl;
     o << "* All rights reserved." << endl;
