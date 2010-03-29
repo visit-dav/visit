@@ -507,12 +507,14 @@ QvisMeshManagementWindow::discretizeBoundaryOnlyChanged(bool val)
 void
 QvisMeshManagementWindow::discretizationModeChanged(int val)
 {
+    flatEnoughLineEdit->setEnabled(false);
     if (val == 0)
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
     else if (val == 1)
     {
 #ifdef HAVE_BILIB
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
+        flatEnoughLineEdit->setEnabled(true);
 #else
         GUIBase::Warning(tr("Adaptive not available. "
                          "Missing boost interval template library. "
