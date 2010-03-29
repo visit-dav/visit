@@ -264,6 +264,10 @@
 #    Tom Fogal, Thu Mar 25 14:43:08 MDT 2010
 #    Acceptable differences ("-pixdiff X") shouldn't count as a failure.
 #
+#    Mark C. Miller, Sun Mar 28 22:59:47 PDT 2010
+#    Added a 'cifrendly' mode where if a test fails, it is run a second time
+#    with verbose and debugging ON. Verbose output gets capture in ci logs
+#    automatically and debug logs are cat'd so they appear there too.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -302,6 +306,7 @@ icet=""
 pixdiff="-pixdiff=0"
 avgdiff="-avgdiff=0"
 numdiff="-numdiff=0"
+cifriendly=0
 otherArgs=""
 for options
 do
@@ -451,9 +456,13 @@ do
              echo "Expected quoted string of args for $1"
              opterror=1
          else
-             otherArgs=$2
+             otherArgs="$otherArgs $2"
              shift 2
          fi
+         ;;
+      -cifriendly)
+         cifriendly=1
+         shift
          ;;
       -*)
          echo "Unknown option $1"
@@ -732,7 +741,12 @@ anyerror=0
 skippedATest=0
 
 prevcategory=""
-for t in $testcases; do
+testcasesA=($testcases)
+let testIndex=0
+let testAttempt=1
+while test $testIndex -lt ${#testcasesA[*]}; do
+
+    t=${testcasesA[$testIndex]}
     dir=`dirname $t`
     category=`basename $dir`
     name=`basename $t`
@@ -879,6 +893,25 @@ for t in $testcases; do
     fi
     t=$torig
 
+    #
+    # Decide now, before we start generating any html, summary or log
+    # output a possibly second time, if we simply need to continue on
+    # to the next test.
+    #
+    if test $cifriendly -ne 0 -a $testAttempt -eq 2; then
+        # Cat level 5 logs so they appear in ci-logs
+        cat A.engine_ser.5.vlog
+        cat A.engine_par.5.vlog
+        cat A.mdserver.5.vlog
+        cat A.viewer.5.vlog
+        rm -f *.vlog
+        verbose=$saved_verbose
+        otherArgs=$saved_otherArgs
+        let testAttempt=1
+        let testIndex++
+        continue
+    fi
+
     # Make the timings
     touch html/${category}_${base}_timings.html
     echo "<html><head><title>Timings for $category/$name</title>" >> html/${category}_${base}_timings.html
@@ -947,78 +980,78 @@ for t in $testcases; do
     # purify. Currently, the coloring of test results is obscuring the data
     # we're really after, which is purify errors
     #
-    if test $purify -eq 1 && test "$error" = "111"; then
+    if test $testAttempt -eq 1 -a $purify -eq 1 -a $error -eq 111; then
         echo -e "    $name:\tcompleted" >> summary
         echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Purify completed test file: $t"
         fi
-    elif test $purify -eq 1 && test "$error" = "112"; then
+    elif test $testAttempt -eq 1 -a $purify -eq 1 -a $error -eq 112; then
         echo -e "    $name:\tcompleted" >> summary
         echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Purify completed test file: $t"
         fi
-    elif test $purify -eq 1 && test "$error" = "113"; then
+    elif test $testAttempt -eq 1 -a $purify -eq 1 -a $error -eq 113; then
         echo -e "    $name:\tcompleted" >> summary
         echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Purify completed test file: $t"
         fi
-    elif test "$error" = "111"; then
+    elif test $testAttempt -eq 1 -a $error -eq 111; then
         echo -e "    $name:\tsucceeded" >> summary
         echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Succeeded</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Passed with zero differences in test file: $t"
         fi
-    elif test "$error" = "112"; then
+    elif test $testAttempt -eq 1 -a $error -eq 112; then
         echo -e "    $name:\tsucceeded, acceptable differences" >> summary
         echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Acceptable</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Acceptable differences found in test file: $t"
         fi
-    elif test "$error" = "113"; then
+    elif test $testAttempt -eq 1 -a $error -eq 113; then
         echo -e "    $name:\tfailed, unacceptable differences" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ff8f00\"><b><i>Unacceptable</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Unacceptable differences found in test file: $t"
         fi
-    elif test "$error" = "114"; then
+    elif test $testAttempt -eq 1 -a $error -eq 114; then
         echo -e "    $name:\tunknown result; no PIL" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ffffff\"><b><i>Unknown</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Unknown if any differences found in test file: $t"
         fi
-    elif test "$error" = "115"; then
+    elif test $testAttempt -eq 1 -a $error -eq 115; then
         echo -e "    $name:\tkilled after $timeLimit seconds" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Self-Killed after $limitSeconds\"</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Killed after $timeLimit seconds when running test file: $t"
         fi
-    elif test "$error" = "116"; then
+    elif test $testAttempt -eq 1 -a $error -eq 116; then
         echo -e "    $name:\tskipped" >> summary
         #anyerror=1 we don't indicate a skip as an error
         echo -e "  <td align=center bgcolor=\"#0000ff\"><b><i>Skipped</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Skipped test file: $t"
         fi
-    elif test "$error" = "118"; then
+    elif test $testAttempt -eq 1 -a $error -eq 118; then
         echo -e "    $name:\tkilled after $limitSeconds seconds" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#880000\"><b><i>OS-Killed after $limitSeconds\"</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Killed after $limitSeconds seconds when running test file: $t"
         fi
-    elif test "$error" = "119"; then
+    elif test $testAttempt -eq 1 -a $error -eq 119; then
         echo -e "    $name:\tpartially skipped" >> summary
         echo -e "  <td align=center bgcolor=\"#00ffff\"><b><i>Partially Skipped</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Passed with partial skips in test file: $t"
         fi
-    elif test "$error" = "0"; then
+    elif test $testAttempt -eq 1 -a $error -eq 0; then
         echo -e "    $name:\tfailed, exit(0) unknown" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit(0) unknown</b></i></td>" >> html/index.html
@@ -1030,7 +1063,7 @@ for t in $testcases; do
         fi
         # Since VisIt terminated, the test page must not have been completed. Complete it here.
         echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>exit(0) unknown</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
-    else
+    elif test $testAttempt -eq 1; then
         echo -e "    $name:\tfailed, exit($error), assumed crashed" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - exit($error) - Crashed?</b></i></td>" >> html/index.html
@@ -1178,15 +1211,28 @@ for t in $testcases; do
 
     echo " </tr>" >> html/index.html
 
-#
-# The redirection and grep after 'done' here is required to
-# silence the output generated by the 'kill -9 $limitTestPid'
-# way way above this point. However, it was discovered that
-# the redirection construct causes the for loop to get executed
-# in a subshell and is NOT the desired behavior.
-#
-#done 2>&1 | grep -v Killed
-done
+    #
+    # Ok, do we try the test a second time with debugging on or
+    # move to the next test? If we're in cifriendly mode, and the
+    # test did not return error code indicating 'succeeded' or
+    # 'acceptable', then we run the test a second time with debugging
+    # turned on. 
+    #
+    if test $cifriendly -eq 0; then
+        let testIndex++
+    else
+        if test $error -ne 111 -a $error -ne 112; then
+            saved_verbose=$verbose
+            verbose="-verbose"
+            saved_otherArgs=$otherArgs
+            otherArgs="$otherArgs -debug 5"
+            let testAttempt=2
+        else
+            let testIndex++
+        fi
+    fi
+
+done # while $testIndex -lt ${#testcasesA[*]}
 
 #
 #  report the end result
