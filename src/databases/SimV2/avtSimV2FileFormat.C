@@ -1165,11 +1165,9 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 
     visit_handle h = simv2_invoke_GetMesh(domain, meshname);
 
-    // If the mesh could not be created then throw an exception.
+    // If the mesh could not be created then return.
     if(h == VISIT_INVALID_HANDLE)
-    {
-        EXCEPTION1(InvalidVariableException, meshname);
-    }
+        return NULL;
 
     vtkDataSet *ds = 0;
     PolyhedralSplit *phSplit = 0;
