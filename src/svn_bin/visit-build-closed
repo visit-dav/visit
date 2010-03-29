@@ -138,7 +138,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-install-thirdparty >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/linux-i686_gcc-3.2.3/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
@@ -169,42 +169,33 @@ then
 fi
 
 #
-# Build on purple, both serial and parallel versions.
+# Build on purple, both 32 and 64 bit versions.
 #
-rm -f purple
-cat <<EOF > purple
+rm -f purple32
+cat <<EOF > purple32
 #!/bin/sh
 PATH=/usr/local/bin:\$PATH
 if test ! -d /p/gscratch3/$user ; then
    mkdir /p/gscratch3/$user
 fi
-if test ! -d /p/gscratch3/$user/purple ; then
-   mkdir /p/gscratch3/$user/purple
+if test ! -d /p/gscratch3/$user/purple32 ; then
+   mkdir /p/gscratch3/$user/purple32
 fi
-rm -rf /p/gscratch3/$user/purple/visitbuild
-mkdir /p/gscratch3/$user/purple/visitbuild
-mv purple_$dist.tar.gz /p/gscratch3/$user/purple/visitbuild/$dist.tar.gz
-cd /p/gscratch3/$user/purple/visitbuild
+rm -rf /p/gscratch3/$user/purple32/visitbuild
+mkdir /p/gscratch3/$user/purple32/visitbuild
+mv purple_$dist.tar.gz /p/gscratch3/$user/purple32/visitbuild/$dist.tar.gz
+cd /p/gscratch3/$user/purple32/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-mv $dist ${dist}_32
-cd ${dist}_32/src
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=32
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/purple1441_32.conf --enable-install-thirdparty >> ../../buildlog 2>&1
-gmake -j 4 >> ../../buildlog 2>&1
-gmake package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr-xlc.tar.gz ../..
-cd ../..
-gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
-cd $dist/src
-OBJECT_MODE=64
-export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel --enable-install-thirdparty >> ../../buildlog 2>&1
-gmake -j 4 >> ../../buildlog 2>&1
-gmake package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr64-xlc.tar.gz ../..
+cp config-site/purple1441_32.cmake config-site/purple1441.cmake
+/usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release-DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+gmake -j 3 >> ../../buildlog 2>&1
+gmake -j 3 package >> ../../buildlog 2>&1
+mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
 cd ../..
 echo "        build of visit on purple"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
@@ -213,12 +204,43 @@ ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "            32 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls ${dist}_32/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls ${dist}_32/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls ${dist}_32/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls ${dist}_32/src/plugins/databases/libI* | sed "s/${dist}_32\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+rm -f purple64
+cat <<EOF > purple64
+#!/bin/sh
+PATH=/usr/local/bin:\$PATH
+if test ! -d /p/gscratch3/$user ; then
+   mkdir /p/gscratch3/$user
+fi
+if test ! -d /p/gscratch3/$user/purple64 ; then
+   mkdir /p/gscratch3/$user/purple64
+fi
+rm -rf /p/gscratch3/$user/purple64/visitbuild
+mkdir /p/gscratch3/$user/purple64/visitbuild
+mv purple_$dist.tar.gz /p/gscratch3/$user/purple64/visitbuild/$dist.tar.gz
+cd /p/gscratch3/$user/purple64/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+OBJECT_MODE=64
+export OBJECT_MODE
+/usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release-DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+gmake -j 3 >> ../../buildlog 2>&1
+gmake -j 3 package >> ../../buildlog 2>&1
+mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
+cd ../..
+echo "        build of visit on purple"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "            64 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -235,9 +257,12 @@ then
    if [ $test = no ]
    then
       echo "Building on purple"
-      scp purple purple:purple_buildit
-      scp $dist.tar.gz purple:purple_$dist.tar.gz
-      ssh purple "chmod 750 purple_buildit;./purple_buildit" &
+      scp purple32 purple:purple32_buildit
+      scp purple64 purple:purple64_buildit
+      scp $dist.tar.gz purple:purple32_$dist.tar.gz
+      scp $dist.tar.gz purple:purple64_$dist.tar.gz
+      ssh purple32 "chmod 750 purple_buildit;./purple32_buildit" &
+      ssh purple64 "chmod 750 purple_buildit;./purple64_buildit" &
    fi
 fi
 
@@ -263,9 +288,9 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --prefix=/usr/gapps/visit --enable-parallel --enable-install-thirdparty >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
-make package >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
@@ -298,5 +323,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier purple hopi
+   rm -f crier purple32 purple64 hopi
 fi
