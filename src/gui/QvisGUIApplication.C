@@ -5648,6 +5648,10 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   Allow for the -o command line option to take an optional ,<pluginID>
 //   suffix, e.g. "-o foobar,LAMMPS_1.0".
 //
+//   Jeremy Meredith, Tue Mar 30 15:54:38 EDT 2010
+//   Add forcing of a plugin type for the GUI's call to open the file.
+//   Turns out the GUI call comes first before we can force it in the viewer.
+//
 // ****************************************************************************
 
 void
@@ -5753,6 +5757,9 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 
             if(loadFile.filename.size() > 0)
             {
+                if (loadFilePlugin != "")
+                    fileServer->SetFilePlugin(f, loadFilePlugin);
+
                 // Try and open the data file for plotting.
                 SetOpenDataFile(f, timeState);
 

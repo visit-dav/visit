@@ -210,6 +210,9 @@ class MessageAttributes;
 //   of which plugin we used to open a given file.  So when we re-open
 //   it, we don't get it wrong.
 //
+//   Jeremy Meredith, Tue Mar 30 15:54:17 EDT 2010
+//   Add way for GUI to pre-set a plugin we intend to use for a file.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -263,6 +266,7 @@ public:
     void OverlayFile(const QualifiedFilename &filename);
     void CloseFile();
     void ClearFile(const QualifiedFilename &filename, bool forgetPlugin);
+    void SetFilePlugin(const QualifiedFilename &filename, const string &plugin);
     void CreateGroupList(const string &filename,
                          const stringVector &groupList);
 
