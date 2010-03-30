@@ -251,6 +251,8 @@ typedef struct _GroupInfo
 //    Added haveAmrGroupInfo, which is used to prevent collsion of amr
 //    levels info with connectivity group info.
 //
+//    Mark C. Miller, Mon Mar 29 17:30:10 PDT 2010
+//    Added siloDriver so we know what driver succeeded in openig the file.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -290,6 +292,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBfile              **dbfiles;
     int                   tocIndex;
     int                   dontForceSingle; // used primarily for testing
+    int                   siloDriver;
     AANTriState           ignoreSpatialExtentsAAN;
     AANTriState           ignoreDataExtentsAAN;
     bool                  ignoreSpatialExtents;
