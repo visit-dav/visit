@@ -778,6 +778,9 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Wed Mar 24 16:21:03 MST 2010
  *   Check for VISITHOME in env. Set PYTHONPATH.
  *
+ *   Kathleen Bonnell, Tue Mar 30 16:46:19 MST 2010
+ *   Test for dev dir and set vars accordingly.
+ *
  *****************************************************************************/
 
 char *
@@ -787,6 +790,7 @@ AddEnvironment(int useShortFileName)
     char *visitdevdir = 0;
     char tmpdir[512];
     int haveVISITHOME = 0;
+    int usingdev = 0;
 
     tmp = (char *)malloc(10000);
 
@@ -809,11 +813,6 @@ AddEnvironment(int useShortFileName)
      */
     if(!haveVISITHOME)
     {
-        char *tempvisitdev = 0;
-        int freetempvisitdev = 1;
-        free(visitpath);
-
-
         char tmpdir[MAX_PATH];
         if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
         {
@@ -829,7 +828,20 @@ AddEnvironment(int useShortFileName)
             visitpath = (char*)malloc(pos +1);
             strncpy(visitpath, tmpdir, pos);
             visitpath[pos] = '\0';
-            len = strlen(visitpath);
+         }
+    }
+    /*
+     * Determine if this is is dev version
+     */
+    {
+        string vp(visitpath);
+        string tp = vp + "\\..\\" + "ThirdParty";
+        struct _stat fs;
+        if (_stat(tp.c_str(), &fs) == 0)
+        {
+            usingdev = 1;
+            size_t pos;
+            size_t len = strlen(visitpath);
             for (pos = len; visitpath[pos] != '\\' && pos >=0; pos--)
             {
                 continue;
@@ -842,8 +854,6 @@ AddEnvironment(int useShortFileName)
             visitdevdir[pos] = '\0';
             sprintf(visitdevdir,"%s\\ThirdParty", visitdevdir);
         }
-        if (tempvisitdev != 0 && freetempvisitdev)
-            free(tempvisitdev);
     }
  
     /*
@@ -931,20 +941,39 @@ AddEnvironment(int useShortFileName)
     /*
      * Set the help dir.
      */
-    sprintf(tmp, "VISITHELPHOME=%s\\help", visitpath);
-    putenv(tmp);
+    if (!usingdev)
+    {
+        sprintf(tmp, "VISITHELPHOME=%s\\help", visitpath);
+        putenv(tmp);
+    }
 
     /*
      * Set the ultrawrapper dir.
      */
-    sprintf(tmp, "VISITULTRAHOME=%s\\ultrawrapper", visitpath);
-    putenv(tmp);
+    if (!usingdev)
+    {
+        sprintf(tmp, "VISITULTRAHOME=%s\\ultrawrapper", visitpath);
+        putenv(tmp);
+    }
+    else
+    {
+        sprintf(tmp, "VISITULTRAHOME=%s\\..\\ultrawrapper", visitpath);
+        putenv(tmp);
+    }
 
     /*
      * Set PYTHONPATH
      */
-    sprintf(tmp, "PYTHONPATH=%s\\lib\\Python\\lib", visitpath);
-    putenv(tmp);
+    if (!usingdev)
+    {
+        sprintf(tmp, "PYTHONPATH=%s\\lib\\Python\\lib", visitpath);
+        putenv(tmp);
+    }
+    else 
+    {
+        sprintf(tmp, "PYTHONPATH=%s\\..\\..\\lib\\Python\\lib", visitpath);
+        putenv(tmp);
+    }
 
     /*
      * Set the SSH program.
