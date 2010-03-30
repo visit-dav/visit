@@ -43,9 +43,12 @@
 #include <avtWarpFilter.h>
 
 #include <vtkCellArray.h>
+#include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+
+#include <DebugStream.h>
 #include <ImproperUseException.h>
 
 #include <avtDatasetExaminer.h>
@@ -103,9 +106,13 @@ avtWarpFilter::~avtWarpFilter()
 //  Creation:     July 12, 2006
 //
 //  Modifications:
-//    
+//    Brad Whitlock, Tue Mar 30 15:33:46 PDT 2010
+//    Use avtCurveTransform, if it exists, to transform the curve points.
+//
 // ****************************************************************************
+
 #include <vtkVisItUtility.h>
+
 vtkDataSet *
 avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
 {
@@ -116,6 +123,17 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
     if (inDS->GetPointData()->GetScalars() == NULL)
     {
         return NULL;
+    }
+
+    // Try and reconstitute a curve transform from field data
+    vtkDataArray *ct = inDS->GetFieldData()->GetArray("avtCurveTransform");
+    vtkMatrix4x4 *t = 0;
+    if(ct != 0 && ct->GetNumberOfTuples() == 16)
+    {
+        t = vtkMatrix4x4::New();
+        for(int i = 0; i < 16; ++i)
+            t->SetElement(i / 4, i % 4, ct->GetTuple1(i));
+        debug5 << "Creating transform from avtCurveTransform" << endl;
     }
 
     vtkDataArray *xc = vtkRectilinearGrid::SafeDownCast(inDS)->GetXCoordinates();
@@ -134,15 +152,36 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
     vtkIdType ptIds[2];
     for (int i = 0; i < nPts; i++)
     {
-         pts->SetPoint(i, xc->GetTuple1(i), sc->GetTuple1(i), 0.); 
-         ptIds[0] = i; 
-         verts->InsertNextCell(1, ptIds);
-         if (i < nPts-1)
-         {
-             ptIds[1] = i+1; 
-             lines->InsertNextCell(2, ptIds);
-         }
+        if(t == 0)
+            pts->SetPoint(i, xc->GetTuple1(i), sc->GetTuple1(i), 0.); 
+        else
+        {
+            float inpoint[4];
+            inpoint[0] = xc->GetTuple1(i);
+            inpoint[1] = sc->GetTuple1(i);
+            inpoint[2] = 0.;
+            inpoint[3] = 1.;
+
+            float outpoint[4];
+            t->MultiplyPoint(inpoint, outpoint);
+
+            outpoint[0] /= outpoint[3];
+            outpoint[1] /= outpoint[3];
+            outpoint[2] = 0.; // Force z==0
+            pts->SetPoint(i, outpoint);
+        }
+
+        ptIds[0] = i; 
+        verts->InsertNextCell(1, ptIds);
+        if (i < nPts-1)
+        {
+            ptIds[1] = i+1; 
+            lines->InsertNextCell(2, ptIds);
+        }
     }
+
+    if(t != 0)
+        t->Delete();
 
     vtkPolyData *polys = vtkPolyData::New();
     polys->SetPoints(pts);

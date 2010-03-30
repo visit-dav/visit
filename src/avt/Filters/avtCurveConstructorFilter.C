@@ -168,6 +168,9 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Bonnell, Mon Mar 23 09:54:09 PDT 2009
 //    Removed unique-leaf test and forceConstruct.
 //
+//    Brad Whitlock, Tue Mar 30 15:33:19 PDT 2010
+//    Pass along avtCurveTransform in the field data if it exists.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -454,6 +457,14 @@ void avtCurveConstructorFilter::Execute()
         outputArray.push_back(sortedXC->GetTuple1(i));
         outputArray.push_back(sortedVal->GetTuple1(i));
     } 
+
+    // Pass a copy of the avtCurveTransform data into the new curve object.
+    vtkDataArray *ct = ds[0]->GetFieldData()->GetArray("avtCurveTransform");
+    if(ct != 0 && ct->GetNumberOfTuples() == 16)
+    {
+        ct->Register(NULL);
+        outGrid->GetFieldData()->AddArray(ct);
+    }
 
     const char *varname = (pipelineVariable != NULL ? pipelineVariable : "");
 

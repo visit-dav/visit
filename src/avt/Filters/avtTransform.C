@@ -44,6 +44,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMatrixToHomogeneousTransform.h>
 #include <vtkMatrixToLinearTransform.h>
@@ -327,6 +328,11 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Kathleen Bonnell, Fri Mar 28 14:33:55 PDT 2008
 //    Added call to TransformData for 1D curve grids.
 //
+//    Brad Whitlock, Tue Mar 30 15:40:18 PDT 2010
+//    If we're doing a transform on curve data that would cause it to need 
+//    to change to polydata or something else, just store the transform so
+//    we can do the right thing later.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -334,16 +340,46 @@ avtTransform::TransformRectilinear(vtkRectilinearGrid *rgrid)
 {
     vtkDataSet *rv = NULL;
     vtkMatrix4x4 *t = GetTransform();
+
+    // Determine whether we have a curve.
+    int dims[3];
+    rgrid->GetDimensions(dims);
+    bool transformCurve = (dims[1] <= 1) &&
+        (dims[2] <= 1) &&
+        (GetInput()->GetInfo().GetAttributes().GetVariableType() == AVT_CURVE);
+
     if (OutputIsRectilinear(t))
     {
         rv = TransformRectilinearToRectilinear(rgrid);
-        int dims[3];
-        rgrid->GetDimensions(dims);
-        if (dims[1] <= 1 && dims[2] <= 1 &&
-           GetInput()->GetInfo().GetAttributes().GetVariableType() == AVT_CURVE)
+        if (transformCurve)
         {
             TransformData((vtkRectilinearGrid*)rv);
         }
+    }
+    else if(transformCurve)
+    {
+        // We would need to transform the rgrid into polydata to apply
+        // the transform but that would foul up a lot of curve machinery. 
+        // Instead, let's not change the curve not but stash the transform
+        // in the field data so we can apply it downstream.
+
+        // NOTE: in the case of multiple transform operators, we may want
+        //       to concatenate the current matrix with an avtCurveTransform
+        //       that is already there. todo.
+
+        vtkRectilinearGrid *out = vtkRectilinearGrid::New();
+        out->ShallowCopy(rgrid);
+        vtkFloatArray *ct = vtkFloatArray::New();
+        ct->SetNumberOfTuples(16);
+        ct->SetName("avtCurveTransform");
+        for(int i = 0; i < 16; ++i)
+            ct->SetTuple1(i, t->GetElement(i / 4, i % 4));
+        out->GetFieldData()->AddArray(ct);
+
+        ManageMemory(out);
+        out->Delete();
+
+        rv = out;
     }
     else
     {
