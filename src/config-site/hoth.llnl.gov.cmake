@@ -21,6 +21,9 @@
 ##
 ## Eric Brugger, Wed Mar  3 17:11:44 PST 2010
 ## Updated H5Part to 1.6.0 and HDF5 to 1.8.4.
+##
+## Mark C. Miller, Mon Mar 29 18:07:05 PDT 2010
+## Removed TCMALLOC setting so that it is NOT the default on hoth.
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -175,8 +178,3 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## VISUS
 ##
 VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR /usr/gapps/visit/visus/linux_rhel3_gcc_3.2.3_new)
-
-##
-## Tcmalloc
-##
-VISIT_OPTION_DEFAULT(VISIT_TCMALLOC_DIR ${VISITHOME}/google-perftools/0.97/${VISITARCH})
