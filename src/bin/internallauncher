@@ -603,6 +603,12 @@ $0 = shift @ARGV;
 #    They are now deprecated, though.  I added good warning/error messages
 #    for both those and for the truly obsolete default_format option.
 #
+#    Gunther H. Weber, Tue Mar 30 15:35:26 PDT 2010
+#    Put qsub job submission file into user's home directory if running on
+#    Hopper @ NERSC since currently having it in /tmp does not work.
+#    Revert to having plugins in a user's home directory on Franklin @NERSC 
+#    since home is now visible from compute nodes.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1623,7 +1629,7 @@ if ( $host =~ /^nid/ )
 }
 
 # ----
-# HACK for franklin @ NERSC
+# HACK for hopper @ NERSC
 #
 # ----
 $IsRunningOnHopperNERSC = 0;
@@ -2089,10 +2095,6 @@ if (defined($ENV{HOME}))
     foreach my $archdir (@supportedarchs)
     {
         $makedir  = "$ENV{HOME}/.visit";mkdir $makedir,0777 if (! -e $makedir);
-        if ($IsRunningOnFranklinNERSC)
-        {
-            $makedir  = "/scratch/scratchdirs/$ENV{USER}/.visit";mkdir $makedir,0777 if (! -e $makedir);
-        }
         $makedir .= "/$archdir";        mkdir $makedir,0777 if (! -e $makedir);
         $makedir .= "/plugins";         mkdir $makedir,0777 if (! -e $makedir);
 
@@ -2201,11 +2203,7 @@ if($os eq "darwin")
 }
 
 # Set up plugin search paths in the correct order
-if ($IsRunningOnFranklinNERSC)
-{
-    $visitprivateplugins = "/scratch/scratchdirs/$ENV{USER}/.visit/$archdir/plugins";
-}
-elsif ($IsRunningOnJaguar_ORNL)
+if ($IsRunningOnJaguar_ORNL)
 {
     $visitprivateplugins = "/lustre/widow1/scratch/$ENV{USER}/.visit/$archdir/plugins";
 }
@@ -2582,6 +2580,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
         {
             $script_dir="/home/$tuser";
         }
+        elsif ($IsRunningOnHopperNERSC)
+        {
+            $script_dir = $ENV{HOME};
+        }
         $tdate =~ s/:/./g if ($IsRunningOnRanger_TACC);
         $tfilename = "$script_dir/visit.$tuser.$tdate";
         $tfile_opened = 1;
@@ -2591,12 +2593,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($security_key_set) { push @visitcmd, "-key", $security_key; }
             push @visitcmd, @post_args;
 
-            if ($IsRunningOnFranklinNERSC)
-            {
-                # Need a location visible from compute nodes
-                $cdcmd     = "cd /scratch/scratchdirs/$ENV{USER}\n";
-            }
-            elsif ($IsRunningOnJaguar_ORNL)
+            if ($IsRunningOnJaguar_ORNL)
             {
                 # Need a location visible from compute nodes
                 $cdcmd     = "cd /lustre/widow1/scratch/$ENV{USER}\n";
