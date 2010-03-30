@@ -51,7 +51,6 @@
 #include <vtkCellType.h>
 
 #include <vtkDataSet.h>
-#include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
 #include <vtkPointData.h>
@@ -167,6 +166,8 @@ avtKeyAggregatorExpression::GetVariableDimension()
 //  Creation:   March 26, 2009
 //
 //  Modifications:
+//   Cyrus Harrison, Thu Oct 29 10:26:42 PDT 2009
+//   Switch to generic use of vtkDataArray to support non integer key types.
 //
 // ****************************************************************************
 void
@@ -179,27 +180,27 @@ avtKeyAggregatorExpression::Execute()
 
     int current_progress = 0;
     int total_steps = 0;
-    
+
     // get input datasets
     vtkDataSet **data_sets_ptr = tree->GetAllLeaves(nsets);
-    
+
     vector<vtkDataSet*> data_sets;
     for(int i = 0; i < nsets ; i++)
         data_sets.push_back(data_sets_ptr[i]);
-    
+
     // set up suitable # of total steps based on the # of input data sets.
     total_steps = nsets * 5;
-        
+
     // get dataset domain ids
     vector<int> domain_ids;
     tree->GetAllDomainIds(domain_ids);
 
     // get the variable names of the inputs (there should only be two)
     if(inputVarNames.size() != 2)
-    { 
+    {
         EXCEPTION2(ExpressionException, outputVariableName,
                 "The key_aggregate expression requires two arguments:\n"
-                " An integer key array.\n"
+                " An key array.\n"
                 " A floating point values array.\n");
     }
 
@@ -210,29 +211,25 @@ avtKeyAggregatorExpression::Execute()
            << " variable name = " << val_vname << endl; 
 
     // obtain key and value arrays.
-    vector<vtkIntArray*> key_arrays(nsets);
-    vector<vtkFloatArray*> val_arrays(nsets);
+    vector<vtkDataArray*> key_arrays(nsets);
+    vector<vtkDataArray*> val_arrays(nsets);
 
     // holds the # of components for each tuple the values arrays.
     int num_val_comps = 0;
-    
+
     for(int i = 0; i < nsets ; i++)
     {
-        vtkDataArray *array = data_sets[i]->GetCellData()->GetArray(key_vname.c_str());
-        vtkIntArray  *keys  =  dynamic_cast<vtkIntArray*>(array);
-        
+        vtkDataArray *keys = data_sets[i]->GetCellData()->GetArray(key_vname.c_str());
+        vtkDataArray *vals = data_sets[i]->GetCellData()->GetArray(val_vname.c_str());
+
         if(!keys)
         {
             EXCEPTION2(ExpressionException, outputVariableName,
-                "key_aggregate() Invalid key array " + key_vname + "\n"
-                "An integer data array is required.");
+                "key_aggregate() Invalid key array " + key_vname + ".");
         }
-        
+
         key_arrays[i] = keys;
-        
-        array = data_sets[i]->GetCellData()->GetArray(val_vname.c_str());
-        vtkFloatArray *vals =  dynamic_cast<vtkFloatArray*>(array);
-        
+
         if(!vals)
         {
             EXCEPTION2(ExpressionException, outputVariableName,
@@ -250,20 +247,20 @@ avtKeyAggregatorExpression::Execute()
                     "# of tuple components == 0.");
             }
         }
-        
+
         if(vals->GetNumberOfComponents() != num_val_comps)
-        { 
+        {
             EXCEPTION2(ExpressionException, outputVariableName,
                 "key_aggregate() Invalid values array " + key_vname +"\n"
                     "# of tuple components does not match between datasets.");
         }
         val_arrays[i] = vals;
-        
+
         // update progress
         current_progress+=nsets;
         UpdateProgress(current_progress,total_steps);
     }
-    
+
     // find the max keys
     // NOTE: With this implementation we assume the key values are contigious,
     // so we can use the max key value +1 to setup bins to aggregate by key.
@@ -271,18 +268,18 @@ avtKeyAggregatorExpression::Execute()
     // update progress
     current_progress+=nsets;
     UpdateProgress(current_progress,total_steps);
-    
+
 #ifdef PARALLEL
     num_keys = UnifyMaximumValue(num_keys);
-#endif     
+#endif
     // number of keys is one more than the max key value.
     num_keys++;
 
     debug2 << "avtKeyAggregatorExpression:: # of keys = " << num_keys << endl;
-    
+
     vector<float> key_results;
     Aggregate(key_arrays,val_arrays,num_keys,num_val_comps,key_results);
-    
+
     // update progress
     current_progress+=nsets;
     UpdateProgress(current_progress,total_steps);
@@ -300,11 +297,11 @@ avtKeyAggregatorExpression::Execute()
 
     // array to hold output sets
     avtDataTree_p *leaves = new avtDataTree_p[nsets];
-    
+
     // vectors to hold result sets and aggregate value
     vector<vtkDataSet*>  result_sets(nsets);
     vector<vtkFloatArray*> result_arrays(nsets);
-    
+
     // prepare output arrays
     for(int i = 0; i < nsets ; i++)
     {
@@ -327,11 +324,11 @@ avtKeyAggregatorExpression::Execute()
             leaves[i] = new avtDataTree(res_set,domain_ids[i]);
         else // if the dataset only contained ghost zones we could end up here
             leaves[i] = NULL;
-        
+
         // update progress
         UpdateProgress(current_progress++,total_steps);
     }
-    
+
     if(nsets > 0 )
     {
         // create output data tree
@@ -366,36 +363,38 @@ avtKeyAggregatorExpression::Execute()
 //
 //  Arguments:
 //      key_arrays  Key cell data arrays for the input datasets.
-//  
+//
 //  Returns: Max key id.
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   March 26, 2009
 //
 //  Modifications:
+//   Cyrus Harrison, Thu Oct 29 10:26:42 PDT 2009
+//   Switch to generic use of vtkDataArray to support non integer key types.
 //
 // ****************************************************************************
 
-int                       
-avtKeyAggregatorExpression::FindMaxKey(vector<vtkIntArray*> &key_arrays)
+int
+avtKeyAggregatorExpression::FindMaxKey(vector<vtkDataArray*> &key_arrays)
 {
     // get the # of data sets we need to scan.
     int nsets = key_arrays.size();
-    
+
     // init our result
     int result = 0;
-    
+
     // over all data sets
     for(int i=0; i < nsets; i++)
     {
         // get the current key array
-        vtkIntArray *keys = key_arrays[i];
+        vtkDataArray *keys = key_arrays[i];
         // get the number of cells in the current key array
         int ncells = keys->GetNumberOfTuples();
         for(int j=0; j < ncells; j++)
         {
            // compare current cell's key with max
-           int key = keys->GetValue(j);
+           int key = (int)keys->GetTuple1(j);
            if(key > result) result = key;
         }
     }
@@ -420,12 +419,14 @@ avtKeyAggregatorExpression::FindMaxKey(vector<vtkIntArray*> &key_arrays)
 //      key_results Output array to hold per key aggregate values.
 //
 //  Modifications:
+//   Cyrus Harrison, Thu Oct 29 10:26:42 PDT 2009
+//   Switch to generic use of vtkDataArray to support non integer key types.
 //
 // ****************************************************************************
 
 void
-avtKeyAggregatorExpression::Aggregate(vector<vtkIntArray*> &key_arrays,
-                                      vector<vtkFloatArray*> &val_arrays,
+avtKeyAggregatorExpression::Aggregate(vector<vtkDataArray*> &key_arrays,
+                                      vector<vtkDataArray*> &val_arrays,
                                       int num_keys,
                                       int num_val_comps,
                                       vector<float> &key_results)
@@ -441,20 +442,20 @@ avtKeyAggregatorExpression::Aggregate(vector<vtkIntArray*> &key_arrays,
     {
         // get the keys & values arrays for the 
         // current data set.
-        vtkIntArray   *keys = key_arrays[i];
-        vtkFloatArray *vals = val_arrays[i];
-        
+        vtkDataArray *keys = key_arrays[i];
+        vtkDataArray *vals = val_arrays[i];
+
         // get the # of cells to scan
         int ncells = keys->GetNumberOfTuples();
-        
+
         for(int j=0; j < ncells; j++)
         {
             // get this cell's key
-            int   key = keys->GetValue(j);
-           
+            int   key = (int)keys->GetTuple1(j);
+
             // get this cell's values
-            float *val_tuple = vals->GetPointer(j); 
-            float *res_tuple = &key_results[key * num_val_comps];
+            double *val_tuple = vals->GetTuple(j);
+            float  *res_tuple = &key_results[key * num_val_comps];
             for(int k=0;k < num_val_comps; k++)
                 res_tuple[k] += val_tuple[k];
         }
@@ -477,13 +478,15 @@ avtKeyAggregatorExpression::Aggregate(vector<vtkIntArray*> &key_arrays,
 //      vals_ncomps Number of components per tuple in the result array.
 //
 //  Returns: Result data set with values set from key aggregates.
-//   
+//
 //  Modifications:
+//   Cyrus Harrison, Thu Oct 29 10:26:42 PDT 2009
+//   Switch to generic use of vtkDataArray to support non integer key types.
 //
 // ****************************************************************************
 
 vtkFloatArray *
-avtKeyAggregatorExpression::CreateResultArray(vtkIntArray   *key_array,
+avtKeyAggregatorExpression::CreateResultArray(vtkDataArray  *key_array,
                                               vector<float> &key_results,
                                               int num_val_comps)
 {
@@ -502,13 +505,13 @@ avtKeyAggregatorExpression::CreateResultArray(vtkIntArray   *key_array,
     for(int i=0;i<ncells;i++)
     {
         // get the key for this cell
-        int key = key_array->GetValue(i);
+        int key = (int)key_array->GetTuple1(i);
         // get pointer to tuple data for this key
         float *key_tuple_ptr = &key_results[key * num_val_comps];
         // set its result to the key's aggregate value.
         res_array->SetTupleValue(i,key_tuple_ptr);
     }
-    
+
     // return result array.
     return res_array;
 }
