@@ -189,6 +189,9 @@
 #    of the distribution file had been changed from the name created
 #    by "make package".
 #
+#    Gunther H. Weber, Tue Mar 30 15:39:05 PDT 2010
+#    Added Hopper to NERSC config.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -584,6 +587,7 @@ else if ($config == llnl_open) then
 else if ($config == nersc) then
    ln -s ../allhosts/host_nersc_davinci.xml  "$dir"/$version+/.visit/hosts/
    ln -s ../allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
+   ln -s ../allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
 else if ($config == ornl) then
    ln -s ../allhosts/host_ornl_ewok.xml     "$dir"/$version+/.visit/hosts/
    ln -s ../allhosts/host_ornl_jaguarpf.xml "$dir"/$version+/.visit/hosts/
