@@ -34,6 +34,7 @@ IF(WIN32)
         host_llnl_zeus.xml
         host_nersc_davinci.xml
         host_nersc_franklin.xml
+        host_nersc_hopper.xml
         host_ornl_ewok.xml
         host_ornl_jaguarpf.xml
         host_ornl_jaguar.xml
@@ -88,6 +89,7 @@ ELSE(WIN32)
         host_llnl_zeus.xml
         host_nersc_davinci.xml
         host_nersc_franklin.xml
+        host_nersc_hopper.xml
         host_ornl_ewok.xml
         host_ornl_jaguarpf.xml
         host_ornl_jaguar.xml
