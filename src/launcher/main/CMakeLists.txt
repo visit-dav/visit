@@ -69,6 +69,7 @@ TARGET_LINK_LIBRARIES(vcl vclrpc visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
 IF (VISIT_CREATE_SOCKET_RELAY_EXECUTABLE)
     ADD_EXECUTABLE(visit_socket_relay SocketRelayMain.C SocketBridge.C)
     TARGET_LINK_LIBRARIES(visit_socket_relay visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    VISIT_INSTALL_TARGETS(visit_socket_relay)
 ENDIF (VISIT_CREATE_SOCKET_RELAY_EXECUTABLE)
 
 IF (NOT WIN32)
