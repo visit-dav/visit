@@ -242,6 +242,10 @@ static const int maxCoincidentNodelists = 12;
 //    Cyrus Harrison, Wed Mar 24 10:39:30 PDT 2010
 //    Added init of haveAmrGroupInfo.
 //
+//    Mark C. Miller, Mon Mar 29 17:20:48 PDT 2010
+//    Added siloDriver initialization. Set Silo's error level to DB_TOP
+//    instead of DB_ALL. This is because in new versions of Silo library
+//    DB_ALL will spew HDF5 diagnostics to stderr too.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -267,6 +271,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     haveAmrGroupInfo = false;
     hasDisjointElements = false;
     topDir = "/";
+    siloDriver = DB_UNKNOWN;
     dbfiles = new DBfile*[MAX_FILES];
     for (int i = 0 ; i < MAX_FILES ; i++)
     {
@@ -299,7 +304,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     // If there is ever a problem with Silo, we want it to throw an
     // exception.
     //
-    DBShowErrors(DB_ALL, ExceptionGenerator);
+    DBShowErrors(DB_TOP, ExceptionGenerator);
 
     //
     // Turn on silo's checksumming feature. This is harmless if the
@@ -444,6 +449,8 @@ avtSiloFileFormat::GetFile(int f)
 //    Hank Childs, Tue Sep 22 20:47:16 PDT 2009
 //    Remove assumption of new version of Silo library.
 //
+//    Mark C. Miller, Mon Mar 29 17:27:07 PDT 2010
+//    Set siloDriver that succeeded in opening the file.
 // ****************************************************************************
 
 DBfile *
@@ -472,9 +479,22 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     // Open the Silo file. Impose priority order on drivers by first
     // trying PDB, then HDF5, then fall-back to UNKNOWN
     //
-    if (((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) == NULL) && 
-        ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) == NULL) && 
-        ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) == NULL))
+    if ((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) != NULL)
+    {
+        debug1 << "Succeeding in opening Silo file with DB_PDB driver" << endl;
+        siloDriver = DB_PDB;
+    }
+    else if ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) != NULL)
+    {
+        debug1 << "Succeeding in opening Silo file with DB_HDF5 driver" << endl;
+        siloDriver = DB_HDF5;
+    }
+    else if ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) == NULL)
+    {
+        debug1 << "Succeeding in opening Silo file with DB_UNKNOWN driver" << endl;
+        siloDriver = DB_UNKNOWN;
+    }
+    else
     {
         EXCEPTION1(InvalidFilesException, filenames[f]);
     }
@@ -3393,6 +3413,10 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names. Also added logic to
 //    handle freeing of multimat species during exceptions.
+//
+//    Mark C. Miller, Mon Mar 29 17:27:43 PDT 2010
+//    Reset Silo error level to DB_TOP as that is correct setting for 
+//    newer versions of Silo library.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
@@ -3472,7 +3496,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 
                     DBShowErrors(DB_NONE, NULL);
                     spec = DBGetMatspecies(correctFile, realvar);
-                    DBShowErrors(DB_ALL, ExceptionGenerator);
+                    DBShowErrors(DB_TOP, ExceptionGenerator);
                     if (spec == NULL)
                     {
                         debug1 << "Giving up on species \"" << multimatspecies_names[i]
@@ -9129,6 +9153,10 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
 //    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
 //    Added extra level of indirection to arbMeshXXXRemap objects to handle
 //    multi-block case.
+//
+//    Mark C. Miller, Mon Mar 29 17:28:33 PDT 2010
+//    Fixed cut-n-paste error where arbMeshCellReMap entry was NOT erased
+//    at the end of this routine if no new points were inserted.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
@@ -9408,7 +9436,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     {
         ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
         arbMeshNodeReMap.find(meshname)->second.erase(domain);
-        arbMeshNodeReMap.find(meshname)->second.erase(domain);
+        arbMeshCellReMap.find(meshname)->second.erase(domain);
         delete cellReMap;
         delete nodeReMap;
     }
