@@ -246,6 +246,9 @@ static const int maxCoincidentNodelists = 12;
 //    Added siloDriver initialization. Set Silo's error level to DB_TOP
 //    instead of DB_ALL. This is because in new versions of Silo library
 //    DB_ALL will spew HDF5 diagnostics to stderr too.
+//
+//    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
+//    Temporarily reset to using DB_ALL error level as DB_TOP is causing hangs.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -304,7 +307,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     // If there is ever a problem with Silo, we want it to throw an
     // exception.
     //
-    DBShowErrors(DB_TOP, ExceptionGenerator);
+    DBShowErrors(DB_ALL, ExceptionGenerator);
 
     //
     // Turn on silo's checksumming feature. This is harmless if the
@@ -451,6 +454,9 @@ avtSiloFileFormat::GetFile(int f)
 //
 //    Mark C. Miller, Mon Mar 29 17:27:07 PDT 2010
 //    Set siloDriver that succeeded in opening the file.
+//
+//    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
+//    Fix DBOpen logic for DB_UNKNOWN case to test for non-NULL result.
 // ****************************************************************************
 
 DBfile *
@@ -489,7 +495,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         debug1 << "Succeeding in opening Silo file with DB_HDF5 driver" << endl;
         siloDriver = DB_HDF5;
     }
-    else if ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) == NULL)
+    else if ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) != NULL)
     {
         debug1 << "Succeeding in opening Silo file with DB_UNKNOWN driver" << endl;
         siloDriver = DB_UNKNOWN;
@@ -3417,6 +3423,9 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 //    Mark C. Miller, Mon Mar 29 17:27:43 PDT 2010
 //    Reset Silo error level to DB_TOP as that is correct setting for 
 //    newer versions of Silo library.
+//
+//    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
+//    Temporarily reset to using DB_ALL error level as DB_TOP is causing hangs.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
@@ -3496,7 +3505,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 
                     DBShowErrors(DB_NONE, NULL);
                     spec = DBGetMatspecies(correctFile, realvar);
-                    DBShowErrors(DB_TOP, ExceptionGenerator);
+                    DBShowErrors(DB_ALL, ExceptionGenerator);
                     if (spec == NULL)
                     {
                         debug1 << "Giving up on species \"" << multimatspecies_names[i]
