@@ -9129,6 +9129,10 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, DBphzonelist *phzl, int gz,
 //    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
 //    Added extra level of indirection to arbMeshXXXRemap objects to handle
 //    multi-block case.
+//
+//    Mark C. Miller, Mon Mar 29 17:28:33 PDT 2010
+//    Fixed cut-n-paste error where arbMeshCellReMap entry was NOT erased
+//    at the end of this routine if no new points were inserted.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
@@ -9408,7 +9412,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     {
         ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
         arbMeshNodeReMap.find(meshname)->second.erase(domain);
-        arbMeshNodeReMap.find(meshname)->second.erase(domain);
+        arbMeshCellReMap.find(meshname)->second.erase(domain);
         delete cellReMap;
         delete nodeReMap;
     }
