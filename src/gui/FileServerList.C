@@ -3167,3 +3167,26 @@ FileServerList::SetOpenFileSIL(const avtSIL *sil)
                   "opened." << endl;
     } 
 }
+
+// ****************************************************************************
+// Method:  FileServerList::SetFilePlugin
+//
+// Purpose:
+//   Allow clients to poke an intended plugin ID to use when we
+//   open a file.  This only makes sense if the file has not been
+//   opened before.
+//
+// Arguments:
+//   filename    the file name
+//   plugin      the plugin ID to use
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 30, 2010
+//
+// ****************************************************************************
+void
+FileServerList::SetFilePlugin(const QualifiedFilename &filename,
+                              const string &plugin)
+{
+    filePlugins[filename.FullName()] = plugin;
+}
