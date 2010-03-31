@@ -130,7 +130,7 @@ if [ $crier = true ]
 then
    if [ $test = no ]
    then
-      scp -P 22 crier:/export/scratch/$user/crier/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
+      scp -P 22 crier:/export/scratch/$user/crier/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux_rhel3.tar.gz
       scp -P 22 visit$ver2.linux_rhel3.tar.gz crier:
       scp -P 22 visit-install crier:
       scp -P 22 crier crier:crier_install
@@ -144,8 +144,8 @@ fi
 rm -f purple
 cat <<EOF > purple
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver ibm-aix-pwr /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver ibm-aix-pwr64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on purple"          >> resultlog 2>&1
@@ -181,10 +181,10 @@ if [ $purple = true ]
 then
    if [ $test = no ]
    then
-      scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix.tar.gz .
-      scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64.tar.gz .
-      scp visit$ver2.aix.tar.gz hopi3:
-      scp visit$ver2.aix64.tar.gz hopi3:
+      scp purple:/p/gscratch3/$user/purple32/visitbuild/visit$ver2.ibm-aix-pwr.tar.gz .
+      scp purple:/p/gscratch3/$user/purple64/visitbuild/visit$ver2.ibm-aix-pwr64.tar.gz .
+      scp visit$ver2.ibm-aix-pwr.tar.gz hopi3:
+      scp visit$ver2.ibm-aix-pwr64.tar.gz hopi3:
       scp visit-install hopi3:
       scp purple hopi3:purple_install
       ssh hopi3 "chmod 750 purple_install;./purple_install"
