@@ -205,6 +205,10 @@
 #
 #    Mark C. MIller, Sat Mar 27 08:49:54 PDT 2010
 #    Removed above, temporary fix once serial started passing.
+#
+#    Mark C. Miller, Wed Mar 31 14:22:12 PDT 2010
+#    Set pixel diff tolerances slightly above zero for scalable modes. This
+#    is to help reduce need for mode-specific baselines.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -579,10 +583,16 @@ for m in $modes; do
         testsToRun="tests/databases/image.py"
     fi
 
+    # set pixel diff-tolerances slightly above zero for mode containing 'scalable'
+    diffTols=""
+    if test -n "$(echo $modes | grep scalable)"; then
+        diffTols="-pixdiff 2 -avgdiff 1"
+    fi
+
     if test "$skipList" = ""; then
-        ./runtest -q -m "$m" -l 1200 -notrackmem $testsToRun
+        ./runtest -q -m "$m" -l 1200 $diffTols -notrackmem $testsToRun
     else
-        ./runtest -q -s "$skipList" -m "$m" -l 1200 -notrackmem $testsToRun
+        ./runtest -q -s "$skipList" -m "$m" -l 1200 $diffTols -notrackmem $testsToRun
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
