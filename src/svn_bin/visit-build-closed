@@ -183,7 +183,7 @@ if test ! -d /p/gscratch3/$user/purple32 ; then
 fi
 rm -rf /p/gscratch3/$user/purple32/visitbuild
 mkdir /p/gscratch3/$user/purple32/visitbuild
-mv purple_$dist.tar.gz /p/gscratch3/$user/purple32/visitbuild/$dist.tar.gz
+mv purple32_$dist.tar.gz /p/gscratch3/$user/purple32/visitbuild/$dist.tar.gz
 cd /p/gscratch3/$user/purple32/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
@@ -224,7 +224,7 @@ if test ! -d /p/gscratch3/$user/purple64 ; then
 fi
 rm -rf /p/gscratch3/$user/purple64/visitbuild
 mkdir /p/gscratch3/$user/purple64/visitbuild
-mv purple_$dist.tar.gz /p/gscratch3/$user/purple64/visitbuild/$dist.tar.gz
+mv purple64_$dist.tar.gz /p/gscratch3/$user/purple64/visitbuild/$dist.tar.gz
 cd /p/gscratch3/$user/purple64/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
@@ -235,7 +235,7 @@ export OBJECT_MODE
 /usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release-DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 gmake -j 3 >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
+mv visit\$ver2.ibm-aix-pwr64.tar.gz ../..
 cd ../..
 echo "        build of visit on purple"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
@@ -261,8 +261,8 @@ then
       scp purple64 purple:purple64_buildit
       scp $dist.tar.gz purple:purple32_$dist.tar.gz
       scp $dist.tar.gz purple:purple64_$dist.tar.gz
-      ssh purple32 "chmod 750 purple_buildit;./purple32_buildit" &
-      ssh purple64 "chmod 750 purple_buildit;./purple64_buildit" &
+      ssh purple "chmod 750 purple32_buildit;./purple32_buildit" &
+      ssh purple "chmod 750 purple64_buildit;./purple64_buildit" &
    fi
 fi
 
