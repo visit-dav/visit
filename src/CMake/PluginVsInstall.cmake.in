@@ -203,15 +203,42 @@ SET(TUVOK_LIB         tuvok)
 
 # Installation macros
 MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
-    MESSAGE(STATUS "No need to install database plugins")
+    IF(WIN32)
+        MESSAGE(STATUS "No need to install database plugins")
+    ELSE(WIN32)
+        FOREACH(target ${ARGN})
+            SET_TARGET_PROPERTIES(${target} PROPERTIES
+               RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/databases"
+               LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/databases"
+            )
+        ENDFOREACH(target)
+    ENDIF(WIN32)
 ENDMACRO(VISIT_INSTALL_DATABASE_PLUGINS)
 
 MACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
-    MESSAGE(STATUS "No need to install operator plugins")
+    IF(WIN32)
+        MESSAGE(STATUS "No need to install operator plugins")
+    ELSE(WIN32)
+        FOREACH(target ${ARGN})
+            SET_TARGET_PROPERTIES(${target} PROPERTIES
+               RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/operators"
+               LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/operators"
+            )
+        ENDFOREACH(target)
+    ENDIF(WIN32)
 ENDMACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
 
 MACRO(VISIT_INSTALL_PLOT_PLUGINS)
-    MESSAGE(STATUS "No need to install plot plugins")
+    IF(WIN32)
+        MESSAGE(STATUS "No need to install plot plugins")
+    ELSE(WIN32)
+        FOREACH(target ${ARGN})
+            SET_TARGET_PROPERTIES(${target} PROPERTIES
+               RUNTIME_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/plots"
+               LIBRARY_OUTPUT_DIRECTORY "${VISIT_PLUGIN_DIR}/plots"
+            )
+        ENDFOREACH(target)
+    ENDIF(WIN32)
 ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
 
 # Parallel settings
