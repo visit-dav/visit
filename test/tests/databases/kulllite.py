@@ -16,6 +16,10 @@
 #    Hank Childs, Thu May 11 11:35:39 PDT 2006
 #    Test reading of density values.
 #
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase("../data/KullLite_test_data/tagtest_xy_3.pdb")
@@ -58,6 +62,7 @@ thres.listedVarNames = ("mesh_quality/shear")
 thres.upperBounds = (0.5)
 SetDefaultOperatorOptions(thres)
 AddOperator("Threshold")
+DrawPlots()
 Test("kulllite_06")
 
 DeleteAllPlots()

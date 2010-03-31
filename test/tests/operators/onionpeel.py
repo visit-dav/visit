@@ -41,6 +41,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 def TestBigSil():
@@ -93,6 +98,7 @@ def TestUCD():
     ResetView()
     SetViewExtentsType("actual")
     AddOperator("OnionPeel")
+    DrawPlots()
     Test("ops_onionpeel_04")
 
     DeleteAllPlots()

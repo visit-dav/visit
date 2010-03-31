@@ -21,6 +21,11 @@
 #    Substituted non-existent var "derived/stress/eff_stress" with
 #    "derived/eff_stress"
 #
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -48,6 +53,7 @@ thres.listedVarNames = ("sand")
 SetDefaultOperatorOptions(thres)
 
 AddOperator("Threshold")
+DrawPlots()
 Test("mili_03")
 
 DeleteAllPlots()

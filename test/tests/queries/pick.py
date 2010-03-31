@@ -183,6 +183,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -229,6 +234,7 @@ def Pick3DTo2D():
     RemoveLastOperator()
 
     AddOperator("Cone")
+    DrawPlots()
     ResetView()
     Pick(165, 170, vars)
     s  = s + GetPickOutput()
@@ -1675,6 +1681,7 @@ def PickVectorPlots():
     slice = SliceAttributes()
     slice.axisType = slice.ZAxis
     SetOperatorOptions(slice)
+    DrawPlots()
     
     Pick(96, 244)
     s = s + GetPickOutput()
@@ -1713,6 +1720,7 @@ def PickVectorPlots():
     s = s + GetPickOutput(); 
 
     AddOperator("Slice")
+    DrawPlots()
     
     Pick(76, 113)
     s = s + GetPickOutput(); 
@@ -2341,6 +2349,7 @@ def PickIndexSelect():
     slice.axisType = slice.ZAxis
     slice.project2d = 1
     SetOperatorOptions(slice)
+    DrawPlots()
 
     v = GetView2D()
     v.windowCoords = (0.226685, 0.501966, 0.147753, 0.423034)

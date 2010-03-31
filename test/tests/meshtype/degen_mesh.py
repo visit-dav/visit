@@ -13,6 +13,12 @@
 #  Programmer: Hank Childs
 #  Date:       August 26, 2004
 #
+#
+#  Modifications:
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -54,6 +60,7 @@ disp.variable = "k_disp"
 SetDefaultOperatorOptions(disp)
 SetActivePlots(2)
 AddOperator("Displace")
+DrawPlots()
 
 v= GetView3D()
 v.viewNormal = (0.449864, 0.604932, 0.657023)
@@ -158,7 +165,7 @@ disp.variable = "k_disp"
 SetDefaultOperatorOptions(disp)
 SetActivePlots(2)
 AddOperator("Displace")
-
+DrawPlots()
 v= GetView3D()
 v.viewNormal = (0.449864, 0.604932, 0.657023)
 v.focus = (0.801178, 0.801178, 0.801178)

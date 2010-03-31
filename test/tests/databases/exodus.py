@@ -24,6 +24,10 @@
 #    Eric Brugger, Wed Mar 14 14:04:32 PDT 2007
 #    Added testing for element block names.
 #
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase("../data/exodus_test_data/balls.exodus")
@@ -57,6 +61,7 @@ d = DisplaceAttributes()
 d.variable = "DISPL"
 SetDefaultOperatorOptions(d)
 AddOperator("Displace")
+DrawPlots()
 Test("exodus_05")
 
 

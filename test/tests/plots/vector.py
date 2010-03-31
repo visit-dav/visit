@@ -21,6 +21,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -155,6 +160,7 @@ iso_surf_atts.contourMethod = iso_surf_atts.Value
 iso_surf_atts.contourValue = (0.2)
 SetDefaultOperatorOptions(iso_surf_atts)
 AddOperator("Isosurface")
+DrawPlots()
 Test("vector_13")
 
 RemoveLastOperator()
@@ -165,6 +171,7 @@ slice_atts.originPoint = (0.5, 0.5, 0.5)
 slice_atts.normal = (1, 1, 1)
 SetDefaultOperatorOptions(slice_atts)
 AddOperator("Slice")
+DrawPlots()
 Test("vector_14")
 
 slice_atts.project2d = 0

@@ -30,6 +30,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -53,6 +58,7 @@ d = DeferExpressionAttributes()
 d.exprs = ("en")
 SetDefaultOperatorOptions(d)
 AddOperator("DeferExpression")
+DrawPlots()
 Test("defer_expr_02")
 
 # Now test that the external node expression can find the external nodes
@@ -128,6 +134,7 @@ Test("defer_expr_05")
 d.exprs = ("X1")
 SetDefaultOperatorOptions(d)
 AddOperator("DeferExpression")
+DrawPlots()
 # This should be the same geometry as '05, but the color should be different.
 Test("defer_expr_06")
 
@@ -182,6 +189,7 @@ Test("defer_expr_09")
 d.exprs = ("mesh_quality/max_edge_length")
 AddOperator("DeferExpression")
 SetOperatorOptions(d)
+DrawPlots()
 Test("defer_expr_10")
 
 DeleteAllPlots()

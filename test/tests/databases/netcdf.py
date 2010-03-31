@@ -21,6 +21,10 @@
 #    I removed the Streamline plot and I fixed some other things to get it
 #    working again.
 #
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -96,6 +100,7 @@ def test0(datapath):
     v2.centerOfRotationSet = 0
     v2.centerOfRotation = (0, 0, 508267)
     SetView3D(v2)
+    DrawPlots()
     Test("netcdf_0_02")
 
     # Plot something 2D

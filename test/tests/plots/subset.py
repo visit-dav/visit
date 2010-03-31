@@ -18,6 +18,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -44,6 +49,7 @@ i.lbound = 2.7
 i.ubound = 3.6
 SetDefaultOperatorOptions(i)
 AddOperator("Isovolume")
+DrawPlots()
 Test("subset_03")
 
 s.wireframe = 0
@@ -57,6 +63,7 @@ op.subsetName = "domain3"
 op.index = (100)
 SetDefaultOperatorOptions(op)
 AddOperator("OnionPeel")
+DrawPlots()
 
 v.windowCoords = (-0.7, -0.3, 3.1, 3.25)
 SetView2D(v)

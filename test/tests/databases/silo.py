@@ -61,6 +61,11 @@
 #    Mark C. Miller, Fri Jan 22 17:30:29 PST 2010
 #    I replaced OpenDatabase with FindAnd... variant for largefile.silo
 #    to deal with data we don't keep in repo.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -184,6 +189,7 @@ DrawPlots()
 Test("silo_07")
 
 AddOperator("Slice")
+DrawPlots()
 Test("silo_08")
 
 #

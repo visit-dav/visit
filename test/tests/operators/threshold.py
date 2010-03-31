@@ -38,6 +38,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -64,6 +69,7 @@ thresh.lowerBounds = (-4)
 thresh.upperBounds = (4)
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh01")
 
@@ -77,6 +83,7 @@ thresh.lowerBounds = (-4)
 thresh.upperBounds = (4)
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh02")
 
@@ -92,6 +99,7 @@ thresh.upperBounds = (340)
 thresh.listedVarNames = ("t")
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh03")
 
@@ -112,6 +120,7 @@ thresh.upperBounds = (0.9)
 thresh.listedVarNames = ("v")
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh04")
 
@@ -131,6 +140,7 @@ thresh.upperBounds = (1.0)
 thresh.listedVarNames = ("u")
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh05")
 
@@ -163,6 +173,7 @@ DeleteActivePlots()
 thresh.outputMeshType = 1
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh07")
 
@@ -183,6 +194,7 @@ thresh.upperBounds = (340, 1)
 thresh.listedVarNames = ("t", "dx")
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh08")
 
@@ -202,6 +214,7 @@ thresh.upperBounds = (0.7, 0.9)
 thresh.listedVarNames = ("u", "v")
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh09")
 
@@ -220,6 +233,7 @@ thresh.upperBounds = (1.0, 0.45)
 thresh.listedVarNames = ("u", "p")
 SetDefaultOperatorOptions(thresh)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("ops_thresh10")
 

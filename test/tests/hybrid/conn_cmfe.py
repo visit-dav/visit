@@ -18,6 +18,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -38,6 +43,7 @@ t.lowerBounds = (-1.0)
 t.upperBounds = (0.1)
 t.listedVarNames = ("cmfe")
 SetOperatorOptions(t)
+DrawPlots()
 Test("conn_cmfe_02")
 
 # Test using cmfe in another expression.
@@ -47,6 +53,7 @@ d = DisplaceAttributes()
 d.variable = "disp"
 SetDefaultOperatorOptions(d)
 AddOperator("Displace")
+DrawPlots()
 Test("conn_cmfe_03")
 
 RemoveLastOperator()

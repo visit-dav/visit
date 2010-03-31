@@ -19,6 +19,10 @@
 #    Hank Childs, Wed Dec 31 14:32:34 PST 2008
 #    Rename ResamplePluginAtts to ResampleAtts.
 #
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -52,6 +56,7 @@ ResampleAtts.startZ = 1
 ResampleAtts.endZ = 6
 ResampleAtts.samplesZ = 80
 SetOperatorOptions(ResampleAtts)
+DrawPlots()
 
 Test("chgcar_03")
 ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")

@@ -18,6 +18,10 @@
 #    Jeremy Meredith, Fri Aug  8 11:23:29 EDT 2008
 #    Updated streamline settings to match new attribute fields.
 #
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -154,6 +158,7 @@ def test1(datapath):
     c.plane1Normal = (-1.,0.,0.)
     c.plane2Normal = (0.,-1.,0.)
     SetOperatorOptions(c)
+    DrawPlots()
     Test("CGNS_1_02")
     DeleteAllPlots()
 

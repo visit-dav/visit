@@ -31,6 +31,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
+#    behavior when an operator is added.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -58,6 +63,7 @@ t.lowerBounds = (0.01)
 t.upperBounds = (0.99)
 SetDefaultOperatorOptions(t)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("matvf_02")
 
@@ -165,6 +171,7 @@ t.upperBounds = (1.01)
 t.listedVarNames = ("abs_materror1")
 SetDefaultOperatorOptions(t)
 AddOperator("Threshold")
+DrawPlots()
 
 Test("matvf_09")
 
