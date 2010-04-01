@@ -59,11 +59,20 @@ import llnl.visit.Plugin;
 
 public class ProjectAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int numAdditionalAttributes = 2;
 
     // Enum values
-    public final static int PROJECTIONTYPE_XYCARTESIAN = 0;
-    public final static int PROJECTIONTYPE_ZRCYLINDRICAL = 1;
+    public final static int PROJECTIONTYPE_ZYCARTESIAN = 0;
+    public final static int PROJECTIONTYPE_XZCARTESIAN = 1;
+    public final static int PROJECTIONTYPE_XYCARTESIAN = 2;
+    public final static int PROJECTIONTYPE_XRCYLINDRICAL = 3;
+    public final static int PROJECTIONTYPE_YRCYLINDRICAL = 4;
+    public final static int PROJECTIONTYPE_ZRCYLINDRICAL = 5;
+
+    public final static int VECTORTRANSFORMMETHOD_NONE = 0;
+    public final static int VECTORTRANSFORMMETHOD_ASPOINT = 1;
+    public final static int VECTORTRANSFORMMETHOD_ASDISPLACEMENT = 2;
+    public final static int VECTORTRANSFORMMETHOD_ASDIRECTION = 3;
 
 
     public ProjectAttributes()
@@ -71,6 +80,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
         super(numAdditionalAttributes);
 
         projectionType = PROJECTIONTYPE_XYCARTESIAN;
+        vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
     }
 
     public ProjectAttributes(int nMoreFields)
@@ -78,6 +88,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
         super(numAdditionalAttributes + nMoreFields);
 
         projectionType = PROJECTIONTYPE_XYCARTESIAN;
+        vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
     }
 
     public ProjectAttributes(ProjectAttributes obj)
@@ -85,6 +96,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
         super(numAdditionalAttributes);
 
         projectionType = obj.projectionType;
+        vectorTransformMethod = obj.vectorTransformMethod;
 
         SelectAll();
     }
@@ -102,7 +114,8 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
     public boolean equals(ProjectAttributes obj)
     {
         // Create the return value
-        return ((projectionType == obj.projectionType));
+        return ((projectionType == obj.projectionType) &&
+                (vectorTransformMethod == obj.vectorTransformMethod));
     }
 
     public String GetName() { return "Project"; }
@@ -115,29 +128,64 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
+    public void SetVectorTransformMethod(int vectorTransformMethod_)
+    {
+        vectorTransformMethod = vectorTransformMethod_;
+        Select(1);
+    }
+
     // Property getting methods
     public int GetProjectionType() { return projectionType; }
+    public int GetVectorTransformMethod() { return vectorTransformMethod; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
             buf.WriteInt(projectionType);
+        if(WriteSelect(1, buf))
+            buf.WriteInt(vectorTransformMethod);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        SetProjectionType(buf.ReadInt());
+        switch(index)
+        {
+        case 0:
+            SetProjectionType(buf.ReadInt());
+            break;
+        case 1:
+            SetVectorTransformMethod(buf.ReadInt());
+            break;
+        }
     }
 
     public String toString(String indent)
     {
         String str = new String();
         str = str + indent + "projectionType = ";
+        if(projectionType == PROJECTIONTYPE_ZYCARTESIAN)
+            str = str + "PROJECTIONTYPE_ZYCARTESIAN";
+        if(projectionType == PROJECTIONTYPE_XZCARTESIAN)
+            str = str + "PROJECTIONTYPE_XZCARTESIAN";
         if(projectionType == PROJECTIONTYPE_XYCARTESIAN)
             str = str + "PROJECTIONTYPE_XYCARTESIAN";
+        if(projectionType == PROJECTIONTYPE_XRCYLINDRICAL)
+            str = str + "PROJECTIONTYPE_XRCYLINDRICAL";
+        if(projectionType == PROJECTIONTYPE_YRCYLINDRICAL)
+            str = str + "PROJECTIONTYPE_YRCYLINDRICAL";
         if(projectionType == PROJECTIONTYPE_ZRCYLINDRICAL)
             str = str + "PROJECTIONTYPE_ZRCYLINDRICAL";
+        str = str + "\n";
+        str = str + indent + "vectorTransformMethod = ";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_NONE)
+            str = str + "VECTORTRANSFORMMETHOD_NONE";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASPOINT)
+            str = str + "VECTORTRANSFORMMETHOD_ASPOINT";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASDISPLACEMENT)
+            str = str + "VECTORTRANSFORMMETHOD_ASDISPLACEMENT";
+        if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASDIRECTION)
+            str = str + "VECTORTRANSFORMMETHOD_ASDIRECTION";
         str = str + "\n";
         return str;
     }
@@ -145,5 +193,6 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     // Attributes
     private int projectionType;
+    private int vectorTransformMethod;
 }
 
