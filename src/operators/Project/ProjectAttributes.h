@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ProjectAttributes
 //
@@ -61,17 +62,38 @@ class ProjectAttributes : public AttributeSubject
 public:
     enum ProjectionType
     {
+        ZYCartesian,
+        XZCartesian,
         XYCartesian,
+        XRCylindrical,
+        YRCylindrical,
         ZRCylindrical
     };
+    enum VectorTransformMethod
+    {
+        None,
+        AsPoint,
+        AsDisplacement,
+        AsDirection
+    };
 
+    // These constructors are for objects of this class
     ProjectAttributes();
     ProjectAttributes(const ProjectAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ProjectAttributes(private_tmfs_t tmfs);
+    ProjectAttributes(const ProjectAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ProjectAttributes();
 
     virtual ProjectAttributes& operator = (const ProjectAttributes &obj);
     virtual bool operator == (const ProjectAttributes &obj) const;
     virtual bool operator != (const ProjectAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ProjectAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -83,9 +105,11 @@ public:
 
     // Property setting methods
     void SetProjectionType(ProjectionType projectionType_);
+    void SetVectorTransformMethod(VectorTransformMethod vectorTransformMethod_);
 
     // Property getting methods
     ProjectionType GetProjectionType() const;
+    VectorTransformMethod GetVectorTransformMethod() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -97,6 +121,11 @@ public:
 protected:
     static std::string ProjectionType_ToString(int);
 public:
+    static std::string VectorTransformMethod_ToString(VectorTransformMethod);
+    static bool VectorTransformMethod_FromString(const std::string &, VectorTransformMethod &);
+protected:
+    static std::string VectorTransformMethod_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -107,14 +136,19 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_projectionType = 0
+        ID_projectionType = 0,
+        ID_vectorTransformMethod,
+        ID__LAST
     };
 
 private:
     int projectionType;
+    int vectorTransformMethod;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PROJECTATTRIBUTES_TMFS "ii"
 
 #endif
