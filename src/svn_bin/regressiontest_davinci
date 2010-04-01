@@ -212,6 +212,10 @@
 #
 #    Mark C. Miller, Thu Apr  1 14:20:50 PDT 2010
 #    Make sure we can actually generate core files; added ulimit call.
+#
+#    Mark C. Miller, Thu Apr  1 14:26:36 PDT 2010
+#    Moved ulimit call to runtest instead. That way, anyone running runtest
+#    will get desired behavior.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -577,11 +581,6 @@ mkdir test/cores
 # run the test(s)
 error=0
 cd test
-
-#
-# Make sure we can write cores (sh version)
-#
-ulimit -c unlimited
 
 for m in $modes; do
 
