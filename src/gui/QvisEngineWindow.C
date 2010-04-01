@@ -439,7 +439,7 @@ QvisEngineWindow::UpdateInformation(int index)
         if (engines->GetSimulationName()[index] != "")
         {
             engineLabel->setText(tr("Simulation:"));
-            closeEngineButton->setText(tr("Disconnect simulation"));
+            closeEngineButton->setText(tr("Disconnect"));
         }
         else
         {
