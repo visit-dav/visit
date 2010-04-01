@@ -279,6 +279,9 @@ QvisSimulationWindow::CreateWindowContents()
     int index = simulationToEngineListMap[simindex];
     stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
     stripCharts->post();
+
+    // Make sure we show the commands page.
+    notepadAux->showPage(simCommands);
 }
 
 // ****************************************************************************

@@ -85,7 +85,6 @@ QvisSimulationCommandWindow::CreateWindowContents()
             cmdButtons[r*3+c] = new QPushButton("", cmdGroup);
             buttonLayout2->addWidget(cmdButtons[r*3+c],r,c);
             commandGroup->addButton(cmdButtons[r*3+c], r*3+c);
-            cmdButtons[r*3+c]->hide();
         }
     }
 
@@ -131,10 +130,9 @@ QvisSimulationCommandWindow::setButtonEnabled(int index, bool enabled)
 {
     if(index >= 0 && index < MAX_CMD_BUTTONS)
     {
-        if(enabled)
-            cmdButtons[index]->show();
-        else
-            cmdButtons[index]->hide();
+        cmdButtons[index]->setEnabled(enabled);
+        if(!enabled)
+            cmdButtons[index]->setText("");
     }
 }
 
