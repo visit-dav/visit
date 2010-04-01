@@ -1,12 +1,25 @@
 <?xml version="1.0"?>
-  <Plugin name="Project" type="operator" label="Project" version="1.0" enabled="true" iconFile="Project.xpm" category="Transforms">
-    <Attribute name="ProjectAttributes" purpose="Project data from three to two dimensions" persistent="true" exportAPI="" exportInclude="">
+  <Plugin name="Project" type="operator" label="Project" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Project.xpm" category="Transforms">
+    <Attribute name="ProjectAttributes" purpose="Project data from three to two dimensions" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="ProjectionType">
+        ZYCartesian
+        XZCartesian
         XYCartesian
+        XRCylindrical
+        YRCylindrical
         ZRCylindrical
+      </Enum>
+      <Enum name="VectorTransformMethod">
+        None
+        AsPoint
+        AsDisplacement
+        AsDirection
       </Enum>
       <Field name="projectionType" label="Projection type" type="enum" subtype="ProjectionType">
         XYCartesian
+      </Field>
+      <Field name="vectorTransformMethod" label="Method for transforming vectors" type="enum" subtype="VectorTransformMethod">
+        AsDirection
       </Field>
     </Attribute>
   </Plugin>

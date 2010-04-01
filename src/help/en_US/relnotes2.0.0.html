@@ -155,9 +155,9 @@ NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. I
   <li>The CreateBonds operator also utilizes a new algorithm which runs many times faster.</li>
   <li>VisIt has a new Edge operator which replaces each filled polygon with its defining edges.</li>
   <li>VisIt has a new Delaunay operator which applies a Delaunay triangulation / tetrahedralization independently to point meshes in each domain.</li>
-  <li>The coordinate transformation function in VisIt's Transform operator can treat vector variables properly, based on a given semantic interpretation.  It has four transformation modes selectable by the user, treating them as absolute point coordinates, absolute point displacements, instantaneous directions, or it can leave them untransformed.</li>
+  <li>VisIt's Project operator, and the Transform operator's coordinate transformation function, now treat vector variables properly.  They support four transformation modes based on the semantric interpretation given by the user, treating them as either absolute point coordinates, absolute point displacements, instantaneous directions, or it can leave them untransformed.</li>
   <li>Several operators have been enabled which were previously hidden by default.</li>
-  <li></li>
+  <li>The Project operator now supports a full complement of cartesian and cylindrical projections, one of each type along each of the three coordinate axes.</li>
 </ul>
 
 
