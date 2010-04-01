@@ -209,6 +209,9 @@
 #    Mark C. Miller, Wed Mar 31 14:22:12 PDT 2010
 #    Set pixel diff tolerances slightly above zero for scalable modes. This
 #    is to help reduce need for mode-specific baselines.
+#
+#    Mark C. Miller, Thu Apr  1 14:20:50 PDT 2010
+#    Make sure we can actually generate core files; added ulimit call.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -574,6 +577,11 @@ mkdir test/cores
 # run the test(s)
 error=0
 cd test
+
+#
+# Make sure we can write cores (sh version)
+#
+ulimit -c unlimited
 
 for m in $modes; do
 
