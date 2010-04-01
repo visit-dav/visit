@@ -251,7 +251,7 @@ simulation_data_dtor(simulation_data *sim)
     patch_dtor(&sim->patch);
 }
 
-const char *cmd_names[] = {"halt", "step", "run", "addplot"};
+const char *cmd_names[] = {"halt", "step", "run", "update"};
 
 /******************************************************************************
  *

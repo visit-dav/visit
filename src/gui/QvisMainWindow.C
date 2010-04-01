@@ -350,6 +350,9 @@
 //    Cyrus Harrison, Tue Mar 16 09:20:05 PDT 2010
 //    Make sure selected files is off by default.
 //
+//    Brad Whitlock, Thu Apr  1 14:58:24 PDT 2010
+//    Shrink the margin a little to free up 10 pixels.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -738,6 +741,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
         QWidget *central = new QWidget(this);
         QVBoxLayout *layout = new QVBoxLayout(central);
+        layout->setMargin(5);
         setCentralWidget(central);
 
         splitter = new QSplitter(central);
