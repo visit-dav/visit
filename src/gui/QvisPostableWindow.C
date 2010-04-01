@@ -78,12 +78,17 @@ bool QvisPostableWindow::postEnabled = true;
 //   Tom Fogal, Sun Jan 24 17:08:09 MST 2010
 //   Patch from Andreas Kloeckner to set appropriate Qt window role.
 //
+//   Cyrus Harrison, Thu Apr  1 15:32:30 PDT 2010
+//   Do not use Qt::Dialog window flags. This makes all visible postable
+//   windows raise above all other windows when the main gui is clicked on &
+//   will occlude viewer windows.
+//
 // ****************************************************************************
 
 QvisPostableWindow::QvisPostableWindow(const QString &captionString,
                                        const QString &shortName,
                                        QvisNotepadArea *n) :
-  QvisWindowBase(captionString, Qt::Dialog)
+  QvisWindowBase(captionString)
 {
     setWindowRole("postable-window");
 
