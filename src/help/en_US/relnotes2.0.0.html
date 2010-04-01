@@ -96,7 +96,7 @@ NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. I
   <li>VisIt's color table editor now shows index number hints for discrete color tables, or atomic symbols for atomic color tables.</li>
   <li>Atomic number in VisIt are now 1-origin (e.g. mapping "Hydrogen" to "1", for example).  For users, this affects only saved color tables, though developers of any molecular file format reader, color table, plot, or operators should be aware of this change.  Atomic number "0" is reserved for unknown elements.</li>
   <li>Text-based annotations now support a "$cycle" substitution variable, analogous to the existing "$time" variable.</li>
-  <li> VisIt's engine now supports embedded Python Filters. The Python Filters infrastructure allows users to write python scripts with vtk level data access to implement custom expressions and queries. These scripts can be loaded and executed at runtime time via VisIt's GUI and command line interface. See the <a href="http://visitusers.org/index.php?title=Python_Filters">wiki documentation </a> for further details.
+  <li> VisIt's engine now supports embedded Python Filters. The Python Filters infrastructure allows users to write python scripts with vtk level data access to implement custom expressions and queries. These scripts can be loaded and executed at runtime time via VisIt's GUI and command line interface. See wiki documentation (http://visitusers.org/index.php?title=Python_Filters) for further details.
   </li>
 </ul>
 
@@ -167,8 +167,8 @@ NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. I
   <li>VisIt has new types of expressions for time iteration.  For example, these expressions may calculate the maximum, minimum or average value at a location, or, alternatively, they may calculate the time when a condition occurs, for example the time when the maximum value at a location occurs.  More information can be found in the Expressions Window, by looking at "Insert Function" and then "Time Iteration".</li>
   <li>Negative values in expressions have received improved support, including performance enhancements.  The "enumerate" expression now supports mapping to negative values as well.</li>
   <li>VisIt has new "cycle" and "timestep" expressions, analogous to the "time" expression, returning varying forms of the current active time state in the file.</li>
-  <li>VisIt now provides a "key_aggregate" expression. See <a href="http://visitusers.org/index.php?title=Key_Aggregate_Expression"> wiki documentation </a> for details.</li>
-  <li>VisIt now provides a "map" expression.  See <a href="http://visitusers.org/index.php?title=Map_Expression"> wiki documentation </a> for details. </li>
+  <li>VisIt now provides a "key_aggregate" expression. See wiki documentation (http://visitusers.org/index.php?title=Key_Aggregate_Expression) for details.</li>
+  <li>VisIt now provides a "map" expression.  See wiki documentation (http://visitusers.org/index.php?title=Map_Expression) for details. </li>
   <li>Various expressions have improved support for the multi-component Array variable type.</li>
   <li>VisIt now supports custom python script expressions. (As outlined in Advanced Features / Python Filters)</li>
 </ul>
