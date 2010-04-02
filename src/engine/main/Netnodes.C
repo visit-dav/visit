@@ -164,13 +164,30 @@ NetnodeDB::GetOutput(void)
 //    Don't try to release the data if we don't have a variable -- this can
 //    happen if we never used the database, or if we are doing a re-open.
 //
+//    Mark C. Miller, Fri Apr  2 10:18:55 PDT 2010
+//    Wrapped on try/catch block. If for any reason an attempt to release
+//    data throws an exception, we want to catch here on the engine as early
+//    as possible so that other release-data-like operations can still proceed
+//    and the engine remains in a decent state.
 // ****************************************************************************
 
 void
 NetnodeDB::ReleaseData(void)
 {
     if (var != "" && var != "<unknown>")
-        GetOutput()->ReleaseData();
+    {
+        TRY
+        {
+            GetOutput()->ReleaseData();
+        }
+        CATCHALL
+        {
+            debug1 << "An attempt to release data associated with \""
+                   << var << "\" has thrown an exception. This may result in "
+                   << "some leaked memory." << endl;
+        }
+        ENDTRY
+    }
 }
 
 
