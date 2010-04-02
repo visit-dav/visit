@@ -165,8 +165,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     vtkDataSet            *GetParticleMesh(int);
     vtkDataSet            *GetFieldMesh(int, const char *);
     vtkDataArray          *GetFieldVar(int, const char*);
-    void                   GetSubBlock(int blockNo, h5part_int64_t gridDims[3],
-                              h5part_int64_t subBlockDims[6]); 
+    void                   GetSubBlock(h5part_int64_t gridDims[3], h5part_int64_t subBlockDims[6]);
 #ifdef HAVE_LIBFASTBIT
     std::string            stringify(double x);
     void                   ConstructHistogram(avtHistogramSpecification *spec);
