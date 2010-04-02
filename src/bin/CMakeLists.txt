@@ -145,7 +145,7 @@ ELSE (NOT WIN32)
                         GROUP_READ GROUP_WRITE
                         WORLD_READ)
 
-    FOREACH (CFG Release Debug RelWithDebuInfo MinSizeRel)
+    FOREACH (CFG Release Debug RelWithDebugInfo MinSizeRel)
         FILE(COPY ${VISIT_BIN_WIN_FILES}
              DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}
              FILE_PERMISSIONS OWNER_READ OWNER_WRITE

@@ -91,6 +91,10 @@
 #    Kathleen Bonnell, Wed Mar 17 10:06:44 MST 2010 
 #    Change cmake minimum required to 2.8.0, to support FILE(COPY .
 #
+#    Kathleen Bonnell, Thu April 1 19:29:24 MST 2010 
+#    Find MakeNSIS on windows. Add PACKAGE target for windows, that uses
+#    our NSIS scripts to create the self-installer.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -741,6 +745,10 @@ ELSE(CMAKE_HOST_UNIX)
   ENDIF(WIN32)
 ENDIF(CMAKE_HOST_UNIX)
 
+IF (WIN32)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
+ENDIF (WIN32)
+
 
 IF(VISIT_STATIC)
     SET(BUILD_SHARED_LIBS 0)
@@ -1389,4 +1397,28 @@ SET(CPACK_PACKAGE_VERSION_PATCH "0")
     SET(CPACK_STRIP_FILES TRUE)
 #ENDIF(WIN32)
 INCLUDE(CPack)
+ELSE (NOT WIN32)
+    # create a custom target that will run our nsis scripts.
+    # Make sure it won't run unless specifically called.
+    # 
+    IF (${MAKENSIS_FOUND})
+        ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
+            COMMAND ${MAKENSIS} 
+                    /DVISIT_SOURCE_DIR=${VISIT_SOURCE_DIR} 
+                    /DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} 
+                     ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
+            COMMAND ${MAKENSIS} 
+                    /DVisItVersion=${VISIT_VERSION} 
+                    /DCOMPILER=${VISIT_MSVC_VERSION} 
+                    /DVISIT_SOURCE_DIR=${VISIT_SOURCE_DIR} 
+                    /DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} 
+                     ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
+            DEPENDS ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
+                    ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
+        )
+        ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
+        SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
+    ENDIF (${MAKENSIS_FOUND})
 ENDIF (NOT WIN32)
+
+

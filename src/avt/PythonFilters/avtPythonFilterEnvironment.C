@@ -230,16 +230,26 @@ avtPythonFilterEnvironment::Shutdown()
 //  Programmer:   Cyrus Harrison
 //  Creation:     Tue Feb  2 13:14:44 PST 2010
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 24 17:58:11 MST 2010
+//    Check for existence of '0x' at beginning of obj address before attempting
+//    to remove it.
+//
 // ****************************************************************************
 PyObject *
 avtPythonFilterEnvironment::WrapVTKObject(void *obj,
                                           const string &obj_type)
 {
     ostringstream oss;
+    string addy_str;
     // vtk constructor needs a string of the objects address.
     oss << (void *) obj;
     // remove 0x from front of string
-    string addy_str = oss.str().substr(2);
+    
+    if (oss.str().substr(0, 2) == "0x")   
+        addy_str = oss.str().substr(2);
+    else 
+        addy_str = oss.str();
 
     if(!pyi->RunScript("_vtkobj = vtk." + obj_type + "('" + addy_str + "')\n"))
         return NULL;
