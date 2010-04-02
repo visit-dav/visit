@@ -1268,7 +1268,7 @@ def TestText(file, inText):
     else:
         print "Warning: No baseline text file: ",base
         base = "notext.txt"
-        baseText = ""
+        baseText = "notext"
 
     # Filter out unwanted text
     inText = FilterTestText(inText, baseText)
