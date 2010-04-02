@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -37,15 +37,12 @@
 *****************************************************************************/
 
 /* SIMPLE SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
 #include <stdio.h>
 
 #include "SimulationExample.h"
 
 #include <stubs.c>
-
-/* Is the simulation in run mode (not waiting for VisIt input) */
-static int runFlag = 1;
 
 /******************************************************************************
  *
@@ -58,13 +55,13 @@ static int runFlag = 1;
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
     do
     {
-        blocking = runFlag ? 0 : 1;
+        blocking = (sim->runMode == VISIT_SIMMODE_RUNNING) ? 0 : 1;
         /* Get input from VisIt or timeout so the simulation can run. */
         visitstate = VisItDetectInput(blocking, -1);
 
@@ -77,7 +74,7 @@ void mainloop(void)
         else if(visitstate == 0)
         {
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep();
+            simulate_one_timestep(sim);
         }
         else if(visitstate == 1)
         {
@@ -90,16 +87,16 @@ void mainloop(void)
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            runFlag = 0;
+            sim->runMode = VISIT_SIMMODE_STOPPED;
             if(!VisItProcessEngineCommand())
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                runFlag = 1;
+                sim->runMode = VISIT_SIMMODE_RUNNING;
             }
         }
-    } while(!simulation_done() && err == 0);
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -119,20 +116,24 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    /* Initialize environment variables. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
     SimulationArguments(argc, argv);
+   
+    /* Initialize envuronment variables. */
     VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
+    /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim4",
         "C prototype simulation connects to VisIt",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 
     /* Read input problem setup, geometry, data. */
-    read_input_deck();
+    read_input_deck(&sim);
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
 
+    simulation_data_dtor(&sim);
     return 0;
 }

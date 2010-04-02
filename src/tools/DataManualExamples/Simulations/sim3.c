@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 /* SIMPLE SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
 #include <stdio.h>
 
 #include "SimulationExample.h"
@@ -55,13 +55,13 @@
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     do
     {
-        simulate_one_timestep();
-        write_vis_dump();
-    } while(!simulation_done());
+        simulate_one_timestep(sim);
+        write_vis_dump(sim);
+    } while(!sim->done);
 }
 
 /******************************************************************************
@@ -81,19 +81,23 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    /* Initialize envuronment variables. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
     SimulationArguments(argc, argv);
+   
+    /* Initialize envuronment variables. */
     VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
+    /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim3",
         "Moved do..while to mainloop function",
         "/path/to/where/sim/was/started", NULL, NULL, NULL);
 
     /* Read input problem setup, geometry, data. */
-    read_input_deck();
+    read_input_deck(&sim);
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
 
+    simulation_data_dtor(&sim);
     return 0;
 }

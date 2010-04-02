@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------------
 c
-c Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+c Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 c Produced at the Lawrence Livermore National Laboratory
 c LLNL-CODE-400142
 c All rights reserved.
@@ -47,7 +47,7 @@ c
 c-----------------------------------------------------------------
       program main
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer err
 
@@ -58,7 +58,7 @@ ccc   local variables
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING,VISIT_F77NULLSTRINGLEN)
+     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
       call mainloop()
       stop
       end
@@ -68,7 +68,7 @@ c mainloop
 c-----------------------------------------------------------------
       subroutine mainloop()
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer visitstate, result, blocking
 ccc   SIMSTATE common block
@@ -162,21 +162,18 @@ c Simulate one time step
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c These functions must be defined to satisfy the visitfortransiminterface lib.
+c These functions must be defined to satisfy the visitfortransimV2interface lib.
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 c---------------------------------------------------------------------------
 c visitcommandcallback
 c---------------------------------------------------------------------------
-      subroutine visitcommandcallback (cmd, lcmd, intdata, 
-     .                                 floatdata, stringdata, 
-     .                                 lstringdata)
+      subroutine visitcommandcallback (cmd, lcmd, args, largs) 
       implicit none
-      character*8 cmd, stringdata
-      integer     lcmd, lstringdata, intdata
-      real        floatdata
-      include "visitfortransiminterface.inc"
+      character*8 cmd, args
+      integer     lcmd, largs
+      include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
@@ -221,84 +218,128 @@ c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
       end
 
 c---------------------------------------------------------------------------
+c visitactivatetimestep
+c---------------------------------------------------------------------------
+      integer function visitactivatetimestep()
+      implicit none
+      include "visitfortransimV2interface.inc"
+      visitactivatetimestep = VISIT_OKAY
+      end
+
+c---------------------------------------------------------------------------
 c visitgetmetadata
 c---------------------------------------------------------------------------
-      integer function visitgetmetadata(handle)
+      integer function visitgetmetadata()
       implicit none
-      integer handle
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
       common /SIMSTATE/ runflag, simcycle, simtime
-      integer err, tdim, sdim, mesh, mt, scalar, curve, mat, e
+      integer md, mmd, vmd, cmd, emd, err
 
-      err = visitmdsetcycletime(handle, simcycle, simtime)
-      if(runflag.eq.1) then
-          err = visitmdsetrunning(handle, VISIT_SIMMODE_RUNNING)
-      else
-          err = visitmdsetrunning(handle, VISIT_SIMMODE_STOPPED)
-      endif
+      if(visitmdsimalloc(md).eq.VISIT_OKAY) then
+          err = visitmdsimsetcycletime(md, simcycle, simtime)
+          if(runflag.eq.1) then
+              err = visitmdsimsetmode(md, VISIT_SIMMODE_RUNNING)
+          else
+              err = visitmdsimsetmode(md, VISIT_SIMMODE_STOPPED)
+          endif
 
 c     Add a 2D rectilinear mesh
-      mt = VISIT_MESHTYPE_RECTILINEAR
-      tdim = 2
-      sdim = 2
-      mesh = visitmdmeshcreate(handle, "mesh2d", 6, mt, tdim, sdim, 1)
-      if(mesh.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmeshsetunits(handle, mesh, "cm", 2)
-          err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
-     .    "Height", 6, "Depth", 5)
-          err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
-          err = visitmdmeshsetblockpiecename(handle, mesh, "domain", 6)
-      endif
+          if(visitmdmeshalloc(mmd).eq.VISIT_OKAY) then
+              err = visitmdmeshsetname(mmd, "mesh2d", 6)
+              err = visitmdmeshsetmeshtype(mmd, 
+     .            VISIT_MESHTYPE_RECTILINEAR)
+              err = visitmdmeshsettopologicaldim(mmd, 2)
+              err = visitmdmeshsetspatialdim(mmd, 2)
+              err = visitmdmeshsetnumdomains(mmd, 1)
+              err = visitmdmeshsetdomaintitle(mmd, "Domains", 7)
+              err = visitmdmeshsetdomainpiecename(mmd, "domain", 6)
+              err = visitmdmeshsetxunits(mmd, "cm", 2)
+              err = visitmdmeshsetyunits(mmd, "cm", 2)
+              err = visitmdmeshsetxlabel(mmd, "Width", 5)
+              err = visitmdmeshsetylabel(mmd, "Height", 6)
+              err = visitmdsimaddmesh(md, mmd)
+          endif
 
 c     Add a 3D curvilinear mesh
-      tdim = 3
-      sdim = 3
-      mt = VISIT_MESHTYPE_CURVILINEAR
-      mesh = visitmdmeshcreate(handle, "mesh3d", 6, mt, tdim, 
-     .                         sdim, 1)
-      if(mesh.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmeshsetunits(handle, mesh, "Miles", 5)
-          err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
-     .    "Height", 6, "Depth", 5)
-          err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
-          err = visitmdmeshsetblockpiecename(handle, mesh, "domain", 6)
-      endif
+          if(visitmdmeshalloc(mmd).eq.VISIT_OKAY) then
+              err = visitmdmeshsetname(mmd, "mesh3d", 6)
+              err = visitmdmeshsetmeshtype(mmd, 
+     .            VISIT_MESHTYPE_CURVILINEAR)
+              err = visitmdmeshsettopologicaldim(mmd, 3)
+              err = visitmdmeshsetspatialdim(mmd, 3)
+              err = visitmdmeshsetnumdomains(mmd, 1)
+              err = visitmdmeshsetdomaintitle(mmd, "Domains", 7)
+              err = visitmdmeshsetdomainpiecename(mmd, "domain", 6)
+              err = visitmdmeshsetxunits(mmd, "Miles", 2)
+              err = visitmdmeshsetyunits(mmd, "Miles", 2)
+              err = visitmdmeshsetxlabel(mmd, "Width", 5)
+              err = visitmdmeshsetylabel(mmd, "Height", 6)
+              err = visitmdsimaddmesh(md, mmd)
+          endif
 
 c     Add a zonal variable on mesh2d.
-      scalar = visitmdscalarcreate(handle, "zonal", 5, "mesh2d", 6,
-     . VISIT_VARCENTERING_ZONE)
+      if(visitmdvaralloc(vmd).eq.VISIT_OKAY) then
+          err = visitmdvarsetname(vmd, "zonal", 5)
+          err = visitmdvarsetmeshname(vmd, "mesh2d", 6)
+          err = visitmdvarsetcentering(vmd, VISIT_VARCENTERING_ZONE)
+          err = visitmdvarsettype(vmd, VISIT_VARTYPE_SCALAR)
+          err = visitmdsimaddvariable(md, vmd)
+      endif
+
 c     Add a nodal variable on mesh3d.
-      scalar = visitmdscalarcreate(handle, "nodal", 5, "mesh3d", 6,
-     . VISIT_VARCENTERING_NODE)
+      if(visitmdvaralloc(vmd).eq.VISIT_OKAY) then
+          err = visitmdvarsetname(vmd, "nodal", 5)
+          err = visitmdvarsetmeshname(vmd, "mesh3d", 6)
+          err = visitmdvarsetcentering(vmd, VISIT_VARCENTERING_NODE)
+          err = visitmdvarsettype(vmd, VISIT_VARTYPE_SCALAR)
+          err = visitmdsimaddvariable(md, vmd)
+      endif
 
 c     Add some expressions
-      e = visitmdexpressioncreate(handle, "zvec", 4,
-     . "{zonal, zonal}", 14, VISIT_VARTYPE_VECTOR)
-      e = visitmdexpressioncreate(handle, "nid", 3,
-     . "nodeid(mesh3d)", 14, VISIT_VARTYPE_SCALAR)
+      if(visitmdexpralloc(emd).eq.VISIT_OKAY) then
+          err = visitmdexprsetname(emd, "zvec", 4)
+          err = visitmdexprsetdefinition(emd, "{zonal, zonal}", 14)
+          err = visitmdexprsettype(emd, VISIT_VARTYPE_VECTOR)
+          err = visitmdsimaddexpression(md, emd)
+      endif
+      if(visitmdexpralloc(emd).eq.VISIT_OKAY) then
+          err = visitmdexprsetname(emd, "nid", 3)
+          err = visitmdexprsetdefinition(emd, "nodeid(mesh3d)", 14)
+          err = visitmdexprsettype(emd, VISIT_VARTYPE_SCALAR)
+          err = visitmdsimaddexpression(md, emd)
+      endif
 
 c     Add simulation commands
-      err = visitmdaddsimcommand(handle, "halt", 4, VISIT_CMDARG_NONE,
-     .                           1)
-      err = visitmdaddsimcommand(handle, "step", 4, VISIT_CMDARG_NONE,
-     .                           1)
-      err = visitmdaddsimcommand(handle, "run", 3, VISIT_CMDARG_NONE,
-     .                           1)
-
-      visitgetmetadata = VISIT_OKAY
+          err = visitmdcmdalloc(cmd)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdcmdsetname(cmd, "halt", 4)
+              err = visitmdsimaddgenericcommand(md, cmd)
+          endif
+          err = visitmdcmdalloc(cmd)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdcmdsetname(cmd, "step", 4)
+              err = visitmdsimaddgenericcommand(md, cmd)
+          endif
+          err = visitmdcmdalloc(cmd)
+          if(err.eq.VISIT_OKAY) then
+              err = visitmdcmdsetname(cmd, "run", 3)
+              err = visitmdsimaddgenericcommand(md, cmd)
+          endif
+      endif
+      visitgetmetadata = md
       end
 
 c---------------------------------------------------------------------------
 c visitgetmesh
 c---------------------------------------------------------------------------
-      integer function visitgetmesh(handle, domain, name, lname)
+      integer function visitgetmesh(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc" 
+      integer     domain, lname
+      include "visitfortransimV2interface.inc" 
 ccc   RECTMESH common block (shared with simulate_one_timestep)
       integer NX, NY
       parameter (NX = 4)
@@ -317,48 +358,42 @@ ccc   CURVMESH common block
       common /CURVMESH/ cmdims, cmndims, cmx, cmy, cmz, nodal
 
 ccc   local variables
-      integer m, baseindex(3), minrealindex(3), maxrealindex(3)
-      real rmz
+      integer h, x, y, z, nnodes, err
 
-      m = VISIT_ERROR
+      h = VISIT_INVALID_HANDLE
       if(visitstrcmp(name, lname, "mesh2d", 6).eq.0) then
-          baseindex(1) = 1
-          baseindex(2) = 1
-          baseindex(3) = 1
-          minrealindex(1) = 0
-          minrealindex(2) = 0
-          minrealindex(3) = 0
-          maxrealindex(1) = rmdims(1)-1
-          maxrealindex(2) = rmdims(2)-1
-          maxrealindex(3) = rmdims(3)-1
-c Create a rectilinear rmesh here
-          m = visitmeshrectilinear(handle, baseindex, minrealindex,
-     .        maxrealindex, rmdims, rmndims, rmx, rmy, rmz)
+          if(visitrectmeshalloc(h).eq.VISIT_OKAY) then
+              err = visitvardataalloc(x)
+              err = visitvardataalloc(y)
+              err = visitvardatasetf(x,VISIT_OWNER_SIM,1,NX,rmx)
+              err = visitvardatasetf(y,VISIT_OWNER_SIM,1,NY,rmy)
+
+              err = visitrectmeshsetcoordsxy(h, x, y)
+          endif
       elseif(visitstrcmp(name, lname, "mesh3d", 6).eq.0) then
-          baseindex(1) = 1
-          baseindex(2) = 1
-          baseindex(3) = 1
-          minrealindex(1) = 0
-          minrealindex(2) = 0
-          minrealindex(3) = 0
-          maxrealindex(1) = cmdims(1)-1
-          maxrealindex(2) = cmdims(2)-1
-          maxrealindex(3) = cmdims(3)-1
-c Create a curvilinear mesh here
-          m = visitmeshcurvilinear(handle, baseindex, minrealindex,
-     .        maxrealindex, cmdims, cmndims, cmx, cmy, cmz)
+          if(visitcurvmeshalloc(h).eq.VISIT_OKAY) then
+              err = visitvardataalloc(x)
+              err = visitvardataalloc(y)
+              err = visitvardataalloc(z)
+              nnodes = CNX * CNY * CNZ
+              err = visitvardatasetf(x,VISIT_OWNER_SIM,1,nnodes,cmx)
+              err = visitvardatasetf(y,VISIT_OWNER_SIM,1,nnodes,cmy)
+              err = visitvardatasetf(z,VISIT_OWNER_SIM,1,nnodes,cmz)
+
+              err = visitcurvmeshsetcoordsxyz(h, cmdims, x, y, z)
+          endif
       endif
-      visitgetmesh = m
+      visitgetmesh = h
       end
 
 c---------------------------------------------------------------------------
-c visitgetscalar
+c visitgetvariable
 c---------------------------------------------------------------------------
-      integer function visitgetscalar(handle, domain, name, lname)
+      integer function visitgetvariable(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
 ccc   RECTMESH common block
       integer NX, NY
       parameter (NX = 4)
@@ -376,54 +411,80 @@ ccc   CURVMESH common block
       double precision nodal(CNX,CNY,CNZ)
       common /CURVMESH/ cmdims, cmndims, cmx, cmy, cmz, nodal
 ccc   local vars
-      integer m, sdims(3)
-      m = VISIT_ERROR
+      integer h, nvals, err
+
+      h = VISIT_INVALID_HANDLE
       if(visitstrcmp(name, lname, "zonal", 5).eq.0) then
 c A zonal variable has 1 less value in each dimension as there
 c are nodes. Send back REAL data.
-          sdims(1) = rmdims(1)-1
-          sdims(2) = rmdims(2)-1
-          sdims(3) = rmdims(3)-1
-          m = visitscalarsetdataf(handle, zonal, sdims, rmndims)
+          if(visitvardataalloc(h).eq.VISIT_OKAY) then
+              nvals = (rmdims(1)-1) * (rmdims(2)-1)
+              err = visitvardatasetf(h, VISIT_OWNER_SIM,1,nvals,zonal)
+          endif
       elseif(visitstrcmp(name, lname, "nodal", 5).eq.0) then
 c A nodal variable has the same number values in each dimension
 c as there are nodes. Send back DOUBLE PRECISION data.
-          m = visitscalarsetdatad(handle, nodal, cmdims, cmndims)
+          if(visitvardataalloc(h).eq.VISIT_OKAY) then
+              nvals = cmdims(1) * cmdims(2)* cmdims(3)
+              err = visitvardatasetd(h, VISIT_OWNER_SIM,1,nvals,nodal)
+          endif
       endif
 
-      visitgetscalar = m
+      visitgetvariable = h
       end
 
 
 c---------------------------------------------------------------------------
 c visitgetcurve
 c---------------------------------------------------------------------------
-      integer function visitgetcurve(handle, name, lname)
+      integer function visitgetcurve(name, lname)
       implicit none
       character*8 name
       integer     handle, lname
-      include "visitfortransiminterface.inc"
-      visitgetcurve = VISIT_ERROR
+      include "visitfortransimV2interface.inc"
+      visitgetcurve = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetdomainlist
 c---------------------------------------------------------------------------
-      integer function visitgetdomainlist(handle)
+      integer function visitgetdomainlist()
       implicit none
       integer handle
-      include "visitfortransiminterface.inc"
-      visitgetdomainlist = VISIT_OKAY
+      include "visitfortransimV2interface.inc"
+      visitgetdomainlist = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainbounds
+c---------------------------------------------------------------------------
+      integer function visitgetdomainbounds(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainbounds = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainnesting
+c---------------------------------------------------------------------------
+      integer function visitgetdomainnesting(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainnesting = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetmaterial
 c---------------------------------------------------------------------------
-      integer function visitgetmaterial(handle, domain, name, lname)
+      integer function visitgetmaterial(domain, name, lname)
       implicit none
       character*8 name
       integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
       visitgetmaterial = VISIT_ERROR
       end
 

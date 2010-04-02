@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -42,11 +42,16 @@
 
 int main(int argc, char **argv)
 {
-    read_input_deck();
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
+    read_input_deck(&sim);
     do
     {
-        simulate_one_timestep();
-        write_vis_dump();
-    } while(!simulation_done());
+        simulate_one_timestep(&sim);
+        write_vis_dump(&sim);
+    } while(!sim.done);
+
+    simulation_data_dtor(&sim);
     return 0;
 }

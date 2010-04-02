@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -42,33 +42,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct
+{
+    int     cycle;
+    double  time;
+    int     runMode;
+    int     done;
 #ifdef PARALLEL
-extern int par_rank;
-extern int par_size;
+    int     par_rank;
+    int     par_size;
 #endif
+} simulation_data;
 
-void simulate_one_timestep(void)
+void
+simulation_data_ctor(simulation_data *sim)
+{
+    sim->cycle = 0;
+    sim->time = 0.;
+    sim->runMode = 1; /* VISIT_SIMMODE_RUNNING */
+    sim->done = 0;
+#ifdef PARALLEL
+    sim->par_rank = 0;
+    sim->par_size = 1;
+#endif
+}
+
+void
+simulation_data_dtor(simulation_data *sim)
+{
+}
+
+void simulate_one_timestep(simulation_data *sim)
 {
     /* simulate 1 time step. */
 #ifdef PARALLEL
-    printf("%d/%d: Simulating time step\n", par_rank, par_size);
+    printf("%d/%d: Simulating time step\n", sim->par_rank, sim->par_size);
 #else
     printf("Simulating time step\n");
 #endif
     sleep(1);
 }
 
-void read_input_deck(void)
+void read_input_deck(simulation_data *sim)
 {
     /* Read in problem setup. */
 }
 
-void write_vis_dump(void)
+void write_vis_dump(simulation_data *sim)
 {
     /* Write visualization dump. */
-}
-
-int simulation_done(void)
-{
-    return 0;
 }

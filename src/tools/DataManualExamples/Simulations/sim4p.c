@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -37,18 +37,14 @@
 *****************************************************************************/
 
 /* SIMPLE PARALLEL SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
 #include <stdio.h>
 #include <mpi.h>
 
 #include "SimulationExample.h"
 
-static int par_rank = 0;
-static int par_size = 1;
-
 #include <stubs.c>
 
-/* CHANGE 1 */
 #ifdef PARALLEL
 static int visit_broadcast_int_callback(int *value, int sender)
 {
@@ -61,6 +57,7 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
 }
 #endif
 
+/* CHANGE 1 */
 #define VISIT_COMMAND_PROCESS 0
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
@@ -76,8 +73,8 @@ static void BroadcastSlaveCommand(int *command)
 /* Callback involved in command communication. */
 void SlaveProcessCallback()
 {
-   int command = VISIT_COMMAND_PROCESS;
-   BroadcastSlaveCommand(&command);
+    int command = VISIT_COMMAND_PROCESS;
+    BroadcastSlaveCommand(&command);
 }
 
 /******************************************************************************
@@ -90,11 +87,11 @@ void SlaveProcessCallback()
  * Modifications:
  *
  *****************************************************************************/
-
-int ProcessVisItCommand(void)
+/* CHANGE 2 */
+int ProcessVisItCommand(simulation_data *sim)
 {
     int command;
-    if (par_rank==0)
+    if (sim->par_rank==0)
     {  
         int success = VisItProcessEngineCommand();
 
@@ -131,10 +128,8 @@ int ProcessVisItCommand(void)
             }
         }
     }
+    return 1;
 }
-
-/* Is the simulation in run mode (not waiting for VisIt input) */
-static int runFlag = 1;
 
 /******************************************************************************
  *
@@ -147,16 +142,16 @@ static int runFlag = 1;
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
     do
     {
-        blocking = runFlag ? 0 : 1;
-/* CHANGE 4 */
+        blocking = (sim->runMode == VISIT_SIMMODE_RUNNING) ? 0 : 1;
+/* CHANGE 3 */
         /* Get input from VisIt or timeout so the simulation can run. */
-        if(par_rank == 0)
+        if(sim->par_rank == 0)
             visitstate = VisItDetectInput(blocking, -1);
 #ifdef PARALLEL
         MPI_Bcast(&visitstate, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -170,33 +165,30 @@ void mainloop(void)
         else if(visitstate == 0)
         {
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep();
+            simulate_one_timestep(sim);
         }
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection())
-            {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetSlaveProcessCallback(SlaveProcessCallback);
-            }
             else
                 fprintf(stderr, "VisIt did not connect\n");
         }
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            runFlag = 0;
-/* CHANGE 5 */
-            if(!ProcessVisItCommand())
+            sim->runMode = VISIT_SIMMODE_STOPPED;
+/* CHANGE 4 */
+            if(!ProcessVisItCommand(sim))
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                runFlag = 1;
+                sim->runMode = VISIT_SIMMODE_RUNNING;
             }
         }
-    } while(!simulation_done() && err == 0);
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -216,41 +208,44 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    /* Initialize environment variables. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
     SimulationArguments(argc, argv);
+
+    /* Initialize environment variables. */
     VisItSetupEnvironment();
 
-/* CHANGE 2 */
 #ifdef PARALLEL
     /* Initialize MPI */
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &par_size);
+    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
 
     /* Install callback functions for global communication. */
     VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
     VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
     /* Tell VSIL whether the simulation is parallel. */
-    VisItSetParallel(par_size > 1);
-    VisItSetParallelRank(par_rank);
+    VisItSetParallel(sim.par_size > 1);
+    VisItSetParallelRank(sim.par_rank);
 #endif
 
-    /* Write out .sim file that VisIt uses to connect. Only do it
+    /* Write out .sim2 file that VisIt uses to connect. Only do it
      * on processor 0.
      */
-    /* CHANGE 3 */
-    if(par_rank == 0)
+    if(sim.par_rank == 0)
     {
         VisItInitializeSocketAndDumpSimFile("sim4p",
         "Parallel C prototype simulation connects to VisIt",
         "/path/to/where/sim/was/started", NULL, NULL, NULL);
     }
 
-    /* Read input problem setup, geometry, data.*/
-    read_input_deck();
+    /* Read input problem setup, geometry, data. */
+    read_input_deck(&sim);
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
+
+    simulation_data_dtor(&sim);
 
 #ifdef PARALLEL
     MPI_Finalize();

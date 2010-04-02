@@ -1,6 +1,7 @@
 #ifndef SIMULATION_EXAMPLE_H
 #define SIMULATION_EXAMPLE_H
 #include <string.h>
+#include <stdlib.h>
 
 /*****************************************************************************
  * Method: SimulationExample
