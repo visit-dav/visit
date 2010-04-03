@@ -274,6 +274,9 @@
 #    and human friendly. Only those logs that contain indications of error
 #    (e.g. 'SIG' or 'EXCEPT' or 'Except) are cat'd. When a log is cat'd, each
 #    line is pre-pended with the test name and log name.
+#
+#    Mark C. Miller, Thu Apr  1 14:26:36 PDT 2010
+#    Added ulimit command.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -739,6 +742,11 @@ if test $purify -eq 1; then
 fi
 echo " </tr>"                                                        >> html/index.html
 echo ""                                                              >> html/index.html
+
+#
+# Make sure we'll get core files if we core
+#
+ulimit -c unlimited
 
 #
 #  loop over all tests, running them
