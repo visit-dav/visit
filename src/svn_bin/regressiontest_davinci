@@ -220,7 +220,7 @@
 #    Mark C. Miller, Fri Apr  2 17:37:22 PDT 2010
 #    Removed some visus tests from skip list as those tests have been
 #    eliminated. Removed some csg tests from skip list as those tests have
-#    been improved.
+#    been improved. Temporarily removed some whole .py files from skip list.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -543,6 +543,8 @@ skipList_dueTo_clientServer="\
           davinci,scalable,parallel,icet:tests/hybrid/locus.py \
           davinci,scalable,parallel,icet:tests/rendering/saveformats.py \
           davinci,scalable,parallel,icet:tests/queries/bestfitline.py"
+# Temporarily overrid above (MCM - 02Apr10)
+skipList_dueTo_clientServer=""
 
 skipList_dueTo_parallelRendering="\
           davinci,scalable,parallel,icet:tests/databases/boxlib.py"
