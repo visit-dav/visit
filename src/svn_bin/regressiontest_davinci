@@ -216,6 +216,11 @@
 #    Mark C. Miller, Thu Apr  1 14:26:36 PDT 2010
 #    Moved ulimit call to runtest instead. That way, anyone running runtest
 #    will get desired behavior.
+#
+#    Mark C. Miller, Fri Apr  2 17:37:22 PDT 2010
+#    Removed some visus tests from skip list as those tests have been
+#    eliminated. Removed some csg tests from skip list as those tests have
+#    been improved.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -555,15 +560,9 @@ skipList_dueTo_temporaryBugs="\
           davinci,scalable,parallel,icet:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05,specular_10"
 
 skipList_for_Davinci="\
-          davinci,serial:tests/meshtype/csg.py:csg_02 \
-          davinci,parallel:tests/meshtype/csg.py:csg_02 \
-          davinci,scalable,parallel,icet:tests/meshtype/csg.py:csg_02 \
           davinci,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
           davinci,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
           davinci,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
-          davinci,serial:tests/databases/visus.py:visus_07,visus_08,visus_09 \
-          davinci,parallel:tests/databases/visus.py:visus_07,visus_08,visus_09 \
-          davinci,scalable,parallel,icet:tests/databases/visus.py:visus_07,visus_08,visus_09 \
           davinci,parallel:tests/rendering/compositing.py \
           davinci,scalable,parallel,icet:tests/rendering/compositing.py \
           davinci,parallel:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
