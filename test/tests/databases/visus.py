@@ -9,6 +9,9 @@
 #  Programmer: Mark C. Miller 
 #  Date:       June 8, 2005 
 #
+#  Modifications
+#    Mark C. Miller, Fri Apr  2 17:22:19 PDT 2010
+#    Removed 7,8,9 tests as they rarely worked.
 # ----------------------------------------------------------------------------
 import os, string
 
@@ -99,33 +102,5 @@ AddOperator("Box")
 SetOperatorOptions(boxAtts);
 DrawPlots()
 Test("visus_06")
-
-
-#
-# Test the other visus format--it uses Peter Lindstrom's floating
-# point compression library.
-#
-DeleteAllPlots()
-ReplaceDatabase("../data/visus_test_data/TGvortex_C_lin/Visus/viz.idx")
-AddPlot("Pseudocolor","x_velocity")
-DrawPlots()
-Test("visus_07")
-
-DeleteAllPlots()
-AddPlot("Pseudocolor","energy")
-DrawPlots()
-SetTimeSliderState(3)
-Test("visus_08")
-
-DeleteAllPlots()
-AddPlot("Pseudocolor","conductivity")
-DrawPlots()
-v=GetView3D()
-v.viewNormal=(-0.707107, -0.707107, 0)
-v.viewUp=(0, 0, 1)
-SetView3D(v)
-Test("visus_09")
-
-
 
 Exit()

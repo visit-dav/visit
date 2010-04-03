@@ -17,21 +17,23 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Mark C. Miller, Fri Apr  2 17:31:28 PDT 2010
+#    Replaced first two tests with subset plot instead of mesh plot.
+#    Used MultiPass instead of uniform for first test.
 # ----------------------------------------------------------------------------
 
-
-OpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
-
 mma=MeshManagementAttributes()
-mma.discretizationMode = mma.Uniform
+mma.discretizationMode = mma.Adaptive
 mma.discretizationTolerance=(0.01, 0.25)
 SetMeshManagementAttributes(mma)
+OpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
 
 #
 # the mesh named "csgmesh" uses just spheres, cylinder and plane
 # primitives
 #
-AddPlot("Mesh", "csgmesh")
+AddPlot("Subset", "csgmesh")
 DrawPlots()
 v = GetView3D()
 v.SetViewNormal(0.650274, -0.646958, 0.398232)
@@ -40,10 +42,12 @@ SetView3D(v)
 Test("csg_01")
 
 #
-# Change the discretization tolerance
+# Change the discretization tolerance and mode
 #
+mma.discretizationMode = mma.MultiPass
 mma.discretizationTolerance=(0.02, 0.25)
 SetMeshManagementAttributes(mma)
+ReOpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
 ClearWindow()
 DrawPlots()
 Test("csg_02")
@@ -57,6 +61,7 @@ ResetView()
 mma.discretizationTolerance=(0.005, 0.25)
 mma.discretizationMode = mma.Adaptive
 SetMeshManagementAttributes(mma)
+ReOpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
 AddPlot("Subset", "regions(greenman_mesh)")
 DrawPlots()
 v = GetView3D()
