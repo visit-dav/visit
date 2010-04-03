@@ -315,14 +315,14 @@ c Create an unstructured mesh here
       end
 
 c---------------------------------------------------------------------------
-c visitgetscalar
+c visitgetvariable
 c---------------------------------------------------------------------------
-      integer function visitgetscalar(domain, name, lname)
+      integer function visitgetvariable(domain, name, lname)
       implicit none
       character*8 name
       integer     domain, lname
       include "visitfortransimV2interface.inc"
-      visitgetscalar = VISIT_ERROR
+      visitgetvariable = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------

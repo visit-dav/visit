@@ -334,9 +334,9 @@ c Create mesh coordinates
       end
 
 c---------------------------------------------------------------------------
-c visitgetscalar
+c visitgetvariable
 c---------------------------------------------------------------------------
-      integer function visitgetscalar(domain, name, lname)
+      integer function visitgetvariable(domain, name, lname)
       implicit none
       character*8 name
       integer     domain, lname
@@ -380,7 +380,7 @@ c         Calculate a zonal variable that depends on the simulation time.
           endif
       endif
 
-      visitgetscalar = h
+      visitgetvariable = h
       end
 
 c---------------------------------------------------------------------------
