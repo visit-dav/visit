@@ -37,18 +37,14 @@
 *****************************************************************************/
 
 /* SIMPLE PARALLEL SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
 #include <stdio.h>
 #include <mpi.h>
 
 #include "SimulationExample.h"
 
-static int par_rank = 0;
-static int par_size = 1;
-
 #include <stubs.c>
 
-/* CHANGE 1 */
 #ifdef PARALLEL
 static int visit_broadcast_int_callback(int *value, int sender)
 {
@@ -72,13 +68,13 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     do
     {
-        simulate_one_timestep();
-        write_vis_dump();
-    } while(!simulation_done());
+        simulate_one_timestep(sim);
+        write_vis_dump(sim);
+    } while(!sim->done);
 }
 
 /******************************************************************************
@@ -98,41 +94,44 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    /* Initialize environment variables. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
     SimulationArguments(argc, argv);
+
+    /* Initialize environment variables. */
     VisItSetupEnvironment();
 
-/* CHANGE 2 */
 #ifdef PARALLEL
     /* Initialize MPI */
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &par_size);
+    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
 
     /* Install callback functions for global communication. */
     VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
     VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
     /* Tell VSIL whether the simulation is parallel. */
-    VisItSetParallel(par_size > 1);
-    VisItSetParallelRank(par_rank);
+    VisItSetParallel(sim.par_size > 1);
+    VisItSetParallelRank(sim.par_rank);
 #endif
 
-    /* Write out .sim file that VisIt uses to connect. Only do it
+    /* Write out .sim2 file that VisIt uses to connect. Only do it
      * on processor 0.
      */
-    /* CHANGE 3 */
-    if(par_rank == 0)
+    if(sim.par_rank == 0)
     {
-        VisItInitializeSocketAndDumpSimFile("sim3",
-        "Setting up parallel intialization routines",
+        VisItInitializeSocketAndDumpSimFile("sim3p",
+        "Moved do..while to mainloop function",
         "/path/to/where/sim/was/started", NULL, NULL, NULL);
     }
 
-    /* Read input problem setup, geometry, data.*/
-    read_input_deck();
+    /* Read input problem setup, geometry, data. */
+    read_input_deck(&sim);
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
+
+    simulation_data_dtor(&sim);
 
 #ifdef PARALLEL
     MPI_Finalize();

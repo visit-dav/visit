@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 /* SIMPLE SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
 #include <stdio.h>
 #include <stubs.c>
 
@@ -60,19 +60,25 @@
 
 int main(int argc, char **argv)
 {
-    /* Initialize environment variables. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
     SimulationArguments(argc, argv);
+   
+    /* Initialize environment variables. */
     VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
+
+    /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim2",
-        "Added some VSIL initialization functions",
+        "Added some initialization functions",
         "/path/to/where/sim/was/started", NULL, NULL, NULL);
 
-    read_input_deck();
+    read_input_deck(&sim);
     do
     {
-        simulate_one_timestep();
-        write_vis_dump();
-    } while(!simulation_done());
+        simulate_one_timestep(&sim);
+        write_vis_dump(&sim);
+    } while(!sim.done);
+
+    simulation_data_dtor(&sim);
     return 0;
 }
