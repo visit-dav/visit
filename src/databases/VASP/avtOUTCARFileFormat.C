@@ -961,6 +961,10 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Apr  5 14:10:44 EDT 2010
+//    Make check less strict.
+//
 // ****************************************************************************
 bool
 avtOUTCARFileFormat::Identify(const std::string &filename)
@@ -981,7 +985,7 @@ avtOUTCARFileFormat::Identify(const std::string &filename)
             fn[i] = fn[i] + ('A'-'a');
     }
 
-    if (fn.length()>=6 && fn.substr(0,6) == "OUTCAR")
+    if (fn.length()>=3 && fn.substr(0,3) == "OUT")
         return true;
 
     return false;
