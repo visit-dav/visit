@@ -207,13 +207,13 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sourceType->addItem(tr("Box"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
-    sourceLayout->addWidget(sourceType, 0, 1);
+    sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
 
 
 
     // Create the source geometry subgroup
     QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
-    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 2);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
@@ -482,6 +482,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 //   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
 //   Add display head geom as cone.
 //
+//   Dave Pugmire, Tue Apr  6 08:15:33 EDT 2010
+//   Rearrange the color by variable widgets.
+//
 // ****************************************************************************
 
 void
@@ -513,11 +516,9 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataValueComboBox->addItem(tr("Variable"),6);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
-
     dataLayout->addWidget(dataValueComboBox, 0, 1);
 
     dataLayout->addWidget(new QLabel(tr("   "), central), 0, 2);
-
 
     // Create the limits group box.
     QGroupBox *limitsGroup = new QGroupBox(central);
@@ -548,6 +549,14 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(processMaxLimitText()));
     limitsLayout->addWidget(legendMaxEdit, 0, 4);
 
+    
+    coloringVarLabel = new QLabel(tr("Variable"), dataGroup);
+    coloringVar = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
+                                         dataGroup);
+    dataLayout->addWidget(coloringVarLabel,2,1);
+    dataLayout->addWidget(coloringVar,2,2);
+    connect(coloringVar, SIGNAL(activated(const QString &)),
+            this, SLOT(coloringVariableChanged(const QString&)));
 
     // Create the display group
     QGroupBox *displayGrp = new QGroupBox(pageAppearance);
@@ -576,6 +585,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(displayMethod, SIGNAL(activated(int)), this, SLOT(displayMethodChanged(int)));
     drawLayout->addWidget(new QLabel(tr("Draw as"), displayGrp), 0, 0);
     drawLayout->addWidget(displayMethod, 0, 1);
+    drawLayout->addWidget(new QLabel(tr("  "), displayGrp), 0, 2, 1, 2);
 
     //--lines
     lineWidth = new QvisLineWidthWidget(0, displayGrp);
@@ -792,15 +802,6 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cLayout->addWidget(opacityVarMin, cRow, 2);
     cLayout->addWidget(opacityMaxToggle, cRow, 3);
     cLayout->addWidget(opacityVarMax, cRow, 4);
-    cRow++;
-
-    varLabel = new QLabel(tr("Variable"), colorGrp);
-    var = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
-                                 colorGrp);
-    cLayout->addWidget(varLabel,cRow,2);
-    cLayout->addWidget(var,cRow,3);
-    connect(var, SIGNAL(activated(const QString &)),
-            this, SLOT(coloringVariableChanged(const QString&)));
     cRow++;
 
 
@@ -1158,7 +1159,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             
         case StreamlineAttributes::ID_coloringVariable:
             temp = streamAtts->GetColoringVariable().c_str();
-            var->setText(temp);
+            coloringVar->setText(temp);
           break;
           
         case StreamlineAttributes::ID_showSeeds:
@@ -1243,19 +1244,18 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 
             if (streamAtts->GetColoringMethod() == StreamlineAttributes::ColorByVariable)
             {
-                varLabel->setEnabled(true);
-                var->setEnabled(true);
-                varLabel->show();
-                var->show();
+                coloringVarLabel->setEnabled(true);
+                coloringVar->setEnabled(true);
+                coloringVarLabel->show();
+                coloringVar->show();
             }
             else
             {
-                varLabel->setEnabled(false);
-                var->setEnabled(false);
-                varLabel->hide();
-                var->hide();
+                coloringVarLabel->setEnabled(false);
+                coloringVar->setEnabled(false);
+                coloringVarLabel->hide();
+                coloringVar->hide();
             }
-            
             }
             break;
         case StreamlineAttributes::ID_colorTableName:

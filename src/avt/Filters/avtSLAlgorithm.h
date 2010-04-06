@@ -81,6 +81,9 @@
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Replace Execute() with RunAlgorithm(). Add a Pre/Post RunAlgorithm.
 //
+//   Dave Pugmire, Tue Apr  6 08:24:44 EDT 2010
+//   Make sure the avtStreamlineFilter baseclass gets called.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -110,18 +113,18 @@ class avtSLAlgorithm
     //Helper accessor funcstions to the filter.
     avtIVPSolver *            GetSolver() {return streamlineFilter->solver; }
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
-                            { return streamlineFilter->PointInDomain(pt, dom); }
+    { return streamlineFilter->avtStreamlineFilter::PointInDomain(pt, dom); }
     virtual void              IntegrateStreamline(avtStreamlineWrapper *slSeg);
     vtkDataSet               *GetDomain(avtStreamlineWrapper *slSeg);
     vtkDataSet               *GetDomain(const DomainType &dom,
                                         double X=0, double Y=0, double Z=0);
     virtual bool              DomainLoaded(DomainType &dom) const
-                                 { return streamlineFilter->DomainLoaded(dom); }
+    { return streamlineFilter->avtStreamlineFilter::DomainLoaded(dom); }
     
     bool                      OwnDomain(DomainType &dom)
-                                     {return streamlineFilter->OwnDomain(dom); }
+    {return streamlineFilter->avtStreamlineFilter::OwnDomain(dom); }
     int                       DomainToRank(DomainType &dom)
-                                     {return streamlineFilter->DomainToRank(dom); }
+    {return streamlineFilter->avtStreamlineFilter::DomainToRank(dom); }
     int                       DomCacheSize() const { return streamlineFilter->cacheQLen; }
 
     //Utility functions.

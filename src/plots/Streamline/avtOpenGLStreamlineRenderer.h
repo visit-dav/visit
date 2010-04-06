@@ -99,7 +99,7 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     StreamlineAttributes atts;
 
     float varMin, varMax, varDiff;
-    
+    float opacityMin, opacityMax, opacityDiff;
     float ambient_coeff;
     float spec_coeff;
     float spec_power;
@@ -145,6 +145,7 @@ class avtOpenGLStreamlineRenderer : public avtStreamlineRendererImplementation
     
     inline void SetColor(const float &scalar, const float &opacity) const;
     void InitColors();
+    void InitVarOpacity(vtkPolyData *data);
     float ComputeRampOpacity(const float &p) const;
     
     avtGLSLProgram* shader;
