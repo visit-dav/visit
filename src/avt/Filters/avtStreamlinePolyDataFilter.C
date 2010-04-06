@@ -53,7 +53,6 @@
 #include <vtkRibbonFilter.h>
 #include <vtkTubeFilter.h>
 
-
 std::string avtStreamlinePolyDataFilter::colorvarArrayName = "colorVar";
 std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
 std::string avtStreamlinePolyDataFilter::opacityArrayName = "opacity";
@@ -98,9 +97,6 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 {
     debug5 << "::CreateStreamlineOutput " << streamlines.size() << endl;
 
-    bool doTubes = displayMethod == STREAMLINE_DISPLAY_TUBES;
-    bool doRibbons  = displayMethod == STREAMLINE_DISPLAY_RIBBONS;
-    
     if (streamlines.size() == 0)
         return;
 
@@ -168,6 +164,9 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 //   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
 //   Add tangents array.
 //
+//   Dave Pugmire, Tue Apr  6 08:24:44 EDT 2010
+//   Bug fix for setting opacity.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -187,7 +186,13 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
     if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
         thetas = vtkFloatArray::New();
 
-    int opacityIdx = -1;
+    int opacityIdx = -1, colorIdx = -1;
+    if (coloringVariable != "")
+    {
+        colorIdx = sl->GetVariableIdx(coloringVariable);
+        if (colorIdx == -1)
+            EXCEPTION1(ImproperUseException, "Unknown coloring variable.");
+    }
     if (opacityVariable != "")
     {
         opacityIdx = sl->GetVariableIdx(opacityVariable);
@@ -220,7 +225,7 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
         }
         else if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         {
-            val = step->scalarValue;
+            val = step->scalarValues[colorIdx];
         }
         else if (coloringMethod == STREAMLINE_COLOR_VORTICITY)
         {
@@ -290,7 +295,7 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
     }
     if (opacity)
     {
-        opacity->SetName(thetaArrayName.c_str());
+        opacity->SetName(opacityArrayName.c_str());
         pd->GetPointData()->AddArray(opacity);
         opacity->Delete();
     }
