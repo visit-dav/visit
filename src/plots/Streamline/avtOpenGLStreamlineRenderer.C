@@ -69,6 +69,8 @@
 #include <vtkCamera.h>
 #include <vtkStripper.h>
 #include <avtVector.h>
+#include <vtkTriangleFilter.h>
+#include <vtkVisItSTLWriter.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -392,6 +394,8 @@ avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
 {
     if (atts.GetOpacityType() != StreamlineAttributes::None)
         appendForTranspPolys = vtkAppendPolyData::New();
+    if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
+        InitVarOpacity(data);
     
     if (atts.GetShowSeeds())
         DrawSeedPoints(data);
@@ -1243,6 +1247,25 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *input)
 
     if (sorter)
         sorter->Delete();
+
+    /*
+    //Write as STL.
+    vtkTriangleFilter *tris = vtkTriangleFilter::New();
+    tris->SetPassLines(false);
+    tris->SetPassVerts(false);
+    tris->SetInput(input);
+    vtkVisItSTLWriter *writer = vtkVisItSTLWriter::New();
+    writer->SetFileTypeToBinary();
+    static int cnt = 0;
+    char tmp[132];
+    sprintf(tmp, "output_%02d.stl", cnt);
+    cnt++;
+    writer->SetFileName(tmp);
+    writer->SetInput(tris->GetOutput());
+    writer->Write();
+    writer->Delete();
+    tris->Delete();
+    */
 }
 
 // ****************************************************************************
@@ -1298,9 +1321,10 @@ avtOpenGLStreamlineRenderer::SetColor(const float &scalar,
              atts.GetOpacityType() == StreamlineAttributes::VariableRange)
     {
         float alpha = atts.GetOpacity();
-        
         if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
         {
+            //alpha *= (opacity-opacityMin) / opacityDiff;
+
             if (atts.GetOpacityVarMinFlag() && opacity < atts.GetOpacityVarMin())
                 alpha = 0.0;
             if (atts.GetOpacityVarMaxFlag() && opacity > atts.GetOpacityVarMax())
@@ -2039,4 +2063,61 @@ avtOpenGLStreamlineRenderer::ComputeRampOpacity(const float &p) const
         o = 1.0;
     
     return o;
+}
+
+
+// ****************************************************************************
+//  Method:  avtOpenGLStreamlineRenderer::InitVarOpacity
+//
+//  Purpose:
+//    
+//  Programmer:  Dave Pugmire
+//  Creation:    April 5, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLStreamlineRenderer::InitVarOpacity(vtkPolyData *data)
+{
+    /*
+    float *opacity = NULL;
+    if (data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str()))
+        opacity = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str())->GetVoidPointer(0);
+
+    if (opacity == NULL)
+        return;
+
+    vtkPoints *points = data->GetPoints();
+    vtkCellArray *lines = data->GetLines();
+    vtkIdType *segments = lines->GetPointer();
+
+    int *segptr = segments;
+
+    for (int i=0; i<data->GetNumberOfLines(); i++)
+    {
+        int nPts = *segptr;
+        segptr++;
+        for (int j=0; j < nPts; j++)
+        {
+            float o = opacity[segptr[j]];
+            if (i == 0 && j == 0)
+            {
+                opacityMin = o;
+                opacityMax = o;
+            }
+            else
+            {
+                if (o < opacityMin)
+                    opacityMin = o;
+                if (o > opacityMax)
+                    opacityMax = o;
+            }
+        }
+        segptr += nPts;
+    }
+
+    opacityDiff = opacityMax-opacityMin;
+    */
 }

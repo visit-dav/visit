@@ -71,8 +71,6 @@ class avtStreamlineRenderer : public avtCustomRenderer
     static avtStreamlineRenderer *New(void);
 
     void                    SetAtts(const AttributeGroup*);
-    void                    SetVarRange(const double &min, const double &max);
-
     void                    InvalidateColors();
 
     virtual void            ReleaseGraphicsResources();

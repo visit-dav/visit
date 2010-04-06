@@ -140,7 +140,7 @@ vtkDataSet *
 avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 {
     int timerHandle = visitTimer->StartTimer();
-    vtkDataSet *ds = streamlineFilter->GetDomain(dom, X, Y, Z);
+    vtkDataSet *ds = streamlineFilter->avtStreamlineFilter::GetDomain(dom, X, Y, Z);
     IOTime.value += visitTimer->StopTimer(timerHandle, "GetDomain()");
     
     return ds;
