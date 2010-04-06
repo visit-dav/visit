@@ -50,6 +50,10 @@
 #  Don't copy VISIT_BIN_FILES on windows, instead only copy makemovie.py,
 #  makemoviemain.py and visitdiff.py.
 #
+#  Eric Brugger, Tue Apr  6 14:22:02 PDT 2010
+#  I changed the installation location of makemovie.py and makemoviemain.py
+#  to ${VISIT_INSTALLED_VERSION_BIN} instead of bin.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -63,8 +67,6 @@ SET(VISIT_BIN_FILES
         curv3dprep
         frontendlauncher
         makemili
-        makemovie.py
-        makemoviemain.py
         mkgrdbl
         mpeg2encode
         regen-ajp
@@ -114,6 +116,12 @@ IF (NOT WIN32)
 
     INSTALL(FILES internallauncher
         DESTINATION ${VISIT_VERSION}/bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                    WORLD_READ             WORLD_EXECUTE)
+
+    INSTALL(FILES makemovie.py makemoviemain.py
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
