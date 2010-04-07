@@ -115,7 +115,7 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     // DATA MEMBERS
     hid_t m_fileID;
     std::string m_filename;
-    int m_refinementLevel;
+    int m_refinement;
     int m_poloidalPlanes;
     avtCentering m_dataLocation;
     float m_perturbationScale;
