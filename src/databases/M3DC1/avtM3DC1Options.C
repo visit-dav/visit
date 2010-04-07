@@ -72,13 +72,21 @@ GetM3DC1ReadOptions(void)
 
     rv->SetInt("Number of poloidal planes", 1);
 
-    rv->SetInt("Levels of mesh refinement 0-5", 0);
+    rv->SetEnum("Mesh refinement", 1);
+    vector<string> refinement;
+    refinement.push_back("1");
+    refinement.push_back("2");
+    refinement.push_back("3");
+    refinement.push_back("4");
+    refinement.push_back("5");
+//    refinement.push_back("Variable");
+    rv->SetEnumStrings("Mesh refinement", refinement);
 
-    rv->SetEnum("Linear Mesh Data Location", 0);
+    rv->SetEnum("Linear mesh data location", 0);
     vector<string> centering;
     centering.push_back("Node");
     centering.push_back("Element");
-    rv->SetEnumStrings("Linear Mesh Data Location", centering);
+    rv->SetEnumStrings("Linear mesh data location", centering);
  
     rv->SetDouble("Perturbation scaling", 1.0);
 

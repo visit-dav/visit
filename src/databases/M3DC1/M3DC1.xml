@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
-  <Plugin name="M3DC1" type="database" label="avtM3DC1" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false">
+  <Plugin name="M3DC1" type="database" label="avtM3DC1" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${HDF5_INCLUDE_DIR}
-      ${VISIT_INCLUDE_DIR}/avt/IVP
     </CXXFLAGS>
     <LDFLAGS>
       ${HDF5_LIBRARY_DIR}
@@ -10,11 +9,20 @@
     <LIBS>
       ${HDF5_LIB}
       ${ZLIB_LIB}
-      avtivp
     </LIBS>
     <FilePatterns>
       *.h5
     </FilePatterns>
+    <Files components="M">
+      avtM3DC1FileFormat.C
+      avtM3DC1Options.C
+      avtM3DC1Field.C
+    </Files>
+    <Files components="E">
+      avtM3DC1FileFormat.C
+      avtM3DC1Options.C
+      avtM3DC1Field.C
+    </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
