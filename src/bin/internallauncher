@@ -609,6 +609,10 @@ $0 = shift @ARGV;
 #    Revert to having plugins in a user's home directory on Franklin @NERSC 
 #    since home is now visible from compute nodes.
 #
+#    Eric Brugger, Wed Apr  7 16:56:43 PDT 2010
+#    I modified the script so that it would properly launch VisIt in
+#    parallel on the opteron clusters at LLNL.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1657,7 +1661,6 @@ if ( $host =~ /^xchem.llnl.gov/ )
     $IsRunningOnXchemLLNL = 1;
     $ENV{LD_LIBRARY_PATH} = join ':' ,
         ("/opt/intel/cc/10.1.021/lib",
-         "opt/intel/cc/10.1.021/lib",
          "/opt/llnl/mpich2_shared/ch3-ssm/lib");
 }
 
@@ -1669,6 +1672,7 @@ $UseTTC = 0;
 if ($host =~ /^yana\d+$/ or $host =~ /^hopi\d+$/)
 {
     $UseTTC = 1;
+    $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
 }
 
 # ----
@@ -1679,6 +1683,18 @@ $UsePPN = 1;
 if ($host =~ /^graph\d+$/)
 {
     $UsePPN  = 0;
+    $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
+}
+
+# ----
+# HACK for AMD Opteron clusters @ LLNL
+#
+# ----
+if ($host =~ /^atlas\d+$/ or $host =~ /^hera\d+$/ or $host =~ /^prism\d+$/ or
+    $host =~ /^zeus\d+$/ or $host =~ /^eos\d+$/ or $host =~ /^gauss\d+$/ or
+    $host =~ /^juno\d+$/ or $host =~ /^minos\d+$/ or $host =~ /^rhea\d+$/)
+{
+    $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
 }
 
 # ----
