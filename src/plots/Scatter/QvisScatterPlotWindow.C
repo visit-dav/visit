@@ -538,17 +538,17 @@ QvisScatterPlotWindow::CreateWindowContents()
     colorTableNameLabel->setBuddy(colorTableName);
     aLayout->addWidget(colorTableNameLabel, 2, 0);
 
+    singleColorLabel = new QLabel(tr("Single color"), appearanceGroup);
+    aLayout->addWidget(singleColorLabel, 3, 0);
+
     QWidget *scBox = new QWidget(appearanceGroup);
     QHBoxLayout *scBoxLayout = new QHBoxLayout(scBox);
     scBoxLayout->setMargin(0);
     scBoxLayout->setSpacing(10);
     aLayout->addWidget(scBox, 3, 1);
 
-    singleColorLabel = new QLabel(tr("Single color"), appearanceGroup);
-    singleColorLabel->setBuddy(singleColor);
-    aLayout->addWidget(singleColorLabel, 3, 0);
-
     singleColor = new QvisColorButton(scBox);
+    singleColorLabel->setBuddy(singleColor);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
     scBoxLayout->addWidget(singleColor);
@@ -558,7 +558,7 @@ QvisScatterPlotWindow::CreateWindowContents()
             this, SLOT(foregroundFlagChanged(bool)));
     scBoxLayout->addWidget(foregroundFlag);
 
-    scaleCube = new QCheckBox(tr("Scale to cube"), scBox);
+    scaleCube = new QCheckBox(tr("Scale to cube"), appearanceGroup);
     connect(scaleCube, SIGNAL(toggled(bool)),
             this, SLOT(scaleCubeChanged(bool)));
     aLayout->addWidget(scaleCube, 4, 0, 1, 2);
@@ -580,8 +580,6 @@ QvisScatterPlotWindow::CreateWindowContents()
     colorRoleLabel = new QLabel(tr("Color:    "), roleGroup);
     roleLayout->addWidget(colorRoleLabel, 1, 1);
 
-
-
     //
     // Create the misc stuff
     //
@@ -594,7 +592,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
+    legendToggle = new QCheckBox(tr("Legend"), miscGroup);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     miscLayout->addWidget(legendToggle, 0, 0);
