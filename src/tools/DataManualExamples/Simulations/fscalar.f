@@ -152,6 +152,7 @@ c Curvilinear mesh data
       data cmdims/CNX,CNY,CNZ/
       data nodal/1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,
      . 16.,17.,18.,19.,20.,21.,22.,23.,24./
+
 c Simulate one time step
       simcycle = simcycle + 1
       simtime = simtime + 0.0134
@@ -275,8 +276,10 @@ c     Add a 3D curvilinear mesh
               err = visitmdmeshsetdomainpiecename(mmd, "domain", 6)
               err = visitmdmeshsetxunits(mmd, "Miles", 2)
               err = visitmdmeshsetyunits(mmd, "Miles", 2)
+              err = visitmdmeshsetzunits(mmd, "Miles", 2)
               err = visitmdmeshsetxlabel(mmd, "Width", 5)
               err = visitmdmeshsetylabel(mmd, "Height", 6)
+              err = visitmdmeshsetzlabel(mmd, "Depth", 5)
               err = visitmdsimaddmesh(md, mmd)
           endif
 

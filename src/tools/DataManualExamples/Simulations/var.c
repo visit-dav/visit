@@ -489,15 +489,15 @@ SimGetMesh(int domain, const char *name, void *cbdata)
     {
         if(VisIt_CurvilinearMesh_alloc(&h) != VISIT_ERROR)
         {
-            int nz;
+            int nn;
             visit_handle hxc, hyc, hzc;
-            nz = cmesh_dims[0] * cmesh_dims[1] * cmesh_dims[2];
+            nn = cmesh_dims[0] * cmesh_dims[1] * cmesh_dims[2];
             VisIt_VariableData_alloc(&hxc);
             VisIt_VariableData_alloc(&hyc);
             VisIt_VariableData_alloc(&hzc);
-            VisIt_VariableData_setDataF(hxc, VISIT_OWNER_SIM, 1, nz, (float*)cmesh_x);
-            VisIt_VariableData_setDataF(hyc, VISIT_OWNER_SIM, 1, nz, (float*)cmesh_y);
-            VisIt_VariableData_setDataF(hzc, VISIT_OWNER_SIM, 1, nz, (float*)cmesh_z);
+            VisIt_VariableData_setDataF(hxc, VISIT_OWNER_SIM, 1, nn, (float*)cmesh_x);
+            VisIt_VariableData_setDataF(hyc, VISIT_OWNER_SIM, 1, nn, (float*)cmesh_y);
+            VisIt_VariableData_setDataF(hzc, VISIT_OWNER_SIM, 1, nn, (float*)cmesh_z);
             VisIt_CurvilinearMesh_setCoordsXYZ(h, cmesh_dims, hxc, hyc, hzc);
         }
     }

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -37,15 +37,27 @@
 *****************************************************************************/
 
 /* SIMPLE SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
+#include <VisItControlInterface_V2.h>
 #include <stdio.h>
-
-#include <stubs.c>
 
 #include "SimulationExample.h"
 
-/* Is the simulation in run mode (not waiting for VisIt input) */
-static int runFlag = 1;
+#include <stubs.c>
+
+visit_handle
+SimGetMetaData(void *cbdata)
+{
+    visit_handle md = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
+
+    /* Create metadata with no variables. */
+    if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
+    {
+        /* Fill in the metadata. */
+    }
+
+    return md;
+}
 
 /******************************************************************************
  *
@@ -58,13 +70,13 @@ static int runFlag = 1;
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
     do
     {
-        blocking = runFlag ? 0 : 1;
+        blocking = (sim->runMode == VISIT_SIMMODE_RUNNING) ? 0 : 1;
         /* Get input from VisIt or timeout so the simulation can run. */
         visitstate = VisItDetectInput(blocking, -1);
 
@@ -77,29 +89,34 @@ void mainloop(void)
         else if(visitstate == 0)
         {
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep();
+            simulate_one_timestep(sim);
         }
         else if(visitstate == 1)
         {
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection())
+            {
                 fprintf(stderr, "VisIt connected\n");
+
+                /* Register data access callbacks */
+                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+            }
             else
                 fprintf(stderr, "VisIt did not connect\n");
         }
         else if(visitstate == 2)
         {
             /* VisIt wants to tell the engine something. */
-            runFlag = 0;
+            sim->runMode = VISIT_SIMMODE_STOPPED;
             if(!VisItProcessEngineCommand())
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                runFlag = 1;
+                sim->runMode = VISIT_SIMMODE_RUNNING;
             }
         }
-    } while(!simulation_done() && err == 0);
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -119,61 +136,24 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    /* Initialize environment variables. */
+    simulation_data sim;
+    simulation_data_ctor(&sim);
     SimulationArguments(argc, argv);
+   
+    /* Initialize envuronment variables. */
     VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
+    /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim5",
         "Demonstrates metadata data access function",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 
     /* Read input problem setup, geometry, data. */
-    read_input_deck();
+    read_input_deck(&sim);
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
 
+    simulation_data_dtor(&sim);
     return 0;
 }
-
-/* DATA ACCESS FUNCTIONS */
-#include <VisItDataInterface_V1.h>
-
-/******************************************************************************
- *
- * Purpose: This callback function returns simulation metadata.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
- *
- * Modifications:
- *
- *****************************************************************************/
-
-VisIt_SimulationMetaData *VisItGetMetaData(void)
-{
-    /* Create a metadata object with no variables. */
-    size_t sz = sizeof(VisIt_SimulationMetaData);
-    VisIt_SimulationMetaData *md =
-        (VisIt_SimulationMetaData *)malloc(sz);
-    memset(md, 0, sz);
-
-    return md;
-}
-
-VisIt_SimulationCallback 
-#if __GNUC__ >= 4
-__attribute__ ((visibility("default"))) 
-#endif
-visitCallbacks =
-{
-    &VisItGetMetaData,
-    NULL, /* GetMesh */
-    NULL, /* GetMaterial */
-    NULL, /* GetSpecies */
-    NULL, /* GetScalar */
-    NULL, /* GetCurve */
-    NULL, /* GetMixedScalar */
-    NULL /* GetDomainList */
-};
