@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------------
 c
-c Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+c Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 c Produced at the Lawrence Livermore National Laboratory
 c LLNL-CODE-400142
 c All rights reserved.
@@ -47,7 +47,7 @@ c
 c-----------------------------------------------------------------
       program main
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer err
 
@@ -58,7 +58,7 @@ ccc   local variables
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING,VISIT_F77NULLSTRINGLEN)
+     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
       call mainloop()
       stop
       end
@@ -68,14 +68,14 @@ c mainloop
 c-----------------------------------------------------------------
       subroutine mainloop()
       implicit none
-      include "visitfortransiminterface.inc"
-ccc   local variables
-      integer visitstate, result, blocking
+      include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
       common /SIMSTATE/ runflag, simcycle, simtime
       save /SIMSTATE/
+ccc   local variables
+      integer visitstate, result, blocking
 
 c     main loop
       runflag = 1
@@ -126,21 +126,17 @@ ccc   SIMSTATE common block
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c These functions must be defined to satisfy the visitfortransiminterface lib.
+c These functions must be defined to satisfy the visitfortransimV2interface lib.
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 c---------------------------------------------------------------------------
 c visitcommandcallback
 c---------------------------------------------------------------------------
-      subroutine visitcommandcallback (cmd, lcmd, intdata, 
-     .                                 floatdata, stringdata, 
-     .                                 lstringdata)
+      subroutine visitcommandcallback (cmd, lcmd, args, largs)
       implicit none
-      character*8 cmd, stringdata
-      integer     lcmd, lstringdata, intdata
-      real        floatdata
-      include "visitfortransiminterface.inc"
+      character*8 cmd, args
+      integer     lcmd, largs
       end
 
 c---------------------------------------------------------------------------
@@ -173,135 +169,143 @@ c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
       end
 
 c---------------------------------------------------------------------------
+c visitactivatetimestep
+c---------------------------------------------------------------------------
+      integer function visitactivatetimestep()
+      implicit none
+      include "visitfortransimV2interface.inc"
+      visitactivatetimestep = VISIT_OKAY
+      end
+
+c---------------------------------------------------------------------------
 c visitgetmetadata
 c---------------------------------------------------------------------------
-      integer function visitgetmetadata(handle)
+      integer function visitgetmetadata()
       implicit none
-      integer handle
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
       common /SIMSTATE/ runflag, simcycle, simtime
-      integer err, tdim, sdim, mesh, mt
+ccc   local variables
+      integer md, m1, m2, err
 
-      err = visitmdsetcycletime(handle, simcycle, simtime)
-      if(runflag.eq.1) then
-          err = visitmdsetrunning(handle, VISIT_SIMMODE_RUNNING)
-      else
-          err = visitmdsetrunning(handle, VISIT_SIMMODE_STOPPED)
+      if(visitmdsimalloc(md).eq.VISIT_OKAY) then
+          err = visitmdsimsetcycletime(md, simcycle, simtime)
+          if(runflag.eq.1) then
+              err = visitmdsimsetmode(md, VISIT_SIMMODE_RUNNING)
+          else
+              err = visitmdsimsetmode(md, VISIT_SIMMODE_STOPPED)
+          endif
+
+c Set the first mesh's properties
+          if(visitmdmeshalloc(m1).eq.VISIT_OKAY) then
+              err = visitmdmeshsetname(m1, "mesh2d", 6)
+              err = visitmdmeshsetmeshtype(m1, 
+     .            VISIT_MESHTYPE_RECTILINEAR)
+              err = visitmdmeshsettopologicaldim(m1, 2)
+              err = visitmdmeshsetspatialdim(m1, 2)
+              err = visitmdmeshsetxunits(m1, "cm", 2)
+              err = visitmdmeshsetyunits(m1, "cm", 2)
+              err = visitmdmeshsetxlabel(m1, "Width", 5)
+              err = visitmdmeshsetylabel(m1, "Height", 6)
+
+              err = visitmdsimaddmesh(md, m1)
+          endif
+
+c Set the second mesh's properties
+          if(visitmdmeshalloc(m2).eq.VISIT_OKAY) then
+              err = visitmdmeshsetname(m2, "mesh3d", 6)
+              err = visitmdmeshsetmeshtype(m2, 
+     .            VISIT_MESHTYPE_CURVILINEAR)
+              err = visitmdmeshsettopologicaldim(m2, 3)
+              err = visitmdmeshsetspatialdim(m2, 3)
+              err = visitmdmeshsetxunits(m2, "cm", 2)
+              err = visitmdmeshsetyunits(m2, "cm", 2)
+              err = visitmdmeshsetzunits(m2, "cm", 2)
+              err = visitmdmeshsetxlabel(m2, "Width", 5)
+              err = visitmdmeshsetylabel(m2, "Height", 6)
+              err = visitmdmeshsetzlabel(m2, "Depth", 5)
+
+              err = visitmdsimaddmesh(md, m2)
+          endif
       endif
-
-c     Add a 2D rectilinear mesh
-      mt = VISIT_MESHTYPE_RECTILINEAR
-      tdim = 2
-      sdim = 2
-      mesh = visitmdmeshcreate(handle, "mesh2d", 6, mt, tdim, sdim, 1)
-      if(mesh.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmeshsetunits(handle, mesh, "cm", 2)
-          err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
-     .    "Height", 6, "Depth", 5)
-          err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
-          err = visitmdmeshsetblockpiecename(handle, mesh, "domain", 6)
-      endif
-
-c     Add a 3D curvilinear mesh
-      tdim = 3
-      sdim = 3
-      mt = VISIT_MESHTYPE_CURVILINEAR
-      mesh = visitmdmeshcreate(handle, "mesh3d", 6, mt, tdim, 
-     .                         sdim, 1)
-      if(mesh.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmeshsetunits(handle, mesh, "Miles", 5)
-          err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
-     .    "Height", 6, "Depth", 5)
-          err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
-          err = visitmdmeshsetblockpiecename(handle, mesh, "domain", 6)
-      endif
-
-      visitgetmetadata = VISIT_OKAY
+      visitgetmetadata = md
       end
 
 c---------------------------------------------------------------------------
 c visitgetmesh
 c---------------------------------------------------------------------------
-      integer function visitgetmesh(handle, domain, name, lname)
+      integer function visitgetmesh(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetmesh = VISIT_ERROR
+      integer     domain, lname
+      include "visitfortransimV2interface.inc" 
+      visitgetmesh = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
-c visitgetscalar
+c visitgetvariable
 c---------------------------------------------------------------------------
-      integer function visitgetscalar(handle, domain, name, lname)
+      integer function visitgetvariable(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetscalar = VISIT_ERROR
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
+      visitgetvariable = VISIT_INVALID_HANDLE
       end
-
 
 c---------------------------------------------------------------------------
 c visitgetcurve
 c---------------------------------------------------------------------------
-      integer function visitgetcurve(handle, name, lname)
+      integer function visitgetcurve(name, lname)
       implicit none
       character*8 name
-      integer     handle, lname
-      include "visitfortransiminterface.inc"
-      visitgetcurve = VISIT_ERROR
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetcurve = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetdomainlist
 c---------------------------------------------------------------------------
-      integer function visitgetdomainlist(handle)
+      integer function visitgetdomainlist(name, lname)
       implicit none
-      integer handle
-      include "visitfortransiminterface.inc"
-      visitgetdomainlist = VISIT_OKAY
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainlist = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainbounds
+c---------------------------------------------------------------------------
+      integer function visitgetdomainbounds(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainbounds = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainnesting
+c---------------------------------------------------------------------------
+      integer function visitgetdomainnesting(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainnesting = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetmaterial
 c---------------------------------------------------------------------------
-      integer function visitgetmaterial(handle, domain, name, lname)
+      integer function visitgetmaterial(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetmaterial = VISIT_ERROR
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
+      visitgetmaterial = VISIT_INVALID_HANDLE
       end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

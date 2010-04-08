@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------------
 c
-c Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+c Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 c Produced at the Lawrence Livermore National Laboratory
 c LLNL-CODE-400142
 c All rights reserved.
@@ -47,7 +47,7 @@ c
 c-----------------------------------------------------------------
       program main
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer err
 
@@ -58,7 +58,7 @@ ccc   local variables
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING,VISIT_F77NULLSTRINGLEN)
+     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
       call mainloop()
       stop
       end
@@ -68,7 +68,7 @@ c mainloop
 c-----------------------------------------------------------------
       subroutine mainloop()
       implicit none
-      include "visitfortransiminterface.inc"
+      include "visitfortransimV2interface.inc"
 ccc   local variables
       integer visitstate, result, runflag, blocking
 
@@ -113,21 +113,17 @@ c Simulate one time step
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c These functions must be defined to satisfy the visitfortransiminterface lib.
+c These functions must be defined to satisfy the visitfortransimV2interface lib.
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 c---------------------------------------------------------------------------
 c visitcommandcallback
 c---------------------------------------------------------------------------
-      subroutine visitcommandcallback (cmd, lcmd, intdata, 
-     .                                 floatdata, stringdata, 
-     .                                 lstringdata)
+      subroutine visitcommandcallback (cmd, lcmd, args, largs)
       implicit none
-      character*8 cmd, stringdata
-      integer     lcmd, lstringdata, intdata
-      real        floatdata
-      include "visitfortransiminterface.inc"
+      character*8 cmd, args
+      integer     lcmd, largs
       end
 
 c---------------------------------------------------------------------------
@@ -160,95 +156,96 @@ c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
       end
 
 c---------------------------------------------------------------------------
+c visitactivatetimestep
+c---------------------------------------------------------------------------
+      integer function visitactivatetimestep()
+      implicit none
+      include "visitfortransimV2interface.inc"
+      visitactivatetimestep = VISIT_OKAY
+      end
+
+c---------------------------------------------------------------------------
 c visitgetmetadata
 c---------------------------------------------------------------------------
-      integer function visitgetmetadata(handle)
+      integer function visitgetmetadata()
       implicit none
-      integer handle
-      include "visitfortransiminterface.inc"
-      visitgetmetadata = VISIT_OKAY
+      include "visitfortransimV2interface.inc"
+      visitgetmetadata = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetmesh
 c---------------------------------------------------------------------------
-      integer function visitgetmesh(handle, domain, name, lname)
+      integer function visitgetmesh(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetmesh = VISIT_ERROR
+      integer     domain, lname
+      include "visitfortransimV2interface.inc" 
+      visitgetmesh = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
-c visitgetscalar
+c visitgetvariable
 c---------------------------------------------------------------------------
-      integer function visitgetscalar(handle, domain, name, lname)
+      integer function visitgetvariable(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetscalar = VISIT_ERROR
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
+      visitgetvariable = VISIT_INVALID_HANDLE
       end
-
 
 c---------------------------------------------------------------------------
 c visitgetcurve
 c---------------------------------------------------------------------------
-      integer function visitgetcurve(handle, name, lname)
+      integer function visitgetcurve(name, lname)
       implicit none
       character*8 name
-      integer     handle, lname
-      include "visitfortransiminterface.inc"
-      visitgetcurve = VISIT_ERROR
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetcurve = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetdomainlist
 c---------------------------------------------------------------------------
-      integer function visitgetdomainlist(handle)
+      integer function visitgetdomainlist(name, lname)
       implicit none
-      integer handle
-      include "visitfortransiminterface.inc"
-      visitgetdomainlist = VISIT_OKAY
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainlist = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainbounds
+c---------------------------------------------------------------------------
+      integer function visitgetdomainbounds(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainbounds = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetdomainnesting
+c---------------------------------------------------------------------------
+      integer function visitgetdomainnesting(name, lname)
+      implicit none
+      character*8 name
+      integer     lname
+      include "visitfortransimV2interface.inc"
+      visitgetdomainnesting = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
 c visitgetmaterial
 c---------------------------------------------------------------------------
-      integer function visitgetmaterial(handle, domain, name, lname)
+      integer function visitgetmaterial(domain, name, lname)
       implicit none
       character*8 name
-      integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetmaterial = VISIT_ERROR
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
+      visitgetmaterial = VISIT_INVALID_HANDLE
       end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
