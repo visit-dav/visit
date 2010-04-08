@@ -38,14 +38,15 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 ##
 ## Turn off warnings for deprecated features and generate position independent code.
 ##
-SET(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC -fvisibility=hidden")
-SET(VISIT_C_FLAGS "-fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fPIC -fvisibility=hidden")
 
 ##
 ## Add parallel arguments.
 ##
-SET(VISIT_MPI_CXX_FLAGS -DMPI_NO_CPPBIND)
-SET(VISIT_MPI_LIBS mpi)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -DMPI_NO_CPPBIND)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpi)
 
 ##
 ## Database reader plugin support libraries
