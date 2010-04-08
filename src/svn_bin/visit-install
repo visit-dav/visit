@@ -672,6 +672,9 @@ find "$dir"/$version+ -type f -exec chmod $file_permission {} \;
 
 chmod $dir_permission "$dir"/$version+/*/bin/*
 chmod $dir_permission "$dir"/$version+/bin/*
+if("$os" == "darwin") then
+    chmod $dir_permission "$dir"/$version+/*/bin/*.app/Contents/MacOS/* 
+endif
 
 #
 # Set the group ownership properly

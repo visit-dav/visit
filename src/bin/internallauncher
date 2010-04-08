@@ -2021,7 +2021,7 @@ else # We're running a public version.
 {
     foreach (@supportedarchs)
     {
-        if (-x "$visitdir/$_/bin/$exe_name")
+        if (-x "$visitdir/$_/bin/$exe_name" || -x "$visitdir/$_/bin/$exe_name.app")
         {
             $archdir = $_;
             last;
