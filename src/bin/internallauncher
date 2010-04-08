@@ -609,6 +609,11 @@ $0 = shift @ARGV;
 #    Revert to having plugins in a user's home directory on Franklin @NERSC 
 #    since home is now visible from compute nodes.
 #
+#    Mark C. Miller, Wed Apr  7 16:33:30 PDT 2010
+#    Modified generate_args_valgrind to obtain and use abs. path to valgrind.
+#    Without it, newer mpi's and/or valgrinds couldn't deal with distinguishing
+#    args to valgrind apart from args to mpirun and/or VisIt.
+#
 #    Eric Brugger, Wed Apr  7 16:56:43 PDT 2010
 #    I modified the script so that it would properly launch VisIt in
 #    parallel on the opteron clusters at LLNL.
@@ -3341,7 +3346,8 @@ sub generate_args_valgrind {
     # properly detect leaks, at a performance cost.
     $ENV{GLIBCXX_FORCE_NEW} = "1" if not exists $ENV{GLIBCXX_FORCE_NEW};
 
-    my @cmd = ("valgrind");
+    my $full_path_vg = `which valgrind`;
+    my @cmd = ("$full_path_vg");
     if(scalar(@args_vg) != 0) {
         push(@cmd, @args_vg);
     } else {
