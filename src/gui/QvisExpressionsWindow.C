@@ -1408,6 +1408,8 @@ QvisExpressionsWindow::UpdatePythonExpression()
 //  Creation:    Thu Feb 18 12:26:48 PST 2010
 //
 //  Modifications:
+//    Cyrus Harrison,Thu Apr  8 12:40:22 PDT 2010
+//    Resolved issue w/ incorrectly flagging non python expressions.
 //
 // ****************************************************************************
 bool
@@ -1425,9 +1427,9 @@ QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
 
     int start_idx = -1;
 
-    if(start_idx =edef.indexOf("py(") == 0)
+    if(edef.indexOf("py(") == 0)
         start_idx = 3;
-    else if (start_idx =edef.indexOf("python(") == 0)
+    else if (edef.indexOf("python(") == 0)
         start_idx = 7;
 
     if(start_idx == -1)
