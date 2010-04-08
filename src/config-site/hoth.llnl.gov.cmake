@@ -24,6 +24,9 @@
 ##
 ## Mark C. Miller, Mon Mar 29 18:07:05 PDT 2010
 ## Removed TCMALLOC setting so that it is NOT the default on hoth.
+##
+## Mark C. Miller, Wed Apr  7 17:05:22 PDT 2010
+## Updated to newest MPICH-1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -65,8 +68,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
 ##
 ## Add parallel arguments.
 ##
-SET(VISIT_MPI_LIBRARY_DIR /misc/gapps/mpich/1.2.4/Linux/serial/64/debug/lib)
-SET(VISIT_MPI_CXX_FLAGS "-I/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/include")
+SET(VISIT_MPI_LIBRARY_DIR ${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/lib)
+SET(VISIT_MPI_CXX_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/include")
 SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
 SET(VISIT_MPI_LIBS mpich)
 
