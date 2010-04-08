@@ -75,10 +75,14 @@ simulation_data_dtor(simulation_data *sim)
 void simulate_one_timestep(simulation_data *sim)
 {
     /* simulate 1 time step. */
+    ++sim->cycle;
+    sim->time += 0.0134;
+
 #ifdef PARALLEL
-    printf("%d/%d: Simulating time step\n", sim->par_rank, sim->par_size);
+    printf("%d/%d: Simulating time step: cycle=%d, time=%lg\n",
+           sim->par_rank, sim->par_size, sim->cycle, sim->time);
 #else
-    printf("Simulating time step\n");
+    printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);    printf("Simulating time step\n");
 #endif
     sleep(1);
 }
