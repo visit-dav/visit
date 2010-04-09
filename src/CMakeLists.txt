@@ -300,7 +300,7 @@ SET(VISIT_VERSION ${VERSION})
 
 IF(WIN32)
     IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-        SET(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX} ${VISIT_VERSION}" 
+        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt ${VISIT_VERSION}" 
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
         SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
     ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
@@ -990,23 +990,48 @@ IF (WIN32)
 
   # cmake automatically uses _DEBUG and MDd for Debug flags, but our
   # third-party libs are NOT debug versions, so we won't be able to
-  # link against them if those defines are used.  Use our own instead.
-  SET (CMAKE_CXX_FLAGS_DEBUG "/MD /ZI /Ob0 /Od /RTC1" CACHE STRING 
-       "Flags used by the compiler during debug builds." FORCE)
-  SET (CMAKE_C_FLAGS_DEBUG "/MD /Zi /Ob0 /Od /RTC1" CACHE STRING 
-       "Flags used by the compiler during debug builds." FORCE)
-  SET (CMAKE_EXE_LINKER_FLAGS_DEBUG "/INCREMENTAL:YES" CACHE STRING 
-       "Flags used by the linker during debug builds." FORCE)
-  SET (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "/INCREMENTAL:YES" CACHE STRING 
-       "Flags used by the linker during debug builds." FORCE)
-  SET (CMAKE_MODULE_LINKER_FLAGS_DEBUG "/INCREMENTAL:YES" CACHE STRING 
-       "Flags used by the linker during debug builds." FORCE)
-  SET (CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO "/INCREMENTAL:YES" CACHE STRING 
-       "Flags used by the linker during debug builds." FORCE)
-  SET (CMAKE_SHARED_LINKER_FLAGS_DEBUG "/INCREMENTAL:YES" CACHE STRING 
-       "Flags used by the linker during debug builds." FORCE)
-  SET (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO "/INCREMENTAL:YES" CACHE STRING 
-       "Flags used by the linker during debug builds." FORCE)
+  # link against them if those defines are used.  Replace those flags:
+  # When we allow users to supply their own third-party libs, then
+  # this will have to be rethought -- they may want to be able to c
+  # change them and this currently forces.
+
+  MACRO(REPLACE_FLAG OLD_FLAG NEW_FLAG FLAG_TYPE FLAG_STRING)
+      STRING(REPLACE "${OLD_FLAG}" "${NEW_FLAG}" TMP "${${FLAG_TYPE}}")
+      SET(${FLAG_TYPE} "${TMP}" CACHE STRING "${FLAG_STRING}" FORCE)
+  ENDMACRO(REPLACE_FLAG)
+
+  # Remove /_DEBUG From debug builds
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_CXX_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_C_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_EXE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_MODULE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+  # Change /MDd to /MD for debug builds
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_C_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_EXE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_MODULE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+
+  # Change /Zi to /ZI for CXX flags
+  REPLACE_FLAG("/Zi" "/ZI" CMAKE_CXX_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/Zi" "/ZI" CMAKE_CXX_FLAGS_RELWITHDEBINFO 
+               "Flags used by the compiler during debug builds")
+
+  # Remove /machine:I386 from linker flags
+  REPLACE_FLAG("/machine:I386" "" CMAKE_EXE_LINKER_FLAGS
+               "Flags used by the linker")
+  REPLACE_FLAG("/machine:I386" "" CMAKE_MODULE_LINKER_FLAGS
+               "Flags used by the linker during creation of modules.")
+  REPLACE_FLAG("/machine:I386" "" CMAKE_SHARED_LINKER_FLAGS
+               "Flags used by the linker during creation of dll's.")
 ENDIF (WIN32)
 
 #-----------------------------------------------------------------------------
