@@ -54,6 +54,7 @@ Mesh
 Molecule
 MultiCurve
 ParallelCoordinates
+Poincare
 Pseudocolor
 Scatter
 Spreadsheet
