@@ -1349,6 +1349,9 @@ QvisHelpWindow::displayHome()
 //   Brad Whitlock, Fri Feb 18 13:35:31 PST 2005
 //   I made it return a bool indicating whether or not it displayed the page.
 //
+//   Kathleen Bonnell, Thu Apr  8 17:20:52 PST 2010
+//   Convert file to url so it will work on windows.
+//
 // ****************************************************************************
 
 bool
@@ -1361,7 +1364,7 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
         QString file(CompleteFileName(page));
         if(QFile(file).exists())
         {
-            helpBrowser->setSource(file);
+            helpBrowser->setSource(QUrl::fromLocalFile(file));
             helpFile = page;
             retval = true;
         }

@@ -68,7 +68,7 @@ ENDIF(VISIT_STATIC)
 
 #****************************** The gui executable ***************************
 IF(NOT APPLE)
-    ADD_EXECUTABLE(gui_exe main.C ${GUI_STATIC_SOURCES})
+    ADD_EXECUTABLE(gui_exe main.C ${GUI_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
 ELSE(NOT APPLE)
     SET(GUI_ICON_FILE VisItIcon.icns)
     SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE} PROPERTIES

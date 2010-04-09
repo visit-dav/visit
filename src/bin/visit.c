@@ -1049,16 +1049,25 @@ AddEnvironment(int useShortFileName)
  * Modifications:
  *   Kathleen Bonnell, Mon Jun 2 18:11:01 PDT 2008
  *   Add 'visitdev' argument. Add it to the path if not null.
- *
+ * 
+ *   Kathleen Bonnell, Sun Feb 28 16:23:45 MST 2010
+ *   Add visitpath and visitdev to beginning of PATH, not end.  Ensure they
+ *   don't get duplicated in the PATH string.
+ * 
  *****************************************************************************/
 
 void
 AddPath(char *tmp, const char *visitpath, const char *visitdev)
 {
     char *env = 0, *path, *start = tmp;
+    bool skiptoken;
 
-    strcpy(tmp, "PATH=");
-    start = path = tmp + 5;
+    sprintf(tmp, "PATH=%s", visitpath);
+
+    if (visitdev != 0)
+        sprintf(tmp, ";%s", visitdev);
+
+    start = path = tmp + strlen(tmp);
 
     if((env = getenv("PATH")) != NULL)
     {
@@ -1073,19 +1082,19 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
            /* 
             * If the token does not contain "VisIt " then add it to the path.
             */
-           if(strstr(token, "VisIt ") == NULL)
+           skiptoken = false;
+           if (strcmp(token, visitpath) == 0)
+               skiptoken = true;
+           else if (visitdev != 0 && strcmp(token, visitdev) == 0)
+               skiptoken = true;
+           else if(strstr(token, "VisIt ") != NULL)
+               skiptoken = true;
+
+           if (!skiptoken)
            {
                int len = strlen(token);
-               if(path == start)
-               {
-                   sprintf(path, "%s", token);
-                   path += len;
-               }
-               else
-               {
-                   sprintf(path, ";%s", token);
-                   path += (len + 1);
-               }
+               sprintf(path, ";%s", token);
+               path += (len + 1);
            }
 
            /* 
@@ -1097,13 +1106,6 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
        free(env2);
     }
 
-    if(path == start)
-        sprintf(path, "%s", visitpath);
-    else
-        sprintf(path, ";%s", visitpath);
-
-    if (visitdev != 0)
-        sprintf(path, ";%s", visitdev);
 
     putenv(tmp);
 }

@@ -145,7 +145,7 @@ avtpipeline_ser
 # engine_ser_exe_EOperator_ser = The list of operator libE libraries needed to link
 # engine_ser_exe_EPlot_ser = The list of plot libE libraries needed to link
 
-ADD_EXECUTABLE(engine_ser_exe main.C ${ENGINE_STATIC_SOURCES})
+ADD_EXECUTABLE(engine_ser_exe main.C ${ENGINE_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
 SET_TARGET_PROPERTIES(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
 TARGET_LINK_LIBRARIES(engine_ser_exe 
     ${engine_ser_exe_IDatabase}

@@ -210,7 +210,7 @@ ${VIEWER_QT_LIBS}
 
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
-    ADD_EXECUTABLE(viewer_exe viewer.C ${VIEWER_STATIC_SOURCES})
+    ADD_EXECUTABLE(viewer_exe viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
 ELSE(NOT APPLE)
     SET(VIEWER_ICON_FILE VisItIcon.icns)
     SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE} PROPERTIES

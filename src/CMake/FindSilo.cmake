@@ -38,6 +38,9 @@
 #    Kathleen Bonnell, Wed Dec  9 15:09:03 MT 2009
 #    Make PDB_LIB a cached STRING, and PDB_FOUND a cached BOOL.
 #
+#    Kathleen Bonnell, Thu Apr  8 17:17:22 MST 2010
+#    Add install and copy of silex for windows.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -46,9 +49,17 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(SILO lib/${VISIT_MSVC_VERSION} include silohdf5)
+    SET_UP_THIRD_PARTY(SILO lib/${VISIT_MSVC_VERSION} include silohdf5)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+         ${SILO_DIR}/lib/${VISIT_MSVC_VERSION}/silex.exe
+         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+    INSTALL(FILES ${SILO_DIR}/lib/${VISIT_MSVC_VERSION}/silex.exe
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        )
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(SILO lib include siloh5)
+    SET_UP_THIRD_PARTY(SILO lib include siloh5)
 ENDIF (WIN32)
 
 # We use Silo for PDB most of the time so set up additional PDB variables.
