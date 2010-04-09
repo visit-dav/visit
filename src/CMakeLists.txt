@@ -170,6 +170,7 @@ IF (WIN32)
   MESSAGE(STATUS "Trying to include config-site/windows.cmake")
   INCLUDE(config-site/windows.cmake)
   SET(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
+  SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
 ENDIF (WIN32)
 
 #-----------------------------------------------------------------------------
@@ -1404,21 +1405,26 @@ ELSE (NOT WIN32)
     # Make sure it won't run unless specifically called.
     # 
     IF (${MAKENSIS_FOUND})
+        FILE(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
+        FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS} 
-                    /DVISIT_SOURCE_DIR=${VISIT_SOURCE_DIR} 
-                    /DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} 
+                    /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
+                    /DINSTALL_PREFIX=${CIP_NATIVE} 
                      ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS} 
                     /DVisItVersion=${VISIT_VERSION} 
                     /DCOMPILER=${VISIT_MSVC_VERSION} 
-                    /DVISIT_SOURCE_DIR=${VISIT_SOURCE_DIR} 
-                    /DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} 
+                    /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
+                    /DINSTALL_PREFIX=${CIP_NATIVE} 
                      ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
                     ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
+        ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD 
+            COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+ 
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
     ENDIF (${MAKENSIS_FOUND})
 ENDIF (NOT WIN32)

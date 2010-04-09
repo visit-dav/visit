@@ -133,7 +133,7 @@ ELSE (NOT WIN32)
     #--------------------------------------------------------------------------
     INCLUDE_DIRECTORIES(${VISIT_COMMON_INCLUDES})
     LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-    ADD_EXECUTABLE(visit_exe visit.c)
+    ADD_EXECUTABLE(visit_exe visit.c ${VISIT_WIN_ICON_RESOURCE})
     SET_TARGET_PROPERTIES(visit_exe PROPERTIES OUTPUT_NAME visit)
     SET_SOURCE_FILES_PROPERTIES(visit.c PROPERTIES LANGUAGE CXX)
     TARGET_LINK_LIBRARIES(visit_exe shlwapi)
