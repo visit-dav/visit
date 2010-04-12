@@ -1059,15 +1059,15 @@ AddEnvironment(int useShortFileName)
 void
 AddPath(char *tmp, const char *visitpath, const char *visitdev)
 {
-    char *env = 0, *path, *start = tmp;
+    char *env = 0, *path;
     bool skiptoken;
 
-    sprintf(tmp, "PATH=%s", visitpath);
-
     if (visitdev != 0)
-        sprintf(tmp, ";%s", visitdev);
+        sprintf(tmp, "PATH=%s;%s", visitpath, visitdev);
+    else
+        sprintf(tmp, "PATH=%s", visitpath);
 
-    start = path = tmp + strlen(tmp);
+    path = tmp + strlen(tmp);
 
     if((env = getenv("PATH")) != NULL)
     {
@@ -1105,7 +1105,6 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
 
        free(env2);
     }
-
 
     putenv(tmp);
 }
