@@ -20,6 +20,8 @@
 #    Jeremy Meredith, Wed Jan 20 12:50:34 EST 2010
 #    Added src/lib to python path so we can find the visit writer module.
 #
+#    Mark C. Miller, Mon Apr 12 15:40:16 PDT 2010
+#    Gracefully skip if we're in scalable mode.
 # ----------------------------------------------------------------------------
 
 import sys
@@ -27,6 +29,12 @@ sys.path.append("../src/lib")
 
 import visit_writer
 
+
+# We can't run this test while in SR mode
+# So, exit and indicate the test was skipped.
+# 'scalble' is defined in Testing.py
+if scalable != 0:
+    Exit(116)
 
 # BEGIN USER MODIFIABLE SECTION
 
