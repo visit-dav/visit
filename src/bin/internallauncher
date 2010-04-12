@@ -613,6 +613,9 @@ $0 = shift @ARGV;
 #    I modified the script so that it would properly launch VisIt in
 #    parallel on the opteron clusters at LLNL.
 #
+#    Jeremy Meredith, Mon Apr 12 11:12:19 EDT 2010
+#    Fixed -help variants so they work on installations.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1130,7 +1133,7 @@ $leftdb = "";
 $rightdb = "";
 $noloopback = 0;
 $assume_fallback_warned = 0;
-$argc = scalar(@ARGV);
+$showhelp = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -1167,16 +1170,10 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; $exe_name_passed = 1;}
     elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
-    elsif ($arg eq "-help" and $argc == 2)
-        { print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n"; exit(0); }
-    elsif ($arg eq "-h" and $argc == 2)
-        { print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n"; exit(0); }
-    elsif ($arg eq "--help" and $argc == 2)
-        { print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n"; exit(0); }
-    elsif ($arg eq "-fullhelp" and $argc == 2)
-        { print STDERR "\nUSAGE: visit [options] $fullusage\n"; exit(0); }
-    elsif ($arg eq "--fullhelp" and $argc == 2)
-        { print STDERR "\nUSAGE: visit [options] $fullusage\n"; exit(0); }
+    elsif ($arg eq "-help" or $arg eq "-h" or $arg eq "--help")
+        { $showhelp = 1; push @visitargs, $arg; }
+    elsif ($arg eq "-fullhelp" or $arg eq "--fullhelp")
+        { $showhelp = 2; push @visitargs, $arg; }
     elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
     elsif ($arg eq "-arch")      { $print_arch = 1; } 
     elsif ($arg eq "-env")              { $envonly = 1; }
@@ -1350,6 +1347,24 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-viewerdisplay" )   { $viewerdisplay = shift; push @visitargs, $arg, $viewerdisplay; }
     elsif ($arg eq "-noloopback")       { push @visitargs, $arg if (!$noloopback); $noloopback = 1; }
     else                         { push @visitargs, $arg; }
+}
+
+# -----------------------------------------------------------------------------
+#                             Display help messages
+# -----------------------------------------------------------------------------
+
+if ($showhelp != 0 and $exe_name eq "gui")
+{
+    if ($showhelp == 1)
+    {
+        print STDERR "\nUSAGE: visit [options] $helpnote\n $usage\n";
+        exit(0);
+    }
+    else # ($showhelp == 2)
+    {
+        print STDERR "\nUSAGE: visit [options] $fullusage\n";
+        exit(0);
+    }
 }
 
 # -----------------------------------------------------------------------------
