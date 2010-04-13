@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class ColorControlPoint extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 2;
+    private static int ColorControlPoint_numAdditionalAtts = 2;
 
     public ColorControlPoint()
     {
-        super(numAdditionalAttributes);
+        super(ColorControlPoint_numAdditionalAtts);
 
         colors = new byte[4];
         colors[0] = (byte)0;
@@ -72,7 +72,7 @@ public class ColorControlPoint extends AttributeSubject
 
     public ColorControlPoint(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ColorControlPoint_numAdditionalAtts + nMoreFields);
 
         colors = new byte[4];
         colors[0] = (byte)0;
@@ -84,7 +84,7 @@ public class ColorControlPoint extends AttributeSubject
 
     public ColorControlPoint(ColorControlPoint obj)
     {
-        super(numAdditionalAttributes);
+        super(ColorControlPoint_numAdditionalAtts);
 
         int i;
 
@@ -104,7 +104,7 @@ public class ColorControlPoint extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ColorControlPoint_numAdditionalAtts;
     }
 
     public boolean equals(ColorControlPoint obj)

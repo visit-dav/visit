@@ -56,25 +56,25 @@ package llnl.visit;
 
 public class avtTensorMetaData extends avtVarMetaData
 {
-    private static int numAdditionalAttributes = 1;
+    private static int avtTensorMetaData_numAdditionalAtts = 1;
 
     public avtTensorMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtTensorMetaData_numAdditionalAtts);
 
         dim = 0;
     }
 
     public avtTensorMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtTensorMetaData_numAdditionalAtts + nMoreFields);
 
         dim = 0;
     }
 
     public avtTensorMetaData(avtTensorMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtTensorMetaData_numAdditionalAtts);
 
         dim = obj.dim;
 
@@ -88,7 +88,7 @@ public class avtTensorMetaData extends avtVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtTensorMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtTensorMetaData obj)
@@ -101,7 +101,7 @@ public class avtTensorMetaData extends avtVarMetaData
     public void SetDim(int dim_)
     {
         dim = dim_;
-        Select(Offset() + 0);
+        Select((new avtTensorMetaData()).Offset() + 0);
     }
 
     // Property getting methods
@@ -112,14 +112,15 @@ public class avtTensorMetaData extends avtVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtTensorMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteInt(dim);
     }
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        if(id == Offset())
+        int offset = (new avtTensorMetaData()).Offset();
+        if(id == offset)
             SetDim(buf.ReadInt());
         else
             super.ReadAtts(id, buf);

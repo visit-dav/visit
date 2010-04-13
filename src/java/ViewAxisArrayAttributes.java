@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class ViewAxisArrayAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 3;
+    private static int ViewAxisArrayAttributes_numAdditionalAtts = 3;
 
     public ViewAxisArrayAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ViewAxisArrayAttributes_numAdditionalAtts);
 
         domainCoords = new double[2];
         domainCoords[0] = 0;
@@ -77,7 +77,7 @@ public class ViewAxisArrayAttributes extends AttributeSubject
 
     public ViewAxisArrayAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ViewAxisArrayAttributes_numAdditionalAtts + nMoreFields);
 
         domainCoords = new double[2];
         domainCoords[0] = 0;
@@ -94,7 +94,7 @@ public class ViewAxisArrayAttributes extends AttributeSubject
 
     public ViewAxisArrayAttributes(ViewAxisArrayAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ViewAxisArrayAttributes_numAdditionalAtts);
 
         int i;
 
@@ -121,7 +121,7 @@ public class ViewAxisArrayAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ViewAxisArrayAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ViewAxisArrayAttributes obj)

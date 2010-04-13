@@ -2458,20 +2458,6 @@ public class ViewerMethods
     }
 
     /**
-     * Toggles the maintain data mode, which ensures that data limits such as those 
-     * used in the Pseudocolor plot remain set to the values that were in force when
-     * maintain data mode was engaged.
-     *
-     * @return true on success; false otherwise.
-     */
-    public boolean ToggleMaintainDataMode()
-    {
-        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLEMAINTAINDATAMODERPC);
-        GetViewerState().GetViewerRPC().Notify();
-        return Synchronize();
-    }
-
-    /**
      * Toggles full frame mode, which is a 1D/2D window mode that exagerrates scale 
      * in one or more dimensions to ensure that plots take up most of the visualization
      * window viewport.

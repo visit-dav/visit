@@ -75,19 +75,24 @@ public class MakeHostProfile extends RunViewer
         String user = new String("whitlocb");
         String remotevisitPath = new String("/usr/gapps/visit");
 
-        // Create a new host profile object and set it up for serial
+        // Basic, serial profile.
+        LaunchProfile example = new LaunchProfile();
+        example.SetProfileName("example");
+        example.SetActive(true);
+        
+        // Create a new machine profile object and the serial launch profile.
         MachineProfile profile = new MachineProfile();
-        profile.SetProfileName("example");
         profile.SetHost(host);
         profile.SetUserName(user);
-        profile.SetClientHostDetermination(HostProfile.CLIENTHOSTDETERMINATION_PARSEDFROMSSHCLIENT);
+        profile.SetClientHostDetermination(MachineProfile.CLIENTHOSTDETERMINATION_PARSEDFROMSSHCLIENT);
         profile.SetTunnelSSH(true);
         profile.SetDirectory(remotevisitPath);
+        profile.AddLaunchProfiles(example);
 
         // Replace the list of host profiles and tell the viewer about the changes. We could
         // have added to the list instead of clearing the list.
-        viewer.GetViewerState().GetHostProfileList().ClearProfiles();
-        viewer.GetViewerState().GetHostProfileList().AddProfiles(profile);
+        viewer.GetViewerState().GetHostProfileList().ClearMachines();
+        viewer.GetViewerState().GetHostProfileList().AddMachines(profile);
         viewer.GetViewerState().GetHostProfileList().Notify();
         System.out.println("HostProfileList = \n" + 
             viewer.GetViewerState().GetHostProfileList().toString(""));

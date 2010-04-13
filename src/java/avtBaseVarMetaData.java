@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class avtBaseVarMetaData extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 5;
+    private static int avtBaseVarMetaData_numAdditionalAtts = 5;
 
     public avtBaseVarMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtBaseVarMetaData_numAdditionalAtts);
 
         name = new String("scalar");
         originalName = new String("");
@@ -71,7 +71,7 @@ public class avtBaseVarMetaData extends AttributeSubject
 
     public avtBaseVarMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtBaseVarMetaData_numAdditionalAtts + nMoreFields);
 
         name = new String("scalar");
         originalName = new String("");
@@ -82,7 +82,7 @@ public class avtBaseVarMetaData extends AttributeSubject
 
     public avtBaseVarMetaData(avtBaseVarMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtBaseVarMetaData_numAdditionalAtts);
 
         name = new String(obj.name);
         originalName = new String(obj.originalName);
@@ -100,7 +100,7 @@ public class avtBaseVarMetaData extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtBaseVarMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtBaseVarMetaData obj)

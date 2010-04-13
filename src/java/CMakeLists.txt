@@ -50,8 +50,6 @@ avtLabelMetaData.java
 avtMatSpeciesMetaData.java
 avtMaterialMetaData.java
 avtMeshMetaData.java
-avtSILCollectionMetaData.java
-avtSILMetaData.java
 avtScalarMetaData.java
 avtSimulationCommandSpecification.java
 avtSimulationInformation.java
@@ -100,12 +98,13 @@ GaussianControlPoint.java
 GaussianControlPointList.java 
 GlobalAttributes.java 
 GlobalLineoutAttributes.java 
-HostProfile.java 
 HostProfileList.java 
 InteractorAttributes.java 
 KeyframeAttributes.java 
+LaunchProfile.java
 LightAttributes.java 
 LightList.java 
+MachineProfile.java
 MaterialAttributes.java 
 MeshManagementAttributes.java 
 MessageAttributes.java
@@ -174,7 +173,7 @@ ADD_EXECUTABLE(VersionWriter VersionWriter.C)
 # it's not all that different than before and it's WAY easier than keeping the
 # per-file source dependencies.
 ADD_CUSTOM_COMMAND(TARGET VersionWriter POST_BUILD 
-    COMMAND ${RUNTIME_OUTPUT_DIRECTORY}/VersionWriter ${VISIT_SOURCE_DIR}/VERSION ${VISIT_SOURCE_DIR}/java/Version.java
+    COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/VersionWriter ${VISIT_SOURCE_DIR}/VERSION ${VISIT_SOURCE_DIR}/java/Version.java
     COMMAND ${CMAKE_Java_COMPILER} ${CMAKE_Java_FLAGS} -d ${VISIT_BINARY_DIR}/java ${PACKAGE_SOURCES} ${PACKAGE_STATE_SOURCES} ${METADATA_SOURCES}
     WORKING_DIRECTORY ${VISIT_BINARY_DIR}/java
 )

@@ -58,7 +58,7 @@ import java.lang.Double;
 
 public class AnnotationObject extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 22;
+    private static int AnnotationObject_numAdditionalAtts = 22;
 
     // Enum values
     public final static int ANNOTATIONTYPE_TEXT2D = 0;
@@ -79,7 +79,7 @@ public class AnnotationObject extends AttributeSubject
 
     public AnnotationObject()
     {
-        super(numAdditionalAttributes);
+        super(AnnotationObject_numAdditionalAtts);
 
         objectName = new String("");
         objectType = ANNOTATIONTYPE_TEXT2D;
@@ -113,7 +113,7 @@ public class AnnotationObject extends AttributeSubject
 
     public AnnotationObject(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(AnnotationObject_numAdditionalAtts + nMoreFields);
 
         objectName = new String("");
         objectType = ANNOTATIONTYPE_TEXT2D;
@@ -147,7 +147,7 @@ public class AnnotationObject extends AttributeSubject
 
     public AnnotationObject(AnnotationObject obj)
     {
-        super(numAdditionalAttributes);
+        super(AnnotationObject_numAdditionalAtts);
 
         int i;
 
@@ -207,7 +207,7 @@ public class AnnotationObject extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return AnnotationObject_numAdditionalAtts;
     }
 
     public boolean equals(AnnotationObject obj)
