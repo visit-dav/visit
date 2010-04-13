@@ -21,6 +21,12 @@
 ##
 ## Eric Brugger, Wed Mar  3 17:11:44 PST 2010
 ## Updated H5Part to 1.6.0 and HDF5 to 1.8.4.
+##
+## Mark C. Miller, Mon Mar 29 18:07:05 PDT 2010
+## Removed TCMALLOC setting so that it is NOT the default on hoth.
+##
+## Mark C. Miller, Wed Apr  7 17:05:22 PDT 2010
+## Updated to newest MPICH-1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -62,10 +68,10 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
 ##
 ## Add parallel arguments.
 ##
-SET(VISIT_MPI_LIBRARY_DIR /misc/gapps/mpich/1.2.4/Linux/serial/64/debug/lib)
-SET(VISIT_MPI_CXX_FLAGS "-I/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/include")
-SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
-SET(VISIT_MPI_LIBS mpich)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBRARY_DIR ${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/lib)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 
 ##############################################################
 ##
@@ -133,12 +139,12 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 #ITAPS_INCLUDE_DIRECTORIES(C ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/include)
 #ITAPS_FILE_PATTERNS(C *.cub)
 #ITAPS_LINK_LIBRARIES(C iMesh MOAB hdf5 sz z netcdf_c++ netcdf vtkGraphics)
-#ITAPS_LINK_DIRECTORIES(C ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.2/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/3.6.3/${VISITARCH}/lib)
+#ITAPS_LINK_DIRECTORIES(C ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.4/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/3.6.3/${VISITARCH}/lib)
 ## MOAB implementation
 ITAPS_INCLUDE_DIRECTORIES(MOAB ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/include)
 ITAPS_FILE_PATTERNS(MOAB *.cub)
 ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5 sz z netcdf_c++ netcdf vtkGraphics)
-ITAPS_LINK_DIRECTORIES(MOAB  ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.2/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/3.6.3/${VISITARCH}/lib)
+ITAPS_LINK_DIRECTORIES(MOAB  ${VISITHOME}/itaps/MOAB/3.99-20Apr09/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.4/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/3.6.3/${VISITARCH}/lib)
 ## FMDB implementation
 ITAPS_INCLUDE_DIRECTORIES(FMDB ${VISITHOME}/itaps/FMDB/1.0-15Apr09/${VISITARCH}/include/FMDB)
 ITAPS_FILE_PATTERNS(FMDB *.sms)
@@ -175,8 +181,3 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## VISUS
 ##
 VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR /usr/gapps/visit/visus/linux_rhel3_gcc_3.2.3_new)
-
-##
-## Tcmalloc
-##
-VISIT_OPTION_DEFAULT(VISIT_TCMALLOC_DIR ${VISITHOME}/google-perftools/0.97/${VISITARCH})
