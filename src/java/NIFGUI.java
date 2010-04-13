@@ -498,7 +498,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
             CurveAttributes curveAtts = (CurveAttributes)viewer.GetPlotAttributes("Curve"); 
             curveAtts.SetLineWidth(2);
             curveAtts.SetShowPoints(true);
-            curveAtts.SetColor(new ColorAttribute(0,0,255,255));
+            curveAtts.SetCurveColor(new ColorAttribute(0,0,255,255));
             curveAtts.Notify();
             viewer.GetViewerMethods().SetPlotOptions("Curve");
         }
@@ -567,7 +567,8 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         // want to tell it to restore a session file here instead.
         //
         viewer.GetViewerMethods().OpenDatabase(visitDatabase);
-        viewer.GetViewerMethods().AddPlot("Surface", visitPlotVar);
+        viewer.GetViewerMethods().AddPlot("Pseudocolor", visitPlotVar);
+        viewer.GetViewerMethods().AddOperator("Elevate");
         viewer.GetViewerMethods().DrawPlots();
     }
 

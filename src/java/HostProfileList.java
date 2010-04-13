@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class HostProfileList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int HostProfileList_numAdditionalAtts = 1;
 
     public HostProfileList()
     {
-        super(numAdditionalAttributes);
+        super(HostProfileList_numAdditionalAtts);
 
         machines = new Vector();
     }
 
     public HostProfileList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(HostProfileList_numAdditionalAtts + nMoreFields);
 
         machines = new Vector();
     }
 
     public HostProfileList(HostProfileList obj)
     {
-        super(numAdditionalAttributes);
+        super(HostProfileList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class HostProfileList extends AttributeSubject
         machines = new Vector(obj.machines.size());
         for(i = 0; i < obj.machines.size(); ++i)
         {
-            MachineProfile newObj = (MachineProfile)machines.elementAt(i);
-            machines.addElement(new MachineProfile(newObj));
+            MachineProfile oldObj = (MachineProfile)obj.machines.elementAt(i);
+            machines.addElement(new MachineProfile(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class HostProfileList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return HostProfileList_numAdditionalAtts;
     }
 
     public boolean equals(HostProfileList obj)

@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class avtArrayMetaData extends avtVarMetaData
 {
-    private static int numAdditionalAttributes = 2;
+    private static int avtArrayMetaData_numAdditionalAtts = 2;
 
     public avtArrayMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtArrayMetaData_numAdditionalAtts);
 
         nVars = 0;
         compNames = new Vector();
@@ -69,7 +69,7 @@ public class avtArrayMetaData extends avtVarMetaData
 
     public avtArrayMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtArrayMetaData_numAdditionalAtts + nMoreFields);
 
         nVars = 0;
         compNames = new Vector();
@@ -77,7 +77,7 @@ public class avtArrayMetaData extends avtVarMetaData
 
     public avtArrayMetaData(avtArrayMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtArrayMetaData_numAdditionalAtts);
 
         int i;
 
@@ -97,7 +97,7 @@ public class avtArrayMetaData extends avtVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtArrayMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtArrayMetaData obj)
@@ -122,13 +122,13 @@ public class avtArrayMetaData extends avtVarMetaData
     public void SetNVars(int nVars_)
     {
         nVars = nVars_;
-        Select(Offset() + 0);
+        Select((new avtArrayMetaData()).Offset() + 0);
     }
 
     public void SetCompNames(Vector compNames_)
     {
         compNames = compNames_;
-        Select(Offset() + 1);
+        Select((new avtArrayMetaData()).Offset() + 1);
     }
 
     // Property getting methods
@@ -140,7 +140,7 @@ public class avtArrayMetaData extends avtVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtArrayMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteInt(nVars);
         if(WriteSelect(offset + 1, buf))
@@ -149,7 +149,8 @@ public class avtArrayMetaData extends avtVarMetaData
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int index = id - Offset();
+        int offset = (new avtArrayMetaData()).Offset();
+        int index = id - offset;
         switch(index)
         {
         case 0:

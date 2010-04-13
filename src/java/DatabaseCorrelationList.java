@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class DatabaseCorrelationList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 4;
+    private static int DatabaseCorrelationList_numAdditionalAtts = 4;
 
     // Enum values
     public final static int WHENTOCORRELATE_CORRELATEALWAYS = 0;
@@ -67,7 +67,7 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public DatabaseCorrelationList()
     {
-        super(numAdditionalAttributes);
+        super(DatabaseCorrelationList_numAdditionalAtts);
 
         correlations = new Vector();
         needPermission = true;
@@ -77,7 +77,7 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public DatabaseCorrelationList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DatabaseCorrelationList_numAdditionalAtts + nMoreFields);
 
         correlations = new Vector();
         needPermission = true;
@@ -87,7 +87,7 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public DatabaseCorrelationList(DatabaseCorrelationList obj)
     {
-        super(numAdditionalAttributes);
+        super(DatabaseCorrelationList_numAdditionalAtts);
 
         int i;
 
@@ -95,8 +95,8 @@ public class DatabaseCorrelationList extends AttributeSubject
         correlations = new Vector(obj.correlations.size());
         for(i = 0; i < obj.correlations.size(); ++i)
         {
-            DatabaseCorrelation newObj = (DatabaseCorrelation)correlations.elementAt(i);
-            correlations.addElement(new DatabaseCorrelation(newObj));
+            DatabaseCorrelation oldObj = (DatabaseCorrelation)obj.correlations.elementAt(i);
+            correlations.addElement(new DatabaseCorrelation(oldObj));
         }
 
         needPermission = obj.needPermission;
@@ -113,7 +113,7 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DatabaseCorrelationList_numAdditionalAtts;
     }
 
     public boolean equals(DatabaseCorrelationList obj)

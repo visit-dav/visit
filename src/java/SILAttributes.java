@@ -58,11 +58,11 @@ import java.lang.Integer;
 
 public class SILAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 12;
+    private static int SILAttributes_numAdditionalAtts = 12;
 
     public SILAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SILAttributes_numAdditionalAtts);
 
         nSets = 0;
         setNames = new Vector();
@@ -80,7 +80,7 @@ public class SILAttributes extends AttributeSubject
 
     public SILAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SILAttributes_numAdditionalAtts + nMoreFields);
 
         nSets = 0;
         setNames = new Vector();
@@ -98,7 +98,7 @@ public class SILAttributes extends AttributeSubject
 
     public SILAttributes(SILAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SILAttributes_numAdditionalAtts);
 
         int i;
 
@@ -140,24 +140,24 @@ public class SILAttributes extends AttributeSubject
         nspace = new Vector(obj.nspace.size());
         for(i = 0; i < obj.nspace.size(); ++i)
         {
-            NamespaceAttributes newObj = (NamespaceAttributes)nspace.elementAt(i);
-            nspace.addElement(new NamespaceAttributes(newObj));
+            NamespaceAttributes oldObj = (NamespaceAttributes)obj.nspace.elementAt(i);
+            nspace.addElement(new NamespaceAttributes(oldObj));
         }
 
         // *** Copy the matrices field ***
         matrices = new Vector(obj.matrices.size());
         for(i = 0; i < obj.matrices.size(); ++i)
         {
-            SILMatrixAttributes newObj = (SILMatrixAttributes)matrices.elementAt(i);
-            matrices.addElement(new SILMatrixAttributes(newObj));
+            SILMatrixAttributes oldObj = (SILMatrixAttributes)obj.matrices.elementAt(i);
+            matrices.addElement(new SILMatrixAttributes(oldObj));
         }
 
         // *** Copy the arrays field ***
         arrays = new Vector(obj.arrays.size());
         for(i = 0; i < obj.arrays.size(); ++i)
         {
-            SILArrayAttributes newObj = (SILArrayAttributes)arrays.elementAt(i);
-            arrays.addElement(new SILArrayAttributes(newObj));
+            SILArrayAttributes oldObj = (SILArrayAttributes)obj.arrays.elementAt(i);
+            arrays.addElement(new SILArrayAttributes(oldObj));
         }
 
         order = new Vector();
@@ -177,7 +177,7 @@ public class SILAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SILAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SILAttributes obj)

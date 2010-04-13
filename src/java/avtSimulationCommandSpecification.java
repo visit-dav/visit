@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class avtSimulationCommandSpecification extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 10;
+    private static int avtSimulationCommandSpecification_numAdditionalAtts = 10;
 
     // Enum values
     public final static int RUNMODE_UNKNOWN = 0;
@@ -71,7 +71,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public avtSimulationCommandSpecification()
     {
-        super(numAdditionalAttributes);
+        super(avtSimulationCommandSpecification_numAdditionalAtts);
 
         name = new String("");
             className = new String("");
@@ -86,7 +86,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public avtSimulationCommandSpecification(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtSimulationCommandSpecification_numAdditionalAtts + nMoreFields);
 
         name = new String("");
             className = new String("");
@@ -101,7 +101,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public avtSimulationCommandSpecification(avtSimulationCommandSpecification obj)
     {
-        super(numAdditionalAttributes);
+        super(avtSimulationCommandSpecification_numAdditionalAtts);
 
         name = new String(obj.name);
         argumentType = obj.argumentType;
@@ -124,7 +124,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtSimulationCommandSpecification_numAdditionalAtts;
     }
 
     public boolean equals(avtSimulationCommandSpecification obj)

@@ -58,11 +58,11 @@ import java.util.Vector;
 
 public class NamespaceAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 4;
+    private static int NamespaceAttributes_numAdditionalAtts = 4;
 
     public NamespaceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(NamespaceAttributes_numAdditionalAtts);
 
         type = -1;
         subsets = new Vector();
@@ -72,7 +72,7 @@ public class NamespaceAttributes extends AttributeSubject
 
     public NamespaceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(NamespaceAttributes_numAdditionalAtts + nMoreFields);
 
         type = -1;
         subsets = new Vector();
@@ -82,7 +82,7 @@ public class NamespaceAttributes extends AttributeSubject
 
     public NamespaceAttributes(NamespaceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(NamespaceAttributes_numAdditionalAtts);
 
         int i;
 
@@ -106,7 +106,7 @@ public class NamespaceAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return NamespaceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(NamespaceAttributes obj)

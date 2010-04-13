@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 19;
+    private static int RenderingAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
@@ -80,7 +80,7 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
 
     public RenderingAttributes()
     {
-        super(numAdditionalAttributes);
+        super(RenderingAttributes_numAdditionalAtts);
 
         antialiasing = false;
         geometryRepresentation = GEOMETRYREPRESENTATION_SURFACES;
@@ -111,7 +111,7 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
 
     public RenderingAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(RenderingAttributes_numAdditionalAtts + nMoreFields);
 
         antialiasing = false;
         geometryRepresentation = GEOMETRYREPRESENTATION_SURFACES;
@@ -142,7 +142,7 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
 
     public RenderingAttributes(RenderingAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(RenderingAttributes_numAdditionalAtts);
 
         int i;
 
@@ -184,7 +184,7 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return RenderingAttributes_numAdditionalAtts;
     }
 
     public boolean equals(RenderingAttributes obj)

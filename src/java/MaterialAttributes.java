@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class MaterialAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 12;
+    private static int MaterialAttributes_numAdditionalAtts = 12;
 
     // Enum values
     public final static int ALGORITHM_EQUIT = 0;
@@ -68,7 +68,7 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MaterialAttributes_numAdditionalAtts);
 
         smoothing = false;
         forceMIR = false;
@@ -86,7 +86,7 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MaterialAttributes_numAdditionalAtts + nMoreFields);
 
         smoothing = false;
         forceMIR = false;
@@ -104,7 +104,7 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes(MaterialAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MaterialAttributes_numAdditionalAtts);
 
         smoothing = obj.smoothing;
         forceMIR = obj.forceMIR;
@@ -129,7 +129,7 @@ public class MaterialAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MaterialAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MaterialAttributes obj)

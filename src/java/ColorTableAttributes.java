@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 4;
+    private static int ColorTableAttributes_numAdditionalAtts = 4;
 
     public ColorTableAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ColorTableAttributes_numAdditionalAtts);
 
         names = new Vector();
         colorTables = new Vector();
@@ -71,7 +71,7 @@ public class ColorTableAttributes extends AttributeSubject
 
     public ColorTableAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ColorTableAttributes_numAdditionalAtts + nMoreFields);
 
         names = new Vector();
         colorTables = new Vector();
@@ -81,7 +81,7 @@ public class ColorTableAttributes extends AttributeSubject
 
     public ColorTableAttributes(ColorTableAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ColorTableAttributes_numAdditionalAtts);
 
         int i;
 
@@ -93,8 +93,8 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector(obj.colorTables.size());
         for(i = 0; i < obj.colorTables.size(); ++i)
         {
-            ColorControlPointList newObj = (ColorControlPointList)colorTables.elementAt(i);
-            colorTables.addElement(new ColorControlPointList(newObj));
+            ColorControlPointList oldObj = (ColorControlPointList)obj.colorTables.elementAt(i);
+            colorTables.addElement(new ColorControlPointList(oldObj));
         }
 
         activeContinuous = new String(obj.activeContinuous);
@@ -110,7 +110,7 @@ public class ColorTableAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ColorTableAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ColorTableAttributes obj)

@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class KeyframeAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 3;
+    private static int KeyframeAttributes_numAdditionalAtts = 3;
 
     public KeyframeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(KeyframeAttributes_numAdditionalAtts);
 
         enabled = false;
         nFrames = 20;
@@ -69,7 +69,7 @@ public class KeyframeAttributes extends AttributeSubject
 
     public KeyframeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(KeyframeAttributes_numAdditionalAtts + nMoreFields);
 
         enabled = false;
         nFrames = 20;
@@ -78,7 +78,7 @@ public class KeyframeAttributes extends AttributeSubject
 
     public KeyframeAttributes(KeyframeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(KeyframeAttributes_numAdditionalAtts);
 
         enabled = obj.enabled;
         nFrames = obj.nFrames;
@@ -94,7 +94,7 @@ public class KeyframeAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return KeyframeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(KeyframeAttributes obj)

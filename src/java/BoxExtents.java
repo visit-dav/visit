@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class BoxExtents extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int BoxExtents_numAdditionalAtts = 1;
 
     public BoxExtents()
     {
-        super(numAdditionalAttributes);
+        super(BoxExtents_numAdditionalAtts);
 
         extents = new double[6];
         extents[0] = 0;
@@ -73,7 +73,7 @@ public class BoxExtents extends AttributeSubject
 
     public BoxExtents(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(BoxExtents_numAdditionalAtts + nMoreFields);
 
         extents = new double[6];
         extents[0] = 0;
@@ -86,7 +86,7 @@ public class BoxExtents extends AttributeSubject
 
     public BoxExtents(BoxExtents obj)
     {
-        super(numAdditionalAttributes);
+        super(BoxExtents_numAdditionalAtts);
 
         int i;
 
@@ -105,7 +105,7 @@ public class BoxExtents extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return BoxExtents_numAdditionalAtts;
     }
 
     public boolean equals(BoxExtents obj)

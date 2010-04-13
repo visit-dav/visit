@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class QueryAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 19;
+    private static int QueryAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int ELEMENTTYPE_ZONE = 0;
@@ -83,7 +83,7 @@ public class QueryAttributes extends AttributeSubject
 
     public QueryAttributes()
     {
-        super(numAdditionalAttributes);
+        super(QueryAttributes_numAdditionalAtts);
 
         name = new String("");
         variables = new Vector();
@@ -115,7 +115,7 @@ public class QueryAttributes extends AttributeSubject
 
     public QueryAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(QueryAttributes_numAdditionalAtts + nMoreFields);
 
         name = new String("");
         variables = new Vector();
@@ -147,7 +147,7 @@ public class QueryAttributes extends AttributeSubject
 
     public QueryAttributes(QueryAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(QueryAttributes_numAdditionalAtts);
 
         int i;
 
@@ -211,7 +211,7 @@ public class QueryAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return QueryAttributes_numAdditionalAtts;
     }
 
     public boolean equals(QueryAttributes obj)

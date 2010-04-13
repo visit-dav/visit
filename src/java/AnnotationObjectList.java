@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class AnnotationObjectList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int AnnotationObjectList_numAdditionalAtts = 1;
 
     public AnnotationObjectList()
     {
-        super(numAdditionalAttributes);
+        super(AnnotationObjectList_numAdditionalAtts);
 
         annotation = new Vector();
     }
 
     public AnnotationObjectList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(AnnotationObjectList_numAdditionalAtts + nMoreFields);
 
         annotation = new Vector();
     }
 
     public AnnotationObjectList(AnnotationObjectList obj)
     {
-        super(numAdditionalAttributes);
+        super(AnnotationObjectList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class AnnotationObjectList extends AttributeSubject
         annotation = new Vector(obj.annotation.size());
         for(i = 0; i < obj.annotation.size(); ++i)
         {
-            AnnotationObject newObj = (AnnotationObject)annotation.elementAt(i);
-            annotation.addElement(new AnnotationObject(newObj));
+            AnnotationObject oldObj = (AnnotationObject)obj.annotation.elementAt(i);
+            annotation.addElement(new AnnotationObject(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class AnnotationObjectList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return AnnotationObjectList_numAdditionalAtts;
     }
 
     public boolean equals(AnnotationObjectList obj)

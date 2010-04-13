@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Axes3D extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 11;
+    private static int Axes3D_numAdditionalAtts = 11;
 
     // Enum values
     public final static int AXES_CLOSESTTRIAD = 0;
@@ -72,7 +72,7 @@ public class Axes3D extends AttributeSubject
 
     public Axes3D()
     {
-        super(numAdditionalAttributes);
+        super(Axes3D_numAdditionalAtts);
 
         visible = true;
         autoSetTicks = true;
@@ -89,7 +89,7 @@ public class Axes3D extends AttributeSubject
 
     public Axes3D(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(Axes3D_numAdditionalAtts + nMoreFields);
 
         visible = true;
         autoSetTicks = true;
@@ -106,7 +106,7 @@ public class Axes3D extends AttributeSubject
 
     public Axes3D(Axes3D obj)
     {
-        super(numAdditionalAttributes);
+        super(Axes3D_numAdditionalAtts);
 
         visible = obj.visible;
         autoSetTicks = obj.autoSetTicks;
@@ -130,7 +130,7 @@ public class Axes3D extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return Axes3D_numAdditionalAtts;
     }
 
     public boolean equals(Axes3D obj)

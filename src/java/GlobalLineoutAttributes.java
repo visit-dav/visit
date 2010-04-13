@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class GlobalLineoutAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 9;
+    private static int GlobalLineoutAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int CURVEOPTIONS_UPDATECURVE = 0;
@@ -68,7 +68,7 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public GlobalLineoutAttributes()
     {
-        super(numAdditionalAttributes);
+        super(GlobalLineoutAttributes_numAdditionalAtts);
 
         Dynamic = false;
         createWindow = true;
@@ -83,7 +83,7 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public GlobalLineoutAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(GlobalLineoutAttributes_numAdditionalAtts + nMoreFields);
 
         Dynamic = false;
         createWindow = true;
@@ -98,7 +98,7 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public GlobalLineoutAttributes(GlobalLineoutAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(GlobalLineoutAttributes_numAdditionalAtts);
 
         Dynamic = obj.Dynamic;
         createWindow = obj.createWindow;
@@ -120,7 +120,7 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return GlobalLineoutAttributes_numAdditionalAtts;
     }
 
     public boolean equals(GlobalLineoutAttributes obj)

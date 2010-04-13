@@ -815,7 +815,7 @@ F_VISITSAVEWINDOW(const char *filename, int *lfilename, int *width, int *height,
 #define F_VISITACTIVATETIMESTEP F77_ID(visitactivatetimestep_,visitactivatetimestep,VISITACTIVATETIMESTEP)
 #define F_VISITGETMETADATA      F77_ID(visitgetmetadata_,visitgetmetadata,VISITGETMETADATA)
 #define F_VISITGETMESH          F77_ID(visitgetmesh_,visitgetmesh,VISITGETMESH)
-#define F_VISITGETVARIABLE      F77_ID(visitgetscalar_,visitgetscalar,VISITGETSCALAR)
+#define F_VISITGETVARIABLE      F77_ID(visitgetvariable_,visitgetvariable,VISITGETVARIABLE)
 #define F_VISITGETMATERIAL      F77_ID(visitgetmaterial_,visitgetmaterial,VISITGETMATERIAL)
 #define F_VISITGETCURVE         F77_ID(visitgetcurve_,visitgetcurve,VISITGETCURVE)
 #define F_VISITGETDOMAINLIST    F77_ID(visitgetdomainlist_,visitgetdomainlist,VISITGETDOMAINLIST)

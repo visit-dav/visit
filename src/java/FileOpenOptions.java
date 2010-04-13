@@ -58,33 +58,35 @@ import java.lang.Integer;
 
 public class FileOpenOptions extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 5;
+    private static int FileOpenOptions_numAdditionalAtts = 5;
 
     public FileOpenOptions()
     {
-        super(numAdditionalAttributes);
+        super(FileOpenOptions_numAdditionalAtts);
 
         typeNames = new Vector();
         typeIDs = new Vector();
         openOptions = new Vector();
         Enabled = new Vector();
         preferredIDs = new Vector();
+        preferredIDs.addElement(new String("Silo_1.0"));
     }
 
     public FileOpenOptions(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(FileOpenOptions_numAdditionalAtts + nMoreFields);
 
         typeNames = new Vector();
         typeIDs = new Vector();
         openOptions = new Vector();
         Enabled = new Vector();
         preferredIDs = new Vector();
+        preferredIDs.addElement(new String("Silo_1.0"));
     }
 
     public FileOpenOptions(FileOpenOptions obj)
     {
-        super(numAdditionalAttributes);
+        super(FileOpenOptions_numAdditionalAtts);
 
         int i;
 
@@ -100,8 +102,8 @@ public class FileOpenOptions extends AttributeSubject
         openOptions = new Vector(obj.openOptions.size());
         for(i = 0; i < obj.openOptions.size(); ++i)
         {
-            DBOptionsAttributes newObj = (DBOptionsAttributes)openOptions.elementAt(i);
-            openOptions.addElement(new DBOptionsAttributes(newObj));
+            DBOptionsAttributes oldObj = (DBOptionsAttributes)obj.openOptions.elementAt(i);
+            openOptions.addElement(new DBOptionsAttributes(oldObj));
         }
 
         Enabled = new Vector();
@@ -125,7 +127,7 @@ public class FileOpenOptions extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return FileOpenOptions_numAdditionalAtts;
     }
 
     public boolean equals(FileOpenOptions obj)

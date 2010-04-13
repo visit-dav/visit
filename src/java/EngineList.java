@@ -58,11 +58,11 @@ import java.lang.Integer;
 
 public class EngineList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 5;
+    private static int EngineList_numAdditionalAtts = 5;
 
     public EngineList()
     {
-        super(numAdditionalAttributes);
+        super(EngineList_numAdditionalAtts);
 
         engines = new Vector();
         numProcessors = new Vector();
@@ -73,7 +73,7 @@ public class EngineList extends AttributeSubject
 
     public EngineList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(EngineList_numAdditionalAtts + nMoreFields);
 
         engines = new Vector();
         numProcessors = new Vector();
@@ -84,7 +84,7 @@ public class EngineList extends AttributeSubject
 
     public EngineList(EngineList obj)
     {
-        super(numAdditionalAttributes);
+        super(EngineList_numAdditionalAtts);
 
         int i;
 
@@ -125,7 +125,7 @@ public class EngineList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return EngineList_numAdditionalAtts;
     }
 
     public boolean equals(EngineList obj)

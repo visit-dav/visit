@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class ExportDBAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int ExportDBAttributes_numAdditionalAtts = 6;
 
     public ExportDBAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ExportDBAttributes_numAdditionalAtts);
 
         db_type = new String("");
         db_type_fullname = new String("");
@@ -73,7 +73,7 @@ public class ExportDBAttributes extends AttributeSubject
 
     public ExportDBAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ExportDBAttributes_numAdditionalAtts + nMoreFields);
 
         db_type = new String("");
         db_type_fullname = new String("");
@@ -85,7 +85,7 @@ public class ExportDBAttributes extends AttributeSubject
 
     public ExportDBAttributes(ExportDBAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ExportDBAttributes_numAdditionalAtts);
 
         int i;
 
@@ -109,7 +109,7 @@ public class ExportDBAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ExportDBAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ExportDBAttributes obj)

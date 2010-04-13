@@ -58,11 +58,11 @@ import java.util.Vector;
 
 public class ProcessAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 4;
+    private static int ProcessAttributes_numAdditionalAtts = 4;
 
     public ProcessAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ProcessAttributes_numAdditionalAtts);
 
         pids = new Vector();
         ppids = new Vector();
@@ -72,7 +72,7 @@ public class ProcessAttributes extends AttributeSubject
 
     public ProcessAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ProcessAttributes_numAdditionalAtts + nMoreFields);
 
         pids = new Vector();
         ppids = new Vector();
@@ -82,7 +82,7 @@ public class ProcessAttributes extends AttributeSubject
 
     public ProcessAttributes(ProcessAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ProcessAttributes_numAdditionalAtts);
 
         int i;
 
@@ -114,7 +114,7 @@ public class ProcessAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ProcessAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ProcessAttributes obj)

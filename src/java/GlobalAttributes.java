@@ -58,11 +58,11 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 23;
+    private static int GlobalAttributes_numAdditionalAtts = 23;
 
     public GlobalAttributes()
     {
-        super(numAdditionalAttributes);
+        super(GlobalAttributes_numAdditionalAtts);
 
         sources = new Vector();
         windows = new Vector();
@@ -91,7 +91,7 @@ public class GlobalAttributes extends AttributeSubject
 
     public GlobalAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(GlobalAttributes_numAdditionalAtts + nMoreFields);
 
         sources = new Vector();
         windows = new Vector();
@@ -120,7 +120,7 @@ public class GlobalAttributes extends AttributeSubject
 
     public GlobalAttributes(GlobalAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(GlobalAttributes_numAdditionalAtts);
 
         int i;
 
@@ -166,7 +166,7 @@ public class GlobalAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return GlobalAttributes_numAdditionalAtts;
     }
 
     public boolean equals(GlobalAttributes obj)

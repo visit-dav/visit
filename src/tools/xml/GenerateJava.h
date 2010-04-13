@@ -144,9 +144,9 @@ class JavaGeneratorField : public virtual Field
         return s;
     }
 
-    QString OffsetPlus() const
+    QString OffsetPlus(const QString &classname) const
     {
-        return custombase ? QString("Offset() + ") : QString();
+        return custombase ? (QString("(new ") + classname + QString("()).Offset() + ")) : QString();
     }
 
     virtual void WriteSourceWriteAtts(QTextStream &h, const QString &indent) = 0;
@@ -162,7 +162,7 @@ class JavaGeneratorField : public virtual Field
 
     // ------------------------------------------------------------------------
 
-    virtual void WriteAuxiliarySetFunction(QTextStream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c, const QString &classname)
     {
     }
 
@@ -176,7 +176,7 @@ class JavaGeneratorField : public virtual Field
         if (!isArray)
         {
             c << "        " << name << " = " << name << "_;" << endl;
-            c << "        Select(" << OffsetPlus() << index << ");" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
         }
         else
         {
@@ -190,13 +190,13 @@ class JavaGeneratorField : public virtual Field
                 c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
                 c << "             " << name << "[i] = " << name << "_[i];"<< endl;
             }
-            c << "        Select(" << OffsetPlus() << index << ");" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
         }
         c << "    }" << endl;
         c << endl;
 
         // If it is an array with a size less than 6, write another set method.
-        WriteAuxiliarySetFunction(c);
+        WriteAuxiliarySetFunction(c, classname);
     }
 
     virtual void WriteSourceGetFunction(QTextStream &c, int w)
@@ -205,7 +205,7 @@ class JavaGeneratorField : public virtual Field
           << name << "; }" << endl;
     }
 
-    virtual void WriteSourceAGVectorFunctions(QTextStream &c)
+    virtual void WriteSourceAGVectorFunctions(QTextStream &c, const QString &classname)
     {
     }
 
@@ -345,7 +345,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(QTextStream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c, const QString &classname)
     {
         if(length < 6)
         {
@@ -360,7 +360,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << OffsetPlus() << index << ");" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -565,7 +565,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(QTextStream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c, const QString &classname)
     {
         if(length < 6)
         {
@@ -580,7 +580,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << OffsetPlus() << index << ");" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -684,7 +684,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(QTextStream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c, const QString &classname)
     {
         if(length < 6)
         {
@@ -699,7 +699,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << OffsetPlus() << index << ");" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -870,7 +870,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
         c << endl;
     }
 
-    virtual void WriteAuxiliarySetFunction(QTextStream &c)
+    virtual void WriteAuxiliarySetFunction(QTextStream &c, const QString &classname)
     {
         if(length < 6)
         {
@@ -885,7 +885,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
             c << "    {" << endl;
             for(int j = 0; j < length; ++j)
                 c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
-            c << "        Select(" << OffsetPlus() << index << ");" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
             c << "    }" << endl;
             c << endl;
         }
@@ -1424,12 +1424,12 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "        " << name << " = new Vector(obj." << name << ".size());" << endl;
         c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
-        c << "            " << attType << " newObj" << " = (" << attType << ")" << name << ".elementAt(i);" << endl;
-        c << "            " << name << ".addElement(new " << attType << "(newObj));" << endl;
+        c << "            " << attType << " oldObj" << " = (" << attType << ")obj." << name << ".elementAt(i);" << endl;
+        c << "            " << name << ".addElement(new " << attType << "(oldObj));" << endl;
         c << "        }" << endl << endl;
     }
 
-    virtual void WriteSourceAGVectorFunctions(QTextStream &c)
+    virtual void WriteSourceAGVectorFunctions(QTextStream &c, const QString &classname)
     {
         QString s = attType;
         QString plural("");
@@ -1440,14 +1440,14 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "    public void Add" << Name << "(" << s << " obj)" << endl;
         c << "    {" << endl;
         c << "        " << name << ".addElement(new " << s << "(obj));" << endl;
-        c << "        Select(" << OffsetPlus() << index << ");" << endl;
+        c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
         c << "    }" << endl << endl;
 
         // Write the Clear method
         c << "    public void Clear" << Name << plural << "()" << endl;
         c << "    {" << endl;
         c << "        " << name << ".clear();" << endl;
-        c << "        Select(" << OffsetPlus() << index << ");" << endl;
+        c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
         c << "    }" << endl << endl;
 
         // Write the Remove method
@@ -1456,7 +1456,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
         c << "        if(index >= 0 && index < " << name << ".size())" << endl;
         c << "        {" << endl;
         c << "            " << name << ".remove(index);" << endl;
-        c << "            Select(" << OffsetPlus() << index << ");" << endl;
+        c << "            Select(" << OffsetPlus(classname) << index << ");" << endl;
         c << "        }" << endl;
         c << "    }" << endl << endl;
 
@@ -1827,7 +1827,7 @@ class JavaGeneratorAttribute : public GeneratorBase
         //
         // Write out AttributeGroupVector convenience methods.
         //
-        WriteSourceAGVectorFunctions(h);
+        WriteSourceAGVectorFunctions(h, name);
 
         //
         // Write user-defined functions 
@@ -1924,7 +1924,7 @@ private:
     {
         c << "    public " << name << "()" << endl;
         c << "    {" << endl;
-        c << "        super(numAdditionalAttributes);" << endl;
+        c << "        super("<< name<<"_numAdditionalAtts);" << endl;
         c << endl;
 
         if(HasCode(name, 0))
@@ -1948,7 +1948,7 @@ private:
     {
         c << "    public " << name << "(int nMoreFields)" << endl;
         c << "    {" << endl;
-        c << "        super(numAdditionalAttributes + nMoreFields);" << endl;
+        c << "        super(" << name << "_numAdditionalAtts + nMoreFields);" << endl;
         c << endl;
 
         if(HasCode(name, 0))
@@ -1972,7 +1972,7 @@ private:
     {
         c << "    public " << name << "(" << name << " obj)" << endl;
         c << "    {" << endl;
-        c << "        super(numAdditionalAttributes);" << endl;
+        c << "        super(" << name << "_numAdditionalAtts);" << endl;
         c << endl;
 
         bool skipLine = false;
@@ -2001,7 +2001,7 @@ private:
 
         c << "    public int GetNumAdditionalAttributes()" << endl;
         c << "    {" << endl;
-        c << "        return numAdditionalAttributes;" << endl;
+        c << "        return " << name << "_numAdditionalAtts;" << endl;
         c << "    }" << endl;
         c << endl;
     }
@@ -2063,7 +2063,7 @@ private:
 
     void WriteSourceEnumsAndConstants(QTextStream &h)
     {
-        h << "    private static int numAdditionalAttributes = " << fields.size() << ";" << endl << endl;
+        h << "    private static int " << name << "_numAdditionalAtts = " << fields.size() << ";" << endl << endl;
 
         // Write the enums out as groups of static int constants.
         if(EnumType::enums.size() > 0)
@@ -2122,7 +2122,7 @@ private:
         {
             h << "        super.WriteAtts(buf);" << endl;
             h << endl;
-            h << "        int offset = Offset();" << endl;
+            h << "        int offset = (new " << name << "()).Offset();" << endl;
             oplus = "offset + ";
         }
         for (size_t i = 0; i < fields.size(); ++i)
@@ -2146,16 +2146,17 @@ private:
         {
             h << "    public void ReadAtts(int id, CommunicationBuffer buf)" << endl;
             h << "    {" << endl;
+            h << "        int offset = (new " << name << "()).Offset();" << endl;
             if(fields.size() > 1)
             {
-                h << "        int index = id - Offset();" << endl;
+                h << "        int index = id - offset;" << endl;
                 h << "        switch(index)" << endl;
                 h << "        {" << endl;
                 for (size_t i = 0; i < fields.size(); ++i)
                 {
                     h << "        case " << i << ":" << endl;
                     if(!fields[i]->WriteSourceReadAtts(h, "            "))
-                        h << "            Select(Offset() + " << i << ");" << endl;
+                        h << "            Select(offset + " << i << ");" << endl;
                     h << "            break;" << endl;
                 }
                 h << "        default:" << endl;
@@ -2165,9 +2166,9 @@ private:
             }
             else if(fields.size() == 1)
             {
-                h << "        if(id == Offset())" << endl;
+                h << "        if(id == offset)" << endl;
                 if(!fields[0]->WriteSourceReadAtts(h, "            "))
-                    h << "            Select(Offset() + 0);" << endl;
+                    h << "            Select(offset + 0);" << endl;
                 h << "        else" << endl;
                 h << "            super.ReadAtts(id, buf);" << endl;
             }
@@ -2200,13 +2201,13 @@ private:
         h << endl;
     }
 
-    void WriteSourceAGVectorFunctions(QTextStream &h)
+    void WriteSourceAGVectorFunctions(QTextStream &h, const QString &classname)
     {
         if (HaveAGVectors())
         {
             h << "    // Attributegroup convenience methods" << endl;
             for (size_t i = 0; i < fields.size(); ++i)
-                fields[i]->WriteSourceAGVectorFunctions(h);
+                fields[i]->WriteSourceAGVectorFunctions(h, classname);
         }
         h << endl;
     }

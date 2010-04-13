@@ -58,11 +58,11 @@ import java.util.Vector;
 
 public class SILRestrictionAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 3;
+    private static int SILRestrictionAttributes_numAdditionalAtts = 3;
 
     public SILRestrictionAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SILRestrictionAttributes_numAdditionalAtts);
 
         useSet = new Vector();
         topSet = -1;
@@ -71,7 +71,7 @@ public class SILRestrictionAttributes extends AttributeSubject
 
     public SILRestrictionAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SILRestrictionAttributes_numAdditionalAtts + nMoreFields);
 
         useSet = new Vector();
         topSet = -1;
@@ -80,7 +80,7 @@ public class SILRestrictionAttributes extends AttributeSubject
 
     public SILRestrictionAttributes(SILRestrictionAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SILRestrictionAttributes_numAdditionalAtts);
 
         int i;
 
@@ -104,7 +104,7 @@ public class SILRestrictionAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SILRestrictionAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SILRestrictionAttributes obj)

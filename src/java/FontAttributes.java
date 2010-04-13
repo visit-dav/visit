@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class FontAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int FontAttributes_numAdditionalAtts = 6;
 
     // Enum values
     public final static int FONTNAME_ARIAL = 0;
@@ -66,7 +66,7 @@ public class FontAttributes extends AttributeSubject
 
     public FontAttributes()
     {
-        super(numAdditionalAttributes);
+        super(FontAttributes_numAdditionalAtts);
 
         font = FONTNAME_ARIAL;
         scale = 1;
@@ -78,7 +78,7 @@ public class FontAttributes extends AttributeSubject
 
     public FontAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(FontAttributes_numAdditionalAtts + nMoreFields);
 
         font = FONTNAME_ARIAL;
         scale = 1;
@@ -90,7 +90,7 @@ public class FontAttributes extends AttributeSubject
 
     public FontAttributes(FontAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(FontAttributes_numAdditionalAtts);
 
         font = obj.font;
         scale = obj.scale;
@@ -109,7 +109,7 @@ public class FontAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return FontAttributes_numAdditionalAtts;
     }
 
     public boolean equals(FontAttributes obj)

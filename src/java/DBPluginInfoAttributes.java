@@ -58,11 +58,11 @@ import java.lang.Integer;
 
 public class DBPluginInfoAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int DBPluginInfoAttributes_numAdditionalAtts = 6;
 
     public DBPluginInfoAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DBPluginInfoAttributes_numAdditionalAtts);
 
         types = new Vector();
         hasWriter = new Vector();
@@ -74,7 +74,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
 
     public DBPluginInfoAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DBPluginInfoAttributes_numAdditionalAtts + nMoreFields);
 
         types = new Vector();
         hasWriter = new Vector();
@@ -86,7 +86,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
 
     public DBPluginInfoAttributes(DBPluginInfoAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DBPluginInfoAttributes_numAdditionalAtts);
 
         int i;
 
@@ -104,16 +104,16 @@ public class DBPluginInfoAttributes extends AttributeSubject
         dbReadOptions = new Vector(obj.dbReadOptions.size());
         for(i = 0; i < obj.dbReadOptions.size(); ++i)
         {
-            DBOptionsAttributes newObj = (DBOptionsAttributes)dbReadOptions.elementAt(i);
-            dbReadOptions.addElement(new DBOptionsAttributes(newObj));
+            DBOptionsAttributes oldObj = (DBOptionsAttributes)obj.dbReadOptions.elementAt(i);
+            dbReadOptions.addElement(new DBOptionsAttributes(oldObj));
         }
 
         // *** Copy the dbWriteOptions field ***
         dbWriteOptions = new Vector(obj.dbWriteOptions.size());
         for(i = 0; i < obj.dbWriteOptions.size(); ++i)
         {
-            DBOptionsAttributes newObj = (DBOptionsAttributes)dbWriteOptions.elementAt(i);
-            dbWriteOptions.addElement(new DBOptionsAttributes(newObj));
+            DBOptionsAttributes oldObj = (DBOptionsAttributes)obj.dbWriteOptions.elementAt(i);
+            dbWriteOptions.addElement(new DBOptionsAttributes(oldObj));
         }
 
         typesFullNames = new Vector(obj.typesFullNames.size());
@@ -132,7 +132,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DBPluginInfoAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DBPluginInfoAttributes obj)

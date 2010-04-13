@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class AxisTickMarks extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 5;
+    private static int AxisTickMarks_numAdditionalAtts = 5;
 
     public AxisTickMarks()
     {
-        super(numAdditionalAttributes);
+        super(AxisTickMarks_numAdditionalAtts);
 
         visible = true;
         majorMinimum = 0;
@@ -71,7 +71,7 @@ public class AxisTickMarks extends AttributeSubject
 
     public AxisTickMarks(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(AxisTickMarks_numAdditionalAtts + nMoreFields);
 
         visible = true;
         majorMinimum = 0;
@@ -82,7 +82,7 @@ public class AxisTickMarks extends AttributeSubject
 
     public AxisTickMarks(AxisTickMarks obj)
     {
-        super(numAdditionalAttributes);
+        super(AxisTickMarks_numAdditionalAtts);
 
         visible = obj.visible;
         majorMinimum = obj.majorMinimum;
@@ -100,7 +100,7 @@ public class AxisTickMarks extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return AxisTickMarks_numAdditionalAtts;
     }
 
     public boolean equals(AxisTickMarks obj)

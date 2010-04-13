@@ -60,7 +60,7 @@ import java.lang.Double;
 
 public class MovieAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 16;
+    private static int MovieAttributes_numAdditionalAtts = 16;
 
     // Enum values
     public final static int MOVIETYPEENUM_SIMPLE = 0;
@@ -73,7 +73,7 @@ public class MovieAttributes extends AttributeSubject
 
     public MovieAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MovieAttributes_numAdditionalAtts);
 
         generationMethod = GENERATIONMETHODENUM_NOWCURRENTINSTANCE;
         movieType = MOVIETYPEENUM_SIMPLE;
@@ -95,7 +95,7 @@ public class MovieAttributes extends AttributeSubject
 
     public MovieAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MovieAttributes_numAdditionalAtts + nMoreFields);
 
         generationMethod = GENERATIONMETHODENUM_NOWCURRENTINSTANCE;
         movieType = MOVIETYPEENUM_SIMPLE;
@@ -117,7 +117,7 @@ public class MovieAttributes extends AttributeSubject
 
     public MovieAttributes(MovieAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MovieAttributes_numAdditionalAtts);
 
         int i;
 
@@ -178,7 +178,7 @@ public class MovieAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MovieAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MovieAttributes obj)

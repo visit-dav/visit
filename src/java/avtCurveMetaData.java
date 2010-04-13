@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class avtCurveMetaData extends avtVarMetaData
 {
-    private static int numAdditionalAttributes = 8;
+    private static int avtCurveMetaData_numAdditionalAtts = 8;
 
     public avtCurveMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtCurveMetaData_numAdditionalAtts);
 
         xUnits = new String("");
         xLabel = new String("X-Axis");
@@ -74,7 +74,7 @@ public class avtCurveMetaData extends avtVarMetaData
 
     public avtCurveMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtCurveMetaData_numAdditionalAtts + nMoreFields);
 
         xUnits = new String("");
         xLabel = new String("X-Axis");
@@ -88,7 +88,7 @@ public class avtCurveMetaData extends avtVarMetaData
 
     public avtCurveMetaData(avtCurveMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtCurveMetaData_numAdditionalAtts);
 
         xUnits = new String(obj.xUnits);
         xLabel = new String(obj.xLabel);
@@ -109,7 +109,7 @@ public class avtCurveMetaData extends avtVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtCurveMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtCurveMetaData obj)
@@ -129,49 +129,49 @@ public class avtCurveMetaData extends avtVarMetaData
     public void SetXUnits(String xUnits_)
     {
         xUnits = xUnits_;
-        Select(Offset() + 0);
+        Select((new avtCurveMetaData()).Offset() + 0);
     }
 
     public void SetXLabel(String xLabel_)
     {
         xLabel = xLabel_;
-        Select(Offset() + 1);
+        Select((new avtCurveMetaData()).Offset() + 1);
     }
 
     public void SetYUnits(String yUnits_)
     {
         yUnits = yUnits_;
-        Select(Offset() + 2);
+        Select((new avtCurveMetaData()).Offset() + 2);
     }
 
     public void SetYLabel(String yLabel_)
     {
         yLabel = yLabel_;
-        Select(Offset() + 3);
+        Select((new avtCurveMetaData()).Offset() + 3);
     }
 
     public void SetHasSpatialExtents(boolean hasSpatialExtents_)
     {
         hasSpatialExtents = hasSpatialExtents_;
-        Select(Offset() + 4);
+        Select((new avtCurveMetaData()).Offset() + 4);
     }
 
     public void SetMinSpatialExtents(double minSpatialExtents_)
     {
         minSpatialExtents = minSpatialExtents_;
-        Select(Offset() + 5);
+        Select((new avtCurveMetaData()).Offset() + 5);
     }
 
     public void SetMaxSpatialExtents(double maxSpatialExtents_)
     {
         maxSpatialExtents = maxSpatialExtents_;
-        Select(Offset() + 6);
+        Select((new avtCurveMetaData()).Offset() + 6);
     }
 
     public void SetFrom1DScalarName(String from1DScalarName_)
     {
         from1DScalarName = from1DScalarName_;
-        Select(Offset() + 7);
+        Select((new avtCurveMetaData()).Offset() + 7);
     }
 
     // Property getting methods
@@ -189,7 +189,7 @@ public class avtCurveMetaData extends avtVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtCurveMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteString(xUnits);
         if(WriteSelect(offset + 1, buf))
@@ -210,7 +210,8 @@ public class avtCurveMetaData extends avtVarMetaData
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int index = id - Offset();
+        int offset = (new avtCurveMetaData()).Offset();
+        int index = id - offset;
         switch(index)
         {
         case 0:

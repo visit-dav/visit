@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class avtSpeciesMetaData extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 7;
+    private static int avtSpeciesMetaData_numAdditionalAtts = 7;
 
     public avtSpeciesMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtSpeciesMetaData_numAdditionalAtts);
 
         name = new String("Species");
         originalName = new String("Species");
@@ -74,7 +74,7 @@ public class avtSpeciesMetaData extends AttributeSubject
 
     public avtSpeciesMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtSpeciesMetaData_numAdditionalAtts + nMoreFields);
 
         name = new String("Species");
         originalName = new String("Species");
@@ -87,7 +87,7 @@ public class avtSpeciesMetaData extends AttributeSubject
 
     public avtSpeciesMetaData(avtSpeciesMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtSpeciesMetaData_numAdditionalAtts);
 
         int i;
 
@@ -101,8 +101,8 @@ public class avtSpeciesMetaData extends AttributeSubject
         species = new Vector(obj.species.size());
         for(i = 0; i < obj.species.size(); ++i)
         {
-            avtMatSpeciesMetaData newObj = (avtMatSpeciesMetaData)species.elementAt(i);
-            species.addElement(new avtMatSpeciesMetaData(newObj));
+            avtMatSpeciesMetaData oldObj = (avtMatSpeciesMetaData)obj.species.elementAt(i);
+            species.addElement(new avtMatSpeciesMetaData(oldObj));
         }
 
 
@@ -116,7 +116,7 @@ public class avtSpeciesMetaData extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtSpeciesMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtSpeciesMetaData obj)

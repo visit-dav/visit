@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class SILArrayAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 11;
+    private static int SILArrayAttributes_numAdditionalAtts = 11;
 
     public SILArrayAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SILArrayAttributes_numAdditionalAtts);
 
         prefix = new String("");
         numSets = 0;
@@ -78,7 +78,7 @@ public class SILArrayAttributes extends AttributeSubject
 
     public SILArrayAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SILArrayAttributes_numAdditionalAtts + nMoreFields);
 
         prefix = new String("");
         numSets = 0;
@@ -95,7 +95,7 @@ public class SILArrayAttributes extends AttributeSubject
 
     public SILArrayAttributes(SILArrayAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SILArrayAttributes_numAdditionalAtts);
 
         int i;
 
@@ -124,7 +124,7 @@ public class SILArrayAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SILArrayAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SILArrayAttributes obj)

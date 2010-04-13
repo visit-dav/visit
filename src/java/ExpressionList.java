@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class ExpressionList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int ExpressionList_numAdditionalAtts = 1;
 
     public ExpressionList()
     {
-        super(numAdditionalAttributes);
+        super(ExpressionList_numAdditionalAtts);
 
         expressions = new Vector();
     }
 
     public ExpressionList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ExpressionList_numAdditionalAtts + nMoreFields);
 
         expressions = new Vector();
     }
 
     public ExpressionList(ExpressionList obj)
     {
-        super(numAdditionalAttributes);
+        super(ExpressionList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class ExpressionList extends AttributeSubject
         expressions = new Vector(obj.expressions.size());
         for(i = 0; i < obj.expressions.size(); ++i)
         {
-            Expression newObj = (Expression)expressions.elementAt(i);
-            expressions.addElement(new Expression(newObj));
+            Expression oldObj = (Expression)obj.expressions.elementAt(i);
+            expressions.addElement(new Expression(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class ExpressionList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ExpressionList_numAdditionalAtts;
     }
 
     public boolean equals(ExpressionList obj)

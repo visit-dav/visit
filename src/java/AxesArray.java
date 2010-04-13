@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class AxesArray extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int AxesArray_numAdditionalAtts = 6;
 
     public AxesArray()
     {
-        super(numAdditionalAttributes);
+        super(AxesArray_numAdditionalAtts);
 
         visible = true;
         ticksVisible = true;
@@ -72,7 +72,7 @@ public class AxesArray extends AttributeSubject
 
     public AxesArray(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(AxesArray_numAdditionalAtts + nMoreFields);
 
         visible = true;
         ticksVisible = true;
@@ -84,7 +84,7 @@ public class AxesArray extends AttributeSubject
 
     public AxesArray(AxesArray obj)
     {
-        super(numAdditionalAttributes);
+        super(AxesArray_numAdditionalAtts);
 
         visible = obj.visible;
         ticksVisible = obj.ticksVisible;
@@ -103,7 +103,7 @@ public class AxesArray extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return AxesArray_numAdditionalAtts;
     }
 
     public boolean equals(AxesArray obj)

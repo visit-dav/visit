@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class MeshManagementAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 7;
+    private static int MeshManagementAttributes_numAdditionalAtts = 7;
 
     // Enum values
     public final static int DISCRETIZATIONMODES_UNIFORM = 0;
@@ -68,10 +68,10 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public MeshManagementAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MeshManagementAttributes_numAdditionalAtts);
 
         discretizationTolerance = new Vector();
-        discretizationTolerance.addElement(new Double(0.01));
+        discretizationTolerance.addElement(new Double(0.02));
         discretizationTolerance.addElement(new Double(0.025));
         discretizationTolerance.addElement(new Double(0.05));
         discretizationToleranceX = new Vector();
@@ -84,10 +84,10 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public MeshManagementAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MeshManagementAttributes_numAdditionalAtts + nMoreFields);
 
         discretizationTolerance = new Vector();
-        discretizationTolerance.addElement(new Double(0.01));
+        discretizationTolerance.addElement(new Double(0.02));
         discretizationTolerance.addElement(new Double(0.025));
         discretizationTolerance.addElement(new Double(0.05));
         discretizationToleranceX = new Vector();
@@ -100,7 +100,7 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public MeshManagementAttributes(MeshManagementAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MeshManagementAttributes_numAdditionalAtts);
 
         int i;
 
@@ -146,7 +146,7 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MeshManagementAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MeshManagementAttributes obj)

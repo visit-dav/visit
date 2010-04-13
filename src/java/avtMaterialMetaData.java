@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class avtMaterialMetaData extends avtBaseVarMetaData
 {
-    private static int numAdditionalAttributes = 3;
+    private static int avtMaterialMetaData_numAdditionalAtts = 3;
 
     public avtMaterialMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtMaterialMetaData_numAdditionalAtts);
 
         numMaterials = 0;
         materialNames = new Vector();
@@ -70,7 +70,7 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
 
     public avtMaterialMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtMaterialMetaData_numAdditionalAtts + nMoreFields);
 
         numMaterials = 0;
         materialNames = new Vector();
@@ -79,7 +79,7 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
 
     public avtMaterialMetaData(avtMaterialMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtMaterialMetaData_numAdditionalAtts);
 
         int i;
 
@@ -103,7 +103,7 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtMaterialMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtMaterialMetaData obj)
@@ -138,19 +138,19 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
     public void SetNumMaterials(int numMaterials_)
     {
         numMaterials = numMaterials_;
-        Select(Offset() + 0);
+        Select((new avtMaterialMetaData()).Offset() + 0);
     }
 
     public void SetMaterialNames(Vector materialNames_)
     {
         materialNames = materialNames_;
-        Select(Offset() + 1);
+        Select((new avtMaterialMetaData()).Offset() + 1);
     }
 
     public void SetColorNames(Vector colorNames_)
     {
         colorNames = colorNames_;
-        Select(Offset() + 2);
+        Select((new avtMaterialMetaData()).Offset() + 2);
     }
 
     // Property getting methods
@@ -163,7 +163,7 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtMaterialMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteInt(numMaterials);
         if(WriteSelect(offset + 1, buf))
@@ -174,7 +174,8 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int index = id - Offset();
+        int offset = (new avtMaterialMetaData()).Offset();
+        int index = id - offset;
         switch(index)
         {
         case 0:

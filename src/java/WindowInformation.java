@@ -58,11 +58,11 @@ import java.lang.Integer;
 
 public class WindowInformation extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 26;
+    private static int WindowInformation_numAdditionalAtts = 27;
 
     public WindowInformation()
     {
-        super(numAdditionalAttributes);
+        super(WindowInformation_numAdditionalAtts);
 
         activeSource = new String("");
         activeTimeSlider = -1;
@@ -75,6 +75,7 @@ public class WindowInformation extends AttributeSubject
         spin = false;
         fullFrame = false;
         perspective = true;
+        maintainView = false;
         lockView = false;
         lockTools = false;
         lockTime = false;
@@ -102,7 +103,7 @@ public class WindowInformation extends AttributeSubject
 
     public WindowInformation(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(WindowInformation_numAdditionalAtts + nMoreFields);
 
         activeSource = new String("");
         activeTimeSlider = -1;
@@ -115,6 +116,7 @@ public class WindowInformation extends AttributeSubject
         spin = false;
         fullFrame = false;
         perspective = true;
+        maintainView = false;
         lockView = false;
         lockTools = false;
         lockTime = false;
@@ -142,7 +144,7 @@ public class WindowInformation extends AttributeSubject
 
     public WindowInformation(WindowInformation obj)
     {
-        super(numAdditionalAttributes);
+        super(WindowInformation_numAdditionalAtts);
 
         int i;
 
@@ -165,6 +167,7 @@ public class WindowInformation extends AttributeSubject
         spin = obj.spin;
         fullFrame = obj.fullFrame;
         perspective = obj.perspective;
+        maintainView = obj.maintainView;
         lockView = obj.lockView;
         lockTools = obj.lockTools;
         lockTime = obj.lockTime;
@@ -202,7 +205,7 @@ public class WindowInformation extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return WindowInformation_numAdditionalAtts;
     }
 
     public boolean equals(WindowInformation obj)
@@ -258,6 +261,7 @@ public class WindowInformation extends AttributeSubject
                 (spin == obj.spin) &&
                 (fullFrame == obj.fullFrame) &&
                 (perspective == obj.perspective) &&
+                (maintainView == obj.maintainView) &&
                 (lockView == obj.lockView) &&
                 (lockTools == obj.lockTools) &&
                 (lockTime == obj.lockTime) &&
@@ -342,103 +346,109 @@ public class WindowInformation extends AttributeSubject
         Select(10);
     }
 
+    public void SetMaintainView(boolean maintainView_)
+    {
+        maintainView = maintainView_;
+        Select(11);
+    }
+
     public void SetLockView(boolean lockView_)
     {
         lockView = lockView_;
-        Select(11);
+        Select(12);
     }
 
     public void SetLockTools(boolean lockTools_)
     {
         lockTools = lockTools_;
-        Select(12);
+        Select(13);
     }
 
     public void SetLockTime(boolean lockTime_)
     {
         lockTime = lockTime_;
-        Select(13);
+        Select(14);
     }
 
     public void SetViewExtentsType(int viewExtentsType_)
     {
         viewExtentsType = viewExtentsType_;
-        Select(14);
+        Select(15);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
-        Select(15);
+        Select(16);
     }
 
     public void SetViewKeyframes(Vector viewKeyframes_)
     {
         viewKeyframes = viewKeyframes_;
-        Select(16);
+        Select(17);
     }
 
     public void SetCameraViewMode(boolean cameraViewMode_)
     {
         cameraViewMode = cameraViewMode_;
-        Select(17);
+        Select(18);
     }
 
     public void SetUsingScalableRendering(boolean usingScalableRendering_)
     {
         usingScalableRendering = usingScalableRendering_;
-        Select(18);
+        Select(19);
     }
 
     public void SetLastRenderMin(float lastRenderMin_)
     {
         lastRenderMin = lastRenderMin_;
-        Select(19);
+        Select(20);
     }
 
     public void SetLastRenderAvg(float lastRenderAvg_)
     {
         lastRenderAvg = lastRenderAvg_;
-        Select(20);
+        Select(21);
     }
 
     public void SetLastRenderMax(float lastRenderMax_)
     {
         lastRenderMax = lastRenderMax_;
-        Select(21);
+        Select(22);
     }
 
     public void SetNumPrimitives(int numPrimitives_)
     {
         numPrimitives = numPrimitives_;
-        Select(22);
+        Select(23);
     }
 
     public void SetExtents(double[] extents_)
     {
         for(int i = 0; i < 6; ++i)
              extents[i] = extents_[i];
-        Select(23);
+        Select(24);
     }
 
     public void SetWindowSize(int[] windowSize_)
     {
         windowSize[0] = windowSize_[0];
         windowSize[1] = windowSize_[1];
-        Select(24);
+        Select(25);
     }
 
     public void SetWindowSize(int e0, int e1)
     {
         windowSize[0] = e0;
         windowSize[1] = e1;
-        Select(24);
+        Select(25);
     }
 
     public void SetWinMode(int winMode_)
     {
         winMode = winMode_;
-        Select(25);
+        Select(26);
     }
 
     // Property getting methods
@@ -453,6 +463,7 @@ public class WindowInformation extends AttributeSubject
     public boolean  GetSpin() { return spin; }
     public boolean  GetFullFrame() { return fullFrame; }
     public boolean  GetPerspective() { return perspective; }
+    public boolean  GetMaintainView() { return maintainView; }
     public boolean  GetLockView() { return lockView; }
     public boolean  GetLockTools() { return lockTools; }
     public boolean  GetLockTime() { return lockTime; }
@@ -495,34 +506,36 @@ public class WindowInformation extends AttributeSubject
         if(WriteSelect(10, buf))
             buf.WriteBool(perspective);
         if(WriteSelect(11, buf))
-            buf.WriteBool(lockView);
+            buf.WriteBool(maintainView);
         if(WriteSelect(12, buf))
-            buf.WriteBool(lockTools);
+            buf.WriteBool(lockView);
         if(WriteSelect(13, buf))
-            buf.WriteBool(lockTime);
+            buf.WriteBool(lockTools);
         if(WriteSelect(14, buf))
-            buf.WriteInt(viewExtentsType);
+            buf.WriteBool(lockTime);
         if(WriteSelect(15, buf))
-            buf.WriteInt(viewDimension);
+            buf.WriteInt(viewExtentsType);
         if(WriteSelect(16, buf))
-            buf.WriteIntVector(viewKeyframes);
+            buf.WriteInt(viewDimension);
         if(WriteSelect(17, buf))
-            buf.WriteBool(cameraViewMode);
+            buf.WriteIntVector(viewKeyframes);
         if(WriteSelect(18, buf))
-            buf.WriteBool(usingScalableRendering);
+            buf.WriteBool(cameraViewMode);
         if(WriteSelect(19, buf))
-            buf.WriteFloat(lastRenderMin);
+            buf.WriteBool(usingScalableRendering);
         if(WriteSelect(20, buf))
-            buf.WriteFloat(lastRenderAvg);
+            buf.WriteFloat(lastRenderMin);
         if(WriteSelect(21, buf))
-            buf.WriteFloat(lastRenderMax);
+            buf.WriteFloat(lastRenderAvg);
         if(WriteSelect(22, buf))
-            buf.WriteInt(numPrimitives);
+            buf.WriteFloat(lastRenderMax);
         if(WriteSelect(23, buf))
-            buf.WriteDoubleArray(extents);
+            buf.WriteInt(numPrimitives);
         if(WriteSelect(24, buf))
-            buf.WriteIntArray(windowSize);
+            buf.WriteDoubleArray(extents);
         if(WriteSelect(25, buf))
+            buf.WriteIntArray(windowSize);
+        if(WriteSelect(26, buf))
             buf.WriteInt(winMode);
     }
 
@@ -564,48 +577,51 @@ public class WindowInformation extends AttributeSubject
             SetPerspective(buf.ReadBool());
             break;
         case 11:
-            SetLockView(buf.ReadBool());
+            SetMaintainView(buf.ReadBool());
             break;
         case 12:
-            SetLockTools(buf.ReadBool());
+            SetLockView(buf.ReadBool());
             break;
         case 13:
-            SetLockTime(buf.ReadBool());
+            SetLockTools(buf.ReadBool());
             break;
         case 14:
-            SetViewExtentsType(buf.ReadInt());
+            SetLockTime(buf.ReadBool());
             break;
         case 15:
-            SetViewDimension(buf.ReadInt());
+            SetViewExtentsType(buf.ReadInt());
             break;
         case 16:
-            SetViewKeyframes(buf.ReadIntVector());
+            SetViewDimension(buf.ReadInt());
             break;
         case 17:
-            SetCameraViewMode(buf.ReadBool());
+            SetViewKeyframes(buf.ReadIntVector());
             break;
         case 18:
-            SetUsingScalableRendering(buf.ReadBool());
+            SetCameraViewMode(buf.ReadBool());
             break;
         case 19:
-            SetLastRenderMin(buf.ReadFloat());
+            SetUsingScalableRendering(buf.ReadBool());
             break;
         case 20:
-            SetLastRenderAvg(buf.ReadFloat());
+            SetLastRenderMin(buf.ReadFloat());
             break;
         case 21:
-            SetLastRenderMax(buf.ReadFloat());
+            SetLastRenderAvg(buf.ReadFloat());
             break;
         case 22:
-            SetNumPrimitives(buf.ReadInt());
+            SetLastRenderMax(buf.ReadFloat());
             break;
         case 23:
-            SetExtents(buf.ReadDoubleArray());
+            SetNumPrimitives(buf.ReadInt());
             break;
         case 24:
-            SetWindowSize(buf.ReadIntArray());
+            SetExtents(buf.ReadDoubleArray());
             break;
         case 25:
+            SetWindowSize(buf.ReadIntArray());
+            break;
+        case 26:
             SetWinMode(buf.ReadInt());
             break;
         }
@@ -625,6 +641,7 @@ public class WindowInformation extends AttributeSubject
         str = str + boolToString("spin", spin, indent) + "\n";
         str = str + boolToString("fullFrame", fullFrame, indent) + "\n";
         str = str + boolToString("perspective", perspective, indent) + "\n";
+        str = str + boolToString("maintainView", maintainView, indent) + "\n";
         str = str + boolToString("lockView", lockView, indent) + "\n";
         str = str + boolToString("lockTools", lockTools, indent) + "\n";
         str = str + boolToString("lockTime", lockTime, indent) + "\n";
@@ -656,6 +673,7 @@ public class WindowInformation extends AttributeSubject
     private boolean  spin;
     private boolean  fullFrame;
     private boolean  perspective;
+    private boolean  maintainView;
     private boolean  lockView;
     private boolean  lockTools;
     private boolean  lockTime;

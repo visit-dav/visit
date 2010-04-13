@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class PrinterAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 10;
+    private static int PrinterAttributes_numAdditionalAtts = 10;
 
     public PrinterAttributes()
     {
-        super(numAdditionalAttributes);
+        super(PrinterAttributes_numAdditionalAtts);
 
         printerName = new String("");
         printProgram = new String("lpr");
@@ -76,7 +76,7 @@ public class PrinterAttributes extends AttributeSubject
 
     public PrinterAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(PrinterAttributes_numAdditionalAtts + nMoreFields);
 
         printerName = new String("");
         printProgram = new String("lpr");
@@ -92,7 +92,7 @@ public class PrinterAttributes extends AttributeSubject
 
     public PrinterAttributes(PrinterAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(PrinterAttributes_numAdditionalAtts);
 
         printerName = new String(obj.printerName);
         printProgram = new String(obj.printProgram);
@@ -115,7 +115,7 @@ public class PrinterAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return PrinterAttributes_numAdditionalAtts;
     }
 
     public boolean equals(PrinterAttributes obj)

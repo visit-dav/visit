@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class avtVarMetaData extends avtBaseVarMetaData
 {
-    private static int numAdditionalAttributes = 6;
+    private static int avtVarMetaData_numAdditionalAtts = 6;
 
     public avtVarMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtVarMetaData_numAdditionalAtts);
 
         centering = 0;
         hasUnits = false;
@@ -72,7 +72,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
 
     public avtVarMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtVarMetaData_numAdditionalAtts + nMoreFields);
 
         centering = 0;
         hasUnits = false;
@@ -84,7 +84,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
 
     public avtVarMetaData(avtVarMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtVarMetaData_numAdditionalAtts);
 
         centering = obj.centering;
         hasUnits = obj.hasUnits;
@@ -103,7 +103,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtVarMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtVarMetaData obj)
@@ -121,37 +121,37 @@ public class avtVarMetaData extends avtBaseVarMetaData
     public void SetCentering(int centering_)
     {
         centering = centering_;
-        Select(Offset() + 0);
+        Select((new avtVarMetaData()).Offset() + 0);
     }
 
     public void SetHasUnits(boolean hasUnits_)
     {
         hasUnits = hasUnits_;
-        Select(Offset() + 1);
+        Select((new avtVarMetaData()).Offset() + 1);
     }
 
     public void SetUnits(String units_)
     {
         units = units_;
-        Select(Offset() + 2);
+        Select((new avtVarMetaData()).Offset() + 2);
     }
 
     public void SetHasDataExtents(boolean hasDataExtents_)
     {
         hasDataExtents = hasDataExtents_;
-        Select(Offset() + 3);
+        Select((new avtVarMetaData()).Offset() + 3);
     }
 
     public void SetMinDataExtents(double minDataExtents_)
     {
         minDataExtents = minDataExtents_;
-        Select(Offset() + 4);
+        Select((new avtVarMetaData()).Offset() + 4);
     }
 
     public void SetMaxDataExtents(double maxDataExtents_)
     {
         maxDataExtents = maxDataExtents_;
-        Select(Offset() + 5);
+        Select((new avtVarMetaData()).Offset() + 5);
     }
 
     // Property getting methods
@@ -167,7 +167,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtVarMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteInt(centering);
         if(WriteSelect(offset + 1, buf))
@@ -184,7 +184,8 @@ public class avtVarMetaData extends avtBaseVarMetaData
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int index = id - Offset();
+        int offset = (new avtVarMetaData()).Offset();
+        int index = id - offset;
         switch(index)
         {
         case 0:

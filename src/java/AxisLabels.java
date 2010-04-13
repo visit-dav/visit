@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class AxisLabels extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 3;
+    private static int AxisLabels_numAdditionalAtts = 3;
 
     public AxisLabels()
     {
-        super(numAdditionalAttributes);
+        super(AxisLabels_numAdditionalAtts);
 
         visible = true;
         font = new FontAttributes();
@@ -69,7 +69,7 @@ public class AxisLabels extends AttributeSubject
 
     public AxisLabels(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(AxisLabels_numAdditionalAtts + nMoreFields);
 
         visible = true;
         font = new FontAttributes();
@@ -78,7 +78,7 @@ public class AxisLabels extends AttributeSubject
 
     public AxisLabels(AxisLabels obj)
     {
-        super(numAdditionalAttributes);
+        super(AxisLabels_numAdditionalAtts);
 
         visible = obj.visible;
         font = new FontAttributes(obj.font);
@@ -94,7 +94,7 @@ public class AxisLabels extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return AxisLabels_numAdditionalAtts;
     }
 
     public boolean equals(AxisLabels obj)

@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class LightList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 8;
+    private static int LightList_numAdditionalAtts = 8;
 
     public LightList()
     {
-        super(numAdditionalAttributes);
+        super(LightList_numAdditionalAtts);
 
         light0 = new LightAttributes();
         light1 = new LightAttributes();
@@ -75,7 +75,7 @@ public class LightList extends AttributeSubject
 
     public LightList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(LightList_numAdditionalAtts + nMoreFields);
 
         light0 = new LightAttributes();
         light1 = new LightAttributes();
@@ -90,7 +90,7 @@ public class LightList extends AttributeSubject
 
     public LightList(LightList obj)
     {
-        super(numAdditionalAttributes);
+        super(LightList_numAdditionalAtts);
 
         light0 = new LightAttributes(obj.light0);
         light1 = new LightAttributes(obj.light1);
@@ -111,7 +111,7 @@ public class LightList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return LightList_numAdditionalAtts;
     }
 
     public boolean equals(LightList obj)
