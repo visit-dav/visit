@@ -117,6 +117,9 @@
 #
 #    Mark C. Miller, Fri Mar  5 16:21:43 PST 2010
 #    Added VERBOSE=1 to make commands
+#
+#    Mark C. Miller, Mon Apr 12 17:22:47 PDT 2010
+#    Re-enabled parallel tests.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -414,8 +417,7 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 theDay=`date +%A`
 
 # set mode to run in
-#modes="nersc,serial nersc,parallel nersc,scalable,parallel"
-modes="nersc,serial"
+modes="nersc,serial nersc,parallel nersc,scalable,parallel"
 
 # set list of tests/modes to skip
 skipList_dueTo_clientServer="\
