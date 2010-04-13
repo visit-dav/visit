@@ -21,6 +21,8 @@
 #    Fixed problem w/ setting active window that allowed errors to propagate
 #    between test cases.
 #
+#    Mark C. Miller, Wed Apr  7 19:02:29 PDT 2010
+#    Be smarter about testing curve formats while in scalable mode.
 # ----------------------------------------------------------------------------
 swa=SaveWindowAttributes()
 swa.family = 0
@@ -51,7 +53,16 @@ def TestSaveFormat(fmt):
     else:
         swatmp.fileName = "current/saveformat_tmp"
     SetSaveWindowAttributes(swatmp)
-    SaveWindow()
+    try:
+        SaveWindow()
+    except:
+        if scalable:
+            if GetLastError() == "You cannot save curve formats (ultra, curve) from " \
+                                 "a window that is currently in scalable rendering mode.":
+                TestText("saveformat_%s%s"%(mode,ext), "Passed\n")
+                return
+        TestText("saveformat_%s%s"%(mode,ext), result)
+        return
 
     # depending on the type of format this is, try to
     # read the file we just created back into VisIt and
