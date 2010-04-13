@@ -41,12 +41,8 @@
 // ************************************************************************* //
 
 #include <avtActor.h>
-
 #include <vtkRenderer.h>
-
 #include <avtTransparencyActor.h>
-
-#include <NoInputException.h>
 #include <ColorAttribute.h>
 
 
@@ -306,22 +302,22 @@ avtActor::SetActorName(const char *newName)
 //    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002 
 //    Add support for a decorations drawable.
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::Add(vtkRenderer *renderingCanvas, vtkRenderer *decorationCanvas)
 {
-    if (*behavior == NULL || *drawable == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    behavior->Add(decorationCanvas);
-    drawable->Add(renderingCanvas);
-    if (*(decorations) != NULL)
-    {
+    if (*behavior != NULL)
+        behavior->Add(decorationCanvas);
+    if (*drawable != NULL)
+        drawable->Add(renderingCanvas);
+    if (*decorations != NULL)
         decorations->Add(renderingCanvas);
-    }
 
     renderer = renderingCanvas;
 
@@ -358,22 +354,23 @@ avtActor::Add(vtkRenderer *renderingCanvas, vtkRenderer *decorationCanvas)
 //    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002 
 //    Add support for a decorations drawable.
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::Remove(vtkRenderer *renderingCanvas, vtkRenderer *decorationCanvas)
 {
-    if (*behavior == NULL || *drawable == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    behavior->Remove(decorationCanvas);
-    drawable->Remove(renderingCanvas);
-    if (*(decorations) != NULL)
-    {
+    if (*behavior != NULL)
+        behavior->Remove(decorationCanvas);
+    if (*drawable != NULL)
+        drawable->Remove(renderingCanvas);
+    if (*decorations != NULL)
         decorations->Remove(renderingCanvas);
-    }
+
     renderer = NULL;
 
     if (transparencyActor != NULL && transparencyIndex >= 0)
@@ -400,17 +397,18 @@ avtActor::Remove(vtkRenderer *renderingCanvas, vtkRenderer *decorationCanvas)
 //    Hank Childs, Mon Jul 15 09:07:25 PDT 2002
 //    Renamed to GetOriginalBounds (from GetBounds).
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::GetOriginalBounds(double bounds[6])
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    behavior->GetOriginalBounds(bounds);
+    if (*behavior != NULL)
+        behavior->GetOriginalBounds(bounds);
 }
 
 
@@ -426,17 +424,20 @@ avtActor::GetOriginalBounds(double bounds[6])
 //  Programmer:   Hank Childs
 //  Creation:     July 15, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::GetActualBounds(double bounds[6])
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    behavior->GetActualBounds(bounds);
+    if (*behavior != NULL)
+        behavior->GetActualBounds(bounds);
 }
 
 
@@ -451,17 +452,21 @@ avtActor::GetActualBounds(double bounds[6])
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 int
 avtActor::GetDimension(void)
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    return behavior->GetDimension();
+    if (*behavior != NULL)
+        return behavior->GetDimension();
+    return -1;
 }
 
 
@@ -476,17 +481,21 @@ avtActor::GetDimension(void)
 //  Programmer: Eric Brugger
 //  Creation:   August 20, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 WINDOW_MODE
 avtActor::GetWindowMode(void)
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    return behavior->GetWindowMode();
+    if (*behavior != NULL)
+        return behavior->GetWindowMode();
+    return WINMODE_NONE;
 }
 
 
@@ -501,17 +510,21 @@ avtActor::GetWindowMode(void)
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2007
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 bool
 avtActor::AdaptsToAnyWindowMode(void)
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    return behavior->AdaptsToAnyWindowMode();
+    if (*behavior != NULL)
+        return behavior->AdaptsToAnyWindowMode();
+    return true;
 }
 
 
@@ -533,17 +546,19 @@ avtActor::AdaptsToAnyWindowMode(void)
 //    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003
 //    Added bool argument.
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 int
 avtActor::GetRenderOrder(bool aa)
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    return behavior->GetRenderOrder(aa);
+    if (*behavior != NULL)
+        return behavior->GetRenderOrder(aa);
+    return -1;
 }
 
 
@@ -558,17 +573,19 @@ avtActor::GetRenderOrder(bool aa)
 //  Programmer:  Hank Childs
 //  Creation:    December 28, 2000
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 avtLegend_p
 avtActor::GetLegend(void)
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    return behavior->GetLegend();
+    if (*behavior != NULL)
+        return behavior->GetLegend();
+    return 0;
 }
 
 
@@ -594,17 +611,18 @@ avtActor::GetLegend(void)
 //    Chris Wojtan, Fri Jul 23 14:13:44 PDT 2004
 //    set isVisible to false
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::VisibilityOff(void)
 {
-    if (*drawable == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    drawable->VisibilityOff();
+    if (*drawable != NULL)
+        drawable->VisibilityOff();
     isVisible = false;
 
     if (transparencyActor != NULL && transparencyIndex >= 0)
@@ -636,17 +654,18 @@ avtActor::VisibilityOff(void)
 //    Chris Wojtan, Fri Jul 23 14:14:08 PDT 2004
 //    set isVisible to true
 //
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::VisibilityOn(void)
 {
-    if (*drawable == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    drawable->VisibilityOn();
+    if (*drawable != NULL)
+        drawable->VisibilityOn();
     isVisible = true;
 
     if (transparencyActor != NULL && transparencyIndex >= 0)
@@ -736,17 +755,20 @@ avtActor::ScaleByVector(const double vec[3])
 //  Programmer:   Kathleen Bonnell 
 //  Creation:     May 7, 2002 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
+//    Replaced EXCEPTION with test(s) for non-NULL and doing what we can.
+//    In cases where a value is returned where we would have otherwise
+//    thrown an exception, the resultant returned value was chosen as
+//    best as possible.
 // ****************************************************************************
 
 void
 avtActor::GetDataExtents(double &dmin, double &dmax) 
 {
-    if (*behavior == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    behavior->GetDataExtents(dmin, dmax);
+    if (*behavior != NULL)
+        behavior->GetDataExtents(dmin, dmax);
 }
 
 
