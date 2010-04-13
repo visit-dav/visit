@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class InteractorAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int InteractorAttributes_numAdditionalAtts = 6;
 
     // Enum values
     public final static int NAVIGATIONMODE_TRACKBALL = 0;
@@ -70,7 +70,7 @@ public class InteractorAttributes extends AttributeSubject
 
     public InteractorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(InteractorAttributes_numAdditionalAtts);
 
         showGuidelines = true;
         clampSquare = false;
@@ -82,7 +82,7 @@ public class InteractorAttributes extends AttributeSubject
 
     public InteractorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(InteractorAttributes_numAdditionalAtts + nMoreFields);
 
         showGuidelines = true;
         clampSquare = false;
@@ -94,7 +94,7 @@ public class InteractorAttributes extends AttributeSubject
 
     public InteractorAttributes(InteractorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(InteractorAttributes_numAdditionalAtts);
 
         showGuidelines = obj.showGuidelines;
         clampSquare = obj.clampSquare;
@@ -113,7 +113,7 @@ public class InteractorAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return InteractorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(InteractorAttributes obj)

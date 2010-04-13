@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class avtSimulationInformation extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 8;
+    private static int avtSimulationInformation_numAdditionalAtts = 8;
 
     // Enum values
     public final static int RUNMODE_UNKNOWN = 0;
@@ -67,7 +67,7 @@ public class avtSimulationInformation extends AttributeSubject
 
     public avtSimulationInformation()
     {
-        super(numAdditionalAttributes);
+        super(avtSimulationInformation_numAdditionalAtts);
 
         host = new String("");
         port = 0;
@@ -81,7 +81,7 @@ public class avtSimulationInformation extends AttributeSubject
 
     public avtSimulationInformation(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtSimulationInformation_numAdditionalAtts + nMoreFields);
 
         host = new String("");
         port = 0;
@@ -95,7 +95,7 @@ public class avtSimulationInformation extends AttributeSubject
 
     public avtSimulationInformation(avtSimulationInformation obj)
     {
-        super(numAdditionalAttributes);
+        super(avtSimulationInformation_numAdditionalAtts);
 
         int i;
 
@@ -114,8 +114,8 @@ public class avtSimulationInformation extends AttributeSubject
         genericCommands = new Vector(obj.genericCommands.size());
         for(i = 0; i < obj.genericCommands.size(); ++i)
         {
-            avtSimulationCommandSpecification newObj = (avtSimulationCommandSpecification)genericCommands.elementAt(i);
-            genericCommands.addElement(new avtSimulationCommandSpecification(newObj));
+            avtSimulationCommandSpecification oldObj = (avtSimulationCommandSpecification)obj.genericCommands.elementAt(i);
+            genericCommands.addElement(new avtSimulationCommandSpecification(oldObj));
         }
 
         mode = obj.mode;
@@ -123,8 +123,8 @@ public class avtSimulationInformation extends AttributeSubject
         customCommands = new Vector(obj.customCommands.size());
         for(i = 0; i < obj.customCommands.size(); ++i)
         {
-            avtSimulationCommandSpecification newObj = (avtSimulationCommandSpecification)customCommands.elementAt(i);
-            customCommands.addElement(new avtSimulationCommandSpecification(newObj));
+            avtSimulationCommandSpecification oldObj = (avtSimulationCommandSpecification)obj.customCommands.elementAt(i);
+            customCommands.addElement(new avtSimulationCommandSpecification(oldObj));
         }
 
 
@@ -138,7 +138,7 @@ public class avtSimulationInformation extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtSimulationInformation_numAdditionalAtts;
     }
 
     public boolean equals(avtSimulationInformation obj)

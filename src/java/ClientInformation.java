@@ -57,11 +57,11 @@ import java.util.Vector;
 
 public class ClientInformation extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 3;
+    private static int ClientInformation_numAdditionalAtts = 3;
 
     public ClientInformation()
     {
-        super(numAdditionalAttributes);
+        super(ClientInformation_numAdditionalAtts);
 
         clientName = new String("");
         methodNames = new Vector();
@@ -70,7 +70,7 @@ public class ClientInformation extends AttributeSubject
 
     public ClientInformation(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ClientInformation_numAdditionalAtts + nMoreFields);
 
         clientName = new String("");
         methodNames = new Vector();
@@ -79,7 +79,7 @@ public class ClientInformation extends AttributeSubject
 
     public ClientInformation(ClientInformation obj)
     {
-        super(numAdditionalAttributes);
+        super(ClientInformation_numAdditionalAtts);
 
         int i;
 
@@ -103,7 +103,7 @@ public class ClientInformation extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ClientInformation_numAdditionalAtts;
     }
 
     public boolean equals(ClientInformation obj)

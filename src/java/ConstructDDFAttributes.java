@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class ConstructDDFAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 13;
+    private static int ConstructDDFAttributes_numAdditionalAtts = 13;
 
     // Enum values
     public final static int BINNINGSCHEME_UNIFORM = 0;
@@ -79,7 +79,7 @@ public class ConstructDDFAttributes extends AttributeSubject
 
     public ConstructDDFAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ConstructDDFAttributes_numAdditionalAtts);
 
         ddfName = new String("");
         varnames = new Vector();
@@ -98,7 +98,7 @@ public class ConstructDDFAttributes extends AttributeSubject
 
     public ConstructDDFAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ConstructDDFAttributes_numAdditionalAtts + nMoreFields);
 
         ddfName = new String("");
         varnames = new Vector();
@@ -117,7 +117,7 @@ public class ConstructDDFAttributes extends AttributeSubject
 
     public ConstructDDFAttributes(ConstructDDFAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ConstructDDFAttributes_numAdditionalAtts);
 
         int i;
 
@@ -159,7 +159,7 @@ public class ConstructDDFAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ConstructDDFAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ConstructDDFAttributes obj)

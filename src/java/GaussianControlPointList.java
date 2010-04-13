@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class GaussianControlPointList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int GaussianControlPointList_numAdditionalAtts = 1;
 
     public GaussianControlPointList()
     {
-        super(numAdditionalAttributes);
+        super(GaussianControlPointList_numAdditionalAtts);
 
         controlPoints = new Vector();
     }
 
     public GaussianControlPointList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(GaussianControlPointList_numAdditionalAtts + nMoreFields);
 
         controlPoints = new Vector();
     }
 
     public GaussianControlPointList(GaussianControlPointList obj)
     {
-        super(numAdditionalAttributes);
+        super(GaussianControlPointList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class GaussianControlPointList extends AttributeSubject
         controlPoints = new Vector(obj.controlPoints.size());
         for(i = 0; i < obj.controlPoints.size(); ++i)
         {
-            GaussianControlPoint newObj = (GaussianControlPoint)controlPoints.elementAt(i);
-            controlPoints.addElement(new GaussianControlPoint(newObj));
+            GaussianControlPoint oldObj = (GaussianControlPoint)obj.controlPoints.elementAt(i);
+            controlPoints.addElement(new GaussianControlPoint(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class GaussianControlPointList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return GaussianControlPointList_numAdditionalAtts;
     }
 
     public boolean equals(GaussianControlPointList obj)

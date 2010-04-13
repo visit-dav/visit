@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class LightAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int LightAttributes_numAdditionalAtts = 6;
 
     // Enum values
     public final static int LIGHTTYPE_AMBIENT = 0;
@@ -66,7 +66,7 @@ public class LightAttributes extends AttributeSubject
 
     public LightAttributes()
     {
-        super(numAdditionalAttributes);
+        super(LightAttributes_numAdditionalAtts);
 
         enabledFlagCanBeToggled = true;
         enabledFlag = true;
@@ -81,7 +81,7 @@ public class LightAttributes extends AttributeSubject
 
     public LightAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(LightAttributes_numAdditionalAtts + nMoreFields);
 
         enabledFlagCanBeToggled = true;
         enabledFlag = true;
@@ -96,7 +96,7 @@ public class LightAttributes extends AttributeSubject
 
     public LightAttributes(LightAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(LightAttributes_numAdditionalAtts);
 
         int i;
 
@@ -121,7 +121,7 @@ public class LightAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return LightAttributes_numAdditionalAtts;
     }
 
     public boolean equals(LightAttributes obj)

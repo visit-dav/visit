@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class avtSubsetsMetaData extends avtVarMetaData
 {
-    private static int numAdditionalAttributes = 12;
+    private static int avtSubsetsMetaData_numAdditionalAtts = 12;
 
     // Enum values
     public final static int PARTIALCELLMODES_INCLUDE = 0;
@@ -72,7 +72,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
     public avtSubsetsMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtSubsetsMetaData_numAdditionalAtts);
 
         catName = new String("");
         catCount = 0;
@@ -89,7 +89,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
     public avtSubsetsMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtSubsetsMetaData_numAdditionalAtts + nMoreFields);
 
         catName = new String("");
         catCount = 0;
@@ -106,7 +106,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
     public avtSubsetsMetaData(avtSubsetsMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtSubsetsMetaData_numAdditionalAtts);
 
         int i;
 
@@ -146,7 +146,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtSubsetsMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtSubsetsMetaData obj)
@@ -199,73 +199,73 @@ public class avtSubsetsMetaData extends avtVarMetaData
     public void SetCatName(String catName_)
     {
         catName = catName_;
-        Select(Offset() + 0);
+        Select((new avtSubsetsMetaData()).Offset() + 0);
     }
 
     public void SetCatCount(int catCount_)
     {
         catCount = catCount_;
-        Select(Offset() + 1);
+        Select((new avtSubsetsMetaData()).Offset() + 1);
     }
 
     public void SetNameScheme(NameschemeAttributes nameScheme_)
     {
         nameScheme = nameScheme_;
-        Select(Offset() + 2);
+        Select((new avtSubsetsMetaData()).Offset() + 2);
     }
 
     public void SetColorScheme(Vector colorScheme_)
     {
         colorScheme = colorScheme_;
-        Select(Offset() + 3);
+        Select((new avtSubsetsMetaData()).Offset() + 3);
     }
 
     public void SetSetsToChunksMaps(Vector setsToChunksMaps_)
     {
         setsToChunksMaps = setsToChunksMaps_;
-        Select(Offset() + 4);
+        Select((new avtSubsetsMetaData()).Offset() + 4);
     }
 
     public void SetGraphEdges(Vector graphEdges_)
     {
         graphEdges = graphEdges_;
-        Select(Offset() + 5);
+        Select((new avtSubsetsMetaData()).Offset() + 5);
     }
 
     public void SetIsChunkCat(boolean isChunkCat_)
     {
         isChunkCat = isChunkCat_;
-        Select(Offset() + 6);
+        Select((new avtSubsetsMetaData()).Offset() + 6);
     }
 
     public void SetIsMaterialCat(boolean isMaterialCat_)
     {
         isMaterialCat = isMaterialCat_;
-        Select(Offset() + 7);
+        Select((new avtSubsetsMetaData()).Offset() + 7);
     }
 
     public void SetIsUnionOfChunks(boolean isUnionOfChunks_)
     {
         isUnionOfChunks = isUnionOfChunks_;
-        Select(Offset() + 8);
+        Select((new avtSubsetsMetaData()).Offset() + 8);
     }
 
     public void SetHasPartialCells(boolean hasPartialCells_)
     {
         hasPartialCells = hasPartialCells_;
-        Select(Offset() + 9);
+        Select((new avtSubsetsMetaData()).Offset() + 9);
     }
 
     public void SetDecompMode(int decompMode_)
     {
         decompMode = decompMode_;
-        Select(Offset() + 10);
+        Select((new avtSubsetsMetaData()).Offset() + 10);
     }
 
     public void SetMaxTopoDim(int maxTopoDim_)
     {
         maxTopoDim = maxTopoDim_;
-        Select(Offset() + 11);
+        Select((new avtSubsetsMetaData()).Offset() + 11);
     }
 
     // Property getting methods
@@ -287,7 +287,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtSubsetsMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteString(catName);
         if(WriteSelect(offset + 1, buf))
@@ -316,7 +316,8 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int index = id - Offset();
+        int offset = (new avtSubsetsMetaData()).Offset();
+        int index = id - offset;
         switch(index)
         {
         case 0:
@@ -327,7 +328,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
             break;
         case 2:
             nameScheme.Read(buf);
-            Select(Offset() + 2);
+            Select(offset + 2);
             break;
         case 3:
             SetColorScheme(buf.ReadStringVector());

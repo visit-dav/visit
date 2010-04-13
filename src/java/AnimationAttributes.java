@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class AnimationAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 5;
+    private static int AnimationAttributes_numAdditionalAtts = 5;
 
     // Enum values
     public final static int ANIMATIONMODE_REVERSEPLAYMODE = 0;
@@ -70,7 +70,7 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes()
     {
-        super(numAdditionalAttributes);
+        super(AnimationAttributes_numAdditionalAtts);
 
         animationMode = ANIMATIONMODE_STOPMODE;
         pipelineCachingMode = false;
@@ -81,7 +81,7 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(AnimationAttributes_numAdditionalAtts + nMoreFields);
 
         animationMode = ANIMATIONMODE_STOPMODE;
         pipelineCachingMode = false;
@@ -92,7 +92,7 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes(AnimationAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(AnimationAttributes_numAdditionalAtts);
 
         animationMode = obj.animationMode;
         pipelineCachingMode = obj.pipelineCachingMode;
@@ -110,7 +110,7 @@ public class AnimationAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return AnimationAttributes_numAdditionalAtts;
     }
 
     public boolean equals(AnimationAttributes obj)

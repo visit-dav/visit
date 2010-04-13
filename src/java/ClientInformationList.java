@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class ClientInformationList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int ClientInformationList_numAdditionalAtts = 1;
 
     public ClientInformationList()
     {
-        super(numAdditionalAttributes);
+        super(ClientInformationList_numAdditionalAtts);
 
         clients = new Vector();
     }
 
     public ClientInformationList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ClientInformationList_numAdditionalAtts + nMoreFields);
 
         clients = new Vector();
     }
 
     public ClientInformationList(ClientInformationList obj)
     {
-        super(numAdditionalAttributes);
+        super(ClientInformationList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class ClientInformationList extends AttributeSubject
         clients = new Vector(obj.clients.size());
         for(i = 0; i < obj.clients.size(); ++i)
         {
-            ClientInformation newObj = (ClientInformation)clients.elementAt(i);
-            clients.addElement(new ClientInformation(newObj));
+            ClientInformation oldObj = (ClientInformation)obj.clients.elementAt(i);
+            clients.addElement(new ClientInformation(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class ClientInformationList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ClientInformationList_numAdditionalAtts;
     }
 
     public boolean equals(ClientInformationList obj)

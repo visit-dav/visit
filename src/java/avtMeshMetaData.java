@@ -58,11 +58,11 @@ import java.lang.Integer;
 
 public class avtMeshMetaData extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 44;
+    private static int avtMeshMetaData_numAdditionalAtts = 44;
 
     public avtMeshMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtMeshMetaData_numAdditionalAtts);
 
         name = new String("mesh");
         originalName = new String("");
@@ -146,7 +146,7 @@ public class avtMeshMetaData extends AttributeSubject
 
     public avtMeshMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtMeshMetaData_numAdditionalAtts + nMoreFields);
 
         name = new String("mesh");
         originalName = new String("");
@@ -230,7 +230,7 @@ public class avtMeshMetaData extends AttributeSubject
 
     public avtMeshMetaData(avtMeshMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtMeshMetaData_numAdditionalAtts);
 
         int i;
 
@@ -320,7 +320,7 @@ public class avtMeshMetaData extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtMeshMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtMeshMetaData obj)

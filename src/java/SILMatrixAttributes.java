@@ -58,11 +58,11 @@ import java.util.Vector;
 
 public class SILMatrixAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 6;
+    private static int SILMatrixAttributes_numAdditionalAtts = 6;
 
     public SILMatrixAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SILMatrixAttributes_numAdditionalAtts);
 
         set1 = new Vector();
         category1 = new String("");
@@ -74,7 +74,7 @@ public class SILMatrixAttributes extends AttributeSubject
 
     public SILMatrixAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SILMatrixAttributes_numAdditionalAtts + nMoreFields);
 
         set1 = new Vector();
         category1 = new String("");
@@ -86,7 +86,7 @@ public class SILMatrixAttributes extends AttributeSubject
 
     public SILMatrixAttributes(SILMatrixAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SILMatrixAttributes_numAdditionalAtts);
 
         int i;
 
@@ -117,7 +117,7 @@ public class SILMatrixAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SILMatrixAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SILMatrixAttributes obj)

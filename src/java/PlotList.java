@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class PlotList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int PlotList_numAdditionalAtts = 1;
 
     public PlotList()
     {
-        super(numAdditionalAttributes);
+        super(PlotList_numAdditionalAtts);
 
         plots = new Vector();
     }
 
     public PlotList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(PlotList_numAdditionalAtts + nMoreFields);
 
         plots = new Vector();
     }
 
     public PlotList(PlotList obj)
     {
-        super(numAdditionalAttributes);
+        super(PlotList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class PlotList extends AttributeSubject
         plots = new Vector(obj.plots.size());
         for(i = 0; i < obj.plots.size(); ++i)
         {
-            Plot newObj = (Plot)plots.elementAt(i);
-            plots.addElement(new Plot(newObj));
+            Plot oldObj = (Plot)obj.plots.elementAt(i);
+            plots.addElement(new Plot(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class PlotList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return PlotList_numAdditionalAtts;
     }
 
     public boolean equals(PlotList obj)

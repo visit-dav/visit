@@ -57,25 +57,25 @@ import java.util.Vector;
 
 public class ColorAttributeList extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int ColorAttributeList_numAdditionalAtts = 1;
 
     public ColorAttributeList()
     {
-        super(numAdditionalAttributes);
+        super(ColorAttributeList_numAdditionalAtts);
 
         colors = new Vector();
     }
 
     public ColorAttributeList(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ColorAttributeList_numAdditionalAtts + nMoreFields);
 
         colors = new Vector();
     }
 
     public ColorAttributeList(ColorAttributeList obj)
     {
-        super(numAdditionalAttributes);
+        super(ColorAttributeList_numAdditionalAtts);
 
         int i;
 
@@ -83,8 +83,8 @@ public class ColorAttributeList extends AttributeSubject
         colors = new Vector(obj.colors.size());
         for(i = 0; i < obj.colors.size(); ++i)
         {
-            ColorAttribute newObj = (ColorAttribute)colors.elementAt(i);
-            colors.addElement(new ColorAttribute(newObj));
+            ColorAttribute oldObj = (ColorAttribute)obj.colors.elementAt(i);
+            colors.addElement(new ColorAttribute(oldObj));
         }
 
 
@@ -98,7 +98,7 @@ public class ColorAttributeList extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ColorAttributeList_numAdditionalAtts;
     }
 
     public boolean equals(ColorAttributeList obj)

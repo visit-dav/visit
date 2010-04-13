@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class Plot extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 18;
+    private static int Plot_numAdditionalAtts = 19;
 
     // Enum values
     public final static int STATETYPE_NEWLYCREATED = 0;
@@ -69,7 +69,7 @@ public class Plot extends AttributeSubject
 
     public Plot()
     {
-        super(numAdditionalAttributes);
+        super(Plot_numAdditionalAtts);
 
         stateType = STATETYPE_NEWLYCREATED;
         plotType = 0;
@@ -89,11 +89,12 @@ public class Plot extends AttributeSubject
         databaseKeyframes = new Vector();
         isFromSimulation = false;
         followsTime = true;
+        description = new String("");
     }
 
     public Plot(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(Plot_numAdditionalAtts + nMoreFields);
 
         stateType = STATETYPE_NEWLYCREATED;
         plotType = 0;
@@ -113,11 +114,12 @@ public class Plot extends AttributeSubject
         databaseKeyframes = new Vector();
         isFromSimulation = false;
         followsTime = true;
+        description = new String("");
     }
 
     public Plot(Plot obj)
     {
-        super(numAdditionalAttributes);
+        super(Plot_numAdditionalAtts);
 
         int i;
 
@@ -157,6 +159,7 @@ public class Plot extends AttributeSubject
         }
         isFromSimulation = obj.isFromSimulation;
         followsTime = obj.followsTime;
+        description = new String(obj.description);
 
         SelectAll();
     }
@@ -168,7 +171,7 @@ public class Plot extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return Plot_numAdditionalAtts;
     }
 
     public boolean equals(Plot obj)
@@ -229,7 +232,8 @@ public class Plot extends AttributeSubject
                 keyframes_equal &&
                 databaseKeyframes_equal &&
                 (isFromSimulation == obj.isFromSimulation) &&
-                (followsTime == obj.followsTime));
+                (followsTime == obj.followsTime) &&
+                (description.equals(obj.description)));
     }
 
     // Property setting methods
@@ -341,6 +345,12 @@ public class Plot extends AttributeSubject
         Select(17);
     }
 
+    public void SetDescription(String description_)
+    {
+        description = description_;
+        Select(18);
+    }
+
     // Property getting methods
     public int     GetStateType() { return stateType; }
     public int     GetPlotType() { return plotType; }
@@ -360,6 +370,7 @@ public class Plot extends AttributeSubject
     public Vector  GetDatabaseKeyframes() { return databaseKeyframes; }
     public boolean GetIsFromSimulation() { return isFromSimulation; }
     public boolean GetFollowsTime() { return followsTime; }
+    public String  GetDescription() { return description; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -400,6 +411,8 @@ public class Plot extends AttributeSubject
             buf.WriteBool(isFromSimulation);
         if(WriteSelect(17, buf))
             buf.WriteBool(followsTime);
+        if(WriteSelect(18, buf))
+            buf.WriteString(description);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -460,6 +473,9 @@ public class Plot extends AttributeSubject
         case 17:
             SetFollowsTime(buf.ReadBool());
             break;
+        case 18:
+            SetDescription(buf.ReadString());
+            break;
         }
     }
 
@@ -493,6 +509,7 @@ public class Plot extends AttributeSubject
         str = str + intVectorToString("databaseKeyframes", databaseKeyframes, indent) + "\n";
         str = str + boolToString("isFromSimulation", isFromSimulation, indent) + "\n";
         str = str + boolToString("followsTime", followsTime, indent) + "\n";
+        str = str + stringToString("description", description, indent) + "\n";
         return str;
     }
 
@@ -516,5 +533,6 @@ public class Plot extends AttributeSubject
     private Vector  databaseKeyframes; // vector of Integer objects
     private boolean isFromSimulation;
     private boolean followsTime;
+    private String  description;
 }
 

@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class avtScalarMetaData extends avtVarMetaData
 {
-    private static int numAdditionalAttributes = 10;
+    private static int avtScalarMetaData_numAdditionalAtts = 10;
 
     // Enum values
     public final static int PARTIALCELLMODES_INCLUDE = 0;
@@ -75,7 +75,7 @@ public class avtScalarMetaData extends avtVarMetaData
 
     public avtScalarMetaData()
     {
-        super(numAdditionalAttributes);
+        super(avtScalarMetaData_numAdditionalAtts);
 
         treatAsASCII = false;
         enumerationType = ENUMTYPES_NONE;
@@ -95,7 +95,7 @@ public class avtScalarMetaData extends avtVarMetaData
 
     public avtScalarMetaData(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(avtScalarMetaData_numAdditionalAtts + nMoreFields);
 
         treatAsASCII = false;
         enumerationType = ENUMTYPES_NONE;
@@ -115,7 +115,7 @@ public class avtScalarMetaData extends avtVarMetaData
 
     public avtScalarMetaData(avtScalarMetaData obj)
     {
-        super(numAdditionalAttributes);
+        super(avtScalarMetaData_numAdditionalAtts);
 
         int i;
 
@@ -160,7 +160,7 @@ public class avtScalarMetaData extends avtVarMetaData
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return avtScalarMetaData_numAdditionalAtts;
     }
 
     public boolean equals(avtScalarMetaData obj)
@@ -221,77 +221,77 @@ public class avtScalarMetaData extends avtVarMetaData
     public void SetTreatAsASCII(boolean treatAsASCII_)
     {
         treatAsASCII = treatAsASCII_;
-        Select(Offset() + 0);
+        Select((new avtScalarMetaData()).Offset() + 0);
     }
 
     public void SetEnumerationType(int enumerationType_)
     {
         enumerationType = enumerationType_;
-        Select(Offset() + 1);
+        Select((new avtScalarMetaData()).Offset() + 1);
     }
 
     public void SetEnumNames(Vector enumNames_)
     {
         enumNames = enumNames_;
-        Select(Offset() + 2);
+        Select((new avtScalarMetaData()).Offset() + 2);
     }
 
     public void SetEnumRanges(Vector enumRanges_)
     {
         enumRanges = enumRanges_;
-        Select(Offset() + 3);
+        Select((new avtScalarMetaData()).Offset() + 3);
     }
 
     public void SetEnumAlwaysExclude(double[] enumAlwaysExclude_)
     {
         enumAlwaysExclude[0] = enumAlwaysExclude_[0];
         enumAlwaysExclude[1] = enumAlwaysExclude_[1];
-        Select(Offset() + 4);
+        Select((new avtScalarMetaData()).Offset() + 4);
     }
 
     public void SetEnumAlwaysExclude(double e0, double e1)
     {
         enumAlwaysExclude[0] = e0;
         enumAlwaysExclude[1] = e1;
-        Select(Offset() + 4);
+        Select((new avtScalarMetaData()).Offset() + 4);
     }
 
     public void SetEnumAlwaysInclude(double[] enumAlwaysInclude_)
     {
         enumAlwaysInclude[0] = enumAlwaysInclude_[0];
         enumAlwaysInclude[1] = enumAlwaysInclude_[1];
-        Select(Offset() + 5);
+        Select((new avtScalarMetaData()).Offset() + 5);
     }
 
     public void SetEnumAlwaysInclude(double e0, double e1)
     {
         enumAlwaysInclude[0] = e0;
         enumAlwaysInclude[1] = e1;
-        Select(Offset() + 5);
+        Select((new avtScalarMetaData()).Offset() + 5);
     }
 
     public void SetEnumPartialCellMode(int enumPartialCellMode_)
     {
         enumPartialCellMode = enumPartialCellMode_;
-        Select(Offset() + 6);
+        Select((new avtScalarMetaData()).Offset() + 6);
     }
 
     public void SetEnumGraphEdges(Vector enumGraphEdges_)
     {
         enumGraphEdges = enumGraphEdges_;
-        Select(Offset() + 7);
+        Select((new avtScalarMetaData()).Offset() + 7);
     }
 
     public void SetEnumNChooseRN(int enumNChooseRN_)
     {
         enumNChooseRN = enumNChooseRN_;
-        Select(Offset() + 8);
+        Select((new avtScalarMetaData()).Offset() + 8);
     }
 
     public void SetEnumNChooseRMaxR(int enumNChooseRMaxR_)
     {
         enumNChooseRMaxR = enumNChooseRMaxR_;
-        Select(Offset() + 9);
+        Select((new avtScalarMetaData()).Offset() + 9);
     }
 
     // Property getting methods
@@ -311,7 +311,7 @@ public class avtScalarMetaData extends avtVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = Offset();
+        int offset = (new avtScalarMetaData()).Offset();
         if(WriteSelect(offset + 0, buf))
             buf.WriteBool(treatAsASCII);
         if(WriteSelect(offset + 1, buf))
@@ -336,7 +336,8 @@ public class avtScalarMetaData extends avtVarMetaData
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int index = id - Offset();
+        int offset = (new avtScalarMetaData()).Offset();
+        int index = id - offset;
         switch(index)
         {
         case 0:

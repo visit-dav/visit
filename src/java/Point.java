@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Point extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 1;
+    private static int Point_numAdditionalAtts = 1;
 
     // Enum values
     public final static int VALUETYPE_VT_TUPLE = 0;
@@ -71,21 +71,21 @@ public class Point extends AttributeSubject
 
     public Point()
     {
-        super(numAdditionalAttributes);
+        super(Point_numAdditionalAtts);
 
         value = new String("");
     }
 
     public Point(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(Point_numAdditionalAtts + nMoreFields);
 
         value = new String("");
     }
 
     public Point(Point obj)
     {
-        super(numAdditionalAttributes);
+        super(Point_numAdditionalAtts);
 
         value = new String(obj.value);
 
@@ -99,7 +99,7 @@ public class Point extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return Point_numAdditionalAtts;
     }
 
     public boolean equals(Point obj)

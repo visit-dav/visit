@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class StatusAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 11;
+    private static int StatusAttributes_numAdditionalAtts = 11;
 
     // Constants
     public final static int DEFAULT_DURATION = 5000;
@@ -66,7 +66,7 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes()
     {
-        super(numAdditionalAttributes);
+        super(StatusAttributes_numAdditionalAtts);
 
         sender = new String("viewer");
         clearStatus = false;
@@ -83,7 +83,7 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(StatusAttributes_numAdditionalAtts + nMoreFields);
 
         sender = new String("viewer");
         clearStatus = false;
@@ -100,7 +100,7 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes(StatusAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(StatusAttributes_numAdditionalAtts);
 
         int i;
 
@@ -132,7 +132,7 @@ public class StatusAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return StatusAttributes_numAdditionalAtts;
     }
 
     public boolean equals(StatusAttributes obj)

@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class DBOptionsAttributes extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 11;
+    private static int DBOptionsAttributes_numAdditionalAtts = 11;
 
     // Enum values
     public final static int OPTIONTYPE_BOOL = 0;
@@ -72,7 +72,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DBOptionsAttributes_numAdditionalAtts);
 
         types = new Vector();
         names = new Vector();
@@ -89,7 +89,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DBOptionsAttributes_numAdditionalAtts + nMoreFields);
 
         types = new Vector();
         names = new Vector();
@@ -106,7 +106,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes(DBOptionsAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DBOptionsAttributes_numAdditionalAtts);
 
         int i;
 
@@ -181,7 +181,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DBOptionsAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DBOptionsAttributes obj)
