@@ -68,10 +68,10 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
 ##
 ## Add parallel arguments.
 ##
-SET(VISIT_MPI_LIBRARY_DIR ${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/lib)
-SET(VISIT_MPI_CXX_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/include")
-SET(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
-SET(VISIT_MPI_LIBS mpich)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBRARY_DIR ${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/lib)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/linux-i686_gcc-3.2/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 
 ##############################################################
 ##
