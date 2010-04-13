@@ -152,7 +152,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                             STRING(REGEX MATCH "${frameworkNameWE}[A-Za-z0-9._/-]*" frameworkMatch ${realFramework})
                             INSTALL(CODE 
                                 "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                    COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}
+                                    COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}\"
                                     OUTPUT_VARIABLE OSXOUT)
                                  MESSAGE(STATUS \"\${OSXOUT}\")
                                 ")
@@ -168,7 +168,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                 GET_FILENAME_COMPONENT(libName ${curNAMEWithExt} NAME)
                                 INSTALL(CODE 
                                     "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}
+                                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}\"
                                         OUTPUT_VARIABLE OSXOUT)
                                      MESSAGE(STATUS \"\${OSXOUT}\")
                                     ")
@@ -195,7 +195,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 STRING(REGEX MATCH "${frameworkNameWE}[A-Za-z0-9._/-]*" frameworkMatch ${realFramework})
                 INSTALL(CODE 
                     "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}
+                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}\"
                         OUTPUT_VARIABLE OSXOUT)
                      MESSAGE(STATUS \"\${OSXOUT}\")
                     ")
@@ -212,7 +212,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     GET_FILENAME_COMPONENT(libName ${tmpLIBFILE} NAME)
                     INSTALL(CODE 
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                            COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}
+                            COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}\"
                             OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")
