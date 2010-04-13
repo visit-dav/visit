@@ -120,6 +120,9 @@
 #
 #    Mark C. Miller, Mon Apr 12 17:22:47 PDT 2010
 #    Re-enabled parallel tests.
+#
+#    Mark C. Miller, Mon Apr 12 22:40:12 PDT 2010
+#    Replaced mpich path with path to 1.2.7p1 mpich.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -258,7 +261,7 @@ EOF
 }
 
 # set up the environment
-PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/data_vobs/VisIt/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
+PATH=/usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-i686_gcc-3.2/bin:/data_vobs/VisIt/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
 export PATH
 
 optError=0
