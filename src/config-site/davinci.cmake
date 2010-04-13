@@ -1,6 +1,12 @@
 #/project/projectdirs/visit/visit_3rdparty/cmake/2.8.0/linux-ia64_gcc-4.1/bin/cmake
 
 ##
+## Modifications:
+##   Mark C. Miller, Mon Apr 12 18:24:36 PDT 2010
+##   Changed to use mpich-1.2.7p1 and an IceT compiled for mpich-1.2.7p1.
+##
+
+##
 ## Set the VISITHOME environment variable.
 ##
 SET(VISITHOME /project/projectdirs/visit/visit_3rdparty)
@@ -33,7 +39,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH2})
 ##
 ## Ice-T
 ##
-VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0-mpich-1.2.7p1/${VISITARCH})
 
 ##
 ## Turn off warnings for deprecated features and generate position independent code.
@@ -45,8 +51,10 @@ VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fPIC -fvisibility=hidden")
 ## Add parallel arguments.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -DMPI_NO_CPPBIND)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpi)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBRARY_DIR ${VISITHOME}/mpich/1.2.7p1/${VISITARCH}/lib)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I${VISITHOME}/mpich/1.2.7p1/${VISITARCH}/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L${VISIT_MPI_LIBRARY_DIR}")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 
 ##
 ## Database reader plugin support libraries

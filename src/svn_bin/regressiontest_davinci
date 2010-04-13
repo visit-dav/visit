@@ -221,6 +221,9 @@
 #    Removed some visus tests from skip list as those tests have been
 #    eliminated. Removed some csg tests from skip list as those tests have
 #    been improved. Temporarily removed some whole .py files from skip list.
+#
+#    Mark C. Miller, Mon Apr 12 18:27:02 PDT 2010
+#    Added mpich installation to PATH
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -364,7 +367,7 @@ EOF
 }
 
 # set up the environment
-PATH=/usr/common/usg/bin:/usr/common/mss/bin:/usr/common/pbs/bin:/global/u1/m/miller86/bin:/usr/common/mss/bin:/usr/common/usg/bin:/usr/local/bin:/usr/bin/X11:/usr/bin:/bin:/usr/lib/java/jre/bin:.
+PATH=/project/projectdirs/visit/visit_3rdparty/mpich/1.2.7p1/linux-ia64_gcc-4.1.2/bin:/usr/common/usg/bin:/usr/common/mss/bin:/usr/common/pbs/bin:/global/u1/m/miller86/bin:/usr/common/mss/bin:/usr/common/usg/bin:/usr/local/bin:/usr/bin/X11:/usr/bin:/bin:/usr/lib/java/jre/bin:.
 export PATH
 
 optError=0
