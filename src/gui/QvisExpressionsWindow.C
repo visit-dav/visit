@@ -1332,6 +1332,9 @@ QvisExpressionsWindow::notHiddenChanged()
 //    Fixed crash when no user expressions are defined and the user clicks
 //    show database expressions.
 //
+//    Cyrus Harrison, Wed Apr 14 13:44:48 PDT 2010
+//    Fixed crash related to reselection.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::displayAllVarsChanged()
@@ -1350,7 +1353,6 @@ QvisExpressionsWindow::displayAllVarsChanged()
 
     if (reselect)
     {
-        QString item = exprListBox->currentItem()->text();
         for (int i=0; i<exprListBox->count(); i++)
         {
             if (exprListBox->item(i)->text() == item)
