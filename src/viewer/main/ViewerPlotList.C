@@ -4398,7 +4398,7 @@ ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
 // Returns:    An int that encodes the flags that must be sent back to the
 //             client in the window information.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 22 15:38:12 PST 2004
@@ -4406,6 +4406,10 @@ ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
 // Modifications:
 //   Brad Whitlock, Fri Feb 4 11:30:13 PDT 2005
 //   Added code to delete the time slider.
+//
+//   Cyrus Harrison, Fri Feb 4 11:30:13 PDT 2005
+//   Update the expression list b/c any database expressions from the active
+//   db need to be removed.
 //
 // ****************************************************************************
 
@@ -4460,6 +4464,8 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 
         retval |= WINDOWINFO_TIMESLIDERS;
     }
+
+    UpdateExpressionList(true);
 
     return retval;
 }
