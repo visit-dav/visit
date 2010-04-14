@@ -18,6 +18,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Wed Apr 14 15:41:11 PDT 2010
+#    Added test to check if database expressions are cleared after
+#    database is closed.
+#
 # ----------------------------------------------------------------------------
 
 #
@@ -90,5 +95,11 @@ for i in range(len(dbs)):
     testString = GetCloseString(dbs[index]) + "\n" + str(GetGlobalAttributes())
     TestText("closedatabase%02d" % testindex, testString)
     testindex = testindex + 1
+
+# Check that database expressions are cleared when database is closed.
+OpenDatabase(dbs[1])
+TestText("closedatabase_exprs00","Expressions() = " + str(Expressions()))
+test_str=GetCloseString(dbs[1]) + "\nExpressions() = " + str(Expressions())
+TestText("closedatabase_exprs01",test_str)
 
 Exit()
