@@ -1,0 +1,2 @@
+The database VISIT_TOP_DIR/data/silo_hdf5_test_data/globe.silo was closed.
+Expressions() = ()
