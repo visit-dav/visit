@@ -8339,6 +8339,10 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 //    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
 //    Added extra level of indirection to arbMeshXXXRemap objects to handle
 //    multi-block case.
+//
+//    Mark C. Miller, Tue Apr 13 18:00:45 PDT 2010
+//    When handling 2D arbitrary polygons, if its 3 or 4 nodes, call it a
+//    triangle or quad instead of leaving it as a polygon.
 // ****************************************************************************
 
 void
@@ -8473,7 +8477,6 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             bool firstTet = true;
             for (j = 0 ; j < shapecnt ; j++, zoneIndex++)
             {
-                *ct++ = effective_vtk_zonetype;
                 *cl++ = currentIndex;
 
                 if (vtk_zonetype != VTK_WEDGE &&
@@ -8498,6 +8501,11 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                         *nl++ = shapesize;
                         for (k = 0 ; k < shapesize ; k++)
                             *nl++ = *(nodelist+k) - origin;
+                        /* correct stored cell type if its really a tri or quad */
+                        if (shapesize == 3)
+                            effective_vtk_zonetype = VTK_TRIANGLE;
+                        else if (shapesize == 4)
+                            effective_vtk_zonetype = VTK_QUAD;
                     }
                     else
                     {
@@ -8506,6 +8514,11 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                         for (k = 0 ; k < ss; k++)
                             *nl++ = *(nodelist+k+1) - origin;
                         nodelist += ss+1;
+                        /* correct stored cell type if its really a tri or quad */
+                        if (ss == 3)
+                            effective_vtk_zonetype = VTK_TRIANGLE;
+                        else if (ss == 4)
+                            effective_vtk_zonetype = VTK_QUAD;
                         effective_shapesize = ss;
                     }
                 }
@@ -8577,6 +8590,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                         *nl++ = *(nodelist+k);
                 }
 
+                *ct++ = effective_vtk_zonetype;
                 nodelist += shapesize;
                 currentIndex += effective_shapesize+1;
             }
