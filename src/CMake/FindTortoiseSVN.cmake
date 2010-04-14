@@ -14,7 +14,13 @@
 #    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} Project)
 #    MESSAGE("Current revision is ${Project_WC_REVISION}")
 #  ENDIF(TortoiseSVN_FOUND)
-
+#
+#------------------------------------------------------------------------------
+#  Modifications:
+#    Kathleen Bonnell, Wed Apr 14 16:15:23 MST 2010
+#    Use "SubWCRev WorkingCopyPath SrcVersionFile DstVersionFile" version of
+#    command to extract revision number.  More consistent results this way.
+#------------------------------------------------------------------------------
 
 SET(TortoiseSVN_FOUND FALSE)
 
@@ -26,22 +32,21 @@ IF(TortoiseSVN_EXECUTABLE)
   SET(TortoiseSVN_FOUND TRUE)
 
   MACRO(TortoiseSVN_WC_INFO dir prefix)
-
-    EXECUTE_PROCESS(COMMAND ${TortoiseSVN_EXECUTABLE} ${dir}
-      OUTPUT_VARIABLE ${prefix}_WC_INFO
+    FILE(WRITE "${VISIT_SOURCE_DIR}/svnrev.in" "$WCREV$")
+       
+    EXECUTE_PROCESS(COMMAND ${TortoiseSVN_EXECUTABLE} "." "${VISIT_SOURCE_DIR}/svnrev.in" "${VISIT_SOURCE_DIR}/svnrev"
+      WORKING_DIRECTORY ${VISIT_SOURCE_DIR}
+      OUTPUT_VARIABLE TortoiseSVN_info_output
       ERROR_VARIABLE TortoiseSVN_info_error
       RESULT_VARIABLE TortoiseSVN_info_result
       OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     IF(NOT ${TortoiseSVN_info_result} EQUAL 0)
-      MESSAGE(SEND_ERROR "Command \"${TortoiseSVN_EXECUTABLE} info ${dir}\" failed with output:\n${TortoiseSVN_info_error}")
+        MESSAGE(SEND_ERROR "Command \"${TortoiseSVN_EXECUTABLE} ${dir}\" failed with output:\n${TortoiseSVN_info_error}")
     ELSE(NOT ${TortoiseSVN_info_result} EQUAL 0)
-
-      STRING(REGEX REPLACE "^(.*\n)?Updated to revision ([^\n]+).*"
-        "\\2" ${prefix}_WC_REVISION "${${prefix}_WC_INFO}")
-
+        FILE(STRINGS ${VISIT_SOURCE_DIR}/svnrev ${prefix}_WC_REVISION)
     ENDIF(NOT ${TortoiseSVN_info_result} EQUAL 0)
-
+    FILE(REMOVE ${VISIT_SOURCE_DIR}/svnrev.in ${VISIT_SOURCE_DIR}/svnrev)
   ENDMACRO(TortoiseSVN_WC_INFO)
 
 ENDIF(TortoiseSVN_EXECUTABLE)

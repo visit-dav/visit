@@ -95,6 +95,9 @@
 #    Find MakeNSIS on windows. Add PACKAGE target for windows, that uses
 #    our NSIS scripts to create the self-installer.
 #
+#    Kathleen Bonnell, Wed April 14 16:33:27 MST 2010
+#    Renable FindTortoiseSVN on windows to retrieve SVN revision number.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1055,11 +1058,11 @@ ELSE(EXISTS SVN_REVISION)
         IF(WIN32)
             # THIS NEEDS TO BE UPDATED: FindTortoiseSVN.cmake needs to use
             # keyword substituion and templates!@
-#            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
-#            IF(TortoiseSVN_FOUND)
-#                TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-#                SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-#            ENDIF(TortoiseSVN_FOUND)
+            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
+            IF(TortoiseSVN_FOUND)
+                TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+                SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+            ENDIF(TortoiseSVN_FOUND)
         ENDIF(WIN32)
     ENDIF(Subversion_FOUND)
 ENDIF(EXISTS SVN_REVISION)
