@@ -1133,6 +1133,15 @@ export DO_MORE="no"
 export ON_MORE="off"
 export DO_DBIO_ONLY="no"
 export DO_STATIC_BUILD="no"
+export USE_VISIBILITY_HIDDEN="no"
+
+if [[ "$CXX_COMPILER" == "g++" ]] ; then
+    VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
+    if [[ ${VERSION} -ge 4 ]] ; then
+        export USE_VISIBILITY_HIDDEN="yes"
+    fi
+fi
+
 
 export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit/"
 # Setup svn path: use SVN_NERSC_NAME if set
@@ -8346,8 +8355,14 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_C_COMPILER $C_COMPILER)">> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER $CXX_COMPILER)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\")" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\")" >> $HOSTCONF
+
+    if [[ "$USE_VISIBILITY_HIDDEN" == "yes" ]] ; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\")" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\")" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\")" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\")" >> $HOSTCONF
+    fi
 
     if [[ "$parallel" == "yes" ]] ; then
         echo >> $HOSTCONF
@@ -9177,7 +9192,7 @@ for arg in "${arguments[@]}" ; do
         # Yep.  Which option was it?
         case $next_arg in
             append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
-            append-cxxflags) CXX_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
+            append-cxxflags) CXX_OPT_FLAGS="${CXX_OPT_FLAGS} ${arg}";;
             arch) VISITARCH="${arg}";;
             cflags) C_OPT_FLAGS=$(strip_quotes "${arg}");;
             cxxflags) CXX_OPT_FLAGS=$(strip_quotes "${arg}");;
