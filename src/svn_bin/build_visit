@@ -29,14 +29,14 @@
 #       MacOSX  ppc,		GCC 4.0.1	snailbait.llnl.gov
 #
 #   It is believed that this script will also work with other Linux variations.
-#   Please send feedback to visit-users@ornl.gov if you run into problems 
+#   Please send feedback to visit-users@ornl.gov if you run into problems
 #   so that this script can be improved in the future.  If you have built
 #   VisIt using this script on an OS/hardware/compiler combination not listed
 #   above, please send a note to visit-users@ornl.gov, so we can add that
 #   information to the script.
 #
 #   Setup:
-#       This script assumes you have downloaded the VisIt source code and 
+#       This script assumes you have downloaded the VisIt source code and
 #       the necessary third party libraries and that they are placed in the
 #       current directory.  If it does not locate these libraries, it will
 #       try to download them.
@@ -869,6 +869,10 @@
 #     Cyrus Harrison, Tue Mar 23 09:21:32 PDT 2010
 #     Added support to set group permissions on:
 #      pil, tcmalloc, icet & advio
+#
+#     Tom Fogal, Fri Mar 26 17:24:39 MDT 2010
+#     Add --cflag, --cxxflag.  These *append* a specific flag.
+#     Getting '--cflags' to quote reliably is a nightmare.
 #
 # *****************************************************************************
 #                                                                             #
@@ -9024,6 +9028,8 @@ usage () {
   printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
   printf "\t  %s\n" "   library path; usually set to something like"
   printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
+  printf "%-11s %s [%s]\n" "--cflag"   "Append a flag to CFLAGS" "${CFLAGS}"
+  printf "%-11s %s [%s]\n" "--cxxflag" "Append a flag to CXXFLAGS" "$CXXFLAGS"
   printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
   printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
   printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
@@ -9049,7 +9055,7 @@ usage () {
 # *************************************************************************** #
 # Function: starts_with_quote                                                 #
 #                                                                             #
-# Purpose: Meant to be used `if $(starts_with_quote "$var") ; then`           #
+# Purpose: Meant to be used in `if $(starts_with_quote "$var") ; then`        #
 #          conditionals.                                                      #
 #                                                                             #
 # Programmer: Tom Fogal                                                       #
@@ -9200,9 +9206,11 @@ for arg in "${arguments[@]}" ; do
         --boxlib) DO_BOXLIB="yes"; ON_BOXLIB="on";;
         --ccmio) DO_CCMIO="yes"; ON_CCMIO="on";;
         --cfitsio) DO_CFITSIO="yes"; ON_CFITSIO="on";;
+        --cflag) next_arg="append-cflags";;
         --cflags) next_arg="cflags";;
         --cgns) DO_CGNS="yes"; ON_CGNS="on";;
         --cmake) DO_CMAKE="yes"; ON_CMAKE="on";;
+        --cxxflag) next_arg="append-cxxflags";;
         --cxxflags) next_arg="cxxflags";;
         --cc) next_arg="cc";;
         --cxx) next_arg="cxx";;
@@ -9381,7 +9389,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
     
     # Guard against bad "which" implementations that return
     # "no <exe> in path1 path2 ..." (these implementations also
-    # return 0 as the exit status.
+    # return 0 as the exit status).
     if [[ "${DLG#no }" != "${DLG}" ]] ; then
         DLG=""
     fi
