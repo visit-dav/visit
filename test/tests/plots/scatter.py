@@ -237,15 +237,14 @@ DeleteActivePlots()
 DefineScalarExpression("xc", "coord(mesh1)[0]")
 DefineScalarExpression("yc", "coord(mesh1)[1]")
 DefineScalarExpression("zc", "coord(mesh1)[2]")
-DefineVectorExpression("uvw","{u,v,w}")
-DefineScalarExpression("uvw_mag", "magnitude(uvw)")
+DefineScalarExpression("uvw_prod", "u*v*w")
 AddPlot("Scatter", "xc")
 s = ScatterAttributes()
 s.var2 = "yc"
 s.var2Role = s.Coordinate1
 s.var3 = "zc"
 s.var3Role = s.Coordinate2
-s.var4 = "uvw_mag"
+s.var4 = "uvw_prod"
 s.var4Role = s.Color
 s.scaleCube = 1
 s.pointSize = 0.01
