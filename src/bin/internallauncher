@@ -621,6 +621,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Mon Apr 12 11:12:19 EDT 2010
 #    Fixed -help variants so they work on installations.
 #
+#    Cyrus Harrison, Thu Apr 15 11:40:19 PDT 2010
+#    Make sure proper mpi path is used on alastor (extended yana & hopi case)
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1685,11 +1688,11 @@ if ( $host =~ /^xchem.llnl.gov/ )
 }
 
 # ----
-# HACK for yana and hopi @ LLNL
+# HACK for yana, alastor hopi @ LLNL
 #
 # ----
 $UseTTC = 0;
-if ($host =~ /^yana\d+$/ or $host =~ /^hopi\d+$/)
+if ($host =~ /^yana\d+$/ or $host =~ /^alastor\d+$/ or $host =~ /^hopi\d+$/)
 {
     $UseTTC = 1;
     $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
