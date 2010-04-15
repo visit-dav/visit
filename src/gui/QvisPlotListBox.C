@@ -296,6 +296,9 @@ QvisPlotListBox::mouseDoubleClickEvent(QMouseEvent *e)
 //   Sean Ahern, Thu Aug 21 14:32:54 EDT 2008
 //   Fixed deleting operators on non-selected plots.
 //
+//   Cyrus Harrison, Thu Apr 15 08:45:34 PDT 2010
+//   Proper offset calc for non drawn items.
+//
 // ****************************************************************************
 
 void
@@ -303,8 +306,6 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     bool doubleClicked)
 {
     QPoint itemClickLocation(clickLocation);
-    int y = 0;
-    int heightSum = 0;
     int action = -1, opId = -1;
     bool bs = signalsBlocked();
     bool emitted = true;
@@ -314,6 +315,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     {
         QListWidgetItem *current = item(i);
         QvisPlotListBoxItem *item2 = (QvisPlotListBoxItem *)current;
+        int y = visualItemRect(current).y();
         int h = visualItemRect(current).height();
         if (clickLocation.y() >= y && clickLocation.y() < (y + h))
         {
@@ -324,7 +326,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
 
             // Reduce the y location of the click location to be local to the
             // item.
-            itemClickLocation.setY(clickLocation.y() - heightSum);
+            itemClickLocation.setY(clickLocation.y() - y);
 
             // Handle the click.
             if (action == -1)
@@ -338,8 +340,6 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
             current->setSelected(false);
             blockSignals(bs);
         }
-        heightSum += h;
-        y += h;
     }
 
     switch(action)
