@@ -1766,6 +1766,9 @@ Engine::ProcessInput()
 //    Hank Childs, Sun Feb 21 13:04:25 CST 2010
 //    Do not use Ice-T if we are using the GPUs.
 //
+//    Tom Fogal, Fri Apr 16 12:40:09 MDT 2010
+//    Ignore IceT flags if we've already seen -hw-accel.
+//
 // ****************************************************************************
 
 void
@@ -1974,7 +1977,15 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-icet") == 0)
         {
-            this->useIceT = true;
+            if(!haveHWAccel)
+            {
+              this->useIceT = true;
+            }
+            else
+            {
+              debug1 << "Ignoring IceT request: currently incompatible with "
+                        "parallel HW acceleration.\n";
+            }
         }
         else if (strcmp(argv[i], "-no-icet") == 0)
         {
