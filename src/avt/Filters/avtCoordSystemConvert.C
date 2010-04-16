@@ -664,7 +664,7 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
                          vectorTransformMethod,
                          SphericalToCylindricalPoint);
     else
-      reutn in_ds;
+      return in_ds;
       
     deleteList.push_back(new_ds);
     cur_ds = new_ds;
