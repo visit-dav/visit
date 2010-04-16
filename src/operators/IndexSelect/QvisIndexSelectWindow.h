@@ -94,12 +94,15 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
     void oneDMinChanged(int min);
     void oneDMaxChanged(int max);
     void oneDIncrChanged(int incr);
+    void oneDWrapToggled(bool val);
     void twoDMinChanged(int min);
     void twoDMaxChanged(int max);
     void twoDIncrChanged(int incr);
+    void twoDWrapToggled(bool val);
     void threeDMinChanged(int min);
     void threeDMaxChanged(int max);
     void threeDIncrChanged(int incr);
+    void threeDWrapToggled(bool val);
     void useWholeCollectionToggled(bool val);
     void categoryChanged(const QString &);
     void subsetChanged(const QString &);
@@ -111,18 +114,21 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
     QSpinBox     *oneDMin;
     QSpinBox     *oneDMax;
     QSpinBox     *oneDIncr;
+    QCheckBox    *oneDWrap;
 
     QWidget      *twoDWidget;
     QLabel       *twoDLabel;
     QSpinBox     *twoDMin;
     QSpinBox     *twoDMax;
     QSpinBox     *twoDIncr;
+    QCheckBox    *twoDWrap;
 
     QWidget      *threeDWidget;
     QLabel       *threeDLabel;
     QSpinBox     *threeDMin;
     QSpinBox     *threeDMax;
     QSpinBox     *threeDIncr;
+    QCheckBox    *threeDWrap;
 
     QCheckBox *useWholeCollection;
 

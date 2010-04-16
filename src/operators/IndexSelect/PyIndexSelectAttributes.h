@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define INDEXSELECTATTRIBUTES_NMETH 34
 void           PyIndexSelectAttributes_StartUp(IndexSelectAttributes *subj, void *data);
 void           PyIndexSelectAttributes_CloseDown();
-PyMethodDef *   PyIndexSelectAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyIndexSelectAttributes_GetMethodTable(int *nMethods);
 bool           PyIndexSelectAttributes_Check(PyObject *obj);
 IndexSelectAttributes *  PyIndexSelectAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyIndexSelectAttributes_New();
-PyObject *      PyIndexSelectAttributes_Wrap(const IndexSelectAttributes *attr);
+PyObject *     PyIndexSelectAttributes_New();
+PyObject *     PyIndexSelectAttributes_Wrap(const IndexSelectAttributes *attr);
 void           PyIndexSelectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyIndexSelectAttributes_SetDefaults(const IndexSelectAttributes *atts);
 std::string    PyIndexSelectAttributes_GetLogString();
 std::string    PyIndexSelectAttributes_ToString(const IndexSelectAttributes *, const char *);
+PyObject *     PyIndexSelectAttributes_getattr(PyObject *self, char *name);
+int            PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyIndexSelectAttributes_methods[INDEXSELECTATTRIBUTES_NMETH];
 
 #endif
 

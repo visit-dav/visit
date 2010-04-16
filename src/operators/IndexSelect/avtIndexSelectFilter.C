@@ -46,6 +46,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkMaskPoints.h>
+#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -293,6 +294,7 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri)
     sampleRate[2] = atts.GetZIncr();
     curvilinearFilter->SetSampleRate(sampleRate);
     rectilinearFilter->SetSampleRate(sampleRate);
+
     pointsFilter->SetOnRatio(sampleRate[0]);
     pointsFilter->SetOffset(voi[0]);
     if (voi[1] != 1000000)
@@ -694,7 +696,16 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     }
 
     successfullyExecuted = true;
-    return out_ds;
+
+    bool wrap[3];
+    wrap[0] = atts.GetXWrap();
+    wrap[1] = atts.GetYWrap();
+    wrap[2] = atts.GetZWrap();
+
+    if( wrap[0] || wrap[1] || wrap[2] )
+      return Replicate( out_ds, wrap );
+    else
+      return out_ds;
 }
 
 
@@ -1209,3 +1220,198 @@ avtIndexSelectFilter::VerifyInput()
     ENDTRY
 }
 
+// ****************************************************************************
+//  Method: avtOnionPeelFilter::Replicate
+//
+//  Purpose:
+//    Replicates the first slice to the last slice for wrapping.
+//
+//  Programmer: Hank Childs/Allen Sanderson
+//  Creation:   April 14, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
+{
+   int   dims_in[3];
+   int   dims_out[3];
+
+   vtkDataSet *out_ds = in_ds;
+
+   // Instantiate the output and copy over the coordinates.
+   if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+   {
+     // Get the original dimensions.
+     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) out_ds;
+     rgrid->GetDimensions(dims_in);
+
+     // Do each dimension individually.
+     for( unsigned int d=0; d<3; ++d )
+     {
+       if( !wrap[d] )
+         continue;
+
+       unsigned int d0 = d;
+       unsigned int d1 = (d+1)%3;
+       unsigned int d2 = (d+2)%3;
+
+       // Learn about the input grid
+       int dims[3];
+       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) out_ds;
+       rgrid->GetDimensions(dims);
+       dims_out[0] = dims[0] + (d==0 && wrap[0] ? 1 : 0);
+       dims_out[1] = dims[1] + (d==1 && wrap[1] ? 1 : 0);
+       dims_out[2] = dims[2] + (d==2 && wrap[2] ? 1 : 0);
+
+       // Make a new coord with a new value at the end.
+       vtkDataArray *coor = GetCoordinates(rgrid, d0);
+       vtkDataArray *coor_new = vtkFloatArray::New();
+       coor_new->SetNumberOfTuples(dims_out[d0]);
+       for (int i=0; i<dims[d0]; ++i)
+           coor_new->SetTuple1(i, coor->GetTuple1(i));
+
+       double lastVal = coor->GetTuple1(dims[d0]-1);
+       double prevVal = coor->GetTuple1(dims[d0]-2);
+       coor_new->SetTuple1(dims[d0], lastVal + (lastVal-prevVal));
+
+       // Set up the output, including the coordinates
+       vtkRectilinearGrid *out_rg = vtkRectilinearGrid::New();
+       out_rg->SetDimensions(dims_out);
+       SetCoordinates(out_rg, coor_new, d0);
+       SetCoordinates(out_rg, GetCoordinates(rgrid, d1), d1);
+       SetCoordinates(out_rg, GetCoordinates(rgrid, d2), d2);
+       coor_new->Delete();
+
+       out_ds = out_rg;
+     }
+   }
+   else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+   {
+     // Learn about the input grid
+     vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+     sgrid->GetDimensions(dims_in);
+
+     dims_out[0] = dims_in[0] + (wrap[0] ? 1 : 0);
+     dims_out[1] = dims_in[1] + (wrap[1] ? 1 : 0);
+     dims_out[2] = dims_in[2] + (wrap[2] ? 1 : 0);
+
+     vtkPoints *pts = sgrid->GetPoints();
+     vtkPoints *new_pts = vtkPoints::New();
+     vtkStructuredGrid *out_sg = vtkStructuredGrid::New();
+     out_sg->SetDimensions(dims_out);
+     out_sg->SetPoints(new_pts);
+     new_pts->Delete();
+     new_pts->SetNumberOfPoints(dims_out[0]*dims_out[1]*dims_out[2]);
+
+     // Copy the original points over.
+     for (int i=0; i<dims_out[0]; ++i)
+     {
+       int i0 = i % dims_in[0];
+       
+       for (int j=0; j<dims_out[1]; ++j)
+       {
+         int j0 = j % dims_in[1];
+         
+         for (int k=0; k<dims_out[2]; ++k)
+         {
+           int k0 = k % dims_in[2];
+           
+           int idx_in  = k0*dims_in[1]*dims_in[0] + j0*dims_in[0] + i0;
+           int idx_out = k*dims_out[1]*dims_out[0] + j*dims_out[0] + i;
+           
+           new_pts->SetPoint(idx_out, pts->GetPoint(idx_in));
+         }
+       }
+     }
+
+     out_ds = out_sg;
+   }
+   
+   // Copy over the point data.
+   vtkPointData *inPD  =  in_ds->GetPointData();
+   vtkPointData *outPD = out_ds->GetPointData();
+   outPD->CopyAllocate(inPD, dims_out[0]*dims_out[1]*dims_out[2]);
+
+   for (int i1=0; i1<dims_out[0]; ++i1)
+   {
+     int i0 = i1 % dims_in[0];
+
+     for (int j1=0; j1<dims_out[1]; ++j1)
+     {
+       int j0 = j1 % dims_in[1];
+       
+       for (int k1=0; k1<dims_out[2]; ++k1)
+       {
+         int k0 = k1 % dims_in[2];
+         
+         int idx_in  = k0*dims_in[1]*dims_in[0] + j0*dims_in[0] + i0;
+         int idx_out = k1*dims_out[1]*dims_out[0] + j1*dims_out[0] + i1;
+
+         outPD->CopyData(inPD, idx_in, idx_out);
+       }
+     }
+   }
+
+   // Copy over the cell data.
+   int xdims = (dims_in[0]-1 < 1 ? 1 : dims_in[0]-1);
+   int ydims = (dims_in[1]-1 < 1 ? 1 : dims_in[1]-1);
+   int zdims = (dims_in[2]-1 < 1 ? 1 : dims_in[2]-1);
+
+   int xdims_out = (dims_out[0]-1 < 1 ? 1 : dims_out[0]-1);
+   int ydims_out = (dims_out[1]-1 < 1 ? 1 : dims_out[1]-1);
+   int zdims_out = (dims_out[2]-1 < 1 ? 1 : dims_out[2]-1);
+
+   vtkCellData *outCD = out_ds->GetCellData();
+   vtkCellData *inCD = in_ds->GetCellData();
+   outCD->CopyAllocate(inCD, xdims_out*ydims_out*zdims_out);
+
+   for (int i1=0; i1<xdims_out; ++i1)
+   {
+     int i0 = i1 % xdims;
+
+     for (int j1=0; j1<ydims_out; ++j1)
+     {
+       int j0 = j1 % ydims;
+
+       for (int k1=0; k1<zdims_out; ++k1)
+       {
+         int k0 = k1 % zdims;
+
+         int idx_in = k0*(ydims*xdims) + j0*xdims + i0;
+         int idx_out = k1*(ydims_out*xdims_out) + j1*xdims_out + i1;
+         outCD->CopyData(inCD, idx_in, idx_out);
+       }
+     }
+   }
+   
+   return out_ds;
+}
+
+vtkDataArray *avtIndexSelectFilter::GetCoordinates( vtkRectilinearGrid *grid,
+                                                    unsigned int coor)
+{
+  if( coor == 0 )
+    return grid->GetXCoordinates();
+  else if( coor == 1 )
+    return grid->GetYCoordinates();
+  else if( coor == 2 )
+    return grid->GetZCoordinates();
+  else
+    return 0;
+};
+
+
+void avtIndexSelectFilter::SetCoordinates( vtkRectilinearGrid *grid,
+                                           vtkDataArray *coordinates,
+                                           unsigned int coor)
+{
+  if( coor == 0 )
+    grid->SetXCoordinates(coordinates);
+  else if( coor == 1 )
+    grid->SetYCoordinates(coordinates);
+  else if( coor == 2 )
+    grid->SetZCoordinates(coordinates);
+};

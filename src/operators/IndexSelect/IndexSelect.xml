@@ -18,6 +18,9 @@
       <Field name="xIncr" label="X-Incr" type="int">
         1
       </Field>
+      <Field name="xWrap" label="X-Wrap" type="bool">
+        false
+      </Field>
       <Field name="yMin" label="Y-Min" type="int" enabler="dim:TwoD,ThreeD">
         0
       </Field>
@@ -27,6 +30,9 @@
       <Field name="yIncr" label="Y-Incr" type="int">
         1
       </Field>
+      <Field name="yWrap" label="Y-Wrap" type="bool">
+        false
+      </Field>
       <Field name="zMin" label="Z-Min" type="int" enabler="dim:ThreeD">
         0
       </Field>
@@ -35,6 +41,9 @@
       </Field>
       <Field name="zIncr" label="Z-Incr" type="int">
         1
+      </Field>
+      <Field name="zWrap" label="Z-Wrap" type="bool">
+        false
       </Field>
       <Field name="useWholeCollection" label="useWholeCollection" type="bool">
         true
