@@ -607,7 +607,7 @@ avtIVPM3DC1Integrator::getBfield(const avtIVPField* field, avtVector y)
   int    element;
 
   /* Find the element containing the point; get local coords xi,eta */
-  if ((element = m3dField->get_tri_coords2D(pt, element, xieta)) < 0) 
+  if ((element = m3dField->get_tri_coords2D(pt, xieta)) < 0) 
   {
     return avtVector(0,0,0);
   }

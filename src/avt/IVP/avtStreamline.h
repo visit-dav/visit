@@ -46,7 +46,7 @@
 #include <avtIVPSolver.h>
 #include <MemStream.h>
 #include <string>
-#include <list>
+#include <vector>
 #include <avtVector.h>
 
 class vtkObject;
