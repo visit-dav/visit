@@ -99,6 +99,27 @@ avtCoordSystemConvert::~avtCoordSystemConvert()
 
 
 // ****************************************************************************
+//  Function: CylindricalToCartesianPoint
+//
+//  Purpose:
+//      Converts cylindrical coordinates to cartesian coordinates.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+static void 
+CylindricalToCartesianPoint(double *newpt, const double *pt)
+{
+    newpt[0] = pt[0] * cos(pt[1]);
+    newpt[1] = pt[0] * sin(pt[1]);
+    newpt[2] = pt[2];
+}
+
+// ****************************************************************************
 //  Function: SphericalToCartesianPoint
 //
 //  Purpose:
@@ -117,8 +138,8 @@ avtCoordSystemConvert::~avtCoordSystemConvert()
 static void 
 SphericalToCartesianPoint(double *newpt, const double *pt)
 {
-    newpt[0] = pt[0]*cos(pt[2])*sin(pt[1]);
-    newpt[1] = pt[0]*sin(pt[2])*sin(pt[1]);
+    newpt[0] = pt[0]*sin(pt[1])*cos(pt[2]);
+    newpt[1] = pt[0]*sin(pt[1])*sin(pt[2]);
     newpt[2] = pt[0]*cos(pt[1]);
 }
 
@@ -139,11 +160,52 @@ SphericalToCartesianPoint(double *newpt, const double *pt)
 static void 
 CartesianToCylindricalPoint(double *newpt, const double *pt)
 {
+    newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
     newpt[1] = atan2(pt[1], pt[0]);
     if (newpt[1] < 0.)
-        newpt[1] = 2*vtkMath::Pi() + newpt[1];
-    newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
+      newpt[1] = 2*vtkMath::Pi() + newpt[1];
     newpt[2] = pt[2];
+}
+
+// ****************************************************************************
+//  Function: CartesianToSphericalPoint
+//
+//  Purpose:
+//      Converts cartesian coordinates to spherical coordinates.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+// ****************************************************************************
+
+static void 
+CartesianToSphericalPoint(double *newpt, const double *pt)
+{
+    newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
+    newpt[0] = acos ( pt[2]/newpt[0] );
+    newpt[2] = atan2( pt[1], pt[0]);
+}
+
+// ****************************************************************************
+//  Function: SphericalToCylindricalPoint
+//
+//  Purpose:
+//      Converts spherical coordinates to cylindrical coordinates.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+static void 
+SphericalToCylindricalPoint(double *newpt, const double *pt)
+{
+    newpt[0] = pt[0] * sin(pt[1]);
+    newpt[1] = pt[2];             
+    newpt[2] = pt[0] * cos(pt[1]);
 }
 
 // ****************************************************************************
@@ -165,11 +227,11 @@ CartesianToCylindricalPoint(double *newpt, const double *pt)
 static void 
 CylindricalToSphericalPoint(double *newpt, const double *pt)
 {
-    newpt[2] = pt[1];
-    newpt[1] = atan2(pt[0], pt[2]);
+    newpt[0] = sqrt(pt[0]*pt[0] + pt[2]*pt[2]);
+    newpt[1] = atan2(pt[0], pt[2]);            
     if (newpt[1] < 0.)
         newpt[1] = 2*vtkMath::Pi() + newpt[2];
-    newpt[0] = sqrt(pt[0]*pt[0] + pt[2]*pt[2]);
+    newpt[2] = pt[1];                          
 }
 
 // ****************************************************************************
@@ -570,42 +632,42 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
     CoordSystem ct_current = inputSys;
 
     vtkDataSet *cur_ds = in_ds;
-    while (ct_current != outputSys)
-    {
-        switch (ct_current)
-        {
-          case CARTESIAN:
-          {
-            vtkDataSet *new_ds = Transform(cur_ds,
-                                           vectorTransformMethod,
-                                           CartesianToCylindricalPoint);
-            deleteList.push_back(new_ds);
-            cur_ds = new_ds;
-            ct_current = CYLINDRICAL;
-            break;
-          }
-          case CYLINDRICAL:
-          {
-            vtkDataSet *new_ds = Transform(cur_ds,
-                                           vectorTransformMethod,
-                                           CylindricalToSphericalPoint);
-            deleteList.push_back(new_ds);
-            cur_ds = new_ds;
-            ct_current = SPHERICAL;
-            break;
-          }
-          case SPHERICAL:
-          {
-            vtkDataSet *new_ds = Transform(cur_ds,
-                                           vectorTransformMethod,
-                                           SphericalToCartesianPoint);
-            deleteList.push_back(new_ds);
-            cur_ds = new_ds;
-            ct_current = CARTESIAN;
-            break;
-          }
-        }
-    }
+    vtkDataSet *new_ds;
+
+    if( ct_current == CARTESIAN && outputSys == CYLINDRICAL )
+      new_ds = Transform(cur_ds,
+                         vectorTransformMethod,
+                         CartesianToCylindricalPoint);
+
+    else if( ct_current == CARTESIAN && outputSys == SPHERICAL )
+      new_ds = Transform(cur_ds,
+                         vectorTransformMethod,
+                         CartesianToSphericalPoint);
+
+    else if( ct_current == CYLINDRICAL && outputSys == CARTESIAN )
+      new_ds = Transform(cur_ds,
+                         vectorTransformMethod,
+                         CylindricalToCartesianPoint);
+
+    else if( ct_current == CYLINDRICAL && outputSys == SPHERICAL )
+      new_ds = Transform(cur_ds,
+                         vectorTransformMethod,
+                         CylindricalToSphericalPoint);
+
+    else if( ct_current == SPHERICAL && outputSys == CARTESIAN )
+      new_ds = Transform(cur_ds,
+                         vectorTransformMethod,
+                         SphericalToCartesianPoint);
+
+    else if( ct_current == SPHERICAL && outputSys == CYLINDRICAL )
+      new_ds = Transform(cur_ds,
+                         vectorTransformMethod,
+                         SphericalToCylindricalPoint);
+    else
+      reutn in_ds;
+      
+    deleteList.push_back(new_ds);
+    cur_ds = new_ds;
 
     if (outputSys == SPHERICAL)
     {
@@ -844,5 +906,3 @@ avtCoordSystemConvert::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }
-
-
