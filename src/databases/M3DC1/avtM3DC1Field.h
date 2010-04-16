@@ -100,12 +100,6 @@ class avtM3DC1Field
     void interpBcomps(float *B, double *x, int element, double *xieta);
 
  protected:
-    template< class type >
-      type* SetDataPointer( vtkDataSet *ds,
-                            const type var,
-                            const char* varname,
-                            const int ntuples,
-                            const int ncomponents );
 
     // Variables calculated in findElementNeighbors (trigtable,
     // neighbors) or read as part of the mesh (elements).
