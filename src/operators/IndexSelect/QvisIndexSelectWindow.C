@@ -169,19 +169,23 @@ QvisIndexSelectWindow::CreateWindowContents()
     QGridLayout *labelLayout = new QGridLayout();
 
     QLabel *minLabel = new QLabel(tr("Min"), central);
-    minLabel->setAlignment(Qt::AlignCenter);
+    minLabel->setAlignment(Qt::AlignRight);
     labelLayout->addWidget(minLabel, 0, 1); 
     QLabel *maxLabel = new QLabel(tr("Max"), central);
-    maxLabel->setAlignment(Qt::AlignCenter);
+    maxLabel->setAlignment(Qt::AlignRight);
     labelLayout->addWidget(maxLabel, 0, 2); 
     QLabel *incrLabel = new QLabel(tr("Incr"), central);
-    incrLabel->setAlignment(Qt::AlignCenter);
+    incrLabel->setAlignment(Qt::AlignRight);
     labelLayout->addWidget(incrLabel, 0, 3); 
-    wholeLayout->addLayout(labelLayout, 1, 0, 1,4 );
+    QLabel *wrapLabel = new QLabel(tr("Wrap"), central);
+    wrapLabel->setAlignment(Qt::AlignRight);
+    labelLayout->addWidget(wrapLabel, 0, 4); 
+
+    wholeLayout->addLayout(labelLayout, 1, 0, 1, 4 );
 
     // 
     // Create the oneD spinBoxes
-    // 
+    //
     oneDWidget = new QWidget(central); 
     QGridLayout *oneDLayout = new QGridLayout(oneDWidget);
     oneDLabel = new QLabel(tr("I"), oneDWidget);
@@ -215,6 +219,13 @@ QvisIndexSelectWindow::CreateWindowContents()
     connect(oneDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(oneDIncrChanged(int)));
     oneDLayout->addWidget(oneDIncr, 0, 5);
+
+    // Set up wrap
+    oneDWrap = new QCheckBox(tr(""), central);
+    oneDWrap->setChecked(false);
+    connect(oneDWrap, SIGNAL(toggled(bool)),
+            this, SLOT(oneDWrapToggled(bool)));
+    oneDLayout->addWidget(oneDWrap, 0, 6);
 
     wholeLayout->addWidget(oneDWidget, 2,0, 1,4);
 
@@ -254,6 +265,13 @@ QvisIndexSelectWindow::CreateWindowContents()
     connect(twoDIncr, SIGNAL(valueChanged(int)),
              this, SLOT(twoDIncrChanged(int)));
     twoDLayout->addWidget(twoDIncr, 0, 5);
+
+    // Set up wrap
+    twoDWrap = new QCheckBox(tr(""), central);
+    twoDWrap->setChecked(false);
+    connect(twoDWrap, SIGNAL(toggled(bool)),
+            this, SLOT(twoDWrapToggled(bool)));
+    twoDLayout->addWidget(twoDWrap, 0, 6);
 
     wholeLayout->addWidget(twoDWidget, 3,0, 1,4);
 
@@ -295,9 +313,16 @@ QvisIndexSelectWindow::CreateWindowContents()
              this, SLOT(threeDIncrChanged(int)));
     threeDLayout->addWidget(threeDIncr, 0, 5);
 
+    // Set up wrap
+    threeDWrap = new QCheckBox(tr(""), central);
+    threeDWrap->setChecked(false);
+    connect(threeDWrap, SIGNAL(toggled(bool)),
+            this, SLOT(threeDWrapToggled(bool)));
+    threeDLayout->addWidget(threeDWrap, 0, 6);
+
     wholeLayout->addWidget(threeDWidget, 4,0, 1,4);
 
-
+    // Set up whole collection
     useWholeCollection = new QCheckBox(tr("Use Whole Collection"), central);
     useWholeCollection->setChecked(false);
     connect(useWholeCollection, SIGNAL(toggled(bool)),
@@ -387,6 +412,11 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             oneDIncr->setValue(atts->GetXIncr());
             oneDIncr->blockSignals(false);
             break;
+          case IndexSelectAttributes::ID_xWrap:
+            oneDWrap->blockSignals(true);
+            oneDWrap->setChecked(atts->GetXWrap());
+            oneDWrap->blockSignals(false);
+            break;
           case IndexSelectAttributes::ID_yMin:
             twoDMin->blockSignals(true);
             twoDMin->setValue(atts->GetYMin());
@@ -402,6 +432,11 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             twoDIncr->setValue(atts->GetYIncr());
             twoDIncr->blockSignals(false);
             break;
+          case IndexSelectAttributes::ID_yWrap:
+            twoDWrap->blockSignals(true);
+            twoDWrap->setChecked(atts->GetYWrap());
+            twoDWrap->blockSignals(false);
+            break;
           case IndexSelectAttributes::ID_zMin:
             threeDMin->blockSignals(true);
             threeDMin->setValue(atts->GetZMin());
@@ -416,6 +451,11 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             threeDIncr->blockSignals(true);
             threeDIncr->setValue(atts->GetZIncr());
             threeDIncr->blockSignals(false);
+            break;
+          case IndexSelectAttributes::ID_zWrap:
+            threeDWrap->blockSignals(true);
+            threeDWrap->setChecked(atts->GetZWrap());
+            threeDWrap->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_useWholeCollection:
             useWholeCollection->blockSignals(true);
@@ -493,6 +533,11 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
         if (atts->GetXIncr() != oneDIncr->value())
             atts->SetXIncr(oneDIncr->value());
     }
+    if(which_widget == IndexSelectAttributes::ID_xWrap || doAll)
+    {
+        if (atts->GetXWrap() != oneDWrap->isChecked())
+            atts->SetXWrap(oneDWrap->isChecked());
+    }
     if(which_widget == IndexSelectAttributes::ID_yMin || doAll)
     {
         if (atts->GetYMin() != twoDMin->value())
@@ -508,6 +553,11 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
         if (atts->GetYIncr() != twoDIncr->value())
             atts->SetYIncr(twoDIncr->value());
     }
+    if(which_widget == IndexSelectAttributes::ID_yWrap || doAll)
+    {
+        if (atts->GetYWrap() != twoDWrap->isChecked())
+            atts->SetYWrap(twoDWrap->isChecked());
+    }
     if(which_widget == IndexSelectAttributes::ID_zMin || doAll)
     {
         if (atts->GetZMin() != threeDMin->value())
@@ -522,6 +572,11 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
     {
         if (atts->GetZIncr() != threeDIncr->value())
             atts->SetZIncr(threeDIncr->value());
+    }
+    if(which_widget == IndexSelectAttributes::ID_zWrap || doAll)
+    {
+        if (atts->GetZWrap() != threeDWrap->isChecked())
+            atts->SetZWrap(threeDWrap->isChecked());
     }
 
     // Do categoryName and subsetName
@@ -570,6 +625,13 @@ QvisIndexSelectWindow::oneDIncrChanged(int)
 }
 
 void
+QvisIndexSelectWindow::oneDWrapToggled(bool)
+{
+    GetCurrentValues(IndexSelectAttributes::ID_xWrap);
+    Apply();
+}
+
+void
 QvisIndexSelectWindow::twoDMinChanged(int)
 {
     GetCurrentValues(IndexSelectAttributes::ID_yMin);
@@ -591,6 +653,13 @@ QvisIndexSelectWindow::twoDIncrChanged(int)
 }
 
 void
+QvisIndexSelectWindow::twoDWrapToggled(bool)
+{
+    GetCurrentValues(IndexSelectAttributes::ID_yWrap);
+    Apply();
+}
+
+void
 QvisIndexSelectWindow::threeDMinChanged(int)
 {
     GetCurrentValues(IndexSelectAttributes::ID_zMin);
@@ -608,6 +677,13 @@ void
 QvisIndexSelectWindow::threeDIncrChanged(int)
 {
     GetCurrentValues(IndexSelectAttributes::ID_zIncr);
+    Apply();
+}
+
+void
+QvisIndexSelectWindow::threeDWrapToggled(bool)
+{
+    GetCurrentValues(IndexSelectAttributes::ID_zWrap);
     Apply();
 }
 

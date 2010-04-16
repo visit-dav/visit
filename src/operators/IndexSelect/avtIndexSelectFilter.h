@@ -52,7 +52,8 @@ class vtkDataSet;
 class vtkMaskPoints;
 class vtkVisItExtractGrid;
 class vtkVisItExtractRectilinearGrid;
-
+class vtkRectilinearGrid;
+class vtkDataArray;
 
 // ****************************************************************************
 //  Class: avtIndexSelectFilter
@@ -130,6 +131,15 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
     virtual avtContract_p
                                 ModifyContract(avtContract_p);
     virtual bool                FilterUnderstandsTransformedRectMesh();
+
+    virtual vtkDataSet *Replicate(vtkDataSet *in_ds, bool wrap[3] );
+
+    virtual vtkDataArray *GetCoordinates( vtkRectilinearGrid *grid,
+                                          unsigned int coor);
+
+    virtual void SetCoordinates( vtkRectilinearGrid *grid,
+                                 vtkDataArray *coordinates,
+                                 unsigned int coor);
 };
 
 

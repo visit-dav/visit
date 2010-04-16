@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: IndexSelectAttributes
 //
@@ -66,13 +67,23 @@ public:
         ThreeD
     };
 
+    // These constructors are for objects of this class
     IndexSelectAttributes();
     IndexSelectAttributes(const IndexSelectAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    IndexSelectAttributes(private_tmfs_t tmfs);
+    IndexSelectAttributes(const IndexSelectAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~IndexSelectAttributes();
 
     virtual IndexSelectAttributes& operator = (const IndexSelectAttributes &obj);
     virtual bool operator == (const IndexSelectAttributes &obj) const;
     virtual bool operator != (const IndexSelectAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const IndexSelectAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -89,12 +100,15 @@ public:
     void SetXMin(int xMin_);
     void SetXMax(int xMax_);
     void SetXIncr(int xIncr_);
+    void SetXWrap(bool xWrap_);
     void SetYMin(int yMin_);
     void SetYMax(int yMax_);
     void SetYIncr(int yIncr_);
+    void SetYWrap(bool yWrap_);
     void SetZMin(int zMin_);
     void SetZMax(int zMax_);
     void SetZIncr(int zIncr_);
+    void SetZWrap(bool zWrap_);
     void SetUseWholeCollection(bool useWholeCollection_);
     void SetCategoryName(const std::string &categoryName_);
     void SetSubsetName(const std::string &subsetName_);
@@ -104,12 +118,15 @@ public:
     int               GetXMin() const;
     int               GetXMax() const;
     int               GetXIncr() const;
+    bool              GetXWrap() const;
     int               GetYMin() const;
     int               GetYMax() const;
     int               GetYIncr() const;
+    bool              GetYWrap() const;
     int               GetZMin() const;
     int               GetZMax() const;
     int               GetZIncr() const;
+    bool              GetZWrap() const;
     bool              GetUseWholeCollection() const;
     const std::string &GetCategoryName() const;
           std::string &GetCategoryName();
@@ -142,15 +159,19 @@ public:
         ID_xMin,
         ID_xMax,
         ID_xIncr,
+        ID_xWrap,
         ID_yMin,
         ID_yMax,
         ID_yIncr,
+        ID_yWrap,
         ID_zMin,
         ID_zMax,
         ID_zIncr,
+        ID_zWrap,
         ID_useWholeCollection,
         ID_categoryName,
-        ID_subsetName
+        ID_subsetName,
+        ID__LAST
     };
 
 private:
@@ -158,18 +179,23 @@ private:
     int         xMin;
     int         xMax;
     int         xIncr;
+    bool        xWrap;
     int         yMin;
     int         yMax;
     int         yIncr;
+    bool        yWrap;
     int         zMin;
     int         zMax;
     int         zIncr;
+    bool        zWrap;
     bool        useWholeCollection;
     std::string categoryName;
     std::string subsetName;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define INDEXSELECTATTRIBUTES_TMFS "iiiibiiibiiibbss"
 
 #endif

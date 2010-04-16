@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class IndexSelectAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 13;
+    private static int numAdditionalAttributes = 16;
 
     // Enum values
     public final static int DIMENSION_ONED = 0;
@@ -75,12 +75,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         xMin = 0;
         xMax = -1;
         xIncr = 1;
+        xWrap = false;
         yMin = 0;
         yMax = -1;
         yIncr = 1;
+        yWrap = false;
         zMin = 0;
         zMax = -1;
         zIncr = 1;
+        zWrap = false;
         useWholeCollection = true;
         categoryName = new String("Whole");
         subsetName = new String("Whole");
@@ -94,12 +97,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         xMin = 0;
         xMax = -1;
         xIncr = 1;
+        xWrap = false;
         yMin = 0;
         yMax = -1;
         yIncr = 1;
+        yWrap = false;
         zMin = 0;
         zMax = -1;
         zIncr = 1;
+        zWrap = false;
         useWholeCollection = true;
         categoryName = new String("Whole");
         subsetName = new String("Whole");
@@ -113,12 +119,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         xMin = obj.xMin;
         xMax = obj.xMax;
         xIncr = obj.xIncr;
+        xWrap = obj.xWrap;
         yMin = obj.yMin;
         yMax = obj.yMax;
         yIncr = obj.yIncr;
+        yWrap = obj.yWrap;
         zMin = obj.zMin;
         zMax = obj.zMax;
         zIncr = obj.zIncr;
+        zWrap = obj.zWrap;
         useWholeCollection = obj.useWholeCollection;
         categoryName = new String(obj.categoryName);
         subsetName = new String(obj.subsetName);
@@ -143,12 +152,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
                 (xMin == obj.xMin) &&
                 (xMax == obj.xMax) &&
                 (xIncr == obj.xIncr) &&
+                (xWrap == obj.xWrap) &&
                 (yMin == obj.yMin) &&
                 (yMax == obj.yMax) &&
                 (yIncr == obj.yIncr) &&
+                (yWrap == obj.yWrap) &&
                 (zMin == obj.zMin) &&
                 (zMax == obj.zMax) &&
                 (zIncr == obj.zIncr) &&
+                (zWrap == obj.zWrap) &&
                 (useWholeCollection == obj.useWholeCollection) &&
                 (categoryName.equals(obj.categoryName)) &&
                 (subsetName.equals(obj.subsetName)));
@@ -182,58 +194,76 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
+    public void SetXWrap(boolean xWrap_)
+    {
+        xWrap = xWrap_;
+        Select(4);
+    }
+
     public void SetYMin(int yMin_)
     {
         yMin = yMin_;
-        Select(4);
+        Select(5);
     }
 
     public void SetYMax(int yMax_)
     {
         yMax = yMax_;
-        Select(5);
+        Select(6);
     }
 
     public void SetYIncr(int yIncr_)
     {
         yIncr = yIncr_;
-        Select(6);
+        Select(7);
+    }
+
+    public void SetYWrap(boolean yWrap_)
+    {
+        yWrap = yWrap_;
+        Select(8);
     }
 
     public void SetZMin(int zMin_)
     {
         zMin = zMin_;
-        Select(7);
+        Select(9);
     }
 
     public void SetZMax(int zMax_)
     {
         zMax = zMax_;
-        Select(8);
+        Select(10);
     }
 
     public void SetZIncr(int zIncr_)
     {
         zIncr = zIncr_;
-        Select(9);
+        Select(11);
+    }
+
+    public void SetZWrap(boolean zWrap_)
+    {
+        zWrap = zWrap_;
+        Select(12);
     }
 
     public void SetUseWholeCollection(boolean useWholeCollection_)
     {
         useWholeCollection = useWholeCollection_;
-        Select(10);
+        Select(13);
     }
 
     public void SetCategoryName(String categoryName_)
     {
         categoryName = categoryName_;
-        Select(11);
+        Select(14);
     }
 
     public void SetSubsetName(String subsetName_)
     {
         subsetName = subsetName_;
-        Select(12);
+        Select(15);
     }
 
     // Property getting methods
@@ -241,12 +271,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
     public int     GetXMin() { return xMin; }
     public int     GetXMax() { return xMax; }
     public int     GetXIncr() { return xIncr; }
+    public boolean GetXWrap() { return xWrap; }
     public int     GetYMin() { return yMin; }
     public int     GetYMax() { return yMax; }
     public int     GetYIncr() { return yIncr; }
+    public boolean GetYWrap() { return yWrap; }
     public int     GetZMin() { return zMin; }
     public int     GetZMax() { return zMax; }
     public int     GetZIncr() { return zIncr; }
+    public boolean GetZWrap() { return zWrap; }
     public boolean GetUseWholeCollection() { return useWholeCollection; }
     public String  GetCategoryName() { return categoryName; }
     public String  GetSubsetName() { return subsetName; }
@@ -263,22 +296,28 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteInt(xIncr);
         if(WriteSelect(4, buf))
-            buf.WriteInt(yMin);
+            buf.WriteBool(xWrap);
         if(WriteSelect(5, buf))
-            buf.WriteInt(yMax);
+            buf.WriteInt(yMin);
         if(WriteSelect(6, buf))
-            buf.WriteInt(yIncr);
+            buf.WriteInt(yMax);
         if(WriteSelect(7, buf))
-            buf.WriteInt(zMin);
+            buf.WriteInt(yIncr);
         if(WriteSelect(8, buf))
-            buf.WriteInt(zMax);
+            buf.WriteBool(yWrap);
         if(WriteSelect(9, buf))
-            buf.WriteInt(zIncr);
+            buf.WriteInt(zMin);
         if(WriteSelect(10, buf))
-            buf.WriteBool(useWholeCollection);
+            buf.WriteInt(zMax);
         if(WriteSelect(11, buf))
-            buf.WriteString(categoryName);
+            buf.WriteInt(zIncr);
         if(WriteSelect(12, buf))
+            buf.WriteBool(zWrap);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(useWholeCollection);
+        if(WriteSelect(14, buf))
+            buf.WriteString(categoryName);
+        if(WriteSelect(15, buf))
             buf.WriteString(subsetName);
     }
 
@@ -299,30 +338,39 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
             SetXIncr(buf.ReadInt());
             break;
         case 4:
-            SetYMin(buf.ReadInt());
+            SetXWrap(buf.ReadBool());
             break;
         case 5:
-            SetYMax(buf.ReadInt());
+            SetYMin(buf.ReadInt());
             break;
         case 6:
-            SetYIncr(buf.ReadInt());
+            SetYMax(buf.ReadInt());
             break;
         case 7:
-            SetZMin(buf.ReadInt());
+            SetYIncr(buf.ReadInt());
             break;
         case 8:
-            SetZMax(buf.ReadInt());
+            SetYWrap(buf.ReadBool());
             break;
         case 9:
-            SetZIncr(buf.ReadInt());
+            SetZMin(buf.ReadInt());
             break;
         case 10:
-            SetUseWholeCollection(buf.ReadBool());
+            SetZMax(buf.ReadInt());
             break;
         case 11:
-            SetCategoryName(buf.ReadString());
+            SetZIncr(buf.ReadInt());
             break;
         case 12:
+            SetZWrap(buf.ReadBool());
+            break;
+        case 13:
+            SetUseWholeCollection(buf.ReadBool());
+            break;
+        case 14:
+            SetCategoryName(buf.ReadString());
+            break;
+        case 15:
             SetSubsetName(buf.ReadString());
             break;
         }
@@ -342,12 +390,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
         str = str + intToString("xMin", xMin, indent) + "\n";
         str = str + intToString("xMax", xMax, indent) + "\n";
         str = str + intToString("xIncr", xIncr, indent) + "\n";
+        str = str + boolToString("xWrap", xWrap, indent) + "\n";
         str = str + intToString("yMin", yMin, indent) + "\n";
         str = str + intToString("yMax", yMax, indent) + "\n";
         str = str + intToString("yIncr", yIncr, indent) + "\n";
+        str = str + boolToString("yWrap", yWrap, indent) + "\n";
         str = str + intToString("zMin", zMin, indent) + "\n";
         str = str + intToString("zMax", zMax, indent) + "\n";
         str = str + intToString("zIncr", zIncr, indent) + "\n";
+        str = str + boolToString("zWrap", zWrap, indent) + "\n";
         str = str + boolToString("useWholeCollection", useWholeCollection, indent) + "\n";
         str = str + stringToString("categoryName", categoryName, indent) + "\n";
         str = str + stringToString("subsetName", subsetName, indent) + "\n";
@@ -360,12 +411,15 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
     private int     xMin;
     private int     xMax;
     private int     xIncr;
+    private boolean xWrap;
     private int     yMin;
     private int     yMax;
     private int     yIncr;
+    private boolean yWrap;
     private int     zMin;
     private int     zMax;
     private int     zIncr;
+    private boolean zWrap;
     private boolean useWholeCollection;
     private String  categoryName;
     private String  subsetName;
