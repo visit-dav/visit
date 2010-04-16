@@ -566,29 +566,29 @@ ClientMethod::ClearArgs()
     intArgs.clear();
     doubleArgs.clear();
     stringArgs.clear();
-    SelectField(1);
-    SelectField(2);
-    SelectField(3);
+    SelectIntArgs();
+    SelectDoubleArgs();
+    SelectStringArgs();
 }
 
 void
 ClientMethod::AddArgument(int val)
 {
     intArgs.push_back(val);
-    SelectField(1);
+    SelectIntArgs();
 }
 
 void
 ClientMethod::AddArgument(double val)
 {
     doubleArgs.push_back(val);
-    SelectField(2);
+    SelectDoubleArgs();
 }
 
 void
 ClientMethod::AddArgument(const std::string &val)
 {
     stringArgs.push_back(val);
-    SelectField(3);
+    SelectStringArgs();
 }
 

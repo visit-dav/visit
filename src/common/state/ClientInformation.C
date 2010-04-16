@@ -528,8 +528,8 @@ ClientInformation::DeclareMethod(const std::string &name, const std::string &pro
 {
     methodNames.push_back(name);
     methodPrototypes.push_back(proto);
-    SelectField(1);
-    SelectField(2);
+    SelectMethodNames();
+    SelectMethodPrototypes();
 }
 
 int
@@ -565,7 +565,7 @@ ClientInformation::ClearMethods()
 {
     methodNames.clear();
     methodPrototypes.clear();
-    SelectField(1);
-    SelectField(2);
+    SelectMethodNames();
+    SelectMethodPrototypes();
 }
 
