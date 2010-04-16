@@ -283,11 +283,13 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 {
     avtIVPSolver::Result result;
     
+    unsigned int ousideDomainCount = 0;
+
     // catch cases where the start position is outside the 
     // domain of field
     if (!field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
         return avtIVPSolver::OUTSIDE_DOMAIN;
-    
+
     while (1)
     {
         // record state for later restore, if needed
@@ -299,11 +301,12 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 
         try
         {
-            if (DebugStream::Level5())
-                debug5<<"Step( mode= "<<termType<<" end= "<<end<<endl;
+//             if (DebugStream::Level5())
+//                 debug5<<"Step( mode= "<<termType<<" end= "<<end<<endl;
             result = ivp->Step(field, termType, end, step);
-            if (DebugStream::Level5())
-                debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
+
+//             if (DebugStream::Level5())
+//                 debug5<<"   T= "<<ivp->GetCurrentT()<<" "<<ivp->GetCurrentY()<<endl;
             
             if (intersectionsSet)
               HandleIntersections(step, termType, end, &result);
@@ -311,7 +314,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         catch( avtIVPField::Undefined& )
         {
             if (DebugStream::Level5())
-                debug5<<ivp->GetCurrentY()<<" not in domain\n";
+              debug5<< ivp->GetCurrentY() << " not in domain "
+                    << ivp->GetNextStepSize() << endl;
+
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
             // restore old state to before failed step
@@ -341,11 +346,15 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 }
 
                 if (DebugStream::Level5())
-                    debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN\n";
+                  debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN "
+                          << "step= " << h << "  count= " << ousideDomainCount << endl;
+
                 return avtIVPSolver::OUTSIDE_DOMAIN;        
             }
 
             ivp->SetNextStepSize(h);
+
+            ++ousideDomainCount;
 
             // retry step
             delete step;
@@ -372,6 +381,13 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             
             if (result == avtIVPSolver::TERMINATE)
                 break;
+            
+            if (ousideDomainCount && DebugStream::Level5())
+              debug5<<"avtStreamline::DoAdvance() DONE  result= BACKIN_DOMAIN "
+                    << "step= " << ivp->GetNextStepSize()
+                    << "  count= " << ousideDomainCount << endl;
+
+            ousideDomainCount = 0;
         }
         else
         {

@@ -88,6 +88,8 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
     ~avtIVPM3DC1Field();
 
+    virtual bool IsInside(const double& t, const avtVector& x) const;
+
     vtkVisItInterpolatedVelocityField* GetBaseField() { return iv; }    
 
     void findElementNeighbors();
@@ -95,8 +97,8 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
                        double x, double y, int *index);
     void add_edge(edge *list, int *tri, int side, int el, int *nlist);
 
-    int get_tri_coords2D(double *x, double *xout);
-    int get_tri_coords2D(double *x, int el, double *xout);
+    int get_tri_coords2D(double *x, double *xout) const;
+    int get_tri_coords2D(double *x, int el, double *xout) const;
 
     float interp    (float *var, int el, double *lcoords);
     float interpdR  (float *var, int el, double *lcoords);

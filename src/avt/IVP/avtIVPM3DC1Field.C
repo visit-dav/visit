@@ -70,8 +70,13 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity 
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
   // nodes thus there are 3 times the number of original values.
+//   nelms =
+//     ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfTuples() / 3;
+
+  // 2.0 Change data is nolonger at the points but still is at the
+  // cells so the above is no longer valid.
   nelms =
-    ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfTuples() / 3;
+    ds->GetCellData()->GetArray("hidden/elements")->GetNumberOfTuples();
 
   // Dummy variable to the template class
   int   *intPtr, intVar;
@@ -137,6 +142,29 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr, int nelements )
 //
 // ****************************************************************************
 
+avtIVPM3DC1Field::~avtIVPM3DC1Field()
+{
+  if( neighbors ) free(neighbors);
+  if( trigtable ) free(trigtable);
+
+  if( elements ) delete [] elements;
+  if( psi0 )     delete [] psi0;
+  if( f0 )       delete [] f0;
+  if( psinr )    delete [] psinr;
+  if( psini )    delete [] psini;
+  if( fnr )      delete [] fnr;
+  if( fni )      delete [] fni;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field destructor
+//
+//  Creationist: Allen Sanderson
+//  Creation:   20 November 2009
+//
+// ****************************************************************************
+
 template< class type >
 type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
                                         const type var,
@@ -144,7 +172,16 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
                                         const int ntuples,
                                         const int ncomponents )
 {
-  vtkDataArray *array = ds->GetPointData()->GetArray(varname);
+  int XX = 1;
+
+  // Because the triangluar mesh is defined by using non unique points
+  // and the data is cell centered data VisIt moves it out to the
+  // nodes. So create a new structure that is what is really needed.
+//  vtkDataArray *array = ds->GetPointData()->GetArray(varname);
+
+  // 2.0 Change data is no longer at the points but still is at the
+  // cells so the above is no longer valid.
+  vtkDataArray *array = ds->GetCellData()->GetArray(varname);
 
   if( array == 0 )
   {
@@ -155,7 +192,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     return 0;
   }
 
-  if( ntuples != array->GetNumberOfTuples() / 3 ||
+  if( ntuples != array->GetNumberOfTuples() / XX ||
       ncomponents != array->GetNumberOfComponents() )
   {
     debug1 << "Variable " << varname
@@ -164,6 +201,12 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     
     return 0;
   }
+
+  // 2.0 Change data is no longer at the points but still is at the
+  // cells so we should be able to use the pointer directly but for
+  // some reason it causes problems.
+  // 
+  //  return (type*) array->GetVoidPointer(0);
 
   type* newptr = new type[ntuples*ncomponents];
 
@@ -176,13 +219,16 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
   // nodes. So create a new structure that is what is really needed.
+
+  // 2.0 Change data is no longer at the points but still is at the
+  // cells so the above is no longer valid.
   if( array->IsA("vtkIntArray") ) 
   {
     int* ptr = (int*) array->GetVoidPointer(0);
 
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
-        newptr[i*ncomponents+j] = ptr[i*3*ncomponents+j];
+        newptr[i*ncomponents+j] = ptr[i*XX*ncomponents+j];
 
     return newptr;
   }
@@ -192,7 +238,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
-        newptr[i*ncomponents+j] = ptr[i*3*ncomponents+j];
+        newptr[i*ncomponents+j] = ptr[i*XX*ncomponents+j];
 
     return newptr;
   }
@@ -202,7 +248,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
-        newptr[i*ncomponents+j] = ptr[i*3*ncomponents+j];
+        newptr[i*ncomponents+j] = ptr[i*XX*ncomponents+j];
 
     return newptr;
   }
@@ -219,25 +265,27 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field destructor
+//  Method: avtIVPM3DC1Field IsInside
 //
 //  Creationist: Allen Sanderson
-//  Creation:   20 November 2009
+//  Creation:   16 April 2010
 //
-// ****************************************************************************
+//  The VTK check should work but is not reliable because the mesh
+//  lies in the XZ plane and Y may or may not be exactly zero. As such
+//  due to round off VTK may say the point is outside the
+//  mesh. As such, use the native check instead.
+//
+//  ****************************************************************************
 
-avtIVPM3DC1Field::~avtIVPM3DC1Field()
+bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 {
-  if( neighbors ) free(neighbors);
-  if( trigtable ) free(trigtable);
+  double xin[3], xout[3];
 
-  if( elements ) delete [] elements;
-  if( psi0 )     delete [] psi0;
-  if( f0 )       delete [] f0;
-  if( psinr )    delete [] psinr;
-  if( psini )    delete [] psini;
-  if( fnr )      delete [] fnr;
-  if( fni )      delete [] fni;
+  xin[0] = x[0];
+  xin[1] = x[1];
+  xin[2] = x[2];
+
+  return (bool) get_tri_coords2D(xin, xout);
 }
 
 
@@ -409,7 +457,7 @@ void avtIVPM3DC1Field::add_edge(edge *list, int *tri,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout)
+int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
 {
   float     *tri;
   double     co, sn, rrel, zrel;
@@ -437,7 +485,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout)
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout)
+int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 {
   static int el=0;
   float     *tri;
