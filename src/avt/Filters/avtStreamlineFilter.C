@@ -455,6 +455,7 @@ avtStreamlineFilter::GetDomain(const DomainType &domain,
         /*
         if (domain.timeStep != curTimeSlice)
         {
+          if (DebugStream::Level5())
             debug5<<"::GetDomain()  Loading: "<<domain<<endl;
             avtContract_p new_contract = new avtContract(lastContract);
             new_contract->GetDataRequest()->SetTimestep(domain.timeStep);
@@ -2033,32 +2034,36 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         
         // Termination criteria was met.
         slSeg->terminated = (result == avtIVPSolver::TERMINATE);
-        debug5<<"Advance:= "<<result<<endl;
-        debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
-        
+
+        if (DebugStream::Level5())
+        {
+          debug5<<"Advance:= "<<result<<endl;
+          debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+        }
     }
     else
         result = avtIVPSolver::TERMINATE;
 
-    numSteps = slSeg->sl->size() - numSteps;
     //slSeg->Debug();
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
     {
+        if (DebugStream::Level5())
+          debug5 << numSteps << "  " <<  slSeg->sl->size() << endl;
+
+        numSteps = slSeg->sl->size() - numSteps;
+
         slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
         DomainType oldDomain = slSeg->domain;
 
         //Set the new domain.
         SetDomain(slSeg);
         
-        // Not in any domains.
-        if (slSeg->seedPtDomainList.empty())
-        {
-            slSeg->status = avtStreamlineWrapper::TERMINATE;
-        }
-
         // We are in the same domain.
-        else if (slSeg->seedPtDomainList.size() >= 1)
+        if (slSeg->seedPtDomainList.size() > 1)
         {
+            if (DebugStream::Level5())
+              debug5 << slSeg->domain << "  " <<  oldDomain << "  " << numSteps << endl;
+              
             // pathline terminates if timestep is out of bounds.
             if (doPathlines && slSeg->domain.timeStep == -1)
             {
@@ -2074,9 +2079,10 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                 slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
             }
         }
+        // Not in any or just one domain.
         else
         {
-            //slSeg->status = avtStreamlineWrapper::TERMINATE;
+          slSeg->status = avtStreamlineWrapper::TERMINATE;
         }
     }
     else
@@ -2572,7 +2578,8 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
     for (int i = 0; i < streamlines.size(); i++)
     {
         avtStreamlineWrapper *slSeg = streamlines[i];
-        debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
+        if (DebugStream::Level5())
+          debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
     }
 }
 
