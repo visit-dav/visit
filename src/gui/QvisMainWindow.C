@@ -493,8 +493,10 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     filePopup->addSeparator();
 
-    filePopup->addAction(tr("Save session . . ."),
+    filePopup->addAction(tr("Save session"),
                          this, SIGNAL(saveSession()));
+    filePopup->addAction(tr("Save session as . . ."),
+                         this, SIGNAL(saveSessionAs()));
     filePopup->addAction(tr("Restore session . . ."),
                          this, SIGNAL(restoreSession()));
     filePopup->addAction(tr("Restore session with sources . . ."),
