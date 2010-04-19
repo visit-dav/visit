@@ -305,6 +305,7 @@ signals:
 
     void refreshFileList();
     void saveSession();
+    void saveSessionAs();
     void restoreSession();
     void restoreSessionWithSources();
     void reopenOnNextFrame();

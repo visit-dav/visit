@@ -453,6 +453,7 @@ private slots:
     void RestoreSession();
     void RestoreSessionWithDifferentSources();
     void SaveSession();
+    void SaveSessionAs();
     void sessionFileHelper_LoadFile(const QString &);
     void sessionFileHelper_LoadSession(const QString &);
     void sessionFileHelper_LoadSessionWithDifferentSources(const QString &,

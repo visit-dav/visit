@@ -2900,6 +2900,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
     connect(mainWin, SIGNAL(restoreSessionWithSources()), this, SLOT(RestoreSessionWithDifferentSources()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
+    connect(mainWin, SIGNAL(saveSessionAs()), this, SLOT(SaveSessionAs()));
     connect(mainWin, SIGNAL(saveCrashRecoveryFile()), 
            this, SLOT(SaveCrashRecoveryFile()));
     connect(mainWin, SIGNAL(updateVisIt()), this, SLOT(updateVisIt()));
@@ -4130,6 +4131,31 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 14 11:52:52 PDT 2003
 //
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveSession()
+{
+    if( sessionFile.isEmpty() )
+        SaveSessionAs();
+    else
+    {
+        ++sessionCount;
+        SaveSessionFile(sessionFile);
+        UpdateSessionDir(sessionFile.toStdString());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveSessionAs
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to save out all of its
+//   state to an XML file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 14 11:52:52 PDT 2003
+//
 // Modifications:
 //   Brad Whitlock, Tue Aug 12 11:23:52 PDT 2003
 //   Added code to force the session file to have a .session extension.
@@ -4149,7 +4175,7 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 // ****************************************************************************
 
 void
-QvisGUIApplication::SaveSession()
+QvisGUIApplication::SaveSessionAs()
 {
 #if defined(_WIN32)
     QString sessionExtension(".vses");
@@ -4165,7 +4191,7 @@ QvisGUIApplication::SaveSession()
 
     // Get the name of the file that the user saved.
     QString sFilter(tr("VisIt session") + QString(" (*") + sessionExtension + ")");
-    QString fileName = QFileDialog::getSaveFileName(mainWin,tr("Save Session File"),".", sFilter);
+    QString fileName = QFileDialog::getSaveFileName(mainWin,tr("Save Session File As"),".", sFilter);
 
     // If the user chose to save a file, tell the viewer to write its state
     // to that file.
@@ -4533,6 +4559,9 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
         
         UpdateSessionDir(s.toStdString());
     }
+
+    sessionFile = QString(""); // Make sure the session file name is
+                               // null as it was used for the restore.
 }
 
 // ****************************************************************************
@@ -4592,6 +4621,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
+        sessionFile = s;
         restoringSession = true;
         std::string filename(s.toStdString());
           
