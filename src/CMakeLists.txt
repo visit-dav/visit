@@ -98,6 +98,9 @@
 #    Kathleen Bonnell, Wed April 14 16:33:27 MST 2010
 #    Renable FindTortoiseSVN on windows to retrieve SVN revision number.
 #
+#    Jeremy Meredith, Mon Apr 19 16:34:02 EDT 2010
+#    Support multiple paths returned for include files from mpi compiler.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -782,8 +785,14 @@ FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags)
     IF(NOT MPI_FOUND)
         MESSAGE(FATAL_ERROR  "Failed to setup MPI using compiler wrapper: ${COMP}")
     ELSE(NOT MPI_FOUND)
+        # Take the MPI include path and split it into -I's
+        SET(MPI_INCLUDE_PATH_CONV "")
+        FOREACH(I ${MPI_INCLUDE_PATH})
+            SET(MPI_INCLUDE_PATH_CONV "${MPI_INCLUDE_PATH_CONV} -I${I}")
+        ENDFOREACH(I)
+
         SET(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-        SET(${mflags}  "-DPARALLEL -I${MPI_INCLUDE_PATH} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
+        SET(${mflags}  "-DPARALLEL ${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
         SET(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
     ENDIF(NOT MPI_FOUND)
 ENDFUNCTION(DETECT_MPI_SETTINGS)
