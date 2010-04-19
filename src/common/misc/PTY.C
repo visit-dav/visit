@@ -209,6 +209,42 @@ ptys_open(int fdm, char *pts_name)
 
 
 #else
+#include "FileFunctions.h"
+
+// ****************************************************************************
+// Method: ug_RW
+//
+// Purpose: 
+//   Checks if a file has RW permissions for usr/group.
+//
+// Arguments:
+//   name : The name of the file to check.
+//
+// Returns:    True if the permissions are RW for usr/group.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 19 16:18:55 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+ug_RW(const char *name)
+{
+    VisItStat_t s;
+    VisItStat(name, &s);
+
+    bool uRW = ((s.st_mode & S_IRUSR) != 0) &&
+               ((s.st_mode & S_IWUSR) != 0);
+
+    bool gRW = ((s.st_mode & S_IRGRP) != 0) &&
+               ((s.st_mode & S_IWGRP) != 0);
+
+    return uRW && gRW;
+}
 
 // ****************************************************************************
 //  Method:  ptym_open  (BSD)
@@ -222,32 +258,52 @@ ptys_open(int fdm, char *pts_name)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 27, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Mon Apr 19 16:18:30 PDT 2010
+//    I made sure that the pty and tty both have 660 permissions before trying
+//    to use either one.
+//
 // ****************************************************************************
-int
-ptym_open(char *pts_name)
-{
-    int         fdm;
-    char        *ptr1, *ptr2;
 
-    strcpy(pts_name, "/dev/ptyXY");
+int
+ptym_open(char *tty_name)
+{
+    int  fdm = -1;
+    char pty_name[20];
+
+    strcpy(pty_name, "/dev/ptyXY");
+    strcpy(tty_name, "/dev/ttyXY");
+
     // array index: 0123456789 (for references in following code)
-    for (ptr1 = "pqrstuvwxyzPQRST"; *ptr1 != 0; ptr1++) {
-        pts_name[8] = *ptr1;
-        for (ptr2 = "0123456789abcdef"; *ptr2 != 0; ptr2++) {
-            pts_name[9] = *ptr2;
+    for (const char *ptr1 = "pqrstuvwxyzPQRST"; *ptr1 != 0; ptr1++)
+    {
+        pty_name[8] = *ptr1;
+        tty_name[8] = *ptr1;
+
+        for (const char *ptr2 = "0123456789abcdef"; *ptr2 != 0; ptr2++)
+        {
+            pty_name[9] = *ptr2;
+            tty_name[9] = *ptr2;
+
+            // Make sure that pty and tty have compatible permissions.
+            if(!ug_RW(pty_name))
+                continue;
+            if(!ug_RW(tty_name))
+                continue;
 
             // try to open master
-            if ( (fdm = open(pts_name, O_RDWR)) < 0) {
+            if ( (fdm = open(pty_name, O_RDWR)) < 0)
+            {
                 if (errno == ENOENT)    // different from EIO
                     return(-1);         // out of pty devices
                 else
                     continue;           // try next pty device
             }
 
-            pts_name[5] = 't';  // change "pty" to "tty"
             return(fdm);        // got it, return fd of master
         }
     }
+
     return(-1);         // out of pty devices
 }
 
