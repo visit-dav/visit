@@ -68,6 +68,10 @@
 //   Brad Whitlock, Thu Oct 22 11:06:53 PDT 2009
 //   I added methods that let the user edit the plot name with a line edit.
 //
+//   Brad Whitlock, Tue Apr 20 11:46:16 PDT 2010
+//   I added an event filter to prevent crashes when pressing Esc to work
+//   around a bug in Qt.
+//
 // ****************************************************************************
 
 class QPlotDelegate : public QItemDelegate
@@ -162,6 +166,29 @@ public:
             QvisPlotListBox *lb = (QvisPlotListBox *)currentItem->listWidget();
             lb->triggerPlotRename(lb->row(currentItem), s);
         }
+    }
+
+    virtual bool eventFilter(QObject *object, QEvent *event)
+    {
+        QWidget *editor = qobject_cast<QWidget*>(object);
+        if (!editor)
+            return false;
+        if (event->type() == QEvent::KeyPress)
+        {
+            bool retval = true;
+            switch (static_cast<QKeyEvent *>(event)->key())
+            {
+            case Qt::Key_Escape:
+                emit closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
+                break;
+            default:
+                retval = QItemDelegate::eventFilter(object, event);
+            }
+
+            return retval;
+        }
+
+        return QItemDelegate::eventFilter(object, event);
     }
 };
 
