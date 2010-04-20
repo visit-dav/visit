@@ -39,13 +39,11 @@
 #****************************************************************************/
 
 IF(NOT WIN32)
-    IF(CMAKE_SYSTEM_NAME STREQUAL Linux)
-        MESSAGE(STATUS "BSD style pseudo-tty")
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL AIX)
+    IF(CMAKE_SYSTEM_NAME STREQUAL AIX)
         MESSAGE(STATUS "BSD style pseudo-tty")
     ELSEIF(CMAKE_SYSTEM_NAME STREQUAL Darwin)
         MESSAGE(STATUS "BSD style pseudo-tty")
-    ELSE(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    ELSE(CMAKE_SYSTEM_NAME STREQUAL AIX)
         TRY_COMPILE(tmpVar
                 ${CMAKE_CURRENT_BINARY_DIR}
                 ${VISIT_SOURCE_DIR}/CMake/TestPTY.cpp
