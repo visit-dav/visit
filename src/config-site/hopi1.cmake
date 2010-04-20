@@ -44,8 +44,8 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
 ##
 ## Turn off warnings for deprecated features on g++
 ##
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC")
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-Wno-deprecated -fPIC")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-Wno-deprecated -fPIC -fvisibility=hidden")
 
 ##############################################################
 ##
