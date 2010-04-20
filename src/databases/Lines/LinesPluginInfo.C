@@ -166,6 +166,7 @@ std::vector<std::string>
 LinesGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
+    defaultPatterns.push_back("*.lines");
 
     return defaultPatterns;
 }
