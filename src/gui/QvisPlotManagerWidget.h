@@ -274,7 +274,7 @@ signals:
     void addPlot(int, const QString &);
     void addOperator(int);
 protected:
-    virtual void keyReleaseEvent(QKeyEvent *key);
+    virtual void keyPressEvent(QKeyEvent *key);
 private:
     void CreateMenus(QMenuBar *);
     void DestroyPlotMenuItem(int index);

@@ -2028,10 +2028,10 @@ QvisPlotManagerWidget::ConnectPluginManagerAttributes(PluginManagerAttributes *p
 }
 
 // ****************************************************************************
-// Method: QvisPlotManagerWidget::keyReleaseEvent
+// Method: QvisPlotManagerWidget::keyPressEvent
 //
 // Purpose: 
-//   This is an event handler method that processes key release events.
+//   This is an event handler method that processes key press events.
 //
 // Arguments:
 //   key : A pointer to a key event object.
@@ -2046,13 +2046,18 @@ QvisPlotManagerWidget::ConnectPluginManagerAttributes(PluginManagerAttributes *p
 //   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Tue Apr 20 11:37:52 PDT 2010
+//   I switched the function to handle key presses instead of releases.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::keyReleaseEvent(QKeyEvent *key)
+QvisPlotManagerWidget::keyPressEvent(QKeyEvent *key)
 {
     if(key->key() == Qt::Key_Delete)
+    {
         deletePlots();
+    }
     else if(key->key() == Qt::Key_Enter || key->key() == Qt::Key_Return)
     {
         // Activate the windows for all of the selected plots.
@@ -2068,7 +2073,7 @@ QvisPlotManagerWidget::keyReleaseEvent(QKeyEvent *key)
     }
 
     // Call the base class's method.
-    QWidget::keyReleaseEvent(key);
+    QWidget::keyPressEvent(key);
 }
 
 //
