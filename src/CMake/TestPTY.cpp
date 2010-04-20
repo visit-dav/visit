@@ -4,6 +4,6 @@
 int
 main(int argc, char *arg[])
 {
-    grantpty(0);
+    grantpt(0);
     return 0;
 }
