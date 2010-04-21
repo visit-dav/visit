@@ -25,6 +25,8 @@ extern "C" {
 
   void paraDIS_SetVerbosity(int level, const char *filename=0); 
   
+  void paraDIS_SetThreshold(double threshold); 
+  
   void paraDIS_EnableDebugOutput(int truth); 
   
   void paraDIS_SetDataFile(const char *filename); 

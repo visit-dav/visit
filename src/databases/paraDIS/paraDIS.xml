@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="paraDIS" type="database" label="paraDIS simulation dump metafile" version="1.0a1" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+  <Plugin name="paraDIS" type="database" label="paraDIS simulation dump metafile" version="2.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
     <Files components="M">
       avtparaDISFileFormat.C      
+      avtparaDISOptions.C      
       paraDIS_lib/paradis.C 
       paraDIS_lib/paradis_c_interface.C   
       RC_c_lib/args.c 
@@ -14,6 +15,7 @@
     </Files>
     <Files components="E">
       avtparaDISFileFormat.C      
+      avtparaDISOptions.C      
       paraDIS_lib/paradis.C 
       paraDIS_lib/paradis_c_interface.C   
       RC_c_lib/args.c 

@@ -41,13 +41,13 @@
 
    ------------------------------------------------------------------ 
  
-   5) ADDED, and DONE BUT UNTESTED:  The data is periodic.  Go back and find all segments that connect two nodes such that if one is "wrapped" around any boundary of the data, it is closer to the other end than if it is not so wrapped.  Each such segment found requires creation of one new segment and two new "wrapped" nodes.  "wrapped" nodes are those created for this purpose, which lie on the intersection of the segment with the bounds of the subspace. When done, the wrapped segment, which normally would draw a crazy line all the way across the data, is replaced with two new segments that are one data space apart from each other. 
+   5) DONE:  The data is periodic.  Go back and find all segments that connect two nodes such that if one is "wrapped" around any boundary of the data, it is closer to the other end than if it is not so wrapped.  Each such segment found requires creation of one new segment and two new "wrapped" nodes.  "wrapped" nodes are those created for this purpose, which lie on the intersection of the segment with the bounds of the subspace. When done, the wrapped segment, which normally would draw a crazy line all the way across the data, is replaced with two new segments that are one data space apart from each other. 
 
    ------------------------------------------------------------------  
 
-   6)  DONE, BUT PROBABLY NEED TO FIX FOR NEW METHODS...  
-   We can now create all arms for our region. 
-   IN THE FUTURE, to save memory, we will implement the following: 
+   6)  DONE, BUT COMMENTED OUT AS DESTRUCTIVE
+   We no longer do this.  All FullNodes are kept, in bounds or not.  This is because deleting "useless" nodes was causing significant portions of arms to not get drawn, and there is no point to this.  Parallelism will proceed by another mechanism. 
+   IN THE FUTURE, to save memory, we could implement the following: 
    Segments that connect two PartialNodes are PartialSegments.  Segments that connect two OOB FullNodes are CollapsedSegments.  Segments that connect an IB FullNode to another node are FullSegments.  Only FullSegments are drawn. 
    HOWEVER, For the first implementation, we will not distinguish between Partial and Full Segments, and we will not even collapse arms, so that we can get a good view of what things are like.  After it is clear that we are making sensible things, we can collapse arms to save memory. 
 
@@ -65,10 +65,18 @@
  
    8)  You now have a complete set of data for the given bounds.  Let the user (e.g. VisIt or povrayDumper) do the filtering to determine what gets drawn.  I could have done filtering within the library for performance reasons, but I don't think this is a good idea.  The bulk of the slowdown is in rendering for PovRay, and VisIt will do good filtering by itself.  
 
+   =========================================================================
+   CHANGES
+
+   2010-03-12 Rich Cook
+   Add two new types: NN_+++_short and NN_100_short.  
+
 */ 
 #ifndef PARADIS_H
 #define PARADIS_H
 
+// set this to 1 to re-enable linked loops code
+#define LINKED_LOOPS 0
 
 #define DEBUG 1
 
@@ -125,7 +133,7 @@ namespace paraDIS {
       for ordering sets and hash lookups 
     */ 
     bool operator == (const NodeID &other) const {
-      return mDomainID == other.mDomainID && mNodeID == other.mNodeID;
+      return (mDomainID == other.mDomainID && mNodeID == other.mNodeID);
     }
 
     /*!
@@ -166,9 +174,9 @@ namespace paraDIS {
     */ 
     std::string Stringify(void) const {
       std::string s("NodeID: (domain id, node id) = (");
-      s += doubleToString(mDomainID);
+      s += intToString(mDomainID);
       s +=  ", ";
-      s += doubleToString(mNodeID);
+      s += intToString(mNodeID);
       s += ")";
       return s; 
     }
@@ -384,11 +392,11 @@ namespace paraDIS {
     */ 
     virtual std::string Stringify(bool showneighbors=false) const {
       std::string s =std::string("MinimalNode: ")+Node::Stringify() + string("\nClassification: ") + string(mKeep?"KEEP":"DON'T KEEP") + string("\n");  
-      s += (doubleToString(mNeighbors.size()) + " neighbors --------------:\n");
+      s += (intToString(mNeighbors.size()) + " neighbors --------------:\n");
       uint32_t n = 0; 
       if (showneighbors) {
         while (n < mNeighbors.size()) {
-          s += "neighbor " + doubleToString(n) + ": "; 
+          s += "neighbor " + intToString(n) + ": "; 
           if (mNeighbors[n]) {
             s += mNeighbors[n]->Stringify() + "\n"; 
           } else {
@@ -522,12 +530,22 @@ namespace paraDIS {
     /*!
       Compute the distance to another node
     */
-    double Distance(const FullNode &other) { 
-      double dx = mLocation[0]-other.mLocation[0],  
+    double Distance(const FullNode &other, bool wrap=false) { 
+      double dist[3] = {0}, sum=0; 
+      int i=3; while (i--) {
+        dist[i] = mLocation[i] - other.mLocation[i]; 
+        if (wrap && fabs(dist[i]) > mBoundsSize[i]/2.0) {
+          dist[i] = mBoundsSize[i] - fabs(dist[i]); 
+        }
+        sum += dist[i]*dist[i]; 
+      }
+      return sqrt(sum); 
+      /*
+        double dx = mLocation[0]-other.mLocation[0],  
         dy = mLocation[1]-other.mLocation[1],        
         dz = mLocation[2]-other.mLocation[2];         
-      
-      return sqrt(dx*dx + dy*dy + dz*dz); 
+        return sqrt(dx*dx + dy*dy + dz*dz); 
+      */ 
     } 
     /*!
       Accessor function.  
@@ -606,6 +624,7 @@ namespace paraDIS {
     static void SetBounds(rclib::Point<float> &min, rclib::Point<float> &max) {
       mBoundsMin = min; 
       mBoundsMax = max; 
+      mBoundsSize = max-min; 
     }
 
     /*!
@@ -664,12 +683,25 @@ namespace paraDIS {
     /*!
       Static member to keep track of subspace bounds for checking if we are in bounds or not
     */ 
-    static rclib::Point<float> mBoundsMin, mBoundsMax; 
+    static rclib::Point<float> mBoundsMin, mBoundsMax, mBoundsSize; 
 
   }; /* end FullNode */  
   
 
   //=============================================
+
+  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))
+#define BURGERS_NONE 0
+#define BURGERS_100  1
+#define BURGERS_010  2
+#define BURGERS_001  3
+#define BURGERS_PPP  4  // +++
+#define BURGERS_PPM  5  // ++-
+#define BURGERS_PMP  6  // +-+
+#define BURGERS_PMM  7  // +--
+#define BURGERS_UNKNOWN  8  
+ 
+  // Arm MN types:
 #define ARM_UNKNOWN 0
 #define ARM_UNINTERESTING 1
 #define ARM_LOOP 2
@@ -679,13 +711,20 @@ namespace paraDIS {
 #define ARM_MM_100 6
 #define ARM_MN_100 7
 #define ARM_NN_100 8
+#define ARM_SHORT_NN_111 9
+#define ARM_SHORT_NN_100 10
   /*! 
     Arm segments are like Neighbors in that they contain neighbor relationships, but these are encoded as pointers to nodes instead of NodeIDs, for faster access to complete node data as needed. They also contain burgers and arm-type information for later analysis.  I almost called them "FullNeighbor", but in common terminology they are called "arm segments," since one or more of them comprise an Arm, so I just called them that.  
   */ 
   class ArmSegment {
 
   public: 
-    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(0){ init(); }
+    ArmSegment():mBurgersType(0), mMNType(ARM_UNKNOWN), mSeen(false)
+#if LINKED_LOOPS
+      , mParentArm(NULL)
+#endif
+
+{ init(); }
     ArmSegment(const ArmSegment &other){
       init(); 
       *this = other; 
@@ -752,7 +791,7 @@ namespace paraDIS {
     }
 
     /*!      
-      For each wrapped segment, there is an identical unwrapped segment with the same node ID's.  One of each such pair of segments has a ghost endpoint with ID greater than one of its nodes and equal to the other, and one has a ghost endpoint with ID less than one of its nodes and equal to the other. This function returns true for one of them and not the other.  
+      For each wrapped segment, there is an identical unwrapped segment with the same node ID's.  One of each such pair of segments has a ghost endpoint with ID greater than one of its nodes and equal to the other, and one has a ghost endpoint with ID less than one of its nodes and equal to the other. This function returns true for one of them and not the other.  Used in counting total segment lengths.  
     */
     bool Cullable(void) { 
       if (mGhostEndpoints.size() > 1) {
@@ -772,12 +811,13 @@ namespace paraDIS {
     int8_t GetMNType(void) const { return mMNType; } 
 
     void SetMNType(int8_t val)  {  mMNType=val; } 
+
     /*!
       Return the distance between the endpoints
-    */
-    double GetLength(void) const { 
-      return mEndpoints[0]->Distance(*mEndpoints[1]); 
-    }
+    */ 
+    double GetLength(bool wrap=false) const { 
+      return mEndpoints[0]->Distance(*mEndpoints[1], wrap); 
+    } 
       
     /*!
       Accessor function
@@ -822,23 +862,24 @@ namespace paraDIS {
       Accessor function
     */
     void SetSeen(bool tf) {mSeen = tf; }
+
     /*!
       convert ArmSegment to string
     */ 
     std::string Stringify(void) const {
       string s(string("ArmSegment at ") + pointerToString(this) +  
 #ifdef DEBUG
-               " number " + doubleToString(mSegmentID) + 
+               " number " + intToString(mSegmentID) + 
 #endif
-               ": \nBurgersType: " + doubleToString(mBurgersType)+", length: "+doubleToString(GetLength())+"\n");
+               ": \nBurgersType: " + intToString(mBurgersType)+", length: "+doubleToString(GetLength())+"\n");
       uint32_t epnum = 0; while (epnum < 2) {
-        s+= "ep"+doubleToString(epnum)+": "; 
+        s+= "ep "+intToString(epnum)+": "; 
         if (mEndpoints[epnum]) s+= mEndpoints[epnum]->Stringify(); 
         else s+= "(NULL)"; 
         epnum++; 
       }
       epnum = 0; while (epnum < mGhostEndpoints.size()) {
-        s+= "GHOST ep"+doubleToString(epnum)+": ";
+        s+= "GHOST ep "+intToString(epnum)+": ";
         if (mGhostEndpoints[epnum]) {
           s+=mGhostEndpoints[epnum]->Stringify(); 
         } else {
@@ -867,7 +908,7 @@ namespace paraDIS {
     }
 
     /*! 
-      Called by a node as part of bookkeeping when wrapping a segment.  Make sure the given node is one of our neighbors -- add it if not
+      Called by a node as part of bookkeeping when wrapping a segment.  Make sure the given node is one of our endpoints -- add it as a ghost if not
     */ 
     void ConfirmEndpoint(FullNode *ep)  {
       if (mEndpoints[0] == ep || mEndpoints[1] == ep) return ; 
@@ -918,6 +959,9 @@ namespace paraDIS {
       If not, then  goes through and removes all the leftover crappy useless endpoints from our ghost endpoints, since they will just be deleted and become dangling references anyhow.  The returns false. 
     */ 
     bool IsUseless(void) const {
+      // I don't remember why we consider any nodes useless.. Let's keep everything. 
+      return false; 
+
       if( mEndpoints[0]->GetNodeType() == USELESS_NODE ||
           mEndpoints[1]->GetNodeType() == USELESS_NODE || 
           (!mEndpoints[0]->InBounds() && ! mEndpoints[1]->InBounds())) {  
@@ -1025,14 +1069,24 @@ namespace paraDIS {
      
       
     /*!
-      Marker used for "once-through" operations like building arms that must look at every segment, but which will usually discover echo particular segment more than once 
+      Marker used for "once-through" operations like building arms that must look at every segment, but which will usually discover echo particular segment more than once. 
     */ 
-    bool mSeen;   
+    bool mSeen; 
+
     /*!
       Pointers to actual nodes, as opposed to just NodeID's as in Neighbors.  
     */ 
     FullNode * mEndpoints[2]; 
+
+
   public:
+#if LINKED_LOOPS
+    /*!
+      Back reference to parent Arm, needed for discovering linked loops.
+      Note forward declaration of struct Arm. 
+    */
+    struct Arm *mParentArm; 
+#endif 
     /*!
       We usually need two slots for endpoints, but may need extra slots for "ghost endpoints" created when nodes are wrapped.  When this segment is deleted, it goes through its endpoints and tells all of them they are gone.  But wrapping causes some segments to be the neighbor of 3 or even (very rarely) more nodes. So we need to track those special cases. 
     */ 
@@ -1087,7 +1141,10 @@ namespace paraDIS {
     Arms are used just for classifying nodes and segments and are not expected to be useful to the user of this library; 
   */ 
   struct Arm { 
-    Arm():mArmType(0)
+    Arm():mArmType(0), mArmLength(0)
+#if LINKED_LOOPS
+         , mPartOfLinkedLoop(false), mCheckedForLinkedLoop(false) 
+#endif
     {return; }
     /*!
       Clear all data from the Arm for reuse
@@ -1106,6 +1163,17 @@ namespace paraDIS {
     std::string Stringify(void) const ; 
 
     /*!
+      Give the exact Burgers type of its segments. 
+      Return 0 is no terminal segments. 
+    */
+    int8_t GetBurgersType(void) {
+      if (!mTerminalSegments.size())  {
+        return 0; 
+      }
+      return mTerminalSegments[0]->GetBurgersType(); 
+    }
+
+    /*!
       to set the arm ID for debugging.  In Debug code, this will do nothing
     */ 
     void SetID(void) { 
@@ -1115,7 +1183,31 @@ namespace paraDIS {
       return; 
     }
 
+#if LINKED_LOOPS
     /*!
+      After an arm has been pushed into the array, you need to set
+      up the back-pointers so you can find it from the terminal segments. 
+    */
+    void SetSegmentBackPointers(void) {
+      int numsegs = mTerminalSegments.size(); 
+      while (numsegs--) {
+        mTerminalSegments[numsegs]->mParentArm = this; 
+      } 
+      return;
+    }
+
+    /*! 
+      A linked loop is defined as:
+      A) Two arms which have the same four-armed terminal nodes 
+      OR
+      B) Three arms which all have the same three-armed terminal nodes.
+    */
+    void CheckForLinkedLoops(void); 
+#endif
+
+    void ComputeLength(void); 
+
+   /*!
       Classify the arm as one of NN, MN or MM, combined with 100 or 111...
     */ 
     void Classify(void) ; 
@@ -1124,6 +1216,8 @@ namespace paraDIS {
       Else, return false.
     */ 
     bool IsUseless(void) {
+      return false; 
+
      int segnum =  mTerminalSegments.size(); 
      bool useless = false; 
       while (segnum--) {
@@ -1144,7 +1238,9 @@ namespace paraDIS {
     /*! 
       Return the sum of the length of all segments in the arm
     */ 
-    double GetLength(void); 
+    double GetLength(void) const { 
+      return mArmLength; 
+    }
 
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 100 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -33 ("special butterfly"). 
@@ -1154,9 +1250,14 @@ namespace paraDIS {
       This is a necessary component to CheckForButterfly, broken out for readability in the code. 
     */ 
     bool HaveFourUniqueType111ExternalArms(void); 
-    vector <const ArmSegment *> mTerminalSegments; // At least one, but not more than two
+    vector < ArmSegment *> mTerminalSegments; // At least one, but not more than two
     vector <FullNode *> mTerminalNodes;  // At least one, but not more than two
-    int8_t mArmType; 
+    int8_t mArmType;
+    double mArmLength; 
+    static double mThreshold; // shorter than this and an arm is "short"
+#if LINKED_LOOPS
+    bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
+#endif
 
 #ifdef DEBUG
     /*! 
@@ -1211,6 +1312,12 @@ namespace paraDIS {
     void SetVerbosity(int level, const char *filename) { 
       if (filename) dbg_setfile(filename); 
       dbg_setverbose(level); 
+    }
+
+    void SetThreshold(double threshold) {
+      mThreshold = threshold;
+      Arm::mThreshold = threshold; 
+      return; 
     }
 
     /*!
@@ -1350,6 +1457,7 @@ s      Tell the data set which file to read
       Initialize things to virginal values. 
     */ 
     void init(void) {    
+      mThreshold = -1.0;
       mFileVersion = 0; 
       mMinimalNodes.clear(); 
       mMinimalNeighbors.clear(); 
@@ -1461,7 +1569,7 @@ s      Tell the data set which file to read
     This will be where we actually discriminate between node types, etc.  But as mentioned for BuildArms, we don't do that yet.  
   */ 
     void FindEndOfArm(FullNodeIterator &firstNode, FullNode **oFoundEndNode, 
-                      const ArmSegment *firstSegment, const ArmSegment *&foundEndSegment
+                      ArmSegment *firstSegment,  ArmSegment *&foundEndSegment
 #ifdef DEBUG
 , Arm &theArm
 #endif
@@ -1477,7 +1585,9 @@ s      Tell the data set which file to read
     */ 
     void ClassifyArms(void); 
 
-    /*!
+    void ComputeArmLengths(void); 
+
+   /*!
       Identify all useless nodes, which are out of bounds and have no in-bounds neighbors.  Then delete all segments connecting two useless nodes.  Finally, delete all useless nodes.  
     */ 
     void DeleteUselessNodesAndSegments(void); 
@@ -1574,6 +1684,12 @@ s      Tell the data set which file to read
       number of processors for parallelism.  If zero or one, then serial. 
     */ 
     int mNumProcs; 
+    /*!
+      A hack to get at some interesting linked loops for Moono Rhee. 
+      If an arm is less than a certain length, then he assumes
+      it is part of a particular loop configuration I call a "linked loop."  
+    */ 
+    double mThreshold; 
   };
 
 

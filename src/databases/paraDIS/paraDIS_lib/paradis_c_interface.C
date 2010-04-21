@@ -24,6 +24,11 @@ static paraDIS::DataSet *gDataSet = NULL;
     return; 
   }
   
+  void paraDIS_SetThreshold(double threshold){
+    PARADIS_INIT;
+    gDataSet->SetThreshold(threshold); 
+    return; 
+  }
   void paraDIS_EnableDebugOutput(int truth){
     PARADIS_INIT;
     gDataSet->EnableDebugOutput(truth); 
