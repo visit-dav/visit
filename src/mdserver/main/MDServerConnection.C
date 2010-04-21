@@ -176,6 +176,7 @@ avtDatabase    *MDServerConnection::currentDatabase;
 std::string     MDServerConnection::currentDatabaseName;
 int             MDServerConnection::currentDatabaseTimeState = 0;
 bool            MDServerConnection::currentDatabaseHasInvariantMD = true;
+std::map<std::string, std::string> MDServerConnection::filePlugins;
 MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 
 // ****************************************************************************
@@ -685,12 +686,19 @@ MDServerConnection::GetPluginErrors()
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Jeremy Meredith, Wed Apr 21 14:43:54 EDT 2010
+//   Added some smarts to save the plugin used to open a file and re-use it
+//   when needed.  This helps in cases where we thrash between open files
+//   (the GUI and Viewer currently have logic to do this too, but sometimes
+//   their requests compete since we can only have one "open" file here).
+//
 // ****************************************************************************
 
 void
 MDServerConnection::ReadMetaData(std::string file, int timeState,
                                  bool forceReadAllCyclesAndTimes,
-                                 std::string forcedFileType,
+                                 std::string forcedFileType_,
                                  bool treatAllDBsAsTimeVarying,
                                  bool createMeshQualityExpressions,
                                  bool createTimeDerivativeExpressions,
@@ -702,7 +710,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     debug2 << "Read the Metadata for " << file.c_str()
            << ", timeState=" << ts
            << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
-           << ", forcedFileType=" << forcedFileType
+           << ", forcedFileType=" << forcedFileType_
            << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
            << ", createMeshQualityExpressions = " 
            << createMeshQualityExpressions
@@ -726,9 +734,20 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     avtDatabase *db = NULL;
     TRY
     {
+        // If we aren't told which type to use, override it
+        // with any saved plugin name.
+        std::string forcedFileType(forcedFileType_);
+        if (forcedFileType == "" && filePlugins.count(file) > 0)
+            forcedFileType = filePlugins[file];
+
+        // Now forget which plugin was used to open it.
+        // If it was somehow wrong, we want to let them pick another.
+        // And if it was correct, it will get re-set momentarily....
+        filePlugins.erase(file);
+
         int t0 = visitTimer->StartTimer();
         db = GetDatabase(file, ts, forceReadAllCyclesAndTimes,
-                 plugins, forcedFileType, treatAllDBsAsTimeVarying);
+                 plugins, forcedFileType_, treatAllDBsAsTimeVarying);
         visitTimer->StopTimer(t0, "Get database from inside ReadMetaData");
     }
     CATCH2(VisItException, e)
@@ -746,6 +765,10 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
             currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes,
                                               treatAllDBsAsTimeVarying);
             visitTimer->StopTimer(t0, "Get metadata from inside ReadMetaData");
+
+            // Cache the file type 
+            if (currentMetaData)
+                filePlugins[file] = currentMetaData->GetFileFormat();
         }
         CATCHALL
         {
@@ -2747,13 +2770,19 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Brad Whitlock, Tue Jun 24 16:12:31 PDT 2008
 //    Pass the database plugin manager to the avtDatabaseFactory.
 //
+//    Jeremy Meredith, Wed Apr 21 14:43:54 EDT 2010
+//    Added some smarts to save the plugin used to open a file and re-use it
+//    when needed.  This helps in cases where we thrash between open files
+//    (the GUI and Viewer currently have logic to do this too, but sometimes
+//    their requests compete since we can only have one "open" file here).
+//
 // ****************************************************************************
 
 avtDatabase *
 MDServerConnection::GetDatabase(string file, int timeState,
                                 bool forceReadAllCyclesAndTimes,
                                 std::vector<std::string> &plugins,
-                                string forcedFileType,
+                                string forcedFileType_,
                                 bool treatAllDBsAsTimeVarying)
 {
     //
@@ -2777,9 +2806,15 @@ MDServerConnection::GetDatabase(string file, int timeState,
                << ". file=" << file.c_str()
                << ", timeState=" << timeState
                << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
-               << ", forcedFileType=" << forcedFileType
+               << ", forcedFileType=" << forcedFileType_
                << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
                << endl;
+
+        // If we aren't told which type to use, override it
+        // with any saved plugin name.
+        std::string forcedFileType(forcedFileType_);
+        if (forcedFileType == "" && filePlugins.count(file) > 0)
+            forcedFileType = filePlugins[file];
 
         if (currentDatabase != NULL)
         {
@@ -2936,6 +2971,16 @@ MDServerConnection::GetDatabase(string file, int timeState,
 //   filter is preserved so we can reliably recreate the list of files later,
 //   if needed.
 //
+//   Jeremy Meredith, Wed Apr 21 14:43:54 EDT 2010
+//   Added some smarts to save the plugin used to open a file and re-use it
+//   when needed.  This helps in cases where we thrash between open files
+//   (the GUI and Viewer currently have logic to do this too, but sometimes
+//   their requests compete since we can only have one "open" file here).
+//   Here, we just clean out the plugin from the cache unconditionally.
+//   If this "close" came as part of a re-open, or some case where we didn't
+//   want to clear it out, only the GUI/Viewer know that -- but in that case
+//   we can rely on their existing logic to pass the correct plugin to us.
+//
 // ****************************************************************************
 
 void
@@ -2959,6 +3004,8 @@ MDServerConnection::CloseDatabase(const std::string &db)
                   "repopulate it later." << endl;
         virtualFile->second.files.clear();
     }
+
+    filePlugins.erase(dbToClose);
 
     if (closeCurrentDB && currentDatabase != NULL)
     {
