@@ -350,6 +350,7 @@ private:
     static int                        currentDatabaseTimeState;
     static bool                       currentDatabaseHasInvariantMD;
     static VirtualFileInformationMap  virtualFiles;
+    static std::map<std::string, std::string> filePlugins;
 
     avtDatabase               *GetDatabase(std::string, int timeState,
                                            bool forceReadAllCyclesAndTimes,
