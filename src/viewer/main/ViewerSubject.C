@@ -10355,6 +10355,11 @@ CleanHostProfileCallback(void *hpl,
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Wed Apr 21 11:29:10 EDT 2010
+//   If we're reading something with the same nickname, overwrite the old one.
+//   This allows user-saved profiles to override system ones.
+//
 // ****************************************************************************
 static void
 ReadHostProfileCallback(void *hpl,
@@ -10379,7 +10384,19 @@ ReadHostProfileCallback(void *hpl,
     SingleAttributeConfigManager mgr(&mp);
     mgr.Import(file);
     mp.SelectAll();
-    profileList->AddMachines(mp);
+    bool found = false;
+    for (int i=0; i<profileList->GetNumMachines(); i++)
+    {
+        MachineProfile &mpold(profileList->GetMachines(i));
+        if (mpold.GetHostNickname() == mp.GetHostNickname())
+        {
+            found = true;
+            mpold = mp;
+            break;
+        }
+    }
+    if (!found)
+        profileList->AddMachines(mp);
     profileList->SelectMachines();
 }
                              
