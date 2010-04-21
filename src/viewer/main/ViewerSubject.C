@@ -241,6 +241,9 @@ using std::string;
 //    Brad Whitlock, Tue Apr 14 11:47:41 PDT 2009
 //    I moved many members into ViewerProperties.
 //
+//    Jeremy Meredith, Wed Apr 21 13:19:50 EDT 2010
+//    Save a copy of the original system host profiles.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0), 
@@ -312,6 +315,7 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     configMgr = new ViewerConfigManager(this);
     systemSettings = 0;
     localSettings = 0;
+    originalSystemHostProfileList = 0;
 
     //
     // Initialize pointers to some objects that don't get created until later.
@@ -369,6 +373,9 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
 //    Brad Whitlock, Tue Apr 14 11:21:46 PDT 2009
 //    Delete viewer properties.
 //
+//    Jeremy Meredith, Wed Apr 21 13:20:11 EDT 2010
+//    Delete original system host profile list.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -384,6 +391,7 @@ ViewerSubject::~ViewerSubject()
     delete operatorFactory;
     delete configMgr;
     delete syncObserver;
+    delete originalSystemHostProfileList;
 
     delete GetViewerProperties();
     delete GetViewerState();
@@ -2306,6 +2314,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
 //    Host profiles are now handles outside the config manager.
 //
+//    Jeremy Meredith, Wed Apr 21 13:20:28 EDT 2010
+//    Save a copy of the original host profiles loaded from the system dir.
+//
 // ****************************************************************************
 
 void
@@ -2383,9 +2394,16 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     configMgr->ProcessConfigSettings(systemSettings);
     configMgr->ProcessConfigSettings(localSettings);
     configMgr->ClearSubjects();
-    ReadAndProcessDirectory(GetAndMakeSystemVisItHostsDirectory(),
+
+    // And do the host profiles.  Keep the system one around
+    // so we can see what the user changed and that we have to keep.
+    if (originalSystemHostProfileList != NULL)
+        delete originalSystemHostProfileList;
+    originalSystemHostProfileList = new HostProfileList;
+    ReadAndProcessDirectory(GetSystemVisItHostsDirectory(),
                             &ReadHostProfileCallback,
-                            GetViewerState()->GetHostProfileList());
+                            originalSystemHostProfileList);
+    *(GetViewerState()->GetHostProfileList()) = *originalSystemHostProfileList;
     ReadAndProcessDirectory(GetAndMakeUserVisItHostsDirectory(),
                             &ReadHostProfileCallback,
                             GetViewerState()->GetHostProfileList());
@@ -5945,10 +5963,13 @@ ViewerSubject::ExportColorTable()
 //    Use ViewerProperties.
 //
 //    Jeremy Meredith, Thu Feb 18 15:39:42 EST 2010
-//    Host profiles are now handles outside the config manager.
+//    Host profiles are now handled outside the config manager.
 //
 //    Jeremy Meredith, Fri Feb 19 13:29:24 EST 2010
 //    Make sure host profile filenames are unique.
+//
+//    Jeremy Meredith, Wed Apr 21 13:15:09 EDT 2010
+//    Only write out host profiles users have changed.
 //
 // ****************************************************************************
 
@@ -5986,7 +6007,7 @@ ViewerSubject::WriteConfigFile()
     //
     string userdir = GetAndMakeUserVisItHostsDirectory();
     HostProfileList *hpl = GetViewerState()->GetHostProfileList();
-    ReadAndProcessDirectory(userdir, &CleanHostProfileCallback, hpl);
+    ReadAndProcessDirectory(userdir, &CleanHostProfileCallback);
     // Make a filename-safe version of the nicknames
     stringVector basenames;
     int n = hpl->GetNumMachines();
@@ -6019,10 +6040,22 @@ ViewerSubject::WriteConfigFile()
             basenames[i] += tmp;
         }
     }
-    // Write them out
+    // Write them out if they are different
     for (int i=0; i<hpl->GetNumMachines(); i++)
     {
         MachineProfile &pl = hpl->GetMachines(i);
+        bool changedFromOriginal = false;
+        for (int j=0; j<originalSystemHostProfileList->GetNumMachines(); j++)
+        {
+            MachineProfile &origpl(originalSystemHostProfileList->GetMachines(j));
+            if (origpl.GetHostNickname() == pl.GetHostNickname())
+            {
+                if (pl != origpl)
+                    changedFromOriginal = true;
+            }
+        }
+        if (!changedFromOriginal)
+            continue;
         string filename = userdir + VISIT_SLASH_STRING +
                           "host_" + basenames[i] + ".xml";
         SingleAttributeConfigManager mgr(&pl);
@@ -10307,7 +10340,6 @@ ViewerSubject::SetNowinMode(bool value)
 //   Callback for directory processing.  Unlinks old host profiles.
 //
 // Arguments:
-//   hpl        the host profile list to load into
 //   file       the current filename
 //   isdir      true if it's a directory
 //
@@ -10316,13 +10348,12 @@ ViewerSubject::SetNowinMode(bool value)
 //
 // ****************************************************************************
 static void
-CleanHostProfileCallback(void *hpl,
+CleanHostProfileCallback(void *,
                          const string &file,
                          bool isdir,
                          bool canaccess,
                          long size)
 {
-    HostProfileList *profileList = (HostProfileList*)hpl;
     if (isdir)
         return;
     string base = StringHelpers::Basename(file.c_str());

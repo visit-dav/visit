@@ -1416,6 +1416,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
+//   Jeremy Meredith, Wed Apr 21 13:17:58 EDT 2010
+//   If the username in the window is the same one we would have gotten
+//   anyway, set the internal value back to the default "notset".
+//
 // ****************************************************************************
 
 bool
@@ -1479,7 +1483,10 @@ QvisHostProfileWindow::GetCurrentValues()
         temp = temp.trimmed();
         if(!temp.isEmpty())
         {
-            currentMachine->SetUserName(std::string(temp.toStdString()));
+            if (temp.toStdString() == GetViewerProxy()->GetLocalUserName())
+                currentMachine->SetUserName("notset");
+            else
+                currentMachine->SetUserName(std::string(temp.toStdString()));
         }
         else
         {

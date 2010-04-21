@@ -64,6 +64,7 @@ class QTimer;
 
 class BufferConnection;
 class DataNode;
+class HostProfileList;
 class SILAttributes;
 class ViewerActionBase;
 class ViewerClientConnection;
@@ -480,6 +481,10 @@ class avtDefaultPlotMetaData;
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Jeremy Meredith, Wed Apr 21 13:19:16 EDT 2010
+//    Save a copy of the host profiles we loaded from the system
+//    installation directory, so we know if a user changed anything.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -764,6 +769,8 @@ private:
     ViewerConfigManager   *configMgr;
     DataNode              *systemSettings;
     DataNode              *localSettings;
+
+    HostProfileList       *originalSystemHostProfileList;
 
     ViewerMessageBuffer   *messageBuffer;
     int                    messagePipe[2];

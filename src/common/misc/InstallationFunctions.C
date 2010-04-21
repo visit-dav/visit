@@ -374,7 +374,7 @@ GetAndMakeUserVisItHostsDirectory()
 }
 
 // ****************************************************************************
-// Method:  GetAndMakeUserVisItHostsDirectory
+// Method:  GetUserVisItHostsDirectory
 //
 // Purpose:
 //   Returns the path to the visit installation directory's
@@ -386,18 +386,18 @@ GetAndMakeUserVisItHostsDirectory()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Wed Apr 21 13:02:53 EDT 2010
+//   Don't mkdir the system hosts directory.  If it doesn't exist, no problem;
+//   we're never going to write into it.  Only the installer does that.
+//
 // ****************************************************************************
 std::string
-GetAndMakeSystemVisItHostsDirectory()
+GetSystemVisItHostsDirectory()
 {
     const char *defConfig = GetDefaultConfigFile("hosts", "VISITHOME");
     std::string retVal(defConfig);
     delete [] defConfig;
-#if defined(_WIN32)
-    mkdir(retVal.c_str());
-#else
-    mkdir(retVal.c_str(), 0777);
-#endif
     return retVal;
 }
 
