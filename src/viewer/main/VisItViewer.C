@@ -408,7 +408,11 @@ VisItViewer::Setup()
     // managers based on the current directory.
     if(getenv("VISITPLUGINDIR") == NULL)
     {
-        std::string pluginDir(GetVisItHome() + "/plugins");
+
+        std::string pluginDir(GetVisItHome());
+#ifndef WIN32
+        pluginDir += "/plugins";
+#endif
 
         viewer->GetOperatorPluginManager()->SetPluginDir(pluginDir.c_str());
         viewer->GetPlotPluginManager()->SetPluginDir(pluginDir.c_str());
