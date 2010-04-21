@@ -1404,6 +1404,46 @@ IF(NOT WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
     ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
 ENDIF(NOT WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
+#-----------------------------------------------------------------------------
+# Create library dependencies file
+#-----------------------------------------------------------------------------
+EXPORT_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake.in)
+
+INSTALL(CODE "
+FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
+    FILE(STRINGS \${filename}.in lines)
+    FILE(WRITE \${filename} \"# Filtered version\\n\")
+    FOREACH(line \${lines})
+        SET(outputLine TRUE)
+        IF(\"\${line}\" MATCHES \".*Plot[_ser|_par]*_LIB_DEPENDS.*\")
+            SET(outputLine FALSE)
+        ENDIF(\"\${line}\" MATCHES \".*Plot[_ser|_par]*_LIB_DEPENDS.*\")
+        IF(\"\${line}\" MATCHES \".*Operator[_ser|_par]*_LIB_DEPENDS.*\")
+            SET(outputLine FALSE)
+        ENDIF(\"\${line}\" MATCHES \".*Operator[_ser|_par]*_LIB_DEPENDS.*\")
+        IF(\"\${line}\" MATCHES \".*Database[_ser|_par]*_LIB_DEPENDS.*\")
+            SET(outputLine FALSE)
+        ENDIF(\"\${line}\" MATCHES \".*Database[_ser|_par]*_LIB_DEPENDS.*\")
+        FOREACH(suppress visit_writer visitfrontend visitmodule proxyexample bow slivrG slivrV air alan bane biff coil dye echo ell gage hest hoover limn mite moss nrrd push ten unrrdu)
+            IF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
+                SET(outputLine FALSE)
+            ENDIF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
+        ENDFOREACH(suppress)
+        IF(\${outputLine} STREQUAL \"TRUE\")
+            FILE(APPEND \${filename} \"\${line}\\n\")
+        ENDIF(\${outputLine} STREQUAL \"TRUE\")
+    ENDFOREACH(line)
+ENDFUNCTION(FILTER_LIBRARY_DEPENDENCIES)
+FILTER_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake)
+")
+
+INSTALL(FILES ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+        PERMISSIONS OWNER_READ OWNER_WRITE 
+                    GROUP_READ GROUP_WRITE 
+                    WORLD_READ             
+        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+)
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
