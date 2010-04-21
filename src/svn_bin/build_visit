@@ -874,6 +874,10 @@
 #     Add --cflag, --cxxflag.  These *append* a specific flag.
 #     Getting '--cflags' to quote reliably is a nightmare.
 #
+#     Cyrus Harrison, Tue Apr 20 17:03:10 PDT 2010
+#     Add support for setting up MPI_INCLUDE_PATH for ice-t via
+#     PAR_COMPILER. Includes special case for osx w/ default mpic++.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -7819,9 +7823,23 @@ function build_tcmalloc
 
 function build_icet
 {
-    if [[ "$PAR_INCLUDE" == "" ]] ; then
-       warn "You must set the PAR_INCLUDE environment variable to be Ice-T."
-       warn "It should be of the form \"-I/path/to/mpi/include\""
+    PAR_INCLUDE_STRING=""
+    if [[ "$PAR_INCLUDE" != "" ]] ; then
+        PAR_INCLUDE_STRING=$PAR_INCLUDE
+    fi
+    
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpic++" ]]; then
+            PAR_INCLUDE_STRING="-I/usr/include/"
+        else
+            PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`    
+        fi
+    fi
+    
+    if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
+       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Ice-T."
+       warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpic++\""
+       warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
        warn "Giving Up!"
        return 1
     fi
@@ -7837,7 +7855,7 @@ function build_icet
 
     # split string at space, grab the front/first string in it.
     PAR_INCLUDE_DIR=""
-    for arg in $PAR_INCLUDE ; do
+    for arg in $PAR_INCLUDE_STRING ; do
        if [[ "$arg" != "${arg#-I}" ]] ; then
           PAR_INCLUDE_DIR=${arg#-I}
           break
@@ -7852,7 +7870,7 @@ function build_icet
         if test -n "${PAR_INCLUDE}" ; then
             error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
         else
-            error "You need to specify the PAR_INCLUDE variable.  On many "
+            error "You need to specify either PAR_COMPILER or PAR_INCLUDE variable.  On many "
                   " systems, the output of \"mpicxx -showme\" is good enough."
             error ""
         fi
