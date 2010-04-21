@@ -183,8 +183,8 @@ ADD_SIMV2_SIMULATION(amr amr.C patch.C)
 
 ADD_SIMV2_SIMULATION(csg csg.c)
 
-ADD_SIMV1_SIMULATION(curve curve.c)
-ADD_FORTRAN_SIMV1_SIMULATION(fcurve fcurve.f)
+ADD_SIMV2_SIMULATION(curve curve.c)
+ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
 
 ADD_SIMV2_SIMULATION(interleave interleave.c)
 
@@ -194,12 +194,12 @@ ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
 ADD_SIMV2_SIMULATION(mesh mesh.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmesh fmesh.f)
 
-ADD_SIMV1_SIMULATION(point point.c)
-ADD_FORTRAN_SIMV1_SIMULATION(fpoint fpoint.f)
+ADD_SIMV2_SIMULATION(point point.c)
+ADD_FORTRAN_SIMV2_SIMULATION(fpoint fpoint.f)
 
 ADD_SIMV2_SIMULATION(polyhedral polyhedral.c)
 
-ADD_SIMV1_SIMULATION(scalar scalar.c)
+ADD_SIMV2_SIMULATION(scalar scalar.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fscalar fscalar.f)
 ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION(fscalarp fscalarp.f)
 
