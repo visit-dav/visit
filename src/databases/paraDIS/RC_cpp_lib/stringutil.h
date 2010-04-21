@@ -1,14 +1,18 @@
 #ifndef TSB_STRING_UTIL_H
 #define TSB_STRING_UTIL_H
 #include <string>
-#include <string.h>
+#include <string>
 #include <stdio.h>
 #include <algorithm>
+#include <inttypes.h>
+//#include "RCDebugStream.h"
+
 using namespace std; 
 
 #define errout if (0) cerr
 #define debugout if (0) cerr
 
+  
 //===============================================================
 inline vector<string> Split(const string &s, char delimchar = ' ') {
   vector <string> sv; 
@@ -151,12 +155,27 @@ inline string applyPatternToString(string pattern, string s) {
   return out; 
 }
 
-// operator string() cannot be overloaded for ints and doubles, so:
-inline std::string doubleToString(double d){
-  char buf[128] = "";
-  sprintf(buf, "%g", d);
+
+// operator string() cannot be overloaded for doubles, so:
+inline std::string doubleToString(double d, int precision=-1){
+  char buf[128] = "", fmt[1024] = "%f";
+  if (precision != -1) 
+    sprintf(fmt, "%%.%df", precision); 
+  
+  sprintf(buf, fmt, d);    
   std::string s(buf);
   return s; 
+}
+
+// operator string() cannot be overloaded for ints
+inline std::string intToString(double i) {
+  return doubleToString(i, 0); 
+
+  /*  char buf[128] = "";
+  sprintf(buf, "%d", i);    
+  std::string s(buf);
+  return s; 
+  */
 }
 
 inline std::string pointerToString(const void *ptr) {
@@ -226,95 +245,5 @@ string arrayToString(T *array, int length) {
 }
 //==========================================================================
 
-
-//==========================================================================
-#ifndef NO_BOOST
-#include "boost/tokenizer.hpp"
-#include "boost/format.hpp"
-#ifndef tokenizer
-#define tokenizer tokenizer<boost::char_separator<char> >
-#endif
-using namespace boost; 
-
-//==========================================================================
-
-//============================================
-// more robust form of strtod;  accepts weird FORTRAN case like this: 
-// -0.300000000000000D+01 as well as "normal" cases like this: 3.0
-template <class T> 
-T stringToNum(string &inString, T &num) {
-  num = static_cast<T>(strtod(inString.c_str(), NULL));  //gets most of the cases  
-  boost::char_separator<char> sep("D");
-  tokenizer  tokens(inString, sep);
-  tokenizer::iterator pos = tokens.begin(); 
-  if (++pos != tokens.end()) {     
-    double exponent = strtod((*pos).c_str(), NULL); 
-    if (exponent > 0) {
-      while (exponent-- > 0)
-    num *= 10; 
-    } else {
-      while (exponent++ < 0)
-    num /= 10; 
-    }      
-  }
-  return num; 
-}
-
-// ====================================
-// different way to access stringToNum
-/*template <class T> 
-void stringToNum(string &inString, T &num) {
-  num = static_cast<T>(stringToNum(inString)); 
-  return; 
-}
-*/
-
-//============================================
-/* Useful if you happen to be parsing a line in a file with a tokenizer and expect a series of numbers or a point to be next in the tokenizer sequence:
- */
-template <class T> 
-void GetNumsFromTokenizer(const tokenizer &inTokens, tokenizer::iterator &inPos, int inNumVals, vector<T> &outValues) {
-              
-  tokenizer::iterator endpos = inTokens.end(); 
-  debugout << "GetNumsFromString values are [" ; 
-  int i=0; while (i<inNumVals){
-    T num; 
-    string value(*inPos); 
-    if (inPos == endpos)
-      throw string("Missing expected value from given tokens"); 
-    stringToNum<T>(value, num);
-    outValues.push_back(num);
-    debugout << num; 
-    if (i!=inNumVals-1) {
-      debugout << ", ";
-    } else {
-      debugout << "]" << endl; 
-    }
-    ++i; ++inPos;
-  }
-  return;
-}
-//============================================
-// given a string, use a tokenizer to extract some numbers
-/* example separator to choose field delimiters: 
-   boost::char_separator<char> sep("()[] ,-");
-*/
-template <class T> 
-void GetNumsFromString(const string &inString, int inNumVals, vector<T> &outValues) {
-  const boost::char_separator<char> delims("()[] ,-");//delimiters
-  tokenizer tokens(inString, delims);
-  tokenizer::iterator pos = tokens.begin(), endpos = tokens.end(); 
-  try {
-    GetNumsFromTokenizer(tokens, pos, inNumVals, outValues); 
-  } catch (string err) {
-    throw string("Error in GetNumsFromString with string \"")+inString+string("\": ")+err;
-  }
-
-  return; 
-}
-
-
-
-#endif // end ifndef NO_TOKENIZER
 
 #endif
