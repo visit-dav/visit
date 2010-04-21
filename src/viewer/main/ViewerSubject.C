@@ -2316,6 +2316,7 @@ ViewerSubject::GetOperatorFactory() const
 //
 //    Jeremy Meredith, Wed Apr 21 13:20:28 EDT 2010
 //    Save a copy of the original host profiles loaded from the system dir.
+//    Don't read any host profiles if they passed -noconfig.
 //
 // ****************************************************************************
 
@@ -2397,16 +2398,21 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 
     // And do the host profiles.  Keep the system one around
     // so we can see what the user changed and that we have to keep.
-    if (originalSystemHostProfileList != NULL)
-        delete originalSystemHostProfileList;
-    originalSystemHostProfileList = new HostProfileList;
-    ReadAndProcessDirectory(GetSystemVisItHostsDirectory(),
-                            &ReadHostProfileCallback,
-                            originalSystemHostProfileList);
-    *(GetViewerState()->GetHostProfileList()) = *originalSystemHostProfileList;
-    ReadAndProcessDirectory(GetAndMakeUserVisItHostsDirectory(),
-                            &ReadHostProfileCallback,
-                            GetViewerState()->GetHostProfileList());
+    if (!GetViewerProperties()->GetNoConfig())
+    {
+        if (originalSystemHostProfileList != NULL)
+            delete originalSystemHostProfileList;
+        originalSystemHostProfileList = new HostProfileList;
+        ReadAndProcessDirectory(GetSystemVisItHostsDirectory(),
+                                &ReadHostProfileCallback,
+                                originalSystemHostProfileList);
+        *(GetViewerState()->GetHostProfileList()) =
+                                                *originalSystemHostProfileList;
+        ReadAndProcessDirectory(GetAndMakeUserVisItHostsDirectory(),
+                                &ReadHostProfileCallback,
+                                GetViewerState()->GetHostProfileList());
+    }
+
     visitTimer->StopTimer(timeid, "Reading config files.");
 }
 
