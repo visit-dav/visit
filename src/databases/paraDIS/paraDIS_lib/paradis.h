@@ -41,13 +41,13 @@
 
    ------------------------------------------------------------------ 
  
-   5) ADDED, and DONE BUT UNTESTED:  The data is periodic.  Go back and find all segments that connect two nodes such that if one is "wrapped" around any boundary of the data, it is closer to the other end than if it is not so wrapped.  Each such segment found requires creation of one new segment and two new "wrapped" nodes.  "wrapped" nodes are those created for this purpose, which lie on the intersection of the segment with the bounds of the subspace. When done, the wrapped segment, which normally would draw a crazy line all the way across the data, is replaced with two new segments that are one data space apart from each other. 
+   5) DONE:  The data is periodic.  Go back and find all segments that connect two nodes such that if one is "wrapped" around any boundary of the data, it is closer to the other end than if it is not so wrapped.  Each such segment found requires creation of one new segment and two new "wrapped" nodes.  "wrapped" nodes are those created for this purpose, which lie on the intersection of the segment with the bounds of the subspace. When done, the wrapped segment, which normally would draw a crazy line all the way across the data, is replaced with two new segments that are one data space apart from each other. 
 
    ------------------------------------------------------------------  
 
-   6)  DONE, BUT PROBABLY NEED TO FIX FOR NEW METHODS...  
-   We can now create all arms for our region. 
-   IN THE FUTURE, to save memory, we will implement the following: 
+   6)  DONE, BUT COMMENTED OUT AS DESTRUCTIVE
+   We no longer do this.  All FullNodes are kept, in bounds or not.  This is because deleting "useless" nodes was causing significant portions of arms to not get drawn, and there is no point to this.  Parallelism will proceed by another mechanism. 
+   IN THE FUTURE, to save memory, we could implement the following: 
    Segments that connect two PartialNodes are PartialSegments.  Segments that connect two OOB FullNodes are CollapsedSegments.  Segments that connect an IB FullNode to another node are FullSegments.  Only FullSegments are drawn. 
    HOWEVER, For the first implementation, we will not distinguish between Partial and Full Segments, and we will not even collapse arms, so that we can get a good view of what things are like.  After it is clear that we are making sensible things, we can collapse arms to save memory. 
 
@@ -133,7 +133,7 @@ namespace paraDIS {
       for ordering sets and hash lookups 
     */ 
     bool operator == (const NodeID &other) const {
-      return mDomainID == other.mDomainID && mNodeID == other.mNodeID;
+      return (mDomainID == other.mDomainID && mNodeID == other.mNodeID);
     }
 
     /*!
@@ -174,9 +174,9 @@ namespace paraDIS {
     */ 
     std::string Stringify(void) const {
       std::string s("NodeID: (domain id, node id) = (");
-      s += doubleToString(mDomainID);
+      s += intToString(mDomainID);
       s +=  ", ";
-      s += doubleToString(mNodeID);
+      s += intToString(mNodeID);
       s += ")";
       return s; 
     }
@@ -392,11 +392,11 @@ namespace paraDIS {
     */ 
     virtual std::string Stringify(bool showneighbors=false) const {
       std::string s =std::string("MinimalNode: ")+Node::Stringify() + string("\nClassification: ") + string(mKeep?"KEEP":"DON'T KEEP") + string("\n");  
-      s += (doubleToString(mNeighbors.size()) + " neighbors --------------:\n");
+      s += (intToString(mNeighbors.size()) + " neighbors --------------:\n");
       uint32_t n = 0; 
       if (showneighbors) {
         while (n < mNeighbors.size()) {
-          s += "neighbor " + doubleToString(n) + ": "; 
+          s += "neighbor " + intToString(n) + ": "; 
           if (mNeighbors[n]) {
             s += mNeighbors[n]->Stringify() + "\n"; 
           } else {
@@ -530,12 +530,22 @@ namespace paraDIS {
     /*!
       Compute the distance to another node
     */
-    double Distance(const FullNode &other) { 
-      double dx = mLocation[0]-other.mLocation[0],  
+    double Distance(const FullNode &other, bool wrap=false) { 
+      double dist[3] = {0}, sum=0; 
+      int i=3; while (i--) {
+        dist[i] = mLocation[i] - other.mLocation[i]; 
+        if (wrap && fabs(dist[i]) > mBoundsSize[i]/2.0) {
+          dist[i] = mBoundsSize[i] - fabs(dist[i]); 
+        }
+        sum += dist[i]*dist[i]; 
+      }
+      return sqrt(sum); 
+      /*
+        double dx = mLocation[0]-other.mLocation[0],  
         dy = mLocation[1]-other.mLocation[1],        
         dz = mLocation[2]-other.mLocation[2];         
-      
-      return sqrt(dx*dx + dy*dy + dz*dz); 
+        return sqrt(dx*dx + dy*dy + dz*dz); 
+      */ 
     } 
     /*!
       Accessor function.  
@@ -614,6 +624,7 @@ namespace paraDIS {
     static void SetBounds(rclib::Point<float> &min, rclib::Point<float> &max) {
       mBoundsMin = min; 
       mBoundsMax = max; 
+      mBoundsSize = max-min; 
     }
 
     /*!
@@ -672,7 +683,7 @@ namespace paraDIS {
     /*!
       Static member to keep track of subspace bounds for checking if we are in bounds or not
     */ 
-    static rclib::Point<float> mBoundsMin, mBoundsMax; 
+    static rclib::Point<float> mBoundsMin, mBoundsMax, mBoundsSize; 
 
   }; /* end FullNode */  
   
@@ -780,7 +791,7 @@ namespace paraDIS {
     }
 
     /*!      
-      For each wrapped segment, there is an identical unwrapped segment with the same node ID's.  One of each such pair of segments has a ghost endpoint with ID greater than one of its nodes and equal to the other, and one has a ghost endpoint with ID less than one of its nodes and equal to the other. This function returns true for one of them and not the other.  
+      For each wrapped segment, there is an identical unwrapped segment with the same node ID's.  One of each such pair of segments has a ghost endpoint with ID greater than one of its nodes and equal to the other, and one has a ghost endpoint with ID less than one of its nodes and equal to the other. This function returns true for one of them and not the other.  Used in counting total segment lengths.  
     */
     bool Cullable(void) { 
       if (mGhostEndpoints.size() > 1) {
@@ -800,12 +811,13 @@ namespace paraDIS {
     int8_t GetMNType(void) const { return mMNType; } 
 
     void SetMNType(int8_t val)  {  mMNType=val; } 
+
     /*!
       Return the distance between the endpoints
-    */
-    double GetLength(void) const { 
-      return mEndpoints[0]->Distance(*mEndpoints[1]); 
-    }
+    */ 
+    double GetLength(bool wrap=false) const { 
+      return mEndpoints[0]->Distance(*mEndpoints[1], wrap); 
+    } 
       
     /*!
       Accessor function
@@ -857,17 +869,17 @@ namespace paraDIS {
     std::string Stringify(void) const {
       string s(string("ArmSegment at ") + pointerToString(this) +  
 #ifdef DEBUG
-               " number " + doubleToString(mSegmentID) + 
+               " number " + intToString(mSegmentID) + 
 #endif
-               ": \nBurgersType: " + doubleToString(mBurgersType)+", length: "+doubleToString(GetLength())+"\n");
+               ": \nBurgersType: " + intToString(mBurgersType)+", length: "+doubleToString(GetLength())+"\n");
       uint32_t epnum = 0; while (epnum < 2) {
-        s+= "ep"+doubleToString(epnum)+": "; 
+        s+= "ep "+intToString(epnum)+": "; 
         if (mEndpoints[epnum]) s+= mEndpoints[epnum]->Stringify(); 
         else s+= "(NULL)"; 
         epnum++; 
       }
       epnum = 0; while (epnum < mGhostEndpoints.size()) {
-        s+= "GHOST ep"+doubleToString(epnum)+": ";
+        s+= "GHOST ep "+intToString(epnum)+": ";
         if (mGhostEndpoints[epnum]) {
           s+=mGhostEndpoints[epnum]->Stringify(); 
         } else {
@@ -896,7 +908,7 @@ namespace paraDIS {
     }
 
     /*! 
-      Called by a node as part of bookkeeping when wrapping a segment.  Make sure the given node is one of our neighbors -- add it if not
+      Called by a node as part of bookkeeping when wrapping a segment.  Make sure the given node is one of our endpoints -- add it as a ghost if not
     */ 
     void ConfirmEndpoint(FullNode *ep)  {
       if (mEndpoints[0] == ep || mEndpoints[1] == ep) return ; 
@@ -947,6 +959,9 @@ namespace paraDIS {
       If not, then  goes through and removes all the leftover crappy useless endpoints from our ghost endpoints, since they will just be deleted and become dangling references anyhow.  The returns false. 
     */ 
     bool IsUseless(void) const {
+      // I don't remember why we consider any nodes useless.. Let's keep everything. 
+      return false; 
+
       if( mEndpoints[0]->GetNodeType() == USELESS_NODE ||
           mEndpoints[1]->GetNodeType() == USELESS_NODE || 
           (!mEndpoints[0]->InBounds() && ! mEndpoints[1]->InBounds())) {  
@@ -1190,6 +1205,8 @@ namespace paraDIS {
     void CheckForLinkedLoops(void); 
 #endif
 
+    void ComputeLength(void); 
+
    /*!
       Classify the arm as one of NN, MN or MM, combined with 100 or 111...
     */ 
@@ -1199,6 +1216,8 @@ namespace paraDIS {
       Else, return false.
     */ 
     bool IsUseless(void) {
+      return false; 
+
      int segnum =  mTerminalSegments.size(); 
      bool useless = false; 
       while (segnum--) {
@@ -1219,7 +1238,7 @@ namespace paraDIS {
     /*! 
       Return the sum of the length of all segments in the arm
     */ 
-    double GetLength(void) { 
+    double GetLength(void) const { 
       return mArmLength; 
     }
 
@@ -1566,7 +1585,9 @@ s      Tell the data set which file to read
     */ 
     void ClassifyArms(void); 
 
-    /*!
+    void ComputeArmLengths(void); 
+
+   /*!
       Identify all useless nodes, which are out of bounds and have no in-bounds neighbors.  Then delete all segments connecting two useless nodes.  Finally, delete all useless nodes.  
     */ 
     void DeleteUselessNodesAndSegments(void); 

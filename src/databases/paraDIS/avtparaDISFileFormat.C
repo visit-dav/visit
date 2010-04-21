@@ -40,6 +40,8 @@
 // ************************************************************************* //
 #define NO_BOOST 1
 #include <avtparaDISFileFormat.h>
+#include <avtparaDISOptions.h>
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include "paradis_c_interface.h"
 #include "stringutil.h"
@@ -83,29 +85,35 @@ using     std::string;
 //
 // ****************************************************************************
  
-avtparaDISFileFormat::avtparaDISFileFormat(const char *filename)
+avtparaDISFileFormat::avtparaDISFileFormat(const char *filename,
+    DBOptionsAttributes *rdatts)
   : avtSTSDFileFormat(filename), 
-    mVerbosity(0), mFilename(filename) {
+    mVerbosity(0), mFilename(filename), mMaterialSetChoice(0) {
  
   paraDIS_init(); 
-  mVerbosity = DebugStream::GetLevel(); 
- 
+  // DebugStream::GetLevel doesn't exist in 1.12RC, so turning off
+  // debugging as a work around.  It does exist in the trunk, so 
+  // leave as follows in trunk.  Sigh.  
+  // mVerbosity = DebugStream::GetLevel(); 
+  mVerbosity = rdatts->GetInt(PARADIS_VERBOSITY); 
   string debugfile ; 
-  char *paradis_verbose = getenv("PARADIS_VERBOSE"); 
-  if (paradis_verbose) {
-    mVerbosity = atoi(paradis_verbose); 
-  }
-  
+
+  /*  if (debug1_real) mVerbosity++;
+  if (debug2_real) mVerbosity++;
+  if (debug3_real) mVerbosity++;
+  if (debug4_real) mVerbosity++;
+  if (debug5_real) mVerbosity++;
+  */
   if (mVerbosity) {
-    debugfile = "paradis_debug_out.log";
+    debugfile = rdatts->GetString(PARADIS_DEBUG_FILE);
   }
   paraDIS_SetVerbosity(mVerbosity, debugfile.c_str()); 
   /*!
     Write out files
   */ 
-  if (mVerbosity>2) paraDIS_EnableDebugOutput(true); 
+  paraDIS_EnableDebugOutput(rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT)); 
 
-  //dbg_setverbose(3); 
+  dbg_setverbose(mVerbosity); 
 
 #ifdef PARALLEL
   /*!  I keep this here to remind myself how to use MPI.  LOL
@@ -119,7 +127,10 @@ avtparaDISFileFormat::avtparaDISFileFormat(const char *filename)
   mProcNum = 0; 
   mNumProcs = 1; 
 #endif
-  // Adding a material to the mesh, which is the correct thing to do for int-valued data (discrete) as it allows subsetting to work
+
+  mMaterialSetChoice = rdatts->GetEnum(PARADIS_MATERIAL_SET_CHOICE); 
+  paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
+ // Adding a material to the mesh, which is the correct thing to do for int-valued data (discrete) as it allows subsetting to work
   // our own data members. 
   mSegmentMNTypes.clear(); 
   mSegmentMNTypes.push_back(string("ARM_UNKNOWN"));    
@@ -131,6 +142,8 @@ avtparaDISFileFormat::avtparaDISFileFormat(const char *filename)
   mSegmentMNTypes.push_back(string("ARM_MM_100"));
   mSegmentMNTypes.push_back(string("ARM_MN_100"));
   mSegmentMNTypes.push_back(string("ARM_NN_100"));
+  mSegmentMNTypes.push_back(string("ARM_SHORT_NN_111"));
+  mSegmentMNTypes.push_back(string("ARM_SHORT_NN_100"));
 
   mBurgersTypes.push_back(string("100 arm type"));    
   mBurgersTypes.push_back(string("010 arm type"));
@@ -230,11 +243,14 @@ bool avtparaDISFileFormat::PopulateParaDISMetaData(avtDatabaseMetaData *md){
     AddScalarVarToMetaData(md, "segmentEngine", "segments", AVT_ZONECENT);
   }
 
-
-  AddMaterialToMetaData(md, "Segment_Burgers_Type", "segments", 
-                        mBurgersTypes.size(), mBurgersTypes);
-  //AddMaterialToMetaData(md, "Segment_MN_Type", "segments", 
-  //                    mSegmentMNTypes.size(), mSegmentMNTypes);
+  // VisIt only allows one material set, so we have to let the user choose one
+  if (mMaterialSetChoice == 0) {
+    AddMaterialToMetaData(md, "Segment_Burgers_Type", "segments", 
+                          mBurgersTypes.size(), mBurgersTypes);
+  } else {
+    AddMaterialToMetaData(md, "Segment_MN_Type", "segments", 
+                          mSegmentMNTypes.size(), mSegmentMNTypes);
+  }
  
    /*!
     =======================================================

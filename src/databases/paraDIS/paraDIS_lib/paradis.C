@@ -26,7 +26,7 @@ namespace paraDIS {
 #ifdef DEBUG
   int32_t ArmSegment::mNextID = 0; 
   int32_t Arm::mNextID = 0; 
-  rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax; 
+  rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax, FullNode::mBoundsSize; 
 #endif
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
@@ -72,9 +72,9 @@ namespace paraDIS {
   std::string FullNode::Stringify(bool showneighbors) const {
     std::string s(string("(FullNode address )") + pointerToString(this) + 
 #ifdef DEBUG
-                  " index " + doubleToString(mNodeIndex) + 
+                  " index " + intToString(mNodeIndex) + 
 #endif
-                  " type " + (doubleToString(mNodeType) + string("\n")) + 
+                  " type " + (intToString(mNodeType) + string("\n")) + 
                   Node::Stringify() + string("\n") +  "Location: ("); 
 
     uint32_t i=0; while (i<3) {
@@ -86,7 +86,7 @@ namespace paraDIS {
     if (showneighbors) {
       s+= "Neighbors:\n"; 
       i=0; while (i < mNeighborSegments.size()) {
-        s += "neighbor " + doubleToString(i) + ": "; 
+        s += "neighbor " + intToString(i) + ": "; 
         if (mNeighborSegments[i]) {
           s+= mNeighborSegments[i]->Stringify();
         } else { 
@@ -189,7 +189,7 @@ namespace paraDIS {
     bool wrap = false;
     int i=3; while (i--) {
       float dist = fabs(loc0[i] - loc1[i]); 
-      if (dataSize[i] - dist < dist) {
+      if (dataSize[i]/2.0 < dist) {
         wrap = true; 
         shift_amt[i] = dataSize[i]; 
       }
@@ -385,6 +385,43 @@ namespace paraDIS {
 #endif // LINKED_LOOPS
   
   //===========================================================================
+  void Arm::ComputeLength(void) {
+    mArmLength = 0; 
+    // first figure out how to iterate.
+    ArmSegment *startSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
+    FullNode *startNode = NULL;  
+    if (startSegment->GetEndpoint(0) == mTerminalNodes[0] ||
+        startSegment->GetEndpoint(1) == mTerminalNodes[0]) {
+      startNode = mTerminalNodes[0];
+    } else if (mTerminalNodes.size() == 2 && 
+               ( startSegment->GetEndpoint(0) == mTerminalNodes[1] ||
+                 startSegment->GetEndpoint(1) == mTerminalNodes[1])) {
+      startNode = mTerminalNodes[1];
+    } else {
+      throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
+    } 
+    ArmSegment *lastSegment = NULL; 
+    uint32_t numSeen = 0; 
+    if (mTerminalSegments.size() == 1)  lastSegment = startSegment; 
+    else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
+    
+    // now compute the length of the arm
+    FullNode *currentNode = startNode; 
+    ArmSegment *currentSegment = startSegment; 
+    while (true) {
+      dbprintf(5, "Adding length for %s\n", currentSegment->Stringify().c_str()); 
+      mArmLength += currentSegment->GetLength(true); 
+      if (currentSegment == lastSegment) {
+        break; 
+      }
+      currentNode = currentSegment->GetOtherEndpoint(currentNode); 
+      currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
+    }
+    return; 
+  }
+    
+  
+  //===========================================================================
   void Arm::Classify(void) {
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
@@ -433,7 +470,7 @@ namespace paraDIS {
     FullNode *currentNode = startNode; 
     ArmSegment *currentSegment = startSegment; 
     while (true) {
-      dbprintf(5, "Classifying segment %s\n", currentSegment->Stringify().c_str()); 
+      dbprintf(5, "Adding length for %s\n", currentSegment->Stringify().c_str()); 
       mArmLength += currentSegment->GetLength(); 
       if (currentSegment == lastSegment) {
         break; 
@@ -465,7 +502,7 @@ namespace paraDIS {
   
 #ifdef DEBUG
     if (numSeen != mNumSegments) {
-      throw string("Error in Arm ")+doubleToString(mArmID)+":  classified "+doubleToString(numSeen)+" segments, but expected "+ doubleToString(mNumSegments); 
+      throw string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
     }
 #endif
     return; 
@@ -529,10 +566,11 @@ namespace paraDIS {
   std::string Arm::Stringify(void) const {
     std::string s  = string("(arm): ") + 
 #ifdef DEBUG
-      "number " + doubleToString(mArmID) + 
-      ", numSegments = " +doubleToString(mNumSegments) +
+      "number " + intToString(mArmID) + 
+      ", numSegments = " +intToString(mNumSegments) +
+      ", length = " +doubleToString(GetLength()) +
 #endif
-      ", Type " +  doubleToString(mArmType);
+      ", Type " +  intToString(mArmType);
 #if LINKED_LOOPS
     if (mPartOfLinkedLoop) {
       s += ", is part of linked loop.\n"; 
@@ -543,7 +581,7 @@ namespace paraDIS {
 
     int num = 0, max = mTerminalNodes.size(); 
     while (num < max) {
-      s+= "Terminal Node " + doubleToString(num) + string(": ");
+      s+= "Terminal Node " + intToString(num) + string(": ");
       if (mTerminalNodes[num]) {
         s += mTerminalNodes[num]->Stringify() + string("\n"); 
       } else {
@@ -553,7 +591,7 @@ namespace paraDIS {
     }
     max = mTerminalSegments.size(); num = 0; 
     while (num < max) {
-      s+= "Terminal Segment " + doubleToString(num) + string(": "); 
+      s+= "Terminal Segment " + intToString(num) + string(": "); 
       if (mTerminalSegments[num]) {
         s += mTerminalSegments[num]->Stringify() + string("\n"); 
       } else {
@@ -900,7 +938,7 @@ namespace paraDIS {
       theNode.AddNeighbor(&(*pos)); 
       
       if (!datafile.good()) {
-        throw string("error reading neighbor number ") + doubleToString(neighbornum);
+        throw string("error reading neighbor number ") + intToString(neighbornum);
       }
       ++lineno; 
       ++neighbornum; 
@@ -1002,7 +1040,7 @@ namespace paraDIS {
       }
       dbprintf(1, "\n"); 
     } catch (string err) {
-      throw string("Error in GetNodes while reading node ") + doubleToString(nodenum) +" at line " + doubleToString(lineno) + ":\n" + err; 
+      throw string("Error in GetNodes while reading node ") + intToString(nodenum) +" at line " + intToString(lineno) + ":\n" + err; 
     }
     return; 
     dbprintf(2, "CreateMinimalNodes ended...\n"); 
@@ -1154,7 +1192,7 @@ namespace paraDIS {
         ++nodenum; 
       } 
     } catch (string err) {
-      err = string("Error in ClassifyMinimalNodes, node ") + doubleToString(nodenum) + ": " + err; 
+      err = string("Error in ClassifyMinimalNodes, node ") + intToString(nodenum) + ": " + err; 
       throw err; 
     }
     dbprintf(2, "ClassifyMinimalNodes ended...\n\n");     
@@ -1256,7 +1294,7 @@ namespace paraDIS {
             int linenum = 0; while (linenum < 2) {
               getline(datafile, junkstring);  
               if (!datafile.good()) {
-                throw string("error reading line ")+ doubleToString(linenum) + string(" of neighbor ") + doubleToString(neighborNum);
+                throw string("error reading line ")+ intToString(linenum) + string(" of neighbor ") + intToString(neighborNum);
               }
               ++linenum;
             }
@@ -1318,10 +1356,10 @@ namespace paraDIS {
           ++neighbornum; 
         }; // done reading neighbor information
       } catch (string err) {
-        throw string("Error in DataSet::ReadFullNode reading neighbor ")+doubleToString(neighbornum)+":" + err; 
+        throw string("Error in DataSet::ReadFullNode reading neighbor ")+intToString(neighbornum)+":" + err; 
       }
     } catch (string err) {
-      throw string("Error trying to read full node info corresponding to ")+theNode.Stringify(true) + string("numskipped is ")+doubleToString(numskipped) + string("\n") + err;
+      throw string("Error trying to read full node info corresponding to ")+theNode.Stringify(true) + string("numskipped is ")+intToString(numskipped) + string("\n") + err;
     } 
 
     fullNode->SetNodeType(); 
@@ -1381,7 +1419,7 @@ namespace paraDIS {
       if (nodenum != nodelimit ) throw string("terminating before nodenum == nodelimit\n"); 
       if (rpos != rend) throw string("terminating before rpos == rend\n"); 
     } catch (string err) {
-      throw string("Error in DataSet::CreateFullNodes while reading node ") + doubleToString(nodenum) +":\n" + err; 
+      throw string("Error in DataSet::CreateFullNodes while reading node ") + intToString(nodenum) +":\n" + err; 
     }
     dbprintf(2, "CreateFullNodes ended...\n"); 
     return; 
@@ -1589,7 +1627,7 @@ namespace paraDIS {
         
       }   
     } catch (string err) {
-      throw string("Arm #")+doubleToString(armnum)+": "+err;
+      throw string("Arm #")+intToString(armnum)+": "+err;
     }
 #if LINKED_LOOPS
     int armNum = mArms.size(); 
@@ -1646,14 +1684,24 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::ClassifyArms(void) {
     dbprintf(2, "ClassifyArms starting...\n");
-    int armnum=0; 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) {      
       armpos->Classify(); 
-      ++armnum; 
       ++armpos; 
     }
     dbprintf(2, "ClassifyArms ended.\n");
+    return; 
+  }
+  
+  //===========================================================================
+  void DataSet::ComputeArmLengths(void) {
+    dbprintf(2, "ComputeArmLengths starting...\n");
+    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
+    while (armpos != armend) {      
+      armpos->ComputeLength(); 
+      ++armpos; 
+    }
+    dbprintf(2, "ComputeArmLengths ended.\n");
     return; 
   }
   
@@ -1662,6 +1710,7 @@ namespace paraDIS {
     Unary predicate for using STL to remove all useless nodes in a range
   */ 
    bool NodeIsUseless(FullNode *node) {
+     return false; 
     return node->GetNodeType() == USELESS_NODE; 
   }
 
@@ -1692,7 +1741,7 @@ namespace paraDIS {
     bool deletable = false; 
     vector<FullNode *>::iterator nodepos = mFullNodes.begin(), 
       nodeend = mFullNodes.end(); 
-    while (nodepos != nodeend) {      
+    /*    while (nodepos != nodeend) {      
       if ((*nodepos)->GetNodeType() != USELESS_NODE && 
           !(*nodepos)->InBounds()) {
 
@@ -1709,18 +1758,18 @@ namespace paraDIS {
       }
       ++nodepos; 
     }   
-
+    */
     /*!
       Next find all arms that have a useless node as either endpoint.  Delete them.  
     */ 
-    dbprintf(2, "Identifying and deleting useless arms...\n"); 
+    /*  dbprintf(2, "Identifying and deleting useless arms...\n"); 
     numdeleted = mArms.size(); 
     vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     armpos = remove_if(armpos, armend, ArmIsUseless); 
     mArms.erase(armpos, mArms.end()); 
     numdeleted -= mArms.size(); 
     dbprintf(2, "Deleted %d arms.\n", numdeleted); 
-
+    */
     /*!
       Useless arm segments are arm segments that have a useless node as either endpoint, or two out of bounds endpoints.  Delete those while copying non-useless arm segments into the final vector.
     */ 
@@ -1768,7 +1817,7 @@ namespace paraDIS {
         mUselessNodes.push_back(*nodepos); 
       } else {
         if (nodetype > 8) {
-          string err = string("Error: bad type ") + doubleToString( nodetype) +  " in node: " + (*nodepos)->Stringify();
+          string err = string("Error: bad type ") + intToString( nodetype) +  " in node: " + (*nodepos)->Stringify();
           throw err;          
         }
       }
@@ -1934,9 +1983,13 @@ namespace paraDIS {
         DebugPrintFullNodes("NodesBeforeDeletion");       
       }
 #endif
+      /*  We can now compute arm lengths properly */
+      ComputeArmLengths(); 
+ 
       /* this used to go before BuildArms() */ 
       WrapBoundarySegments();  
-      
+
+     
       DeleteUselessNodesAndSegments(); 
 
       RenumberNodes(); 
