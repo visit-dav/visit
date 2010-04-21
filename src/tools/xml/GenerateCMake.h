@@ -843,6 +843,7 @@ class CMakeGeneratorPlugin : public Plugin
             }
 
             out << "INCLUDE(" << visithome << "/include/PluginVsInstall.cmake)" << endl;
+            out << "INCLUDE(" << visithome << "/include/VisItLibraryDependencies.cmake)" << endl;
             out << endl;
         }
         else
