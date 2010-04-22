@@ -4,6 +4,7 @@
    Need to do this because the previous design was intentionally entwined with povray and HTS operations for efficiency, and assumed the whole dataset would be read at once. 
  */ 
 #include "paradis.h"
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <iostream> 
@@ -617,7 +618,7 @@ namespace paraDIS {
 #endif
     
     //NN types corresponding to burgers values of the NN arms:    
-    char *armTypes[7] = {
+    const char *armTypes[7] = {
       "NN_100", 
       "NN_010", 
       "NN_001", 
@@ -663,7 +664,7 @@ namespace paraDIS {
       ++armpos; 
     }
     
-    char *armTypeNames[11] = 
+    const char *armTypeNames[11] = 
       { "ARM_UNKNOWN",
         "ARM_UNINTERESTING",
         "ARM_LOOP",
@@ -1451,7 +1452,7 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  void DataSet::DebugPrintFullNodes(char *name) {
+  void DataSet::DebugPrintFullNodes(const char *name) {
     uint32_t monsterTypes[5] = {0}; /* types: -44, -4, -3, -33, sum of monsters */ 
     
     string basename="FullNodes-list.txt";
