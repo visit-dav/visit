@@ -90,7 +90,6 @@ avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
 
 avtIVPM3DC1Integrator::~avtIVPM3DC1Integrator()
 {
-  cerr << "out of avtIVPM3DC1Integrator" << endl;
 }
 
 

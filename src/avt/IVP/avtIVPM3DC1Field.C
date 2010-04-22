@@ -69,14 +69,16 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity 
 
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
-  // nodes thus there are 3 times the number of original values.
-//   nelms =
-//     ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfTuples() / 3;
+  // nodes for STREAMLINES thus there are 3 times the number of
+  // original values.
+  if( ds->GetPointData()->GetArray("hidden/elements") )
+    nelms =
+      ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfTuples() / 3;
 
-  // 2.0 Change data is nolonger at the points but still is at the
-  // cells so the above is no longer valid.
-  nelms =
-    ds->GetCellData()->GetArray("hidden/elements")->GetNumberOfTuples();
+  // 2.0 Change data is at the cells for POINCARE
+  else
+    nelms =
+      ds->GetCellData()->GetArray("hidden/elements")->GetNumberOfTuples();
 
   // Dummy variable to the template class
   int   *intPtr, intVar;
@@ -90,7 +92,6 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity 
   intPtr = SetDataPointer( ds, intVar, "hidden/header/ntor",   nelms, 1 );
   tmode = intPtr[0];
   delete [] intPtr;
-
 
   fltPtr = SetDataPointer( ds, fltVar, "hidden/header/bzero",  nelms, 1 );
   bzero = fltPtr[0];
@@ -172,16 +173,24 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
                                         const int ntuples,
                                         const int ncomponents )
 {
-  int XX = 1;
+  vtkDataArray *array;
+  int XX;
 
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
-  // nodes. So create a new structure that is what is really needed.
-//  vtkDataArray *array = ds->GetPointData()->GetArray(varname);
-
-  // 2.0 Change data is no longer at the points but still is at the
-  // cells so the above is no longer valid.
-  vtkDataArray *array = ds->GetCellData()->GetArray(varname);
+  // nodes for STREAMLINES thus there are 3 times the number of
+  // original values.
+  if( ds->GetPointData()->GetArray(varname) )
+  {
+    array = ds->GetPointData()->GetArray(varname);
+    XX = 3;
+  }
+  // 2.0 Change data is at the cells for POINCARE
+  else
+  {
+    array = ds->GetCellData()->GetArray(varname);
+    XX = 1;
+  }
 
   if( array == 0 )
   {
