@@ -66,6 +66,7 @@
       <Enum name="IntegrationType">
         DormandPrince
         AdamsBashforth
+        M3DC1Integrator
       </Enum>
       <Enum name="OpacityType">
         None

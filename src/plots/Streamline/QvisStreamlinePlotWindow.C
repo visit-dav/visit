@@ -422,6 +422,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
+    integrationType->addItem(tr("M3D-C1 Integrator"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 0,1);
@@ -518,7 +519,13 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(coloringMethodChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);
 
-    dataLayout->addWidget(new QLabel(tr("   "), central), 0, 2);
+
+    coloringVar = new QvisVariableButton(false, true, true,
+                                         QvisVariableButton::Scalars,
+                                         dataGroup);
+    dataLayout->addWidget(coloringVar, 0, 2);
+    connect(coloringVar, SIGNAL(activated(const QString &)),
+            this, SLOT(coloringVariableChanged(const QString&)));
 
     // Create the limits group box.
     QGroupBox *limitsGroup = new QGroupBox(central);
@@ -549,16 +556,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(processMaxLimitText()));
     limitsLayout->addWidget(legendMaxEdit, 0, 4);
 
-    
-    coloringVarLabel = new QLabel(tr("Variable"), dataGroup);
-    coloringVar = new QvisVariableButton(false, true, true, QvisVariableButton::Scalars,
-                                         dataGroup);
-    dataLayout->addWidget(coloringVarLabel,2,1);
-    dataLayout->addWidget(coloringVar,2,2);
-    connect(coloringVar, SIGNAL(activated(const QString &)),
-            this, SLOT(coloringVariableChanged(const QString&)));
-
-    // Create the display group
+        // Create the display group
     QGroupBox *displayGrp = new QGroupBox(pageAppearance);
     displayGrp->setTitle(tr("Display"));
     appearanceLayout->addWidget(displayGrp);
@@ -1244,16 +1242,12 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 
             if (streamAtts->GetColoringMethod() == StreamlineAttributes::ColorByVariable)
             {
-                coloringVarLabel->setEnabled(true);
                 coloringVar->setEnabled(true);
-                coloringVarLabel->show();
                 coloringVar->show();
             }
             else
             {
-                coloringVarLabel->setEnabled(false);
                 coloringVar->setEnabled(false);
-                coloringVarLabel->hide();
                 coloringVar->hide();
             }
             }
@@ -1677,9 +1671,6 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 void
 QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
 {
-    bool useDormandPrince = streamAtts->GetIntegrationType() == StreamlineAttributes::DormandPrince;
-    bool useAdamsBashforth = streamAtts->GetIntegrationType() == StreamlineAttributes::AdamsBashforth;
-
     //Turn off everything.
     maxStepLength->hide();
     maxStepLengthLabel->hide();
@@ -1688,8 +1679,9 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     absTol->hide();
     absTolLabel->hide();
 
-    if ( useDormandPrince )
+    switch( streamAtts->GetIntegrationType() )
     {
+    case StreamlineAttributes::DormandPrince:
         maxStepLength->show();
         maxStepLengthLabel->show();
         maxStepLengthLabel->setText(tr("Maximum step length"));
@@ -1697,14 +1689,16 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
         relTolLabel->show();
         absTol->show();
         absTolLabel->show();
-    }
-    else if ( useAdamsBashforth )
-    {
+        break;
+
+    case StreamlineAttributes::AdamsBashforth:
+    case StreamlineAttributes::M3DC1Integrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
         maxStepLengthLabel->setText(tr("Step length"));
         absTol->show();
         absTolLabel->show();
+        break;
     }
 }
 
