@@ -1958,7 +1958,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         debug4<<"avtStreamlineFilter::IntegrateDom(dom= "<<slSeg->domain<<")"<<endl;
 
     // prepare streamline integration ingredients
-    vtkVisItInterpolatedVelocityField* velocity1 = vtkVisItInterpolatedVelocityField::New();
+    vtkVisItInterpolatedVelocityField* velocity1 =
+      vtkVisItInterpolatedVelocityField::New();
     velocity1->SetDataSet(ds);
 
     vtkVisItCellLocator *cellLocator = NULL;
@@ -2127,7 +2128,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 // ****************************************************************************
 
 void
-avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps)
+avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg,
+                                         int maxSteps)
 {
     int t1 = visitTimer->StartTimer();
     slSeg->status = avtStreamlineWrapper::UNSET;
@@ -2151,7 +2153,8 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
 
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
         intervalTree->GetElementExtents(slSeg->domain.domain, extents);
-        avtIVPSolver::Result result = IntegrateDomain(slSeg, ds, extents, maxSteps);
+        avtIVPSolver::Result result =
+          IntegrateDomain(slSeg, ds, extents, maxSteps);
         if (DebugStream::Level5())
             debug5<<"ISL: result= "<<result<<endl;
 
@@ -2891,15 +2894,47 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
     avtDataRequest_p out_dr = NULL;
 
-    if (strcmp(in_dr->GetVariable(), "colorVar") == 0 || doPathlines)
+    if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR ||
+        strcmp(in_dr->GetVariable(), "colorVar") == 0 ||
+        opacityVariable != "" ||
+        doPathlines)
     {
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
     }
 
+    if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
+    {
+        // Add in the other fields that the M3D Interpolation needs
+        // for doing their Newton's Metod.
+
+        // Assume the user has selected B as the primary variable.
+        // Which is ignored.
+
+        // Single variables stored as attributes on the header
+        out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
+        out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
+        
+        out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
+        out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
+
+        // The mesh - N elememts x 7
+        out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
+
+        // Variables on the mesh - N elements x 20
+        out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
+        out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
+
+        out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
+        out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
+        out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
+        out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
+    }
+
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         out_dr->AddSecondaryVariable(coloringVariable.c_str());
+
     if (opacityVariable != "")
         out_dr->AddSecondaryVariable(opacityVariable.c_str());
 
@@ -2932,7 +2967,6 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
         }
         if (needExpr)
         {
-
             pathlineVar = out_dr->GetVariable(); // HANK: ASSUMPTION
             std::string meshname = out_dr->GetVariable(); // Can reuse varname here.
             Expression *e = new Expression();
