@@ -44,6 +44,9 @@ class VsH5Reader {
    * Set file.
    */
   void setFile(const std::string& filename);
+  void CreateVariableComponents_Vars();
+  void CreateVariableComponents_MdVars();
+  void CreateVariableComponents_VarsWithMesh();
 
   /**
    * Get the values of the whole variable (dataset).
@@ -211,6 +214,8 @@ class VsH5Reader {
    * Returns NULL if not found
    */
   void getComponentInfo(std::string componentName, NamePair* namePair);
+  void getComponentInfo(std::string varName, int componentNumber, NamePair* namePair);
+  std::string getComponentName(std::string varName, int componentNumber);
 
   /**
    * Find a unique name for the given component info.

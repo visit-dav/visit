@@ -56,17 +56,16 @@
 #endif
 
 // VizSchema includes
-//#include <VsSchema.h>
 #include <VsUtils.h>
 
 avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
-#ifdef VISIT_VERSION //Visit 2.0.0 and later use VISIT_VERSION instead of VERSION, and require a different debugstream accessor as well
   avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm),debugStrmRef(DebugStream::Stream3()) {
-#else
-  avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm),debugStrmRef(debug3_real) {
-#endif
 
     debugStrmRef <<"avtVsFileFormat::constructor() - entering" <<std::endl;
+
+    //reader starts off empty
+    reader = NULL;
+    //    LoadData();
 
     //initialize settings
     stride.resize(3);
@@ -117,6 +116,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
     std::string meshName = name;
+    LoadData();
 
     //The MD system works by filtering the requests directed to it
     // into the name of the appropriate subordinate mesh.
@@ -161,7 +161,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
 #endif
       if (meta->isUnstructuredMesh()) {
         debugStrmRef <<methodSig <<"Trying to load & return unstructured mesh" <<std::endl;
-        VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)meta;
+        //VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)meta;
         // getUnstructuredMesh handles split points so getSplitPointMesh is not needed.
         //  if (unstructuredMesh->usesSplitPoints())
         //    return getSplitPointMesh(meshName, *unstructuredMesh);
@@ -174,6 +174,11 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         return getStructuredMesh(meshName, *meta);
       }
 
+      if (meta->isRectilinearMesh()) {
+        debugStrmRef <<methodSig <<"Trying to load & return rectilinear mesh." <<std::endl;
+        return getRectilinearMesh(meshName, *meta);
+      }
+      
       //if we get here, we don't know what kind of mesh it is.
       debugStrmRef <<methodSig <<"Mesh has unknown type: " <<meta->kind <<"Returning." << endl;
       return NULL;
@@ -206,6 +211,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getCurve(" <<domain <<", " <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     ///TODO: This method piggybacks on getVar and getMesh -
     ///       Could be made much more efficient
@@ -318,6 +324,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getStructuredMesh(" <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     //Find points
     //structured meshes used to be groups, and the points were a dataset in that group
@@ -530,6 +537,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getUnstructuredMesh(" <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)&meta;
 
@@ -841,6 +849,307 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     debugStrmRef <<methodSig <<"Returning data." <<std::endl;
     return ugridPtr;
   }
+  
+
+  vtkDataSet* avtVsFileFormat::getRectilinearMesh(const std::string& name,
+      const VsMeshMeta& meta) {
+    //TODO - make "cleanupAndReturnNull" label, and do a "go to" instead of just returning NULL all the time
+    
+    std::stringstream sstr;
+    sstr <<"avtVsFileFormat::getRectilinearMesh(" <<name <<") - ";
+    std::string methodSig = sstr.str();
+    debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
+
+    if (!meta.isRectilinearMesh()) {
+      debugStrmRef <<methodSig <<"Supplied metadata is not a rectilinear mesh?" <<std::endl;
+      debugStrmRef <<methodSig <<"Returning NULL." <<std::endl;
+      return NULL;
+    }
+    
+    // Cast to Rectilinear Mesh object
+    VsRectilinearMesh* rectilinearMesh = (VsRectilinearMesh*)&meta;
+
+    // Get dimensions
+    std::vector<int> dims;
+    reader->getMeshDims(name, &dims);
+    size_t rank = dims.size();
+    if (rank > 3) {
+      debugStrmRef <<methodSig <<"Error: rank of data is larger than 3." << endl;
+      debugStrmRef <<methodSig <<"Returning NULL." << endl;
+      return NULL;
+    }
+    
+    // Size of mesh in VisIt (it requires 3 dimensions)
+    size_t vsdim = 3;
+    
+    debugStrmRef <<methodSig <<"Determining size of coordinate arrays." << endl;
+    std::vector<int> idims(vsdim);
+    for (size_t i = 0; i < vsdim; ++i) {
+      // Number of nodes is given by the size of the axis definition arrays
+      if (i < rank)
+        idims[i] = dims[i];
+      else idims[i] = 1; // set unused dims to 1
+    }
+
+    //Are coordinate arrays float or double?
+    //We assume they are the same
+    //TODO - if not the same, convert!
+    hid_t ftype = rectilinearMesh->getDataType();
+    
+    debugStrmRef <<methodSig <<"Building coordinate arrays." << endl;
+    vtkPoints* vpoints1 = vtkPoints::New();
+    vtkPoints* vpoints2 = vtkPoints::New();
+    
+    size_t dsize = 0;
+    if (H5Tequal(ftype, H5T_NATIVE_DOUBLE)) {
+      debugStrmRef <<methodSig <<"Coordinate arrays are H5T_NATIVE_DOUBLE." << endl;
+      vpoints1->SetDataTypeToDouble();
+      vpoints2->SetDataTypeToDouble();
+      dsize = sizeof(double);
+    }
+    else if (H5Tequal(ftype, H5T_NATIVE_FLOAT)) {
+      debugStrmRef <<methodSig <<"Coordinate arrays are H5T_NATIVE_FLOAT." << endl;
+      vpoints1->SetDataTypeToFloat();
+      vpoints2->SetDataTypeToFloat();
+      dsize = sizeof(float);
+    }
+
+    vpoints1->SetNumberOfPoints(rank);
+    vpoints2->SetNumberOfPoints(rank);
+
+    debugStrmRef <<methodSig <<"Loading data for axis 0." << endl;
+    VsDMeta* axis0Data = rectilinearMesh->getAxisDataset(0);
+    if (axis0Data == NULL) {
+      debugStrmRef <<methodSig <<"Axis 0 data not found. Returning NULL." << endl;
+      return NULL;
+    }
+
+    // Check data type
+    if (!H5Tequal(ftype, axis0Data->type)) {
+      debugStrmRef <<methodSig <<"Axis 0 data type is different from declared mesh data type." <<std::endl;
+      debugStrmRef <<methodSig <<"Returning NULL" <<std::endl;
+      return NULL;
+    }
+
+    // Read points and add in zero for any lacking dimension
+    debugStrmRef <<methodSig <<"Reading in axis0 data." <<std::endl;
+    void* dataPtr0 = 0;
+    double* dblDataPtr0 = 0;
+    float* fltDataPtr0 = 0;
+    if (H5Tequal(ftype, H5T_NATIVE_DOUBLE)) {
+      debugStrmRef <<methodSig <<"Declaring array of doubles of length " <<dims[0] <<"." <<std::endl;
+      debugStrmRef <<methodSig <<"Total allocation: " <<(dims[0] * dsize) <<" bytes." <<std::endl;
+      dblDataPtr0 = new double[dims[0]];
+      dataPtr0 = dblDataPtr0;
+    }
+    else if (H5Tequal(ftype, H5T_NATIVE_FLOAT)) {
+      debugStrmRef <<methodSig <<"Declaring array of floats of length " <<dims[0] <<"." <<std::endl;
+      debugStrmRef <<methodSig <<"Total allocation: " <<(dims[0] * dsize) <<" bytes." <<std::endl;
+      fltDataPtr0 = new float[dims[0]];
+      dataPtr0 = fltDataPtr0;
+    }
+
+    if (!dataPtr0) {
+      debugStrmRef <<methodSig <<"Allocation failed, pointer is NULL." <<std::endl;
+      debugStrmRef <<methodSig <<"Returning NULL." <<std::endl;
+      return NULL;
+    }
+
+    debugStrmRef <<methodSig <<"Allocation succeeded.  Now reading in data." <<std::endl;
+
+    // Read in the data
+    herr_t err = reader->getDatasetMeshComponent(rectilinearMesh->getAxisDatasetName(0), meta, dataPtr0);
+    if (err != 0) {
+      debugStrmRef <<methodSig <<"Got error " <<err <<" while reading data.  Returning NULL." <<std::endl;
+      return NULL;
+    }
+    
+
+    debugStrmRef <<methodSig <<"Loading data for axis 1." << endl;
+    VsDMeta* axis1Data = rectilinearMesh->getAxisDataset(1);
+    void* dataPtr1 = 0;
+    double* dblDataPtr1 = 0;
+    float* fltDataPtr1 = 0;
+    if (axis1Data != NULL) {
+      // Check data type
+      if (!H5Tequal(ftype, axis1Data->type)) {
+        debugStrmRef <<methodSig <<"Axis 1 data type is different from declared mesh data type." <<std::endl;
+        debugStrmRef <<methodSig <<"Returning NULL" <<std::endl;
+        return NULL;
+      }
+
+      // Read points and add in zero for any lacking dimension
+      debugStrmRef <<methodSig <<"Reading in axis1 data." <<std::endl;
+      if (H5Tequal(ftype, H5T_NATIVE_DOUBLE)) {
+        debugStrmRef <<methodSig <<"Declaring array of doubles of length " <<dims[1] <<"." <<std::endl;
+        debugStrmRef <<methodSig <<"Total allocation: " <<(dims[1] * dsize) <<" bytes." <<std::endl;
+        dblDataPtr1 = new double[dims[1]];
+        dataPtr1 = dblDataPtr1;
+      }
+      else if (H5Tequal(ftype, H5T_NATIVE_FLOAT)) {
+        debugStrmRef <<methodSig <<"Declaring array of floats of length " <<dims[1] <<"." <<std::endl;
+        debugStrmRef <<methodSig <<"Total allocation: " <<(dims[1] * dsize) <<" bytes." <<std::endl;
+        fltDataPtr1 = new float[dims[1]];
+        dataPtr1 = fltDataPtr1;
+      }
+  
+      if (!dataPtr1) {
+        debugStrmRef <<methodSig <<"Allocation failed, pointer is NULL." <<std::endl;
+        debugStrmRef <<methodSig <<"Returning NULL." <<std::endl;
+        return NULL;
+      }
+  
+      debugStrmRef <<methodSig <<"Allocation succeeded.  Now reading in data." <<std::endl;
+  
+      // Read in the data
+      herr_t err = reader->getDatasetMeshComponent(rectilinearMesh->getAxisDatasetName(1), meta, dataPtr1);
+      if (err != 0) {
+        debugStrmRef <<methodSig <<"Got error " <<err <<" while reading data.  Returning NULL." <<std::endl;
+        return NULL;
+      }
+    }
+    
+   
+    debugStrmRef <<methodSig <<"Loading data for axis 2." << endl;
+    VsDMeta* axis2Data = rectilinearMesh->getAxisDataset(2);
+    double* dblDataPtr2 = 0;
+    float* fltDataPtr2 = 0;
+    void* dataPtr2 = 0;
+    if (axis2Data != NULL) {
+      // Check data type
+      if (!H5Tequal(ftype, axis2Data->type)) {
+        debugStrmRef <<methodSig <<"Axis 2 data type is different from declared mesh data type." <<std::endl;
+        debugStrmRef <<methodSig <<"Returning NULL" <<std::endl;
+        return NULL;
+      }
+      
+      // Read points and add in zero for any lacking dimension
+      debugStrmRef <<methodSig <<"Reading in axis2 data." <<std::endl;
+      if (H5Tequal(ftype, H5T_NATIVE_DOUBLE)) {
+        debugStrmRef <<methodSig <<"Declaring array of doubles of length " <<dims[2] <<"." <<std::endl;
+        debugStrmRef <<methodSig <<"Total allocation: " <<(dims[2] * dsize) <<" bytes." <<std::endl;
+        dblDataPtr2 = new double[dims[2]];
+        dataPtr2 = dblDataPtr2;
+      }
+      else if (H5Tequal(ftype, H5T_NATIVE_FLOAT)) {
+        debugStrmRef <<methodSig <<"Declaring array of floats of length " <<dims[2] <<"." <<std::endl;
+        debugStrmRef <<methodSig <<"Total allocation: " <<(dims[2] * dsize) <<" bytes." <<std::endl;
+        fltDataPtr2 = new float[dims[2]];
+        dataPtr2 = fltDataPtr2;
+      }
+  
+      if (!dataPtr2) {
+        debugStrmRef <<methodSig <<"Allocation failed, pointer is NULL." <<std::endl;
+        debugStrmRef <<methodSig <<"Returning NULL." <<std::endl;
+        return NULL;
+      }
+  
+      debugStrmRef <<methodSig <<"Allocation succeeded.  Now reading in data." <<std::endl;
+  
+      // Read in the data
+      herr_t err = reader->getDatasetMeshComponent(rectilinearMesh->getAxisDatasetName(2), meta, dataPtr2);
+      if (err != 0) {
+        debugStrmRef <<methodSig <<"Got error " <<err <<" while reading data.  Returning NULL." <<std::endl;
+        return NULL;
+      }
+    }
+    
+    // Create vtkRectilinearGrid
+    debugStrmRef <<methodSig <<"Creating rectilinear grid." << endl;
+    vtkRectilinearGrid* rgrid = vtkRectilinearGrid::New();
+    rgrid->SetDimensions(&idims[0]);
+  
+    // Create coords arrays
+    debugStrmRef << methodSig << "Creating coordinate arrays." << endl;
+    std::vector<vtkDataArray*> coords(vsdim);
+    if (H5Tequal(ftype, H5T_NATIVE_DOUBLE)) {
+      //axis 0
+      coords[0] = vtkDoubleArray::New();
+      for (int j = 0; j < idims[0]; ++j) {
+        double temp = dblDataPtr0[j];
+        coords[0]->InsertTuple(j, &temp);
+      }
+      
+      //axis 1
+      coords[1] = vtkDoubleArray::New();
+      if (rank > 1) {
+        for (int j = 0; j < idims[1]; ++j) {
+          double temp = dblDataPtr1[j];
+          coords[1]->InsertTuple(j, &temp);
+        }
+      } else {
+        coords[1]->SetNumberOfTuples(1);
+        coords[1]->SetComponent(0, 0, 0);    
+      }
+      
+      //axis 2
+      coords[2] = vtkDoubleArray::New();
+      if (rank > 2) {
+        for (int j = 0; j < idims[2]; ++j) {
+          double temp = dblDataPtr2[j];
+          coords[2]->InsertTuple(j, &temp);
+        }
+      } else {
+        coords[2]->SetNumberOfTuples(1);
+        coords[2]->SetComponent(0, 0, 0);
+      }
+    } else if (H5Tequal(ftype, H5T_NATIVE_FLOAT)) {
+      //axis 0
+      coords[0] = vtkFloatArray::New();
+      for (int j = 0; j < idims[0]; ++j) {
+        float temp = fltDataPtr0[j];
+        coords[0]->InsertTuple(j, &temp);
+      }
+      
+      //axis 1
+      coords[1] = vtkFloatArray::New();
+      if (rank > 1) {
+        for (int j = 0; j < idims[1]; ++j) {
+          float temp = fltDataPtr1[j];
+          coords[1]->InsertTuple(j, &temp);
+        }
+      } else {
+        coords[1]->SetNumberOfTuples(1);
+        coords[1]->SetComponent(0, 0, 0);    
+      }
+      
+      //axis 2
+      coords[2] = vtkFloatArray::New();
+      if (rank > 2) {
+        for (int j = 0; j < idims[2]; ++j) {
+          float temp = fltDataPtr2[j];
+          coords[2]->InsertTuple(j, &temp);
+        }
+      } else {
+        coords[2]->SetNumberOfTuples(1);
+        coords[2]->SetComponent(0, 0, 0);
+      }
+    }
+
+    // Set grid data
+    debugStrmRef <<methodSig <<"Adding coordinates to grid." << endl;
+    rgrid->SetXCoordinates(coords[0]);
+    rgrid->SetYCoordinates(coords[1]);
+    rgrid->SetZCoordinates(coords[2]);
+
+    // Clean local data
+    debugStrmRef <<methodSig <<"Cleaning up." << endl;
+    for (size_t i = 0; i < vsdim; ++i) {
+      coords[i]->Delete();
+    }
+
+    if (fltDataPtr0) delete fltDataPtr0;
+    if (fltDataPtr1) delete fltDataPtr1;
+    if (fltDataPtr2) delete fltDataPtr2;
+    if (dblDataPtr0) delete dblDataPtr0;
+    if (dblDataPtr1) delete dblDataPtr1;
+    if (dblDataPtr2) delete dblDataPtr2;
+    debugStrmRef <<methodSig <<"Returning data." << endl;
+    return rgrid;
+  }
+  
+  //end getReclinearMesh
 
   vtkDataSet* avtVsFileFormat::getUniformMesh(const std::string& name,
       const VsMeshMeta& meta) {
@@ -848,6 +1157,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getUniformMesh(" <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     // Cast to Uniform Mesh object
     VsUniformMesh* uniformMesh = (VsUniformMesh*)&meta;
@@ -1057,6 +1367,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getPointMesh(" <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     hid_t type = meta.getType();
     if (!H5Tequal(type, H5T_NATIVE_DOUBLE) && !H5Tequal(type, H5T_NATIVE_FLOAT)) {
@@ -1205,6 +1516,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getSplitPointMesh(" <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     VsUnstructuredMesh* unstructuredMesh = (VsUnstructuredMesh*)&meta;
 
@@ -1313,6 +1625,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::getVar(" <<domain <<", " <<name <<") - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     //Is this a component?
     //If so, we swap the component name with the "real" variable name
@@ -1383,6 +1696,14 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     //If we haven't found metadata yet, we give up
     if ((meta == NULL) && (vmMeta == NULL)) {
       debugStrmRef << methodSig <<"ERROR: Could not find metadata for name: "<<name <<std::endl;
+      std::vector<std::string> varNames;
+      reader->getVarsNames(varNames);
+      debugStrmRef << methodSig <<"All available names = ";
+      for (int i = 0; i < varNames.size(); i++) {
+ debugStrmRef << varNames[i] <<", ";
+      }
+      debugStrmRef <<std::endl;
+
       debugStrmRef << "Returning NULL" << endl;
       return NULL;
     }
@@ -1820,6 +2141,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::RegisterExpressions() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     //get list of expressions from reader
     std::map<std::string, std::string> vsVars = reader->getVsVars();
@@ -1865,6 +2187,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::RegisterVars() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     // Get var names
     std::vector<std::string> names;
@@ -1926,20 +2249,18 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         //generate a name for each one
         //then add to VisIt registry
         for (size_t i = 0; i<numComps; ++i) {
-          //first, get a unique name for this component
-          std::string compName = reader->getUniqueComponentName(vMeta->getLabel(i), *it, i);
+   //First we look for a match in the component registry
+   //using var name and component index to search
+   std::string componentName = reader->getComponentName(*it, i);
 
-          //next, register the component info
-          reader->registerComponentInfo(compName, *it, i);
-
-          //for backwards compatibility, register the "old-style" name too
-          std::string oldCompName = reader->getOldComponentName(*it, i);
-          reader->registerComponentInfo(oldCompName, *it, i);
-
-          debugStrmRef <<methodSig <<"Adding variable component " <<compName <<"." <<std::endl;
-          avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(), mesh.c_str(), centering);
-          smd->hasUnits = false;
-          md->Add(smd);
+   if (!componentName.empty()) {
+     debugStrmRef <<methodSig <<"Adding variable component " <<componentName <<"." <<std::endl;
+     avtScalarMetaData* smd = new avtScalarMetaData(componentName, mesh.c_str(), centering);
+     smd->hasUnits = false;
+     md->Add(smd);
+   } else {
+     debugStrmRef <<methodSig <<"Unable to find match for variable in component registry." <<std::endl;
+   }
         }
       }
       else if (numComps == 1) {
@@ -1961,6 +2282,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::RegisterMeshes() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     // Number of mesh dims
     int mdims;
@@ -2043,6 +2365,15 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         setAxisLabels(vmd);
         md->Add(vmd);
       }
+      else if (meta->isRectilinearMesh()) {
+        mdims = dims.size();
+        debugStrmRef <<methodSig <<"Adding rectilinear mesh" <<*it <<"." <<std::endl;
+        debugStrmRef <<methodSig <<"MDims = " <<mdims <<"." <<std::endl;
+        avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
+            1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
+        setAxisLabels(vmd);
+        md->Add(vmd);
+      }
       else {
         debugStrmRef <<methodSig <<"Unrecognized mesh kind: " <<meta->kind <<"." <<std::endl;
       }
@@ -2055,6 +2386,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::RegisterMdVars() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     // Get vars names
     std::vector<std::string> names;
@@ -2095,20 +2427,17 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       if (numComps > 1) {
         for (size_t i = 0; i<numComps; ++i) {
           //first, get a unique name for this component
-          std::string compName = reader->getUniqueComponentName(vMeta->getLabel(i), *it, i);
-
-          //next, register the component info
-          reader->registerComponentInfo(compName, *it, i);
-
-          //for backwards compatibility, register the "old-style" name too
-          std::string oldCompName = reader->getOldComponentName(*it, i);
-          reader->registerComponentInfo(oldCompName, *it, i);
-
-          debugStrmRef <<methodSig <<"Adding variable component " <<compName <<"." <<std::endl;
-          avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
+          std::string compName = reader->getComponentName(*it, i);
+          
+          if (!compName.empty()) {
+            debugStrmRef <<methodSig <<"Adding variable component " <<compName <<"." <<std::endl;
+            avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
               mesh.c_str(), centering);
-          smd->hasUnits = false;
-          md->Add(smd);
+            smd->hasUnits = false;
+            md->Add(smd);
+          } else {
+            debugStrmRef <<methodSig <<"Unable to find component name for var " <<*it <<" and index " <<i <<std::endl;
+          }
         }
       }
       else if (numComps == 1) {
@@ -2128,6 +2457,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::RegisterMdMeshes() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     std::vector<std::string> names;
     reader->getMDMeshNames(names);
@@ -2176,6 +2506,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     sstr <<"avtVsFileFormat::RegisterVarsWithMesh() - ";
     std::string methodSig = sstr.str();
     debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     std::vector<std::string> names;
     reader->getVarsWithMeshNames(names);
@@ -2196,7 +2527,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       // add var components
       std::vector<int> dims = vMeta->getDims();
       if (dims.size() <= 0) {
-        std::string msg = "avtVsFileFormat::RegisterVarsWithMesh: could not get dimensions of variable with mesh.";
+        std::string msg = "avtVsFileFormat::RegisterVarsWithMesh() - could not get dimensions of variable with mesh.";
         debugStrmRef << msg << std::endl;
         throw std::out_of_range(msg.c_str());
       }
@@ -2223,21 +2554,18 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       //    for (size_t i = 0; i < lastDim-vm->numSpatialDims; ++i) {
       for (size_t i = 0; i < lastDim; ++i) {
         //first, get a unique name for this component
-        std::string compName = reader->getUniqueComponentName(vMeta->getLabel(i), *it, i);
-
-        //next, register the component info
-        reader->registerComponentInfo(compName, *it, i);
-
-        //for backwards compatibility, register the "old-style" name too
-        std::string oldCompName = reader->getOldComponentName(*it, i);
-        reader->registerComponentInfo(oldCompName, *it, i);
-
-        //register with VisIt
-        debugStrmRef <<methodSig <<"Adding variable component " <<compName <<"." <<std::endl;
-        avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
+        std::string compName = reader->getComponentName(*it, i);
+        
+        if (!compName.empty()) {
+          //register with VisIt
+          debugStrmRef <<methodSig <<"Adding variable component " <<compName <<"." <<std::endl;
+          avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(),
             it->c_str(), AVT_NODECENT);
-        smd->hasUnits = false;
-        md->Add(smd);
+          smd->hasUnits = false;
+          md->Add(smd);
+        } else {
+          debugStrmRef <<methodSig <<"Unable to get component name for variable " <<*it <<" and index " <<i <<std::endl;
+        }
       }
 
       // add var mesh
@@ -2251,24 +2579,33 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     debugStrmRef <<methodSig <<"Exiting normally." << endl;
   }
 
-  void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md) {
-    std::stringstream sstr;
-    sstr <<"avtVsFileFormat::PopulateDatabaseMetaData() - ";
-    std::string methodSig = sstr.str();
-    debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+  void avtVsFileFormat::LoadData() {
+    if (reader)
+      return;
 
+    debugStrmRef <<"avtVsFileFormat::LoadData() - loading data for file " <<dataFileName <<std::endl;
     //Actually open the file & read metadata for the first time
-    debugStrmRef <<methodSig <<"Initializing VsH5Reader()" <<std::endl;
+    debugStrmRef <<"avtVsFileFormat::LoadData() - Initializing VsH5Reader()" <<std::endl;
     try {
       reader = new VsH5Reader(dataFileName, debugStrmRef, stride);
     }
     catch (std::invalid_argument& ex) {
-      std::string msg(methodSig);
+      std::string msg("avtVsFileFormat::LoadData() - ");
       msg += " Error initializing VsH5Reader: ";
       msg += ex.what();
       debugStrmRef << msg << endl;
       EXCEPTION1(InvalidDBTypeException, msg.c_str());
     }
+
+    debugStrmRef <<"avtVsFileFormat::LoadData() - returning." <<std::endl;
+  }
+
+  void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md) {
+    std::stringstream sstr;
+    sstr <<"avtVsFileFormat::PopulateDatabaseMetaData() - ";
+    std::string methodSig = sstr.str();
+    debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+    LoadData();
 
     // Tell visit that we can split meshes into subparts when running in parallel
     // NOTE that we can't decompose domains if we have MD meshes
