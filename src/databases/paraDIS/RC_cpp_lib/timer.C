@@ -9,7 +9,7 @@
 */
 int Progress(timer &iTimer, double iNum, double iMax, 
              double &oPercent, double iPercentDelta, 
-             double &oTime, double iTimeDelta, char *iMsg) {
+             double &oTime, double iTimeDelta, const char *iMsg) {
   double percent = iNum/iMax*100.0;
   double newtime = iTimer.elapsed_time();
   if (iNum == iMax || percent - oPercent > iPercentDelta || newtime-oTime > iTimeDelta) {      
