@@ -104,6 +104,12 @@ public:
         Confidence,
         RidgelineVariance
     };
+    enum StreamlineAlgorithmType
+    {
+        LoadOnDemand,
+        ParallelStaticDomains,
+        MasterSlave
+    };
 
     // These constructors are for objects of this class
     PoincareAttributes();
@@ -137,8 +143,8 @@ public:
     void SelectColorTableName();
 
     // Property setting methods
-    void SetMinPunctures(double minPunctures_);
-    void SetMaxPunctures(double maxPunctures_);
+    void SetMinPunctures(int minPunctures_);
+    void SetMaxPunctures(int maxPunctures_);
     void SetSourceType(SourceType sourceType_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
@@ -165,17 +171,25 @@ public:
     void SetColorTableName(const std::string &colorTableName_);
     void SetDataValue(DataValue dataValue_);
     void SetShowOPoints(bool showOPoints_);
+    void SetOPointMaxInterations(int OPointMaxInterations_);
+    void SetShowXPoints(bool showXPoints_);
+    void SetXPointMaxInterations(int XPointMaxInterations_);
+    void SetShowChaotic(bool showChaotic_);
     void SetShowIslands(bool showIslands_);
-    void SetShowLines(bool showLines_);
-    void SetShowPoints(bool showPoints_);
     void SetVerboseFlag(bool verboseFlag_);
     void SetShowRidgelines(bool showRidgelines_);
+    void SetShowLines(bool showLines_);
+    void SetShowPoints(bool showPoints_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
+    void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
+    void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
+    void SetMaxDomainCacheSize(int maxDomainCacheSize_);
+    void SetWorkGroupSize(int workGroupSize_);
 
     // Property getting methods
-    double               GetMinPunctures() const;
-    double               GetMaxPunctures() const;
+    int                  GetMinPunctures() const;
+    int                  GetMaxPunctures() const;
     SourceType           GetSourceType() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
@@ -207,13 +221,21 @@ public:
           std::string    &GetColorTableName();
     DataValue            GetDataValue() const;
     bool                 GetShowOPoints() const;
+    int                  GetOPointMaxInterations() const;
+    bool                 GetShowXPoints() const;
+    int                  GetXPointMaxInterations() const;
+    bool                 GetShowChaotic() const;
     bool                 GetShowIslands() const;
-    bool                 GetShowLines() const;
-    bool                 GetShowPoints() const;
     bool                 GetVerboseFlag() const;
     bool                 GetShowRidgelines() const;
+    bool                 GetShowLines() const;
+    bool                 GetShowPoints() const;
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
+    StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
+    int                  GetMaxStreamlineProcessCount() const;
+    int                  GetMaxDomainCacheSize() const;
+    int                  GetWorkGroupSize() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -249,6 +271,11 @@ public:
     static bool DataValue_FromString(const std::string &, DataValue &);
 protected:
     static std::string DataValue_ToString(int);
+public:
+    static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
+    static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
+protected:
+    static std::string StreamlineAlgorithmType_ToString(int);
 public:
 
     // Keyframing methods
@@ -292,19 +319,27 @@ public:
         ID_colorTableName,
         ID_dataValue,
         ID_showOPoints,
+        ID_OPointMaxInterations,
+        ID_showXPoints,
+        ID_XPointMaxInterations,
+        ID_showChaotic,
         ID_showIslands,
-        ID_showLines,
-        ID_showPoints,
         ID_verboseFlag,
         ID_showRidgelines,
+        ID_showLines,
+        ID_showPoints,
         ID_legendFlag,
         ID_lightingFlag,
+        ID_streamlineAlgorithmType,
+        ID_maxStreamlineProcessCount,
+        ID_maxDomainCacheSize,
+        ID_workGroupSize,
         ID__LAST
     };
 
 private:
-    double         minPunctures;
-    double         maxPunctures;
+    int            minPunctures;
+    int            maxPunctures;
     int            sourceType;
     double         pointSource[3];
     double         lineStart[3];
@@ -331,18 +366,26 @@ private:
     std::string    colorTableName;
     int            dataValue;
     bool           showOPoints;
+    int            OPointMaxInterations;
+    bool           showXPoints;
+    int            XPointMaxInterations;
+    bool           showChaotic;
     bool           showIslands;
-    bool           showLines;
-    bool           showPoints;
     bool           verboseFlag;
     bool           showRidgelines;
+    bool           showLines;
+    bool           showPoints;
     bool           legendFlag;
     bool           lightingFlag;
+    int            streamlineAlgorithmType;
+    int            maxStreamlineProcessCount;
+    int            maxDomainCacheSize;
+    int            workGroupSize;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "ddiDDDiidddiidiiiidddbbiasibbbbbbbb"
+#define POINCAREATTRIBUTES_TMFS "iiiDDDiidddiidiiiidddbbiasibibibbbbbbbbiiii"
 
 #endif

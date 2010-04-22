@@ -327,6 +327,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
 #ifdef ENGINE
 
+    // Streamline specific attributes (avtStreamlineFilter).
+
     // Make the number of punctures 2x because the analysis uses only
     // the punctures in the same direction as the plane.
     poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
@@ -350,19 +352,29 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         break;
 
       case PoincareAttributes::SpecifiedLine:
-        poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
-        poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
-        poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
+        if( atts.GetPointDensity() > 1 )
+        {
+          poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
+          poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
+          poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
+        }
+        else
+        {
+          double pt[3];
+
+          pt[0] = (atts.GetLineStart()[0] + atts.GetLineEnd()[0]) / 2;
+          pt[1] = (atts.GetLineStart()[1] + atts.GetLineEnd()[1]) / 2;
+          pt[2] = (atts.GetLineStart()[2] + atts.GetLineEnd()[2]) / 2;
+
+          poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
+          poincareFilter->SetPointSource(pt);
+        }
+
         break;
     }
 
     // Set the streamline attributes.
-    if (atts.GetIntegrationType() == PoincareAttributes::DormandPrince)
-        poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORMAND_PRINCE);
-    else if (atts.GetIntegrationType() == PoincareAttributes::AdamsBashforth)
-        poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_ADAMS_BASHFORTH);
-    else if (atts.GetIntegrationType() == PoincareAttributes::M3DC1Integrator)
-        poincareFilter->SetIntegrationType(STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR);
+    poincareFilter->SetIntegrationType(atts.GetIntegrationType());
 
     poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_STATIC_DOMAINS,
                                            10, 3, 1);
@@ -370,7 +382,12 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
 
 
+    poincareFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
+                                           atts.GetMaxStreamlineProcessCount(),
+                                           atts.GetMaxDomainCacheSize(),
+                                           atts.GetWorkGroupSize());
 
+    // Poincare specific attributes.
     poincareFilter->SetMaxToroidalWinding( atts.GetMaxToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetHitRate( atts.GetHitRate() );
@@ -401,6 +418,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetDataValue( atts.GetDataValue() );
 
     poincareFilter->SetShowOPoints( atts.GetShowOPoints() );
+    poincareFilter->SetShowChaotic( atts.GetShowChaotic() );
     poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetShowLines(atts.GetShowLines());
     poincareFilter->SetShowPoints(atts.GetShowPoints());

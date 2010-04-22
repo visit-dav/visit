@@ -52,6 +52,8 @@ typedef avtVector Vector;
 
 #include <vector>
 
+using namespace std;
+
 enum FieldlineType { UNKNOWN  = 0,
 
                      PERIODIC = 10,
@@ -60,7 +62,7 @@ enum FieldlineType { UNKNOWN  = 0,
                      X_POINT  = 13,
                      
                      QUASI_PERIODIC = 20,
-                     IRRATIONAL     = 21,
+                     FLUX_SURFACE   = 21,
                      ISLAND_CHAIN   = 22,
                      
                      CHAOTIC = 30 };
@@ -70,7 +72,7 @@ struct FieldlineInfo {
 
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
-  unsigned int skip;
+  unsigned int windingGroupOffset;
   unsigned int islands;
   float nnodes;
 
@@ -81,13 +83,14 @@ struct FieldlineInfo {
   bool complete;
 
   unsigned int nPuncturesNeeded;
+
+  std::vector< Point > islandCenters;
+  bool seedIslandCenters;
 };
 
 namespace FusionPSE {
 
-using namespace std;
 //using namespace SCIRun;
-
 
 class FieldlineLib
 {
@@ -205,6 +208,13 @@ public:
                 unsigned int poloidalWinding,
                 unsigned int skip,
                 unsigned int island );
+
+  void
+  findIslandCenter( vector < Point > &points,
+                    unsigned int nnodes,
+                    unsigned int toroidalWinding,
+                    unsigned int poloidalWinding,
+                    vector< Point > &centers );
 
   bool verboseFlag;
 };
