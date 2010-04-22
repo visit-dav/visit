@@ -71,6 +71,9 @@
 //    John Schreiner, Fri Feb 12 19:19:34 MST 2010
 //    Removed window size parameter from Render().
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 
 class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
@@ -86,7 +89,8 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
                                    float varmin, float varmax,
                                    float ambient_coeff,
                                    float spec_coeff, float spec_power,
-                                   float spec_r, float spec_g, float spec_b);
+                                   float spec_r, float spec_g, float spec_b,
+                                   bool is2D);
 
     virtual void   InvalidateColors();
 
@@ -99,6 +103,7 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
     float varmin;
     float varmax;
 
+    bool  is2D;
     float ambient_coeff;
     float spec_coeff;
     float spec_power;
@@ -108,16 +113,21 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
     avtLookupTable *levelsLUT;
 
     float *sphere_pts[MAX_DETAIL_LEVELS];
+    float *circle_pts[MAX_DETAIL_LEVELS];
     float *cyl_pts[MAX_DETAIL_LEVELS];
 
     bool spheres_calculated;
+    bool circles_calculated;
     void CalculateSpherePts();
+    void CalculateCirclePts();
     void DrawSphereAsQuads(float, float, float, float r, int);
+    void DrawCircleAsTriangles(float, float, float r, int);
 
     bool cylinders_calculated;
     void CalculateCylPts();
     void DrawCylinderBetweenTwoPoints(double *, double *, float r, int);
     void DrawCylinderCap(double *, double *, int half, float r, int);
+    void DrawRectangleBetweenTwoPoints(double *, double *, float r);
 
     int            numcolors;
     unsigned char *colors;
@@ -133,7 +143,8 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
     void DrawBonds(vtkPolyData *data,
                    const MoleculeAttributes&);
 
-    void *tex;
+    void *tex2D;
+    void *tex3D;
 };
 
 

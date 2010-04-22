@@ -433,11 +433,15 @@ avtMoleculePlot::CustomizeBehavior(void)
 //  Creation:   February  3, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Apr 22 14:37:32 EDT 2010
+//    Added a 2D mode to the renderer.
+//
 // ****************************************************************************
 
 void
 avtMoleculePlot::CustomizeMapper(avtDataObjectInformation &info)
 {
+    renderer->SetIs2D(info.GetAttributes().GetSpatialDimension() == 2);
 }
 
 

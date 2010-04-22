@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include "avtOpenGLAtomTexturer.h"
+#include "avtOpenGLAtomTexturer3D.h"
 #include <vtkConfigure.h>
 #include <math.h>
 #include <DebugStream.h>
@@ -612,7 +612,7 @@ ShaderModeData::FreeResources()
 void
 ShaderModeData::SetHint(int hint, int val)
 {
-    if(hint == avtOpenGLAtomTexturer::HINT_SET_DEPTH)
+    if(hint == avtOpenGLAtomTexturer3D::HINT_SET_DEPTH)
     {
         bool d = val != 0;
 
@@ -795,28 +795,28 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 ///
-/// avtOpenGLAtomTexturer CLASS
+/// avtOpenGLAtomTexturer3D CLASS
 ///
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-const int avtOpenGLAtomTexturer::HINT_SET_DEPTH = 0;
+const int avtOpenGLAtomTexturer3D::HINT_SET_DEPTH = 0;
 
-avtOpenGLAtomTexturer::avtOpenGLAtomTexturer()
+avtOpenGLAtomTexturer3D::avtOpenGLAtomTexturer3D()
 {
     modeDetermined = false;
     tData = (void *)new TextureModeData;
     sData = (void *)new ShaderModeData;
 }
 
-avtOpenGLAtomTexturer::~avtOpenGLAtomTexturer()
+avtOpenGLAtomTexturer3D::~avtOpenGLAtomTexturer3D()
 {
     delete (TextureModeData *) tData;
     delete (ShaderModeData *) sData;
 }
 
 // ****************************************************************************
-// Method: avtOpenGLAtomTexturer::SetHint
+// Method: avtOpenGLAtomTexturer3D::SetHint
 //
 // Purpose: 
 //   Sets hints into the different shading implementations.
@@ -833,14 +833,14 @@ avtOpenGLAtomTexturer::~avtOpenGLAtomTexturer()
 // ****************************************************************************
 
 void
-avtOpenGLAtomTexturer::SetHint(int hint, int value)
+avtOpenGLAtomTexturer3D::SetHint(int hint, int value)
 {
     ((TextureModeData *)tData)->SetHint(hint, value);
     ((ShaderModeData *)sData)->SetHint(hint, value);
 }
 
 // ****************************************************************************
-// Method: avtOpenGLAtomTexturer::BeginSphereTexturing
+// Method: avtOpenGLAtomTexturer3D::BeginSphereTexturing
 //
 // Purpose: 
 //   Starts sphere texturing using the best available mode.
@@ -853,7 +853,7 @@ avtOpenGLAtomTexturer::SetHint(int hint, int value)
 // ****************************************************************************
 
 void
-avtOpenGLAtomTexturer::BeginSphereTexturing()
+avtOpenGLAtomTexturer3D::BeginSphereTexturing()
 {
     GetMode();
 
@@ -870,7 +870,7 @@ avtOpenGLAtomTexturer::BeginSphereTexturing()
 }
 
 // ****************************************************************************
-// Method: avtOpenGLAtomTexturer::EndSphereTexturing
+// Method: avtOpenGLAtomTexturer3D::EndSphereTexturing
 //
 // Purpose: 
 //   Stops sphere texturing.
@@ -883,7 +883,7 @@ avtOpenGLAtomTexturer::BeginSphereTexturing()
 // ****************************************************************************
 
 void
-avtOpenGLAtomTexturer::EndSphereTexturing()
+avtOpenGLAtomTexturer3D::EndSphereTexturing()
 {
     GetMode();
 
@@ -894,7 +894,7 @@ avtOpenGLAtomTexturer::EndSphereTexturing()
 }
 
 // ****************************************************************************
-// Method: avtOpenGLAtomTexturer::Mode
+// Method: avtOpenGLAtomTexturer3D::Mode
 //
 // Purpose: 
 //   Returns the sphere shading mode that we'll use, determining the best
@@ -911,10 +911,10 @@ avtOpenGLAtomTexturer::EndSphereTexturing()
 //
 // ****************************************************************************
 
-avtOpenGLAtomTexturer::TexMode_t
-avtOpenGLAtomTexturer::GetMode()
+avtOpenGLAtomTexturer3D::TexMode_t
+avtOpenGLAtomTexturer3D::GetMode()
 { 
-    const char *mName = "avtOpenGLAtomTexturer::GetMode";
+    const char *mName = "avtOpenGLAtomTexturer3D::GetMode";
 
     if(!modeDetermined)
     {

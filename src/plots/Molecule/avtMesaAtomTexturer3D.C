@@ -36,51 +36,23 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_MOLECULE_RENDERER_IMPLEMENTATION_H
-#define AVT_MOLECULE_RENDERER_IMPLEMENTATION_H
+// ************************************************************************* //
+//                           avtMesaAtomTexturer3D.C                         //
+// ************************************************************************* //
 
-class avtLookupTable;
-class vtkPolyData;
-class vtkDataArray;
-class MoleculeAttributes;
-struct avtViewInfo;
+#include <avtMesaAtomTexturer3D.h>
 
-// ****************************************************************************
-//  Class:  avtMoleculeRendererImplementation
-//
-//  Purpose:
-//    Implements the rendering-only portion of a molecule renderer in a
-//    relatively stateless manner.  Meant to be instantiated at render
-//    time by avtMoleculeRenderer::Render, though it can be kept around
-//    across renderers while the implementation itself has not changed.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    February  3, 2006
-//
-//  Modifications:
-//    John Schreiner, Fri Feb 12 19:19:34 MST 2010
-//    Removed window size parameter to Render().
-//
-//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
-//    Added 2D mode.
-//
-// ****************************************************************************
-class avtMoleculeRendererImplementation
-{
-  public:
-                   avtMoleculeRendererImplementation() {}
-    virtual       ~avtMoleculeRendererImplementation() {}
-    virtual void   Render(vtkPolyData *data, const MoleculeAttributes&,
-                          bool immediateModeRendering,
-                          float varmin, float varmax,
-                          float ambient_coeff,
-                          float spec_coeff, float spec_power,
-                          float spec_r, float spec_g, float spec_b,
-                          bool is2D) = 0;
-    virtual void   InvalidateColors() { };
-    virtual void   SetLevelsLUT(avtLookupTable *) = 0;
-private:
-    avtLookupTable *levelsLUT;
-};
+// Mangle the GL calls to mgl.
+#include <GL/gl_mangle.h>
+#include <GL/gl.h>
 
-#endif
+#define avtOpenGLAtomTexturer3D avtMesaAtomTexturer3D
+#define TextureModeData mesaTextureModeData
+#define ShaderModeData mesaShaderModeData
+#define VTK_IMPLEMENT_MESA_CXX
+
+#include "avtOpenGLAtomTexturer3D.C"
+
+#undef  avtOpenGLAtomTexturer3D
+#undef TextureModeData
+#undef ShaderModeData

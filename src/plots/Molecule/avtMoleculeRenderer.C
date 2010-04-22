@@ -73,6 +73,9 @@
 //    Jeremy Meredith, Mon Aug 28 18:13:46 EDT 2006
 //    Initialize specular parameters.
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 avtMoleculeRenderer::avtMoleculeRenderer()
 {
@@ -88,6 +91,7 @@ avtMoleculeRenderer::avtMoleculeRenderer()
     spec_r = 0;
     spec_g = 0;
     spec_b = 0;
+    is2D = false;
 }
 
 // ****************************************************************************
@@ -172,6 +176,9 @@ avtMoleculeRenderer::New(void)
 //    John Schreiner, Fri Feb 12 19:19:34 MST 2010
 //    Removed window size parameter to Render().
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 
 void
@@ -213,7 +220,8 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
                                    varmin, varmax,
                                    ambient_coeff,
                                    spec_coeff, spec_power,
-                                   spec_r, spec_g, spec_b);
+                                   spec_r, spec_g, spec_b,
+                                   is2D);
 }
 
 
@@ -392,4 +400,24 @@ avtMoleculeRenderer::SetLevelsLUT(avtLookupTable *lut)
 
     if (rendererImplementation)
         rendererImplementation->SetLevelsLUT(lut);
+}
+
+// ****************************************************************************
+// Method:  avtMoleculeRenderer::SetIs2D
+//
+// Purpose:
+//   Tell the renderer it's in 2D mode.
+//
+// Arguments:
+//   twoD       true for 2D, false for 3D
+//
+// Programmer:  Jeremy Meredith
+// Creation:    April 22, 2010
+//
+// ****************************************************************************
+
+void
+avtMoleculeRenderer::SetIs2D(bool twoD)
+{
+    is2D = twoD;
 }

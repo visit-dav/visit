@@ -36,51 +36,24 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_OPENGL_ATOM_TEXTURER_H
-#define AVT_OPENGL_ATOM_TEXTURER_H
+#ifndef AVT_MESA_ATOM_TEXTURER_3D_H
+#define AVT_MESA_ATOM_TEXTURER_3D_H
 
-// ****************************************************************************
-// Class: avtOpenGLAtomTexturer
-//
-// Purpose:
-//   Performs sphere shading on imposter quads using different methods.
-//
-// Notes:      There are 2 methods: texture-based, shader-based.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 28 09:56:02 PDT 2006
-//
-// Modifications:
-//   Brad Whitlock, Fri Apr 7 11:26:48 PDT 2006
-//   Added SetHint method.
-//
-//   John Schreiner, Fri Feb 12 19:19:34 MST 2010
-//   Removed width/height hints that aren't required anymore.
-//
-// ****************************************************************************
+#define avtOpenGLAtomTexturer3D avtMesaAtomTexturer3D
 
-class avtOpenGLAtomTexturer
-{
-public:
-    avtOpenGLAtomTexturer();
-    virtual ~avtOpenGLAtomTexturer();
+#undef SET_IT_BACK
+#ifdef AVT_OPEN_GL_MOLECULE_RENDERER_H
+    #define  SET_IT_BACK
+    #undef   AVT_OPENGL_ATOM_TEXTURER_3D_H
+#endif
 
-    void BeginSphereTexturing();
-    void EndSphereTexturing();
+#include <avtOpenGLAtomTexturer3D.h>
 
-    static const int HINT_SET_DEPTH;
+#ifdef SET_IT_BACK
+    #define AVT_OPENGL_ATOM_TEXTURER_3D_H
+#endif
 
-    void SetHint(int hint, int value);
-
-    typedef enum {TextureMode, ShaderMode} TexMode_t;
-    TexMode_t GetMode();
-
-private:
-    bool modeDetermined;
-    TexMode_t mode;
-    void *tData;
-    void *sData;
-};
+#undef avtOpenGLAtomTexturer3D
 
 
 #endif

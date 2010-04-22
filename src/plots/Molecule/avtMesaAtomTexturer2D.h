@@ -36,24 +36,24 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_MESA_ATOM_TEXTURER_H
-#define AVT_MESA_ATOM_TEXTURER_H
+#ifndef AVT_MESA_ATOM_TEXTURER_2D_H
+#define AVT_MESA_ATOM_TEXTURER_2D_H
 
-#define avtOpenGLAtomTexturer avtMesaAtomTexturer
+#define avtOpenGLAtomTexturer2D avtMesaAtomTexturer2D
 
 #undef SET_IT_BACK
 #ifdef AVT_OPEN_GL_MOLECULE_RENDERER_H
     #define  SET_IT_BACK
-    #undef   AVT_OPENGL_ATOM_TEXTURER_H
+    #undef   AVT_OPENGL_ATOM_TEXTURER_2D_H
 #endif
 
-#include <avtOpenGLAtomTexturer.h>
+#include <avtOpenGLAtomTexturer2D.h>
 
 #ifdef SET_IT_BACK
-    #define AVT_OPENGL_ATOM_TEXTURER_H
+    #define AVT_OPENGL_ATOM_TEXTURER_2D_H
 #endif
 
-#undef avtOpenGLAtomTexturer
+#undef avtOpenGLAtomTexturer2D
 
 
 #endif
