@@ -277,6 +277,14 @@
 #
 #    Mark C. Miller, Thu Apr  1 14:26:36 PDT 2010
 #    Added ulimit command.
+#
+#    Eric Brugger, Thu Apr 22 12:46:21 PDT 2010
+#    I modified the script so that the summary for each test will read
+#    "Succeeded With Skips" or "Acceptable With Skips" when a partially
+#    skipped test is successful and "Unacceptable" when a partially skipped
+#    test has a non-skipped test fail.  Previously all these cases simply
+#    had "Partially Skipped".
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -1066,10 +1074,16 @@ while test $testIndex -lt ${#testcasesA[*]}; do
             echo -e ">> Killed after $limitSeconds seconds when running test file: $t"
         fi
     elif test $testAttempt -eq 1 -a $error -eq 119; then
-        echo -e "    $name:\tpartially skipped" >> summary
-        echo -e "  <td align=center bgcolor=\"#00ffff\"><b><i>Partially Skipped</b></i></td>" >> html/index.html
+        echo -e "    $name:\tsucceeded with skips" >> summary
+        echo -e "  <td align=center bgcolor=\"#00ffff\"><b><i>Succeeded With Skips</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
-            echo -e ">> Passed with partial skips in test file: $t"
+            echo -e ">> Succeeded with partial skips in test file: $t"
+        fi
+    elif test $testAttempt -eq 1 -a $error -eq 120; then
+        echo -e "    $name:\tacceptable with skips" >> summary
+        echo -e "  <td align=center bgcolor=\"#00ffff\"><b><i>Acceptable With Skips</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Acceptable with partial skips in test file: $t"
         fi
     elif test $testAttempt -eq 1 -a $error -eq 0; then
         echo -e "    $name:\tfailed, exit(0) unknown" >> summary
