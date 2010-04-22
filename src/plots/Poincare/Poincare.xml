@@ -51,11 +51,17 @@
 	RidgelineVariance
       </Enum>
 
-      <Field name="minPunctures" label="Minimum number of Punctures" type="double">
-        10.000000
+      <Enum name="StreamlineAlgorithmType">
+        LoadOnDemand
+        ParallelStaticDomains
+        MasterSlave
+      </Enum>
+
+      <Field name="minPunctures" label="Minimum number of Punctures" type="int">
+        10
       </Field>
-      <Field name="maxPunctures" label="Maximum number of Punctures" type="double">
-        100.000000
+      <Field name="maxPunctures" label="Maximum number of Punctures" type="int">
+        100
       </Field>
 
       <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
@@ -151,16 +157,22 @@
         SafetyFactor
       </Field>
 
-      <Field name="showOPoints" label="Show O Points" type="bool">
+      <Field name="showOPoints" label="Detect O Points" type="bool">
+        false
+      </Field>
+      <Field name="OPointMaxInterations" label="Maximum Interations" type="int">
+        2
+      </Field>
+      <Field name="showXPoints" label="Detect X Points" type="bool">
+        false
+      </Field>
+      <Field name="XPointMaxInterations" label="Maximum Interations" type="int">
+        2
+      </Field>
+      <Field name="showChaotic" label="Show Chaotic Fieldlines" type="bool">
         false
       </Field>
       <Field name="showIslands" label="Show Islands" type="bool">
-        false
-      </Field>
-      <Field name="showLines" label="Show Lines" type="bool">
-        true
-      </Field>
-      <Field name="showPoints" label="Show Points" type="bool">
         false
       </Field>
       <Field name="verboseFlag" label="Verbose" type="bool">
@@ -170,11 +182,30 @@
         false
       </Field>
 
+      <Field name="showLines" label="Show Lines" type="bool">
+        true
+      </Field>
+      <Field name="showPoints" label="Show Points" type="bool">
+        false
+      </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
       <Field name="lightingFlag" label="Lighting" type="bool">
         true
+      </Field>
+
+      <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
+        LoadOnDemand
+      </Field>
+      <Field name="maxStreamlineProcessCount" label="maxStreamlineProcessCount" type="int">
+        10
+      </Field>
+      <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
+        3
+      </Field>
+      <Field name="workGroupSize" label="Work group size" type="int">
+        32
       </Field>
 
       <Function name="CopyAttributes" user="false" member="true">

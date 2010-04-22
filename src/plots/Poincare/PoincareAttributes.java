@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 35;
+    private static int PoincareAttributes_numAdditionalAtts = 43;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -94,10 +94,14 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int DATAVALUE_CONFIDENCE = 10;
     public final static int DATAVALUE_RIDGELINEVARIANCE = 11;
 
+    public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
+    public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
+    public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
+
 
     public PoincareAttributes()
     {
-        super(numAdditionalAttributes);
+        super(PoincareAttributes_numAdditionalAtts);
 
         minPunctures = 10;
         maxPunctures = 100;
@@ -136,18 +140,26 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTOR;
         showOPoints = false;
+        OPointMaxInterations = 2;
+        showXPoints = false;
+        XPointMaxInterations = 2;
+        showChaotic = false;
         showIslands = false;
-        showLines = true;
-        showPoints = false;
         verboseFlag = true;
         showRidgelines = false;
+        showLines = true;
+        showPoints = false;
         legendFlag = true;
         lightingFlag = true;
+        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_LOADONDEMAND;
+        maxStreamlineProcessCount = 10;
+        maxDomainCacheSize = 3;
+        workGroupSize = 32;
     }
 
     public PoincareAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(PoincareAttributes_numAdditionalAtts + nMoreFields);
 
         minPunctures = 10;
         maxPunctures = 100;
@@ -186,18 +198,26 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTOR;
         showOPoints = false;
+        OPointMaxInterations = 2;
+        showXPoints = false;
+        XPointMaxInterations = 2;
+        showChaotic = false;
         showIslands = false;
-        showLines = true;
-        showPoints = false;
         verboseFlag = true;
         showRidgelines = false;
+        showLines = true;
+        showPoints = false;
         legendFlag = true;
         lightingFlag = true;
+        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_LOADONDEMAND;
+        maxStreamlineProcessCount = 10;
+        maxDomainCacheSize = 3;
+        workGroupSize = 32;
     }
 
     public PoincareAttributes(PoincareAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(PoincareAttributes_numAdditionalAtts);
 
         int i;
 
@@ -241,13 +261,21 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorTableName = new String(obj.colorTableName);
         dataValue = obj.dataValue;
         showOPoints = obj.showOPoints;
+        OPointMaxInterations = obj.OPointMaxInterations;
+        showXPoints = obj.showXPoints;
+        XPointMaxInterations = obj.XPointMaxInterations;
+        showChaotic = obj.showChaotic;
         showIslands = obj.showIslands;
-        showLines = obj.showLines;
-        showPoints = obj.showPoints;
         verboseFlag = obj.verboseFlag;
         showRidgelines = obj.showRidgelines;
+        showLines = obj.showLines;
+        showPoints = obj.showPoints;
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
+        streamlineAlgorithmType = obj.streamlineAlgorithmType;
+        maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+        maxDomainCacheSize = obj.maxDomainCacheSize;
+        workGroupSize = obj.workGroupSize;
 
         SelectAll();
     }
@@ -259,7 +287,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return PoincareAttributes_numAdditionalAtts;
     }
 
     public boolean equals(PoincareAttributes obj)
@@ -310,26 +338,34 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (colorTableName.equals(obj.colorTableName)) &&
                 (dataValue == obj.dataValue) &&
                 (showOPoints == obj.showOPoints) &&
+                (OPointMaxInterations == obj.OPointMaxInterations) &&
+                (showXPoints == obj.showXPoints) &&
+                (XPointMaxInterations == obj.XPointMaxInterations) &&
+                (showChaotic == obj.showChaotic) &&
                 (showIslands == obj.showIslands) &&
-                (showLines == obj.showLines) &&
-                (showPoints == obj.showPoints) &&
                 (verboseFlag == obj.verboseFlag) &&
                 (showRidgelines == obj.showRidgelines) &&
+                (showLines == obj.showLines) &&
+                (showPoints == obj.showPoints) &&
                 (legendFlag == obj.legendFlag) &&
-                (lightingFlag == obj.lightingFlag));
+                (lightingFlag == obj.lightingFlag) &&
+                (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
+                (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+                (maxDomainCacheSize == obj.maxDomainCacheSize) &&
+                (workGroupSize == obj.workGroupSize));
     }
 
     public String GetName() { return "Poincare"; }
     public String GetVersion() { return "2.0"; }
 
     // Property setting methods
-    public void SetMinPunctures(double minPunctures_)
+    public void SetMinPunctures(int minPunctures_)
     {
         minPunctures = minPunctures_;
         Select(0);
     }
 
-    public void SetMaxPunctures(double maxPunctures_)
+    public void SetMaxPunctures(int maxPunctures_)
     {
         maxPunctures = maxPunctures_;
         Select(1);
@@ -521,51 +557,99 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(27);
     }
 
-    public void SetShowIslands(boolean showIslands_)
+    public void SetOPointMaxInterations(int OPointMaxInterations_)
     {
-        showIslands = showIslands_;
+        OPointMaxInterations = OPointMaxInterations_;
         Select(28);
     }
 
-    public void SetShowLines(boolean showLines_)
+    public void SetShowXPoints(boolean showXPoints_)
     {
-        showLines = showLines_;
+        showXPoints = showXPoints_;
         Select(29);
     }
 
-    public void SetShowPoints(boolean showPoints_)
+    public void SetXPointMaxInterations(int XPointMaxInterations_)
     {
-        showPoints = showPoints_;
+        XPointMaxInterations = XPointMaxInterations_;
         Select(30);
+    }
+
+    public void SetShowChaotic(boolean showChaotic_)
+    {
+        showChaotic = showChaotic_;
+        Select(31);
+    }
+
+    public void SetShowIslands(boolean showIslands_)
+    {
+        showIslands = showIslands_;
+        Select(32);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(31);
+        Select(33);
     }
 
     public void SetShowRidgelines(boolean showRidgelines_)
     {
         showRidgelines = showRidgelines_;
-        Select(32);
+        Select(34);
+    }
+
+    public void SetShowLines(boolean showLines_)
+    {
+        showLines = showLines_;
+        Select(35);
+    }
+
+    public void SetShowPoints(boolean showPoints_)
+    {
+        showPoints = showPoints_;
+        Select(36);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(33);
+        Select(37);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(34);
+        Select(38);
+    }
+
+    public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
+    {
+        streamlineAlgorithmType = streamlineAlgorithmType_;
+        Select(39);
+    }
+
+    public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+    {
+        maxStreamlineProcessCount = maxStreamlineProcessCount_;
+        Select(40);
+    }
+
+    public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
+    {
+        maxDomainCacheSize = maxDomainCacheSize_;
+        Select(41);
+    }
+
+    public void SetWorkGroupSize(int workGroupSize_)
+    {
+        workGroupSize = workGroupSize_;
+        Select(42);
     }
 
     // Property getting methods
-    public double         GetMinPunctures() { return minPunctures; }
-    public double         GetMaxPunctures() { return maxPunctures; }
+    public int            GetMinPunctures() { return minPunctures; }
+    public int            GetMaxPunctures() { return maxPunctures; }
     public int            GetSourceType() { return sourceType; }
     public double[]       GetPointSource() { return pointSource; }
     public double[]       GetLineStart() { return lineStart; }
@@ -592,21 +676,29 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public String         GetColorTableName() { return colorTableName; }
     public int            GetDataValue() { return dataValue; }
     public boolean        GetShowOPoints() { return showOPoints; }
+    public int            GetOPointMaxInterations() { return OPointMaxInterations; }
+    public boolean        GetShowXPoints() { return showXPoints; }
+    public int            GetXPointMaxInterations() { return XPointMaxInterations; }
+    public boolean        GetShowChaotic() { return showChaotic; }
     public boolean        GetShowIslands() { return showIslands; }
-    public boolean        GetShowLines() { return showLines; }
-    public boolean        GetShowPoints() { return showPoints; }
     public boolean        GetVerboseFlag() { return verboseFlag; }
     public boolean        GetShowRidgelines() { return showRidgelines; }
+    public boolean        GetShowLines() { return showLines; }
+    public boolean        GetShowPoints() { return showPoints; }
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
+    public int            GetStreamlineAlgorithmType() { return streamlineAlgorithmType; }
+    public int            GetMaxStreamlineProcessCount() { return maxStreamlineProcessCount; }
+    public int            GetMaxDomainCacheSize() { return maxDomainCacheSize; }
+    public int            GetWorkGroupSize() { return workGroupSize; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteDouble(minPunctures);
+            buf.WriteInt(minPunctures);
         if(WriteSelect(1, buf))
-            buf.WriteDouble(maxPunctures);
+            buf.WriteInt(maxPunctures);
         if(WriteSelect(2, buf))
             buf.WriteInt(sourceType);
         if(WriteSelect(3, buf))
@@ -660,19 +752,35 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(27, buf))
             buf.WriteBool(showOPoints);
         if(WriteSelect(28, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteInt(OPointMaxInterations);
         if(WriteSelect(29, buf))
-            buf.WriteBool(showLines);
+            buf.WriteBool(showXPoints);
         if(WriteSelect(30, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteInt(XPointMaxInterations);
         if(WriteSelect(31, buf))
-            buf.WriteBool(verboseFlag);
+            buf.WriteBool(showChaotic);
         if(WriteSelect(32, buf))
-            buf.WriteBool(showRidgelines);
+            buf.WriteBool(showIslands);
         if(WriteSelect(33, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(34, buf))
+            buf.WriteBool(showRidgelines);
+        if(WriteSelect(35, buf))
+            buf.WriteBool(showLines);
+        if(WriteSelect(36, buf))
+            buf.WriteBool(showPoints);
+        if(WriteSelect(37, buf))
+            buf.WriteBool(legendFlag);
+        if(WriteSelect(38, buf))
             buf.WriteBool(lightingFlag);
+        if(WriteSelect(39, buf))
+            buf.WriteInt(streamlineAlgorithmType);
+        if(WriteSelect(40, buf))
+            buf.WriteInt(maxStreamlineProcessCount);
+        if(WriteSelect(41, buf))
+            buf.WriteInt(maxDomainCacheSize);
+        if(WriteSelect(42, buf))
+            buf.WriteInt(workGroupSize);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -680,10 +788,10 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetMinPunctures(buf.ReadDouble());
+            SetMinPunctures(buf.ReadInt());
             break;
         case 1:
-            SetMaxPunctures(buf.ReadDouble());
+            SetMaxPunctures(buf.ReadInt());
             break;
         case 2:
             SetSourceType(buf.ReadInt());
@@ -765,25 +873,49 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetShowOPoints(buf.ReadBool());
             break;
         case 28:
-            SetShowIslands(buf.ReadBool());
+            SetOPointMaxInterations(buf.ReadInt());
             break;
         case 29:
-            SetShowLines(buf.ReadBool());
+            SetShowXPoints(buf.ReadBool());
             break;
         case 30:
-            SetShowPoints(buf.ReadBool());
+            SetXPointMaxInterations(buf.ReadInt());
             break;
         case 31:
-            SetVerboseFlag(buf.ReadBool());
+            SetShowChaotic(buf.ReadBool());
             break;
         case 32:
-            SetShowRidgelines(buf.ReadBool());
+            SetShowIslands(buf.ReadBool());
             break;
         case 33:
-            SetLegendFlag(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 34:
+            SetShowRidgelines(buf.ReadBool());
+            break;
+        case 35:
+            SetShowLines(buf.ReadBool());
+            break;
+        case 36:
+            SetShowPoints(buf.ReadBool());
+            break;
+        case 37:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 38:
             SetLightingFlag(buf.ReadBool());
+            break;
+        case 39:
+            SetStreamlineAlgorithmType(buf.ReadInt());
+            break;
+        case 40:
+            SetMaxStreamlineProcessCount(buf.ReadInt());
+            break;
+        case 41:
+            SetMaxDomainCacheSize(buf.ReadInt());
+            break;
+        case 42:
+            SetWorkGroupSize(buf.ReadInt());
             break;
         }
     }
@@ -791,8 +923,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
-        str = str + doubleToString("minPunctures", minPunctures, indent) + "\n";
-        str = str + doubleToString("maxPunctures", maxPunctures, indent) + "\n";
+        str = str + intToString("minPunctures", minPunctures, indent) + "\n";
+        str = str + intToString("maxPunctures", maxPunctures, indent) + "\n";
         str = str + indent + "sourceType = ";
         if(sourceType == SOURCETYPE_SPECIFIEDPOINT)
             str = str + "SOURCETYPE_SPECIFIEDPOINT";
@@ -875,20 +1007,35 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_RIDGELINEVARIANCE";
         str = str + "\n";
         str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
+        str = str + intToString("OPointMaxInterations", OPointMaxInterations, indent) + "\n";
+        str = str + boolToString("showXPoints", showXPoints, indent) + "\n";
+        str = str + intToString("XPointMaxInterations", XPointMaxInterations, indent) + "\n";
+        str = str + boolToString("showChaotic", showChaotic, indent) + "\n";
         str = str + boolToString("showIslands", showIslands, indent) + "\n";
-        str = str + boolToString("showLines", showLines, indent) + "\n";
-        str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
         str = str + boolToString("showRidgelines", showRidgelines, indent) + "\n";
+        str = str + boolToString("showLines", showLines, indent) + "\n";
+        str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
+        str = str + indent + "streamlineAlgorithmType = ";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_LOADONDEMAND)
+            str = str + "STREAMLINEALGORITHMTYPE_LOADONDEMAND";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS)
+            str = str + "STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_MASTERSLAVE)
+            str = str + "STREAMLINEALGORITHMTYPE_MASTERSLAVE";
+        str = str + "\n";
+        str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
+        str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
+        str = str + intToString("workGroupSize", workGroupSize, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private double         minPunctures;
-    private double         maxPunctures;
+    private int            minPunctures;
+    private int            maxPunctures;
     private int            sourceType;
     private double[]       pointSource;
     private double[]       lineStart;
@@ -915,12 +1062,20 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private String         colorTableName;
     private int            dataValue;
     private boolean        showOPoints;
+    private int            OPointMaxInterations;
+    private boolean        showXPoints;
+    private int            XPointMaxInterations;
+    private boolean        showChaotic;
     private boolean        showIslands;
-    private boolean        showLines;
-    private boolean        showPoints;
     private boolean        verboseFlag;
     private boolean        showRidgelines;
+    private boolean        showLines;
+    private boolean        showPoints;
     private boolean        legendFlag;
     private boolean        lightingFlag;
+    private int            streamlineAlgorithmType;
+    private int            maxStreamlineProcessCount;
+    private int            maxDomainCacheSize;
+    private int            workGroupSize;
 }
 

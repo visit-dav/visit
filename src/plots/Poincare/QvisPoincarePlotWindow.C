@@ -142,35 +142,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
     
     QGridLayout *mainLayout = new QGridLayout(firstTab);
 
-    // Create the punctures group box.
-    QGroupBox *puncturesGroup = new QGroupBox(central);
-    puncturesGroup->setTitle(tr("Punctures"));
-    mainLayout->addWidget(puncturesGroup, 0, 0);
-//    mainLayout->setStretchFactor(puncturesGroup, 100);
-
-    QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
-    puncturesLayout->setMargin(5);
-    puncturesLayout->setSpacing(10);
-
-    minPuncturesLabel = new QLabel(tr("Minimum"), central);
-    puncturesLayout->addWidget(minPuncturesLabel, 0, 0);
-    minPunctures = new QLineEdit(central);
-    connect(minPunctures, SIGNAL(returnPressed()),
-            this, SLOT(minPuncturesProcessText()));
-    puncturesLayout->addWidget(minPunctures, 0, 1);
-
-    maxPuncturesLabel = new QLabel(tr("Maximum"), central);
-    puncturesLayout->addWidget(maxPuncturesLabel, 0, 2);
-    maxPunctures = new QLineEdit(central);
-    connect(maxPunctures, SIGNAL(returnPressed()),
-            this, SLOT(maxPuncturesProcessText()));
-    puncturesLayout->addWidget(maxPunctures, 0, 3);
-
-
    // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
     sourceGroup->setTitle(tr("Source"));
-    mainLayout->addWidget(sourceGroup, 1, 0);
+    mainLayout->addWidget(sourceGroup, 0, 0);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
     sourceLayout->setMargin(5);
@@ -196,8 +171,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
 
 
-
-
     lineStartLabel = new QLabel(tr("Start Point"), central);
     sourceLayout->addWidget(lineStartLabel, 0, 2);
     lineStart = new QLineEdit(central);
@@ -214,11 +187,41 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     pointDensityLabel = new QLabel(tr("Point density"), central);
     sourceLayout->addWidget(pointDensityLabel, 2, 2);
-    pointDensity = new QLineEdit(central);
-    connect(pointDensity, SIGNAL(returnPressed()),
-            this, SLOT(pointDensityProcessText()));
+    pointDensity = new QSpinBox(central);
+    pointDensity->setMinimum(1);
+    pointDensity->setMaximum(10000);
+    connect(pointDensity, SIGNAL(valueChanged(int)),
+            this, SLOT(pointDensityChanged(int)));
     sourceLayout->addWidget(pointDensity, 2, 3);
 
+
+    // Create the punctures group box.
+    QGroupBox *puncturesGroup = new QGroupBox(central);
+    puncturesGroup->setTitle(tr("Punctures"));
+    mainLayout->addWidget(puncturesGroup, 1, 0);
+//    mainLayout->setStretchFactor(puncturesGroup, 100);
+
+    QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
+    puncturesLayout->setMargin(5);
+    puncturesLayout->setSpacing(10);
+
+    minPuncturesLabel = new QLabel(tr("Minimum"), central);
+    puncturesLayout->addWidget(minPuncturesLabel, 0, 0);
+    minPunctures = new QSpinBox(central);
+    minPunctures->setMinimum(1);
+    minPunctures->setMaximum(10000);
+    connect(minPunctures, SIGNAL(valueChanged(int)),
+            this, SLOT(minPuncturesChanged(int)));
+    puncturesLayout->addWidget(minPunctures, 0, 1);
+
+    maxPuncturesLabel = new QLabel(tr("Maximum"), central);
+    puncturesLayout->addWidget(maxPuncturesLabel, 0, 2);
+    maxPunctures = new QSpinBox(central);
+    maxPunctures->setMinimum(1);
+    maxPunctures->setMaximum(10000);
+    connect(maxPunctures, SIGNAL(valueChanged(int)),
+            this, SLOT(maxPuncturesChanged(int)));
+    puncturesLayout->addWidget(maxPunctures, 0, 3);
 
    // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
@@ -233,14 +236,14 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationLayout->addWidget(integrationTypeLabel,0,0);
 
     integrationTypeCombo = new QComboBox(firstTab);
-    integrationTypeCombo->addItem(tr("DormandPrince"));
-    integrationTypeCombo->addItem(tr("AdamsBashforth"));
-    integrationTypeCombo->addItem(tr("M3DC1Integrator"));
+    integrationTypeCombo->addItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationTypeCombo->addItem(tr("Adams-Bashforth (Multi-step)"));
+    integrationTypeCombo->addItem(tr("M3D-C1 Integrator"));
     connect(integrationTypeCombo, SIGNAL(activated(int)),
            this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationTypeCombo, 0, 1);
 
-    maxStepLengthLabel = new QLabel(tr("maximum step length"), central);
+    maxStepLengthLabel = new QLabel(tr("Maxiumum step length"), central);
     integrationLayout->addWidget(maxStepLengthLabel,1,0);
     maxStepLength = new QLineEdit(central);
     connect(maxStepLength, SIGNAL(returnPressed()),
@@ -271,16 +274,20 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     maxToroidalWindingLabel = new QLabel(tr("Max Toroidal Winding"), central);
     mainLayout->addWidget(maxToroidalWindingLabel, 0, 0);
-    maxToroidalWinding = new QLineEdit(central);
-    connect(maxToroidalWinding, SIGNAL(returnPressed()),
-            this, SLOT(maxToroidalWindingProcessText()));
+    maxToroidalWinding = new QSpinBox(central);
+    maxToroidalWinding->setMinimum(1);
+    maxToroidalWinding->setMaximum(1000);
+    connect(maxToroidalWinding, SIGNAL(valueChanged(int)),
+            this, SLOT(maxToroidalWindingChanged(int)));
     mainLayout->addWidget(maxToroidalWinding, 0, 1);
 
     overrideToroidalWindingLabel = new QLabel(tr("Override Toroidal Winding"), central);
     mainLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
-    overrideToroidalWinding = new QLineEdit(central);
-    connect(overrideToroidalWinding, SIGNAL(returnPressed()),
-            this, SLOT(overrideToroidalWindingProcessText()));
+    overrideToroidalWinding = new QSpinBox(central);
+    overrideToroidalWinding->setMinimum(0);
+    overrideToroidalWinding->setMaximum(1000);
+    connect(overrideToroidalWinding, SIGNAL(valueChanged(int)),
+            this, SLOT(overrideToroidalWindingChanged(int)));
     mainLayout->addWidget(overrideToroidalWinding, 1, 1);
 
     hitRateLabel = new QLabel(tr("Hit Rate"), central);
@@ -289,13 +296,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(hitRate, SIGNAL(returnPressed()),
             this, SLOT(hitRateProcessText()));
     mainLayout->addWidget(hitRate, 2, 1);
-
-    adjustPlaneLabel = new QLabel(tr("Adjust Plane"), central);
-    mainLayout->addWidget(adjustPlaneLabel, 3, 0);
-    adjustPlane = new QLineEdit(central);
-    connect(adjustPlane, SIGNAL(returnPressed()),
-            this, SLOT(adjustPlaneProcessText()));
-    mainLayout->addWidget(adjustPlane, 3, 1);
 
     overlapsLabel = new QLabel(tr("Overlaps"), central);
     mainLayout->addWidget(overlapsLabel, 4, 0, Qt::AlignTop);
@@ -318,7 +318,64 @@ QvisPoincarePlotWindow::CreateWindowContents()
     overlapsLayout->addWidget(overlapsOverlapTypeSmooth);
     connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(overlapsChanged(int)));
-    mainLayout->addWidget(overlaps, 4,1, Qt::AlignTop);
+    mainLayout->addWidget(overlaps, 4, 1, Qt::AlignTop);
+
+
+   // Create the O/X Point  group box.
+    QGroupBox *criticalPointGroup = new QGroupBox(central);
+    criticalPointGroup->setTitle(tr("Critical Points"));
+    mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 2, Qt::AlignTop);
+
+    QGridLayout *criticalPointLayout = new QGridLayout(criticalPointGroup);
+    criticalPointLayout->setMargin(5);
+    criticalPointLayout->setSpacing(10);
+
+    showOPoints = new QCheckBox(tr("Detect O Points"), central);
+    connect(showOPoints, SIGNAL(toggled(bool)),
+            this, SLOT(showOPointsChanged(bool)));
+    criticalPointLayout->addWidget(showOPoints, 0, 0);
+
+    OPointMaxIterationsLabel =
+      new QLabel(tr(" Maximum iterations"), criticalPointGroup);
+    OPointMaxIterations = new QSpinBox(criticalPointGroup);
+    OPointMaxIterations->setMinimum(1);
+    OPointMaxIterations->setMaximum(10);
+    connect(OPointMaxIterations, SIGNAL(valueChanged(int)), 
+            this, SLOT(OPointMaxIterationsChanged(int)));
+    criticalPointLayout->addWidget( OPointMaxIterationsLabel, 0, 2);
+    criticalPointLayout->addWidget( OPointMaxIterations, 0, 3);
+
+    criticalPointGroup->hide();
+
+   // Create the options group box.
+    QGroupBox *analysisOptionsGroup = new QGroupBox(central);
+    analysisOptionsGroup->setTitle(tr("Options"));
+    mainLayout->addWidget(analysisOptionsGroup, 6, 0, 1, 2, Qt::AlignTop);
+
+    QGridLayout *analysisOptionsLayout = new QGridLayout(analysisOptionsGroup);
+    analysisOptionsLayout->setMargin(5);
+    analysisOptionsLayout->setSpacing(10);
+
+    showIslands = new QCheckBox(tr("Show Islands Only"), central);
+    connect(showIslands, SIGNAL(toggled(bool)),
+            this, SLOT(showIslandsChanged(bool)));
+    analysisOptionsLayout->addWidget(showIslands, 0, 0);
+
+    showChaotic = new QCheckBox(tr("Show Chaotic Fieldlines (as points)"), central);
+    connect(showChaotic, SIGNAL(toggled(bool)),
+            this, SLOT(showChaoticChanged(bool)));
+    analysisOptionsLayout->addWidget(showChaotic, 0, 1);
+
+    showRidgelines = new QCheckBox(tr("Show Rdigelines"), central);
+    connect(showRidgelines, SIGNAL(toggled(bool)),
+            this, SLOT(showRidgelinesChanged(bool)));
+    analysisOptionsLayout->addWidget(showRidgelines, 1, 0);
+
+    verboseFlag = new QCheckBox(tr("Verbose"), central);
+    connect(verboseFlag, SIGNAL(toggled(bool)),
+            this, SLOT(verboseFlagChanged(bool)));
+    analysisOptionsLayout->addWidget(verboseFlag, 1, 1);
+
 
     // ----------------------------------------------------------------------
     // Third tab
@@ -347,7 +404,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     dataValueCombo->addItem(tr("InputOrder"));
     dataValueCombo->addItem(tr("PointIndex"));
     dataValueCombo->addItem(tr("Plane"));
-    dataValueCombo->addItem(tr("WindingOrder"));
+    dataValueCombo->addItem(tr("WindingGroup"));
     dataValueCombo->addItem(tr("WindingPointOrder"));
     dataValueCombo->addItem(tr("WindingPointOrderModulo"));
     dataValueCombo->addItem(tr("ToroidalWindings"));
@@ -412,18 +469,29 @@ QvisPoincarePlotWindow::CreateWindowContents()
     displayLayout->addWidget(meshTypeCombo, 0, 1);
 
     numberPlanesLabel = new QLabel(tr("Number of planes"), central);
-    displayLayout->addWidget(numberPlanesLabel,1,0);
-    numberPlanes = new QLineEdit(central);
-    connect(numberPlanes, SIGNAL(returnPressed()),
-            this, SLOT(numberPlanesProcessText()));
-    displayLayout->addWidget(numberPlanes, 1,1);
+    displayLayout->addWidget(numberPlanesLabel, 1, 0);
+    numberPlanes = new QSpinBox(central);
+    numberPlanes->setMinimum(1);
+    numberPlanes->setMaximum(250);
+    connect(numberPlanes, SIGNAL(valueChanged(int)),
+            this, SLOT(numberPlanesChanged(int)));
+    displayLayout->addWidget(numberPlanes, 1, 1);
 
-    singlePlaneLabel = new QLabel(tr("Base plane"), central);
-    displayLayout->addWidget(singlePlaneLabel,1,2);
+    singlePlaneLabel = new QLabel(tr("Base plane (degrees)"), central);
+    displayLayout->addWidget(singlePlaneLabel, 1, 2);
     singlePlane = new QLineEdit(central);
     connect(singlePlane, SIGNAL(returnPressed()),
             this, SLOT(singlePlaneProcessText()));
-    displayLayout->addWidget(singlePlane, 1,3);
+    displayLayout->addWidget(singlePlane, 1, 3);
+
+    adjustPlaneLabel = new QLabel(tr("Adjust plane index"), central);
+    displayLayout->addWidget(adjustPlaneLabel, 1, 2);
+    adjustPlane = new QSpinBox(central);
+    adjustPlane->setMinimum(-1);
+    adjustPlane->setMaximum(250);
+    connect(adjustPlane, SIGNAL(valueChanged(int)),
+            this, SLOT(adjustPlaneChanged(int)));
+    displayLayout->addWidget(adjustPlane, 1, 3);
 
 
    // Create the color group box.
@@ -473,22 +541,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
     optionsLayout->setMargin(5);
     optionsLayout->setSpacing(10);
 
-    showOPoints = new QCheckBox(tr("Show O Points"), central);
-    connect(showOPoints, SIGNAL(toggled(bool)),
-            this, SLOT(showOPointsChanged(bool)));
-    optionsLayout->addWidget(showOPoints, 0, 0);
-//    showOPoints->hide();
-
-    showIslands = new QCheckBox(tr("Show Islands"), central);
-    connect(showIslands, SIGNAL(toggled(bool)),
-            this, SLOT(showIslandsChanged(bool)));
-    optionsLayout->addWidget(showIslands, 0, 1);
-
-    verboseFlag = new QCheckBox(tr("Verbose"), central);
-    connect(verboseFlag, SIGNAL(toggled(bool)),
-            this, SLOT(verboseFlagChanged(bool)));
-    optionsLayout->addWidget(verboseFlag, 0, 2);
-
     showLines = new QCheckBox(tr("Show Lines"), central);
     connect(showLines, SIGNAL(toggled(bool)),
             this, SLOT(showLinesChanged(bool)));
@@ -498,12 +550,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
     optionsLayout->addWidget(showPoints, 1, 1);
-
-    showRidgelines = new QCheckBox(tr("Show Rdigelines"), central);
-    connect(showRidgelines, SIGNAL(toggled(bool)),
-            this, SLOT(showRidgelinesChanged(bool)));
-    optionsLayout->addWidget(showRidgelines, 1, 2);
-
 
     //
     // Create the misc stuff
@@ -527,6 +573,60 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
     miscLayout->addWidget(lightingToggle, 0, 1);
+
+    // ----------------------------------------------------------------------
+    // Forth tab
+    // ----------------------------------------------------------------------
+    forthTab = new QWidget(central);
+    propertyTabs->addTab(forthTab, tr("Parallel"));
+    
+    mainLayout = new QGridLayout(forthTab);
+
+    QGroupBox *algoGrp = new QGroupBox(central);
+    algoGrp->setTitle(tr("Parallel streamline options"));
+    mainLayout->addWidget(algoGrp, 0, 0, 1, 4);
+
+    // Algorithm group.
+    QGridLayout *algoGLayout = new QGridLayout(algoGrp);
+    algoGLayout->setSpacing(10);
+    algoGLayout->setColumnStretch(1,10);
+
+    slAlgoLabel = new QLabel(tr("Parallelize across"), algoGrp);
+    slAlgo = new QComboBox(algoGrp);
+    slAlgo->addItem(tr("Streamlines"));
+    slAlgo->addItem(tr("Domains"));
+    slAlgo->addItem(tr("Streamlines and Domains"));
+    connect(slAlgo, SIGNAL(activated(int)),
+            this, SLOT(streamlineAlgorithmChanged(int)));
+    algoGLayout->addWidget( slAlgoLabel, 1,0);
+    algoGLayout->addWidget( slAlgo, 1,1);
+    
+    maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
+    maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setMinimum(1);
+    maxSLCount->setMaximum(100000);
+    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+            this, SLOT(maxSLCountChanged(int)));
+    algoGLayout->addWidget( maxSLCountLabel, 2,0);
+    algoGLayout->addWidget( maxSLCount,2,1);
+
+    maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
+    maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setMinimum(1);
+    maxDomainCache->setMaximum(100000);
+    connect(maxDomainCache, SIGNAL(valueChanged(int)),
+            this, SLOT(maxDomainCacheChanged(int)));
+    algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
+    algoGLayout->addWidget( maxDomainCache, 3,1);
+
+    workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
+    workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setMinimum(2);
+    workGroupSize->setMaximum(1000000);
+    connect(workGroupSize, SIGNAL(valueChanged(int)),
+            this, SLOT(workGroupSizeChanged(int)));
+    algoGLayout->addWidget( workGroupSizeLabel, 4,0);
+    algoGLayout->addWidget( workGroupSize, 4,1);
 }
 
 
@@ -562,10 +662,14 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case PoincareAttributes::ID_minPunctures:
-            minPunctures->setText(DoubleToQString(atts->GetMinPunctures()));
+            minPunctures->blockSignals(true);
+            minPunctures->setValue(atts->GetMinPunctures());
+            minPunctures->blockSignals(false);
             break;
           case PoincareAttributes::ID_maxPunctures:
-            maxPunctures->setText(DoubleToQString(atts->GetMaxPunctures()));
+            maxPunctures->blockSignals(true);
+            maxPunctures->setValue(atts->GetMaxPunctures());
+            maxPunctures->blockSignals(false);
             break;
           case PoincareAttributes::ID_sourceType:
             if (atts->GetSourceType() == PoincareAttributes::SpecifiedPoint)
@@ -639,9 +743,14 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             lineEnd->setText(DoublesToQString(atts->GetLineEnd(), 3));
             break;
           case PoincareAttributes::ID_pointDensity:
-            pointDensity->setText(IntToQString(atts->GetPointDensity()));
+            pointDensity->blockSignals(true);
+            pointDensity->setValue(atts->GetPointDensity());
+            pointDensity->blockSignals(false);
             break;
           case PoincareAttributes::ID_integrationType:
+            // Update lots of widget visibility and enabled states.
+            UpdateIntegrationAttributes();
+
             integrationTypeCombo->blockSignals(true);
             integrationTypeCombo->setCurrentIndex((int)atts->GetIntegrationType());
             integrationTypeCombo->blockSignals(false);
@@ -656,16 +765,22 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             absTol->setText(DoubleToQString(atts->GetAbsTol()));
             break;
           case PoincareAttributes::ID_maxToroidalWinding:
-            maxToroidalWinding->setText(IntToQString(atts->GetMaxToroidalWinding()));
+            maxToroidalWinding->blockSignals(true);
+            maxToroidalWinding->setValue(atts->GetMaxToroidalWinding());
+            maxToroidalWinding->blockSignals(false);
             break;
           case PoincareAttributes::ID_overrideToroidalWinding:
-            overrideToroidalWinding->setText(IntToQString(atts->GetOverrideToroidalWinding()));
+            overrideToroidalWinding->blockSignals(true);
+            overrideToroidalWinding->setValue(atts->GetOverrideToroidalWinding());
+            overrideToroidalWinding->blockSignals(false);
             break;
           case PoincareAttributes::ID_hitRate:
             hitRate->setText(DoubleToQString(atts->GetHitRate()));
             break;
           case PoincareAttributes::ID_adjustPlane:
-            adjustPlane->setText(IntToQString(atts->GetAdjustPlane()));
+            adjustPlane->blockSignals(true);
+            adjustPlane->setValue(atts->GetAdjustPlane());
+            adjustPlane->blockSignals(false);
             break;
           case PoincareAttributes::ID_overlaps:
             overlapsButtonGroup->blockSignals(true);
@@ -674,6 +789,7 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             overlapsButtonGroup->blockSignals(false);
             break;
           case PoincareAttributes::ID_meshType:
+            UpdateMeshTypeAttributes();
             meshTypeCombo->blockSignals(true);
             meshTypeCombo->setCurrentIndex((int)atts->GetMeshType());
             meshTypeCombo->blockSignals(false);
@@ -681,13 +797,13 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_numberPlanes:
             // Disconnect the slot before setting the toggle and
             // reconnect it after. This prevents multiple updates.
-            disconnect(numberPlanes, SIGNAL(returnPressed()),
-                       this, SLOT(numberPlanesProcessText()));
-            numberPlanes->setText(IntToQString(atts->GetNumberPlanes()));
+            disconnect(numberPlanes, SIGNAL(valueChanged(int)),
+                       this, SLOT(numberPlanesChanged(int)));
+            numberPlanes->setValue(atts->GetNumberPlanes());
             singlePlaneLabel->setEnabled( atts->GetNumberPlanes() == 1 );
             singlePlane->setEnabled( atts->GetNumberPlanes() == 1 );
-            connect(numberPlanes, SIGNAL(returnPressed()),
-                    this, SLOT(numberPlanesProcessText()));
+            connect(numberPlanes, SIGNAL(valueChanged(int)),
+                    this, SLOT(numberPlanesChanged(int)));
             break;
           case PoincareAttributes::ID_singlePlane:
             singlePlane->setText(DoubleToQString(atts->GetSinglePlane()));
@@ -769,6 +885,11 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             showIslands->setChecked(atts->GetShowIslands());
             showIslands->blockSignals(false);
             break;
+          case PoincareAttributes::ID_showChaotic:
+            showChaotic->blockSignals(true);
+            showChaotic->setChecked(atts->GetShowChaotic());
+            showChaotic->blockSignals(false);
+            break;
           case PoincareAttributes::ID_showLines:
             showLines->blockSignals(true);
             showLines->setChecked(atts->GetShowLines());
@@ -799,6 +920,29 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             lightingToggle->setChecked(atts->GetLightingFlag());
             lightingToggle->blockSignals(false);
             break;
+
+        case PoincareAttributes::ID_streamlineAlgorithmType:
+            UpdateAlgorithmAttributes();
+
+            slAlgo->blockSignals(true);
+            slAlgo->setCurrentIndex(atts->GetStreamlineAlgorithmType());
+            slAlgo->blockSignals(false);
+            break;
+        case PoincareAttributes::ID_maxStreamlineProcessCount:
+            maxSLCount->blockSignals(true);
+            maxSLCount->setValue(atts->GetMaxStreamlineProcessCount());
+            maxSLCount->blockSignals(false);
+            break;
+        case PoincareAttributes::ID_maxDomainCacheSize:
+            maxDomainCache->blockSignals(true);
+            maxDomainCache->setValue(atts->GetMaxDomainCacheSize());
+            maxDomainCache->blockSignals(false);
+            break;
+        case PoincareAttributes::ID_workGroupSize:
+            workGroupSize->blockSignals(true);
+            workGroupSize->setValue(atts->GetWorkGroupSize());
+            workGroupSize->blockSignals(false);
+            break;
         }
     }
 }
@@ -823,34 +967,6 @@ void
 QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
-
-    // Do minPunctures
-    if(which_widget == PoincareAttributes::ID_minPunctures || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(minPunctures, val))
-            atts->SetMinPunctures(val);
-        else
-        {
-            ResettingError(tr("Minimum number of Punctures"),
-                DoubleToQString(atts->GetMinPunctures()));
-            atts->SetMinPunctures(atts->GetMinPunctures());
-        }
-    }
-
-    // Do maxPunctures
-    if(which_widget == PoincareAttributes::ID_maxPunctures || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(maxPunctures, val))
-            atts->SetMaxPunctures(val);
-        else
-        {
-            ResettingError(tr("Maximum number of Punctures"),
-                DoubleToQString(atts->GetMaxPunctures()));
-            atts->SetMaxPunctures(atts->GetMaxPunctures());
-        }
-    }
 
     // Do pointSource
     if(which_widget == PoincareAttributes::ID_pointSource || doAll)
@@ -891,20 +1007,6 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("Line Point End"),
                 DoublesToQString(atts->GetLineEnd(),3));
             atts->SetLineEnd(atts->GetLineEnd());
-        }
-    }
-
-    // Do pointDensity
-    if(which_widget == PoincareAttributes::ID_pointDensity || doAll)
-    {
-        int val;
-        if(LineEditGetInt(pointDensity, val))
-            atts->SetPointDensity(val);
-        else
-        {
-            ResettingError(tr("Point density"),
-                IntToQString(atts->GetPointDensity()));
-            atts->SetPointDensity(atts->GetPointDensity());
         }
     }
 
@@ -950,34 +1052,6 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do maxToroidalWinding
-    if(which_widget == PoincareAttributes::ID_maxToroidalWinding || doAll)
-    {
-        int val;
-        if(LineEditGetInt(maxToroidalWinding, val))
-            atts->SetMaxToroidalWinding(val);
-        else
-        {
-            ResettingError(tr("maxToroidalWinding"),
-                IntToQString(atts->GetMaxToroidalWinding()));
-            atts->SetMaxToroidalWinding(atts->GetMaxToroidalWinding());
-        }
-    }
-
-    // Do overrideToroidalWinding
-    if(which_widget == PoincareAttributes::ID_overrideToroidalWinding || doAll)
-    {
-        int val;
-        if(LineEditGetInt(overrideToroidalWinding, val))
-            atts->SetOverrideToroidalWinding(val);
-        else
-        {
-            ResettingError(tr("overrideToroidalWinding"),
-                IntToQString(atts->GetOverrideToroidalWinding()));
-            atts->SetOverrideToroidalWinding(atts->GetOverrideToroidalWinding());
-        }
-    }
-
     // Do hitRate
     if(which_widget == PoincareAttributes::ID_hitRate || doAll)
     {
@@ -990,37 +1064,6 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
                 DoubleToQString(atts->GetHitRate()));
             atts->SetHitRate(atts->GetHitRate());
         }
-    }
-
-    // Do adjustPlane
-    if(which_widget == PoincareAttributes::ID_adjustPlane || doAll)
-    {
-        int val;
-        if(LineEditGetInt(adjustPlane, val))
-            atts->SetAdjustPlane(val);
-        else
-        {
-            ResettingError(tr("adjustPlane"),
-                IntToQString(atts->GetAdjustPlane()));
-            atts->SetAdjustPlane(atts->GetAdjustPlane());
-        }
-    }
-
-    // Do numberPlanes
-    if(which_widget == PoincareAttributes::ID_numberPlanes || doAll)
-    {
-        int val;
-        if(LineEditGetInt(numberPlanes, val))
-            atts->SetNumberPlanes(val);
-        else
-        {
-            ResettingError(tr("numberPlanes"),
-                IntToQString(atts->GetNumberPlanes()));
-            atts->SetNumberPlanes(atts->GetNumberPlanes());
-        }
-
-        singlePlaneLabel->setEnabled( val == 1 );
-        singlePlane->setEnabled( val == 1 );
     }
 
     // Do singlePlane
@@ -1065,6 +1108,132 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
+}
+
+
+// ****************************************************************************
+// Method: QvisPoincarePlotWindow::UpdateIntegrationAttributes
+//
+// Purpose: 
+//   Updates the widgets for the various integration types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Jul 31 14:41:00 EDT 2008
+//
+// ****************************************************************************
+
+void
+QvisPoincarePlotWindow::UpdateIntegrationAttributes()
+{
+    //Turn off everything.
+    maxStepLength->hide();
+    maxStepLengthLabel->hide();
+    relTol->hide();
+    relTolLabel->hide();
+    absTol->hide();
+    absTolLabel->hide();
+    
+    switch( atts->GetIntegrationType() )
+    {
+    case PoincareAttributes::DormandPrince:
+        maxStepLength->show();
+        maxStepLengthLabel->show();
+        maxStepLengthLabel->setText(tr("Maximum step length"));
+        relTol->show();
+        relTolLabel->show();
+        absTol->show();
+        absTolLabel->show();
+        break;
+
+    case PoincareAttributes::AdamsBashforth:
+    case PoincareAttributes::M3DC1Integrator:
+        maxStepLength->show();
+        maxStepLengthLabel->show();
+        maxStepLengthLabel->setText(tr("Step length"));
+        absTol->show();
+        absTolLabel->show();
+        break;
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisPoincarePlotWindow::UpdateMeshTypeAttributes
+//
+// Purpose: 
+//   Updates the widgets for the various integration types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Fri Aug 1 16:41:38 EDT 2008
+//
+// ****************************************************************************
+
+void
+QvisPoincarePlotWindow::UpdateMeshTypeAttributes()
+{
+    //Turn off everything.
+    singlePlaneLabel->hide();
+    singlePlane->hide();
+    adjustPlaneLabel->hide();
+    adjustPlane->hide();
+
+    switch( atts->GetMeshType() )
+    {
+    case PoincareAttributes::Curves:
+        singlePlaneLabel->show();
+        singlePlane->show();
+        break;
+
+    case PoincareAttributes::Surfaces:
+        adjustPlaneLabel->show();
+        adjustPlane->show();
+        break;
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisPoincarePlotWindow::UpdateAlgorithmAttributes
+//
+// Purpose: 
+//   Updates the widgets for the various integration types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Fri Aug 1 16:41:38 EDT 2008
+//
+// ****************************************************************************
+
+void
+QvisPoincarePlotWindow::UpdateAlgorithmAttributes()
+{
+    //Turn off everything.
+    maxDomainCacheLabel->hide();
+    maxDomainCache->hide();
+    maxSLCountLabel->hide();
+    maxSLCount->hide();
+    workGroupSizeLabel->hide();
+    workGroupSize->hide();
+
+    switch( atts->GetStreamlineAlgorithmType() )
+    {
+      case PoincareAttributes::LoadOnDemand:
+        maxDomainCacheLabel->show();
+        maxDomainCache->show();
+        break;
+    case PoincareAttributes::ParallelStaticDomains:
+        maxSLCountLabel->show();
+        maxSLCount->show();
+        break;
+
+    case PoincareAttributes::MasterSlave:
+        maxDomainCacheLabel->show();
+        maxDomainCache->show();
+        maxSLCountLabel->show();
+        maxSLCount->show();
+        workGroupSizeLabel->show();
+        workGroupSize->show();
+        break;
+    }
 }
 
 
@@ -1172,22 +1341,6 @@ QvisPoincarePlotWindow::reset()
 
 
 void
-QvisPoincarePlotWindow::minPuncturesProcessText()
-{
-    GetCurrentValues(PoincareAttributes::ID_minPunctures);
-    Apply();
-}
-
-
-void
-QvisPoincarePlotWindow::maxPuncturesProcessText()
-{
-    GetCurrentValues(PoincareAttributes::ID_maxPunctures);
-    Apply();
-}
-
-
-void
 QvisPoincarePlotWindow::sourceTypeChanged(int val)
 {
     if(val != atts->GetSourceType())
@@ -1223,9 +1376,25 @@ QvisPoincarePlotWindow::lineEndProcessText()
 
 
 void
-QvisPoincarePlotWindow::pointDensityProcessText()
+QvisPoincarePlotWindow::pointDensityChanged(int val)
 {
-    GetCurrentValues(PoincareAttributes::ID_pointDensity);
+    atts->SetPointDensity(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::minPuncturesChanged(int val)
+{
+    atts->SetMinPunctures(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::maxPuncturesChanged(int val)
+{
+    atts->SetMaxPunctures(val);
     Apply();
 }
 
@@ -1236,7 +1405,6 @@ QvisPoincarePlotWindow::integrationTypeChanged(int val)
     if(val != atts->GetIntegrationType())
     {
         atts->SetIntegrationType(PoincareAttributes::IntegrationType(val));
-        SetUpdate(false);
         Apply();
     }
 }
@@ -1267,17 +1435,17 @@ QvisPoincarePlotWindow::absTolProcessText()
 
 
 void
-QvisPoincarePlotWindow::maxToroidalWindingProcessText()
+QvisPoincarePlotWindow::maxToroidalWindingChanged(int val)
 {
-    GetCurrentValues(PoincareAttributes::ID_maxToroidalWinding);
+    atts->SetMaxToroidalWinding(val);
     Apply();
 }
 
 
 void
-QvisPoincarePlotWindow::overrideToroidalWindingProcessText()
+QvisPoincarePlotWindow::overrideToroidalWindingChanged(int val)
 {
-    GetCurrentValues(PoincareAttributes::ID_overrideToroidalWinding);
+    atts->SetOverrideToroidalWinding(val);
     Apply();
 }
 
@@ -1291,20 +1459,11 @@ QvisPoincarePlotWindow::hitRateProcessText()
 
 
 void
-QvisPoincarePlotWindow::adjustPlaneProcessText()
-{
-    GetCurrentValues(PoincareAttributes::ID_adjustPlane);
-    Apply();
-}
-
-
-void
 QvisPoincarePlotWindow::overlapsChanged(int val)
 {
     if(val != atts->GetOverlaps())
     {
         atts->SetOverlaps(PoincareAttributes::OverlapType(val));
-        SetUpdate(false);
         Apply();
     }
 }
@@ -1316,16 +1475,15 @@ QvisPoincarePlotWindow::meshTypeChanged(int val)
     if(val != atts->GetMeshType())
     {
         atts->SetMeshType(PoincareAttributes::ShowMeshType(val));
-        SetUpdate(false);
         Apply();
     }
 }
 
 
 void
-QvisPoincarePlotWindow::numberPlanesProcessText()
+QvisPoincarePlotWindow::numberPlanesChanged(int val)
 {
-    GetCurrentValues(PoincareAttributes::ID_numberPlanes);
+    atts->SetNumberPlanes(val);
     Apply();
 }
 
@@ -1334,6 +1492,14 @@ void
 QvisPoincarePlotWindow::singlePlaneProcessText()
 {
     GetCurrentValues(PoincareAttributes::ID_singlePlane);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::adjustPlaneChanged(int val)
+{
+    atts->SetAdjustPlane(val);
     Apply();
 }
 
@@ -1416,7 +1582,14 @@ void
 QvisPoincarePlotWindow::showOPointsChanged(bool val)
 {
     atts->SetShowOPoints(val);
-    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::OPointMaxIterationsChanged(int val)
+{
+    atts->SetOPointMaxInterations(val);
     Apply();
 }
 
@@ -1425,7 +1598,14 @@ void
 QvisPoincarePlotWindow::showIslandsChanged(bool val)
 {
     atts->SetShowIslands(val);
-    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::showChaoticChanged(bool val)
+{
+    atts->SetShowChaotic(val);
     Apply();
 }
 
@@ -1434,7 +1614,6 @@ void
 QvisPoincarePlotWindow::showLinesChanged(bool val)
 {
     atts->SetShowLines(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1443,7 +1622,6 @@ void
 QvisPoincarePlotWindow::showRidgelinesChanged(bool val)
 {
     atts->SetShowRidgelines(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1452,7 +1630,6 @@ void
 QvisPoincarePlotWindow::showPointsChanged(bool val)
 {
     atts->SetShowPoints(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1461,7 +1638,6 @@ void
 QvisPoincarePlotWindow::verboseFlagChanged(bool val)
 {
     atts->SetVerboseFlag(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -1480,5 +1656,36 @@ QvisPoincarePlotWindow::lightingToggled(bool val)
 {
     atts->SetLightingFlag(val);
     SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::streamlineAlgorithmChanged(int val)
+{
+    if(val != atts->GetStreamlineAlgorithmType())
+    {
+        atts->SetStreamlineAlgorithmType(PoincareAttributes::StreamlineAlgorithmType(val));
+        Apply();
+    }
+}
+
+void
+QvisPoincarePlotWindow::maxSLCountChanged(int val)
+{
+    atts->SetMaxStreamlineProcessCount(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::maxDomainCacheChanged(int val)
+{
+    atts->SetMaxDomainCacheSize(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::workGroupSizeChanged(int val)
+{
+    atts->SetWorkGroupSize(val);
     Apply();
 }
