@@ -662,12 +662,21 @@ def GenFileNames(file, ext):
 #
 #   Sean Ahern, Thu Dec 20 14:48:14 EST 2007
 #   Made diffState be a string so its easier to understand.
+#
+#   Eric Brugger, Thu Apr 22 12:56:41 PDT 2010
+#   I made several changes to the return code behavior of the script.  It
+#   returns error code 119 if the test succeeded and the test had some skips.
+#   It returns error code 120 if the test had acceptable differences and
+#   had some skips.  It returns error code 113 if the differences were
+#   unacceptable regardless of whether some tests were skipped.
+#
 # ----------------------------------------------------------------------------
 
 def Test(file, altSWA=0):
     global pixdifftol
     global avgdifftol
     global maxds
+    global numskip
     global trackingMemoryUsage
     global iactive
     global usePIL
@@ -732,6 +741,7 @@ def Test(file, altSWA=0):
                 diffState = 'None'
     if skipMe:
         diffState = 'Skipped'
+        numskip = numskip + 1
 
     WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file)
 
@@ -762,7 +772,7 @@ def Test(file, altSWA=0):
         'Acceptable' : 1,
         'Unacceptable' : 2,
         'Unknown' : 3,
-        'Skipped' : 4
+        'Skipped' : 0
     }
     maxds = max(maxds, diffVals[diffState])
 
@@ -1239,10 +1249,18 @@ def FilterTestText(inText, baseText):
 #   Brad Whitlock, Mon Nov 21 13:41:19 PST 2005
 #   I made sure that it uses the mode-specific baseline if one exists.
 #
+#   Eric Brugger, Thu Apr 22 12:56:41 PDT 2010
+#   I made several changes to the return code behavior of the script.  It
+#   returns error code 119 if the test succeeded and the test had some skips.
+#   It returns error code 120 if the test had acceptable differences and
+#   had some skips.  It returns error code 113 if the differences were
+#   unacceptable regardless of whether some tests were skipped.
+#
 # ----------------------------------------------------------------------------
 def TestText(file, inText):
     global html
     global maxds
+    global numskip
     global trackingMemoryUsage
     global skipCases
 
@@ -1322,9 +1340,12 @@ def TestText(file, inText):
     if trackingMemoryUsage:
        AddMemorySample()
 
+    # Increment the number of skips if appropriate
+    if skipMe: numskip = numskip + 1
+
     # set error codes 
     if failed:
-        if skipMe: maxds = 4
+        if skipMe: maxds = 0
 	else: maxds = 2
 
 # ----------------------------------------------------------------------------
@@ -1352,6 +1373,7 @@ def TestSection(sectionName):
 def Exit(excode=0):
     global html
     global maxds
+    global numskip
     global trackingMemoryUsage
     global leakHistory
     if purify == 1:
@@ -1374,10 +1396,17 @@ def Exit(excode=0):
     html.close()
     if (iactive == 0):
         if (excode):             sys.exit(excode)
-	if (maxds == 0):         sys.exit(111)
-        if (maxds == 1):         sys.exit(112)
+	if (maxds == 0):
+            if (numskip == 0):
+                sys.exit(111)
+            else:
+                sys.exit(119)
+        if (maxds == 1):
+            if (numskip == 0):
+                sys.exit(112)
+            else:
+                sys.exit(120)
         if (maxds == 2):         sys.exit(113)
-        if (maxds == 4):         sys.exit(119)
         sys.exit(114)
 
 
@@ -1533,6 +1562,13 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
 #    It was decided that Silo should be a global preferred file format
 #    for all users everywhere, so I removed the setting in this file.
 #
+#   Eric Brugger, Thu Apr 22 12:56:41 PDT 2010
+#   I made several changes to the return code behavior of the script.  It
+#   returns error code 119 if the test succeeded and the test had some skips.
+#   It returns error code 120 if the test had acceptable differences and
+#   had some skips.  It returns error code 113 if the differences were
+#   unacceptable regardless of whether some tests were skipped.
+#
 # ----------------------------------------------------------------------------
 
 import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
@@ -1544,6 +1580,7 @@ from stat import *
 
 # global indicating the maximum difference over all images
 maxds = 0
+numskip = 0
 avgdifftol = 0.0
 pixdifftol = 0
 numdifftol = 0.0
