@@ -12,6 +12,9 @@
 # Date: Wed Jan 13 15:41:40 PST 2010
 #
 # Modifications:
+#   Cyrus Harrison, Thu Apr 22 08:53:19 PDT 2010
+#   Added link to qt.conf into bundle.app/Contents/Resources to prevent qt
+#   from loading plugins from other qt installs.
 #
 ################################################################################
 
@@ -149,6 +152,13 @@ function fixup_bundle
     # Make a link up to visit
     cd MacOS
     ln -s ../../../../../../bin/visit .
+
+    # Make a link to qt.conf to avoid loading qt plugins
+    # from other qt installs.
+    if test -d ../Resources ; then
+        cd ../Resources
+        ln -s ../../../qt.conf .
+    fi
     popd > /dev/null
 }
 
