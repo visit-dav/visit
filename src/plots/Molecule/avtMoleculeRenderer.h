@@ -63,6 +63,9 @@ class avtMoleculeRendererImplementation;
 //    Jeremy Meredith, Tue Aug 29 13:20:08 EDT 2006
 //    Changed spec coeffs to doubles.
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 
 class avtMoleculeRenderer : public avtCustomRenderer
@@ -73,6 +76,7 @@ class avtMoleculeRenderer : public avtCustomRenderer
     static avtMoleculeRenderer *New(void);
 
     void                    SetAtts(const AttributeGroup*);
+    void                    SetIs2D(bool);
 
     void                    InvalidateColors();
 
@@ -105,6 +109,7 @@ class avtMoleculeRenderer : public avtCustomRenderer
     float spec_coeff;
     float spec_power;
     float spec_r, spec_g, spec_b;
+    bool  is2D;
     avtLookupTable *levelsLUT;
 };
 

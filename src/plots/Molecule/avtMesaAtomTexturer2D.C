@@ -37,22 +37,22 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtMesaAtomTexturer.C                           //
+//                          avtMesaAtomTexturer2D.C                          //
 // ************************************************************************* //
 
-#include <avtMesaAtomTexturer.h>
+#include <avtMesaAtomTexturer2D.h>
 
 // Mangle the GL calls to mgl.
 #include <GL/gl_mangle.h>
 #include <GL/gl.h>
 
-#define avtOpenGLAtomTexturer avtMesaAtomTexturer
+#define avtOpenGLAtomTexturer2D avtMesaAtomTexturer2D
 #define TextureModeData mesaTextureModeData
 #define ShaderModeData mesaShaderModeData
 #define VTK_IMPLEMENT_MESA_CXX
 
-#include "avtOpenGLAtomTexturer.C"
+#include "avtOpenGLAtomTexturer2D.C"
 
-#undef  avtOpenGLAtomTexturer
+#undef  avtOpenGLAtomTexturer2D
 #undef TextureModeData
 #undef ShaderModeData

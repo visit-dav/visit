@@ -36,51 +36,61 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_MOLECULE_RENDERER_IMPLEMENTATION_H
-#define AVT_MOLECULE_RENDERER_IMPLEMENTATION_H
-
-class avtLookupTable;
-class vtkPolyData;
-class vtkDataArray;
-class MoleculeAttributes;
-struct avtViewInfo;
+#ifndef AVT_OPENGL_ATOM_TEXTURER_2D_H
+#define AVT_OPENGL_ATOM_TEXTURER_2D_H
 
 // ****************************************************************************
-//  Class:  avtMoleculeRendererImplementation
+// Class: avtOpenGLAtomTexturer2D
 //
-//  Purpose:
-//    Implements the rendering-only portion of a molecule renderer in a
-//    relatively stateless manner.  Meant to be instantiated at render
-//    time by avtMoleculeRenderer::Render, though it can be kept around
-//    across renderers while the implementation itself has not changed.
+// Purpose:
+//   Performs sphere shading on imposter quads using different methods.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    February  3, 2006
+// Notes:      There are 2 methods: texture-based, shader-based.
 //
-//  Modifications:
-//    John Schreiner, Fri Feb 12 19:19:34 MST 2010
-//    Removed window size parameter to Render().
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 28 09:56:02 PDT 2006
 //
-//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
-//    Added 2D mode.
+// Modifications:
+//   Brad Whitlock, Fri Apr 7 11:26:48 PDT 2006
+//   Added SetHint method.
+//
+//   John Schreiner, Fri Feb 12 19:19:34 MST 2010
+//   Removed width/height hints that aren't required anymore.
+//
+//   Jeremy Meredith, Thu Apr 22 14:09:38 EDT 2010
+//   Derived from 3D atom texturer.
+//   Made a flat-circle version for 2D use.
 //
 // ****************************************************************************
-class avtMoleculeRendererImplementation
+
+class avtOpenGLAtomTexturer2D
 {
-  public:
-                   avtMoleculeRendererImplementation() {}
-    virtual       ~avtMoleculeRendererImplementation() {}
-    virtual void   Render(vtkPolyData *data, const MoleculeAttributes&,
-                          bool immediateModeRendering,
-                          float varmin, float varmax,
-                          float ambient_coeff,
-                          float spec_coeff, float spec_power,
-                          float spec_r, float spec_g, float spec_b,
-                          bool is2D) = 0;
-    virtual void   InvalidateColors() { };
-    virtual void   SetLevelsLUT(avtLookupTable *) = 0;
+public:
+    avtOpenGLAtomTexturer2D();
+    virtual ~avtOpenGLAtomTexturer2D();
+    bool BeginSphereTexturing();
+    void EndSphereTexturing();
+
+    void SetHint(int,int) {; };
+
+    bool ModeAvailable() { return true; }
 private:
-    avtLookupTable *levelsLUT;
+    void MakeTextures();
+
+    // Texture-related data.
+    bool sphereTexturesDataCreated;
+    bool sphereTexturesLoaded;
+    unsigned int  textureName;
+    unsigned char sphereTexture[256][256][2];
+
+    // Keep track of OpenGL state
+    int   isBlendEnabled;
+    int   blendFunc0;
+    int   blendFunc1;
+    int   needAlphaTest;
+    int   isAlphaTestEnabled;
+    int   alphaTestFunc;
+    float alphaTestRef;
 };
 
 #endif

@@ -27,8 +27,10 @@ avtMoleculePlot.C
 avtMoleculeRenderer.C
 avtOpenGLMoleculeRenderer.C
 avtMesaMoleculeRenderer.C
-avtOpenGLAtomTexturer.C
-avtMesaAtomTexturer.C
+avtOpenGLAtomTexturer2D.C
+avtMesaAtomTexturer2D.C
+avtOpenGLAtomTexturer3D.C
+avtMesaAtomTexturer3D.C
 avtMoleculeFilter.C
 ${COMMON_SOURCES}
 )
@@ -39,19 +41,21 @@ avtMoleculePlot.C
 avtMoleculeRenderer.C
 avtOpenGLMoleculeRenderer.C
 avtMesaMoleculeRenderer.C
-avtOpenGLAtomTexturer.C
-avtMesaAtomTexturer.C
+avtOpenGLAtomTexturer2D.C
+avtMesaAtomTexturer2D.C
+avtOpenGLAtomTexturer3D.C
+avtMesaAtomTexturer3D.C
 avtMoleculeFilter.C
 ${COMMON_SOURCES}
 )
 
 IF (NOT WIN32)
-    SET_SOURCE_FILES_PROPERTIES(avtOpenGLAtomTexturer.C avtOpenGLMoleculeRenderer.C 
+    SET_SOURCE_FILES_PROPERTIES(avtOpenGLAtomTexturer2D.C avtOpenGLAtomTexturer3D.C avtOpenGLMoleculeRenderer.C 
         PROPERTIES
         COMPILE_FLAGS "-I ${OPENGL_INCLUDE_DIR}"
     )
 ENDIF (NOT WIN32)
-SET_SOURCE_FILES_PROPERTIES(avtMesaAtomTexturer.C avtMesaMoleculeRenderer.C 
+SET_SOURCE_FILES_PROPERTIES(avtMesaAtomTexturer2D.C avtMesaAtomTexturer3D.C avtMesaMoleculeRenderer.C 
     PROPERTIES
     COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR}"
 )
@@ -138,5 +142,5 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
+

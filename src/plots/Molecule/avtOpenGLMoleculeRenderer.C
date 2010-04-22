@@ -68,7 +68,8 @@
 #include <LineAttributes.h>
 
 #include <avtLookupTable.h>
-#include "avtOpenGLAtomTexturer.h"
+#include "avtOpenGLAtomTexturer2D.h"
+#include "avtOpenGLAtomTexturer3D.h"
 
 #include <DebugStream.h>
 #include "matrix.c"
@@ -98,6 +99,13 @@ static int sphere_quality_levels[4][2] = {
     {48,24}
 };
 
+static int circle_quality_levels[4] = {
+    6,
+    10,
+    18,
+    30
+};
+
 static int cylinder_quality_levels[4] = {
     3,
     5,
@@ -119,6 +127,9 @@ static int cylinder_quality_levels[4] = {
 //    Brad Whitlock, Mon Mar 27 14:51:24 PST 2006
 //    Added tex.
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 avtOpenGLMoleculeRenderer::avtOpenGLMoleculeRenderer()
 {
@@ -132,9 +143,11 @@ avtOpenGLMoleculeRenderer::avtOpenGLMoleculeRenderer()
     levelsLUT = 0;
 
     spheres_calculated = false;
+    circles_calculated = false;
     cylinders_calculated = false;
 
-    tex = (void *)new avtOpenGLAtomTexturer;
+    tex2D = (void *)new avtOpenGLAtomTexturer2D;
+    tex3D = (void *)new avtOpenGLAtomTexturer3D;
 }
 
 
@@ -147,6 +160,9 @@ avtOpenGLMoleculeRenderer::avtOpenGLMoleculeRenderer()
 //  Modifications:
 //    Brad Whitlock, Mon Mar 27 14:51:24 PST 2006
 //    Added tex.
+//
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
 //
 // ****************************************************************************
 avtOpenGLMoleculeRenderer::~avtOpenGLMoleculeRenderer()
@@ -161,7 +177,8 @@ avtOpenGLMoleculeRenderer::~avtOpenGLMoleculeRenderer()
         displaylistid = 0;
     }
 
-    delete ((avtOpenGLAtomTexturer *)tex);
+    delete ((avtOpenGLAtomTexturer2D *)tex2D);
+    delete ((avtOpenGLAtomTexturer3D *)tex3D);
 }
 
 
@@ -272,6 +289,9 @@ SetColor3ubv(const unsigned char *c)
 //    John Schreiner, Fri Feb 12 19:15:11 MST 2010
 //    Fixed glTexCoord being called before glVertex for imposter rendering.
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 
 void
@@ -365,13 +385,20 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
     {
         // If we're doing imposter rendering then set up sphere texturing
         // and disable lighting.
-        ((avtOpenGLAtomTexturer *)tex)->BeginSphereTexturing();
+        if (is2D)
+            ((avtOpenGLAtomTexturer2D *)tex2D)->BeginSphereTexturing();
+        else
+            ((avtOpenGLAtomTexturer3D *)tex3D)->BeginSphereTexturing();
         glDisable(GL_LIGHTING);
 
         // Based on the selected sphere texturing mode, there might be a
         // little more setup required.
-        vmode = (((avtOpenGLAtomTexturer *)tex)->GetMode() ==
-                avtOpenGLAtomTexturer::TextureMode) ? 1 : 2;
+        if (is2D)
+            vmode = 1;
+        else
+            vmode = (((avtOpenGLAtomTexturer3D *)tex3D)->GetMode() ==
+                     avtOpenGLAtomTexturer3D::TextureMode) ? 1 : 2;
+
         if(vmode == 1)
         {
             float modelview[4][4], imv[4][4];
@@ -390,7 +417,10 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         }
     }
 
-    glBegin(GL_QUADS);
+    if (is2D && vmode==0)
+        glBegin(GL_TRIANGLES);
+    else
+        glBegin(GL_QUADS);
     vtkIdType *vertptr = data->GetVerts()->GetPointer();
     for (int ix=0; ix<numverts; ix++, vertptr += (1+*vertptr))
     {
@@ -481,11 +511,21 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         {
             // Plot spheres
             double *pt = points->GetPoint(atom);
-            DrawSphereAsQuads(pt[0],
-                              pt[1],
-                              pt[2],
-                              radius,
-                              atts.GetAtomSphereQuality());
+            if (is2D)
+            {
+                DrawCircleAsTriangles(pt[0],
+                                      pt[1],
+                                      radius,
+                                      atts.GetAtomSphereQuality());
+            }
+            else
+            {
+                DrawSphereAsQuads(pt[0],
+                                  pt[1],
+                                  pt[2],
+                                  radius,
+                                  atts.GetAtomSphereQuality());
+            }
         }
     }
     glEnd();
@@ -494,8 +534,15 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
     // off sphere texturing.
     if(imposter)
     {
-        ((avtOpenGLAtomTexturer *)tex)->EndSphereTexturing();
-        glEnable(GL_LIGHTING);
+        if (is2D)
+        {
+            ((avtOpenGLAtomTexturer2D *)tex2D)->EndSphereTexturing();
+        }
+        else
+        {
+            ((avtOpenGLAtomTexturer3D *)tex3D)->EndSphereTexturing();
+            glEnable(GL_LIGHTING);
+        }
     }
 }
 
@@ -544,6 +591,9 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    Draw a dangling, capped cylinder (or dangling line) for bonds
 //    where one half has no vertex cell.  Also, don't draw any 
 //    bond if neither adjacent point has a vertex cell.
+//
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
 //
 // ****************************************************************************
 
@@ -804,13 +854,20 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 
                 if (atts.GetDrawBondsAs() == MoleculeAttributes::CylinderBonds )
                 {
-                    DrawCylinderBetweenTwoPoints(pt_a, pt_b, radius,
-                                                 atts.GetBondCylinderQuality());
-                    if (!hasVertex[otherAtom])
+                    if (is2D)
                     {
-                        DrawCylinderCap(pt_a, pt_b, half,
-                                        radius,
-                                        atts.GetBondCylinderQuality());
+                        DrawRectangleBetweenTwoPoints(pt_a, pt_b, radius);
+                    }
+                    else
+                    {
+                        DrawCylinderBetweenTwoPoints(pt_a, pt_b, radius,
+                                                 atts.GetBondCylinderQuality());
+                        if (!hasVertex[otherAtom])
+                        {
+                            DrawCylinderCap(pt_a, pt_b, half,
+                                            radius,
+                                            atts.GetBondCylinderQuality());
+                        }
                     }
                 }
                 else // == MoleculeAttributes::Wireframe
@@ -849,6 +906,9 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 //    Removed width/height hints for atom imposters that aren't required
 //    anymore.  Also don't use depth hint when drawing bonds (always use depth).
 //
+//    Jeremy Meredith, Thu Apr 22 14:11:20 EDT 2010
+//    Added 2D mode.
+//
 // ****************************************************************************
 
 void
@@ -858,7 +918,8 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
                                  float _varmin, float _varmax,
                                  float _ambient_coeff,
                                  float _spec_coeff, float _spec_power,
-                                 float _spec_r, float _spec_g, float _spec_b)
+                                 float _spec_r, float _spec_g, float _spec_b,
+                                 bool _is2D)
 {
     if (!data->GetCellData()->GetScalars() &&
         !data->GetPointData()->GetScalars())
@@ -868,8 +929,9 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
     // for certain imposter methods.
     if(atts.GetDrawAtomsAs() == MoleculeAttributes::ImposterAtoms)
     {
-        if( ((avtOpenGLAtomTexturer *)tex)->GetMode() ==
-            avtOpenGLAtomTexturer::TextureMode)
+        if(is2D ||
+           ((avtOpenGLAtomTexturer3D *)tex3D)->GetMode() ==
+                                          avtOpenGLAtomTexturer3D::TextureMode)
         {
             immediateModeRendering = true;
         }
@@ -909,6 +971,7 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
     varmax = _varmax;
 
     immediatemode = immediateModeRendering;
+    is2D          = _is2D;
     ambient_coeff = _ambient_coeff;
     spec_coeff    = _spec_coeff;
     spec_power    = _spec_power;
@@ -921,7 +984,10 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
                  GL_ENABLE_BIT);
     glDisable(GL_BLEND);
 
-    glEnable(GL_LIGHTING);
+    if (is2D)
+        glDisable(GL_LIGHTING);
+    else
+        glEnable(GL_LIGHTING);
 
 #if 0
     glDisable(GL_COLOR_MATERIAL);
@@ -1193,6 +1259,42 @@ void avtOpenGLMoleculeRenderer::CalculateSpherePts()
 }
 
 // ****************************************************************************
+//  Method:  avtOpenGLMoleculeRenderer::CalculateCirclePts
+//
+//  Purpose:
+//    Precalculate points for circle geometry.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 22, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void avtOpenGLMoleculeRenderer::CalculateCirclePts()
+{
+    if (circles_calculated)
+        return;
+
+    circles_calculated = true;
+
+    for (int detail=0; detail<MAX_DETAIL_LEVELS; detail++)
+    {
+        int cdetail = circle_quality_levels[detail];
+        circle_pts[detail] = new float[(cdetail+1)*2];
+
+        for (int a=0; a<=cdetail; a++)
+        {
+            float theta = 2*M_PI * float(a) / float(cdetail);
+            float dx = cos(theta);
+            float dy = sin(theta);
+            circle_pts[detail][a*2 + 0] = dx;
+            circle_pts[detail][a*2 + 1] = dy;
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method:  avtOpenGLMoleculeRenderer::CalculateCylPts
 //
 //  Purpose:
@@ -1288,6 +1390,75 @@ avtOpenGLMoleculeRenderer::DrawSphereAsQuads(float x0,
         }
     }
 }
+
+// ****************************************************************************
+//  Method:  avtOpenGLMoleculeRenderer::DrawCircleAsTriangles
+//
+//  Purpose:
+//    Make the OpenGL calls to draw a circle with the
+//    given center, radius, and detail level.  Z==0 is assumed.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 22, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtOpenGLMoleculeRenderer::DrawCircleAsTriangles(float x0,
+                                                 float y0,
+                                                 float r,
+                                                 int detail)
+{
+    CalculateCirclePts();
+
+    int cdetail = circle_quality_levels[detail];
+
+    for (int a=0; a<cdetail; a++)
+    {
+        int a0 = a;
+        int a1 = a+1;
+
+        float *v0 = &(circle_pts[detail][a0*2]);
+        float *v1 = &(circle_pts[detail][a1*2]);
+
+        glVertex2f(x0          , y0          );
+        glVertex2f(x0 + r*v0[0], y0 + r*v0[1]);
+        glVertex2f(x0 + r*v1[0], y0 + r*v1[1]);
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtOpenGLMoleculeRenderer::DrawRectangleBetweenTwoPoints
+//
+//  Purpose:
+//    Make the OpenGL calls to draw a rectangle with the given begin
+//    and end points and radius.  Assumes drawing in the z==0 plane.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 22, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtOpenGLMoleculeRenderer::DrawRectangleBetweenTwoPoints(double *p0,
+                                                         double *p1,
+                                                         float r)
+{
+    float v[3] = {p0[1]-p1[1], p1[0]-p0[0], 0};
+    float v_len = vtkMath::Normalize(v);
+    if (v_len == 0)
+        return;
+
+    glVertex2f(p0[0] + r*v[0], p0[1] + r*v[1]);
+    glVertex2f(p1[0] + r*v[0], p1[1] + r*v[1]);
+    glVertex2f(p1[0] - r*v[0], p1[1] - r*v[1]);
+    glVertex2f(p0[0] - r*v[0], p0[1] - r*v[1]);
+}
+
+
+
 
 // ****************************************************************************
 //  Method:  avtOpenGLMoleculeRenderer::DrawCylinderBetweenTwoPoints
