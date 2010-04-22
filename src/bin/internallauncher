@@ -624,6 +624,10 @@ $0 = shift @ARGV;
 #    Cyrus Harrison, Thu Apr 15 11:40:19 PDT 2010
 #    Make sure proper mpi path is used on alastor (extended yana & hopi case)
 #
+#    Jeremy Meredith, Thu Apr 22 12:33:42 EDT 2010
+#    Fix valgrind so it runs again.  It was inserting a newline in the
+#    middle of the command, causing it to run valgrind with no arguments.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -3365,6 +3369,7 @@ sub generate_args_valgrind {
     $ENV{GLIBCXX_FORCE_NEW} = "1" if not exists $ENV{GLIBCXX_FORCE_NEW};
 
     my $full_path_vg = `which valgrind`;
+    chomp($full_path_vg);
     my @cmd = ("$full_path_vg");
     if(scalar(@args_vg) != 0) {
         push(@cmd, @args_vg);
