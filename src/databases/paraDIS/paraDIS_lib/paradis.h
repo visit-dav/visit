@@ -1507,7 +1507,7 @@ s      Tell the data set which file to read
     /*! 
       Prints out all full nodes 
     */ 
-    void DebugPrintFullNodes(char *name = NULL); 
+    void DebugPrintFullNodes(const char *name = NULL); 
    /*! 
       Prints out all arms
     */ 
