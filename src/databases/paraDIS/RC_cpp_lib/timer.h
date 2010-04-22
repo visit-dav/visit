@@ -61,7 +61,9 @@
 
   
 */
+#ifdef RC_CPP_VISIT_BUILD
 #include <visit-config.h>
+#endif
 #include <stdio.h>
 #include <ctime>
 #ifdef HAVE_SYS_TIME_H
@@ -90,6 +92,7 @@ class timer
   double acc_time;
   double time_per_tick; 
   bool mUseWallTime; 
+ public:
 #ifndef WIN32
   double getExactSeconds(void) {
     struct timeval t; 
@@ -103,7 +106,6 @@ class timer
    return t.time + (double)t.millitm/1000.0;
   }
 #endif
- public:
   // 'running' is initially false.  A timer needs to be explicitly started
   // using 'start' or 'restart'
   timer() : running(false), start_clock(0),  acc_time(0), mUseWallTime(true) { 
