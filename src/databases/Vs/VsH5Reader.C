@@ -821,21 +821,14 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
       axisName = it->second->name;
     }
     
-    //now look for the actual dataSet for this axis
+    //now look for the actual dataSet for the third axis
     std::map<std::string, VsDMeta*>::iterator it2;
     it2 = mm.dComps.find(axisName);
     if (it2 != mm.dComps.end()) {
       mm.numSpatialDims = 3;
     }
     else {
-      //One last thing to check
-      //if this mesh specifies a "vsTransform", it is 3-d automatically
-      it = mm.aComps.find(VsSchema::Rectilinear::transformKey);
-      if (it != mm.aComps.end()) {
-        mm.numSpatialDims = 3;
-      } else {
         mm.numSpatialDims = 2;
-      }
     }
   }
   else {
