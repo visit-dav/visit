@@ -198,6 +198,10 @@
 #    of linking to them. (So the copy in allhosts/ uses "bdivp", and
 #    the copy in hosts/ uses $bank.)
 #
+#    Cyrus Harrison, Thu Apr 22 09:29:47 PDT 2010
+#    Changed bin directory detection logic to look for 'engine_ser'
+#    instead of 'cli' b/c the existence of an empty cli include path.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -530,8 +534,8 @@ if (! -e "$dir"/$version+)                 mkdir "$dir"/$version+
 cd $distributiondir/$version
 
 # Determine the platform
-set findcli = `find . -name cli`
-set platformBin = `echo "$findcli" | sed -e "s/cli//"`
+set findbin = `find . -name engine_ser`
+set platformBin = `echo "$findcli" | sed -e "s/engine_ser//"`
 set savepwd = `pwd`
 cd $platformBin/..
 set platformPath = `pwd`
