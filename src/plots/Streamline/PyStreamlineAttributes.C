@@ -400,7 +400,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    const char *integrationType_names = "DormandPrince, AdamsBashforth";
+    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator";
     switch (atts->GetIntegrationType())
     {
       case StreamlineAttributes::DormandPrince:
@@ -409,6 +409,10 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::AdamsBashforth:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::M3DC1Integrator:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC1Integrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       default:
@@ -1707,14 +1711,14 @@ StreamlineAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the integrationType in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetIntegrationType(StreamlineAttributes::IntegrationType(ival));
     else
     {
         fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "DormandPrince, AdamsBashforth.");
+                        "DormandPrince, AdamsBashforth, M3DC1Integrator.");
         return NULL;
     }
 
@@ -2683,6 +2687,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::DormandPrince));
     if(strcmp(name, "AdamsBashforth") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::AdamsBashforth));
+    if(strcmp(name, "M3DC1Integrator") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::M3DC1Integrator));
 
     if(strcmp(name, "streamlineAlgorithmType") == 0)
         return StreamlineAttributes_GetStreamlineAlgorithmType(self, NULL);
@@ -2905,6 +2911,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

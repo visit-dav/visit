@@ -274,7 +274,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *workGroupSizeLabel;
     QSpinBox  *workGroupSize;
     QvisVariableButton *coloringVar;
-    QLabel    *coloringVarLabel;
     QLabel    *limitsLabel;
     QCheckBox *legendMaxToggle;
     QCheckBox *legendMinToggle;

@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 59;
+    private static int StreamlineAttributes_numAdditionalAtts = 59;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -99,6 +99,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
+    public final static int INTEGRATIONTYPE_M3DC1INTEGRATOR = 2;
 
     public final static int OPACITYTYPE_NONE = 0;
     public final static int OPACITYTYPE_CONSTANT = 1;
@@ -116,7 +117,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes()
     {
-        super(numAdditionalAttributes);
+        super(StreamlineAttributes_numAdditionalAtts);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -217,7 +218,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(StreamlineAttributes_numAdditionalAtts + nMoreFields);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -318,7 +319,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes(StreamlineAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(StreamlineAttributes_numAdditionalAtts);
 
         int i;
 
@@ -429,7 +430,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return StreamlineAttributes_numAdditionalAtts;
     }
 
     public boolean equals(StreamlineAttributes obj)
@@ -1435,6 +1436,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
         if(integrationType == INTEGRATIONTYPE_ADAMSBASHFORTH)
             str = str + "INTEGRATIONTYPE_ADAMSBASHFORTH";
+        if(integrationType == INTEGRATIONTYPE_M3DC1INTEGRATOR)
+            str = str + "INTEGRATIONTYPE_M3DC1INTEGRATOR";
         str = str + "\n";
         str = str + indent + "streamlineAlgorithmType = ";
         if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_LOADONDEMAND)
