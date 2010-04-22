@@ -60,6 +60,11 @@ debugStrmRef(dbgstrm) {
   meta = new VsMeta();
   makeVsMeta();
   meta->write(debugStrmRef);
+
+  CreateVariableComponents_Vars();
+  CreateVariableComponents_MdVars();
+  CreateVariableComponents_VarsWithMesh();
+
   debugStrmRef <<"VsH5Reader::VsH5Reader(" <<nm <<") exiting." << std::endl;
 }
 
@@ -802,32 +807,37 @@ herr_t VsH5Reader::makeGMeshMeta(VsGMeta* gm, VsMeshMeta& mm) const {
       
       unstructuredMesh->numnodes = points0->dims[0];
     }
+  } else if (mm.kind == VsSchema::Rectilinear::key) {
+    //Rectilinear meshes are defined by a series of arrays
+    //Each array represents one spatial dimension
+    //i.e. numSpatialDims = number of arrays
+
+    std::map<std::string, VsAMeta*>::iterator it;
+    //look for the name of the third axis
+    it = mm.aComps.find(VsSchema::Rectilinear::axis2Key);
+    std::string axisName = "axis2"; //the default name
+    if (it != mm.aComps.end()) {
+      //found a non-default user-specified name
+      axisName = it->second->name;
+    }
+    
+    //now look for the actual dataSet for this axis
+    std::map<std::string, VsDMeta*>::iterator it2;
+    it2 = mm.dComps.find(axisName);
+    if (it2 != mm.dComps.end()) {
+      mm.numSpatialDims = 3;
+    }
+    else {
+      //One last thing to check
+      //if this mesh specifies a "vsTransform", it is 3-d automatically
+      it = mm.aComps.find(VsSchema::Rectilinear::transformKey);
+      if (it != mm.aComps.end()) {
+        mm.numSpatialDims = 3;
+      } else {
+        mm.numSpatialDims = 2;
+      }
+    }
   }
-  /*
-   else if (mm.kind == VsSchema::Rectilinear::key) {
-   //Rectilinear meshes are defined by a series of arrays
-   //Each array represents one spatial dimension
-   //i.e. numSpatialDims = number of arrays
-   
-   std::map<std::string, VsAMeta*>::iterator it;
-   //look for the name of the third axis
-   it = mm.aComps.find(VsSchema::Rectilinear::axis2Key);
-   string axisName = "axis2"; //the default name
-   if (it != mm.aComps.end()) {
-   //found a non-default user-specified name
-   axisName = it->second->name;
-   }
-   
-   //now look for the actual dataSet for this axis
-   std::map<std::string, VsDMeta*>::iterator it2;
-   it2 = mm.dComps.find(axisName);
-   if (it2 != mm.dComps.end()) {
-   mm.numSpatialDims = 3;
-   }
-   else {
-   mm.numSpatialDims = 2;
-   }
-   }*/
   else {
     std::string msg = "VsH5Reader::makeGMeshMeta(...): for mesh of kind '";
     msg += mm.kind;
@@ -2367,7 +2377,6 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
       
       debugStrmRef <<"VsH5Reader::getMeshDims() - dims[0] is " <<(*dims)[0] <<std::endl;
       debugStrmRef <<"VsH5Reader::getMeshDims() - dims[1] is " <<(*dims)[1] <<std::endl;
-      
     }
   }
   
@@ -2409,9 +2418,43 @@ size_t VsH5Reader::getMeshDims(const std::string& name, std::vector<int>* dims) 
     //end structured
   }
   
+  if (meshMeta->isRectilinearMesh()) {
+    //size of rectilinear mesh depends on the size of the component arrays
+    VsRectilinearMesh* rectilinearMesh = (VsRectilinearMesh*)meshMeta;
+    debugStrmRef <<"VsH5Reader::getMeshDims() - name of axis 0 is "<< rectilinearMesh->getAxisDatasetName(0) <<std::endl;
+    VsDMeta* axis0Data = rectilinearMesh->getAxisDataset(0);
+    //We require at least one axis
+    if (!axis0Data) {
+      debugStrmRef <<"VsH5Reader::getMeshDims() - unable to find information for axis 0." <<std::endl;
+      debugStrmRef <<"VsH5Reader::getMeshDims() - returning 0." <<std::endl;
+    }
+    dims->resize(1);
+    (*dims)[0] = axis0Data->dims.front();  //size of dataset given by axis0Name
+    
+    VsDMeta* axis1Data = rectilinearMesh->getAxisDataset(1);
+    if (axis1Data == NULL) {
+      return 0;
+    } else {
+      debugStrmRef <<"VsH5Reader::getMeshDims() - name of axis 1 is "<< rectilinearMesh->getAxisDatasetName(1) <<std::endl;
+      dims->resize(2);
+      (*dims)[1] = axis1Data->dims.front();  //size of dataset given by axis1Name
+    }
+    
+    VsDMeta* axis2Data = rectilinearMesh->getAxisDataset(2);
+    if (axis2Data == NULL) {
+      return 0;
+    } else {
+      debugStrmRef <<"VsH5Reader::getMeshDims() - name of axis 2 is "<< rectilinearMesh->getAxisDatasetName(2) <<std::endl;
+      dims->resize(3);
+      (*dims)[2] = axis2Data->dims.front();  //size of dataset given by axis1Name
+    }
+    
+  }
+  
   if ( !meshMeta->isUnstructuredMesh() &&
       !meshMeta->isStructuredMesh() &&
-      !meshMeta->isUniformMesh() ) {
+      !meshMeta->isUniformMesh() &&
+      !meshMeta->isRectilinearMesh()) {
     debugStrmRef << "VsH5Reader::getMeshDims error: mesh kind '" << kind
     << "' not implemented " << std::endl;
     debugStrmRef << "VsH5Reader::getMeshDims(" <<name <<", dims): Returning 0." << std::endl;
@@ -2435,7 +2478,163 @@ void VsH5Reader::setFile (const std::string& fn) {
   debugStrmRef << "VsH5Reader::setFile(" <<fn <<"): Making new VsMeta()." << std::endl;
   meta = new VsMeta();
   makeVsMeta();
+  
+  //create component names
+  CreateVariableComponents_Vars();
+  CreateVariableComponents_MdVars();
+  CreateVariableComponents_VarsWithMesh();
+
   debugStrmRef << "VsH5Reader::setFile(" <<fn <<"): Exiting." << std::endl;
+}
+
+void VsH5Reader::CreateVariableComponents_MdVars() {
+  std::stringstream sstr;
+  sstr <<"VsH5Reader::CreateVariableComponents_MdVars() - ";
+  std::string methodSig = sstr.str();
+  debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+
+  // Get vars names
+  std::vector<std::string> names;
+  getMDVarsNames(names);
+
+  std::vector<std::string>::const_iterator it;
+  for (it = names.begin(); it != names.end(); ++it) {
+    debugStrmRef <<methodSig <<"Processing md var '"
+    << *it << "'." << std::endl;
+    const VsMDVariableMeta* vMeta = getMDVariableMeta(*it);
+    
+    // Number of component of the var
+    size_t numComps = getMDNumComps(*it);
+    debugStrmRef <<methodSig <<"Variable has " <<numComps <<" components." <<std::endl;
+    if (numComps > 1) {
+      for (size_t i = 0; i<numComps; ++i) {
+        //first, get a unique name for this component
+        std::string compName = getUniqueComponentName(vMeta->getLabel(i), *it, i);
+
+        //next, register the component info
+        registerComponentInfo(compName, *it, i);
+
+        //for backwards compatibility, register the "old-style" name too
+        std::string oldCompName = getOldComponentName(*it, i);
+        registerComponentInfo(oldCompName, *it, i);
+      }
+    }
+    
+  }
+  debugStrmRef <<methodSig <<"Exiting normally." << std::endl;
+}
+
+void VsH5Reader::CreateVariableComponents_VarsWithMesh() {
+  std::stringstream sstr;
+  sstr <<"VsH5Reader::CreateVariableComponents_VarsWithMesh() - ";
+  std::string methodSig = sstr.str();
+  debugStrmRef <<methodSig <<"Entering function." <<std::endl;
+
+  std::vector<std::string> names;
+  getVarsWithMeshNames(names);
+
+  if (names.size() == 0) {
+    debugStrmRef <<methodSig <<"WARNING: no variables with mesh were found in this file. Returning." <<endl;
+    return;
+  } else {
+    debugStrmRef <<methodSig <<"Found " <<names.size() <<" variables with mesh in this file." <<endl;
+  }
+
+  std::vector<std::string>::const_iterator it;
+  for (it = names.begin(); it != names.end(); ++it) {
+    debugStrmRef <<methodSig <<"Processing varWithMesh '"
+    << *it << "'." << endl;
+    const VsVariableWithMeshMeta* vMeta = getVariableWithMeshMeta(*it);
+
+    // add var components
+    std::vector<int> dims = vMeta->getDims();
+    if (dims.size() <= 0) {
+      std::string msg = "avtVsFileFormat::RegisterVarsWithMesh() - could not get dimensions of variable with mesh.";
+      debugStrmRef << msg << std::endl;
+      throw std::out_of_range(msg.c_str());
+    }
+
+    size_t lastDim = 0;
+    if (vMeta->isCompMinor())
+      lastDim = dims[dims.size()-1];
+    else lastDim = dims[0];
+
+    if (lastDim < vMeta->getNumSpatialDims()) {
+      debugStrmRef <<methodSig <<"Error: "
+      "for variable with mesh '" << *it << "', numSpatialDims = " <<
+      vMeta->getNumSpatialDims() << " must be larger then the last dimension, " <<
+      "lastDim = " << lastDim << "." << endl;
+      debugStrmRef <<methodSig <<"Error: Attempting to remove associated mesh from system." <<std::endl;
+      //JRC: Remove the associated mesh from the system!
+      //Actually, the associated mesh doesn't get added until the end of this method
+      //So there is no associated mesh to remove
+      //We just drop through the loop and start on the next varWithMesh
+      continue;
+    }
+
+    // SS: we need all components so going to lastDim here.
+    //    for (size_t i = 0; i < lastDim-vm->numSpatialDims; ++i) {
+    for (size_t i = 0; i < lastDim; ++i) {
+      //first, get a unique name for this component
+      std::string compName = getUniqueComponentName(vMeta->getLabel(i), *it, i);
+
+      //next, register the component info
+      registerComponentInfo(compName, *it, i);
+
+      //for backwards compatibility, register the "old-style" name too
+      std::string oldCompName = getOldComponentName(*it, i);
+      registerComponentInfo(oldCompName, *it, i);
+
+      //register with VisIt
+      debugStrmRef <<methodSig <<"Adding variable component " <<compName <<"." <<std::endl;
+    }
+  }
+
+  debugStrmRef <<methodSig <<"Exiting normally." << endl;
+}
+
+void VsH5Reader::CreateVariableComponents_Vars() {
+  //create component names                                                                                                                    
+  std::vector<std::string> names;
+  getVarsNames(names);
+
+  if (names.size() == 0) {
+    debugStrmRef <<"VsH5Reader::CreateVariableComponents_Vars()" <<"WARNING: No variables were found in this file.  Returning." <<endl;
+    return;
+  } else {
+    debugStrmRef <<"VsH5Reader::CreateVariableComponents_Vars()" <<"Found " <<names.size() <<" variables in this file." <<endl;
+  }
+
+  std::vector<std::string>::const_iterator it;
+  for (it = names.begin(); it != names.end(); ++it) {
+    debugStrmRef <<"VsH5Reader::CreateVariableComponents_Vars()" <<"Processing var: "<< *it <<std::endl;
+
+    //get metadata for var                                                                                                                    
+    const VsVariableMeta* vMeta = getVariableMeta(*it);
+
+    // Number of component of the var                                                                                                         
+    size_t numComps = getNumComps(*it);
+    if (numComps > 1) {
+      //go through list of components                                                                                                         
+      //generate a name for each one                                                                                                          
+      //then add to VisIt registry                                                                                                            
+      for (size_t i = 0; i < numComps; ++i) {
+        //first, get a unique name for this component                                                                                         
+ std::string compName = getUniqueComponentName(vMeta->getLabel(i), *it, i);
+
+        //next, register the component info                                                                                                   
+        registerComponentInfo(compName, *it, i);
+
+        //for backwards compatibility, register the "old-style" name too                                                                      
+ std::string oldCompName = getOldComponentName(*it, i);
+        if (oldCompName != compName) {
+          registerComponentInfo(oldCompName, *it, i);
+        }
+
+        debugStrmRef <<"VsH5Reader::CreateVariableComponents_Vars()" <<"Adding variable component " <<compName <<"." <<std::endl;
+      }
+    }
+  }
 }
 
 bool VsH5Reader::registerComponentInfo(std::string componentName, std::string varName, int componentNumber) {
@@ -2486,6 +2685,42 @@ void VsH5Reader::getComponentInfo(std::string componentName, NamePair* namePair)
       return;
     }
   }
+  
+  namePair->first = "";
+  namePair->second = -1;
+}
+
+std::string VsH5Reader::getComponentName(std::string varName, int componentNumber) {
+  for (unsigned int i = 0; i < componentNames.size(); i++) {
+    std::pair<std::string, NamePair > foundPair = componentNames[i];
+    NamePair tempNamePair = foundPair.second;
+    if ((tempNamePair.first == varName) && (tempNamePair.second == componentNumber)) {
+      debugStrmRef <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - Found matching name & index, returning. " <<std::endl;
+      return foundPair.first;
+    }
+  }
+
+  debugStrmRef <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - no match found." <<std::endl;
+  return "";
+}
+
+void VsH5Reader::getComponentInfo(std::string varName, int componentNumber, NamePair* namePair) {
+  //yes, I should use a std::hash_map for this
+  
+  NamePair tempNamePair;
+  //look for a match and return the value if the name is registered
+  for (unsigned int i = 0; i < componentNames.size(); i++) {
+    std::pair<std::string, NamePair > foundPair = componentNames[i];
+    tempNamePair = foundPair.second;
+    if ((tempNamePair.first == varName) && (tempNamePair.second == componentNumber)) {
+      debugStrmRef <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - Found matching name & index, returning. " <<std::endl;
+      namePair->first = tempNamePair.first;
+      namePair->second = tempNamePair.second;
+      return;
+    }
+  }
+  
+  debugStrmRef <<"VsH5Reader::getComponentInfo(" <<varName <<", " <<componentNumber <<") - no match found." <<std::endl;
   
   namePair->first = "";
   namePair->second = -1;

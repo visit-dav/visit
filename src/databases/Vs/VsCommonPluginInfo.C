@@ -117,14 +117,8 @@ VsCommonPluginInfo::SetupDatabase(const char *const *list,
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 #else
-                     #ifdef VISIT_VERSION //Visit 2.0.0 and later use VISIT_VERSION instead of VERSION, and require a different debugstream accessor as well
-                            DebugStream::Stream3() <<"VsCommonPluginInfo::SetupDatabase() - Vizschema database plugin requires hdf5 1.8.1 or later." <<std::endl;
-                            DebugStream::Stream3() <<"VsCommonPluginInfo::SetupDatabase() - Plugin is disabled and will not open files." <<std::endl;
-                #else
-                            debug3 <<"VsCommonPluginInfo::SetupDatabase() - Vizschema database plugin requires hdf5 1.8.1 or later." <<std::endl;
-                            debug3 <<"VsCommonPluginInfo::SetupDatabase() - Plugin is disabled and will not open files." <<std::endl;
-                #endif
-
+    DebugStream::Stream3() <<"VsCommonPluginInfo::SetupDatabase() - Vizschema database plugin requires hdf5 1.8.1 or later." <<std::endl;
+    DebugStream::Stream3() <<"VsCommonPluginInfo::SetupDatabase() - Plugin is disabled and will not open files." <<std::endl;
     return NULL;
 #endif
 }
@@ -192,7 +186,7 @@ VsCommonPluginInfo::GetReadOptions() const
 // ****************************************************************************
 void VsCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts) {
 
-       for (int i = 0; i < opts->GetNumberOfOptions(); i++)
+    for (int i = 0; i < opts->GetNumberOfOptions(); i++)
     {
         string optname = opts->GetName(i);
         if (optname == VsCommonPluginInfo::strideSettingAxis1_Name.c_str()) {

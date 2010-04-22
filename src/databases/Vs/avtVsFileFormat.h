@@ -101,6 +101,9 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /** Pointer to the reader */
   VsH5Reader* reader;
 
+  /** Ensure data has been read **/
+  void LoadData();
+
   private:
   /**
    * A user-specified setting for the stride to use when loading data.
@@ -121,6 +124,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   vtkDataSet* getUniformMesh(const std::string& nm, const VsMeshMeta&);
   vtkDataSet* getUnstructuredMesh(const std::string& nm, const VsMeshMeta&);
+  vtkDataSet* getRectilinearMesh(const std::string& name, const VsMeshMeta&);
   vtkDataSet* getStructuredMesh(const std::string& nm, const VsMeshMeta&);
   vtkDataSet* getPointMesh(const std::string& name,
       const VsVariableWithMeshMeta& meta);

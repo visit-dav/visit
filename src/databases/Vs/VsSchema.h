@@ -54,6 +54,19 @@ struct VsSchema {
     static std::string upperBounds;
   };
 
+  struct Rectilinear {
+    static std::string key;
+
+    static std::string axis0Key;
+    static std::string axis0DefaultName;
+    
+    static std::string axis1Key;
+    static std::string axis1DefaultName;
+    
+    static std::string axis2Key;
+    static std::string axis2DefaultName;
+  };
+
   struct Unstructured {
     static std::string key;
     static std::string defaultPolygonsName; //polygons
