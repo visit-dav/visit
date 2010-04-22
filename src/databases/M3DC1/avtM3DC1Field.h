@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400124
 * All rights reserved.
@@ -40,8 +40,8 @@
 //                              avtM3DC1Field.h                              //
 // ************************************************************************* //
 
-#ifndef AVT_M3D_FIELD_H
-#define AVT_M3D_FIELD_H
+#ifndef AVT_M3DC1_FIELD_H
+#define AVT_M3DC1_FIELD_H
 
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
