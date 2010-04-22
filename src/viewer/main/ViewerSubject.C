@@ -5977,6 +5977,10 @@ ViewerSubject::ExportColorTable()
 //    Jeremy Meredith, Wed Apr 21 13:15:09 EDT 2010
 //    Only write out host profiles users have changed.
 //
+//    Jeremy Meredith, Thu Apr 22 13:21:27 EDT 2010
+//    Also make sure to write out new host profiles that don't exist
+//    in the system host profiles.
+//
 // ****************************************************************************
 
 void
@@ -6050,14 +6054,14 @@ ViewerSubject::WriteConfigFile()
     for (int i=0; i<hpl->GetNumMachines(); i++)
     {
         MachineProfile &pl = hpl->GetMachines(i);
-        bool changedFromOriginal = false;
+        bool changedFromOriginal = true;
         for (int j=0; j<originalSystemHostProfileList->GetNumMachines(); j++)
         {
             MachineProfile &origpl(originalSystemHostProfileList->GetMachines(j));
             if (origpl.GetHostNickname() == pl.GetHostNickname())
             {
-                if (pl != origpl)
-                    changedFromOriginal = true;
+                if (pl == origpl)
+                    changedFromOriginal = false;
             }
         }
         if (!changedFromOriginal)
