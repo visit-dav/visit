@@ -49,6 +49,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
+#include <vtkTriangulationTables.h>
 #include <avtMTSDFileFormatInterface.h>
 
 #include <avtDatabaseMetaData.h>
@@ -188,12 +189,28 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
 //    Added support for unit cell origin (previously assumed to be 0,0,0);
 //
+//    Jeremy Meredith, Thu Apr 22 11:12:51 EDT 2010
+//    Added unit cell bounding box mesh.
+//
 // ****************************************************************************
 
 void
 avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timestep)
 {
     ReadAllMetaData();
+
+    avtMeshMetaData *mmd_bbox = new avtMeshMetaData("unitCell", 1, 0,0,0,
+                                                    3, 1,
+                                                    AVT_UNSTRUCTURED_MESH);
+    for (int i=0; i<9; i++)
+        mmd_bbox->unitCellVectors[i] = 0;
+    mmd_bbox->unitCellVectors[0] = xMax - xMin;
+    mmd_bbox->unitCellVectors[4] = yMax - yMin;
+    mmd_bbox->unitCellVectors[8] = zMax - zMin;
+    mmd_bbox->unitCellOrigin[0] = xMin;
+    mmd_bbox->unitCellOrigin[1] = yMin;
+    mmd_bbox->unitCellOrigin[2] = zMin;
+    md->Add(mmd_bbox);
 
     avtMeshMetaData *mmd = new avtMeshMetaData("mesh", 1, 0,0,0,
                                                3, 1,
@@ -244,12 +261,53 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 //    Jeremy Meredith, Fri May 15 11:00:49 EDT 2009
 //    Fixed typo....
 //
+//    Jeremy Meredith, Thu Apr 22 11:12:51 EDT 2010
+//    Added unit cell bounding box mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *meshname)
+avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
 {
     ReadTimeStep(timestep);
+
+    string meshname(name);
+    if (meshname == "unitCell")
+    {
+        vtkPolyData *pd  = vtkPolyData::New();
+        vtkPoints   *pts = vtkPoints::New();
+
+        pts->SetNumberOfPoints(8);
+        pd->SetPoints(pts);
+        pts->Delete();
+        for (int j = 0 ; j < 8 ; j++)
+        {
+            float x=xMin,y=yMin,z=zMin;
+            if (j & 0x01)
+                x = xMax;
+            if (j & 0x02)
+                y = yMax;
+            if (j & 0x04)
+                z = zMax;
+            pts->SetPoint(j, x,y,z);
+        }
+ 
+        vtkCellArray *lines = vtkCellArray::New();
+        pd->SetLines(lines);
+        lines->Delete();
+        for (int k = 0 ; k < 12 ; k++)
+        {
+            lines->InsertNextCell(2);
+            lines->InsertCellPoint(voxVerticesFromEdges[k][0]);
+            lines->InsertCellPoint(voxVerticesFromEdges[k][1]);
+        }
+
+        return pd;
+    }
+
+    if (meshname != "mesh")
+        return NULL;
+
 
     vtkPolyData *pd  = vtkPolyData::New();
     vtkPoints   *pts = vtkPoints::New();

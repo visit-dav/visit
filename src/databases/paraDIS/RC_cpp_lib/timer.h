@@ -77,7 +77,7 @@
 class timer; 
 int Progress(timer &iTimer, double iNum, double iMax, 
              double &oPercent, double iPercentDelta, 
-             double &oTime, double iTimeDelta, char *iMsg);
+             double &oTime, double iTimeDelta, const char *iMsg);
 
 
 using namespace std; 
