@@ -54,6 +54,11 @@
 #  I changed the installation location of makemovie.py and makemoviemain.py
 #  to ${VISIT_INSTALLED_VERSION_BIN} instead of bin.
 #
+#  Cyrus Harrison, Wed Apr 21 12:25:20 PDT 2010
+#  Added copy of qt.conf to ${VISIT_INSTALLED_VERSION_BIN}
+#  This file is used to prevent qt from loading plugins from other qt
+#  installs.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -125,6 +130,12 @@ IF (NOT WIN32)
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
+
+    INSTALL(FILES qt.conf
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE
+                    GROUP_READ GROUP_WRITE
+                    WORLD_READ)
 
 ELSE (NOT WIN32)
 
