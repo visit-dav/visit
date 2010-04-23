@@ -61,14 +61,21 @@
 
   
 */
+ /*!
+   VisIt has its quirks
+ */
 #ifdef RC_CPP_VISIT_BUILD
 #include <visit-config.h>
-#endif
-#include <stdio.h>
-#include <ctime>
+ // this does not work on chaos machines outside of VisIt, maybe it's a VisIt thing?  
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
+#else
+ // if not in VisIt, then just include sys/time.h
+#include <sys/time.h>
+#endif
+#include <stdio.h>
+#include <ctime>
 #ifdef WIN32
 #include <sys/timeb.h>
 #include <Winsock2.h>
@@ -94,6 +101,9 @@ class timer
   bool mUseWallTime; 
  public:
 #ifndef WIN32
+#ifndef RC_CPP_VISIT_BUILD
+  static
+#endif
   double getExactSeconds(void) {
     struct timeval t; 
     gettimeofday(&t, NULL); 
