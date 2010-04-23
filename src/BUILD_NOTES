@@ -13,10 +13,10 @@ shell prompt.
 
     Library  Version   Description            For More Information
     =======  =======   ===========            ====================
-    Mesa     5.0       3-D Graphics Library   http://www.mesa3d.org/
+    Mesa     7.5       3-D Graphics Library   http://www.mesa3d.org/
     Python   2.5       Scripting Language     http://www.python.org
     Qt       4.4.3     GUI Toolkit            http://www.trolltech.com
-    VTK      5.0.0c    Visualization Toolkit  http://www.kitware.com
+    VTK      5.0.0d    Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -158,66 +158,56 @@ OpenGL.  It is used for performing off-screen rendering.
 #
 # Build Mesa
 #
-gunzip Mesa-5.0-mangled.tar.gz
-tar xf Mesa-5.0-mangled.tar
-cd Mesa-5.0
+gunzip MesaLib-7.5.tar.gz
+tar xf MesaLib-7.5.tar
+cd Mesa-7.5
 
-#
-# Mesa causes the engine to crash when built with icc 9.0 in the routine
-# mesa_test_os_sse_exception_support, so don't use it.  The gcc version
-# is compatible with icc 9.0, so you may build Mesa with it and the rest
-# of VisIt with icc 9.0.
-#
-# To build Mesa, one of the following targets should probably be used.  The
-# complete list of targets is available by typing "make" in the Mesa-5.0
-# directory.
-#
-#  make aix                  for IBM RS/6000
-#  make darwin               for Macintosh systems running MacOS X
-#  make irix6-n32-dso        for SGI systems with IRIX 6.x, make n32-bit DSOs
-#  make irix6-64-dso         for SGI systems with IRIX 6.x, make 64-bit DSOs
-#  make linux                for Linux systems, make shared .so libs
-#  make linux-alpha          for Linux on Alpha systems
-#  make linux-icc            for Linux systems using icc, make shared .so libs
-#  make osf1-sl              for DEC Alpha systems with OSF/1, make shared libs
-#  make solaris-x86          for PCs with Solaris
-#  make solaris-x86-gcc      for PCs with Solaris using GCC
-#  make sunos5-sl            for Suns with SunOS 5.x, make shared libs
-#  make sunos5-gcc-sl        for Suns with SunOS 5.x, GCC, make shared libs
-#
-# To change the compiler modify CC and CXX in the file Make-config under
-# the appropriate target from the above list.
-#
+# You'll need to build Mesa twice, to get both "MesaGL" and "OSMesa"
+# libraries.  The simplest way to do this is:
+  ./configure \
+    CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE" \
+    CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
+    --prefix=/path/to/somewhere \
+    --without-demos \
+    --disable-gallium \
+    --enable-gl-osmesa \
+    --disable-glw \
+    --disable-glu \
+    --disable-egl \
+    --with-driver=xlib
+  # this fixes the library names
+  cat configs/autoconf | \
+     sed -e "s,GL_LIB = GL,GL_LIB=MesaGL,g" > configs/autoconf.edit \
+     || return 1
+  mv configs/autoconf.edit configs/autoconf
+   cat configs/autoconf | \
+     sed -e "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" > configs/autoconf.edit \
+     || return 1
+  mv configs/autoconf.edit configs/autoconf
+  make
+  make install
 
-#
-# Install it in the visit directory under the mesa directory.
-#
-mkdir $VISITDIR/mesa
-mkdir $VISITDIR/mesa/5.0
-mkdir $VISITDIR/mesa/5.0/$VISITARCH
-mkdir $VISITDIR/mesa/5.0/$VISITARCH/{include,lib}
-mkdir $VISITDIR/mesa/5.0/$VISITARCH/include/GL
-cp include/GL/*.h $VISITDIR/mesa/5.0/$VISITARCH/include/GL
-#
-# On aix systems you will need to build shared libraries from the
-# archives.
-#
-# cd lib
-# ar -x libMesaGL.a
-# xlC -G -brtl -Wl,-blpdata -Wl,-bmaxdata:0x70000000 -o libMesaGL.so *.o
-# rm *.o
-# ar -x libOSMesa.a
-# xlC -G -brtl -Wl,-blpdata -Wl,-bmaxdata:0x70000000 -o libOSMesa.so *.o
-# rm *.o
-# cd ..
-#
-
-#
-# If you built a 64 bit version of the library on irix, then the library
-# will be located in the lib64 directory.
-#
-cp lib/*.so       $VISITDIR/mesa/5.0/$VISITARCH/lib 
-cd ..
+  # And again, same deal but with a different --with-driver.
+  ./configure \
+    CFLAGS="${CFLAGS} -DUSE_MGL_NAMESPACE" \
+    CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
+    --prefix=/path/to/somewhere \
+    --without-demos \
+    --disable-gallium \
+    --disable-glw \
+    --disable-egl \
+    --disable-glu \
+  # this fixes the library names
+  cat configs/autoconf | \
+     sed -e "s,GL_LIB = GL,GL_LIB=MesaGL,g" > configs/autoconf.edit \
+     || return 1
+  mv configs/autoconf.edit configs/autoconf
+   cat configs/autoconf | \
+     sed -e "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" > configs/autoconf.edit \
+     || return 1
+  mv configs/autoconf.edit configs/autoconf
+  make
+  make install
 
 VTK
 ====
@@ -251,8 +241,8 @@ gmake
 # Build VTK
 #
 cd ..
-gunzip vtk-5.0.0c.tar.gz
-tar xf vtk-5.0.0c.tar
+gunzip vtk-5.0.0d.tar.gz
+tar xf vtk-5.0.0d.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -283,13 +273,14 @@ cd VTK
 # appropriate files and directories in the mesa directory.
 # For example:
 #
-# MANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/5.0/$VISITARCH/include
-# MANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/5.0/$VISITARCH/lib/libMesaGL.so
-# MANGLED_OSMESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/5.0/$VISITARCH/include
-# MANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/5.0/$VISITARCH/lib/libOSMesa.so
+# MANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/7.5/$VISITARCH/include
+# MANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/7.5/$VISITARCH/lib/libOSMesa.so
+# MANGLED_OSMESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/7.5/$VISITARCH/include
+# MANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/7.5/$VISITARCH/lib/libMesaGL.so
 #
-# Note that you need to be very careful in setting the above variables so
-# that you provide the appropriate filename or path.
+# You might think that the above command is setting the MESA_LIBRARY and the
+# OSMESA_LIBRARY in the opposite manner which it should, but this is actually
+# correct!  The link order is very important.
 #
 ../cmake-2.4.5/bin/cmake .
 
@@ -371,36 +362,11 @@ gmake
 #
 # Install it in the visit directory under the vtk directory.
 #
-mkdir $VISITDIR/vtk
-mkdir $VISITDIR/vtk/5.0.0c
-mkdir $VISITDIR/vtk/5.0.0c/$VISITARCH
-mkdir $VISITDIR/vtk/5.0.0c/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
-cp vtkConfigure.h                   $VISITDIR/vtk/5.0.0c/$VISITARCH
-cp vtkToolkits.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH
-cp vtk*Instantiator.h               $VISITDIR/vtk/5.0.0c/$VISITARCH
-cp Common/*.h                       $VISITDIR/vtk/5.0.0c/$VISITARCH/Common
-cp Common/*.txx                     $VISITDIR/vtk/5.0.0c/$VISITARCH/Common
-cp Filtering/*.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH/Filtering
-cp Filtering/*.txx                  $VISITDIR/vtk/5.0.0c/$VISITARCH/Filtering
-cp GenericFiltering/*.h             $VISITDIR/vtk/5.0.0c/$VISITARCH/GenericFiltering
-cp Graphics/*.h                     $VISITDIR/vtk/5.0.0c/$VISITARCH/Graphics
-cp Hybrid/*.h                       $VISITDIR/vtk/5.0.0c/$VISITARCH/Hybrid
-cp IO/*.h                           $VISITDIR/vtk/5.0.0c/$VISITARCH/IO
-cp Imaging/*.h                      $VISITDIR/vtk/5.0.0c/$VISITARCH/Imaging
-cp Rendering/*.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH/Rendering
-cp Utilities/*.h                    $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities
-cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities/vtktiff
-cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities/vtkexpat
-cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/Utilities/vtkzlib
-cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0c/$VISITARCH/VolumeRendering
-cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/MangleMesaInclude
-cp vtkstd/*                         $VISITDIR/vtk/5.0.0c/$VISITARCH/vtkstd
-cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
-# For aix, IRIX, solaris
-# cp -R bin/*.so* $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
-# For true64
-# cp bin/*.so $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
-cd ..
+make install
+
+# On Mac OS X, you will need to do a series of install_name_tool
+# invocations to fix library paths.  See the function build_vtk in
+# svn_bin/build_visit for details.
 
 #
 # Several of the header files in MangleMesaInclude have absolute paths
