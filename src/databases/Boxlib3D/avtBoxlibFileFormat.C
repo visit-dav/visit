@@ -1943,6 +1943,9 @@ avtBoxlibFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    and therefore pass NULL, because attempting to  dereference an empty 
 //    vector's 0'th item crashes on windows.
 //
+//    Kathleen Bonnell, Fri Apr 23 10:36:54 MST 2010
+//    Remove redundant line of code.
+//
 // ****************************************************************************
     
 void *
@@ -2052,8 +2055,6 @@ avtBoxlibFileFormat::GetMaterial(const char *var, int patch,
 
     if (material_list.size() > 0)
         ml = &(material_list[0]);
-    if (mix_mat.size() > 0)
-        mixm = &(mix_mat[0]);
     if (mix_mat.size() > 0)
         mixm = &(mix_mat[0]);
     if (mix_next.size() > 0)
