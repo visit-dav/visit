@@ -130,6 +130,9 @@ VisItFstat(int fd, VisItStat_t *buf)
 //   Hank Childs, Thu Jun  8 16:13:20 PDT 2006
 //   Fix warning regarding uninitialized variable.
 //
+//   Kathleen Bonnell, Thu Apr 22 17:23:43 MST 2010 
+//   Add '.' to test for isDir on Windows.
+//
 // ****************************************************************************
 
 bool
@@ -169,8 +172,10 @@ ReadAndProcessDirectory(const std::string &directory,
         {
             do
             {
-                bool isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
-                             (strcmp(fd.cFileName, "..") == 0);
+                bool isDir = 
+                    ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
+                     (strcmp(fd.cFileName, "..") == 0) ||
+                     (strcmp(fd.cFileName, ".") == 0) ;
                 long sz = ((fd.nFileSizeHigh * MAXDWORD) + fd.nFileSizeLow);
                 std::string fileName(directory);
                 if(directory.substr(directory.size() - 1) != "\\")
