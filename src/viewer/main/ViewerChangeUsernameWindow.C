@@ -169,6 +169,9 @@ ViewerChangeUsernameWindow::getUsername()
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //   Can just update one machine profile now.
 //
+//   Kathleen Bonnell, Thu Apr 22 17:54:34 MST 2010
+//   Prevent use of mp if NULL.
+//
 // ****************************************************************************
 
 bool
@@ -214,7 +217,8 @@ ViewerChangeUsernameWindow::changeUsername(const std::string &host)
             return false;
        
         MachineProfile *mp = profiles->GetMachineProfileForHost(host);
-        mp->SetUserName(new_username);
+        if (mp != NULL)
+            mp->SetUserName(new_username);
 
         profiles->SelectAll();
         profiles->Notify();
