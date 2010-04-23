@@ -255,7 +255,6 @@ public:
     void FinishAddingOperators();
     void EnablePluginMenus();
     void UpdateOperatorCategories();
-    void UpdatePlotList();
     void SetSourceVisible(bool);
 public slots:
     void hideThisPlot();
@@ -267,6 +266,7 @@ public slots:
     void disconnectThisPlot();
     void setActivePlot();
 
+    void UpdatePlotList();
 signals:
     void activateSubsetWindow();
     void activatePlotWindow(int);
