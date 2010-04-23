@@ -333,7 +333,9 @@ static passwordCallback *passwordCB = NULL;
  * Date:       Thu Aug 29 14:24:24 PST 2002
  *
  * Modifications:
- *
+ *   Kathleen Bonnell, Thu Apr 22 17:50:01 MST 2010
+ *   passwordCB signature has been modified to prevent returns of char* 
+ *   across domain boundaries.
  *****************************************************************************/
 
 static int console_get_line_or_password(const char *prompt, char *str,
@@ -344,10 +346,10 @@ static int console_get_line_or_password(const char *prompt, char *str,
     if(is_pw && passwordCB != NULL)
     {
         int okay = 1;
-        const char *password = NULL;
+        char password[512];
 
         /* Call the user-supplied password gathering function. */
-        password = passwordCB(host_g, &okay);
+        passwordCB(host_g, &password[0], &okay);
 
         /* Copy the password into the return buffer. */
         if(okay)

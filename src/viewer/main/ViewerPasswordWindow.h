@@ -80,6 +80,9 @@ class ViewerConnectionProgressDialog;
 //    Brad Whitlock, Tue May 27 13:44:12 PDT 2008
 //    Qt 4.
 //
+//    Kathleen Bonnell, Thu Apr 22 18:06:28 MST 2010 
+//    Changed return type of getPassword to std::string.
+//
 // ****************************************************************************
 
 class ViewerPasswordWindow : public QDialog
@@ -89,7 +92,7 @@ class ViewerPasswordWindow : public QDialog
     ViewerPasswordWindow(QWidget *parent=NULL);
     ~ViewerPasswordWindow();
 
-    static const char *getPassword(const char *, const char *, bool = false);
+    static const std::string getPassword(const char *, const char *, bool = false);
     static const bool getNeedToChangeUsername() { return needToChangeUsername; }
     static void resetNeedToChangeUsername() { needToChangeUsername = false; }
     static void authenticate(const char *, const char *, int);

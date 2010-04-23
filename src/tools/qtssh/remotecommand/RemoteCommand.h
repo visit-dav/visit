@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
 /* Types. */
-typedef const char *passwordCallback(const char *host, int *okay);
+typedef void passwordCallback(const char *host, char *, int *okay);
 
 /* Prototypes. */
 REMOTE_COMMAND_API int RunRemoteCommand(const char *username,
