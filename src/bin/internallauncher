@@ -628,10 +628,23 @@ $0 = shift @ARGV;
 #    Fix valgrind so it runs again.  It was inserting a newline in the
 #    middle of the command, causing it to run valgrind with no arguments.
 #
+#    Gunther H. Weber, Fri Apr 23 15:14:50 PDT 2010
+#    Modifications limited to LBL ANAG (tested by checking for /usr/local/anag)
+#    Delete PYTHONPHOME and PYTHONPATH to avoid conflict with their local
+#    Python installation. Iconify cli xterm at startup.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
 use Cwd;
+
+# HACK for LBNL ANAG/APDEC: Delete PYTHONHOME and PYTHONPATH on ANAG machines
+# to ensure using the appropriate Python version
+if (-x "/usr/local/anag")
+{
+    delete $ENV{PYTHONHOME};
+    delete $ENV{PYTHONPATH};
+}
 
 # -----------------------------------------------------------------------------
 #                                 Setup
@@ -2299,6 +2312,7 @@ $ENV{VISITHOME}     = "$visitdir";
 $ENV{VISITARCHHOME} = "$visitarchdir";
 $ENV{VISITHELPHOME} = "$visithelpdir";
 $ENV{VISITULTRAHOME} = "$visitultradir";
+
 if (-x "$visitlibdir/python")
 {
     $ENV{PYTHONHOME}    = "$visitlibdir/python";
@@ -3230,7 +3244,17 @@ else
                 splice @visitcmd, 0, 1, @newcmd;
 
                 @tmpcmd = @visitcmd;
-                @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-e");
+
+                if (-x "/usr/local/anag")
+                {
+                    # HACK: Iconify cli xterm window for ANAG/APDEC users
+                    @visitcmd = ("xterm", "-iconic", "-title", "VisIt $exe_name$ver", "-e");
+                }
+                else
+                {
+                    @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-e");
+                }
+
                 push @visitcmd, @tmpcmd;
             }
         }
