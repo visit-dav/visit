@@ -104,6 +104,8 @@ public:
     bool NeedToUpdateSelection(const PlotList *) const;
 
     void triggerPlotRename(int, const QString &);
+    bool IsSelecting() const;
+
 signals:
     void itemExpansionChanged();
     void activateSubsetWindow();
@@ -133,7 +135,7 @@ private slots:
 protected:
     virtual void mousePressEvent(QMouseEvent *e);
     virtual void mouseDoubleClickEvent(QMouseEvent *e);
-    void clickHandler(const QPoint &p, bool, bool);
+    void clickHandler(const QPoint &p, bool, bool, Qt::KeyboardModifiers);
     void contextMenuEvent( QContextMenuEvent *event );
 private:
     void contextMenuCreateActions();

@@ -264,12 +264,15 @@ QvisPlotListBox::~QvisPlotListBox()
 //   Brad Whitlock, Fri May 30 16:05:33 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Apr 23 14:31:43 PDT 2010
+//   I changed the code to work better with extended selection.
+//
 // ****************************************************************************
 
 void
 QvisPlotListBox::mousePressEvent(QMouseEvent *e)
 {
-    clickHandler(e->pos(), e->button() == Qt::RightButton, false);
+    clickHandler(e->pos(), e->button() == Qt::RightButton, false, e->modifiers());
     QListWidget::mousePressEvent(e);
 }
 
@@ -287,6 +290,8 @@ QvisPlotListBox::mousePressEvent(QMouseEvent *e)
 // Creation:   Mon Sep 11 09:59:58 PDT 2000
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr 23 14:31:43 PDT 2010
+//   I changed the code to work better with extended selection.
 //   
 // ****************************************************************************
 
@@ -294,7 +299,7 @@ void
 QvisPlotListBox::mouseDoubleClickEvent(QMouseEvent *e)
 {
     QPoint p = e->pos();
-    clickHandler(p, e->button() == Qt::RightButton, true);
+    clickHandler(p, e->button() == Qt::RightButton, true, Qt::NoModifier);
     QListWidget::mouseDoubleClickEvent (e);
 }
 
@@ -326,11 +331,14 @@ QvisPlotListBox::mouseDoubleClickEvent(QMouseEvent *e)
 //   Cyrus Harrison, Thu Apr 15 08:45:34 PDT 2010
 //   Proper offset calc for non drawn items.
 //
+//   Brad Whitlock, Fri Apr 23 14:31:43 PDT 2010
+//   I changed the code to work better with extended selection.
+//
 // ****************************************************************************
 
 void
 QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
-    bool doubleClicked)
+    bool doubleClicked, Qt::KeyboardModifiers modifiers)
 {
     QPoint itemClickLocation(clickLocation);
     int action = -1, opId = -1;
@@ -346,22 +354,35 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
         int h = visualItemRect(current).height();
         if (clickLocation.y() >= y && clickLocation.y() < (y + h))
         {
-            // If the item is not selected, select it.
-            blockSignals(false);
-            current->setSelected(true);
-            blockSignals(bs);
-
-            // Reduce the y location of the click location to be local to the
-            // item.
-            itemClickLocation.setY(clickLocation.y() - y);
-
-            // Handle the click.
-            if (action == -1)
+            if(!rightClick &&
+               (modifiers & (Qt::ControlModifier | Qt::MetaModifier)) > 0)
             {
-                action = item2->clicked(itemClickLocation, doubleClicked, opId);
+                // If we're using Ctrl or Meta + mouse click then switch
+                // the item to its reverse selection.
+                blockSignals(false);
+                current->setSelected(!current->isSelected());
+                blockSignals(bs);
+            }
+            else
+            {
+                // If the item is not selected, select it.
+                blockSignals(false);
+                current->setSelected(true);
+                blockSignals(bs);
+
+                // Reduce the y location of the click location to be local             // item.
+                // to the item
+                itemClickLocation.setY(clickLocation.y() - y);
+
+                // Handle the click.
+                if (action == -1)
+                {
+                    action = item2->clicked(itemClickLocation, doubleClicked, 
+                                            opId);
+                }
             }
         }
-        else
+        else if(rightClick || doubleClicked)
         {
             blockSignals(false);
             current->setSelected(false);
@@ -584,6 +605,27 @@ QvisPlotListBox::NeedToUpdateSelection(const PlotList *pl) const
     return retval;
 }
 
+// ****************************************************************************
+// Method: QvisPlotListBox::IsSelecting
+//
+// Purpose: 
+//   Returns whether we're in selecting mode (the user is selecting items with
+//   the mouse)
+//
+// Returns:    True if we're in selecting mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 23 14:32:30 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisPlotListBox::IsSelecting() const
+{
+    return state() == DragSelectingState;
+}
 
 // ****************************************************************************
 // Method: QvisPlotListBox::contextMenuCreateActions
