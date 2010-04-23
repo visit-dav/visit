@@ -285,6 +285,15 @@
 #    test has a non-skipped test fail.  Previously all these cases simply
 #    had "Partially Skipped".
 #
+#    Eric Brugger, Fri Apr 23 14:38:05 PDT 2010
+#    I modified the parsing of the modes command so that it only considers
+#    the key words serial, parallel, and scalable in an arbitrary order.
+#    Specifically, if it sees the keyword serial, it runs the serial test,
+#    if it sees the keyword parallel in the absence of the keyword scalable,
+#    it runs the parallel test, and if it sees the keywords parallel and
+#    scalable, it runs the test scalable,parallel test.  This change allows
+#    it to ignore any arbitrary host name.
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -783,7 +792,23 @@ while test $testIndex -lt ${#testcasesA[*]}; do
     export VISIT_TEST_SKIP_CASES
     VISIT_TEST_CATEGORY=$category
     VISIT_TEST_NAME=$name
-    VISIT_TEST_MODES=`echo $modes | tr ',' '\n' | grep -v nersc | grep -v davinci | tr '\n' ',' | cut -d',' -f1,2`
+
+    # parse the mode
+    serial_found=`echo $modes | grep "serial"`
+    parallel_found=`echo $modes | grep "parallel"`
+    scalable_found=`echo $modes | grep "scalable"`
+    if test "$serial_found" != ""; then
+        VISIT_TEST_MODES=serial
+    else
+        if test "$parallel_found" != ""; then
+            if test "$scalable_found" != ""; then
+                VISIT_TEST_MODES="scalable,parallel"
+            else
+                VISIT_TEST_MODES="parallel"
+            fi
+        fi
+    fi
+
     # Note: the '-P' is necessary to get pwd
     # to return physical path (without links)
     VISIT_TOP_DIR=`(cd .. ; pwd -P)`
