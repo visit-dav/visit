@@ -27,6 +27,7 @@
       <Field name="traceVariableZ" label="Z-Coordinate" type="variablename" vartypes="01000000000">
       </Field>
       <Field name="connectParticles" label="Connect Particles" type="bool">
+        false
       </Field>
       <Field name="indexVariable" label="Index Variable" type="variablename" enabler="connectParticles:true" vartypes="01000000000">
       </Field>

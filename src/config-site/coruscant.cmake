@@ -1,4 +1,4 @@
-#/home/brad/Development/thirdparty_shared/cmake/2.6.4/linux-x86_64_gcc-4.4/bin/cmake
+#/home/brad/Development/thirdparty_shared/cmake/2.8.0/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Thu Feb  4 13:04:51 PST 2010

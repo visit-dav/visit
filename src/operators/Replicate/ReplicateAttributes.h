@@ -40,6 +40,7 @@
 #define REPLICATEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ReplicateAttributes
 //
@@ -58,13 +59,23 @@
 class ReplicateAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ReplicateAttributes();
     ReplicateAttributes(const ReplicateAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ReplicateAttributes(private_tmfs_t tmfs);
+    ReplicateAttributes(const ReplicateAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ReplicateAttributes();
 
     virtual ReplicateAttributes& operator = (const ReplicateAttributes &obj);
     virtual bool operator == (const ReplicateAttributes &obj) const;
     virtual bool operator != (const ReplicateAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ReplicateAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -132,7 +143,8 @@ public:
         ID_mergeResults,
         ID_replicateUnitCellAtoms,
         ID_shiftPeriodicAtomOrigin,
-        ID_newPeriodicOrigin
+        ID_newPeriodicOrigin,
+        ID__LAST
     };
 
 private:
@@ -150,6 +162,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define REPLICATEATTRIBUTES_TMFS "bDDDiiibbbD"
 
 #endif

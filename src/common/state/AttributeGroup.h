@@ -311,10 +311,10 @@ private:
         virtual ~typeInfo();
         void operator = (const typeInfo &);
 
+        void         *address;
+        int           length;
         unsigned char typeCode;
-        bool selected;
-        void *address;
-        int  length;
+        bool          selected;
     };
 
     typedef std::vector<typeInfo> typeInfoVector;
