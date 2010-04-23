@@ -256,7 +256,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     // until later.
     //
     checkParent = 0;
-    checkRenderer = 0;
 
     //
     // We start out with no ParentProcess object and it's only temporary anyway.
@@ -323,7 +322,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0),
     plotFactory = 0;
     operatorFactory = 0;
     messageBuffer = new ViewerMessageBuffer;
-    messagePipe[0] = -1; messagePipe[1] = -1;
 
     viewerSubject = this;   // FIX_ME Hack, this should be removed.
 
@@ -464,6 +462,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //   Brad Whitlock, Tue Apr 14 11:57:11 PDT 2009
 //   Use ViewerProperties.
 //
+//   Brad Whitlock, Thu Apr 22 16:53:34 PST 2010
+//   Use a signal to schedule HeavyInitialization.
+//
 // ****************************************************************************
 
 void
@@ -542,6 +543,12 @@ ViewerSubject::Initialize()
         // client.
         //
         QTimer::singleShot(350, this, SLOT(EnableSocketSignals()));
+    }
+    else
+    {
+        connect(this, SIGNAL(scheduleHeavyInitialization()),
+                this, SLOT(HeavyInitialization()),
+                Qt::QueuedConnection);
     }
 
     visitTimer->StopTimer(timeid, "Total time setting up");
@@ -1047,7 +1054,10 @@ ViewerSubject::HeavyInitialization()
         if(processingFromParent)
             QTimer::singleShot(100, this, SLOT(CreateViewerDelayedState()));
         else
+        {
+            // This is the more common case
             CreateViewerDelayedState();
+        }
 
         // Discover the client's information.
         QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
@@ -2954,16 +2964,8 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 void
 ViewerSubject::MessageRendererThread(const char *message)
 {
-#ifdef VIEWER_MT
-    int msglen = strlen(message);
-    if (write(this->messagePipe[1], message, msglen) != msglen)
-    {
-        cerr << "Error sending a message to the master thread.\n";
-    }
-#else
     messageBuffer->AddString(message);
     QTimer::singleShot(1, this, SLOT(ProcessRendererMessage()));
-#endif
 }
 
 // ****************************************************************************
@@ -6774,6 +6776,10 @@ ViewerSubject::SetWindowArea()
 //   Jeremy Meredith, Tue Feb  8 08:58:49 PST 2005
 //   Added a query for errors detected during plugin initialization.
 //
+//   Brad Whitlock, Thu Apr 22 17:02:23 PST 2010
+//   Defer execution of HeavyInitialization so when it modifies the viewer
+//   state, it does not alter the xfer subjects already in a notify.
+//
 // ****************************************************************************
 
 void
@@ -6815,7 +6821,7 @@ ViewerSubject::ConnectToMetaDataServer()
     //
     // Do heavy initialization if we still need to do it.
     //
-    HeavyInitialization();
+    emit scheduleHeavyInitialization();
 }
 
 // ****************************************************************************
@@ -7435,20 +7441,6 @@ ViewerSubject::ProcessRendererMessage()
     TRY
     {
         char msg[512];
-
-#ifdef VIEWER_MT
-        //
-        // Read from the message pipe.
-        //
-        int n = read(messagePipe[0], msg, 512);
-        if (n < 0 && n >= 512)
-        {
-            cerr << "Error getting the message sent to the master.\n";
-            CATCH_RETURN(1);
-        }
-        msg[n] = '\0';
-        messageBuffer->AddString(msg);
-#endif
 
         //
         // Add the string to the message buffer and then process messages

@@ -68,6 +68,9 @@
 //    Brad Whitlock, Wed Feb 14 10:58:34 PDT 2007
 //    I renamed the class to ViewerObserverToSignal.
 //
+//    Brad Whitlock, Thu Apr 22 15:47:45 PST 2010
+//    I made the destructor virtual.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerObserverToSignal : public QObject, public Observer
@@ -75,7 +78,7 @@ class VIEWER_API ViewerObserverToSignal : public QObject, public Observer
     Q_OBJECT
 public:
     ViewerObserverToSignal(Subject *);
-    ~ViewerObserverToSignal();
+    virtual ~ViewerObserverToSignal();
     virtual void Update(Subject *);
 signals:
     void execute();
