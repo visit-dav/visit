@@ -94,6 +94,9 @@ static bool isDevelopmentVersion = false;
 //   Tom Fogal, Sun Apr 19 11:39:50 MST 2009
 //   Use `Environment' to simplify and fix a compilation error.
 //
+//   Kathleen Bonnell, Thu Apr 22 17:25:54 MST 2010
+//   Username no longer added to config file names on windows.
+//
 // ****************************************************************************
 
 char *
@@ -149,29 +152,13 @@ GetDefaultConfigFile(const char *filename, const char *home)
 
     if(!realhome.empty())
     {
-        if(home == NULL)
-        {
-            // User config. Get the username so we can append it to
-            // the filename.
-            DWORD namelen = 100;
-            char username[100];
-            GetUserName(username, &namelen);
-
-            retval = new char[realhome.length() + namelen + 5 + filenameLength + 2 + 7];
-            sprintf(retval, "%s\\%s for %s.ini", realhome.c_str(),
-                    configFileName, username);
-        }
-        else
-        {
-            // System config.
-            retval = new char[realhome.length() + filenameLength + 2 + 7];
-            sprintf(retval, "%s\\%s.ini", realhome.c_str(), configFileName);
-        }
+        retval = new char[realhome.length() + filenameLength + 2];
+        sprintf(retval, "%s\\%s", realhome.c_str(), configFileName);
     }
     else
     {
-        retval = new char[filenameLength + 1 + 4];
-        sprintf(retval, "%s.ini", configFileName);
+        retval = new char[filenameLength + 1];
+        sprintf(retval, "%s", configFileName);
     }
 #else
     // The file it is assumed to be in the home directory unless the home
