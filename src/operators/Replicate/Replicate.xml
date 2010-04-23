@@ -2,6 +2,7 @@
   <Plugin name="Replicate" type="operator" label="Replicate" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Replicate.xpm" category="Transforms">
     <Attribute name="ReplicateAttributes" purpose="This class contains attributes for the replicate operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Field name="useUnitCellVectors" label="Use provided unit cell vectors" type="bool">
+        false
       </Field>
       <Field name="xVector" label="Vector for X" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
         1.000000

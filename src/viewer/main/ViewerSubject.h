@@ -533,7 +533,6 @@ private:
     void ConnectObjectsAndHandlers();
     void ConnectConfigManager();
 
-    void HeavyInitialization();
     void InitializePluginManagers();
     void LoadPlotPlugins();
     void LoadOperatorPlugins();
@@ -687,8 +686,11 @@ private:
     void SetDefaultFileOpenOptions();
     void SetSuppressMessages();
         
-
+signals:
+    void scheduleHeavyInitialization();
 private slots:
+    void HeavyInitialization();
+
     void AddInputToXfer(ViewerClientConnection *, AttributeSubject *subj);
     void ProcessSpecialOpcodes(int opcode);
     void DisconnectClient(ViewerClientConnection *client);
@@ -735,7 +737,6 @@ private:
     static void BroadcastToAllClients(void *, Subject *);
 
     QSocketNotifier       *checkParent;
-    QSocketNotifier       *checkRenderer;
     QTimer                *keepAliveTimer;
     bool                   launchingComponent;
     bool                   deferHeavyInitialization;
@@ -773,7 +774,6 @@ private:
     HostProfileList       *originalSystemHostProfileList;
 
     ViewerMessageBuffer   *messageBuffer;
-    int                    messagePipe[2];
 
     std::map<int,EngineKey>                     simulationSocketToKey;
     std::map<EngineKey,QSocketNotifier*>        engineKeyToNotifier;

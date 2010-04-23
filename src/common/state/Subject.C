@@ -171,15 +171,20 @@ Subject::Detach(SimpleObserver *o)
 // Creation:   Wed Aug 9 16:04:43 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 22 16:53:34 PST 2010
+//   Make a copy of the observers array and work from that. This
+//   is meant to avoid a rare problem where adding observers to the
+//   subject being notified can cause undesirable results.
+//
 // *******************************************************************
 
 void
 Subject::Notify()
 {
+    std::vector<SimpleObserver *> obs(observers);
     std::vector<SimpleObserver *>::iterator pos;
 
-    for(pos = observers.begin(); pos != observers.end(); ++pos)
+    for(pos = obs.begin(); pos != obs.end(); ++pos)
     {
         // Update the observer if it wants to be updated. If it didn't
         // want to be updated, set its update to true so it will be 

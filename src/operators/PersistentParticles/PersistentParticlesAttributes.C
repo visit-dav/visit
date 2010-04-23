@@ -98,6 +98,7 @@ void PersistentParticlesAttributes::Init()
     stopIndex = 1;
     stopPathType = 0;
     stride = 1;
+    connectParticles = false;
 
     PersistentParticlesAttributes::SelectAll();
 }
