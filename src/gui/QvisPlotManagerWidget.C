@@ -51,6 +51,7 @@
 #include <QMessageBox>
 #include <QPixmapCache>
 #include <QPushButton>
+#include <QTimer>
 #include <QTreeWidget>
 #include <QGroupBox>
 #include <QWidget>
@@ -925,11 +926,17 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
 //   Moved source related controls into QvisSourceManagerWidget.
 //
+//   Brad Whitlock, Fri Apr 23 14:34:41 PDT 2010
+//   If the plot list box is being selected, postpone the update.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::UpdatePlotList()
 {
+    if(plotListBox->IsSelecting())
+        QTimer::singleShot(100, this, SLOT(UpdatePlotList()));
+
     blockSignals(true);
 
     //
