@@ -4233,6 +4233,8 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName)
     if(sessionName.right(sessionExtension.length()) != sessionExtension)
         sessionName += sessionExtension;
 
+    sessionFile = sessionName;  // Save the name for saving later.
+
     // Tell the viewer to save a session file.
     GetViewerMethods()->ExportEntireState(sessionName.toStdString());
 
@@ -4615,13 +4617,14 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 // ****************************************************************************
 
 void
-QvisGUIApplication::RestoreSessionFile(const QString &s, 
-    const stringVector &sources)
+QvisGUIApplication::RestoreSessionFile(const QString &s,
+                                       const stringVector &sources)
 {
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
-        sessionFile = s;
+        sessionFile = s;  // Save the name for saving later.
+
         restoringSession = true;
         std::string filename(s.toStdString());
           
