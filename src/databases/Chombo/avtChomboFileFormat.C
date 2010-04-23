@@ -421,6 +421,32 @@ avtChomboFileFormat::InitializeReader(void)
     }
 
     //
+    // Open up "Chombo_global". Need to do open this before the "/" group to
+    // determine number of dimensions, which we need to know for reading origin
+    // and aspect ratio information.
+    //
+    hid_t global = H5Gopen(file_handle, "Chombo_global");
+    if (global < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, does "
+                                           "not have Chombo_global");
+    }
+    hid_t dim_id = H5Aopen_name(global, "SpaceDim");
+    if (dim_id < 0)
+    {
+        EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, does "
+                                         "not have SpaceDim in Chombo_global");
+    }
+    H5Aread(dim_id, H5T_NATIVE_INT, &dimension);
+    if (dimension != 2 && dimension != 3)
+    {
+        debug1 << "ERROR: Reader only supports 2D and 3D data sets." << endl;
+        EXCEPTION1(InvalidFilesException, filenames[0]);
+    }
+    H5Aclose(dim_id);
+    H5Gclose(global);
+
+    //
     // Most of the global info is stored in the "/" group.
     //
     hid_t slash = H5Gopen(file_handle, "/");
@@ -434,6 +460,8 @@ avtChomboFileFormat::InitializeReader(void)
     bool hasTime = false;
     bool hasIterations = false;
     bool hasCentering = false;
+    bool hasProbLo = false;
+    bool hasAspectRatio = false;
 
     int numAttrs = H5Aget_num_attrs(slash);
     char buf[1024];
@@ -447,6 +475,10 @@ avtChomboFileFormat::InitializeReader(void)
             hasIterations = true;
         if (strcmp(buf,"data_centering") == 0)
             hasCentering = true;
+        if (strcmp(buf,"prob_lo") == 0)
+            hasProbLo = true;
+        if (strcmp(buf,"aspect_ratio") == 0)
+            hasAspectRatio = true;
         H5Aclose(idx);
     }
 
@@ -516,6 +548,91 @@ avtChomboFileFormat::InitializeReader(void)
             debug1 << "Cell centered data." << std::endl;
         }
     }
+
+    //
+    // Get origin and aspect ratio
+    //
+    for (int i=0; i<3; ++i)
+    {
+        probLo[i] = 0.0;
+        aspectRatio[i] =1.0;
+    }
+
+    hid_t doublevect2d_id = H5Tcreate (H5T_COMPOUND, sizeof(doublevect2d));
+    H5Tinsert (doublevect2d_id, "x", HOFFSET(doublevect2d, x), H5T_NATIVE_DOUBLE);
+    H5Tinsert (doublevect2d_id, "y", HOFFSET(doublevect2d, y), H5T_NATIVE_DOUBLE);
+    hid_t doublevect3d_id = H5Tcreate (H5T_COMPOUND, sizeof(doublevect3d));
+    H5Tinsert (doublevect3d_id, "x", HOFFSET(doublevect3d, x), H5T_NATIVE_DOUBLE);
+    H5Tinsert (doublevect3d_id, "y", HOFFSET(doublevect3d, y), H5T_NATIVE_DOUBLE);
+    H5Tinsert (doublevect3d_id, "z", HOFFSET(doublevect3d, z), H5T_NATIVE_DOUBLE);
+
+    if (hasProbLo)
+    {
+        hid_t probLo_id = H5Aopen_name(slash, "prob_lo");
+        if (probLo_id < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "Could not open attribute \"prob_lo\".");
+        }
+        else
+        {
+            doublevect probLoBuff;
+            if (H5Aread(probLo_id, (dimension == 2 ? doublevect2d_id : doublevect3d_id), &probLoBuff) < 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_lo\".");
+            }
+            else
+            {
+                if (dimension == 2)
+                {
+                    probLo[0] = probLoBuff.dv2.x;
+                    probLo[1] = probLoBuff.dv2.y;
+                }
+                else
+                {
+                    probLo[0] = probLoBuff.dv3.x;
+                    probLo[1] = probLoBuff.dv3.y;
+                    probLo[2] = probLoBuff.dv3.z;
+                }
+            }
+            H5Aclose(probLo_id);
+        }
+    }
+
+    if (hasAspectRatio)
+    {
+        hid_t aspectRatio_id = H5Aopen_name(slash, "aspect_ratio");
+        if (aspectRatio_id < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "Could not open attribute \"aspect_ratio\".");
+        }
+        else
+        {
+            doublevect aspectRatioBuff;
+            if (H5Aread(aspectRatio_id, (dimension == 2 ? doublevect2d_id : doublevect3d_id), &aspectRatioBuff) < 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "Cannot read \"aspect_ratio\".");
+            }
+            else
+            {
+                if (dimension == 2)
+                {
+                    aspectRatio[0] = aspectRatioBuff.dv2.x;
+                    aspectRatio[1] = aspectRatioBuff.dv2.y;
+                }
+                else
+                {
+                    aspectRatio[0] = aspectRatioBuff.dv3.x;
+                    aspectRatio[1] = aspectRatioBuff.dv3.y;
+                    aspectRatio[2] = aspectRatioBuff.dv3.z;
+                }
+            }
+            H5Aclose(aspectRatio_id);
+        }
+    }
+
+    H5Tclose(doublevect2d_id);
+    H5Tclose(doublevect3d_id);
+
 
     //
     // Note: max_level, per conversation with John Shalf, is for the code
@@ -592,30 +709,6 @@ avtChomboFileFormat::InitializeReader(void)
     // We're done reading everything from "slash".
     //
     H5Gclose(slash);
-
-    //
-    // Now open up "Chombo_global".
-    //
-    hid_t global = H5Gopen(file_handle, "Chombo_global");
-    if (global < 0)
-    {
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, does "
-                                           "not have Chombo_global");
-    }
-    hid_t dim_id = H5Aopen_name(global, "SpaceDim");
-    if (dim_id < 0)
-    {
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, does "
-                                         "not have SpaceDim in Chombo_global");
-    }
-    H5Aread(dim_id, H5T_NATIVE_INT, &dimension);
-    if (dimension != 2 && dimension != 3)
-    {
-        debug1 << "ERROR: Reader only supports 2D and 3D data sets." << endl;
-        EXCEPTION1(InvalidFilesException, filenames[0]);
-    }
-    H5Aclose(dim_id);
-    H5Gclose(global);
 
     //
     // Look for epxressions
@@ -1410,14 +1503,14 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->spatialDimension = 3;
     }
     mesh->hasSpatialExtents = true;
-    mesh->minSpatialExtents[0] = lowProbI[0] * dx[0];
-    mesh->maxSpatialExtents[0] = (hiProbI[0] + 1) * dx[0];
-    mesh->minSpatialExtents[1] = lowProbJ[0] * dx[0];
-    mesh->maxSpatialExtents[1] = (hiProbJ[0] + 1) * dx[0];
+    mesh->minSpatialExtents[0] = probLo[0] + lowProbI[0] * dx[0] * aspectRatio[0];
+    mesh->maxSpatialExtents[0] = probLo[0] + (hiProbI[0] + 1) * dx[0] * aspectRatio[0];
+    mesh->minSpatialExtents[1] = probLo[1] + lowProbJ[0] * dx[0] * aspectRatio[1];
+    mesh->maxSpatialExtents[1] = probLo[1] + (hiProbJ[0] + 1) * dx[0] * aspectRatio[1];
     if (dimension == 3)
     {
-        mesh->minSpatialExtents[2] = lowProbK[0] * dx[0];
-        mesh->maxSpatialExtents[2] = (hiProbK[0] + 1) * dx[0];
+        mesh->minSpatialExtents[2] = probLo[2] + lowProbK[0] * dx[0] * aspectRatio[2];
+        mesh->maxSpatialExtents[2] = probLo[2] + (hiProbK[0] + 1) * dx[0] * aspectRatio[2];
     }
     mesh->blockTitle = "patches";
     mesh->blockPieceName = "patch";
@@ -1919,32 +2012,32 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
         float *ptr = xcoord->GetPointer(0);
         if (!allowedToUseGhosts)
-            ptr[0] = lowI[patch]*dx[level];
+            ptr[0] = probLo[0] + lowI[patch]*dx[level]*aspectRatio[0];
         else
-            ptr[0] = (lowI[patch]-numGhostI)*dx[level];
+            ptr[0] = probLo[0] + (lowI[patch]-numGhostI)*dx[level]*aspectRatio[0];
 
         for (i = 1; i < dims[0]; i++)
-            ptr[i] = ptr[0] + i*dx[level];
+            ptr[i] = ptr[0] + i*dx[level]*aspectRatio[0];
 
         ptr = ycoord->GetPointer(0);
         if (!allowedToUseGhosts)
-            ptr[0] = lowJ[patch]*dx[level];
+            ptr[0] = probLo[1] + lowJ[patch]*dx[level]*aspectRatio[1];
         else
-            ptr[0] = (lowJ[patch]-numGhostJ)*dx[level];
+            ptr[0] = probLo[1] + (lowJ[patch]-numGhostJ)*dx[level]*aspectRatio[1];
 
         for (i = 1; i < dims[1]; i++)
-            ptr[i] = ptr[0] + i*dx[level];
+            ptr[i] = ptr[0] + i*dx[level]*aspectRatio[1];
 
         if (dimension == 3)
         {
             ptr = zcoord->GetPointer(0);
             if (!allowedToUseGhosts)
-                ptr[0] = lowK[patch]*dx[level];
+                ptr[0] = probLo[2] + lowK[patch]*dx[level]*aspectRatio[2];
             else
-                ptr[0] = (lowK[patch]-numGhostK)*dx[level];
+                ptr[0] = probLo[2] + (lowK[patch]-numGhostK)*dx[level]*aspectRatio[2];
 
             for (i = 1; i < dims[2]; i++)
-                ptr[i] = ptr[0] + i*dx[level];
+                ptr[i] = ptr[0] + i*dx[level]*aspectRatio[2];
         }
         else
             zcoord->SetTuple1(0, 0.);
@@ -2656,16 +2749,16 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
 
             GetLevelAndLocalPatchNumber(patch, level, local_patch);
 
-            bounds[0] = lowI[patch]*dx[level];
-            bounds[1] = bounds[0] + (hiI[patch]-lowI[patch])*dx[level];
-            bounds[2] = lowJ[patch]*dx[level];
-            bounds[3] = bounds[2] + (hiJ[patch]-lowJ[patch])*dx[level];
+            bounds[0] = probLo[0] + lowI[patch]*dx[level]*aspectRatio[0];
+            bounds[1] = probLo[0] + bounds[0] + (hiI[patch]-lowI[patch])*dx[level]*aspectRatio[0];
+            bounds[2] = probLo[1] + lowJ[patch]*dx[level]*aspectRatio[1];
+            bounds[3] = probLo[1] + bounds[2] + (hiJ[patch]-lowJ[patch])*dx[level]*aspectRatio[1];
             bounds[4] = 0;
             bounds[5] = 0;
             if (dimension == 3)
             {
-                bounds[4] = lowK[patch]*dx[level];
-                bounds[5] = bounds[4] + (hiK[patch]-lowK[patch])*dx[level];
+                bounds[4] = probLo[2] + lowK[patch]*dx[level]*aspectRatio[2];
+                bounds[5] = probLo[2] + bounds[4] + (hiK[patch]-lowK[patch])*dx[level]*aspectRatio[2];
             }
             itree->AddElement(patch, bounds);
         }

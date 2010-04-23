@@ -84,6 +84,22 @@ union
   box3d b3;
 } typedef box;
 
+struct {
+  double x;
+  double y;
+} typedef doublevect2d;
+
+struct {
+  double x;
+  double y;
+  double z;
+} typedef doublevect3d;
+
+union
+{
+  doublevect2d dv2;
+  doublevect3d dv3;
+} typedef doublevect;
 
 class DBOptionsAttributes;
 
@@ -194,6 +210,9 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<int>       hiJ;
     std::vector<int>       lowK;
     std::vector<int>       hiK;
+
+    double                 probLo[3];
+    double                 aspectRatio[3];
 
     void                   InitializeReader(void);
     void                   GetLevelAndLocalPatchNumber(int global_patch,

@@ -1826,6 +1826,9 @@ QvisGUIApplication::Exec()
 //    Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //    Support for internationalization.
 //
+//    Gunther H. Weber, Fri Apr 23 11:24:19 PDT 2010
+//    Check for system wide visitrc file in addition to user visitrc file.
+//
 // ****************************************************************************
 
 void
@@ -1835,7 +1838,8 @@ QvisGUIApplication::Quit()
     {
         int num_clients = GetViewerState()->GetClientInformationList()
                             ->GetNumClients();
-        bool have_visitrc = QFile(GetUserVisItRCFile().c_str()).exists();
+        bool have_visitrc = QFile(GetSystemVisItRCFile().c_str()).exists() ||
+                            QFile(GetUserVisItRCFile().c_str()).exists();
 
         closeAllClients = true;
         
