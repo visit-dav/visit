@@ -24,17 +24,21 @@ class DoUsernameWindow { };
 // Creation:   February 13, 2008 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu April 22 17:43:12 MST 2010
+//   Use std::string.
 //
 // ****************************************************************************
 
-const char *
+std::string 
 graphicalGetUsername(const char *host)
 {
     bool okay = ViewerChangeUsernameWindow::changeUsername(host);
+    std::string retval;
     if (okay)
-        return ViewerChangeUsernameWindow::getUsername().c_str();
-    else
-        return NULL;
+    {
+        retval = ViewerChangeUsernameWindow::getUsername();
+    }
+    return retval;
 }
 
 // ****************************************************************************
@@ -56,20 +60,27 @@ graphicalGetUsername(const char *host)
 //   Added test for 'needToChangeUsername'.  Throw exception if necessary so
 //   that RunRemoteCommand can get the correct username.
 //
+//   Kathleen Bonnell, Thu April 22 17:43:12 MST 2010
+//   Modified signature to prevent returning char* across dll boundaries.
+//
 // ****************************************************************************
 
-const char *
-graphicalGetPassword(const char *host, int *okay)
+void
+graphicalGetPassword(const char *host, char *pass, int *okay)
 {
     ViewerPasswordWindow::resetNeedToChangeUsername();
-    const char *retval = ViewerPasswordWindow::getPassword(username, host);
+    std::string store = ViewerPasswordWindow::getPassword(username, host);
     if (ViewerPasswordWindow::getNeedToChangeUsername())
     {
         throw DoUsernameWindow();
     }
-    *okay = (retval != 0);
+    *okay = (store.size() != 0);
 
-    return retval;
+    if (store.size() > 0)
+    {
+        strncpy(pass, store.c_str(), store.size());
+        pass[store.size()] = '\0';
+    }
 }
 
 // ****************************************************************************
@@ -102,6 +113,9 @@ graphicalGetPassword(const char *host, int *okay)
 //
 //   Kathleen Bonnell, Thu Jun  5 13:51:20 PDT 2008 
 //   Fixed typo causing compiler failure.
+//
+//   Kathleen Bonnell, Thu April 22 17:43:12 MST 2010
+//   graphicalGetUsername now returns std::string.
 //
 // ****************************************************************************
 
@@ -280,16 +294,16 @@ main(int argc, char *argv[])
         }
         catch(DoUsernameWindow)
         {
-            const char *n = graphicalGetUsername(host);
-            if (n != NULL)
+            std::string n = graphicalGetUsername(host);
+            if (!n.empty())
             {
-                namelen = strlen(n) +1;
+                namelen = n.size() +1;
                 if (!shouldDeleteUsername)
                 {
                     username = new char[namelen];
                     shouldDeleteUsername = true; 
                 }
-                strncpy(username, n, namelen);
+                strncpy(username, n.c_str(), namelen);
             }
         }
     }

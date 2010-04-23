@@ -211,6 +211,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Hank Childs, Thu Nov  5 18:49:29 PST 2009
 //    Add some debug statements.
 //
+//    Kathleen Bonnell, Thu Apr 22 17:57:09 MST 2010
+//    getPassword now returns std::string.
+//
 // ****************************************************************************
 
 void
@@ -269,9 +272,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         {
             // Password needed. Prompt for it and write it to the FD.
             instance->needToChangeUsername = false;
-            const char *passwd = instance->getPassword(username, host);
+            const std::string passwd = instance->getPassword(username, host);
 
-            if (!passwd)
+            if (passwd.empty())
             {
                 if (instance->needToChangeUsername)
                 {
@@ -284,7 +287,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                 }
             }
 
-            write(fd, passwd, strlen(passwd));
+            write(fd, passwd.c_str(), passwd.size());
             write(fd, "\n", 1);
             pbuf = buffer;
 
@@ -296,9 +299,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         {
             // Passphrase needed. Prompt for it and write it to the FD.
             instance->needToChangeUsername = false;
-            const char *passphr = instance->getPassword(username, host, true);
+            const std::string passphr = instance->getPassword(username, host, true);
 
-            if (!passphr)
+            if (passphr.empty())
             {
                 if (instance->needToChangeUsername)
                 {
@@ -311,7 +314,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                 }
             }
 
-            write(fd, passphr, strlen(passphr));
+            write(fd, passphr.c_str(), passphr.size());
             write(fd, "\n", 1);
             pbuf = buffer;
 
@@ -405,9 +408,13 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 //   Brad Whitlock, Tue May 27 13:44:45 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Thu Apr 22 17:59:33 MST 2010
+//   Changed return type to std::string so this method can still be used
+//   on windows.
+//
 // ****************************************************************************
 
-const char *
+const std::string
 ViewerPasswordWindow::getPassword(const char *username, const char *host,
                                   bool passphrase)
 {
@@ -452,16 +459,13 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
 #endif
 
     // Return the password string.
+    std::string pass;
     if (status == Accepted)
     {
         // Accepted; hit return or Okay.
-        return instance->passedit->text().toStdString().c_str();
+        pass =  instance->passedit->text().toStdString();
     }
-    else
-    {
-        // Rejected or cancelled.  Return a NULL pointer as a sentinel.
-        return NULL;
-    }
+    return pass;
 }
 
 // ****************************************************************************
