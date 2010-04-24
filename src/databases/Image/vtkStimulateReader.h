@@ -56,6 +56,10 @@
 //  Programmer: Hank Childs
 //  Creation:   March 17, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Fri Apr 23 23:32:27 PDT 2010
+//    Added tdata and dataType.
 // ****************************************************************************
 
 class vtkStimulateReader : public vtkImageReader2
@@ -81,6 +85,7 @@ public:
 
 
 protected:
+  enum dtype {UCHAR, SHORT, INT, FLOAT};
   void ExecuteInformation();
   void ExecuteData(vtkDataObject *);
   virtual int OpenFile(void);
@@ -92,6 +97,7 @@ private:
   int      dims[2];
   float    origin[2];
   float    step[2];
+  dtype    dataType;
 
   vtkStimulateReader(const vtkStimulateReader&);  // Not implemented.
   void operator=(const vtkStimulateReader&);  // Not implemented.
