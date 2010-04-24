@@ -57,6 +57,7 @@ vtkStimulateReader::vtkStimulateReader()
 {
     haveReadSPRFile = false;
     validSPRFile = false;
+    dataType = FLOAT;
 }
 vtkStimulateReader::~vtkStimulateReader()
 {
@@ -178,6 +179,8 @@ bool vtkStimulateReader::GetFilenames(const char *one_file, char *spr_name,
     return true;
 }
 
+//    Mark C. Miller, Fri Apr 23 23:32:51 PDT 2010
+//    Added support for sdt types.
 void vtkStimulateReader::ExecuteData(vtkDataObject *output)
 {
   if (!OpenFile())
@@ -190,14 +193,21 @@ void vtkStimulateReader::ExecuteData(vtkDataObject *output)
   // appear to be working/is very hard to interface to, so just do a little
   // of the heavy lifting ourselves.
   vtkImageData *data = AllocateOutputData(output);
-  vtkDataArray *scalars = data->GetPointData()->GetScalars();
-  scalars->SetNumberOfTuples(dims[0]*dims[1]);
-  void *ptr = scalars->GetVoidPointer(0);
-
-  File->read((char *)ptr, dims[0]*dims[1]*sizeof(float));
+  int size;
+  switch (dataType)
+  {
+    case UCHAR: data->SetScalarTypeToUnsignedChar(); size=sizeof(unsigned char); break;
+    case SHORT: data->SetScalarTypeToShort(); size=sizeof(short); break;
+    case INT: data->SetScalarTypeToInt(); size=sizeof(int); break;
+    case FLOAT: data->SetScalarTypeToFloat(); size=sizeof(float); break;
+  }
+  data->SetDimensions(dims[0],dims[1],1);
+  data->AllocateScalars();
+  void *ptr = data->GetScalarPointer();
+  File->read((char *)ptr, dims[0]*dims[1]*size);
   if (GetSwapBytes())
   {
-     vtkByteSwap::SwapVoidRange(ptr, dims[0]*dims[1], sizeof(float));
+     vtkByteSwap::SwapVoidRange(ptr, dims[0]*dims[1], size);
   }
 }
 
@@ -223,6 +233,8 @@ int vtkStimulateReader::CanReadFile(const char* fname)
   return ReadSPRFile(spr_name);
 }
 
+//    Mark C. Miller, Fri Apr 23 23:33:16 PDT 2010
+//    Added parsing of data type.
 bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
 {
     if (haveReadSPRFile)
@@ -286,6 +298,24 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
     {
         vtkErrorMacro(<<"Unable to read SPR file step in Y is negative");
         return false;
+    }
+
+    if (!spr_file.eof())
+    {
+        spr_file.getline(line, 1024);
+        if (!strncasecmp(line,"byte",4))
+            dataType = UCHAR;
+        else if (!strncasecmp(line,"word",4))
+            dataType = SHORT;
+        else if (!strncasecmp(line,"lword",5))
+            dataType = INT;
+        else if (!strncasecmp(line,"real",4))
+            dataType = FLOAT;
+        else
+        {
+            vtkErrorMacro(<<"Unable to support dataType = \"" << line << "\"");
+            return false;
+        }
     }
 
     validSPRFile = true;
