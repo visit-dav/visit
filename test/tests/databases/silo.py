@@ -298,7 +298,6 @@ v=GetView3D()
 v.viewNormal=(-0.5, 0.296198, 0.813798)
 SetView3D(v)
 silr=SILRestriction()
-silr
 for i in range(1,36,2):
     silr.TurnOffSet(i)
 SetPlotSILRestriction(silr)
