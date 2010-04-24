@@ -60,6 +60,9 @@
 #   added yesterday so that parallel builds would work and make clean would
 #   remove all the files.
 #
+#   Mark C. Miller, Fri Apr 23 23:51:46 PDT 2010
+#   Use glob to produce list of archived targets. That way, don't have to
+#   edit this makefile every time one is added or removed.
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -327,70 +330,7 @@ ENDIF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
 # of the source tarball. This makes tracking the dependencies simple.
 #
 #-----------------------------------------------------------------------------
-SET(ARCHIVED_TARGETS
-ANALYZE_test_data
-ANSYS_test_data
-Adventure_test_data
-CGNS_test_data
-Cale_test_data
-Chombo_test_data
-EnSight_test_data
-Enzo_test_data
-FITS_test_data
-FLASH_test_data
-Fluent_test_data
-GDAL_test_data
-GGCM_test_data
-Image_test_data
-KullLite_test_data
-NASTRAN_test_data
-OpenFOAM_test_data
-PATRAN_test_data
-ProteinDataBank_test_data
-RAW_test_data
-Rect_test_data
-Velodyne_test_data
-Vista_test_data
-bov_test_data
-boxlib_test_data
-chgcar_test_data
-claw_test_data
-csg_test_data
-curve_test_data
-ddcmd_test_data
-exodus_test_data
-h5nimrod_test_data
-h5part_test_data
-iTaps_test_data
-lines_test_data
-mili_test_data
-miranda_test_data
-nek3d_test_data
-netcdf_test_data
-okc_test_data
-old_silo_test_data
-overlink_test_data
-pdb_test_data
-pixie_test_data
-sami_test_data
-samrai_test_data
-shapefile_test_data
-silo_amr_test_data
-silo_hdf5_test_data
-silo_pdb_test_data
-tecplot_test_data
-visitdiff_test_data
-visit_dist_data
-visus_test_data
-vtk_cylindrical_test_data
-vtk_test_data
-vtk_xml_test_data
-xdmf_test_data
-xyz_test_data
-zipwrapper_test_data
-)
-
-
+FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data.tar.gz)
 
 #-----------------------------------------------------------------------------
 # Add a custom command to extract each archived dataset & collect
@@ -398,14 +338,15 @@ zipwrapper_test_data
 #-----------------------------------------------------------------------------
 SET(DATA_TARGET_DEPENDS "")
 
-FOREACH(DATASET_TARGET ${ARCHIVED_TARGETS})
+FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
+    STRING(REPLACE ".tar.gz" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
     ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
                        COMMAND ${UNTAR_CMD}
-                       ARGS ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET}.tar.gz
+                       ARGS ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                       )
     SET( DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
-ENDFOREACH(DATASET_TARGET IN ${ARCHIVED_DATASETS})
+ENDFOREACH(DATASET_TARGET_FILE IN ${ARCHIVED_DATASETS})
 
 #-----------------------------------------------------------------------------
 # Add custom targets: "data" & "test"
