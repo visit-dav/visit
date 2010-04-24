@@ -65,6 +65,7 @@
 #include <vtkStimulateReader.h>
 #endif
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataSelection.h>
 #include <avtGhostData.h>
@@ -259,12 +260,15 @@ avtImageFileFormat::ActivateTimestep(void)
 //    Added code to strip off extra windows end of line characters from the
 //    end of the file extensions so the reader is not confused later.
 //
+//    Mark C. Miller, Fri Apr 23 17:40:30 PDT 2010
+//    Added warning about wasting processors.
 // ****************************************************************************
 
 void
 avtImageFileFormat::ReadImageVolumeHeader(void)
 {
     int rank = PAR_Rank();
+    int size = PAR_Size();
     if (PAR_UIProcess())
     {
         ifstream ifile(fname.c_str());
@@ -351,6 +355,25 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
         dTmp = zStep;
         BroadcastDouble(dTmp);
         BroadcastStringVector(subImages, rank);
+
+        //
+        // Issue warning of possible mistake in using too many processors.
+        // Maximum parallelism is one MPI task per image.
+        //
+        static bool haveIssuedProcWarning = false;
+        if (size > subImages.size() && !haveIssuedProcWarning)
+        {
+            char msg[1024];
+            SNPRINTF(msg, sizeof(msg),
+                "Because your imgvol dataset named \"%s\",\n"
+                "has %d slices, it can be decomposed for parallel across at most %d processors.\n"
+                "You are using %d processors and so %d of these are not adding any additional\n"
+                "parallel speedup to operations involving it.",
+                fname.c_str(), subImages.size(), subImages.size(), size, size-subImages.size()); 
+            if (!avtCallback::IssueWarning(msg))
+                cerr << msg << endl;
+            haveIssuedProcWarning = true;
+        }
     }
     else
     {
@@ -882,50 +905,39 @@ avtImageFileFormat::GetMesh(const char *meshname)
 //    Hank Childs, Tue Jun  7 11:45:23 PDT 2005
 //    Added ghost nodes.
 //
+//    Mark C. Miller, Fri Apr 23 17:27:41 PDT 2010
+//    Replaced ghost nodes with ghost zones.
 // ****************************************************************************
 
 vtkDataSet *
 avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
 {
     int i;
-    bool doGhostNodes = false;
-
-    int addOne = 1;
-    if (strcmp(meshname, "ImageMesh_nodal") == 0)
-        addOne = 0;
-
-    float myStart = (specifiedZStart ? zStart : 0.);
-    int   mySteps = subImages.size();
-    int   startImg = 0;
-    float myZStep = (specifiedZStep ? zStep : 1.);
-
-#ifdef PARALLEL
     int rank = PAR_Rank();
     int nprocs = PAR_Size();
-    int stepsPerProc = mySteps / nprocs;
-    if ((mySteps % nprocs) != 0)
-        stepsPerProc += 1;
-    startImg = rank*stepsPerProc;
-    if (startImg >= mySteps)
-        startImg = mySteps;
-    int endImg = (rank+1)*stepsPerProc;
-    if (endImg >= mySteps)
-        endImg = mySteps;
+    bool doGhostZones = nprocs>1;
+    bool isNodal = !strcmp(meshname, "ImageMesh_nodal");
+    int globalZoneCount = subImages.size();
+    if (isNodal) globalZoneCount--; 
+    int globalZoneStart = 0;
+    float globalZStart = (specifiedZStart ? zStart : 0.);
+    float ZStep = (specifiedZStep ? zStep : 1.);
 
-    if (!addOne)
+    int localZoneStart;
+    int localZoneCount = globalZoneCount / nprocs;
+    int procsWithExtra = globalZoneCount % nprocs;
+
+    if (rank < procsWithExtra)
     {
-        //
-        // We want to make sure this mesh matches up with that of the previous
-        // processor.  If we don't do this, we will get a gap.
-        //
-        if (startImg > 0)
-            startImg--;
+        localZoneCount++; // this proc has extra layer of zones
+        localZoneStart = rank * localZoneCount;
     }
-    myStart = myStart + startImg*myZStep;
-    mySteps = endImg - startImg;
-    doGhostNodes = true;
-#endif
-   
+    else
+    {
+        localZoneStart = procsWithExtra * (localZoneCount+1) +      // procs w/ extra layer
+                         (rank - procsWithExtra) * localZoneCount;  // procs w/o extra layer
+    }
+
     // -1 means we will take any image.
     indexOfImageToRead = -1;
     vtkDataSet *one_slice = GetOneMesh(meshname);
@@ -946,43 +958,46 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
         return NULL;
     }
 
-    vtkFloatArray *z = vtkFloatArray::New();
-    z->SetNumberOfTuples(mySteps+addOne);
-    for (i = 0 ; i < mySteps+addOne ; i++)
-        z->SetTuple1(i, myStart + (i-addOne/2.)*myZStep);
-
     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) one_slice;
     int dims[3];
     rgrid->GetDimensions(dims);
-    dims[2] = mySteps+addOne;
+    dims[2] = localZoneCount+1;
+    int start = localZoneStart;
+    if (localZoneStart > 0) {dims[2]++; start--;}
+    if (localZoneStart + localZoneCount < globalZoneCount-1) dims[2]++;
+    vtkFloatArray *z = vtkFloatArray::New();
+    z->SetNumberOfTuples(dims[2]);
+    for (i = 0 ; i < dims[2]; i++)
+        z->SetTuple1(i, (start + i - (isNodal?0.:.5)) * ZStep);
     rgrid->SetDimensions(dims);
     rgrid->SetZCoordinates(z);
     z->Delete();
 
-    if (doGhostNodes)
+    if (doGhostZones)
     {
-        int nvals = dims[0]*dims[1]*dims[2];
-        vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
-        ghost_nodes->SetName("avtGhostNodes");
-        ghost_nodes->SetNumberOfTuples(nvals);
-        unsigned char *gnp = ghost_nodes->GetPointer(0);
+        int nvals = (dims[0]-1)*(dims[1]-1)*(dims[2]-1);
+        int nplane = (dims[0]-1)*(dims[1]-1);
+        vtkUnsignedCharArray *ghost_zones = vtkUnsignedCharArray::New();
+        ghost_zones->SetName("avtGhostZones");
+        ghost_zones->SetNumberOfTuples(nvals);
+        unsigned char *gzp = ghost_zones->GetPointer(0);
         for (i = 0 ; i < nvals ; i++)
-            gnp[i] = 0;
-        if (startImg != 0)
+            gzp[i] = 0;
+        unsigned char val = 0;
+        avtGhostData::AddGhostZoneType(val, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        if (localZoneStart > 0)
         {
-            int nplane = dims[0]*dims[1];
             for (i = 0 ; i < nplane ; i++)
-                avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
+                gzp[i] = val;
         }
-        if ((startImg+mySteps) != subImages.size())
+        if (localZoneStart + localZoneCount < globalZoneCount-1)
         {
-            int nplane = dims[0]*dims[1];
             int planeStart = nvals-nplane;
             for (i = planeStart ; i < nvals ; i++)
-                avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
+                gzp[i] = val;
         }
-        rgrid->GetPointData()->AddArray(ghost_nodes);
-        ghost_nodes->Delete();
+        rgrid->GetCellData()->AddArray(ghost_zones);
+        ghost_zones->Delete();
     }
 
     return rgrid;
@@ -1015,6 +1030,8 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
 //    Renamed to GetOneMesh.  Also added support for setting up images that
 //    do not start at (0,0) with steps of size 1.
 //
+//    Mark C. Miller, Fri Apr 23 23:30:59 PDT 2010
+//    Changed logic to use 'isNodal' so its consistent with GetImageVolumeMesh
 // ****************************************************************************
 
 vtkDataSet *
@@ -1022,10 +1039,7 @@ avtImageFileFormat::GetOneMesh(const char *meshname)
 {
     ReadInImage();
 
-    int addOne = 1;
-    if (strcmp(meshname, "ImageMesh_nodal") == 0)
-        addOne = 0;
-    
+    bool isNodal = !strcmp(meshname, "ImageMesh_nodal");
     int dims[3];
     image->GetDimensions(dims);
     int xdim = dims[0];
@@ -1037,16 +1051,16 @@ avtImageFileFormat::GetOneMesh(const char *meshname)
     //    so we can have the correct number of cells.
     int i;
     vtkFloatArray *xCoords = vtkFloatArray::New();
-    for(i=0; i<xdim + addOne; i++)
-        xCoords->InsertNextValue((float) xStart + i*xStep-addOne/2.0);
+    for(i=0; i<xdim + !isNodal; i++)
+        xCoords->InsertNextValue((float) xStart + i*xStep - (isNodal?0.:.5));
     vtkFloatArray *yCoords = vtkFloatArray::New();
-    for(i=0; i<ydim + addOne; i++)
-        yCoords->InsertNextValue((float) yStart + i*yStep -addOne/2.0);
+    for(i=0; i<ydim + !isNodal; i++)
+        yCoords->InsertNextValue((float) yStart + i*yStep - (isNodal?0.:.5));
     vtkFloatArray *zCoords = vtkFloatArray::New();
     zCoords->InsertNextValue(0.0);
     
     vtkRectilinearGrid *dataset = vtkRectilinearGrid::New();
-    dataset->SetDimensions(xdim+addOne,ydim+addOne,1);
+    dataset->SetDimensions(xdim+!isNodal,ydim+!isNodal,1);
     dataset->SetXCoordinates(xCoords);
     dataset->SetYCoordinates(yCoords);
     dataset->SetZCoordinates(zCoords);
@@ -1097,52 +1111,56 @@ avtImageFileFormat::GetVar(const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Fri Apr 23 17:28:15 PDT 2010
+//    Added support for ghost zones.
 // ****************************************************************************
 
 vtkDataArray *
 avtImageFileFormat::GetImageVolumeVar(const char *varname)
 {
-    int myStart = 0;
-    int myStop = subImages.size();
+    int rank = PAR_Rank();
+    int nprocs = PAR_Size();
 
+    // examine name to see if its node-/zone-centered
     const char *vtmp = varname;
     int len = strlen(varname);
     int len2 = strlen("_nodal");
     if (len > len2)
         vtmp = varname + len - len2;
-    bool isNodal = (strcmp(vtmp, "_nodal") == 0);
+    bool isNodal = !strcmp(vtmp, "_nodal");
 
-#ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nprocs = PAR_Size();
-    int stepsPerProc = myStop / nprocs;
-    if ((myStop % nprocs) != 0)
-        stepsPerProc += 1;
-    int startImg = rank*stepsPerProc;
-    if (startImg >= myStop)
-        startImg = myStop;
-    int endImg = (rank+1)*stepsPerProc;
-    if (endImg >= myStop)
-        endImg = myStop;
+    int globalZoneCount = subImages.size();
+    if (isNodal) globalZoneCount--; 
+    int globalZoneStart = 0;
+    float globalZStart = (specifiedZStart ? zStart : 0.);
+    float ZStep = (specifiedZStep ? zStep : 1.);
 
-    if (isNodal)
+    int localZoneStart;
+    int localZoneCount = globalZoneCount / nprocs;
+    int procsWithExtra = globalZoneCount % nprocs;
+
+    if (rank < procsWithExtra)
     {
-        //
-        // We want to make sure this mesh matches up with that of the previous
-        // processor.  If we don't do this, we will get a gap.
-        //
-        if (startImg > 0)
-            startImg--;
+        localZoneCount++; // this proc has extra layer of zones
+        localZoneStart = rank * localZoneCount;
+    }
+    else
+    {
+        localZoneStart = procsWithExtra * (localZoneCount+1) +      // procs w/ extra layer
+                         (rank - procsWithExtra) * localZoneCount;  // procs w/o extra layer
     }
 
-    myStart = startImg;
-    myStop = endImg;
-#endif
-   
+    int count = localZoneCount+isNodal;
+    int start = localZoneStart;
+    if (localZoneStart > 0) {count++; start--;}
+    if (localZoneStart + localZoneCount < globalZoneCount-1) count++;
+
     vtkFloatArray *arr = vtkFloatArray::New();
     bool haveInitialized = false;
     int  valsPerSlice = 0;
-    for (int i = myStart ; i < myStop ; i++)
+    for (int i = start; i < start+count; i++)
     {
         indexOfImageToRead = i;
         vtkDataArray *one_slice = GetOneVar(varname);
@@ -1172,14 +1190,14 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
         if (!haveInitialized)
         {
             valsPerSlice = one_slice->GetNumberOfTuples();
-            int ntups = valsPerSlice*(myStop - myStart);
+            int ntups = valsPerSlice*count;
             arr->SetNumberOfTuples(ntups);
             haveInitialized = true;
         }
        
         float *p1 = (float *) one_slice->GetVoidPointer(0);
         float *p2 = (float *) arr->GetVoidPointer(0);
-        p2 += valsPerSlice*(i-myStart);
+        p2 += valsPerSlice*(i-start);
         memcpy(p2, p1, valsPerSlice*sizeof(float));
         one_slice->Delete();
     }
