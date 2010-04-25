@@ -450,6 +450,10 @@ struct VsMeshMeta {
     return (kind == VsSchema::Unstructured::key);
   }
 
+  bool isRectilinearMesh() const {
+    return (kind == VsSchema::Rectilinear::key);
+  }
+
   bool isStructuredMesh() const {
     return (kind == VsSchema::structuredMeshKey);
   }
@@ -525,6 +529,80 @@ struct VsMeshMeta {
   }
 
   int numnodes;
+};
+
+struct VsRectilinearMesh : public VsMeshMeta {
+
+  hid_t getDataType() const {
+
+    VsDMeta* axis0 = getAxisDataset(0);
+    if (axis0 == NULL) {
+      //ERROR!
+      return H5T_NATIVE_DOUBLE; //?
+    }
+
+    return axis0->type;
+  }
+
+  std::string getAxisDatasetName(int axisNumber) const {
+    if ((axisNumber < 0) || (axisNumber > 2)) {
+      return "";
+    }
+    
+    std::string axisKey;
+    switch (axisNumber) {
+      case 0: axisKey = VsSchema::Rectilinear::axis0Key;
+         break;
+      case 1: axisKey = VsSchema::Rectilinear::axis1Key;
+         break;
+      case 2: axisKey = VsSchema::Rectilinear::axis2Key;
+         break;
+      default:
+         return "";
+         break;
+    }
+    
+    //First see if the user has specified a name for the dataset
+    std::string axisName = getStringAttribute(axisKey);
+    if (!axisName.empty()) {
+      return axisName;
+    }
+    
+    //if we didn't find a user supplied name, try the default name
+    std::string defaultAxisName;
+    switch (axisNumber) {
+      case 0: defaultAxisName = VsSchema::Rectilinear::axis0DefaultName;
+         break;
+      case 1: defaultAxisName = VsSchema::Rectilinear::axis1DefaultName;
+         break;
+      case 2: defaultAxisName = VsSchema::Rectilinear::axis2DefaultName;
+         break;
+      default:
+         return "";
+         break;
+    }
+    
+    axisName = getStringAttribute(defaultAxisName);
+    
+    //axisName 
+    return axisName;
+  }
+  
+  //NOTE - cannot be used to get datasets that are not members of this group
+  VsDMeta* getAxisDataset(int axisNumber) const {
+    std::string axisDatasetName = getAxisDatasetName(axisNumber);
+    if (axisDatasetName.empty()) {
+      return NULL;
+    }
+
+    //We look inside our own datasets
+    VsDMeta* answer = getDataset(axisDatasetName);
+
+    //At this point
+    return answer; //could be NULL
+  }
+  
+  
 };
 
 struct VsUniformMesh : public VsMeshMeta {
@@ -918,6 +996,10 @@ struct VsMDMeshMeta {
 
   bool isUniformMesh() const {
     return ((kind == VsSchema::Uniform::key) || (kind == VsSchema::Uniform::deprecated_key));
+  }
+
+  bool isRectilinearMesh() const {
+    return (kind == VsSchema::Rectilinear::key);
   }
 
   bool isUnstructuredMesh() const {

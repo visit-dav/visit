@@ -42,6 +42,14 @@ std::string VsSchema::compMinorFKey = "compMinorF"; //supported
 
 std::string VsSchema::structuredMeshKey = "structured";
 
+std::string VsSchema::Rectilinear::key = "rectilinear";
+std::string VsSchema::Rectilinear::axis0Key = "vsAxis0";
+std::string VsSchema::Rectilinear::axis0DefaultName = "axis0";
+std::string VsSchema::Rectilinear::axis1Key = "vsAxis1";
+std::string VsSchema::Rectilinear::axis1DefaultName = "axis1";
+std::string VsSchema::Rectilinear::axis2Key = "vsAxis2";
+std::string VsSchema::Rectilinear::axis2DefaultName = "axis2";
+
 std::string VsSchema::Uniform::key = "uniform";
 std::string VsSchema::Uniform::deprecated_key = "uniformCartesian";
 std::string VsSchema::Uniform::lowerBounds = "vsLowerBounds";
