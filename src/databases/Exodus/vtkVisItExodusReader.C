@@ -753,6 +753,11 @@ void vtkVisItExodusReader::ReadGeometry(int exoid, vtkUnstructuredGrid *output)
 //
 //   Mark C. Miller, Mon Oct  8 11:50:38 PDT 2007
 //   Changed delete [] of ids to free(ids); Doh!
+//
+//   Kenneth Leiter, Mon Apr 26 14:10:16 PDT 2010
+//   Corrected some memory errors that occur when the reader encounters an
+//   unsupported cell type.
+//
 //----------------------------------------------------------------------------
 void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
 {
@@ -769,7 +774,9 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
   int inId, outId, *pId;
   vtkIdType outPtCount;
   int len;
-
+  std::vector<int> cell_num_points;
+  std::vector<int> vtk_elem_type;
+ 
   // I think we can do better than this.
   //output->Allocate(this->NumberOfElements);  
   
@@ -821,15 +828,83 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
     num_elem_in_block.push_back(num_elem_in_cur_block);
     num_nodes_per_elem.push_back(num_nodes_per_cur_elem);
     num_attr.push_back(cur_num_attr);
+
+    // cellNumPoints may be smaller than num_nodes_per_elem 
+    // because of higher order cells.
+    len = strlen(elem_type_tmp);
+    for (j = 0 ; j < len ; j++)
+      {
+      all_caps_elem_type[j] = toupper(elem_type_tmp[j]);
+      }
+    if (strncmp(all_caps_elem_type, "HEX", 3) == 0)
+      {
+      cellType = VTK_HEXAHEDRON;
+      cellNumPoints = 8;
+      }
+    else if (strncmp(all_caps_elem_type, "QUA", 3) == 0 ||
+             strncmp(all_caps_elem_type, "SHELL4", 6) == 0)
+      {
+      cellType = VTK_QUAD;
+      cellNumPoints = 4;
+      }
+    else if (strncmp(all_caps_elem_type,"SPH",3)==0
+             || strncmp(all_caps_elem_type,"CIR",3)==0)
+      {
+      cellType = VTK_VERTEX;
+      cellNumPoints = 1;
+      }
+    else if (strncmp(all_caps_elem_type, "TRU", 3) == 0)
+      {
+      cellType = VTK_LINE;
+      cellNumPoints = 2;
+      }
+    else if (strncmp(all_caps_elem_type, "TRI", 3) == 0)
+      {
+      cellType = VTK_TRIANGLE;
+      cellNumPoints = 3;
+      }
+    else if (strncmp(all_caps_elem_type, "TET", 3) == 0)
+      {
+      if(num_nodes_per_elem[i] == 10)
+        {
+          cellType = VTK_QUADRATIC_TETRA;
+          cellNumPoints = 10;
+        }
+      else
+        {
+          cellType = VTK_TETRA;
+          cellNumPoints = 4;
+        }
+      }
+    else if (strncmp(all_caps_elem_type, "WED", 3) == 0)
+      {
+      cellType = VTK_WEDGE;
+      cellNumPoints = 6;
+      }
+    else
+      {
+      vtkErrorMacro("Cannot handle type: " << elem_type_tmp
+                    << " with " << num_nodes_per_cur_elem << " nodes."
+                    << "Num elem in block = " << num_elem_in_cur_block);
+      connect.push_back(NULL);
+      cell_num_points.push_back(0);
+      vtk_elem_type.push_back(VTK_EMPTY_CELL);
+      continue;
+      }
+
     if (num_elem_in_cur_block == 0)
       {
       connect.push_back(NULL);
+      cell_num_points.push_back(0);
+      vtk_elem_type.push_back(VTK_EMPTY_CELL);
       }
     else
       {
       int *tmp_conn = new int [num_nodes_per_cur_elem*num_elem_in_cur_block];
       ex_get_elem_conn (exoid, this->BlockIds->GetValue(i), tmp_conn);
       connect.push_back(tmp_conn);
+      cell_num_points.push_back(cellNumPoints);
+      vtk_elem_type.push_back(cellType);
       }
     }
 
@@ -839,8 +914,11 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
   int numCells = 0;
   for (i = 0; i < connect.size(); i++)
     {
-    totalSize += (num_nodes_per_elem[i]+1)*(num_elem_in_block[i]);
-    numCells += num_elem_in_block[i];
+    if(cell_num_points[i] != 0)
+      {
+      totalSize += (cell_num_points[i]+1)*(num_elem_in_block[i]);
+      numCells += num_elem_in_block[i];
+      }
     }
 
   vtkIdTypeArray *nlist = vtkIdTypeArray::New();
@@ -859,61 +937,11 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
   int currentIndex = 0;
   for (i = this->StartBlock, idx=0 ; i <= this->EndBlock; i++, idx++)
     {
-    if (num_elem_in_block[idx] <= 0)
+    if (num_elem_in_block[idx] <= 0 || cell_num_points[idx] <= 0)
       continue;
 
-    // cellNumPoints may be smaller than num_nodes_per_elem 
-    // because of higher order cells.
-    len = strlen(elem_type[idx].c_str());
-    for (j = 0 ; j < len ; j++)
-      {
-      all_caps_elem_type[j] = toupper(elem_type[idx].c_str()[j]);
-      }
-    if (strncmp(all_caps_elem_type, "HEX", 3) == 0)
-      {
-      cellType = VTK_HEXAHEDRON;
-      cellNumPoints = 8;
-      }
-    else if (strncmp(all_caps_elem_type, "QUA", 3) == 0 ||
-             strncmp(all_caps_elem_type, "SHELL4", 6) == 0)
-
-      {
-      cellType = VTK_QUAD;
-      cellNumPoints = 4;
-      }
-    else if (strncmp(all_caps_elem_type,"SPH",3)==0 
-             || strncmp(all_caps_elem_type,"CIR",3)==0)
-      {
-      cellType = VTK_VERTEX;
-      cellNumPoints = 1;
-      }
-    else if (strncmp(all_caps_elem_type, "TRU", 3) == 0)
-      {
-      cellType = VTK_LINE;
-      cellNumPoints = 2;
-      }
-    else if (strncmp(all_caps_elem_type, "TRI", 3) == 0)
-      {
-      cellType = VTK_TRIANGLE;
-      cellNumPoints = 3;
-      }
-    else if (strncmp(all_caps_elem_type, "TET", 3) == 0)
-      {
-      cellType = VTK_TETRA;
-      cellNumPoints = 4;
-      }
-    else if (strncmp(all_caps_elem_type, "WED", 3) == 0)
-      {
-      cellType = VTK_WEDGE;
-      cellNumPoints = 6;
-      }
-    else
-      {
-      vtkErrorMacro("Cannot handle type: " << elem_type[idx].c_str() 
-                    << " with " << num_nodes_per_elem[idx] << " nodes."
-                    << "Num elem in block = " << num_elem_in_block[idx]);
-      continue;
-      }
+    cellType = vtk_elem_type[idx];
+    cellNumPoints = cell_num_points[idx];
       
     // Now save the cells in a cell array.
     int *pConnect = connect[idx];
@@ -921,7 +949,7 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
       {
       *ct++ = cellType;
       *cl++ = currentIndex;
-      *nl++ = num_nodes_per_elem[i];
+      *nl++ = cellNumPoints;
       for (k = 0; k < cellNumPoints; ++k)
         {
         // Translate inId to outId and build up point map.
