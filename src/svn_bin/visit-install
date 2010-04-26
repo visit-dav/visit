@@ -535,7 +535,7 @@ cd $distributiondir/$version
 
 # Determine the platform
 set findbin = `find . -name engine_ser`
-set platformBin = `echo "$findcli" | sed -e "s/engine_ser//"`
+set platformBin = `echo "$findbin" | sed -e "s/engine_ser//"`
 set savepwd = `pwd`
 cd $platformBin/..
 set platformPath = `pwd`
