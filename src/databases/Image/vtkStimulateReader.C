@@ -50,6 +50,14 @@
 
 #include <sys/stat.h>
 
+#ifndef STRNCEQUAL
+  #ifdef _WIN32
+    #define STRNCEQUAL(a,b,c) strnicmp(a, b, c)
+  #else
+    #define STRNCEQUAL(a,b,c) strncasecmp(a, b, c)
+  #endif
+#endif
+
 vtkCxxRevisionMacro(vtkStimulateReader, "$Revision: 1.30 $");
 vtkStandardNewMacro(vtkStimulateReader);
 
@@ -303,13 +311,13 @@ bool vtkStimulateReader::ReadSPRFile(const char *spr_name)
     if (!spr_file.eof())
     {
         spr_file.getline(line, 1024);
-        if (!strncasecmp(line,"byte",4))
+        if (!STRNCEQUAL(line,"byte",4))
             dataType = UCHAR;
-        else if (!strncasecmp(line,"word",4))
+        else if (!STRNCEQUAL(line,"word",4))
             dataType = SHORT;
-        else if (!strncasecmp(line,"lword",5))
+        else if (!STRNCEQUAL(line,"lword",5))
             dataType = INT;
-        else if (!strncasecmp(line,"real",4))
+        else if (!STRNCEQUAL(line,"real",4))
             dataType = FLOAT;
         else
         {
