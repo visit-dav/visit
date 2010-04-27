@@ -77,7 +77,7 @@
 #    Kathleen Bonnell, Tue Feb 16 14:04:16 MST 2010
 #    Removed conditional setting of VISIT_RENDERING_SIZE_LIMIT, in case 
 #    initial configure pass was missing something. Install our zlib on windows.
-#    
+#
 #    Cyrus Harrison, Sun Feb 21 19:12:33 PST 2010
 #    Added support for enable/disable of Python Engine Filters.
 #
@@ -100,6 +100,10 @@
 #
 #    Jeremy Meredith, Mon Apr 19 16:34:02 EDT 2010
 #    Support multiple paths returned for include files from mpi compiler.
+#
+#    Cyrus Harrison, Tue Apr 27 13:39:38 PDT 2010
+#    Added ability to bake rpaths for MPI libs into exes & libs when
+#    'make install' & 'make package' are used.
 #
 #****************************************************************************/
 
@@ -234,6 +238,7 @@ OPTION(VISIT_CREATE_SOCKET_RELAY "Create a separate executable that forwards Vis
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
+
 
 MACRO(VISIT_3RDPARTY_VAR vvar comment libvar)
     # Create a path variable 
@@ -765,7 +770,7 @@ IF(VISIT_FORTRAN)
     ENABLE_LANGUAGE(Fortran)
 ENDIF(VISIT_FORTRAN)
 
-FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags)
+FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
     # Unset any variables that may have been set before by FindMPI
     UNSET(MPI_FOUND CACHE)
     UNSET(MPI_INCLUDE_PATH CACHE)
@@ -794,6 +799,26 @@ FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags)
         SET(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
         SET(${mflags}  "-DPARALLEL ${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
         SET(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
+
+        #
+        # Detect all mpi library paths, we need these to keep the RPATH intact
+        # for installs that link to MPI.
+        #
+        IF(NOT ${mrpath})
+            UNSET(MPI_RPATH CACHE)
+            FOREACH(MLIB ${MPI_LIBRARIES})
+                GET_FILENAME_COMPONENT(MLIB_PATH ${MLIB} PATH)
+                # make sure it is not an implicit path - we need to skip these
+                LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${MLIB_PATH} pidx)
+                MESSAGE(" PIDX = ${pidx}")
+                IF(${pidx} EQUAL -1)
+                    LIST(APPEND MPI_RPATH ${MLIB_PATH})
+                ENDIF(${pidx} EQUAL -1)
+               ENDFOREACH(MLIB ${MPI_LIBRARIES})
+            LIST(REMOVE_DUPLICATES MPI_RPATH)
+            SET(${mrpath} "${MPI_RPATH}" CACHE STRING "Parallel rpath")
+        ENDIF(NOT ${mrpath})
+
     ENDIF(NOT MPI_FOUND)
 ENDFUNCTION(DETECT_MPI_SETTINGS)
 
@@ -802,10 +827,11 @@ IF(VISIT_PARALLEL)
         MESSAGE(STATUS "Setting up MPI using compiler wrapper")
 
         # Detect the MPI settings that C++ wants
-        DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER} 
+        DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER}
             VISIT_PARALLEL_LIBS
             VISIT_PARALLEL_CFLAGS
             VISIT_PARALLEL_LINKER_FLAGS
+            VISIT_PARALLEL_RPATH
         )
         SET(VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CFLAGS} CACHE STRING "Parallel CXXFLAGS")
 
@@ -858,6 +884,8 @@ IF(VISIT_PARALLEL)
     MESSAGE(STATUS "    VISIT_PARALLEL_CXXFLAGS = ${VISIT_PARALLEL_CXXFLAGS}")
     MESSAGE(STATUS "    VISIT_PARALLEL_LINKER_FLAGS = ${VISIT_PARALLEL_LINKER_FLAGS}")
     MESSAGE(STATUS "    VISIT_PARALLEL_LIBS = ${VISIT_PARALLEL_LIBS}")
+    MESSAGE(STATUS "    VISIT_PARALLEL_RPATH = ${VISIT_PARALLEL_RPATH}")
+
     IF(VISIT_FORTRAN AND VISIT_PARALLEL_FORTRAN_LIBS)
         MESSAGE(STATUS "")
         MESSAGE(STATUS "    VISIT_PARALLEL_FORTRAN_FLAGS = ${VISIT_PARALLEL_FORTRAN_FLAGS}")
@@ -878,7 +906,7 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target)
         SET_TARGET_PROPERTIES(${target} PROPERTIES
             COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
         )
-	
+
         IF(VISIT_PARALLEL_LINKER_FLAGS)
             SET(PAR_LINK_FLAGS "")
             FOREACH(X ${VISIT_PARALLEL_LINKER_FLAGS})
@@ -894,6 +922,19 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target)
         IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES) # This is a new if test
             TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
         ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
+
+        IF(VISIT_PARALLEL_RPATH)
+            SET(PAR_RPATHS "")
+            FOREACH(X ${CMAKE_INSTALL_RPATH})
+                LIST(APPEND PAR_RPATHS ${X})
+            ENDFOREACH(X)
+            FOREACH(X ${VISIT_PARALLEL_RPATH})
+                LIST(APPEND PAR_RPATHS ${X})
+            ENDFOREACH(X)
+            SET_TARGET_PROPERTIES(${target} PROPERTIES
+                INSTALL_RPATH ${PAR_RPATHS}
+            )
+        ENDIF(VISIT_PARALLEL_RPATH)
     ENDIF(VISIT_PARALLEL_CXXFLAGS)
 ENDFUNCTION(ADD_PARALLEL_EXECUTABLE)
 
@@ -907,7 +948,7 @@ FUNCTION(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
         SET_TARGET_PROPERTIES(${target} PROPERTIES
             COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
         )
-	
+
         IF(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
             SET(PAR_LINK_FLAGS "")
             FOREACH (X ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS})
@@ -916,6 +957,18 @@ FUNCTION(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
             SET_TARGET_PROPERTIES(${target} PROPERTIES
                 LINK_FLAGS ${PAR_LINK_FLAGS}
             )
+        IF(VISIT_PARALLEL_RPATH)
+            SET(PAR_RPATHS "")
+            FOREACH(X ${CMAKE_INSTALL_RPATH})
+                LIST(APPEND PAR_RPATHS ${X})
+            ENDFOREACH(X)
+            FOREACH(X ${VISIT_PARALLEL_RPATH})
+                LIST(APPEND PAR_RPATHS ${X})
+            ENDFOREACH(X)
+            SET_TARGET_PROPERTIES(${target} PROPERTIES
+                INSTALL_RPATH ${PAR_RPATHS}
+            )
+        ENDIF(VISIT_PARALLEL_RPATH)
         ENDIF(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
         TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_FORTRAN_LIBS})
     ENDIF(VISIT_PARALLEL_FORTRAN_FLAGS)
@@ -948,6 +1001,20 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
                 LINK_FLAGS ${PAR_LINK_FLAGS}
             )
         ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
+
+        IF(VISIT_PARALLEL_RPATH)
+            SET(PAR_RPATHS "")
+            FOREACH(X ${CMAKE_INSTALL_RPATH})
+                LIST(APPEND PAR_RPATHS ${X})
+            ENDFOREACH(X)
+            FOREACH(X ${VISIT_PARALLEL_RPATH})
+                LIST(APPEND PAR_RPATHS ${X})
+            ENDFOREACH(X)
+            SET_TARGET_PROPERTIES(${target} PROPERTIES
+                INSTALL_RPATH ${PAR_RPATHS}
+            )
+        ENDIF(VISIT_PARALLEL_RPATH)
+
         IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
             TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
         ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
