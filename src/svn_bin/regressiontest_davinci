@@ -228,6 +228,10 @@
 #    Eric Brugger, Mon Nov  2 17:17:59 PST 2009
 #    I added some more partial skips for tuvok.
 #
+#    Eric Brugger, Tue Apr 27 08:23:23 PDT 2010
+#    Corrected a bug where the large baseline image would always be the non
+#    mode specific version regardless of the mode the test was being run in.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -619,6 +623,18 @@ for m in $modes; do
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`
 
+    # Determine the mode directory name in the baselines.
+    parallel_found=`echo $m | grep "parallel"`
+    scalable_found=`echo $m | grep "scalable"`
+    theBaselineModeDir="serial"
+    if test "$parallel_found" != ""; then
+        if test "$scalable_found" != ""; then
+            theBaselineModeDir="scalable_parallel"
+        else
+            theBaselineModeDir="parallel"
+        fi
+    fi
+
     # Do the work to copy html results and post them only if this is NOT
     # a test of the regressiontest script itself.
     if test -z "$testEmail"; then
@@ -638,6 +654,13 @@ for m in $modes; do
                 baseName=""
                 if test -f ./baseline/$theCat/$thePyFileBase/$baseNameTxt.txt; then
                     baseName=$baseNameTxt
+                elif test -f ./baseline/$theCat/$thePyFileBase/$theBaselineModeDir/$baseNamePng.png; then
+                    baseName=$baseNamePng
+                    if test -f ./html/d_$baseNamePng.png; then
+                        cp html/[cd]_${baseName}.png html_${dateTag}/. 1>/dev/null 2>&1
+                    fi
+                    ln /project/projectdirs/visit/test/trunk/test/baseline/$theCat/$thePyFileBase/$theBaselineModeDir/$baseNamePng.png html_${dateTag}/b_${baseName}.png
+                    cp html/[cdb]_${baseName}_thumb.png html_${dateTag}/. 1>/dev/null 2>&1
                 elif test -f ./baseline/$theCat/$thePyFileBase/$baseNamePng.png; then
                     baseName=$baseNamePng
                     if test -f ./html/d_$baseNamePng.png; then
