@@ -1,13 +1,14 @@
 # ----------------------------------------------------------------------------
 # Function: GetMemUsage
 #
-# Purpose: This function examins the process(s) whos ProcessAttributes are
-# in procAtts using successive calls to ps. It sleeps 1 second between calls.
-# If after 3 calls in succession, the sum of osz (virtual mem size) over all
-# process(es) has not changed, it takes that as the reading of memory usage
-# for the process. Note, it also, it also gets the pagesize to convert
-# osz to actual byte count. This probably means this code only works on the
-# suns.
+# Purpose:
+#   This function examins the process(s) whos ProcessAttributes are in
+#   procAtts using successive calls to ps. It sleeps 1 second between calls.
+#   If after 3 calls in succession, the sum of osz (virtual mem size) over all
+#   process(es) has not changed, it takes that as the reading of memory usage
+#   for the process. Note, it also, it also gets the pagesize to convert
+#   osz to actual byte count. This probably means this code only works on the
+#   suns.
 #
 # Programmer: Mark C. Miller
 # Created:    January 31, 2005
@@ -52,8 +53,8 @@ def GetMemUsage(procAtts):
 # Function: GetLinesThatContain
 #
 # Purpose:
-#  Filter out a tuple of strings so that we only return the ones that contain
-#  words in the list.
+#   Filter out a tuple of strings so that we only return the ones that contain
+#   words in the list.
 #
 # ----------------------------------------------------------------------------
 
@@ -72,8 +73,8 @@ def GetLinesThatContain(lines, words):
 # Function: InformationFromLine
 #
 # Purpose:
-#  Splits the columns from the top command and returns the values specified
-#  by the indices tuple.
+#   Splits the columns from the top command and returns the values specified
+#   by the indices tuple.
 #
 # ----------------------------------------------------------------------------
 
@@ -96,8 +97,8 @@ def InformationFromLine(line, indices):
 # Function: CreateProgramInformation
 #
 # Purpose:
-#  Converts the information that we care about from the top command into a 
-#  Python dictionary that is keyed using the program pids.
+#   Converts the information that we care about from the top command into a 
+#   Python dictionary that is keyed using the program pids.
 #
 # ----------------------------------------------------------------------------
 
@@ -115,8 +116,8 @@ def CreateProgramInformation(lines, indices):
 # Function: ReadTop
 #
 # Purpose:
-#  Reads the output of the top command and returns a Python dictionary of
-#  information for the running VisIt components.
+#   Reads the output of the top command and returns a Python dictionary of
+#   information for the running VisIt components.
 #
 # ----------------------------------------------------------------------------
 
@@ -143,7 +144,7 @@ def ReadTop():
 # Function: InterpretMemorySize
 #
 # Purpose:
-#  Interprets the memory size from the top command in terms of Kb and Mb.
+#   Interprets the memory size from the top command in terms of Kb and Mb.
 #
 # ----------------------------------------------------------------------------
 
@@ -173,8 +174,8 @@ def InterpretMemorySize(valString):
 # Function: AddMemorySample
 #
 # Purpose:
-#  Reads output from the top command and adds the results to the memory
-#  usage data that we want to plot.
+#   Reads output from the top command and adds the results to the memory
+#   usage data that we want to plot.
 #
 # ----------------------------------------------------------------------------
 
@@ -217,8 +218,8 @@ def AddMemorySample():
 # Function: SampleMemoryUsage
 #
 # Purpose:
-#  Thread callback function that gathers samples until the global keepSampling
-#  variable is set to 0.
+#   Thread callback function that gathers samples until the global keepSampling
+#   variable is set to 0.
 #
 # ----------------------------------------------------------------------------
 
@@ -237,8 +238,8 @@ def SampleMemoryUsage():
 # Function: BeginTrackingMemoryUsage
 #
 # Purpose:
-#  Begins a 2nd thread that independently samples the memory usage as reported
-#  by the top command while the tests execute.
+#   Begins a 2nd thread that independently samples the memory usage as reported
+#   by the top command while the tests execute.
 #
 # ----------------------------------------------------------------------------
 
@@ -251,7 +252,7 @@ def BeginTrackingMemoryUsage():
 # Function: ScaledValue
 #
 # Purpose:
-#  Scales the input value using the min, max limits so it is in the range [0,1]
+#   Scales the input value using the min, max limits so it is in the range [0,1]
 #
 # ----------------------------------------------------------------------------
 
@@ -266,9 +267,9 @@ def ScaledValue(val, minval, maxval):
 # Function: FinishTrackingMemoryUsage
 #
 # Purpose:
-#  Tells the sampling thread to quit and then writes the memory usage data
-#  a curve file that is plotted with VisIt and added to the html page for the
-#  entire test.
+#   Tells the sampling thread to quit and then writes the memory usage data
+#   a curve file that is plotted with VisIt and added to the html page for the
+#   entire test.
 #
 # Modifications:
 #   Brad Whitlock, Mon Mar 26 11:23:23 PDT 2007
@@ -276,6 +277,7 @@ def ScaledValue(val, minval, maxval):
 #
 #   Mark C. Miller, Thu Jun 18 21:42:59 PDT 2009
 #   Changed save format to PNG
+#
 # ----------------------------------------------------------------------------
 
 def FinishTrackingMemoryUsage(html):
@@ -444,18 +446,19 @@ def FinishTrackingMemoryUsage(html):
 # ----------------------------------------------------------------------------
 # Function: LeakCheck 
 #
-# Purpose: This function iterates over the following VisIt CLI calls
+# Purpose:
+#   This function iterates over the following VisIt CLI calls
 #
-#    ClearCacheForAllEngines()
-#    ClearWindow() 
-#    DrawPlots()
-#    SaveWindow()
+#     ClearCacheForAllEngines()
+#     ClearWindow() 
+#     DrawPlots()
+#     SaveWindow()
 #
-# and queries memory usage for both viewer and engine upon the end of each
-# iteration. It then computes the difference in memory usage from one iteration
-# to the next. If the difference exceeds the given threshold on more than half
-# of the iterations, the test returns a failure. If the test exceeds threshold
-# on less than half of the iterations 
+#   and queries memory usage for both viewer and engine upon the end of each
+#   iteration. It then computes the difference in memory usage from one
+#   iteration to the next. If the difference exceeds the given threshold on
+#   more than half of the iterations, the test returns a failure. If the test
+#   exceeds threshold on less than half of the iterations 
 #
 # Programmer: Mark C. Miller
 # Created:    January 31, 2005
@@ -528,15 +531,17 @@ def LeakCheck(file, numIters):
 # ----------------------------------------------------------------------------
 # Function: FileExists 
 #
-# Purpose: tests if a file exists and, if the file is being written, waits
-# until the file size does not change for growthInterval seconds. If the
-# file exists but is of zero size, that is the same as it NOT existing
+# Purpose:
+#   Tests if a file exists and, if the file is being written, waits
+#   until the file size does not change for growthInterval seconds. If the
+#   file exists but is of zero size, that is the same as it NOT existing
 #
 # waitToAppear: number of seconds to wait for the file to first appear
 # growhtInterval: number of seconds between successive stats on the file 
 #
 # Programmer: Mark C. Miller
 #             September 20, 2005
+#
 # ----------------------------------------------------------------------------
 def FileExists(name, waitToAppear, growthInterval):
     if os.path.isfile(name) == 0:
@@ -562,12 +567,14 @@ def FileExists(name, waitToAppear, growthInterval):
 # ----------------------------------------------------------------------------
 # Function: SaveFileInfo
 #
-# Purpose: return a string representing the appropriate extension for the
-# given file format and return bools indicating if the format supports
-# curves, images and/or geometry
+# Purpose:
+#   Return a string representing the appropriate extension for the
+#   given file format and return bools indicating if the format supports
+#   curves, images and/or geometry.
 #
 # Programmer: Mark C. Miller
 #             September 20, 2005
+#
 # ----------------------------------------------------------------------------
 def SaveFileInfo(fmt):
     swa = SaveWindowAttributes()
@@ -598,6 +605,26 @@ def SaveFileInfo(fmt):
     else:
         return ("unknown", 0, 0, 0)
 
+# ----------------------------------------------------------------------------
+# Function: GenFileNames
+#
+# Purpose:
+#   Return the file names of the baseline, the current and the difference
+#   images.
+#
+# Returns:
+#   cur      The name of the current image.
+#   diff     The name of the difference image.
+#   base     The name of the baseline image.
+#   altbase  The name of the mode specific baseline image.
+#   modeSpecific A flag indicating if the baseline image is mode specific.
+#
+# Modifications:
+#   Eric Brugger, Tue Apr 27 13:23:16 PDT 2010
+#   I added the modeSpecific return value, which indicates if the baseline
+#   image is mode specific.
+#
+# ----------------------------------------------------------------------------
 def GenFileNames(file, ext):
     global pyfilebase
     global category
@@ -617,21 +644,22 @@ def GenFileNames(file, ext):
     cur  = "current/%s/%s/"%(category,pyfilebase)  + file + ext
     diff = "diff/%s/%s/"%(category,pyfilebase)     + file + ext
     base = "baseline/%s/%s/"%(category,pyfilebase) + file + ext
-    altbase=""
+    altbase = ""
+    modeSpecific = 0
     if modeStr != "":
         altbase = "baseline/%s/%s/%s/"%(category,pyfilebase,modeStr) + file + ext
         if (os.path.isfile(altbase)):
             base = altbase
+            modeSpecific = 1
 
-    return (cur, diff, base, altbase)
-
+    return (cur, diff, base, altbase, modeSpecific)
 
 # ----------------------------------------------------------------------------
 # Function: Test
 #
 # Purpose:
-#  Write out the file, compare it to the baseline, thumbnail it,
-#  and add it's data to the html
+#   Write out the file, compare it to the baseline, thumbnail it,
+#   and add it's data to the html
 #
 # Modifications:
 #   Mark C. Miller, Mon Mar 29 19:37:26 PST 2004
@@ -670,6 +698,10 @@ def GenFileNames(file, ext):
 #   had some skips.  It returns error code 113 if the differences were
 #   unacceptable regardless of whether some tests were skipped.
 #
+#   Eric Brugger, Tue Apr 27 13:23:16 PDT 2010
+#   I enhanced the routine so that the text next to the large baseline image
+#   indicates if it is a mode specific image or not.
+#
 # ----------------------------------------------------------------------------
 
 def Test(file, altSWA=0):
@@ -696,7 +728,7 @@ def Test(file, altSWA=0):
 	print "***********************"
         next = sys.stdin.read(1)
 
-    (cur, diff, base, altbase) = GenFileNames(file, ".png")
+    (cur, diff, base, altbase, modeSpecific) = GenFileNames(file, ".png")
 
     # save the window in visit
     if altSWA != 0:
@@ -743,7 +775,7 @@ def Test(file, altSWA=0):
         diffState = 'Skipped'
         numskip = numskip + 1
 
-    WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file)
+    WriteHTMLForOneTestImage(diffState, modeSpecific, dpix, tPixs, pPixs, dPixs, davg, file)
 
     # write data to the log file if there is one
     if (os.path.isfile("log")):
@@ -780,16 +812,22 @@ def Test(file, altSWA=0):
 # Function: WriteHTMLForOneTestImage 
 #
 # Purpose:
-#  Writes HTML stuff for a single test image 
+#   Writes HTML stuff for a single test image 
+#
 # Modifications:
-#  Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
-#  Generate 'mouse-over' hrefs ONLY for case where there are diffs.
-#  When there are no diffs, reference baseline instead of current. The
-#  rationale for this later change is so that we can then create symlinks
-#  for the html content instead of making copies and taking more disk space.
+#   Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
+#   Generate 'mouse-over' hrefs ONLY for case where there are diffs.
+#   When there are no diffs, reference baseline instead of current. The
+#   rationale for this later change is so that we can then create symlinks
+#   for the html content instead of making copies and taking more disk space.
+#
+#   Eric Brugger, Tue Apr 27 13:23:16 PDT 2010
+#   I added the modeSpecific argument, which causes the text next to the
+#   baseline image to indicate if it is a mode specific image or not.
+#
 # ----------------------------------------------------------------------------
 
-def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
+def WriteHTMLForOneTestImage(diffState, modeSpecific, dpix, tPixs, pPixs, dPixs, davg, file):
     global html
 
     # write to the html file
@@ -832,7 +870,10 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     else:
         testcase.write("        <b><h1><i>Unknown</i></h1></b>\n");
     testcase.write("    </td>\n")
-    testcase.write("    <td align=center>Baseline:</td>\n")
+    if modeSpecific:
+        testcase.write("    <td align=center>Mode<br>Specific<br>Baseline:</td>\n")
+    else:
+        testcase.write("    <td align=center>Baseline:</td>\n")
     if (diffState == 'None'):
         testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%file)
     elif (diffState == 'Unknown'):
@@ -880,7 +921,9 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
 # ----------------------------------------------------------------------------
 # Function: GetBackgroundImage 
 #
-# Purpose: Returns the image of just VisIt's background without any plots
+# Purpose:
+#   Returns the image of just VisIt's background without any plots
+#
 # ----------------------------------------------------------------------------
 
 def GetBackgroundImage(file):
@@ -953,17 +996,18 @@ def GetBackgroundImage(file):
 # Function: DiffUsingPIL 
 #
 # Purpose:
-#  Diffs test results using PIL, outputs HTML, makes jpeg images,
+#   Diffs test results using PIL, outputs HTML, makes jpeg images,
 #
 # Modifications:
-#    Jeremy Meredith, Tue Jun  7 12:14:11 PDT 2005
-#    Fixed error reporting for missing baseline images.
+#   Jeremy Meredith, Tue Jun  7 12:14:11 PDT 2005
+#   Fixed error reporting for missing baseline images.
 #
-#    Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
-#    Modified to instead of always generating thumb of current (new) image
-#    and only of baseline (old) and diffs when there are diffs to do the
-#    opposite. That is always generate thumb of baseline (old) image and
-#    current and diffs when there are diffs.
+#   Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
+#   Modified to instead of always generating thumb of current (new) image
+#   and only of baseline (old) and diffs when there are diffs to do the
+#   opposite. That is always generate thumb of baseline (old) image and
+#   current and diffs when there are diffs.
+#
 # ----------------------------------------------------------------------------
 
 def DiffUsingPIL(file, cur, diff, baseline, altbase):
@@ -1079,7 +1123,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 # Function: FilterTestText
 #
 # Purpose:
-#  Filters words from the test text before it gets saved.
+#   Filters words from the test text before it gets saved.
 #
 # Modifications:
 #   Mark C. Miller, Tue Jan 29 18:57:45 PST 2008
@@ -1230,8 +1274,8 @@ def FilterTestText(inText, baseText):
 # Function: TestText
 #
 # Purpose:
-#  Write out text to file, diff it with the baseline, and add it's data to 
-#  the html
+#   Write out text to file, diff it with the baseline, and add it's data to 
+#   the html
 #
 # Modifications:
 #   Brad Whitlock, Tue Mar 30 16:39:43 PST 2004
@@ -1256,6 +1300,10 @@ def FilterTestText(inText, baseText):
 #   had some skips.  It returns error code 113 if the differences were
 #   unacceptable regardless of whether some tests were skipped.
 #
+#   Eric Brugger, Tue Apr 27 13:23:16 PDT 2010
+#   I enhanced the routine so that the text next to the large baseline image
+#   indicates if it is a mode specific image or not.
+#
 # ----------------------------------------------------------------------------
 def TestText(file, inText):
     global html
@@ -1277,7 +1325,7 @@ def TestText(file, inText):
         next = sys.stdin.read(1)
 
     # create file names
-    (cur, diff, base, altbase) = GenFileNames(file, ".txt")
+    (cur, diff, base, altbase, modeSpecific) = GenFileNames(file, ".txt")
 
     if (os.path.isfile(base)):
         O = os.open(base, os.O_RDONLY)
@@ -1352,8 +1400,8 @@ def TestText(file, inText):
 # Function: TestSection
 #
 # Purpose:
-#  Write a section header into the results table so it is easier to understand
-#  the results for a large test.
+#   Write a section header into the results table so it is easier to understand
+#   the results for a large test.
 #
 # ----------------------------------------------------------------------------
 
@@ -1367,7 +1415,15 @@ def TestSection(sectionName):
 # Function: Exit
 #
 # Purpose:
-#  Exit with the appropriate error code.  Must be called at end of test cases.
+#   Exit with the appropriate error code.  Must be called at end of test cases.
+#
+# Modifications:
+#   Eric Brugger, Thu Apr 22 12:56:41 PDT 2010
+#   I made several changes to the return code behavior of the script.  It
+#   returns error code 119 if the test succeeded and the test had some skips.
+#   It returns error code 120 if the test had acceptable differences and
+#   had some skips.  It returns error code 113 if the differences were
+#   unacceptable regardless of whether some tests were skipped.
 # ----------------------------------------------------------------------------
 
 def Exit(excode=0):
