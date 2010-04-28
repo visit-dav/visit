@@ -624,6 +624,9 @@ $0 = shift @ARGV;
 #    Delete PYTHONPHOME and PYTHONPATH to avoid conflict with their local
 #    Python installation. Iconify cli xterm at startup.
 #
+#    Rick Angelini (commit by HRC), Wed Apr 28 04:05:31 PDT 2010
+#    Add support for varying numbers of processors per node.
+#    
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2565,7 +2568,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
         @parcmd = ("salloc");
         push @parcmd, "-p", $part  if $part_set;
         push @parcmd, "-t", $time  if $time_set; 
-        push @parcmd, "-N", $procs if $procs_set;
+        push @parcmd, "-N", $nodes if $nodes_set;
+        push @parcmd, "-n", $procs if $procs_set;    
         if ($nodes_set)
         {
            $ppn = ceil($procs / $nodes);
