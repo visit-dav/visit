@@ -170,6 +170,7 @@ LAMMPSGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.meam");
     defaultPatterns.push_back("*.rigid");
     defaultPatterns.push_back("*.dump");
+    defaultPatterns.push_back("*.lammps");
 
     return defaultPatterns;
 }

@@ -264,6 +264,9 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 //    Jeremy Meredith, Thu Apr 22 11:12:51 EDT 2010
 //    Added unit cell bounding box mesh.
 //
+//    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
+//    The number of atoms can now vary per timestep.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -312,10 +315,10 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
     vtkPolyData *pd  = vtkPolyData::New();
     vtkPoints   *pts = vtkPoints::New();
 
-    pts->SetNumberOfPoints(nAtoms);
+    pts->SetNumberOfPoints(nAtoms[timestep]);
     pd->SetPoints(pts);
     pts->Delete();
-    for (int j = 0 ; j < nAtoms ; j++)
+    for (int j = 0 ; j < nAtoms[timestep] ; j++)
     {
         double x = vars[xIndex][j];
         double y = vars[yIndex][j];
@@ -332,7 +335,7 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
     vtkCellArray *verts = vtkCellArray::New();
     pd->SetVerts(verts);
     verts->Delete();
-    for (int k = 0 ; k < nAtoms ; k++)
+    for (int k = 0 ; k < nAtoms[timestep] ; k++)
     {
         verts->InsertNextCell(1);
         verts->InsertCellPoint(k);
@@ -363,6 +366,9 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
 //    Jeremy Meredith, Mon May 11 16:55:53 EDT 2009
 //    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //
+//    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
+//    The number of atoms can now vary per timestep.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -374,9 +380,9 @@ avtLAMMPSDumpFileFormat::GetVar(int timestep, const char *varname)
     if (string(varname) == "species")
     {
         vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfTuples(nAtoms);
+        scalars->SetNumberOfTuples(nAtoms[timestep]);
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<nAtoms; i++)
+        for (int i=0; i<nAtoms[timestep]; i++)
         {
             ptr[i] = speciesVar[i];
         }
@@ -400,9 +406,9 @@ avtLAMMPSDumpFileFormat::GetVar(int timestep, const char *varname)
 
     // and now create the data array for it
     vtkFloatArray *scalars = vtkFloatArray::New();
-    scalars->SetNumberOfTuples(nAtoms);
+    scalars->SetNumberOfTuples(nAtoms[timestep]);
     float *ptr = (float *) scalars->GetVoidPointer(0);
-    for (int i=0; i<nAtoms; i++)
+    for (int i=0; i<nAtoms[timestep]; i++)
     {
         ptr[i] = vars[varIndex][i];
     }
@@ -454,6 +460,9 @@ avtLAMMPSDumpFileFormat::GetVectorVar(int timestep, const char *varname)
 //    Jeremy Meredith, Fri May 15 11:32:54 EDT 2009
 //    Fixed species to be 0-origin.  Also, only set it once.
 //
+//    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
+//    The number of atoms can now vary per timestep.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
@@ -468,13 +477,13 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
     OpenFileAtBeginning();
     in.seekg(file_positions[timestep]);
 
-    speciesVar.resize(nAtoms);
+    speciesVar.resize(nAtoms[timestep]);
     for (int v=0; v<vars.size(); v++)
     {
         // id and species are ints; don't bother with the float arrays for them
         if (v == idIndex || v == speciesIndex)
             continue;
-        vars[v].resize(nAtoms);
+        vars[v].resize(nAtoms[timestep]);
     }
 
     vector<double> tmpVars(nVars);
@@ -482,7 +491,7 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
 
     char buff[1000];
     // read all the atoms
-    for (int a=0; a<nAtoms; a++)
+    for (int a=0; a<nAtoms[timestep]; a++)
     {
         in.getline(buff,1000);
         istringstream sin(buff);
@@ -527,6 +536,9 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
 //    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //    Includes bounds/unit cell, and an optional atom format string.
 //
+//    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
+//    The number of atoms can now vary per timestep.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadAllMetaData()
@@ -538,7 +550,6 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
 
     char buff[1000];
 
-    nAtoms = 0;
     nTimeSteps = 0;
     nVars = -1;
 
@@ -574,13 +585,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
         {
             in.getline(buff,1000);
             int n = strtol(buff, NULL, 10);
-            if (nAtoms == 0)
-                nAtoms = n;
-            else
-            {
-                if (n != nAtoms)
-                    EXCEPTION1(InvalidFilesException, filename.c_str());
-            }
+            nAtoms.push_back(n);
         }
         else if (item.substr(0,5) == "ATOMS")
         {

@@ -29,6 +29,9 @@ using std::vector;
 //    Added support for new, more arbitrary LAMMPS atom dump style formatting.
 //    Includes bounds/unit cell, and an optional atom format string.
 //
+//    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
+//    The number of atoms can now vary per timestep.
+//
 // ****************************************************************************
 
 class avtLAMMPSDumpFileFormat : public avtMTSDFileFormat
@@ -59,7 +62,7 @@ class avtLAMMPSDumpFileFormat : public avtMTSDFileFormat
     bool                           metaDataRead;
     int                            nTimeSteps;
     int                            nVars;
-    int                            nAtoms;
+    std::vector<int>               nAtoms;
     double                         xMin, xMax;
     double                         yMin, yMax;
     double                         zMin, zMax;
