@@ -76,6 +76,9 @@
 //    Brad Whitlock, Wed Apr  8 09:40:02 PDT 2009
 //    I added short int support.
 //
+//    Hank Childs, Sat Apr 24 18:21:42 PDT 2010
+//    Add proper support for time.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -96,6 +99,7 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     virtual int                GetCycle(void) { return cycle; };
+    virtual double             GetTime(void) { return dtime; };
     virtual bool               ReturnsValidCycle(void) { return haveReadTOC; };
     void                       ActivateTimestep(void);
 
@@ -119,6 +123,7 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     char                      *path;
     std::string                file_pattern;
     int                        cycle;
+    double                     dtime;
     long long                  full_size[3];
     long long                  bricklet_size[3];
     long long                  byteOffset;
