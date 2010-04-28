@@ -2194,7 +2194,12 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    The paired processors ALWAYS communicate string size and cell count
 //    info in the first sendrecv. However, they may or may NOT engage in the
 //    2nd sendrecv of the data depending on cell count.
+//
+//    Hank Childs, Sat Apr 24 18:31:34 PDT 2010
+//    Fix problem-sized memory leak.
+//
 // ****************************************************************************
+
 static void
 SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
     int *reducedCellCount, int scalableThreshold, bool sendDataAnyway,
@@ -2288,6 +2293,7 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
         delete avtreader;
     }
 
+   delete dobwrtr;
    *reducedCellCount = srcCnt;
 
 }
