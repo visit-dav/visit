@@ -810,7 +810,6 @@ FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
                 GET_FILENAME_COMPONENT(MLIB_PATH ${MLIB} PATH)
                 # make sure it is not an implicit path - we need to skip these
                 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${MLIB_PATH} pidx)
-                MESSAGE(" PIDX = ${pidx}")
                 IF(${pidx} EQUAL -1)
                     LIST(APPEND MPI_RPATH ${MLIB_PATH})
                 ENDIF(${pidx} EQUAL -1)
