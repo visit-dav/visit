@@ -34,7 +34,8 @@
     <Field name="tunnelSSH" label="Tunnel data connections through SSH" type="bool">
       false
     </Field>
-    <Field name="launchProfiles" type="attVector" subtype="LaunchProfile"></Field>
+    <Field name="launchProfiles" label="launchProfiles" type="attVector" subtype="LaunchProfile">
+    </Field>
     <Field name="activeProfile" label="activeProfile" type="int">
       -1
     </Field>
@@ -52,7 +53,13 @@
     </Function>
     <Function name="SetDefaultUserName_static" user="true" member="true">
     </Function>
-    <Function name="GetActiveLaunchProfile" user="true">
+    <Function name="GetActiveLaunchProfile" user="true" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SelectOnlyDifferingFields" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       Utility.h

@@ -2446,7 +2446,6 @@ QvisHostProfileWindow::processSublaunchPreCmdText(const QString &tmp)
     currentLaunch->SetSublaunchPreCmd(tmp.toStdString());
     SetUpdate(false);
     Apply();
-    UpdateWindowSensitivity();
 }
 
 // ****************************************************************************

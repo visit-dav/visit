@@ -52,12 +52,15 @@
 // Creation:   January  2, 2009
 //
 // Modifications:
+//   Jeremy Meredith, Thu Apr 29 12:14:13 EDT 2010
+//   Added ability to do a selective save.
 //   
 // ****************************************************************************
 
 SingleAttributeConfigManager::SingleAttributeConfigManager(AttributeGroup *att)
 {
     attribute = att;
+    completeSave = false;
 }
 
 // ****************************************************************************
@@ -89,12 +92,16 @@ SingleAttributeConfigManager::~SingleAttributeConfigManager()
 // Creation:   January  2, 2009
 //
 // Modifications:
+//   Jeremy Meredith, Thu Apr 29 12:14:13 EDT 2010
+//   Added ability to do a selective save.
 //
 // ****************************************************************************
 
 bool
-SingleAttributeConfigManager::Export(const std::string &filename)
+SingleAttributeConfigManager::Export(const std::string &filename,
+                                     bool complete)
 {
+    completeSave = complete;
     return WriteConfigFile(filename.c_str());
 }
 
@@ -141,6 +148,8 @@ SingleAttributeConfigManager::Import(const std::string &filename)
 // Creation:   January  2, 2009
 //
 // Modifications:
+//   Jeremy Meredith, Thu Apr 29 12:14:13 EDT 2010
+//   Added ability to do a selective save.
 //
 // ****************************************************************************
 
@@ -150,7 +159,7 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
     // We need to start with a top-level container data node, but that's
     // not what we wind up saving; get the actual one from inside it.
     DataNode topLevel("topLevel");
-    attribute->CreateNode(&topLevel, true, true);
+    attribute->CreateNode(&topLevel, completeSave, true);
     DataNode *actualNode = topLevel.GetNode(attribute->TypeName());
     if (!actualNode)
         return false;

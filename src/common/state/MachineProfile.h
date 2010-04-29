@@ -176,6 +176,7 @@ public:
     static const std::string &GetDefaultUserName();
     static void SetDefaultUserName(const std::string &n);
     LaunchProfile *GetActiveLaunchProfile() const;
+    void SelectOnlyDifferingFields(MachineProfile &other);
 
     // IDs that can be used to identify fields in case statements
     enum {
