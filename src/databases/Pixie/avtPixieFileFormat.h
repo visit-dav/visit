@@ -90,6 +90,10 @@
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
+//
+//    Luis Chacon, Tue Mar 2 10:02:00 EST 2010
+//    Added double vector time_val (set up in GetVariableList)
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTSDFileFormat
@@ -170,6 +174,7 @@ protected:
     std::string            rawExpressionString;
     std::string            timeStatePrefix;
     std::vector<int>       cycles;
+    std::vector<double>    time_val;
 
     static herr_t GetVariableList(hid_t, const char *, void *);
 };
