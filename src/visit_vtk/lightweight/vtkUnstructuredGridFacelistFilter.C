@@ -494,6 +494,8 @@ static void AddQuadraticTriangle(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticQuad(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticTetrahedron(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticPyramid(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticWedge(vtkIdType *, int, HashEntryList &);
 static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
 static int  LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &);
@@ -1922,6 +1924,9 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //   Hank Childs, Fri Sep  8 14:38:54 PDT 2006
 //   Add support for unexpected cell types.
 //
+//   Brad Whitlock, Thu Apr 29 14:10:51 PST 2010
+//   I added quadratic pyramid and wedge.
+//
 // ****************************************************************************
 
 int
@@ -1992,6 +1997,14 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
 
           case VTK_QUADRATIC_HEXAHEDRON:
             AddQuadraticHexahedron(pts, cellId, list);
+            break;
+
+          case VTK_QUADRATIC_PYRAMID:
+            AddQuadraticPyramid(pts, cellId, list);
+            break;
+
+          case VTK_QUADRATIC_WEDGE:
+            AddQuadraticWedge(pts, cellId, list);
             break;
 
           default:
@@ -2362,6 +2375,96 @@ AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
     }
 }
 
+// ****************************************************************************
+// Function: AddQuadraticPyramid
+//
+// Purpose: 
+//   Breaks up the faces of the quadratic pyramid into linear triangles and
+//   adds them to the list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 29 14:32:38 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddQuadraticPyramid(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    const int triangles[][3] = {
+       {0,5,9},{5,10,9},{5,1,10},{9,10,4},
+       {1,6,10},{6,11,10},{6,2,11},{10,11,4},
+       {2,7,11},{7,12,11},{7,3,12},{11,12,4},
+       {3,8,12},{8,9,12},{8,0,9},{12,9,4},
+       {3,7,8},{8,5,0},{5,1,6},{7,2,6}
+    };
+    const int quads[][4] = {
+       {8,7,6,5}
+    };
+
+    vtkIdType nodes[4];
+    for(int i = 0; i < 20; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+
+    nodes[0] = pts[quads[0][0]];
+    nodes[1] = pts[quads[0][1]];
+    nodes[2] = pts[quads[0][2]];
+    nodes[3] = pts[quads[0][3]];
+    list.AddQuad(nodes, cellId);
+}
+
+// ****************************************************************************
+// Function: AddQuadraticWedge
+//
+// Purpose: 
+//   Breaks up the faces of the quadratic wedge into linear triangles and
+//   adds them to the list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 29 14:32:38 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    const int triangles[][3] = {
+        {0,6,8},{6,7,8},{6,1,7},{8,7,2},
+        {4,9,10},{9,10,11},{9,3,11},{10,11,5},
+        {3,12,11},{11,14,5},{12,0,8},{14,8,2},
+        {5,14,10},{10,13,4},{14,2,7},{13,7,1},
+        {4,13,9},{9,12,3},{13,1,6},{12,6,0}
+    };
+    const int quads[][4] = {
+        {11,12,8,14},
+        {10,14,7,13},
+        {9,13,6,12}
+    };
+    vtkIdType nodes[4];
+    for(int i = 0; i < 20; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+    for(int i = 0; i < 3; ++i)
+    {
+        nodes[0] = pts[quads[i][0]];
+        nodes[1] = pts[quads[i][1]];
+        nodes[2] = pts[quads[i][2]];
+        nodes[3] = pts[quads[i][3]];
+        list.AddQuad(nodes, cellId);
+    }
+}
 
 // ****************************************************************************
 // Function: AddUnknownCell
