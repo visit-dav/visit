@@ -110,6 +110,7 @@ avtLineToPolylineFilter::~avtLineToPolylineFilter()
 //
 //    Tom Fogal, Mon Apr 26 17:27:44 MDT 2010
 //    Break out of a loop to prevent incrementing a singular iterator.
+//    Use `empty' instead of 'size'.
 //
 // ****************************************************************************
 
@@ -207,7 +208,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, string)
     int lineOffset = input->GetVerts()->GetNumberOfCells();
     int ptsBufSize = 200;
     pts = new vtkIdType[ptsBufSize];
-    while(freeEdges.size() > 0)
+    while(!freeEdges.empty())
     {
         std::deque<vtkIdType> shape;
 
