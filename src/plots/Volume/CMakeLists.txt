@@ -34,9 +34,7 @@ avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
 avtOpenGLSplattingVolumeRenderer.C
-avtMesaSplattingVolumeRenderer.C
 avtOpenGL3DTextureVolumeRenderer.C
-avtMesa3DTextureVolumeRenderer.C
 avtOpenGLSLIVRVolumeRenderer.C
 avtOpenGLTuvokVolumeRenderer.C
 BoundingBoxContourer.C
@@ -53,9 +51,7 @@ avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
 avtOpenGLSplattingVolumeRenderer.C
-avtMesaSplattingVolumeRenderer.C
 avtOpenGL3DTextureVolumeRenderer.C
-avtMesa3DTextureVolumeRenderer.C
 avtOpenGLSLIVRVolumeRenderer.C
 avtOpenGLTuvokVolumeRenderer.C
 BoundingBoxContourer.C
@@ -69,23 +65,6 @@ IF (NOT WIN32)
         COMPILE_FLAGS "-I ${OPENGL_INCLUDE_DIR}"
     )
 ENDIF (NOT WIN32)
-
-# BEGIN Custom code
-IF(VISIT_TUVOK)
-    SET_SOURCE_FILES_PROPERTIES(avtOpenGLTuvokVolumeRenderer.C avtVolumeRenderer.C
-        PROPERTIES
-        COMPILE_DEFINITIONS "USE_TUVOK"
-    )
-ENDIF(VISIT_TUVOK)
-IF(VISIT_SLIVR)
-    ADD_DEFINITIONS(-DHAVE_LIBSLIVR -DslivrG_EXPORTS -DslivrV_EXPORTS)
-ENDIF(VISIT_SLIVR)
-# END Custom code
-
-SET_SOURCE_FILES_PROPERTIES(avtMesa3DTextureVolumeRenderer.C avtMesaSplattingVolumeRenderer.C 
-    PROPERTIES
-    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR}"
-)
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -121,13 +100,7 @@ ${QT_QTCORE_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS} 
 ${PYTHON_INCLUDE_PATH} 
-${VISIT_INCLUDE_DIR}/visitpy/visitpy ${QT_QTOPENGL_INCLUDE_DIR} ${SLIVR_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} 
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
-${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
+${VISIT_INCLUDE_DIR}/visitpy/visitpy ${QT_QTOPENGL_INCLUDE_DIR} ${SLIVR_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok 
 )
 
 
@@ -177,6 +150,5 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
 

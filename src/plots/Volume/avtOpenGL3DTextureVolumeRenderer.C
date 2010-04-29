@@ -40,7 +40,10 @@
 //                      avtOpenGL3DTextureVolumeRenderer.C                   //
 // ************************************************************************* //
 
+#include <float.h>
 #include "avtOpenGL3DTextureVolumeRenderer.h"
+
+#include <avtGLEWInitializer.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -50,32 +53,13 @@
 #include <vtkMatrix4x4.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <BoundingBoxContourer.h>
-#include <VolumeAttributes.h>
-#include <avtViewInfo.h>
+
 #include <avtCallback.h>
-#include <LightList.h>
+#include <avtViewInfo.h>
+#include <BoundingBoxContourer.h>
 #include <DebugStream.h>
-
-#include <float.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  // Include GLEW.
-  #include <visit-config.h>
-  #include <avtGLEWInitializer.h>
-
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-       // On Windows, we have to access glTexImage3D as an OpenGL extension.
-       // In case texture3D extension is NOT available.
-       static PFNGLTEXIMAGE3DEXTPROC glTexImage3D_ptr = 0;
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
+#include <LightList.h>
+#include <VolumeAttributes.h>
 
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -104,16 +88,15 @@
 //    Tom Fogal, Sat Jul 25 19:45:26 MDT 2009
 //    Use new GLEW initialization wrapper.
 //
+//    Tom Fogal, Fri Mar 19 16:19:37 MDT 2010
+//    Don't initialize GLEW here; assume it is already initialized.
+//
 // ****************************************************************************
 
 avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
 {
     volumetex = NULL;
     volumetexId = 0;
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-    avt::glew::initialize();
-#endif
 }
 
 
@@ -213,6 +196,10 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    This was already enabled, to some degree, by default, but it's now both
 //    optional and configurable.
 //
+//    Tom Fogal, Fri Mar 19 16:28:07 MDT 2010
+//    Simplified greatly by querying for extension directly, independent of
+//    Mesa queries.
+//
 // ****************************************************************************
 
 void
@@ -221,48 +208,18 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
     static bool haveIssuedWarning = false;
-#ifndef VTK_IMPLEMENT_MESA_CXX
-    // OpenGL mode
-#if !defined(GL_VERSION_1_2)
-#ifdef HAVE_LIBGLEW
-    // If we have GLEW then we're in the OpenGL version and we should
-    // be sure that the extension exists on the display.
-    if(glew_initialized && !GLEW_EXT_texture3D)
+
+    if(!(glewIsSupported("GL_VERSION_1_2") ||
+       glewIsSupported("GL_EXT_texture3D")))
     {
-#ifdef _WIN32
-        // On Windows, glTexImage3D is an OpenGL extension. We have to look
-        // up the function pointer.
-        if(glTexImage3D_ptr == 0)
-            glTexImage3D_ptr = (PFNGLTEXIMAGE3DEXTPROC)wglGetProcAddress("glTexImage3D");
-        if(glTexImage3D_ptr == 0)
+        if(!haveIssuedWarning)
         {
-            debug1 << "The glTexImage3D function was not located." << endl;
-            if (!haveIssuedWarning)
-            {
-                avtCallback::IssueWarning("3D textured volume rendering is not "
-                           "available, because the OpenGL functions cannot be "
-                           "located.");
-                haveIssuedWarning = true;
-            }
-            return;
-        }
-#else
-        debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: "
-                  "returning because there is no texture3D extension."
-               << endl;
-        if (!haveIssuedWarning)
-        {
-            avtCallback::IssueWarning("3D textured volume rendering is not "
-                       "available, because the 3D texturing extensions can "
-                       "not be located.");
+            avtCallback::IssueWarning("Volume rendering based on 3D textures "
+                                      "is not supported on your GPU.");
             haveIssuedWarning = true;
         }
         return;
-#endif
     }
-#endif
-#endif
-#endif
 
     // Get the transfer function
     int ncolors=256;
@@ -484,32 +441,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(
         glGenTextures(1, (GLuint*)&volumetexId);
         glBindTexture(GL_TEXTURE_3D, volumetexId);
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
-        // OpenGL mode
-#ifdef GL_VERSION_1_2
-        // OpenGL supports glTexImage3D.
+
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
-#elif defined(HAVE_LIBGLEW)
-        if (GLEW_EXT_texture3D)
-        {
-            // glTexImage3D via GLEW.
-            glTexImage3DEXT(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
-                            0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
-        }
-#ifdef _WIN32
-        else if (glTexImage3D_ptr != 0)
-        {
-            glTexImage3D_ptr(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
-                             0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
-        }
-#endif
-#endif
-#else
-        // Mesa mode
-        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
-#endif
     }
 
     //
