@@ -63,6 +63,10 @@
 #   Mark C. Miller, Fri Apr 23 23:51:46 PDT 2010
 #   Use glob to produce list of archived targets. That way, don't have to
 #   edit this makefile every time one is added or removed.
+#
+#   Brad Whitlock, Thu Apr 29 11:50:42 PDT 2010
+#   I added xdmf2d.C
+#
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -165,7 +169,7 @@ SET(VTK_TARGETS degen_meshes)
 #-----------------------------------------------------------------------------
 # HDF5 Data Gen Programs
 #-----------------------------------------------------------------------------
-SET(HDF5_TARGETS unic xdmf)
+SET(HDF5_TARGETS unic xdmf xdmf2d)
 
 #-----------------------------------------------------------------------------
 # PDB Data Gen Programs
