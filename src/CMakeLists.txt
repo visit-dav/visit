@@ -105,6 +105,10 @@
 #    Added ability to bake rpaths for MPI libs into exes & libs when
 #    'make install' & 'make package' are used.
 #
+#    Cyrus Harrison, Thu Apr 29 09:32:01 PDT 2010
+#    Small change to rpath detection to avoid cmake error w/
+#    LIST(REMOVE_DUPLCIATES) if no rpaths are found.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -781,6 +785,7 @@ FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
     UNSET(MPI_EXTRA_LIBRARY CACHE)
     UNSET(MPI_LINK_FLAGS CACHE)
     UNSET(MPI_COMPILER CACHE)
+    UNSET(MPI_RPATH CACHE)
 
     # Set the compiler and call FindMPI
     SET(MPI_COMPILER ${COMP})
@@ -804,19 +809,17 @@ FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
         # Detect all mpi library paths, we need these to keep the RPATH intact
         # for installs that link to MPI.
         #
-        IF(NOT ${mrpath})
-            UNSET(MPI_RPATH CACHE)
-            FOREACH(MLIB ${MPI_LIBRARIES})
-                GET_FILENAME_COMPONENT(MLIB_PATH ${MLIB} PATH)
-                # make sure it is not an implicit path - we need to skip these
-                LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${MLIB_PATH} pidx)
-                IF(${pidx} EQUAL -1)
-                    LIST(APPEND MPI_RPATH ${MLIB_PATH})
-                ENDIF(${pidx} EQUAL -1)
-               ENDFOREACH(MLIB ${MPI_LIBRARIES})
-            LIST(REMOVE_DUPLICATES MPI_RPATH)
-            SET(${mrpath} "${MPI_RPATH}" CACHE STRING "Parallel rpath")
-        ENDIF(NOT ${mrpath})
+        SET(MPI_RPATH "")
+        FOREACH(MLIB ${MPI_LIBRARIES})
+            GET_FILENAME_COMPONENT(MLIB_PATH ${MLIB} PATH)
+            # make sure it is not an implicit path - we need to skip these
+            LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${MLIB_PATH} pidx)
+            IF(${pidx} EQUAL -1)
+                LIST(APPEND MPI_RPATH ${MLIB_PATH})
+            ENDIF(${pidx} EQUAL -1)
+        ENDFOREACH(MLIB ${MPI_LIBRARIES})
+        LIST(REMOVE_DUPLICATES MPI_RPATH)
+        SET(${mrpath} "${MPI_RPATH}" CACHE STRING "Parallel rpath(s)")
 
     ENDIF(NOT MPI_FOUND)
 ENDFUNCTION(DETECT_MPI_SETTINGS)
