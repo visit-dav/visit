@@ -133,13 +133,15 @@ QvisVariablePopupMenu::addVar(const QString &var, bool valid)
 // Creation:   Fri May  9 12:25:06 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 29 09:43:43 PDT 2010
+//   I added John Schreiner's fix.
+//
 // ****************************************************************************
 
 int
 QvisVariablePopupMenu::count() const
 {
-    return actions->actions().count();
+    return actions->actions().count() + QMenu::actions().count();
 }
 
 //
