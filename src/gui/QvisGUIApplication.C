@@ -4201,6 +4201,8 @@ QvisGUIApplication::SaveSessionAs()
     // to that file.
     if(!fileName.isNull())
     {
+        sessionFile = fileName;  // Save the name for saving later.
+
         ++sessionCount;
         SaveSessionFile(fileName);
         UpdateSessionDir(fileName.toStdString());
@@ -4236,8 +4238,6 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName)
     QString sessionName(fileName);
     if(sessionName.right(sessionExtension.length()) != sessionExtension)
         sessionName += sessionExtension;
-
-    sessionFile = sessionName;  // Save the name for saving later.
 
     // Tell the viewer to save a session file.
     GetViewerMethods()->ExportEntireState(sessionName.toStdString());
