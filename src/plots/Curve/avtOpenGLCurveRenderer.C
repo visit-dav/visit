@@ -54,17 +54,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-      #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
-
+#include <avtGLEWInitializer.h>
 
 // ****************************************************************************
 // Method: avtOpenGLCurveRenderer::avtOpenGLCurveRenderer
