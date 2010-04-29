@@ -66,6 +66,11 @@
 #    Cyrus Harrison, Mon Mar 22 09:01:32 PDT 2010
 #    Added back paraDIS after build issue was resolved.
 #
+#    Brad Whitlock, Mon Apr 26 13:35:37 PST 2010
+#    I made Xdmf use the Xdmf library. I renamed our old XDMF reader to 
+#    VisItXdmf and I made it get used when the Xdmf reader that uses the
+#    Xdmf library is not available.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -119,6 +124,9 @@ THIRDPARTY_DEPENDENT_PLUGINS(EXODUSII Exodus TimeVaryingExodus)
 THIRDPARTY_DEPENDENT_PLUGINS(FASTBIT  HDF_UC)
 THIRDPARTY_DEPENDENT_PLUGINS(GDAL     GDAL)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos ZeusMP)
+IF(NOT XDMF_FOUND)
+    SET(XDMF_READER VisItXdmf)
+ENDIF(NOT XDMF_FOUND)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
 Chombo
 CosmosPP
@@ -135,7 +143,7 @@ Tetrad
 UNIC
 Velodyne
 Vs
-XDMF
+${XDMF_READER}
 )
 THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)
 THIRDPARTY_DEPENDENT_PLUGINS(MILI     Mili)
@@ -146,6 +154,7 @@ ELSE (NOT WIN32)
     THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI)
 ENDIF (NOT WIN32)
 THIRDPARTY_DEPENDENT_PLUGINS(VISUS    ViSUS)
+THIRDPARTY_DEPENDENT_PLUGINS(XDMF     Xdmf)
 
 # Add ITAPS
 IF(ITAPS_DIRS)

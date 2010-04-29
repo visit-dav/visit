@@ -5983,6 +5983,10 @@ ViewerSubject::ExportColorTable()
 //    Also make sure to write out new host profiles that don't exist
 //    in the system host profiles.
 //
+//    Jeremy Meredith, Thu Apr 29 14:48:03 EDT 2010
+//    If the user modified a profile from the original system-global one,
+//    only write out the fields they actually changed, not the whole thing.
+//
 // ****************************************************************************
 
 void
@@ -6056,22 +6060,41 @@ ViewerSubject::WriteConfigFile()
     for (int i=0; i<hpl->GetNumMachines(); i++)
     {
         MachineProfile &pl = hpl->GetMachines(i);
-        bool changedFromOriginal = true;
+        // try to find an original system-global profile which our
+        // user one was modified from
+        MachineProfile *orig = NULL;
         for (int j=0; j<originalSystemHostProfileList->GetNumMachines(); j++)
         {
             MachineProfile &origpl(originalSystemHostProfileList->GetMachines(j));
             if (origpl.GetHostNickname() == pl.GetHostNickname())
             {
-                if (pl == origpl)
-                    changedFromOriginal = false;
+                orig = &origpl;
+                break;
             }
         }
-        if (!changedFromOriginal)
-            continue;
         string filename = userdir + VISIT_SLASH_STRING +
                           "host_" + basenames[i] + ".xml";
-        SingleAttributeConfigManager mgr(&pl);
-        mgr.Export(filename);
+        if (orig)
+        {
+            // if we found a match, compare the original with the new
+            if (*orig != pl)
+            {
+                // if there are differences, we should only write
+                // out the things the user actually changed, so that
+                // they pick up any updates to the system one
+                pl.SelectOnlyDifferingFields(*orig);
+                SingleAttributeConfigManager mgr(&pl);
+                mgr.Export(filename, false);
+            }
+            // else skip it entirely - it's identical
+        }
+        else
+        {
+            // there's no original version - user-created, write it out
+            // in its entirety
+            SingleAttributeConfigManager mgr(&pl);
+            mgr.Export(filename);
+        }
     }
 }
 
@@ -10390,8 +10413,14 @@ CleanHostProfileCallback(void *,
 //
 // Modifications:
 //   Jeremy Meredith, Wed Apr 21 11:29:10 EDT 2010
-//   If we're reading something with the same nickname, overwrite the old one.
+//   If we're reading something with the same nickname, clobber the old one.
 //   This allows user-saved profiles to override system ones.
+//
+//   Jeremy Meredith, Thu Apr 29 15:05:52 EDT 2010
+//   Don't completely override the old one -- instead, import it over top of
+//   the original one.  We no longer assume that host profiles saved to disk
+//   are complete -- they now only contain values users changed from the 
+//   system-global host profiles.
 //
 // ****************************************************************************
 static void
@@ -10413,23 +10442,36 @@ ReadHostProfileCallback(void *hpl,
         (base.substr(base.length()-4) != ".xml" &&
          base.substr(base.length()-4) != ".XML"))
         return;
+
+    // Import the machine profile
     MachineProfile mp;
     SingleAttributeConfigManager mgr(&mp);
     mgr.Import(file);
     mp.SelectAll();
+
+    // If it matches one of the existing ones, import it
+    // over top of the old one so the old settings remain
     bool found = false;
     for (int i=0; i<profileList->GetNumMachines(); i++)
     {
         MachineProfile &mpold(profileList->GetMachines(i));
         if (mpold.GetHostNickname() == mp.GetHostNickname())
         {
+            // note: yes, it's less inefficient to import it
+            // twice, but the only easy way to override only
+            // some of the old settings instead of all of them
+            SingleAttributeConfigManager mgr2(&mpold);
+            mgr2.Import(file);
             found = true;
-            mpold = mp;
             break;
         }
     }
+    // and if it doesn't match, just add it to the list
     if (!found)
+    {
         profileList->AddMachines(mp);
+    }
+    mp.SelectAll();
     profileList->SelectMachines();
 }
                              
