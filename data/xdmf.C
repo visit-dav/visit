@@ -511,23 +511,33 @@ write_hdf5_3d_curv_data(hid_t file_id)
     /* Write Origin and DxDyDz. */
     dims[0] = 3;
     dataspace_id = H5Screate_simple(1, dims, NULL);
-
     dataset_id = H5Dcreate(file_id, "/Origin", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT);
-
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, origin);
-
     status = H5Dclose(dataset_id);
 
     dataset_id = H5Dcreate(file_id, "/DxDyDz", H5T_NATIVE_FLOAT, dataspace_id,
                            H5P_DEFAULT);
-
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, dxdydz);
+    status = H5Dclose(dataset_id);
+    status = H5Sclose(dataspace_id);
 
+    /* Write Origin2 and DxDy. */
+    dims[0] = 2;
+    dataspace_id = H5Screate_simple(1, dims, NULL);
+    dataset_id = H5Dcreate(file_id, "/Origin2", H5T_NATIVE_FLOAT, dataspace_id,
+                           H5P_DEFAULT);
+    status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                      H5P_DEFAULT, origin);
     status = H5Dclose(dataset_id);
 
+    dataset_id = H5Dcreate(file_id, "/DxDy", H5T_NATIVE_FLOAT, dataspace_id,
+                           H5P_DEFAULT);
+    status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                      H5P_DEFAULT, dxdydz);
+    status = H5Dclose(dataset_id);
     status = H5Sclose(dataspace_id);
 
     /* Write individual x, y and z coordinate arrays. */
@@ -1364,12 +1374,12 @@ create_corect2d()
 
     fprintf(xmf, "   <Grid Name=\"mesh\" GridType=\"Uniform\">\n");
     fprintf(xmf, "     <Topology TopologyType=\"2DCoRectMesh\" NumberOfElements=\"%d %d\"/>\n", NY+1, NX+1);
-    fprintf(xmf, "     <Geometry GeometryType=\"Origin_DxDyDz\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", 3);
-    fprintf(xmf, "        mesh.h5:/Origin\n");
+    fprintf(xmf, "     <Geometry GeometryType=\"Origin_DxDy\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", 2);
+    fprintf(xmf, "        mesh.h5:/Origin2\n");
     fprintf(xmf, "       </DataItem>\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", 3);
-    fprintf(xmf, "        mesh.h5:/DxDyDz\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", 2);
+    fprintf(xmf, "        mesh.h5:/DxDy\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
@@ -1462,7 +1472,7 @@ create_rect2d()
 
     fprintf(xmf, "   <Grid Name=\"mesh\" GridType=\"Uniform\">\n");
     fprintf(xmf, "     <Topology TopologyType=\"2DRectMesh\" NumberOfElements=\"%d %d\"/>\n", NY+1, NX+1);
-    fprintf(xmf, "     <Geometry GeometryType=\"VXVYVZ\">\n");
+    fprintf(xmf, "     <Geometry GeometryType=\"VXVY\">\n");
     fprintf(xmf, "       <DataItem Dimensions=\"%d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NX+1);
     fprintf(xmf, "        mesh.h5:/X_1D\n");
     fprintf(xmf, "       </DataItem>\n");
