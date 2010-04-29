@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtXDMFFileFormat.h                            //
+//                            avtVisItXdmfFileFormat.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_XDMF_FILE_FORMAT_H
@@ -198,7 +198,7 @@ class DomainInfo
 };
 
 // ****************************************************************************
-//  Class: avtXDMFFileFormat
+//  Class: avtVisItXdmfFileFormat
 //
 //  Purpose:
 //      Reads in XDMF files as a plugin to VisIt.
@@ -236,11 +236,11 @@ class DomainInfo
 //
 // ****************************************************************************
 
-class avtXDMFFileFormat : public avtSTMDFileFormat
+class avtVisItXdmfFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtXDMFFileFormat(const char *);
-    virtual           ~avtXDMFFileFormat();
+                       avtVisItXdmfFileFormat(const char *);
+    virtual           ~avtVisItXdmfFileFormat();
 
     //
     // This is used to return unconvention data -- ranging from material

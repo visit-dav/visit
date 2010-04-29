@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="XDMF" type="database" label="eXtensible Data Model and Format" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
+  <Plugin name="VisItXdmf" type="database" label="eXtensible Data Model and Format" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
     <CXXFLAGS> 
       ${HDF5_INCLUDE_DIR} 
     </CXXFLAGS>
@@ -15,11 +15,11 @@
       *.xdmf
     </FilePatterns>
     <Files components="M">
-      avtXDMFFileFormat.C
+      avtVisItXdmfFileFormat.C
       XDMFParser.C
     </Files>
     <Files components="E">
-      avtXDMFFileFormat.C
+      avtVisItXdmfFileFormat.C
       XDMFParser.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

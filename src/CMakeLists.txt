@@ -299,6 +299,7 @@ VISIT_3RDPARTY_VAR(VISIT_NETCDF_DIR    "Path containing the NETCDF library's inc
 VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's include and lib" SILO_DIR)
 VISIT_3RDPARTY_DEP(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
+VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -735,6 +736,12 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
 IF(VISUS_FOUND)
     SET(HAVE_LIBVISUS 1)
 ENDIF(VISUS_FOUND)
+
+# Configure Xdmf support.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
+IF(XDMF_FOUND)
+    SET(HAVE_LIBXDMF 1)
+ENDIF(XDMF_FOUND)
 
 
 IF(CMAKE_HOST_UNIX)

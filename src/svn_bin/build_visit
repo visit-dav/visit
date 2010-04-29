@@ -878,6 +878,9 @@
 #     Add support for setting up MPI_INCLUDE_PATH for ice-t via
 #     PAR_COMPILER. Includes special case for osx w/ default mpic++.
 #
+#     Brad Whitlock, Mon Apr 26 13:55:27 PST 2010
+#     I added support for the Xdmf library.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1122,6 +1125,8 @@ export DO_SLIVR="no"
 export ON_SLIVR="off"
 export DO_VISUS="no"
 export ON_VISUS="off"
+export DO_XDMF="no"
+export ON_XDMF="off"
 export DO_TCMALLOC="no"
 export ON_TCMALLOC="off"
 export DO_ICET="no"
@@ -1307,6 +1312,11 @@ export TCMALLOC_FILE=${TCMALLOC_FILE:-"google-perftools-0.97.tar.gz"}
 export TCMALLOC_VERSION=${TCMALLOC_VERSION:-"0.97"}
 export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
 export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
+
+export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.tar.gz"}
+export XDMF_VERSION=${XDMF_VERSION:-"2.1"}
+export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1"}
+export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
 
 export ICET_FILE=${ICET_FILE:-"IceT-0-5-4.tar.gz"}
 export ICET_VERSION=${ICET_VERSION:-"0.5.4"}
@@ -1961,6 +1971,9 @@ function check_visit_source_code
 #    Brad Whitlock, Mon Sep 21 09:57:52 PDT 2009
 #    Added AdvIO support.
 #
+#    Brad Whitlock, Mon Apr 26 14:04:16 PST 2010
+#    I added Xdmf support.
+#
 # *************************************************************************** #
 
 function check_optional_3rdparty
@@ -2141,7 +2154,16 @@ function check_optional_3rdparty
             error "Unable to build ViSUS.  ${VISUS_FILE} not found."
         fi
     fi
-    
+
+    if [[ "$DO_XDMF" == "yes" ]] ; then
+        ensure_built_or_ready "XDMF" $XDMF_VERSION $XDMF_BUILD_DIR $XDMF_FILE
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_XDMF="no"
+            error "Unable to build XDMF.  ${XDMF_FILE} not found."
+        fi
+    fi
+
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
         ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
         if [[ $? != 0 ]] ; then
@@ -8305,6 +8327,112 @@ function build_advio
 }
 
 # *************************************************************************** #
+#                         Function 8.19, build_xdmf                           #
+# *************************************************************************** #
+
+function build_xdmf
+{
+    #
+    # CMake is the build system for Xdmf.  Call another script that will build
+    # that program.
+    #
+    CMAKE_INSTALL="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
+       info "Xdmf: CMake found"
+    else
+       build_cmake
+       if [[ $? != 0 ]] ; then
+          warn "Unable to build cmake.  Giving up"
+          return 1
+       fi
+    fi
+    CMAKE_BIN=${CMAKE_INSTALL}/cmake
+
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE
+    untarred_XDMF=$?
+    if [[ $untarred_XDMF == -1 ]] ; then
+       warn "Unable to prepare Xdmf Build Directory. Giving up"
+       return 1
+    fi
+
+    # We need to patch the CMakeLists.txt so it uses our HDF5 by default
+    # when we tell it to use the system versions.
+    cd $XDMF_BUILD_DIR || error "Can't cd to Xdmf build dir."
+    rm CML.*
+    mv CMakeLists.txt CML.0
+    H5DIR=$(echo "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" | sed "s/\//\\\\\//g")
+    sed "s/  hdf5/  hdf5  $H5DIR\/lib/g" CML.0 > CML.1
+    sed "s/H5Ipublic.h/H5Ipublic.h $H5DIR\/include/g" CML.1 > CMakeLists.txt
+
+    # Configure Xdmf
+    info "Executing CMake on Xdmf"
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        XDMF_SHARED_LIBS="OFF"
+        LIBEXT="a"
+    else
+        XDMF_SHARED_LIBS="ON"
+        LIBEXT="${SO_EXT}"
+    fi
+    ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
+        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
+        -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
+        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+        -DBUILD_TESTING:BOOL=OFF \
+        -DXDMF_BUILD_MPI:BOOL=OFF \
+        -DXDMF_BUILD_UTILS:BOOL=OFF \
+        -DXDMF_BUILD_VTK:BOOL=OFF \
+        -DXDMF_SYSTEM_HDF5:BOOL=ON \
+        -DXDMF_SYSTEM_ZLIB:BOOL=ON \
+        .
+
+    if [[ $? != 0 ]] ; then
+       warn "Xdmf configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build Xdmf
+    #
+    info "Building Xdmf . . . (~3 minutes)"
+
+    $MAKE
+    if [[ $? != 0 ]] ; then
+       warn "Xdmf build failed.  Giving up"
+       return 1
+    fi
+
+    # Install Xdmf
+    info "Installing Xdmf"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "Xdmf install failed.  Giving up"
+       return 1
+    fi
+
+    # Patch up the library names on Darwin
+    if [[ "$DO_STATIC_BUILD" != "yes" && "$OPSYS" == "Darwin" ]]; then
+        LIBDIR="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}/lib"
+        install_name_tool -change libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib -id $LIBDIR/libXdmf.dylib $LIBDIR/libXdmf.dylib 
+        install_name_tool -id $LIBDIR/libvtklibxml2.dylib $LIBDIR/libvtklibxml2.dylib 
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/Xdmf"
+       chgrp -R ${GROUP} "$VISITDIR/Xdmf"
+    fi
+
+    cd "$START_DIR"
+    info "Done with Xdmf"
+    return 0
+}
+
+# *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 # *************************************************************************** #
 
@@ -8596,6 +8724,7 @@ function build_hostconf
             >> $HOSTCONF
         fi
     fi
+
     if [[ "$DO_VISUS" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -8605,6 +8734,20 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR \${VISITHOME}/visus/$VISUS_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
+
+    if [[ "$DO_XDMF" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Xdmf" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+        >> $HOSTCONF
+    fi
+
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -8889,79 +9032,69 @@ printvariables () {
   printf "%s%s\n" "QT_PLATFORM=" "${QT_PLATFORM}"
   printf "%s%s\n" "QT_BUILD_DIR=" "${QT_BUILD_DIR}"
 
-  printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
-  printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
-  printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
+  printf "%s%s\n" "TCMALLOC_FILE=" "${TCMALLOC_FILE}"
+  printf "%s%s\n" "TCMALLOC_VERSION=" "${TCMALLOC_VERSION}"
+  printf "%s%s\n" "TCMALLOC_COMPATIBILITY_VERSION=" "${TCMALLOC_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "TCMALLOC_BUILD_DIR=" "${TCMALLOC_BUILD_DIR}"
 
-  printf "%s%s\n" "SZIP_FILE=" "${SZIP_FILE}"
-  printf "%s%s\n" "SZIP_VERSION=" "${SZIP_VERSION}"
-  printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" "${SZIP_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "SZIP_BUILD_DIR=" "${SZIP_BUILD_DIR}"
+  printf "%s%s\n" "ICET_FILE=" "${ICET_FILE}"
+  printf "%s%s\n" "ICET_VERSION=" "${ICET_VERSION}"
+  printf "%s%s\n" "ICET_COMPATIBILITY_VERSION=" "${ICET_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ICET_BUILD_DIR=" "${ICET_BUILD_DIR}"
 
-  printf "%s%s\n" "HDF5_FILE=" "${HDF5_FILE}"
-  printf "%s%s\n" "HDF5_VERSION=" "${HDF5_VERSION}"
-  printf "%s%s\n" "HDF5_COMPATIBILITY_VERSION=" "${HDF5_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "HDF5_BUILD_DIR=" "${HDF5_BUILD_DIR}"
-
-  printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
-  printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
-  printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "HDF4_BUILD_DIR=" "${HDF4_BUILD_DIR}"
-
-  printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
-  printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
-  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
-
-  printf "%s%s\n" "NETCDF_FILE=" "${NETCDF_FILE}"
-  printf "%s%s\n" "NETCDF_VERSION=" "${NETCDF_VERSION}"
-  printf "%s%s\n" "NETCDF_COMPATIBILITY_VERSION=" "${NETCDF_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "NETCDF_BUILD_DIR=" "${NETCDF_BUILD_DIR}"
-
-  printf "%s%s\n" "CGNS_FILE=" "${CGNS_FILE}"
-  printf "%s%s\n" "CGNS_VERSION=" "${CGNS_VERSION}"
-  printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" "${CGNS_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "CGNS_BUILD_DIR=" "${CGNS_BUILD_DIR}"
-
-  printf "%s%s\n" "GDAL_FILE=" "${GDAL_FILE}"
-  printf "%s%s\n" "GDAL_VERSION=" "${GDAL_VERSION}"
-  printf "%s%s\n" "GDAL_COMPATIBILITY_VERSION=" "${GDAL_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "GDAL_BUILD_DIR=" "${GDAL_BUILD_DIR}"
-
-  printf "%s%s\n" "EXODUS_FILE=" "${EXODUS_FILE}"
-  printf "%s%s\n" "EXODUS_VERSION=" "${EXODUS_VERSION}"
-  printf "%s%s\n" "EXODUS_COMPATIBILITY_VERSION=" "${EXODUS_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "EXODUS_BUILD_DIR=" "${EXODUS_BUILD_DIR}"
+  printf "%s%s\n" "ADVIO_FILE=" "${ADVIO_FILE}"
+  printf "%s%s\n" "ADVIO_VERSION=" "${ADVIO_VERSION}"
+  printf "%s%s\n" "ADVIO_COMPATIBILITY_VERSION=" "${ADVIO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ADVIO_BUILD_DIR=" "${ADVIO_BUILD_DIR}"
 
   printf "%s%s\n" "BOXLIB_FILE=" "${BOXLIB_FILE}"
   printf "%s%s\n" "BOXLIB_VERSION=" "${BOXLIB_VERSION}"
   printf "%s%s\n" "BOXLIB_COMPATIBILITY_VERSION=" "${BOXLIB_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "BOXLIB_BUILD_DIR=" "${BOXLIB_BUILD_DIR}"
 
+  printf "%s%s\n" "CCMIO_FILE=" "${CCMIO_FILE}"
+  printf "%s%s\n" "CCMIO_VERSION=" "${CCMIO_VERSION}"
+  printf "%s%s\n" "CCMIO_COMPATIBILITY_VERSION=" "${CCMIO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "CCMIO_BUILD_DIR=" "${CCMIO_BUILD_DIR}"
+
   printf "%s%s\n" "CFITSIO_FILE=" "${CFITSIO_FILE}"
   printf "%s%s\n" "CFITSIO_VERSION=" "${CFITSIO_VERSION}"
   printf "%s%s\n" "CFITSIO_COMPATIBILITY_VERSION=" "${CFITSIO_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "CFITSIO_BUILD_DIR=" "${CFITSIO_BUILD_DIR}"
+
+  printf "%s%s\n" "CGNS_FILE=" "${CGNS_FILE}"
+  printf "%s%s\n" "CGNS_VERSION=" "${CGNS_VERSION}"
+  printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" "${CGNS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "CGNS_BUILD_DIR=" "${CGNS_BUILD_DIR}"
+
+  printf "%s%s\n" "EXODUS_FILE=" "${EXODUS_FILE}"
+  printf "%s%s\n" "EXODUS_VERSION=" "${EXODUS_VERSION}"
+  printf "%s%s\n" "EXODUS_COMPATIBILITY_VERSION=" "${EXODUS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "EXODUS_BUILD_DIR=" "${EXODUS_BUILD_DIR}"
+
+  printf "%s%s\n" "FASTBIT_FILE=" "${FASTBIT_FILE}"
+  printf "%s%s\n" "FASTBIT_VERSION=" "${FASTBIT_VERSION}"
+  printf "%s%s\n" "FASTBIT_BUILD_DIR=" "${FASTBIT_BUILD_DIR}"
+
+  printf "%s%s\n" "GDAL_FILE=" "${GDAL_FILE}"
+  printf "%s%s\n" "GDAL_VERSION=" "${GDAL_VERSION}"
+  printf "%s%s\n" "GDAL_COMPATIBILITY_VERSION=" "${GDAL_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "GDAL_BUILD_DIR=" "${GDAL_BUILD_DIR}"
 
   printf "%s%s\n" "H5PART_FILE=" "${H5PART_FILE}"
   printf "%s%s\n" "H5PART_VERSION=" "${H5PART_VERSION}"
   printf "%s%s\n" "H5PART_COMPATIBILITY_VERSION=" "${H5PART_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "H5PART_BUILD_DIR=" "${H5PART_BUILD_DIR}"
 
-  printf "%s%s\n" "FASTBIT_FILE=" "${FASTBIT_FILE}"
-  printf "%s%s\n" "FASTBIT_VERSION=" "${FASTBIT_VERSION}"
-  printf "%s%s\n" "FASTBIT_BUILD_DIR=" "${FASTBIT_BUILD_DIR}"
+  printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
+  printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
+  printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "HDF4_BUILD_DIR=" "${HDF4_BUILD_DIR}"
 
-  printf "%s%s\n" "CCMIO_FILE=" "${CCMIO_FILE}"
-  printf "%s%s\n" "CCMIO_VERSION=" "${CCMIO_VERSION}"
-  printf "%s%s\n" "CCMIO_COMPATIBILITY_VERSION=" "${CCMIO_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "CCMIO_BUILD_DIR=" "${CCMIO_BUILD_DIR}"
-
-  printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
-  printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
-  printf "%s%s\n" "ITAPS_MOAB_COMPATIBILITY_VERSION=" "${ITAPS_MOAB_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
+  printf "%s%s\n" "HDF5_FILE=" "${HDF5_FILE}"
+  printf "%s%s\n" "HDF5_VERSION=" "${HDF5_VERSION}"
+  printf "%s%s\n" "HDF5_COMPATIBILITY_VERSION=" "${HDF5_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "HDF5_BUILD_DIR=" "${HDF5_BUILD_DIR}"
 
   printf "%s%s\n" "ITAPS_FMDB_FILE=" "${ITAPS_FMDB_FILE}"
   printf "%s%s\n" "ITAPS_FMDB_VERSION=" "${ITAPS_FMDB_VERSION}"
@@ -8973,25 +9106,40 @@ printvariables () {
   printf "%s%s\n" "ITAPS_GRUMMP_COMPATIBILITY_VERSION=" "${ITAPS_GRUMMP_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "ITAPS_GRUMMP_BUILD_DIR=" "${ITAPS_GRUMMP_BUILD_DIR}"
 
+  printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
+  printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
+  printf "%s%s\n" "ITAPS_MOAB_COMPATIBILITY_VERSION=" "${ITAPS_MOAB_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
+
+  printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
+  printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
+  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
+
+  printf "%s%s\n" "NETCDF_FILE=" "${NETCDF_FILE}"
+  printf "%s%s\n" "NETCDF_VERSION=" "${NETCDF_VERSION}"
+  printf "%s%s\n" "NETCDF_COMPATIBILITY_VERSION=" "${NETCDF_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "NETCDF_BUILD_DIR=" "${NETCDF_BUILD_DIR}"
+
+  printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
+  printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
+  printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
+
+  printf "%s%s\n" "SZIP_FILE=" "${SZIP_FILE}"
+  printf "%s%s\n" "SZIP_VERSION=" "${SZIP_VERSION}"
+  printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" "${SZIP_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "SZIP_BUILD_DIR=" "${SZIP_BUILD_DIR}"
+
   printf "%s%s\n" "VISUS_FILE=" "${VISUS_FILE}"
   printf "%s%s\n" "VISUS_VERSION=" "${VISUS_VERSION}"
   printf "%s%s\n" "VISUS_COMPATIBILITY_VERSION=" "${VISUS_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "VISUS_BUILD_DIR=" "${VISUS_BUILD_DIR}"
 
-  printf "%s%s\n" "ADVIO_FILE=" "${ADVIO_FILE}"
-  printf "%s%s\n" "ADVIO_VERSION=" "${ADVIO_VERSION}"
-  printf "%s%s\n" "ADVIO_COMPATIBILITY_VERSION=" "${ADVIO_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ADVIO_BUILD_DIR=" "${ADVIO_BUILD_DIR}"
-
-  printf "%s%s\n" "TCMALLOC_FILE=" "${TCMALLOC_FILE}"
-  printf "%s%s\n" "TCMALLOC_VERSION=" "${TCMALLOC_VERSION}"
-  printf "%s%s\n" "TCMALLOC_COMPATIBILITY_VERSION=" "${TCMALLOC_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "TCMALLOC_BUILD_DIR=" "${TCMALLOC_BUILD_DIR}"
-
-  printf "%s%s\n" "ICET_FILE=" "${ICET_FILE}"
-  printf "%s%s\n" "ICET_VERSION=" "${ICET_VERSION}"
-  printf "%s%s\n" "ICET_COMPATIBILITY_VERSION=" "${ICET_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ICET_BUILD_DIR=" "${ICET_BUILD_DIR}"
+  printf "%s%s\n" "XDMF_FILE=" "${XDMF_FILE}"
+  printf "%s%s\n" "XDMF_VERSION=" "${XDMF_VERSION}"
+  printf "%s%s\n" "XDMF_COMPATIBILITY_VERSION=" "${XDMF_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "XDMF_BUILD_DIR=" "${XDMF_BUILD_DIR}"
 }
 usage () {
   printf "Usage: %s [options]\n" $0
@@ -9006,6 +9154,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS"
   printf "%-15s %s [%s]\n" "--cmake"   "Build CMake" "built by default unless --no-thirdparty flag is used"
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
+  printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
   printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
   printf "%-15s %s [%s]\n" "--exodus" "Build Exodus (requires NetCDF)" "$DO_EXODUS"
   printf "%-15s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
@@ -9042,7 +9191,7 @@ usage () {
   printf "\t\t%15s\n" "NOTE: not available for download from web"
   printf "%-15s %s [%s]\n" "--visus" "Build ViSUS (experimental!)" "$DO_VISUS"
   printf "%-15s %s [%s]\n" "--vtk" "Build VTK" "built by default unless --no-thirdparty flag is used"
-  printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
+  printf "%-15s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
   printf "%s\n" ""
   printf "OPTIONS\n"
   printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
@@ -9248,6 +9397,7 @@ for arg in "${arguments[@]}" ; do
         --cc) next_arg="cc";;
         --cxx) next_arg="cxx";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
+        --dbio-only) DO_DBIO_ONLY="yes";;
         --debug) set -vx;;
         --fastbit) DO_FASTBIT="yes"; ON_FASTBIT="on"
                   DO_HDF5="yes"; ON_HDF5="on";;
@@ -9298,7 +9448,7 @@ for arg in "${arguments[@]}" ; do
         --visus) DO_VISUS="yes"; ON_VISUS="on";;
         --version) next_arg="version";;
         --vtk) DO_VTK="yes"; ON_VTK="on";;
-        --dbio-only) DO_DBIO_ONLY="yes";;
+        --xdmf) DO_XDMF="yes"; ON_XDMF="on";;
         -4) deprecated="${deprecated} --hdf4";;
         -5) deprecated="${deprecated} --hdf5";;
         -c) deprecated="${deprecated} --cgns";;
@@ -9383,6 +9533,8 @@ if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
     ON_ITAPS="on"
     DO_SILO="yes"
     ON_SILO="on"
+    DO_XDMF="yes"
+    ON_XDMF="on"
 
     #
     # Any plugin for this yet?
@@ -9544,10 +9696,11 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
            "ITAPS"    "15Apr09 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
            "Mili"     "$MILI_VERSION $MILI_FILE (not available from the web)"      $ON_MILI \
+           "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF \
            "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
            "Silo"     "$SILO_VERSION    $SILO_FILE"      $ON_SILO \
            "SZip"     "$SZIP_VERSION    $SZIP_FILE"      $ON_SZIP \
-           "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
+           "Xdmf"     "$XDMF_VERSION  $XDMF_FILE"    $ON_XDMF 2> tmp$$
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
@@ -9571,6 +9724,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_SILO="no"
         DO_SZIP="no"
         DO_ITAPS="no"
+        DO_XDMF="no"
         for OPTION in $choice
         do
             case $OPTION in
@@ -9613,6 +9767,9 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_SZIP="yes";;
               ITAPS)
                  DO_ITAPS="yes";;
+              Xdmf)
+                 DO_XDMF="yes"
+                 DO_HDF5="yes";;
             esac
         done
         ;;
@@ -10179,6 +10336,21 @@ if [[ "$DO_ADVIO" == "yes" ]] ; then
         fi
         info "Done building AdvIO"
     fi
+fi
+
+cd "$START_DIR"
+if [[ "$DO_XDMF" == "yes" ]] ; then
+    check_if_installed "Xdmf" $XDMF_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping Xdmf build.  Xdmf is already installed."
+    else
+        info "Building Xdmf (~2 minutes)"
+        build_xdmf
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install Xdmf.  Bailing out."
+        fi
+        info "Done building Xdmf"
+   fi
 fi
 
 #
