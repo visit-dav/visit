@@ -44,9 +44,6 @@
 #include <vtkToolkits.h>
 
 #include "vtkOpenGLTexturedBackgroundMapper.h"
-#ifdef VTK_USE_MANGLED_MESA
-#include "vtkMesaTexturedBackgroundMapper.h"
-#endif
 
 // ****************************************************************************
 // Method: vtkTexturedBackgroundActor::vtkTexturedBackgroundActor
@@ -188,7 +185,10 @@ vtkTexturedBackgroundActor::PrintSelf(ostream &os, vtkIndent indent)
 // Creation:   Mon Nov 19 12:32:32 PST 2007
 //
 // Modifications:
-//   
+//
+//   Tom Fogal, Tue Apr 27 13:06:28 MDT 2010
+//   Remove special case for Mesa.
+//
 // ****************************************************************************
 
 vtkMapper2D *
@@ -196,22 +196,9 @@ vtkTexturedBackgroundActor::GetInitializedMapper()
 {
     if(GetMapper() == NULL)
     {
-#ifdef VTK_USE_MANGLED_MESA
-        if(vtkGraphicsFactory::GetUseMesaClasses())
-        {
-            vtkMesaTexturedBackgroundMapper *m = 
-                vtkMesaTexturedBackgroundMapper::New();
-            this->SetMapper(m);
-        }
-        else
-        {
-#endif
-            vtkOpenGLTexturedBackgroundMapper *m = 
-                vtkOpenGLTexturedBackgroundMapper::New();
-            this->SetMapper(m);
-#ifdef VTK_USE_MANGLED_MESA
-        }
-#endif
+        vtkOpenGLTexturedBackgroundMapper *m =
+            vtkOpenGLTexturedBackgroundMapper::New();
+        this->SetMapper(m);
     }
     return GetMapper();
 }
@@ -331,22 +318,9 @@ vtkTexturedBackgroundActor::SetTextureAndRenderers(const char *imgFile,
         texture = tex;
     }
 
-#ifdef VTK_USE_MANGLED_MESA
-    if(vtkGraphicsFactory::GetUseMesaClasses())
-    {
-        vtkMesaTexturedBackgroundMapper *m = 
-            (vtkMesaTexturedBackgroundMapper *)GetInitializedMapper();
-        m->SetTextureAndRenderers(texture, bg, canvas);
-    }
-    else
-    {
-#endif
-        vtkOpenGLTexturedBackgroundMapper *m = 
-            (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
-        m->SetTextureAndRenderers(texture, bg, canvas);
-#ifdef VTK_USE_MANGLED_MESA
-    }
-#endif
+    vtkOpenGLTexturedBackgroundMapper *m =
+        (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
+    m->SetTextureAndRenderers(texture, bg, canvas);
 
     return (texture == 0) ? -1 : 0;
 }
@@ -368,28 +342,18 @@ vtkTexturedBackgroundActor::SetTextureAndRenderers(const char *imgFile,
 // Creation:   Mon Nov 19 12:34:23 PST 2007
 //
 // Modifications:
-//   
+//
+//   Tom Fogal, Tue Apr 27 13:06:28 MDT 2010
+//   Remove special case for Mesa.
+//
 // ****************************************************************************
 
 void
 vtkTexturedBackgroundActor::SetSphereMode(bool sphereMode)
 {
-#ifdef VTK_USE_MANGLED_MESA
-    if(vtkGraphicsFactory::GetUseMesaClasses())
-    {
-        vtkMesaTexturedBackgroundMapper *m = 
-            (vtkMesaTexturedBackgroundMapper *)GetInitializedMapper();
-        m->SetSphereMode(sphereMode);
-    }
-    else
-    {  
-#endif
-        vtkOpenGLTexturedBackgroundMapper *m = 
-            (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
-        m->SetSphereMode(sphereMode);
-#ifdef VTK_USE_MANGLED_MESA
-    }
-#endif
+    vtkOpenGLTexturedBackgroundMapper *m =
+        (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
+    m->SetSphereMode(sphereMode);
 }
 
 // ****************************************************************************
@@ -411,26 +375,15 @@ vtkTexturedBackgroundActor::SetSphereMode(bool sphereMode)
 //
 // Modifications:
 //   
+//   Tom Fogal, Tue Apr 27 13:06:28 MDT 2010
+//   Remove special case for Mesa.
+//
 // ****************************************************************************
 
 void
 vtkTexturedBackgroundActor::SetImageRepetitions(int nx, int ny)
 {
-#ifdef VTK_USE_MANGLED_MESA
-    if(vtkGraphicsFactory::GetUseMesaClasses())
-    {
-        vtkMesaTexturedBackgroundMapper *m = 
-            (vtkMesaTexturedBackgroundMapper *)GetInitializedMapper();
-        m->SetImageRepetitions(nx, ny);
-    }
-    else
-    {  
-#endif
-        vtkOpenGLTexturedBackgroundMapper *m = 
-            (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
-        m->SetImageRepetitions(nx, ny);
-#ifdef VTK_USE_MANGLED_MESA
-    }
-#endif
+    vtkOpenGLTexturedBackgroundMapper *m =
+        (vtkOpenGLTexturedBackgroundMapper *)GetInitializedMapper();
+    m->SetImageRepetitions(nx, ny);
 }
-

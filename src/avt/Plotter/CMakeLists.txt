@@ -39,12 +39,7 @@
 #****************************************************************************/
 
 SET(AVTPLOTTER_MESA_SOURCES
-avtMesaSurfaceAndWireframeRenderer.C 
-vtk/vtkMesaRectilinearGridMapper.C 
-vtk/vtkMesaStructuredGridMapper.C 
-vtk/vtkMesaTexturedBackgroundMapper.C 
 vtk/vtkOSMesaRenderWindow.C 
-vtk/vtkVisItMesaPolyDataMapper.C
 )
 
 SET_SOURCE_FILES_PROPERTIES(
@@ -162,6 +157,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${MESA_INCLUDE_DIR}
+${GLEW_INCLUDE_DIR}
 )
 
 IF(QT_MAC_USE_COCOA)

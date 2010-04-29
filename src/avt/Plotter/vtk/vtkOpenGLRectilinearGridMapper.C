@@ -48,24 +48,8 @@
 
 static const int dlSize = 8192;
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #include <visit-config.h>
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
-
-#include <math.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkOpenGLRectilinearGridMapper, "$Revision: 1.78 $");
 vtkStandardNewMacro(vtkOpenGLRectilinearGridMapper);
-#endif
 
 static float vtk1Over255[] = {
 0.f, 0.00392157f, 0.00784314f, 0.0117647f, 0.0156863f, 0.0196078f, 0.0235294f,

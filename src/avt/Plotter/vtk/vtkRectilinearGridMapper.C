@@ -22,9 +22,6 @@
 #include "vtkRenderWindow.h"
 #include "vtkToolkits.h"
 
-#ifdef VTK_USE_MANGLED_MESA
-#include "vtkMesaRectilinearGridMapper.h"
-#endif
 #include "vtkOpenGLRectilinearGridMapper.h"
 
 vtkCxxRevisionMacro(vtkRectilinearGridMapper, "$Revision: 1.38 $");
@@ -37,12 +34,6 @@ vtkInstantiatorNewMacro(vtkRectilinearGridMapper);
 // return the correct type of RectilinearGridMapper 
 vtkRectilinearGridMapper *vtkRectilinearGridMapper::New()
 {
-#ifdef VTK_USE_MANGLED_MESA
-  if ( vtkGraphicsFactory::GetUseMesaClasses() )
-    {
-    return vtkMesaRectilinearGridMapper::New();
-    }
-#endif
   return vtkOpenGLRectilinearGridMapper::New();
 }
 

@@ -22,9 +22,6 @@
 #include "vtkRenderWindow.h"
 #include "vtkToolkits.h"
 
-#ifdef VTK_USE_MANGLED_MESA
-#include "vtkMesaStructuredGridMapper.h"
-#endif
 #include "vtkOpenGLStructuredGridMapper.h"
 
 vtkCxxRevisionMacro(vtkStructuredGridMapper, "$Revision: 1.38 $");
@@ -37,12 +34,6 @@ vtkInstantiatorNewMacro(vtkStructuredGridMapper);
 // return the correct type of StructuredGridMapper 
 vtkStructuredGridMapper *vtkStructuredGridMapper::New()
 {
-#ifdef VTK_USE_MANGLED_MESA
-  if ( vtkGraphicsFactory::GetUseMesaClasses() )
-    {
-    return vtkMesaStructuredGridMapper::New();
-    }
-#endif
   return vtkOpenGLStructuredGridMapper::New();
 }
 

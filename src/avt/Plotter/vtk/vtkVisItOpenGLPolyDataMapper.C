@@ -38,27 +38,14 @@
 #include "vtkLookupTable.h"
 #include "vtkSkewLookupTable.h"
 
+#include <DebugStream.h>
+
 static const int dlSize = 8192;
-
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #include <visit-config.h>
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
 
 #include <math.h>
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkVisItOpenGLPolyDataMapper, "$Revision: 1.78 $");
 vtkStandardNewMacro(vtkVisItOpenGLPolyDataMapper);
-#endif
 
 static float vtk1Over255[] = {
 0.f, 0.00392157f, 0.00784314f, 0.0117647f, 0.0156863f, 0.0196078f, 0.0235294f, 
@@ -114,6 +101,9 @@ static float vtk1Over255[] = {
 //    Brad Whitlock, Thu Aug 24 15:43:19 PST 2006
 //    I added color texture members.
 //
+//    Tom Fogal, Tue Apr 27 13:08:59 MDT 2010
+//    Remove Mesa-specific code.
+//
 // ****************************************************************************
 vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
 {
@@ -126,11 +116,7 @@ vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
   this->SphereTexturesDataCreated = false;
   this->SphereTexturesLoaded = false;
   this->TextureName = 0;
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  this->PointSpriteSupported = -1;  // OpenGL
-#else
-  this->PointSpriteSupported = 1;   // Mesa
-#endif
+  this->PointSpriteSupported = -1;
 
   this->EnableColorTexturing = false;
   this->ColorTexturingAllowed = false;
@@ -3935,8 +3921,11 @@ void vtkVisItOpenGLPolyDataMapper::PrintSelf(ostream& os, vtkIndent indent)
 //   Brad Whitlock, Tue Dec 6 13:37:58 PST 2005
 //   Changed to 1-pass texturing.
 //
-//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
-//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//   Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//   The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
+//   Tom Fogal, Tue Apr 27 11:23:40 MDT 2010
+//   Simplify point sprite detection and note when we can't use it.
 //
 // ****************************************************************************
 
@@ -3946,40 +3935,11 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
 {
     if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
     {
-#ifndef vtkVisItOpenGLPolyDataMapper
-        // If we're in OpenGL and not Mesa then do this test.
-        if(this->PointSpriteSupported == -1)
+        if(!GLEW_ARB_point_sprite)
         {
-            const char *ext = (const char *)glGetString(GL_EXTENSIONS);
-            if(ext != 0 && strstr(ext, "GL_ARB_point_sprite") != 0)
-                this->PointSpriteSupported = 1;
-            else
-            {
-                if(LastWindow != 0)
-                {
-                    // If the window is direct then say that the extension is
-                    // not supported since it should have been in the list
-                    // of extensions. If the display is not direct then the
-                    // list of extensions is unreliable and we should just 
-                    // try and use the extension.
-                    vtkRenderWindow *renWin = vtkRenderWindow::
-                        SafeDownCast(LastWindow);
-                    if(renWin != 0)
-                        this->PointSpriteSupported = renWin->IsDirect() ? 0 : 1;
-                    else
-                        this->PointSpriteSupported = 0;
-                }
-                else
-                    this->PointSpriteSupported = 0;
-            }
-        }
-
-        if(this->PointSpriteSupported < 1)
-        {
-            // Point sprites are not supported
+            debug1 << "Point sprites are not supported!\n";
             return;
         }
-#endif
 
         // Create the rextures
         if(!this->SphereTexturesDataCreated)
