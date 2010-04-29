@@ -28,11 +28,6 @@
 #include "vtkOpenGLRectilinearGridMapper.h"
 #include "vtkOpenGLStructuredGridMapper.h"
 #include <vtkVisItOpenGLPolyDataMapper.h>
-#ifdef VTK_USE_MANGLED_MESA
-#include "vtkMesaRectilinearGridMapper.h"
-#include "vtkMesaStructuredGridMapper.h"
-#include <vtkVisItMesaPolyDataMapper.h>
-#endif
 
 vtkCxxRevisionMacro(vtkVisItDataSetMapper, "$Revision: 1.70 $");
 vtkStandardNewMacro(vtkVisItDataSetMapper);
@@ -309,6 +304,9 @@ void vtkVisItDataSetMapper::ReportReferences(vtkGarbageCollector* collector)
 //   Brad Whitlock, Wed Jun 10 11:54:59 PDT 2009
 //   Conditionally compiler mesa classes.
 //
+//   Tom Fogal, Tue Apr 27 11:19:53 MDT 2010
+//   Remove Mesa-specific coding.
+//
 // ****************************************************************************
 
 void
@@ -331,20 +329,6 @@ vtkVisItDataSetMapper::SetPointTextureMethod(
             m->SetPointTextureMethod(
                 vtkVisItOpenGLPolyDataMapper::TEXTURE_USING_POINTSPRITES);
       }
-#ifdef VTK_USE_MANGLED_MESA
-    else if(strcmp(this->PolyDataMapper->GetClassName(), 
-                   "vtkVisItMesaPolyDataMapper") == 0)
-      {
-        vtkVisItMesaPolyDataMapper *m = 
-            (vtkVisItMesaPolyDataMapper *)this->PolyDataMapper;
-        if(this->PointTextureMethod == TEXTURE_NO_POINTS)
-            m->SetPointTextureMethod(
-               vtkVisItMesaPolyDataMapper::TEXTURE_NO_POINTS);
-        else if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
-            m->SetPointTextureMethod(
-               vtkVisItMesaPolyDataMapper::TEXTURE_USING_POINTSPRITES);
-      }
-#endif
     }
 }
 
@@ -371,6 +355,9 @@ vtkVisItDataSetMapper::SetPointTextureMethod(
 //   Brad Whitlock, Wed Jun 10 11:54:42 PDT 2009
 //   Conditionally compile mangled mesa classes.
 //
+//   Tom Fogal, Tue Apr 27 11:20:11 MDT 2010
+//   Remove Mesa-specific code.
+//
 // ****************************************************************************
 
 void
@@ -387,15 +374,6 @@ vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
             (vtkVisItOpenGLPolyDataMapper *)this->PolyDataMapper;
         m->SetEnableColorTexturing(val);
       }
-#ifdef VTK_USE_MANGLED_MESA
-    else if(strcmp(this->PolyDataMapper->GetClassName(), 
-                   "vtkVisItMesaPolyDataMapper") == 0)
-      {
-        vtkVisItMesaPolyDataMapper *m = 
-            (vtkVisItMesaPolyDataMapper *)this->PolyDataMapper;
-        m->SetEnableColorTexturing(val);
-      }
-#endif
     }
   if(this->RectilinearGridMapper != NULL)
     {
@@ -406,15 +384,6 @@ vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
             (vtkOpenGLRectilinearGridMapper *)this->RectilinearGridMapper;
         m->SetEnableColorTexturing(val);
       }
-#ifdef VTK_USE_MANGLED_MESA
-    else if(strcmp(this->RectilinearGridMapper->GetClassName(), 
-                   "vtkMesaRectilinearGridMapper") == 0)
-      {
-        vtkMesaRectilinearGridMapper *m = 
-            (vtkMesaRectilinearGridMapper *)this->RectilinearGridMapper;
-        m->SetEnableColorTexturing(val);
-      }
-#endif
     }
   if(this->StructuredGridMapper != NULL)
     {
@@ -425,15 +394,6 @@ vtkVisItDataSetMapper::SetEnableColorTexturing(bool val)
             (vtkOpenGLStructuredGridMapper *)this->StructuredGridMapper;
         m->SetEnableColorTexturing(val);
       }
-#ifdef VTK_USE_MANGLED_MESA
-    else if(strcmp(this->StructuredGridMapper->GetClassName(), 
-                   "vtkMesaStructuredGridMapper") == 0)
-      {
-        vtkMesaStructuredGridMapper *m = 
-            (vtkMesaStructuredGridMapper *)this->StructuredGridMapper;
-        m->SetEnableColorTexturing(val);
-      }
-#endif
     }
 }
 
@@ -461,5 +421,3 @@ vtkVisItDataSetMapper::SetSceneIs3D(bool val)
   if (this->StructuredGridMapper != NULL)
      this->StructuredGridMapper->SetSceneIs3D(val);
 }
-
-

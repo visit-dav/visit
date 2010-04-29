@@ -75,7 +75,6 @@ protected:
   float        *ColorTexture;
   int           ColorTextureSize;
   bool          OpenGLSupportsVersion1_2;
-  bool          GLEW_initialized;
   double        LastOpacity;
 
   bool MapScalarsWithTextureSupport(double);

@@ -12,6 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
+#include <avtGLEWInitializer.h>
 #include "vtkVisItOpenGLTexture.h"
 
 #include "vtkImageData.h"
@@ -22,14 +23,10 @@
 #include "vtkRenderWindow.h"
 #include "vtkOpenGLRenderWindow.h"
 
-#include "vtkOpenGL.h"
-
 #include <math.h>
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkVisItOpenGLTexture, "$Revision: 1.56 $");
 vtkStandardNewMacro(vtkVisItOpenGLTexture);
-#endif
 
 // Initializes an instance, generates a unique index.
 vtkVisItOpenGLTexture::vtkVisItOpenGLTexture()

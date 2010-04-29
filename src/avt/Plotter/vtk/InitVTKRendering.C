@@ -42,9 +42,6 @@
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItOpenGLTexture.h>
 #include <vtkToolkits.h>
-#ifdef VTK_USE_MANGLED_MESA
-#include <vtkVisItMesaPolyDataMapper.h>
-#endif
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>
 #if defined(__APPLE__)
@@ -81,9 +78,6 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLTexture);
-#ifdef VTK_USE_MANGLED_MESA
-VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
-#endif
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
@@ -130,6 +124,9 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //    Brad Whitlock, Thurs Nov 15 16:25 PST 2007
 //    Added override of vtkOpenGLTexture that is compatible with our vtkQtRenderWindow.
 //
+//    Tom Fogal, Tue Apr 27 11:42:46 MDT 2010
+//    Fix Mesa special case: our OGL classes can handle that.
+//
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
   this->RegisterOverride("vtkOpenGLPolyDataMapper", "vtkVisItOpenGLPolyDataMapper",
@@ -137,10 +134,11 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          1,
                          vtkObjectFactoryCreatevtkVisItOpenGLPolyDataMapper);
 #ifdef VTK_USE_MANGLED_MESA
-  this->RegisterOverride("vtkMesaPolyDataMapper", "vtkVisItMesaPolyDataMapper",
-                         "vtkVisItMesaPolyDataMapper override vtkMesaPolyDataMapper",
+  this->RegisterOverride("vtkMesaPolyDataMapper",
+                         "vtkVisItOpenGLPolyDataMapper",
+                         "vtkVisItOpenGLPolyDataMapper override vtkMesaGLPolyDataMapper",
                          1,
-                         vtkObjectFactoryCreatevtkVisItMesaPolyDataMapper);
+                         vtkObjectFactoryCreatevtkVisItOpenGLPolyDataMapper);
 #endif
   this->RegisterOverride("vtkDataSetMapper", "vtkVisItDataSetMapper",
                          "vtkVisItDataSetMapper override vtkDataSetMapper",

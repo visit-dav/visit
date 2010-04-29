@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 #include "vtkOpenGLTexturedBackgroundMapper.h"
+#include <avtGLEWInitializer.h>
 #include <vtkCamera.h>
 #include <vtkTexture.h>
 #include <vtkViewport.h>
@@ -45,17 +46,6 @@
 #include <vtkMatrix4x4.h>
 
 #include <math.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #ifdef WIN32
-        #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
 
 // ****************************************************************************
 // Method: vtkOpenGLTexturedBackgroundMapper::vtkOpenGLTexturedBackgroundMapper

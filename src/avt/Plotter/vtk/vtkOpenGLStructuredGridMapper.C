@@ -22,6 +22,8 @@
 =========================================================================*/
 #include "vtkOpenGLStructuredGridMapper.h"
 
+#include <avtGLEWInitializer.h>
+
 #include <vtkPoints.h>
 #include "vtkCellArray.h"
 #include "vtkCellData.h"
@@ -45,27 +47,10 @@
 
 static const int dlSize = 8192;
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-    #include <avtGLEWInitializer.h>
-  #endif
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
-
 #include <math.h>
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkOpenGLStructuredGridMapper, "$Revision: 1.78 $");
 vtkStandardNewMacro(vtkOpenGLStructuredGridMapper);
-#endif
 
 static float vtk1Over255[] = {
 0.f, 0.00392157f, 0.00784314f, 0.0117647f, 0.0156863f, 0.0196078f, 0.0235294f,
@@ -123,9 +108,6 @@ vtkOpenGLStructuredGridMapper::vtkOpenGLStructuredGridMapper()
   this->ColorTextureSize = 0;
   this->ColorTextureLooksDiscrete = false;
   this->OpenGLSupportsVersion1_2 = false;
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  this->GLEW_initialized = false;
-#endif
 
   this->LastOpacity = -1;
 }
@@ -834,8 +816,11 @@ vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
 //
 // Modifications:
 //
-//    Thomas R. Treadway, Wed Feb  7 16:29:06 PST 2007
-//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//   Thomas R. Treadway, Wed Feb  7 16:29:06 PST 2007
+//   The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
+//   Tom Fogal,  Tue Apr 27 11:13:10 MDT 2010
+//   Remove special case Mesa handling.
 //
 // ****************************************************************************
 
@@ -910,24 +895,11 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
     // after texturing. This ensures that the specular highlights look
     // right when we're in texturing mode.
     //
-#ifdef VTK_IMPLEMENT_MESA_CXX
-    // Mesa
-    glEnable(GL_COLOR_SUM_EXT);
-    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-#else
-    // OpenGL
-#ifdef HAVE_LIBGLEW
-    if(!this->GLEW_initialized)
-    {
-        this->GLEW_initialized = glewInit() == GLEW_OK;
-    }
-    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    if(GLEW_EXT_secondary_color)
     {
         glEnable(GL_COLOR_SUM_EXT);
         glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
     }
-#endif
-#endif
 }
 
 
@@ -945,6 +917,9 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
 //
 // Modifications:
 //
+//   Tom Fogal, Tue Apr 27 11:12:52 MDT 2010
+//   Remove special case Mesa handling.
+//
 // ****************************************************************************
 
 void
@@ -959,16 +934,8 @@ vtkOpenGLStructuredGridMapper::EndColorTexturing()
         glDisable(GL_TEXTURE_1D);
     }
 
-#ifdef VTK_IMPLEMENT_MESA_CXX
-    // Mesa
-    glDisable(GL_COLOR_SUM_EXT);
-#else
-    // OpenGL
-#ifdef HAVE_LIBGLEW
-    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    if(GLEW_EXT_secondary_color)
         glDisable(GL_COLOR_SUM_EXT);
-#endif
-#endif
 }
 
 
@@ -1038,5 +1005,3 @@ vtkOpenGLStructuredGridMapper::UsesPointData(vtkDataSet *input, int scalarMode,
 
   return usesPointData;
 }
-
-

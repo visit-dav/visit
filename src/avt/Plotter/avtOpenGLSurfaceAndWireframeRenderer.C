@@ -42,6 +42,8 @@
 
 #include "avtOpenGLSurfaceAndWireframeRenderer.h"
 
+#include <avtGLEWInitializer.h>
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
@@ -52,23 +54,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkTriangle.h>
 
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #include <visit-config.h>
-  #ifdef HAVE_LIBGLEW
-    #include <avtGLEWInitializer.h>
-  #endif
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
-
 #include <DebugStream.h>
-
 
 avtOpenGLSurfaceAndWireframeRenderer::avtOpenGLSurfaceAndWireframeRenderer()
 {
@@ -4114,6 +4100,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Jeremy Meredith, Fri Feb 20 17:26:49 EST 2009
 //    Use the property's opacity for the edge color (mesh lines) as well.
 //
+//    Tom Fogal, Tue Apr 27 17:26:03 MDT 2010
+//    Remove special case Mesa code; always follow path.  This fixes legends.py
+//    when using HW-accel'd parallel rendering.
+//
 // ****************************************************************************
 
 void
@@ -4289,8 +4279,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // different lists of primitives. So, we can't rely on GL's
     // glPolygonOffset stuff to help us here.
     //
-#ifdef AVT_MESA_SURFACE_AND_WIREFRAME_RENDERER_H
-
     bool didZShift = false;
     if (ShouldDrawSurface() && surfaceListId.size() > 0)
     {
@@ -4327,8 +4315,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
         didZShift = true;
     }
-
-#endif
 
     // draw all the points
     if (drawEdgeVerts)
@@ -4376,14 +4362,11 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
     glEnable(GL_LIGHTING);
 
-#ifdef AVT_MESA_SURFACE_AND_WIREFRAME_RENDERER_H
     //
     // Undue changes we made to the view transform 
     //
     if (didZShift)
         glPopMatrix();
-#endif
-
 } // DrawEdges
 
 
