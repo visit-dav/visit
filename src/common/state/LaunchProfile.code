@@ -1,0 +1,337 @@
+Function: CreateNode
+Declaration: bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: LaunchProfile::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can
+//   be saved to a config file.
+//
+//   This differs from the auto-generated one in the following ways:
+//    - it checks to see if something is selected when saving instead
+//      of checking to see if it differs from the default-constructor version,
+//      which lets us select user-set values which differ from system-global
+//      ones and save only those fields
+//    - if any field was saved, we always add the profile name, as that's how
+//      we identify which launch profile is which
+//
+// Programmer: Jeremy Meredith
+// Creation:   April 29, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+bool
+LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    LaunchProfile defaultObject;
+    bool addToParent = false;
+    // Create a node for LaunchProfile.
+    DataNode *node = new DataNode("LaunchProfile");
+
+    if(completeSave || IsSelected(ID_timeout))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeout", timeout));
+    }
+
+    if(completeSave || IsSelected(ID_numProcessors))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numProcessors", numProcessors));
+    }
+
+    if(completeSave || IsSelected(ID_numNodesSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numNodesSet", numNodesSet));
+    }
+
+    if(completeSave || IsSelected(ID_numNodes))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numNodes", numNodes));
+    }
+
+    if(completeSave || IsSelected(ID_partitionSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("partitionSet", partitionSet));
+    }
+
+    if(completeSave || IsSelected(ID_partition))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("partition", partition));
+    }
+
+    if(completeSave || IsSelected(ID_bankSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("bankSet", bankSet));
+    }
+
+    if(completeSave || IsSelected(ID_bank))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("bank", bank));
+    }
+
+    if(completeSave || IsSelected(ID_timeLimitSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeLimitSet", timeLimitSet));
+    }
+
+    if(completeSave || IsSelected(ID_timeLimit))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeLimit", timeLimit));
+    }
+
+    if(completeSave || IsSelected(ID_launchMethodSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("launchMethodSet", launchMethodSet));
+    }
+
+    if(completeSave || IsSelected(ID_launchMethod))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("launchMethod", launchMethod));
+    }
+
+    if(completeSave || IsSelected(ID_forceStatic))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forceStatic", forceStatic));
+    }
+
+    if(completeSave || IsSelected(ID_forceDynamic))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forceDynamic", forceDynamic));
+    }
+
+    if(completeSave || IsSelected(ID_active))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("active", active));
+    }
+
+    if(completeSave || IsSelected(ID_arguments))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("arguments", arguments));
+    }
+
+    if(completeSave || IsSelected(ID_parallel))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("parallel", parallel));
+    }
+
+    if(completeSave || IsSelected(ID_launchArgsSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("launchArgsSet", launchArgsSet));
+    }
+
+    if(completeSave || IsSelected(ID_launchArgs))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("launchArgs", launchArgs));
+    }
+
+    if(completeSave || IsSelected(ID_sublaunchArgsSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sublaunchArgsSet", sublaunchArgsSet));
+    }
+
+    if(completeSave || IsSelected(ID_sublaunchArgs))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sublaunchArgs", sublaunchArgs));
+    }
+
+    if(completeSave || IsSelected(ID_sublaunchPreCmdSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sublaunchPreCmdSet", sublaunchPreCmdSet));
+    }
+
+    if(completeSave || IsSelected(ID_sublaunchPreCmd))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sublaunchPreCmd", sublaunchPreCmd));
+    }
+
+    if(completeSave || IsSelected(ID_sublaunchPostCmdSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sublaunchPostCmdSet", sublaunchPostCmdSet));
+    }
+
+    if(completeSave || IsSelected(ID_sublaunchPostCmd))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sublaunchPostCmd", sublaunchPostCmd));
+    }
+
+    if(completeSave || IsSelected(ID_machinefileSet))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("machinefileSet", machinefileSet));
+    }
+
+    if(completeSave || IsSelected(ID_machinefile))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("machinefile", machinefile));
+    }
+
+    if(completeSave || IsSelected(ID_visitSetsUpEnv))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("visitSetsUpEnv", visitSetsUpEnv));
+    }
+
+    if(completeSave || IsSelected(ID_canDoHWAccel))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("canDoHWAccel", canDoHWAccel));
+    }
+
+    if(completeSave || IsSelected(ID_havePreCommand))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("havePreCommand", havePreCommand));
+    }
+
+    if(completeSave || IsSelected(ID_hwAccelPreCommand))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("hwAccelPreCommand", hwAccelPreCommand));
+    }
+
+    if(completeSave || IsSelected(ID_havePostCommand))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("havePostCommand", havePostCommand));
+    }
+
+    if(completeSave || IsSelected(ID_hwAccelPostCommand))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("hwAccelPostCommand", hwAccelPostCommand));
+    }
+
+    if (addToParent)
+    {
+        node->AddNode(new DataNode("profileName", profileName));
+    }
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+Function: SelectOnlyDifferingFields
+Declaration: void SelectOnlyDifferingFields(LaunchProfile &other);
+Definition:
+// ****************************************************************************
+// Method:  LaunchProfile::SelectOnlyDifferingFields
+//
+// Purpose:
+//   Select only fields which differ from a compared attribute.
+//
+// Arguments:
+//   other      the profile to compare against
+//
+// Programmer:  Jeremy Meredith
+// Creation:    April 29, 2010
+//
+// ****************************************************************************
+void
+LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
+{
+    UnSelectAll();
+
+    if (profileName != other.GetProfileName())
+        Select(ID_profileName,         (void *)&profileName);
+    if (timeout != other.GetTimeout())
+        Select(ID_timeout,             (void *)&timeout);
+    if (numProcessors != other.GetNumProcessors())
+        Select(ID_numProcessors,       (void *)&numProcessors);
+    if (numNodesSet != other.GetNumNodesSet())
+        Select(ID_numNodesSet,         (void *)&numNodesSet);
+    if (numNodes != other.GetNumNodes())
+        Select(ID_numNodes,            (void *)&numNodes);
+    if (partitionSet != other.GetPartitionSet())
+        Select(ID_partitionSet,        (void *)&partitionSet);
+    if (partition != other.GetPartition())
+        Select(ID_partition,           (void *)&partition);
+    if (bankSet != other.GetBankSet())
+        Select(ID_bankSet,             (void *)&bankSet);
+    if (bank != other.GetBank())
+        Select(ID_bank,                (void *)&bank);
+    if (timeLimitSet != other.GetTimeLimitSet())
+        Select(ID_timeLimitSet,        (void *)&timeLimitSet);
+    if (timeLimit != other.GetTimeLimit())
+        Select(ID_timeLimit,           (void *)&timeLimit);
+    if (launchMethodSet != other.GetLaunchMethodSet())
+        Select(ID_launchMethodSet,     (void *)&launchMethodSet);
+    if (launchMethod != other.GetLaunchMethod())
+        Select(ID_launchMethod,        (void *)&launchMethod);
+    if (forceStatic != other.GetForceStatic())
+        Select(ID_forceStatic,         (void *)&forceStatic);
+    if (forceDynamic != other.GetForceDynamic())
+        Select(ID_forceDynamic,        (void *)&forceDynamic);
+    if (active != other.GetActive())
+        Select(ID_active,              (void *)&active);
+    if (arguments != other.GetArguments())
+        Select(ID_arguments,           (void *)&arguments);
+    if (parallel != other.GetParallel())
+        Select(ID_parallel,            (void *)&parallel);
+    if (launchArgsSet != other.GetLaunchArgsSet())
+        Select(ID_launchArgsSet,       (void *)&launchArgsSet);
+    if (launchArgs != other.GetLaunchArgs())
+        Select(ID_launchArgs,          (void *)&launchArgs);
+    if (sublaunchArgsSet != other.GetSublaunchArgsSet())
+        Select(ID_sublaunchArgsSet,    (void *)&sublaunchArgsSet);
+    if (sublaunchArgs != other.GetSublaunchArgs())
+        Select(ID_sublaunchArgs,       (void *)&sublaunchArgs);
+    if (sublaunchPreCmdSet != other.GetSublaunchPreCmdSet())
+        Select(ID_sublaunchPreCmdSet,  (void *)&sublaunchPreCmdSet);
+    if (sublaunchPreCmd != other.GetSublaunchPreCmd())
+        Select(ID_sublaunchPreCmd,     (void *)&sublaunchPreCmd);
+    if (sublaunchPostCmdSet != other.GetSublaunchPostCmdSet())
+        Select(ID_sublaunchPostCmdSet, (void *)&sublaunchPostCmdSet);
+    if (sublaunchPostCmd != other.GetSublaunchPostCmd())
+        Select(ID_sublaunchPostCmd,    (void *)&sublaunchPostCmd);
+    if (machinefileSet != other.GetMachinefileSet())
+        Select(ID_machinefileSet,      (void *)&machinefileSet);
+    if (machinefile != other.GetMachinefile())
+        Select(ID_machinefile,         (void *)&machinefile);
+    if (visitSetsUpEnv != other.GetVisitSetsUpEnv())
+        Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
+    if (canDoHWAccel != other.GetCanDoHWAccel())
+        Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
+    if (havePreCommand != other.GetHavePreCommand())
+        Select(ID_havePreCommand,      (void *)&havePreCommand);
+    if (hwAccelPreCommand != other.GetHwAccelPreCommand())
+        Select(ID_hwAccelPreCommand,   (void *)&hwAccelPreCommand);
+    if (havePostCommand != other.GetHavePostCommand())
+        Select(ID_havePostCommand,     (void *)&havePostCommand);
+    if (hwAccelPostCommand != other.GetHwAccelPostCommand())
+        Select(ID_hwAccelPostCommand,  (void *)&hwAccelPostCommand);
+}
