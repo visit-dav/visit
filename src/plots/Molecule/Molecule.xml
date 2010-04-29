@@ -6,11 +6,8 @@
     <Files components="V">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
-      avtMesaMoleculeRenderer.C
       avtOpenGLAtomTexturer2D.C
-      avtMesaAtomTexturer2D.C
       avtOpenGLAtomTexturer3D.C
-      avtMesaAtomTexturer3D.C
       avtMoleculeFilter.C
     </Files>
     <LIBS components="V">
@@ -20,11 +17,8 @@
     <Files components="E">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
-      avtMesaMoleculeRenderer.C
       avtOpenGLAtomTexturer2D.C
-      avtMesaAtomTexturer2D.C
       avtOpenGLAtomTexturer3D.C
-      avtMesaAtomTexturer3D.C
       avtMoleculeFilter.C
     </Files>
     <LIBS components="ESer">

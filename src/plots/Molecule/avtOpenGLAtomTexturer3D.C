@@ -39,27 +39,11 @@
 #include "avtOpenGLAtomTexturer3D.h"
 #include <vtkConfigure.h>
 #include <math.h>
+
+#include <vtkConfigure.h>
+
+#include <avtGLEWInitializer.h>
 #include <DebugStream.h>
-
-#include <cstring>
-
-//
-// If we're creating the OpenGL version of this class then check to see if
-// the GLEW library is available so we can use shaders.
-//
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #include <visit-config.h>
-  #include <avtGLEWInitializer.h>
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
