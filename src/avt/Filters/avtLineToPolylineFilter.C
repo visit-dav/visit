@@ -108,6 +108,9 @@ avtLineToPolylineFilter::~avtLineToPolylineFilter()
 //
 //  Modifications:
 //
+//    Tom Fogal, Mon Apr 26 17:27:44 MDT 2010
+//    Break out of a loop to prevent incrementing a singular iterator.
+//
 // ****************************************************************************
 
 struct edge
@@ -235,6 +238,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, string)
                     shape.push_front(pos->second);
                     freeEdges.erase(pos);
                     found = true;
+                    break;
                 }
                 else if(currentEdge.first == pos->second)
                 {
@@ -242,6 +246,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, string)
                     shape.push_front(pos->first);
                     freeEdges.erase(pos);
                     found = true;
+                    break;
                 }
                 else if(currentEdge.second == pos->first)
                 {
@@ -249,6 +254,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, string)
                     shape.push_back(pos->second);
                     freeEdges.erase(pos);
                     found = true;
+                    break;
                 }
                 else if(currentEdge.second == pos->second)
                 {
@@ -256,6 +262,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, string)
                     shape.push_back(pos->first);
                     freeEdges.erase(pos);
                     found = true;
+                    break;
                 }
             }
         } while(found);
