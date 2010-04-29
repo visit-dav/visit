@@ -334,6 +334,14 @@ avtVistaAle3dFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
 //    Fix memory leaks.
 //
+//    Eric Brugger, Thu Apr 29 10:42:10 PDT 2010
+//    I corrected calls to HasAllComponents that caused a test suite crash on
+//    x86_64 systems.  The fix consisted of adding a "const char *" cast to
+//    the last arguement in the call since it was expecting a "const char *"
+//    and the "0" that was passed was passed as an integer instead of a
+//    pointer.  Since integers are 32 bits and pointers are 64 bits on x86_64
+//    systems, this was a problem.
+//
 // ****************************************************************************
 
 void
@@ -468,21 +476,21 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             const char *zdstr = spatialDim == 3 ? "zd" : 0;
             const char *z0str = spatialDim == 3 ? "z0" : 0;
 
-            if (HasAllComponents(fieldMap, numPieces, "x", "y", zstr, 0))
+            if (HasAllComponents(fieldMap, numPieces, "x", "y", zstr, (const char *)0))
             {
                 // set counts to zero these entries won't get processed in loop below 
                 fieldMap["x"].val = fieldMap["y"].val = 0; if (zstr) fieldMap["z"].val = 0;
                 AddVectorVarToMetaData(md, "coords", mesh->name, centering, spatialDim);
             }
 
-            if (HasAllComponents(fieldMap, numPieces, "xd", "yd", zdstr, 0))
+            if (HasAllComponents(fieldMap, numPieces, "xd", "yd", zdstr, (const char *)0))
             {
                 // set counts to zero these entries won't get processed in loop below 
                 fieldMap["xd"].val = fieldMap["yd"].val = 0; if (zdstr) fieldMap["zd"].val = 0;
                 AddVectorVarToMetaData(md, "velocity", mesh->name, centering, spatialDim);
             }
 
-            if (HasAllComponents(fieldMap, numPieces, "x0", "y0", z0str, 0))
+            if (HasAllComponents(fieldMap, numPieces, "x0", "y0", z0str, (const char *)0))
             {
                 // set counts to zero these entries won't get processed in loop below 
                 fieldMap["x0"].val = fieldMap["y0"].val = 0; if (z0str) fieldMap["z0"].val = 0;
@@ -492,7 +500,7 @@ avtVistaAle3dFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         else
         {
             // This tensor isn't quite right. Need help from Al or Jeff
-            if (HasAllComponents(fieldMap, numPieces, "sx", "sy", "p", "txy", "txz", "tyz", 0))
+            if (HasAllComponents(fieldMap, numPieces, "sx", "sy", "p", "txy", "txz", "tyz", (const char *)0))
             {
                 // set counts to zero these entries won't get processed in loop below 
                 // don't set "p" to zero because we want that as a scalar field, too
