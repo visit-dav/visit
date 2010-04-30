@@ -109,6 +109,9 @@
 #    Small change to rpath detection to avoid cmake error w/
 #    LIST(REMOVE_DUPLCIATES) if no rpaths are found.
 #
+#    Tom Fogal, Fri Apr 30 09:35:51 MDT 2010
+#    Define HAVE_LIBSLIVR as appropriate.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -619,6 +622,7 @@ IF(VISIT_SLIVR)
     SET(SLIVR_GUI_IMPL QvisCMap2Display.C QvisCMap2Widget.C)
     SET(SLIVR_GUI_HDR QvisCMap2Display.h QvisCMap2Widget.h)
     SET(SLIVR_LIB slivrG slivrV)
+    ADD_DEFINITIONS(-DHAVE_LIBSLIVR)
 ENDIF(VISIT_SLIVR)
 
 # Include Ice-T support if we can.
