@@ -126,6 +126,9 @@ QvisPoincarePlotWindow::~QvisPoincarePlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Jeremy Meredith, Fri Apr 30 13:05:20 EDT 2010
+//   Fixed all the parents.
+//
 // ****************************************************************************
 
 void
@@ -143,7 +146,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(firstTab);
 
    // Create the source group box.
-    QGroupBox *sourceGroup = new QGroupBox(central);
+    QGroupBox *sourceGroup = new QGroupBox(firstTab);
     sourceGroup->setTitle(tr("Source"));
     mainLayout->addWidget(sourceGroup, 0, 0);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
@@ -151,10 +154,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
     sourceLayout->setMargin(5);
     sourceLayout->setSpacing(10);
 
-    sourceTypeLabel = new QLabel(tr("Source Type"), central);
+    sourceTypeLabel = new QLabel(tr("Source Type"), sourceGroup);
     sourceLayout->addWidget(sourceTypeLabel, 0, 0);
 
-    sourceTypeCombo = new QComboBox(firstTab);
+    sourceTypeCombo = new QComboBox(sourceGroup);
     sourceTypeCombo->addItem(tr("Point"));
     sourceTypeCombo->addItem(tr("Line"));
     connect(sourceTypeCombo, SIGNAL(activated(int)),
@@ -162,32 +165,32 @@ QvisPoincarePlotWindow::CreateWindowContents()
     sourceLayout->addWidget(sourceTypeCombo, 0, 1);
 
 
-    pointSourceLabel = new QLabel(tr("Location"), central);
+    pointSourceLabel = new QLabel(tr("Location"), sourceGroup);
     sourceLayout->addWidget(pointSourceLabel, 0, 2);
-    pointSource = new QLineEdit(central);
+    pointSource = new QLineEdit(sourceGroup);
     connect(pointSource, SIGNAL(returnPressed()),
             this, SLOT(pointSourceProcessText()));
     sourceLayout->addWidget(pointSource, 0, 3);
 
 
 
-    lineStartLabel = new QLabel(tr("Start Point"), central);
+    lineStartLabel = new QLabel(tr("Start Point"), sourceGroup);
     sourceLayout->addWidget(lineStartLabel, 0, 2);
-    lineStart = new QLineEdit(central);
+    lineStart = new QLineEdit(sourceGroup);
     connect(lineStart, SIGNAL(returnPressed()),
             this, SLOT(lineStartProcessText()));
     sourceLayout->addWidget(lineStart, 0, 3);
 
-    lineEndLabel = new QLabel(tr("End Point"), central);
+    lineEndLabel = new QLabel(tr("End Point"), sourceGroup);
     sourceLayout->addWidget(lineEndLabel, 1, 2);
-    lineEnd = new QLineEdit(central);
+    lineEnd = new QLineEdit(sourceGroup);
     connect(lineEnd, SIGNAL(returnPressed()),
             this, SLOT(lineEndProcessText()));
     sourceLayout->addWidget(lineEnd, 1, 3);
 
-    pointDensityLabel = new QLabel(tr("Point density"), central);
+    pointDensityLabel = new QLabel(tr("Point density"), sourceGroup);
     sourceLayout->addWidget(pointDensityLabel, 2, 2);
-    pointDensity = new QSpinBox(central);
+    pointDensity = new QSpinBox(sourceGroup);
     pointDensity->setMinimum(1);
     pointDensity->setMaximum(10000);
     connect(pointDensity, SIGNAL(valueChanged(int)),
@@ -196,7 +199,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
 
     // Create the punctures group box.
-    QGroupBox *puncturesGroup = new QGroupBox(central);
+    QGroupBox *puncturesGroup = new QGroupBox(firstTab);
     puncturesGroup->setTitle(tr("Punctures"));
     mainLayout->addWidget(puncturesGroup, 1, 0);
 //    mainLayout->setStretchFactor(puncturesGroup, 100);
@@ -205,18 +208,18 @@ QvisPoincarePlotWindow::CreateWindowContents()
     puncturesLayout->setMargin(5);
     puncturesLayout->setSpacing(10);
 
-    minPuncturesLabel = new QLabel(tr("Minimum"), central);
+    minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
     puncturesLayout->addWidget(minPuncturesLabel, 0, 0);
-    minPunctures = new QSpinBox(central);
+    minPunctures = new QSpinBox(puncturesGroup);
     minPunctures->setMinimum(1);
     minPunctures->setMaximum(10000);
     connect(minPunctures, SIGNAL(valueChanged(int)),
             this, SLOT(minPuncturesChanged(int)));
     puncturesLayout->addWidget(minPunctures, 0, 1);
 
-    maxPuncturesLabel = new QLabel(tr("Maximum"), central);
+    maxPuncturesLabel = new QLabel(tr("Maximum"), puncturesGroup);
     puncturesLayout->addWidget(maxPuncturesLabel, 0, 2);
-    maxPunctures = new QSpinBox(central);
+    maxPunctures = new QSpinBox(puncturesGroup);
     maxPunctures->setMinimum(1);
     maxPunctures->setMaximum(10000);
     connect(maxPunctures, SIGNAL(valueChanged(int)),
@@ -224,7 +227,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     puncturesLayout->addWidget(maxPunctures, 0, 3);
 
    // Create the integration group box.
-    QGroupBox *integrationGroup = new QGroupBox(central);
+    QGroupBox *integrationGroup = new QGroupBox(firstTab);
     integrationGroup->setTitle(tr("Integration"));
     mainLayout->addWidget(integrationGroup, 2, 0);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
@@ -232,10 +235,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationLayout->setMargin(5);
     integrationLayout->setSpacing(10);
 
-    integrationTypeLabel = new QLabel(tr("Integrator:"), central);
+    integrationTypeLabel = new QLabel(tr("Integrator:"), integrationGroup);
     integrationLayout->addWidget(integrationTypeLabel,0,0);
 
-    integrationTypeCombo = new QComboBox(firstTab);
+    integrationTypeCombo = new QComboBox(integrationGroup);
     integrationTypeCombo->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationTypeCombo->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationTypeCombo->addItem(tr("M3D-C1 Integrator"));
@@ -243,23 +246,23 @@ QvisPoincarePlotWindow::CreateWindowContents()
            this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationTypeCombo, 0, 1);
 
-    maxStepLengthLabel = new QLabel(tr("Maxiumum step length"), central);
+    maxStepLengthLabel = new QLabel(tr("Maxiumum step length"), integrationGroup);
     integrationLayout->addWidget(maxStepLengthLabel,1,0);
-    maxStepLength = new QLineEdit(central);
+    maxStepLength = new QLineEdit(integrationGroup);
     connect(maxStepLength, SIGNAL(returnPressed()),
             this, SLOT(maxStepLengthProcessText()));
     integrationLayout->addWidget(maxStepLength, 1,1);
 
-    relTolLabel = new QLabel(tr("Relative tolerance"), central);
+    relTolLabel = new QLabel(tr("Relative tolerance"), integrationGroup);
     integrationLayout->addWidget(relTolLabel,2,0);
-    relTol = new QLineEdit(central);
+    relTol = new QLineEdit(integrationGroup);
     connect(relTol, SIGNAL(returnPressed()),
             this, SLOT(relTolProcessText()));
     integrationLayout->addWidget(relTol, 2,1);
 
-    absTolLabel = new QLabel(tr("Absolute tolerance"), central);
+    absTolLabel = new QLabel(tr("Absolute tolerance"), integrationGroup);
     integrationLayout->addWidget(absTolLabel,3,0);
-    absTol = new QLineEdit(central);
+    absTol = new QLineEdit(integrationGroup);
     connect(absTol, SIGNAL(returnPressed()),
             this, SLOT(absTolProcessText()));
     integrationLayout->addWidget(absTol, 3,1);
@@ -272,34 +275,34 @@ QvisPoincarePlotWindow::CreateWindowContents()
     
     mainLayout = new QGridLayout(secondTab);
 
-    maxToroidalWindingLabel = new QLabel(tr("Max Toroidal Winding"), central);
+    maxToroidalWindingLabel = new QLabel(tr("Max Toroidal Winding"), secondTab);
     mainLayout->addWidget(maxToroidalWindingLabel, 0, 0);
-    maxToroidalWinding = new QSpinBox(central);
+    maxToroidalWinding = new QSpinBox(secondTab);
     maxToroidalWinding->setMinimum(1);
     maxToroidalWinding->setMaximum(1000);
     connect(maxToroidalWinding, SIGNAL(valueChanged(int)),
             this, SLOT(maxToroidalWindingChanged(int)));
     mainLayout->addWidget(maxToroidalWinding, 0, 1);
 
-    overrideToroidalWindingLabel = new QLabel(tr("Override Toroidal Winding"), central);
+    overrideToroidalWindingLabel = new QLabel(tr("Override Toroidal Winding"), secondTab);
     mainLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
-    overrideToroidalWinding = new QSpinBox(central);
+    overrideToroidalWinding = new QSpinBox(secondTab);
     overrideToroidalWinding->setMinimum(0);
     overrideToroidalWinding->setMaximum(1000);
     connect(overrideToroidalWinding, SIGNAL(valueChanged(int)),
             this, SLOT(overrideToroidalWindingChanged(int)));
     mainLayout->addWidget(overrideToroidalWinding, 1, 1);
 
-    hitRateLabel = new QLabel(tr("Hit Rate"), central);
+    hitRateLabel = new QLabel(tr("Hit Rate"), secondTab);
     mainLayout->addWidget(hitRateLabel, 2, 0);
-    hitRate = new QLineEdit(central);
+    hitRate = new QLineEdit(secondTab);
     connect(hitRate, SIGNAL(returnPressed()),
             this, SLOT(hitRateProcessText()));
     mainLayout->addWidget(hitRate, 2, 1);
 
-    overlapsLabel = new QLabel(tr("Overlaps"), central);
+    overlapsLabel = new QLabel(tr("Overlaps"), secondTab);
     mainLayout->addWidget(overlapsLabel, 4, 0, Qt::AlignTop);
-    overlaps = new QWidget(central);
+    overlaps = new QWidget(secondTab);
     overlapsButtonGroup= new QButtonGroup(overlaps);
     QHBoxLayout *overlapsLayout = new QHBoxLayout(overlaps);
     overlapsLayout->setMargin(0);
@@ -322,7 +325,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
 
    // Create the O/X Point  group box.
-    QGroupBox *criticalPointGroup = new QGroupBox(central);
+    QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
     criticalPointGroup->setTitle(tr("Critical Points"));
     mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 2, Qt::AlignTop);
 
@@ -330,7 +333,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     criticalPointLayout->setMargin(5);
     criticalPointLayout->setSpacing(10);
 
-    showOPoints = new QCheckBox(tr("Detect O Points"), central);
+    showOPoints = new QCheckBox(tr("Detect O Points"), criticalPointGroup);
     connect(showOPoints, SIGNAL(toggled(bool)),
             this, SLOT(showOPointsChanged(bool)));
     criticalPointLayout->addWidget(showOPoints, 0, 0);
@@ -348,7 +351,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     criticalPointGroup->hide();
 
    // Create the options group box.
-    QGroupBox *analysisOptionsGroup = new QGroupBox(central);
+    QGroupBox *analysisOptionsGroup = new QGroupBox(secondTab);
     analysisOptionsGroup->setTitle(tr("Options"));
     mainLayout->addWidget(analysisOptionsGroup, 6, 0, 1, 2, Qt::AlignTop);
 
@@ -356,22 +359,22 @@ QvisPoincarePlotWindow::CreateWindowContents()
     analysisOptionsLayout->setMargin(5);
     analysisOptionsLayout->setSpacing(10);
 
-    showIslands = new QCheckBox(tr("Show Islands Only"), central);
+    showIslands = new QCheckBox(tr("Show Islands Only"), analysisOptionsGroup);
     connect(showIslands, SIGNAL(toggled(bool)),
             this, SLOT(showIslandsChanged(bool)));
     analysisOptionsLayout->addWidget(showIslands, 0, 0);
 
-    showChaotic = new QCheckBox(tr("Show Chaotic Fieldlines (as points)"), central);
+    showChaotic = new QCheckBox(tr("Show Chaotic Fieldlines (as points)"), analysisOptionsGroup);
     connect(showChaotic, SIGNAL(toggled(bool)),
             this, SLOT(showChaoticChanged(bool)));
     analysisOptionsLayout->addWidget(showChaotic, 0, 1);
 
-    showRidgelines = new QCheckBox(tr("Show Rdigelines"), central);
+    showRidgelines = new QCheckBox(tr("Show Rdigelines"), analysisOptionsGroup);
     connect(showRidgelines, SIGNAL(toggled(bool)),
             this, SLOT(showRidgelinesChanged(bool)));
     analysisOptionsLayout->addWidget(showRidgelines, 1, 0);
 
-    verboseFlag = new QCheckBox(tr("Verbose"), central);
+    verboseFlag = new QCheckBox(tr("Verbose"), analysisOptionsGroup);
     connect(verboseFlag, SIGNAL(toggled(bool)),
             this, SLOT(verboseFlagChanged(bool)));
     analysisOptionsLayout->addWidget(verboseFlag, 1, 1);
@@ -386,7 +389,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     mainLayout = new QGridLayout(thirdTab);
 
     // Create the data group box.
-    QGroupBox *dataGroup = new QGroupBox(central);
+    QGroupBox *dataGroup = new QGroupBox(thirdTab);
     dataGroup->setTitle(tr("Data"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
@@ -396,10 +399,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
     dataLayout->setColumnStretch(2, 10);
 
 
-    dataValueLabel = new QLabel(tr("Data value:"), central);
+    dataValueLabel = new QLabel(tr("Data value:"), dataGroup);
     dataLayout->addWidget(dataValueLabel, 0, 0);
 
-    dataValueCombo = new QComboBox(thirdTab);
+    dataValueCombo = new QComboBox(dataGroup);
     dataValueCombo->addItem(tr("OriginalValue"));
     dataValueCombo->addItem(tr("InputOrder"));
     dataValueCombo->addItem(tr("PointIndex"));
@@ -416,41 +419,41 @@ QvisPoincarePlotWindow::CreateWindowContents()
            this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueCombo, 0, 1);
 
-    dataLayout->addWidget(new QLabel(tr("   "), central), 0, 2);
+    dataLayout->addWidget(new QLabel(tr("   "), dataGroup), 0, 2);
 
 
     // Create the limits group box.
-    QGroupBox *limitsGroup = new QGroupBox(central);
+    QGroupBox *limitsGroup = new QGroupBox(thirdTab);
     dataLayout->addWidget(limitsGroup, 1, 0, 1, 3);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
     limitsLayout->setMargin(5);
     limitsLayout->setSpacing(10);
 
-    limitsLayout->addWidget(new QLabel(tr("Limits"), central), 0, 0);
+    limitsLayout->addWidget(new QLabel(tr("Limits"), limitsGroup), 0, 0);
 
-    minFlag = new QCheckBox(tr("Minimum"), central);
+    minFlag = new QCheckBox(tr("Minimum"), limitsGroup);
     limitsLayout->addWidget(minFlag, 0, 1);
     connect(minFlag, SIGNAL(toggled(bool)),
             this, SLOT(minFlagChanged(bool)));
-    min = new QLineEdit(central);
+    min = new QLineEdit(limitsGroup);
     connect(min, SIGNAL(returnPressed()),
             this, SLOT(minProcessText()));
     limitsLayout->addWidget(min, 0, 2);
 
-    maxFlag = new QCheckBox(tr("Maximum"), central);
+    maxFlag = new QCheckBox(tr("Maximum"), limitsGroup);
     connect(maxFlag, SIGNAL(toggled(bool)),
             this, SLOT(maxFlagChanged(bool)));
     limitsLayout->addWidget(maxFlag, 0, 3);
 
-    max = new QLineEdit(central);
+    max = new QLineEdit(limitsGroup);
     connect(max, SIGNAL(returnPressed()),
             this, SLOT(maxProcessText()));
     limitsLayout->addWidget(max, 0, 4);
 
 
     // Create the display group box.
-    QGroupBox *displayGroup = new QGroupBox(central);
+    QGroupBox *displayGroup = new QGroupBox(thirdTab);
     displayGroup->setTitle(tr("Display"));
     mainLayout->addWidget(displayGroup, 1, 0);
 //    mainLayout->setStretchFactor(displayGroup, 100);
@@ -458,35 +461,35 @@ QvisPoincarePlotWindow::CreateWindowContents()
     displayLayout->setMargin(5);
     displayLayout->setSpacing(10);
 
-    meshTypeLabel = new QLabel(tr("Mesh:"), central);
+    meshTypeLabel = new QLabel(tr("Mesh:"), displayGroup);
     displayLayout->addWidget(meshTypeLabel, 0, 0);
 
-    meshTypeCombo = new QComboBox(thirdTab);
+    meshTypeCombo = new QComboBox(displayGroup);
     meshTypeCombo->addItem(tr("Curves"));
     meshTypeCombo->addItem(tr("Surfaces"));
     connect(meshTypeCombo, SIGNAL(activated(int)),
            this, SLOT(meshTypeChanged(int)));
     displayLayout->addWidget(meshTypeCombo, 0, 1);
 
-    numberPlanesLabel = new QLabel(tr("Number of planes"), central);
+    numberPlanesLabel = new QLabel(tr("Number of planes"), displayGroup);
     displayLayout->addWidget(numberPlanesLabel, 1, 0);
-    numberPlanes = new QSpinBox(central);
+    numberPlanes = new QSpinBox(displayGroup);
     numberPlanes->setMinimum(1);
     numberPlanes->setMaximum(250);
     connect(numberPlanes, SIGNAL(valueChanged(int)),
             this, SLOT(numberPlanesChanged(int)));
     displayLayout->addWidget(numberPlanes, 1, 1);
 
-    singlePlaneLabel = new QLabel(tr("Base plane (degrees)"), central);
+    singlePlaneLabel = new QLabel(tr("Base plane (degrees)"), displayGroup);
     displayLayout->addWidget(singlePlaneLabel, 1, 2);
-    singlePlane = new QLineEdit(central);
+    singlePlane = new QLineEdit(displayGroup);
     connect(singlePlane, SIGNAL(returnPressed()),
             this, SLOT(singlePlaneProcessText()));
     displayLayout->addWidget(singlePlane, 1, 3);
 
-    adjustPlaneLabel = new QLabel(tr("Adjust plane index"), central);
+    adjustPlaneLabel = new QLabel(tr("Adjust plane index"), displayGroup);
     displayLayout->addWidget(adjustPlaneLabel, 1, 2);
-    adjustPlane = new QSpinBox(central);
+    adjustPlane = new QSpinBox(displayGroup);
     adjustPlane->setMinimum(-1);
     adjustPlane->setMaximum(250);
     connect(adjustPlane, SIGNAL(valueChanged(int)),
@@ -495,7 +498,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
 
    // Create the color group box.
-    QGroupBox *colorGroup = new QGroupBox(central);
+    QGroupBox *colorGroup = new QGroupBox(thirdTab);
     colorGroup->setTitle(tr("Color"));
     mainLayout->addWidget(colorGroup, 2, 0);
 //    mainLayout->setStretchFactor(colorGroup, 100);
@@ -504,9 +507,9 @@ QvisPoincarePlotWindow::CreateWindowContents()
     colorLayout->setSpacing(10);
     colorLayout->setColumnStretch(2, 10);
 
-//     colorTypeLabel = new QLabel(tr("Color type"), central);
+//     colorTypeLabel = new QLabel(tr("Color type"), colorGroup);
 //     colorLayout->addWidget(colorTypeLabel,6,0);
-    colorType = new QWidget(central);
+    colorType = new QWidget(colorGroup);
     colorTypeButtonGroup= new QButtonGroup(colorType);
 
     QRadioButton *colorTypeSingleColor =
@@ -514,7 +517,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     colorTypeButtonGroup->addButton(colorTypeSingleColor,0);
     colorLayout->addWidget(colorTypeSingleColor, 0, 0);
 
-    singleColor = new QvisColorButton(central);
+    singleColor = new QvisColorButton(colorGroup);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
     colorLayout->addWidget(singleColor, 0, 1, Qt::AlignLeft);
@@ -526,14 +529,14 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(colorTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorTypeChanged(int)));
 
-    colorTableName = new QvisColorTableButton(central);
+    colorTableName = new QvisColorTableButton(colorGroup);
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     colorLayout->addWidget(colorTableName, 0, 3, Qt::AlignLeft);
 
 
    // Create the options group box.
-    QGroupBox *optionsGroup = new QGroupBox(central);
+    QGroupBox *optionsGroup = new QGroupBox(thirdTab);
     optionsGroup->setTitle(tr("Options"));
     mainLayout->addWidget(optionsGroup, 3, 0);
 
@@ -541,12 +544,12 @@ QvisPoincarePlotWindow::CreateWindowContents()
     optionsLayout->setMargin(5);
     optionsLayout->setSpacing(10);
 
-    showLines = new QCheckBox(tr("Show Lines"), central);
+    showLines = new QCheckBox(tr("Show Lines"), optionsGroup);
     connect(showLines, SIGNAL(toggled(bool)),
             this, SLOT(showLinesChanged(bool)));
     optionsLayout->addWidget(showLines, 1, 0);
 
-    showPoints = new QCheckBox(tr("Show Points"), central);
+    showPoints = new QCheckBox(tr("Show Points"), optionsGroup);
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
     optionsLayout->addWidget(showPoints, 1, 1);
@@ -554,7 +557,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     //
     // Create the misc stuff
     //
-    QGroupBox * miscGroup = new QGroupBox(central);
+    QGroupBox * miscGroup = new QGroupBox(thirdTab);
     miscGroup->setTitle(tr("Misc"));
     mainLayout->addWidget(miscGroup, 4, 0);
 
@@ -563,26 +566,26 @@ QvisPoincarePlotWindow::CreateWindowContents()
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
+    legendToggle = new QCheckBox(tr("Legend"), miscGroup);
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     miscLayout->addWidget(legendToggle, 0, 0);
 
     // Create the lighting toggle
-    lightingToggle = new QCheckBox(tr("Lighting"), central);
+    lightingToggle = new QCheckBox(tr("Lighting"), miscGroup);
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
     miscLayout->addWidget(lightingToggle, 0, 1);
 
     // ----------------------------------------------------------------------
-    // Forth tab
+    // Fourth tab
     // ----------------------------------------------------------------------
-    forthTab = new QWidget(central);
-    propertyTabs->addTab(forthTab, tr("Parallel"));
+    fourthTab = new QWidget(central);
+    propertyTabs->addTab(fourthTab, tr("Parallel"));
     
-    mainLayout = new QGridLayout(forthTab);
+    mainLayout = new QGridLayout(fourthTab);
 
-    QGroupBox *algoGrp = new QGroupBox(central);
+    QGroupBox *algoGrp = new QGroupBox(fourthTab);
     algoGrp->setTitle(tr("Parallel streamline options"));
     mainLayout->addWidget(algoGrp, 0, 0, 1, 4);
 
