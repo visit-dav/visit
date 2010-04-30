@@ -96,6 +96,11 @@ vtkStandardNewMacro(vtkVisItScalarBarActor);
 //    suppliedLabels, calculatedValues, MinMaxInclusive, UseSuppliedLabels, 
 //    DrawMode and Type.
 //
+//    Jeremy Meredith, Fri Apr 30 16:08:38 EDT 2010
+//    Changed the number of color values used for sampling continuous color
+//    tables to be something which was more in line with window resolutions,
+//    specifically increasing it from 64 to 1024.
+//
 //------------------------------------------------------------------------------
 vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap(), suppliedLabels(), suppliedValues(), calculatedValues()
 {
@@ -108,7 +113,7 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
   this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport();
   this->PositionCoordinate->SetValue(0.82, 0.1);
   
-  this->MaximumNumberOfColors = 64;
+  this->MaximumNumberOfColors = 1024;
   this->NumberOfLabels = DefaultNumLabels;
   this->NumberOfLabelsBuilt = 0;
   this->Title = NULL;
