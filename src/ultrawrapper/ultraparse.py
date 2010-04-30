@@ -1,5 +1,10 @@
 import os, sys, inspect
 
+try:
+    import pyparsing
+except:
+    raise VisItException("LoadUltra requires PyParsing to be installed in python's site-packages.")
+
 #make the ultrawrapper modules available for import
 sys.path.append(os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe()))))
 

@@ -13161,9 +13161,8 @@ visit_GetUltraScript(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_LoadUltra(PyObject *self, PyObject *args)
 {
-#ifdef HAVE_PYPARSING
     NO_ARGUMENTS();
-          
+
     string parserFile = string(getenv("VISITULTRAHOME")) + 
                         string("/ultraparse.py");
 
@@ -13171,10 +13170,6 @@ visit_LoadUltra(PyObject *self, PyObject *args)
     PyTuple_SetItem(argTuple, 0, PyString_FromString(parserFile.c_str()));
     visit_Source(self, argTuple);
     return PyInt_FromLong(1);
-#else
-    VisItErrorFunc("LoadUltra requires PyParsing to be installed in pythons site-packages.");
-    return NULL;
-#endif
 }
 
 
