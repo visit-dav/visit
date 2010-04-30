@@ -609,7 +609,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     winPopup = menuBar()->addMenu(tr("&Windows"));
 
-    winPopup->addAction(QPixmap(newwindow_xpm), tr("Add"),
+    winPopup->addAction(QPixmap(newwindow_xpm), tr("New"),
                         this, SLOT(windowAdd())
 #ifndef Q_WS_MACX
                          , QKeySequence(Qt::CTRL + Qt::Key_Insert)

@@ -256,6 +256,10 @@ public:
     void EnablePluginMenus();
     void UpdateOperatorCategories();
     void SetSourceVisible(bool);
+
+    QMenu *getOperatorMenu() { return operatorMenu; };
+    QMenu *getVariableMenu() { return (QMenu*) varMenu; };
+
 public slots:
     void hideThisPlot();
     void deleteThisPlot();
