@@ -166,6 +166,9 @@ std::vector<std::string>
 PlainTextGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
+    defaultPatterns.push_back("*.csv");
+    defaultPatterns.push_back("*.tsv");
+    defaultPatterns.push_back("*.txt");
 
     return defaultPatterns;
 }
