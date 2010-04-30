@@ -45,6 +45,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -116,6 +117,12 @@ avtFilledBoundaryFilter::SetPlotAtts(const FilledBoundaryAttributes *atts)
 //    Hank Childs, Thu Feb 21 16:38:36 PST 2008
 //    Initialize nSelectedBoundaries, in case there is a parsing problem.
 //
+//    Jeremy Meredith, Fri Apr 30 17:08:32 EDT 2010
+//    We can actually get here without polydata, in the event of a clean
+//    data set in wireframe mode.  We just convert to polydata first now,
+//    which may not work perfectly or optimally in the general case, but
+//    is acceptable for how it's being used at the moment.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -159,9 +166,13 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         //
         int *boundaryList = ((vtkIntArray*)boundaryArray)->GetPointer(0);
 
+        vtkGeometryFilter *geom = NULL;
         if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
         {
-            EXCEPTION0(ImproperUseException);
+            geom = vtkGeometryFilter::New();
+            geom->SetInput(in_ds);
+            in_ds = geom->GetOutput();
+            in_ds->Update();
         }
 
         vtkPolyData *in_pd = (vtkPolyData *)in_ds;
@@ -270,6 +281,9 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         delete [] selectedBoundaryNames;
         delete [] selectedBoundaries;
         delete [] cLabelStorage;
+
+        if (geom)
+            geom->Delete();
     }
     else
     {
