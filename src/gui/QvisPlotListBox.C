@@ -222,9 +222,11 @@ public:
 //
 // ****************************************************************************
 
-QvisPlotListBox::QvisPlotListBox(QWidget *parent) : QListWidget(parent)
+QvisPlotListBox::QvisPlotListBox(QWidget *parent) : QListWidget(parent),
+                                                    plotContextMenu(0)
 {
     contextMenuCreateActions();
+    contextMenuCreate();
     setItemDelegate(new QPlotDelegate(this));
 }
 
@@ -710,34 +712,17 @@ QvisPlotListBox::contextMenuCreateActions()
     makeThisPlotLastAct->setStatusTip(tr("Make this plot be the last in the plot list"));
     connect(makeThisPlotLastAct, SIGNAL(triggered()), this, SIGNAL(makeThisPlotLast()));
 
-     // build the menu
-     plotContextMenu = new QMenu(this);
-     plotContextMenu->addAction(hideShowAct);
-     plotContextMenu->addAction(clearAct);
-     plotContextMenu->addAction(drawAct);
-     plotContextMenu->addAction(redrawAct);
-     plotContextMenu->addSeparator();
-     plotContextMenu->addAction(cloneAct);
-     plotContextMenu->addAction(deleteAct);
-     plotContextMenu->addSeparator();
-     plotContextMenu->addAction(makeThisPlotFirstAct);
-     plotContextMenu->addAction(moveThisPlotTowardFirstAct);
-     plotContextMenu->addAction(moveThisPlotTowardLastAct);
-     plotContextMenu->addAction(makeThisPlotLastAct);
-     plotContextMenu->addSeparator();
-     plotContextMenu->addAction(setPlotDescriptionAct);
-     plotContextMenu->addSeparator();
-    
+   
 // copy to window incomplete!!!!! Commented out below...
-     copyToWinAct = new QAction(tr("Copy To Window"), 0);
-     copyToWinAct->setStatusTip(tr("Copy this plot to different window"));
-     connect( copyToWinAct, SIGNAL(triggered()), this, SIGNAL(copyToWinThisPlot()));    
-     win1Act = new QAction(tr("Window 1"), 0);
-     win2Act = new QAction(tr("Window 2"), 0);
-     win1Act->setStatusTip(tr("Copy this plot to different window"));
-     win2Act->setStatusTip(tr("Copy this plot to different window"));
-     connect( win1Act, SIGNAL(triggered()), this, SIGNAL(copyToWinThisPlot()));    
-     connect( win2Act, SIGNAL(triggered()), this, SIGNAL(copyToWinThisPlot()));    
+//      copyToWinAct = new QAction(tr("Copy To Window"), 0);
+//      copyToWinAct->setStatusTip(tr("Copy this plot to different window"));
+//      connect( copyToWinAct, SIGNAL(triggered()), this, SIGNAL(copyToWinThisPlot()));    
+//      win1Act = new QAction(tr("Window 1"), 0);
+//      win2Act = new QAction(tr("Window 2"), 0);
+//      win1Act->setStatusTip(tr("Copy this plot to different window"));
+//      win2Act->setStatusTip(tr("Copy this plot to different window"));
+//      connect( win1Act, SIGNAL(triggered()), this, SIGNAL(copyToWinThisPlot()));    
+//      connect( win2Act, SIGNAL(triggered()), this, SIGNAL(copyToWinThisPlot()));    
 
     // adding a popup menu to the copyToWin option:
     // how many windows are open? hard-coding to 3 while debugging...
@@ -750,16 +735,67 @@ QvisPlotListBox::contextMenuCreateActions()
 //    copyWinSubMenu = new QMenu(this);
 //    win1Act->addTo(copyWinSubMenu);
 //    win2Act->addTo(copyWinSubMenu);
-//    plotContextMenu->insertItem(tr("Copy To Window"), copyWinSubMenu);
 
-     plotContextMenu->addSeparator();
-    
      // Now, for the "Disconnect From TimeSlider" option:
      disconnectAct = new QAction(tr("Disconnect From time slider"), this);
      disconnectAct->setStatusTip(tr("Disconnect this plot from time slider"));
      disconnectAct->setCheckable(true);
      connect( disconnectAct, SIGNAL(toggled(bool)), this, SIGNAL(disconnectThisPlot()));
-     plotContextMenu->addAction(disconnectAct);   
+}
+
+// ****************************************************************************
+// Method: QvisPlotListBox::contextMenuCreate
+//
+// Purpose: 
+//   Builds the context menu
+//
+// Arguments:
+//
+// Creationist: Allen Sanderson
+// Creation:    Fri April 230 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisPlotListBox::contextMenuCreate()
+{
+    QMenu *operatorMenu =
+      ((QvisPlotManagerWidget*) parentWidget())->getOperatorMenu();
+    QMenu *variableMenu =
+      ((QvisPlotManagerWidget*) parentWidget())->getVariableMenu();
+
+    // Incase it is being rebuilt.
+    if( plotContextMenu )
+      delete plotContextMenu;
+
+    // build the menu
+    plotContextMenu = new QMenu(this);
+    if( operatorMenu )
+      plotContextMenu->addMenu(operatorMenu);
+    if( variableMenu )
+      plotContextMenu->addMenu(variableMenu);
+    if( operatorMenu || variableMenu )
+      plotContextMenu->addSeparator();
+
+    plotContextMenu->addAction(hideShowAct);
+    plotContextMenu->addAction(clearAct);
+    plotContextMenu->addAction(drawAct);
+    plotContextMenu->addAction(redrawAct);
+    plotContextMenu->addSeparator();
+//  plotContextMenu->insertItem(tr("Copy To Window"), copyWinSubMenu);
+    plotContextMenu->addAction(cloneAct);
+    plotContextMenu->addAction(deleteAct);
+    plotContextMenu->addSeparator();
+    plotContextMenu->addAction(makeThisPlotFirstAct);
+    plotContextMenu->addAction(moveThisPlotTowardFirstAct);
+    plotContextMenu->addAction(moveThisPlotTowardLastAct);
+    plotContextMenu->addAction(makeThisPlotLastAct);
+    plotContextMenu->addSeparator();
+    plotContextMenu->addAction(setPlotDescriptionAct);
+    plotContextMenu->addSeparator();
+ 
+    plotContextMenu->addAction(disconnectAct);   
 }
 
 // ****************************************************************************
@@ -790,7 +826,6 @@ QvisPlotListBox::contextMenuCreateActions()
 void
 QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
 {
-    
     // setEnabled(false) if no active plots (plots are 'active' without being
     // highlighted/selected, non-intuitive...??)
     

@@ -276,6 +276,14 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     topLayout->addWidget(plotActionsToolbar);
 
+    // Create the plot and operator menus. Note that they will be
+    // empty until they are populated by the main
+    // application. However, they must be created before the
+    // QVisPlotListBox so the top level pointers are available for the
+    // context menu
+    operatorRemoveLastAct = 0;
+    operatorRemoveAllAct = 0;
+    CreateMenus(menuBar);
 
     // Create the plot list box.
     plotListBox = new QvisPlotListBox(this);
@@ -330,12 +338,6 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(makeThisPlotLast()));
 
     topLayout->addWidget(plotListBox);
-
-    // Create the plot and operator menus. Note that they will be empty until
-    // they are populated by the main application.
-    operatorRemoveLastAct = 0;
-    operatorRemoveAllAct = 0;
-    CreateMenus(menuBar);
 }
 
 // ****************************************************************************
@@ -600,6 +602,10 @@ QvisPlotManagerWidget::CreateVariableMenu()
 
     varMenuAction->setMenu(varMenu);
     varMenuAction->setEnabled(false);
+
+    // The plot list box has a link to the varMenu so add it too.
+    if( plotListBox )
+      plotListBox->contextMenuCreate();
 }
 
 // ****************************************************************************
@@ -640,6 +646,10 @@ QvisPlotManagerWidget::DestroyVariableMenu()
         // Delete the variable menu.
         delete varMenu;
         varMenu = 0;
+
+        // The plot list box has a link to the varMenu so nuke it too.
+        if( plotListBox )
+          plotListBox->contextMenuCreate();
     }
 }
 
@@ -2787,5 +2797,3 @@ QvisPlotManagerWidget::setActivePlot()
         }
     }
 }
-
-

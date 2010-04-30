@@ -139,7 +139,10 @@ protected:
     void contextMenuEvent( QContextMenuEvent *event );
 private:
     void contextMenuCreateActions();
+public:
+    void contextMenuCreate();
     
+private:
     QMenu      *plotContextMenu;
     QAction    *hideShowAct;
     QAction    *deleteAct;
