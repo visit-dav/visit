@@ -227,7 +227,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QWidget *firstTab;
     QWidget *secondTab;
     QWidget *thirdTab;
-    QWidget *forthTab;
+    QWidget *fourthTab;
     QGroupBox *sourceGroup;
 
     PoincareAttributes *atts;
