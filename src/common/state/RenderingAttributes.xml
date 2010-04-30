@@ -64,6 +64,9 @@
     <Field name="doDepthCueing" label="Do Depth Cueing" type="bool">
       false
     </Field>
+    <Field name="depthCueingAutomatic" label="Depth Cueing Automatic" type="bool">
+      true
+    </Field>
     <Field name="startCuePoint" label="startCuePoint" type="doubleArray" length="3">
       -10.000000
       0.000000

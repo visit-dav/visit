@@ -596,14 +596,32 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
 //    Tom Fogal, Mon Jun 16 11:13:34 EDT 2008
 //    Made current_view constant.
 //
+//    Jeremy Meredith, Fri Apr 30 14:23:19 EDT 2010
+//    Added automatic mode.
+//
 // ****************************************************************************
 void
 avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
                                   const avtView3D &current_view,
-                                  const double start[3],
-                                  const double end[3],
+                                  bool autoExtents,
+                                  const double start_[3],
+                                  const double end_[3],
                                   unsigned char cuecolor[3])
 {
+    double start[3] = {start_[0],start_[2],start_[2]};
+    double end[3]   = {end_[0],  end_[2],  end_[2]};
+    if (autoExtents)
+    {
+        double fudge = 0.6;
+        start[0] = current_view.focus[0] - fudge * current_view.normal[0]*current_view.nearPlane;
+        start[1] = current_view.focus[1] - fudge * current_view.normal[1]*current_view.nearPlane;
+        start[2] = current_view.focus[2] - fudge * current_view.normal[2]*current_view.nearPlane;
+
+        end[0] = current_view.focus[0] - fudge * current_view.normal[0]*current_view.farPlane;
+        end[1] = current_view.focus[1] - fudge * current_view.normal[1]*current_view.farPlane;
+        end[2] = current_view.focus[2] - fudge * current_view.normal[2]*current_view.farPlane;
+    }
+
     double direction[3] = {end[0]-start[0], end[1]-start[1], end[2]-start[2]};
     double mag = (direction[0]*direction[0] +
                   direction[1]*direction[1] +
