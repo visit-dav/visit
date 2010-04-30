@@ -147,9 +147,9 @@ ENDIF(QNANHIBIT)
 ADD_DEFINITIONS(-DTEEM_DIO=0)
 #ENDIF(USE_DIRECTIO)
 
-SET(TEEM_LIBRARIES air hest biff nrrd ell unrrdu dye moss gage bane
-  limn hoover alan echo ten
-  mite coil push CACHE INTERNAL "TEEM libraries")
+SET(TEEM_LIBRARIES air hest biff nrrd ell unrrdu dye moss gage
+  alan
+  CACHE INTERNAL "TEEM libraries")
 
 SET(TEEM_INSTALLED_HEADER_FILES)
 FOREACH(header_file
@@ -165,19 +165,11 @@ FOREACH(header_file
     unrrdu/unrrdu.h
     dye/dye.h
     alan/alan.h
-    limn/limn.h
     gage/gage.h
     moss/moss.h
-    echo/echo.h
-    bane/bane.h
-    ten/ten.h
-    ten/tenMacros.h
-    hoover/hoover.h
-    mite/mite.h
     nrrd/nrrdDefines.h
     nrrd/nrrdMacros.h
     nrrd/nrrdEnums.h
-    push/push.h
     )
   # When debugging, uncomment this line
   #MESSAGE(STATUS "Copy header file: ${header_file}")
