@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="PlainText" type="database" label="PlainText" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true" filePatternsStrict="false">
+    <FilePatterns>
+      *.csv
+      *.tsv
+      *.txt
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

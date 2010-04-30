@@ -192,6 +192,9 @@ avtLAMMPSDumpFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Thu Apr 22 11:12:51 EDT 2010
 //    Added unit cell bounding box mesh.
 //
+//    Jeremy Meredith, Fri Apr 30 10:03:17 EDT 2010
+//    Added cycles to meta-data.
+//
 // ****************************************************************************
 
 void
@@ -233,6 +236,9 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
             continue;
         AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_NODECENT);
     }
+
+    md->SetCycles(cycles);
+    md->SetCyclesAreAccurate(true);
 }
 
 
