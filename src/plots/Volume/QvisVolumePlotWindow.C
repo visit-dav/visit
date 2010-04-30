@@ -752,9 +752,11 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
     rendererTypesComboBox->addItem(tr("3D Texturing"));
     rendererTypesComboBox->addItem(tr("Ray casting: compositing"));
     rendererTypesComboBox->addItem(tr("Ray casting: integration (grey scale)"));
-    rendererTypesComboBox->addItem(tr("SCI, University of Utah (Tuvok)"));
+#ifdef USE_TUVOK
+    rendererTypesComboBox->addItem(tr("Tuvok"));
+#endif
 #ifdef HAVE_LIBSLIVR
-    rendererTypesComboBox->addItem(tr("SCI, University of Utah (SLIVR)"));
+    rendererTypesComboBox->addItem(tr("SLIVR"));
 #endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
