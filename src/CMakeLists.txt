@@ -1111,8 +1111,6 @@ IF (WIN32)
   # Change /Zi to /ZI for CXX flags
   REPLACE_FLAG("/Zi" "/ZI" CMAKE_CXX_FLAGS_DEBUG 
                "Flags used by the compiler during debug builds")
-  REPLACE_FLAG("/Zi" "/ZI" CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-               "Flags used by the compiler during debug builds")
 
   # Remove /machine:I386 from linker flags
   REPLACE_FLAG("/machine:I386" "" CMAKE_EXE_LINKER_FLAGS
