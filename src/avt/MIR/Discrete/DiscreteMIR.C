@@ -63,11 +63,11 @@
 #include <vtkObjectFactory.h>
 
 #include <VisItArray.h>
+#include <cstdlib>
 
 using std::vector;
 
 // Programmer: John C. Anderson, Fri Oct 31 12:53:10 2008
-#define RANDOM ((double) rand() / (double) RAND_MAX)
 
 
 // WARNING by John C. Anderson: The following arrays are probably
@@ -322,6 +322,11 @@ DiscreteMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //    Split labels into mixed and clean versions to avoid assumptions
 //    about signedness of pointers and sizes of integers and pointers.
 //
+//    Jeremy Meredith, Fri Apr 30 11:03:23 EDT 2010
+//    Fixed bug where we walked off an array when looking at neighboring cells.
+//    Also, use random number generator in the range [0,1) so that we don't
+//    walk off the end of other arrays.
+//
 // ****************************************************************************
 bool
 DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -398,7 +403,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
         --dimensions[2];
 
     // Seed the random number generator.
-    srand((int) time(NULL));
+    srand48(time(NULL));
 
     // Intialize the mixed label pointer array.
     m_mixedlabels = (unsigned char **) calloc(dimensions[0] * dimensions[1] * dimensions[2],
@@ -504,7 +509,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
 
         while(tmp != end)
         {
-            double r = total * RANDOM;
+            double r = total * drand48();
 
             unsigned int l = 0;
             int cdf = target[0] - count[0];
@@ -560,7 +565,14 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                             (dimension == 2) ?
                             cell.incidentCell4(n) :
                             cell.incidentCell26(n);
-                        if(matlist[id(celln)] < 0)
+
+                        // if we're on a boundary, some cells will
+                        // be off the edges of the array; we're going
+                        // to assume those cells are clean for simplicity
+                        int cellid = id(celln);
+                        if (cellid >= 0 &&
+                            cellid < nCells &&
+                            matlist[cellid] < 0)
                         {
                             cleanish.push_back(cell);
                             goto NEXT_CELL;
@@ -1822,6 +1834,10 @@ unsigned char DiscreteMIR::get(size_t i, size_t j, size_t k) const
 //    Split labels into mixed and clean versions to avoid assumptions
 //    about signedness of pointers and sizes of integers and pointers.
 //
+//    Jeremy Meredith, Fri Apr 30 11:13:05 EDT 2010
+//    Use random number generator in the range [0,1) so that we don't
+//    walk off the end of the array.
+//
 // ***************************************************************************
 void DiscreteMIR::optimize()
 {
@@ -1844,15 +1860,15 @@ void DiscreteMIR::optimize()
     {
         for(int iteration = 0; iteration < 1000; ++iteration)
         {
-            cell = m_mixedCells[RANDOM * m_mixedCells.size()];
+            cell = m_mixedCells[drand48() * m_mixedCells.size()];
             labels = m_mixedlabels[id(cell)];
 
             // Pick two sites within a cell with different labels.
             int incell = 10;
             do
             {
-                r  = DX * DY * DZ * RANDOM;
-                r2 = DX * DY * DZ * RANDOM;
+                r  = DX * DY * DZ * drand48();
+                r2 = DX * DY * DZ * drand48();
 
                 l  = labels[r];
                 l2 = labels[r2];
@@ -1909,13 +1925,13 @@ void DiscreteMIR::optimize()
             {
                 if(m_temperature > 0.0)
                 {
-                    if(RANDOM < exp(-(e1 - e0) / m_temperature))
+                    if(drand48() < exp(-(e1 - e0) / m_temperature))
                         std::swap(labels[r], labels[r2]);
                 }
                 else
                 {
 #if 1
-                    if(e1 == e0 && RANDOM < 0.5)
+                    if(e1 == e0 && drand48() < 0.5)
                         std::swap(labels[r], labels[r2]);
 #endif
                 }
