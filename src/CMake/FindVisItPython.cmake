@@ -340,7 +340,7 @@ IF(PYTHONLIBS_FOUND)
                                           WORLD_READ             WORLD_EXECUTE
                     PATTERN "*.pyc"  EXCLUDE
                     PATTERN "*.pyo"  EXCLUDE
-	            PATTERN "lib-tk" EXCLUDE
+                    PATTERN "lib-tk" EXCLUDE
                     PATTERN "visit*" EXCLUDE
                     PATTERN ".svn"   EXCLUDE
                     PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
@@ -348,13 +348,4 @@ IF(PYTHONLIBS_FOUND)
             ENDIF (NOT WIN32)
         ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr")) 
     ENDIF(Python_FRAMEWORKS)
-ENDIF(PYTHONLIBS_FOUND)
-
-# See if we have pyparsing
-IF(PYTHONLIBS_FOUND)
-    SET(cfgLibPy "config/libpython${PYTHON_VERSION}.so")
-    STRING(REPLACE ${cfgLibPy} "site-packages/pyparsing.py" pyParsingFile ${PYTHON_LIBRARIES})
-    IF(EXISTS ${pyParsingFile})
-        SET(HAVE_PYPARSING 1 CACHE BOOL "Defined if Python has pyparsing")
-    ENDIF(EXISTS ${pyParsingFile})
 ENDIF(PYTHONLIBS_FOUND)
