@@ -3143,6 +3143,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
 //   Added depth cueing properties.
 //
+//   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//   Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 void
@@ -3207,6 +3210,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         }
 
         if (windows[index]->GetDoDepthCueing() != renderAtts->GetDoDepthCueing() ||
+            windows[index]->GetDepthCueingAutomatic() != renderAtts->GetDepthCueingAutomatic() ||
             windows[index]->GetStartCuePoint()[0] != renderAtts->GetStartCuePoint()[0] ||
             windows[index]->GetStartCuePoint()[1] != renderAtts->GetStartCuePoint()[1] ||
             windows[index]->GetStartCuePoint()[2] != renderAtts->GetStartCuePoint()[2] ||
@@ -3216,6 +3220,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         {
             windows[index]->SetDepthCueingProperties(
                                                renderAtts->GetDoDepthCueing(),
+                                               renderAtts->GetDepthCueingAutomatic(),
                                                renderAtts->GetStartCuePoint(),
                                                renderAtts->GetEndCuePoint());
         }
@@ -4780,6 +4785,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
 //   Added depth cueing properties.
 //
+//   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//   Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 void
@@ -4813,6 +4821,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetDoShadowing(win->GetDoShading());
         renderAtts->SetShadowStrength(win->GetShadingStrength());
         renderAtts->SetDoDepthCueing(win->GetDoDepthCueing());
+        renderAtts->SetDepthCueingAutomatic(win->GetDepthCueingAutomatic());
         renderAtts->SetStartCuePoint(win->GetStartCuePoint());
         renderAtts->SetEndCuePoint(win->GetEndCuePoint());
         renderAtts->SetColorTexturingFlag(win->GetColorTexturingFlag());
@@ -7953,6 +7962,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Hank Childs, Sat Mar 13 18:46:54 PST 2010
 //    Remove reference to bounding box mode.
 //
+//    Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//    Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 void
@@ -7991,6 +8003,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetShadingProperties(renderAtts->GetDoShadowing(),
                             renderAtts->GetShadowStrength());
     w->SetDepthCueingProperties(renderAtts->GetDoDepthCueing(),
+                                renderAtts->GetDepthCueingAutomatic(),
                                 renderAtts->GetStartCuePoint(),
                                 renderAtts->GetEndCuePoint());
 }

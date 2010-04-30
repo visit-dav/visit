@@ -6249,6 +6249,9 @@ NetworkManager::RenderShadows(int windowID,
 //    Tom Fogal, Wed Jun 18 16:00:29 EDT 2008
 //    Made the input image a reference.
 //
+//    Jeremy Meredith, Fri Apr 30 14:23:19 EDT 2010
+//    Added automatic mode.
+//
 // ****************************************************************************
 
 void
@@ -6279,11 +6282,13 @@ NetworkManager::RenderDepthCues(int windowID,
             viswinMap.find(windowID)->second.annotationAttributes;
         const double *start = winAtts.GetRenderAtts().GetStartCuePoint();
         const double *end   = winAtts.GetRenderAtts().GetEndCuePoint();
+        bool automode       = winAtts.GetRenderAtts().GetDepthCueingAutomatic();
         unsigned char color[] =
             {annotationAttributes.GetBackgroundColor().Red(),
              annotationAttributes.GetBackgroundColor().Green(),
              annotationAttributes.GetBackgroundColor().Blue()};
         avtSoftwareShader::AddDepthCueing(compositedImage, cur_view,
+                                          automode,
                                           start, end, color);
     }
     CallProgressCallback("NetworkManager", "Applying depth cueing", 1,1);
