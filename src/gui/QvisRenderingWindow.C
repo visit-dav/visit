@@ -84,6 +84,9 @@
 //   Brad Whitlock, Wed Apr  9 11:52:02 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
+//   Added an automatic start/end setting capability for depth cueing.
+//
 // ****************************************************************************
 
 QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
@@ -365,7 +368,13 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(depthCueingToggle, row, 0, 1, 3);
     row++;
 
-    depthCueingStartLabel = new QLabel(tr("Start point"));
+    depthCueingAutoToggle = new QCheckBox(tr("Cue automatically along camera depth"), advancedOptions);
+    connect(depthCueingAutoToggle, SIGNAL(toggled(bool)),
+            this, SLOT(depthCueingAutoToggled(bool)));
+    advLayout->addWidget(depthCueingAutoToggle, row, 1, 1, 3);
+    row++;
+
+    depthCueingStartLabel = new QLabel(tr("Manual start point"));
     advLayout->addWidget(depthCueingStartLabel, row, 1);
     depthCueingStartEdit = new QLineEdit(advancedOptions);
     advLayout->addWidget(depthCueingStartEdit, row, 2, 1, 2);
@@ -373,7 +382,7 @@ QvisRenderingWindow::CreateAdvancedPage()
             this, SLOT(depthCueingStartChanged()));
     row++;
 
-    depthCueingEndLabel = new QLabel(tr("End point"));
+    depthCueingEndLabel = new QLabel(tr("Manual end point"));
     advLayout->addWidget(depthCueingEndLabel, row, 1);
     depthCueingEndEdit = new QLineEdit(advancedOptions);
     advLayout->addWidget(depthCueingEndEdit, row, 2, 1, 2);
@@ -597,6 +606,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Thu Jun 19 13:26:50 PDT 2008
 //   Qt 4.
 //
+//   Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
+//   Added an automatic start/end setting capability for depth cueing.
+//
 // ****************************************************************************
 
 void
@@ -716,6 +728,11 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             depthCueingToggle->setChecked(renderAtts->GetDoDepthCueing());
             depthCueingToggle->blockSignals(false);
             break;
+        case RenderingAttributes::ID_depthCueingAutomatic:
+            depthCueingAutoToggle->blockSignals(true);
+            depthCueingAutoToggle->setChecked(renderAtts->GetDepthCueingAutomatic());
+            depthCueingAutoToggle->blockSignals(false);
+            break;
         case RenderingAttributes::ID_startCuePoint:
             depthCueingStartEdit->blockSignals(true);
             tmp = DoublesToQString(renderAtts->GetStartCuePoint(), 3);
@@ -773,6 +790,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    I added code to enable/disable the scalable auto threshold spin box based
 //    on the scalable rendering mode. 
 //
+//    Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
+//    Added an automatic start/end setting capability for depth cueing.
+//
 // ****************************************************************************
 
 void
@@ -784,6 +804,7 @@ QvisRenderingWindow::UpdateWindowSensitivity()
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Auto;
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
+    bool depthCueingAuto = renderAtts->GetDepthCueingAutomatic();
     bool stereoOn = renderAtts->GetStereoRendering();
     bool specularOn = renderAtts->GetSpecularFlag();
 
@@ -793,10 +814,11 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     shadowStrengthLabel->setEnabled(scalableAlways && shadowOn);
 
     depthCueingToggle->setEnabled(scalableAlways);
-    depthCueingStartEdit->setEnabled(scalableAlways && depthCueingOn);
-    depthCueingStartLabel->setEnabled(scalableAlways && depthCueingOn);
-    depthCueingEndEdit->setEnabled(scalableAlways && depthCueingOn);
-    depthCueingEndLabel->setEnabled(scalableAlways && depthCueingOn);
+    depthCueingAutoToggle->setEnabled(scalableAlways && depthCueingOn);
+    depthCueingStartEdit->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
+    depthCueingStartLabel->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
+    depthCueingEndEdit->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
+    depthCueingEndLabel->setEnabled(scalableAlways && depthCueingOn && !depthCueingAuto);
 
     redblue->setEnabled(stereoOn);
     interlace->setEnabled(stereoOn);
@@ -1579,6 +1601,28 @@ QvisRenderingWindow::depthCueingToggled(bool val)
 }
 
 // ****************************************************************************
+//  Method:  QvisRenderingWindow::depthCueingAutoToggled
+//
+//  Purpose:
+//    Triggered when depth cueing automatic mode is toggled.
+//
+//  Arguments:
+//    val        the new value for the flag
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 30, 2010
+//
+// ****************************************************************************
+void
+QvisRenderingWindow::depthCueingAutoToggled(bool val)
+{
+    renderAtts->SetDepthCueingAutomatic(val);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
 //  Method:  QvisRenderingWindow::depthCueingStartChanged
 //
 //  Purpose:
@@ -1641,6 +1685,9 @@ QvisRenderingWindow::depthCueingEndChanged()
 //    Brad Whitlock, Thu Jun 19 13:34:38 PDT 2008
 //    Use convenience methods.
 //
+//    Jeremy Meredith, Fri Apr 30 14:06:35 EDT 2010
+//    Fix bug.
+//
 // ****************************************************************************
 
 void
@@ -1657,7 +1704,7 @@ QvisRenderingWindow::GetCurrentValues()
         renderAtts->SetStartCuePoint(renderAtts->GetStartCuePoint());
     }
 
-    if(LineEditGetDoubles(depthCueingStartEdit, v, 3))
+    if(LineEditGetDoubles(depthCueingEndEdit, v, 3))
         renderAtts->SetEndCuePoint(v);
     else
     {

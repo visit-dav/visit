@@ -265,6 +265,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//    Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
@@ -400,6 +403,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     shadingStrength = 0.5;
 
     doDepthCueing = false;
+    depthCueingAuto = true;
     startCuePoint[0] = -10;  startCuePoint[0] = 0;  startCuePoint[0] = 0;
     endCuePoint[0]   =  10;  endCuePoint[0]   = 0;  endCuePoint[0]   = 0;
 }
@@ -2238,6 +2242,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Hank Childs, Sat Mar 13 18:46:54 PST 2010
 //   Remove reference to bounding box mode.
 //
+//   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//   Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 void
@@ -2259,6 +2266,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
                           source->GetSpecularColor());
     SetShadingProperties(source->GetDoShading(), source->GetShadingStrength());
     SetDepthCueingProperties(source->GetDoDepthCueing(),
+                             source->GetDepthCueingAutomatic(),
                              source->GetStartCuePoint(),
                              source->GetEndCuePoint());
     SetColorTexturingFlag(source->GetColorTexturingFlag());
@@ -6141,6 +6149,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //   Added new axis array window mode.
 //
+//   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//   Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6232,6 +6243,7 @@ ViewerWindow::GetWindowAttributes() const
     renderAtts.SetShadowStrength(GetShadingStrength());
 
     renderAtts.SetDoDepthCueing(GetDoDepthCueing());
+    renderAtts.SetDepthCueingAutomatic(GetDepthCueingAutomatic());
     renderAtts.SetStartCuePoint(GetStartCuePoint());
     renderAtts.SetEndCuePoint(GetEndCuePoint());
 
@@ -7162,6 +7174,26 @@ ViewerWindow::GetDoDepthCueing() const
 }
 
 // ****************************************************************************
+//  Method:  ViewerWindow::GetDepthCueingAutomatic
+//
+//  Purpose:
+//    Returns the window's depth cueing automatic flag.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 30, 2010
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetDepthCueingAutomatic() const
+{
+    return depthCueingAuto;
+}
+
+// ****************************************************************************
 //  Method:  ViewerWindow::GetStartCuePoint
 //
 //  Purpose:
@@ -7213,13 +7245,19 @@ ViewerWindow::GetEndCuePoint() const
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//    Added automatic depth cueing mode.
+//
 // ****************************************************************************
 void
 ViewerWindow::SetDepthCueingProperties(bool flag,
+                                       bool autoflag,
                                        const double start[3],
                                        const double end[3])
 {
     doDepthCueing = flag;
+    depthCueingAuto = autoflag;
     startCuePoint[0] = start[0];
     startCuePoint[1] = start[1];
     startCuePoint[2] = start[2];
@@ -7846,6 +7884,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Hank Childs, Sat Mar 13 18:46:54 PST 2010
 //   Remove reference to bounding box mode.
 //
+//   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//   Added automatic depth cueing mode.
+//
 // ****************************************************************************
 
 void
@@ -7939,6 +7980,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("doShading", GetDoShading()));
         windowNode->AddNode(new DataNode("shadingStrength", GetShadingStrength()));
         windowNode->AddNode(new DataNode("doDepthCueing", GetDoDepthCueing()));
+        windowNode->AddNode(new DataNode("depthCueingAuto", GetDepthCueingAutomatic()));
         windowNode->AddNode(new DataNode("startCuePoint", GetStartCuePoint(), 3));
         windowNode->AddNode(new DataNode("endCuePoint", GetEndCuePoint(), 3));
         windowNode->AddNode(new DataNode("colorTexturingFlag", GetColorTexturingFlag()));
@@ -8117,6 +8159,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //
 //   Hank Childs, Sat Mar 13 18:46:54 PST 2010
 //   Remove reference to bounding box mode.
+//
+//   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
+//   Added automatic depth cueing mode.
 //
 // ****************************************************************************
 
@@ -8312,11 +8357,17 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
 
     numParamsSaved = 0;
     bool tmpDoDepthCueing = false;
+    bool tmpDepthCueingAuto = true;
     double tmpStartCuePoint[3];
     double tmpEndCuePoint[3];
     if((node = windowNode->GetNode("doDepthCueing")) != 0)
     {
         tmpDoDepthCueing = node->AsBool();
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("depthCueingAuto")) != 0)
+    {
+        tmpDepthCueingAuto = node->AsBool();
         numParamsSaved++;
     }
     if((node = windowNode->GetNode("startCuePoint")) != 0)
@@ -8333,9 +8384,10 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         tmpEndCuePoint[2] = node->AsDoubleArray()[2];
         numParamsSaved++;
     }
-    if (numParamsSaved == 3)
+    if (numParamsSaved == 4)
     {
         SetDepthCueingProperties(tmpDoDepthCueing,
+                                 tmpDepthCueingAuto,
                                  tmpStartCuePoint,
                                  tmpEndCuePoint);
     }

@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <float.h>
 
@@ -84,13 +85,23 @@ public:
     static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
     static const int DEFAULT_SCALABLE_ACTIVATION_MODE;
 
+    // These constructors are for objects of this class
     RenderingAttributes();
     RenderingAttributes(const RenderingAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    RenderingAttributes(private_tmfs_t tmfs);
+    RenderingAttributes(const RenderingAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~RenderingAttributes();
 
     virtual RenderingAttributes& operator = (const RenderingAttributes &obj);
     virtual bool operator == (const RenderingAttributes &obj) const;
     virtual bool operator != (const RenderingAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const RenderingAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -119,6 +130,7 @@ public:
     void SetDoShadowing(bool doShadowing_);
     void SetShadowStrength(double shadowStrength_);
     void SetDoDepthCueing(bool doDepthCueing_);
+    void SetDepthCueingAutomatic(bool depthCueingAutomatic_);
     void SetStartCuePoint(const double *startCuePoint_);
     void SetEndCuePoint(const double *endCuePoint_);
     void SetCompressionActivationMode(TriStateMode compressionActivationMode_);
@@ -141,6 +153,7 @@ public:
     bool                 GetDoShadowing() const;
     double               GetShadowStrength() const;
     bool                 GetDoDepthCueing() const;
+    bool                 GetDepthCueingAutomatic() const;
     const double         *GetStartCuePoint() const;
           double         *GetStartCuePoint();
     const double         *GetEndCuePoint() const;
@@ -195,10 +208,12 @@ public:
         ID_doShadowing,
         ID_shadowStrength,
         ID_doDepthCueing,
+        ID_depthCueingAutomatic,
         ID_startCuePoint,
         ID_endCuePoint,
         ID_compressionActivationMode,
-        ID_colorTexturingFlag
+        ID_colorTexturingFlag,
+        ID__LAST
     };
 
 private:
@@ -217,6 +232,7 @@ private:
     bool           doShadowing;
     double         shadowStrength;
     bool           doDepthCueing;
+    bool           depthCueingAutomatic;
     double         startCuePoint[3];
     double         endCuePoint[3];
     int            compressionActivationMode;
@@ -224,6 +240,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define RENDERINGATTRIBUTES_TMFS "biibibiibffabdbbDDib"
 
 #endif
