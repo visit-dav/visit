@@ -140,7 +140,7 @@ ReadAndProcessDirectory(const std::string &directory,
     ProcessDirectoryCallback *processOneFile, void *data,
     bool checkAccess)
 {
-    bool retval = false;
+    //bool retval = false; // tjf -- forcing build failure
 
 #if defined(_WIN32)
     if(directory == "My Computer")
