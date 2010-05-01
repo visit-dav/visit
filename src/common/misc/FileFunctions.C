@@ -57,7 +57,7 @@
 // Purpose: platform independent stat function that supports large files
 // when possible
 //
-// Programmer: Mark C. Miller 
+// Programmer: Mark C. Miller
 // Creation:   March 23, 2006 
 //
 // ****************************************************************************
