@@ -52,7 +52,7 @@
 #endif
 
 // ****************************************************************************
-// Method: VisItStat 
+// Method: VisItStat
 //
 // Purpose: platform independent stat function that supports large files
 // when possible
