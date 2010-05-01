@@ -172,7 +172,7 @@ ReadAndProcessDirectory(const std::string &directory,
         {
             do
             {
-                bool isDir = 
+                bool isDir =
                     ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
                      (strcmp(fd.cFileName, "..") == 0) ||
                      (strcmp(fd.cFileName, ".") == 0) ;
