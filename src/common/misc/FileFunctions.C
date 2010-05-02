@@ -79,7 +79,7 @@ VisItStat(const char *file_name, VisItStat_t *buf)
 }
 
 // ****************************************************************************
-// Method: VisItFStat 
+// Method: VisItFStat
 //
 // Purpose: platform independent fstat function that supports large files
 // when possible
