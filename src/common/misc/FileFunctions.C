@@ -58,7 +58,7 @@
 // when possible
 //
 // Programmer: Mark C. Miller
-// Creation:   March 23, 2006 
+// Creation:   March 23, 2006
 //
 // ****************************************************************************
 
