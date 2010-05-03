@@ -4329,6 +4329,48 @@ function build_vtk
     return 0
 }
 
+function apply_python_osx104_patch
+{
+   info "Patching Python: fix _environ issue for OS X 10.4"
+   patch -p0 << \EOF
+diff -c Modules.orig/posixmodule.c Modules/posixmodule.c
+*** Modules.orig/posixmodule.c  Mon May  3 12:17:59 2010
+--- Modules/posixmodule.c       Mon May  3 12:19:31 2010
+***************
+*** 360,365 ****
+--- 360,369 ----
+  #endif
+  #endif
+  
++ /* On OS X 10.4, we need to use a function to get access to environ; 
++  * otherwise we get an unresolved "_environ" when linking shared libs */
++ #define WITH_NEXT_FRAMEWORK
++ 
+  /* Return a dictionary corresponding to the POSIX environment table */
+  #ifdef WITH_NEXT_FRAMEWORK
+  /* On Darwin/MacOSX a shared library or framework has no access to
+EOF
+   if [[ $? != 0 ]] ; then
+      warn "Python patch on OS X 10.4 failed."
+      return 1
+   fi
+
+   return 0
+}
+
+function apply_python_patch
+{
+    VER=$(uname -r)
+    if [[ ${VER%%.*} -le 9 ]]; then
+        apply_python_osx104_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 
 # *************************************************************************** #
 #                         Function 7, build_python                            #
@@ -4344,9 +4386,17 @@ function build_python
     fi
 
     #
-    # Call configure
+    # Do any python patches if necessary
     #
     cd $PYTHON_BUILD_DIR || error "Can't cd to Python build dir."
+    apply_python_patch
+    if [[ $? != 0 ]] ; then
+        warn "Patch failed, but continuing."
+    fi
+
+    #
+    # Call configure
+    #
     cCompiler="${C_COMPILER}"
     cFlags="${C_OPT_FLAGS}"
     cxxCompiler="${CXX_COMPILER}"
