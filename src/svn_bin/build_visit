@@ -4363,11 +4363,13 @@ EOF
 
 function apply_python_patch
 {
-    VER=$(uname -r)
-    if [[ ${VER%%.*} -le 9 ]]; then
-        apply_python_osx104_patch
-        if [[ $? != 0 ]] ; then
-            return 1
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        VER=$(uname -r)
+        if [[ ${VER%%.*} == 8 ]] ; then
+            apply_python_osx104_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
         fi
     fi
 
