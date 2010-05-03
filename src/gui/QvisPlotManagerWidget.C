@@ -217,7 +217,8 @@ using std::vector;
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 : QGroupBox(tr("Plots"),parent), GUIBase(), SimpleObserver(), menuPopulator(),
-  varMenuPopulator(), plotPlugins(), operatorPlugins()
+  varMenuPopulator(), plotPlugins(), operatorPlugins(),
+  plotListBox(0), operatorMenu(0), varMenu(0)
 {
     plotList = 0;
     globalAtts = 0;
@@ -290,7 +291,6 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     plotListBox->setSelectionMode(QAbstractItemView::ExtendedSelection);
     plotListBox->setMinimumHeight(fontMetrics().boundingRect("X").height() * 6);
     topLayout->addWidget(plotListBox,10);
-
 
     connect(plotListBox, SIGNAL(itemSelectionChanged()),
             this, SLOT(setActivePlots()));
