@@ -881,6 +881,9 @@
 #     Brad Whitlock, Mon Apr 26 13:55:27 PST 2010
 #     I added support for the Xdmf library.
 #
+#     Jeremy Meredith, Mon May  3 12:58:17 EDT 2010
+#     Added patch to fix undefined _environ issue in python in OS X 10.4.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
