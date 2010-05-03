@@ -183,7 +183,7 @@ static void
 CartesianToSphericalPoint(double *newpt, const double *pt)
 {
     newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
-    newpt[0] = acos ( pt[2]/newpt[0] );
+    newpt[1] = acos ( pt[2]/newpt[0] );
     newpt[2] = atan2( pt[1], pt[0]);
 }
 
