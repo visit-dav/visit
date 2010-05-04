@@ -53,8 +53,9 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fPIC -fvisibility=hidden")
 ##
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-D_REENTRANT -DOMPI_SKIP_MPICXX -I /usr/common/usg/openmpi/1.4.1/gnu/include")
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-D_REENTRANT -DOMPI_SKIP_MPICXX -I /usr/common/usg/openmpi/1.4.1/gnu/include")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L /usr/common/usg/openmpi/1.4.1/gnu/lib -Wl,--export-dynamic")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/usr/common/usg/openmpi/1.4.1/gnu/lib -Wl,--export-dynamic")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpi open-rte open-pal dl nsl util pthread dl)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/usr/common/usg/openmpi/1.4.1/gnu/lib")
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 
 ##############################################################

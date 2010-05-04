@@ -49,6 +49,7 @@
 
 
 class     avtBinaryMultiplyExpression;
+class     avtEdgeLength;
 class     avtRevolvedVolume;
 class     avtVMetricArea;
 class     avtVMetricVolume;
@@ -73,6 +74,9 @@ class     avtVMetricVolume;
 //    Hank Childs, Thu May 11 13:28:50 PDT 2006
 //    Added new virtual methods so that new queries can inherit from this.
 //
+//    Hank Childs, Wed Apr 28 05:25:52 PDT 2010
+//    Add support for 1D cross sections.
+//
 // ****************************************************************************
 
 class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
@@ -85,6 +89,7 @@ class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
                              { return "avtWeightedVariableSummationQuery"; };
 
   protected:
+    avtEdgeLength               *length;
     avtVMetricArea              *area;
     avtVMetricVolume            *volume;
     avtRevolvedVolume           *revolvedVolume;

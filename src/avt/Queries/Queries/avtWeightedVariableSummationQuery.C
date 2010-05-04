@@ -43,6 +43,7 @@
 #include <avtWeightedVariableSummationQuery.h>
 
 #include <avtBinaryMultiplyExpression.h>
+#include <avtEdgeLength.h>
 #include <avtRevolvedVolume.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtOriginatingSource.h>
@@ -68,11 +69,17 @@ using     std::string;
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added revolvedVolume. 
 //
+//    Hank Childs, Wed Apr 28 05:27:24 PDT 2010
+//    Add support for edges (1D cross sections)
+//
 // ****************************************************************************
 
 avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery() 
     : avtSummationQuery()
 {
+    length = new avtEdgeLength;
+    length->SetOutputVariableName("avt_weights");
+
     area = new avtVMetricArea;
     area->SetOutputVariableName("avt_weights");
 
@@ -107,6 +114,7 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 
 avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 {
+    delete length;
     delete area;
     delete multiply;
     delete volume;
@@ -188,7 +196,13 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     SetSumType(varname);
 
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    if (topo == 2)
+    if (topo == 1)
+    {
+        debug5 << "WeightedVariableSum using length" << endl;
+        length->SetInput(dob);
+        dob = length->GetOutput();
+    }
+    else if (topo == 2)
     {
         if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_XY)
         {

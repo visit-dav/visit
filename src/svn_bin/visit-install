@@ -597,6 +597,7 @@ else if ($config == nersc) then
    cp "$dir"/$version+/.visit/allhosts/host_nersc_davinci.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/
 else if ($config == ornl) then
    cp "$dir"/$version+/.visit/allhosts/host_ornl_ewok.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguarpf.xml "$dir"/$version+/.visit/hosts/
