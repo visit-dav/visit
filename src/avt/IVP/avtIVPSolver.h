@@ -106,20 +106,25 @@ struct avtIVPStateHelper;
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Generalize the compute scalar variable.
 //
+//   Dave Pugmire, Tue May  4 16:09:58 EDT 2010
+//   Gathering scalar values was not working properly in parallel.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
 {
 public:
     avtIVPStep() : avtBezierSegment()
-    { tStart = tEnd = scalarValue = 0.0; speed = 0.0; vorticity = 0.0;
+    { tStart = tEnd = 0.0; speed = 0.0; vorticity = 0.0;
       velStart = avtVector(0.,0.,0.); velEnd = avtVector(0.,0.,0.); }
 
     avtIVPStep(const avtIVPStep &s) : avtBezierSegment(s),
-                                      tStart(s.tStart),tEnd(s.tEnd), scalarValue(s.scalarValue),
+                                      tStart(s.tStart),tEnd(s.tEnd),
                                       speed(s.speed), vorticity(s.vorticity),
                                       velStart(s.velStart), velEnd(s.velEnd)
     {
+        for (int i=0; i<s.scalarValues.size(); i++)
+            scalarValues.push_back(s.scalarValues[i]);
     }
     
     void   ComputeSpeed(const avtIVPField *field)
@@ -148,7 +153,7 @@ public:
         buff.io( mode, tEnd );
         buff.io( mode, speed );
         buff.io( mode, vorticity );
-        buff.io( mode, scalarValue );
+        buff.io( mode, scalarValues );
         buff.io( mode, velStart );
         buff.io( mode, velEnd );
         
@@ -164,7 +169,7 @@ public:
     
     double tStart, tEnd;
     avtVector velStart, velEnd;
-    double speed, vorticity, scalarValue;
+    double speed, vorticity;
     std::vector<double> scalarValues;
 };
 
