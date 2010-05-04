@@ -44,7 +44,7 @@
 #          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
 #          Mesa     MesaLib-7.5.tar.gz
 #          Python   Python-2.6.4tgz
-#          VTK      vtk-5.0.0d.tar.gz
+#          VTK      vtk-5.0.0e.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
 #
 #        The following optional libraries need to be in the current directory
@@ -884,6 +884,10 @@
 #     Jeremy Meredith, Mon May  3 12:58:17 EDT 2010
 #     Added patch to fix undefined _environ issue in python in OS X 10.4.
 #
+#     Kathleen Bonnell, Mon May  3 14:55:55 PDT 2010
+#     Use of vtk-5.0.0e.
+#
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1184,8 +1188,8 @@ fi
 export VISIT_VERSION=${VISIT_VERSION:-"2.0.0"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-export VTK_FILE=${VTK_FILE:-"vtk-5.0.0d.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.0.0d"}
+export VTK_FILE=${VTK_FILE:-"vtk-5.0.0e.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.0.0e"}
 export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
 
 export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.0.tar.gz"}
@@ -3880,7 +3884,7 @@ function apply_vtk_500d_patch
 
 function apply_vtk_patch
 {
-   if [[ ${VTK_VERSION} == 5.0.0d ]] ; then
+   if [[ ${VTK_VERSION} == 5.0.0e ]] ; then
        apply_vtk_500d_patch
        if [[ $? != 0 ]] ; then
            return 1
