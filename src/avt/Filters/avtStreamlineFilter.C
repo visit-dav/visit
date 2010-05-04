@@ -455,6 +455,7 @@ avtStreamlineFilter::GetDomain(const DomainType &domain,
         /*
         if (domain.timeStep != curTimeSlice)
         {
+          if (DebugStream::Level5())
             debug5<<"::GetDomain()  Loading: "<<domain<<endl;
             avtContract_p new_contract = new avtContract(lastContract);
             new_contract->GetDataRequest()->SetTimestep(domain.timeStep);
@@ -1957,7 +1958,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         debug4<<"avtStreamlineFilter::IntegrateDom(dom= "<<slSeg->domain<<")"<<endl;
 
     // prepare streamline integration ingredients
-    vtkVisItInterpolatedVelocityField* velocity1 = vtkVisItInterpolatedVelocityField::New();
+    vtkVisItInterpolatedVelocityField* velocity1 =
+      vtkVisItInterpolatedVelocityField::New();
     velocity1->SetDataSet(ds);
 
     vtkVisItCellLocator *cellLocator = NULL;
@@ -2033,14 +2035,16 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         
         // Termination criteria was met.
         slSeg->terminated = (result == avtIVPSolver::TERMINATE);
-        debug5<<"Advance:= "<<result<<endl;
-        debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
-        
+
+        if (DebugStream::Level5())
+        {
+          debug5<<"Advance:= "<<result<<endl;
+          debug5<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
+        }
     }
     else
         result = avtIVPSolver::TERMINATE;
 
-    numSteps = slSeg->sl->size() - numSteps;
     //slSeg->Debug();
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
     {
@@ -2065,6 +2069,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                 slSeg->status = avtStreamlineWrapper::TERMINATE;
             }
 
+            numSteps = slSeg->sl->size() - numSteps;
             if (slSeg->domain == oldDomain && numSteps == 0)
             {
                 slSeg->status = avtStreamlineWrapper::TERMINATE;
@@ -2074,6 +2079,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                 slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
             }
         }
+
         else
         {
             //slSeg->status = avtStreamlineWrapper::TERMINATE;
@@ -2121,7 +2127,8 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 // ****************************************************************************
 
 void
-avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps)
+avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg,
+                                         int maxSteps)
 {
     int t1 = visitTimer->StartTimer();
     slSeg->status = avtStreamlineWrapper::UNSET;
@@ -2145,7 +2152,8 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSte
 
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
         intervalTree->GetElementExtents(slSeg->domain.domain, extents);
-        avtIVPSolver::Result result = IntegrateDomain(slSeg, ds, extents, maxSteps);
+        avtIVPSolver::Result result =
+          IntegrateDomain(slSeg, ds, extents, maxSteps);
         if (DebugStream::Level5())
             debug5<<"ISL: result= "<<result<<endl;
 
@@ -2572,7 +2580,8 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
     for (int i = 0; i < streamlines.size(); i++)
     {
         avtStreamlineWrapper *slSeg = streamlines[i];
-        debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
+        if (DebugStream::Level5())
+          debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
     }
 }
 
@@ -2884,15 +2893,47 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
     avtDataRequest_p out_dr = NULL;
 
-    if (strcmp(in_dr->GetVariable(), "colorVar") == 0 || doPathlines)
+    if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR ||
+        strcmp(in_dr->GetVariable(), "colorVar") == 0 ||
+        opacityVariable != "" ||
+        doPathlines)
     {
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
     }
 
+    if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
+    {
+        // Add in the other fields that the M3D Interpolation needs
+        // for doing their Newton's Metod.
+
+        // Assume the user has selected B as the primary variable.
+        // Which is ignored.
+
+        // Single variables stored as attributes on the header
+        out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
+        out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
+        
+        out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
+        out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
+
+        // The mesh - N elememts x 7
+        out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
+
+        // Variables on the mesh - N elements x 20
+        out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
+        out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
+
+        out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
+        out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
+        out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
+        out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
+    }
+
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         out_dr->AddSecondaryVariable(coloringVariable.c_str());
+
     if (opacityVariable != "")
         out_dr->AddSecondaryVariable(opacityVariable.c_str());
 
@@ -2925,7 +2966,6 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
         }
         if (needExpr)
         {
-
             pathlineVar = out_dr->GetVariable(); // HANK: ASSUMPTION
             std::string meshname = out_dr->GetVariable(); // Can reuse varname here.
             Expression *e = new Expression();
