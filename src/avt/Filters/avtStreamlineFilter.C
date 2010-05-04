@@ -2071,6 +2071,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                 slSeg->status = avtStreamlineWrapper::TERMINATE;
             }
 
+            numSteps = slSeg->sl->size() - numSteps;
             if (slSeg->domain == oldDomain && numSteps == 0)
             {
                 slSeg->status = avtStreamlineWrapper::TERMINATE;
