@@ -43,6 +43,11 @@ All rights reserve
 // 
 // .SECTION See Also
 // vtkActor vtkAxisActor vtkCubeAxesActor2D
+//
+// Modifications:
+//   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//   Added support for title visibility separate from label visibility.
+//
 
 #ifndef __vtkVisItCubeAxesActor_h
 #define __vtkVisItCubeAxesActor_h
@@ -183,6 +188,20 @@ public:
   vtkSetMacro(ZAxisLabelVisibility,int);
   vtkGetMacro(ZAxisLabelVisibility,int);
   vtkBooleanMacro(ZAxisLabelVisibility,int);
+
+  // Description:
+  // Turn on and off the visibility of titles for each axis.
+  vtkSetMacro(XAxisTitleVisibility,int);
+  vtkGetMacro(XAxisTitleVisibility,int);
+  vtkBooleanMacro(XAxisTitleVisibility,int);
+
+  vtkSetMacro(YAxisTitleVisibility,int);
+  vtkGetMacro(YAxisTitleVisibility,int);
+  vtkBooleanMacro(YAxisTitleVisibility,int);
+
+  vtkSetMacro(ZAxisTitleVisibility,int);
+  vtkGetMacro(ZAxisTitleVisibility,int);
+  vtkBooleanMacro(ZAxisTitleVisibility,int);
 
   // Description:
   // Turn on and off the visibility of ticks for each axis.
@@ -331,6 +350,10 @@ protected:
   int XAxisLabelVisibility;
   int YAxisLabelVisibility;
   int ZAxisLabelVisibility;
+
+  int XAxisTitleVisibility;
+  int YAxisTitleVisibility;
+  int ZAxisTitleVisibility;
 
   int DrawXGridlines;
   int DrawYGridlines;
