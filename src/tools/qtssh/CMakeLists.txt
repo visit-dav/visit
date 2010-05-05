@@ -35,7 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
-#
+#   Kathleen Bonnell, Wed May 5 12:07:54 PST 2010
+#   Disable optimization.
+# 
 #****************************************************************************/
 
 ADD_SUBDIRECTORY(remotecommand)
@@ -74,7 +76,13 @@ ADD_DEPENDENCIES(qtssh remotecommand visitcommon viewer)
 # LINK_FLAGS.  No paths are needed as they have already been specified in the 
 # LINK_DIRECTORIES command above. 
 
+# Add /Od COMPILE FLAG, as QTSSH needs to be compiled without optimization, 
+# because of its use of exceptions that cross c/c++ library boundaries.
+
 SET(QTSSH_DEP "remotecommand.lib visitcommon.lib viewerlib.lib QtCore4.lib QtGui4.lib")
-SET_TARGET_PROPERTIES(qtssh PROPERTIES LINK_FLAGS ${QTSSH_DEP})
+
+SET_TARGET_PROPERTIES(qtssh PROPERTIES 
+                      LINK_FLAGS ${QTSSH_DEP}
+                      COMPILE_FLAGS "/Od")
 
 VISIT_INSTALL_TARGETS(qtssh)

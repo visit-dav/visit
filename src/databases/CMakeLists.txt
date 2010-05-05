@@ -65,6 +65,9 @@
 #    VisItXdmf and I made it get used when the Xdmf reader that uses the
 #    Xdmf library is not available.
 #
+#    Kathleen Bonnell, Wed May 5 12:04:22 PST 2010 
+#    Enable VASP reader on windows. 
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -217,6 +220,7 @@ Spheral
 TFT
 TSurf
 Tecplot
+VASP
 VTK
 WavefrontOBJ
 XYZ
@@ -228,7 +232,6 @@ paraDIS_tecplot
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
         Claw
-        VASP
         Vis5D
         ZipWrapper
     )
