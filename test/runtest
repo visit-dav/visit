@@ -294,6 +294,9 @@
 #    scalable, it runs the test scalable,parallel test.  This change allows
 #    it to ignore any arbitrary host name.
 #
+#    Mark C. Miller, Wed May  5 08:28:46 PDT 2010
+#    Removed some bash-specific coding I introduced in Mar 29, 2010 update.
+#    Removed use of an array shell variable and 'let' statements.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -772,12 +775,20 @@ anyerror=0
 skippedATest=0
 
 prevcategory=""
-testcasesA=($testcases)
-let testIndex=0
-let testAttempt=1
-while test $testIndex -lt ${#testcasesA[*]}; do
+testCount=$(echo $testcases | tr ' ' '\n' | wc -l)
+testIndex=0
+testAttempt=1
+while test $testIndex -lt $testCount; do
 
-    t=${testcasesA[$testIndex]}
+    # find the testIndex-th test case
+    ti=0
+    for t in $testcases; do
+        if test $ti -eq $testIndex; then
+            break
+        fi
+        ti=$(expr $ti + 1)
+    done
+
     dir=`dirname $t`
     category=`basename $dir`
     name=`basename $t`
@@ -960,8 +971,8 @@ while test $testIndex -lt ${#testcasesA[*]}; do
         rm -f *.vlog
         verbose=$saved_verbose
         otherArgs=$saved_otherArgs
-        let testAttempt=1
-        let testIndex++
+        testAttempt=1
+        testIndex=$(expr $testIndex + 1)
         continue
     fi
 
@@ -1278,20 +1289,20 @@ while test $testIndex -lt ${#testcasesA[*]}; do
     # turned on. 
     #
     if test $cifriendly -eq 0; then
-        let testIndex++
+        testIndex=$(expr $testIndex + 1)
     else
         if test $error -ne 111 -a $error -ne 112; then
             saved_verbose=$verbose
             verbose="-verbose"
             saved_otherArgs=$otherArgs
             otherArgs="$otherArgs -debug 5"
-            let testAttempt=2
+            testAttempt=2
         else
-            let testIndex++
+            testIndex=$(expr $testIndex + 1)
         fi
     fi
 
-done # while $testIndex -lt ${#testcasesA[*]}
+done # while $testIndex -lt $testCount
 
 #
 #  report the end result
