@@ -87,6 +87,9 @@ class vtkOutlineSource;
 //    Added SetAutoSetTicks, SetMajorTickMinimum, SetMajorTickMaximum,
 //    SetMajorTickSpacing and SetMinorTickSpacing.
 //
+//    Jeremy Meredith, Wed May  5 14:32:23 EDT 2010
+//    Added support for title visibility separate from label visibility.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -113,6 +116,9 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetXLabelVisibility(int);
     void                      SetYLabelVisibility(int);
     void                      SetZLabelVisibility(int);
+    void                      SetXTitleVisibility(int);
+    void                      SetYTitleVisibility(int);
+    void                      SetZTitleVisibility(int);
     void                      SetXGridVisibility(int);
     void                      SetYGridVisibility(int);
     void                      SetZGridVisibility(int);

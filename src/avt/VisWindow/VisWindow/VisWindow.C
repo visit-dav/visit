@@ -4255,6 +4255,9 @@ VisWindow::UpdateAxesParallel()
 //   Eric Brugger, Wed Oct 15 09:21:13 PDT 2008
 //   Added the setting of the tick mark locations.
 //
+//   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//   Added support for title visibility separate from label visibility.
+//
 // ****************************************************************************
 
 void
@@ -4274,6 +4277,9 @@ VisWindow::UpdateAxes3D()
     axes3D->SetXLabelVisibility(a && axis3D.GetXAxis().GetLabel().GetVisible());
     axes3D->SetYLabelVisibility(a && axis3D.GetYAxis().GetLabel().GetVisible());
     axes3D->SetZLabelVisibility(a && axis3D.GetZAxis().GetLabel().GetVisible());
+    axes3D->SetXTitleVisibility(a && axis3D.GetXAxis().GetTitle().GetVisible());
+    axes3D->SetYTitleVisibility(a && axis3D.GetYAxis().GetTitle().GetVisible());
+    axes3D->SetZTitleVisibility(a && axis3D.GetZAxis().GetTitle().GetVisible());
     axes3D->SetLabelScaling(axis3D.GetAutoSetScaling(),
                             axis3D.GetXAxis().GetLabel().GetScaling(),
                             axis3D.GetYAxis().GetLabel().GetScaling(),

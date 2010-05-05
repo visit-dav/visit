@@ -82,6 +82,9 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
 //   Added support for specifying tick mark locations.
 //
+//   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//   Added support for title visibility separate from label visibility.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -161,6 +164,10 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->XAxisLabelVisibility = 1;
   this->YAxisLabelVisibility = 1;
   this->ZAxisLabelVisibility = 1;
+
+  this->XAxisTitleVisibility = 1;
+  this->YAxisTitleVisibility = 1;
+  this->ZAxisTitleVisibility = 1;
 
   this->DrawXGridlines = 0;
   this->DrawYGridlines = 0;
@@ -1462,6 +1469,9 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
 //    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
 //    Added support for specifying tick mark locations.
 //
+//    Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//    Added support for title visibility separate from label visibility.
+//
 // *************************************************************************
 
 void vtkVisItCubeAxesActor::SetNonDependentAttributes()
@@ -1480,7 +1490,7 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     this->XAxes[i]->SetBounds(this->Bounds);
     this->XAxes[i]->AxisVisibilityOn();
     this->XAxes[i]->SetLabelVisibility(this->XAxisLabelVisibility);
-    this->XAxes[i]->SetTitleVisibility(this->XAxisLabelVisibility);
+    this->XAxes[i]->SetTitleVisibility(this->XAxisTitleVisibility);
     this->XAxes[i]->SetTickVisibility(this->XAxisTickVisibility);
     this->XAxes[i]->SetMinorTicksVisible(this->XAxisMinorTickVisibility);
     this->XAxes[i]->SetAdjustLabels(this->AdjustLabels);
@@ -1498,7 +1508,7 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     this->YAxes[i]->SetBounds(this->Bounds);
     this->YAxes[i]->AxisVisibilityOn();
     this->YAxes[i]->SetLabelVisibility(this->YAxisLabelVisibility);
-    this->YAxes[i]->SetTitleVisibility(this->YAxisLabelVisibility);
+    this->YAxes[i]->SetTitleVisibility(this->YAxisTitleVisibility);
     this->YAxes[i]->SetTickVisibility(this->YAxisTickVisibility);
     this->YAxes[i]->SetMinorTicksVisible(this->YAxisMinorTickVisibility);
     this->YAxes[i]->SetAdjustLabels(this->AdjustLabels);
@@ -1516,7 +1526,7 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     this->ZAxes[i]->SetBounds(this->Bounds);
     this->ZAxes[i]->AxisVisibilityOn();
     this->ZAxes[i]->SetLabelVisibility(this->ZAxisLabelVisibility);
-    this->ZAxes[i]->SetTitleVisibility(this->ZAxisLabelVisibility);
+    this->ZAxes[i]->SetTitleVisibility(this->ZAxisTitleVisibility);
     this->ZAxes[i]->SetTickVisibility(this->ZAxisTickVisibility);
     this->ZAxes[i]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
     this->ZAxes[i]->SetAdjustLabels(this->AdjustLabels);
@@ -1553,6 +1563,9 @@ static int Conn[8][3] = {{1,2,4}, {0,3,5}, {3,0,6}, {2,1,7},
 //   Kathleen Bonnell, Thu Jul 18 10:33:07 PDT 2002  
 //   Ensure that primary axes visibility flags are set properly, and
 //   that secondary axes visibility flags are turned off.
+//
+//   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//   Added support for title visibility separate from label visibility.
 // *************************************************************************
 void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
 {
@@ -1819,17 +1832,17 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
   //  Make sure that the primary axis visibility flags are set correctly.
   //
   this->XAxes[renderAxesX[0]]->SetLabelVisibility(this->XAxisLabelVisibility);
-  this->XAxes[renderAxesX[0]]->SetTitleVisibility(this->XAxisLabelVisibility);
+  this->XAxes[renderAxesX[0]]->SetTitleVisibility(this->XAxisTitleVisibility);
   this->XAxes[renderAxesX[0]]->SetTickVisibility(this->XAxisTickVisibility);
   this->XAxes[renderAxesX[0]]->SetMinorTicksVisible(this->XAxisMinorTickVisibility);
 
   this->YAxes[renderAxesY[0]]->SetLabelVisibility(this->YAxisLabelVisibility);
-  this->YAxes[renderAxesY[0]]->SetTitleVisibility(this->YAxisLabelVisibility);
+  this->YAxes[renderAxesY[0]]->SetTitleVisibility(this->YAxisTitleVisibility);
   this->YAxes[renderAxesY[0]]->SetTickVisibility(this->YAxisTickVisibility);
   this->YAxes[renderAxesY[0]]->SetMinorTicksVisible(this->YAxisMinorTickVisibility);
 
   this->ZAxes[renderAxesZ[0]]->SetLabelVisibility(this->ZAxisLabelVisibility);
-  this->ZAxes[renderAxesZ[0]]->SetTitleVisibility(this->ZAxisLabelVisibility);
+  this->ZAxes[renderAxesZ[0]]->SetTitleVisibility(this->ZAxisTitleVisibility);
   this->ZAxes[renderAxesZ[0]]->SetTickVisibility(this->ZAxisTickVisibility);
   this->ZAxes[renderAxesZ[0]]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
 }

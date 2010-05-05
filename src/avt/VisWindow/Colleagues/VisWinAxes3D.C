@@ -620,13 +620,17 @@ VisWinAxes3D::SetZTickVisibility(int zVis, int zLabelsVis)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 28, 2001.
 //
+//  Modifications:
+//    Jeremy Meredith, Wed May  5 14:30:51 EDT 2010
+//    Removed call to set the tick visibility -- the Y and Z axes didn't have
+//    it, and didn't appear to need it.
+//
 // ****************************************************************************
 
 void
 VisWinAxes3D::SetXLabelVisibility(int xVis)
 {
     axes->SetXAxisLabelVisibility(xVis);
-    axes->SetXAxisTickVisibility(xVis);
 }
 
    
@@ -669,6 +673,69 @@ void
 VisWinAxes3D::SetZLabelVisibility(int zVis)
 {
     axes->SetZAxisLabelVisibility(zVis);
+}
+
+
+// ****************************************************************************
+//  Function: SetXTitleVisibility
+//
+//  Purpose:
+//      Sets the visibility of x-axis titles.
+//
+//  Arguments:
+//      x-vis     The visibility of the x-axis titles.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   May  5, 2010
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetXTitleVisibility(int xVis)
+{
+    axes->SetXAxisTitleVisibility(xVis);
+}
+
+   
+// ****************************************************************************
+//  Function: SetYTitleVisibility
+//
+//  Purpose:
+//      Sets the visibility of y-axis titles.
+//
+//  Arguments:
+//      y-vis     The visibility of the y-axis titles.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   May  5, 2010
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetYTitleVisibility(int yVis)
+{
+    axes->SetYAxisTitleVisibility(yVis);
+}
+
+   
+// ****************************************************************************
+//  Function: SetZTitleVisibility
+//
+//  Purpose:
+//      Sets the visibility of z-axis titles.
+//
+//  Arguments:
+//      z-vis     The visibility of the z-axis titles.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   May  5, 2010
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetZTitleVisibility(int zVis)
+{
+    axes->SetZAxisTitleVisibility(zVis);
 }
 
 
