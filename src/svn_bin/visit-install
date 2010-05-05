@@ -202,6 +202,13 @@
 #    Changed bin directory detection logic to look for 'engine_ser'
 #    instead of 'cli' b/c the existence of an empty cli include path.
 #
+#    Eric Brugger, Wed May  5 14:25:04 PDT 2010
+#    I made some corrections that worked around some bugs in the c shell
+#    on a newer version of redhat linux.  The first change was to copy the
+#    data files one at a time in a loop instead of all at once and the
+#    second change was to change the default bank in one host file at a
+#    time in a loop instead of all at once.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -547,7 +554,9 @@ end
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
 cd ../../..
-cp $distributiondir/data/* "$dir"/data
+foreach datafile (`ls $distributiondir/data/*`)
+    cp $datafile "$dir"/data
+end
 
 #
 # Store some of the installation options so they can be used by VisIt when
@@ -619,7 +628,9 @@ else if ($config == anag) then
 endif
 
 # Do the bank fixup
-sed -e "s/bdivp/$bank/" -i "$dir"/$version+/.visit/hosts/host_*
+foreach hostfile (`ls $dir/$version+/.visit/hosts/host_*`)
+    sed -e "s/bdivp/${bank}/" -i $hostfile
+end
 
 
 #
