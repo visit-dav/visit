@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="1.1" language="nl">
+<!DOCTYPE TS>
+<TS version="2.0" language="nl">
 <defaultcodec></defaultcodec>
 <context>
     <name></name>
@@ -55,12 +56,12 @@
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="107"/>
         <source>Create a new viewer window</source>
-        <translation type="unfinished">Voeg nieuw venster toe</translation>
+        <translation>Voeg nieuw venster toe</translation>
     </message>
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="108"/>
         <source>New</source>
-        <translation type="unfinished">Nieuw</translation>
+        <translation>Nieuw</translation>
     </message>
 </context>
 <context>
@@ -174,7 +175,7 @@
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="286"/>
         <source>Clear all plots from this window</source>
-        <translation type="unfinished">Wis alle plots</translation>
+        <translation>Wis alle plots van dit venster</translation>
     </message>
 </context>
 <context>
@@ -192,7 +193,7 @@
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="156"/>
         <source>Clone this window</source>
-        <translation type="unfinished">Kloon venster</translation>
+        <translation>Kloon dit venster</translation>
     </message>
 </context>
 <context>
@@ -226,7 +227,7 @@
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="209"/>
         <source>Delete this window</source>
-        <translation type="unfinished">Verwijder venster</translation>
+        <translation>Verwijder dit.venster</translation>
     </message>
 </context>
 <context>
@@ -850,7 +851,7 @@
     <message>
         <location filename="../../operators/DeformSphereGlyph/DeformSphereGlyphGUIPluginInfo.C" line="79"/>
         <source>DeformSphereGlyph</source>
-        <translation>Misvorm gebied</translation>
+        <translation>Vervorm Bolvorm</translation>
     </message>
     <message>
         <location filename="../../operators/Delaunay/DelaunayGUIPluginInfo.C" line="79"/>
@@ -922,7 +923,7 @@
     <message>
         <location filename="../../plots/Pseudocolor/PseudocolorGUIPluginInfo.C" line="79"/>
         <source>Pseudocolor</source>
-        <translation>Pseudocolor</translation>
+        <translation>Pseudokleur</translation>
     </message>
     <message>
         <location filename="../../plots/Scatter/ScatterGUIPluginInfo.C" line="79"/>
@@ -982,7 +983,7 @@
     <message>
         <location filename="../../plots/MultiCurve/MultiCurveGUIPluginInfo.C" line="79"/>
         <source>MultiCurve</source>
-        <translation>Vele krommen </translation>
+        <translation>Meervoudige krommen </translation>
     </message>
 </context>
 <context>
@@ -1083,12 +1084,12 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisAnimationWindow.C" line="187"/>
         <source>slower</source>
-        <translation>Langzamer</translation>
+        <translation>langzamer</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnimationWindow.C" line="189"/>
         <source>faster</source>
-        <translation>Sneller</translation>
+        <translation>sneller</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnimationWindow.C" line="169"/>
@@ -1159,7 +1160,7 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="452"/>
         <source>Time scale factor</source>
-        <translation>Tijd schaal factor</translation>
+        <translation>Tijdschaalfactor</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="458"/>
@@ -1254,7 +1255,7 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="948"/>
         <source>Line width</source>
-        <translation>Lijn breedte</translation>
+        <translation>Lijnbreedte</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="692"/>
@@ -1319,17 +1320,17 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1000"/>
         <source>Background color</source>
-        <translation>Achtergrond kleur</translation>
+        <translation>Achtergrondkleur</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1010"/>
         <source>Foreground color</source>
-        <translation>Voorgrond kleur</translation>
+        <translation>Voorgrondkleur</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1017"/>
         <source>Background style</source>
-        <translation>Achtergrond stijl</translation>
+        <translation>Achtergrondstijl</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1024"/>
@@ -1379,22 +1380,22 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1053"/>
         <source>Gradient style</source>
-        <translation>Gradiënt stijl</translation>
+        <translation>Gradiëntstijl</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1062"/>
         <source>Gradient color 1</source>
-        <translation>Gradiënt kleur 1</translation>
+        <translation>Gradiëntkleur 1</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1072"/>
         <source>Gradient color 2</source>
-        <translation>Gradiënt kleur 2</translation>
+        <translation>Gradiëntkleur 2</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1089"/>
         <source>Background image</source>
-        <translation>Achtergrond afbeelding</translation>
+        <translation>Achtergrondafbeelding</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1093"/>
@@ -1424,7 +1425,7 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1185"/>
         <source>Annotation objects</source>
-        <translation>Bijschrift objecten</translation>
+        <translation>Bijschriftobjecten</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="1195"/>
@@ -1632,7 +1633,7 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="173"/>
         <source>Multiple</source>
-        <translation>Meervoudige</translation>
+        <translation>Meervoudig</translation>
     </message>
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="214"/>
@@ -1677,27 +1678,27 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="248"/>
         <source>Options</source>
-        <translation type="unfinished">Opties</translation>
+        <translation>Opties</translation>
     </message>
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="266"/>
         <source>Point / Line Style</source>
-        <translation type="unfinished">Punt / Lijnstijl</translation>
+        <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="310"/>
         <source>Geometry</source>
-        <translation type="unfinished">Geometrie</translation>
+        <translation>Geometrie</translation>
     </message>
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="317"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Gladstrijken</translation>
+        <translation>Gladstrijken</translation>
     </message>
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="338"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -2533,17 +2534,17 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../plots/Contour/QvisContourPlotWindow.C" line="164"/>
         <source>Contour Levels</source>
-        <translation type="unfinished">Niveaus</translation>
+        <translation>Omlijningsniveaus</translation>
     </message>
     <message>
         <location filename="../../plots/Contour/QvisContourPlotWindow.C" line="307"/>
         <source>Line Style</source>
-        <translation type="unfinished">Lijnstijl</translation>
+        <translation>Lijnstijl</translation>
     </message>
     <message>
         <location filename="../../plots/Contour/QvisContourPlotWindow.C" line="337"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -2906,27 +2907,27 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="159"/>
         <source>Line Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Lijngeometrie</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="279"/>
         <source>Curve color</source>
-        <translation type="unfinished">kleur</translation>
+        <translation>Krommekleur</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="283"/>
         <source>Cycle</source>
-        <translation type="unfinished">Cyclus</translation>
+        <translation>Cyclus</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="287"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Aangepast</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="306"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -4349,27 +4350,27 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="247"/>
         <source>Options</source>
-        <translation type="unfinished">Opties</translation>
+        <translation>Opties</translation>
     </message>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="290"/>
         <source>Point / Line Style</source>
-        <translation type="unfinished">Punt / Lijnstijl</translation>
+        <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="334"/>
         <source>Geometry</source>
-        <translation type="unfinished">Geometrie</translation>
+        <translation>Geometrie</translation>
     </message>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="341"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Gladstrijken</translation>
+        <translation>Gladstrijken</translation>
     </message>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="362"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -5857,22 +5858,22 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../gui/QvisInteractorWindow.C" line="199"/>
         <source>Switch to bounding box when changing views:</source>
-        <translation type="unfinished"></translation>
+        <translation>Schakel over naar de omgrenzende doos zodra aangezichten veranderd worden:</translation>
     </message>
     <message>
         <location filename="../../gui/QvisInteractorWindow.C" line="210"/>
         <source>Always</source>
-        <translation type="unfinished">Altijd</translation>
+        <translation>Altijd</translation>
     </message>
     <message>
         <location filename="../../gui/QvisInteractorWindow.C" line="213"/>
         <source>Never</source>
-        <translation type="unfinished">Nooit</translation>
+        <translation>Nooit</translation>
     </message>
     <message>
         <location filename="../../gui/QvisInteractorWindow.C" line="216"/>
         <source>Auto (remote rendering only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto (alleen op afstand weergave)</translation>
     </message>
 </context>
 <context>
@@ -6303,7 +6304,7 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="307"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -6520,7 +6521,7 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../gui/QvisLegendAttributesInterface.C" line="1452"/>
         <source></source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -7524,7 +7525,7 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../gui/QvisMeshManagementWindow.C" line="196"/>
         <source>Multi-pass</source>
-        <translation type="unfinished"></translation>
+        <translation>Meervoudig doorlopen</translation>
     </message>
 </context>
 <context>
@@ -7636,52 +7637,52 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="173"/>
         <source>Zone</source>
-        <translation type="unfinished">Cell</translation>
+        <translation>Zone</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="181"/>
         <source>Show internal zones</source>
-        <translation type="unfinished">Toon interne cellen</translation>
+        <translation>Toon interne cellen</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="207"/>
         <source>Color</source>
-        <translation type="unfinished">Kleur</translation>
+        <translation>Kleur</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="219"/>
         <source>Foreground</source>
-        <translation type="unfinished">Gebruik voorgrond</translation>
+        <translation>Voorgrond</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="249"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Aangepast</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="245"/>
         <source>Background</source>
-        <translation type="unfinished">Gebruik achtergrond</translation>
+        <translation>Achtergrond</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="309"/>
         <source>Point / Line Style</source>
-        <translation type="unfinished">Punt / Lijnstijl</translation>
+        <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="354"/>
         <source>Geometry</source>
-        <translation type="unfinished">Geometrie</translation>
+        <translation>Geometrie</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="361"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Gladstrijken</translation>
+        <translation>Gladstrijken</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="383"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -8230,7 +8231,7 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../plots/Molecule/QvisMoleculePlotWindow.C" line="380"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -9399,17 +9400,17 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="265"/>
         <source>Hide/Show</source>
-        <translation type="unfinished">Verberg/Toon</translation>
+        <translation>Verberg/Toon</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="261"/>
         <source>Delete</source>
-        <translation type="unfinished">Verwijder</translation>
+        <translation>Verwijder</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="268"/>
         <source>Draw</source>
-        <translation type="unfinished">Teken</translation>
+        <translation>Teken</translation>
     </message>
     <message>
         <source>Apply </source>
@@ -9451,7 +9452,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="529"/>
         <source>PlotAtts</source>
-        <translation type="unfinished">Plot attributen</translation>
+        <translation>PlotAttn</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="544"/>
@@ -9461,7 +9462,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="546"/>
         <source>OpAtts</source>
-        <translation type="unfinished">Operator attributen</translation>
+        <translation>OpAttn</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="595"/>
@@ -9596,7 +9597,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="248"/>
         <source>Add</source>
-        <translation type="unfinished">Voeg toe</translation>
+        <translation>Voeg toe</translation>
     </message>
 </context>
 <context>
@@ -9797,12 +9798,12 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="901"/>
         <source>Relative tolerance</source>
-        <translation type="unfinished">Relatieve tolerantie</translation>
+        <translation>Relatieve tolerantie</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="915"/>
         <source>Absolute tolerance</source>
-        <translation type="unfinished">Absolute tolerantie</translation>
+        <translation>Absolute tolerantie</translation>
     </message>
     <message>
         <source>Max toroidal winding</source>
@@ -9972,7 +9973,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="476"/>
         <source>Verbose</source>
-        <translation type="unfinished">Informatief</translation>
+        <translation>Informatief</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="504"/>
@@ -10240,37 +10241,37 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="330"/>
         <source>Data</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevens</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="338"/>
         <source>Data value:</source>
-        <translation type="unfinished"></translation>
+        <translation>Gegevenswaarde:</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="348"/>
         <source>WindingPointOrderModulo</source>
-        <translation type="unfinished"></translation>
+        <translation>WindingPointOrderModulo</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="358"/>
         <source>   </source>
-        <translation type="unfinished"></translation>
+        <translation>   </translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="434"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Aangepast</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="465"/>
         <source>Show O Points</source>
-        <translation type="unfinished"></translation>
+        <translation>Toon O-punten</translation>
     </message>
     <message>
         <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="496"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -10323,7 +10324,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../gui/QvisPointControl.C" line="97"/>
         <source>Point type</source>
-        <translation type="unfinished">Punttype</translation>
+        <translation>Punttype</translation>
     </message>
 </context>
 <context>
@@ -10583,7 +10584,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="219"/>
         <source>New plots automatically expanded</source>
-        <translation type="unfinished"></translation>
+        <translation>Nieuwe plots automatisch uitbreiden</translation>
     </message>
 </context>
 <context>
@@ -10591,7 +10592,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="130"/>
         <source>Projection type</source>
-        <translation type="unfinished">Projectietype</translation>
+        <translation>Projectietype</translation>
     </message>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="137"/>
@@ -10768,47 +10769,47 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="192"/>
         <source>Data</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevens</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="279"/>
         <source>Original</source>
-        <translation type="unfinished">Originele</translation>
+        <translation>Origineel</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="297"/>
         <source>Color</source>
-        <translation type="unfinished">Kleur</translation>
+        <translation>Kleur</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="323"/>
         <source>Set explicitly</source>
-        <translation type="unfinished">Gebruik opaciteit</translation>
+        <translation>Zet expliciet</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="327"/>
         <source>From color table</source>
-        <translation type="unfinished">van kleurtabel</translation>
+        <translation>Van kleurtabel</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="357"/>
         <source>Point / Line Style</source>
-        <translation type="unfinished">Punt / Lijnstijl</translation>
+        <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="403"/>
         <source>Geometry</source>
-        <translation type="unfinished">Geometrie</translation>
+        <translation>Geometrie</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="410"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Gladstrijken</translation>
+        <translation>Gladstrijken</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="431"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -13033,7 +13034,7 @@ over alle processoren
     <message>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="589"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -13720,37 +13721,37 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="128"/>
         <source>Sources</source>
-        <translation type="unfinished">Bronnen</translation>
+        <translation>Bronnen</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="140"/>
         <source>Open</source>
-        <translation type="unfinished">Open gegevensbron</translation>
+        <translation>Open</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="143"/>
         <source>Close</source>
-        <translation type="unfinished">Sluit gegevensbron</translation>
+        <translation>Sluit</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="146"/>
         <source>Reopen</source>
-        <translation type="unfinished">Heropen gegevensbron</translation>
+        <translation>Heropen</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="149"/>
         <source>Replace</source>
-        <translation type="unfinished">Vervang</translation>
+        <translation>Vervang</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="151"/>
         <source>Overlay</source>
-        <translation type="unfinished">Bedek plots</translation>
+        <translation>Bedek</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSourceManagerWidget.C" line="154"/>
         <source>Active source</source>
-        <translation type="unfinished">Aktieve bron</translation>
+        <translation>Aktieve bron</translation>
     </message>
 </context>
 <context>
@@ -14510,62 +14511,62 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="252"/>
         <source>Locations</source>
-        <translation type="unfinished">Locatie</translation>
+        <translation>Locaties</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="373"/>
         <source>Termination</source>
-        <translation type="unfinished">Beëindiging</translation>
+        <translation>Beëindiging</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="414"/>
         <source>Integration</source>
-        <translation type="unfinished">Integratie</translation>
+        <translation>Integratie</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="464"/>
         <source>Parallel</source>
-        <translation type="unfinished">Parallelle</translation>
+        <translation>Parallel</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="496"/>
         <source>Data</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevens</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="504"/>
         <source>Data Value</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevenswaarde</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="519"/>
         <source>   </source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="532"/>
         <source>Minimum</source>
-        <translation type="unfinished">Minimum</translation>
+        <translation>Minimum</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="541"/>
         <source>Maximum</source>
-        <translation type="unfinished">Maximum</translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="585"/>
         <source>  </source>
-        <translation type="unfinished"></translation>
+        <translation>..</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="721"/>
         <source>Color</source>
-        <translation type="unfinished">Kleur</translation>
+        <translation>Kleur</translation>
     </message>
     <message>
         <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="811"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -14819,27 +14820,27 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="249"/>
         <source>Options</source>
-        <translation type="unfinished">Opties</translation>
+        <translation>Opties</translation>
     </message>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="274"/>
         <source>Point / Line Style</source>
-        <translation type="unfinished">Punt / Lijnstijl</translation>
+        <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="318"/>
         <source>Geometry</source>
-        <translation type="unfinished">Geometrie</translation>
+        <translation>Geometrie</translation>
     </message>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="325"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Gladstrijken</translation>
+        <translation>Gladstrijken</translation>
     </message>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="346"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -15215,12 +15216,12 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../plots/Surface/QvisSurfacePlotWindow.C" line="162"/>
         <source>Data</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevens</translation>
     </message>
     <message>
         <location filename="../../plots/Surface/QvisSurfacePlotWindow.C" line="325"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -15295,22 +15296,22 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="144"/>
         <source>Data</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevens</translation>
     </message>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="223"/>
         <source>Display</source>
-        <translation type="unfinished">Toon</translation>
+        <translation>Toon</translation>
     </message>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="231"/>
         <source>Color</source>
-        <translation type="unfinished">Kleur</translation>
+        <translation>Kleur</translation>
     </message>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="268"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -15607,17 +15608,17 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../gui/QvisTimeSliderControlWidget.C" line="92"/>
         <source>Time</source>
-        <translation type="unfinished">Tijd</translation>
+        <translation>Tijd</translation>
     </message>
     <message>
         <location filename="../../gui/QvisTimeSliderControlWidget.C" line="107"/>
         <source>Active time slider</source>
-        <translation type="unfinished">Actieve tijdschuifregelaar</translation>
+        <translation>Actieve tijdschuifregelaar</translation>
     </message>
     <message>
         <location filename="../../gui/QvisTimeSliderControlWidget.C" line="855"/>
         <source>The active time slider is already at state</source>
-        <translation type="unfinished">De actieve tijdschuifregelaar is reeds op niveau</translation>
+        <translation>De actieve tijdschuifregelaar is reeds op niveau</translation>
     </message>
 </context>
 <context>
@@ -16100,12 +16101,12 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../plots/Truecolor/QvisTruecolorPlotWindow.C" line="126"/>
         <source>Color</source>
-        <translation type="unfinished">Kleur</translation>
+        <translation>Kleur</translation>
     </message>
     <message>
         <location filename="../../plots/Truecolor/QvisTruecolorPlotWindow.C" line="146"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -16489,37 +16490,37 @@ kleur van de plot.</translation>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="188"/>
         <source>Data</source>
-        <translation type="unfinished">Gegevens</translation>
+        <translation>Gegevens</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="314"/>
         <source>Display</source>
-        <translation type="unfinished">Toon</translation>
+        <translation>Toon</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="452"/>
         <source>Geometry</source>
-        <translation type="unfinished">Geometrie</translation>
+        <translation>Geometrie</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="459"/>
         <source>Quality</source>
-        <translation type="unfinished">Kwaliteit</translation>
+        <translation>Kwaliteit</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="466"/>
         <source>Fast</source>
-        <translation type="unfinished">Snel</translation>
+        <translation>Snel</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="470"/>
         <source>High</source>
-        <translation type="unfinished">Hoog</translation>
+        <translation>Hoog</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="478"/>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Diversen</translation>
     </message>
 </context>
 <context>
@@ -17644,7 +17645,7 @@ FTP Fout: </translation>
     <message>
         <location filename="../../viewer/main/WindowActions.C" line="536"/>
         <source>Make this window active</source>
-        <translation type="unfinished">Activeer venster</translation>
+        <translation>Activeer dit venster</translation>
     </message>
 </context>
 <context>
