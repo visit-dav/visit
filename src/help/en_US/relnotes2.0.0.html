@@ -16,6 +16,16 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <p><b>Sections</b></p>
 <ul>
+ <li><a href="#Major_New_Features">Major New features</a></li>
+  <ul>
+    <li><a href="#Major_UI">User interface</a></li>
+    <li><a href="#Major_sim">Simulation code library</a></li>
+    <li><a href="#Major_analysis">Analysis features</a></li>
+    <li><a href="#Major_usability">Usability improvements</a></li>
+    <li><a href="#Major_development">Development changes</a></li>
+  </ul>
+ <li><a href="#Other_Features">Other features</a></li>
+  <ul>
     <li><a href="#General_Features">Features for all users</a></li>
     <li><a href="#Advanced_Features">Features for advanced users</a></li>
     <li><a href="#File_format">Changes to file format readers</a></li>
@@ -26,25 +36,91 @@ enhancements and bug-fixes that were added to this release.</p>
     <li><a href="#Bugs_fixed">Other bug fixes</a></li>
     <li><a href="#Config_changes">Changes to machine configuration files</a></li>
     <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+   </ul>
 </ul>
+
+<a name="Major_New_Features"></a>
+<p><b><font size="5">Major features added in version 2.0</font></b></p>
+<ul>
+  <a name="Major_UI"></a>
+  <li><font size="4">User interface</font></li>
+    <ul>
+      <li>VisIt's main graphical user interface window has received a major overhaul.</li>
+      <ul>
+        <li>The new default operating mode for the main window no longer utilizes the "selected files" paradigm. Instead, users open files directly without having to first "select them". This mode was previously available via a setting in the Preferences window, and this same setting can still be toggled to return to the selected files mode for users that prefer the old behavior. However, a number of related improvements have made the new mode far more useful than it was in previous releases.</li>
+        <li>There have been a number of rearrangements to the main window, including adding toolbars and icons for common behaviors. The new arrangement makes better use of both horizontal and vertical space in the GUI, unifies the behavior and design across Windows, Mac OS X, and Linux/UNIX systems, and generally makes main window interaction require fewer mouse clicks and less mouse motion for many common behaviors. Less frequently used widgets have been relocated away from the central area of interaction.</li>
+      </ul>
+      <li>The Operators menu and Operator attributes menus now group operators into different categories, which lets more operators be loaded on startup without running off the screen as they would have in a flat list. The operator categories can be customized in the Operators tab of the Plugin Manager window. Double-click on the operator category to edit it. When you apply your changes, the menus will adjust accordingly. Save your settings to make the changes permanent.</li>
+      <li>All Plot and Operator attributes can be saved to individual XML files. This could be used, for example, to save Volume plot transfer functions for later use without requiring the use of heavyweight session files. It also enables easy sharing of settings with other users. In the GUI, each window has a Load and Save button, and in the Python interface, use the LoadAttribute and SaveAttribute functions.</li>
+    </ul>
+  <a name="Major_sim"></a>
+  <li><font size="4">Simulation code library</font></li>
+    <ul>
+      <li>A new version 2 libsim, SimV2, has been created for instrumenting simulation codes. The new SimV2 API differs from the older libsim (SimV1) API. The control API in SimV2 is nearly the same as in SimV1. The largest difference is in the data API. Where SimV1 provided data to VisIt using C structures, SimV2 uses functions to allocate handles to data structures which are then manipulated using other functions. This eliminates a class of common coding problems and allows detection of missing or malformed data at runtime. It also makes the C and Fortran interfaces for using SimV2 the same, apart from calling different function names. In addition to being more error tolerant, SimV2 provides many new features, including:</li>
+        <ul>
+          <li>Vector, tensor, array, and label data; not just scalars</li>
+          <li>CSG meshes</li>
+          <li>AMR meshes</li>
+          <li>Polyhedra</li>
+          <li>Species</li>
+          <li>Ability to save images directly from the simulation</li>
+          <li>Better synchronization with VisIt</li>
+          <li>Interleaved XY, XYZ coordinate arrays</li>
+        </ul>
+        NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. In order to use the newer features provided in SimV2, migration to SimV2 is required.
+    </ul>
+  <a name="Major_analysis"></a>
+  <li><font size="4">Analysis features</font></li>
+    <ul>
+      <li>VisIt's queries and expressions now support embedded Python Filters. The Python Filters infrastructure allows users to write python scripts with vtk level data access to implement custom expressions and queries. These scripts can be loaded and executed at runtime time via VisIt's GUI and command line interface. See wiki documentation (<a href="http://visitusers.org/index.php?title=Python_Filters">http://visitusers.org/index.php?title=Python_Filters</a>) for further details.
+      <li>VisIt has new types of expressions for time iteration. For example, these expressions may calculate the maximum, minimum or average value at a location, or, alternatively, they may calculate the time when a condition occurs, for example the time when the maximum value at a location occurs. More information can be found in the Expressions Window, by looking at "Insert Function" and then "Time Iteration".</li>
+    </ul>
+  <a name="Major_usability"></a>
+  <li><font size="4">Usability improvements</font></li>
+    <ul>
+      <li>VisIt's Host Profiles, which describe connection and launching behavior on remote or parallel systems, have had several aspects redesigned. Note that these changes break some compatibility with old saved settings and sessions, but many major sites' profiles have already been converted to the new format.  If you have a host profile you need to convert, there is a <a href="http://visitusers.org/index.php?title=VisIt_2.0_changes_for_host_profiles">script for host profile conversion</a>.</li>
+      <ul>
+        <li>The Host Profiles window now separates launch-specific and host-specific settings.</li>
+        <li>Host profiles are now divorced from the standard configuration files and session files.  They are now stored separately, one file per host, in a format independent of operating system. This makes the process of sharing and updating host profiles more trivial.</li>
+        <li>Only settings users actually change from the globally-installed system host profiles will be saved to a user's local configuration.  Any updates to installed system host profiles will almost always be automatically visible when VisIt launches.</li>
+      </ul>
+      <li>VisIt's file opening and format detection has seen major improvements.</li>
+      <ul>
+        <li>File format readers can now specify a full file pattern they match, allowing automatic detection of many more file types.</li>
+        <li>VisIt now has a special category of preferred file formats to try if there are no file formats readers which can read the given file. This subsumes the old "-assume_format" and "-fallback_format" command-line options.</li>
+        <li>Many file format readers have improved strictness in their file detection code (though "Open As" can often bypass many of these checks).</li>
+        <li>If multiple file format readers can successfully open a file, VisIt will warn the user, thus alerting the user to many instances where an improper reader was chosen automatically.</li>
+        <li>VisIt now remembers which file format reader plugin was used to open a file, and always attempts to use this plugin first when re-opening a file, even when restoring a session.  You may choose a different plugin by explicitly closing the file.</li>
+        <li>VisIt's "-o" command-line option, used to specify a file to open during initialization, now supports an "Open As" variant by adding a plugin ID after the filename, separated by a comma. For instance, <tt>visit -o file.txt</tt> can now be called as <tt>visit -o file.txt,Silo_1.0</tt> to instruct visit to use the Silo plugin when opening the file.</li>
+        <li>Users can now group file formats which contain multiple timesteps into virtual databases combining all timesteps into a single sequence.</li>
+      </ul>
+    </ul>
+  <a name="Major_development"></a>
+  <li><font size="4">Development changes</font></li>
+    <ul>
+      <li>While we largely strove for backward compatibility in version 2.0, as a major release we were able to take the opportunity for several improvements which required some incompatibility with past versions.</li>
+      <li>Many of VisIt's third-party support libraries received version upgrades.</li>
+      <li>The most notable is Qt, but those building from source should expect to rebuild many of them, most easily done with the <tt>build_visit</tt> script. </li>
+      <li>Various plugin interfaces have also changed.  Check <a href="http://visitusers.org/index.php?title=VisIt_2.0_changes_for_plugin_developers">http://visitusers.org/index.php?title=VisIt_2.0_changes_for_plugin_developers</a> for details.</li>
+    </ul>
+</li>
+</ul>
+
+<hr></hr>
+
+<a name="Other_Features"></a>
+<p><b><font size="5">Other features added in version 2.0</font></b></p>
 
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.0</font></b></p>
 <ul>
-  <li>VisIt's main graphical user interface window has received a major overhaul:</li>
-  <ul>
-    <li>The new default operating mode for the main window no longer utilizes the "selected files" paradigm. Instead, users open files directly without having to first "select them". This mode was previously available via a setting in the Preferences window, and this same setting can still be toggled to return to the selected files mode for users that prefer the old behavior. However, a number of related improvements have made the new mode far more useful than it was in previous releases.</li>
-    <li>There have been a number of rearrangements to the main window, including adding toolbars and icons for common behaviors. The new arrangement makes better use of both horizontal and vertical space in the GUI, unifies the behavior and design across Windows, Mac OS X, and Linux/UNIX systems, and generally makes main window interaction require fewer mouse clicks and less mouse motion for many common behaviors. Less frequently used widgets have been relocated away from the central area of interaction.</li>
-  </ul>
   <li>You can now animate every Nth time state when animating in the GUI by setting the animation increment via the Animation window.</li>
   <li>VisIt will now leave plots in the visualization window when interacting with tools unless you have enabled "bounding box" mode.</li>
   <li>VisIt's point tool has been enhanced so it shows a small sphere indicating the location of the point. This is helpful when placing the point within 3D geometry.</li>
   <li>VisIt's plane tool has been enhanced so it is drawn with shading, which provides some depth cues and improves the look of the tool.</li>
-  <li>VisIt's legend has been enhanced to allow changing the number of tick marks automatically generated, as well as whether or not the min and max values should be included. The ability to specify numeric values and associated textual labels has also been added. There is a 1-1 correspondence between the values and the labels, so specifying empty strings will allow skipping textual labels for particular values. Values specified outside the min/max range will be ignored. For correct placement of textual labels, numeric values must be specified, but drawing of values can be turned off. Label drawing now has 4 modes -- off (None), Values only, Labels only, or Values and Labels. Default is Values only.</li>
+  <li>VisIt's legend has been enhanced to allow changing the number of tick marks automatically generated, as well as whether or not the min and max values should be included. The ability to specify numeric values and associated textual labels has also been added. There is a 1:1 correspondence between the values and the labels, so specifying empty strings will allow skipping textual labels for particular values. Values specified outside the min/max range will be ignored. For correct placement of textual labels, numeric values must be specified, but drawing of values can be turned off. Label drawing now has 4 modes: off (None), Values only, Labels only, or Values and Labels. Default is Values only.</li>
   <li>VisIt's plot list context menu now provides options that let you change the order of plots in the plot list. You can also provide a plot description that lets the plot list display a more informative description of the contents of a plot. This is useful when you need to tell apart many similar plots.</li>
-  <li>The <b>Operators</b> menu and <b>Operator attributes</b> menus now group operators into different categories, which lets more operators be loaded on startup without running off the screen as they would have in a flat list. The operator categories can be customized in the <b>Operators</b> tab of the <b>Plugin Manager</b> window. Double-click on the operator category to edit it. When you apply your changes, the menus will adjust accordingly. Save your settings to make the changes permanent.</li>
   <li>Henk Krus of the dolfyn.net project was kind enough to provide a complete Dutch translation of VisIt. To try it, run "visit -locale nl".</li>
-  <li>All Plot and Operator attributes can be saved to individual XML files. This could be used, for example, to save Volume plot transfer functions for later use without requiring the use of heavyweight session files. It also enables easy sharing of settings with other users. In the GUI, each window has a Load and Save button, and in the Python interface, use the LoadAttribute and SaveAttribute functions.</li>
   <li>The material interface reconstruction (MIR) capabilities in VisIt received large improvements:</li>
   <ul>
     <li>The MIR algorithms have been renamed to match the literature.</li>
@@ -54,7 +130,6 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>There is also a new Discrete algorithm, which currently supports only rectilinear grids, contributed by John Anderson. This algorithm subdivides cells into voxels, each of which is assigned a single material, and thus has fixed volume fraction error bounds depending on the amount of subdivision.</li>
   </ul>
   <li>Color tables now support adjustable opacity for each control point. This opacity can be used in the Pseudocolor and Volume plots.</li>
-  <li>VisIt's Host Profiles window now clearly distinguishes between settings which apply to a single launch profile, and those which are global to all launch profiles on the same host.</li>
   <li>VisIt's various Tools which interact with plots and operators in the visualization window can now update in one of three modes, chosen via the visualization window context menu:</li>
   <ul>
     <li>Continuously: After a user grabs a hotpoint by holding down the mouse button, the tool and its connected plot/operator update while the mouse is moved. Note that this mode is not available when the "bounding box navigation" setting is enabled.</li>
@@ -67,47 +142,22 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Advanced features added in version 2.0</font></b></p>
 <ul>
   <li>When available, the IceT parallel compositor is used by default. IceT provides significantly faster rendering times when VisIt is rendering in parallel. VisIt has supported IceT previously, but many improvements have been put into this release to allow it to work robustly. A new flag, <TT>-no-icet</TT> was added to explicitly disable IceT. The old flag, <TT>-icet</TT>, was maintained for compatibility reasons.</li>
-  <li>Operator plugins are now grouped into categories by default and this causes operators to be grouped instead of remaining in a flat, alphabetical list. Operators each have a default category to which they like to belong. You may edit the operator categories in the Plugin Manager window's Operators tab. Double-click the operator category and type in a new name. When you click the Apply button, the gui's operator menus will be changed to fit the new customized organization. If you do not want operators to be grouped into submenus, simply remove the category name for each operator using the "Clear category for all operators" button in the Plugin Manager window. Any customizations are saved when you save your settings.</li>
   <li>An internal data structure that manages subset relations was tuned significantly. This tuning should prevent sluggishness when adding plots, deleting plots, and also is noticeable through a delay in progress reporting when drawing a plot. Note that some file formats can be updated to use new features in this data structure. If you are observing sluggishness with your file format and would like to inquire about using this data structure more efficiently, contact a VisIt developer.</li>
-  <li>A new version 2 libsim, SimV2, has been created for instrumenting simulation codes. The new SimV2 API differs from the older libsim (SimV1) API. The control API in SimV2 is nearly the same as in SimV1. The largest difference is in the data API. Where SimV1 provided data to VisIt using C structures, SimV2 uses functions to allocate handles to data structures which are then manipulated using other functions. This eliminates a class of common coding problems and allows detection of missing or malformed data at runtime. It also makes the C and Fortran interfaces for using SimV2 the same, apart from calling different function names. In addition to being more error tolerant, SimV2 provides many new features, including:
-  <ul>
-      <li>Vector, tensor, array, and label data; not just scalars</li>
-      <li>CSG meshes</li>
-      <li>AMR meshes</li>
-      <li>Polyhedra</li>
-      <li>Species</li>
-      <li>Ability to save images directly from the simulation</li>
-      <li>Better synchronization with VisIt</li>
-      <li>Interleaved XY, XYZ coordinate arrays</li>
-  </ul>
-NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. In order to use the newer features provided in SimV2, migration to SimV2 is required.
-  </li>
   <li>
-      It is now possible to launch the VisIt compute engine directly and have it "reverse launch" the VisIt viewer, reversing the normal launch order. This can be useful when VisIt needs to run in batch jobs and it can be useful for launching the engine directly under a debugger. To use reverse launching to execute a script, you can execute <i>"visit -engine -reverse_launch -nowin -s script.py"</i>.
+      It is now possible to launch the VisIt compute engine directly and have it "reverse launch" the VisIt viewer, reversing the normal launch order. This can be useful when VisIt needs to run in batch jobs and it can be useful for launching the engine directly under a debugger. To use reverse launching to execute a script, you can execute <tt>"visit -engine -reverse_launch -nowin -s script.py"</tt>.
   </li>
   <li>VisIt's constructive solid geometry (CSG) discretization supports a new Multi-Pass algorithm which can successfully generate thin shells and sharp angles, thus increasing output accuracy even when starting at a lower discretization resolution. In addiiton, the clipping used in the existing Uniform CSG discretization algorithm has been upgraded, resulting in improved speed and quality.</li>
   <li>VisIt's axis-array window modality (used by the Parallel Coordinates plot, for example) now supports a full range of annotations.</li>
   <li>Users can now specify -sshtunneling as a command-line option, forcing all remote connections to use SSH port forwarding and overriding the equivalent settings in the host profile for a single session.</li>
   <li>VisIt's color table editor now shows index number hints for discrete color tables, or atomic symbols for atomic color tables.</li>
   <li>Atomic number in VisIt are now 1-origin (e.g. mapping "Hydrogen" to "1", for example). For users, this affects only saved color tables, though developers of any molecular file format reader, color table, plot, or operators should be aware of this change. Atomic number "0" is reserved for unknown elements.</li>
-  <li>Text-based annotations now support a "$cycle" substitution variable, analogous to the existing "$time" variable.</li>
-  <li> VisIt's engine now supports embedded Python Filters. The Python Filters infrastructure allows users to write python scripts with vtk level data access to implement custom expressions and queries. These scripts can be loaded and executed at runtime time via VisIt's GUI and command line interface. See wiki documentation (http://visitusers.org/index.php?title=Python_Filters) for further details.
+  <li>Text-based annotations now support a <tt>"$cycle"</tt> substitution variable, analogous to the existing <tt>"$time"</tt> variable.</li>
   </li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.0</font></b></p>
 <ul>
-  <li>VisIt's file opening and format detection has received a major overhaul.</li>
-  <ul>
-    <li>File format readers can now specify a full file pattern they match, instead of being limited to a simple dot-extension. This allows many file formats to be tried automatically that previously had to be specified manually.</li>
-    <li>VisIt now has a special category of preferred file formats to try if there are no file formats readers which can read the given file. This subsumes the old "-assume_format" and "-fallback_format" command-line options.</li>
-    <li>Many file format readers behave more strictly when attempting to detect if a given file is of that format, allowing the proper reader to open the file automatically in more cases. This strictness can typically be bypassed by instructing VisIt to use a specific file format to open a file (i.e. "Open As").</li>
-    <li>If multiple file format readers can successfully open a file, VisIt will warn the user, thus alerting the user to many instances where an improper reader was chosen automatically.</li>
-    <li>VisIt now remembers which file format reader plugin was used to open a file in a session, and always attempts to use this plugin first when re-opening a file. This knowledge is also saved into session files and used when restoring sessions. If a file is closed explicitly by the user, this instructs VisIt to "forget" which plugin was used, allowing the user to select a different plugin the when opening the file again.</li>
-    <li>VisIt's "-o" command-line option, used to specify a file to open during initialization, now supports an "Open As" variant by adding a plugin ID after the filename, separated by a comma. For instance, <tt>visit -o file.txt</tt> can now be called as <tt>visit -o file.txt,Silo_1.0</tt> to instruct visit to use the Silo plugin when opening the file.</li>
-    <li>Users can now group file formats which contain multiple timesteps into virtual databases combining all timesteps into a single sequence. For example, if file100.xyz and file200.xyz each contains ten timesteps, opening the file*.xyz database results in a cohesive 20-timestep sequence.</li>
-  </ul>
   <li>VisIt's Nek reader now serves up per-domain data ranges, which optimizes operations like contouring and thresholding.</li>
   <li>VisIt now includes a Velodyne file format reader contributed by Corvid Technologies.</li>
   <li>VisIt now includes a file format reader for the Adventure (AdvIO) file format.</li>
@@ -160,20 +210,19 @@ NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. I
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.0</font></b></p>
 <ul>
-  <li>VisIt has new types of expressions for time iteration. For example, these expressions may calculate the maximum, minimum or average value at a location, or, alternatively, they may calculate the time when a condition occurs, for example the time when the maximum value at a location occurs. More information can be found in the Expressions Window, by looking at "Insert Function" and then "Time Iteration".</li>
   <li>Negative values in expressions have received improved support, including performance enhancements. The "enumerate" expression now supports mapping to negative values as well.</li>
   <li>VisIt has new "cycle" and "timestep" expressions, analogous to the "time" expression, returning varying forms of the current active time state in the file.</li>
-  <li>VisIt now provides a "key_aggregate" expression. See wiki documentation (http://visitusers.org/index.php?title=Key_Aggregate_Expression) for details.</li>
-  <li>VisIt now provides a "map" expression. See wiki documentation (http://visitusers.org/index.php?title=Map_Expression) for details. </li>
+  <li>VisIt now provides a "key_aggregate" expression. See wiki documentation (<a href="http://visitusers.org/index.php?title=Key_Aggregate_Expression">http://visitusers.org/index.php?title=Key_Aggregate_Expression</a>) for details.</li>
+  <li>VisIt now provides a "map" expression. See wiki documentation (<a href="http://visitusers.org/index.php?title=Map_Expression">http://visitusers.org/index.php?title=Map_Expression</a>) for details. </li>
   <li>Various expressions have improved support for the multi-component Array variable type.</li>
-  <li>VisIt now supports custom python script expressions. (As outlined in Advanced Features / Python Filters)</li>
+  <li>VisIt now supports custom python script expressions. (As outlined in Major Features)</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.0</font></b></p>
 <ul>
   <li>There are new statistical queries for both population and sample statistics on variables, showing mean, variance, skewness, kurtosis.</li>
-  <li>VisIt now supports custom python script queries. (As outlined in Advanced Features / Python Filters)</li>
+  <li>VisIt now supports custom python script queries. (As outlined in Major Features)</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -200,10 +249,6 @@ NOTE: Simulations instrumented using SimV1 will continue to work in VisIt 2.0. I
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 2.0</font></b></p>
 <i>Note: Although efforts were made to make as much as possible backward compatible with old configuration files, we recommend removing your old configuration files and starting fresh if possible, as some new features will be disabled or hidden by using old configuration files.</i>
-<ul>
-  <li>Host profiles are now divorced from the standard configuration files and stored separately, one file per host. This makes the process of giving users configurations for a specific host trivial (simply copy the file into the new <tt>hosts/</tt> directory), simplifies setting up remote connections to multiple sites, and makes it easier to revert any changed settings to host configurations. UNIX, OS X, and Windows variants of these profiles have been combined into a single flavor.</li>
-  <li>Furthermore, these host profiles are no longer saved in session files. This allows sessions to be restored using current instead of outdated host configuration information.</li>
-</ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.0</font></b></p>
