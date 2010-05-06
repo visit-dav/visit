@@ -213,6 +213,9 @@ using std::vector;
 //   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
 //   Moved source related controls into QvisSourceManagerWidget.
 //
+//   Cyrus Harrison, Thu May  6 15:54:47 PDT 2010
+//   Change to Plot toolbar button order.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -258,6 +261,10 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     plotActionsToolbar->addSeparator();
 
+    // add draw action
+    plotDrawAction = plotActionsToolbar->addAction(QIcon(plot_draw_xpm),tr("Draw"),
+                                                   this, SLOT(drawPlots()));
+
     // add delete action
     plotDeleteAction = plotActionsToolbar->addAction(QIcon(plot_del_xpm),tr("Delete"),
                                                      this,SLOT(deletePlots()));
@@ -265,10 +272,6 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     // add hide/show action
     plotHideShowAction = plotActionsToolbar->addAction(QIcon(plot_hide_xpm),tr("Hide/Show"),
                                                        this, SLOT(hidePlots()));
-    // add draw action
-    plotDrawAction = plotActionsToolbar->addAction(QIcon(plot_draw_xpm),tr("Draw"),
-                                                   this, SLOT(drawPlots()));
-
     // add change variable menu action
     varMenuAction = plotActionsToolbar->addAction(QIcon(plot_var_xpm),tr("Variables"));
     QToolButton *var_button = (QToolButton*) plotActionsToolbar->widgetForAction(varMenuAction);
