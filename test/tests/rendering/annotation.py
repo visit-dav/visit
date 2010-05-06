@@ -351,22 +351,28 @@ a.axes3D.zAxis.grid = 1
 SetAnnotationAttributes(a)
 Test("annot3d_04")
 
-# Turn off labels and ticks
+# Turn off titles, labels and ticks
 # want to ensure gridlines work alone
 a.axes3D.xAxis.label.visible = 0
 a.axes3D.yAxis.label.visible = 0
 a.axes3D.zAxis.label.visible = 0
+a.axes3D.xAxis.title.visible = 0
+a.axes3D.yAxis.title.visible = 0
+a.axes3D.zAxis.title.visible = 0
 a.axes3D.xAxis.tickMarks.visible = 0
 a.axes3D.yAxis.tickMarks.visible = 0
 a.axes3D.zAxis.tickMarks.visible = 0
 SetAnnotationAttributes(a)
 Test("annot3d_05")
 
-# Mix up which ticks, labels, 
+# Mix up which ticks, titles, labels, 
 # or gridlines are turned on
 a.axes3D.xAxis.label.visible = 1
 a.axes3D.yAxis.label.visible = 0
 a.axes3D.zAxis.label.visible = 0
+a.axes3D.xAxis.title.visible = 0
+a.axes3D.yAxis.title.visible = 0
+a.axes3D.zAxis.title.visible = 1
 a.axes3D.xAxis.tickMarks.visible = 0
 a.axes3D.yAxis.tickMarks.visible = 1
 a.axes3D.zAxis.tickMarks.visible = 0
@@ -379,6 +385,9 @@ Test("annot3d_06")
 a.axes3D.xAxis.label.visible = 1
 a.axes3D.yAxis.label.visible = 1
 a.axes3D.zAxis.label.visible = 1
+a.axes3D.xAxis.title.visible = 1
+a.axes3D.yAxis.title.visible = 1
+a.axes3D.zAxis.title.visible = 1
 a.axes3D.xAxis.tickMarks.visible = 1
 a.axes3D.yAxis.tickMarks.visible = 1
 a.axes3D.zAxis.tickMarks.visible = 1
