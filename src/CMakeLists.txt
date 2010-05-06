@@ -112,6 +112,12 @@
 #    Tom Fogal, Fri Apr 30 09:35:51 MDT 2010
 #    Define HAVE_LIBSLIVR as appropriate.
 #
+#    Eric Brugger, Thu May  6 12:23:34 PDT 2010
+#    I corrected the rpath detection logic to handle the case were there
+#    were multiple rpaths.  In particular, INSTALL_RPATH was being set as a
+#    list of rpaths (the rpaths end up semi-colon separated) and I changed
+#    it to a string of space separated rpaths.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -940,10 +946,10 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target)
         IF(VISIT_PARALLEL_RPATH)
             SET(PAR_RPATHS "")
             FOREACH(X ${CMAKE_INSTALL_RPATH})
-                LIST(APPEND PAR_RPATHS ${X})
+                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
             ENDFOREACH(X)
             FOREACH(X ${VISIT_PARALLEL_RPATH})
-                LIST(APPEND PAR_RPATHS ${X})
+                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
             ENDFOREACH(X)
             SET_TARGET_PROPERTIES(${target} PROPERTIES
                 INSTALL_RPATH ${PAR_RPATHS}
@@ -1019,10 +1025,10 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
         IF(VISIT_PARALLEL_RPATH)
             SET(PAR_RPATHS "")
             FOREACH(X ${CMAKE_INSTALL_RPATH})
-                LIST(APPEND PAR_RPATHS ${X})
+                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
             ENDFOREACH(X)
             FOREACH(X ${VISIT_PARALLEL_RPATH})
-                LIST(APPEND PAR_RPATHS ${X})
+                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
             ENDFOREACH(X)
             SET_TARGET_PROPERTIES(${target} PROPERTIES
                 INSTALL_RPATH ${PAR_RPATHS}
