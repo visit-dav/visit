@@ -6865,6 +6865,9 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Tue Oct 20 16:50:41 PDT 2009
 //    Made it static.
 //   
+//    Kathleen Bonnell, Thu May  6 15:36:11 PDT 2010
+//    Fix error in vector dimensionality test.
+//
 // ****************************************************************************
 
 template <typename T, typename Tarr>
@@ -6876,7 +6879,7 @@ CopyPointVectorVar(const DBmeshvar *mv)
     vectors->SetNumberOfTuples(mv->nels);
     const T *v1 = ((const T**)mv->vals)[0];
     const T *v2 = ((const T**)mv->vals)[1];
-    if(mv->nels == 3)
+    if(mv->nvals == 3)
     {
         const T *v3 = ((const T**)mv->vals)[2];
         for (int i = 0 ; i < mv->nels ; i++)
