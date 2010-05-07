@@ -86,6 +86,7 @@
 #     Function 6, build_vtk:        build VTK
 #     Function 7, build_python:     build Python
 #     Function 7.1, build_pil       build the Python Imaging Library
+#     Function 7.2, build_pyparsing build the pyparsing python module
 #     Function 8.0, build_szip:     build SZIP
 #     Function 8.1, build_hdf5:     build HDF5
 #     Function 8.2, build_mili:     build Mili
@@ -887,6 +888,8 @@
 #     Kathleen Bonnell, Mon May  3 14:55:55 PDT 2010
 #     Use of vtk-5.0.0e.
 #
+#     Cyrus Harrison, Fri May  7 13:58:35 PDT 2010
+#     Added build & install of pyparsing module to the python build process.
 #
 # *****************************************************************************
 #                                                                             #
@@ -1210,6 +1213,9 @@ export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
 export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
 export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
 export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
+
+export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
+export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
 
 export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.6.1.tar.gz"}
 export QT_VERSION=${QT_VERSION:-"4.6.1"}
@@ -1569,7 +1575,7 @@ function download_file
         warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PATH/trunk/third_party/$dfile"
         rm -f $dfile
     fi
-    
+
     if [[ "$1" == "" ]] ; then
         # If SVN was not requested or if it failed...
         if [[ "$dfile" == "$VISIT_FILE" ]] ; then
@@ -1577,7 +1583,7 @@ function download_file
         else
             try_download_file https://wci.llnl.gov/codes/visit/3rd_party/$dfile $dfile
         fi
-        
+
         if [[ $? == 0 ]] ; then
             return 0
         fi
@@ -1592,8 +1598,8 @@ function download_file
         return 0
     fi
     done
-    info "Failed to download $dfile" 
-    return 1 
+    info "Failed to download $dfile"
+    return 1
 }
 
 # *************************************************************************** 
@@ -4542,6 +4548,44 @@ function build_pil
     fi
 
     info "Done with PIL."
+    return 0
+}
+
+# *************************************************************************** #
+#                            Function 7.2, build_pyparsing                    #
+# *************************************************************************** #
+function build_pyparsing
+{
+    if ! test -f ${PYPARSING_FILE} ; then
+        download_file ${PYPARSING_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYPARSING_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -d ${PYPARSING_BUILD_DIR} ; then
+        info "Extracting pyparsing ..."
+        uncompress_untar ${PYPARSING_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYPARSING_FILE}"
+            return 1
+        fi
+    fi
+
+    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    pushd $PYPARSING_BUILD_DIR > /dev/null
+        info "Installing pyparsing ..."
+        ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    # pyparsing installs into site-packages dir of Visit's Python.
+    # Simply re-execute the python perms command.
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/python"
+       chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    info "Done with pyparsing."
     return 0
 }
 
@@ -10021,6 +10065,12 @@ if [[ "$DO_PYTHON" == "yes" ]] ; then
             warn "PIL build failed."
         fi
         info "Done building the Python Imaging Library"
+
+        build_pyparsing
+        if [[ $? != 0 ]] ; then
+            warn "pyparsing build failed."
+        fi
+        info "Done building the pyparsing module."
     fi
 fi
 
