@@ -87,6 +87,10 @@ class QVBoxLayout;
 //   Brad Whitlock, Thu Jul 23 16:14:30 PDT 2009
 //   I added SetAddStretch and SetDismissEnabled.
 //
+//   Cyrus Harrison, Thu May  6 16:32:07 PDT 2010
+//   Added 'avoid_scroll' argument. This avoids creating scrollbars if they do
+//   not already exist.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindow : public QvisWindowBase
@@ -115,7 +119,7 @@ public slots:
     virtual void raise();
     virtual void show();
     virtual void hide();
-    virtual void post();
+    virtual void post(bool avoid_scroll=false);
     virtual void unpost();
 protected:
     bool               isCreated;
