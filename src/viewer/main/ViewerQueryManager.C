@@ -1903,6 +1903,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Check whether reusePickLetter flag in PickAttributes is set and
 //    do not update pick letter if it is.
 //
+//    Kathleen Bonnell, Thu May  6 18:44:08 PDT 2010
+//    Add topodim of 1 to test for 'linesData'.  (Allows picking on meshes 
+//    consisting of vtk lines.)
+//
 // ****************************************************************************
 
 bool
@@ -2090,9 +2094,12 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                    (strcmp(plot->GetPlotTypeName(), "Mesh") != 0));
 
 
+
         bool isLinesData = (plot->GetSpatialDimension() == 2) &&
-                  ((strcmp(plot->GetPlotTypeName(), "Boundary") == 0) ||
+                          ( (plot->GetTopologicalDimension() == 1) ||
+                  (strcmp(plot->GetPlotTypeName(), "Boundary") == 0) ||
                    (strcmp(plot->GetPlotTypeName(), "Contour") == 0));
+
         pickAtts->SetLinesData(isLinesData);
         pickAtts->SetInputTopoDim(plot->GetTopologicalDimension());
                   
