@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
+    <Field name="hostNickname" type="string">NERSC Euclid</Field>
     <Field name="host" type="string">euclid.nersc.gov</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string"></Field>
-    <Field name="hostNickname" type="string">NERSC Euclid</Field>
-    <Field name="directory" type="string"></Field>
+    <Field name="directory" type="string">/usr/common/graphics/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
@@ -12,7 +12,6 @@
     <Field name="manualClientHostName" type="string"></Field>
     <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">serial</Field>
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">1</Field>
         <Field name="numNodesSet" type="bool">false</Field>
@@ -46,9 +45,9 @@
         <Field name="hwAccelPreCommand" type="string"></Field>
         <Field name="havePostCommand" type="bool">false</Field>
         <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">serial</Field>
     </Object>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">parallel</Field>
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">8</Field>
         <Field name="numNodesSet" type="bool">false</Field>
@@ -82,6 +81,7 @@
         <Field name="hwAccelPreCommand" type="string"></Field>
         <Field name="havePostCommand" type="bool">false</Field>
         <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">parallel</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>
