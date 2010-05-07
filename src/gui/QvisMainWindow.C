@@ -135,7 +135,7 @@
 //
 //    Brad Whitlock, Fri Jun 22 12:46:13 PST 2001
 //    I added an entry for the subset window in the controls menu.
-//   
+//
 //    Jeremy Meredith, Fri Jul 20 11:25:56 PDT 2001
 //    Removed the "VisIt is Ready" message.  It should occur later.
 //
@@ -352,6 +352,10 @@
 //
 //    Brad Whitlock, Thu Apr  1 14:58:24 PDT 2010
 //    Shrink the margin a little to free up 10 pixels.
+//
+//    Cyrus Harrison, Thu May  6 16:47:11 PDT 2010
+//    For displays with low vertical resolution: don't use scroll bars when
+//    posting the main window.
 //
 // ****************************************************************************
 
@@ -735,7 +739,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         CreateMainContents(pmw);
 
         // Post the window
-        pmw->post();
+        pmw->post(true);
     }
     else
     {
