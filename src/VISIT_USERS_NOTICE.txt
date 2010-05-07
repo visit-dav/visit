@@ -1,0 +1,14 @@
+
+Hi all,
+
+VisIt 2.0 is now available.
+
+Source code and prebuilt executables are available on the visit web site
+(https://visit.llnl.gov/).
+
+Changes for the 2.0 release can be found at
+
+    https://visit.llnl.gov/relnotes2.0.0.html.
+
+Eric
+
