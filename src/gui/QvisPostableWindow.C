@@ -482,10 +482,14 @@ QvisPostableWindow::raise()
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Thu May  6 16:32:07 PDT 2010
+//   Added 'avoid_scroll' argument. This avoids creating scrollbars if they do
+//   not already exist.
+//
 // ****************************************************************************
 
 void
-QvisPostableWindow::post()
+QvisPostableWindow::post(bool avoid_scroll)
 {
     if(!isPosted && notepad)
     {
@@ -503,7 +507,7 @@ QvisPostableWindow::post()
         if(postEnabled)
         {
             // Post to the notepad
-            notepad->postWindow(this);
+            notepad->postWindow(this,avoid_scroll);
 
             // Hide the main window.
             QvisWindowBase::hide();

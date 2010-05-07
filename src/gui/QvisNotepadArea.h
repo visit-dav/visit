@@ -70,6 +70,9 @@ class QVBoxLayout;
 //   Brad Whitlock, Fri Jun  6 09:36:11 PDT 2008
 //   Qt 4.
 //
+//   Cyrus Harrison, Thu May  6 16:34:02 PDT 2010
+//   Added 'avoid_scroll' argument to postWindow.
+//
 // ****************************************************************************
 
 class GUI_API QvisNotepadArea : public QWidget
@@ -90,7 +93,7 @@ public:
     QvisNotepadArea(QWidget *parent = 0);
     virtual ~QvisNotepadArea();
     void showPage(QvisPostableWindow *pw);
-    void postWindow(QvisPostableWindow *pw);
+    void postWindow(QvisPostableWindow *pw, bool avoid_scroll=false);
 private:
     int               numPosted;
     QTabWidget       *tabs;
