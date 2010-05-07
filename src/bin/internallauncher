@@ -636,6 +636,10 @@ $0 = shift @ARGV;
 #    Rick Angelini (commit by HRC), Wed Apr 28 04:05:31 PDT 2010
 #    Add support for varying numbers of processors per node.
 #    
+#    Gunther H. Weber, Fri May  7 15:11:21 PDT 2010
+#    Detect whether we are running on Euclid @ NERSC and specify full path
+#    to mpirun if we do.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1695,6 +1699,16 @@ if ( $host =~ /^hopper/ )
 }
 
 # ----
+# HACK for euclid @ NERSC
+#
+# ----
+$IsRunningOnEuclidNERSC = 0;
+if ( $host =~ /^euclid.nersc.gov/ )
+{
+    $IsRunningOnEuclidNERSC = 1;
+}
+
+# ----
 # HACK for xchem @ LLNL
 #
 # ----
@@ -2404,7 +2418,14 @@ if ($procs_set or ($parallel and $parlaunch_set))
     # mpirun
     if ($launch eq "mpirun")
     {
-        @parcmd = ("mpirun");
+        if ($IsRunningOnEuclidNERSC)
+        {
+            @parcmd = ("/usr/common/usg/openmpi/1.4.1/gnu/bin/mpirun");
+        }
+        else
+        {
+            @parcmd = ("mpirun");
+        }
         if ($debug_totalview eq $exe_name)
         {
             push @parcmd, "-tv";
