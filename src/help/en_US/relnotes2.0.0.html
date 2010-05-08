@@ -95,6 +95,15 @@ enhancements and bug-fixes that were added to this release.</p>
         <li>Users can now group file formats which contain multiple timesteps into virtual databases combining all timesteps into a single sequence.</li>
       </ul>
     </ul>
+    <ul>
+       <li>Major performance improvements were made for data sets that have
+           large numbers of subsets, for example domains, materials, or patches.
+           
+           Previously, there were delays in opening files, making plots, and
+           progress reporting with these files.
+           Visualizations from the FLASH code (an AMR code), in particular, are now much faster.
+    </ul>
+   
   <a name="Major_development"></a>
   <li><font size="4">Development changes</font></li>
     <ul>
@@ -242,6 +251,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>3D Axes now support enabling of title visibility separate from label visibility.</li>
   <li>The Molecule plot's "imposter" rendering mode now correctly sets depth
       information.</li>
+  <li>Ray-casted volume rendering of point meshes no longer clip away half of the data.</li>
   <li>Thanks to Andreas Kloeckner, various window "roles" are now set
       correctly, allowing better handling by window managers.</li>
 </ul>
