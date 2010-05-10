@@ -107,7 +107,9 @@ void getDims(hid_t id, bool isDataset, std::vector<int>& dims) {
   else space = H5Dget_space(id);
   size_t rank = H5Sget_simple_extent_ndims(space);
   std::vector<hsize_t> sdim(rank);
-  H5Sget_simple_extent_dims(space, &sdim[0], NULL);
+  if (rank > 0) {
+    H5Sget_simple_extent_dims(space, &sdim[0], NULL);
+  }
   dims.resize(rank);
   for (size_t i = 0; i < rank; ++i) {
     dims[i] = sdim[i];
