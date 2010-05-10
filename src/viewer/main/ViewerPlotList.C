@@ -5571,7 +5571,9 @@ ViewerPlotList::SetPlotOrderToFirst(int plotId)
 {
     if(plotId >= 0 && plotId < nPlots && nPlots > 1)
     {
-        ViewerPlotListElement *newPlots = new ViewerPlotListElement[nPlots];
+        ViewerPlotListElement *newPlots = new ViewerPlotListElement[nPlotsAlloc];
+        memset(newPlots, 0, nPlotsAlloc*sizeof(ViewerPlotListElement));
+
         newPlots[0] = plots[plotId];
         int index = 1;
         for(int i = 0; i < nPlots; ++i)
@@ -5609,7 +5611,9 @@ ViewerPlotList::SetPlotOrderToLast(int plotId)
 {
     if(plotId >= 0 && plotId < nPlots && nPlots > 1)
     {
-        ViewerPlotListElement *newPlots = new ViewerPlotListElement[nPlots];
+        ViewerPlotListElement *newPlots = new ViewerPlotListElement[nPlotsAlloc];
+        memset(newPlots, 0, nPlotsAlloc*sizeof(ViewerPlotListElement));
+
         int index = 0;
         for(int i = 0; i < nPlots; ++i)
         {
