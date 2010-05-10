@@ -54,6 +54,11 @@ typedef avtVector Vector;
 
 using namespace std;
 
+
+class FieldlineInfo {
+
+public:
+
 enum FieldlineType { UNKNOWN  = 0,
 
                      PERIODIC = 10,
@@ -67,8 +72,21 @@ enum FieldlineType { UNKNOWN  = 0,
                      
                      CHAOTIC = 30 };
   
-struct FieldlineInfo {
+enum analysisStatus { IN_PROCESS = 0x0001,
+                      COMPLETED  = 0x0002,
+                      TERMINATED = 0x0004,
+
+                      DELETE     = 0x0008,
+
+                      ADD          = 0x00F0,
+                      ADD_O_POINTS = 0x0010,
+                      ADD_X_POINTS = 0x0020 };
+
+public:
+
   FieldlineType type;
+
+  int analysisStatus;
 
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
@@ -80,12 +98,13 @@ struct FieldlineInfo {
   float ridgelineVariance;
   unsigned int ridgelinePeriod;
 
-  bool complete;
-
   unsigned int nPuncturesNeeded;
 
-  std::vector< Point > islandCenters;
-  bool seedIslandCenters;
+  std::vector< Point > OPoints;
+  bool seedOPoints;
+
+  std::vector< int > parentIds;
+  std::vector< int > childIds;
 };
 
 namespace FusionPSE {
@@ -109,12 +128,9 @@ public:
                    int dir );
 
   bool hullCheck( vector< Point > &points,
-                  unsigned int toroidalWinding,
-                  int direction,
-                  unsigned int &nhulls,
-                  bool &reversed);
+                  int &direction);
 
-  unsigned int factorial( unsigned int n0, unsigned int n1 );
+  unsigned int GCD( unsigned int a, unsigned int b );
 
   Point circle(Point &pt1, Point &pt2, Point &pt3);
 
@@ -134,36 +150,43 @@ public:
                                             double > > &windingSetList );
 
   unsigned int
-  poloidalWindingStats( unsigned int base_period,
-                        vector< Point >& ridgelinePoints,
-                        vector< Point >& poloidalWindingPoints,
-                        vector< pair< unsigned int,
-                                      double > >& ridgelineSetList );
+  periodicityStats( unsigned int base_period,
+                    vector< Point >& points,
+                    vector< pair< unsigned int, double > >& stats );
+
+
+  unsigned int
+  periodicityChecks( unsigned int winding,
+                     unsigned int period,
+                     vector< Point >& points,
+                     vector< pair< unsigned int, double > >& stats,
+                     bool intTest );
 
   double
-  calculatePeriodVariance( vector< Point >& poloidalWinding_points,
-                           unsigned int poloidalWinding,
-                           bool zCheckOnly = false );
+  calculateSumOfSquares( vector< Point >& poloidalWinding_points,
+                         unsigned int poloidalWinding,
+                         int checkType );
 
   bool
   rationalCheck( vector< Point >& points,
                  unsigned int toroidalWinding,
                  unsigned int &island,
-                 float &avenode,
+                 unsigned int &nnodes,
                  float delta=0.01);
 
   bool
   islandChecks( vector< Point >& points,
                 unsigned int toroidalWinding,
                 unsigned int &islands,
-                float &avenode,
+                unsigned int &nnodes,
                 bool &complete );
 
   FieldlineInfo 
   fieldlineProperties( vector< Point > &ptList,
                        unsigned int override,
                        unsigned int maxToroidalWinding,
-                       float hitrate );
+                       float hitrate,
+                       bool findIslandCenters );
 
   unsigned int
   islandProperties( vector< Point > &points,
@@ -210,7 +233,7 @@ public:
                 unsigned int island );
 
   void
-  findIslandCenter( vector < Point > &points,
+  findIslandCenter( vector< Point > &points,
                     unsigned int nnodes,
                     unsigned int toroidalWinding,
                     unsigned int poloidalWinding,
