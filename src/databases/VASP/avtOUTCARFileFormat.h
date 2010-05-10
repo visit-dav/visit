@@ -75,6 +75,9 @@ struct Atom
 //    Jeremy Meredith, Tue Mar 10 17:42:20 EDT 2009
 //    Added support for POTIM field to get time values.
 //
+//    Jeremy Meredith, Mon May 10 18:01:50 EDT 2010
+//    Changed the way cycles and times are generated.
+//
 // ****************************************************************************
 
 class avtOUTCARFileFormat : public avtMTSDFileFormat
@@ -91,6 +94,8 @@ class avtOUTCARFileFormat : public avtMTSDFileFormat
 
     virtual const char    *GetType(void)   { return "OUTCAR"; };
     virtual void           FreeUpResources(void); 
+    virtual void           GetCycles(std::vector<int>&);
+    virtual void           GetTimes(std::vector<double>&);
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
