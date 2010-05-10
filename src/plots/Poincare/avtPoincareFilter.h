@@ -122,6 +122,9 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual void              CreateStreamlineOutput( 
                                    vector<avtStreamlineWrapper *> &sls);
 
+  virtual void drawPoints( avtDataTree *dt,
+                           vector < Point > &nodes );
+
   virtual void findIslandCenter( avtDataTree *dt,
                                  vector< vector < vector < Point > > > &nodes,
                                  unsigned int color,

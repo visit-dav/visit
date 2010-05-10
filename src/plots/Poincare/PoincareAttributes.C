@@ -2546,13 +2546,14 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     bool densityMatters = ((sourceType == SpecifiedLine) &&
                            (pointDensity != obj.pointDensity));
 
-    return (minPunctures != obj.minPunctures ||
-            maxPunctures != obj.maxPunctures ||
+    return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
             sourceLineDiffers ||
             densityMatters ||
 
-            sourceType != obj.sourceType ||
+            minPunctures != obj.minPunctures ||
+            maxPunctures != obj.maxPunctures ||
+
             integrationType != obj.integrationType ||
             maxStepLength != obj.maxStepLength ||
             relTol != obj.relTol ||
@@ -2581,18 +2582,20 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            adjustPlane != obj.adjustPlane ||
            overlaps != obj.overlaps ||
 
+           showOPoints != obj.showOPoints ||
+           OPointMaxInterations != obj.OPointMaxInterations ||
+
+           showIslands != obj.showIslands ||
+           showRidgelines != obj.showRidgelines ||
+           showChaotic != obj.showChaotic ||
+           verboseFlag != obj.verboseFlag ||
+ 
+           dataValue != obj.dataValue ||
+
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
            singlePlane != obj.singlePlane ||
 
-           dataValue != obj.dataValue ||
-
-           showOPoints != obj.showOPoints ||
-           showIslands != obj.showIslands ||
-           showRidgelines != obj.showRidgelines ||
-           verboseFlag != obj.verboseFlag ||
-
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
 }
-

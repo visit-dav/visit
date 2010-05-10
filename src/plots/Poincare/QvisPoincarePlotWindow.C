@@ -197,39 +197,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(pointDensityChanged(int)));
     sourceLayout->addWidget(pointDensity, 2, 3);
 
-
-    // Create the punctures group box.
-    QGroupBox *puncturesGroup = new QGroupBox(firstTab);
-    puncturesGroup->setTitle(tr("Punctures"));
-    mainLayout->addWidget(puncturesGroup, 1, 0);
-//    mainLayout->setStretchFactor(puncturesGroup, 100);
-
-    QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
-    puncturesLayout->setMargin(5);
-    puncturesLayout->setSpacing(10);
-
-    minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
-    puncturesLayout->addWidget(minPuncturesLabel, 0, 0);
-    minPunctures = new QSpinBox(puncturesGroup);
-    minPunctures->setMinimum(1);
-    minPunctures->setMaximum(10000);
-    connect(minPunctures, SIGNAL(valueChanged(int)),
-            this, SLOT(minPuncturesChanged(int)));
-    puncturesLayout->addWidget(minPunctures, 0, 1);
-
-    maxPuncturesLabel = new QLabel(tr("Maximum"), puncturesGroup);
-    puncturesLayout->addWidget(maxPuncturesLabel, 0, 2);
-    maxPunctures = new QSpinBox(puncturesGroup);
-    maxPunctures->setMinimum(1);
-    maxPunctures->setMaximum(10000);
-    connect(maxPunctures, SIGNAL(valueChanged(int)),
-            this, SLOT(maxPuncturesChanged(int)));
-    puncturesLayout->addWidget(maxPunctures, 0, 3);
-
    // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(firstTab);
     integrationGroup->setTitle(tr("Integration"));
-    mainLayout->addWidget(integrationGroup, 2, 0);
+    mainLayout->addWidget(integrationGroup, 1, 0);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
     integrationLayout->setMargin(5);
@@ -267,6 +238,34 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(absTolProcessText()));
     integrationLayout->addWidget(absTol, 3,1);
 
+    // Create the punctures group box.
+    QGroupBox *puncturesGroup = new QGroupBox(firstTab);
+    puncturesGroup->setTitle(tr("Punctures"));
+    mainLayout->addWidget(puncturesGroup, 2, 0);
+//    mainLayout->setStretchFactor(puncturesGroup, 100);
+
+    QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
+    puncturesLayout->setMargin(5);
+    puncturesLayout->setSpacing(10);
+
+    minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
+    puncturesLayout->addWidget(minPuncturesLabel, 0, 0);
+    minPunctures = new QSpinBox(central);
+    minPunctures->setMinimum(1);
+    minPunctures->setMaximum(10000);
+    connect(minPunctures, SIGNAL(valueChanged(int)),
+            this, SLOT(minPuncturesChanged(int)));
+    puncturesLayout->addWidget(minPunctures, 0, 1);
+
+    maxPuncturesLabel = new QLabel(tr("Maximum"), puncturesGroup);
+    puncturesLayout->addWidget(maxPuncturesLabel, 0, 2);
+    maxPunctures = new QSpinBox(central);
+    maxPunctures->setMinimum(1);
+    maxPunctures->setMaximum(10000);
+    connect(maxPunctures, SIGNAL(valueChanged(int)),
+            this, SLOT(maxPuncturesChanged(int)));
+    puncturesLayout->addWidget(maxPunctures, 0, 3);
+
     // ----------------------------------------------------------------------
     // Second tab
     // ----------------------------------------------------------------------
@@ -275,7 +274,8 @@ QvisPoincarePlotWindow::CreateWindowContents()
     
     mainLayout = new QGridLayout(secondTab);
 
-    maxToroidalWindingLabel = new QLabel(tr("Max Toroidal Winding"), secondTab);
+    maxToroidalWindingLabel =
+      new QLabel(tr("Max Toroidal Winding"), secondTab);
     mainLayout->addWidget(maxToroidalWindingLabel, 0, 0);
     maxToroidalWinding = new QSpinBox(secondTab);
     maxToroidalWinding->setMinimum(1);
@@ -284,7 +284,8 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(maxToroidalWindingChanged(int)));
     mainLayout->addWidget(maxToroidalWinding, 0, 1);
 
-    overrideToroidalWindingLabel = new QLabel(tr("Override Toroidal Winding"), secondTab);
+    overrideToroidalWindingLabel =
+      new QLabel(tr("Override Toroidal Winding"), secondTab);
     mainLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
     overrideToroidalWinding = new QSpinBox(secondTab);
     overrideToroidalWinding->setMinimum(0);
@@ -307,16 +308,20 @@ QvisPoincarePlotWindow::CreateWindowContents()
     QHBoxLayout *overlapsLayout = new QHBoxLayout(overlaps);
     overlapsLayout->setMargin(0);
     overlapsLayout->setSpacing(10);
-    QRadioButton *overlapsOverlapTypeRaw = new QRadioButton(tr("Raw"), overlaps);
+    QRadioButton *overlapsOverlapTypeRaw =
+      new QRadioButton(tr("Raw"), overlaps);
     overlapsButtonGroup->addButton(overlapsOverlapTypeRaw,0);
     overlapsLayout->addWidget(overlapsOverlapTypeRaw);
-    QRadioButton *overlapsOverlapTypeRemove = new QRadioButton(tr("Remove"), overlaps);
+    QRadioButton *overlapsOverlapTypeRemove =
+      new QRadioButton(tr("Remove"), overlaps);
     overlapsButtonGroup->addButton(overlapsOverlapTypeRemove,1);
     overlapsLayout->addWidget(overlapsOverlapTypeRemove);
-    QRadioButton *overlapsOverlapTypeMerge = new QRadioButton(tr("Merge"), overlaps);
+    QRadioButton *overlapsOverlapTypeMerge =
+      new QRadioButton(tr("Merge"), overlaps);
     overlapsButtonGroup->addButton(overlapsOverlapTypeMerge,2);
     overlapsLayout->addWidget(overlapsOverlapTypeMerge);
-    QRadioButton *overlapsOverlapTypeSmooth = new QRadioButton(tr("Smooth"), overlaps);
+    QRadioButton *overlapsOverlapTypeSmooth =
+      new QRadioButton(tr("Smooth"), overlaps);
     overlapsButtonGroup->addButton(overlapsOverlapTypeSmooth,3);
     overlapsLayout->addWidget(overlapsOverlapTypeSmooth);
     connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
@@ -348,7 +353,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     criticalPointLayout->addWidget( OPointMaxIterationsLabel, 0, 2);
     criticalPointLayout->addWidget( OPointMaxIterations, 0, 3);
 
-    criticalPointGroup->hide();
+//    criticalPointGroup->hide();
 
    // Create the options group box.
     QGroupBox *analysisOptionsGroup = new QGroupBox(secondTab);
@@ -364,7 +369,8 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(showIslandsChanged(bool)));
     analysisOptionsLayout->addWidget(showIslands, 0, 0);
 
-    showChaotic = new QCheckBox(tr("Show Chaotic Fieldlines (as points)"), analysisOptionsGroup);
+    showChaotic =
+      new QCheckBox(tr("Show Chaotic Fieldlines (as points)"), analysisOptionsGroup);
     connect(showChaotic, SIGNAL(toggled(bool)),
             this, SLOT(showChaoticChanged(bool)));
     analysisOptionsLayout->addWidget(showChaotic, 0, 1);
@@ -1561,7 +1567,8 @@ QvisPoincarePlotWindow::singleColorChanged(const QColor &color)
 
 
 void
-QvisPoincarePlotWindow::colorTableNameChanged(bool useDefault, const QString &ctName)
+QvisPoincarePlotWindow::colorTableNameChanged(bool useDefault,
+                                              const QString &ctName)
 {
     atts->SetColorTableName(ctName.toStdString());
     SetUpdate(false);
