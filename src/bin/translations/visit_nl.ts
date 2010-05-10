@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="nl">
+<!DOCTYPE TS><TS version="1.1" language="nl">
 <defaultcodec></defaultcodec>
 <context>
     <name></name>
@@ -3437,7 +3436,7 @@ De metadataserver haf het volgende bericht door:
     <message>
         <location filename="../../gui/QvisEngineWindow.C" line="442"/>
         <source>Disconnect simulation</source>
-        <translation>Koppel simulatie los</translation>
+        <translation type="obsolete">Koppel simulatie los</translation>
     </message>
     <message>
         <location filename="../../gui/QvisEngineWindow.C" line="455"/>
@@ -3501,6 +3500,11 @@ De metadataserver haf het volgende bericht door:
         <location filename="../../gui/QvisEngineWindow.C" line="723"/>
         <source>Cancel</source>
         <translation>Annuleer</translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisEngineWindow.C" line="442"/>
+        <source>Disconnect</source>
+        <translation type="unfinished">Koppel los</translation>
     </message>
 </context>
 <context>
@@ -3901,17 +3905,17 @@ De metadataserver haf het volgende bericht door:
         <translation type="obsolete">Geselecteerde bestanden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2523"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2524"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="301"/>
+        <location filename="../../gui/QvisFilePanel.C" line="302"/>
         <source>Replace</source>
         <translation>Vervang</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="306"/>
+        <location filename="../../gui/QvisFilePanel.C" line="307"/>
         <source>Overlay</source>
         <translation>Bedek</translation>
     </message>
@@ -3921,47 +3925,47 @@ De metadataserver haf het volgende bericht door:
         <translation type="obsolete">Actieve tijdschuifregelaar</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2177"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2178"/>
         <source>&amp;Open</source>
         <translation>&amp;Open</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="313"/>
+        <location filename="../../gui/QvisFilePanel.C" line="314"/>
         <source>&amp;Replace</source>
         <translation>&amp;Vervang</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="314"/>
+        <location filename="../../gui/QvisFilePanel.C" line="315"/>
         <source>Replace &amp;Selected</source>
         <translation>Vervang ge&amp;Selecteerde</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="315"/>
+        <location filename="../../gui/QvisFilePanel.C" line="316"/>
         <source>&amp;Overlay</source>
         <translation>&amp;Overdek</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="316"/>
+        <location filename="../../gui/QvisFilePanel.C" line="317"/>
         <source>&amp;Close</source>
         <translation>&amp;Afsluiten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="659"/>
+        <location filename="../../gui/QvisFilePanel.C" line="660"/>
         <source>Hosts</source>
         <translation>Computers</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="1265"/>
+        <location filename="../../gui/QvisFilePanel.C" line="1266"/>
         <source>cycle</source>
         <translation>cycle</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="1266"/>
+        <location filename="../../gui/QvisFilePanel.C" line="1267"/>
         <source>time</source>
         <translation>tijd</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2520"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2521"/>
         <source>ReOpen</source>
         <translation>HerOpen</translation>
     </message>
@@ -3971,22 +3975,22 @@ De metadataserver haf het volgende bericht door:
         <translation type="obsolete">De actieve tijdschuifregelaar is reeds op niveau</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2518"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2519"/>
         <source>Activate</source>
         <translation>Activeer</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2591"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2592"/>
         <source>Reopen cannot be used to change the active time state for an animation because reopen discards all cached networks and causes the database to actually be reopened. If you want to change the active time state, use the animation slider or select a new time state and click the Replace button.</source>
         <translation>Heropen kan niet gebruikt worden om de actieve tijdtoestand van een animatie te wijzigen omdat heropenen alle gebufferde netwerken afdankt en zorgt ervoor dat de database wordt geheropend. Indien u de actieve tijdtoestand wilt wijzigen, gebruik dan de animatieschuifregelaar of selecteer een nieuwe tijdtoestand en klik de Vervangknop. </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2169"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2170"/>
         <source>&amp;Activate</source>
         <translation>&amp;Activeer</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisFilePanel.C" line="2171"/>
+        <location filename="../../gui/QvisFilePanel.C" line="2172"/>
         <source>Re&amp;Open</source>
         <translation>Her&amp;Open</translation>
     </message>
@@ -4404,237 +4408,237 @@ De metadataserver haf het volgende bericht door:
 <context>
     <name>QvisGUIApplication</name>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="775"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="776"/>
         <source>File selection</source>
         <translation>Bestand selecteren</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="776"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="777"/>
         <source>File information</source>
         <translation>Bestandsinformatie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="777"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="778"/>
         <source>Information</source>
         <translation>Informatie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3171"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3211"/>
         <source>Output</source>
         <translation>Uitvoer</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="779"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="780"/>
         <source>Host profiles</source>
         <translation>Computerprofielen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="780"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="781"/>
         <source>Set save options</source>
         <translation>Zet opslaanopties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="781"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="782"/>
         <source>Compute engines</source>
         <translation>Rekenmachines</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3195"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3235"/>
         <source>Animation</source>
         <translation>Animatie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3200"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3240"/>
         <source>Annotation</source>
         <translation>Aantekeningen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3210"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3250"/>
         <source>Color tables</source>
         <translation>Kleurtabellen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3215"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3255"/>
         <source>Expressions</source>
         <translation>Uitdrukkingen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3220"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3260"/>
         <source>Subset</source>
         <translation>Subset</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="787"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="788"/>
         <source>Plugin Manager</source>
         <translation>Pluginbeheerder</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3234"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3274"/>
         <source>View</source>
         <translation>Aanzicht</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3247"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3287"/>
         <source>Appearance</source>
         <translation>Voorkomen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="790"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="791"/>
         <source>Keyframe Editor</source>
         <translation>Keyframe bewerker</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3262"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3302"/>
         <source>Lighting</source>
         <translation>Belichting</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="792"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="793"/>
         <source>Lineout options</source>
         <translation>Lineoutopties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="793"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="794"/>
         <source>Material Reconstruction Options</source>
         <translation>MateriaalReconstructieOpties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3277"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3317"/>
         <source>Pick</source>
         <translation>Kies</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3284"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3324"/>
         <source>Help</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3292"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3332"/>
         <source>Query</source>
         <translation>Vraag</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3303"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3343"/>
         <source>Preferences</source>
         <translation>Voorkeuren</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="798"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="799"/>
         <source>Rendering options</source>
         <translation>Weergaveopties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="799"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="800"/>
         <source>Database correlation list</source>
         <translation>Databasecorrelatie lijst</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3323"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3363"/>
         <source>QueryOverTime</source>
         <translation>VraagOverTijd</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="801"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="802"/>
         <source>Interactors</source>
         <translation>Interactors</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3334"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3374"/>
         <source>Simulations</source>
         <translation>Simulaties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3348"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3388"/>
         <source>Export Database</source>
         <translation>Exporteer Database</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="804"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="805"/>
         <source>Commands</source>
         <translation>Opdrachten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="805"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="806"/>
         <source>Mesh Management Options</source>
         <translation>MeshManagementOpties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="806"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="807"/>
         <source>File open</source>
         <translation>Bestand open</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3376"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3416"/>
         <source>Macros</source>
         <translation>Macro´s</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1104"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1105"/>
         <source>Calculating window metrics...</source>
         <translation>Bereken venstergegevens...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1125"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1126"/>
         <source>Creating main window...</source>
         <translation>Maak hoofdvenster aan...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1134"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1135"/>
         <source>Starting viewer...</source>
         <translation>Start viewer ...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1150"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1151"/>
         <source>Starting metadata server...</source>
         <translation>Start metadataserver ...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1162"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1163"/>
         <source>Launched the metadata server...</source>
         <translation>Metadataserver gelanceerd ...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1170"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1171"/>
         <source>Getting the path...</source>
         <translation>Verkrijg pad ...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1176"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1177"/>
         <source>Creating crucial windows...</source>
         <translation>Maak cruciale vensters aan...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1185"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1186"/>
         <source>Loading plugin information...</source>
         <translation>Laden plugininformatie...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1194"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1195"/>
         <source>Processing config file...</source>
         <translation>Verwerk config-bestand...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1599"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1593"/>
         <source>Creating visible windows...</source>
         <translation>Maak zichtbare vensters aan...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1607"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1601"/>
         <source>Processing window configs...</source>
         <translation>Verwerken vensterconfigs...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1615"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1609"/>
         <source>VisIt is ready.</source>
         <translation>VisIt is klaar.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1638"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1632"/>
         <source>When a session file is specified on the command line, files specified with the -o argument are ignored.</source>
         <translation>Als een sessiebestand is opgegeven op de commandoregel, dan worden bestanden na het -o argument genegeerd.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="1858"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="1884"/>
         <source>There is more than 1 VisIt client connected to the viewer. Do you want to quit everything? 
 
 Answering No will just detach the GUI and leave the viewer and its remaining clients running.</source>
@@ -4643,167 +4647,167 @@ Answering No will just detach the GUI and leave the viewer and its remaining cli
 Indien u met Nee antwoord dan haakt alleen de GUI af en de viewer en overige afnemers blijven lopen.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3163"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3203"/>
         <source>FileInfo</source>
         <translation>BestandsInformatie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3177"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3217"/>
         <source>Profiles</source>
         <translation>Profielen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3182"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3222"/>
         <source>Save options</source>
         <translation>Opslaanopties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3187"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3227"/>
         <source>Engines</source>
         <translation>Machines</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3226"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3266"/>
         <source>Plugins</source>
         <translation>Plugins</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3253"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3293"/>
         <source>Keyframer</source>
         <translation>Keyframer</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3267"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3307"/>
         <source>Lineout</source>
         <translation>Lineout</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3272"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3312"/>
         <source>MIR Options</source>
         <translation>MIR opties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3308"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3348"/>
         <source>Rendering</source>
         <translation>Weergeven</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3318"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3358"/>
         <source>Correlations</source>
         <translation>Correlaties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3328"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3368"/>
         <source>Interactor</source>
         <translation>Interactor</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3356"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3396"/>
         <source>Command</source>
         <translation>Opdracht</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3364"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3404"/>
         <source>MeshManagement</source>
         <translation>MeshManagement</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3643"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3683"/>
         <source>Loading plugins...</source>
         <translation>Plugins laden...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3665"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3705"/>
         <source>Creating plugin windows...</source>
         <translation>Maak pluginvensters...</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3847"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3887"/>
         <source>%1 plot attributes</source>
         <translation>%1 plotattributen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3848"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3888"/>
         <source>%1 plot</source>
         <translation>%1 plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3893"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3933"/>
         <source>%1 operator attributes</source>
         <translation>%1 operatorattributen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="3894"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="3934"/>
         <source>%1 operator</source>
         <translation>%1 operator</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4152"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4192"/>
         <source>VisIt session</source>
         <translation>VisIt sessie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4505"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4545"/>
         <source>VisIt was able to read the session file, %1, but the session file might be from before VisIt 1.5.5. Consequently, VisIt will open the session file in the normal manner. If you want to restore this session using different sources then you should first resave your session with a newer version of VisIt.</source>
         <translation>VisIt kon sessiebestand %1 lezen maar dit bestand is mogelijk van voor VisIt 1.5.5. Derhalve zal VisIt de sessie openen op de normale wijze. Indien u deze sessie wilt herstellen met andere bronnen dan dient u de sessie eerst opnieuw op te slaan met een nieuwere versie van VisIt.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5264"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5304"/>
         <source>Preventing the metadata server from being launched on %1.</source>
         <translation>Verhinderen dat de metadataserver gelanceerd wordt op %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5748"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5802"/>
         <source>Hostname &quot;%1&quot; is not a recognized host.</source>
         <translation>Computernaam &quot;%1&quot; wordt niet herkend als computer.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5316"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5356"/>
         <source>VisIt could not set the host back to &quot;%1&quot; because no metadata server could be launched on that host.</source>
         <translation>VisIt kan de computer niet terugzetten naar &quot;%1&quot; omdat geen metadataserver gelanceerd kon worden op die computer.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5322"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5362"/>
         <source>VisIt could not set the host back to &quot;%1&quot;.</source>
         <translation>VisIt kon de computer niet terugzetten naar &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5769"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5823"/>
         <source>The metadata server running on %1 could not change the current directory to %2.</source>
         <translation>De MetaData server lopend op %1 kon niet de huidige map niet veranderen naar %2.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5790"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5844"/>
         <source>The metadata server running on %1 could not get the file list for the current directory.</source>
         <translation>De MetaData server lopend op %1 kon niet de bestandenlijst van de huidige map niet verkrijgen.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5358"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5398"/>
         <source>VisIt could not launch a metadata server on host &quot;%1&quot;.</source>
         <translation>VisIt kon de metadataserver op computer &quot;%1&quot; niet lanceren.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5365"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5405"/>
         <source>The launch of a metadata server on host &quot;%1&quot; was cancelled.</source>
         <translation>Het lanceren van de metadataserver op computer &quot;%1&quot; werd geannuleerd.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5797"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="5851"/>
         <source>VisIt could not open %1 because it could not launch a metadata server on host &quot;%1&quot;.</source>
         <translation>VisIt kon %1 niet openen omdat de metadataserver op computer &quot;%1&quot; niet gelanceerd kon worden.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="5949"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6003"/>
         <source>Saving settings</source>
         <translation>Sla instellingen op</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="6421"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="6475"/>
         <source>VisIt encountered an error while setting up printer options.</source>
         <translation>VisIt liep tegen een fout aan terwijl de afdrukinstellingen werden opgezet.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="6971"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7025"/>
         <source>VisIt has been updated. Would you like VisIt to save 
 its session, quit, and restart the session using the new 
 version of VisIt?</source>
@@ -4812,27 +4816,27 @@ opslaat, afbreekt, en de sessie herstart met de nieuwe
 versie van VisIt? </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7016"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7070"/>
         <source>VisIt could not automatically relaunch itself. Please exit and restart VisIt.</source>
         <translation>VisIt kon zichzelf niet automatisch herstarten. Gelieve VisIt te verlaten en opnieuw te starten.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7181"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7235"/>
         <source>Client method %1 is supported by the GUI but not enough information was passed in the method request.</source>
         <translation>Afnemermethode %1 wordt ondersteund door de GUI maar er werd niet genoeg informatie doorgegeven bij de aanvraag van de methode.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7284"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7338"/>
         <source>VisIt movie progress</source>
         <translation>VisIt filmvoortgang</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7285"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7339"/>
         <source>Making movie</source>
         <translation>Maak film</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7945"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7999"/>
         <source>VisIt executed the following command line to begin making your movie:
 
 </source>
@@ -4841,12 +4845,12 @@ versie van VisIt? </translation>
 </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7960"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8014"/>
         <source>VisIt could not run %1.</source>
         <translation>VisIt kon %1 niet uitvoeren.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="7970"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8024"/>
         <source>Execute the following command at the command prompt on your local computer to begin making your movie. All settings, including the number of processors, will be the same as your current VisIt session when you invoke:
 
 </source>
@@ -4855,27 +4859,27 @@ versie van VisIt? </translation>
 </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8117"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8171"/>
         <source>Crash recovery</source>
         <translation>Valherstel</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="8119"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="8173"/>
         <source>VisIt found a crash recovery session file. Would you like to restore it to return to the last saved state?</source>
         <translation>VisIt vond een sessievalherstelbestand. Wilt u de laatst opgeslagen toestand herstellen?</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4153"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4193"/>
         <source>Save Session File</source>
         <translation>Bewaar sessiebestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="4464"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="4504"/>
         <source>Open VisIt Session File</source>
         <translation>Open een VisIt-sessiebestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisGUIApplication.C" line="6972"/>
+        <location filename="../../gui/QvisGUIApplication.C" line="7026"/>
         <source>VisIt</source>
         <translation>VisIt</translation>
     </message>
@@ -5111,17 +5115,17 @@ door de Lineout Operator</translation>
         <translation>Het bestand met de vrijgifte aantekeningen kon niet geopend worden.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1658"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1661"/>
         <source>The bookmark was not added because it is already in the list.</source>
         <translation>De bladwijzer kon niet toegevoegd worden omdat het al in de lijst voorkomt.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1662"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1665"/>
         <source>The bookmark could not be added.</source>
         <translation>De bladwijzer kon niet toegevoegd worden.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHelpWindow.C" line="1665"/>
+        <location filename="../../gui/QvisHelpWindow.C" line="1668"/>
         <source>This page cannot be bookmarked.</source>
         <translation>Deze bladzijde kan niet met een bladwijzer voorzien worden.</translation>
     </message>
@@ -5331,7 +5335,7 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Computerprofielen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="3411"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="3428"/>
         <source>New profile</source>
         <translation>Nieuw profiel</translation>
     </message>
@@ -5398,7 +5402,7 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Parallelle rekenmachine</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1498"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1505"/>
         <source>(default)</source>
         <translation>(standaard)</translation>
     </message>
@@ -5548,42 +5552,42 @@ door de Lineout Operator</translation>
         <translation>Afsluitende opdracht</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1444"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1448"/>
         <source>Profile name cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation>Profielnaam kan niet leeg blijven, val terug op &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1470"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1474"/>
         <source>Host name cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation>Computernaam kan niet leeg blijven, val terug op &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1669"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1676"/>
         <source>Username cannot be empty, reverting to &quot;%1&quot;.</source>
         <translation>Gebruikersnaam kan niet leeg blijven, val terug op &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1526"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1533"/>
         <source>An invalid number of processors was specified, reverting to %1 processors.</source>
         <translation>Een ongeldig aantal processoren is gespecificeerd, val terug op %1 processoren.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1551"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1558"/>
         <source>An invalid number of nodes was specified, reverting to %1 nodes.</source>
         <translation>Een ongeldig aantal nodes is gespecificeerd, val terug op %1 nodes.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1638"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1645"/>
         <source>An invalid timeout was specified, reverting to %1 minutes.</source>
         <translation>Een ongeldige tijdslimiet is gespecificeerd, val terug op %1 minuten.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="3156"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="3168"/>
         <source>Pre-command cannot be empty, turning off pre-command.</source>
         <translation>Een voorloopopdracht kan niet leeg zijn, voorloopopdrachten uitgeschakeld.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="3199"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="3213"/>
         <source>Post-command cannot be empty, turning off post-command.</source>
         <translation>Een afsluitende opdracht kan niet leeg zijn, afsluitende opdrachten uitgeschakeld.</translation>
     </message>
@@ -5668,7 +5672,7 @@ door de Lineout Operator</translation>
         <translation>Standaard bank / rekening</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisHostProfileWindow.C" line="1935"/>
+        <location filename="../../gui/QvisHostProfileWindow.C" line="1942"/>
         <source>(default</source>
         <translation>(standaard)</translation>
     </message>
@@ -6518,11 +6522,6 @@ door de Lineout Operator</translation>
         <source>Computed values</source>
         <translation>Berekende waarden</translation>
     </message>
-    <message>
-        <location filename="../../gui/QvisLegendAttributesInterface.C" line="1452"/>
-        <source></source>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>QvisLightingWindow</name>
@@ -6809,387 +6808,387 @@ door de Lineout Operator</translation>
 <context>
     <name>QvisMainWindow</name>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="419"/>
+        <location filename="../../gui/QvisMainWindow.C" line="427"/>
         <source>&amp;File</source>
         <translation>&amp;Bestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="2565"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2597"/>
         <source>Select &amp;file . . .</source>
         <translation>Selecteer &amp;Bestand . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="430"/>
+        <location filename="../../gui/QvisMainWindow.C" line="438"/>
         <source>Open file . . .</source>
         <translation>Open bestand . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="2577"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2609"/>
         <source>Advanced file options</source>
         <translation>Gevorderde bestandsopties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="2627"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2682"/>
         <source>ReOpen file</source>
         <translation>HerOpen bestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="2620"/>
+        <location filename="../../gui/QvisMainWindow.C" line="2675"/>
         <source>Close file</source>
         <translation>Sluit bestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="460"/>
+        <location filename="../../gui/QvisMainWindow.C" line="468"/>
         <source>Refresh file list</source>
         <translation>Ververs bestandslijst</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="463"/>
+        <location filename="../../gui/QvisMainWindow.C" line="471"/>
         <source>File &amp;information . . .</source>
         <translation>Bestands&amp;informatie . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="466"/>
+        <location filename="../../gui/QvisMainWindow.C" line="474"/>
         <source>Compute &amp;engines . . .</source>
         <translation>Reken&amp;machines . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="469"/>
+        <location filename="../../gui/QvisMainWindow.C" line="477"/>
         <source>Simulations . . .</source>
         <translation>Simulaties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="475"/>
+        <location filename="../../gui/QvisMainWindow.C" line="483"/>
         <source>&amp;Save window</source>
         <translation>&amp;Sla venster op</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="478"/>
+        <location filename="../../gui/QvisMainWindow.C" line="486"/>
         <source>Set Save &amp;options . . .</source>
         <translation>Zet &amp;opslaanopties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="481"/>
+        <location filename="../../gui/QvisMainWindow.C" line="489"/>
         <source>Save movie . . .</source>
         <translation>Bewaar film . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="483"/>
+        <location filename="../../gui/QvisMainWindow.C" line="491"/>
         <source>Export database . . .</source>
         <translation>Exporteer Database . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="485"/>
+        <location filename="../../gui/QvisMainWindow.C" line="493"/>
         <source>Print window</source>
         <translation>Druk venster af</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="487"/>
+        <location filename="../../gui/QvisMainWindow.C" line="495"/>
         <source>Set Print options . . .</source>
         <translation>Zet afdrukopties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="495"/>
+        <location filename="../../gui/QvisMainWindow.C" line="503"/>
         <source>Restore session . . .</source>
         <translation>Herstel sessie . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="497"/>
+        <location filename="../../gui/QvisMainWindow.C" line="505"/>
         <source>Restore session with sources . . .</source>
         <translation>Herstel sessie met bronnen . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="493"/>
+        <location filename="../../gui/QvisMainWindow.C" line="501"/>
         <source>Save session . . .</source>
         <translation>Bewaar sessie . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="503"/>
+        <location filename="../../gui/QvisMainWindow.C" line="511"/>
         <source>&amp;Quit</source>
         <translation>&amp;Q verlaat</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="506"/>
+        <location filename="../../gui/QvisMainWindow.C" line="514"/>
         <source>E&amp;xit</source>
         <translation>E&amp;xit</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="514"/>
+        <location filename="../../gui/QvisMainWindow.C" line="522"/>
         <source>&amp;Controls</source>
         <translation>&amp;Controls</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="515"/>
+        <location filename="../../gui/QvisMainWindow.C" line="523"/>
         <source>&amp;Animation . . .</source>
         <translation>&amp;Animatie . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="518"/>
+        <location filename="../../gui/QvisMainWindow.C" line="526"/>
         <source>A&amp;nnotation . . .</source>
         <translation>A&amp;nnotatie . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="521"/>
+        <location filename="../../gui/QvisMainWindow.C" line="529"/>
         <source>Color &amp;table . . .</source>
         <translation>Kleur&amp;tabel . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="524"/>
+        <location filename="../../gui/QvisMainWindow.C" line="532"/>
         <source>Command . . .</source>
         <translation>Opdracht . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="527"/>
+        <location filename="../../gui/QvisMainWindow.C" line="535"/>
         <source>&amp;Database correlations . . .</source>
         <translation>&amp;Database correlaties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="530"/>
+        <location filename="../../gui/QvisMainWindow.C" line="538"/>
         <source>&amp;Expressions . . .</source>
         <translation>&amp;Expressies . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="533"/>
+        <location filename="../../gui/QvisMainWindow.C" line="541"/>
         <source>&amp;Keyframing . . .</source>
         <translation>&amp;Keyframing . . . </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="536"/>
+        <location filename="../../gui/QvisMainWindow.C" line="544"/>
         <source>&amp;Lighting . . .</source>
         <translation>Be&amp;lichting . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="539"/>
+        <location filename="../../gui/QvisMainWindow.C" line="547"/>
         <source>&amp;Lineout . . .</source>
         <translation>&amp;Lineout . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="542"/>
+        <location filename="../../gui/QvisMainWindow.C" line="550"/>
         <source>Macros . . .</source>
         <translation>Macro&apos;s . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="544"/>
+        <location filename="../../gui/QvisMainWindow.C" line="552"/>
         <source>&amp;Material Options . . .</source>
         <translation>&amp;Materiaal Opties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="547"/>
+        <location filename="../../gui/QvisMainWindow.C" line="555"/>
         <source>&amp;Mesh management . . .</source>
         <translation>&amp;Mesh management . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="550"/>
+        <location filename="../../gui/QvisMainWindow.C" line="558"/>
         <source>&amp;Pick . . .</source>
         <translation>&amp;P kies . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="555"/>
+        <location filename="../../gui/QvisMainWindow.C" line="563"/>
         <source>Quer&amp;y . . .</source>
         <translation>Ondervraag &amp;y . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="558"/>
+        <location filename="../../gui/QvisMainWindow.C" line="566"/>
         <source>Quer&amp;y over time options . . .</source>
         <translation>Ondervraag &amp;y gedurende tijd opties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="562"/>
+        <location filename="../../gui/QvisMainWindow.C" line="570"/>
         <source>&amp;Query over time options . . .</source>
         <translation>&amp;Q Ondervraag gedurende tijd opties . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="565"/>
+        <location filename="../../gui/QvisMainWindow.C" line="573"/>
         <source>&amp;Query . . .</source>
         <translation>&amp;Q ondervraag . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="569"/>
+        <location filename="../../gui/QvisMainWindow.C" line="577"/>
         <source>S&amp;ubset . . .</source>
         <translation>S&amp;ubset . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="572"/>
+        <location filename="../../gui/QvisMainWindow.C" line="580"/>
         <source>&amp;View . . .</source>
         <translation>&amp;V aanzicht . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="579"/>
+        <location filename="../../gui/QvisMainWindow.C" line="587"/>
         <source>&amp;Options</source>
         <translation>&amp;Opties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="580"/>
+        <location filename="../../gui/QvisMainWindow.C" line="588"/>
         <source>&amp;Appearance . . .</source>
         <translation>&amp;A voorkomen . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="583"/>
+        <location filename="../../gui/QvisMainWindow.C" line="591"/>
         <source>&amp;Host profiles . . .</source>
         <translation>&amp;H Computerprofielen . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="586"/>
+        <location filename="../../gui/QvisMainWindow.C" line="594"/>
         <source>&amp;Interactors . . .</source>
         <translation>&amp;Interactors . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="589"/>
+        <location filename="../../gui/QvisMainWindow.C" line="597"/>
         <source>&amp;Plugin Manager . . .</source>
         <translation>&amp;Pluginbeheerder . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="591"/>
+        <location filename="../../gui/QvisMainWindow.C" line="599"/>
         <source>Preferences . . .</source>
         <translation>Voorkeuren . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="593"/>
+        <location filename="../../gui/QvisMainWindow.C" line="601"/>
         <source>Rendering . . .</source>
         <translation>Weergave . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="598"/>
+        <location filename="../../gui/QvisMainWindow.C" line="606"/>
         <source>Save Settings</source>
         <translation>Sla instellingen op</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="605"/>
+        <location filename="../../gui/QvisMainWindow.C" line="613"/>
         <source>&amp;Windows</source>
         <translation>&amp;W vensters</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="607"/>
+        <location filename="../../gui/QvisMainWindow.C" line="615"/>
         <source>Add</source>
         <translation>Voeg toe</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="614"/>
+        <location filename="../../gui/QvisMainWindow.C" line="622"/>
         <source>Clone</source>
         <translation>Kloon</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="616"/>
+        <location filename="../../gui/QvisMainWindow.C" line="624"/>
         <source>Delete</source>
         <translation>Verwijder</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="620"/>
+        <location filename="../../gui/QvisMainWindow.C" line="628"/>
         <source>Clear all</source>
         <translation>Alles opruimen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="625"/>
+        <location filename="../../gui/QvisMainWindow.C" line="633"/>
         <source>1x1</source>
         <translation>1x1</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="627"/>
+        <location filename="../../gui/QvisMainWindow.C" line="635"/>
         <source>1x2</source>
         <translation>1x2</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="629"/>
+        <location filename="../../gui/QvisMainWindow.C" line="637"/>
         <source>2x2</source>
         <translation>2x2</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="631"/>
+        <location filename="../../gui/QvisMainWindow.C" line="639"/>
         <source>2x3</source>
         <translation>2x3</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="633"/>
+        <location filename="../../gui/QvisMainWindow.C" line="641"/>
         <source>2x4</source>
         <translation>2x4</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="635"/>
+        <location filename="../../gui/QvisMainWindow.C" line="643"/>
         <source>3x3</source>
         <translation>3x3</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="623"/>
+        <location filename="../../gui/QvisMainWindow.C" line="631"/>
         <source>Layouts</source>
         <translation>Opmaak</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="641"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1119"/>
         <source>Active window</source>
         <translation>Actief venster</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="654"/>
+        <location filename="../../gui/QvisMainWindow.C" line="662"/>
         <source>View from</source>
         <translation>Aanzicht van</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="661"/>
+        <location filename="../../gui/QvisMainWindow.C" line="669"/>
         <source>Lighting from</source>
         <translation>Belichting van</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="667"/>
+        <location filename="../../gui/QvisMainWindow.C" line="675"/>
         <source>Annotations from</source>
         <translation>Aantekeningen van</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="673"/>
+        <location filename="../../gui/QvisMainWindow.C" line="681"/>
         <source>Plots from</source>
         <translation>Plots van</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="680"/>
+        <location filename="../../gui/QvisMainWindow.C" line="688"/>
         <source>Everything from</source>
         <translation>Alles van</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="651"/>
+        <location filename="../../gui/QvisMainWindow.C" line="659"/>
         <source>Copy</source>
         <translation>Kopie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="692"/>
+        <location filename="../../gui/QvisMainWindow.C" line="700"/>
         <source>Pick points</source>
         <translation>Kies punten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="693"/>
+        <location filename="../../gui/QvisMainWindow.C" line="701"/>
         <source>Plots</source>
         <translation>Plots</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="694"/>
+        <location filename="../../gui/QvisMainWindow.C" line="702"/>
         <source>Reference lines</source>
         <translation>Referentielijnen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="691"/>
+        <location filename="../../gui/QvisMainWindow.C" line="699"/>
         <source>Clear</source>
         <translation>Opruimen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="700"/>
+        <location filename="../../gui/QvisMainWindow.C" line="708"/>
         <source>Time</source>
         <translation>Tijd</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="701"/>
+        <location filename="../../gui/QvisMainWindow.C" line="709"/>
         <source>Tools</source>
         <translation>Gereedschap</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="702"/>
+        <location filename="../../gui/QvisMainWindow.C" line="710"/>
         <source>View</source>
         <translation>Aanzicht</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="704"/>
+        <location filename="../../gui/QvisMainWindow.C" line="712"/>
         <source>Unlock everything</source>
         <translation>Ontgrendel alles</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="698"/>
+        <location filename="../../gui/QvisMainWindow.C" line="706"/>
         <source>Lock</source>
         <translation>Vergrendel</translation>
     </message>
@@ -7206,47 +7205,47 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Spin</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="884"/>
+        <location filename="../../gui/QvisMainWindow.C" line="947"/>
         <source>&amp;Help</source>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="886"/>
+        <location filename="../../gui/QvisMainWindow.C" line="949"/>
         <source>About . . .</source>
         <translation>Over . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="889"/>
+        <location filename="../../gui/QvisMainWindow.C" line="952"/>
         <source>Copyright . . .</source>
         <translation>Auteursrecht . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="892"/>
+        <location filename="../../gui/QvisMainWindow.C" line="955"/>
         <source>Help . . .</source>
         <translation>Help . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="896"/>
+        <location filename="../../gui/QvisMainWindow.C" line="959"/>
         <source>Release notes . . .</source>
         <translation>Vrijgave aantekeningen . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="901"/>
+        <location filename="../../gui/QvisMainWindow.C" line="964"/>
         <source>Check for new version . . .</source>
         <translation>Navragen voor nieuwe versie . . .</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="726"/>
+        <location filename="../../gui/QvisMainWindow.C" line="734"/>
         <source>Main Controls</source>
         <translation>Hoofdcontrols</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="726"/>
+        <location filename="../../gui/QvisMainWindow.C" line="734"/>
         <source>Main</source>
         <translation>Hoofd</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="784"/>
+        <location filename="../../gui/QvisMainWindow.C" line="783"/>
         <source>Output window</source>
         <translation>Uitvoervenster</translation>
     </message>
@@ -7265,82 +7264,87 @@ door de Lineout Operator</translation>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="1067"/>
         <source>Replace plots</source>
-        <translation>Vervang plots</translation>
+        <translation type="obsolete">Vervang plots</translation>
     </message>
     <message>
         <source>Auto update</source>
         <translation type="obsolete">Auto bijwerken</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1212"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1261"/>
         <source>done</source>
         <translation>gedaan</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1213"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1262"/>
         <source>of stage</source>
         <translation>van fase</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1632"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1667"/>
         <source>Window </source>
         <translation>Venster </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="709"/>
+        <location filename="../../gui/QvisMainWindow.C" line="717"/>
         <source>Full frame mode</source>
         <translation>Volledig frame</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="711"/>
+        <location filename="../../gui/QvisMainWindow.C" line="719"/>
         <source>Spin mode</source>
         <translation>Spin modus</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="713"/>
+        <location filename="../../gui/QvisMainWindow.C" line="721"/>
         <source>Bounding box navigation</source>
         <translation>Navigeer met de begrenzende doos</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="1061"/>
         <source>Window</source>
-        <translation>Venster</translation>
+        <translation type="obsolete">Venster</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMainWindow.C" line="1072"/>
+        <location filename="../../gui/QvisMainWindow.C" line="1130"/>
         <source>Auto apply</source>
         <translation>Auto bijwerken</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="1077"/>
         <source>Apply operators  /</source>
-        <translation>Pas operatoren toe  /</translation>
+        <translation type="obsolete">Pas operatoren toe  /</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="1082"/>
         <source>selection to all plots</source>
-        <translation>selectie naar alle plots</translation>
+        <translation type="obsolete">selectie naar alle plots</translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMainWindow.C" line="1110"/>
+        <source>Global</source>
+        <translation type="unfinished">Hoofd</translation>
     </message>
 </context>
 <context>
     <name>QvisMaterialWindow</name>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="160"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="163"/>
         <source>Algorithm:</source>
         <translation>Algoritme:</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="165"/>
         <source>Tetrahedral (obsolete)</source>
-        <translation>Tetraëder (verouderd)</translation>
+        <translation type="obsolete">Tetraëder (verouderd)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="166"/>
         <source>Zoo-based (default)</source>
-        <translation>Zoo-gebaseerd (standaard)</translation>
+        <translation type="obsolete">Zoo-gebaseerd (standaard)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="167"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="170"/>
         <source>Isovolume (special-purpose)</source>
         <translation>Isovolume (speciale doeleinden)</translation>
     </message>
@@ -7353,104 +7357,139 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Forceer volledige connectiviteit</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="185"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="188"/>
         <source>Force interface reconstruction</source>
         <translation>Force interface reconstruction</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="190"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="193"/>
         <source>Clean zones only</source>
         <translation>Alleen schone zones</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="196"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="199"/>
         <source>Simplify heavily mixed zones</source>
         <translation>Simplificeer zwaar gemengde zones</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="202"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="205"/>
         <source>Maximum materials per zone</source>
         <translation>Maximum materialen per zone</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="211"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="214"/>
         <source>Volume Fraction for Isovolume</source>
         <translation>Volumefractie voor isovolume</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="531"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="537"/>
         <source>Max mats per zone must be at least 1.Resetting to the last good value of %1.</source>
         <translation>Maximum materialen per zone dient tenminste 1 te zijn. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="555"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="561"/>
         <source>The value of isoVolumeFraction was invalid. Resetting to the last good value of %1.</source>
         <translation>De waarde van isoVolumeFraction was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="668"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="674"/>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
         <translation>Opmerking:  Deze instellingen gelden alleen voor nieuwe plots.  Als ze voor de huidige plots moeten gelden, heropen dan het bestand.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="674"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="680"/>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.  VisIt will NOT issue this message any further times for this session, but keep in mind that you must re-open each time you change the material attributes.</source>
         <translation>Opmerking:  Deze instellingen gelden alleen voor nieuwe plots.  Als ze voor de huidige plots moeten gelden, heropen dan het bestand. VisIt zal ditbericht NIET nog een keer tonen tijdens deze sessie, maar onthoud dat telkens het bestand heropend dient te worden als de materiaalattributen gewijzigd worden. </translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="168"/>
         <source>Youngs (accurate/discontinuous)</source>
-        <translation>Youngs (nauwkeurig/discontinue)</translation>
+        <translation type="obsolete">Youngs (nauwkeurig/discontinue)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="169"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="172"/>
         <source>Discrete (accurate/10X memory footprint/rect. only)</source>
         <translation>Discreet (nauwkeurig/10x meer geheugen/alleen rechth.)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="175"/>
         <source>Enable interface smoothing (Zoo/Tet only)</source>
-        <translation>Enable interface smoothing (Zoo/Tet only)</translation>
+        <translation type="obsolete">Enable interface smoothing (Zoo/Tet only)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="180"/>
         <source>Force full connectivity (Tet only)</source>
-        <translation>Force full connectivity (Tet only)</translation>
+        <translation type="obsolete">Force full connectivity (Tet only)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="220"/>
         <source>Enable iteration (Zoo/Isovol only)</source>
-        <translation>Enable iteration (Zoo/Isovol only)</translation>
+        <translation type="obsolete">Enable iteration (Zoo/Isovol only)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="226"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="229"/>
         <source>Number of iterations</source>
         <translation>Aantal iteraties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="234"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="237"/>
         <source>Convergence rate (&gt;0)</source>
         <translation>Convergentiesnelheid (&gt; 0)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="242"/>
         <source>Annealing time (seconds)</source>
-        <translation>Gloeitijd (seconden)</translation>
+        <translation type="obsolete">Gloeitijd (seconden)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="579"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="585"/>
         <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
         <translation>De waarde van het aantal iteraties was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="603"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="609"/>
         <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
         <translation>De waarde van de iteratiedemping was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMaterialWindow.C" line="627"/>
+        <location filename="../../gui/QvisMaterialWindow.C" line="633"/>
         <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
         <translation>De waarde van de gloeitijd was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="168"/>
+        <source>Equi-T (obsolete)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="169"/>
+        <source>Equi-Z (default, supports iteration)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="171"/>
+        <source>PLIC (accurate/discontinuous)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="178"/>
+        <source>Enable interface smoothing (Equi-* only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="183"/>
+        <source>Force full connectivity (Equi-T only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="223"/>
+        <source>Enable iteration (Equi-Z, Isovolume only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisMaterialWindow.C" line="245"/>
+        <source>Annealing time (seconds) (Discrete only)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7513,7 +7552,7 @@ door de Lineout Operator</translation>
         <translation>Vlak genoeg (recip. kromming)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisMeshManagementWindow.C" line="519"/>
+        <location filename="../../gui/QvisMeshManagementWindow.C" line="521"/>
         <source>Adaptive not available. Missing boost interval template library. Overriding to Uniform.</source>
         <translation>Aanpassend niet beschikbaar. Boostintervaltemplatebibliotheek ontbreekt. In plaats daarvan Uniform.</translation>
     </message>
@@ -7531,17 +7570,17 @@ door de Lineout Operator</translation>
 <context>
     <name>QvisMeshPlotWindow</name>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="335"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="336"/>
         <source>Line style</source>
         <translation>Lijnstijl</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="343"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="344"/>
         <source>Line width</source>
         <translation>Lijnbreedte</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="215"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="218"/>
         <source>Mesh color</source>
         <translation>Roosterkleur</translation>
     </message>
@@ -7551,7 +7590,7 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Gebruik voorgrond</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="240"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="243"/>
         <source>Opaque color</source>
         <translation>Ondoorzichtige kleur</translation>
     </message>
@@ -7561,27 +7600,27 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Gebruik achtergrond</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="272"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="267"/>
         <source>Opaque mode</source>
         <translation>Ondoorzichtige modus</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="274"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="276"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="278"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="280"/>
         <source>On</source>
         <translation>Aan</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="282"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="284"/>
         <source>Off</source>
         <translation>Uit</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="291"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="293"/>
         <source>Opacity</source>
         <translation>Opaciteit</translation>
     </message>
@@ -7591,17 +7630,17 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Toon interne cellen</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="187"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="190"/>
         <source>Outline only</source>
         <translation>Enkel omlijning</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="193"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="196"/>
         <source>Tolerance</source>
         <translation>Tolerantie</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="391"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="392"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
@@ -7611,17 +7650,17 @@ door de Lineout Operator</translation>
         <translation type="obsolete">Geometrie gladstrijken</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="368"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="369"/>
         <source>None</source>
         <translation>Geen</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="371"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="372"/>
         <source>Fast</source>
         <translation>Snel</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="374"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="375"/>
         <source>High</source>
         <translation>Hoog</translation>
     </message>
@@ -7630,57 +7669,57 @@ door de Lineout Operator</translation>
         <translation type="obsolete">De fouttolerantie was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="721"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="722"/>
         <source>error tolerance</source>
         <translation>fouttolerantie</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="173"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="176"/>
         <source>Zone</source>
         <translation>Zone</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="181"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="184"/>
         <source>Show internal zones</source>
         <translation>Toon interne cellen</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="207"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="210"/>
         <source>Color</source>
         <translation>Kleur</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="219"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="222"/>
         <source>Foreground</source>
         <translation>Voorgrond</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="249"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="252"/>
         <source>Custom</source>
         <translation>Aangepast</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="245"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="248"/>
         <source>Background</source>
         <translation>Achtergrond</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="309"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="310"/>
         <source>Point / Line Style</source>
         <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="354"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="355"/>
         <source>Geometry</source>
         <translation>Geometrie</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="361"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="362"/>
         <source>Smoothing</source>
         <translation>Gladstrijken</translation>
     </message>
     <message>
-        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="383"/>
+        <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="384"/>
         <source>Misc</source>
         <translation>Diversen</translation>
     </message>
@@ -9243,82 +9282,82 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPlotListBox</name>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="599"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="668"/>
         <source>&amp;Hide/Show</source>
         <translation>&amp;H Verberg/Toon</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="600"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="669"/>
         <source>Hide or Show this plot</source>
         <translation>Verberg of toon deze plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="604"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="673"/>
         <source>Delete</source>
         <translation>Verwijder</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="605"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="674"/>
         <source>Delete this plot</source>
         <translation>Verwijder deze plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="608"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="677"/>
         <source>Draw</source>
         <translation>Teken</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="609"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="678"/>
         <source>Draw this plot</source>
         <translation>Teken deze plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="612"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="681"/>
         <source>Clear</source>
         <translation>Wis</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="613"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="682"/>
         <source>Clear this plot</source>
         <translation>Wis deze plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="616"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="685"/>
         <source>Redraw</source>
         <translation>Herteken</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="617"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="686"/>
         <source>Redraw this plot</source>
         <translation>Herteken deze plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="620"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="689"/>
         <source>Copy</source>
         <translation>Kopie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="621"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="690"/>
         <source>Copy this plot</source>
         <translation>Kopieer deze plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="662"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="731"/>
         <source>Copy To Window</source>
         <translation>Kopieer naar venster</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="668"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="737"/>
         <source>Copy this plot to different window</source>
         <translation>Kopieer deze plot naar een ander venster</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="665"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="734"/>
         <source>Window 1</source>
         <translation>Venster 1</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="666"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="735"/>
         <source>Window 2</source>
         <translation>Venster 2</translation>
     </message>
@@ -9327,62 +9366,62 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Koppel van de TimeSlider los</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="689"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="758"/>
         <source>Disconnect this plot from time slider</source>
         <translation>Koppel deze plot los van de tijdsschuif</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="624"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="693"/>
         <source>Edit plot description</source>
         <translation>Bewerk plotomschrijving</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="625"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="694"/>
         <source>Add a meaningful name for the plot</source>
         <translation>Voeg een betekenisvolle naam toe aan de plot</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="628"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="697"/>
         <source>Move toward first</source>
         <translation>Verplaats naar eerste</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="629"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="698"/>
         <source>Move this plot one slot toward the first plot in the plot list</source>
         <translation>Verplaats deze plot een positie naar voren in de plotlijst</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="632"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="701"/>
         <source>Move toward last</source>
         <translation>Verplaats naar laatste</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="633"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="702"/>
         <source>Move this plot one slot toward the last plot in the plot list</source>
         <translation>Verplaats deze plot een positie naar achteren in de plotlijst</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="636"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="705"/>
         <source>Make first</source>
         <translation>Maak eerste</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="637"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="706"/>
         <source>Make this plot be the first in the plot list</source>
         <translation>Laat deze plot de eerste plot in de plotlijst zijn</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="640"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="709"/>
         <source>Make last</source>
         <translation>Maak laatste</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="641"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="710"/>
         <source>Make this plot be the last in the plot list</source>
         <translation>Laat deze plot de laatste plot in de plotlijst zijn</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotListBox.C" line="688"/>
+        <location filename="../../gui/QvisPlotListBox.C" line="757"/>
         <source>Disconnect From time slider</source>
         <translation>Breek met de tijdschuifregelaar</translation>
     </message>
@@ -9398,17 +9437,17 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Aktieve plots</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="265"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="272"/>
         <source>Hide/Show</source>
         <translation>Verberg/Toon</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="261"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="268"/>
         <source>Delete</source>
         <translation>Verwijder</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="268"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="276"/>
         <source>Draw</source>
         <translation>Teken</translation>
     </message>
@@ -9421,51 +9460,52 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">operatoren</translation>
     </message>
     <message>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="350"/>
         <source>selection to all plots</source>
-        <translation type="obsolete">selectie naar alle plots</translation>
+        <translation type="unfinished">selectie naar alle plots</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="506"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="539"/>
         <source>Plots</source>
         <translation>Plots</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1339"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1395"/>
         <source>Remove last</source>
         <translation>Verwijder laatste</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1340"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1396"/>
         <source>Remove all</source>
         <translation>Verwijder alle</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="515"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="548"/>
         <source>Operators</source>
         <translation>Operatoren</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="527"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="560"/>
         <source>Plot Attributes</source>
         <translation>Plot attributen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="529"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="562"/>
         <source>PlotAtts</source>
         <translation>PlotAttn</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="544"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="577"/>
         <source>Operator Attributes</source>
         <translation>Operator attributen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="546"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="579"/>
         <source>OpAtts</source>
         <translation>OpAttn</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="595"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="628"/>
         <source>Variables</source>
         <translation>Variabelen</translation>
     </message>
@@ -9560,44 +9600,49 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Teken plots</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1363"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1419"/>
         <source>Analysis</source>
         <translation>Analyse</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1364"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1420"/>
         <source>Debugging</source>
         <translation>Ontluizen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1365"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1421"/>
         <source>Geometry</source>
         <translation>Geometrie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1366"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1422"/>
         <source>Molecular</source>
         <translation>Moleculair</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1367"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1423"/>
         <source>Selection</source>
         <translation>Selectie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1368"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1424"/>
         <source>Slicing</source>
         <translation>Plakjessnijden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="1369"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="1425"/>
         <source>Transforms</source>
         <translation>Transformaties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPlotManagerWidget.C" line="248"/>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="255"/>
         <source>Add</source>
         <translation>Voeg toe</translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPlotManagerWidget.C" line="345"/>
+        <source>Apply operators  /</source>
+        <translation type="unfinished">Pas operatoren toe  /</translation>
     </message>
 </context>
 <context>
@@ -9742,27 +9787,27 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Maximum Punctures</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="177"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="180"/>
         <source>Streamline Source</source>
         <translation>Stroomlijnbron</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="181"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="184"/>
         <source>Point</source>
         <translation>Punt</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="182"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="185"/>
         <source>Line</source>
         <translation>Lijn</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="345"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="348"/>
         <source>Plane</source>
         <translation>Plat vlak</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="189"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="192"/>
         <source>Location</source>
         <translation>Locatie</translation>
     </message>
@@ -9775,7 +9820,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Einde</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="873"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="876"/>
         <source>Point density</source>
         <translation>Puntdichtheid</translation>
     </message>
@@ -9796,12 +9841,12 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Maximum staplengte</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="901"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="904"/>
         <source>Relative tolerance</source>
         <translation>Relatieve tolerantie</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="915"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="918"/>
         <source>Absolute tolerance</source>
         <translation>Absolute tolerantie</translation>
     </message>
@@ -9822,32 +9867,32 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">AdjustPlane</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="297"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="300"/>
         <source>Overlaps</source>
         <translation>Overlappen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="304"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="307"/>
         <source>Raw</source>
         <translation>Ruw</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="307"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="310"/>
         <source>Remove</source>
         <translation>Verwijder</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="310"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="313"/>
         <source>Merge</source>
         <translation>Samenvoegen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="313"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="316"/>
         <source>Smooth</source>
         <translation>Geleidelijk</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="393"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="396"/>
         <source>Display</source>
         <translation>Toon</translation>
     </message>
@@ -9856,22 +9901,22 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Toon type</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="404"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="407"/>
         <source>Curves</source>
         <translation>Krommen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="405"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="408"/>
         <source>Surfaces</source>
         <translation>Oppervlakken</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="410"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="413"/>
         <source>Number of planes</source>
         <translation>Aantal vlakken</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="369"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="372"/>
         <source>Limits</source>
         <translation>Limieten</translation>
     </message>
@@ -9884,7 +9929,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Max</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="420"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="423"/>
         <source>Color</source>
         <translation>Kleur</translation>
     </message>
@@ -9902,57 +9947,57 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Kleur met</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="342"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="345"/>
         <source>OriginalValue</source>
         <translation>OrigineleWaarde</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="343"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="346"/>
         <source>InputOrder</source>
         <translation>InvoerVolgorde</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="344"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="347"/>
         <source>PointIndex</source>
         <translation>PuntIndex</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="346"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="349"/>
         <source>WindingOrder</source>
         <translation>WindingOrder</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="347"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="350"/>
         <source>WindingPointOrder</source>
         <translation>WindingPointOrder</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="349"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="352"/>
         <source>ToroidalWindings</source>
         <translation>ToroidalWindings</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="350"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="353"/>
         <source>PoloidalWindings</source>
         <translation>PoloidalWindings</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="351"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="354"/>
         <source>SafetyFactor</source>
         <translation>VeiligheidsFactor</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="352"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="355"/>
         <source>Confidence</source>
         <translation>Betrouwbaarheid</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="353"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="356"/>
         <source>RidgelineVariance</source>
         <translation>RidgelineVariance</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="458"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="461"/>
         <source>Options</source>
         <translation>Opties</translation>
     </message>
@@ -9961,27 +10006,27 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Toon alleen eilanden</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="481"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="484"/>
         <source>Show Lines</source>
         <translation>Toon lijnen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="486"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="489"/>
         <source>Show Points</source>
         <translation>Toon punten</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="476"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="479"/>
         <source>Verbose</source>
         <translation>Informatief</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="504"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="507"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="510"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="513"/>
         <source>Lighting</source>
         <translation>Belichting</translation>
     </message>
@@ -10054,67 +10099,67 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">De maximum waarde was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="141"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="144"/>
         <source>Streamlines</source>
         <translation>Stroomlijnen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="147"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="150"/>
         <source>Punctures</source>
         <translation>Puncties</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="371"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="374"/>
         <source>Minimum</source>
         <translation>Minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="380"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="383"/>
         <source>Maximum</source>
         <translation>Maximum</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="170"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="173"/>
         <source>Source</source>
         <translation>Bron</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="198"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="201"/>
         <source>Start Point</source>
         <translation>Startpunt</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="205"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="208"/>
         <source>End Point</source>
         <translation>Eindpunt</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="222"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="225"/>
         <source>Integration</source>
         <translation>Integratie</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="229"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="232"/>
         <source>Integrator:</source>
         <translation>Integrator:</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="233"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="236"/>
         <source>DormandPrince</source>
         <translation>DormandPrince</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="234"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="237"/>
         <source>AdamsBashforth</source>
         <translation>AdamsBashforth</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="235"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="238"/>
         <source>M3DC1Integrator</source>
         <translation>M3DC1Integrator</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="887"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="890"/>
         <source>maximum step length</source>
         <translation>maximum staplengte</translation>
     </message>
@@ -10129,37 +10174,37 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">abs. tolerantie</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="265"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="268"/>
         <source>Analysis</source>
         <translation>Analyse</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="269"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="272"/>
         <source>Max Toroidal Winding</source>
         <translation>Max toroidale draaingen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="276"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="279"/>
         <source>Override Toroidal Winding</source>
         <translation>Toroidale draaingen overschrijven</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="283"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="286"/>
         <source>Hit Rate</source>
         <translation>Hit Rate</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="290"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="293"/>
         <source>Adjust Plane</source>
         <translation>Pas vlak aan</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="400"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="403"/>
         <source>Mesh:</source>
         <translation>Rooster:</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="439"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="442"/>
         <source>Color Table</source>
         <translation>Kleurtabel</translation>
     </message>
@@ -10169,7 +10214,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Kleur met:</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="471"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="474"/>
         <source>Show Islands</source>
         <translation>Toon eilanden</translation>
     </message>
@@ -10179,97 +10224,97 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">uitvoerig</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="803"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="806"/>
         <source>Minimum number of Punctures</source>
         <translation>Minimum aantal puncties</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="817"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="820"/>
         <source>Maximum number of Punctures</source>
         <translation>Maximum aantal puncties</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="831"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="834"/>
         <source>Point Source</source>
         <translation>Puntbron</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="845"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="848"/>
         <source>Line Point Start</source>
         <translation>Beginpunt lijn</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="859"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="862"/>
         <source>Line Point End</source>
         <translation>Eindpunt lijn</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="929"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="932"/>
         <source>maxToroidalWinding</source>
         <translation>maxToroidaleDraaingen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="943"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="946"/>
         <source>overrideToroidalWinding</source>
         <translation>overschrijfToroidaleDraaingen</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="957"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="960"/>
         <source>hitRate</source>
         <translation>hitRate</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="971"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="974"/>
         <source>adjustPlane</source>
         <translation>pasVlakAan</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="985"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="988"/>
         <source>numberPlanes</source>
         <translation>aantalVlakken</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="999"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1002"/>
         <source>min</source>
         <translation>min</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1013"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="1016"/>
         <source>max</source>
         <translation>max</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="330"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="333"/>
         <source>Data</source>
         <translation>Gegevens</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="338"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="341"/>
         <source>Data value:</source>
         <translation>Gegevenswaarde:</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="348"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="351"/>
         <source>WindingPointOrderModulo</source>
         <translation>WindingPointOrderModulo</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="358"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="361"/>
         <source>   </source>
         <translation>   </translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="434"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="437"/>
         <source>Custom</source>
         <translation>Aangepast</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="465"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="468"/>
         <source>Show O Points</source>
         <translation>Toon O-punten</translation>
     </message>
     <message>
-        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="496"/>
+        <location filename="../../plots/Poincare/QvisPoincarePlotWindow.C" line="499"/>
         <source>Misc</source>
         <translation>Diversen</translation>
     </message>
@@ -10277,37 +10322,37 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPointControl</name>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="640"/>
+        <location filename="../../gui/QvisPointControl.C" line="641"/>
         <source>Point size</source>
         <translation>Puntafmeting</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="119"/>
+        <location filename="../../gui/QvisPointControl.C" line="120"/>
         <source>Scale point size by variable</source>
         <translation>Schaal puntafmeting met variabele</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="100"/>
+        <location filename="../../gui/QvisPointControl.C" line="101"/>
         <source>Box</source>
         <translation>Doos</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="101"/>
+        <location filename="../../gui/QvisPointControl.C" line="102"/>
         <source>Axis</source>
         <translation>As</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="102"/>
+        <location filename="../../gui/QvisPointControl.C" line="103"/>
         <source>Icosahedron</source>
         <translation>Icosaëder</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="103"/>
+        <location filename="../../gui/QvisPointControl.C" line="104"/>
         <source>Point</source>
         <translation>Punt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="104"/>
+        <location filename="../../gui/QvisPointControl.C" line="105"/>
         <source>Sphere</source>
         <translation>Bol</translation>
     </message>
@@ -10317,12 +10362,12 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Punttype</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="644"/>
+        <location filename="../../gui/QvisPointControl.C" line="645"/>
         <source>Point size (pixels)</source>
         <translation>Puntafmeting (pixels)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPointControl.C" line="97"/>
+        <location filename="../../gui/QvisPointControl.C" line="98"/>
         <source>Point type</source>
         <translation>Punttype</translation>
     </message>
@@ -10330,22 +10375,22 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPostableWindow</name>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="93"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="98"/>
         <source>Untitled</source>
         <translation>Naamloos</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="757"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="766"/>
         <source>Post</source>
         <translation>Aanplakken</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="508"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="517"/>
         <source>Unpost</source>
         <translation>Weghalen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPostableWindow.C" line="759"/>
+        <location filename="../../gui/QvisPostableWindow.C" line="768"/>
         <source>Dismiss</source>
         <translation>Heenzenden</translation>
     </message>
@@ -10467,146 +10512,206 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPreferencesWindow</name>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="189"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="192"/>
         <source>Clone window on first reference</source>
         <translation>Kloon venster bij de eerste referentie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="195"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="198"/>
         <source>Post windows when shown</source>
         <translation>Plak vensters aan zodra ze getoond worden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="201"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="204"/>
         <source>Prompt before setting default attributes</source>
         <translation>Vragen voordat de standaard attributen gezet worden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="207"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="210"/>
         <source>Prompt before applying new operator</source>
         <translation>Vragen voordat de nieuwe operator toegepast wordt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="213"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="216"/>
         <source>New plots inherit SIL restriction</source>
         <translation>Nieuwe plots erven SIL restricties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="229"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="237"/>
         <source>Databases</source>
         <translation>Databases</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="235"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="243"/>
         <source>Try harder to get accurate cycles/times</source>
         <translation>Doe meer moeite om nauwkeurige cycli/tijden te krijgen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="241"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="249"/>
         <source>Ignore database extents (may degrade performance)</source>
         <translation>Negeer database groottes (kan de prestaties verminderen)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="248"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="256"/>
         <source>Treat all databases as time-varying</source>
         <translation>Behandel alle databases als tijdsafhankelijk</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="254"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="262"/>
         <source>Automatically create mesh quality expressions</source>
         <translation>Maak automatisch roosterkwaliteitsuitdrukkingen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="260"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="268"/>
         <source>Automatically create time derivative expressions</source>
         <translation>Maak automatisch tijdsafgeleideuitdrukkingen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="266"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="274"/>
         <source>Automatically create vector magnitude expressions</source>
         <translation>Maak automatisch vectorgrootteuitdrukkingen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="275"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="283"/>
         <source>Session files</source>
         <translation>Sessiebestanden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="281"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="289"/>
         <source>User directory is default location for session files</source>
         <translation>Gebruikersmap is de standaardplaats voor sessiebestanden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="288"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="296"/>
         <source>Periodically save a crash recovery file</source>
         <translation>Periodiek opslaan van een herstelbestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="298"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="306"/>
         <source>File panel properties</source>
         <translation>Bestandspaneeleigenschappen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="306"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="314"/>
         <source>Show selected files</source>
         <translation>Toon geselecteerde bestanden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="314"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="322"/>
         <source>Automatically highlight open file</source>
         <translation>Automatisch het geopende bestand belichten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="323"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="331"/>
         <source>Display time using:</source>
         <translation>Toon tijd met:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="326"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="334"/>
         <source>Cycles</source>
         <translation>Cycli</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="329"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="337"/>
         <source>Times</source>
         <translation>Tijden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="332"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="340"/>
         <source>Cycles and times</source>
         <translation>Cycli en tijden</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="342"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="350"/>
         <source>Number of significant digits</source>
         <translation>Aantal significante cijfers</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPreferencesWindow.C" line="219"/>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="222"/>
         <source>New plots automatically expanded</source>
         <translation>Nieuwe plots automatisch uitbreiden</translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisPreferencesWindow.C" line="227"/>
+        <source>Replace plots</source>
+        <translation>Vervang plots</translation>
     </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
     <message>
-        <location filename="../../operators/Project/QvisProjectWindow.C" line="130"/>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="131"/>
         <source>Projection type</source>
         <translation>Projectietype</translation>
     </message>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="137"/>
         <source>XYCartesian</source>
-        <translation>XYCartesisch</translation>
+        <translation type="obsolete">XYCartesisch</translation>
     </message>
     <message>
         <location filename="../../operators/Project/QvisProjectWindow.C" line="140"/>
         <source>ZRCylindrical</source>
-        <translation>ZRCilindrisch</translation>
+        <translation type="obsolete">ZRCilindrisch</translation>
     </message>
     <message>
         <source>projectionType</source>
         <translation type="obsolete">Projectietype</translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="136"/>
+        <source>X-Axis Cartesian (x &lt;= z, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="137"/>
+        <source>Y-Axis Cartesian (x &lt;= x, y &lt;= z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="138"/>
+        <source>Z-Axis Cartesian (x &lt;= x, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="139"/>
+        <source>X-Axis Cylindrical (x &lt;= x, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="140"/>
+        <source>Y-Axis Cylindrical (x &lt;= y, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="141"/>
+        <source>Z-Axis Cylindrical (x &lt;= z, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="146"/>
+        <source>Vector transform method:</source>
+        <translation type="unfinished">Vectortransformatiemethode:</translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="150"/>
+        <source>No transformation</source>
+        <translation type="unfinished">Geen transformatie</translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="151"/>
+        <source>Treat as point coordinates</source>
+        <translation type="unfinished">Behandel als puntcoördinaten</translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="152"/>
+        <source>Treat as coordinate displacements</source>
+        <translation type="unfinished">Behandel als coördinaatverplaatsingen</translation>
+    </message>
+    <message>
+        <location filename="../../operators/Project/QvisProjectWindow.C" line="153"/>
+        <source>Treat as instantaneous directions</source>
+        <translation type="unfinished">Behandel als instantane richtingen</translation>
     </message>
 </context>
 <context>
@@ -10670,14 +10775,14 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>Log</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="293"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="214"/>
         <source>Skew</source>
-        <translation type="obsolete">Hellend</translation>
+        <translation type="unfinished">Hellend</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="214"/>
         <source>Skew factor</source>
-        <translation>Hellingsfactor</translation>
+        <translation type="obsolete">Hellingsfactor</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="340"/>
@@ -10690,12 +10795,12 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>Kleurtabel</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="439"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="438"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="445"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="444"/>
         <source>Lighting</source>
         <translation>Belichting</translation>
     </message>
@@ -10705,17 +10810,17 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Geometrie gladstrijken</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="417"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="416"/>
         <source>None</source>
         <translation>Geen</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="420"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="419"/>
         <source>Fast</source>
         <translation>Snel</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="423"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="422"/>
         <source>High</source>
         <translation>Hoog</translation>
     </message>
@@ -10732,12 +10837,12 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">De hellingsfactor was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="383"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="382"/>
         <source>Line style</source>
         <translation>Lijnstijl</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="391"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="390"/>
         <source>Line width</source>
         <translation>Lijnbreedte </translation>
     </message>
@@ -10757,12 +10862,12 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Gebruik opaciteit van kleurtabel</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="724"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="723"/>
         <source>minimum value</source>
         <translation>minimum waarde</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="750"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="749"/>
         <source>maximum value</source>
         <translation>maximum waarde</translation>
     </message>
@@ -10792,22 +10897,22 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>Van kleurtabel</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="357"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="356"/>
         <source>Point / Line Style</source>
         <translation>Punt- / Lijnstijl</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="403"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="402"/>
         <source>Geometry</source>
         <translation>Geometrie</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="410"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="409"/>
         <source>Smoothing</source>
         <translation>Gladstrijken</translation>
     </message>
     <message>
-        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="431"/>
+        <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="430"/>
         <source>Misc</source>
         <translation>Diversen</translation>
     </message>
@@ -10815,47 +10920,47 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPythonFilterEditor</name>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="82"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="83"/>
         <source>Load Script</source>
         <translation>Laad script</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="86"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="87"/>
         <source>&amp;Template</source>
         <translation>&amp;T sjabloon</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="88"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="89"/>
         <source>&amp;File</source>
         <translation>&amp;Bestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="89"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="90"/>
         <source>&amp;Simple Filter</source>
         <translation>&amp;Simpele filter</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="90"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="91"/>
         <source>&amp;Advanced Filter</source>
         <translation>&amp;A gevorderde filter</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="94"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="95"/>
         <source>Save Script</source>
         <translation>Bewaar script</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="300"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="301"/>
         <source>Python Script File</source>
         <translation>Python scriptbestand</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="275"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="276"/>
         <source>Save Python Filter Script</source>
         <translation>Bewaar Python filterscript</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisPythonFilterEditor.C" line="302"/>
+        <location filename="../../gui/QvisPythonFilterEditor.C" line="303"/>
         <source>Load Python Filter</source>
         <translation>Laad Python-filter</translation>
     </message>
@@ -11443,7 +11548,7 @@ zullen dit venster ook gebruiken.
 <context>
     <name>QvisRenderingWindow</name>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="505"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="514"/>
         <source>Basic</source>
         <translation>Basis</translation>
     </message>
@@ -11452,92 +11557,92 @@ zullen dit venster ook gebruiken.
         <translation type="obsolete">Basisopties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="163"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="166"/>
         <source>Antialiasing</source>
         <translation>Antialiasing</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="170"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="173"/>
         <source>Draw objects as</source>
         <translation>Teken objecten als</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="177"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="180"/>
         <source>Surfaces</source>
         <translation>Oppervlakken</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="180"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="183"/>
         <source>Wireframe</source>
         <translation>Draadmodel</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="183"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="186"/>
         <source>Points</source>
         <translation>Punten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="189"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="192"/>
         <source>Use display lists</source>
         <translation>Gebruik displaylists</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="332"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="335"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="336"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="339"/>
         <source>Always</source>
         <translation>Altijd</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="339"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="342"/>
         <source>Never</source>
         <translation>Nooit</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="208"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="211"/>
         <source>Stereo</source>
         <translation>Sneller</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="217"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="220"/>
         <source>Red/Blue</source>
         <translation>Rood/Blauw</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="220"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="223"/>
         <source>Interlace</source>
         <translation>Doorheen vlechten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="224"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="227"/>
         <source>Crystal Eyes</source>
         <translation>Crystal Eyes</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="227"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="230"/>
         <source>Red/Green</source>
         <translation>Rood/Groen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="233"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="236"/>
         <source>Specular lighting</source>
         <translation>Speculaire belichting</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="355"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="358"/>
         <source>Strength</source>
         <translation>Sterkte</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="253"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="256"/>
         <source>Sharpness</source>
         <translation>Scherpte</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="511"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="520"/>
         <source>Advanced</source>
         <translation>Gevorderd</translation>
     </message>
@@ -11546,12 +11651,12 @@ zullen dit venster ook gebruiken.
         <translation type="obsolete">Gevorderde opties</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="292"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="295"/>
         <source>Use scalable rendering</source>
         <translation>Gebruik schaalbare weergave</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="311"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="314"/>
         <source>When polygon count exceeds</source>
         <translation>Als het aantal polygonen meer is dan</translation>
     </message>
@@ -11560,92 +11665,92 @@ zullen dit venster ook gebruiken.
         <translation type="obsolete">Comprimeer afbeeldingen (ook geometrie) van machine</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="345"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="348"/>
         <source>Shadows (scalable rendering only)</source>
         <translation>Schaduwen (alleen schaalbare weergave)</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="362"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="365"/>
         <source>Depth Cueing (scalable rendering only)</source>
         <translation>Depth Cueing (alleen schaalbare weergave)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="368"/>
         <source>Start point</source>
-        <translation>Startpunt</translation>
+        <translation type="obsolete">Startpunt</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="376"/>
         <source>End point</source>
-        <translation>Eindpunt</translation>
+        <translation type="obsolete">Eindpunt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="385"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="394"/>
         <source>Apply color using textures</source>
         <translation>Pas kleur toe met texturen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="516"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="525"/>
         <source>Information</source>
         <translation>Informatie</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="421"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="430"/>
         <source>Query after each render</source>
         <translation>Vraag na elke weergave</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="430"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="439"/>
         <source>Using Scalable Rendering: </source>
         <translation>Gebruik schaalbare weergave: </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="432"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="441"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="916"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="938"/>
         <source>Frames per second:</source>
         <translation>Frames per seconde:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="445"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="454"/>
         <source>Approximate polygon count:</source>
         <translation>Geschatte aantal polygonen:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="454"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="463"/>
         <source>X Extents:</source>
         <translation>Omvang in X:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="461"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="470"/>
         <source>Y Extents:</source>
         <translation>Omvang in Y:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="468"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="477"/>
         <source>Z Extents:</source>
         <translation>Omvang in Z:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="891"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="913"/>
         <source>yes</source>
         <translation>ja</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="891"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="913"/>
         <source>no</source>
         <translation>nee</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="912"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="934"/>
         <source>Seconds per frame:</source>
         <translation>Seconden per frame:</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="939"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="961"/>
         <source>not set</source>
         <translation>niet gezet</translation>
     </message>
@@ -11658,19 +11763,34 @@ zullen dit venster ook gebruiken.
         <translation type="obsolete">Het eindpunt was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="324"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="327"/>
         <source>Compress images (geometry too) from engine</source>
         <translation>Comprimeer afbeeldingen (ook geometrie) van machine</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="1655"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="1702"/>
         <source>start point</source>
         <translation>startpunt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisRenderingWindow.C" line="1664"/>
+        <location filename="../../gui/QvisRenderingWindow.C" line="1711"/>
         <source>end point</source>
         <translation>eindpunt</translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisRenderingWindow.C" line="371"/>
+        <source>Cue automatically along camera depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisRenderingWindow.C" line="377"/>
+        <source>Manual start point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/QvisRenderingWindow.C" line="385"/>
+        <source>Manual end point</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12801,7 +12921,7 @@ over alle processoren
         <translation>Voorkomen</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="882"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="880"/>
         <source>Point size</source>
         <translation>Puntafmeting</translation>
     </message>
@@ -12841,7 +12961,7 @@ over alle processoren
         <translation>Kleurtabel</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="547"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="541"/>
         <source>Single color</source>
         <translation>Enkelvoudige kleur</translation>
     </message>
@@ -12881,12 +13001,12 @@ over alle processoren
         <translation>Kleur:    </translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="597"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="595"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="887"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="885"/>
         <source>Point size (pixels)</source>
         <translation>Puntafmeting (pixels)</translation>
     </message>
@@ -12947,7 +13067,7 @@ over alle processoren
         <translation type="obsolete">De waarde van pointSize was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1260"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1258"/>
         <source>The %1 role was being fulfilled by another input variable. To ensure that the %2 role is fulfilled by the %3 variable, the other variable&apos;s role has been set to None.</source>
         <translation>De rol %1 werd waargenomen door een andere invoervariabele. Om te vergewissen dat rol %2 wordt waargenomen door variabele %3, werd de andere rol van de variabele op Geen gezet.</translation>
     </message>
@@ -12962,77 +13082,77 @@ over alle processoren
         <translation>Minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="989"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="987"/>
         <source>Variable 1 minimum</source>
         <translation>Variabele 1 minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1003"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1001"/>
         <source>Variable 1 max</source>
         <translation>Variabele 1 maximum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1017"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1015"/>
         <source>Variable 1 skew factor</source>
         <translation>Variabele 1 scheve factor</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1031"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1029"/>
         <source>Variable 2 minimum</source>
         <translation>Variabele 2 minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1045"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1043"/>
         <source>Variable 2 maximum</source>
         <translation>Variabele 2 maximum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1059"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1057"/>
         <source>Variable 2 skew factor</source>
         <translation>Variabele 2 scheve factor</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1073"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1071"/>
         <source>Variable 3 minimum</source>
         <translation>Variabele 3 minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1087"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1085"/>
         <source>Variable 3 maximum</source>
         <translation>Variabele 3 maximum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1101"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1099"/>
         <source>Variable 3 skew factor</source>
         <translation>Variabele 3 scheve factor</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1115"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1113"/>
         <source>Variable 4 minimum</source>
         <translation>Variabele 4 minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1129"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1127"/>
         <source>Variable 4 maximum</source>
         <translation>Variabele 4 maximum</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1143"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1141"/>
         <source>Variable 4 skew factor</source>
         <translation>Variabele 4 scheve factor</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1160"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1158"/>
         <source>point size (pixels)</source>
         <translation>Puntafmeting (pixels)</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1172"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="1170"/>
         <source>point size</source>
         <translation>Puntafmeting</translation>
     </message>
     <message>
-        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="589"/>
+        <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="587"/>
         <source>Misc</source>
         <translation>Diversen</translation>
     </message>
@@ -13253,27 +13373,27 @@ kleur van de plot.</translation>
         <translation>Opdrachten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationCommandWindow.C" line="93"/>
+        <location filename="../../gui/QvisSimulationCommandWindow.C" line="92"/>
         <source>Enable time ranging</source>
         <translation>Gebruik tijdreeksen</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationCommandWindow.C" line="102"/>
+        <location filename="../../gui/QvisSimulationCommandWindow.C" line="101"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationCommandWindow.C" line="109"/>
+        <location filename="../../gui/QvisSimulationCommandWindow.C" line="108"/>
         <source>Step</source>
         <translation>Stap</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationCommandWindow.C" line="116"/>
+        <location filename="../../gui/QvisSimulationCommandWindow.C" line="115"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationCommandWindow.C" line="147"/>
+        <location filename="../../gui/QvisSimulationCommandWindow.C" line="145"/>
         <source>Custom . . .</source>
         <translation>Aangepast . . .</translation>
     </message>
@@ -13346,32 +13466,32 @@ kleur van de plot.</translation>
         <translation type="obsolete">Haal het Strip Chart venster weg</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="444"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="447"/>
         <source>VisIt could not locate the simulation&apos;s user interface creation file at: %1. The custom user interface for this simulation will be unavailable.</source>
         <translation>VisIt kon het gebruikersinterfacebestand %1 behorende bij de simulatie niet vinden. De aangepaste gebruikersinterface is voor deze simulatie niet beschikbaar.</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="885"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="888"/>
         <source>on</source>
         <translation>aan</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1225"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1228"/>
         <source>Host</source>
         <translation>Computer</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1236"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1239"/>
         <source>Name</source>
         <translation>Naam</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1244"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1247"/>
         <source>Date</source>
         <translation>Datum</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1249"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1252"/>
         <source>Num Processors</source>
         <translation>Aantal processoren</translation>
     </message>
@@ -13384,7 +13504,7 @@ kleur van de plot.</translation>
         <translation type="obsolete">Simulatie status: gestopt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1585"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1588"/>
         <source>Really close the compute engine on host &quot;%1&quot;?
 
 </source>
@@ -13393,7 +13513,7 @@ kleur van de plot.</translation>
 </translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1591"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1594"/>
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
@@ -13450,17 +13570,17 @@ kleur van de plot.</translation>
         <translation>Berichten</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1266"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1269"/>
         <source>Unknown</source>
         <translation>Onbekend</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1269"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1272"/>
         <source>Running</source>
         <translation>Loopt</translation>
     </message>
     <message>
-        <location filename="../../gui/QvisSimulationWindow.C" line="1272"/>
+        <location filename="../../gui/QvisSimulationWindow.C" line="1275"/>
         <source>Stopped</source>
         <translation>Gestopt</translation>
     </message>
@@ -13855,7 +13975,7 @@ kleur van de plot.</translation>
         <translation>Afstand</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="511"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="514"/>
         <source>Time</source>
         <translation>Tijd</translation>
     </message>
@@ -13910,7 +14030,7 @@ kleur van de plot.</translation>
         <translation>Plat vlak</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="653"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="663"/>
         <source>Sphere</source>
         <translation>Bol</translation>
     </message>
@@ -13935,7 +14055,7 @@ kleur van de plot.</translation>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="703"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="713"/>
         <source>End</source>
         <translation>Einde</translation>
     </message>
@@ -13955,7 +14075,7 @@ kleur van de plot.</translation>
         <translation>Omhoogwijzende as</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="662"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="672"/>
         <source>Radius</source>
         <translation>Straal</translation>
     </message>
@@ -13985,22 +14105,22 @@ kleur van de plot.</translation>
         <translation>Voorkomen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="573"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="582"/>
         <source>Lines</source>
         <translation>Lijnen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="574"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="583"/>
         <source>Tubes</source>
         <translation>Buizen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="575"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="584"/>
         <source>Ribbons</source>
         <translation>Linten</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="651"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="661"/>
         <source>Display as</source>
         <translation>Toon als</translation>
     </message>
@@ -14009,7 +14129,7 @@ kleur van de plot.</translation>
         <translation type="obsolete">Toon start</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="602"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="612"/>
         <source>Radius used for tubes and ribbons.</source>
         <translation>Straal voor buizen en linten.</translation>
     </message>
@@ -14018,32 +14138,32 @@ kleur van de plot.</translation>
         <translation type="obsolete">Lijn breedte</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="507"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="510"/>
         <source>Solid</source>
         <translation>Solide</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="508"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="511"/>
         <source>Speed</source>
         <translation>Snelheid</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="509"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="512"/>
         <source>Vorticity magnitude</source>
         <translation>Grootte van de vorticiteit</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="510"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="513"/>
         <source>Arc length</source>
         <translation>Booglengte</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="512"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="515"/>
         <source>Seed point ID</source>
         <translation>Zaaipunt ID</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="797"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="774"/>
         <source>Variable</source>
         <translation>Variabele</translation>
     </message>
@@ -14057,12 +14177,12 @@ kleur van de plot.</translation>
         <translation type="obsolete">Kleurvariabele</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="735"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="745"/>
         <source>Color table</source>
         <translation>Kleurtabel</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="745"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="755"/>
         <source>Single color</source>
         <translation>Enkelvoudige kleur</translation>
     </message>
@@ -14072,7 +14192,7 @@ kleur van de plot.</translation>
         <translation type="obsolete">Gevorderd</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="853"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="854"/>
         <source>Parallel streamline options</source>
         <translation>Parallelle stroomlijnopties</translation>
     </message>
@@ -14081,27 +14201,27 @@ kleur van de plot.</translation>
         <translation type="obsolete">Paralleliseer over:</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="863"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="864"/>
         <source>Streamlines</source>
         <translation>Stroomlijnen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="864"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="865"/>
         <source>Domains</source>
         <translation>Domeinen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="871"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="872"/>
         <source>Communication threshold</source>
         <translation>Communicatiedrempel</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="880"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="881"/>
         <source>Domain cache size</source>
         <translation>Domein cacheafmeting</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="889"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="890"/>
         <source>Work group size</source>
         <translation>Werkgroep afmeting</translation>
     </message>
@@ -14141,12 +14261,12 @@ kleur van de plot.</translation>
         <translation>Relatieve tolerantie</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="819"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="820"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="825"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="826"/>
         <source>Lighting</source>
         <translation>Belichting</translation>
     </message>
@@ -14239,87 +14359,87 @@ kleur van de plot.</translation>
         <translation type="obsolete">Weergaveopties</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="577"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="586"/>
         <source>Draw as</source>
         <translation>Teken als</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="584"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="594"/>
         <source>Width</source>
         <translation>Breedte</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="610"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="620"/>
         <source>Display density</source>
         <translation>Toon dichtheid</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="632"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="642"/>
         <source>Show seeds</source>
         <translation>Toon zaadjes</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="641"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="651"/>
         <source>Radius for seed point display.</source>
         <translation>Straal waarin de zaadjes getoond worden.</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="647"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="657"/>
         <source>Show heads</source>
         <translation>Toon koppen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="654"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="664"/>
         <source>Cone</source>
         <translation>Kegel</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="664"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="674"/>
         <source>Radius for head point display.</source>
         <translation>Straal voor koppuntweergave.</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="667"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="677"/>
         <source>Height</source>
         <translation>Hoogte</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="669"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="679"/>
         <source>Height for head point display.</source>
         <translation>Hoogte voor koppuntweergave.</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="677"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="687"/>
         <source>Low</source>
         <translation>Laag</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="678"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="688"/>
         <source>Medium</source>
         <translation>Gemiddeld</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="679"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="689"/>
         <source>High</source>
         <translation>Hoog</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="680"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="690"/>
         <source>Super</source>
         <translation>Super</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="681"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="691"/>
         <source>Display quality</source>
         <translation>Weergavekwaliteit</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="701"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="711"/>
         <source>Display</source>
         <translation>Toon</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="702"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="712"/>
         <source>Begin</source>
         <translation>Begin</translation>
     </message>
@@ -14329,7 +14449,7 @@ kleur van de plot.</translation>
         <translation type="obsolete">Kleuropties</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="530"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="531"/>
         <source>Limits</source>
         <translation>Limieten</translation>
     </message>
@@ -14344,27 +14464,27 @@ kleur van de plot.</translation>
         <translation type="obsolete">Min</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="755"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="765"/>
         <source>None</source>
         <translation>Geen</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="756"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="766"/>
         <source>Constant</source>
         <translation>Constant</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="757"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="767"/>
         <source>Ramp</source>
         <translation>Sprong</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="758"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="768"/>
         <source>Variable Range</source>
         <translation>Variabelebereik</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="761"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="771"/>
         <source>Opacity</source>
         <translation>Opaciteit</translation>
     </message>
@@ -14379,12 +14499,12 @@ kleur van de plot.</translation>
         <translation>Opaciteit Max</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="861"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="862"/>
         <source>Parallelize across</source>
         <translation>Paralleliseer over</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="865"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="866"/>
         <source>Streamlines and Domains</source>
         <translation>Stroomlijnen en domeinen</translation>
     </message>
@@ -14529,42 +14649,42 @@ kleur van de plot.</translation>
         <translation>Parallel</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="496"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="499"/>
         <source>Data</source>
         <translation>Gegevens</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="504"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="507"/>
         <source>Data Value</source>
         <translation>Gegevenswaarde</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="519"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="521"/>
         <source>   </source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="532"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="533"/>
         <source>Minimum</source>
         <translation>Minimum</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="541"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="542"/>
         <source>Maximum</source>
         <translation>Maximum</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="585"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="595"/>
         <source>  </source>
         <translation>..</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="721"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="731"/>
         <source>Color</source>
         <translation>Kleur</translation>
     </message>
     <message>
-        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="811"/>
+        <location filename="../../plots/Streamline/QvisStreamlinePlotWindow.C" line="812"/>
         <source>Misc</source>
         <translation>Diversen</translation>
     </message>
@@ -17091,60 +17211,60 @@ FTP Fout: </translation>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="757"/>
         <source>SCI, University of Utah (SLIVR)</source>
-        <translation>SCI, University of Utah (SLIVR)</translation>
+        <translation type="obsolete">SCI, University of Utah (SLIVR)</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="761"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="763"/>
         <source>Rendering method</source>
         <translation>Renderingmethode</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="770"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="772"/>
         <source>Number of samples</source>
         <translation>Aantal monsters</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="790"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="792"/>
         <source>Number of slices</source>
         <translation>Aantal plakken</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="800"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="802"/>
         <source>Samples per ray</source>
         <translation>Monsters per straal</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="810"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="812"/>
         <source>Sampling rate</source>
         <translation>Bemonsteringssnelheid</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="833"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="835"/>
         <source>Gradient method</source>
         <translation>Gradiëntmethode</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="837"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="839"/>
         <source>Centered diff</source>
         <translation>Gecenterde diff</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="840"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="842"/>
         <source>Sobel</source>
         <translation>Sobel</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="846"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="848"/>
         <source>Sampling method</source>
         <translation>Bemonsteringsmethode</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="850"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="852"/>
         <source>Rasterization</source>
         <translation>Rasteren</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="853"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="855"/>
         <source>Kernel Based</source>
         <translation>Kernel gebaseerd</translation>
     </message>
@@ -17163,17 +17283,17 @@ FTP Fout: </translation>
         <translation>2D</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="859"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="861"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="865"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="867"/>
         <source>Lighting</source>
         <translation>Belichting</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="871"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="873"/>
         <source>Smooth Data</source>
         <translation>Gegevens gladstrijken</translation>
     </message>
@@ -17182,12 +17302,12 @@ FTP Fout: </translation>
         <translation type="obsolete">De waarde van resampleTarget was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2028"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2030"/>
         <source>The minimum value for the color variable was invalid.Resetting to the last good value of %1.</source>
         <translation>De minimum waarde van de kleurvariabele was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2043"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2045"/>
         <source>The maximum value for the color variable was invalid.Resetting to the last good value of %1.</source>
         <translation>De maximum waarde van de kleurvariabele was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
@@ -17196,32 +17316,32 @@ FTP Fout: </translation>
         <translation type="obsolete">De minimum waarde van de opaciteit was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2073"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2075"/>
         <source>The maximum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
         <translation>De maximum waarde van de opaciteit was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2088"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2090"/>
         <source>The number of samples per ray was invalid.Resetting to the last good value of %1.</source>
         <translation>Het aantal monsters per straal was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2103"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2105"/>
         <source>The number of 3d slices was invalid.Resetting to the last good value of %1.</source>
         <translation>Het aantal 3D plakjes was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2117"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2119"/>
         <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
         <translation>De hellingsfactor was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2143"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2145"/>
         <source>The value of renderer samples was invalid. Valid values are in the range [1.,%1]. Resetting to the last good value of %2.</source>
         <translation>De waarde van de redermonsters was ongeldig. Geldige waarden zijn in het bereik [1.,%1]. Laatste geldige waarde %2 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2197"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2199"/>
         <source>The range set for indexing colors will also be used when indexing opacities</source>
         <translation>Het bereik dat gezet is voor de geïndexeerde kleuren zal ook gebruikt worden om de opaciteit te indexeren </translation>
     </message>
@@ -17268,27 +17388,37 @@ FTP Fout: </translation>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="755"/>
         <source>SCI, University of Utah (Tuvok)</source>
-        <translation>SCI, University of Utah (Tuvok)</translation>
+        <translation type="obsolete">SCI, University of Utah (Tuvok)</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="879"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="881"/>
         <source>Low gradient lighting reduction factor</source>
         <translation>Low gradient lighting reduction factor</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="899"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="901"/>
         <source>Low gradient lighting reduction, max value</source>
         <translation>Low gradient lighting reduction, max value</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2058"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2060"/>
         <source>The minimum value for the opacity variable was invalid.Resetting to the last good value of %1.</source>
         <translation>De minimum waarde van de opaciteit was ongeldig. Laatste geldige waarde %1 opnieuw gezet.</translation>
     </message>
     <message>
-        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2159"/>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="2161"/>
         <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
         <translation>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="756"/>
+        <source>Tuvok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="759"/>
+        <source>SLIVR</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18324,12 +18454,12 @@ FTP Fout: </translation>
         <translation>Annuleer</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="182"/>
+        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="185"/>
         <source>Choose new username</source>
         <translation>Kies nieuwe gebruikersnaam</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="185"/>
+        <location filename="../../viewer/main/ViewerChangeUsernameWindow.C" line="188"/>
         <source>New username for %1: </source>
         <translation>Nieuwe gebruikersnaam voor %1: </translation>
     </message>
@@ -18626,32 +18756,32 @@ Verdere uitleg volgt nog. </translation>
         <translation>Het starten van de metadataserver op computer &quot;%1&quot; werd geannuleerd.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2243"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2250"/>
         <source>VisIt cannot create a database correlation that does not use any databases.</source>
         <translation>VisIt kan geen databasecorrelatie maken zonder databases.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2312"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2319"/>
         <source>The times for %1 may not be accurate so the new correlation %2 might not work as expected.</source>
         <translation>De tijden voor %1 zouden niet nauwkeurig kunnen zijn zodat de nieuwe correlatie %2 anders zou kunnen werken als verwacht.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2328"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2335"/>
         <source>The cycles for %1 may not be accurate so the new correlation %2 might not work as expected.</source>
         <translation>De cycli voor %1 zouden niet nauwkeurig kunnen zijn zodat de nieuwe correlatie %2 anders zou kunnen werken als verwacht.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="2346"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="2353"/>
         <source>VisIt could not retrieve metadata for %1 so the correlation %2 could not be created.</source>
         <translation>VisIt kon de metadata voor %1 niet ophalen en de correlatie %2 kon derhalve niet gemaakt worden.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="3087"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="3094"/>
         <source>VisIt was unable to determine the variable type for %1&apos;s %2 variable.</source>
         <translation>VisIt kon het variabeletype van %2 op %1 niet vaststellen. </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerFileServer.C" line="3164"/>
+        <location filename="../../viewer/main/ViewerFileServer.C" line="3171"/>
         <source>VisIt was unable to determine the real variable type for %1&apos;s %2 variable.</source>
         <translation>VisIt kon de werkelijke variabeletype van %2 op %1 niet vaststellen. </translation>
     </message>
@@ -18745,12 +18875,12 @@ Verdere uitleg volgt nog. </translation>
         <translation>Annuleer</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="421"/>
+        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="428"/>
         <source>Enter password</source>
         <translation>Voer wachtwoord in</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="419"/>
+        <location filename="../../viewer/main/ViewerPasswordWindow.C" line="426"/>
         <source>Enter passphrase</source>
         <translation>Voer sleutelzin in</translation>
     </message>
@@ -18887,67 +19017,67 @@ dit een aantal minuten duren.</translation>
         <translation type="obsolete">VisIt kon de plotattributen van %1 in aanpassen aangezien een dergelijke plot niet was geselecteerd. Gelieve een %2 plot te selecteren alvorens U de plotattributen wijzigt.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="4812"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="4818"/>
         <source>The %1 plot of &quot;%2&quot; cannot be regenerated using the database: %3 since the variable is not contained in the new database.</source>
         <translation>De %1 plot van &quot;%2&quot; kan niet opnieuw gemaakt worden uitgaande van database %3 aangezien de nieuwe database de variabele niet bevat. </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="4849"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="4855"/>
         <source>The %1 plot of &quot;%2&quot; cannot be overlayed using the database: %3 since the variable is not contained in the new database.</source>
         <translation>De %1 plot van &quot;%2&quot; kan niet overheen gelegd worden omdat database %3 de variabele niet bevat.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="4860"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="4866"/>
         <source>No plots were created as a result of the overlay because no plots were selected in the plot list.</source>
         <translation>Geen plots werden aangemaakt als gevolg van het overheenleggen aangezien geen plots werden geselecteerd in de plotlijst.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5101"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5107"/>
         <source>VisIt could not read the SIL for %1 at state %2.</source>
         <translation>VisIt kon de SIL van %1 niet lezen in toestand %2.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5124"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5130"/>
         <source>VisIt could not read the MetaData for %1 at state %2.</source>
         <translation>VisIt kon de MeatData van %1 niet lezen in toestand %2.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="5246"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="5252"/>
         <source>VisIt could not read the SIL for %1.</source>
         <translation>VisIt kon de SIL van %1 niet lezen.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="6278"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="6284"/>
         <source>Some plots had errors. VisIt will try to regenerate those plots</source>
         <translation>Sommige plots bevatten fouten. VisIt zal proberen die plots opnieuw aan te maken</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="6440"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="6446"/>
         <source>The %1 plot of variable &quot;%2&quot; yielded no data.</source>
         <translation>De %1 plot van variabele &quot;%2&quot; leverde geen data op.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="6671"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="6677"/>
         <source>The plot dimensions do not match.</source>
         <translation>De plotdimensies passen niet.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="7920"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="7926"/>
         <source>VisIt does not have all the information it needs to perform a pick.  Please wait while the necessary information is calculated.  All current pick selections have been cached and will be performed when calculations are complete.  VisIt will notify you when it is fully ready for more picks.</source>
         <translation>VisIt heeft niet alle informatie om te kunnen pikken.  Gelieve te wachten tot de benodigde informatie is uitgerekend.  Alle huidige pikken zijn opgeslagen en worden uitgevoerd als de berekeningen afgerond zijn.  VisIt zal U verwittigen als deze klaar is voor meer pikken.  </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="7928"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="7934"/>
         <source>Pick mode now fully ready.</source>
         <translation>Pikmodus staat nu klaar.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="8592"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="8598"/>
         <source>Your session file was saved before VisIt 1.5.5. If you want to restore your session file using a different list of data sources then you will first have to load your session into VisIt 1.5.5 and save it before attempting to restore the session with a different list of sources.</source>
         <translation>Uw sessiebestand is ouder dan VisIt 1.5.5. Indien U Uw sessiebestand wilt herstellen met een andere lijst van databronnen dan dient U eerst Uw sessie te laden in VisIt 1.5.5 en dan te bewaren alvorens te proberen een sessiebestand te herstellen met een andere bronnenlijst.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="9055"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="9061"/>
         <source>The session file did not specify how many plots to create.</source>
         <translation>Het sessiebestand specificeerde niet het aantal plots dat gemaakt diende te worden.</translation>
     </message>
@@ -18957,7 +19087,7 @@ dit een aantal minuten duren.</translation>
         <translation>VisIt kon de plotattributen van %1 in aanpassen aangezien een dergelijke plot niet was geselecteerd. Gelieve een %1 plot te selecteren alvorens U de plotattributen wijzigt.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerPlotList.C" line="8910"/>
+        <location filename="../../viewer/main/ViewerPlotList.C" line="8916"/>
         <source>Could not create a plot of type from variable %1 of database %2 on host %3.  This often happens because something has changed since the session file was saved.  (For example, the file was overwritten.)</source>
         <translation>Kon geen plot maken van het gevraagde type voor variabele %1 van database %2 op computer %3.  Dit gebeurt vaak als iets veranderd is sinds het sessiebestand was bewaard.  (bijvoorbeeld, het bestand is overschreven)</translation>
     </message>
@@ -19018,22 +19148,22 @@ Gelieve een plot te selecteren en probeer het overnieuw.
         <translation>VisIt was niet in staat de vraag uit te voeren.  Gelieve een VisIt-ontwikkelaar te benaderen.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2800"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2806"/>
         <source>Lineout cannot be performed on curve windows.</source>
         <translation>Lineout werkt niet bij vensters met krommen.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2805"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2811"/>
         <source>Lineout cannot be performed on axis array windows.</source>
         <translation>Lineout werkt niet bij dit venster.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2836"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2842"/>
         <source>Only 2D points allowed for 2D lineouts. Please set z-coord to 0.</source>
         <translation>Alleen 2D punten zijn toegestaan voor 2D lineouts. Gelieve de z-coordinaat op 0 te zetten.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="1972"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="1979"/>
         <source>PICK requires an active non-hidden Plot.
 Please select a plot and try again.
 </source>
@@ -19042,37 +19172,37 @@ Gelieve een plot te selecteren en probeer het overnieuw.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2147"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2153"/>
         <source>Glyph pick could not find a valid intersection.</source>
         <translation>Tekenpik kon geen geldige intersectie vinden.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2220"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2226"/>
         <source>Pick failed with an internal error. Please contact a VisIt developer.</source>
         <translation>Pikken mislukte met een interne fout. Gelieve een VisIt-ontwikkelaar te benaderen.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2290"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2296"/>
         <source>Could not create a spreadsheet with the pick, because the spreadsheet plugin is not available.</source>
         <translation>Kon geen rekenblad maken met het pikken omdat de rekenbladplugin niet beschikbaar is.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2463"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2469"/>
         <source>Please choose a different window to place the histogram of the array variable into.</source>
         <translation>Gelieve een ander venster te kiezen waarin de histogram van de reeksvariabele geplaatst kan worden.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2473"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2479"/>
         <source>Could not create a histogram of the array variable, because the Histogram plugin is not available.</source>
         <translation>Kon geen histogram van de reeksvariabele maken, omdat de histogramplugin niet beschikbaar is.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="2532"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="2538"/>
         <source>The picked point is not contained in a surface</source>
         <translation>Het gepikte punt valt niet in een oppervlak</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="3230"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="3236"/>
         <source>Pick requires an active non-hidden Plot.
 Please select a plot and try again.
 </source>
@@ -19081,90 +19211,90 @@ Gelieve een plot te selecteren en probeer het overnieuw.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4255"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4266"/>
         <source>Time history query is not available for %1.</source>
         <translation>Tijdsgeschiedenisvraag is niet beschikbaar voor %1.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4272"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4283"/>
         <source>Cannot create a time query curve with 1 time state.</source>
         <translation>Kan geen tijdvraagkromme aanmaken met enkel één tijdtoestand.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4327"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4338"/>
         <source>The centering of the query (zone) does not match the centering of the plot&apos;s current variable (node).  Please try again with the appropriately centered query: &apos;Variable By Node&apos;</source>
         <translation>Het centreren van de vraag (zone) pastte niet bij het centreren van de huidige plotvariabele (knoop).  Gelieve overnieuw proberen met de juiste gecentreerde vraag: &apos;Variabele op knoop&apos;</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4334"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4345"/>
         <source>The centering of the query (node) does not match the centering of the plot&apos;s current variable (zone).  Please try again with the appropriately centered query: &apos;Variable By Zone&apos;</source>
         <translation>Het centreren van de vraag (knoop) pastte niet bij het centreren van de huidige plotvariabele (zone).  Gelieve overnieuw proberen met de juiste gecentreerde vraag: &apos;Variabele in zone&apos;</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4352"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4363"/>
         <source>Query over time: start time must be smaller than end time please correct and try again.</source>
         <translation>Vragen in de tijd: starttijd moet kleiner zijn dan de eindtijd. Gelieve aan te passen en probeer het overnieuw.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4360"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4371"/>
         <source>Query over time requires more than 1 frame, please correct start and end times try again.</source>
         <translation>Vragen in de tijd benodigen meer dan één frame. Gelieve aan te passen en probeer het overnieuw.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4365"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4376"/>
         <source>Clamping start time to 0.</source>
         <translation>Klem de starttijd vast op nul.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4370"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4381"/>
         <source>Clamping end time to number of available timesteps.</source>
         <translation>Klem de eindtijd tot het aantal beschikbare tijdstappen.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4388"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4399"/>
         <source>Please choose a different window method for the time query</source>
         <translation>Gelieve een ander venster te kiezen voor de tijdvragen</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4612"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4623"/>
         <source>The centering of the pick-through-time (zone) does not match the centering of the plot&apos;s current variable (node).  Please try again with the appropriately centered Pick</source>
         <translation>Het centreren van de pik-in-de-tijd (zone) pastte niet bij het centreren van de huidige plotvariabele (knoop).  Gelieve overnieuw proberen met de juiste gecentreerde pik</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4621"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4632"/>
         <source>The centering of the pick-through-time (node) does not match the centering of the plot&apos;s current variable (zone).  Please try again with the appropriately centered Pick</source>
         <translation>Het centreren van de pik-in-de-tijd (knoop) pastte niet bij het centreren van de huidige plotvariabele (zone).  Gelieve overnieuw proberen met de juiste gecentreerde pik</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4798"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4809"/>
         <source>Cannot perform a %1 query on variable %2.
 </source>
         <translation>Kan een %1 vraag niet uitvoeren op variabele %2.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4810"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4821"/>
         <source>Cannot perform a %1 query with only %2 variables, it requires %3 variables.
 </source>
         <translation>Kan een %1 vraag niet uitvoeren met enkel %2 variabelen, er zijn %3 variabelen nodig.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4898"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4909"/>
         <source>%1 requires exactly %2 plots to be selected, realized, and drawn. Please select them and try again.
 </source>
         <translation>%1 vereist exact %2 geselecteerde plots, gerealiseerd en getekend. Gelieve ze te selecteren en probeer het overnieuw.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="4915"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="4926"/>
         <source>Multiple input queries require all their inputs to be on the same host.
 </source>
         <translation>Meervoudige invoervragen vereist dat alle invoer geschiedt op dezelfde host.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerQueryManager.C" line="5219"/>
+        <location filename="../../viewer/main/ViewerQueryManager.C" line="5230"/>
         <source>There is no running engine with which to perform the query.  Please ensure the plot has finished drawing and try again.</source>
         <translation>Er is geen lopende machine waarme de vraag uitgevoerd kan worden.  Gelieve te verzekeren dat de plot is getekend en probeer het overnieuw.</translation>
     </message>
@@ -19172,97 +19302,97 @@ Gelieve een plot te selecteren en probeer het overnieuw.
 <context>
     <name>ViewerSubject</name>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5005"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5077"/>
         <source>You cannot define a database correlation that has the same name as a source. No database correlation will be created for %1.</source>
         <translation>U kunt geen databsecorrelatie definiëren met dezelfde naam als de bron. Geen databasecorrelatie zal worden aangemaakt voor %1.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5117"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5189"/>
         <source>VisIt did not open a new compute engine on host %1 because a compute engine is already running there.</source>
         <translation>De rekenmachine op computer %1 kon niet geopend worden omdat er op die computer al een rekenmachine liep.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5266"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5338"/>
         <source>To construct a derived data function, you must have an active plot.  No DDF was created.</source>
         <translation>Kon geen afgeleide datafunctie (DDF) creëren, U dient een actieve plot te hebben.  Geen DDF aangemaakt. </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5271"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5343"/>
         <source>Only one DDF can be created at a time.  VisIt is using the first active plot.</source>
         <translation>Slechts één DDF kan per keer aangemaakt worden.  VisIt gebruikt de eerste actieve plot.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5281"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5353"/>
         <source>Created DDF</source>
         <translation>DDF aangemaakt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5285"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5357"/>
         <source>Unable to create DDF</source>
         <translation>Aanmaken DDF mislukt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5328"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5400"/>
         <source>To export a database, you must have an active plot.  No database was saved.</source>
         <translation>Om een database te exporteren dient U een actieve plot te hebben.  Geen database bewaard.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5332"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5404"/>
         <source>Only one database can be exported at a time.  VisIt is exporting the first active plot.</source>
         <translation>Slechts één database kan per keer worden geëxporteerd.  VisIt exporteerd de eerste actieve plot.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5342"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5414"/>
         <source>Exported database</source>
         <translation>Database geëxporteerd</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5346"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5418"/>
         <source>Unable to export database</source>
         <translation>Database exporteren mislukt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5351"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5423"/>
         <source>Unable to export database: %1</source>
         <translation>Database %1 exporteren mislukt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5852"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5924"/>
         <source>Color table %1 exported to %2</source>
         <translation>Kleurtabel %1 geëxporteerd naar %2</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5862"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="5934"/>
         <source>VisIt exported color table &quot;%1&quot; to the file: %2. You can share that file with colleagues who want to use your color table. Simply put the file in their .visit directory, run VisIt and the color table will appear in their list of color tables when VisIt starts up.</source>
         <translation>VisIt heeft kleurtabel &quot;%1&quot; geëxporteerd naar bestand &quot;%2&quot;. U kunt dit bestand met Uw collega&apos;s delen. Plaats het bestand in de .visit-map, start VisIt en de kleurtabel zal verschijnen in de lijst van kleurtabellen zodra VisIt is opgestart.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="5928"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="6011"/>
         <source>VisIt could not save your settings to: %1.</source>
         <translation>VisIt kon Uw instellingen niet bewaren in: %1.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="7054"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="7172"/>
         <source>Performing %1 query...</source>
         <translation>Voer vraag %1 uit...</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="7701"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="7805"/>
         <source>Sending keep alive signals...</source>
         <translation>Verstuur blijf-actief-signalen...</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9086"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9190"/>
         <source>Currently, GetProcessAttributes() works only for &quot;engine&quot; or &quot;viewer&quot;</source>
         <translation>Op het ogenblik werkt GetProcessAttributes() enkel voor de &quot;machine&quot; of &quot;viewer&quot;</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9160"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9264"/>
         <source>Added a new client to the viewer.</source>
         <translation>Voeg een nieuwe klant toe aan de viewer.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9170"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9274"/>
         <source>VisIt could not connect to the new client %1.</source>
         <translation>VisIt kon geen verbinding maken met de nieuwe klant %1.</translation>
     </message>
@@ -19275,72 +19405,72 @@ Gelieve een plot te selecteren en probeer het overnieuw.
         <translation type="obsolete">Ongeldige VensterId</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9893"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="9997"/>
         <source>To apply a named selection, you must have an active plot.  No named selection was applied.</source>
         <translation>Om een naamselectie uit te kunnen voeren heeft U een actieve plot nodig. Geen naamselectie uitgevoerd.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9912"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10016"/>
         <source>All plots involving a named selection must come from the same engine.  No named selection was applied.</source>
         <translation>Alle plots voor de naamslectie dienen van dezelfde machine te komen.  Geen naamselectie uitgevoerd.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9930"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10034"/>
         <source>Applied named selection</source>
         <translation>Naamselectie uitgevoerd</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9934"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10038"/>
         <source>Unable to apply named selection</source>
         <translation>Naamselectie kon niet uitgevoerd worden</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9973"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10077"/>
         <source>To create a named selection, you must have an active plot.  No named selection was created.</source>
         <translation>Om een naamselectie aan te maken dient U een actieve plot te hebben. Geen naamselectie werd aangemaakt.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9979"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10083"/>
         <source>You can only have one active plot when creating a named selection.  No named selection was created.</source>
         <translation>U kunt slechts één actieve plot hebben als U een naamselectie aanmaakt.  Geen naamselectie werd aangemaakt.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9991"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10095"/>
         <source>Created named selection</source>
         <translation>Naamselectie aangemaakt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="9995"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10099"/>
         <source>Unable to create named selection</source>
         <translation>Naamselectie aanmaken mislukt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10039"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10143"/>
         <source>Deleted named selection</source>
         <translation>Naamselectie verwijderd</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10043"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10147"/>
         <source>Unable to delete named selection</source>
         <translation>Verwijderen naamselectie mislukt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10087"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10191"/>
         <source>Loaded named selection</source>
         <translation>Naamselectie geladen</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10091"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10195"/>
         <source>Unable to load named selection</source>
         <translation>Laden naamselectie mislukt</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10135"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10239"/>
         <source>Saved named selection</source>
         <translation>Naamselectie bewaard</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerSubject.C" line="10139"/>
+        <location filename="../../viewer/main/ViewerSubject.C" line="10243"/>
         <source>Unable to save named selection</source>
         <translation>Bewaren naamselectie mislukt</translation>
     </message>
@@ -19348,39 +19478,39 @@ Gelieve een plot te selecteren en probeer het overnieuw.
 <context>
     <name>ViewerWindow</name>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="1232"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="1236"/>
         <source>VisIt does not allow view keyframes to be deleted when the active window is not in keyframe mode.</source>
         <translation>VisIt laat niet toe dat keyframes verwijderd worden als het actieve venster niet in keyframemodus is.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="1307"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="1311"/>
         <source>VisIt does not allow view keyframes to be moved when the active window is not in keyframe mode.</source>
         <translation>VisIt laat niet toe dat keyframes verplaatst worden als het actieve venster niet in keyframemodus is.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="1393"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="1397"/>
         <source>VisIt does not allow view keyframes to be added when the active window is not in keyframe mode.</source>
         <translation>VisIt laat niet toe dat keyframes toegevoegd worden als het actieve venster niet in keyframemodus is.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="3366"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="3374"/>
         <source>The annotation object could not be added.</source>
         <translation>Het bijschriftobject kon niet toegevoegd worden.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="4581"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="4589"/>
         <source>There are plots in the window that do not
 support log-scaling.  It will not be done.</source>
         <translation>Er zijn plots in het venster die geen
 log-schalen toestaan.  We doen het niet.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="5693"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="5701"/>
         <source>VisIt could not pick the center of rotation. You might not have clicked on a plot.</source>
         <translation>VisIt kon het nieuwe rotatiecentrum niet bepalen. U heeft mogelijk niet in een plot geklikt.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="6439"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="6451"/>
         <source>An error occurred while trying to take a pick.
 This happens most often when trying to do a choose center while the engine times out or otherwise has problems.
 
@@ -19393,7 +19523,7 @@ De uitzondering was: %1
 De foutmelding was: %2</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindow.C" line="9390"/>
+        <location filename="../../viewer/main/ViewerWindow.C" line="9442"/>
         <source>Unable to update view with new image from engine</source>
         <translation>Het bijwerken van het aanzicht met de nieuwe afbeelding is mislukt</translation>
     </message>
@@ -19608,17 +19738,17 @@ en &apos;origininele ruimteijke afmetingen&apos; in
 Controls -&gt; Aanzicht -&gt; Gevorderd</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3420"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3425"/>
         <source>Would you like to modify the %1 correlation so it correlates the following databases?</source>
         <translation>Wilt U de %1 correlaties wijzigen zodat ze correleren met de volgende databases?</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3421"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3426"/>
         <source>Alter correlation?</source>
         <translation>Correlatie aanpassen?</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3444"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3449"/>
         <source>Would you like to correlate the following databases
 to ensure that changing the time will apply to all
 windows that are locked in time?
@@ -19629,39 +19759,39 @@ is op alle vensters die in de tijd vastgezet zijn?
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3447"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3452"/>
         <source>Create correlation?</source>
         <translation>Correlatie aanmaken?</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3469"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3474"/>
         <source>VisIt created a new database correlation called %1.</source>
         <translation>VisIt heeft een nieuwe databasecorrelatie gemaakt genaamd %1.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="3481"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="3486"/>
         <source>Since you opted not to create a database correlation, changing time sliders in one locked window might not affect other locked windows.</source>
         <translation>Aangezien U geen databasecorrelatie wilde aanmaken, kan het wijzigen van een tijdschuifregelaar in een vastgezet venster geen effect hebben in andere vastgezette vensters.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="4142"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="4147"/>
         <source>Window layout %1 is an unsupported layout.</source>
         <translation>Venster opmaak %1 wordt niet ondersteund.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="4310"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="4315"/>
         <source>The specified window doesn&apos;t exist.</source>
         <translation>Het gespecificeerde venster bestaat niet.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="4409"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="4414"/>
         <source>ViewerWindowManager::GetActiveWindow() There are no windows.
 </source>
         <translation>ViewerWindowManager::GetActiveWindow() Er zijn geen vensters.
 </translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6223"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6232"/>
         <source>VisIt did not set the time state for these windows: %1.The time slider in cannot be set by the active window&apos;s time slider since the correlations of the time sliders have nothing in common.
 
 To avoid this warning in the future, make sure that locked windows have compatible time sliders.</source>
@@ -19671,57 +19801,57 @@ To avoid this warning in the future, make sure that locked windows have compatib
 Om deze waarschuwing in de toekomst te vermijden, zorg er dan voor dat de vensters compatibele tijdschuifregelaars hebben.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6133"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6142"/>
         <source>VisIt could not find a database correlation for the desired time slider so it must not be a valid time slider.</source>
         <translation>VisIt kon geen databasecorrelatie vinden voor de gewenste tijdschuifregelaar dus is het geen geldige tijdschuifregelaar.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6159"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6168"/>
         <source>You&apos;ve made the keyframe animation time slider be the active time slider. Other windows that are also time locked will not have their time sliders set to the keyframe time slider.</source>
         <translation>U heeft een keyframe animatie tijdschuifregelaar actief gemaakt. Andere vensters zijn ook in de tijd vastgezet en hun tijdschuifregelaars zullen niet op de keyframe tijdschuifregelaar afgestemd worden.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6426"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6435"/>
         <source>You cannot alter a database correlation that corresponds directly to a database.</source>
         <translation>U kunt geen databasecorrelatie wijzigen die direct overeen komt met een database.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6465"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6474"/>
         <source>You cannot alter a database correlation for %1 because there is no such database correlation.</source>
         <translation>U kunt geen databasecorrelatie wijzigen voor %1 omdat er geen dergelijke databasecorrelatie bestaat.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6501"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6510"/>
         <source>You cannot delete a database correlation that corresponds directly to a source.</source>
         <translation>U kunt geen databasecorrelatie verwijderen die direct overeen komt met een bron.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6651"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6660"/>
         <source>VisIt could not close &quot;%1&quot; because it is still being used by one or more plots.</source>
         <translation>VisIt kon &quot;%1&quot; niet afsluiten omdat het nog in gebruik is door één of meerdere plots.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="6705"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="6714"/>
         <source>VisIt closed &quot;%1&quot;.</source>
         <translation>VisIt heeft &quot;%1&quot; afgesloten.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="7888"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="7897"/>
         <source>Window %1</source>
         <translation>Venster %1</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="8771"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="8784"/>
         <source>VisIt could not open a window for Lineout because the maximum number of windows was exceeded.</source>
         <translation>VisIt kon geen venster openen voor Lineout omdat het maximum aantal vensters is overschreden.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="9617"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="9630"/>
         <source>The maximum number of windows are already being used.</source>
         <translation>Het maximum aantal vensters is al in gebruik.</translation>
     </message>
     <message>
-        <location filename="../../viewer/main/ViewerWindowManager.C" line="9694"/>
+        <location filename="../../viewer/main/ViewerWindowManager.C" line="9707"/>
         <source>VisIt could not open a window for TimeQuery because the maximum number of windows was exceeded.</source>
         <translation>VisIt kon geen venster openen voor TimeQuery omdat het maximum aantal vensters is overschreden.</translation>
     </message>

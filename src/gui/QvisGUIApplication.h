@@ -410,7 +410,7 @@ private:
     QString CrashRecoveryFile() const;
 
     void ExtractSystemDefaultAppearance();
-
+    void ShowAllWindows();
 
 public slots:
     void newExpression();

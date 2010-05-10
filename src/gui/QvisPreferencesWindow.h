@@ -104,6 +104,9 @@ class QSpinBox;
 //   Hank Childs, Wed Mar 17 20:13:21 PDT 2010
 //   Added preference to expand new plots.
 //
+//   Brad Whitlock, Fri May  7 14:29:53 PDT 2010
+//   I transplanted some replace plots coding.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -146,6 +149,7 @@ private slots:
     void userDirForSessionFilesToggled(bool);
     void saveCrashRecoveryFileToggled(bool);
     void ignoreDbExtentsToggled(bool val);
+    void replacePlotsToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -165,6 +169,7 @@ private:
     QCheckBox        *userDirForSessionFilesToggle;
     QCheckBox        *saveCrashRecoveryFileToggle;
     QCheckBox        *ignoreDbExtentsToggle;
+    QCheckBox        *replacePlotsToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

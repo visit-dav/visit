@@ -1575,16 +1575,9 @@ QvisGUIApplication::FinalInitialization()
     case 0:
         allowSocketRead = false;
 
-#ifndef Q_WS_MACX
-        // Tell the viewer to show all of its windows.
-        GetViewerMethods()->ShowAllWindows();
-
-        // Show the main window
+        // Show the main window and the viewer window.
         mainWin->show();
-#else
-        // On MacOS X, just tell the viewer to show for now.
-        GetViewerMethods()->ShowAllWindows();
-#endif
+        ShowAllWindows();
 
         // Indicate that future messages should go to windows and not
         // to the console.
@@ -1672,11 +1665,6 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 8 - Create keepalive");
         break;
     case 9:
-#ifdef Q_WS_MACX
-        // In the MacOS X version, show the main window last because it 
-        // trims off about 1.5 seconds off of the launch.
-        mainWin->show();
-#endif
         allowSocketRead = true;
         visitTimer->StopTimer(timeid, "stage 9");
         break;
@@ -1760,6 +1748,39 @@ QvisGUIApplication::FinalInitialization()
         ++initStage;
         emit FireInit(1);
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::ShowAllWindows
+//
+// Purpose: 
+//   Show all windows for the first time, making sure to tell the viewer where
+//   it can show its windows. The main window must have been mapped so it has
+//   a valid width value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  7 17:02:57 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::ShowAllWindows()
+{
+    // Tell the viewer the size of its area.
+    int x, y, w, h;
+    CalculateViewerArea(GetViewerState()->GetAppearanceAttributes()->GetOrientation(),
+        x, y, w, h);
+    GetViewerMethods()->SetWindowArea(x, y, w, h);
+
+    // Tell the viewer to show its windows.
+    GetViewerMethods()->ShowAllWindows();
+
+    // Tell the viewer to set its window layout so the viewer window area gets
+    // applied to the viewer windows.
+    GetViewerMethods()->SetWindowLayout(GetViewerState()->GetGlobalAttributes()->
+        GetWindowLayout());
 }
 
 // ****************************************************************************
@@ -5757,7 +5778,7 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
             // Tell the viewer to show all of its windows since launching
             // an engine could take a while and we want the viewer window
             // to still pop up at roughly the same time as the gui.
-            GetViewerMethods()->ShowAllWindows();
+            ShowAllWindows();
 
             if(loadFile.filename.size() > 0)
             {
