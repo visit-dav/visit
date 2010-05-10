@@ -180,6 +180,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Hank Childs, Wed Mar 17 20:13:21 PDT 2010
 //   Added "Expand new plots"
 //
+//   Brad Whitlock, Fri May  7 14:31:00 PDT 2010
+//   I transplanted replacePlotsToggle.
+//
 // ****************************************************************************
 
 void
@@ -220,6 +223,11 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(expandNewPlotsToggle, SIGNAL(toggled(bool)),
             this, SLOT(expandNewPlotsToggled(bool)));
     topLayout->addWidget(expandNewPlotsToggle);
+
+    replacePlotsToggle = new QCheckBox(tr("Replace plots"), central);
+    connect(replacePlotsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(replacePlotsToggled(bool)));
+    topLayout->addWidget(replacePlotsToggle);
 
     //
     //
@@ -451,6 +459,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Hank Childs, Wed Mar 17 20:13:21 PDT 2010
 //   Added support for "Expand New Plots".
 //
+//   Brad Whitlock, Fri May  7 14:34:37 PDT 2010
+//   I transplanted some replace plots code.
+//
 // ****************************************************************************
 
 void
@@ -578,6 +589,13 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         saveCrashRecoveryFileToggle->setChecked(
             atts->GetSaveCrashRecoveryFile());
         saveCrashRecoveryFileToggle->blockSignals(false);
+    }
+
+    if(doAll || atts->IsSelected(GlobalAttributes::ID_replacePlots))
+    {
+        replacePlotsToggle->blockSignals(true);
+        replacePlotsToggle->setChecked(atts->GetReplacePlots());
+        replacePlotsToggle->blockSignals(false);
     }
 
     if(doAll)
@@ -1117,3 +1135,26 @@ QvisPreferencesWindow::saveCrashRecoveryFileToggled(bool val)
     atts->Notify();
 }
 
+// ****************************************************************************
+// Method: QvisPreferencesWindow::replacePlotsToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the replace plots checkbox
+//   is toggled.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 4 11:45:12 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::replacePlotsToggled(bool val)
+{
+    atts->SetReplacePlots(val);
+    atts->Notify();
+}

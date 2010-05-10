@@ -350,10 +350,7 @@ private slots:
 
     void emitActivateOutputWindow();
 
-    void replacePlotsToggled(bool);
     void autoUpdateToggled(bool);
-    void applyOperatorToggled(bool);
-    void applySelectionToggled(bool);
 
     void winset(int);
     void winset2(QAction *);
@@ -369,13 +366,14 @@ private slots:
 private:
     void CreateMainContents(QSplitter *parent);
     void CreateMainContents(QvisPostableMainWindow *win);
-    void CreateGlobalArea(QWidget *par);
+    QWidget *CreateGlobalArea(QWidget *par);
     void UpdateFileMenuPopup(QMenu *, QAction *);
     void UpdateGlobalArea(bool doAll);
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
     void UpdateCrashRecoveryTimer();
     void AddHelpMenu(void);
+    void SetDefaultSplitterSizes(int);
 
 private:
     QSplitter                   *splitter;
@@ -394,10 +392,7 @@ private:
     QPixmap                   *openIcon;
 
     QComboBox                 *activeWindowComboBox;
-    QCheckBox                 *replacePlotsCheckBox;
     QCheckBox                 *autoUpdateCheckBox;
-    QCheckBox                 *applyOperatorCheckBox;
-    QCheckBox                 *applySelectionCheckBox;
 
     QMenu                     *filePopup;
     QAction                   *selFileAct;
