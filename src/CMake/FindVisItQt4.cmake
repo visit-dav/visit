@@ -39,6 +39,9 @@
 #   Use QT_X_LIBRARY_RELEASE instead of simple QT_X_LIBRARY, which may 
 #   list both optimized and debug versions of the library if present.
 #
+#   Tom Fogal, Mon May  3 10:22:15 MDT 2010
+#   Remove QtScript requirement/installation.  We don't use it.
+#
 #****************************************************************************/
 
 #
@@ -76,7 +79,7 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
     SET(QT_BINARY_DIR  ${QT_DIR}/lib/${VISIT_MSVC_VERSION} CACHE INTERNAL "" FORCE )
     SET(QT_MOC_EXECUTABLE  ${QT_DIR}/lib/${VISIT_MSVC_VERSION}/moc.exe )
     SET(QT_INCLUDES ${QT_INCLUDE_DIR})
-    SET(QT_WIN_LIBS QtCore QtDesigner QtDesignerComponents QtGui QtNetwork QtOpenGL QtSql QtXml QtSvg Qt Script QtTest QtMain QtAssistantClient QtHelp QtXml QtXMLPatterns QtUiTools)
+    SET(QT_WIN_LIBS QtCore QtDesigner QtDesignerComponents QtGui QtNetwork QtOpenGL QtSql QtXml QtSvg Qt QtTest QtMain QtAssistantClient QtHelp QtXml QtXMLPatterns QtUiTools)
     FOREACH(QTWINLIB ${QT_WIN_LIBS})
         STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
         SET(QT_${upper_qtwinlib}_FOUND 1)
@@ -118,7 +121,6 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
         QT_QTSQL                 
         QT_QTXML                 
         QT_QTSVG                 
-        QT_QTSCRIPT              
         QT_QTTEST                
         QT_QTMAIN                
         QT_QTUITOOLS             
