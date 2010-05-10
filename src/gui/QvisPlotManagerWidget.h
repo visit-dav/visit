@@ -229,6 +229,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
 //   Moved source related controls into QvisSourceManagerWidget.
 //
+//   Brad Whitlock, Fri May  7 14:05:19 PDT 2010
+//   I transplanted some methods.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QGroupBox, public GUIBase,
@@ -315,6 +318,8 @@ private slots:
     void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(QAction *);
 
+    void applyOperatorToggled(bool val);;
+    void applySelectionToggled(bool val);
 private:
     bool                    sourceVisible;
     // Plot manager widgets
@@ -332,6 +337,9 @@ private:
     QAction                 *operatorAttsMenuAct;
     QAction                 *operatorRemoveLastAct;
     QAction                 *operatorRemoveAllAct;
+
+    QCheckBox               *applyOperatorCheckBox;
+    QCheckBox               *applySelectionCheckBox;
 
     bool                     updatePlotVariableMenuEnabledState;
     bool                     updateOperatorMenuEnabledState;

@@ -216,6 +216,9 @@ using std::vector;
 //   Cyrus Harrison, Thu May  6 15:54:47 PDT 2010
 //   Change to Plot toolbar button order.
 //
+//   Brad Whitlock, Fri May  7 14:10:57 PDT 2010
+//   I transplanted some check boxes. Add a minimum width.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -262,10 +265,6 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     plotActionsToolbar->addSeparator();
 
-    // add draw action
-    plotDrawAction = plotActionsToolbar->addAction(QIcon(plot_draw_xpm),tr("Draw"),
-                                                   this, SLOT(drawPlots()));
-
     // add delete action
     plotDeleteAction = plotActionsToolbar->addAction(QIcon(plot_del_xpm),tr("Delete"),
                                                      this,SLOT(deletePlots()));
@@ -273,6 +272,11 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     // add hide/show action
     plotHideShowAction = plotActionsToolbar->addAction(QIcon(plot_hide_xpm),tr("Hide/Show"),
                                                        this, SLOT(hidePlots()));
+
+    // add draw action
+    plotDrawAction = plotActionsToolbar->addAction(QIcon(plot_draw_xpm),tr("Draw"),
+                                                   this, SLOT(drawPlots()));
+
     // add change variable menu action
     varMenuAction = plotActionsToolbar->addAction(QIcon(plot_var_xpm),tr("Variables"));
     QToolButton *var_button = (QToolButton*) plotActionsToolbar->widgetForAction(varMenuAction);
@@ -341,6 +345,37 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(makeThisPlotLast()));
 
     topLayout->addWidget(plotListBox);
+
+    QWidget *cbParent = new QWidget(this);
+    QHBoxLayout *cbLayout = new QHBoxLayout(cbParent);
+    cbLayout->setMargin(0);
+    topLayout->addWidget(cbParent);
+    applyOperatorCheckBox = new QCheckBox(tr("Apply operators  /"), cbParent);
+    connect(applyOperatorCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(applyOperatorToggled(bool)));
+    cbLayout->addWidget(applyOperatorCheckBox);
+
+    applySelectionCheckBox = new QCheckBox(tr("selection to all plots"), cbParent);
+    connect(applySelectionCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(applySelectionToggled(bool)));
+    cbLayout->addWidget(applySelectionCheckBox);
+    cbLayout->addStretch();
+
+    // Create the plot and operator menus. Note that they will be empty until
+    // they are populated by the main application.
+    operatorRemoveLastAct = 0;
+    operatorRemoveAllAct = 0;
+    CreateMenus(menuBar);
+
+    // Let's size the widget a little based on its toolbar button text
+    int minWidth = fontMetrics().boundingRect(plotAddMenuAction->text()).width() + 
+         fontMetrics().boundingRect(operMenuAction->text()).width() + 
+         fontMetrics().boundingRect(plotDrawAction->text()).width() + 
+         fontMetrics().boundingRect(plotHideShowAction->text()).width() + 
+         fontMetrics().boundingRect(varMenuAction->text()).width() + 
+         6 * fontMetrics().boundingRect("XX").width() + 
+         8 * fontMetrics().boundingRect("x").width();
+    setMinimumWidth(minWidth);
 }
 
 // ****************************************************************************
@@ -744,6 +779,9 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 //   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
 //   Moved source related controls into QvisSourceManagerWidget.
 //
+//   Brad Whitlock, Fri May  7 14:13:46 PDT 2010
+//   I added some code for updating globalAtts.
+//
 // ****************************************************************************
 
 void
@@ -838,6 +876,20 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         if(globalAtts->IsSelected(GlobalAttributes::ID_sources))
         {
             UpdatePlotList();
+        }
+
+        if(globalAtts->IsSelected(GlobalAttributes::ID_applyOperator))
+        {
+            applyOperatorCheckBox->blockSignals(true);
+            applyOperatorCheckBox->setChecked(globalAtts->GetApplyOperator());
+            applyOperatorCheckBox->blockSignals(false);
+        }
+
+        if(globalAtts->IsSelected(GlobalAttributes::ID_applySelection))
+        {
+            applySelectionCheckBox->blockSignals(true);
+            applySelectionCheckBox->setChecked(globalAtts->GetApplySelection());
+            applySelectionCheckBox->blockSignals(false);
         }
 
         //
@@ -2799,4 +2851,46 @@ QvisPlotManagerWidget::setActivePlot()
             GetViewerMethods()->SetActivePlots(newPlotSelection);
         }
     }
+}
+
+// ****************************************************************************
+// Method:  QvisPlotManagerWidget::applyOperatorToggled
+//
+// Purpose:
+//   callback when "apply operator to all plots" is toggled
+//
+// Arguments:
+//   val        the new state
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 19, 2010
+//
+// ****************************************************************************
+void
+QvisPlotManagerWidget::applyOperatorToggled(bool val)
+{
+    globalAtts->SetApplyOperator(val);
+    SetUpdate(false);
+    globalAtts->Notify();
+}
+
+// ****************************************************************************
+// Method:  QvisPlotManagerWidget::applySelectionToggled
+//
+// Purpose:
+//   callback when "apply selection to all plots" is toggled
+//
+// Arguments:
+//   val        the new state
+//
+// Programmer:  Jeremy Meredith
+// Creation:    February 19, 2010
+//
+// ****************************************************************************
+void
+QvisPlotManagerWidget::applySelectionToggled(bool val)
+{
+    globalAtts->SetApplySelection(val);
+    SetUpdate(false);
+    globalAtts->Notify();
 }
