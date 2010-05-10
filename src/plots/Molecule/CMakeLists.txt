@@ -26,9 +26,7 @@ MoleculeViewerPluginInfo.C
 avtMoleculePlot.C
 avtMoleculeRenderer.C
 avtOpenGLMoleculeRenderer.C
-avtMesaMoleculeRenderer.C
 avtOpenGLAtomTexturer.C
-avtMesaAtomTexturer.C
 avtMoleculeFilter.C
 ${COMMON_SOURCES}
 )
@@ -38,9 +36,7 @@ MoleculeEnginePluginInfo.C
 avtMoleculePlot.C
 avtMoleculeRenderer.C
 avtOpenGLMoleculeRenderer.C
-avtMesaMoleculeRenderer.C
 avtOpenGLAtomTexturer.C
-avtMesaAtomTexturer.C
 avtMoleculeFilter.C
 ${COMMON_SOURCES}
 )
@@ -51,10 +47,6 @@ IF (NOT WIN32)
         COMPILE_FLAGS "-I ${OPENGL_INCLUDE_DIR}"
     )
 ENDIF (NOT WIN32)
-SET_SOURCE_FILES_PROPERTIES(avtMesaAtomTexturer.C avtMesaMoleculeRenderer.C 
-    PROPERTIES
-    COMPILE_FLAGS "-I ${MESA_INCLUDE_DIR}"
-)
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -138,5 +130,5 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
+

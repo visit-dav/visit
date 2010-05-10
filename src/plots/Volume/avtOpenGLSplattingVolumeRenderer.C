@@ -42,6 +42,8 @@
 
 #include "avtOpenGLSplattingVolumeRenderer.h"
 
+#include <avtGLEWInitializer.h>
+
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
@@ -50,21 +52,11 @@
 #include <vtkMatrix4x4.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+
 #include <VolumeAttributes.h>
 #include <avtViewInfo.h>
 #include <avtCallback.h>
 #include <LightList.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
 
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -72,7 +64,6 @@
 #ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
-
 
 // ****************************************************************************
 //  Method: avtOpenGLSplattingVolumeRenderer::avtOpenGLSplattingVolumeRenderer
@@ -583,5 +574,3 @@ avtOpenGLSplattingVolumeRenderer::Render(
     camera->Delete();
     I->Delete();
 }
-
-

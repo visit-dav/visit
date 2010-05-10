@@ -40,7 +40,8 @@
 //                            avtMoleculeRenderer.C                          //
 // ************************************************************************* //
 
-#include "avtMoleculeRenderer.h"
+#include <math.h>
+#include <float.h>
 
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
@@ -50,15 +51,12 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkToolkits.h>
-#include <math.h>
-#include <float.h>
+
+#include <avtGLEWInitializer.h>
+#include "avtMoleculeRenderer.h"
 
 #include <avtCallback.h>
 #include <avtOpenGLMoleculeRenderer.h>
-#ifdef VTK_USE_MANGLED_MESA
-#include <avtMesaMoleculeRenderer.h>
-#endif
-
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
 
@@ -182,12 +180,7 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
         if (rendererImplementation)
             delete rendererImplementation;
 
-#ifdef VTK_USE_MANGLED_MESA
-        if (avtCallback::GetNowinMode())
-            rendererImplementation = new avtMesaMoleculeRenderer;
-        else
-#endif
-            rendererImplementation = new avtOpenGLMoleculeRenderer;
+        rendererImplementation = new avtOpenGLMoleculeRenderer;
         currentRendererIsValid = true;
 
         rendererImplementation->SetLevelsLUT(levelsLUT);

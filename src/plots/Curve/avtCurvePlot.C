@@ -40,26 +40,23 @@
 //                             avtCurvePlot.C                                //
 // ************************************************************************* //
 
-#include <avtCurvePlot.h>
-
-#include <avtCurveFilter.h>
-#include <avtCurveLegend.h>
-#include <avtCompactTreeFilter.h>
-#include <avtSurfaceAndWireframeRenderer.h> 
-#include <avtWarpFilter.h>
-
 #include <vtkToolkits.h>
 
-#include <avtCallback.h>
-#ifdef VTK_USE_MANGLED_MESA
-#include <avtMesaCurveRenderer.h>
-#endif
+#include <avtGLEWInitializer.h>
+
+#include <avtCurvePlot.h>
 #include <avtOpenGLCurveRenderer.h>
 
-#include <LineAttributes.h>
-
-#include <avtUserDefinedMapper.h>
+#include <avtCallback.h>
+#include <avtCompactTreeFilter.h>
+#include <avtCurveFilter.h>
+#include <avtCurveLegend.h>
 #include <avtLabeledCurveMapper.h>
+#include <avtSurfaceAndWireframeRenderer.h> 
+#include <avtWarpFilter.h>
+#include <avtUserDefinedMapper.h>
+
+#include <LineAttributes.h>
 
 // ****************************************************************************
 //  Method: avtCurvePlot constructor
@@ -85,9 +82,6 @@
 //    Brad Whitlock, Mon Nov 20 10:16:08 PDT 2006
 //    Changed to a curve renderer.
 //
-//    Brad Whitlock, Wed Jun 10 14:06:34 PST 2009
-//    I made Mesa support be conditional.
-//
 // ****************************************************************************
 
 avtCurvePlot::avtCurvePlot()
@@ -97,12 +91,7 @@ avtCurvePlot::avtCurvePlot()
 
     CurveFilter = new avtCurveFilter();
     WarpFilter = new avtWarpFilter();
-#ifdef VTK_USE_MANGLED_MESA
-    if (avtCallback::GetSoftwareRendering())
-        renderer = new avtMesaCurveRenderer;
-    else
-#endif
-        renderer = new avtOpenGLCurveRenderer;
+    renderer = new avtOpenGLCurveRenderer;
     avtCustomRenderer_p ren;
     CopyTo(ren, renderer);
     mapper = new avtUserDefinedMapper(ren);

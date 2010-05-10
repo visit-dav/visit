@@ -61,10 +61,6 @@
 #ifdef HAVE_LIBSLIVR
 # include <avtOpenGLSLIVRVolumeRenderer.h>
 #endif
-#ifdef VTK_USE_MANGLED_MESA
-#include <avtMesaSplattingVolumeRenderer.h>
-#include <avtMesa3DTextureVolumeRenderer.h>
-#endif
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -155,8 +151,7 @@ avtVolumeRenderer::ReleaseGraphicsResources()
 //  Method: avtVolumeRenderer::New
 //
 //  Purpose:
-//      A static method that creates the correct type of renderer based on
-//      whether we should use OpenGL or Mesa.
+//      A static method that creates the correct type of renderer.
 //
 //  Returns:    A renderer that is of type derived from this class.
 //
@@ -264,6 +259,9 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Jeremy Meredith, Tue Jan  5 15:48:41 EST 2010
 //    Output un-normalized gradient magnitude and actual calculated maximum.
 //
+//    Tom Fogal, Fri Mar 19 16:15:50 MDT 2010
+//    Get rid of Mesa cases; GLEW handles the details.
+//
 // ****************************************************************************
 
 void
@@ -273,71 +271,34 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 
     if (!currentRendererIsValid || !rendererImplementation)
     {
-        if (rendererImplementation)
-            delete rendererImplementation;
+        delete rendererImplementation;
 
-#ifdef VTK_USE_MANGLED_MESA
-        if (avtCallback::GetSoftwareRendering())
+        if (atts.GetRendererType() == VolumeAttributes::Splatting)
         {
-            if (atts.GetRendererType() == VolumeAttributes::Splatting)
-            {
-                debug5 << "Creating a (Mesa) Splatting renderer." << std::endl;
-                rendererImplementation = new avtMesaSplattingVolumeRenderer;
-            }
-#ifdef HAVE_LIBSLIVR
-            else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
-            {
-                debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
-                rendererImplementation = new avtMesa3DTextureVolumeRenderer;
-                avtCallback::IssueWarning("SLIVR is not currently supported for "
-                    "offscreen rendering. VisIt is reverting to 3D texturing.");
-            }
-#endif
-#ifdef USE_TUVOK
-            else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
-            {
-                debug5 << "Creating a (Mesa) Tuvok renderer." << std::endl;
-                rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
-            }
-#endif
-            else // it == VolumeAttributes::Texture3D
-            {
-                debug5 << "Creating a (Mesa) 3DTexture renderer." << std::endl;
-                rendererImplementation = new avtMesa3DTextureVolumeRenderer;
-            }
+            debug5 << "Creating a Splatting renderer." << std::endl;
+            rendererImplementation = new avtOpenGLSplattingVolumeRenderer;
         }
-        else
-        {
-#endif
-            if (atts.GetRendererType() == VolumeAttributes::Splatting)
-            {
-                debug5 << "Creating a (HW) Splatting renderer." << std::endl;
-                rendererImplementation = new avtOpenGLSplattingVolumeRenderer;
-            }
 #ifdef HAVE_LIBSLIVR
-            else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
-            {
-                debug5 << "Creating a (HW) SLIVR renderer." << std::endl;
-                rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
-            }
+        else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
+        {
+            debug5 << "Creating a SLIVR renderer." << std::endl;
+            rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
+        }
 #endif
 #ifdef USE_TUVOK
-            else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
-            {
-                debug5 << "Creating a (HW) Tuvok renderer." << std::endl;
-                rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
-            }
+        else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
+        {
+            debug5 << "Creating a Tuvok renderer." << std::endl;
+            rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
+        }
 #endif
-            else // it == VolumeAttributes::Texture3D
-            {
-                debug5 << "Creating a (HW) 3DTexture renderer." << std::endl;
-                rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
-            }
+        else // it == VolumeAttributes::Texture3D
+        {
+            debug5 << "Creating a 3DTexture renderer." << std::endl;
+            rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
         }
         currentRendererIsValid = true;
-#ifdef VTK_USE_MANGLED_MESA
     }
-#endif
 
     if (!initialized)
     {

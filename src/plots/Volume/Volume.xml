@@ -41,9 +41,7 @@
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
       avtOpenGLSplattingVolumeRenderer.C
-      avtMesaSplattingVolumeRenderer.C
       avtOpenGL3DTextureVolumeRenderer.C
-      avtMesa3DTextureVolumeRenderer.C
       avtOpenGLSLIVRVolumeRenderer.C
       avtOpenGLTuvokVolumeRenderer.C
       BoundingBoxContourer.C
@@ -62,9 +60,7 @@
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
       avtOpenGLSplattingVolumeRenderer.C
-      avtMesaSplattingVolumeRenderer.C
       avtOpenGL3DTextureVolumeRenderer.C
-      avtMesa3DTextureVolumeRenderer.C
       avtOpenGLSLIVRVolumeRenderer.C
       avtOpenGLTuvokVolumeRenderer.C
       BoundingBoxContourer.C
