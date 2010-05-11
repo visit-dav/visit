@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class avtDatabaseMetaData extends AttributeSubject
 {
-    private static int avtDatabaseMetaData_numAdditionalAtts = 34;
+    private static int avtDatabaseMetaData_numAdditionalAtts = 35;
 
     public avtDatabaseMetaData()
     {
@@ -99,6 +99,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         isSimulation = false;
         simInfo = new avtSimulationInformation();
         suggestedDefaultSILRestriction = new Vector();
+        replacementMask = -65;
     }
 
     public avtDatabaseMetaData(int nMoreFields)
@@ -139,6 +140,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         isSimulation = false;
         simInfo = new avtSimulationInformation();
         suggestedDefaultSILRestriction = new Vector();
+        replacementMask = -65;
     }
 
     public avtDatabaseMetaData(avtDatabaseMetaData obj)
@@ -292,6 +294,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         for(i = 0; i < obj.suggestedDefaultSILRestriction.size(); ++i)
             suggestedDefaultSILRestriction.addElement(new String((String)obj.suggestedDefaultSILRestriction.elementAt(i)));
 
+        replacementMask = obj.replacementMask;
 
         SelectAll();
     }
@@ -506,7 +509,8 @@ public class avtDatabaseMetaData extends AttributeSubject
                 defaultPlots_equal &&
                 (isSimulation == obj.isSimulation) &&
                 (simInfo.equals(obj.simInfo)) &&
-                suggestedDefaultSILRestriction_equal);
+                suggestedDefaultSILRestriction_equal &&
+                (replacementMask == obj.replacementMask));
     }
 
     // Property setting methods
@@ -642,6 +646,12 @@ public class avtDatabaseMetaData extends AttributeSubject
         Select(33);
     }
 
+    public void SetReplacementMask(int replacementMask_)
+    {
+        replacementMask = replacementMask_;
+        Select(34);
+    }
+
     // Property getting methods
     public boolean                  GetHasTemporalExtents() { return hasTemporalExtents; }
     public double                   GetMinTemporalExtents() { return minTemporalExtents; }
@@ -677,6 +687,7 @@ public class avtDatabaseMetaData extends AttributeSubject
     public boolean                  GetIsSimulation() { return isSimulation; }
     public avtSimulationInformation GetSimInfo() { return simInfo; }
     public Vector                   GetSuggestedDefaultSILRestriction() { return suggestedDefaultSILRestriction; }
+    public int                      GetReplacementMask() { return replacementMask; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -833,6 +844,8 @@ public class avtDatabaseMetaData extends AttributeSubject
             simInfo.Write(buf);
         if(WriteSelect(33, buf))
             buf.WriteStringVector(suggestedDefaultSILRestriction);
+        if(WriteSelect(34, buf))
+            buf.WriteInt(replacementMask);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1063,6 +1076,9 @@ public class avtDatabaseMetaData extends AttributeSubject
         case 33:
             SetSuggestedDefaultSILRestriction(buf.ReadStringVector());
             break;
+        case 34:
+            SetReplacementMask(buf.ReadInt());
+            break;
         }
     }
 
@@ -1211,6 +1227,7 @@ public class avtDatabaseMetaData extends AttributeSubject
         str = str + boolToString("isSimulation", isSimulation, indent) + "\n";
         str = str + indent + "simInfo = {\n" + simInfo.toString(indent + "    ") + indent + "}\n";
         str = str + stringVectorToString("suggestedDefaultSILRestriction", suggestedDefaultSILRestriction, indent) + "\n";
+        str = str + intToString("replacementMask", replacementMask, indent) + "\n";
         return str;
     }
 
@@ -1635,5 +1652,6 @@ public class avtDatabaseMetaData extends AttributeSubject
     private boolean                  isSimulation;
     private avtSimulationInformation simInfo;
     private Vector                   suggestedDefaultSILRestriction; // vector of String objects
+    private int                      replacementMask;
 }
 

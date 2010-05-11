@@ -45,6 +45,7 @@
 #include <ParsingExprList.h>
 #include <ExprNode.h>
 #include <snprintf.h>
+#include <plugin_vartypes.h>
 #include <avtMeshMetaData.h>
 #include <avtSubsetsMetaData.h>
 #include <avtScalarMetaData.h>
@@ -85,6 +86,7 @@ void avtDatabaseMetaData::Init()
     formatCanDoDomainDecomposition = false;
     useCatchAllMesh = false;
     isSimulation = false;
+    replacementMask = -65;
 
     avtDatabaseMetaData::SelectAll();
 }
@@ -310,6 +312,7 @@ void avtDatabaseMetaData::Copy(const avtDatabaseMetaData &obj)
     isSimulation = obj.isSimulation;
     simInfo = obj.simInfo;
     suggestedDefaultSILRestriction = obj.suggestedDefaultSILRestriction;
+    replacementMask = obj.replacementMask;
 
     avtDatabaseMetaData::SelectAll();
 }
@@ -645,7 +648,8 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
             defaultPlots_equal &&
             (isSimulation == obj.isSimulation) &&
             (simInfo == obj.simInfo) &&
-            (suggestedDefaultSILRestriction == obj.suggestedDefaultSILRestriction));
+            (suggestedDefaultSILRestriction == obj.suggestedDefaultSILRestriction) &&
+            (replacementMask == obj.replacementMask));
 }
 
 // ****************************************************************************
@@ -823,6 +827,7 @@ avtDatabaseMetaData::SelectAll()
     Select(ID_isSimulation,                   (void *)&isSimulation);
     Select(ID_simInfo,                        (void *)&simInfo);
     Select(ID_suggestedDefaultSILRestriction, (void *)&suggestedDefaultSILRestriction);
+    Select(ID_replacementMask,                (void *)&replacementMask);
 }
 
 // ****************************************************************************
@@ -1109,6 +1114,13 @@ avtDatabaseMetaData::SetSuggestedDefaultSILRestriction(const stringVector &sugge
 {
     suggestedDefaultSILRestriction = suggestedDefaultSILRestriction_;
     Select(ID_suggestedDefaultSILRestriction, (void *)&suggestedDefaultSILRestriction);
+}
+
+void
+avtDatabaseMetaData::SetReplacementMask(int replacementMask_)
+{
+    replacementMask = replacementMask_;
+    Select(ID_replacementMask, (void *)&replacementMask);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1461,6 +1473,12 @@ stringVector &
 avtDatabaseMetaData::GetSuggestedDefaultSILRestriction()
 {
     return suggestedDefaultSILRestriction;
+}
+
+int
+avtDatabaseMetaData::GetReplacementMask() const
+{
+    return replacementMask;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3743,6 +3761,9 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
 //    Dave Pugmire, Thu Mar  4 10:27:17 EST 2010
 //    Added support for curves.
 //
+//    Brad Whitlock, Tue May 11 14:50:46 PDT 2010
+//    Check replacementMask before doing character replacement.
+//
 // ****************************************************************************
 
 static bool IsForbidden(std::string &origName, std::string &newName, 
@@ -3786,7 +3807,6 @@ static bool IsForbidden(std::string &origName, std::string &newName,
     return shouldReplace;
 }
 
-
 void
 avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                                       stringVector &replacementStr)
@@ -3795,179 +3815,214 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
 
     std::string replacementName;
 
-    for (i = 0 ; i < GetNumMeshes() ; i++)
+    if((replacementMask & VAR_CATEGORY_MESH) > 0)
     {
-        if (GetMeshes(i).originalName == "")
-            GetMeshes(i).originalName = GetMeshes(i).name;
-        if (IsForbidden(GetMeshes(i).originalName, replacementName, badChars, 
-                        replacementStr))
+        for (i = 0 ; i < GetNumMeshes() ; i++)
         {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetMeshes(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetMeshes(i).name = replacementName;
+            if (GetMeshes(i).originalName == "")
+                GetMeshes(i).originalName = GetMeshes(i).name;
+            if (IsForbidden(GetMeshes(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetMeshes(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetMeshes(i).name = replacementName;
+            }
         }
     }
-    for (i = 0 ; i < GetNumScalars() ; i++)
+
+    if((replacementMask & VAR_CATEGORY_SCALAR) > 0)
     {
-        if (GetScalars(i).originalName == "")
-            GetScalars(i).originalName = GetScalars(i).name;
-        if (IsForbidden(GetScalars(i).originalName, replacementName, badChars, 
-                        replacementStr))
+        for (i = 0 ; i < GetNumScalars() ; i++)
         {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetScalars(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetScalars(i).name = replacementName;
-        }
-        if (IsForbidden(GetScalars(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetScalars(i).meshName = replacementName;
-    }
-    for (i = 0 ; i < GetNumVectors() ; i++)
-    {
-        if (GetVectors(i).originalName == "")
-            GetVectors(i).originalName = GetVectors(i).name;
-        if (IsForbidden(GetVectors(i).originalName, replacementName, badChars, 
-                        replacementStr))
-        {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetVectors(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetVectors(i).name = replacementName;
-        }
-        if (IsForbidden(GetVectors(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetVectors(i).meshName = replacementName;
-    }
-    for (i = 0 ; i < GetNumTensors() ; i++)
-    {
-        if (GetTensors(i).originalName == "")
-            GetTensors(i).originalName = GetTensors(i).name;
-        if (IsForbidden(GetTensors(i).originalName, replacementName, badChars, 
-                        replacementStr))
-        {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetTensors(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetTensors(i).name = replacementName;
-        }
-        if (IsForbidden(GetTensors(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetTensors(i).meshName = replacementName;
-    }
-    for (i = 0 ; i < GetNumSymmTensors() ; i++)
-    {
-        if (GetSymmTensors(i).originalName == "")
-            GetSymmTensors(i).originalName = GetSymmTensors(i).name;
-        if (IsForbidden(GetSymmTensors(i).originalName, replacementName, 
-                        badChars, replacementStr))
-        {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetSymmTensors(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetSymmTensors(i).name = replacementName;
-        }
-        if (IsForbidden(GetSymmTensors(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetSymmTensors(i).meshName = replacementName;
-    }
-    for (i = 0 ; i < GetNumArrays() ; i++)
-    {
-        if (GetArrays(i).originalName == "")
-            GetArrays(i).originalName = GetArrays(i).name;
-        if (IsForbidden(GetArrays(i).originalName, replacementName, badChars, 
-                        replacementStr))
-        {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetArrays(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetArrays(i).name = replacementName;
-        }
-        if (IsForbidden(GetArrays(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetArrays(i).meshName = replacementName;
-    }
-    for (i = 0 ; i < GetNumMaterials() ; i++)
-    {
-        if (GetMaterials(i).originalName == "")
-            GetMaterials(i).originalName = GetMaterials(i).name;
-        if (IsForbidden(GetMaterials(i).originalName, replacementName, badChars, 
-                        replacementStr))
-        {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetMaterials(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetMaterials(i).name = replacementName;
-        }
-        if (IsForbidden(GetMaterials(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetMaterials(i).meshName = replacementName;
-    }
-    for (i = 0; i < GetNumCurves(); i++)
-    {
-        if (GetCurves(i).originalName == "")
-            GetCurves(i).originalName = GetCurves(i).name;
-        if (IsForbidden(GetCurves(i).originalName, replacementName, badChars,
-                        replacementStr))
-        {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetCurves(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetCurves(i).name = replacementName;
+            if (GetScalars(i).originalName == "")
+                GetScalars(i).originalName = GetScalars(i).name;
+            if (IsForbidden(GetScalars(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetScalars(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetScalars(i).name = replacementName;
+            }
+            if (IsForbidden(GetScalars(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetScalars(i).meshName = replacementName;
         }
     }
-    for (i = 0 ; i < GetNumLabels() ; i++)
+
+    if((replacementMask & VAR_CATEGORY_VECTOR) > 0)
     {
-        if (GetLabels(i).originalName == "")
-            GetLabels(i).originalName = GetLabels(i).name;
-        if (IsForbidden(GetLabels(i).originalName, replacementName, badChars, 
-                        replacementStr))
+        for (i = 0 ; i < GetNumVectors() ; i++)
         {
-            char msg[1024];
-            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
-                             ", which contains characters not supported by "
-                             "VisIt.  VisIt is renaming it to \"%s\"",
-                             GetLabels(i).originalName.c_str(), 
-                             replacementName.c_str());
-            IssueWarning(msg);
-            GetLabels(i).name = replacementName;
+            if (GetVectors(i).originalName == "")
+                GetVectors(i).originalName = GetVectors(i).name;
+            if (IsForbidden(GetVectors(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetVectors(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetVectors(i).name = replacementName;
+            }
+            if (IsForbidden(GetVectors(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetVectors(i).meshName = replacementName;
         }
-        if (IsForbidden(GetLabels(i).meshName, replacementName, badChars,
-                        replacementStr))
-            GetLabels(i).meshName = replacementName;
+    }
+
+    if((replacementMask & VAR_CATEGORY_TENSOR) > 0)
+    {
+        for (i = 0 ; i < GetNumTensors() ; i++)
+        {
+            if (GetTensors(i).originalName == "")
+                GetTensors(i).originalName = GetTensors(i).name;
+            if (IsForbidden(GetTensors(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetTensors(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetTensors(i).name = replacementName;
+            }
+            if (IsForbidden(GetTensors(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetTensors(i).meshName = replacementName;
+        }
+    }
+
+    if((replacementMask & VAR_CATEGORY_SYMMETRIC_TENSOR) > 0)
+    {
+        for (i = 0 ; i < GetNumSymmTensors() ; i++)
+        {
+            if (GetSymmTensors(i).originalName == "")
+                GetSymmTensors(i).originalName = GetSymmTensors(i).name;
+            if (IsForbidden(GetSymmTensors(i).originalName, replacementName, 
+                            badChars, replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetSymmTensors(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetSymmTensors(i).name = replacementName;
+            }
+            if (IsForbidden(GetSymmTensors(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetSymmTensors(i).meshName = replacementName;
+        }
+    }
+
+    if((replacementMask & VAR_CATEGORY_ARRAY) > 0)
+    {
+        for (i = 0 ; i < GetNumArrays() ; i++)
+        {
+            if (GetArrays(i).originalName == "")
+                GetArrays(i).originalName = GetArrays(i).name;
+            if (IsForbidden(GetArrays(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetArrays(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetArrays(i).name = replacementName;
+            }
+            if (IsForbidden(GetArrays(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetArrays(i).meshName = replacementName;
+        }
+    }
+
+    if((replacementMask & VAR_CATEGORY_MATERIAL) > 0)
+    {
+        for (i = 0 ; i < GetNumMaterials() ; i++)
+        {
+            if (GetMaterials(i).originalName == "")
+                GetMaterials(i).originalName = GetMaterials(i).name;
+            if (IsForbidden(GetMaterials(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetMaterials(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetMaterials(i).name = replacementName;
+            }
+            if (IsForbidden(GetMaterials(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetMaterials(i).meshName = replacementName;
+        }
+    }
+
+    if((replacementMask & VAR_CATEGORY_CURVE) > 0)
+    {
+        for (i = 0; i < GetNumCurves(); i++)
+        {
+            if (GetCurves(i).originalName == "")
+                GetCurves(i).originalName = GetCurves(i).name;
+            if (IsForbidden(GetCurves(i).originalName, replacementName, badChars,
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetCurves(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetCurves(i).name = replacementName;
+            }
+        }
+    }
+
+    if((replacementMask & VAR_CATEGORY_LABEL) > 0)
+    {
+        for (i = 0 ; i < GetNumLabels() ; i++)
+        {
+            if (GetLabels(i).originalName == "")
+                GetLabels(i).originalName = GetLabels(i).name;
+            if (IsForbidden(GetLabels(i).originalName, replacementName, badChars, 
+                            replacementStr))
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                                 ", which contains characters not supported by "
+                                 "VisIt.  VisIt is renaming it to \"%s\"",
+                                 GetLabels(i).originalName.c_str(), 
+                                 replacementName.c_str());
+                IssueWarning(msg);
+                GetLabels(i).name = replacementName;
+            }
+            if (IsForbidden(GetLabels(i).meshName, replacementName, badChars,
+                            replacementStr))
+                GetLabels(i).meshName = replacementName;
+        }
     }
 }
 
