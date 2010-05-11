@@ -477,6 +477,9 @@ QvisFileOpenWindow::ConnectSubjects(HostProfileList *hpl,
 //   Brad Whitlock, Mon Jul 14 11:07:38 PDT 2008
 //   Moved code to the base class. Qt 4.
 //
+//   Brad Whitlock, Tue May 11 12:01:11 PDT 2010
+//   I added code to set the gui's open file too.
+//
 // ****************************************************************************
 
 void
@@ -494,6 +497,15 @@ QvisFileOpenWindow::okClicked()
             data(Qt::UserRole)));
         AddFile(fn);
 
+        // Save the name of the first file.
+        if(emitFile.Empty())
+            emitFile = fn;
+    }
+
+    // If we selected a file, open it.
+    if(!emitFile.Empty())
+    {
+        // Identify the file format used to open the file.
         string forcedFormat = "";
         if (fileFormatComboBox->currentIndex() != 0)
         {
@@ -508,12 +520,17 @@ QvisFileOpenWindow::okClicked()
                 }
             }
         }
+        // If there was a format, tell the file server to associate the filename
+        // with the format so we don't guess when we open the file.
+        if(!forcedFormat.empty())
+            fileServer->SetFilePlugin(emitFile, forcedFormat);
 
-        // Save the name of the first file.
-        if(emitFile.Empty())
-            emitFile = fn;
+        // Try and open the data file. This is the part that retrieves new metadata
+        // for the gui and updates the menus, etc.
+        bool retval = SetOpenDataFile(emitFile, 0, 0, false);
 
-        GetViewerMethods()->OpenDatabase(fn.FullName().c_str(),
+        // Tell the viewer to open the file.
+        GetViewerMethods()->OpenDatabase(emitFile.FullName().c_str(),
             0, true, forcedFormat);
     }
 

@@ -112,6 +112,10 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //     Kathleen Bonnell, Wed Jul  9 17:48:21 PDT 2008
 //     Add vtk_cycle, to store cycle from the VTK file if it is available.
 //
+//     Brad Whitlock, Tue May 11 11:13:29 PDT 2010
+//     Search for file extension from the back of the filename in case
+//     directories contain "." and terminate if we hit a path separator.
+//
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
@@ -124,9 +128,17 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
     // find the file extension
     int i, start = -1;
     int len = strlen(fname);
-    for(i = 0; i < len; i++)
+    for(i = len-1; i >= 0; i--)
+    {
         if(fname[i] == '.')
             start = i;
+        else if(fname[i] == '/' || fname[i] == '\\')
+        {
+            // We hit a path separator. There is no file extension.
+            start = -1;
+            break;
+        }
+    }
 
     if (start != -1)
         extension = string(fname, start+1, len-1);

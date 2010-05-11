@@ -366,7 +366,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
          fontMetrics().boundingRect(plotHideShowAction->text()).width() + 
          fontMetrics().boundingRect(varMenuAction->text()).width() + 
          6 * fontMetrics().boundingRect("XX").width() + 
-         8 * fontMetrics().boundingRect("x").width();
+         9 * fontMetrics().boundingRect("x").width();
     setMinimumWidth(minWidth);
 }
 
