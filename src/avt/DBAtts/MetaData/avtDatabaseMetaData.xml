@@ -78,6 +78,9 @@
     </Field>
     <Field name="suggestedDefaultSILRestriction" label="Description of default SIL restriction for plots suggested by database plugin" type="stringVector">
     </Field>
+    <Field name="replacementMask" label="-1 and not VAR_CATEGORY_CURVE = -65" type="int">
+      -65
+    </Field>
     <Function name="SetNumStates" user="false" member="true">
     </Function>
     <Function name="SetTemporalExtents" user="true" member="true">
@@ -311,5 +314,8 @@
     </Include>
     <Include file="source" quoted="false">
       snprintf.h
+    </Include>
+    <Include file="source" quoted="false">
+      plugin_vartypes.h
     </Include>
   </Attribute>

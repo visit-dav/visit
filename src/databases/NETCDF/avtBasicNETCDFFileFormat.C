@@ -187,7 +187,10 @@ avtBasic_MTSD_NETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md
 {
     reader->PopulateDatabaseMetaData(timeState, md);
     if(md != 0)
+    {
          md->SetDatabaseComment(std::string("Read using Basic NETCDF MT reader\n") + md->GetDatabaseComment());
+         md->SetReplacementMask(-1);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -408,7 +411,10 @@ avtBasic_STSD_NETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md
 {
     reader->PopulateDatabaseMetaData(0, md);
     if(md != 0)
+    {
          md->SetDatabaseComment(std::string("Read using Basic NETCDF ST reader\n") + md->GetDatabaseComment());
+         md->SetReplacementMask(-1);
+    }
 }
 
 // ****************************************************************************
