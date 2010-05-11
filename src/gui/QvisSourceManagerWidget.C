@@ -444,6 +444,9 @@ QvisSourceManagerWidget::ConnectWindowInformation(WindowInformation *wi)
 // Note: Taken/Refactored from QvisPlotManager.
 //
 // Modifications:
+//  Brad Whitlock, Tue May 11 11:33:57 PDT 2010
+//  I added code to set the gui's notion of the active file to the file that
+//  the user selected. This should cause variable menus to update.
 //
 // ****************************************************************************
 
@@ -452,7 +455,17 @@ QvisSourceManagerWidget::sourceChanged(int index)
 {
     const stringVector &sources = globalAtts->GetSources();
     if(index >= 0 && index < sources.size())
+    {
+        //
+        // Make the file that we reopened be the new open file. Since we're
+        // reopening, this will take care of freeing the old metadata and SIL.
+        //
+        QualifiedFilename fileName(sources[index]);
+        int timeState = GetStateForSource(fileName);
+        SetOpenDataFile(fileName, timeState, 0, false);
+
         GetViewerMethods()->ActivateDatabase(sources[index]);
+    }
 }
 
 
