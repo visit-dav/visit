@@ -118,6 +118,9 @@
 #    list of rpaths (the rpaths end up semi-colon separated) and I changed
 #    it to a string of space separated rpaths.
 #
+#    Kathleen Bonnell, Tue May 11 13:01:44 MST 2010 
+#    Set HAVE_SELECT to TRUE on windows. 
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1304,7 +1307,11 @@ CHECK_ISFINITE_EXISTS(HAVE_ISFINITE)
 
 # If we're not disabling the select() call then check for it.
 IF(NOT VISIT_DISABLE_SELECT)
-    CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
+    IF(WIN32)
+        SET(HAVE_SELECT TRUE)
+    ELSE(WIN32)
+        CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
+    ENDIF(WIN32)
 ENDIF(NOT VISIT_DISABLE_SELECT)
 
 MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
