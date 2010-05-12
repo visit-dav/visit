@@ -8921,6 +8921,11 @@ ViewerSubject::DiscoverClientInformation()
 //
 //    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL
+//
+//    Brad Whitlock, Wed May 12 14:09:23 PST 2010
+//    Add an extra Show() for MacOS X since 10.5 versions weren't showing new
+//    windows.
+//
 // ****************************************************************************
 
 void
@@ -8929,6 +8934,9 @@ ViewerSubject::ConnectWindow(ViewerWindow *win)
     TRY
     {
         win->GetActionManager()->EnableActions(ViewerWindowManager::Instance()->GetWindowAtts());
+#ifdef Q_WS_MACX
+        win->Show();
+#endif
     }
     CATCHALL
     {
