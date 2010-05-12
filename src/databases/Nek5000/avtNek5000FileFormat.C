@@ -723,6 +723,9 @@ avtNek5000FileFormat::ParseNekFileHeader()
 //    Hank Childs, Mon Feb  8 23:16:20 CST 2010
 //    Improve support for passive scalars for legacy format.
 //
+//    Hank Childs, Tue May 11 20:27:34 PDT 2010
+//    More support for legacy scalars.
+//
 // ****************************************************************************
 
 void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
@@ -756,7 +759,11 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
                 f.get();
             char digit2 = f.get();
 
-            iNumSFields = (digit1-'0')*10 + (digit2-'0');
+            if (digit1 >= '0' && digit1 <= '9' && 
+                digit2 >= '0' && digit2 <= '9')
+                iNumSFields = (digit1-'0')*10 + (digit2-'0');
+            else
+                iNumSFields = 1;
         }
         else
             break;
