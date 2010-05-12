@@ -232,6 +232,9 @@
 #    Corrected a bug where the large baseline image would always be the non
 #    mode specific version regardless of the mode the test was being run in.
 #
+#    Mark C. Miller, Wed May 12 09:58:44 PDT 2010
+#    Added logic to check for a previous instance of this script still
+#    running.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -427,6 +430,14 @@ if test $optError -eq 1; then
     echo "                          specified address. Implies -force, too."
     echo "        -trace            set -x."
     exit 1
+fi
+
+# check to see if (due to slow system) a previous instance of this script
+# is still running from a previous night.
+prevRun=$(ps -f -U $USER | tr '\n' '@')
+prevRun=$(echo $prevRun | tr '@' '\n' | grep $0 | grep -v $$)
+if test -n "$prevRun"; then
+    checkAndHandleError 1 fatal "A previous instance of $0 is running"
 fi
 
 # check that /projectdir is actually there. Sometimes it is down for maint.
