@@ -294,6 +294,9 @@ avtMTMDFileFormatInterface::GetFilename(int ts)
 //    Jeremy Meredith, Thu Jan 28 15:49:05 EST 2010
 //    MTMD files can now be grouped into longer sequences.
 //
+//    Hank Childs, Sun May  9 17:53:17 CDT 2010
+//    Register metadata object with all of the chunks.
+//
 // ****************************************************************************
 
 void
@@ -323,7 +326,16 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     //
     int tsGroup = GetTimestepGroupForTimestep(timeState);
     int localTS = GetTimestepWithinGroup(timeState);
+    int offset = 0;
+    for (i = 0 ; i < nTimestepGroups ; i++)
+    {
+        chunks[i]->SetTimeSliceOffset(offset);
+        offset += tsPerGroup[i];
+    }
     chunks[tsGroup]->SetDatabaseMetaData(md, localTS);
+    for (i = 0 ; i < nTimestepGroups ; i++)
+        if (i != tsGroup)
+            chunks[i]->RegisterDatabaseMetaData(md);
 
     //
     // Note: In an MTXX format, a single file has multiple time steps in it
@@ -451,7 +463,6 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             md->SetTimesAreAccurate(false);
         }
     }
-
 }
 
 // ****************************************************************************

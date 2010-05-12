@@ -274,6 +274,7 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename)
     bBinary = false;
     iNumOutputDirs = 0;
     bParFormat = false;
+    curTimestep = 0;
 
     iNumBlocks = 0;
     iBlockSize[0] = 1;
@@ -2121,6 +2122,9 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
 //    Add workaround for bug reported by Stefan Kerkemeier, where timestep
 //    0 is not getting reported correctly.
 //
+//    Hank Childs, Wed May 12 10:53:33 PDT 2010
+//    Adapt time setting for Nek files that are part of .visit files.
+//
 // ****************************************************************************
 
 void
@@ -2138,10 +2142,10 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     if (readTimeInfoFor[curTimestep] == true)
     {
         // avtMTMDFileFormatInterface tramples on this.  Fight back.
-        metadata->SetTime(curTimestep, aTimes[curTimestep]);
-        metadata->SetTimeIsAccurate(true, curTimestep);
-        metadata->SetCycle(curTimestep, aCycles[curTimestep]);
-        metadata->SetCycleIsAccurate(true, curTimestep);
+        metadata->SetTime(curTimestep+timeSliceOffset, aTimes[curTimestep]);
+        metadata->SetTimeIsAccurate(true, curTimestep+timeSliceOffset);
+        metadata->SetCycle(curTimestep+timeSliceOffset, aCycles[curTimestep]);
+        metadata->SetCycleIsAccurate(true, curTimestep+timeSliceOffset);
 
         return;
     }
@@ -2184,11 +2188,11 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     f.close();
 
     aTimes[curTimestep] = t;
-    metadata->SetTime(curTimestep, t);
-    metadata->SetTimeIsAccurate(true, curTimestep);
+    metadata->SetTime(curTimestep+timeSliceOffset, t);
+    metadata->SetTimeIsAccurate(true, curTimestep+timeSliceOffset);
     aCycles[curTimestep] = c;
-    metadata->SetCycle(curTimestep, c);
-    metadata->SetCycleIsAccurate(true, curTimestep);
+    metadata->SetCycle(curTimestep+timeSliceOffset, c);
+    metadata->SetCycleIsAccurate(true, curTimestep+timeSliceOffset);
 
     // If this file contains a mesh, the first variable codes after the 
     // cycle number will be X Y

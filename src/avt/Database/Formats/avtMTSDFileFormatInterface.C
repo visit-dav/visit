@@ -415,6 +415,10 @@ avtMTSDFileFormatInterface::GetFilename(int ts)
 //    MTSD files can now be grouped not just into a faux MD format by having
 //    more than one block, but also into a longer sequence of MT files,
 //    each chunk with one or more timesteps.
+//
+//    Hank Childs, Sun May  9 17:53:17 CDT 2010
+//    Register metadata object with all of the chunks.
+//
 // ****************************************************************************
 
 void
@@ -447,7 +451,16 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     //
     int tsGroup = GetTimestepGroupForTimestep(timeState);
     int localTS = GetTimestepWithinGroup(timeState);
+    int offset = 0;
+    for (i = 0 ; i < nTimestepGroups ; i++)
+    {
+        chunks[i][0]->SetTimeSliceOffset(offset);
+        offset += tsPerGroup[i];
+    }
     chunks[tsGroup][0]->SetDatabaseMetaData(md, localTS);
+    for (i = 0 ; i < nTimestepGroups ; i++)
+        if (i != tsGroup)
+            chunks[i][0]->RegisterDatabaseMetaData(md);
 
     //
     // Note: In an MTXX format, a single file has multiple time steps in it

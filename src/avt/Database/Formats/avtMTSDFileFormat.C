@@ -72,6 +72,9 @@ const int avtMTSDFileFormat::MAX_FILES = 1000;
 //    Hank Childs, Mon Aug 16 16:22:56 PDT 2004
 //    Initialize myDomain.
 //
+//    Hank Childs, Sun May  9 18:47:06 CDT 2010
+//    Initialize time slice offset.
+//
 // ****************************************************************************
 
 avtMTSDFileFormat::avtMTSDFileFormat(const char * const *names, int nNames)
@@ -89,6 +92,7 @@ avtMTSDFileFormat::avtMTSDFileFormat(const char * const *names, int nNames)
         filenames[i] = NULL;
     }
     myDomain = -1;
+    timeSliceOffset = 0;
 }
 
 
