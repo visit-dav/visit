@@ -63,12 +63,18 @@ using     std::vector;
 //  Programmer:  Hank Childs
 //  Creation:    April 4, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sun May  9 18:47:06 CDT 2010
+//    Initialize time slice offset.
+//
 // ****************************************************************************
 
 avtMTMDFileFormat::avtMTMDFileFormat(const char *name)
 {
     filename = new char[strlen(name)+1];
     strcpy(filename, name);
+    timeSliceOffset = 0;
 }
 
 

@@ -98,6 +98,10 @@ class     avtIOInformation;
 //    time-qualified and non-time-qualified PopulateDatabaseMetaData methods
 //    See note below.
 //
+//    Hank Childs, Sun May  9 18:47:06 CDT 2010
+//    Add support for time slice offsets (used when group MT files with .visit
+//    files).
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormat : public avtFileFormat
@@ -111,6 +115,7 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
                                             DestructorFunction &);
 
     void                   SetDomain(int d) { myDomain = d; };
+    void                   SetTimeSliceOffset(int ts) { timeSliceOffset = ts; };
 
     virtual int            GetNTimesteps(void);
 
@@ -130,6 +135,7 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
     char                 **filenames;
     int                    nFiles;
     int                    myDomain;
+    int                    timeSliceOffset;
 
     // The second of these should really be pure virtual and the first
     // non-existant. However, both are just virtual to maintain 
