@@ -1804,6 +1804,8 @@ QvisExpressionsWindow::stdInsertFunction(QAction * action)
 //  Creation:    Thu Feb 11 15:21:11 PST 2010
 //
 //  Modifications:
+//   Cyrus Harrison, Tue May 11 23:39:37 PDT 2010
+//   Added comma separator for multiple arguments.
 //
 // ****************************************************************************
 
@@ -1816,6 +1818,9 @@ QvisExpressionsWindow::pyInsertFunction(QAction * action)
     QString func_name = action->text();
 
     QString func_res =ExpandFunction(func_name);
+    QString args_trimmed = pyArgsEdit->text().trimmed();
+    if(args_trimmed.size() > 0 && args_trimmed.right(1) != QString(","))
+        func_res = QString(", ") + func_res;
     pyArgsEdit->insert(func_res);
     pyArgsEdit->setFocus();
 }
@@ -1912,6 +1917,9 @@ QvisExpressionsWindow::stdInsertVariable(const QString &var)
 // Creation:   Thu Feb 11 15:22:08 PST 2010
 //
 // Modifications:
+//  Modifications:
+//   Cyrus Harrison, Tue May 11 23:39:37 PDT 2010
+//   Added comma separator for multiple arguments.
 //
 // ****************************************************************************
 
@@ -1921,7 +1929,11 @@ QvisExpressionsWindow::pyInsertVariable(const QString &var)
     if (!pyArgsEdit->isEnabled())
         return;
 
-    pyArgsEdit->insert(QuoteVariable(var));
+    QString var_res = QuoteVariable(var);
+    QString args_trimmed = pyArgsEdit->text().trimmed();
+    if(args_trimmed.size() > 0 && args_trimmed.right(1) != QString(","))
+        var_res = QString(", ") + var_res;
+    pyArgsEdit->insert(var_res);
     pyArgsEdit->setFocus();
 }
 
