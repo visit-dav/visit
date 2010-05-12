@@ -862,19 +862,13 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             UpdatePlotList();
         }
 
-        if(globalAtts->IsSelected(GlobalAttributes::ID_applyOperator))
-        {
-            applyOperatorCheckBox->blockSignals(true);
-            applyOperatorCheckBox->setChecked(globalAtts->GetApplyOperator());
-            applyOperatorCheckBox->blockSignals(false);
-        }
+        applyOperatorCheckBox->blockSignals(true);
+        applyOperatorCheckBox->setChecked(globalAtts->GetApplyOperator());
+        applyOperatorCheckBox->blockSignals(false);
 
-        if(globalAtts->IsSelected(GlobalAttributes::ID_applySelection))
-        {
-            applySelectionCheckBox->blockSignals(true);
-            applySelectionCheckBox->setChecked(globalAtts->GetApplySelection());
-            applySelectionCheckBox->blockSignals(false);
-        }
+        applySelectionCheckBox->blockSignals(true);
+        applySelectionCheckBox->setChecked(globalAtts->GetApplySelection());
+        applySelectionCheckBox->blockSignals(false);
 
         //
         // When the globalAtts change, we might have to update the
