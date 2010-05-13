@@ -243,6 +243,7 @@ ELSE(VISIT_STATIC)
         TARGET_LINK_LIBRARIES(visitfrontend
             ${PYTHON_LIBRARIES}
         )
+        VISIT_INSTALL_TARGETS(visitfrontend)
     ENDIF(NOT WIN32)
 
     VISIT_INSTALL_TARGETS(visitpy cli visitmodule)
