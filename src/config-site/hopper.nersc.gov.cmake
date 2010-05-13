@@ -51,6 +51,7 @@ SET(VISIT_EXE_LINKER_FLAGS "-Wl,--rpath,/opt/gcc/4.3.3/snos/lib64")
 # Get these via CC -v
 SET(VISIT_MPI_CXX_FLAGS "-DMPICH_IGNORE_CXX_SEEK -I/opt/mpt/default/xt/mpich2-gnu/include")
 SET(VISIT_MPI_LD_FLAGS "-L/opt/mpt/default/xt/mpich2-gnu/lib -L/opt/mpt/default/xt/pmi/lib -L/opt/mpt/default/xt/util/lib -L/opt/xt-xcpe/default/lib -Wl,--rpath,/opt/mpt/default/xt/mpich2-gnu/lib,--rpath,/opt/mpt/default/xt/pmi/lib,--rpath,/opt/mpt/default/xt/util/lib,--rpath,/opt/xt-xcpe/default/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/mpt/default/xt/mpich2-gnu/lib;/opt/mpt/default/xt/pmi/lib;/opt/mpt/default/xt/util/lib;/opt/xt-xcpe/default/lib")
 SET(VISIT_MPI_LIBS mpich pmi alpslli alpsutil portals pthread rt)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)
