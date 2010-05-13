@@ -37,6 +37,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li><a href="#Config_changes">Changes to machine configuration files</a></li>
     <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
    </ul>
+  <li><a href="#Known_issues">Known Issues</a></li>
 </ul>
 
 <a name="Major_New_Features"></a>
@@ -275,6 +276,17 @@ enhancements and bug-fixes that were added to this release.</p>
       </ul>
   </li>
   <li>It is now easier to integrate IceT into VisIt, in terms of build_visit and CMake. Testing showed that this library made a substantial speedup with parallel rendering and is worth the compile-time effort.</li>
+</ul>
+
+<a name="Known_issues"></a>
+<p><b><font size="4">Known Issues in version 2.0</font></b></p>
+<ul>
+  <li>A few issues remain with OS X 10.6-based builds.  The 10.5 binaries
+      should work fine on 10.6.</li>
+  <li>The SLIVR volume plot option can cause a crash with the message
+      &quot;<TT>Maximum number of clients reached</TT>&quot; on many Linux
+      systems.  We recommend sticking with the 3D texture renderer on that
+      platform.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
