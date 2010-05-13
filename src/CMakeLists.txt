@@ -1595,6 +1595,18 @@ ELSE (NOT WIN32)
             COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
  
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
+        
+        # source installer
+        ADD_CUSTOM_COMMAND(OUTPUT visitdev${VISIT_VERSION}.exe
+            COMMAND ${MAKENSIS} 
+                    /DVisItVersion=${VISIT_VERSION} 
+                    /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
+                    /DINSTALL_PREFIX=${CIP_NATIVE} 
+                     ${VISIT_WINDOWS_DIR}/installation/sourceinstallation.nsi
+            DEPENDS ${VISIT_WINDOWS_DIR}/installation/sourceinstallation.nsi
+        )
+        ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
+        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
     ENDIF (${MAKENSIS_FOUND})
 ENDIF (NOT WIN32)
 
