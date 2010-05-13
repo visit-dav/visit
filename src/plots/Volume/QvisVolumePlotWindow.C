@@ -1413,7 +1413,12 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 centeredDiffButton->setEnabled(true);
                 sobelButton->setEnabled(true);
 #ifdef HAVE_LIBSLIVR
+#ifdef USE_TUVOK
                 rendererTypesComboBox->setCurrentIndex(5);
+#else
+                // There's no Tuvok so we use slot 4.
+                rendererTypesComboBox->setCurrentIndex(4);
+#endif
                 num3DSlicesLabel->setEnabled(false);
                 num3DSlices->setEnabled(false);
                 rendererSamplesLabel->setEnabled(true);
