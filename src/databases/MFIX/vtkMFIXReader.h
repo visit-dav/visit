@@ -265,6 +265,7 @@ private:
   void RestartVersionNumber(const char* buffer);
   void GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n);
   void GetBlockOfFloats(istream& in, vtkFloatArray *v, int n);
+  void GetBlockOfFloats(FILE* in, vtkFloatArray *v, int n);
   void GetBlockOfInts(istream& in, vtkIntArray *v, int n);
   void ReadRestartFile();
   void GetVariableAtTimestep(int vari , int tstep, vtkFloatArray *v);

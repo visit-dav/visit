@@ -2081,7 +2081,7 @@ void vtkMFIXReader::GetTimeSteps()
         case 7:
           {
           numberOfVariables = this->NMax->GetValue(0);
-          for (int m=0; m<this->MMAX; ++m)
+          for (int m=1; m<=this->MMAX; ++m)
             {
             numberOfVariables += this->NMax->GetValue(m);
             }
@@ -2221,12 +2221,14 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep,
   int index = (vari*this->MaximumTimestep) + tstep;
   long long nBytesSkip = this->SPXTimestepIndexTable->GetValue(index);
 #ifdef _WIN32
-  ifstream in(fileName,ios::binary);
+  FILE* in = fopen(fileName,"rb");
+  int result = _fseeki64(in,nBytesSkip,SEEK_SET);
+  this->GetBlockOfFloats (in, v, this->IJKMaximum2);
 #else
   ifstream in(fileName);
-#endif
   in.seekg(nBytesSkip,ios::beg);
   this->GetBlockOfFloats (in, v, this->IJKMaximum2);
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -2272,6 +2274,14 @@ void vtkMFIXReader::GetNumberOfVariablesInSPXFiles()
 {
   int NumberOfVariablesInSPX = 0;
   int skip = 0;
+
+  //initialize VariablesToSkipTable to 0
+  //for windows
+  for(int i=0;i<this->VariableNames->GetMaxId()+1;i++)
+    {
+    this->VariableToSkipTable->InsertValue(i,0);
+    }
+
   for (int j=1; j<this->NumberOfSPXFilesUsed; j++)
     {
     for(int i=0;i<this->VariableNames->GetMaxId()+1;i++)
