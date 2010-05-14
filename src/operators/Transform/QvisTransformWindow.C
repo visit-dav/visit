@@ -133,6 +133,9 @@ QvisTransformWindow::~QvisTransformWindow()
 //    new interpretation of them.  Added vector transform method
 //    selection to coordinate system conversions.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 void
@@ -252,6 +255,12 @@ QvisTransformWindow::CreateWindowContents()
     connect(translateZ, SIGNAL(returnPressed()),
             this, SLOT(translateZProcessText()));
     mainLayout->addWidget(translateZ, 8,6);
+    
+    transformVectors1 = new QCheckBox(tr("Transform vectors"),
+                                 thirdPage);
+    mainLayout->addWidget(transformVectors1, 9, 0);
+    connect(transformVectors1, SIGNAL(toggled(bool)),
+            this, SLOT(transformVectorsChanged(bool)));
     mainLayout->setRowStretch(9, 100);
 
     // ----------------------------------------------------------------------
@@ -357,6 +366,13 @@ QvisTransformWindow::CreateWindowContents()
     thirdPageLayout->addWidget(linearInvert, 4, 0, 1, 3);
     connect(linearInvert, SIGNAL(toggled(bool)),
             this, SLOT(linearInvertChanged(bool)));
+
+    transformVectors3 = new QCheckBox(tr("Transform vectors"),
+                                 thirdPage);
+    thirdPageLayout->addWidget(transformVectors3, 5, 0, 1, 3);
+    connect(transformVectors3, SIGNAL(toggled(bool)),
+            this, SLOT(transformVectorsChanged(bool)));
+
     thirdPageLayout->setRowStretch(5, 100);
 
     connect(transformTypeTabs, SIGNAL(currentChanged(int)),
@@ -593,6 +609,15 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             vectorMethodCombo->setCurrentIndex(
                                        int(atts->GetVectorTransformMethod()));
             vectorMethodCombo->blockSignals(false);
+
+          case TransformAttributes::ID_transformVectors:
+            transformVectors1->blockSignals(true);
+            transformVectors3->blockSignals(true);
+            transformVectors1->setChecked(atts->GetTransformVectors());
+            transformVectors3->setChecked(atts->GetTransformVectors());
+            transformVectors1->blockSignals(false);
+            transformVectors3->blockSignals(false);
+            break;
         }
     }
 }
@@ -946,6 +971,13 @@ void
 QvisTransformWindow::linearInvertChanged(bool val)
 {
     atts->SetInvertLinearTransform(val);
+    Apply();
+}
+
+void
+QvisTransformWindow::transformVectorsChanged(bool val)
+{
+    atts->SetTransformVectors(val);
     Apply();
 }
 

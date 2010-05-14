@@ -99,6 +99,9 @@ avtLinearTransformFilter::~avtLinearTransformFilter()
 //
 //  Modifications:
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 void
@@ -111,6 +114,7 @@ avtLinearTransformFilter::SetAtts(const AttributeGroup *a)
     if (invM)
         invM->Delete();
     invM = NULL;
+    SetVectorTransform(atts.GetTransformVectors());
 }
 
 

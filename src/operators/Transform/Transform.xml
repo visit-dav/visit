@@ -111,6 +111,9 @@
       <Field name="vectorTransformMethod" label="Method for transforming vectors" type="enum" subtype="VectorTransformMethod" enabler="transformType:Coordinate">
         AsDirection
       </Field>
+      <Field name="transformVectors" label="transformVectors" type="bool">
+        true
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

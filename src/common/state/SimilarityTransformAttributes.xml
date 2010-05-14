@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SimilarityTransformAttributes" purpose="This class contains attributes for the similarity transform." persistent="true" codefile="SimilarityTransformAttributes.code" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="SimilarityTransformAttributes" purpose="This class contains attributes for the similarity transform." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SimilarityTransformAttributes.code">
     <Enum name="AngleType">
       Deg
       Rad
@@ -51,6 +51,9 @@
     </Field>
     <Field name="translateZ" label="Z" type="float" enabler="doTranslate:true">
       0.000000
+    </Field>
+    <Field name="transformVectors" label="transformVectors" type="bool">
+      true
     </Field>
     <Function name="CopyAttributes" user="false" member="true">
     </Function>

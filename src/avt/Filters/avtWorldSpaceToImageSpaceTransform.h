@@ -88,6 +88,9 @@ class   avtIntervalTree;
 //    Hank Childs, Tue Sep 22 20:40:39 PDT 2009
 //    Redefine virtual method in order to disable transformation of vectors.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Move vector transform flag into base class.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
@@ -134,8 +137,6 @@ class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
 
     virtual void            UpdateDataObjectInfo(void);
     virtual bool            FilterUnderstandsTransformedRectMesh();
-    // Never want to do it for volume rendering.
-    virtual bool            TransformVectors(void) { return false; };
 };
 
 

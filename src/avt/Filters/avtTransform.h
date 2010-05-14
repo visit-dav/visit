@@ -92,6 +92,9 @@ class     vtkRectilinearGrid;
 //    Add a method for transforming vectors ... we need to not transform
 //    vectors when volume rendering.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
@@ -103,8 +106,12 @@ class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
     virtual const char         *GetType(void) { return "avtTransform"; };
     virtual const char         *GetDescription(void)
                                         { return "Transforming data"; };
+    void                 SetVectorTransform(bool b)
+                                               { transformVectors = b; }
 
   protected:
+    bool transformVectors;
+
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual vtkMatrix4x4       *GetTransform() = 0;
     virtual void                UpdateDataObjectInfo(void);
@@ -116,7 +123,6 @@ class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
     vtkDataSet                 *TransformRectilinearToCurvilinear(
                                                          vtkRectilinearGrid *);
     virtual void                TransformData(vtkRectilinearGrid *) {;};
-    virtual bool                TransformVectors(void) { return true; };
 };
 
 

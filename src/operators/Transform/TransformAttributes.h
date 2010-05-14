@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TransformAttributes
 //
@@ -84,13 +85,23 @@ public:
         AsDirection
     };
 
+    // These constructors are for objects of this class
     TransformAttributes();
     TransformAttributes(const TransformAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TransformAttributes(private_tmfs_t tmfs);
+    TransformAttributes(const TransformAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TransformAttributes();
 
     virtual TransformAttributes& operator = (const TransformAttributes &obj);
     virtual bool operator == (const TransformAttributes &obj) const;
     virtual bool operator != (const TransformAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TransformAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -132,6 +143,7 @@ public:
     void SetM22(double m22_);
     void SetInvertLinearTransform(bool invertLinearTransform_);
     void SetVectorTransformMethod(VectorTransformMethod vectorTransformMethod_);
+    void SetTransformVectors(bool transformVectors_);
 
     // Property getting methods
     bool        GetDoRotate() const;
@@ -165,6 +177,7 @@ public:
     double      GetM22() const;
     bool        GetInvertLinearTransform() const;
     VectorTransformMethod GetVectorTransformMethod() const;
+    bool        GetTransformVectors() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -228,7 +241,9 @@ public:
         ID_m21,
         ID_m22,
         ID_invertLinearTransform,
-        ID_vectorTransformMethod
+        ID_vectorTransformMethod,
+        ID_transformVectors,
+        ID__LAST
     };
 
 private:
@@ -260,9 +275,12 @@ private:
     double m22;
     bool   invertLinearTransform;
     int    vectorTransformMethod;
+    bool   transformVectors;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TRANSFORMATTRIBUTES_TMFS "bFFfibFfffbfffiiidddddddddbib"
 
 #endif

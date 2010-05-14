@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class TransformAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 28;
+    private static int TransformAttributes_numAdditionalAtts = 29;
 
     // Enum values
     public final static int ANGLETYPE_DEG = 0;
@@ -81,7 +81,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public TransformAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TransformAttributes_numAdditionalAtts);
 
         doRotate = false;
         rotateOrigin = new float[3];
@@ -120,11 +120,12 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m22 = 1;
         invertLinearTransform = false;
         vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
+        transformVectors = true;
     }
 
     public TransformAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TransformAttributes_numAdditionalAtts + nMoreFields);
 
         doRotate = false;
         rotateOrigin = new float[3];
@@ -163,11 +164,12 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m22 = 1;
         invertLinearTransform = false;
         vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
+        transformVectors = true;
     }
 
     public TransformAttributes(TransformAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TransformAttributes_numAdditionalAtts);
 
         int i;
 
@@ -211,6 +213,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m22 = obj.m22;
         invertLinearTransform = obj.invertLinearTransform;
         vectorTransformMethod = obj.vectorTransformMethod;
+        transformVectors = obj.transformVectors;
 
         SelectAll();
     }
@@ -222,7 +225,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TransformAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TransformAttributes obj)
@@ -272,7 +275,8 @@ public class TransformAttributes extends AttributeSubject implements Plugin
                 (m21 == obj.m21) &&
                 (m22 == obj.m22) &&
                 (invertLinearTransform == obj.invertLinearTransform) &&
-                (vectorTransformMethod == obj.vectorTransformMethod));
+                (vectorTransformMethod == obj.vectorTransformMethod) &&
+                (transformVectors == obj.transformVectors));
     }
 
     public String GetName() { return "Transform"; }
@@ -477,6 +481,12 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(27);
     }
 
+    public void SetTransformVectors(boolean transformVectors_)
+    {
+        transformVectors = transformVectors_;
+        Select(28);
+    }
+
     // Property getting methods
     public boolean GetDoRotate() { return doRotate; }
     public float[] GetRotateOrigin() { return rotateOrigin; }
@@ -506,6 +516,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     public double  GetM22() { return m22; }
     public boolean GetInvertLinearTransform() { return invertLinearTransform; }
     public int     GetVectorTransformMethod() { return vectorTransformMethod; }
+    public boolean GetTransformVectors() { return transformVectors; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -566,6 +577,8 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(invertLinearTransform);
         if(WriteSelect(27, buf))
             buf.WriteInt(vectorTransformMethod);
+        if(WriteSelect(28, buf))
+            buf.WriteBool(transformVectors);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -656,6 +669,9 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         case 27:
             SetVectorTransformMethod(buf.ReadInt());
             break;
+        case 28:
+            SetTransformVectors(buf.ReadBool());
+            break;
         }
     }
 
@@ -725,6 +741,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         if(vectorTransformMethod == VECTORTRANSFORMMETHOD_ASDIRECTION)
             str = str + "VECTORTRANSFORMMETHOD_ASDIRECTION";
         str = str + "\n";
+        str = str + boolToString("transformVectors", transformVectors, indent) + "\n";
         return str;
     }
 
@@ -758,5 +775,6 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     private double  m22;
     private boolean invertLinearTransform;
     private int     vectorTransformMethod;
+    private boolean transformVectors;
 }
 
