@@ -30,4 +30,7 @@
     <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
       false
     </Field>
+    <Field name="transformVectors" label="transformVectors" type="bool">
+      true
+    </Field>
   </Attribute>

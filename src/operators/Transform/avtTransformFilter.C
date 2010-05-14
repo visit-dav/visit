@@ -159,6 +159,9 @@ avtTransformFilter::Create()
 //    Made coordinate system convert filter's coordinate type enum be
 //    within the filter's namespace.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 void
@@ -191,6 +194,7 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
         st_atts.SetTranslateX(atts.GetTranslateX());
         st_atts.SetTranslateY(atts.GetTranslateY());
         st_atts.SetTranslateZ(atts.GetTranslateZ());
+        st_atts.SetTransformVectors(atts.GetTransformVectors());
     
         stf->SetAtts(&st_atts);
     }
@@ -252,6 +256,8 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
         lt_atts.SetM22(atts.GetM22());
 
         lt_atts.SetInvertLinearTransform(atts.GetInvertLinearTransform());
+        lt_atts.SetTransformVectors(atts.GetTransformVectors());
+
         ltf->SetAtts(&lt_atts);
     }
 }

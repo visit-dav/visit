@@ -88,6 +88,9 @@ bool   HexIntersectsImageCube(const float [8][3]);
 //    Remove tightenClippingPlanes, as this functionality has been moved to
 //    avtRayTracer.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
@@ -103,6 +106,9 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
     view = vi;
     transform = vtkMatrix4x4::New();
     CalculateTransform(view, transform, scale, aspect);
+    
+    // Never want to do it for volume rendering.
+    transformVectors = false;
 }
 
 

@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: LinearTransformAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API LinearTransformAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     LinearTransformAttributes();
     LinearTransformAttributes(const LinearTransformAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    LinearTransformAttributes(private_tmfs_t tmfs);
+    LinearTransformAttributes(const LinearTransformAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~LinearTransformAttributes();
 
     virtual LinearTransformAttributes& operator = (const LinearTransformAttributes &obj);
     virtual bool operator == (const LinearTransformAttributes &obj) const;
     virtual bool operator != (const LinearTransformAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const LinearTransformAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -86,6 +97,7 @@ public:
     void SetM21(double m21_);
     void SetM22(double m22_);
     void SetInvertLinearTransform(bool invertLinearTransform_);
+    void SetTransformVectors(bool transformVectors_);
 
     // Property getting methods
     double GetM00() const;
@@ -98,6 +110,7 @@ public:
     double GetM21() const;
     double GetM22() const;
     bool   GetInvertLinearTransform() const;
+    bool   GetTransformVectors() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -122,7 +135,9 @@ public:
         ID_m20,
         ID_m21,
         ID_m22,
-        ID_invertLinearTransform
+        ID_invertLinearTransform,
+        ID_transformVectors,
+        ID__LAST
     };
 
 private:
@@ -136,9 +151,12 @@ private:
     double m21;
     double m22;
     bool   invertLinearTransform;
+    bool   transformVectors;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LINEARTRANSFORMATTRIBUTES_TMFS "dddddddddbb"
 
 #endif

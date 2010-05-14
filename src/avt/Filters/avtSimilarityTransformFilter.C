@@ -111,6 +111,9 @@ avtSimilarityTransformFilter::~avtSimilarityTransformFilter()
 //    Kathleen Bonnell, Wed May 21 11:38:23 PDT 2003   
 //    Check for bad axis of rotation. 
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 void
@@ -123,6 +126,8 @@ avtSimilarityTransformFilter::SetAtts(const AttributeGroup *a)
     if (invM)
         invM->Delete();
     invM = NULL;
+
+    SetVectorTransform(atts.GetTransformVectors());
 
     const float *axis = atts.GetRotateAxis();
     if (axis[0] == 0. && axis[1] == 0. && axis[2] == 0.)

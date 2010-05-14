@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SimilarityTransformAttributes
 //
@@ -66,13 +67,23 @@ public:
         Rad
     };
 
+    // These constructors are for objects of this class
     SimilarityTransformAttributes();
     SimilarityTransformAttributes(const SimilarityTransformAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SimilarityTransformAttributes(private_tmfs_t tmfs);
+    SimilarityTransformAttributes(const SimilarityTransformAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SimilarityTransformAttributes();
 
     virtual SimilarityTransformAttributes& operator = (const SimilarityTransformAttributes &obj);
     virtual bool operator == (const SimilarityTransformAttributes &obj) const;
     virtual bool operator != (const SimilarityTransformAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SimilarityTransformAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -100,6 +111,7 @@ public:
     void SetTranslateX(float translateX_);
     void SetTranslateY(float translateY_);
     void SetTranslateZ(float translateZ_);
+    void SetTransformVectors(bool transformVectors_);
 
     // Property getting methods
     bool        GetDoRotate() const;
@@ -119,6 +131,7 @@ public:
     float       GetTranslateX() const;
     float       GetTranslateY() const;
     float       GetTranslateZ() const;
+    bool        GetTransformVectors() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -153,7 +166,9 @@ public:
         ID_doTranslate,
         ID_translateX,
         ID_translateY,
-        ID_translateZ
+        ID_translateZ,
+        ID_transformVectors,
+        ID__LAST
     };
 
 private:
@@ -171,9 +186,12 @@ private:
     float translateX;
     float translateY;
     float translateZ;
+    bool  transformVectors;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SIMILARITYTRANSFORMATTRIBUTES_TMFS "bFFfibFfffbfffb"
 
 #endif

@@ -60,14 +60,23 @@
 #include <VisItException.h>
 
 
-static bool   IsIdentity(vtkMatrix4x4 *);
+static bool IsIdentity(vtkMatrix4x4 *);
+static void TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
+                                       vtkDataArray *outVecs, vtkDataArray *inVecs,
+                                       vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+                                       int *dims);
+static void TransformVecAsDirection(vtkMatrixToLinearTransform *t,
+                                    vtkDataArray *outVecs, vtkDataArray *inVecs,
+                                    vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+                                    int *dims,
+                                    vtkPoints *pts);
 
 
 // START VTK WORKAROUND
 class vtkVisItMatrixToHomogeneousTransform : public vtkMatrixToHomogeneousTransform
 {
 public:
-  vtkVisItMatrixToHomogeneousTransform() { transformVectors = true; };
+  vtkVisItMatrixToHomogeneousTransform() { transformVectors = true; }
   static vtkVisItMatrixToHomogeneousTransform *New(); 
   virtual void TransformPointsNormalsVectors(vtkPoints *inPts,
                                              vtkPoints *outPts,
@@ -75,9 +84,9 @@ public:
                                              vtkDataArray *outNms,
                                              vtkDataArray *inVrs,
                                              vtkDataArray *outVrs);
-  void SetTransformVectors(bool v) { transformVectors = v; };
+  void SetTransformVectors(bool b) { transformVectors = b;}
 private:
-  bool         transformVectors;
+    bool transformVectors;
 };
 #include <vtkObjectFactory.h>
 #include <vtkMath.h>
@@ -195,11 +204,16 @@ void vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(vtkPoin
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 avtTransform::avtTransform()
 {
-    ;
+    transformVectors = true;
 }
 
 
@@ -264,6 +278,9 @@ avtTransform::~avtTransform()
 //    Hank Childs, Tue Sep 22 20:40:39 PDT 2009
 //    Turn off vector transformation (needed for volume rendering).
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -286,7 +303,7 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // VTK WORK-AROUND
     //vtkMatrixToHomogeneousTransform *t =vtkMatrixToHomogeneousTransform::New();
     vtkVisItMatrixToHomogeneousTransform *t =vtkVisItMatrixToHomogeneousTransform::New();
-    t->SetTransformVectors(TransformVectors());
+    t->SetTransformVectors(transformVectors);
     t->SetInput(mat);
     transform->SetTransform(t);
     t->Delete();
@@ -557,6 +574,9 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
 //    Renamed routine since we now do not always make curvilinear grids
 //    out of rectilinear grids.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -633,7 +653,12 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
         vtkDataArray *arr = vectors->NewInstance();
         arr->SetNumberOfComponents(3);
         arr->Allocate(3*vectors->GetNumberOfTuples());
-        trans->TransformVectors(vectors, arr);
+
+        if (transformVectors)
+            trans->TransformVectors(vectors, arr);
+        else
+            arr->DeepCopy(vectors);
+        
         arr->SetName(vectors->GetName());
         out->GetPointData()->RemoveArray(vectors->GetName());
         out->GetPointData()->SetVectors(arr);
@@ -657,7 +682,12 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
         vtkDataArray *arr = vectors->NewInstance();
         arr->SetNumberOfComponents(3);
         arr->Allocate(3*vectors->GetNumberOfTuples());
-        trans->TransformVectors(vectors, arr);
+        
+        if (transformVectors)
+            trans->TransformVectors(vectors, arr);
+        else
+            arr->DeepCopy(vectors);
+        
         arr->SetName(vectors->GetName());
         out->GetCellData()->RemoveArray(vectors->GetName());
         out->GetCellData()->SetVectors(arr);
@@ -757,4 +787,95 @@ IsIdentity(vtkMatrix4x4 *mat)
     }
 
     return true;
+}
+
+void
+TransformVecAsDisplacement(vtkMatrixToLinearTransform *t, 
+                           vtkDataArray *outVecs, vtkDataArray *inVecs, 
+                           vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+                           int *dims)
+{
+    int index = 0;
+    for (int k = 0; k < dims[2]; k++)
+    {
+        for (int j = 0; j < dims[1]; j++)
+        {
+            for (int i = 0; i < dims[0]; i++)
+            {
+                double inPt[3];
+                inPt[0] = x->GetComponent(i,0);
+                inPt[1] = y->GetComponent(j,0);
+                inPt[2] = z->GetComponent(k,0);
+                
+                double vec[3], vec2[3];
+                inVecs->GetTuple(index, vec);
+                vec[0] += inPt[0];
+                vec[1] += inPt[1];
+                vec[2] += inPt[2];
+                t->TransformVector(vec, vec2);
+
+                vec2[0] -= inPt[0];
+                vec2[1] -= inPt[1];
+                vec2[2] -= inPt[2];
+                outVecs->SetTuple(index, vec2);
+                index++;
+
+                if (index < 10)
+                {
+                    t->Print(cout);
+                    cout<<"v: "<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ==> "<<vec2[0]<<" "<<vec2[1]<<" "<<vec2[2]<<endl;
+                }
+            }
+        }
+    }
+}
+
+
+
+void
+TransformVecAsDirection(vtkMatrixToLinearTransform *t,
+                        vtkDataArray *outVecs, vtkDataArray *inVecs,
+                        vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+                        int *dims,
+                        vtkPoints *pts)
+{
+    const double instantEps    = 1.e-5;
+    const double instantEpsInv = 1.e+5;
+    
+    int index = 0;
+    for (int k = 0; k < dims[2]; k++)
+    {
+        for (int j = 0; j < dims[1]; j++)
+        {
+            for (int i = 0; i < dims[0]; i++)
+            {
+                double inPt[3];
+                inPt[0] = x->GetComponent(i,0);
+                inPt[1] = y->GetComponent(j,0);
+                inPt[2] = z->GetComponent(k,0);
+                
+                double vec[3], vec2[3];
+                inVecs->GetTuple(index, vec);
+                vec[0] = instantEps*vec[0] + inPt[0];
+                vec[1] = instantEps*vec[1] + inPt[1];
+                vec[2] = instantEps*vec[2] + inPt[2];
+                t->TransformVector(vec, vec2);
+
+                double outPt[3];
+                pts->GetPoint(index, outPt);
+                vec2[0] = (vec2[0]-outPt[0]) * instantEpsInv;
+                vec2[1] = (vec2[1]-outPt[1]) * instantEpsInv;
+                vec2[2] = (vec2[2]-outPt[2]) * instantEpsInv;
+
+                outVecs->SetTuple(index, vec2);
+                index++;
+
+                if (index < 10)
+                {
+                    t->Print(cout);
+                    cout<<"v: "<<vec[0]<<" "<<vec[1]<<" "<<vec[2]<<" ==> "<<vec2[0]<<" "<<vec2[1]<<" "<<vec2[2]<<endl;
+                }
+            }
+        }
+    }
 }

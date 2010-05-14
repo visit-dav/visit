@@ -109,6 +109,9 @@ class QNarrowLineEdit : public QLineEdit
 //    Added choice for multiple ways one might want to transform a vector
 //    in coordinate system conversions.
 //
+//    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
+//    Flag for vector transformations.
+//
 // ****************************************************************************
 
 class QvisTransformWindow : public QvisOperatorWindow
@@ -145,6 +148,7 @@ class QvisTransformWindow : public QvisOperatorWindow
     void outputCoordChanged(int);
     void ltElementtChanged();
     void linearInvertChanged(bool val);
+    void transformVectorsChanged(bool val);
     void vectorMethodChanged(int);
   private:
     QTabWidget      *transformTypeTabs;
@@ -187,6 +191,7 @@ class QvisTransformWindow : public QvisOperatorWindow
     QNarrowLineEdit *m21;
     QNarrowLineEdit *m22;
     QCheckBox       *linearInvert;
+    QCheckBox       *transformVectors1, *transformVectors3;
 
     QButtonGroup    *inputCoord;
     QButtonGroup    *outputCoord;
