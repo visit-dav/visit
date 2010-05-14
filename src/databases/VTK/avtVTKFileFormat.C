@@ -131,7 +131,10 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
     for(i = len-1; i >= 0; i--)
     {
         if(fname[i] == '.')
+        {
             start = i;
+            break;
+        }
         else if(fname[i] == '/' || fname[i] == '\\')
         {
             // We hit a path separator. There is no file extension.
