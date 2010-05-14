@@ -5,6 +5,8 @@
 ## system: AIX up041 3 5 00C5D6DD4C00
 ## by: brugger
 
+VISIT_OPTION_DEFAULT(VISIT_SLIVR OFF)
+
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
