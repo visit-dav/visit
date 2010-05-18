@@ -93,6 +93,9 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
 //   Removed unused corner offset.
 //
+//   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
+//   Added Ranges which are independent of Bounds.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -100,6 +103,10 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->Bounds[0] = -1.0; this->Bounds[1] = 1.0;
   this->Bounds[2] = -1.0; this->Bounds[3] = 1.0;
   this->Bounds[4] = -1.0; this->Bounds[5] = 1.0;
+
+  this->Ranges[0] = -1.0; this->Ranges[1] = 1.0;
+  this->Ranges[2] = -1.0; this->Ranges[3] = 1.0;
+  this->Ranges[4] = -1.0; this->Ranges[5] = 1.0;
 
   this->TickLocation = VTK_TICKS_INSIDE;
   this->Camera = NULL;
@@ -279,6 +286,9 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
 //   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
 //   Removed unused corner offset.
 //
+//   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
+//   Added Ranges which are independent of Bounds.
+//
 // ****************************************************************************
 
 void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
@@ -294,6 +304,7 @@ void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
   this->SetFlyMode(actor->GetFlyMode());
   this->SetCamera(actor->GetCamera());
   this->SetBounds(actor->GetBounds());
+  this->SetRanges(actor->GetRanges());
   this->mustAdjustXValue = actor->mustAdjustXValue;
   this->mustAdjustYValue = actor->mustAdjustYValue;
   this->mustAdjustZValue = actor->mustAdjustZValue;
@@ -503,33 +514,6 @@ int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
   return renderedSomething;
 }
 
-// Do final adjustment of axes to control offset, etc.
-
-// Modifications:
-//   Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
-//   Renamed some instances of Range to Bounds to reflect their true
-//   usage (since in theory, the range of an axis need not be tied to
-//   its location in physical space).
-//
-//   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
-//   Removed unused corner offset.
-//
-void 
-vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6], 
-                                double yCoords[4][6], double zCoords[4][6],
-                                double xBounds[2], double yBounds[2], 
-                                double zBounds[2])
-{
-  xBounds[0] = bounds[0];
-  xBounds[1] = bounds[1];
-  
-  yBounds[0] = bounds[2];
-  yBounds[1] = bounds[3];
-  
-  zBounds[0] = bounds[4];
-  zBounds[1] = bounds[5];
-}
-
 // Release any graphics resources that are being consumed by this actor.
 // The parameter window could be used to determine which graphic
 // resources to release.
@@ -588,6 +572,9 @@ double *vtkVisItCubeAxesActor::GetBounds()
 //   Jeremy Meredith, Tue May 18 13:15:40 EDT 2010
 //   Removed unused corner offset.
 //
+//   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
+//   Added Ranges which are independent of Bounds.
+//
 // ******************************************************************
 
 void vtkVisItCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
@@ -601,6 +588,14 @@ void vtkVisItCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
      << this->Bounds[3] << ")\n";
   os << indent << "  Zmin,Zmax: (" << this->Bounds[4] << ", " 
      << this->Bounds[5] << ")\n";
+
+  os << indent << "Ranges: \n";
+  os << indent << "  Xmin,Xmax: (" << this->Ranges[0] << ", " 
+     << this->Ranges[1] << ")\n";
+  os << indent << "  Ymin,Ymax: (" << this->Ranges[2] << ", " 
+     << this->Ranges[3] << ")\n";
+  os << indent << "  Zmin,Zmax: (" << this->Ranges[4] << ", " 
+     << this->Ranges[5] << ")\n";
   
   if (this->Camera)
     {
@@ -783,7 +778,7 @@ vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
 }
 
 // ****************************************************************************
-//  Method: vtkVisItCubeAxesActor::AdjustValues
+//  Method: vtkVisItCubeAxesActor::ComputeLabelExponent
 //
 //  Purpose:
 //      If the range of values is too big or too small, put them in scientific
@@ -825,10 +820,13 @@ vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
 //    Brad Whitlock, Fri Jul 23 18:27:30 PST 2004
 //    Added support for using user-defined titles for axes.
 //
+//    Jeremy Meredith, Tue May 18 15:05:41 EDT 2010
+//    Renamed to ComputeLabelExponent as a more correct, descriptive name.
+//
 // ****************************************************************************
 
 void
-vtkVisItCubeAxesActor::AdjustValues(const double bnds[6])
+vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
 {
     char xTitle[64];
 
@@ -969,7 +967,7 @@ vtkVisItCubeAxesActor::AdjustValues(const double bnds[6])
 
 
 // ****************************************************************************
-//  Method: vtkVisItCubeAxesActor::AdjustBounds
+//  Method: vtkVisItCubeAxesActor::ComputeLabelFormat
 //
 //  Purpose:
 //    If the range is small, adjust the precision of the values displayed.
@@ -996,10 +994,13 @@ vtkVisItCubeAxesActor::AdjustValues(const double bnds[6])
 //    usage (since in theory, the range of an axis need not be tied to
 //    its location in physical space).
 //
+//    Jeremy Meredith, Tue May 18 15:05:41 EDT 2010
+//    Renamed to ComputeLabelFormat as a more correct, descriptive name.
+//
 // ****************************************************************************
 
 void
-vtkVisItCubeAxesActor::AdjustBounds(const double bnds[6])
+vtkVisItCubeAxesActor::ComputeLabelFormat(const double bnds[6])
 {
     double xbounds[2], ybounds[2], zbounds[2];
     xbounds[0] = bnds[0];
@@ -1229,6 +1230,11 @@ LabelExponent(double min, double max)
 //    usage (since in theory, the range of an axis need not be tied to
 //    its location in physical space).
 //
+//    Jeremy Meredith, Tue May 18 15:25:35 EDT 2010
+//    Removed call to AdjustAxes, as it now does nothing.
+//    Renamed a couple routines to be more descriptive.
+//    Added Ranges which are independent of Bounds.
+//
 // *************************************************************************
 
 void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
@@ -1301,16 +1307,11 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
     zCoords[i][5] = bounds[5];
     }
 
-  double xBounds[2], yBounds[2], zBounds[2];
-
-  // this method sets the Coords, and offsets if necessary.
-  this->AdjustAxes(bounds, xCoords, yCoords, zCoords, xBounds, yBounds, zBounds);
-
   // adjust for sci. notation if necessary 
   // May set a flag for each axis specifying that label values should
   // be scaled, may change title of each axis, may change label format.
-  this->AdjustValues(this->Bounds);
-  this->AdjustBounds(this->Bounds);
+  this->ComputeLabelExponent(this->Ranges);
+  this->ComputeLabelFormat(this->Ranges);
 
   // Prepare axes for rendering with user-definable options 
   for (i = 0; i < 4; i++)
@@ -1335,9 +1336,9 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
                                                     zCoords[i][5]);
 
 
-    this->XAxes[i]->SetRange(xBounds[0], xBounds[1]);
-    this->YAxes[i]->SetRange(yBounds[0], yBounds[1]);
-    this->ZAxes[i]->SetRange(zBounds[0], zBounds[1]);
+    this->XAxes[i]->SetRange(this->Ranges[0], this->Ranges[1]);
+    this->YAxes[i]->SetRange(this->Ranges[2], this->Ranges[3]);
+    this->ZAxes[i]->SetRange(this->Ranges[4], this->Ranges[5]);
 
 
     this->XAxes[i]->SetTitle(this->ActualXLabel);
@@ -1887,6 +1888,11 @@ inline double fsign(double value, double sign)
 //   Moved from vtkVisItAxisActor. Added calls to set inividual axis'
 //   MajorStart, MinorStart, deltaMajor, deltaMinor. 
 //
+//   Jeremy Meredith, Tue May 18 15:27:11 EDT 2010
+//   Fixed the calculation for major/minor start when the range start
+//   is positive -- in the old way, you would miss the first label/
+//   tick if it fell exactly at the beginning of the drawn range.
+//
 // *******************************************************************
 
 void 
@@ -1952,13 +1958,13 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
   // start of the axis.
   if (sortedRange[0] <= 0.)
     {
-    majorStart = major*(ffix(sortedRange[0]*(1./major)) + 0.);
-    minorStart = minor*(ffix(sortedRange[0]*(1./minor)) + 0.);
+    majorStart = major*(ffix(sortedRange[0]*(1./major)));
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor)));
     }
   else
     {
-    majorStart = major*(ffix(sortedRange[0]*(1./major)) + 1.);
-    minorStart = minor*(ffix(sortedRange[0]*(1./minor)) + 1.);
+    majorStart = major*(ffix(sortedRange[0]*(1./major) + .9999));
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor) + .9999));
     }
 
   for (int i = 0; i < 4; i++)
@@ -1988,6 +1994,11 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
 //    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
 //    Added support for specifying tick mark locations.
 //
+//    Jeremy Meredith, Tue May 18 15:28:38 EDT 2010
+//    We now use the Range of axis as the, well, Range of the axis.
+//    (Previously we ignored the Axis set for the Range, and
+//    used the physical extents of the problem as the Range.)
+//
 // ****************************************************************
 
 void
@@ -1997,7 +2008,6 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
   int i, labelCount = 0;
   double majorStart = axes[0]->GetMajorStart();
   const double deltaMajor = axes[0]->GetDeltaMajor();
-  const double *p2        = axes[0]->GetPoint2Coordinate()->GetValue();
   const double *range     = axes[0]->GetRange();
   const double majorTickMinimum = axes[0]->GetMajorTickMinimum();
   const double majorTickMaximum = axes[0]->GetMajorTickMaximum();
@@ -2012,19 +2022,19 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
   switch (axes[0]->GetAxisType())
     {
     case VTK_AXIS_TYPE_X : 
-        lastVal = p2[0]; 
+        lastVal = this->Ranges[1]; 
         format = this->XLabelFormat;
         mustAdjustValue = this->mustAdjustXValue;
         lastPow = this->lastXPow;
         break; 
     case VTK_AXIS_TYPE_Y : 
-        lastVal = p2[1]; 
+        lastVal = this->Ranges[3]; 
         format = this->YLabelFormat;
         mustAdjustValue = this->mustAdjustYValue;
         lastPow = this->lastYPow;
         break; 
     case VTK_AXIS_TYPE_Z : 
-        lastVal = p2[2]; 
+        lastVal = this->Ranges[5]; 
         format = this->ZLabelFormat;
         mustAdjustValue = this->mustAdjustZValue;
         lastPow = this->lastZPow;

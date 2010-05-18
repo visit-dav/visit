@@ -56,6 +56,12 @@ All rights reserve
 //   Jeremy Meredith, Tue May 18 13:14:37 EDT 2010
 //   Removed unused CornerOffset.
 //
+//   Jeremy Meredith, Tue May 18 13:23:21 EDT 2010
+//   Added a concept of Range which is independent of Bounds.
+//   Removed trivial and now mislabeled AdjustAxes
+//   Renamed AdjustBounds and AdjustValues to ComputeLabelExponent and
+//   ComputeLabelFormat, respectively.
+//
 
 #ifndef __vtkVisItCubeAxesActor_h
 #define __vtkVisItCubeAxesActor_h
@@ -101,6 +107,14 @@ public:
   void GetBounds(double& xmin, double& xmax, double& ymin, double& ymax, 
                  double& zmin, double& zmax);
   void GetBounds(double bounds[6]);
+
+  // Description:
+  // Explicitly specify the actual min/max values assigned to each
+  // of the three axes.  This is what controls the actual numbers
+  // displayed on the axes, and for the typical auto-set axes with
+  // no scaling, will be exactly the same as the bounds.
+  vtkSetVector6Macro(Ranges,double);
+  double *GetRanges();
 
   // Description:
   // Set/Get the camera to perform scaling and translation of the 
@@ -313,6 +327,7 @@ protected:
   ~vtkVisItCubeAxesActor();
 
   double       Bounds[6]; //Define bounds explicitly
+  double       Ranges[6]; //Define ranges explicitly
 
   vtkCamera *Camera;
   int FlyMode;
@@ -445,13 +460,9 @@ private:
   // various helper methods
   void  TransformBounds(vtkViewport *viewport, const double bounds[6], 
                         double pts[8][3]);
-  void  AdjustAxes(double bounds[6], double xCoords[4][6], double yCoords[4][6], 
-                   double zCoords[4][6], double xBounds[2], double yBounds[2], 
-                   double zBounds[2]);
-
   bool  ComputeTickSize(double bounds[6]);
-  void  AdjustValues(const double bounds[6]);
-  void  AdjustBounds(const double bounds[6]);
+  void  ComputeLabelExponent(const double bounds[6]);
+  void  ComputeLabelFormat(const double bounds[6]);
   void  BuildAxes(vtkViewport *);
   void  DetermineRenderAxes(vtkViewport *);
   void  SetNonDependentAttributes(void);
