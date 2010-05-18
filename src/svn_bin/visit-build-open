@@ -42,6 +42,11 @@
 #   wrapper library. I commented out sunspot since Qt4 does not build
 #   there.
 #
+#   Brad Whitlock, Fri May 14 10:23:41 PDT 2010
+#   I removed double builds and made the the packages always include
+#   the 3rd party libs since the size difference isn't worth the
+#   extra build time IMHO.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -217,9 +222,6 @@ ver2=\`echo \$ver | tr "." "_"\`
 /usr/gapps/visit/thirdparty_static/cmake/2.8.0/linux-i686_gcc-3.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-intel.tar.gz ../../visit_llnl\$ver2.linux-intel.tar.gz
-/usr/gapps/visit/thirdparty_static/cmake/2.8.0/linux-i686_gcc-3.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
-make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
 rm -f resultlog
@@ -275,9 +277,6 @@ cp config-site/up041_32.cmake config-site/up041.cmake
 /usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 gmake -j 3 >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr.tar.gz ../../visit_llnl\$ver2.ibm-aix-pwr.tar.gz
-/usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
-gmake -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
 cd ../..
 echo "        build of visit on up"           > resultlog 2>&1
@@ -318,9 +317,6 @@ OBJECT_MODE=64
 export OBJECT_MODE
 /usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 gmake -j 3 >> ../../buildlog 2>&1
-gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr64.tar.gz ../../visit_llnl\$ver2.ibm-aix-pwr64.tar.gz
-/usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
 gmake -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.ibm-aix-pwr64.tar.gz ../..
 cd ../..
@@ -378,9 +374,6 @@ export PATH=\$PATH:/usr/bin/X11
 /usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../../visit_llnl\$ver2.linux-x86_64.tar.gz
-/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
@@ -431,7 +424,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
 ln -s yana1.conf config-site/\`hostname\`.conf
-/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=OFF >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 12 >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -523,19 +516,16 @@ fi
 rm -f davinci
 cat <<EOF > davinci
 #!/bin/sh
-if test ! -d tmp ; then
-   mkdir tmp
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
 fi
-if test ! -d tmp/$user ; then
-   mkdir tmp/$user
+if test ! -d /usr/tmp/$user/davinci; then
+   mkdir /usr/tmp/$user/davinci
 fi
-if test ! -d tmp/$user/davinci; then
-   mkdir tmp/$user/davinci
-fi
-rm -rf tmp/$user/davinci/visitbuild
-mkdir tmp/$user/davinci/visitbuild
-mv davinci_$dist.tar.gz tmp/$user/davinci/visitbuild/$dist.tar.gz
-cd tmp/$user/davinci/visitbuild
+rm -rf /usr/tmp/$user/davinci/visitbuild
+mkdir /usr/tmp/$user/davinci/visitbuild
+mv davinci_$dist.tar.gz /usr/tmp/$user/davinci/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/davinci/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
