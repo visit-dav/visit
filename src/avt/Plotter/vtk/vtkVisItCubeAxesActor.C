@@ -561,6 +561,12 @@ double *vtkVisItCubeAxesActor::GetBounds()
   return this->Bounds;
 }
 
+// Compute the ranges
+double *vtkVisItCubeAxesActor::GetRanges()
+{
+  return this->Ranges;
+}
+
 // ******************************************************************
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
