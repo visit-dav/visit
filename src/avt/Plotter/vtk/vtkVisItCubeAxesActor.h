@@ -53,6 +53,9 @@ All rights reserve
 //   usage (since in theory, the range of an axis need not be tied to
 //   its location in physical space).
 //
+//   Jeremy Meredith, Tue May 18 13:14:37 EDT 2010
+//   Removed unused CornerOffset.
+//
 
 #ifndef __vtkVisItCubeAxesActor_h
 #define __vtkVisItCubeAxesActor_h
@@ -154,13 +157,6 @@ public:
   // to another).
   vtkSetClampMacro(Inertia, int, 1, VTK_LARGE_INTEGER);
   vtkGetMacro(Inertia, int);
-
-  // Description:
-  // Specify an offset value to "pull back" the axes from the corner at
-  // which they are joined to avoid overlap of axes labels. The 
-  // "CornerOffset" is the fraction of the axis length to pull back.
-  vtkSetMacro(CornerOffset, double);
-  vtkGetMacro(CornerOffset, double);
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.

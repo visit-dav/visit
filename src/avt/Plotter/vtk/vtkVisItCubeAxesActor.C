@@ -90,6 +90,9 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   usage (since in theory, the range of an axis need not be tied to
 //   its location in physical space).
 //
+//   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
+//   Removed unused corner offset.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -150,7 +153,6 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   SNPRINTF(this->YLabelFormat,8, "%s","%-#6.3g");
   this->ZLabelFormat = new char[8]; 
   SNPRINTF(this->ZLabelFormat,8, "%s","%-#6.3g");
-  this->CornerOffset = 0.05;
   this->Inertia = 1;
   this->RenderCount = 0;
 
@@ -274,6 +276,9 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
 //   Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
 //   Added support for specifying tick mark locations.
 //
+//   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
+//   Removed unused corner offset.
+//
 // ****************************************************************************
 
 void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
@@ -282,7 +287,6 @@ void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
   this->SetXLabelFormat(actor->GetXLabelFormat());
   this->SetYLabelFormat(actor->GetYLabelFormat());
   this->SetZLabelFormat(actor->GetZLabelFormat());
-  this->SetCornerOffset(actor->GetCornerOffset());
   this->SetInertia(actor->GetInertia());
   this->SetXTitle(actor->GetXTitle());
   this->SetYTitle(actor->GetYTitle());
@@ -506,6 +510,10 @@ int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
 //   Renamed some instances of Range to Bounds to reflect their true
 //   usage (since in theory, the range of an axis need not be tied to
 //   its location in physical space).
+//
+//   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
+//   Removed unused corner offset.
+//
 void 
 vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6], 
                                 double yCoords[4][6], double zCoords[4][6],
@@ -520,54 +528,6 @@ vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6],
   
   zBounds[0] = bounds[4];
   zBounds[1] = bounds[5];
-  
-  // Pull back the corners if specified
-  if (this->CornerOffset > 0.0)
-   {
-   for (int i = 0; i < 4; i++)
-     {
-     double ave;
-
-     // x-axis
-     ave = (xCoords[i][0] + xCoords[i][2]) / 2.0;
-     xCoords[i][0] = xCoords[i][0] - this->CornerOffset * (xCoords[i][0] - ave);
-     xCoords[i][2] = xCoords[i][2] - this->CornerOffset * (xCoords[i][2] - ave);
-    
-     ave = (xCoords[i][1] + xCoords[i][3]) / 2.0;
-     xCoords[i][1] = xCoords[i][1] - this->CornerOffset * (xCoords[i][1] - ave);
-     xCoords[i][3] = xCoords[i][3] - this->CornerOffset * (xCoords[i][3] - ave);
-
-     ave = (xBounds[1] + xBounds[0]) / 2.0;
-     xBounds[0] = xBounds[0] - this->CornerOffset * (xBounds[0] - ave);
-     xBounds[1] = xBounds[1] - this->CornerOffset * (xBounds[1] - ave);
-   
-     // y-axis
-     ave = (yCoords[i][0] + yCoords[i][2]) / 2.0;
-     yCoords[i][0] = yCoords[i][0] - this->CornerOffset * (yCoords[i][0] - ave);
-     yCoords[i][2] = yCoords[i][2] - this->CornerOffset * (yCoords[i][2] - ave);
-    
-     ave = (yCoords[i][1] + yCoords[i][3]) / 2.0;
-     yCoords[i][1] = yCoords[i][1] - this->CornerOffset * (yCoords[i][1] - ave);
-     yCoords[i][3] = yCoords[i][3] - this->CornerOffset * (yCoords[i][3] - ave);
-
-     ave = (yBounds[1] + yBounds[0]) / 2.0;
-     yBounds[0] = yBounds[0] - this->CornerOffset * (yBounds[0] - ave);
-     yBounds[1] = yBounds[1] - this->CornerOffset * (yBounds[1] - ave);
-    
-     // z-axis
-     ave = (zCoords[i][0] + zCoords[i][2]) / 2.0;
-     zCoords[i][0] = zCoords[i][0] - this->CornerOffset * (zCoords[i][0] - ave);
-     zCoords[i][2] = zCoords[i][2] - this->CornerOffset * (zCoords[i][2] - ave);
-    
-     ave = (zCoords[i][1] + zCoords[i][3]) / 2.0;
-     zCoords[i][1] = zCoords[i][1] - this->CornerOffset * (zCoords[i][1] - ave);
-     zCoords[i][3] = zCoords[i][3] - this->CornerOffset * (zCoords[i][3] - ave);
-
-     ave = (zBounds[1] + zBounds[0]) / 2.0;
-     zBounds[0] = zBounds[0] - this->CornerOffset * (zBounds[0] - ave);
-     zBounds[1] = zBounds[1] - this->CornerOffset * (zBounds[1] - ave);
-     }
-   }
 }
 
 // Release any graphics resources that are being consumed by this actor.
@@ -624,6 +584,9 @@ double *vtkVisItCubeAxesActor::GetBounds()
 //
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Removed Input and Prop.
+//
+//   Jeremy Meredith, Tue May 18 13:15:40 EDT 2010
+//   Removed unused corner offset.
 //
 // ******************************************************************
 
@@ -685,7 +648,6 @@ void vtkVisItCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Y Axis Label Format: " << this->YLabelFormat << "\n";
   os << indent << "Z Axis Label Format: " << this->ZLabelFormat << "\n";
   os << indent << "Inertia: " << this->Inertia << "\n";
-  os << indent << "Corner Offset: " << this->CornerOffset << "\n";
 }
 
 
