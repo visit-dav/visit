@@ -2425,7 +2425,7 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
     }
 
 #ifdef _WIN32
-  ifstream tfile(fileName, ios::binary);
+  FILE* tfile = fopen(fileName, "rb");
 #else
   ifstream tfile(fileName);
 #endif
@@ -2440,18 +2440,34 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
   int numberOfVariablesInSPX = this->SPXToNVarTable->GetValue(tmpval);
   int offset = 512-(int)sizeof(float) + 
     512*(numberOfVariablesInSPX*SPXRecordsPerTimestep);
-  tfile.clear();
+#ifdef _WIN32
+  fseek(tfile, 3*512, SEEK_SET); // first time
+#else
   tfile.seekg( 3*512, ios::beg ); // first time
+#endif
   float time;
   double* steps = new double[this->NumberOfTimeSteps];
 
   for (int i = 0; i < this->NumberOfTimeSteps; i++)
     {
+#ifdef _WIN32
+    fread((char*)&time, sizeof(float), 1, tfile);
+#else
     tfile.read( (char*)&time,sizeof(float) );
+#endif
     SwapFloat(time);
     steps[i] = (double)time;
+#ifdef _WIN32
+    _fseeki64(tfile,offset,SEEK_CUR);
+#else
     tfile.seekg(offset,ios::cur);
+#endif
     }
+#ifdef _WIN32
+    fclose(tfile);
+#else
+    tfile.close();
+#endif
 
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
   outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(), 
