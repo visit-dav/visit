@@ -136,6 +136,7 @@ do
    $cmd MesaLib-7.5.tar.gz                         >> ../visit$version/$output
    $cmd Python-2.5.tgz                             >> ../visit$version/$output
    $cmd Python-2.6.4.tgz                           >> ../visit$version/$output
+   $cmd Xdmf-2.1.tar.gz                            >> ../visit$version/$output
    $cmd boxlib.tar.gz                              >> ../visit$version/$output
    $cmd cfitsio3006.tar.gz                         >> ../visit$version/$output
    $cmd cgnslib_2.4-3.tar.gz                       >> ../visit$version/$output
