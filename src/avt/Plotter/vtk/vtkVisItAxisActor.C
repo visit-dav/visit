@@ -25,9 +25,12 @@ All rights reserved.
 #include <vtkProperty.h>
 #include <vtkViewport.h>
 #include <snprintf.h>
+#include <algorithm>
 
 using std::string;
 using std::vector;
+using std::min;
+using std::max;
 
 // ****************************************************************
 // Modifications:
@@ -912,6 +915,12 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
 //   Jeremy Meredith, Tue May 18 11:39:58 EDT 2010
 //   Made this apply to all axis types with a little bit of careful indexing.
 //
+//   Jeremy Meredith, Tue May 18 15:31:04 EDT 2010
+//   Use the Range of the axis as the values which we use when labeling
+//   and assigning tick marks (e.g. via the user).  Previously, we would
+//   assume the range was the same as the physical location of the axis.
+//   Also did a tiny bit of cleanup and fixed a bug from my previous change.
+//
 // **************************************************************************
 bool vtkVisItAxisActor::BuildTickPoints(double p1[3], double p2[3], bool force)
 {
@@ -953,33 +962,63 @@ bool vtkVisItAxisActor::BuildTickPoints(double p1[3], double p2[3], bool force)
     }
     int Bmult = multiplierTable1[this->AxisPosition];
     int Cmult = multiplierTable2[this->AxisPosition];
+    double gridBLength, gridCLength;
+    switch (this->AxisType)
+    {
+      case VTK_AXIS_TYPE_X:
+        gridBLength=GridlineYLength;
+        gridCLength=GridlineZLength;
+        break;
+      case VTK_AXIS_TYPE_Y:
+        gridBLength=GridlineXLength;
+        gridCLength=GridlineZLength;
+        break;
+      case VTK_AXIS_TYPE_Z:
+        gridBLength=GridlineXLength;
+        gridCLength=GridlineYLength;
+        break;
+    }
 
     //
     // The ordering of the tick endpoints is important because
     // label position is defined by them.
     //
 
+    double aSpatialMin = p1[aAxis];
+    double aSpatialMax = p2[aAxis];
+    double aLower = this->Range[0];
+    double aUpper = this->Range[1];
+
+    // Figure out the mapping between logical space (i.e. the
+    // axis "Range") and the coordinates in 3D space.
+    double aSpatialRange = aSpatialMax-aSpatialMin;
+    double aRange = aUpper - aLower;
+    double aScale = 1;
+    double aOffset = 0;
+    if (aRange != 0)
+    {
+        aScale = aSpatialRange / aRange;
+        aOffset = aSpatialMin - aLower*aScale;
+    }
+
     //
     // Minor ticks
     //
-    double aLower = p1[aAxis];
-    double aUpper = p2[aAxis];
-
     if (this->AdjustLabels)
     {
         aMin = this->MinorStart;
         aMax = aUpper;
-        aDelta = this->DeltaMinor * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
+        aDelta = this->DeltaMinor;
     }
     else
     {
         aMin = this->MajorTickMinimum +
             ceil((this->MinorStart - this->MajorTickMinimum) /
                  this->MinorTickSpacing) * this->MinorTickSpacing;
-        aMin = aMin > this->MajorTickMinimum ? aMin : this->MajorTickMinimum;
-        aMax = this->MajorTickMaximum < aUpper ? this->MajorTickMaximum : aUpper;
+        aMin = max(aMin, this->MajorTickMinimum);
+        aMax = min(aUpper, this->MajorTickMaximum);
         aMax += this->MinorTickSpacing / 1e6;
-        aDelta = this->MinorTickSpacing * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
+        aDelta = this->MinorTickSpacing;
     }
 
     if (this->TickLocation == VTK_TICKS_OUTSIDE) 
@@ -1009,7 +1048,8 @@ bool vtkVisItAxisActor::BuildTickPoints(double p1[3], double p2[3], bool force)
     numTicks = 0;
     for (a = aMin; a <= aMax && numTicks < VTK_MAX_TICKS; a += aDelta)
     {
-        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = a;
+        double aa = a * aScale + aOffset;
+        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = aa;
         // ab-portion
         this->minorTickPts->InsertNextPoint(aPoint1);
         this->minorTickPts->InsertNextPoint(bPoint);
@@ -1026,32 +1066,33 @@ bool vtkVisItAxisActor::BuildTickPoints(double p1[3], double p2[3], bool force)
     {
         aMin = this->MajorStart;
         aMax = aUpper;
-        aDelta = this->DeltaMajor * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
+        aDelta = this->DeltaMajor;
     }
     else
     {
         aMin = this->MajorTickMinimum +
             ceil((this->MajorStart - this->MajorTickMinimum) /
                  this->MajorTickSpacing) * this->MajorTickSpacing;
-        aMin = aMin > this->MajorTickMinimum ? aMin : this->MajorTickMinimum;
-        aMax = this->MajorTickMaximum < aUpper ? this->MajorTickMaximum : aUpper;
+        aMin = max(aMin, this->MajorTickMinimum);
+        aMax = min(aUpper, this->MajorTickMaximum);
         aMax = aMax + this->MajorTickSpacing / 1e6;
-        aDelta = this->MajorTickSpacing * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
+        aDelta = this->MajorTickSpacing;
     }
 
     bPoint[bAxis] = aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis];
-    aPoint1[bAxis] = p1[bAxis] - Bmult * this->GridlineYLength; 
+    aPoint1[bAxis] = p1[bAxis] - Bmult * gridBLength; 
     aPoint1[cAxis] = bPoint[cAxis] = cPoint[cAxis] = p1[cAxis]; 
-    aPoint2[cAxis] = p1[cAxis] - Cmult * this->GridlineZLength; 
+    aPoint2[cAxis] = p1[cAxis] - Cmult * gridCLength; 
 
     numTicks = 0;
     for (a = aMin; a <= aMax && numTicks < VTK_MAX_TICKS; a += aDelta)
     {
-        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = a;
-        // xy-portion
+        double aa = a * aScale + aOffset;
+        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = aa;
+        // ab-portion
         this->gridlinePts->InsertNextPoint(aPoint1);
         this->gridlinePts->InsertNextPoint(bPoint);
-        // xz-portion
+        // ac-portion
         this->gridlinePts->InsertNextPoint(aPoint2);
         this->gridlinePts->InsertNextPoint(cPoint);
         numTicks++;
@@ -1087,11 +1128,12 @@ bool vtkVisItAxisActor::BuildTickPoints(double p1[3], double p2[3], bool force)
     numTicks = 0;
     for (a = aMin; a <= aMax && numTicks < VTK_MAX_TICKS; a += aDelta)
     {
-        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = a;
-        // xy-portion
+        double aa = a * aScale + aOffset;
+        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = aa;
+        // ab-portion
         this->majorTickPts->InsertNextPoint(aPoint1);
         this->majorTickPts->InsertNextPoint(bPoint);
-        // xz-portion
+        // ac-portion
         this->majorTickPts->InsertNextPoint(aPoint2);
         this->majorTickPts->InsertNextPoint(cPoint);
         numTicks++;

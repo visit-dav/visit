@@ -381,6 +381,11 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
 //    Added code to check for DBL_MAX to avoid doing math that
 //    exceeded maximums and cause a crash.
 //
+//    Jeremy Meredith, Tue May 18 15:14:55 EDT 2010
+//    Axes now support a range which is independent of the bounds.
+//    For now, we set the range to be the same as the bounds until we
+//    add support for independent control.
+//
 // ****************************************************************************
 
 void
@@ -437,6 +442,7 @@ VisWinAxes3D::SetBounds(double bounds[6])
         currentBounds[5] = bounds[5] + fudgeZ;
 
         axes->SetBounds(currentBounds);
+        axes->SetRanges(currentBounds);
         axesBoxSource->SetBounds(currentBounds);
     }
 }
