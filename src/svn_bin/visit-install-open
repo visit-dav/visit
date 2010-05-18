@@ -185,11 +185,10 @@ then
    if [ $test = no ]
    then
       scp hoth:/scratch/$user/hoth/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rhel3.tar.gz
-      scp hoth:/scratch/$user/hoth/visitbuild/visit_llnl$ver2.linux-intel.tar.gz visit_llnl$ver2.linux-rhel3.tar.gz
-      scp visit_llnl$ver2.linux-rhel3.tar.gz kickit:visit$ver2.linux-rhel3.tar.gz
-      scp visit-install kickit:
-      scp hoth kickit:hoth_install
-      ssh kickit "chmod 750 hoth_install;./hoth_install"
+      scp visit$ver2.linux-rhel3.tar.gz hoth:visit$ver2.linux-rhel3.tar.gz
+      scp visit-install hoth:
+      scp hoth hoth:hoth_install
+      ssh hoth "chmod 750 hoth_install;./hoth_install"
    fi
 fi
 
@@ -237,11 +236,9 @@ then
    if [ $test = no ]
    then
       scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.ibm-aix-pwr.tar.gz .
-      scp up:/p/gup1/$user/up32/visitbuild/visit_llnl$ver2.ibm-aix-pwr.tar.gz .
       scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.ibm-aix-pwr64.tar.gz .
-      scp up:/p/gup1/$user/up64/visitbuild/visit_llnl$ver2.ibm-aix-pwr64.tar.gz .
-      scp visit_llnl$ver2.ibm-aix-pwr.tar.gz yana:visit$ver2.ibm-aix-pwr.tar.gz
-      scp visit_llnl$ver2.ibm-aix-pwr64.tar.gz yana:visit$ver2.ibm-aix-pwr64.tar.gz
+      scp visit$ver2.ibm-aix-pwr.tar.gz yana:visit$ver2.ibm-aix-pwr.tar.gz
+      scp visit$ver2.ibm-aix-pwr64.tar.gz yana:visit$ver2.ibm-aix-pwr64.tar.gz
       scp visit-install yana:
       scp up yana:up_install
       ssh yana "chmod 750 up_install;./up_install"
@@ -277,8 +274,7 @@ then
    if [ $test = no ]
    then
       scp yana3:/usr/tmp/$user/yana/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp yana3:/usr/tmp/$user/yana/visitbuild/visit_llnl$ver2.linux-x86_64.tar.gz .
-      scp visit_llnl$ver2.linux-x86_64.tar.gz yana:visit$ver2.linux-x86_64.tar.gz
+      scp visit$ver2.linux-x86_64.tar.gz yana:visit$ver2.linux-x86_64.tar.gz
       scp visit-install yana:
       scp yana yana:yana_install
       ssh yana "chmod 750 yana_install;./yana_install"
@@ -349,7 +345,7 @@ if [ $davinci = true ]
 then
    if [ $test = no ]
    then
-      scp davinci.nersc.gov:tmp/$user/davinci/visitbuild/visit$ver2.linux-ia64.tar.gz visit$ver2.linux-altix.tar.gz
+      scp davinci.nersc.gov:/usr/tmp/$user/davinci/visitbuild/visit$ver2.linux-ia64.tar.gz visit$ver2.linux-altix.tar.gz
       scp visit$ver2.linux-altix.tar.gz davinci.nersc.gov:
       scp visit-install davinci.nersc.gov:
       scp davinci davinci.nersc.gov:davinci_install
