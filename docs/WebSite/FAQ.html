@@ -3,6 +3,19 @@
 <HEAD>
 <!-- InstanceBeginEditable name="doctitle" -->
 <TITLE>Frequently Asked Questions</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="LLNLRandR" content="LLNL-WEB-431531">
+<meta name="review" content="May 2010">
+<meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract DE-AC52-07NA27344">
+<meta name="language" content="en">
+<meta name="rating" content="general">
+<meta name="distribution" content="global">
+<meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
+<meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
+<meta http-equiv="Expires" content="never">
+<meta name="date" content="2010-05-10">
+<meta name="Author" content="Eric Brugger">
+
 <!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
 <!-- ImageReady Preload Script (template1.psd) -->
 <SCRIPT TYPE="text/javascript">
@@ -298,14 +311,14 @@ function MM_initTimelines() { //v4.0
 <p> VisIt can run on a variety of platforms from PCs running Windows or Linux all the way up to supercomputers running AIX.<br>
   The following operating systems are supported:</p>
 <ul>
-  <li> Windows 2000, XP </li>
+  <li> Windows XP, Vista, 7 </li>
   <li> Linux (x86, x86_64, Itanium, Altix) </li>
-  <li> MacOS X 10.3 and 10.4 (PowerPC and Intel) </li>
-  <li> SunOS 5.7</li>
+  <li> MacOS X 10.4 through 10.6 (PowerPC and Intel) </li>
   <li> AIX 5.3</li>
 </ul>
 <p>VisIt is known to work on other platforms as well but no binary distributions for these platforms are available due to machine retirements at LLNL.</p>
 <ul>
+  <li> SunOS 5.7</li>
   <li> IRIX 6.5, IRIX64 6.5</li>
   <li> Tru64 V5.1</li>
 </ul>
@@ -315,7 +328,7 @@ function MM_initTimelines() { //v4.0
 <ul>
   <li> You should have at least 1 gigabyte (GB) of memory for your system. The actual amount of memory you will need depends on the size of the dataset you will be visualizing, but having plenty of memory will ensure that you don&#8217;t suffer large performance degradations.</li>
   <li> You should make sure that you install the graphics driver provided by the vendor of your graphics card so that you can get full hardware-accelerated graphics rendering. The standard Linux distributions come with a generic driver that will work on all systems, but this will not give top performance. If you plan to use Linux and have not yet purchased a graphics card, you should check that the card you are considering purchasing has a driver optimized for Linux.</li>
-  <li> If you run VisIt on Windows, you must use Windows 98, 2000, Me, or Windows XP. VisIt had been known to work on some versions of Windows NT 4.0, but you must have later service packs installed or VisIt will not run. </li>
+  <li> If you run VisIt on Windows, you must use Windows XP, Windows Vista, or Windows 7. </li>
 </ul>
 <h2><a name="4"></a>4. How do I debug problems starting VisIt or opening files?</h2>
 <p> If you are having difficulty either starting VisIt and/or looking at some data files once VisIt is running, try some of the following...</p>
@@ -375,7 +388,7 @@ in the directory that VisIt was launched from.</p>
 <p>Also note that the VisIt binary distributions will most likely not work for running in parallel on your particular computer system. The most common reason is that the MPI version used to compile VisIt binaries is not compatible with your MPI and parallel launching mechanism. This is solved if you recompile VisIt from source on your computer. We have developed a script called <a href="source.html#build_visit" title="Build VisIt Script">build_visit</a> that automates much of this process for Linux and AIX platforms. </p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="12"></a>12. What data file formats can VisIt read?</h2>
-<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
+<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
 <table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -655,7 +668,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 <p> If none of these suggestions allow you to successfully connect to the remote computer then contact <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a> and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running in your e-mail.</p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="17"></a>17. How do I build VisIt on my Windows computer?</h2>
-<p> You need three things in order to build VisIt on a Windows computer. Firstof all, you must have  Microsoft Visual Studio .Net 2003 or 2005. Compilers from other vendors might work to build the VisIt source code but the VisIt sourcedistribution for Windows only provides project files for the two afore-mentioned compilers. The second thing you need in order to build VisIt on Windows is the Qt library, which is available at <a href="http://www.trolltech.com/download/qt/evaluate.html?cid=3">Trolltech's Web site</a>. VisIt currently requires a Qt 3.x version such as Qt 3.3.8. (The unix version is built with Qt 3.3.8) You must build Qt before you attempt to build VisIt. The last thing you need in order to build VisIt on Windows is the <a href="source.html">VisIt source distribution for Windows</a>.</p>
+<p> You need two things in order to build VisIt on a Windows computer. First of all, you must have  Microsoft Visual Studio .Net 2003 or 2005. Compilers from other vendors might work to build the VisIt source code but the VisIt source distribution for Windows only provides project files for the two afore-mentioned compilers. The last thing you need in order to build VisIt on Windows is the <a href="source.html">VisIt source distribution for Windows</a>. The Windows source distribution contains additional pre-compiled libraries that will ease the process of building VisIt on your Windows computer. See <a href="http://www.visitusers.org/index.php?title=Using_CMake_with_VisIt_on_Windows">this guide to building VisIt on Windows</a> for more information.</p>
 <p> The VisIt source distribution for Windows contains all of VisIt's source code and prebuilt versions of most of VisIt's support libraries so it is not required that you download and build all of those libraries unless you want to customize them. Download and install the source distribution for Windows and read the VisItBuildInstructionsOnWindows.doc file in the VisIt development directoryfor more information on building VisIt for Windows.</p>
 <h2><a name="18"></a>18. I have trouble installing VisIt on my MacOS X computer. Why?</h2>
 <p> You need to download two files to successfully download VisIt on any UNIX computer, including MacOS X. On MacOS X in particular, some Web browsers can corrupt the VisIt binary distribution, which is the file that you download that ends in <em>&quot;.tar.gz&quot;</em>. Be sure that your web browser downloaded the binary distribution properly by checking the <a href="https://wci.llnl.gov/codes/visit/1.7/visit_md5_checksums" target="_blank">checksums</a>. You may also have to manually change the visit-install script so that it has execute permission. Once you've completed those steps, the most common cause of errors during installation on MacOS X is the visit-install script's inability to gracefully handle installation paths that contain spaces. Many of the MacOS X installation paths such as /Applications can have a volume label prepended to them. Volume labels often contain spaces. If you are having trouble installing VisIt on MacOS X, the easiest way to make sure that the installation succeeds is to install to your home directory. Assuming that you have correctly downloaded to the two requisite files, you can usually follow these steps to install VisIt.</p>
@@ -682,7 +695,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 <p>Each version of VisIt contains on average 60 enhancements or bug-fixes. The first time that you run a new version of VisIt, the release notes for that version will be prominently displayed in the Help window. The release notes describe the enhancements and bug-fixes made in each version of the tool. After you have read the release notes for the new version of VisIt, they will not be automatically displayed again but you can view them at any time using VisIt's <strong>Help window</strong>. </p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="24"></a>24. Which compilers can be used to build VisIt? </h2>
-<p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. </p>
+<p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. In general, any g++ 4.x series compiler will build VisIt just fine. Earlier versions of g++ will also usually work. </p>
 <table width="50%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -694,24 +707,16 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td bgcolor="#CCCCFF">xlC </td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">IRIX64 6.5</td>
-      <td bgcolor="#CCCCFF">MIPSpro 7.41</td>
+      <td bgcolor="#CCCCFF">Linux</td>
+      <td bgcolor="#CCCCFF">g++ 4.0 or later</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">RedHat Enterprise Linux 4</td>
-      <td bgcolor="#CCCCFF">g++ 3.2.3</td>
+      <td bgcolor="#CCCCFF">Windows XP,Vista,7</td>
+      <td bgcolor="#CCCCFF">Microsoft Visual Studio .Net 2003, or .Net 2005 (Visual Studio 2010 support coming)</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">Solaris 7</td>
-      <td bgcolor="#CCCCFF">g++ 3.2</td>
-    </tr>
-    <tr>
-      <td bgcolor="#CCCCFF">Windows 2000/XP</td>
-      <td bgcolor="#CCCCFF">Microsoft Visual Studio 6.0 with service pack 5, Microsoft Visual Studio .Net 2003</td>
-    </tr>
-    <tr>
-      <td bgcolor="#CCCCFF">MacOS X 10.4</td>
-      <td bgcolor="#CCCCFF">g++ 4.0 </td>
+      <td bgcolor="#CCCCFF">MacOS X 10.4-10.6</td>
+      <td bgcolor="#CCCCFF">g++ 4.0 or later</td>
     </tr>
   </tbody>
 </table>
@@ -772,7 +777,7 @@ build it!</P>
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-415310, 
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-431531, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>
