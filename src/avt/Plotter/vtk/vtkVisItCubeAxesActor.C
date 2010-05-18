@@ -85,6 +85,11 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
 //   Added support for title visibility separate from label visibility.
 //
+//   Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//   Renamed some instances of Range to Bounds to reflect their true
+//   usage (since in theory, the range of an axis need not be tied to
+//   its location in physical space).
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -194,12 +199,12 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->lastYAxisDigits = 3;
   this->lastZAxisDigits = 3;
 
-  this->LastXRange[0] = FLT_MAX;
-  this->LastXRange[1] = FLT_MAX;
-  this->LastYRange[0] = FLT_MAX;
-  this->LastYRange[1] = FLT_MAX;
-  this->LastZRange[0] = FLT_MAX;
-  this->LastZRange[1] = FLT_MAX;
+  this->LastXBounds[0] = FLT_MAX;
+  this->LastXBounds[1] = FLT_MAX;
+  this->LastYBounds[0] = FLT_MAX;
+  this->LastYBounds[1] = FLT_MAX;
+  this->LastZBounds[0] = FLT_MAX;
+  this->LastZBounds[1] = FLT_MAX;
 
   this->LastFlyMode = -1;
   for (i = 0; i < 4; i++)
@@ -495,20 +500,26 @@ int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
 }
 
 // Do final adjustment of axes to control offset, etc.
+
+// Modifications:
+//   Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//   Renamed some instances of Range to Bounds to reflect their true
+//   usage (since in theory, the range of an axis need not be tied to
+//   its location in physical space).
 void 
 vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6], 
                                 double yCoords[4][6], double zCoords[4][6],
-                                double xRange[2], double yRange[2], 
-                                double zRange[2])
+                                double xBounds[2], double yBounds[2], 
+                                double zBounds[2])
 {
-  xRange[0] = bounds[0];
-  xRange[1] = bounds[1];
+  xBounds[0] = bounds[0];
+  xBounds[1] = bounds[1];
   
-  yRange[0] = bounds[2];
-  yRange[1] = bounds[3];
+  yBounds[0] = bounds[2];
+  yBounds[1] = bounds[3];
   
-  zRange[0] = bounds[4];
-  zRange[1] = bounds[5];
+  zBounds[0] = bounds[4];
+  zBounds[1] = bounds[5];
   
   // Pull back the corners if specified
   if (this->CornerOffset > 0.0)
@@ -526,9 +537,9 @@ vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6],
      xCoords[i][1] = xCoords[i][1] - this->CornerOffset * (xCoords[i][1] - ave);
      xCoords[i][3] = xCoords[i][3] - this->CornerOffset * (xCoords[i][3] - ave);
 
-     ave = (xRange[1] + xRange[0]) / 2.0;
-     xRange[0] = xRange[0] - this->CornerOffset * (xRange[0] - ave);
-     xRange[1] = xRange[1] - this->CornerOffset * (xRange[1] - ave);
+     ave = (xBounds[1] + xBounds[0]) / 2.0;
+     xBounds[0] = xBounds[0] - this->CornerOffset * (xBounds[0] - ave);
+     xBounds[1] = xBounds[1] - this->CornerOffset * (xBounds[1] - ave);
    
      // y-axis
      ave = (yCoords[i][0] + yCoords[i][2]) / 2.0;
@@ -539,9 +550,9 @@ vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6],
      yCoords[i][1] = yCoords[i][1] - this->CornerOffset * (yCoords[i][1] - ave);
      yCoords[i][3] = yCoords[i][3] - this->CornerOffset * (yCoords[i][3] - ave);
 
-     ave = (yRange[1] + yRange[0]) / 2.0;
-     yRange[0] = yRange[0] - this->CornerOffset * (yRange[0] - ave);
-     yRange[1] = yRange[1] - this->CornerOffset * (yRange[1] - ave);
+     ave = (yBounds[1] + yBounds[0]) / 2.0;
+     yBounds[0] = yBounds[0] - this->CornerOffset * (yBounds[0] - ave);
+     yBounds[1] = yBounds[1] - this->CornerOffset * (yBounds[1] - ave);
     
      // z-axis
      ave = (zCoords[i][0] + zCoords[i][2]) / 2.0;
@@ -552,9 +563,9 @@ vtkVisItCubeAxesActor::AdjustAxes(double bounds[6], double xCoords[4][6],
      zCoords[i][1] = zCoords[i][1] - this->CornerOffset * (zCoords[i][1] - ave);
      zCoords[i][3] = zCoords[i][3] - this->CornerOffset * (zCoords[i][3] - ave);
 
-     ave = (zRange[1] + zRange[0]) / 2.0;
-     zRange[0] = zRange[0] - this->CornerOffset * (zRange[0] - ave);
-     zRange[1] = zRange[1] - this->CornerOffset * (zRange[1] - ave);
+     ave = (zBounds[1] + zBounds[0]) / 2.0;
+     zBounds[0] = zBounds[0] - this->CornerOffset * (zBounds[0] - ave);
+     zBounds[1] = zBounds[1] - this->CornerOffset * (zBounds[1] - ave);
      }
    }
 }
@@ -724,6 +735,11 @@ void vtkVisItCubeAxesActor::TransformBounds(vtkViewport *viewport,
 //    Use the actual range values instead of range-extents to determine
 //    if tick size needs to be recomputed. 
 //
+//    Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//    Renamed some instances of Range to Bounds to reflect their true
+//    usage (since in theory, the range of an axis need not be tied to
+//    its location in physical space).
+//
 // ***********************************************************************
 
 bool
@@ -733,16 +749,16 @@ vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
   bool yPropsChanged = this->LabelTextProperty[1]->GetMTime() > this->BuildTime.GetMTime();
   bool zPropsChanged = this->LabelTextProperty[2]->GetMTime() > this->BuildTime.GetMTime();
 
-  bool xRangeChanged = this->LastXRange[0] != bounds[0] ||
-                       this->LastXRange[1] != bounds[1];
+  bool xBoundsChanged = this->LastXBounds[0] != bounds[0] ||
+                        this->LastXBounds[1] != bounds[1];
 
-  bool yRangeChanged = this->LastYRange[0] != bounds[2] ||
-                       this->LastYRange[1] != bounds[3];
+  bool yBoundsChanged = this->LastYBounds[0] != bounds[2] ||
+                        this->LastYBounds[1] != bounds[3];
 
-  bool zRangeChanged = this->LastZRange[0] != bounds[4] ||
-                       this->LastZRange[1] != bounds[5];
+  bool zBoundsChanged = this->LastZBounds[0] != bounds[4] ||
+                        this->LastZBounds[1] != bounds[5];
 
-  if (!(xRangeChanged || yRangeChanged || zRangeChanged) &&
+  if (!(xBoundsChanged || yBoundsChanged || zBoundsChanged) &&
       !(xPropsChanged || yPropsChanged || zPropsChanged))
     {
     // no need to re-compute ticksize.
@@ -753,28 +769,28 @@ vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
   double xExt = bounds[1] - bounds[0];
   double yExt = bounds[3] - bounds[2];
   double zExt = bounds[5] - bounds[4];
-  if (xRangeChanged || xPropsChanged)
+  if (xBoundsChanged || xPropsChanged)
     {
     AdjustTicksComputeRange(this->XAxes);
     BuildLabels(this->XAxes);
     }
-  if (yRangeChanged || yPropsChanged)
+  if (yBoundsChanged || yPropsChanged)
     {
     AdjustTicksComputeRange(this->YAxes);
     BuildLabels(this->YAxes);
     }
-  if (zRangeChanged || zPropsChanged)
+  if (zBoundsChanged || zPropsChanged)
     {
     AdjustTicksComputeRange(this->ZAxes);
     BuildLabels(this->ZAxes);
     }
 
-  this->LastXRange[0] = bounds[0];
-  this->LastXRange[1] = bounds[1];
-  this->LastYRange[0] = bounds[2];
-  this->LastYRange[1] = bounds[3];
-  this->LastZRange[0] = bounds[4];
-  this->LastZRange[1] = bounds[5];
+  this->LastXBounds[0] = bounds[0];
+  this->LastXBounds[1] = bounds[1];
+  this->LastYBounds[0] = bounds[2];
+  this->LastYBounds[1] = bounds[3];
+  this->LastZBounds[0] = bounds[4];
+  this->LastZBounds[1] = bounds[5];
 
   double major = 0.02 * (xExt + yExt + zExt) / 3.;
   double minor = 0.5 * major;
@@ -991,7 +1007,7 @@ vtkVisItCubeAxesActor::AdjustValues(const double bnds[6])
 
 
 // ****************************************************************************
-//  Method: vtkVisItCubeAxesActor::AdjustRange
+//  Method: vtkVisItCubeAxesActor::AdjustBounds
 //
 //  Purpose:
 //    If the range is small, adjust the precision of the values displayed.
@@ -1013,36 +1029,41 @@ vtkVisItCubeAxesActor::AdjustValues(const double bnds[6])
 //    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
 //    Adjust the range values using lastXPow, lastYPow, lastZPow.
 //
+//    Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//    Renamed some instances of Range to Bounds to reflect their true
+//    usage (since in theory, the range of an axis need not be tied to
+//    its location in physical space).
+//
 // ****************************************************************************
 
 void
-vtkVisItCubeAxesActor::AdjustRange(const double bnds[6])
+vtkVisItCubeAxesActor::AdjustBounds(const double bnds[6])
 {
-    double xrange[2], yrange[2], zrange[2];
-    xrange[0] = bnds[0];
-    xrange[1] = bnds[1];
-    yrange[0] = bnds[2];
-    yrange[1] = bnds[3];
-    zrange[0] = bnds[4];
-    zrange[1] = bnds[5];
+    double xbounds[2], ybounds[2], zbounds[2];
+    xbounds[0] = bnds[0];
+    xbounds[1] = bnds[1];
+    ybounds[0] = bnds[2];
+    ybounds[1] = bnds[3];
+    zbounds[0] = bnds[4];
+    zbounds[1] = bnds[5];
 
     if (this->lastXPow != 0)
     {
-        xrange[0] /= pow(10., this->lastXPow);
-        xrange[1] /= pow(10., this->lastXPow);
+        xbounds[0] /= pow(10., this->lastXPow);
+        xbounds[1] /= pow(10., this->lastXPow);
     }
     if (this->lastYPow != 0)
     {
-        yrange[0] /= pow(10., this->lastYPow);
-        yrange[1] /= pow(10., this->lastYPow);
+        ybounds[0] /= pow(10., this->lastYPow);
+        ybounds[1] /= pow(10., this->lastYPow);
     }
     if (this->lastZPow != 0)
     {
-        zrange[0] /= pow(10., this->lastZPow);
-        zrange[1] /= pow(10., this->lastZPow);
+        zbounds[0] /= pow(10., this->lastZPow);
+        zbounds[1] /= pow(10., this->lastZPow);
     }
 
-    int xAxisDigits = Digits(xrange[0], xrange[1]);
+    int xAxisDigits = Digits(xbounds[0], xbounds[1]);
     if (xAxisDigits != this->lastXAxisDigits)
     {
         char  format[16];
@@ -1051,7 +1072,7 @@ vtkVisItCubeAxesActor::AdjustRange(const double bnds[6])
         this->lastXAxisDigits = xAxisDigits;
     }
 
-    int yAxisDigits = Digits(yrange[0], yrange[1]);
+    int yAxisDigits = Digits(ybounds[0], ybounds[1]);
     if (yAxisDigits != this->lastYAxisDigits)
     {
         char  format[16];
@@ -1060,7 +1081,7 @@ vtkVisItCubeAxesActor::AdjustRange(const double bnds[6])
         this->lastYAxisDigits = yAxisDigits;
     }
 
-    int zAxisDigits = Digits(zrange[0], zrange[1]);
+    int zAxisDigits = Digits(zbounds[0], zbounds[1]);
     if (zAxisDigits != this->lastZAxisDigits)
     {
         char  format[16];
@@ -1241,6 +1262,11 @@ LabelExponent(double min, double max)
 //    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
 //    Added support for specifying tick mark locations.
 //
+//    Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//    Renamed some instances of Range to Bounds to reflect their true
+//    usage (since in theory, the range of an axis need not be tied to
+//    its location in physical space).
+//
 // *************************************************************************
 
 void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
@@ -1313,16 +1339,16 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
     zCoords[i][5] = bounds[5];
     }
 
-  double xRange[2], yRange[2], zRange[2];
+  double xBounds[2], yBounds[2], zBounds[2];
 
   // this method sets the Coords, and offsets if necessary.
-  this->AdjustAxes(bounds, xCoords, yCoords, zCoords, xRange, yRange, zRange);
+  this->AdjustAxes(bounds, xCoords, yCoords, zCoords, xBounds, yBounds, zBounds);
 
   // adjust for sci. notation if necessary 
   // May set a flag for each axis specifying that label values should
   // be scaled, may change title of each axis, may change label format.
   this->AdjustValues(this->Bounds);
-  this->AdjustRange(this->Bounds);
+  this->AdjustBounds(this->Bounds);
 
   // Prepare axes for rendering with user-definable options 
   for (i = 0; i < 4; i++)
@@ -1347,9 +1373,10 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
                                                     zCoords[i][5]);
 
 
-    this->XAxes[i]->SetRange(xRange[0], xRange[1]);
-    this->YAxes[i]->SetRange(yRange[0], yRange[1]);
-    this->ZAxes[i]->SetRange(zRange[0], zRange[1]);
+    this->XAxes[i]->SetRange(xBounds[0], xBounds[1]);
+    this->YAxes[i]->SetRange(yBounds[0], yBounds[1]);
+    this->ZAxes[i]->SetRange(zBounds[0], zBounds[1]);
+
 
     this->XAxes[i]->SetTitle(this->ActualXLabel);
     this->YAxes[i]->SetTitle(this->ActualYLabel);
