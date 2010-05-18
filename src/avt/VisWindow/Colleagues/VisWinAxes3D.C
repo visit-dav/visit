@@ -82,6 +82,9 @@
 //    Brad Whitlock, Thu Jul 28 10:07:18 PDT 2005
 //    Added new members for storing user-specified axis titles and units.
 //
+//    Jeremy Meredith, Tue May 18 13:12:06 EDT 2010
+//    Removed unused CornerOffset.
+//
 // ****************************************************************************
 
 VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
@@ -91,7 +94,6 @@ VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
     axes = vtkVisItCubeAxesActor::New();
     axes->SetFlyModeToClosestTriad();
     axes->GetProperty()->SetColor(0, 0, 0);
-    axes->SetCornerOffset(0.);
     axes->PickableOff();
 
     axesBoxSource = vtkOutlineSource::New();
