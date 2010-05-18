@@ -48,6 +48,11 @@ All rights reserve
 //   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
 //   Added support for title visibility separate from label visibility.
 //
+//   Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//   Renamed some instances of Range to Bounds to reflect their true
+//   usage (since in theory, the range of an axis need not be tied to
+//   its location in physical space).
+//
 
 #ifndef __vtkVisItCubeAxesActor_h
 #define __vtkVisItCubeAxesActor_h
@@ -420,9 +425,9 @@ private:
   int lastXAxisDigits;
   int lastYAxisDigits;
   int lastZAxisDigits;
-  double LastXRange[2];
-  double LastYRange[2];
-  double LastZRange[2];
+  double LastXBounds[2];
+  double LastYBounds[2];
+  double LastZBounds[2];
   int   LastFlyMode;
 
   int   renderAxesX[4];
@@ -445,12 +450,12 @@ private:
   void  TransformBounds(vtkViewport *viewport, const double bounds[6], 
                         double pts[8][3]);
   void  AdjustAxes(double bounds[6], double xCoords[4][6], double yCoords[4][6], 
-                   double zCoords[4][6], double xRange[2], double yRange[2], 
-                   double zRange[2]);
+                   double zCoords[4][6], double xBounds[2], double yBounds[2], 
+                   double zBounds[2]);
 
   bool  ComputeTickSize(double bounds[6]);
   void  AdjustValues(const double bounds[6]);
-  void  AdjustRange(const double bounds[6]);
+  void  AdjustBounds(const double bounds[6]);
   void  BuildAxes(vtkViewport *);
   void  DetermineRenderAxes(vtkViewport *);
   void  SetNonDependentAttributes(void);
