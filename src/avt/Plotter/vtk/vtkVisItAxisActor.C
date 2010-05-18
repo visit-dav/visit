@@ -470,13 +470,7 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
   //
   // Generate the axis and tick marks.
   //
-  bool ticksRebuilt;
-  if (this->AxisType == VTK_AXIS_TYPE_X)
-      ticksRebuilt = this->BuildTickPointsForXType(p1, p2, force);
-  else if (this->AxisType == VTK_AXIS_TYPE_Y)
-      ticksRebuilt = this->BuildTickPointsForYType(p1, p2, force);
-  else
-      ticksRebuilt = this->BuildTickPointsForZType(p1, p2, force);
+  bool ticksRebuilt = this->BuildTickPoints(p1, p2, force);
 
   bool tickVisChanged = this->TickVisibilityChanged();
 
@@ -615,7 +609,7 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
             ymult = 0; 
             break;
    case VTK_AXIS_TYPE_Z :
-             xmult = multiplierTable1[this->AxisPosition];
+            xmult = multiplierTable1[this->AxisPosition];
             ymult = multiplierTable2[this->AxisPosition]; 
             break;
    }
@@ -790,23 +784,6 @@ void vtkVisItAxisActor::TransformBounds(vtkViewport *viewport, double bnds[6])
 }
 
 
-
-inline double ffix(double value)
-{
-  int ivalue = (int)value;
-  return (double) ivalue;
-}
-
-inline double fsign(double value, double sign)
-{
-  value = fabs(value);
-  if (sign < 0.)
-    {
-    value *= -1.;
-    }
-  return value;
-}
-
 // ****************************************************************
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
@@ -932,567 +909,196 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
 //   Eric Brugger, Tue Oct 21 12:02:53 PDT 2008
 //   Added support for specifying tick mark locations.
 //
+//   Jeremy Meredith, Tue May 18 11:39:58 EDT 2010
+//   Made this apply to all axis types with a little bit of careful indexing.
+//
 // **************************************************************************
-bool vtkVisItAxisActor::BuildTickPointsForXType(double p1[3], double p2[3], bool force)
+bool vtkVisItAxisActor::BuildTickPoints(double p1[3], double p2[3], bool force)
 {
-  if (!force && 
-      (this->AxisPosition == this->LastAxisPosition) &&
-      (this->TickLocation == this->LastTickLocation ) &&
-      (this->AdjustLabels == this->LastAdjustLabels) &&
-      (this->MajorTickMinimum == this->LastMajorTickMinimum) &&
-      (this->MajorTickMaximum == this->LastMajorTickMaximum) &&
-      (this->MajorTickSpacing == this->LastMajorTickSpacing) &&
-      (this->MinorTickSpacing == this->LastMinorTickSpacing) &&
-      (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
+    if (!force &&
+        (this->AxisPosition == this->LastAxisPosition) &&
+        (this->TickLocation == this->LastTickLocation) &&
+        (this->AdjustLabels == this->LastAdjustLabels) &&
+        (this->MajorTickMinimum == this->LastMajorTickMinimum) &&
+        (this->MajorTickMaximum == this->LastMajorTickMaximum) &&
+        (this->MajorTickSpacing == this->LastMajorTickSpacing) &&
+        (this->MinorTickSpacing == this->LastMinorTickSpacing) &&
+        (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
     {
-    return false;
+        return false;
     }
 
-  double xPoint1[3], xPoint2[3], yPoint[3], zPoint[3];
-  double x, xMin, xMax, xDelta;
-  int numTicks;
+    double aPoint1[3], aPoint2[3], bPoint[3], cPoint[3];
+    double a, aMin, aMax, aDelta;
+    int numTicks;
 
-  this->minorTickPts->Reset();
-  this->majorTickPts->Reset();
-  this->gridlinePts->Reset();
+    this->minorTickPts->Reset();
+    this->majorTickPts->Reset();
+    this->gridlinePts->Reset();
 
-  //
-  // Ymult & Zmult control adjustments to tick position based
-  // upon "where" this axis is located in relation to the underlying
-  // assumed bounding box.
-  //
-  int Ymult = multiplierTable1[this->AxisPosition];
-  int Zmult = multiplierTable2[this->AxisPosition];
-
-  //
-  // The ordering of the tick endpoints is important because
-  // label position is defined by them.
-  //
-
-  //
-  // Minor ticks
-  //
-  if (this->AdjustLabels)
+    //
+    // Bmult & Cmult control adjustments to tick position based
+    // upon "where" this axis is located in relation to the underlying
+    // assumed bounding box.
+    //
+    // x axis: b==y, c==z
+    // y axis: b==x, c==z
+    // z axis: b==x, c==y
+    int aAxis, bAxis, cAxis;
+    switch (this->AxisType)
     {
-    xMin = this->MinorStart;
-    xMax = p2[0];
-    xDelta = this->DeltaMinor;
+      case VTK_AXIS_TYPE_X: aAxis=0; bAxis=1; cAxis=2; break;
+      case VTK_AXIS_TYPE_Y: aAxis=1; bAxis=0; cAxis=2; break;
+      case VTK_AXIS_TYPE_Z: aAxis=2; bAxis=0; cAxis=1; break;
     }
-  else
-    {
-    xMin = this->MajorTickMinimum +
-        ceil((this->MinorStart - this->MajorTickMinimum) /
-        this->MinorTickSpacing) * this->MinorTickSpacing;
-    xMin = xMin > this->MajorTickMinimum ? xMin : this->MajorTickMinimum;
-    xMax = this->MajorTickMaximum < p2[0] ? this->MajorTickMaximum : p2[0];
-    xMax = xMax + this->MinorTickSpacing / 1e6;
-    xDelta = this->MinorTickSpacing;
-    }
+    int Bmult = multiplierTable1[this->AxisPosition];
+    int Cmult = multiplierTable2[this->AxisPosition];
 
-  if (this->TickLocation == VTK_TICKS_OUTSIDE) 
+    //
+    // The ordering of the tick endpoints is important because
+    // label position is defined by them.
+    //
+
+    //
+    // Minor ticks
+    //
+    double aLower = p1[aAxis];
+    double aUpper = p2[aAxis];
+
+    if (this->AdjustLabels)
     {
-    xPoint1[1] = xPoint2[1] = zPoint[1] = p1[1]; 
-    xPoint1[2] = xPoint2[2] = yPoint[2] = p1[2]; 
-    yPoint[1] = p1[1] + Ymult * this->MinorTickSize; 
-    zPoint[2] = p1[2] + Zmult * this->MinorTickSize; 
+        aMin = this->MinorStart;
+        aMax = aUpper;
+        aDelta = this->DeltaMinor * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
     }
-  else if (this->TickLocation == VTK_TICKS_INSIDE) 
+    else
     {
-    yPoint[1] = xPoint2[1] = zPoint[1] = p1[1]; 
-    xPoint1[2] = yPoint[2] = zPoint[2] = p1[2]; 
-    xPoint1[1] = p1[1] - Ymult * this->MinorTickSize; 
-    xPoint2[2] = p1[2] - Zmult * this->MinorTickSize; 
-    }
-  else // both sides
-    {
-    xPoint2[1] = zPoint[1] = p1[1]; 
-    xPoint1[2] = yPoint[2] = p1[2]; 
-    yPoint[1] = p1[1] + Ymult * this->MinorTickSize; 
-    zPoint[2] = p1[2] + Zmult * this->MinorTickSize; 
-    xPoint1[1] = p1[1] - Ymult * this->MinorTickSize; 
-    xPoint2[2] = p1[2] - Zmult * this->MinorTickSize; 
+        aMin = this->MajorTickMinimum +
+            ceil((this->MinorStart - this->MajorTickMinimum) /
+                 this->MinorTickSpacing) * this->MinorTickSpacing;
+        aMin = aMin > this->MajorTickMinimum ? aMin : this->MajorTickMinimum;
+        aMax = this->MajorTickMaximum < aUpper ? this->MajorTickMaximum : aUpper;
+        aMax += this->MinorTickSpacing / 1e6;
+        aDelta = this->MinorTickSpacing * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
     }
 
-  numTicks = 0;
-  for (x = xMin; x <= xMax && numTicks < VTK_MAX_TICKS; x += xDelta)
+    if (this->TickLocation == VTK_TICKS_OUTSIDE) 
     {
-    xPoint1[0] = xPoint2[0] = yPoint[0] = zPoint[0] = x;
-    // xy-portion
-    this->minorTickPts->InsertNextPoint(xPoint1);
-    this->minorTickPts->InsertNextPoint(yPoint);
-    // xz-portion
-    this->minorTickPts->InsertNextPoint(xPoint2);
-    this->minorTickPts->InsertNextPoint(zPoint);
-    numTicks++;
+        aPoint1[bAxis] = aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis]; 
+        aPoint1[cAxis] = aPoint2[cAxis] = bPoint[cAxis] = p1[cAxis]; 
+        bPoint[bAxis] = p1[bAxis] + Bmult * this->MinorTickSize; 
+        cPoint[cAxis] = p1[cAxis] + Cmult * this->MinorTickSize; 
+    }
+    else if (this->TickLocation == VTK_TICKS_INSIDE) 
+    {
+        bPoint[bAxis] = aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis]; 
+        aPoint1[cAxis] = bPoint[cAxis] = cPoint[cAxis] = p1[cAxis]; 
+        aPoint1[bAxis] = p1[bAxis] - Bmult * this->MinorTickSize; 
+        aPoint2[cAxis] = p1[cAxis] - Cmult * this->MinorTickSize; 
+    }
+    else // both sides
+    {
+        aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis]; 
+        aPoint1[cAxis] = bPoint[cAxis] = p1[cAxis]; 
+        bPoint[bAxis] = p1[bAxis] + Bmult * this->MinorTickSize; 
+        cPoint[cAxis] = p1[cAxis] + Cmult * this->MinorTickSize; 
+        aPoint1[bAxis] = p1[bAxis] - Bmult * this->MinorTickSize; 
+        aPoint2[cAxis] = p1[cAxis] - Cmult * this->MinorTickSize; 
     }
 
-  //
-  // Gridline points 
-  //
-  if (this->AdjustLabels)
+    numTicks = 0;
+    for (a = aMin; a <= aMax && numTicks < VTK_MAX_TICKS; a += aDelta)
     {
-    xMin = this->MajorStart;
-    xMax = p2[0];
-    xDelta = this->DeltaMajor;
-    }
-  else
-    {
-    xMin = this->MajorTickMinimum +
-        ceil((this->MajorStart - this->MajorTickMinimum) /
-        this->MajorTickSpacing) * this->MajorTickSpacing;
-    xMin = xMin > this->MajorTickMinimum ? xMin : this->MajorTickMinimum;
-    xMax = this->MajorTickMaximum < p2[0] ? this->MajorTickMaximum : p2[0];
-    xMax = xMax + this->MajorTickSpacing / 1e6;
-    xDelta = this->MajorTickSpacing;
+        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = a;
+        // ab-portion
+        this->minorTickPts->InsertNextPoint(aPoint1);
+        this->minorTickPts->InsertNextPoint(bPoint);
+        // ac-portion
+        this->minorTickPts->InsertNextPoint(aPoint2);
+        this->minorTickPts->InsertNextPoint(cPoint);
+        numTicks++;
     }
 
-  yPoint[1] = xPoint2[1] = zPoint[1] = p1[1];
-  xPoint1[1] = p1[1] - Ymult * this->GridlineYLength; 
-  xPoint1[2] = yPoint[2] = zPoint[2] = p1[2]; 
-  xPoint2[2] = p1[2] - Zmult * this->GridlineZLength; 
-
-  numTicks = 0;
-  for (x = xMin; x <= xMax && numTicks < VTK_MAX_TICKS; x += xDelta)
+    //
+    // Gridline points 
+    //
+    if (this->AdjustLabels)
     {
-    xPoint1[0] = xPoint2[0] = yPoint[0] = zPoint[0] = x;
-    // xy-portion
-    this->gridlinePts->InsertNextPoint(xPoint1);
-    this->gridlinePts->InsertNextPoint(yPoint);
-    // xz-portion
-    this->gridlinePts->InsertNextPoint(xPoint2);
-    this->gridlinePts->InsertNextPoint(zPoint);
-    numTicks++;
+        aMin = this->MajorStart;
+        aMax = aUpper;
+        aDelta = this->DeltaMajor * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
+    }
+    else
+    {
+        aMin = this->MajorTickMinimum +
+            ceil((this->MajorStart - this->MajorTickMinimum) /
+                 this->MajorTickSpacing) * this->MajorTickSpacing;
+        aMin = aMin > this->MajorTickMinimum ? aMin : this->MajorTickMinimum;
+        aMax = this->MajorTickMaximum < aUpper ? this->MajorTickMaximum : aUpper;
+        aMax = aMax + this->MajorTickSpacing / 1e6;
+        aDelta = this->MajorTickSpacing * (aUpper-aLower)/(this->Range[1]-this->Range[0]);
     }
 
-  //
-  // Major ticks
-  //
-  if (this->TickLocation == VTK_TICKS_OUTSIDE) 
+    bPoint[bAxis] = aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis];
+    aPoint1[bAxis] = p1[bAxis] - Bmult * this->GridlineYLength; 
+    aPoint1[cAxis] = bPoint[cAxis] = cPoint[cAxis] = p1[cAxis]; 
+    aPoint2[cAxis] = p1[cAxis] - Cmult * this->GridlineZLength; 
+
+    numTicks = 0;
+    for (a = aMin; a <= aMax && numTicks < VTK_MAX_TICKS; a += aDelta)
     {
-    xPoint1[1] = xPoint2[1] = zPoint[1] = p1[1]; 
-    xPoint1[2] = xPoint2[2] = yPoint[2] = p1[2]; 
-    yPoint[1] = p1[1] + Ymult * this->MajorTickSize; 
-    zPoint[2] = p1[2] + Zmult * this->MajorTickSize; 
-    }
-  else if (this->TickLocation == VTK_TICKS_INSIDE) 
-    {
-    yPoint[1] = xPoint2[1] = zPoint[1] = p1[1]; 
-    xPoint1[2] = yPoint[2] = zPoint[2] = p1[2]; 
-    xPoint1[1] = p1[1] - Ymult * this->MajorTickSize; 
-    xPoint2[2] = p1[2] - Zmult * this->MajorTickSize; 
-    }
-  else // both sides
-    {
-    xPoint2[1] = zPoint[1] = p1[1]; 
-    xPoint1[2] = yPoint[2] = p1[2]; 
-    yPoint[1] = p1[1] + Ymult * this->MajorTickSize; 
-    zPoint[2] = p1[2] + Zmult * this->MajorTickSize; 
-    xPoint1[1] = p1[1] - Ymult * this->MajorTickSize; 
-    xPoint2[2] = p1[2] - Zmult * this->MajorTickSize; 
+        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = a;
+        // xy-portion
+        this->gridlinePts->InsertNextPoint(aPoint1);
+        this->gridlinePts->InsertNextPoint(bPoint);
+        // xz-portion
+        this->gridlinePts->InsertNextPoint(aPoint2);
+        this->gridlinePts->InsertNextPoint(cPoint);
+        numTicks++;
     }
 
-  numTicks = 0;
-  for (x = xMin; x <= xMax && numTicks < VTK_MAX_TICKS; x += xDelta)
+    //
+    // Major ticks
+    //
+    if (this->TickLocation == VTK_TICKS_OUTSIDE) 
     {
-    xPoint1[0] = xPoint2[0] = yPoint[0] = zPoint[0] = x;
-    // xy-portion
-    this->majorTickPts->InsertNextPoint(xPoint1);
-    this->majorTickPts->InsertNextPoint(yPoint);
-    // xz-portion
-    this->majorTickPts->InsertNextPoint(xPoint2);
-    this->majorTickPts->InsertNextPoint(zPoint);
-    numTicks++;
+        aPoint1[bAxis] = aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis]; 
+        aPoint1[cAxis] = aPoint2[cAxis] = bPoint[cAxis] = p1[cAxis]; 
+        bPoint[bAxis] = p1[bAxis] + Bmult * this->MajorTickSize; 
+        cPoint[cAxis] = p1[cAxis] + Cmult * this->MajorTickSize; 
+    }
+    else if (this->TickLocation == VTK_TICKS_INSIDE) 
+    {
+        bPoint[bAxis] = aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis]; 
+        aPoint1[cAxis] = bPoint[cAxis] = cPoint[cAxis] = p1[cAxis]; 
+        aPoint1[bAxis] = p1[bAxis] - Bmult * this->MajorTickSize; 
+        aPoint2[cAxis] = p1[cAxis] - Cmult * this->MajorTickSize; 
+    }
+    else // both sides
+    {
+        aPoint2[bAxis] = cPoint[bAxis] = p1[bAxis]; 
+        aPoint1[cAxis] = bPoint[cAxis] = p1[cAxis]; 
+        bPoint[bAxis] = p1[bAxis] + Bmult * this->MajorTickSize; 
+        cPoint[cAxis] = p1[cAxis] + Cmult * this->MajorTickSize; 
+        aPoint1[bAxis] = p1[bAxis] - Bmult * this->MajorTickSize; 
+        aPoint2[cAxis] = p1[cAxis] - Cmult * this->MajorTickSize; 
     }
 
-  return true;
+    numTicks = 0;
+    for (a = aMin; a <= aMax && numTicks < VTK_MAX_TICKS; a += aDelta)
+    {
+        aPoint1[aAxis] = aPoint2[aAxis] = bPoint[aAxis] = cPoint[aAxis] = a;
+        // xy-portion
+        this->majorTickPts->InsertNextPoint(aPoint1);
+        this->majorTickPts->InsertNextPoint(bPoint);
+        // xz-portion
+        this->majorTickPts->InsertNextPoint(aPoint2);
+        this->majorTickPts->InsertNextPoint(cPoint);
+        numTicks++;
+    }
+
+    return true;
 }
-
-// **************************************************************************
-// Creates points for ticks (minor, major, gridlines) in correct position 
-// for Y-type axis.
-//
-// Programmer:  Kathleen Bonnell
-// Creation:    November 7, 2001
-//
-// Modifications:
-//   Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
-//   Compare vtkTimeStamps correctly.
-//
-//   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
-//   Use defined constant VTK_MAX_TICKS to prevent infinite loops. 
-//
-//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
-//   Allow a forced build, despite previous build time.
-//
-//   Eric Brugger, Tue Oct 21 12:02:53 PDT 2008
-//   Added support for specifying tick mark locations.
-//
-// **************************************************************************
-bool vtkVisItAxisActor::BuildTickPointsForYType(double p1[3], double p2[3], bool force)
-{
-  if (!force && (this->AxisPosition  == this->LastAxisPosition) &&
-      (this->TickLocation == this->LastTickLocation) &&
-      (this->AdjustLabels == this->LastAdjustLabels) &&
-      (this->MajorTickMinimum == this->LastMajorTickMinimum) &&
-      (this->MajorTickMaximum == this->LastMajorTickMaximum) &&
-      (this->MajorTickSpacing == this->LastMajorTickSpacing) &&
-      (this->MinorTickSpacing == this->LastMinorTickSpacing) &&
-      (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
-    {
-    return false;
-    }
-
-  double yPoint1[3], yPoint2[3], xPoint[3], zPoint[3];
-  double y, yMin, yMax, yDelta;
-  int numTicks;
-
-  this->minorTickPts->Reset();
-  this->majorTickPts->Reset();
-  this->gridlinePts->Reset();
-  //
-  // Xmult & Zmult control adjustments to tick position based
-  // upon "where" this axis is located in relation to the underlying
-  // assumed bounding box.
-  //
-  int Xmult = multiplierTable1[this->AxisPosition];
-  int Zmult = multiplierTable2[this->AxisPosition];
-  
-  //
-  // The ordering of the tick endpoints is important because
-  // label position is defined by them.
-  //
-
-  //
-  // Minor ticks
-  //
-  if (this->AdjustLabels)
-    {
-    yMin = this->MinorStart;
-    yMax = p2[1];
-    yDelta = this->DeltaMinor;
-    }
-  else
-    {
-    yMin = this->MajorTickMinimum +
-        ceil((this->MinorStart - this->MajorTickMinimum) /
-        this->MinorTickSpacing) * this->MinorTickSpacing;
-    yMin = yMin > this->MajorTickMinimum ? yMin : this->MajorTickMinimum;
-    yMax = this->MajorTickMaximum < p2[1] ? this->MajorTickMaximum : p2[1];
-    yMax = yMax + this->MinorTickSpacing / 1e6;
-    yDelta = this->MinorTickSpacing;
-    }
-
-  if (this->TickLocation == VTK_TICKS_INSIDE)      
-    {
-    yPoint1[2] = xPoint[2] = zPoint[2] = p1[2]; 
-    yPoint2[0] = xPoint[0] = zPoint[0] = p1[0];
-    yPoint1[0] = p1[0] - Xmult * this->MinorTickSize;
-    yPoint2[2] = p1[2] - Zmult * this->MinorTickSize; 
-    }
-  else if (this->TickLocation == VTK_TICKS_OUTSIDE) 
-    {
-    yPoint1[0] = yPoint2[0] = zPoint[0] = p1[0];
-    yPoint1[2] = yPoint2[2] = xPoint[2] = p1[2];
-    xPoint[0] = p1[0] + Xmult * this->MinorTickSize;
-    zPoint[2] = p1[2] + Zmult * this->MinorTickSize;
-    }
-  else                              // both sides
-    {
-    yPoint1[2] = xPoint[2] = p1[2]; 
-    yPoint2[0] = zPoint[0] = p1[0];
-    yPoint1[0] = p1[0] - Xmult * this->MinorTickSize;
-    yPoint2[2] = p1[2] + Zmult * this->MinorTickSize;
-    xPoint[0]  = p1[0] + Xmult * this->MinorTickSize;
-    zPoint[2]  = p1[2] - Zmult * this->MinorTickSize;
-    }
-
-  numTicks = 0;
-  for (y = yMin; y < yMax && numTicks < VTK_MAX_TICKS; y += yDelta)
-    {
-    yPoint1[1] = xPoint[1] = yPoint2[1] = zPoint[1] = y;
-    // yx portion
-    this->minorTickPts->InsertNextPoint(yPoint1);
-    this->minorTickPts->InsertNextPoint(xPoint);
-    // yz portion
-    this->minorTickPts->InsertNextPoint(yPoint2);
-    this->minorTickPts->InsertNextPoint(zPoint);
-    numTicks++;
-    }
-
-  //
-  // Gridline points
-  // 
-  if (this->AdjustLabels)
-    {
-    yMin = this->MajorStart;
-    yMax = p2[1];
-    yDelta = this->DeltaMajor;
-    }
-  else
-    {
-    yMin = this->MajorTickMinimum +
-        ceil((this->MajorStart - this->MajorTickMinimum) /
-        this->MajorTickSpacing) * this->MajorTickSpacing;
-    yMin = yMin > this->MajorTickMinimum ? yMin : this->MajorTickMinimum;
-    yMax = this->MajorTickMaximum < p2[1] ? this->MajorTickMaximum : p2[1];
-    yMax = yMax + this->MajorTickSpacing / 1e6;
-    yDelta = this->MajorTickSpacing;
-    }
-
-  yPoint1[0] = p1[0] - Xmult * this->GridlineXLength;
-  yPoint2[2] = p1[2] - Zmult * this->GridlineZLength;
-  yPoint2[0] = xPoint[0] = zPoint[0]  = p1[0];
-  yPoint1[2] = xPoint[2] = zPoint[2]  = p1[2];
-    
-  numTicks = 0;
-  for (y = yMin; y < yMax && numTicks < VTK_MAX_TICKS; y += yDelta)
-    {
-    yPoint1[1] = xPoint[1] = yPoint2[1] = zPoint[1] = y;
-    // yx portion
-    this->gridlinePts->InsertNextPoint(yPoint1);
-    this->gridlinePts->InsertNextPoint(xPoint);
-    // yz portion
-    this->gridlinePts->InsertNextPoint(yPoint2);
-    this->gridlinePts->InsertNextPoint(zPoint);
-    numTicks++;
-    }
-
-  //
-  // Major ticks
-  //
-  if (this->TickLocation == VTK_TICKS_INSIDE)
-    {
-    yPoint1[2] = xPoint[2] = zPoint[2] = p1[2]; 
-    yPoint2[0] = xPoint[0] = zPoint[0] = p1[0];
-    yPoint1[0] = p1[0] - Xmult * this->MajorTickSize;
-    yPoint2[2] = p1[2] - Zmult * this->MajorTickSize; 
-    }
-  else if (this->TickLocation == VTK_TICKS_OUTSIDE) 
-    {
-    yPoint1[0] = yPoint2[0] = zPoint[0] = p1[0];
-    yPoint1[2] = yPoint2[2] = xPoint[2] = p1[2];
-    xPoint[0] = p1[0] + Xmult * this->MajorTickSize;
-    zPoint[2] = p1[2] + Zmult * this->MajorTickSize;
-    }
-  else                              // both sides
-    {
-    yPoint1[2] = xPoint[2] = p1[2]; 
-    yPoint2[0] = zPoint[0] = p1[0];
-    yPoint1[0] = p1[0] - Xmult * this->MajorTickSize;
-    yPoint2[2] = p1[2] + Zmult * this->MajorTickSize;
-    xPoint[0]  = p1[0] + Xmult * this->MajorTickSize;
-    zPoint[2]  = p1[2] - Zmult * this->MajorTickSize;
-    }
-
-  numTicks = 0;
-  for (y = yMin; y < yMax && numTicks < VTK_MAX_TICKS; y += yDelta)
-    {
-    yPoint1[1] = xPoint[1] = yPoint2[1] = zPoint[1] = y;
-    // yx portion
-    this->majorTickPts->InsertNextPoint(yPoint1);
-    this->majorTickPts->InsertNextPoint(xPoint);
-    // yz portion
-    this->majorTickPts->InsertNextPoint(yPoint2);
-    this->majorTickPts->InsertNextPoint(zPoint);
-    numTicks++;
-    }
-  return true;
-}
-
-// **************************************************************************
-// Creates points for ticks (minor, major, gridlines) in correct position 
-// for Z-type axis.
-//
-// Programmer:  Kathleen Bonnell
-// Creation:    November 7, 2001
-//
-// Modifications:
-//   Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
-//   Compare vtkTimeStamps correctly.
-//
-//   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
-//   Use defined constant VTK_MAX_TICKS to prevent infinite loops. 
-//
-//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
-//   Allow a forced build, despite previous build time.
-//
-//   Eric Brugger, Tue Oct 21 12:02:53 PDT 2008
-//   Added support for specifying tick mark locations.
-//
-// **************************************************************************
-
-bool vtkVisItAxisActor::BuildTickPointsForZType(double p1[3], double p2[3], bool force)
-{
-  if (!force && (this->AxisPosition  == this->LastAxisPosition) &&
-      (this->TickLocation == this->LastTickLocation) &&
-      (this->AdjustLabels == this->LastAdjustLabels) &&
-      (this->MajorTickMinimum == this->LastMajorTickMinimum) &&
-      (this->MajorTickMaximum == this->LastMajorTickMaximum) &&
-      (this->MajorTickSpacing == this->LastMajorTickSpacing) &&
-      (this->MinorTickSpacing == this->LastMinorTickSpacing) &&
-      (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
-    {
-    return false;
-    }
-
-  this->minorTickPts->Reset();
-  this->majorTickPts->Reset();
-  this->gridlinePts->Reset();
-
-  //
-  // Xmult & Ymult control adjustments to tick position based
-  // upon "where" this axis is located in relation to the underlying
-  // assumed bounding box.
-  //
-  int Xmult = multiplierTable1[this->AxisPosition];
-  int Ymult = multiplierTable2[this->AxisPosition];
-
-  double zPoint1[3], zPoint2[3], xPoint[3], yPoint[3];
-  double z, zMin, zMax, zDelta;
-  int numTicks;
-
-  //
-  // The ordering of the tick endpoints is important because
-  // label position is defined by them.
-  //
-
-  //
-  // Minor ticks
-  //
-  if (this->AdjustLabels)
-    {
-    zMin = this->MinorStart;
-    zMax = p2[2];
-    zDelta = this->DeltaMinor;
-    }
-  else
-    {
-    zMin = this->MajorTickMinimum +
-        ceil((this->MinorStart - this->MajorTickMinimum) /
-        this->MinorTickSpacing) * this->MinorTickSpacing;
-    zMin = zMin > this->MajorTickMinimum ? zMin : this->MajorTickMinimum;
-    zMax = this->MajorTickMaximum < p2[2] ? this->MajorTickMaximum : p2[2];
-    zMax = zMax + this->MinorTickSpacing / 1e6;
-    zDelta = this->MinorTickSpacing;
-    }
-
-  if (this->TickLocation == VTK_TICKS_INSIDE)      
-    {
-    zPoint1[0] = p1[0] - Xmult * this->MinorTickSize;
-    zPoint2[1] = p1[1] - Ymult * this->MinorTickSize;
-    zPoint2[0] = xPoint[0] = yPoint[0]  = p1[0];
-    zPoint1[1] = xPoint[1] = yPoint[1]  = p1[1];
-    }
-  else if (this->TickLocation == VTK_TICKS_OUTSIDE) 
-    {
-    xPoint[0]  = p1[0] + Xmult * this->MinorTickSize;
-    yPoint[1]  = p1[1] + Ymult * this->MinorTickSize;
-    zPoint1[0] = zPoint2[0] = yPoint[0] = p1[0];
-    zPoint1[1] = zPoint2[1] = xPoint[1] = p1[1];
-    }
-  else                              // both sides
-    {
-    zPoint1[0] = p1[0] - Xmult * this->MinorTickSize;
-    xPoint[0]  = p1[0] + Xmult * this->MinorTickSize;
-    zPoint2[1] = p1[1] - Ymult * this->MinorTickSize;
-    yPoint[1]  = p1[1] + Ymult * this->MinorTickSize;
-    zPoint1[1] = xPoint[1] = p1[1];
-    zPoint2[0] = yPoint[0] = p1[0];
-    }
-
-  numTicks = 0;
-  for (z = zMin; z < zMax && numTicks < VTK_MAX_TICKS; z += zDelta)
-    {
-    zPoint1[2] = zPoint2[2] = xPoint[2] = yPoint[2] = z;
-    // zx-portion
-    this->minorTickPts->InsertNextPoint(zPoint1);
-    this->minorTickPts->InsertNextPoint(xPoint);
-    // zy-portion
-    this->minorTickPts->InsertNextPoint(zPoint2);
-    this->minorTickPts->InsertNextPoint(yPoint);
-    numTicks++;
-    }
-
-  //
-  // Gridline points
-  // 
-  if (this->AdjustLabels)
-    {
-    zMin = this->MajorStart;
-    zMax = p2[2];
-    zDelta = this->DeltaMajor;
-    }
-  else
-    {
-    zMin = this->MajorTickMinimum +
-        ceil((this->MajorStart - this->MajorTickMinimum) /
-        this->MajorTickSpacing) * this->MajorTickSpacing;
-    zMin = zMin > this->MajorTickMinimum ? zMin : this->MajorTickMinimum;
-    zMax = this->MajorTickMaximum < p2[2] ? this->MajorTickMaximum : p2[2];
-    zMax = zMax + this->MajorTickSpacing / 1e6;
-    zDelta = this->MajorTickSpacing;
-    }
-
-  zPoint1[0] = p1[0] - Xmult * this->GridlineXLength;
-  zPoint2[1] = p1[1] - Ymult * this->GridlineYLength;
-  zPoint1[1] = xPoint[1] = yPoint[1] = p1[1];
-  zPoint2[0] = xPoint[0] = yPoint[0] = p1[0];
-
-  numTicks = 0;
-  for (z = zMin; z < zMax && numTicks < VTK_MAX_TICKS; z += zDelta)
-    {
-    zPoint1[2] = zPoint2[2] = xPoint[2] = yPoint[2] = z;
-    // zx-portion
-    this->gridlinePts->InsertNextPoint(zPoint1);
-    this->gridlinePts->InsertNextPoint(xPoint);
-    // zy-portion
-    this->gridlinePts->InsertNextPoint(zPoint2);
-    this->gridlinePts->InsertNextPoint(yPoint);
-    numTicks++;
-    }
-
-  //
-  // Major ticks
-  //
-  if (this->TickLocation == VTK_TICKS_INSIDE)   
-    {
-    zPoint1[0] = p1[0] - Xmult * this->MajorTickSize;
-    zPoint2[1] = p1[1] - Ymult * this->MajorTickSize;
-    zPoint2[0] = xPoint[0] = yPoint[0]  = p1[0];
-    zPoint1[1] = xPoint[1] = yPoint[1]  = p1[1];
-    }
-  else if (this->TickLocation == VTK_TICKS_OUTSIDE) 
-    {
-    xPoint[0]  = p1[0] + Xmult * this->MajorTickSize;
-    yPoint[2]  = p1[1] + Ymult * this->MajorTickSize;
-    zPoint1[0] = zPoint2[0] = yPoint[0] = p1[0];
-    zPoint1[1] = zPoint2[1] = xPoint[1] = p1[1];
-    }
-  else                              // both sides
-    {
-    zPoint1[0] = p1[0] - Xmult * this->MajorTickSize;
-    xPoint[0]  = p1[0] + Xmult * this->MajorTickSize;
-    zPoint2[1] = p1[1] - Ymult * this->MajorTickSize;
-    yPoint[1]  = p1[1] + Ymult * this->MajorTickSize;
-    zPoint1[1] = xPoint[1] = p1[1];
-    zPoint2[0] = yPoint[0] = p1[0];
-    }
-
-  numTicks = 0;
-  for (z = zMin; z < zMax && numTicks < VTK_MAX_TICKS; z += zDelta)
-    {
-    zPoint1[2] = zPoint2[2] = xPoint[2] = yPoint[2] = z;
-    // zx-portion
-    this->majorTickPts->InsertNextPoint(zPoint1);
-    this->majorTickPts->InsertNextPoint(xPoint);
-    // zy-portion
-    this->majorTickPts->InsertNextPoint(zPoint2);
-    this->majorTickPts->InsertNextPoint(yPoint);
-    numTicks++;
-    }
-  return true;
-}
-
 // **************************************************************************
 // Creates Poly data (lines) from tickmarks (minor/major), gridlines, and axis. 
 //
