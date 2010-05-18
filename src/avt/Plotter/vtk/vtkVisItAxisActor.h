@@ -88,6 +88,9 @@ All rights reserved.
 //    Eric Brugger, Tue Oct 21 12:00:23 PDT 2008
 //    Added support for specifying tick mark locations.
 //
+//    Jeremy Meredith, Tue May 18 11:39:24 EDT 2010
+//    Rewrote some X/Y/Z-specific routines to be more general.
+//
 // ****************************************************************************
 
 
@@ -357,9 +360,7 @@ private:
   void BuildTitle(bool);
 
   void SetAxisPointsAndLines(void);
-  bool BuildTickPointsForXType(double p1[3], double p2[3], bool);
-  bool BuildTickPointsForYType(double p1[3], double p2[3], bool);
-  bool BuildTickPointsForZType(double p1[3], double p2[3], bool);
+  bool BuildTickPoints(double p1[3], double p2[3], bool);
 
   bool TickVisibilityChanged(void);
   vtkProperty *NewTitleProperty();
