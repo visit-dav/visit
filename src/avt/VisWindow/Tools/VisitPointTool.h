@@ -70,6 +70,9 @@ class vtkTextActor;
 //   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
 //   Added new value to callback used to pass the hotpoint's "data" field.
 //
+//   Jeremy Meredith, Wed May 19 11:40:07 EDT 2010
+//   Added full frame support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
@@ -93,6 +96,9 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
 
     virtual void UpdateView();
     virtual void UpdateTool();
+
+    virtual void FullFrameOn(const double, const int);
+    virtual void FullFrameOff(void);
 
   protected:
     // Callback functions for the tool's hot points.
