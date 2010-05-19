@@ -152,6 +152,11 @@ avtEllipticalCompactnessFactorQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   May 8, 2006
 //
+//  Modifications:
+//    Cyrus Harrison, Wed May 19 12:37:14 PDT 2010
+//    Fixed parallel bug: Extents need to be unified across all processors
+//    before trying to calculate the ellipsoid axes.
+//
 // ****************************************************************************
 
 void
@@ -169,6 +174,9 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
     centroid[0] = C_tmp[0];
     centroid[1] = C_tmp[1];
     centroid[2] = C_tmp[2];
+
+    // we need to unify the bounds across all processors.
+    UnifyMinMax(bounds,6);
 
     for (int i = 0 ; i < numGuesses ; i++)
         volume_inside[i] = 0.;
