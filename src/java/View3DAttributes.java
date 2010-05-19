@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class View3DAttributes extends AttributeSubject
 {
-    private static int View3DAttributes_numAdditionalAtts = 13;
+    private static int View3DAttributes_numAdditionalAtts = 15;
 
     public View3DAttributes()
     {
@@ -89,6 +89,11 @@ public class View3DAttributes extends AttributeSubject
         centerOfRotation[0] = 0;
         centerOfRotation[1] = 0;
         centerOfRotation[2] = 0;
+        axis3DScaleFlag = false;
+        axis3DScales = new double[3];
+        axis3DScales[0] = 1;
+        axis3DScales[1] = 1;
+        axis3DScales[2] = 1;
     }
 
     public View3DAttributes(int nMoreFields)
@@ -122,6 +127,11 @@ public class View3DAttributes extends AttributeSubject
         centerOfRotation[0] = 0;
         centerOfRotation[1] = 0;
         centerOfRotation[2] = 0;
+        axis3DScaleFlag = false;
+        axis3DScales = new double[3];
+        axis3DScales[0] = 1;
+        axis3DScales[1] = 1;
+        axis3DScales[2] = 1;
     }
 
     public View3DAttributes(View3DAttributes obj)
@@ -161,6 +171,12 @@ public class View3DAttributes extends AttributeSubject
         centerOfRotation[0] = obj.centerOfRotation[0];
         centerOfRotation[1] = obj.centerOfRotation[1];
         centerOfRotation[2] = obj.centerOfRotation[2];
+
+        axis3DScaleFlag = obj.axis3DScaleFlag;
+        axis3DScales = new double[3];
+        axis3DScales[0] = obj.axis3DScales[0];
+        axis3DScales[1] = obj.axis3DScales[1];
+        axis3DScales[2] = obj.axis3DScales[2];
 
 
         SelectAll();
@@ -205,6 +221,11 @@ public class View3DAttributes extends AttributeSubject
         for(i = 0; i < 3 && centerOfRotation_equal; ++i)
             centerOfRotation_equal = (centerOfRotation[i] == obj.centerOfRotation[i]);
 
+        // Compare the axis3DScales arrays.
+        boolean axis3DScales_equal = true;
+        for(i = 0; i < 3 && axis3DScales_equal; ++i)
+            axis3DScales_equal = (axis3DScales[i] == obj.axis3DScales[i]);
+
         // Create the return value
         return (viewNormal_equal &&
                 focus_equal &&
@@ -218,7 +239,9 @@ public class View3DAttributes extends AttributeSubject
                 (perspective == obj.perspective) &&
                 (eyeAngle == obj.eyeAngle) &&
                 (centerOfRotationSet == obj.centerOfRotationSet) &&
-                centerOfRotation_equal);
+                centerOfRotation_equal &&
+                (axis3DScaleFlag == obj.axis3DScaleFlag) &&
+                axis3DScales_equal);
     }
 
     // Property setting methods
@@ -348,6 +371,28 @@ public class View3DAttributes extends AttributeSubject
         Select(12);
     }
 
+    public void SetAxis3DScaleFlag(boolean axis3DScaleFlag_)
+    {
+        axis3DScaleFlag = axis3DScaleFlag_;
+        Select(13);
+    }
+
+    public void SetAxis3DScales(double[] axis3DScales_)
+    {
+        axis3DScales[0] = axis3DScales_[0];
+        axis3DScales[1] = axis3DScales_[1];
+        axis3DScales[2] = axis3DScales_[2];
+        Select(14);
+    }
+
+    public void SetAxis3DScales(double e0, double e1, double e2)
+    {
+        axis3DScales[0] = e0;
+        axis3DScales[1] = e1;
+        axis3DScales[2] = e2;
+        Select(14);
+    }
+
     // Property getting methods
     public double[] GetViewNormal() { return viewNormal; }
     public double[] GetFocus() { return focus; }
@@ -362,6 +407,8 @@ public class View3DAttributes extends AttributeSubject
     public double   GetEyeAngle() { return eyeAngle; }
     public boolean  GetCenterOfRotationSet() { return centerOfRotationSet; }
     public double[] GetCenterOfRotation() { return centerOfRotation; }
+    public boolean  GetAxis3DScaleFlag() { return axis3DScaleFlag; }
+    public double[] GetAxis3DScales() { return axis3DScales; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -392,6 +439,10 @@ public class View3DAttributes extends AttributeSubject
             buf.WriteBool(centerOfRotationSet);
         if(WriteSelect(12, buf))
             buf.WriteDoubleArray(centerOfRotation);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(axis3DScaleFlag);
+        if(WriteSelect(14, buf))
+            buf.WriteDoubleArray(axis3DScales);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -437,6 +488,12 @@ public class View3DAttributes extends AttributeSubject
         case 12:
             SetCenterOfRotation(buf.ReadDoubleArray());
             break;
+        case 13:
+            SetAxis3DScaleFlag(buf.ReadBool());
+            break;
+        case 14:
+            SetAxis3DScales(buf.ReadDoubleArray());
+            break;
         }
     }
 
@@ -456,6 +513,8 @@ public class View3DAttributes extends AttributeSubject
         str = str + doubleToString("eyeAngle", eyeAngle, indent) + "\n";
         str = str + boolToString("centerOfRotationSet", centerOfRotationSet, indent) + "\n";
         str = str + doubleArrayToString("centerOfRotation", centerOfRotation, indent) + "\n";
+        str = str + boolToString("axis3DScaleFlag", axis3DScaleFlag, indent) + "\n";
+        str = str + doubleArrayToString("axis3DScales", axis3DScales, indent) + "\n";
         return str;
     }
 
@@ -474,5 +533,7 @@ public class View3DAttributes extends AttributeSubject
     private double   eyeAngle;
     private boolean  centerOfRotationSet;
     private double[] centerOfRotation;
+    private boolean  axis3DScaleFlag;
+    private double[] axis3DScales;
 }
 

@@ -130,6 +130,9 @@ class QPushButton;
 //   Jeremy Meredith, Wed Feb  3 15:29:17 EST 2010
 //   Added maintain view here.  (moved from main window)
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -198,6 +201,8 @@ private slots:
     void processImageZoomText();
     void perspectiveToggled(bool val);
     void viewButtonClicked(int index);
+    void axis3DScaleFlagToggled(bool val);
+    void processAxis3DScalesText();
 
     void processEyeAngleText();
     void eyeAngleSliderChanged(int val);
@@ -277,6 +282,8 @@ private:
     QSlider     *eyeAngleSlider;
     QCheckBox   *perspectiveToggle;
     QComboBox   *alignComboBox;
+    QCheckBox   *axis3DScaleFlagToggle;
+    QLineEdit   *axis3DScalesLineEdit;
 
     // AxisArray widgets
     QWidget      *pageAxisArray;

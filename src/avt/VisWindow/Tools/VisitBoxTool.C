@@ -77,6 +77,9 @@
 //   Brad Whitlock, Tue Jul 13 14:11:03 PST 2004
 //   I changed how the hotpoints work for this tool.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 VisitBoxTool::VisitBoxTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
@@ -169,6 +172,16 @@ VisitBoxTool::VisitBoxTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     //
     double extents[6];
     proxy.GetBounds(extents);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] *= axisscale[0];
+        extents[1] *= axisscale[0];
+        extents[2] *= axisscale[1];
+        extents[3] *= axisscale[1];
+        extents[4] *= axisscale[2];
+        extents[5] *= axisscale[2];
+    }
     Interface.SetExtents(extents);
 
     addedOutline = false;
@@ -409,6 +422,8 @@ VisitBoxTool::UpdateView()
 // Creation:   Wed Oct 30 12:22:25 PDT 2002
 //
 // Modifications:
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //   
 // ****************************************************************************
 
@@ -421,11 +436,30 @@ VisitBoxTool::UpdateTool()
     {
         double e[6];
         proxy.GetBounds(e);
+        // don't modify using axis scaling here -- the interface
+        // stores the true extents
         Interface.SetExtents(e);
     }
 
     // Use the extents from the interface.
-    const double *extents = Interface.GetExtents();
+    double extents[6] = {
+        Interface.GetExtents()[0],
+        Interface.GetExtents()[1],
+        Interface.GetExtents()[2],
+        Interface.GetExtents()[3],
+        Interface.GetExtents()[4],
+        Interface.GetExtents()[5]
+    };
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] *= axisscale[0];
+        extents[1] *= axisscale[0];
+        extents[2] *= axisscale[1];
+        extents[3] *= axisscale[1];
+        extents[4] *= axisscale[2];
+        extents[5] *= axisscale[2];
+    }
     double dX = extents[1] - extents[0];
     double dY = extents[3] - extents[2];
     double dZ = extents[5] - extents[4];
@@ -612,30 +646,44 @@ VisitBoxTool::RemoveText()
 // Creation:   Tue Jul 13 14:43:01 PST 2004
 //
 // Modifications:
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //   
 // ****************************************************************************
 
 void
 VisitBoxTool::GetHotPointLabel(int index, char *str)
 {
+    double px = hotPoints[index].pt.x;
+    double py = hotPoints[index].pt.y;
+    double pz = hotPoints[index].pt.z;
+
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        px /= axisscale[0];
+        py /= axisscale[1];
+        pz /= axisscale[2];
+    }
+
     if(index == 0)
         sprintf(str, " Origin<%1.3g %1.3g %1.3g>",
-            hotPoints[index].pt.x, hotPoints[index].pt.y, hotPoints[index].pt.z);
+            px, py, pz);
     else if(index == 1)
-        sprintf(str, " Xmin = %1.3g", hotPoints[index].pt.x);
+        sprintf(str, " Xmin = %1.3g", px);
     else if(index == 2)
-        sprintf(str, " Xmax = %1.3g", hotPoints[index].pt.x);
+        sprintf(str, " Xmax = %1.3g", px);
     else if(index == 3)
-        sprintf(str, " Ymin = %1.3g", hotPoints[index].pt.y);
+        sprintf(str, " Ymin = %1.3g", py);
     else if(index == 4)
-        sprintf(str, " Ymax = %1.3g", hotPoints[index].pt.y);
+        sprintf(str, " Ymax = %1.3g", py);
     else if(index == 5)
-        sprintf(str, " Zmin = %1.3g", hotPoints[index].pt.z);
+        sprintf(str, " Zmin = %1.3g", pz);
     else if(index == 6)
-        sprintf(str, " Zmax = %1.3g", hotPoints[index].pt.z);
+        sprintf(str, " Zmax = %1.3g", pz);
     else
         sprintf(str, " XYZ<%1.3g %1.3g %1.3g>",
-            hotPoints[index].pt.x, hotPoints[index].pt.y, hotPoints[index].pt.z);
+            px, py, pz);
 }
 
 // ****************************************************************************
@@ -655,6 +703,9 @@ VisitBoxTool::GetHotPointLabel(int index, char *str)
 //   Moved some code into GetHotPointLabel. I also added code to make hot
 //   points on faces that point away be smaller.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -669,6 +720,16 @@ VisitBoxTool::UpdateText()
 
     double bounds[6];
     proxy.GetBounds(bounds);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        bounds[0] *= axisscale[0];
+        bounds[1] *= axisscale[0];
+        bounds[2] *= axisscale[1];
+        bounds[3] *= axisscale[1];
+        bounds[4] *= axisscale[2];
+        bounds[5] *= axisscale[2];
+    }
     avtVector center((hotPoints[1].pt.x + hotPoints[2].pt.x) * 0.5,
                      (hotPoints[3].pt.y + hotPoints[4].pt.y) * 0.5,
                      (hotPoints[5].pt.z + hotPoints[6].pt.z) * 0.5);
@@ -877,6 +938,9 @@ VisitBoxTool::RemoveOutline()
 //   Brad Whitlock, Tue Jul 13 15:59:06 PST 2004
 //   Changed to account for more hotpoints.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -884,6 +948,16 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 {
     double extents[6];
     proxy.GetBounds(extents);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] *= axisscale[0];
+        extents[1] *= axisscale[0];
+        extents[2] *= axisscale[1];
+        extents[3] *= axisscale[1];
+        extents[4] *= axisscale[2];
+        extents[5] *= axisscale[2];
+    }
 
     if(a == 1)
     {
@@ -933,6 +1007,9 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 //   Brad Whitlock, Thu Aug 12 17:42:02 PST 2004
 //   I fixed a potential error.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -945,6 +1022,16 @@ VisitBoxTool::UpdateOutline()
     {
         double totalExtents[6];
         proxy.GetBounds(totalExtents);
+        double axisscale[3];
+        if (proxy.Get3DAxisScalingFactors(axisscale))
+        {
+            totalExtents[0] *= axisscale[0];
+            totalExtents[1] *= axisscale[0];
+            totalExtents[2] *= axisscale[1];
+            totalExtents[3] *= axisscale[1];
+            totalExtents[4] *= axisscale[2];
+            totalExtents[5] *= axisscale[2];
+        }
 
         for(int i = 0; i < 3; ++i)
         {
@@ -1075,6 +1162,9 @@ VisitBoxTool::UpdateOutline()
 //   Brad Whitlock, Tue Jul 13 15:56:07 PST 2004
 //   Changed to account for more hotpoints.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -1092,6 +1182,17 @@ VisitBoxTool::CallCallback()
     extents[3] = minFirstY ? hotPoints[4].pt.y : hotPoints[0].pt.y;
     extents[4] = minFirstZ ? hotPoints[0].pt.z : hotPoints[6].pt.z;
     extents[5] = minFirstZ ? hotPoints[6].pt.z : hotPoints[0].pt.z;
+
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] /= axisscale[0];
+        extents[1] /= axisscale[0];
+        extents[2] /= axisscale[1];
+        extents[3] /= axisscale[1];
+        extents[4] /= axisscale[2];
+        extents[5] /= axisscale[2];
+    }
 
     Interface.SetExtents(extents);
     Interface.ExecuteCallback();
@@ -1266,6 +1367,9 @@ VisitBoxTool::Translate(CB_ENUM e, int, int shift, int x, int y)
 //    Depending on the tool update mode, either call the callback 
 //    continuously, or don't even call it upon the mouse release.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 #define TOLERANCE 0.0001
@@ -1317,6 +1421,16 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
         {
             double extents[6];
             proxy.GetBounds(extents);
+            double axisscale[3];
+            if (proxy.Get3DAxisScalingFactors(axisscale))
+            {
+                extents[0] *= axisscale[0];
+                extents[1] *= axisscale[0];
+                extents[2] *= axisscale[1];
+                extents[3] *= axisscale[1];
+                extents[4] *= axisscale[2];
+                extents[5] *= axisscale[2];
+            }
             int *size = proxy.GetCanvas()->GetSize();
 
             int    screenDelta = y - lastY;
@@ -1475,6 +1589,27 @@ VisitBoxTool::ReAddToWindow()
     }
 }
 
+// ****************************************************************************
+// Method:  VisitBoxTool::Set3DAxisScalingFactors
+//
+// Purpose:
+//   If the 3D scaling changes, update the tool.
+//
+// Arguments:
+//   ignored
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+VisitBoxTool::Set3DAxisScalingFactors(bool, const double[3])
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
+    }
+}
 
 //
 // Static callback functions.

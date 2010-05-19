@@ -1386,6 +1386,9 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 //    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
 //    Support for internationalization.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -1435,6 +1438,8 @@ ViewerWindow::SetViewKeyframe()
         curView3D->SetImageZoom(view3d.imageZoom);
         curView3D->SetPerspective(view3d.perspective);
         curView3D->SetEyeAngle(view3d.eyeAngle);
+        curView3D->SetAxis3DScaleFlag(view3d.axis3DScaleFlag);
+        curView3D->SetAxis3DScales(view3d.axis3DScales);
         view3DAtts->SetAtts(curIndex, curView3D);
 
         //
@@ -3908,6 +3913,27 @@ ViewerWindow::GetScaleFactorAndType(double &s, int &t)
     visWindow->GetScaleFactorAndType(s, t);
 }
 
+
+// ****************************************************************************
+// Method:  ViewerWindow::Get3DAxisScalingFactors
+//
+// Purpose:
+//   Gets the 3D axis scaling factors and returns true if it is active.
+//
+// Arguments:
+//   s          the axis scaling factors
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+bool
+ViewerWindow::Get3DAxisScalingFactors(double s[3])
+{
+    return visWindow->Get3DAxisScalingFactors(s);
+}
+
+
 // ****************************************************************************
 //  Method: ViewerWindow::RecenterViewCurve
 //
@@ -4175,6 +4201,9 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    I added code to set the center of rotation to handle the case where
 //    the navigation mode is dolly.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -4237,22 +4266,29 @@ ViewerWindow::RecenterView3d(const double *limits)
         boundingBox3d[i] = limits[i];
     }
 
+    // Get the actual sizes
+    double sizeOrig[3] = {boundingBox3d[1] - boundingBox3d[0],
+                          boundingBox3d[3] - boundingBox3d[2],
+                          boundingBox3d[5] - boundingBox3d[4]};
+    double sizeScaled[3] = {sizeOrig[0] * (view3D.axis3DScaleFlag ?
+                                           view3D.axis3DScales[0] : 1.0),
+                            sizeOrig[1] * (view3D.axis3DScaleFlag ?
+                                           view3D.axis3DScales[1] : 1.0),
+                            sizeOrig[2] * (view3D.axis3DScaleFlag ?
+                                           view3D.axis3DScales[2] : 1.0)};
     //
     // Calculate the new focal point.
     //
-    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
-    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
-    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+    view3D.focus[0] = sizeScaled[0]/2. + boundingBox3d[0];
+    view3D.focus[1] = sizeScaled[1]/2. + boundingBox3d[2];
+    view3D.focus[2] = sizeScaled[2]/2. + boundingBox3d[4];
 
     //
     // Calculate the new parallel scale.
     //
-    width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                        (boundingBox3d[1] - boundingBox3d[0])) +
-                       ((boundingBox3d[3] - boundingBox3d[2]) *
-                        (boundingBox3d[3] - boundingBox3d[2])) +
-                       ((boundingBox3d[5] - boundingBox3d[4]) *
-                        (boundingBox3d[5] - boundingBox3d[4])));
+    width = 0.5 * sqrt(sizeScaled[0]*sizeScaled[0] +
+                       sizeScaled[1]*sizeScaled[1] +
+                       sizeScaled[2]*sizeScaled[2]);
 
     view3D.parallelScale = width / zoomFactor;
 
@@ -4669,6 +4705,9 @@ ViewerWindow::ResetView2d()
 //    the center of rotation to handle the case where the navigation mode
 //    is dolly.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -4791,6 +4830,14 @@ ViewerWindow::ResetView3d()
     view3D.centerOfRotation[0] = view3D.focus[0];
     view3D.centerOfRotation[1] = view3D.focus[1];
     view3D.centerOfRotation[2] = view3D.focus[2];
+
+    //
+    // Reset the 3D scale factors.
+    //
+    view3D.axis3DScaleFlag = false;
+    view3D.axis3DScales[0] = 1.0;
+    view3D.axis3DScales[1] = 1.0;
+    view3D.axis3DScales[2] = 1.0;
 
     //
     // Update the view.

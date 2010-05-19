@@ -86,6 +86,9 @@ class vtkTextActor;
 //   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
 //   Added new value to callback used to pass the hotpoint's "data" field.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
@@ -112,6 +115,7 @@ class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
     virtual void TurnLightingOn();
     virtual void TurnLightingOff();
     virtual void ReAddToWindow();
+    virtual void Set3DAxisScalingFactors(bool, const double[3]);
 
   protected:
     // Callback functions for the tool's hot points.

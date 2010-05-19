@@ -194,6 +194,9 @@ class avtTransparencyActor;
 //    Tom Fogal, Mon May 25 18:20:46 MDT 2009
 //    Added GetTransparencyActor method.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -256,6 +259,8 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
+    virtual void                  Set3DAxisScalingFactors(bool scale,
+                                                          const double s[3]);
     bool                          DoAllPlotsAxesHaveSameUnits();
 
     bool                          TransparenciesExist(void);

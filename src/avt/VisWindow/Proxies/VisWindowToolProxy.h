@@ -83,6 +83,9 @@
 //   Jeremy Meredith, Tue Feb  2 11:12:10 EST 2010
 //   Added GetToolUpdateMode.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
@@ -143,6 +146,9 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
 
     void                GetScaleFactorAndType(double &scale, int &type)
                             { ProxiedGetScaleFactorAndType(scale, type); };
+
+    bool                Get3DAxisScalingFactors(double s[3]) 
+                                  { return ProxiedGet3DAxisScalingFactors(s); }
 
     bool                TransparenciesExist()
                                   { return ProxiedTransparenciesExist(); };

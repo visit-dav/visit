@@ -110,6 +110,9 @@
 //    inappropriate for the new mode can be removed.   Added optional int arg
 //    to ClearPickPoints method.
 //    
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 class VISWINDOW_API VisWinQuery : public VisWinColleague
 {
@@ -136,6 +139,7 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
     virtual void                  ReAddToWindow(void);
+    virtual void                  Set3DAxisScalingFactors(bool,const double s[3]);
 
     void                          GetVisualCues(const VisualCueInfo::CueType cueType,
                                       std::vector<const VisualCueInfo *>& cues) const;

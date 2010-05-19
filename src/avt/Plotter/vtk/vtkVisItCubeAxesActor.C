@@ -1969,8 +1969,8 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
     }
   else
     {
-    majorStart = major*(ffix(sortedRange[0]*(1./major) + .9999));
-    minorStart = minor*(ffix(sortedRange[0]*(1./minor) + .9999));
+    majorStart = major*(ffix(sortedRange[0]*(1./major) + .999));
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor) + .999));
     }
 
   for (int i = 0; i < 4; i++)

@@ -105,6 +105,9 @@ class vtkHighlightActor2D;
 //   Jeremy Meredith, Tue Apr 22 14:33:01 EDT 2008
 //   Removed Extents tool.  (Subsumed by axis restriction tool.)
 //
+//   Jeremy Meredith, Wed May 19 11:00:51 EDT 2010
+//   Added support for 3D axis scaling.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinTools : public VisWinColleague
@@ -142,6 +145,8 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
 
     virtual void     FullFrameOn(const double, const int);
     virtual void     FullFrameOff(void);
+
+    virtual void     Set3DAxisScalingFactors(bool scale, const double s[3]);
 
   protected:
     void                  ClearHighlight();

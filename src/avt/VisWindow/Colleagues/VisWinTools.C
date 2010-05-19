@@ -1174,6 +1174,28 @@ VisWinTools::FullFrameOff()
 
 
 // ****************************************************************************
+// Method:  VisWinTools::Set3DAxisScalingFactors
+//
+// Purpose:
+//   Update tools with any new 3D scaling settings.
+//
+// Arguments:
+//   scale      true if scaling is enabled
+//   s          the axis scaling factors
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+VisWinTools::Set3DAxisScalingFactors(bool scale, const double s[3])
+{
+    for(int i = 0; i < numTools; ++i)
+        tools[i]->Set3DAxisScalingFactors(scale, s);
+}
+
+
+// ****************************************************************************
 //  Method:  VisWinTools::UpdatePlotList
 //
 //  Purpose:

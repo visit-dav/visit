@@ -73,6 +73,9 @@ class vtkTextActor;
 //   Jeremy Meredith, Wed May 19 11:40:07 EDT 2010
 //   Added full frame support.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
@@ -99,6 +102,7 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
 
     virtual void FullFrameOn(const double, const int);
     virtual void FullFrameOff(void);
+    virtual void Set3DAxisScalingFactors(bool, const double[3]);
 
   protected:
     // Callback functions for the tool's hot points.

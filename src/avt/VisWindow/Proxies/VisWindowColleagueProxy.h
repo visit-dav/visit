@@ -142,6 +142,9 @@
 //    plot, and the functionality has been accomodated in a new window
 //    modality supporting the correct style annotations.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -228,6 +231,9 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     bool                GetFullFrameMode()
                                   { return ProxiedGetFullFrameMode(); };
+
+    bool                Get3DAxisScalingFactors(double s[3]) 
+                                  { return ProxiedGet3DAxisScalingFactors(s); }
 
     bool                GetSpecularFlag()
                                   { return ProxiedGetSpecularFlag(); };

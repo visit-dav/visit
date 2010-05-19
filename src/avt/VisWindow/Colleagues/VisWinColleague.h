@@ -118,6 +118,9 @@ class     ColorAttribute;
 //    Eric Brugger, Tue Dec  9 14:25:37 PST 2008
 //    Added the AxisParallel window mode.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -173,6 +176,8 @@ class VISWINDOW_API VisWinColleague
 
     virtual void              FullFrameOn(const double, const int)       {;};
     virtual void              FullFrameOff(void)       {;};
+
+    virtual void              Set3DAxisScalingFactors(bool,const double s[3]){}
 
     virtual void              SetFrameAndState(int, int, int, int,
                                                int, int, int) {;};

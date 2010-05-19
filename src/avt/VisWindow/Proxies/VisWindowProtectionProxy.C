@@ -1138,6 +1138,27 @@ VisWindowProtectionProxy::ProxiedGetBackgroundMode() const
     return viswin->GetBackgroundMode();
 }
 
+// ****************************************************************************
+// Method:  VisWindowProtectionProxy::ProxiedGet3DAxisScalingFactors
+//
+// Purpose:
+//   Return the 3D axis scaling factors and enabled flag.
+//
+// Arguments:
+//   s       (o) the scaling factors
+//
+// Returns:  true if scaling is enabled
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+bool
+VisWindowProtectionProxy::ProxiedGet3DAxisScalingFactors(double s[3])
+{
+    return viswin->Get3DAxisScalingFactors(s);
+}
+
 
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetToolUpdateMode

@@ -2867,6 +2867,9 @@ ViewerWindowManager::SetView2DFromClient()
 //    Have the call to UpdateViewAtts tell the routine not to bother
 //    updating the atttributes for the Axis Array window modality.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -2896,6 +2899,10 @@ ViewerWindowManager::SetView3DFromClient()
     view3d.centerOfRotation[0] = view3DClientAtts->GetCenterOfRotation()[0];
     view3d.centerOfRotation[1] = view3DClientAtts->GetCenterOfRotation()[1];
     view3d.centerOfRotation[2] = view3DClientAtts->GetCenterOfRotation()[2];
+    view3d.axis3DScaleFlag = view3DClientAtts->GetAxis3DScaleFlag();
+    view3d.axis3DScales[0] = view3DClientAtts->GetAxis3DScales()[0];
+    view3d.axis3DScales[1] = view3DClientAtts->GetAxis3DScales()[1];
+    view3d.axis3DScales[2] = view3DClientAtts->GetAxis3DScales()[2];
 
     //
     // Set the 3D view for the active viewer window.
