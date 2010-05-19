@@ -90,6 +90,9 @@ class vtkOutlineSource;
 //    Jeremy Meredith, Wed May  5 14:32:23 EDT 2010
 //    Added support for title visibility separate from label visibility.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -109,7 +112,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     virtual void              NoPlots(void);
     virtual void              ReAddToWindow(void);
 
-    void                      SetBounds(double [6]);
+    void                      SetBounds(double [6], double scales[3]);
     void                      SetXTickVisibility(int, int);
     void                      SetYTickVisibility(int, int);
     void                      SetZTickVisibility(int, int);
@@ -149,6 +152,9 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
                                   const VisWinTextAttributes &xAxis, 
                                   const VisWinTextAttributes &yAxis,
                                   const VisWinTextAttributes &zAxis);
+
+    void                      Set3DAxisScalingFactors(bool scale,
+                                                       const double s[3]);
   protected:
     void UpdateTitleTextAttributes(double fr, double fg, double fb);
     void UpdateLabelTextAttributes(double fr, double fg, double fb);
@@ -160,6 +166,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
 
     bool                      addedAxes3D;
     double                    currentBounds[6];
+    double                    currentScaleFactors[3];
     bool                      visibility;
 
     std::string               userXTitle;

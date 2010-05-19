@@ -223,6 +223,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Jeremy Meredith, Wed Feb  3 15:29:17 EST 2010
 //   Added maintain view here.  (moved from main window)
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -499,6 +502,18 @@ QvisViewWindow::CreateWindowContents()
     QLabel *alignLabel = new QLabel(tr("Align to axis"), page3D);
     alignLabel->setBuddy(alignComboBox);
     layout3D->addWidget(alignLabel, 11, 0);
+
+    // Create the 3D axis scale check box
+    axis3DScaleFlagToggle = new QCheckBox(tr("Scale 3D axes"), page3D);
+    connect(axis3DScaleFlagToggle, SIGNAL(toggled(bool)),
+            this, SLOT(axis3DScaleFlagToggled(bool)));
+    layout3D->addWidget(axis3DScaleFlagToggle, 12, 0);
+
+    axis3DScalesLineEdit = new QLineEdit(page3D);
+    axis3DScalesLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
+    connect(axis3DScalesLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processAxis3DScalesText()));
+    layout3D->addWidget(axis3DScalesLineEdit, 12, 1, 1, 2);
 
     //
     // Add the controls for the axis array view.
@@ -967,6 +982,9 @@ QvisViewWindow::Update2D(bool doAll)
 //   Brad Whitlock, Thu Jun 19 09:41:01 PDT 2008
 //   Use DoublesToQString.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -1038,6 +1056,16 @@ QvisViewWindow::Update3D(bool doAll)
         case View3DAttributes::ID_centerOfRotation:
             temp = DoublesToQString(view3d->GetCenterOfRotation(), 3);
             centerLineEdit->setText(temp);
+            break;
+        case View3DAttributes::ID_axis3DScaleFlag:
+            axis3DScaleFlagToggle->blockSignals(true);
+            axis3DScaleFlagToggle->setChecked(view3d->GetAxis3DScaleFlag());
+            axis3DScaleFlagToggle->blockSignals(false);
+            axis3DScalesLineEdit->setEnabled(view3d->GetAxis3DScaleFlag());
+            break;
+        case View3DAttributes::ID_axis3DScales:
+            temp = DoublesToQString(view3d->GetAxis3DScales(), 3);
+            axis3DScalesLineEdit->setText(temp);
             break;
         }
     }
@@ -1572,6 +1600,11 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   Hank Childs, Mon Dec 22 09:22:38 PST 2008
 //   Fix problem where up vector and view angle were accidentally merged.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Support 3D axis scaling (3D equivalent of full-frame mode).
+//   Make sure axis scales are positive.  (Negative and zero have some
+//   bad consequences.)
+//
 // ****************************************************************************
 
 void
@@ -1735,6 +1768,32 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
             view3d->SetCenterOfRotation(view3d->GetCenterOfRotation());
         }
     }
+
+    // Do the axis 3D scales values
+    if(which_widget == View3DAttributes::ID_axis3DScales || doAll)
+    {
+        double v[3];
+        if(LineEditGetDoubles(axis3DScalesLineEdit, v, 3))
+        {
+            if (v[0] <= 0 || v[1] <= 0 || v[2] <= 0)
+            {
+                ResettingError(tr("axis3DScales"),
+                               DoublesToQString(view3d->GetAxis3DScales(), 3));
+                view3d->SetAxis3DScales(view3d->GetAxis3DScales());
+            }
+            else
+            {
+                view3d->SetAxis3DScales(v);
+            }
+        }
+        else
+        {
+            ResettingError(tr("axis3DScales"),
+                           DoublesToQString(view3d->GetAxis3DScales(), 3));
+            view3d->SetAxis3DScales(view3d->GetAxis3DScales());
+        }
+    }
+
 }
 
 void
@@ -2853,4 +2912,41 @@ QvisViewWindow::yScaleModeChanged(int val)
     {
         view2d->SetYScale(val);
     }
+}
+
+
+// ****************************************************************************
+// Method:  QvisViewWindow::axis3DScaleFlagToggled
+//
+// Purpose:
+//   Callback for toggle button enabling 3D scaling.
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+QvisViewWindow::axis3DScaleFlagToggled(bool val)
+{
+    view3d->SetAxis3DScaleFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method:  QvisViewWindow::processAxis3DScalesText
+//
+// Purpose:
+//   Callback for line edit with 3D axis scaling vector.
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+QvisViewWindow::processAxis3DScalesText()
+{
+    GetCurrentValues3d(View3DAttributes::ID_axis3DScales);
+    Apply();
 }

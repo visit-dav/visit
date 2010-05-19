@@ -163,6 +163,9 @@ class     VisitInteractor;
 //    Jeremy Meredith, Tue Feb  2 13:45:02 EST 2010
 //    Added tool update mode.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -226,6 +229,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedReAddColleaguesToRenderWindow();
     bool                ProxiedGetAntialiasing();
     bool                ProxiedGetFullFrameMode();
+    bool                ProxiedGet3DAxisScalingFactors(double s[3]);
     bool                ProxiedGetSpecularFlag();
     double               ProxiedGetSpecularCoeff();
     double               ProxiedGetSpecularPower();

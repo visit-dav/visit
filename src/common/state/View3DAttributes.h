@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: View3DAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API View3DAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     View3DAttributes();
     View3DAttributes(const View3DAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    View3DAttributes(private_tmfs_t tmfs);
+    View3DAttributes(const View3DAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~View3DAttributes();
 
     virtual View3DAttributes& operator = (const View3DAttributes &obj);
     virtual bool operator == (const View3DAttributes &obj) const;
     virtual bool operator != (const View3DAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const View3DAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -79,6 +90,7 @@ public:
     void SelectViewUp();
     void SelectImagePan();
     void SelectCenterOfRotation();
+    void SelectAxis3DScales();
 
     // Property setting methods
     void SetViewNormal(const double *viewNormal_);
@@ -94,6 +106,8 @@ public:
     void SetEyeAngle(double eyeAngle_);
     void SetCenterOfRotationSet(bool centerOfRotationSet_);
     void SetCenterOfRotation(const double *centerOfRotation_);
+    void SetAxis3DScaleFlag(bool axis3DScaleFlag_);
+    void SetAxis3DScales(const double *axis3DScales_);
 
     // Property getting methods
     const double *GetViewNormal() const;
@@ -114,6 +128,9 @@ public:
     bool         GetCenterOfRotationSet() const;
     const double *GetCenterOfRotation() const;
           double *GetCenterOfRotation();
+    bool         GetAxis3DScaleFlag() const;
+    const double *GetAxis3DScales() const;
+          double *GetAxis3DScales();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -144,7 +161,10 @@ public:
         ID_perspective,
         ID_eyeAngle,
         ID_centerOfRotationSet,
-        ID_centerOfRotation
+        ID_centerOfRotation,
+        ID_axis3DScaleFlag,
+        ID_axis3DScales,
+        ID__LAST
     };
 
 private:
@@ -161,9 +181,13 @@ private:
     double eyeAngle;
     bool   centerOfRotationSet;
     double centerOfRotation[3];
+    bool   axis3DScaleFlag;
+    double axis3DScales[3];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEW3DATTRIBUTES_TMFS "DDDddddDdbdbDbD"
 
 #endif

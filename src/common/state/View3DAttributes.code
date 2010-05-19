@@ -390,7 +390,6 @@ View3DAttributes::ResetView(const double *bbox)
     *this = view3D;
 }
 
-
 Target: xml2python
 Function: View3DAttributes_RotateAxis
 Declaration: View3DAttributes_RotateAxis

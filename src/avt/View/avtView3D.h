@@ -73,6 +73,9 @@ class View3DAttributes;
 //    Eric Brugger, Mon Feb  9 15:59:15 PST 2004
 //    Added centerOfRotationSet and centerOfRotation.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView3D
@@ -90,6 +93,8 @@ struct AVTVIEW_API avtView3D
     bool     perspective;
     bool     centerOfRotationSet;
     double   centerOfRotation[3];
+    bool     axis3DScaleFlag;
+    double   axis3DScales[3];
 
   public:
                     avtView3D();

@@ -85,6 +85,9 @@
 //   Brad Whitlock, Fri Oct 18 15:15:31 PST 2002
 //   Created radius text.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 VisitPlaneTool::VisitPlaneTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
@@ -143,6 +146,16 @@ VisitPlaneTool::VisitPlaneTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     //
     double bounds[6];
     proxy.GetBounds(bounds);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        bounds[0] *= axisscale[0];
+        bounds[1] *= axisscale[0];
+        bounds[2] *= axisscale[1];
+        bounds[3] *= axisscale[1];
+        bounds[4] *= axisscale[2];
+        bounds[5] *= axisscale[2];
+    }
     double dX = bounds[1] - bounds[0];
     double dY = bounds[3] - bounds[2];
     double dZ = bounds[5] - bounds[4];
@@ -466,6 +479,9 @@ VisitPlaneTool::UpdateView()
 //   I made it so it can get the scale from the interface's attributes if
 //   a scale was provided through them.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -478,10 +494,32 @@ VisitPlaneTool::UpdateTool()
     avtVector up(Interface.GetUpAxis()[0],
                  Interface.GetUpAxis()[1],
                  Interface.GetUpAxis()[2]);
+    avtVector origin(Interface.GetOrigin()[0],
+                     Interface.GetOrigin()[1],
+                     Interface.GetOrigin()[2]);
+
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        origin.x *= axisscale[0];
+        origin.y *= axisscale[1];
+        origin.z *= axisscale[2];
+
+        // Yes, the normals are scaled the *opposite* way as the origin.
+        // It may or may not seem intuitive, but it's correct.
+        at.x /= axisscale[0];
+        at.y /= axisscale[1];
+        at.z /= axisscale[2];
+        at.normalize();
+
+        up.x /= axisscale[0];
+        up.y /= axisscale[1];
+        up.z /= axisscale[2];
+        up.normalize();
+    }
+
     RMtx.MakeRBT(from, at, up);
-    TMtx.MakeTranslate(Interface.GetOrigin()[0],
-                       Interface.GetOrigin()[1],
-                       Interface.GetOrigin()[2]);
+    TMtx.MakeTranslate(origin);
 
     // Calculate the scale based on the bounds because there is nothing
     // else in the code yet that can provide the radius that is used
@@ -496,6 +534,16 @@ VisitPlaneTool::UpdateTool()
     {
         double bounds[6];
         proxy.GetBounds(bounds);
+        double axisscale[3];
+        if (proxy.Get3DAxisScalingFactors(axisscale))
+        {
+            bounds[0] *= axisscale[0];
+            bounds[1] *= axisscale[0];
+            bounds[2] *= axisscale[1];
+            bounds[3] *= axisscale[1];
+            bounds[4] *= axisscale[2];
+            bounds[5] *= axisscale[2];
+        }
         double dX = bounds[1] - bounds[0];
         double dY = bounds[3] - bounds[2];
         scale = 0.5 * sqrt(dX * dX + dY * dY) / 1.414214;
@@ -1016,20 +1064,48 @@ VisitPlaneTool::RemoveRadiusText()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace mapper with actor.
 //
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
 VisitPlaneTool::UpdateText()
 {
     char str[100];
-    sprintf(str, "Origin <%1.3g %1.3g %1.3g>", hotPoints[0].pt.x,
-            hotPoints[0].pt.y, hotPoints[0].pt.z);
+    avtVector origin(hotPoints[0].pt);
+    avtVector normal(Normal());
+    avtVector up(hotPoints[1].pt.x - hotPoints[0].pt.x,
+                 hotPoints[1].pt.y - hotPoints[0].pt.y,
+                 hotPoints[1].pt.z - hotPoints[0].pt.z);
+
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        origin.x /= axisscale[0];
+        origin.y /= axisscale[1];
+        origin.z /= axisscale[2];
+
+        // Yes, the normals are scaled the *opposite* way as the origin.
+        // It may or may not seem intuitive, but it's correct.
+        normal.x *= axisscale[0];
+        normal.y *= axisscale[1];
+        normal.z *= axisscale[2];
+        normal.normalize();
+
+        up.x *= axisscale[0];
+        up.y *= axisscale[1];
+        up.z *= axisscale[2];
+        up.normalize();
+    }
+
+    sprintf(str, "Origin <%1.3g %1.3g %1.3g>",
+            origin.x, origin.y, origin.z);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     double pt[3] = {originScreen.x, originScreen.y, 0.};
     originTextActor->GetPositionCoordinate()->SetValue(pt);
 
-    avtVector normal(Normal());
     sprintf(str, "Normal <%1.3g %1.3g %1.3g>", normal.x, normal.y, normal.z);
     normalTextActor->SetInput(str);
     avtVector normalScreen = ComputeWorldToDisplay(hotPoints[3].pt);
@@ -1037,9 +1113,6 @@ VisitPlaneTool::UpdateText()
     normalTextActor->GetPositionCoordinate()->SetValue(pt2);
 
     // Create a normalized up vector.
-    avtVector up(hotPoints[1].pt.x - hotPoints[0].pt.x,
-                 hotPoints[1].pt.y - hotPoints[0].pt.y,
-                 hotPoints[1].pt.z - hotPoints[0].pt.z);
     up.normalize();
     sprintf(str, "Up <%1.3g %1.3g %1.3g>", up.x, up.y, up.z);
     upAxisTextActor->SetInput(str);
@@ -1398,7 +1471,9 @@ VisitPlaneTool::ClipAgainstPlane(avtVector *v, int &nverts,
 // Creation:   Thu Oct 11 15:05:35 PST 2001
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -1409,6 +1484,16 @@ VisitPlaneTool::GetBoundingBoxOutline(avtVector *v, int &nverts) const
     //
     double bounds[6];
     proxy.GetBounds(bounds);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        bounds[0] *= axisscale[0];
+        bounds[1] *= axisscale[0];
+        bounds[2] *= axisscale[1];
+        bounds[3] *= axisscale[1];
+        bounds[4] *= axisscale[2];
+        bounds[5] *= axisscale[2];
+    }
     double scale = ((bounds[1] - bounds[0]) +
                     (bounds[3] - bounds[2]) +
                     (bounds[5] - bounds[4])) * 10.;
@@ -1573,7 +1658,9 @@ VisitPlaneTool::FacingAway() const
 // Creation:   Wed Oct 10 09:35:13 PDT 2001
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -1590,6 +1677,26 @@ VisitPlaneTool::CallCallback()
     upAxis.normalize();
     
     // Radius
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        origin.x /= axisscale[0];
+        origin.y /= axisscale[1];
+        origin.z /= axisscale[2];
+
+        // Yes, the normals are scaled the *opposite* way as the origin.
+        // It may or may not seem intuitive, but it's correct.
+        normal.x *= axisscale[0];
+        normal.y *= axisscale[1];
+        normal.z *= axisscale[2];
+        normal.normalize();
+
+        upAxis.x *= axisscale[0];
+        upAxis.y *= axisscale[1];
+        upAxis.z *= axisscale[2];
+        upAxis.normalize();
+    }
+
     double radius = (hotPoints[4].pt - origin).norm();
     Interface.SetOrigin(origin.x, origin.y, origin.z);
     Interface.SetNormal(normal.x, normal.y, normal.z);
@@ -2318,5 +2425,27 @@ VisitPlaneTool::ReAddToWindow()
     {
         proxy.GetCanvas()->RemoveActor(planeActor);
         proxy.GetCanvas()->AddActor(planeActor);
+    }
+}
+
+// ****************************************************************************
+// Method:  VisitPlaneTool::Set3DAxisScalingFactors
+//
+// Purpose:
+//   If the 3D scaling changes, update the tool.
+//
+// Arguments:
+//   ignored
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+VisitPlaneTool::Set3DAxisScalingFactors(bool, const double[3])
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
     }
 }

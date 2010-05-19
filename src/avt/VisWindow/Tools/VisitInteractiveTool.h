@@ -90,6 +90,9 @@ typedef std::vector<HotPoint> HotPointVector;
 //   here.  It already existed in every tool, and it is now required to
 //   be visible to get the "OnToolClose" tool update mode to work correctly.
 //
+//   Jeremy Meredith, Wed May 19 11:00:51 EDT 2010
+//   Added support for 3D axis scaling.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractiveTool
@@ -133,6 +136,8 @@ class VISWINDOW_API VisitInteractiveTool
 
     virtual void          FullFrameOn(const double, const int)  {; }; 
     virtual void          FullFrameOff() {; }; 
+
+    virtual void          Set3DAxisScalingFactors(bool, const double[3]) { }
 
     virtual void          CallCallback() = 0;
 

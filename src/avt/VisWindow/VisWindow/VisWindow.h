@@ -416,6 +416,9 @@ class VisitInteractor;
 //    Add "auto" setting to bounding box mode.  Remove call to 
 //    SetBoundingBoxMode, since that is now done through the interactor atts.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -522,10 +525,12 @@ public:
 
     WINDOW_MODE          GetWindowMode() const;
     void                 GetScaleFactorAndType(double &s, int &t);
-    bool                 GetFullFrameMode(void);
+    bool                 GetFullFrameMode(void) const;
     void                 FullFrameOn(const double, const int);
     void                 FullFrameOff(void);
     bool                 DoAllPlotsAxesHaveSameUnits();
+    bool                 Get3DAxisScalingFactors(double s[3]) const;
+    void                 Set3DAxisScalingFactors(bool, const double s[3]);
 
 
     void                 ShowMenu(void);

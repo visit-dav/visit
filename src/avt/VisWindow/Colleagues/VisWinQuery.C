@@ -253,6 +253,9 @@ VisWinQuery::SetForegroundColor(double fr, double fg, double fb)
 //    Kathleen Bonnell, Fri Jun 11 14:49:39 PDT 2004 
 //    Add back in the line that computes and sets the Scale for a pick.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -284,6 +287,18 @@ VisWinQuery::UpdateView()
                 if (mediator.GetFullFrameMode())
                 {
                     it->pickActor->Translate(transVec);
+                }
+            }
+            else
+            {
+                double scale[3] = {1,1,1};
+                if (mediator.Get3DAxisScalingFactors(scale))
+                {
+                    double newShift[3] = {shiftVec[0]/scale[0],
+                                          shiftVec[1]/scale[1],
+                                          shiftVec[2]/scale[2]};
+                    it->pickActor->ResetPosition(newShift);
+                    it->pickActor->Translate(scale);
                 }
             }
             it->pickActor->UpdateView();
@@ -1194,4 +1209,41 @@ VisWinQuery::Start3DMode()
 {
     // Remove 2d pick actors if they exists
     ClearPickPoints(2);
+}
+
+// ****************************************************************************
+// Method:  VisWinQuery::Set3DAxisScalingFactors
+//
+// Purpose:
+//   Reset the pick point positions in 3D if the scaling changes.
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+VisWinQuery::Set3DAxisScalingFactors(bool doscaling,const double scale[3])
+{
+    if (!pickPoints.empty())
+    {
+        double distance = CalculateShiftDistance();
+        double shiftVec[3];
+        CreateShiftVector(shiftVec, distance);
+        std::vector< PickEntry >::iterator it;
+        for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
+        {
+            if (doscaling)
+            {
+                double newShift[3] = {shiftVec[0]/scale[0],
+                                      shiftVec[1]/scale[1],
+                                      shiftVec[2]/scale[2]};
+                it->pickActor->ResetPosition(newShift);
+                it->pickActor->Translate(scale);
+            }
+            else
+            {
+                it->pickActor->ResetPosition(shiftVec);
+            }
+        }
+    }
 }

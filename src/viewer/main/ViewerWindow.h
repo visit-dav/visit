@@ -457,6 +457,9 @@ class ViewerToolbar;
 //    Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //    Added automatic depth cueing mode.
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -637,6 +640,7 @@ public:
     void SetFullFrameActivationMode(const int mode);
     int  GetFullFrameActivationMode() const;
     void GetScaleFactorAndType(double &s, int &t);
+    bool Get3DAxisScalingFactors(double s[3]);
     bool DoAllPlotsAxesHaveSameUnits();
 
     void ConvertFromLeftEyeToRightEye(void);

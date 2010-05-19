@@ -274,6 +274,10 @@ VisWinPlots::~VisWinPlots()
 //    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
 //    Added support to overlay curve plots on 2D plots.
 //    Reset scale vec to all 1's if not in full frame mode.
+//
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -300,6 +304,7 @@ VisWinPlots::AddPlot(avtActor_p &p)
     p->SetTransparencyActor(transparencyActor);
 
     double vec[3] = { 1. , 1., 1.};
+    double axisscale[3] = { 1. , 1., 1.};
     if (mediator.GetFullFrameMode())
     {
         double scale; 
@@ -310,6 +315,10 @@ VisWinPlots::AddPlot(avtActor_p &p)
         else
             vec[1] = scale;
         p->ScaleByVector(vec);
+    }
+    else if (mediator.Get3DAxisScalingFactors(axisscale))
+    {
+        p->ScaleByVector(axisscale);
     }
     else
     {
@@ -343,6 +352,16 @@ VisWinPlots::AddPlot(avtActor_p &p)
     {
         double  bounds[6];
         GetRealBounds(bounds);
+        double axisscale[3] = { 1. , 1., 1.};
+        if (mediator.Get3DAxisScalingFactors(axisscale))
+        {
+            bounds[0] *= axisscale[0];
+            bounds[1] *= axisscale[0];
+            bounds[2] *= axisscale[1];
+            bounds[3] *= axisscale[1];
+            bounds[4] *= axisscale[2];
+            bounds[5] *= axisscale[2];
+        }
         SetBoundingBox(bounds);
         p->VisibilityOff();
     }
@@ -676,6 +695,9 @@ VisWinPlots::SetViewExtentsType(avtExtentType vt)
 //    Mark C. Miller, Wed Jun  8 10:53:46 PDT 2005
 //    Used new SaveVisibility interface for externally rendered images actor
 //
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
@@ -710,6 +732,16 @@ VisWinPlots::StartBoundingBox(void)
     //
     double  bounds[6];
     GetRealBounds(bounds);
+    double axisscale[3] = { 1. , 1., 1.};
+    if (mediator.Get3DAxisScalingFactors(axisscale))
+    {
+        bounds[0] *= axisscale[0];
+        bounds[1] *= axisscale[0];
+        bounds[2] *= axisscale[1];
+        bounds[3] *= axisscale[1];
+        bounds[4] *= axisscale[2];
+        bounds[5] *= axisscale[2];
+    }
     SetBoundingBox(bounds);
     bbox->VisibilityOn();
 
@@ -1935,6 +1967,33 @@ VisWinPlots::FullFrameOff()
     double vec[3] = {1., 1., 1.};
     ScalePlots(vec);
 }
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::Set3DAxisScalingFactors
+//
+//  Purpose:
+//    Scales the 3D plots.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 21, 2009
+//
+// ****************************************************************************
+
+void
+VisWinPlots::Set3DAxisScalingFactors(bool scale, const double s[3])
+{
+    double vec[3] = {1., 1., 1.};
+    if (scale)
+    {
+        vec[0] = s[0];
+        vec[1] = s[1];
+        vec[2] = s[2];
+    }
+
+    ScalePlots(vec);
+}
+
 
 
 // ****************************************************************************
