@@ -367,12 +367,30 @@ VisitPointTool::UpdateView()
 //   Brad Whitlock, Fri Apr  3 14:23:26 PDT 2009
 //   I added UpdateSphere().
 //
+//   Jeremy Meredith, Wed May 19 11:42:11 EDT 2010
+//   Added full frame support.
+//
 // ****************************************************************************
 
 void
 VisitPointTool::UpdateTool()
 {
     hotPoints[0].pt = avtVector((double*)Interface.GetPoint());
+
+    if (proxy.GetFullFrameMode())
+    {
+        // 
+        // Translate the hotPoints so they appear in the correct position
+        // in full-frame mode. 
+        // 
+        double scale;
+        int type;
+        proxy.GetScaleFactorAndType(scale, type);
+        if (type == 0 ) // x_axis
+            hotPoints[0].pt.x *= scale;
+        else            // x_axis
+            hotPoints[0].pt.y *= scale;
+    }
 
     UpdateSphere();
     UpdateText();
@@ -464,14 +482,33 @@ VisitPointTool::RemoveText()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Jeremy Meredith, Wed May 19 11:42:11 EDT 2010
+//   Added full frame support.
+//
 // ****************************************************************************
 
 void
 VisitPointTool::UpdateText()
 {
     char str[100];
-    sprintf(str, "XYZ<%1.3g %1.3g %1.3g>", 
-            hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
+    if (proxy.GetFullFrameMode())
+    {
+        double scale;
+        int type;
+        proxy.GetScaleFactorAndType(scale, type);
+        if (type == 0 ) // x_axis
+            sprintf(str, "XYZ<%1.3g %1.3g %1.3g>", 
+                hotPoints[0].pt.x/scale, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        else // y_axis
+            sprintf(str, "XYZ<%1.3g %1.3g %1.3g>", 
+                hotPoints[0].pt.x, hotPoints[0].pt.y/scale, hotPoints[0].pt.z);
+    }
+    else
+    {
+        sprintf(str, "XYZ<%1.3g %1.3g %1.3g>", 
+                hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
+    }
     pointTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     double pt[3] = {originScreen.x, originScreen.y, 0.};
@@ -1150,3 +1187,52 @@ VisitPointTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
     VisitPointTool *lt = (VisitPointTool *)it;
     lt->Translate(e, ctrl, shift, x, y, 0);
 }
+
+// ****************************************************************************
+//  Method:  VisitPointTool::FullFrameOn
+//
+//  Purpose: Updates the tool.
+//
+//  Arguments:
+//    <unused>   The axis scale factor.
+//    <unused>   The axis scale type.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 19, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitPointTool::FullFrameOn(const double, const int)
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  VisitPointTool::FullFrameOn
+//
+//  Purpose: Updates the tool.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 19, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitPointTool::FullFrameOff()
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
+    }
+}
+
+

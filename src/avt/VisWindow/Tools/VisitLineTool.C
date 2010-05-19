@@ -429,6 +429,8 @@ VisitLineTool::UpdateView()
 //   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
 //   Added support for full-frame mode.
 //   
+//   Jeremy Meredith, Wed May 19 11:42:11 EDT 2010
+//   Added full frame support.
 // ****************************************************************************
 
 void
@@ -631,6 +633,9 @@ VisitLineTool::RemoveText()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace mapper with actor.
 //
+//   Jeremy Meredith, Wed May 19 11:42:11 EDT 2010
+//   Added full frame support.
+//
 // ****************************************************************************
 
 void
@@ -641,8 +646,26 @@ VisitLineTool::UpdateText()
     for(int i = 0; i < 2; ++i)
     {
         char str[100];
-        sprintf(str, "%s <%1.3g %1.3g %1.3g>", prefix[i],
-                hotPoints[i].pt.x, hotPoints[i].pt.y, hotPoints[i].pt.z);
+        if (proxy.GetFullFrameMode())
+        {
+            double scale;
+            int type;
+            proxy.GetScaleFactorAndType(scale, type);
+            if (type == 0 ) // x_axis
+                sprintf(str, "%s <%1.3g %1.3g %1.3g>", prefix[i],
+                        hotPoints[i].pt.x/scale, hotPoints[i].pt.y,
+                        hotPoints[i].pt.z);
+            else // y_axis
+                sprintf(str, "%s <%1.3g %1.3g %1.3g>", prefix[i],
+                        hotPoints[i].pt.x, hotPoints[i].pt.y/scale,
+                        hotPoints[i].pt.z);
+        }
+        else
+        {
+            sprintf(str, "%s <%1.3g %1.3g %1.3g>", prefix[i],
+                    hotPoints[i].pt.x, hotPoints[i].pt.y, hotPoints[i].pt.z);
+        }
+
         pointTextActor[i]->SetInput(str);
         avtVector originScreen = ComputeWorldToDisplay(hotPoints[i].pt);
         double pt[3] = {originScreen.x, originScreen.y, 0.};
