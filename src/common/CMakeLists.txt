@@ -67,6 +67,7 @@ Exceptions/Database/InvalidSourceException.C
 Exceptions/Database/InvalidTimeStepException.C
 Exceptions/Database/InvalidVariableException.C
 Exceptions/Database/InvalidZoneTypeException.C
+Exceptions/Database/NonCompliantFileException.C
 Exceptions/Database/PointerNotInCacheException.C
 Exceptions/Database/SiloException.C
 Exceptions/Pipeline/AbortException.C
