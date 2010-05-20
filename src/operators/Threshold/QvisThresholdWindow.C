@@ -530,6 +530,14 @@ QvisThresholdWindow::variableAddedToList(const QString &variableToAdd)
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu May 20 10:09:27 PDT 2010
+//    Fix problem uncovered by Cihan Altinay with deleting the last variable.
+//
+// ****************************************************************************
+
 void
 QvisThresholdWindow::selectedVariableDeleted()
 {
@@ -539,15 +547,17 @@ QvisThresholdWindow::selectedVariableDeleted()
                << endl;
         return;
     }
-
+ 
     if (guiFullVarNames.size() == 0)
         return;
-        
+ 
     int selectedVarNum = threshVars->currentRow();
-
-    threshVars->removeRow(selectedVarNum);
-
-    guiFullVarNames.erase(guiFullVarNames.begin() + selectedVarNum);
+ 
+    if (selectedVarNum >= 0)
+    {
+        threshVars->removeRow(selectedVarNum);
+        guiFullVarNames.erase(guiFullVarNames.begin() + selectedVarNum);
+    }
 }
 
 
