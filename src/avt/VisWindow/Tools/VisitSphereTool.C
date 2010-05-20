@@ -548,14 +548,27 @@ VisitSphereTool::RemoveText()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace mapper with actor.
 //
+//   Jeremy Meredith, Thu May 20 10:50:29 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
 // ****************************************************************************
 
 void
 VisitSphereTool::UpdateText()
 {
+    double px = hotPoints[0].pt.x;
+    double py = hotPoints[0].pt.y;
+    double pz = hotPoints[0].pt.z;
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        px /= axisscale[0];
+        py /= axisscale[1];
+        pz /= axisscale[2];
+    }
+
     char str[100];
-    sprintf(str, "Origin <%1.3g %1.3g %1.3g>", hotPoints[0].pt.x,
-            hotPoints[0].pt.y, hotPoints[0].pt.z);
+    sprintf(str, "Origin <%1.3g %1.3g %1.3g>", px, py, pz);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     double pt[3] = {originScreen.x, originScreen.y, 0.};
@@ -564,7 +577,10 @@ VisitSphereTool::UpdateText()
     avtVector up(hotPoints[1].pt.x - hotPoints[0].pt.x,
                  hotPoints[1].pt.y - hotPoints[0].pt.y,
                  hotPoints[1].pt.z - hotPoints[0].pt.z);
-    sprintf(str, "Radius = %1.3g", up.norm());
+    double radius = up.norm();
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+        radius /= axisscale[0];
+    sprintf(str, "Radius = %1.3g", radius);
     for(int i = 0; i < 3; ++i)
     {
         radiusTextActor[i]->SetInput(str);
@@ -584,6 +600,8 @@ VisitSphereTool::UpdateText()
 // Creation:   Thu May 2 17:05:45 PST 2002
 //
 // Modifications:
+//   Jeremy Meredith, Thu May 20 10:50:29 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //   
 // ****************************************************************************
 
@@ -595,6 +613,16 @@ VisitSphereTool::CallCallback()
    
     // Radius
     double radius = (hotPoints[1].pt - origin).norm();
+
+    double axisscale[3] = { 1. , 1., 1.};
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        origin.x /= axisscale[0];
+        origin.y /= axisscale[1];
+        origin.z /= axisscale[2];
+        // If scaling applied, note we used the X hotpoint to determine radius
+        radius /= axisscale[0];
+    }
 
     Interface.SetOrigin(origin.x, origin.y, origin.z);
     Interface.SetRadius(radius);
@@ -666,6 +694,8 @@ VisitSphereTool::FinalActorSetup()
 //  Creation:    Thu May 2 17:11:06 PST 2002
 //
 //  Modifications:
+//   Jeremy Meredith, Thu May 20 10:50:29 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
 // ****************************************************************************
 
@@ -673,6 +703,10 @@ void
 VisitSphereTool::DoTransformations()
 {
     avtMatrix M = TMtx * SMtx;
+
+    double axisscale[3] = { 1. , 1., 1.};
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+        M = avtMatrix::CreateScale(axisscale[0],axisscale[1],axisscale[2]) * M;
 
     for (int i=0; i<hotPoints.size(); i++)
         hotPoints[i].pt = M * origHotPoints[i].pt;
@@ -862,6 +896,29 @@ VisitSphereTool::ReAddToWindow()
     {
         proxy.GetCanvas()->RemoveActor(sphereActor);
         proxy.GetCanvas()->AddActor(sphereActor);
+    }
+}
+
+
+// ****************************************************************************
+// Method:  VisitSphereTool::Set3DAxisScalingFactors
+//
+// Purpose:
+//   If the 3D scaling changes, update the tool.
+//
+// Arguments:
+//   ignored
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 20, 2010
+//
+// ****************************************************************************
+void
+VisitSphereTool::Set3DAxisScalingFactors(bool, const double[3])
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
     }
 }
 
