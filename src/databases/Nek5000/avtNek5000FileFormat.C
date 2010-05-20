@@ -726,15 +726,26 @@ avtNek5000FileFormat::ParseNekFileHeader()
 //    Hank Childs, Tue May 11 20:27:34 PDT 2010
 //    More support for legacy scalars.
 //
+//    Hank Childs, Thu May 20 10:53:30 PDT 2010
+//    Add support for legacy passive scalars where trailing white spaces
+//    followed by numbers can get confused for numbers of passive scalars.
+//
 // ****************************************************************************
 
 void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 {
+    int numSpacesInARow = 0;
     while (f.tellg() < iHeaderSize)
     {
         char c = f.get();
-        if (c == ' ')
+        if (numSpacesInARow >= 5)
             continue;
+        if (c == ' ')
+        {
+            numSpacesInARow++;
+            continue;
+        }
+        numSpacesInARow = 0;
         if (c == 'X' || c == 'Y' || c == 'Z')
             continue;
         else if (c == 'U')
