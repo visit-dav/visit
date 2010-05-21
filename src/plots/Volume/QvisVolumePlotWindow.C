@@ -927,10 +927,13 @@ QvisVolumePlotWindow::CreateOptions(int maxWidth)
 //   Tom Fogal, Tue Mar 10 17:22:11 MST 2009
 //   Don't try to pass empty histograms to the widgets.
 //   
+//   Hank Childs, Fri May 21 12:05:03 PDT 2010
+//   Add argument for need2D.
+//
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::UpdateHistogram()
+QvisVolumePlotWindow::UpdateHistogram(bool need2D)
 {
     PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(plotType);
     bool invalid = true;
@@ -958,7 +961,7 @@ QvisVolumePlotWindow::UpdateHistogram()
         }
 #endif
         // Ugh.  Sorry this looks so gross.
-        if(!hist.empty() SLIVR_ONLY(&& !hist2.empty()))
+        if(!hist.empty() SLIVR_ONLY(&& (!need2D || !hist2.empty())))
         {
             invalid = false;
         }
@@ -1076,6 +1079,9 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   The low-gradient-mag lighting reduction now also applies to the 
 //   3D texturing and splatting volume renderers.
 //
+//   Hank Childs, Fri May 21 12:05:03 PDT 2010
+//   Add argument to UpdateHistogram.
+//
 // ****************************************************************************
 
 void
@@ -1086,7 +1092,10 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
     // If the plot info atts changed then update the histogram.
     if(doAll || SelectedSubject() == GetViewerState()->GetPlotInformation(plotType))
     {
-        UpdateHistogram();
+        bool need2D = false;
+        if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
+            need2D = true;
+        UpdateHistogram(need2D);
         if(!doAll)
             return;
     }

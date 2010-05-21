@@ -42,6 +42,8 @@
 
 #include <avtDatasetExaminer.h>
 
+#include <avtParallel.h>
+
 #include <float.h>
 #include <DebugStream.h>
 
@@ -707,3 +709,61 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
     nReal = numNodes[0];
     nGhost = numNodes[1];
 }
+
+
+// ****************************************************************************
+//  Method: avtDatasetExaminer::CalculateHistogram
+//
+//  Purpose:
+//      Calculates a histogram for a given variable.  This deals with parallel
+//      details as well.
+//
+//  Arguments:
+//      var       The variable to calculate the histogram for
+//      min       The minimum value for the histogram (values below this are
+//                clamped to min).
+//      max       The maximum value for the histogram (values above this are
+//                clamped to max).
+//      numvals   An array to store the number of values.  Note that this array
+//                should be sized to the number of bins in the histogram.
+//
+//  Returns:      true if the histogram was successfully calculated, false 
+//                otherwise.
+//  
+//  Programmer: Hank Childs
+//  Creation:   May 21, 2010
+//
+// ****************************************************************************
+
+bool
+avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds, 
+                                       const std::string &var,
+                                       double min, double max,
+                                       std::vector<VISIT_LONG_LONG> &numvals)
+{
+    avtDataTree_p dataTree = ds->dataTree;
+
+    bool ranGood = true;
+    CalculateHistogramArgs args;
+    if (*dataTree != NULL)
+    {
+        args.min      = min;
+        args.max      = max;
+        args.variable = var;
+        args.numVals.resize(numvals.size(), 0);
+        dataTree->Traverse(CCalculateHistogram, (void *) &args, ranGood);
+    }
+
+    int iFailed        = (ranGood ? 1 : 0);
+    int somebodyFailed = UnifyMaximumValue(iFailed);
+
+    if (somebodyFailed)
+        return false;
+
+    SumLongLongArrayAcrossAllProcessors(&(args.numVals[0]), &(numvals[0]),
+                                        numvals.size());
+    
+    return true;
+}
+
+

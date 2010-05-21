@@ -151,13 +151,79 @@ avtVolumeFilter::SetAttributes(const VolumeAttributes &a)
 //  Programmer: Hank Childs
 //  Creation:   November 11, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May 21 11:28:12 CDT 2010
+//    Calculate histograms for setting up transfer functions.
+//
 // ****************************************************************************
 
 void
 avtVolumeFilter::Execute(void)
 {
+    int i;
+
+    // Copy our input to the output
     avtDataObject_p input = GetInput();
     GetOutput()->Copy(*input);
+
+    // The rest of this method is to set up histogram.
+    int numValsInHist = 256;
+    avtDataset_p ds = GetTypedInput();
+    double minmax[2] = { 0, 1 };
+    bool artificialMin = atts.GetUseColorVarMin();
+    bool artificialMax = atts.GetUseColorVarMax();
+    if (!artificialMin || !artificialMax)
+        avtDatasetExaminer::GetDataExtents(ds, minmax, primaryVariable);
+    minmax[0] = (artificialMin ? atts.GetColorVarMin() : minmax[0]);
+    minmax[1] = (artificialMax ? atts.GetColorVarMax() : minmax[1]);
+    if (atts.GetScaling() == VolumeAttributes::Log10)
+    {
+        if (artificialMin)
+            if (minmax[0] > 0)
+                minmax[0] = log10(minmax[0]);
+        if (artificialMax)
+            if (minmax[1] > 0)
+                minmax[1] = log10(minmax[1]);
+    }
+    else if (atts.GetScaling() == VolumeAttributes::Skew)
+    {
+        if (artificialMin)
+        {
+            double newMin = vtkSkewValue(minmax[0], minmax[0], minmax[1],
+                                         atts.GetSkewFactor());
+            minmax[0] = newMin;
+        }
+        if (artificialMax)
+        {
+            double newMax = vtkSkewValue(minmax[1], minmax[0], minmax[1],
+                                         atts.GetSkewFactor());
+            minmax[1] = newMax;
+        }
+    }
+
+    std::string s = string(primaryVariable);
+    std::vector<VISIT_LONG_LONG> numvals(numValsInHist, 0);
+    avtDatasetExaminer::CalculateHistogram(ds, s, minmax[0], minmax[1], numvals);
+
+    VISIT_LONG_LONG maxVal = 0;
+    for (i = 0 ; i < numValsInHist ; i++)
+        if (numvals[i] > maxVal)
+            maxVal = numvals[i];
+
+    std::vector<float> h1(numValsInHist, 0.);
+    if (maxVal != 0)
+    {
+        for (i = 0 ; i < numValsInHist ; i++)
+            h1[i] = ((double) numvals[i]) / ((double) maxVal);
+    }
+    
+    MapNode vhist;
+    vhist["histogram_size"] = numValsInHist;
+    vhist["histogram_1d"] = h1;
+    // vhist["histogram_2d"] = compressedbuf; <<-- not doing this
+
+    GetOutput()->GetInfo().GetAttributes().AddPlotInformation("VolumeHistogram", vhist);
 }
 
 

@@ -149,6 +149,9 @@ typedef int WidgetID;
 //    curve shape power, and an optional max-grad-mag-value clamp useful both
 //    as an extra tweak and for making animations not have erratic lighting.
 //
+//    Hank Childs, Fri May 21 12:05:03 PDT 2010
+//    Add argument to UpdateHistogram.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -167,7 +170,7 @@ public slots:
     virtual void reset();
 protected:
     void UpdateWindow(bool doAll);
-    void UpdateHistogram();
+    void UpdateHistogram(bool need2D);
     void UpdateColorControlPoints();
     void UpdateGaussianControlPoints();
     void UpdateFreeform();

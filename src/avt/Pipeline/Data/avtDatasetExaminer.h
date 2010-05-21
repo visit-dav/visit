@@ -84,6 +84,9 @@ class     vtkDataArray;
 //    Hank Childs, Sat Nov 21 13:59:40 PST 2009
 //    Change interface of GetNumberOfZones/Nodes to use VISIT_LONG_LONG.
 //
+//    Hank Childs, Fri May 21 11:22:21 CDT 2010
+//    Added CalculateHistogram.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -108,6 +111,10 @@ class PIPELINE_API avtDatasetExaminer
     static vtkDataArray      *GetArray(avtDataset_p &, const char *, int,
                                        avtCentering &);
     static avtCentering       GetVariableCentering(avtDataset_p&, const char*);
+    static bool               CalculateHistogram(avtDataset_p&, 
+                                                 const std::string &var,
+                                                 double min, double max,
+                                                 std::vector<VISIT_LONG_LONG> &);
 };
 
 
