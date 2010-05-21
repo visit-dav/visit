@@ -43,6 +43,7 @@
 #include <avtArctan2Expression.h>
 #include <avtArctanExpression.h>
 #include <avtBase10LogExpression.h>
+#include <avtBase10LogWithMinExpression.h>
 #include <avtCeilingExpression.h>
 #include <avtCosExpression.h>
 #include <avtCoshExpression.h>
@@ -80,6 +81,10 @@
 //
 // Modifications:
 //   
+//   Hank Childs, Thu May 20 21:26:47 PDT 2010
+//   Add log10withmin.  This is possible with if, gt, and log, but more
+//   efficiently implemented in a single filter.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -119,6 +124,8 @@ avtFunctionExpr::CreateMathFilters(const string &functionName) const
         f = new avtExpExpression();
     else if ((functionName == "log") || (functionName == "log10"))
         f = new avtBase10LogExpression();
+    else if (functionName == "log10withmin") 
+        f = new avtBase10LogWithMinExpression();
     else if (functionName == "sqrt")
         f = new avtSquareRootExpression();
     else if ((functionName == "sq") || (functionName == "sqr"))
