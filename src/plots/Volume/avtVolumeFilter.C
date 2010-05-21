@@ -60,7 +60,6 @@
 #include <avtRay.h>
 #include <avtPhong.h>
 #include <avtRayTracer.h>
-#include <avtResampleFilter.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtView3D.h>
 #include <avtViewInfo.h>
@@ -747,6 +746,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Lighting queues should be taken from the gradient of the opacity var,
 //    not the color var.
 //
+//    Hank Childs, Thu May 20 21:32:04 PDT 2010
+//    Use a more efficient version of Log10-with-minimum.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -776,8 +778,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         {
             char m[16];
             SNPRINTF(m, 16, "%f", atts.GetColorVarMin());
-            SNPRINTF(exprDef, 128, "log10(if(gt(%s, 0), %s, %s))", 
-                     var, var, m);
+            SNPRINTF(exprDef, 128, "log10withmin(%s, %s)", var, m);
         }
         else 
         {

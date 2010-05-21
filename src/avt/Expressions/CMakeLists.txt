@@ -42,6 +42,9 @@
 #    Use proper python include path ${PYTHON_INCLUDE_PATH}, instead of 
 #    ${PYTHON_INCLUDE_DIRS}
 #
+#    Hank Childs, Thu May 20 21:26:47 PDT 2010
+#    Add Base10LogWithMin.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -188,6 +191,7 @@ Math/avtArcsinExpression.C
 Math/avtArctanExpression.C
 Math/avtArctan2Expression.C
 Math/avtBase10LogExpression.C
+Math/avtBase10LogWithMinExpression.C
 Math/avtBinaryAddExpression.C
 Math/avtBinaryAndExpression.C
 Math/avtBinaryDivideExpression.C
