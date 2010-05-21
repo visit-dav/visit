@@ -645,6 +645,9 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 //    Hank Childs, Thu May 31 23:07:02 PDT 2007
 //    Add support for non-scalars.
 //
+//    Hank Childs, Thu May 20 21:33:53 CDT 2010
+//    Make distributed resampling work correctly.
+//
 // ****************************************************************************
 
 void
@@ -653,13 +656,6 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
 {
     int   i, j, k, l, m;
 
-    //
-    // Create the scalars and tell it how many elements we want.
-    //
-    for (i = 0 ; i < nArrays ; i++)
-    {
-        arrays[i]->SetNumberOfTuples(volumeWidth*volumeHeight*volumeDepth);
-    }
 
     //
     // Set up the indices we are going to iterate over.  This is normally
@@ -679,6 +675,15 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
     }
     if (hEnd > volumeHeight)
         return;
+
+    //
+    // Create the scalars and tell it how many elements we want.
+    //
+    int vH = hEnd-hStart;
+    int vW = wEnd-wStart;
+    int nvals = vH*vW*volumeDepth;
+    for (i = 0 ; i < nArrays ; i++)
+        arrays[i]->SetNumberOfTuples(vW*vH*volumeDepth);
 
     int *arraySize = new int[nArrays];
     for (i = 0 ; i < nArrays ; i++)
@@ -727,7 +732,7 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
                         float sample[AVT_VARIABLE_LIMIT];
                         if (rays[i][j]->GetSample(k, sample))
                         {
-                            int index = k*vHeight*vWidth + (i-hStart)*vWidth 
+                            int index = k*vH*vW + (i-hStart)*vW 
                                       + (j-wStart);
                             int nv = 0;
                             for (l = 0 ; l < nArrays ; l++)
