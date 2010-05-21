@@ -369,6 +369,10 @@ avtResampleFilter::BypassResample(void)
 //    Tom Fogal, Wed Jun 24 20:28:04 MDT 2009
 //    Use new GetBounds method.
 //
+//    Hank Childs, Thu May 20 21:33:53 CDT 2010
+//    Add support for distributed resampling in a way that actually
+//    distributes the memory footprint.
+//
 // ****************************************************************************
 
 void
@@ -616,12 +620,16 @@ avtResampleFilter::ResampleInput(void)
     // Now replace the -FLT_MAX's with the default value.  (See comment above.)
     for (i = 0 ; i < numArrays ; i++)
     {
-        float *ptr = (float *) vars[i]->GetVoidPointer(0);
-        int numTups = width*height*depth*vars[i]->GetNumberOfComponents();
-        for (j = 0 ; j < numTups ; j++)
-            ptr[j] = (ptr[j] == defaultPlaceholder 
-                             ? atts.GetDefaultVal() 
-                             : ptr[j]);
+        int numTups = vars[i]->GetNumberOfComponents()
+                    * vars[i]->GetNumberOfTuples();
+        if (numTups > 0)
+        {
+            float *ptr = (float *) vars[i]->GetVoidPointer(0);
+            for (j = 0 ; j < numTups ; j++)
+                ptr[j] = (ptr[j] == defaultPlaceholder 
+                                 ? atts.GetDefaultVal() 
+                                 : ptr[j]);
+        }
     }
    
     bool iHaveData = false;
@@ -673,21 +681,33 @@ avtResampleFilter::ResampleInput(void)
                     else
                         rg->GetPointData()->SetVectors(vars[i]);
                 else if (vars[i]->GetNumberOfComponents() == 1)
+                {
                     if (cellCenteredOutput)
+                    {
+                        rg->GetCellData()->AddArray(vars[i]);
                         rg->GetCellData()->SetScalars(vars[i]);
+                    }
                     else
+                    {
+                        rg->GetPointData()->AddArray(vars[i]);
                         rg->GetPointData()->SetScalars(vars[i]);
+                    }
+                }
                 else
+               {
                     if (cellCenteredOutput)
                         rg->GetCellData()->AddArray(vars[i]);
                     else
                         rg->GetPointData()->AddArray(vars[i]);
+               }
             }
             else
+            {
                 if (cellCenteredOutput)
                     rg->GetCellData()->AddArray(vars[i]);
                 else
                     rg->GetPointData()->AddArray(vars[i]);
+            }
         }
 
         avtDataTree_p tree = new avtDataTree(rg, 0);
