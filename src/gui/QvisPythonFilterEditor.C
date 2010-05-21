@@ -260,6 +260,9 @@ QvisPythonFilterEditor::loadScript(const QString &py_script)
 // Creation:   Thu Feb 11 09:35:54 PST 2010
 //
 // Modifications:
+//   Cyrus Harrison, Fri May 21 09:51:44 PDT 2010
+//   Added 'All Files' to the filter, to support scripts without a '.py'
+//   extension.
 //
 // ****************************************************************************
 
@@ -270,7 +273,8 @@ QvisPythonFilterEditor::cmdSaveClick()
                            + "/" + QString("visit_filter.py");
 
     // Get the name of the file that the user saved.
-    QString filter(tr("Python Script File") +  QString(" (*.py)"));
+    QString filter(tr("Python Script File") +  QString(" (*.py);;")
+                   + tr("All Files") + QString(" (*)"));
 
     QString res = QFileDialog::getSaveFileName(this,
                                                tr("Save Python Filter Script"),
@@ -290,6 +294,9 @@ QvisPythonFilterEditor::cmdSaveClick()
 // Creation:   Thu Feb 11 09:35:54 PST 2010
 //
 // Modifications:
+//   Cyrus Harrison, Fri May 21 09:51:44 PDT 2010
+//   Added 'All Files' to the filter, to support scripts without a '.py'
+//   extension.
 //
 // ****************************************************************************
 
@@ -298,7 +305,8 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 {
     if(action == loadFile)
     {
-        QString filter(tr("Python Script File") +  QString(" (*.py)"));
+        QString filter(tr("Python Script File") +  QString(" (*.py);;")
+                       + tr("All Files") + QString(" (*)"));
         QString res = QFileDialog::getOpenFileName(this,
                                                    tr("Load Python Filter"),
                                                    QDir::current().path(),
