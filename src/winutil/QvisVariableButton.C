@@ -528,6 +528,9 @@ QvisVariableButton::InitializeCategoryNames()
 //   Brad Whitlock, Fri May  9 12:18:55 PDT 2008
 //   Qt 4. Designer support.
 //
+//   Cyrus Harrison, Fri May 21 11:41:21 PDT 2010
+//   Connect top level menu actions to slots.
+//
 // ****************************************************************************
 
 void
@@ -537,9 +540,9 @@ QvisVariableButton::UpdateMenu()
 
     // Insert some extra menu options.
     if(addDefault)
-        menu->addAction(defaultVariable);
+        menu->addAction(defaultVariable,this,SLOT(onDefaultVar()));
     if(addExpr)
-        menu->addAction(tr("Create new expression ..."));
+        menu->addAction(tr("Create new expression ..."),this,SLOT(onCreateExpr()));
 
     if(addDefault || addExpr)
     {
@@ -958,6 +961,44 @@ QvisVariableButton::changeVariable(int i, const QString &var)
         // Tell other Qt objects that we chose a variable.
         emit activated(var);
     }
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::onCreateExpr
+//
+// Purpose:
+//   Called when top level "Create new expression" option is selected.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri May 21 11:33:34 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVariableButton::onCreateExpr()
+{
+    changeVariable(0,tr("Create new expression ..."));
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::onDefaultVar
+//
+// Purpose:
+//   Called when top level 'default' option is selected.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri May 21 11:33:34 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVariableButton::onDefaultVar()
+{
+    changeVariable(0,defaultVariable);
 }
 
 // ****************************************************************************
